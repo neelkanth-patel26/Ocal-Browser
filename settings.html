@@ -1,0 +1,418 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Settings - Ocal</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        :root {
+            --bg: #070707;
+            --sidebar-bg: #111;
+            --accent: #a855f7;
+            --text: #eee;
+            --text-dim: #888;
+            --border: rgba(255,255,255,0.05);
+        }
+
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: -apple-system, system-ui, sans-serif; }
+        body { background: var(--bg); color: var(--text); display: flex; height: 100vh; overflow: hidden; }
+
+        /* Sidebar */
+        .settings-sidebar {
+            width: 240px;
+            background: var(--sidebar-bg);
+            border-right: 1px solid var(--border);
+            padding: 40px 10px;
+            display: flex;
+            flex-direction: column;
+            gap: 5px;
+        }
+
+        .nav-item {
+            padding: 12px 20px;
+            border-radius: 6px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            color: var(--text-dim);
+            transition: all 0.2s;
+            font-size: 14px;
+        }
+
+        .nav-item:hover { background: rgba(255,255,255,0.03); color: var(--text); }
+        .nav-item.active { background: rgba(168, 85, 247, 0.1); color: var(--accent); }
+
+        /* Main Content */
+        .content { flex: 1; padding: 60px 80px; overflow-y: auto; }
+        .section { display: none; max-width: 600px; }
+        .section.active { display: block; animation: fadeIn 0.3s ease; }
+
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+
+        h2 { font-size: 24px; font-weight: 600; margin-bottom: 30px; letter-spacing: -0.5px; }
+        .group { margin-bottom: 40px; }
+        .group-title { font-size: 12px; text-transform: uppercase; color: var(--text-dim); letter-spacing: 1px; margin-bottom: 20px; }
+
+        /* Controls */
+        .control-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 15px 0;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .control-info h4 { font-size: 14px; font-weight: 500; margin-bottom: 4px; }
+        .control-info p { font-size: 12px; color: var(--text-dim); }
+
+        select, input {
+            background: #1a1a1a;
+            border: 1px solid var(--border);
+            color: var(--text);
+            padding: 8px 12px;
+            border-radius: 6px;
+            outline: none;
+            font-size: 13px;
+        }
+
+        .btn {
+            background: var(--accent);
+            color: #fff;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 13px;
+            font-weight: 500;
+            transition: opacity 0.2s;
+        }
+        .btn:hover { opacity: 0.9; }
+        .btn.secondary { background: rgba(255,255,255,0.05); color: #fff; }
+
+        /* Profile Grid */
+        .profile-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)); gap: 15px; margin-top: 20px; }
+        .profile-card {
+            background: rgba(255,255,255,0.03);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 20px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        .profile-card:hover { border-color: var(--accent); transform: translateY(-2px); }
+        .profile-card i { font-size: 32px; color: var(--accent); margin-bottom: 12px; display: block; }
+        .profile-card span { font-size: 14px; font-weight: 500; }
+
+        /* Premium About */
+        .about-card {
+            background: linear-gradient(135deg, rgba(255,255,255,0.05), rgba(255,255,255,0.02));
+            backdrop-filter: blur(20px);
+            border: 1px solid rgba(255,255,255,0.08);
+            border-radius: 24px;
+            padding: 60px 40px;
+            text-align: center;
+            position: relative;
+            overflow: hidden;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.3);
+        }
+
+        .about-card::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background: radial-gradient(circle, var(--accent) 0%, transparent 60%);
+            opacity: 0.1;
+            z-index: 0;
+            pointer-events: none;
+        }
+
+        .logo-glow {
+            font-size: 82px;
+            font-weight: 800;
+            margin-bottom: 20px;
+            display: inline-block;
+            background: linear-gradient(180deg, #fff, #a855f7);
+            -webkit-background-clip: text;
+            background-clip: text;
+            -webkit-text-fill-color: transparent;
+            text-shadow: 0 0 40px rgba(168, 85, 247, 0.4);
+            animation: breathe 4s ease-in-out infinite;
+        }
+
+        @keyframes breathe {
+            0%, 100% { transform: scale(1); filter: drop-shadow(0 0 10px rgba(168, 85, 247, 0.2)); }
+            50% { transform: scale(1.05); filter: drop-shadow(0 0 30px rgba(168, 85, 247, 0.5)); }
+        }
+
+        .brand-name { font-size: 28px; font-weight: 700; margin-bottom: 8px; color: #fff; }
+        .version-tag { 
+            background: rgba(255,255,255,0.08); 
+            padding: 4px 12px; 
+            border-radius: 100px; 
+            font-size: 11px; 
+            color: var(--text-dim);
+            letter-spacing: 0.5px;
+            display: inline-block;
+            margin-bottom: 25px;
+        }
+
+        .credits {
+            color: var(--text-dim);
+            font-size: 13px;
+            margin-bottom: 40px;
+            line-height: 1.6;
+            max-width: 300px;
+            margin-left: auto;
+            margin-right: auto;
+        }
+
+        .company-name {
+            display: block;
+            margin-top: 10px;
+            font-style: italic;
+            color: var(--accent);
+            font-weight: 500;
+            font-size: 14px;
+        }
+    </style>
+</head>
+<body>
+    <div class="settings-sidebar">
+        <div class="nav-item active" data-section="general">
+            <i class="fas fa-cog"></i> General
+        </div>
+        <div class="nav-item" data-section="profiles">
+            <i class="fas fa-user-circle"></i> Profiles
+        </div>
+        <div class="nav-item" data-section="search">
+            <i class="fas fa-search"></i> Search Engine
+        </div>
+        <div class="nav-item" data-section="security">
+            <i class="fas fa-shield-alt"></i> DNS & Security
+        </div>
+        <div class="nav-item" data-section="privacy">
+            <i class="fas fa-user-shield"></i> Privacy & Data
+        </div>
+        <div class="nav-item" data-section="about">
+            <i class="fas fa-info-circle"></i> About
+        </div>
+    </div>
+
+    <div class="content">
+        <!-- General -->
+        <div id="general" class="section active">
+            <h2>General Settings</h2>
+            <div class="group">
+                <div class="group-title">Appearance</div>
+                <div class="control-row">
+                    <div class="control-info">
+                        <h4>Accent Color</h4>
+                        <p>Choose your primary UI color (Ocal Purple is default).</p>
+                    </div>
+                    <div style="display: flex; gap: 10px;">
+                        <div class="dot active" style="background:#a855f7; width:24px; height:24px; border-radius:50%; cursor:pointer;"></div>
+                        <div class="dot" style="background:#3b82f6; width:24px; height:24px; border-radius:50%; cursor:pointer;"></div>
+                        <div class="dot" style="background:#ef4444; width:24px; height:24px; border-radius:50%; cursor:pointer;"></div>
+                        <div class="dot" style="background:#10b981; width:24px; height:24px; border-radius:50%; cursor:pointer;"></div>
+                    </div>
+                </div>
+                <div class="control-row">
+                    <div class="control-info">
+                        <h4>Compact Mode</h4>
+                        <p>Reduce the height of tabs and toolbars.</p>
+                    </div>
+                    <input type="checkbox" id="compact-toggle">
+                </div>
+            </div>
+        </div>
+
+        <!-- Profiles -->
+        <div id="profiles" class="section">
+            <h2>Profiles</h2>
+            <p style="color:var(--text-dim); margin-bottom:20px;">Manage your browsing identities with ease.</p>
+            <div class="profile-grid">
+                <!-- Profiles injected here -->
+            </div>
+        </div>
+
+        <!-- Privacy -->
+        <div id="privacy" class="section">
+            <h2>Privacy & Data</h2>
+            <div class="group">
+                <div class="group-title">Browsing Data</div>
+                <div class="control-row">
+                    <div class="control-info">
+                        <h4>Clear History</h4>
+                        <p>Remove all visited site records.</p>
+                    </div>
+                    <button class="btn secondary" id="clear-data-btn">Clear Now</button>
+                </div>
+                <div class="control-row">
+                    <div class="control-info">
+                        <h4>Tracking Protection</h4>
+                        <p>Block known trackers and advertisements.</p>
+                    </div>
+                    <input type="checkbox" checked id="tracking-toggle">
+                </div>
+            </div>
+        </div>
+
+        <!-- Search -->
+        <div id="search" class="section">
+            <h2>Search Engine</h2>
+            <div class="group">
+                <div class="group-title">Search Preferences</div>
+                <div class="control-row">
+                    <div class="control-info">
+                        <h4>Default Search Engine</h4>
+                        <p>Choose the engine used in the address bar.</p>
+                    </div>
+                    <select id="search-engine-select">
+                        <option value="google">Google</option>
+                        <option value="bing">Bing</option>
+                        <option value="duckduckgo">DuckDuckGo</option>
+                    </select>
+                </div>
+            </div>
+        </div>
+
+        <!-- Security -->
+        <div id="security" class="section">
+            <h2>DNS & Security</h2>
+            <div class="group">
+                <div class="group-title">Network</div>
+                <div class="control-row">
+                    <div class="control-info">
+                        <h4>Secure DNS (DoH)</h4>
+                        <p>Lookup websites using an encrypted connection.</p>
+                    </div>
+                    <select id="dns-select">
+                        <option value="default">Default (ISP)</option>
+                        <option value="google">Google Public DNS</option>
+                        <option value="cloudflare">Cloudflare (1.1.1.1)</option>
+                    </select>
+                </div>
+            </div>
+        </div>
+
+        <!-- About -->
+        <div id="about" class="section">
+            <div class="about-card">
+                <div class="logo-glow">O</div>
+                <div class="brand-name">Ocal Browser</div>
+                <div class="version-tag">VERSION 1.0.4 (AGENTIC MASTER BUILD)</div>
+                <div class="credits">
+                    "Driven by intelligence. Designed for performance. The future of browsing is here."
+                    <span class="company-name">Made by Gaming Netwotrk Studio Media Group</span>
+                </div>
+                <button class="btn" id="update-check-btn" style="padding: 12px 32px; border-radius: 50px; background: #fff; color: #000; box-shadow: 0 10px 20px rgba(255,255,255,0.1);">
+                    Check for Updates <i class="fas fa-arrow-right" style="margin-left: 8px;"></i>
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Tab switching logic
+        document.querySelectorAll('.nav-item').forEach(item => {
+            item.onclick = () => {
+                document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+                document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
+                
+                item.classList.add('active');
+                document.getElementById(item.dataset.section).classList.add('active');
+            };
+        });
+
+        // Setting change listeners
+        const searchSelect = document.getElementById('search-engine-select');
+        const dnsSelect = document.getElementById('dns-select');
+        const compactToggle = document.getElementById('compact-toggle');
+        const trackingToggle = document.getElementById('tracking-toggle');
+        const clearBtn = document.getElementById('clear-data-btn');
+        const updateBtn = document.getElementById('update-check-btn');
+        const dots = document.querySelectorAll('.dot');
+
+        searchSelect.onchange = () => {
+            window.electronAPI.updateSetting('searchEngine', searchSelect.value);
+        };
+
+        dnsSelect.onchange = () => {
+            window.electronAPI.updateSetting('dns', dnsSelect.value);
+        };
+
+        compactToggle.onchange = () => {
+            window.electronAPI.updateSetting('compactMode', compactToggle.checked);
+        };
+
+        trackingToggle.onchange = () => {
+            window.electronAPI.updateSetting('trackingProtection', trackingToggle.checked);
+        };
+
+        clearBtn.onclick = () => {
+            clearBtn.innerText = 'Clearing...';
+            window.electronAPI.clearBrowsingData();
+            setTimeout(() => clearBtn.innerText = 'Data Cleared!', 1000);
+            setTimeout(() => clearBtn.innerText = 'Clear Now', 3000);
+        };
+
+        updateBtn.onclick = () => {
+            updateBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Checking...';
+            setTimeout(() => {
+                updateBtn.innerHTML = 'Ocal is up to date!';
+                updateBtn.style.background = '#10b981';
+                setTimeout(() => {
+                    updateBtn.innerHTML = 'Check for Updates <i class="fas fa-arrow-right" style="margin-left: 8px;"></i>';
+                    updateBtn.style.background = '#fff';
+                }, 3000);
+            }, 2000);
+        };
+
+        function renderProfiles(settings) {
+            profileGrid.innerHTML = settings.profiles.map(p => `
+                <div class="profile-card ${settings.currentProfileId === p.id ? 'active' : ''}" onclick="window.electronAPI.switchProfile('${p.id}')">
+                    <i class="fas ${p.icon}"></i>
+                    <span>${p.name}</span>
+                    ${settings.currentProfileId === p.id ? '<div style="font-size:10px; color:var(--accent); margin-top:5px;">ACTIVE</div>' : ''}
+                </div>
+            `).join('') + `
+                <div class="profile-card" style="border-style: dashed; opacity: 0.5;">
+                    <i class="fas fa-plus"></i>
+                    <span>New Profile</span>
+                </div>
+            `;
+        }
+        dots.forEach(dot => {
+            dot.onclick = () => {
+                dots.forEach(d => d.classList.remove('active'));
+                dot.classList.add('active');
+                const color = dot.style.background;
+                window.electronAPI.updateSetting('accentColor', color);
+            };
+        });
+
+        // Load current settings
+        window.electronAPI.getSettings().then(settings => {
+            if (settings.searchEngine) searchSelect.value = settings.searchEngine;
+            if (settings.dns) dnsSelect.value = settings.dns;
+            if (settings.compactMode !== undefined) compactToggle.checked = settings.compactMode;
+            if (settings.trackingProtection !== undefined) trackingToggle.checked = settings.trackingProtection;
+            
+            renderProfiles(settings);
+
+            if (settings.accentColor) {
+                dots.forEach(d => {
+                    if (d.style.background === settings.accentColor) d.classList.add('active');
+                    else d.classList.remove('active');
+                });
+            }
+        });
+    </script>
+</body>
+</html>

@@ -1,0 +1,241 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ocal Home</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        :root {
+            --bg: #070707;
+            --accent: #a855f7;
+            --glass: rgba(255,255,255,0.03);
+            --border: rgba(255,255,255,0.06);
+        }
+
+        body {
+            margin: 0;
+            padding: 0;
+            background: var(--bg);
+            color: #fff;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            min-height: 100vh;
+            padding-top: 12vh;
+            overflow: hidden;
+            background-image: 
+                radial-gradient(circle at 20% 30%, rgba(168, 85, 247, 0.05) 0%, transparent 40%),
+                radial-gradient(circle at 80% 70%, rgba(168, 85, 247, 0.03) 0%, transparent 40%);
+            background-size: cover;
+            background-position: center;
+        }
+
+        .logo {
+            font-size: 32px;
+            font-weight: 800;
+            margin-bottom: 40px;
+            letter-spacing: -1px;
+            background: linear-gradient(to bottom, #fff, #888);
+            -webkit-background-clip: text;
+            background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .search-container {
+            width: 100%;
+            max-width: 650px;
+            margin-bottom: 70px;
+            perspective: 1000px;
+        }
+
+        .search-box {
+            background: var(--glass);
+            backdrop-filter: blur(20px);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 14px 25px;
+            display: flex;
+            align-items: center;
+            box-shadow: 0 20px 50px rgba(0,0,0,0.5);
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .search-box:focus-within {
+            background: rgba(255,255,255,0.06);
+            border-color: var(--accent);
+            box-shadow: 0 0 30px rgba(168, 85, 247, 0.15);
+            transform: scale(1.01);
+        }
+
+        .search-box i { font-size: 18px; margin-right: 18px; color: var(--accent); opacity: 0.8; }
+        .search-box input { 
+            border: none; 
+            outline: none; 
+            flex: 1; 
+            font-size: 16px; 
+            color: #fff; 
+            background: transparent;
+            letter-spacing: 0.2px;
+        }
+        .search-box input::placeholder { color: #555; }
+
+        .dial-grid {
+            display: grid;
+            grid-template-columns: repeat(5, 1fr);
+            gap: 20px;
+            width: 90%;
+            max-width: 900px;
+        }
+
+        .dial-card {
+            background: var(--glass);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            aspect-ratio: 1.4 / 1;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .dial-card::before {
+            content: '';
+            position: absolute;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background: radial-gradient(circle at center, rgba(255,255,255,0.05) 0%, transparent 70%);
+            opacity: 0;
+            transition: opacity 0.3s;
+        }
+
+        .dial-card:hover {
+            background: rgba(255,255,255,0.06);
+            border-color: rgba(255,255,255,0.2);
+            transform: translateY(-8px);
+        }
+        .dial-card:hover::before { opacity: 1; }
+
+        .dial-card i { font-size: 34px; margin-bottom: 12px; z-index: 1; transition: transform 0.3s; }
+        .dial-card:hover i { transform: scale(1.1); }
+        .dial-card span { font-size: 12px; color: #777; font-weight: 500; z-index: 1; transition: color 0.3s; }
+        .dial-card:hover span { color: #fff; }
+        
+        /* Brand Colors */
+        .yt i { color: #ff0000; }
+        .spt i { color: #1ed760; }
+        .fb i { color: #1877f2; }
+        .ig i { color: #e4405f; }
+    </style>
+</head>
+    <div class="logo">Ocal</div>
+
+    <div class="search-container">
+        <div class="search-box">
+            <i class="fas fa-search" id="engine-icon"></i>
+            <input type="text" id="home-search" placeholder="Search the web" autofocus>
+        </div>
+    </div>
+
+    <div class="dial-grid">
+        <div class="dial-card" onclick="navigate('youtube.com')">
+            <i class="fab fa-youtube yt"></i>
+            <span>YouTube</span>
+        </div>
+        <div class="dial-card" onclick="navigate('spotify.com')">
+            <i class="fab fa-spotify spt"></i>
+            <span>Spotify</span>
+        </div>
+        <div class="dial-card" onclick="navigate('amazon.in')">
+            <i class="fab fa-amazon"></i>
+            <span>Amazon</span>
+        </div>
+        <div class="dial-card" onclick="navigate('twitter.com')">
+            <i class="fab fa-twitter" style="color:#1da1f2"></i>
+            <span>Twitter</span>
+        </div>
+        <div class="dial-card" onclick="navigate('discord.com')">
+            <i class="fab fa-discord" style="color:#5865F2"></i>
+            <span>Discord</span>
+        </div>
+    </div>
+
+    <script>
+        const searchInput = document.getElementById('home-search');
+        const engineIcon = document.getElementById('engine-icon');
+        let currentSettings = { searchEngine: 'google' };
+
+        // Sync with main process settings
+        async function syncSettings() {
+            try {
+                currentSettings = await window.electronAPI.getSettings();
+                const engine = currentSettings.searchEngine;
+                
+                const icons = {
+                    google: 'fab fa-google',
+                    bing: 'fas fa-b',
+                    duckduckgo: 'fas fa-duck'
+                };
+                
+                const placeholders = {
+                    google: 'Search with Google',
+                    bing: 'Search with Bing',
+                    duckduckgo: 'Search with DuckDuckGo'
+                };
+
+                engineIcon.className = icons[engine] || 'fas fa-search';
+                searchInput.placeholder = placeholders[engine] || 'Search the web';
+
+                // Apply Background
+                if (currentSettings.homeBackground && currentSettings.homeBackground !== 'default') {
+                    document.body.style.backgroundImage = `url('${currentSettings.homeBackground}')`;
+                } else {
+                    document.body.style.backgroundImage = 'none';
+                    document.body.style.backgroundColor = '#070707';
+                }
+
+                // Apply Accent
+                if (currentSettings.accentColor) {
+                    document.documentElement.style.setProperty('--accent', currentSettings.accentColor);
+                }
+            } catch (e) {
+                console.log("Settings sync unavailable in this context", e);
+            }
+        }
+
+        function navigate(url) {
+            let targetUrl = url;
+            if (!url.startsWith('http')) targetUrl = 'https://' + url;
+            // Use IPC instead of direct location change to keep Ocal logic
+            window.location.href = targetUrl;
+        }
+
+        searchInput.addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') {
+                const query = searchInput.value;
+                if (!query) return;
+                
+                const engine = currentSettings.searchEngine || 'google';
+                const searchUrls = {
+                    google: 'https://www.google.com/search?q=',
+                    bing: 'https://www.bing.com/search?q=',
+                    duckduckgo: 'https://duckduckgo.com/?q='
+                };
+                
+                let targetUrl = query;
+                if (!query.startsWith('http://') && !query.startsWith('https://')) {
+                  if (query.includes('.') && !query.includes(' ')) targetUrl = 'https://' + query;
+                  else targetUrl = (searchUrls[engine] || searchUrls.google) + encodeURIComponent(query);
+                }
+                window.location.href = targetUrl;
+            }
+        });
+
+        syncSettings();
+    </script>
+</body>
+</html>
