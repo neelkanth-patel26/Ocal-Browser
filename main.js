@@ -251,7 +251,35 @@ function applySettings(settings) {
 
 ipcMain.handle('get-settings', () => userSettings);
 
+ipcMain.handle('check-for-updates', async () => {
+    try {
+        const response = await fetch('https://api.github.com/repos/neelkanth-patel26/Ocal-Browser/releases/latest');
+        
+        if (response.status === 404) {
+            return { isUpdateAvailable: false, message: 'No releases found on GitHub' };
+        }
+        
+        if (!response.ok) throw new Error(`GitHub API returned ${response.status}`);
+        
+        const data = await response.json();
+        const latestVersion = data.tag_name.replace('v', '');
+        const currentVersion = app.getVersion();
+        
+        return {
+            isUpdateAvailable: latestVersion !== currentVersion,
+            latestVersion,
+            currentVersion,
+            url: data.html_url
+        };
+    } catch (error) {
+        console.error('Update check failed:', error);
+        return { error: error.message };
+    }
+});
+
+
 ipcMain.on('update-setting', (event, key, value) => {
+
     userSettings[key] = value;
     applySettings(userSettings);
     // Broadcast

@@ -362,17 +362,43 @@
             setTimeout(() => clearBtn.innerText = 'Clear Now', 3000);
         };
 
-        updateBtn.onclick = () => {
+        updateBtn.onclick = async () => {
             updateBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Checking...';
+            updateBtn.disabled = true;
+            
+            try {
+                const result = await window.electronAPI.checkForUpdates();
+                
+                if (result.error) {
+                    updateBtn.innerHTML = '<i class="fas fa-exclamation-triangle"></i> Error checking updates';
+                    updateBtn.style.background = '#ef4444';
+                } else if (result.message) {
+                    updateBtn.innerHTML = `<i class="fas fa-info-circle"></i> ${result.message}`;
+                    updateBtn.style.background = 'rgba(255,255,255,0.1)';
+                } else if (result.isUpdateAvailable) {
+
+                    updateBtn.innerHTML = `<i class="fas fa-download"></i> Update Available (v${result.latestVersion})`;
+                    updateBtn.style.background = 'var(--accent)';
+                    updateBtn.onclick = () => window.open(result.url, '_blank');
+                } else {
+                    updateBtn.innerHTML = '<i class="fas fa-check"></i> Ocal is up to date!';
+                    updateBtn.style.background = '#10b981';
+                }
+            } catch (err) {
+                updateBtn.innerHTML = 'Error happened';
+            }
+
             setTimeout(() => {
-                updateBtn.innerHTML = 'Ocal is up to date!';
-                updateBtn.style.background = '#10b981';
-                setTimeout(() => {
+                if (!updateBtn.innerHTML.includes('Update Available')) {
                     updateBtn.innerHTML = 'Check for Updates <i class="fas fa-arrow-right" style="margin-left: 8px;"></i>';
                     updateBtn.style.background = '#fff';
-                }, 3000);
-            }, 2000);
+                    updateBtn.disabled = false;
+                    // Reset click handler
+                    updateBtn.onclick = originalUpdateHandler;
+                }
+            }, 5000);
         };
+        const originalUpdateHandler = updateBtn.onclick;
 
         function renderProfiles(settings) {
             profileGrid.innerHTML = settings.profiles.map(p => `

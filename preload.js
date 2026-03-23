@@ -13,7 +13,9 @@ contextBridge.exposeInMainWorld('electronAPI', {
   close: () => ipcRenderer.send('window-close'),
   toggleSidebar: (isOpen) => ipcRenderer.send('toggle-sidebar', isOpen),
   getSettings: () => ipcRenderer.invoke('get-settings'),
+  checkForUpdates: () => ipcRenderer.invoke('check-for-updates'),
   updateSetting: (key, value) => ipcRenderer.send('update-setting', key, value),
+
   toggleBookmark: (bookmark) => ipcRenderer.send('toggle-bookmark', bookmark),
   
     onTabCreated: (callback) => ipcRenderer.on('tab-created', (e, tab) => callback(tab)),
