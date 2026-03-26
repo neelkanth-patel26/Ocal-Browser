@@ -76,6 +76,26 @@ Exposed APIs and secure preload hooks allow AI agents to interact with the web w
 
 ---
 
+## 👨‍💻 Development & Contribution
+
+We welcome contributors! Here's how to get your local environment ready:
+
+```bash
+# 1. Clone the repository
+git clone https://github.com/neelkanth-patel26/Ocal-Browser.git
+
+# 2. Install dependencies
+npm install
+
+# 3. Launch Ocal in development mode
+npm start
+
+# 4. Generate a production installer
+npm run build-exe
+```
+
+---
+
 ## 📜 License & Legal
 
 This project is developed by **Gaming Network Studio Media Group**. 
