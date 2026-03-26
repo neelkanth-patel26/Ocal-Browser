@@ -4,441 +4,581 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Settings - Ocal</title>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <style>
         :root {
-            --bg: #070707;
-            --sidebar-bg: #111;
+            --bg: #0c0c0e;
             --accent: #a855f7;
-            --text: #eee;
-            --text-dim: #888;
-            --border: rgba(255,255,255,0.05);
+            --accent-glow: rgba(168, 85, 247, 0.4);
+            --text: #ffffff;
+            --text-dim: rgba(255, 255, 255, 0.6);
+            --text-muted: rgba(255, 255, 255, 0.35);
+            --glass: rgba(255, 255, 255, 0.03);
+            --glass-border: rgba(255, 255, 255, 0.08);
+            --card-radius: 18px;
         }
 
-        * { box-sizing: border-box; margin: 0; padding: 0; font-family: -apple-system, system-ui, sans-serif; }
-        body { background: var(--bg); color: var(--text); display: flex; height: 100vh; overflow: hidden; }
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body { 
+            font-family: 'Inter', sans-serif; 
+            background: var(--bg); 
+            color: var(--text); 
+            height: 100vh; 
+            display: flex; 
+            align-items: center; 
+            justify-content: center; 
+            overflow: hidden;
+            letter-spacing: -0.01em;
+        }
 
-        /* Sidebar */
-        .settings-sidebar {
-            width: 240px;
-            background: var(--sidebar-bg);
-            border-right: 1px solid var(--border);
-            padding: 40px 10px;
+        /* ── Aurora Background ───────────────────────────────────────── */
+        .aurora-container {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            z-index: -1; overflow: hidden; background: var(--bg);
+        }
+        .orb {
+            position: absolute; border-radius: 50%; opacity: 0.45; filter: blur(100px);
+            animation: move linear infinite; transition: background 1s ease;
+        }
+        @keyframes move {
+            0% { transform: translate(0, 0) scale(1); }
+            33% { transform: translate(30%, 20%) scale(1.2); }
+            66% { transform: translate(-20%, 40%) scale(0.8); }
+            100% { transform: translate(0, 0) scale(1); }
+        }
+
+        /* ── Main Layout ────────────────────────────────────────────── */
+        .settings-glass {
+            width: 90%;
+            max-width: 1100px;
+            height: 85vh;
+            background: rgba(15, 15, 18, 0.4);
+            backdrop-filter: blur(50px) saturate(180%);
+            border: 1px solid var(--glass-border);
+            border-radius: 32px;
+            display: flex;
+            overflow: hidden;
+            box-shadow: 0 40px 100px rgba(0,0,0,0.6);
+            animation: containerEntry 0.8s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+        @keyframes containerEntry {
+            from { opacity: 0; transform: scale(0.95); filter: blur(10px); }
+            to { opacity: 1; transform: scale(1); filter: blur(0); }
+        }
+
+        /* ── Sidebar ──────────────────────────────────────────────── */
+        .sidebar {
+            width: 260px;
+            background: rgba(255, 255, 255, 0.015);
+            border-right: 1px solid var(--glass-border);
+            padding: 40px 20px;
             display: flex;
             flex-direction: column;
-            gap: 5px;
+            gap: 6px;
         }
-
+        .sidebar-header {
+            font-size: 11px;
+            font-weight: 700;
+            text-transform: uppercase;
+            color: var(--text-muted);
+            letter-spacing: 0.1em;
+            margin-bottom: 20px;
+            padding-left: 12px;
+        }
         .nav-item {
-            padding: 12px 20px;
-            border-radius: 6px;
+            padding: 12px 16px;
+            border-radius: 12px;
             cursor: pointer;
             display: flex;
             align-items: center;
             gap: 12px;
             color: var(--text-dim);
-            transition: all 0.2s;
+            transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
             font-size: 14px;
+            font-weight: 500;
+        }
+        .nav-item:hover { background: rgba(255, 255, 255, 0.05); color: #fff; }
+        .nav-item.active {
+            background: rgba(255, 255, 255, 0.1);
+            color: #fff;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+            border: 1px solid rgba(255,255,255,0.05);
+        }
+        .nav-item i { font-size: 16px; color: var(--accent); }
+
+        /* ── Content ──────────────────────────────────────────────── */
+        .content {
+            flex: 1;
+            padding: 60px 80px;
+            overflow-y: overlay;
+            scrollbar-width: none;
+        }
+        .content::-webkit-scrollbar { display: none; }
+
+        .section { display: none; animation: sectionIn 0.5s cubic-bezier(0.16, 1, 0.3, 1); }
+        .section.active { display: block; }
+
+        @keyframes sectionIn {
+            from { opacity: 0; transform: translateX(20px); }
+            to { opacity: 1; transform: translateX(0); }
         }
 
-        .nav-item:hover { background: rgba(255,255,255,0.03); color: var(--text); }
-        .nav-item.active { background: rgba(168, 85, 247, 0.1); color: var(--accent); }
+        h1 { font-size: 32px; font-weight: 700; margin-bottom: 40px; letter-spacing: -0.03em; }
+        .group { margin-bottom: 48px; }
+        .group-title { font-size: 12px; font-weight: 700; text-transform: uppercase; color: var(--text-muted); letter-spacing: 0.05em; margin-bottom: 24px; }
 
-        /* Main Content */
-        .content { flex: 1; padding: 60px 80px; overflow-y: auto; }
-        .section { display: none; max-width: 600px; }
-        .section.active { display: block; animation: fadeIn 0.3s ease; }
-
-        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
-
-        h2 { font-size: 24px; font-weight: 600; margin-bottom: 30px; letter-spacing: -0.5px; }
-        .group { margin-bottom: 40px; }
-        .group-title { font-size: 12px; text-transform: uppercase; color: var(--text-dim); letter-spacing: 1px; margin-bottom: 20px; }
-
-        /* Controls */
-        .control-row {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            padding: 15px 0;
-            border-bottom: 1px solid var(--border);
+        /* ── Cards & Rows ────────────────────────────────────────── */
+        .card {
+            background: rgba(255,255,255,0.02);
+            border: 1px solid var(--glass-border);
+            border-radius: var(--card-radius);
+            padding: 24px;
+            margin-bottom: 16px;
+            transition: all 0.3s;
         }
+        .card:hover { border-color: rgba(255,255,255,0.15); background: rgba(255,255,255,0.035); }
 
-        .control-info h4 { font-size: 14px; font-weight: 500; margin-bottom: 4px; }
-        .control-info p { font-size: 12px; color: var(--text-dim); }
+        .row { display: flex; align-items: center; justify-content: space-between; gap: 20px; }
+        .row-info { flex: 1; }
+        .row-info h4 { font-size: 15px; font-weight: 600; margin-bottom: 4px; color: #fff; }
+        .row-info p { font-size: 13px; color: var(--text-dim); line-height: 1.5; }
 
-        select, input {
-            background: #1a1a1a;
-            border: 1px solid var(--border);
-            color: var(--text);
-            padding: 8px 12px;
-            border-radius: 6px;
+        /* ── Controls ────────────────────────────────────────────── */
+        select {
+            background: rgba(0,0,0,0.2);
+            border: 1px solid var(--glass-border);
+            color: #fff;
+            padding: 10px 16px;
+            border-radius: 10px;
             outline: none;
             font-size: 13px;
+            cursor: pointer;
+            transition: all 0.2s;
         }
+        select:hover { border-color: var(--accent); }
 
         .btn {
             background: var(--accent);
             color: #fff;
             border: none;
-            padding: 10px 20px;
-            border-radius: 6px;
-            cursor: pointer;
-            font-size: 13px;
-            font-weight: 500;
-            transition: opacity 0.2s;
-        }
-        .btn:hover { opacity: 0.9; }
-        .btn.secondary { background: rgba(255,255,255,0.05); color: #fff; }
-
-        /* Profile Grid */
-        .profile-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)); gap: 15px; margin-top: 20px; }
-        .profile-card {
-            background: rgba(255,255,255,0.03);
-            border: 1px solid var(--border);
+            padding: 12px 24px;
             border-radius: 12px;
-            padding: 20px;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: 600;
+            transition: all 0.3s;
+            display: flex; align-items: center; gap: 10px;
+        }
+        .btn:hover { transform: translateY(-2px); box-shadow: 0 10px 20px var(--accent-glow); filter: brightness(1.1); }
+        .btn:active { transform: translateY(0); }
+        .btn.secondary { background: rgba(255,255,255,0.08); color: #fff; }
+        .btn.secondary:hover { background: rgba(255,255,255,0.15); box-shadow: none; }
+
+        /* Custom Toggle */
+        .toggle {
+            width: 44px; height: 24px; background: rgba(255,255,255,0.1);
+            border-radius: 100px; position: relative; cursor: pointer; transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+        .toggle::after {
+            content: ''; position: absolute; top: 3px; left: 3px; width: 18px; height: 18px;
+            background: #fff; border-radius: 50%; transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+            box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+        }
+        .toggle.on { background: var(--accent); }
+        .toggle.on::after { left: 23px; }
+
+        /* Profile Cards */
+        .profile-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(160px, 1fr)); gap: 16px; }
+        .profile-card {
+            background: var(--glass);
+            border: 1px solid var(--glass-border);
+            border-radius: 20px;
+            padding: 24px;
             text-align: center;
             cursor: pointer;
-            transition: all 0.2s;
+            transition: all 0.3s;
         }
-        .profile-card:hover { border-color: var(--accent); transform: translateY(-2px); }
-        .profile-card i { font-size: 32px; color: var(--accent); margin-bottom: 12px; display: block; }
-        .profile-card span { font-size: 14px; font-weight: 500; }
+        .profile-card:hover { transform: translateY(-4px); border-color: var(--accent); background: rgba(255,255,255,0.05); }
+        .profile-card.active { border-color: var(--accent); background: var(--accent-dim); box-shadow: 0 0 20px var(--accent-glow); }
+        .profile-card i { font-size: 32px; color: var(--accent); margin-bottom: 12px; }
+        .profile-card span { display: block; font-size: 14px; font-weight: 600; margin-bottom: 4px; }
+        .profile-card .status { font-size: 10px; color: var(--accent); font-weight: 700; letter-spacing: 0.1em; }
 
-        /* Premium About */
-        .about-card {
-            background: linear-gradient(135deg, rgba(255,255,255,0.05), rgba(255,255,255,0.02));
-            backdrop-filter: blur(20px);
-            border: 1px solid rgba(255,255,255,0.08);
-            border-radius: 24px;
-            padding: 60px 40px;
+        /* Accent Dots */
+        .accent-picker { display: flex; gap: 12px; }
+        .dot {
+            width: 28px; height: 28px; border-radius: 50%; cursor: pointer;
+            transition: all 0.3s; border: 2px solid transparent; position: relative;
+        }
+        .dot:hover { transform: scale(1.15); }
+        .dot.active { border-color: #fff; box-shadow: 0 0 15px currentColor; }
+
+        /* About Page */
+        .about-wrap {
+            height: 100%;
+            display: flex; flex-direction: column; align-items: center; justify-content: center;
             text-align: center;
-            position: relative;
-            overflow: hidden;
-            box-shadow: 0 20px 40px rgba(0,0,0,0.3);
         }
+        .logo-breather {
+            width: 100px; height: 100px;
+            background: linear-gradient(135deg, #fff, var(--accent));
+            border-radius: 24px;
+            display: flex; align-items: center; justify-content: center;
+            font-size: 60px; font-weight: 900; color: #000;
+            box-shadow: 0 0 50px var(--accent-glow);
+            margin-bottom: 30px;
+            animation: orbBounce 4s ease-in-out infinite;
+        }
+        @keyframes orbBounce {
+            0%, 100% { transform: translateY(0) scale(1.05); box-shadow: 0 0 40px var(--accent-glow); }
+            50% { transform: translateY(-15px) scale(1); box-shadow: 0 0 80px var(--accent-glow); }
+        }
+        .version-info {
+            background: rgba(255,255,255,0.05);
+            padding: 6px 16px; border-radius: 100px;
+            font-size: 11px; font-weight: 700; color: var(--text-muted);
+            letter-spacing: 0.1em; margin-bottom: 20px; border: 1px solid var(--glass-border);
+        }
+        .about-text { max-width: 400px; color: var(--text-dim); line-height: 1.6; margin-bottom: 40px; font-size: 14px; }
+        .company-brand { font-weight: 700; color: var(--accent); display: block; margin-top: 10px; }
 
-        .about-card::before {
-            content: '';
-            position: absolute;
-            top: -50%;
-            left: -50%;
-            width: 200%;
-            height: 200%;
-            background: radial-gradient(circle, var(--accent) 0%, transparent 60%);
-            opacity: 0.1;
-            z-index: 0;
-            pointer-events: none;
-        }
-
-        .logo-glow {
-            font-size: 82px;
-            font-weight: 800;
-            margin-bottom: 20px;
-            display: inline-block;
-            background: linear-gradient(180deg, #fff, #a855f7);
-            -webkit-background-clip: text;
-            background-clip: text;
-            -webkit-text-fill-color: transparent;
-            text-shadow: 0 0 40px rgba(168, 85, 247, 0.4);
-            animation: breathe 4s ease-in-out infinite;
-        }
-
-        @keyframes breathe {
-            0%, 100% { transform: scale(1); filter: drop-shadow(0 0 10px rgba(168, 85, 247, 0.2)); }
-            50% { transform: scale(1.05); filter: drop-shadow(0 0 30px rgba(168, 85, 247, 0.5)); }
-        }
-
-        .brand-name { font-size: 28px; font-weight: 700; margin-bottom: 8px; color: #fff; }
-        .version-tag { 
-            background: rgba(255,255,255,0.08); 
-            padding: 4px 12px; 
-            border-radius: 100px; 
-            font-size: 11px; 
-            color: var(--text-dim);
-            letter-spacing: 0.5px;
-            display: inline-block;
-            margin-bottom: 25px;
-        }
-
-        .credits {
-            color: var(--text-dim);
-            font-size: 13px;
-            margin-bottom: 40px;
-            line-height: 1.6;
-            max-width: 300px;
-            margin-left: auto;
-            margin-right: auto;
-        }
-
-        .company-name {
-            display: block;
-            margin-top: 10px;
-            font-style: italic;
-            color: var(--accent);
-            font-weight: 500;
-            font-size: 14px;
-        }
     </style>
 </head>
 <body>
-    <div class="settings-sidebar">
-        <div class="nav-item active" data-section="general">
-            <i class="fas fa-cog"></i> General
-        </div>
-        <div class="nav-item" data-section="profiles">
-            <i class="fas fa-user-circle"></i> Profiles
-        </div>
-        <div class="nav-item" data-section="search">
-            <i class="fas fa-search"></i> Search Engine
-        </div>
-        <div class="nav-item" data-section="security">
-            <i class="fas fa-shield-alt"></i> DNS & Security
-        </div>
-        <div class="nav-item" data-section="privacy">
-            <i class="fas fa-user-shield"></i> Privacy & Data
-        </div>
-        <div class="nav-item" data-section="about">
-            <i class="fas fa-info-circle"></i> About
-        </div>
-    </div>
+    <div class="aurora-container" id="aurora"></div>
 
-    <div class="content">
-        <!-- General -->
-        <div id="general" class="section active">
-            <h2>General Settings</h2>
-            <div class="group">
-                <div class="group-title">Appearance</div>
-                <div class="control-row">
-                    <div class="control-info">
-                        <h4>Accent Color</h4>
-                        <p>Choose your primary UI color (Ocal Purple is default).</p>
-                    </div>
-                    <div style="display: flex; gap: 10px;">
-                        <div class="dot active" style="background:#a855f7; width:24px; height:24px; border-radius:50%; cursor:pointer;"></div>
-                        <div class="dot" style="background:#3b82f6; width:24px; height:24px; border-radius:50%; cursor:pointer;"></div>
-                        <div class="dot" style="background:#ef4444; width:24px; height:24px; border-radius:50%; cursor:pointer;"></div>
-                        <div class="dot" style="background:#10b981; width:24px; height:24px; border-radius:50%; cursor:pointer;"></div>
-                    </div>
-                </div>
-                <div class="control-row">
-                    <div class="control-info">
-                        <h4>Compact Mode</h4>
-                        <p>Reduce the height of tabs and toolbars.</p>
-                    </div>
-                    <input type="checkbox" id="compact-toggle">
-                </div>
+    <div class="settings-glass">
+        <div class="sidebar">
+            <div class="sidebar-header">Preferences</div>
+            <div class="nav-item active" data-section="general">
+                <i class="fas fa-sliders"></i> General
+            </div>
+            <div class="nav-item" data-section="profiles">
+                <i class="fas fa-layer-group"></i> Profiles
+            </div>
+            <div class="nav-item" data-section="search">
+                <i class="fas fa-magnifying-glass"></i> Search
+            </div>
+            <div class="nav-item" data-section="security">
+                <i class="fas fa-shield-halved"></i> Security
+            </div>
+            <div class="nav-item" data-section="privacy">
+                <i class="fas fa-eye-slash"></i> Privacy
+            </div>
+            <div style="flex: 1;"></div>
+            <div class="nav-item" data-section="about">
+                <i class="fas fa-circle-info"></i> About
             </div>
         </div>
 
-        <!-- Profiles -->
-        <div id="profiles" class="section">
-            <h2>Profiles</h2>
-            <p style="color:var(--text-dim); margin-bottom:20px;">Manage your browsing identities with ease.</p>
-            <div class="profile-grid">
-                <!-- Profiles injected here -->
-            </div>
-        </div>
+        <div class="content">
+            <!-- General -->
+            <div id="general" class="section active">
+                <h1>General Settings</h1>
+                
+                <div class="group">
+                    <div class="group-title">Personalization</div>
+                    <div class="card">
+                        <div class="row">
+                            <div class="row-info">
+                                <h4>Accent Color</h4>
+                                <p>Set your theme color for the entire browser experience.</p>
+                            </div>
+                            <div class="accent-picker">
+                                <div class="dot" data-color="#a855f7" style="background:#a855f7"></div>
+                                <div class="dot" data-color="#3b82f6" style="background:#3b82f6"></div>
+                                <div class="dot" data-color="#ef4444" style="background:#ef4444"></div>
+                                <div class="dot" data-color="#10b981" style="background:#10b981"></div>
+                            </div>
+                        </div>
+                    </div>
 
-        <!-- Privacy -->
-        <div id="privacy" class="section">
-            <h2>Privacy & Data</h2>
-            <div class="group">
-                <div class="group-title">Browsing Data</div>
-                <div class="control-row">
-                    <div class="control-info">
-                        <h4>Clear History</h4>
-                        <p>Remove all visited site records.</p>
+                    <div class="card">
+                        <div class="row">
+                            <div class="row-info">
+                                <h4>Compact Interface</h4>
+                                <p>Optimize spacing for maximum content visibility.</p>
+                            </div>
+                            <div class="toggle" id="compact-toggle"></div>
+                        </div>
                     </div>
-                    <button class="btn secondary" id="clear-data-btn">Clear Now</button>
-                </div>
-                <div class="control-row">
-                    <div class="control-info">
-                        <h4>Tracking Protection</h4>
-                        <p>Block known trackers and advertisements.</p>
-                    </div>
-                    <input type="checkbox" checked id="tracking-toggle">
-                </div>
-            </div>
-        </div>
-
-        <!-- Search -->
-        <div id="search" class="section">
-            <h2>Search Engine</h2>
-            <div class="group">
-                <div class="group-title">Search Preferences</div>
-                <div class="control-row">
-                    <div class="control-info">
-                        <h4>Default Search Engine</h4>
-                        <p>Choose the engine used in the address bar.</p>
-                    </div>
-                    <select id="search-engine-select">
-                        <option value="google">Google</option>
-                        <option value="bing">Bing</option>
-                        <option value="duckduckgo">DuckDuckGo</option>
-                    </select>
                 </div>
             </div>
-        </div>
 
-        <!-- Security -->
-        <div id="security" class="section">
-            <h2>DNS & Security</h2>
-            <div class="group">
-                <div class="group-title">Network</div>
-                <div class="control-row">
-                    <div class="control-info">
-                        <h4>Secure DNS (DoH)</h4>
-                        <p>Lookup websites using an encrypted connection.</p>
+            <!-- Profiles -->
+            <div id="profiles" class="section">
+                <h1>Profiles</h1>
+                <div class="group">
+                    <div class="group-title">User Identities</div>
+                    <div class="profile-grid" id="profile-grid">
+                        <!-- Profiles injected here -->
                     </div>
-                    <select id="dns-select">
-                        <option value="default">Default (ISP)</option>
-                        <option value="google">Google Public DNS</option>
-                        <option value="cloudflare">Cloudflare (1.1.1.1)</option>
-                    </select>
                 </div>
             </div>
-        </div>
 
-        <!-- About -->
-        <div id="about" class="section">
-            <div class="about-card">
-                <div class="logo-glow">O</div>
-                <div class="brand-name">Ocal Browser</div>
-                <div class="version-tag">VERSION 1.0.4 (AGENTIC MASTER BUILD)</div>
-                <div class="credits">
-                    "Driven by intelligence. Designed for performance. The future of browsing is here."
-                    <span class="company-name">Made by Gaming Netwotrk Studio Media Group</span>
+            <!-- Privacy -->
+            <div id="privacy" class="section">
+                <h1>Privacy & Data</h1>
+                <div class="group">
+                    <div class="group-title">Data Management</div>
+                    <div class="card">
+                        <div class="row">
+                            <div class="row-info">
+                                <h4>Clear Browsing History</h4>
+                                <p>Permanently remove records of all visited sites.</p>
+                            </div>
+                            <button class="btn secondary" id="clear-data-btn">Clear History</button>
+                        </div>
+                    </div>
+                    
+                    <div class="card">
+                        <div class="row">
+                            <div class="row-info">
+                                <h4>Tracking Protection</h4>
+                                <p>Block invasive trackers and third-party scripts.</p>
+                            </div>
+                            <div class="toggle" id="tracking-toggle"></div>
+                        </div>
+                    </div>
                 </div>
-                <button class="btn" id="update-check-btn" style="padding: 12px 32px; border-radius: 50px; background: #fff; color: #000; box-shadow: 0 10px 20px rgba(255,255,255,0.1);">
-                    Check for Updates <i class="fas fa-arrow-right" style="margin-left: 8px;"></i>
-                </button>
+            </div>
+
+            <!-- Search -->
+            <div id="search" class="section">
+                <h1>Search Engine</h1>
+                <div class="group">
+                    <div class="group-title">Default Engine</div>
+                    <div class="card">
+                        <div class="row">
+                            <div class="row-info">
+                                <h4>Address Bar Search</h4>
+                                <p>Choose your preferred provider for web searches.</p>
+                            </div>
+                            <select id="search-engine-select">
+                                <option value="google">Google Search</option>
+                                <option value="bing">Microsoft Bing</option>
+                                <option value="duckduckgo">DuckDuckGo</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Security -->
+            <div id="security" class="section">
+                <h1>Security</h1>
+                <div class="group">
+                    <div class="group-title">Network Security</div>
+                    <div class="card">
+                        <div class="row">
+                            <div class="row-info">
+                                <h4>Secure DNS (DoH)</h4>
+                                <p>Encrypt your DNS queries for enhanced network privacy.</p>
+                            </div>
+                            <select id="dns-select">
+                                <option value="default">System Default</option>
+                                <option value="google">Google Public DNS</option>
+                                <option value="cloudflare">Cloudflare (1.1.1.1)</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- About -->
+            <div id="about" class="section">
+                <div class="about-wrap">
+                    <div class="logo-breather">O</div>
+                    <h1>Ocal Browser</h1>
+                    <div class="version-info" id="current-version-display">BUILD 0.9.9 · AGENTIC OS</div>
+                    <div class="about-text">
+                        Experience the next generation of browsing. Driven by intelligence, designed for pure performance.
+                        <span class="company-brand">Gaming Network Studio Media Group</span>
+                    </div>
+                    
+                    <div id="update-status-card" class="card" style="display:none; width:100%; max-width:500px; text-align:left; margin-bottom:20px; animation: modalIn 0.4s easeOut">
+                        <div class="row">
+                            <div class="row-info">
+                                <h4 id="update-title" style="color:var(--accent)">New Update Available!</h4>
+                                <p id="update-version-label" style="font-weight:700; margin-bottom:12px"></p>
+                                <div id="update-notes" style="font-size:12px; color:var(--text-dim); max-height:120px; overflow-y:auto; background:rgba(0,0,0,0.2); padding:12px; border-radius:10px; border:1px solid var(--glass-border)"></div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <button class="btn" id="update-check-btn">
+                        Check for Updates <i class="fas fa-rotate"></i>
+                    </button>
+
+                    <button class="btn" id="download-update-btn" style="display:none; margin-top:12px; background:#10b981 !important">
+                        Download Now <i class="fas fa-download"></i>
+                    </button>
+                </div>
             </div>
         </div>
     </div>
 
     <script>
-        // Tab switching logic
+        const aurora = document.getElementById('aurora');
+        function createOrbs() {
+            aurora.innerHTML = '';
+            for(let i=0; i<3; i++) {
+                const orb = document.createElement('div');
+                orb.className = 'orb';
+                const size = Math.random() * 400 + 300;
+                orb.style.width = size + 'px';
+                orb.style.height = size + 'px';
+                orb.style.left = Math.random() * 100 + '%';
+                orb.style.top = Math.random() * 100 + '%';
+                orb.style.background = 'var(--accent)';
+                orb.style.animationDuration = (Math.random() * 20 + 20) + 's';
+                orb.style.animationDelay = -(Math.random() * 20) + 's';
+                aurora.appendChild(orb);
+            }
+        }
+        createOrbs();
+
+        // Section switching
         document.querySelectorAll('.nav-item').forEach(item => {
             item.onclick = () => {
                 document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
                 document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
-                
                 item.classList.add('active');
                 document.getElementById(item.dataset.section).classList.add('active');
             };
         });
 
-        // Setting change listeners
+        const toggleSync = (el, key, isOn) => {
+            el.classList.toggle('on', isOn);
+            el.onclick = () => {
+                const newState = !el.classList.contains('on');
+                el.classList.toggle('on', newState);
+                window.electronAPI.updateSetting(key, newState);
+            };
+        };
+
+        const profileGrid = document.getElementById('profile-grid');
         const searchSelect = document.getElementById('search-engine-select');
         const dnsSelect = document.getElementById('dns-select');
         const compactToggle = document.getElementById('compact-toggle');
         const trackingToggle = document.getElementById('tracking-toggle');
         const clearBtn = document.getElementById('clear-data-btn');
         const updateBtn = document.getElementById('update-check-btn');
-        const dots = document.querySelectorAll('.dot');
 
-        searchSelect.onchange = () => {
-            window.electronAPI.updateSetting('searchEngine', searchSelect.value);
-        };
-
-        dnsSelect.onchange = () => {
-            window.electronAPI.updateSetting('dns', dnsSelect.value);
-        };
-
-        compactToggle.onchange = () => {
-            window.electronAPI.updateSetting('compactMode', compactToggle.checked);
-        };
-
-        trackingToggle.onchange = () => {
-            window.electronAPI.updateSetting('trackingProtection', trackingToggle.checked);
-        };
+        searchSelect.onchange = () => window.electronAPI.updateSetting('searchEngine', searchSelect.value);
+        dnsSelect.onchange = () => window.electronAPI.updateSetting('dns', dnsSelect.value);
 
         clearBtn.onclick = () => {
             clearBtn.innerText = 'Clearing...';
-            window.electronAPI.clearBrowsingData();
-            setTimeout(() => clearBtn.innerText = 'Data Cleared!', 1000);
-            setTimeout(() => clearBtn.innerText = 'Clear Now', 3000);
+            window.electronAPI.send('clear-history');
+            setTimeout(() => clearBtn.innerText = 'Cleared', 1000);
+            setTimeout(() => clearBtn.innerText = 'Clear History', 3000);
         };
+
+        const statusCard = document.getElementById('update-status-card');
+        const updateTitle = document.getElementById('update-title');
+        const updateVersion = document.getElementById('update-version-label');
+        const updateNotes = document.getElementById('update-notes');
+        const downloadBtn = document.getElementById('download-update-btn');
+        const currentVersionEl = document.getElementById('current-version-display');
+
+        let currentVer = '0.9.9';
 
         updateBtn.onclick = async () => {
             updateBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Checking...';
             updateBtn.disabled = true;
-            
+            statusCard.style.display = 'none';
+            downloadBtn.style.display = 'none';
+
             try {
-                const result = await window.electronAPI.checkForUpdates();
-                
-                if (result.error) {
-                    updateBtn.innerHTML = '<i class="fas fa-exclamation-triangle"></i> Error checking updates';
-                    updateBtn.style.background = '#ef4444';
-                } else if (result.message) {
-                    updateBtn.innerHTML = `<i class="fas fa-info-circle"></i> ${result.message}`;
-                    updateBtn.style.background = 'rgba(255,255,255,0.1)';
-                } else if (result.isUpdateAvailable) {
-
-                    updateBtn.innerHTML = `<i class="fas fa-download"></i> Update Available (v${result.latestVersion})`;
-                    updateBtn.style.background = 'var(--accent)';
-                    updateBtn.onclick = () => window.open(result.url, '_blank');
-                } else {
-                    updateBtn.innerHTML = '<i class="fas fa-check"></i> Ocal is up to date!';
+                const latest = await window.electronAPI.checkForUpdate();
+                if (!latest) {
+                    updateBtn.innerHTML = '<i class="fas fa-check"></i> You are up to date';
                     updateBtn.style.background = '#10b981';
+                    setTimeout(() => { 
+                        updateBtn.innerHTML = 'Check for Updates <i class="fas fa-rotate"></i>'; 
+                        updateBtn.style.background = '';
+                        updateBtn.disabled = false;
+                    }, 3000);
+                    return;
                 }
-            } catch (err) {
-                updateBtn.innerHTML = 'Error happened';
-            }
 
-            setTimeout(() => {
-                if (!updateBtn.innerHTML.includes('Update Available')) {
-                    updateBtn.innerHTML = 'Check for Updates <i class="fas fa-arrow-right" style="margin-left: 8px;"></i>';
-                    updateBtn.style.background = '#fff';
+                if (latest.version !== currentVer) {
+                    updateTitle.innerText = "New Version Available!";
+                    updateVersion.innerText = `Version ${latest.version}`;
+                    updateNotes.innerText = latest.notes || 'No release notes provided.';
+                    statusCard.style.display = 'block';
+                    downloadBtn.style.display = 'flex';
+                    downloadBtn.onclick = () => window.open(latest.url, '_blank');
+                    updateBtn.innerHTML = 'Check for Updates <i class="fas fa-rotate"></i>';
                     updateBtn.disabled = false;
-                    // Reset click handler
-                    updateBtn.onclick = originalUpdateHandler;
+                } else {
+                    updateBtn.innerHTML = '<i class="fas fa-check"></i> You are up to date';
+                    updateBtn.style.background = '#10b981';
+                    setTimeout(() => { 
+                        updateBtn.innerHTML = 'Check for Updates <i class="fas fa-rotate"></i>'; 
+                        updateBtn.style.background = '';
+                        updateBtn.disabled = false;
+                    }, 3000);
                 }
-            }, 5000);
+            } catch(e) { 
+                updateBtn.innerText = 'Check Failed'; 
+                updateBtn.disabled = false;
+            }
         };
-        const originalUpdateHandler = updateBtn.onclick;
 
         function renderProfiles(settings) {
             profileGrid.innerHTML = settings.profiles.map(p => `
                 <div class="profile-card ${settings.currentProfileId === p.id ? 'active' : ''}" onclick="window.electronAPI.switchProfile('${p.id}')">
                     <i class="fas ${p.icon}"></i>
                     <span>${p.name}</span>
-                    ${settings.currentProfileId === p.id ? '<div style="font-size:10px; color:var(--accent); margin-top:5px;">ACTIVE</div>' : ''}
+                    ${settings.currentProfileId === p.id ? '<div class="status">ACTIVE</div>' : ''}
                 </div>
             `).join('') + `
                 <div class="profile-card" style="border-style: dashed; opacity: 0.5;">
                     <i class="fas fa-plus"></i>
-                    <span>New Profile</span>
+                    <span>Add New</span>
                 </div>
             `;
         }
+
+        const dots = document.querySelectorAll('.dot');
         dots.forEach(dot => {
             dot.onclick = () => {
-                dots.forEach(d => d.classList.remove('active'));
-                dot.classList.add('active');
-                const color = dot.style.background;
+                const color = dot.dataset.color;
                 window.electronAPI.updateSetting('accentColor', color);
+                applyAccent(color);
             };
         });
 
-        // Load current settings
-        window.electronAPI.getSettings().then(settings => {
-            if (settings.searchEngine) searchSelect.value = settings.searchEngine;
-            if (settings.dns) dnsSelect.value = settings.dns;
-            if (settings.compactMode !== undefined) compactToggle.checked = settings.compactMode;
-            if (settings.trackingProtection !== undefined) trackingToggle.checked = settings.trackingProtection;
-            
-            renderProfiles(settings);
+        function applyAccent(color) {
+            document.documentElement.style.setProperty('--accent', color);
+            dots.forEach(d => d.classList.toggle('active', d.dataset.color === color));
+            createOrbs(); 
+        }
 
-            if (settings.accentColor) {
-                dots.forEach(d => {
-                    if (d.style.background === settings.accentColor) d.classList.add('active');
-                    else d.classList.remove('active');
-                });
-            }
+        window.electronAPI.getSettings().then(s => {
+            if (s.accentColor) applyAccent(s.accentColor);
+            if (s.searchEngine) searchSelect.value = s.searchEngine;
+            if (s.dns) dnsSelect.value = s.dns;
+            toggleSync(compactToggle, 'compactMode', !!s.compactMode);
+            toggleSync(trackingToggle, 'trackingProtection', !!s.trackingProtection);
+            renderProfiles(s);
+        });
+
+        window.electronAPI.getAppVersion().then(v => {
+            currentVer = v;
+            currentVersionEl.innerText = `BUILD ${v} · AGENTIC OS`;
+        });
+
+        // Listen for external sync
+        window.electronAPI.onSettingsChanged(s => {
+            if (s.accentColor) applyAccent(s.accentColor);
         });
     </script>
+</body>
+</html>
 </body>
 </html>
