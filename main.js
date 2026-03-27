@@ -371,6 +371,12 @@ function createNewTab(url = null) {
 
   setupContextMenu(view.webContents);
 
+  // Intercept window.open; load in the same view per user request
+  view.webContents.setWindowOpenHandler(({ url }) => {
+    view.webContents.loadURL(url);
+    return { action: 'deny' };
+  });
+
   view.webContents.on('did-navigate-in-page', (event, url) => {
     updateHistory(view, url);
   });
