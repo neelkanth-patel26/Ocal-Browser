@@ -16,9 +16,34 @@ window.electronAPI.onHtmlFullscreen((isFullscreen) => {
 // ── Tab Rendering ──────────────────────────────────────────────────────────
 function renderTabs() {
     tabList.innerHTML = '';
-    tabs.forEach(tab => {
+    tabs.forEach((tab, index) => {
         const el = document.createElement('div');
         el.className = `tab-item ${tab.id === activeTabId ? 'active' : ''}`;
+        el.draggable = true;
+
+        el.ondragstart = (e) => {
+            e.dataTransfer.setData('tab-index', index);
+            el.classList.add('dragging');
+        };
+
+        el.ondragover = (e) => {
+            e.preventDefault();
+            el.classList.add('drag-over');
+        };
+
+        el.ondragleave = () => el.classList.remove('drag-over');
+
+        el.ondrop = (e) => {
+            e.preventDefault();
+            el.classList.remove('drag-over');
+            const fromIndex = parseInt(e.dataTransfer.getData('tab-index'));
+            const toIndex = index;
+            if (fromIndex !== toIndex) {
+                window.electronAPI.send('reorder-tabs', { fromIndex, toIndex });
+            }
+        };
+
+        el.ondragend = () => el.classList.remove('dragging');
         
         const iconHtml = getTabIconHtml(tab.url);
         
@@ -89,6 +114,12 @@ function getTabIconHtml(url) {
     if (!url || url.includes('home.html')) return '<i class="fas fa-house tab-favicon" style="color:var(--accent)"></i>';
     if (url.includes('settings.html')) return '<i class="fas fa-gear tab-favicon" style="color:var(--accent)"></i>';
     if (url.includes('game.html')) return '<i class="fas fa-gamepad tab-favicon" style="color:var(--accent)"></i>';
+    
+    // Search Engines
+    if (url.includes('google.com')) return '<i class="fab fa-google tab-favicon" style="color:#4285F4"></i>';
+    if (url.includes('bing.com')) return '<i class="fas fa-b tab-favicon" style="color:#00a1f1"></i>';
+    if (url.includes('duckduckgo.com')) return '<i class="fas fa-shield-cat tab-favicon" style="color:#de5833"></i>';
+    
     return '<i class="fas fa-globe tab-favicon"></i>';
 }
 
@@ -102,8 +133,7 @@ function updateOmniboxIcon(url) {
         iconContainer.innerHTML = '<i class="fas fa-gear" style="color:var(--accent)"></i>';
     } else if (url.includes('game.html')) {
         iconContainer.innerHTML = '<i class="fas fa-gamepad" style="color:var(--accent)"></i>';
-    } else {
-        // Default Google/Web icon
+    } else if (url.includes('google.com')) {
         iconContainer.innerHTML = `
             <svg width="14" height="14" viewBox="0 0 24 24">
                 <path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="#4285F4"/>
@@ -111,6 +141,13 @@ function updateOmniboxIcon(url) {
                 <path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l3.66-2.84z" fill="#FBBC05"/>
                 <path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" fill="#EA4335"/>
             </svg>`;
+    } else if (url.includes('bing.com')) {
+        iconContainer.innerHTML = '<i class="fas fa-b" style="color:#00a1f1; font-size: 13px;"></i>';
+    } else if (url.includes('duckduckgo.com')) {
+        iconContainer.innerHTML = '<i class="fas fa-shield-cat" style="color:#de5833; font-size: 13px;"></i>';
+    } else {
+        // Default Web icon (Globe) instead of hardcoded Google
+        iconContainer.innerHTML = '<i class="fas fa-globe" style="color:var(--text-muted); font-size: 13px;"></i>';
     }
 }
 
@@ -123,14 +160,49 @@ window.electronAPI.onUpdateTitle((data) => {
 // ── Navigation ─────────────────────────────────────────────────────────────
 if (newTabBtn) newTabBtn.onclick = () => window.electronAPI.newTab();
 
+let suggestTimeout;
 if (addressInput) {
+    addressInput.addEventListener('input', () => {
+        clearTimeout(suggestTimeout);
+        const query = addressInput.value.trim();
+        if (!query) {
+            window.electronAPI.send('hide-suggestions');
+            return;
+        }
+        suggestTimeout = setTimeout(() => {
+            const omnibox = document.getElementById('omnibox');
+            if (!omnibox) return;
+            const rect = omnibox.getBoundingClientRect();
+            window.electronAPI.send('suggest-search', query);
+            window.electronAPI.send('show-suggestions', {
+                x: rect.left,
+                y: rect.top,
+                width: rect.width,
+                height: rect.height
+            });
+        }, 150);
+    });
+
     addressInput.addEventListener('keydown', (e) => {
-        if (e.key === 'Enter') { window.electronAPI.navigateTo(addressInput.value); addressInput.blur(); }
-        if (e.key === 'Escape') addressInput.blur();
+        if (e.key === 'Enter') { 
+            window.electronAPI.send('hide-suggestions');
+            window.electronAPI.navigateTo(addressInput.value); 
+            addressInput.blur(); 
+        }
+        if (e.key === 'Escape') {
+            window.electronAPI.send('hide-suggestions');
+            addressInput.blur();
+        }
     });
     // Select all on focus
     addressInput.addEventListener('focus', () => addressInput.select());
 }
+
+window.electronAPI.on('execute-suggestion', (e, text) => {
+    addressInput.value = text;
+    window.electronAPI.navigateTo(text);
+    addressInput.blur();
+});
 
 // ── Window Controls + Sidebar Buttons ─────────────────────────────────────
 document.addEventListener('DOMContentLoaded', () => {
@@ -153,7 +225,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const mnBtn  = document.getElementById('burger-menu-btn');
     const dlBtn  = document.getElementById('download-icon-btn');
 
-    if (aiBtn) aiBtn.onclick = () => window.electronAPI.send('toggle-sidebar', true);
+    if (aiBtn) aiBtn.onclick = () => window.electronAPI.send('toggle-ai-sidebar');
     if (bmBtn) bmBtn.onclick = () => { window.electronAPI.send('toggle-sidebar', true); window.electronAPI.send('switch-sidebar-tab', 'bookmarks'); };
     if (hiBtn) hiBtn.onclick = () => { window.electronAPI.send('toggle-sidebar', true); window.electronAPI.send('switch-sidebar-tab', 'history'); };
     if (mnBtn) mnBtn.onclick = () => window.electronAPI.send('toggle-sidebar', true);
@@ -264,6 +336,38 @@ if (screenshotBtn) {
 }
 
 // ── Global Click-to-Dismiss ──────────────────────────────────────────────
+// ── AI Resizing Logic ───────────────────────────────────────────────────
+let isAiResizing = false;
+const resizeOverlay = document.createElement('div');
+resizeOverlay.style.cssText = 'position:fixed;inset:0;z-index:99999;cursor:ew-resize;display:none;background:transparent;';
+document.body.appendChild(resizeOverlay);
+
+window.electronAPI.on('ai-resize-started', () => {
+    isAiResizing = true;
+    resizeOverlay.style.display = 'block';
+});
+
+window.electronAPI.on('ai-resize-stopped', () => {
+    isAiResizing = false;
+    resizeOverlay.style.display = 'none';
+});
+
+window.addEventListener('mousemove', (e) => {
+    if (!isAiResizing) return;
+    const newWidth = window.innerWidth - e.clientX;
+    if (newWidth >= 300 && newWidth <= 950) {
+        window.electronAPI.send('set-ai-sidebar-width', newWidth);
+    }
+});
+
+window.addEventListener('mouseup', () => {
+    if (isAiResizing) {
+        isAiResizing = false;
+        resizeOverlay.style.display = 'none';
+        window.electronAPI.send('stop-ai-resize');
+    }
+});
+
 window.addEventListener('mousedown', (e) => {
     // Only close if we're not clicking a button that's supposed to open/control something
     if (!e.target.closest('.toolbar-actions') && 

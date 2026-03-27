@@ -39,9 +39,10 @@ contextBridge.exposeInMainWorld('electronAPI', {
   // Both renderer and sidebars use bookmarks-changed; renderer gets full object
   onBookmarksUpdated:  (cb) => ipcRenderer.on('bookmarks-changed',     (e, d)    => cb(d)),
   onBookmarksChanged:  (cb) => ipcRenderer.on('bookmarks-changed',     (e, d)    => cb(d)),
+  onSuggestionsUpdated: (cb) => ipcRenderer.on('update-suggestions',   (e, d)    => cb(e, d)),
 
   onDownloadUpdated:   (cb) => ipcRenderer.on('download-updated',      (e, dl)   => cb(dl)),
-  onToggleSidebar:     (cb) => ipcRenderer.on('toggle-right-sidebar',  (e, open) => cb(e, open)),
+  onToggleSidebar:     (cb) => ipcRenderer.on('toggle-sidebar',  (e, open) => cb(e, open)),
   onSwitchTab:         (cb) => ipcRenderer.on('switch-tab-sidebar',    (e, tab)  => cb(tab)),
   onMaximized:         (cb) => ipcRenderer.on('window-is-maximized',   (e, s)    => cb(s)),
   onCloseAllSidebars:  (cb) => ipcRenderer.on('close-all-sidebars',    ()        => cb()),

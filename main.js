@@ -51,10 +51,14 @@ function saveSettings(settings) {
 let mainWindow;
 let welcomeView;
 let sidebarOverlayView;
+let aiSidebarView;
+let suggestionsView;
 let views = [];
 let downloads = [];
 let activeViewId = null;
 let sidebarOpen = false;
+let aiSidebarOpen = false;
+let aiSidebarWidth = 550;
 let historySidebarOpen = false;
 let downloadsSidebarOpen = false;
 let bookmarksSidebarOpen = false;
@@ -75,7 +79,9 @@ let userSettings = loadSettings() || {
   bookmarks: [],
   folders: [],
   bookmarkBarMode: 'auto',
-  homeLayout: 'center', // 'center', 'top-center', 'bottom-center', 'center-left', 'center-right'
+  homeLayout: 'center', // 'top', 'center', 'bottom'
+  homeTileSize: 80,
+  homeTileSpacing: 20,
   homeTileStyle: 'square' // 'square', 'rectangle', 'monochrome'
 };
 
@@ -83,6 +89,8 @@ if (!userSettings.bookmarks) userSettings.bookmarks = [];
 if (!userSettings.folders) userSettings.folders = [];
 if (!userSettings.bookmarkBarMode) userSettings.bookmarkBarMode = 'auto';
 if (!userSettings.homeLayout) userSettings.homeLayout = 'center';
+if (!userSettings.homeTileSize) userSettings.homeTileSize = 80;
+if (!userSettings.homeTileSpacing) userSettings.homeTileSpacing = 20;
 if (!userSettings.homeTileStyle) userSettings.homeTileStyle = 'square';
 
 function createMainWindow() {
@@ -120,8 +128,10 @@ function createMainWindow() {
     }
   });
 
-  mainWindow.webContents.on('did-finish-load', () => {
-    if (!sidebarOverlayView) createSidebarOverlay();
+    mainWindow.webContents.on('did-finish-load', () => {
+        if (!sidebarOverlayView) createSidebarOverlay();
+        if (!aiSidebarView) createAiSidebar();
+        if (!suggestionsView) createSuggestionsView();
     // Always open a tab on startup
     if (views.length === 0) createNewTab();
     setupDownloadHandler();
@@ -251,38 +261,73 @@ function setupDownloadHandler() {
 
 function createSidebarOverlay() {
     sidebarOverlayView = new BrowserView({
-        webPreferences: { preload: path.join(__dirname, 'preload.js'), contextIsolation: true, nodeIntegration: false },
+        webPreferences: { preload: path.join(__dirname, 'preload.js'), contextIsolation: true, nodeIntegration: false, webviewTag: true },
     });
     sidebarOverlayView.webContents.loadFile('sidebars.html');
     sidebarOverlayView.setBackgroundColor('#00000000');
-    // Do NOT add to window yet — only mount when sidebar is open
+    setupContextMenu(sidebarOverlayView.webContents);
+}
+
+function createAiSidebar() {
+    aiSidebarView = new BrowserView({
+        webPreferences: { preload: path.join(__dirname, 'preload.js'), contextIsolation: true, nodeIntegration: false, webviewTag: true },
+    });
+    aiSidebarView.webContents.loadFile('ai-sidebar.html');
+    aiSidebarView.setBackgroundColor('#00000000');
+    setupContextMenu(aiSidebarView.webContents);
 }
 
 function showSidebarOverlay() {
-    if (!sidebarOverlayView) return;
-    const { width, height } = mainWindow.getContentBounds();
+    if (!sidebarOverlayView || !mainWindow) return;
     if (!mainWindow.getBrowserViews().includes(sidebarOverlayView)) {
         mainWindow.addBrowserView(sidebarOverlayView);
     }
-    mainWindow.setTopBrowserView(sidebarOverlayView);
-    sidebarOverlayView.setBounds({ x: 0, y: 0, width: Math.floor(width), height: Math.floor(height) });
-    // Send initial data after mount
-    const data = { bookmarks: userSettings.bookmarks, folders: userSettings.folders };
-    sidebarOverlayView.webContents.send('bookmarks-changed', data);
-    sidebarOverlayView.webContents.send('settings-changed', userSettings);
-    broadcastTabs();
+    updateViewBounds();
 }
 
 function hideSidebarOverlay() {
-    if (!sidebarOverlayView) return;
-    if (mainWindow.getBrowserViews().includes(sidebarOverlayView)) {
-        mainWindow.removeBrowserView(sidebarOverlayView);
+  if (sidebarOverlayView && mainWindow && mainWindow.getBrowserViews().includes(sidebarOverlayView)) {
+    mainWindow.removeBrowserView(sidebarOverlayView);
+  }
+}
+
+function showAiSidebar() {
+    if (!aiSidebarView) createAiSidebar();
+    if (!mainWindow.getBrowserViews().includes(aiSidebarView)) {
+        mainWindow.addBrowserView(aiSidebarView);
     }
+    mainWindow.setTopBrowserView(aiSidebarView);
+    updateViewBounds();
+}
+
+function hideAiSidebar() {
+    if (!aiSidebarView) return;
+    if (mainWindow.getBrowserViews().includes(aiSidebarView)) {
+        mainWindow.removeBrowserView(aiSidebarView);
+    }
+}
+
+function createSuggestionsView() {
+    suggestionsView = new BrowserView({
+        webPreferences: { preload: path.join(__dirname, 'preload.js'), contextIsolation: true, nodeIntegration: false }
+    });
+    suggestionsView.webContents.loadFile('suggestions.html');
 }
 
 function closeOverlays() {
     sidebarOpen = false;
+    aiSidebarOpen = false;
     hideSidebarOverlay();
+    hideAiSidebar();
+    hideSuggestions();
+    mainWindow.webContents.send('sidebars-closed');
+}
+
+function hideSuggestions() {
+    if (!suggestionsView || !mainWindow) return;
+    if (mainWindow.getBrowserViews().includes(suggestionsView)) {
+        mainWindow.removeBrowserView(suggestionsView);
+    }
 }
 
 function showWelcomeWizard() {
@@ -293,6 +338,7 @@ function showWelcomeWizard() {
     const { width, height } = mainWindow.getContentBounds();
     welcomeView.setBounds({ x: 0, y: 0, width, height });
     welcomeView.webContents.loadFile('welcome.html');
+    setupContextMenu(welcomeView.webContents);
 }
 
 function createNewTab(url = null) {
@@ -322,6 +368,8 @@ function createNewTab(url = null) {
   view.webContents.on('did-navigate', (event, url) => {
     updateHistory(view, url);
   });
+
+  setupContextMenu(view.webContents);
 
   view.webContents.on('did-navigate-in-page', (event, url) => {
     updateHistory(view, url);
@@ -376,31 +424,54 @@ function updateViewBounds() {
   const { width, height } = mainWindow.getContentBounds();
   const isFullscreen = !!htmlFullscreenViewId;
 
+  const hTabs = isFullscreen ? 0 : (userSettings.compactMode ? 34 : 42);
+  const hNav  = isFullscreen ? 0 : (userSettings.compactMode ? 38 : 46);
+  const hBm   = (isFullscreen || !bookmarkBarVisible) ? 0 : (userSettings.compactMode ? 28 : 36);
+  const yOffset = hTabs + hNav + hBm;
+
+  // 1. Stack the active tab
   if (activeViewId) {
     const activeViewEntry = views.find(v => v.id === activeViewId);
     if (activeViewEntry) {
-      const hTabs = isFullscreen ? 0 : 42;
-      const hNav  = isFullscreen ? 0 : 46;
-      const hBm   = (isFullscreen || !bookmarkBarVisible) ? 0 : 36;
-      const y = hTabs + hNav + hBm;
       activeViewEntry.view.setBounds({
-        x: 0, y: Math.floor(y),
+        x: 0, y: Math.floor(yOffset),
         width: Math.floor(width),
-        height: Math.floor(height - y)
+        height: Math.floor(height - yOffset)
       });
+      mainWindow.setTopBrowserView(activeViewEntry.view);
     }
   }
 
+  // 2. Stack AI Sidebar (on top of tab, if enabled)
+  if (aiSidebarView && mainWindow.getBrowserViews().includes(aiSidebarView)) {
+    aiSidebarView.setBounds({ 
+        x: Math.floor(width - aiSidebarWidth), 
+        y: Math.floor(yOffset), 
+        width: Math.floor(aiSidebarWidth), 
+        height: Math.floor(height - yOffset) 
+    });
+    mainWindow.setTopBrowserView(aiSidebarView);
+  }
+
+  // 3. Stack Sidebar Overlay (on top of everything else)
   if (sidebarOverlayView && mainWindow.getBrowserViews().includes(sidebarOverlayView)) {
-    sidebarOverlayView.setBounds({ x: 0, y: 0, width: Math.floor(width), height: Math.floor(height) });
+    sidebarOverlayView.setBounds({ 
+        x: 0, 
+        y: Math.floor(yOffset), 
+        width: Math.floor(width), 
+        height: Math.floor(height - yOffset) 
+    });
+    mainWindow.setTopBrowserView(sidebarOverlayView);
   }
 }
 
 function closeOverlays() {
     sidebarOpen = false;
+    aiSidebarOpen = false;
     mainWindow.webContents.send('sidebars-closed');
     if (sidebarOverlayView) sidebarOverlayView.webContents.send('close-all-sidebars');
     hideSidebarOverlay();
+    hideAiSidebar();
 }
 
 // IPC Handlers
@@ -445,21 +516,38 @@ ipcMain.on('window-maximize', () => { if (mainWindow.isMaximized()) mainWindow.u
 ipcMain.on('window-close', () => mainWindow.close());
 
 ipcMain.on('toggle-sidebar', (e, open) => {
-  sidebarOpen = open;
-  if (open) {
+  sidebarOpen = (open === undefined) ? !sidebarOpen : open;
+  if (sidebarOpen) {
     showSidebarOverlay();
-    if (sidebarOverlayView) sidebarOverlayView.webContents.send('toggle-right-sidebar', true);
+    if (sidebarOverlayView) sidebarOverlayView.webContents.send('toggle-sidebar', true);
   } else {
-    if (sidebarOverlayView) sidebarOverlayView.webContents.send('toggle-right-sidebar', false);
-    // Delay unmount so close animation can play
-    setTimeout(closeOverlays, 400);
+    if (sidebarOverlayView) sidebarOverlayView.webContents.send('toggle-sidebar', false);
+    hideSidebarOverlay(); // This line is now redundant as the overlay will hide itself based on the message
   }
+});
+
+ipcMain.on('toggle-ai-sidebar', (e, open) => {
+  aiSidebarOpen = (open === undefined) ? !aiSidebarOpen : open;
+  if (aiSidebarOpen) showAiSidebar(); else hideAiSidebar();
+});
+
+ipcMain.on('set-ai-sidebar-width', (e, width) => {
+  aiSidebarWidth = width;
+  updateViewBounds();
+});
+
+ipcMain.on('start-ai-resize', () => {
+  mainWindow.webContents.send('ai-resize-started');
+});
+
+ipcMain.on('stop-ai-resize', () => {
+  mainWindow.webContents.send('ai-resize-stopped');
 });
 ipcMain.on('switch-sidebar-tab', (e, tab) => {
   sidebarOpen = true;
   showSidebarOverlay();
   if (sidebarOverlayView) {
-    sidebarOverlayView.webContents.send('toggle-right-sidebar', true);
+    sidebarOverlayView.webContents.send('toggle-sidebar', true);
     sidebarOverlayView.webContents.send('switch-tab-sidebar', tab);
   }
 });
@@ -667,3 +755,109 @@ ipcMain.on('capture-screenshot', async (e, type) => {
     }
   }
 });
+
+function createSuggestionsView() {
+    suggestionsView = new BrowserView({
+        webPreferences: { preload: path.join(__dirname, 'preload.js'), contextIsolation: true, nodeIntegration: false }
+    });
+    suggestionsView.webContents.loadFile('suggestions.html');
+    setupContextMenu(suggestionsView.webContents);
+}
+
+function hideSuggestions() {
+    if (!suggestionsView || !mainWindow) return;
+    if (mainWindow.getBrowserViews().includes(suggestionsView)) {
+        mainWindow.removeBrowserView(suggestionsView);
+    }
+}
+
+ipcMain.on('suggest-search', async (e, query) => {
+    if (!query) { hideSuggestions(); return; }
+    try {
+        let results = [];
+        
+        // 1. Online Suggestions (only if enabled)
+        if (userSettings.searchSuggest !== false) {
+            try {
+                const response = await fetch(`https://suggestqueries.google.com/complete/search?client=chrome&q=${encodeURIComponent(query)}`);
+                const data = await response.json();
+                results = data[1].map(s => ({ text: s, type: 'search' }));
+            } catch (err) { console.error('Online suggest fetch failed'); }
+        }
+
+        // 2. History Suggestions (always included unless query is empty)
+        if (userSettings.history && Array.isArray(userSettings.history)) {
+            const hResults = userSettings.history
+                .filter(h => (h.title && h.title.toLowerCase().includes(query.toLowerCase())) || (h.url && h.url.toLowerCase().includes(query.toLowerCase())))
+                .slice(0, 3)
+                .map(h => ({ text: h.title, url: h.url, type: 'history' }));
+            results.unshift(...hResults);
+        }
+
+        if (results.length > 0) {
+            if (suggestionsView) suggestionsView.webContents.send('update-suggestions', results.slice(0, 8));
+        } else {
+            hideSuggestions();
+        }
+    } catch (err) { /* Silent fail */ }
+});
+
+ipcMain.on('show-suggestions', (e, bounds) => {
+    if (!suggestionsView || !mainWindow) return;
+    if (!mainWindow.getBrowserViews().includes(suggestionsView)) {
+        mainWindow.addBrowserView(suggestionsView);
+    }
+    suggestionsView.setBounds({
+        x: Math.floor(bounds.x),
+        y: Math.floor(bounds.y + bounds.height),
+        width: Math.floor(bounds.width),
+        height: 350
+    });
+    mainWindow.setTopBrowserView(suggestionsView);
+});
+
+ipcMain.on('hide-suggestions', () => hideSuggestions());
+
+ipcMain.on('suggestion-selected', (e, text) => {
+    hideSuggestions();
+    mainWindow.webContents.send('execute-suggestion', text);
+});
+
+ipcMain.on('reorder-tabs', (e, { fromIndex, toIndex }) => {
+    if (fromIndex < 0 || fromIndex >= views.length || toIndex < 0 || toIndex >= views.length) return;
+    const tabEntry = views.splice(fromIndex, 1)[0];
+    views.splice(toIndex, 0, tabEntry);
+    broadcastTabs();
+});
+
+function setupContextMenu(contents) {
+    contents.on('context-menu', (e, props) => {
+        const menu = new Menu();
+
+        if (props.linkURL) {
+            menu.append(new MenuItem({ label: 'Open Link in New Tab', click: () => createNewTab(props.linkURL) }));
+            menu.append(new MenuItem({ label: 'Copy Link Address', click: () => clipboard.writeText(props.linkURL) }));
+            menu.append(new MenuItem({ type: 'separator' }));
+        }
+
+        if (props.selectionText) {
+            menu.append(new MenuItem({ label: 'Copy', role: 'copy' }));
+            menu.append(new MenuItem({ type: 'separator' }));
+            menu.append(new MenuItem({ label: `Search Google for "${props.selectionText.substring(0, 20)}..."`, click: () => createNewTab(`https://www.google.com/search?q=${encodeURIComponent(props.selectionText)}`) }));
+            menu.append(new MenuItem({ type: 'separator' }));
+        }
+
+        if (props.isEditable) {
+            menu.append(new MenuItem({ label: 'Paste', role: 'paste' }));
+            menu.append(new MenuItem({ type: 'separator' }));
+        }
+
+        menu.append(new MenuItem({ label: 'Back', enabled: contents.canGoBack(), click: () => contents.goBack() }));
+        menu.append(new MenuItem({ label: 'Forward', enabled: contents.canGoForward(), click: () => contents.goForward() }));
+        menu.append(new MenuItem({ label: 'Reload', click: () => contents.reload() }));
+        menu.append(new MenuItem({ type: 'separator' }));
+        menu.append(new MenuItem({ label: 'Inspect Element', click: () => contents.inspectElement(props.x, props.y) }));
+
+        menu.popup(BrowserWindow.fromWebContents(contents));
+    });
+}

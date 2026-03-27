@@ -7,6 +7,7 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
         :root {
             --bg: #0c0c0e;
@@ -206,14 +207,56 @@
         .profile-card span { display: block; font-size: 14px; font-weight: 600; margin-bottom: 4px; }
         .profile-card .status { font-size: 10px; color: var(--accent); font-weight: 700; letter-spacing: 0.1em; }
 
-        /* Accent Dots */
-        .accent-picker { display: flex; gap: 12px; }
-        .dot {
-            width: 28px; height: 28px; border-radius: 50%; cursor: pointer;
-            transition: all 0.3s; border: 2px solid transparent; position: relative;
+        .dot { 
+            width: 24px; height: 24px; border-radius: 50%; cursor: pointer; border: 2px solid transparent; 
+            transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1); box-shadow: 0 4px 10px rgba(0,0,0,0.3);
         }
-        .dot:hover { transform: scale(1.15); }
-        .dot.active { border-color: #fff; box-shadow: 0 0 15px currentColor; }
+        .dot:hover { transform: scale(1.2); }
+        .dot.active { border-color: #fff; box-shadow: 0 0 15px currentColor; transform: scale(1.1); }
+        .accent-picker { display: flex; gap: 12px; }
+        
+        /* Options Grid */
+        .option-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 16px; }
+        .option-card {
+            background: rgba(255,255,255,0.02);
+            border: 1px solid var(--glass-border);
+            border-radius: 20px;
+            padding: 20px;
+            display: flex;
+            align-items: center;
+            gap: 16px;
+            cursor: pointer;
+            transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+        .option-card:hover { background: rgba(255,255,255,0.05); transform: translateY(-2px); border-color: rgba(255,255,255,0.2); }
+        .option-card.active { border-color: var(--accent); background: rgba(255,255,255,0.06); box-shadow: 0 8px 25px var(--accent-glow); }
+        .option-icon {
+            width: 40px; height: 40px; border-radius: 12px;
+            background: var(--glass); display: flex; align-items: center; justify-content: center;
+            font-size: 18px; color: var(--accent);
+        }
+        .option-info h5 { font-size: 14px; font-weight: 600; margin-bottom: 2px; }
+        .option-info p { font-size: 11px; color: var(--text-muted); }
+
+        /* Security Hub */
+        .security-hub {
+            background: linear-gradient(135deg, rgba(168, 85, 247, 0.05), transparent);
+            border: 1px solid var(--glass-border); border-radius: 24px; padding: 30px; margin-bottom: 32px;
+            display: flex; align-items: center; gap: 24px;
+        }
+        .pulse-shield {
+            width: 60px; height: 60px; border-radius: 50%; background: var(--accent-glow);
+            display: flex; align-items: center; justify-content: center; position: relative;
+        }
+        .pulse-shield i { font-size: 24px; color: var(--accent); z-index: 2; }
+        .pulse-shield::after {
+            content: ''; position: absolute; inset: 0; border-radius: 50%;
+            background: var(--accent); opacity: 0.4; animation: shieldPulse 2s infinite;
+        }
+        @keyframes shieldPulse {
+            0% { transform: scale(1); opacity: 0.4; }
+            100% { transform: scale(1.6); opacity: 0; }
+        }
 
         /* About Page */
         .about-wrap {
@@ -243,7 +286,141 @@
         }
         .about-text { max-width: 400px; color: var(--text-dim); line-height: 1.6; margin-bottom: 40px; font-size: 14px; }
         .company-brand { font-weight: 700; color: var(--accent); display: block; margin-top: 10px; }
+        
+        /* Extensions Special Styling */
+        .ext-container {
+            height: 60vh; display: flex; flex-direction: column; align-items: center; justify-content: center;
+            position: relative; overflow: hidden;
+        }
+        .ext-icon-stack {
+            position: relative; width: 120px; height: 120px; margin-bottom: 40px;
+            animation: extFloat 6s ease-in-out infinite;
+        }
+        .ext-glass {
+            position: absolute; inset: 0; 
+            background: linear-gradient(135deg, rgba(255,255,255,0.2), transparent);
+            backdrop-filter: blur(10px); border: 1px solid rgba(255,255,255,0.1);
+            border-radius: 30px; box-shadow: 0 20px 40px rgba(0,0,0,0.3);
+            display: flex; align-items: center; justify-content: center; z-index: 2;
+        }
+        .ext-glow {
+            position: absolute; inset: -20px; background: var(--accent);
+            filter: blur(40px); opacity: 0.2; z-index: 1; border-radius: 50%;
+        }
+        .ext-particle {
+            position: absolute; width: 6px; height: 6px; background: var(--accent);
+            border-radius: 2px; opacity: 0.4; pointer-events: none;
+            animation: particleFloat 8s linear infinite;
+        }
+        @keyframes extFloat {
+            0%, 100% { transform: translateY(0) rotate(0deg); }
+            50% { transform: translateY(-20px) rotate(5deg); }
+        }
+        @keyframes particleFloat {
+            0% { transform: translate(0, 0) rotate(0deg); opacity: 0; }
+            20% { opacity: 0.6; }
+            80% { opacity: 0.6; }
+            100% { transform: translate(var(--dx), var(--dy)) rotate(360deg); opacity: 0; }
+        }
+        /* Search Engine & Layout Cards */
+        .search-engine-grid { display: grid; gap: 12px; }
+        .engine-card {
+            background: rgba(255,255,255,0.02);
+            border: 1px solid var(--glass-border);
+            border-radius: 16px;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+            color: var(--text-dim);
+            position: relative;
+            overflow: hidden;
+            border-bottom: 2px solid transparent;
+        }
+        .engine-card:hover { 
+            background: rgba(255,255,255,0.05); 
+            border-color: rgba(255,255,255,0.15); 
+            transform: translateY(-4px); 
+        }
+        .engine-card.active {
+            background: rgba(168, 85, 247, 0.1);
+            border-color: var(--accent);
+            border-bottom-color: var(--accent);
+            color: #fff;
+            box-shadow: 0 12px 30px rgba(168, 85, 247, 0.2);
+            transform: translateY(-2px);
+        }
 
+        /* Mini Layout Mockups */
+        .layout-mockup {
+            width: 100px; height: 60px;
+            background: rgba(0,0,0,0.4); border-radius: 10px;
+            margin-bottom: 14px; position: relative;
+            border: 1px solid rgba(255,255,255,0.1);
+            padding: 6px; display: flex; flex-direction: column; gap: 6px;
+            transition: all 0.4s;
+            box-shadow: inset 0 2px 10px rgba(0,0,0,0.5);
+        }
+        .engine-card:hover .layout-mockup { border-color: rgba(168,85,247,0.4); transform: scale(1.05); }
+        .engine-card.active .layout-mockup { border-color: var(--accent); background: #000; }
+        
+        .mock-search { width: 100%; height: 8px; background: rgba(255,255,255,0.1); border-radius: 4px; transition: 0.3s; }
+        .engine-card.active .mock-search { 
+            background: var(--accent); 
+            box-shadow: 0 0 12px var(--accent-glow);
+            animation: mockPulse 2s infinite ease-in-out;
+        }
+        @keyframes mockPulse {
+            0% { opacity: 0.8; box-shadow: 0 0 8px var(--accent-glow); }
+            50% { opacity: 1; box-shadow: 0 0 16px var(--accent); }
+            100% { opacity: 0.8; box-shadow: 0 0 8px var(--accent-glow); }
+        }
+        
+        .mock-tiles { display: grid; grid-template-columns: repeat(4, 1fr); gap: 4px; }
+        .mock-tile { width: 100%; height: 12px; background: rgba(255,255,255,0.06); border-radius: 3px; }
+
+        .slider {
+            -webkit-appearance: none;
+            width: 100%; height: 8px;
+            background: linear-gradient(90deg, rgba(168,85,247,0.2) 0%, rgba(255,255,255,0.05) 100%);
+            border-radius: 100px; outline: none; transition: 0.3s;
+            border: 1px solid rgba(255,255,255,0.03);
+        }
+        .slider::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            width: 20px; height: 20px;
+            background: #fff; border-radius: 50%;
+            cursor: pointer;
+            box-shadow: 0 0 20px var(--accent-glow);
+            border: 3px solid var(--accent);
+            transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+        .slider::-webkit-slider-thumb:hover { transform: scale(1.2); box-shadow: 0 0 30px var(--accent); }
+
+        /* Sidebar items */
+        .sidebar-item {
+            padding: 10px 16px;
+            border-radius: 12px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            color: var(--text-dim);
+            transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+            font-size: 14px;
+            font-weight: 500;
+        }
+        .sidebar-item:hover { background: rgba(255, 255, 255, 0.05); color: #fff; }
+        .sidebar-item.active {
+            background: rgba(255, 255, 255, 0.1);
+            color: #fff;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+            border: 1px solid rgba(255,255,255,0.05);
+        }
+        .sidebar-item i { font-size: 16px; color: var(--accent); width: 18px; text-align: center; }
     </style>
 </head>
 <body>
@@ -258,11 +435,19 @@
             <div class="nav-item" data-section="profiles">
                 <i class="fas fa-layer-group"></i> Profiles
             </div>
-            <div class="nav-item" data-section="search">
-                <i class="fas fa-magnifying-glass"></i> Search
+            <div class="nav-item" data-section="extensions">
+                <i class="fas fa-puzzle-piece"></i> Extensions
             </div>
-            <div class="nav-item" data-section="security">
-                <i class="fas fa-shield-halved"></i> Security
+            
+            <div class="sidebar-label" style="padding-left:16px; margin: 16px 0 8px 0; font-size:10px; font-weight:700; color:var(--text-dim); text-transform:uppercase; letter-spacing:1px;">Search & Style</div>
+            <div class="sidebar-item" data-section="search" style="display: flex; align-items: center; gap: 12px; padding: 10px 16px; border-radius: 12px; cursor: pointer; color: var(--text-dim); transition: 0.2s;">
+                <i class="fas fa-magnifying-glass" style="width: 16px;"></i> Search
+            </div>
+            <div class="sidebar-item" data-section="homepage" style="display: flex; align-items: center; gap: 12px; padding: 10px 16px; border-radius: 12px; cursor: pointer; color: var(--text-dim); transition: 0.2s;">
+                <i class="fas fa-house-user" style="width: 16px;"></i> Home Page
+            </div>
+            <div class="sidebar-item" data-section="security" style="display: flex; align-items: center; gap: 12px; padding: 10px 16px; border-radius: 12px; cursor: pointer; color: var(--text-dim); transition: 0.2s;">
+                <i class="fas fa-shield-halved" style="width: 16px;"></i> Security
             </div>
             <div class="nav-item" data-section="privacy">
                 <i class="fas fa-eye-slash"></i> Privacy
@@ -318,7 +503,92 @@
                 </div>
             </div>
 
-            <!-- Privacy -->
+            <!-- Extensions -->
+            <div id="extensions" class="section">
+                <h1>Extensions</h1>
+                <div class="ext-container">
+                    <!-- Particles will be injected by JS -->
+                    <div id="ext-particles"></div>
+                    
+                    <div class="ext-icon-stack">
+                        <div class="ext-glow"></div>
+                        <div class="ext-glass">
+                            <i class="fas fa-puzzle-piece" style="font-size: 50px; color: var(--accent); filter: drop-shadow(0 0 10px var(--accent-glow));"></i>
+                        </div>
+                    </div>
+
+                    <div class="version-info" style="color: var(--accent); background: var(--accent-glow); border-color: var(--accent); border-radius: 10px; padding: 4px 12px;">ECOSYSTEM ROADMAP</div>
+                    <h2 style="font-size: 32px; font-weight: 800; margin: 16px 0 8px; letter-spacing: -0.02em;">Coming Soon</h2>
+                    <p style="max-width: 440px; color: var(--text-dim); line-height: 1.6; text-align: center; font-size: 14px;">
+                        We're engineering a state-of-the-art extension engine designed for security and speed. 
+                        Soon, you'll be able to customize your Ocal experience with a vast marketplace of powerful addons.
+                    </p>
+                </div>
+            </div>
+
+            <!-- Home Page Section -->
+            <div id="homepage" class="section">
+                <h1 class="page-title">Home Page Customization</h1>
+                <p class="page-desc">Personalize your new tab experience with flexible layouts and styles.</p>
+
+                <div class="settings-grid" style="display: flex; flex-direction: column; gap: 30px; max-width: 600px;">
+                    <!-- Controls -->
+                    <div style="display: flex; flex-direction: column; gap: 24px;">
+                        <div class="setting-card">
+                            <div class="setting-info">
+                                <div class="setting-label">Search Bar Placement</div>
+                                <div class="setting-desc">Choose where the search bar sits on your home page.</div>
+                            </div>
+                            <div class="search-engine-grid" style="grid-template-columns: repeat(3, 1fr); margin-top: 12px; gap: 20px;">
+                                <div class="engine-card" id="layout-top" onclick="updateHomeLayout('top')">
+                                    <div class="layout-mockup">
+                                        <div class="mock-search"></div>
+                                        <div class="mock-tiles">
+                                            <div class="mock-tile"></div><div class="mock-tile"></div><div class="mock-tile"></div><div class="mock-tile"></div>
+                                        </div>
+                                    </div>
+                                    <span style="font-weight: 600;">Top</span>
+                                </div>
+                                <div class="engine-card active" id="layout-center" onclick="updateHomeLayout('center')">
+                                    <div class="layout-mockup" style="justify-content: center;">
+                                        <div class="mock-search" style="margin: 4px 0;"></div>
+                                        <div class="mock-tiles">
+                                            <div class="mock-tile"></div><div class="mock-tile"></div><div class="mock-tile"></div><div class="mock-tile"></div>
+                                        </div>
+                                    </div>
+                                    <span style="font-weight: 600;">Center</span>
+                                </div>
+                                <div class="engine-card" id="layout-bottom" onclick="updateHomeLayout('bottom')">
+                                    <div class="layout-mockup" style="justify-content: flex-end;">
+                                        <div class="mock-tiles">
+                                            <div class="mock-tile"></div><div class="mock-tile"></div><div class="mock-tile"></div><div class="mock-tile"></div>
+                                        </div>
+                                        <div class="mock-search"></div>
+                                    </div>
+                                    <span style="font-weight: 600;">Bottom</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="setting-card">
+                            <div class="setting-info">
+                                <div class="setting-label">Tile Size</div>
+                                <div class="setting-desc">Adjust the scale of your speed dial shortcuts.</div>
+                            </div>
+                            <input type="range" min="80" max="160" value="80" class="slider" id="homeTileSize" oninput="updateHomeSetting('homeTileSize', this.value)">
+                        </div>
+
+                        <div class="setting-card">
+                            <div class="setting-info">
+                                <div class="setting-label">Tile Spacing</div>
+                                <div class="setting-desc">Control the density of your home page grid.</div>
+                            </div>
+                            <input type="range" min="10" max="40" value="20" class="slider" id="homeTileSpacing" oninput="updateHomeSetting('homeTileSpacing', this.value)">
+                        </div>
+                    </div>
+                </div>
+            </div>
+
             <div id="privacy" class="section">
                 <h1>Privacy & Data</h1>
                 <div class="group">
@@ -349,18 +619,41 @@
             <div id="search" class="section">
                 <h1>Search Engine</h1>
                 <div class="group">
-                    <div class="group-title">Default Engine</div>
+                    <div class="group-title">Preferred Provider</div>
+                    <div class="option-grid" id="search-grid">
+                        <div class="option-card" data-value="google">
+                            <div class="option-icon"><i class="fab fa-google"></i></div>
+                            <div class="option-info">
+                                <h5>Google Search</h5>
+                                <p>Fast and reliable</p>
+                            </div>
+                        </div>
+                        <div class="option-card" data-value="bing">
+                            <div class="option-icon"><i class="fab fa-microsoft"></i></div>
+                            <div class="option-info">
+                                <h5>Microsoft Bing</h5>
+                                <p>Visual and integrated</p>
+                            </div>
+                        </div>
+                        <div class="option-card" data-value="duckduckgo">
+                            <div class="option-icon"><i class="fas fa-shield-cat"></i></div>
+                            <div class="option-info">
+                                <h5>DuckDuckGo</h5>
+                                <p>Private and secure</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="group">
+                    <div class="group-title">Capabilities</div>
                     <div class="card">
                         <div class="row">
                             <div class="row-info">
-                                <h4>Address Bar Search</h4>
-                                <p>Choose your preferred provider for web searches.</p>
+                                <h4>Predictive Suggestions</h4>
+                                <p>Show search suggestions as you type in the address bar.</p>
                             </div>
-                            <select id="search-engine-select">
-                                <option value="google">Google Search</option>
-                                <option value="bing">Microsoft Bing</option>
-                                <option value="duckduckgo">DuckDuckGo</option>
-                            </select>
+                            <div class="toggle" id="search-suggest-toggle"></div>
                         </div>
                     </div>
                 </div>
@@ -369,19 +662,53 @@
             <!-- Security -->
             <div id="security" class="section">
                 <h1>Security</h1>
+                
+                <div class="security-hub">
+                    <div class="pulse-shield">
+                        <i class="fas fa-shield-check"></i>
+                    </div>
+                    <div>
+                        <h4 style="font-size: 18px; font-weight: 700; margin-bottom: 4px;">Security Hub</h4>
+                        <p style="font-size: 13px; color: var(--text-dim);">Your browser is protected by Ocal Advanced Shield.</p>
+                    </div>
+                </div>
+
                 <div class="group">
-                    <div class="group-title">Network Security</div>
+                    <div class="group-title">Domain Protection</div>
+                    <div class="option-grid" id="dns-grid">
+                        <div class="option-card" data-value="default">
+                            <div class="option-icon"><i class="fas fa-network-wired"></i></div>
+                            <div class="option-info">
+                                <h5>System Default</h5>
+                                <p>Use OS settings</p>
+                            </div>
+                        </div>
+                        <div class="option-card" data-value="cloudflare">
+                            <div class="option-icon"><i class="fas fa-bolt"></i></div>
+                            <div class="option-info">
+                                <h5>Cloudflare</h5>
+                                <p>Ultra-fast 1.1.1.1</p>
+                            </div>
+                        </div>
+                        <div class="option-card" data-value="google">
+                            <div class="option-icon"><i class="fab fa-google"></i></div>
+                            <div class="option-info">
+                                <h5>Google DNS</h5>
+                                <p>Broad compatibility</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="group">
+                    <div class="group-title">Advanced</div>
                     <div class="card">
                         <div class="row">
                             <div class="row-info">
-                                <h4>Secure DNS (DoH)</h4>
-                                <p>Encrypt your DNS queries for enhanced network privacy.</p>
+                                <h4>Safe Browsing</h4>
+                                <p>Protect against malicious sites and dangerous downloads.</p>
                             </div>
-                            <select id="dns-select">
-                                <option value="default">System Default</option>
-                                <option value="google">Google Public DNS</option>
-                                <option value="cloudflare">Cloudflare (1.1.1.1)</option>
-                            </select>
+                            <div class="toggle" id="safe-browsing-toggle"></div>
                         </div>
                     </div>
                 </div>
@@ -403,7 +730,7 @@
                             <div class="row-info">
                                 <h4 id="update-title" style="color:var(--accent)">New Update Available!</h4>
                                 <p id="update-version-label" style="font-weight:700; margin-bottom:12px"></p>
-                                <div id="update-notes" style="font-size:12px; color:var(--text-dim); max-height:120px; overflow-y:auto; background:rgba(0,0,0,0.2); padding:12px; border-radius:10px; border:1px solid var(--glass-border)"></div>
+                                <div id="update-notes" style="font-size:12.5px; color:var(--text-dim); max-height:180px; overflow-y:auto; background:rgba(0,0,0,0.3); padding:16px; border-radius:14px; border:1px solid var(--glass-border); line-height:1.7; scrollbar-width:thin; scrollbar-color:var(--accent) transparent"></div>
                             </div>
                         </div>
                     </div>
@@ -450,6 +777,27 @@
             };
         });
 
+        // New section switching for nested sidebar items
+        document.querySelectorAll('.sidebar-item').forEach(item => {
+            item.onclick = () => {
+                // Deactivate all nav-items and sidebar-items
+                document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+                document.querySelectorAll('.sidebar-item').forEach(si => si.classList.remove('active'));
+                document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
+
+                // Activate the parent nav-item (if applicable)
+                const parentNavItem = item.closest('.nav-item');
+                if (parentNavItem) {
+                    parentNavItem.classList.add('active');
+                }
+                // Activate the clicked sidebar-item
+                item.classList.add('active');
+                // Activate the corresponding section
+                document.getElementById(item.dataset.section).classList.add('active');
+            };
+        });
+
+
         const toggleSync = (el, key, isOn) => {
             el.classList.toggle('on', isOn);
             el.onclick = () => {
@@ -460,15 +808,35 @@
         };
 
         const profileGrid = document.getElementById('profile-grid');
-        const searchSelect = document.getElementById('search-engine-select');
-        const dnsSelect = document.getElementById('dns-select');
         const compactToggle = document.getElementById('compact-toggle');
         const trackingToggle = document.getElementById('tracking-toggle');
+        const suggestToggle = document.getElementById('search-suggest-toggle');
+        const safeToggle = document.getElementById('safe-browsing-toggle');
         const clearBtn = document.getElementById('clear-data-btn');
         const updateBtn = document.getElementById('update-check-btn');
 
-        searchSelect.onchange = () => window.electronAPI.updateSetting('searchEngine', searchSelect.value);
-        dnsSelect.onchange = () => window.electronAPI.updateSetting('dns', dnsSelect.value);
+        function initGridSelector(gridId, settingsKey) {
+            const grid = document.getElementById(gridId);
+            if (!grid) return;
+            grid.querySelectorAll('.option-card').forEach(card => {
+                card.onclick = () => {
+                    grid.querySelectorAll('.option-card').forEach(c => c.classList.remove('active'));
+                    card.classList.add('active');
+                    window.electronAPI.updateSetting(settingsKey, card.dataset.value);
+                };
+            });
+        }
+
+        function setGridValue(gridId, value) {
+            const grid = document.getElementById(gridId);
+            if (!grid) return;
+            grid.querySelectorAll('.option-card').forEach(card => {
+                card.classList.toggle('active', card.dataset.value === value);
+            });
+        }
+
+        initGridSelector('search-grid', 'searchEngine');
+        initGridSelector('dns-grid', 'dns');
 
         clearBtn.onclick = () => {
             clearBtn.innerText = 'Clearing...';
@@ -484,7 +852,33 @@
         const downloadBtn = document.getElementById('download-update-btn');
         const currentVersionEl = document.getElementById('current-version-display');
 
-        let currentVer = '0.9.9';
+        // Simple Markdown to HTML converter
+        function parseMD(md) {
+            if (!md) return '';
+            return md
+                .replace(/^### (.*$)/gim, '<h5 style="margin:16px 0 8px; color:#fff; font-size:13px; font-weight:700">$1</h5>')
+                .replace(/^## (.*$)/gim, '<h4 style="margin:20px 0 10px; color:var(--accent); font-size:14px; font-weight:800">$1</h4>')
+                .replace(/^# (.*$)/gim, '<h3 style="margin:24px 0 12px; color:#fff; font-size:16px; font-weight:800">$1</h3>')
+                .replace(/^\* (.*$)/gim, '<li style="margin-left:14px; margin-bottom:4px">$1</li>')
+                .replace(/^\- (.*$)/gim, '<li style="margin-left:14px; margin-bottom:4px">$1</li>')
+                .replace(/\*\*(.*)\*\*/gim, '<b style="color:#fff">$1</b>')
+                .replace(/\*(.*)\*/gim, '<i>$1</i>')
+                .replace(/\n$/gim, '<br />');
+        }
+
+        function isNewerVersion(latest, current) {
+            const l = latest.split('.').map(Number);
+            const c = current.split('.').map(Number);
+            for (let i = 0; i < Math.max(l.length, c.length); i++) {
+                const ln = l[i] || 0;
+                const cn = c[i] || 0;
+                if (ln > cn) return true;
+                if (ln < cn) return false;
+            }
+            return false;
+        }
+
+        let currentVer = '1.01.3';
 
         updateBtn.onclick = async () => {
             updateBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Checking...';
@@ -505,10 +899,10 @@
                     return;
                 }
 
-                if (latest.version !== currentVer) {
+                if (isNewerVersion(latest.version, currentVer)) {
                     updateTitle.innerText = "New Version Available!";
                     updateVersion.innerText = `Version ${latest.version}`;
-                    updateNotes.innerText = latest.notes || 'No release notes provided.';
+                    updateNotes.innerHTML = parseMD(latest.notes) || 'No release notes provided.';
                     statusCard.style.display = 'block';
                     downloadBtn.style.display = 'flex';
                     downloadBtn.onclick = () => window.open(latest.url, '_blank');
@@ -559,13 +953,35 @@
             createOrbs(); 
         }
 
+        function updateHomeLayout(layout) {
+            document.querySelectorAll('#homepage .engine-card').forEach(c => {
+                c.classList.toggle('active', c.id === `layout-${layout}`);
+            });
+            window.electronAPI.updateSetting('homeLayout', layout);
+        }
+
+        function updateHomeSetting(key, value) {
+            window.electronAPI.updateSetting(key, parseInt(value));
+        }
+
         window.electronAPI.getSettings().then(s => {
             if (s.accentColor) applyAccent(s.accentColor);
-            if (s.searchEngine) searchSelect.value = s.searchEngine;
-            if (s.dns) dnsSelect.value = s.dns;
+            if (s.searchEngine) setGridValue('search-grid', s.searchEngine);
+            if (s.dns) setGridValue('dns-grid', s.dns);
+            if (s.homeLayout) {
+                document.querySelectorAll('#homepage .engine-card').forEach(c => {
+                    c.classList.toggle('active', c.id === `layout-${s.homeLayout}`);
+                });
+            }
+            if (s.homeTileSize) document.getElementById('homeTileSize').value = s.homeTileSize;
+            if (s.homeTileSpacing) document.getElementById('homeTileSpacing').value = s.homeTileSpacing;
+            
             toggleSync(compactToggle, 'compactMode', !!s.compactMode);
             toggleSync(trackingToggle, 'trackingProtection', !!s.trackingProtection);
+            toggleSync(suggestToggle, 'searchSuggest', !!s.searchSuggest);
+            toggleSync(safeToggle, 'safeBrowsing', !!s.safeBrowsing);
             renderProfiles(s);
+            updatePreview();
         });
 
         window.electronAPI.getAppVersion().then(v => {
@@ -577,6 +993,23 @@
         window.electronAPI.onSettingsChanged(s => {
             if (s.accentColor) applyAccent(s.accentColor);
         });
+
+        // Extensions Particles
+        function initExtParticles() {
+            const container = document.getElementById('ext-particles');
+            if (!container) return;
+            for(let i=0; i<15; i++) {
+                const p = document.createElement('div');
+                p.className = 'ext-particle';
+                p.style.left = '50%';
+                p.style.top = '50%';
+                p.style.setProperty('--dx', (Math.random() * 400 - 200) + 'px');
+                p.style.setProperty('--dy', (Math.random() * 400 - 200) + 'px');
+                p.style.animationDelay = (Math.random() * 8) + 's';
+                container.appendChild(p);
+            }
+        }
+        initExtParticles();
     </script>
 </body>
 </html>

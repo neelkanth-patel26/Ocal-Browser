@@ -17,6 +17,12 @@
   --panel-blur: blur(24px) saturate(180%);
 }
 
+body.compact-mode {
+  --tab-h: 34px;
+  --nav-h: 38px;
+  --bm-h: 28px;
+}
+
 /* ── Reset ─────────────────────────────────────────────────────── */
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 button { background: none; border: none; cursor: pointer; font-family: inherit; }
@@ -68,8 +74,10 @@ body.fullscreen .bookmark-bar { display: none !important; }
   gap: 8px;
   padding: 0 14px;
   height: 32px;
-  min-width: 140px;
+  flex: 1;
+  min-width: 36px;
   max-width: 210px;
+  width: auto;
   font-size: 11.5px;
   font-weight: 500;
   color: var(--text-dim);
@@ -82,6 +90,7 @@ body.fullscreen .bookmark-bar { display: none !important; }
   overflow: hidden;
   position: relative;
 }
+body.compact-mode .tab-item { height: 26px; padding: 0 10px; gap: 6px; }
 .tab-item:hover { background: var(--hover); color: var(--text); }
 .tab-item.active {
   background: rgba(255,255,255,0.065);
@@ -89,8 +98,10 @@ body.fullscreen .bookmark-bar { display: none !important; }
   border-color: var(--accent-border);
   box-shadow: 0 4px 14px rgba(0,0,0,0.3), inset 0 0 10px rgba(168,85,247,0.05);
 }
+.tab-item.dragging { opacity: 0.4; transform: scale(0.95); }
+.tab-item.drag-over { border-color: var(--accent); background: rgba(168,85,247,0.1); }
 .tab-item .tab-favicon { font-size: 11px; opacity: 0.7; flex-shrink: 0; color: var(--accent); }
-.tab-title { flex: 1; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; letter-spacing: 0.2px; }
+.tab-title { flex: 1; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; letter-spacing: 0.2px; min-width: 0; }
 .tab-close {
   font-size: 10px;
   opacity: 0;
@@ -119,11 +130,12 @@ body.fullscreen .bookmark-bar { display: none !important; }
   background: rgba(255,255,255,0.03);
   border: 1px solid var(--chrome-border);
 }
+body.compact-mode .new-tab-btn { width: 24px; height: 24px; border-radius: 6px; margin-left: 2px; }
 .new-tab-btn:hover { background: var(--accent-dim); color: var(--accent); border-color: var(--accent-border); transform: scale(1.05); }
 
-.tab-drag-spacer { flex: 1; -webkit-app-region: drag; min-width: 20px; }
+.tab-drag-spacer { flex: 1; -webkit-app-region: drag; min-width: 0; }
 
-/* Window controls */
+/* ── Window controls ────────────────────────────────────────── */
 .window-controls {
   display: flex;
   -webkit-app-region: no-drag;
@@ -170,6 +182,7 @@ body.fullscreen .bookmark-bar { display: none !important; }
   border: 1px solid var(--chrome-border);
 }
 .nav-btn:hover { background: var(--hover); color: #fff; border-color: rgba(255,255,255,0.15); transform: translateY(-1px); }
+body.compact-mode .nav-btn { width: 26px; height: 26px; border-radius: 8px; }
 .nav-btn:active { transform: translateY(0) scale(0.95); }
 
 /* Omnibox (address bar) */
@@ -183,9 +196,8 @@ body.fullscreen .bookmark-bar { display: none !important; }
   border-radius: 12px;
   height: 34px;
   padding: 0 12px;
-  transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
-  min-width: 0;
 }
+body.compact-mode .omnibox { height: 28px; padding: 0 8px; gap: 6px; border-radius: 10px; }
 .omnibox:focus-within {
   background: rgba(255,255,255,0.07);
   border-color: var(--accent);
@@ -275,6 +287,7 @@ body.fullscreen .bookmark-bar { display: none !important; }
   border: 1px solid var(--chrome-border);
 }
 .tool-btn:hover { background: var(--hover); color: #fff; border-color: rgba(255,255,255,0.12); transform: translateY(-1px); }
+body.compact-mode .tool-btn { width: 26px; height: 26px; border-radius: 8px; }
 
 /* ── Bookmark Bar ──────────────────────────────────────────────── */
 .bookmark-bar {
