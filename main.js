@@ -605,53 +605,88 @@ function isNewerVersion(latest, current) {
 async function checkForUpdatesSilently() {
     if (!userSettings.autoCheckUpdates) return;
     try {
-        const fetch = (...args) => import('node-fetch').then(({default: fetch}) => fetch(...args));
-        const response = await fetch('https://api.github.com/repos/neelkanth-patel26/Ocal-Browser/releases/latest');
-        if (!response.ok) return;
-        const data = await response.json();
-        const latest = data.tag_name.replace(/^v/, '');
-        const current = app.getVersion();
-
-        if (isNewerVersion(latest, current)) {
-            console.log('[AutoUpdate] New version found:', latest);
-            if (mainWindow) {
-                mainWindow.webContents.send('update-available', {
-                    version: latest,
-                    notes: data.body,
-                    url: data.html_url
-                });
-            }
-        }
-    } catch (e) {
-        console.error('[AutoUpdate] Silent check error:', e);
-    }
+        const { net } = require('electron');
+        const request = net.request({
+            method: 'GET',
+            url: 'https://api.github.com/repos/neelkanth-patel26/Ocal-Browser/releases/latest',
+            redirect: 'follow'
+        });
+        request.setHeader('User-Agent', 'Ocal-Browser');
+        request.on('response', (response) => {
+            let data = '';
+            response.on('data', (chunk) => data += chunk.toString());
+            response.on('end', () => {
+                if (response.statusCode === 200) {
+                    try {
+                        const json = JSON.parse(data);
+                        const latest = json.tag_name.replace(/^v/, '');
+                        const current = app.getVersion();
+                        if (isNewerVersion(latest, current)) {
+                            if (mainWindow) {
+                                mainWindow.webContents.send('update-available', {
+                                    version: latest,
+                                    notes: json.body,
+                                    url: json.html_url
+                                });
+                            }
+                        }
+                    } catch (e) {}
+                }
+            });
+        });
+        request.on('error', () => {});
+        request.end();
+    } catch (e) {}
 }
 
 ipcMain.handle('check-for-update', async () => {
-    try {
-        const fetch = (...args) => import('node-fetch').then(({default: fetch}) => fetch(...args));
-        // Using the user's specific repo: neelkanth-patel26/Ocal-Browser
-        const response = await fetch('https://api.github.com/repos/neelkanth-patel26/Ocal-Browser/releases/latest');
-        console.log('[UpdateCheck] GitHub API status:', response.status);
-        if (!response.ok) throw new Error('GitHub API error');
-        const data = await response.json();
-        console.log('[UpdateCheck] Found Tag:', data.tag_name);
-        return {
-            version: data.tag_name.replace(/^v/, ''),
-            notes: data.body,
-            url: data.html_url
-        };
-    } catch (e) {
-        console.error('[UpdateCheck] Internal Error:', e);
-        return null;
-    }
+    return new Promise((resolve) => {
+        try {
+            const { net } = require('electron');
+            const request = net.request({
+                method: 'GET',
+                url: 'https://api.github.com/repos/neelkanth-patel26/Ocal-Browser/releases/latest',
+                redirect: 'follow'
+            });
+            request.setHeader('User-Agent', 'Ocal-Browser');
+            request.on('response', (response) => {
+                let data = '';
+                response.on('data', (chunk) => data += chunk.toString());
+                response.on('end', () => {
+                    if (response.statusCode === 200) {
+                        try {
+                            const json = JSON.parse(data);
+                            resolve({
+                                version: json.tag_name.replace(/^v/, ''),
+                                notes: json.body,
+                                url: json.html_url
+                            });
+                        } catch (e) {
+                            resolve(null);
+                        }
+                    } else {
+                        resolve(null);
+                    }
+                });
+            });
+            request.on('error', () => resolve(null));
+            request.end();
+        } catch (e) {
+            resolve(null);
+        }
+    });
 });
 ipcMain.handle('download-update', async (event) => {
     const downloadWithRetry = async (url, dest, retries = 3) => {
         const { net } = require('electron');
         return new Promise((resolve, reject) => {
             const attempt = (remaining) => {
-                const request = net.request(url);
+                const request = net.request({
+                    method: 'GET',
+                    url: url,
+                    redirect: 'follow'
+                });
+                request.setHeader('User-Agent', 'Ocal-Browser');
                 request.on('response', (response) => {
                     if (response.statusCode !== 200) {
                         if (remaining > 0) return setTimeout(() => attempt(remaining - 1), 2000);
@@ -666,11 +701,13 @@ ipcMain.handle('download-update', async (event) => {
                         receivedBytes += chunk.length;
                         fileStream.write(chunk);
                         const progress = Math.round((receivedBytes / totalBytes) * 100);
-                    mainWindow.webContents.send('update-download-progress', {
-                        percent: progress,
-                        loaded: (receivedBytes / (1024 * 1024)).toFixed(1),
-                        total: (totalBytes / (1024 * 1024)).toFixed(1)
-                    });
+                        if (mainWindow) {
+                            mainWindow.webContents.send('update-download-progress', {
+                                percent: progress,
+                                loaded: (receivedBytes / (1024 * 1024)).toFixed(1),
+                                total: (totalBytes / (1024 * 1024)).toFixed(1)
+                            });
+                        }
                     });
 
                     response.on('end', () => {
@@ -689,29 +726,40 @@ ipcMain.handle('download-update', async (event) => {
     };
 
     try {
-        const fetch = (...args) => import('node-fetch').then(({default: fetch}) => fetch(...args));
-        const res = await fetch('https://api.github.com/repos/neelkanth-patel26/Ocal-Browser/releases/latest');
-        const data = await res.json();
-        
-        // Robust asset matching: Architecture-aware (.exe + Setup + process.arch)
-        const arch = process.arch === 'x64' ? 'x64' : (process.arch === 'arm64' ? 'arm64' : '');
-        let asset = data.assets.find(a => 
-            a.name.endsWith('.exe') && 
-            a.name.includes('Setup') && 
-            (arch ? a.name.includes(arch) : true)
-        );
+        return new Promise((resolve, reject) => {
+            const { net } = require('electron');
+            const request = net.request({
+                method: 'GET',
+                url: 'https://api.github.com/repos/neelkanth-patel26/Ocal-Browser/releases/latest',
+                redirect: 'follow'
+            });
+            request.setHeader('User-Agent', 'Ocal-Browser');
+            request.on('response', (response) => {
+                let data = '';
+                response.on('data', (chunk) => data += chunk.toString());
+                response.on('end', async () => {
+                    if (response.statusCode === 200) {
+                        try {
+                            const json = JSON.parse(data);
+                            const arch = process.arch === 'x64' ? 'x64' : (process.arch === 'arm64' ? 'arm64' : '');
+                            let asset = json.assets.find(a => 
+                                a.name.endsWith('.exe') && 
+                                a.name.includes('Setup') && 
+                                (arch ? a.name.includes(arch) : true)
+                            );
+                            if (!asset) asset = json.assets.find(a => a.name.endsWith('.exe') && a.name.includes('Setup'));
+                            if (!asset) return reject(new Error('No compatible installer found.'));
 
-        // Fallback to any Setup .exe if arch-specific not found
-        if (!asset) {
-            asset = data.assets.find(a => a.name.endsWith('.exe') && a.name.includes('Setup'));
-        }
-
-        if (!asset) throw new Error('No compatible installer found for automatic update.');
-
-        const tempPath = path.join(app.getPath('temp'), asset.name);
-        return await downloadWithRetry(asset.browser_download_url, tempPath);
+                            const tempPath = path.join(app.getPath('temp'), asset.name);
+                            resolve(await downloadWithRetry(asset.browser_download_url, tempPath));
+                        } catch (e) { reject(e); }
+                    } else { reject(new Error(`API Status ${response.statusCode}`)); }
+                });
+            });
+            request.on('error', reject);
+            request.end();
+        });
     } catch (e) {
-        console.error('[UpdateDownload] Robust Error:', e);
         throw e;
     }
 });
