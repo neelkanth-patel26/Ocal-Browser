@@ -82,7 +82,8 @@ let userSettings = loadSettings() || {
   homeLayout: 'center', // 'top', 'center', 'bottom'
   homeTileSize: 80,
   homeTileSpacing: 20,
-  homeTileStyle: 'square' // 'square', 'rectangle', 'monochrome'
+  homeTileStyle: 'square', // 'square', 'rectangle', 'monochrome'
+  autoCheckUpdates: true
 };
 
 if (!userSettings.bookmarks) userSettings.bookmarks = [];
@@ -92,6 +93,7 @@ if (!userSettings.homeLayout) userSettings.homeLayout = 'center';
 if (!userSettings.homeTileSize) userSettings.homeTileSize = 80;
 if (!userSettings.homeTileSpacing) userSettings.homeTileSpacing = 20;
 if (!userSettings.homeTileStyle) userSettings.homeTileStyle = 'square';
+if (userSettings.autoCheckUpdates === undefined) userSettings.autoCheckUpdates = true;
 
 function createMainWindow() {
   mainWindow = new BrowserWindow({
@@ -136,6 +138,9 @@ function createMainWindow() {
     if (views.length === 0) createNewTab();
     setupDownloadHandler();
     setupCompatibilityHandler();
+    
+    // Proactive background update check
+    setTimeout(checkForUpdatesSilently, 3000); 
   });
 
   mainWindow.on('maximize', () => mainWindow.webContents.send('window-is-maximized', true));
@@ -585,22 +590,141 @@ ipcMain.on('update-setting', (e, key, val) => {
 });
 ipcMain.handle('get-settings', () => userSettings);
 ipcMain.handle('get-app-version', () => app.getVersion());
+function isNewerVersion(latest, current) {
+    const l = latest.split('.').map(Number);
+    const c = current.split('.').map(Number);
+    for (let i = 0; i < Math.max(l.length, c.length); i++) {
+        const ln = l[i] || 0;
+        const cn = c[i] || 0;
+        if (ln > cn) return true;
+        if (ln < cn) return false;
+    }
+    return false;
+}
+
+async function checkForUpdatesSilently() {
+    if (!userSettings.autoCheckUpdates) return;
+    try {
+        const fetch = (...args) => import('node-fetch').then(({default: fetch}) => fetch(...args));
+        const response = await fetch('https://api.github.com/repos/neelkanth-patel26/Ocal-Browser/releases/latest');
+        if (!response.ok) return;
+        const data = await response.json();
+        const latest = data.tag_name.replace(/^v/, '');
+        const current = app.getVersion();
+
+        if (isNewerVersion(latest, current)) {
+            console.log('[AutoUpdate] New version found:', latest);
+            if (mainWindow) {
+                mainWindow.webContents.send('update-available', {
+                    version: latest,
+                    notes: data.body,
+                    url: data.html_url
+                });
+            }
+        }
+    } catch (e) {
+        console.error('[AutoUpdate] Silent check error:', e);
+    }
+}
+
 ipcMain.handle('check-for-update', async () => {
     try {
         const fetch = (...args) => import('node-fetch').then(({default: fetch}) => fetch(...args));
         // Using the user's specific repo: neelkanth-patel26/Ocal-Browser
         const response = await fetch('https://api.github.com/repos/neelkanth-patel26/Ocal-Browser/releases/latest');
+        console.log('[UpdateCheck] GitHub API status:', response.status);
         if (!response.ok) throw new Error('GitHub API error');
         const data = await response.json();
+        console.log('[UpdateCheck] Found Tag:', data.tag_name);
         return {
             version: data.tag_name.replace(/^v/, ''),
             notes: data.body,
             url: data.html_url
         };
     } catch (e) {
-        console.error('Update check failed:', e);
+        console.error('[UpdateCheck] Internal Error:', e);
         return null;
     }
+});
+ipcMain.handle('download-update', async (event) => {
+    const downloadWithRetry = async (url, dest, retries = 3) => {
+        const { net } = require('electron');
+        return new Promise((resolve, reject) => {
+            const attempt = (remaining) => {
+                const request = net.request(url);
+                request.on('response', (response) => {
+                    if (response.statusCode !== 200) {
+                        if (remaining > 0) return setTimeout(() => attempt(remaining - 1), 2000);
+                        return reject(new Error(`Download failed with status ${response.statusCode}`));
+                    }
+
+                    const totalBytes = parseInt(response.headers['content-length'], 10);
+                    let receivedBytes = 0;
+                    const fileStream = fs.createWriteStream(dest);
+
+                    response.on('data', (chunk) => {
+                        receivedBytes += chunk.length;
+                        fileStream.write(chunk);
+                        const progress = Math.round((receivedBytes / totalBytes) * 100);
+                    mainWindow.webContents.send('update-download-progress', {
+                        percent: progress,
+                        loaded: (receivedBytes / (1024 * 1024)).toFixed(1),
+                        total: (totalBytes / (1024 * 1024)).toFixed(1)
+                    });
+                    });
+
+                    response.on('end', () => {
+                        fileStream.end();
+                        resolve(dest);
+                    });
+                });
+                request.on('error', (err) => {
+                    if (remaining > 0) return setTimeout(() => attempt(remaining - 1), 2000);
+                    reject(err);
+                });
+                request.end();
+            };
+            attempt(retries);
+        });
+    };
+
+    try {
+        const fetch = (...args) => import('node-fetch').then(({default: fetch}) => fetch(...args));
+        const res = await fetch('https://api.github.com/repos/neelkanth-patel26/Ocal-Browser/releases/latest');
+        const data = await res.json();
+        
+        // Robust asset matching: Architecture-aware (.exe + Setup + process.arch)
+        const arch = process.arch === 'x64' ? 'x64' : (process.arch === 'arm64' ? 'arm64' : '');
+        let asset = data.assets.find(a => 
+            a.name.endsWith('.exe') && 
+            a.name.includes('Setup') && 
+            (arch ? a.name.includes(arch) : true)
+        );
+
+        // Fallback to any Setup .exe if arch-specific not found
+        if (!asset) {
+            asset = data.assets.find(a => a.name.endsWith('.exe') && a.name.includes('Setup'));
+        }
+
+        if (!asset) throw new Error('No compatible installer found for automatic update.');
+
+        const tempPath = path.join(app.getPath('temp'), asset.name);
+        return await downloadWithRetry(asset.browser_download_url, tempPath);
+    } catch (e) {
+        console.error('[UpdateDownload] Robust Error:', e);
+        throw e;
+    }
+});
+
+ipcMain.on('apply-update', (event, installerPath) => {
+    const { spawn } = require('child_process');
+    // Run Inno Setup in silent mode
+    const child = spawn(installerPath, ['/SILENT', '/SUPPRESSMSGBOXES', '/NORESTART'], {
+        detached: true,
+        stdio: 'ignore'
+    });
+    child.unref();
+    app.quit();
 });
 
 // Bookmark IPCs
