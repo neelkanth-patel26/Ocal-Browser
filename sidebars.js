@@ -36,7 +36,7 @@ tabBtns.forEach(btn => btn.addEventListener('click', () => switchTab(btn.dataset
 function switchTab(id) {
     currentTab = id;
     tabBtns.forEach(b => b.classList.toggle('active', b.dataset.tab === id));
-    const titles = { bookmarks: 'Saves', history: 'History', downloads: 'Files', settings: 'Settings' };
+    const titles = { bookmarks: 'Saves', history: 'History', downloads: 'Files' };
     sbTitle.textContent = titles[id] || id;
     bmToolbar.style.display = id === 'bookmarks' ? 'flex' : 'none';
     sbSearch.placeholder = `Search ${titles[id] || id}...`;
@@ -170,7 +170,6 @@ window.electronAPI.getSettings().then(s => {
     if (s.accentColor) document.documentElement.style.setProperty('--accent', s.accentColor);
     render();
 });
-
 // Settings nav button
 const settingsNavBtn = document.getElementById('settings-nav-btn');
 if (settingsNavBtn) {
@@ -180,13 +179,13 @@ if (settingsNavBtn) {
     };
 }
 
+
 // ── Master render ──────────────────────────────────────────────────────────
 function render() {
     sbContent.innerHTML = '';
     if (currentTab === 'bookmarks') renderBookmarks();
     else if (currentTab === 'history')   renderHistory();
     else if (currentTab === 'downloads') renderDownloads();
-    else if (currentTab === 'settings')  renderSettings();
 
     if (!sbContent.children.length) {
         sbContent.innerHTML = `<div class="empty-state"><i class="fas fa-ghost"></i><p>Nothing here yet</p></div>`;
@@ -608,35 +607,6 @@ function renderDownloads() {
     });
 }
 
-// ── Settings ───────────────────────────────────────────────────────────────
-function renderSettings() {
-    const rows = [
-        { label: 'Compact Mode', key: 'compactMode' },
-        { label: 'Tracking Protection', key: 'trackingProtection' },
-    ];
-    rows.forEach(r => {
-        const row = document.createElement('div');
-        row.className = 'setting-row';
-        const toggle = document.createElement('div');
-        toggle.className = `toggle ${currentSettings[r.key] ? 'on' : ''}`;
-        toggle.onclick = () => {
-            const newVal = !currentSettings[r.key];
-            currentSettings[r.key] = newVal;
-            toggle.classList.toggle('on', newVal);
-            window.electronAPI.updateSetting(r.key, newVal);
-        };
-        row.innerHTML = `<span class="setting-label">${r.label}</span>`;
-        row.appendChild(toggle);
-        sbContent.appendChild(row);
-    });
-
-    const openSettings = document.createElement('div');
-    openSettings.className = 'bm-item';
-    openSettings.style.marginTop = '16px';
-    openSettings.innerHTML = `<i class="fas fa-external-link-alt" style="color:var(--accent);width:20px;text-align:center"></i><div class="bm-info"><div class="bm-title">All Settings</div><div class="bm-url">Open full preferences</div></div>`;
-    openSettings.onclick = () => { window.electronAPI.navigateTo('settings'); closeSidebar(); };
-    sbContent.appendChild(openSettings);
-}
 
 // ── Helpers ────────────────────────────────────────────────────────────────
 function esc(str) {

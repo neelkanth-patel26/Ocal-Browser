@@ -1,10 +1,10 @@
 [Setup]
 AppName=Ocal Browser
-AppVersion=1.0.6
+AppVersion=1.1.0
 DefaultDirName={autopf}\Ocal
 DefaultGroupName=Ocal
 OutputDir=dist-inno
-OutputBaseFilename=Ocal-1.0.6-Setup
+OutputBaseFilename=Ocal-1.1.0-Setup
 SetupIconFile=icon.ico
 Compression=lzma
 SolidCompression=yes

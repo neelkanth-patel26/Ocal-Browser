@@ -2,7 +2,7 @@ const https = require('https');
 
 const TOKEN = process.env.GITHUB_TOKEN;
 const REPO = 'neelkanth-patel26/Ocal-Browser';
-const TAG = 'v1.0.6';
+const TAG = 'v1.1.0';
 
 async function request(method, url, data = null) {
     const urlObj = new URL(url);
