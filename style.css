@@ -58,6 +58,7 @@ body.fullscreen .bookmark-bar { display: none !important; }
   -webkit-app-region: drag;
   z-index: 100;
   border-bottom: 1px solid rgba(255,255,255,0.03);
+  user-select: none;
 }
 
 #tab-list {

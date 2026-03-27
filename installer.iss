@@ -1,10 +1,12 @@
 [Setup]
 AppName=Ocal Browser
-AppVersion=1.1.1
+AppVersion=1.1.2
+AppPublisher=Gaming Network Studio Media Group
+AppPublisherURL=https://gnstudioxrage.wixstudio.com/gamingnetworkstudio
 DefaultDirName={autopf}\Ocal
 DefaultGroupName=Ocal
 OutputDir=dist-inno
-OutputBaseFilename=Ocal-1.1.1-Setup
+OutputBaseFilename=Ocal-1.1.2-Setup
 SetupIconFile=icon.ico
 Compression=lzma
 SolidCompression=yes

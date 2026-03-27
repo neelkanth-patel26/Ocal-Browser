@@ -102,9 +102,10 @@ function createMainWindow() {
     minWidth: 1000,
     minHeight: 700,
     title: 'Ocal',
+    titleBarStyle: 'hidden',
     frame: false,
     transparent: false,
-    backgroundColor: '#00000000',
+    backgroundColor: '#0c0c0e', // Solid background for better Win10 stability
     backgroundMaterial: 'mica',
     resizable: true,
     fullscreenable: true,
