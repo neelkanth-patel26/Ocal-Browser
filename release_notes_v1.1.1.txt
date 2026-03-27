@@ -1,0 +1,23 @@
+OCAL BROWSER - RELEASE NOTES v1.1.1
+=================================
+
+Release Date: March 27, 2026
+Version: 1.1.1
+
+This hotfix release addresses critical communication issues with the GitHub Update API and stabilizes the built-in update system.
+
+1. UPDATE SYSTEM STABILIZATION
+------------------------------
+- [FIX] GitHub API Communication: Transitioned to Electron's native `net.request` for all update checks, resolving intermittent `null` responses in packaged builds.
+- [FIX] User-Agent Compliance: Added required headers to all update-related requests to satisfy GitHub's API security requirements.
+- [NEW] Enhanced Error Reporting: Added granular tracing for update detection failures.
+
+2. UI & STABILITY FIXES
+-----------------------
+- [FIX] Settings Page: Removed the invalid `updatePreview` function call that caused a JavaScript ReferenceError.
+- [FIX] Version Reporting: Corrected an issue where the application would report an older version in the console despite being fully updated.
+- [REFINED] Installer EULA: Finalized the End User License Agreement presentation during setup.
+
+---------------------------------
+Copyright © 2026 Gaming Network Studio Media Group.
+Ocal Browser - Fast, Secure, and Agentic.

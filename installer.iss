@@ -1,16 +1,17 @@
 [Setup]
 AppName=Ocal Browser
-AppVersion=1.1.0
+AppVersion=1.1.1
 DefaultDirName={autopf}\Ocal
 DefaultGroupName=Ocal
 OutputDir=dist-inno
-OutputBaseFilename=Ocal-1.1.0-Setup
+OutputBaseFilename=Ocal-1.1.1-Setup
 SetupIconFile=icon.ico
 Compression=lzma
 SolidCompression=yes
 PrivilegesRequired=admin
 ArchitecturesAllowed=x64
 ArchitecturesInstallIn64BitMode=x64
+LicenseFile=license.txt
 
 [Tasks]
 Name: "desktopicon"; Description: "{cm:CreateDesktopIcon}"; GroupDescription: "{cm:AdditionalIcons}"; Flags: unchecked

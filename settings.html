@@ -1082,7 +1082,6 @@
             toggleSync(safeToggle, 'safeBrowsing', !!s.safeBrowsing);
             toggleSync(autoUpdateToggle, 'autoCheckUpdates', !!s.autoCheckUpdates);
             renderProfiles(s);
-            updatePreview();
         });
 
         window.electronAPI.getAppVersion().then(v => {
