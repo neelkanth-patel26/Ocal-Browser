@@ -309,6 +309,47 @@
             transform: rotate(90deg) scale(1.1);
             box-shadow: 0 0 20px var(--accent-glow);
         }
+
+        /* ── Responsiveness for Lower Resolutions ─────────────────── */
+        @media (max-width: 1200px), (max-height: 800px) {
+            :root {
+                --tile-size: 100px;
+                --tile-spacing: 16px;
+            }
+            .clock {
+                font-size: 64px;
+                letter-spacing: -2px;
+            }
+            .content-stack {
+                max-width: 640px;
+                padding: 0 20px;
+            }
+            .header {
+                margin-bottom: 30px;
+            }
+            .search-area {
+                margin-bottom: 34px;
+            }
+            .search-bar {
+                height: 50px;
+            }
+        }
+
+        @media (max-width: 900px), (max-height: 600px) {
+            :root {
+                --tile-size: 80px;
+                --tile-spacing: 12px;
+            }
+            .clock {
+                font-size: 48px;
+            }
+            .tile-icon {
+                border-radius: 16px;
+            }
+            .tile-label {
+                font-size: 10px;
+            }
+        }
     </style>
 </head>
 
