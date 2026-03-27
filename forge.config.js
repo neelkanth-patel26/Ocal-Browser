@@ -47,4 +47,17 @@ module.exports = {
       [FuseV1Options.OnlyLoadAppFromAsar]: true,
     }),
   ],
+  publishers: [
+    {
+      name: '@electron-forge/publisher-github',
+      config: {
+        repository: {
+          owner: 'neelkanth-patel26',
+          name: 'Ocal-Browser'
+        },
+        prerelease: false,
+        draft: true
+      }
+    }
+  ]
 };

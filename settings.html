@@ -421,6 +421,56 @@
             border: 1px solid rgba(255,255,255,0.05);
         }
         .sidebar-item i { font-size: 16px; color: var(--accent); width: 18px; text-align: center; }
+
+        /* Update Progress Bar */
+        .update-progress-container {
+            margin-top: 16px;
+            background: rgba(255, 255, 255, 0.05);
+            height: 6px;
+            border-radius: 100px;
+            overflow: hidden;
+            border: 1px solid var(--glass-border);
+            display: none;
+        }
+        .update-progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, var(--accent), var(--accent-glow));
+            background-size: 200% 100%;
+            width: 0%;
+            transition: width 0.3s ease;
+            box-shadow: 0 0 10px var(--accent-glow);
+            position: relative;
+            overflow: hidden;
+        }
+        .update-progress-fill::after {
+            content: '';
+            position: absolute;
+            top: 0; left: 0; bottom: 0; right: 0;
+            background-image: linear-gradient(
+                -45deg, 
+                rgba(255, 255, 255, 0.2) 25%, 
+                transparent 25%, 
+                transparent 50%, 
+                rgba(255, 255, 255, 0.2) 50%, 
+                rgba(255, 255, 255, 0.2) 75%, 
+                transparent 75%, 
+                transparent
+            );
+            background-size: 30px 30px;
+            animation: move-stripes 1.5s linear infinite;
+        }
+        @keyframes move-stripes {
+            0% { background-position: 0 0; }
+            100% { background-position: 30px 0; }
+        }
+        .progress-meta {
+            display: flex;
+            justify-content: space-between;
+            font-size: 11px;
+            color: var(--text-dim);
+            margin-top: 8px;
+            font-family: inherit;
+        }
     </style>
 </head>
 <body>
@@ -724,6 +774,16 @@
                         Experience the next generation of browsing. Driven by intelligence, designed for pure performance.
                         <span class="company-brand">Gaming Network Studio Media Group</span>
                     </div>
+
+                    <div class="card" style="margin-top:20px; text-align:left;">
+                        <div class="row">
+                            <div class="row-info">
+                                <h4>Proactive Updates</h4>
+                                <p>Automatically check for new versions on startup.</p>
+                            </div>
+                            <div class="toggle" id="auto-update-toggle"></div>
+                        </div>
+                    </div>
                     
                     <div id="update-status-card" class="card" style="display:none; width:100%; max-width:500px; text-align:left; margin-bottom:20px; animation: modalIn 0.4s easeOut">
                         <div class="row">
@@ -731,6 +791,13 @@
                                 <h4 id="update-title" style="color:var(--accent)">New Update Available!</h4>
                                 <p id="update-version-label" style="font-weight:700; margin-bottom:12px"></p>
                                 <div id="update-notes" style="font-size:12.5px; color:var(--text-dim); max-height:180px; overflow-y:auto; background:rgba(0,0,0,0.3); padding:16px; border-radius:14px; border:1px solid var(--glass-border); line-height:1.7; scrollbar-width:thin; scrollbar-color:var(--accent) transparent"></div>
+                                <div class="update-progress-container" id="update-progress-container" style="display:none;">
+                                    <div class="update-progress-fill" id="update-progress-fill"></div>
+                                </div>
+                                <div class="progress-meta" id="progress-meta" style="display:none;">
+                                    <span id="update-progress-text">Downloading...</span>
+                                    <span id="update-size-text">0 / 0 MB</span>
+                                </div>
                             </div>
                         </div>
                     </div>
@@ -845,6 +912,8 @@
             setTimeout(() => clearBtn.innerText = 'Clear History', 3000);
         };
 
+        const autoUpdateToggle = document.getElementById('auto-update-toggle');
+
         const statusCard = document.getElementById('update-status-card');
         const updateTitle = document.getElementById('update-title');
         const updateVersion = document.getElementById('update-version-label');
@@ -878,7 +947,7 @@
             return false;
         }
 
-        let currentVer = '1.01.3';
+        let currentVer = '0.0.0';
 
         updateBtn.onclick = async () => {
             updateBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Checking...';
@@ -888,6 +957,9 @@
 
             try {
                 const latest = await window.electronAPI.checkForUpdate();
+                console.log('[UpdateCheck] Latest from GitHub:', latest);
+                console.log('[UpdateCheck] Current Build:', currentVer);
+
                 if (!latest) {
                     updateBtn.innerHTML = '<i class="fas fa-check"></i> You are up to date';
                     updateBtn.style.background = '#10b981';
@@ -899,13 +971,40 @@
                     return;
                 }
 
-                if (isNewerVersion(latest.version, currentVer)) {
+                const isNewer = isNewerVersion(latest.version, currentVer);
+                console.log('[UpdateCheck] Is newer?', isNewer);
+
+                if (isNewer) {
                     updateTitle.innerText = "New Version Available!";
                     updateVersion.innerText = `Version ${latest.version}`;
                     updateNotes.innerHTML = parseMD(latest.notes) || 'No release notes provided.';
                     statusCard.style.display = 'block';
                     downloadBtn.style.display = 'flex';
-                    downloadBtn.onclick = () => window.open(latest.url, '_blank');
+                    downloadBtn.innerHTML = 'Download & Install <i class="fas fa-sparkles"></i>';
+                    
+                    downloadBtn.onclick = async () => {
+                        downloadBtn.disabled = true;
+                        downloadBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Downloading...';
+                        document.getElementById('update-progress-container').style.display = 'block';
+                        
+                        try {
+                            const installerPath = await window.electronAPI.downloadUpdate();
+                            console.log('[UpdateCheck] Download complete:', installerPath);
+                            
+                            downloadBtn.innerHTML = 'Restart and Update <i class="fas fa-power-off"></i>';
+                            downloadBtn.disabled = false;
+                            downloadBtn.style.background = '#3b82f6 !important';
+                            
+                            downloadBtn.onclick = () => {
+                                window.electronAPI.applyUpdate(installerPath);
+                            };
+                        } catch (err) {
+                            console.error('[UpdateCheck] Download error:', err);
+                            downloadBtn.innerHTML = 'Download Failed - Try again';
+                            downloadBtn.disabled = false;
+                        }
+                    };
+
                     updateBtn.innerHTML = 'Check for Updates <i class="fas fa-rotate"></i>';
                     updateBtn.disabled = false;
                 } else {
@@ -918,6 +1017,7 @@
                     }, 3000);
                 }
             } catch(e) { 
+                console.error('[UpdateCheck] Error:', e);
                 updateBtn.innerText = 'Check Failed'; 
                 updateBtn.disabled = false;
             }
@@ -980,6 +1080,7 @@
             toggleSync(trackingToggle, 'trackingProtection', !!s.trackingProtection);
             toggleSync(suggestToggle, 'searchSuggest', !!s.searchSuggest);
             toggleSync(safeToggle, 'safeBrowsing', !!s.safeBrowsing);
+            toggleSync(autoUpdateToggle, 'autoCheckUpdates', !!s.autoCheckUpdates);
             renderProfiles(s);
             updatePreview();
         });
@@ -987,6 +1088,48 @@
         window.electronAPI.getAppVersion().then(v => {
             currentVer = v;
             currentVersionEl.innerText = `BUILD ${v} · AGENTIC OS`;
+        });
+
+        window.electronAPI.onUpdateProgress((data) => {
+            const fill = document.getElementById('update-progress-fill');
+            const progressText = document.getElementById('update-progress-text');
+            const sizeText = document.getElementById('update-size-text');
+            const meta = document.getElementById('progress-meta');
+            
+            if (meta) meta.style.display = 'flex';
+            if (fill) fill.style.width = data.percent + '%';
+            if (progressText) progressText.innerText = `Downloading Ocal Update... ${data.percent}%`;
+            if (sizeText) sizeText.innerText = `${data.loaded} MB / ${data.total} MB`;
+            
+            document.getElementById('download-update-btn').innerHTML = `<i class="fas fa-spinner fa-spin"></i> Downloading... ${data.percent}%`;
+        });
+
+        window.electronAPI.onUpdateAvailable((latest) => {
+            if (latest) {
+                updateTitle.innerText = "New Version Available!";
+                updateVersion.innerText = `Version ${latest.version}`;
+                updateNotes.innerHTML = parseMD(latest.notes) || 'No release notes provided.';
+                statusCard.style.display = 'block';
+                downloadBtn.style.display = 'flex';
+                
+                // Set up the robust download handler logic exactly as in the button click
+                downloadBtn.innerHTML = 'Download & Install <i class="fas fa-sparkles"></i>';
+                downloadBtn.onclick = async () => {
+                    downloadBtn.disabled = true;
+                    downloadBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Downloading...';
+                    document.getElementById('update-progress-container').style.display = 'block';
+                    try {
+                        const installerPath = await window.electronAPI.downloadUpdate();
+                        downloadBtn.innerHTML = 'Restart and Update <i class="fas fa-power-off"></i>';
+                        downloadBtn.disabled = false;
+                        downloadBtn.style.background = '#3b82f6 !important';
+                        downloadBtn.onclick = () => window.electronAPI.applyUpdate(installerPath);
+                    } catch (err) {
+                        downloadBtn.innerHTML = 'Download Failed - Try again';
+                        downloadBtn.disabled = false;
+                    }
+                };
+            }
         });
 
         // Listen for external sync
