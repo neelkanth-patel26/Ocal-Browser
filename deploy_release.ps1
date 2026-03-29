@@ -30,8 +30,7 @@ try {
     
     # Artifacts to upload
     $artifacts = @(
-        "dist-builder/Ocal Browser Setup 2.6.78-beta.exe",
-        "dist-builder/Ocal Browser 2.6.78-beta.exe"
+        "dist-inno/Ocal-2.6.78-beta-Setup.exe"
     )
 
     foreach ($file in $artifacts) {
