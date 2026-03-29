@@ -1,0 +1,27 @@
+OCAL BROWSER - RELEASE NOTES v1.1.2
+=================================
+
+Release Date: March 27, 2026
+Version: 1.1.2
+
+This release focuses on platform-specific UI stability for Windows 10, cross-resolution responsiveness, and a more professional installation experience.
+
+1. WINDOWS 10 UI STABILITY
+---------------------------
+- [FIX] Top Bar Clickability: Resolved issues where the title bar / tab area was non-responsive or non-clickable on certain Windows 10 configurations by optimizing frameless window settings and color rendering.
+- [FIX] Window Draggable Regions: Improved the robustness of draggable regions to ensure smooth window movement across different scaling settings.
+
+2. RESPONSIVE DESIGN
+--------------------
+- [NEW] Home Page Scaling: Implemented dynamic scaling for the Ocal Home page. The clock, shortcut tiles, and layout now adapt to lower resolutions (e.g., 1024x768 and below) for a seamless experience on all devices.
+
+3. PROFESSIONAL INSTALLER
+-------------------------
+- [NEW] Inno Setup Integration: Officially transitioned to Inno Setup as the primary installer mechanism. This provides a familiar, high-performance installer experience with administrative privilege support.
+- [NEW] Publisher Metadata: Added official publisher branding and support links:
+  - Publisher: Gaming Network Studio Media Group
+  - Website: https://gnstudioxrage.wixstudio.com/gamingnetworkstudio
+
+---------------------------------
+Copyright © 2026 Gaming Network Studio Media Group.
+Ocal Browser - Fast, Secure, and Agentic.

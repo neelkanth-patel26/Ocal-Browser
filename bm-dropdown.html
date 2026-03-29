@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com https://cdnjs.cloudflare.com; font-src 'self' https://fonts.gstatic.com https://cdnjs.cloudflare.com; img-src 'self' data: https:;">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        :root {
+            --accent: #a855f7;
+            --accent-dim: rgba(168, 85, 247, 0.1);
+            --bg-glass: rgba(15, 15, 20, 0.75);
+            --border-glass: rgba(255, 255, 255, 0.08);
+            --text-muted: #94a3b8;
+        }
+
+        body {
+            margin: 0; padding: 0;
+            font-family: 'Inter', -apple-system, sans-serif;
+            background: transparent;
+            overflow: hidden;
+            user-select: none;
+        }
+
+        .dropdown-container {
+            width: fit-content; min-width: 200px;
+            max-width: 320px; max-height: 480px;
+            background: var(--bg-glass);
+            backdrop-filter: blur(20px);
+            border: 1px solid var(--border-glass);
+            border-radius: 14px;
+            box-shadow: 0 12px 40px rgba(0, 0, 0, 0.4);
+            overflow-y: auto; overflow-x: hidden;
+            display: flex; flex-direction: column;
+            padding: 6px;
+            animation: slideIn 0.15s cubic-bezier(0, 0, 0.2, 1);
+        }
+
+        @keyframes slideIn {
+            from { opacity: 0; transform: translateY(-8px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .menu-option {
+            display: flex; align-items: center; gap: 10px;
+            padding: 10px 14px; border-radius: 10px;
+            cursor: pointer; transition: 0.15s;
+            color: #fff; font-size: 13px; font-weight: 500;
+        }
+
+        .menu-option:hover { background: var(--accent-dim); color: var(--accent); }
+        
+        .menu-option img { width: 14px; height: 14px; border-radius: 3px; flex-shrink: 0; background: rgba(255,255,255,0.05); }
+        .menu-option span { flex: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+        .menu-option i { width: 14px; text-align: center; font-size: 13px; color: var(--text-muted); }
+
+        .empty-label {
+            padding: 16px; text-align: center;
+            color: var(--text-muted); font-size: 12px; font-style: italic;
+        }
+
+        /* Scrollbar styling */
+        .dropdown-container::-webkit-scrollbar { width: 4px; }
+        .dropdown-container::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.1); border-radius: 10px; }
+    </style>
+</head>
+<body>
+    <div class="dropdown-container" id="menu-container"></div>
+    <script src="bm-dropdown.js"></script>
+</body>
+</html>

@@ -7,6 +7,7 @@ let downloadItems = [];
 let searchFilter = '';
 let currentSettings = {};
 let expandedFolders = new Set();
+let currentFolderId = null;
 let dragSrc = null; // { type: 'bookmark'|'folder', id }
 let activeTabs = [];
 let activeTabId = null;
@@ -58,6 +59,8 @@ window.electronAPI.onSwitchTab((tab) => {
 window.electronAPI.onBookmarksChanged((data) => {
     bookmarks = data.bookmarks || [];
     folders   = data.folders   || [];
+    // If current folder was deleted, go back to root
+    if (currentFolderId && !folders.some(f => f.id === currentFolderId)) currentFolderId = null;
     if (currentTab === 'bookmarks') render();
 });
 
@@ -168,7 +171,12 @@ window.electronAPI.getSettings().then(s => {
     bookmarks    = s.bookmarks || [];
     folders      = s.folders   || [];
     if (s.accentColor) document.documentElement.style.setProperty('--accent', s.accentColor);
-    render();
+    
+    // Fetch downloads too
+    window.electronAPI.getDownloads().then(dl => {
+        downloadItems = dl || [];
+        render();
+    });
 });
 // Settings nav button
 const settingsNavBtn = document.getElementById('settings-nav-btn');
@@ -196,7 +204,33 @@ function render() {
 function renderBookmarks() {
     const q = searchFilter;
 
-    // Folders
+    // If viewing a specific folder
+    if (currentFolderId && !q) {
+        const f = folders.find(folder => folder.id === currentFolderId);
+        if (f) {
+            const backRow = document.createElement('div');
+            backRow.className = 'bm-back-row';
+            backRow.innerHTML = `<i class="fas fa-arrow-left"></i> Back to Saves`;
+            backRow.onclick = () => { currentFolderId = null; render(); };
+            sbContent.appendChild(backRow);
+
+            const crumbs = document.createElement('div');
+            crumbs.className = 'bm-breadcrumb';
+            crumbs.innerHTML = `Saves <i class="fas fa-chevron-right"></i> ${esc(f.name)}`;
+            sbContent.appendChild(crumbs);
+
+            const folderBms = bookmarks.filter(b => b.folderId === f.id);
+            if (folderBms.length === 0) {
+                sbContent.innerHTML += `<div class="empty-state" style="padding:60px 20px"><i class="fas fa-folder-open"></i><p>This folder is empty</p></div>`;
+            } else {
+                folderBms.forEach(bm => sbContent.appendChild(buildBookmarkItem(bm, false)));
+            }
+            return;
+        }
+    }
+
+    // Root View / Search View
+    // 1. Folders
     folders.forEach(f => {
         const folderBms = bookmarks.filter(b => b.folderId === f.id);
         if (q && !f.name.toLowerCase().includes(q) && !folderBms.some(b => b.title.toLowerCase().includes(q) || b.url.toLowerCase().includes(q))) return;
@@ -205,65 +239,42 @@ function renderBookmarks() {
         wrap.className = 'bm-folder';
         wrap.dataset.folderId = f.id;
 
-        const isOpen = expandedFolders.has(f.id);
         const hdr = document.createElement('div');
         hdr.className = 'bm-folder-hdr';
         hdr.draggable = true;
         hdr.innerHTML = `
-            <i class="fas fa-chevron-right bm-folder-chevron ${isOpen ? 'open' : ''}"></i>
             <i class="fas fa-folder bm-folder-icon"></i>
             <span class="bm-folder-name">${esc(f.name)}</span>
             <span class="bm-folder-count">${folderBms.length}</span>
             <div class="bm-folder-actions">
-                <button class="icon-btn" title="Rename" onclick="renameFolder('${f.id}',this)"><i class="fas fa-pen"></i></button>
-                <button class="icon-btn del" title="Delete" onclick="deleteFolder('${f.id}')"><i class="fas fa-trash"></i></button>
+                <button class="icon-btn" id="rename-f-${f.id}" title="Rename"><i class="fas fa-pen"></i></button>
+                <button class="icon-btn del" id="delete-f-${f.id}" title="Delete"><i class="fas fa-trash"></i></button>
             </div>
         `;
 
-        // Folder drag (reorder folders)
-        hdr.addEventListener('dragstart', e => { dragSrc = { type: 'folder', id: f.id }; e.dataTransfer.effectAllowed = 'move'; });
-        hdr.addEventListener('dragover', e => { e.preventDefault(); hdr.classList.add('drag-over'); });
-        hdr.addEventListener('dragleave', () => hdr.classList.remove('drag-over'));
-        hdr.addEventListener('drop', e => {
-            e.preventDefault(); hdr.classList.remove('drag-over');
-            if (dragSrc?.type === 'bookmark') {
-                // Move bookmark into this folder
-                window.electronAPI.send('edit-bookmark', { id: dragSrc.id, folderId: f.id });
-                dragSrc = null;
-            }
-        });
+        const renBtn = hdr.querySelector(`#rename-f-${f.id}`);
+        const delBtn = hdr.querySelector(`#delete-f-${f.id}`);
+        if (renBtn) renBtn.onclick = (e) => { e.stopPropagation(); renameFolder(f.id, renBtn); };
+        if (delBtn) delBtn.onclick = (e) => { e.stopPropagation(); deleteFolder(f.id); };
 
         hdr.onclick = (e) => {
-            if (e.target.closest('.bm-folder-actions') || e.target.closest('.icon-btn')) return;
-            if (expandedFolders.has(f.id)) expandedFolders.delete(f.id);
-            else expandedFolders.add(f.id);
+            if (e.target.closest('.bm-folder-actions')) return;
+            currentFolderId = f.id;
             render();
         };
 
         wrap.appendChild(hdr);
-
-        if (isOpen) {
-            const body = document.createElement('div');
-            body.className = 'bm-folder-body';
-            if (folderBms.length === 0) {
-                body.innerHTML = `<div style="padding:8px 28px;font-size:11px;color:#333;font-style:italic">Empty folder — drag bookmarks here</div>`;
-            } else {
-                folderBms.forEach(bm => body.appendChild(buildBookmarkItem(bm, true)));
-            }
-            wrap.appendChild(body);
-        }
-
         sbContent.appendChild(wrap);
     });
 
-    // Loose bookmarks
+    // 2. Loose bookmarks
     const loose = bookmarks.filter(b => !b.folderId);
     const filtered = q ? loose.filter(b => b.title.toLowerCase().includes(q) || b.url.toLowerCase().includes(q)) : loose;
 
     if (filtered.length && folders.length) {
         const lbl = document.createElement('div');
-        lbl.className = 'bm-section';
-        lbl.textContent = 'Bookmarks';
+        lbl.className = 'bm-section-label';
+        lbl.innerHTML = `<i class="fas fa-bookmark"></i>Other Bookmarks`;
         sbContent.appendChild(lbl);
     }
 
@@ -285,11 +296,19 @@ function buildBookmarkItem(bm, indented) {
             <div class="bm-url">${esc(domain)}</div>
         </div>
         <div class="bm-item-actions">
-            <button class="icon-btn" title="Edit" onclick="editBookmark('${bm.id}',this)"><i class="fas fa-pen"></i></button>
-            <button class="icon-btn" title="Move to folder" onclick="showMoveMenu(event,'${bm.id}')"><i class="fas fa-folder-open" style="font-size:10px"></i></button>
-            <button class="icon-btn del" title="Delete" onclick="deleteBookmark('${bm.url}')"><i class="fas fa-trash"></i></button>
+            <button class="icon-btn edit-btn" title="Edit"><i class="fas fa-pen"></i></button>
+            <button class="icon-btn move-btn" title="Move to folder"><i class="fas fa-folder-open" style="font-size:10px"></i></button>
+            <button class="icon-btn del-btn" title="Delete"><i class="fas fa-trash"></i></button>
         </div>
     `;
+
+    const eBtn = el.querySelector('.edit-btn');
+    const mBtn = el.querySelector('.move-btn');
+    const dBtn = el.querySelector('.del-btn');
+    
+    if (eBtn) eBtn.onclick = (e) => { e.stopPropagation(); editBookmark(bm.id, eBtn); };
+    if (mBtn) mBtn.onclick = (e) => { e.stopPropagation(); showMoveMenu(e, bm.id); };
+    if (dBtn) dBtn.onclick = (e) => { e.stopPropagation(); deleteBookmark(bm.url); };
 
     el.addEventListener('click', (e) => {
         if (e.target.closest('.bm-item-actions') || e.target.closest('.bm-drag-handle')) return;
@@ -477,7 +496,16 @@ function renderHistory() {
             if (tab.id === activeTabId) item.classList.add('current-active');
             
             let iconHtml = `<img class="hist-favicon" src="https://www.google.com/s2/favicons?domain=${domain}&sz=32" onerror="this.src='https://www.google.com/s2/favicons?domain=google.com&sz=32'">`;
-            if (tab.url.includes('home.html')) iconHtml = `<i class="fas fa-house hist-favicon" style="color:var(--accent);display:flex;align-items:center;justify-content:center;font-size:12px"></i>`;
+            const lowerUrl = tab.url.toLowerCase();
+            const isPdf = lowerUrl.endsWith('.pdf') || lowerUrl.includes('.pdf?') || lowerUrl.includes('pdf-viewer.html');
+
+            if (isPdf) {
+                iconHtml = `<div class="hist-favicon" style="display:flex;align-items:center;justify-content:center;background:rgba(168,85,247,0.1);color:var(--accent);"><i class="fas fa-file-pdf" style="font-size:10px;"></i></div>`;
+            } else if (tab.url.includes('home.html') || tab.url === 'ocal://') {
+                iconHtml = `<div class="hist-favicon" style="display:flex;align-items:center;justify-content:center;background:rgba(168,85,247,0.1);color:var(--accent);"><i class="fas fa-home" style="font-size:10px;"></i></div>`;
+            } else if (tab.url.includes('settings.html')) {
+                iconHtml = `<div class="hist-favicon" style="display:flex;align-items:center;justify-content:center;background:rgba(168,85,247,0.1);color:var(--accent);"><i class="fas fa-gear" style="font-size:10px;"></i></div>`;
+            }
 
             item.innerHTML = `
                 ${iconHtml}
@@ -485,7 +513,7 @@ function renderHistory() {
                     <div class="hist-title">${esc(tab.title || 'New Tab')}</div>
                     <div class="hist-meta">${esc(domain || 'ocal://')} · Active Now</div>
                 </div>
-                ${tab.id === activeTabId ? '<span class="active-badge">CURRENT</span>' : ''}
+                ${tab.id === activeTabId ? '<div class="active-badge">CURRENT</div>' : ''}
             `;
             item.onclick = () => {
                 window.electronAPI.send('switch-tab', tab.id);
@@ -501,8 +529,14 @@ function renderHistory() {
         const counts = {};
         historyItems.forEach(h => {
             try {
-                const domain = new URL(h.url).hostname;
-                counts[domain] = (counts[domain] || 0) + 1;
+                const urlObj = new URL(h.url);
+                let domain = urlObj.hostname;
+                if (!domain && urlObj.protocol === 'file:') {
+                    if (urlObj.pathname.includes('settings.html')) domain = 'ocal:settings';
+                    else if (urlObj.pathname.includes('home.html')) domain = 'ocal:home';
+                    else domain = 'ocal:local';
+                }
+                if (domain) counts[domain] = (counts[domain] || 0) + 1;
             } catch {}
         });
         const topDomains = Object.entries(counts)
@@ -517,11 +551,31 @@ function renderHistory() {
         topDomains.forEach(([domain, count]) => {
             const item = document.createElement('div');
             item.className = 'recom-item';
+            
+            let iconSrc = `https://www.google.com/s2/favicons?domain=${domain}&sz=64`;
+            let iconHtml = `<img src="${iconSrc}" onerror="this.onerror=null; this.src='https://www.google.com/s2/favicons?domain=ocal.com&sz=64'">`;
+            
+            let label = domain.replace('www.','');
+
+            if (domain.startsWith('ocal:')) {
+                const isSettings = domain === 'ocal:settings';
+                const icon = isSettings ? 'fa-gear' : 'fa-house';
+                label = isSettings ? 'Settings' : 'Home';
+                iconHtml = `<div style="width:100%; height:100%; display:flex; align-items:center; justify-content:center; background:rgba(168,85,247,0.1); border-radius:12px; color:var(--accent); font-size:20px;"><i class="fas ${icon}"></i></div>`;
+            } else if (domain.toLowerCase().endsWith('.pdf') || domain.toLowerCase().includes('pdf-viewer')) {
+                label = label.split(/[?#]/)[0].split('/').pop() || 'Document';
+                iconHtml = `<div style="width:100%; height:100%; display:flex; align-items:center; justify-content:center; background:rgba(168,85,247,0.1); border-radius:12px; color:var(--accent); font-size:20px;"><i class="fas fa-file-pdf"></i></div>`;
+            }
+
             item.innerHTML = `
-                <img src="https://www.google.com/s2/favicons?domain=${domain}&sz=64" onerror="this.onerror=null; this.src='https://www.google.com/s2/favicons?domain=ocal.com&sz=64'">
-                <div class="recom-name">${esc(domain.replace('www.',''))}</div>
+                ${iconHtml}
+                <div class="recom-name">${esc(label)}</div>
             `;
-            item.onclick = () => window.electronAPI.navigateTo('https://' + domain);
+            item.onclick = () => {
+                if (domain === 'ocal:settings') window.electronAPI.navigateTo('ocal://settings');
+                else if (domain === 'ocal:home') window.electronAPI.navigateTo('ocal://home');
+                else window.electronAPI.navigateTo('https://' + domain);
+            };
             grid.appendChild(item);
         });
         sbContent.appendChild(recomWrap);
@@ -561,11 +615,20 @@ function renderHistory() {
             const time = new Date(h.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
 
             let iconHtml = `<img class="hist-favicon" src="https://www.google.com/s2/favicons?domain=${domain}&sz=32" onerror="this.src='https://www.google.com/s2/favicons?domain=google.com&sz=32'">`;
-            
-            // Local page specific icons
-            if (h.url.includes('sidebars.html')) iconHtml = `<i class="fas fa-gear hist-favicon" style="color:var(--accent);display:flex;align-items:center;justify-content:center;font-size:12px"></i>`;
-            else if (h.url.includes('home.html')) iconHtml = `<i class="fas fa-house hist-favicon" style="color:var(--accent);display:flex;align-items:center;justify-content:center;font-size:12px"></i>`;
-            else if (h.url.includes('game.html')) iconHtml = `<i class="fas fa-gamepad hist-favicon" style="color:var(--accent);display:flex;align-items:center;justify-content:center;font-size:12px"></i>`;
+            const lowerUrl = h.url.toLowerCase();
+            const isPdf = lowerUrl.endsWith('.pdf') || lowerUrl.includes('.pdf?') || lowerUrl.includes('pdf-viewer.html');
+
+            if (isPdf) {
+                iconHtml = `<i class="fas fa-file-pdf hist-favicon" style="color:var(--accent);display:flex;align-items:center;justify-content:center;font-size:12px"></i>`;
+            } else if (h.url.includes('sidebars.html')) {
+                iconHtml = `<i class="fas fa-gear hist-favicon" style="color:var(--accent);display:flex;align-items:center;justify-content:center;font-size:12px"></i>`;
+            } else if (h.url.includes('settings.html')) {
+                iconHtml = `<i class="fas fa-gear hist-favicon" style="color:var(--accent);display:flex;align-items:center;justify-content:center;font-size:12px"></i>`;
+            } else if (h.url.includes('home.html')) {
+                iconHtml = `<i class="fas fa-house hist-favicon" style="color:var(--accent);display:flex;align-items:center;justify-content:center;font-size:12px"></i>`;
+            } else if (h.url.includes('game.html')) {
+                iconHtml = `<i class="fas fa-gamepad hist-favicon" style="color:var(--accent);display:flex;align-items:center;justify-content:center;font-size:12px"></i>`;
+            }
 
             const el = document.createElement('div');
             el.className = 'hist-item';
@@ -623,6 +686,24 @@ function showModal({ title, message, onConfirm }) {
 
     if (!overlay || !confirmBtn || !cancelBtn) return;
 
+    // Custom Icon for Exit
+    const iconEl = document.getElementById('modal-icon');
+    if (iconEl) {
+        if (title === 'Confirm Exit') {
+            iconEl.innerHTML = '<i class="fas fa-power-off"></i>';
+            iconEl.style.color = '#ef4444';
+            iconEl.style.background = 'rgba(239, 68, 68, 0.1)';
+            iconEl.style.borderColor = 'rgba(239, 68, 68, 0.2)';
+            iconEl.style.boxShadow = '0 10px 30px rgba(239, 68, 68, 0.2)';
+        } else {
+            iconEl.innerHTML = '<i class="fas fa-triangle-exclamation"></i>';
+            iconEl.style.color = 'var(--accent)';
+            iconEl.style.background = 'var(--accent-dim)';
+            iconEl.style.borderColor = 'var(--accent-border)';
+            iconEl.style.boxShadow = '0 10px 30px var(--accent-glow)';
+        }
+    }
+
     titleEl.textContent = title;
     bodyEl.textContent = message;
     overlay.style.display = 'flex';
@@ -642,13 +723,22 @@ function showModal({ title, message, onConfirm }) {
     };
 }
 
-// Expose globals needed by inline onclick handlers
-window.addFolder = addFolder;
-window.renameFolder = renameFolder;
-window.deleteFolder = deleteFolder;
-window.editBookmark = editBookmark;
-window.deleteBookmark = deleteBookmark;
-window.showMoveMenu = showMoveMenu;
-window.sortBookmarks = sortBookmarks;
-window.closeSidebar = closeSidebar;
-window.showModal = showModal;
+// ── Final Event Listener Assignment ──────────────────────────────────────
+if (backdrop) backdrop.addEventListener('click', closeSidebar);
+const sbCloseBtn = document.getElementById('sb-close-btn');
+if (sbCloseBtn) sbCloseBtn.addEventListener('click', closeSidebar);
+
+const addFolderBtn = document.getElementById('add-folder-btn');
+if (addFolderBtn) addFolderBtn.addEventListener('click', addFolder);
+
+const sortBmsBtn = document.getElementById('sort-bms-btn');
+if (sortBmsBtn) sortBmsBtn.addEventListener('click', sortBookmarks);
+
+const ssVisible = document.getElementById('ss-visible');
+if (ssVisible) ssVisible.addEventListener('click', () => handleSS('visible'));
+
+const ssFull = document.getElementById('ss-full');
+if (ssFull) ssFull.addEventListener('click', () => handleSS('full'));
+
+const ssPdf = document.getElementById('ss-pdf');
+if (ssPdf) ssPdf.addEventListener('click', () => handleSS('pdf'));

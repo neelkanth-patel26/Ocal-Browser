@@ -1,0 +1,170 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ocal Browser Installer</title>
+    <link rel="stylesheet" href="style.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&family=Outfit:wght@400;500;600;700&display=swap" rel="stylesheet">
+</head>
+<body>
+    <div class="installer-window">
+        <!-- Sidebar -->
+        <aside class="sidebar">
+            <div class="logo">
+                <img src="../icon.png" alt="Ocal Logo" class="logo-img">
+                <span class="logo-text">Ocal</span>
+            </div>
+            <nav class="steps">
+                <div class="step active" data-step="welcome">
+                    <span class="step-num">01</span>
+                    <span class="step-label">Welcome</span>
+                </div>
+                <div class="step" data-step="license">
+                    <span class="step-num">02</span>
+                    <span class="step-label">Agreement</span>
+                </div>
+                <div class="step" data-step="destination">
+                    <span class="step-num">03</span>
+                    <span class="step-label">Location</span>
+                </div>
+                <div class="step" data-step="preferences">
+                    <span class="step-num">04</span>
+                    <span class="step-label">Options</span>
+                </div>
+                <div class="step" data-step="installing">
+                    <span class="step-num">05</span>
+                    <span class="step-label">Installing</span>
+                </div>
+            </nav>
+        </aside>
+
+        <!-- Main Content Area -->
+        <main class="content">
+            <div class="header-controls">
+                <button class="win-btn minimize" id="minimizeBtn"></button>
+                <button class="win-btn close" id="closeBtn"></button>
+            </div>
+
+            <div class="main-content">
+                <!-- Screen: Welcome -->
+                <section id="screen-welcome" class="screen active">
+                    <header class="screen-header">
+                        <h1 id="welcomeHeader">Welcome to <span class="neon-text">Ocal Browser</span></h1>
+                        <p id="welcomeSubtext">Ocal is a fast, secure, and intelligent browser designed for the premium user. Experience browsing reimagined with state-of-the-art AI Copilot integration.</p>
+                    </header>
+                    
+                    <div class="feature-carousel card">
+                        <div class="feature-item active">
+                            <h3 id="featureTitle">AI Copilot</h3>
+                            <p id="featureDesc">Integrated AI that understands your workflow.</p>
+                        </div>
+                    </div>
+                </section>
+
+            <!-- Screen: License -->
+            <section id="screen-license" class="screen">
+                <h2>Software License <span class="neon-text">Agreement</span></h2>
+                <div class="license-box mica-box">
+                    <pre class="license-text" id="licenseTextContent">Loading license agreement...</pre>
+                </div>
+                <div class="checkbox-container">
+                    <label class="custom-checkbox">
+                        <input type="checkbox" id="agreeCheckbox">
+                        <span class="checkmark"></span>
+                        I accept the terms in the license agreement
+                    </label>
+                </div>
+            </section>
+
+            <!-- Screen: Destination -->
+            <section id="screen-destination" class="screen">
+                <header class="screen-header">
+                    <h2>Target <span class="gradient-text">Destination</span></h2>
+                    <p>Select the folder where you want to install Ocal Browser.</p>
+                </header>
+                
+                <div class="input-group">
+                    <div class="path-selector card">
+                        <input type="text" id="installPath" value="C:\Program Files\Ocal" readonly>
+                        <button class="browse-btn" id="browseBtn">Browse</button>
+                    </div>
+                </div>
+                
+                <div class="disk-info">
+                    <p>Required Space: <span>156 MB</span></p>
+                    <p>Available Space: <span>42.8 GB</span></p>
+                </div>
+            </section>
+
+            <!-- Screen: Preferences -->
+            <section id="screen-preferences" class="screen">
+                <h2>Custom <span class="gradient-text">Setup</span></h2>
+                <p>Personalize your installation and sync your existing data.</p>
+                
+                <div class="preferences-list">
+                    <div class="pref-item">
+                        <div class="pref-text">
+                            <h3>Import Bookmarks & History</h3>
+                            <p>Seamlessly migrate from Chrome or Edge</p>
+                            <a id="importFileBtn" class="import-file-link">Import from HTML File...</a>
+                            <span id="filePathLabel" class="file-path-label" style="display: none;"></span>
+                        </div>
+                        <label class="toggle-switch">
+                            <input type="checkbox" id="importData" checked>
+                            <span class="slider"></span>
+                        </label>
+                    </div>
+                    
+                    <div class="pref-item">
+                        <div class="pref-text">
+                            <h3>Set as Default Browser</h3>
+                            <p>Make Ocal your primary window to the web</p>
+                        </div>
+                        <label class="toggle-switch">
+                            <input type="checkbox" id="setDefault" checked>
+                            <span class="slider"></span>
+                        </label>
+                    </div>
+
+                    <div class="pref-item">
+                        <div class="pref-text">
+                            <h3>Create Desktop Shortcut</h3>
+                            <p>Quick access from your desktop</p>
+                        </div>
+                        <label class="toggle-switch">
+                            <input type="checkbox" id="createShortcut" checked>
+                            <span class="slider"></span>
+                        </label>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Screen: Installing -->
+            <section id="screen-installing" class="screen">
+                <h2>Installing <span class="gradient-text">Ocal Browser</span></h2>
+                <p id="installStatus">Extracting core components...</p>
+                
+                <div class="progress-container">
+                    <div class="progress-bar-bg">
+                        <div class="progress-bar-fill" id="progressBar">
+                            <div class="progress-glow"></div>
+                        </div>
+                    </div>
+                    <span id="progressText">0%</span>
+                </div>
+            </section>
+
+            <!-- Footer Buttons -->
+            <footer class="footer">
+                <button class="btn btn-secondary" id="backBtn">Back</button>
+                <button class="btn btn-primary" id="nextBtn">Next</button>
+            </footer>
+        </main>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html>
