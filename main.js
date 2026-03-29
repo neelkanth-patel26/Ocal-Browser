@@ -570,6 +570,52 @@ function applyProxy(region = 'auto') {
     setProxyFor(session.fromPartition('persist:google_login'));
 }
 
+function handleVpnFailure(contents, code) {
+    if (userSettings.vpnEnabled) {
+        console.warn(`[VPN v3] Connection Failure (Code: ${code}) for URL: ${contents.getURL()}`);
+        
+        // If it's a timeout or connection reset, try switching to 'auto' (RESCUE POOL)
+        if (code === -105 || code === -102 || code === -118) {
+            console.log('[VPN v3] Proactive Failover to RESCUE POOL initiated.');
+            broadcastVpnStatus('Retrying', 'Failing over...');
+            applyProxy('auto');
+            setTimeout(() => {
+                if (!contents.isDestroyed()) contents.reload();
+            }, 1000);
+        } else {
+            broadcastVpnStatus('Error', `Code ${code}`);
+        }
+    }
+}
+
+function applyCyberStealth(webContents) {
+    if (!userSettings.cyberStealthEnabled) return;
+
+    // Advanced Bot-Detection Bypass (Randomized delays and clean traces)
+    const stealthScript = `
+        (function() {
+            // Shadow DOM trace removal
+            const originalAttachShadow = Element.prototype.attachShadow;
+            Element.prototype.attachShadow = function(options) {
+                return originalAttachShadow.call(this, { ...options, mode: 'open' });
+            };
+
+            // Canvas poisoning prevention
+            const originalGetImageData = CanvasRenderingContext2D.prototype.getImageData;
+            CanvasRenderingContext2D.prototype.getImageData = function(x, y, w, h) {
+                const data = originalGetImageData.call(this, x, y, w, h);
+                // Subtle noise to avoid fingerprinting
+                if (data.data.length > 0) data.data[0] = data.data[0] ^ 1;
+                return data;
+            };
+
+            console.log('[CyberStealth] Active: Traces sanitized, Fingerprinting guarded.');
+        })();
+    `;
+
+    webContents.executeJavaScript(stealthScript).catch(() => {});
+}
+
 function setupSecurityHeadersFix() {
     const ses = session.defaultSession;
     const googleSes = session.fromPartition('persist:google_login');

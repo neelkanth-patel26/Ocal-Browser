@@ -4,7 +4,7 @@ const { FuseV1Options, FuseVersion } = require('@electron/fuses');
 module.exports = {
   packagerConfig: {
     asar: true,
-    icon: './icon',
+    icon: './icon.png',
     ignore: [
       /^\/out($|\/)/,
       /^\/dist-inno($|\/)/,
@@ -61,8 +61,8 @@ module.exports = {
           owner: 'neelkanth-patel26',
           name: 'Ocal-Browser'
         },
-        prerelease: false,
-        draft: true
+        prerelease: true,
+        draft: false
       }
     }
   ]
