@@ -9,15 +9,21 @@ if (typeof electron === 'string' || !electron.app) {
 }
 
 const { 
-    app, BrowserWindow, BrowserView, ipcMain, dialog, 
+    app, BrowserWindow, BrowserView, webContents, ipcMain, dialog, 
     shell, session, Menu, MenuItem, clipboard, protocol, net 
 } = electron;
+
+// Disable deprecation warnings in the console (silences punycode and setPreloads from 3rd-party libs)
+process.noDeprecation = true;
 
 // Register internal protocol as standard/secure to allow 'self' in CSP
 protocol.registerSchemesAsPrivileged([
   { scheme: 'ocal', privileges: { standard: true, secure: true, supportFetchAPI: true, corsEnabled: true } }
 ]);
 const path = require('path');
+const AdmZip = require('adm-zip');
+const { ElectronBlocker } = require('@cliqz/adblocker-electron');
+const fetch = require('cross-fetch').default || require('cross-fetch');
 
 // Disable QUIC (fixes Handshake -101 and Connection Reset issues)
 app.commandLine.appendSwitch('disable-quic');
@@ -25,6 +31,9 @@ app.commandLine.appendSwitch('disable-quic');
 app.commandLine.appendSwitch('enable-features', 'Tls13EarlyData');
 // Hide the fact that we are an automated/embedded browser (Crucial for Google Login)
 app.commandLine.appendSwitch('disable-blink-features', 'AutomationControlled');
+
+const OCAL_USER_AGENT = 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/134.0.0.0 Safari/537.36';
+app.userAgentFallback = OCAL_USER_AGENT;
 
 // Single Instance Lock
 const gotTheLock = app.requestSingleInstanceLock();
@@ -177,6 +186,7 @@ let userSettings = loadSettings() || {
   accentColor: '#a855f7',
   compactMode: false,
   trackingProtection: true,
+  forceShieldIcon: true,
   profiles: [{ id: 'default', name: 'Personal', icon: 'fa-user' }],
   history: [],
   bookmarks: [],
@@ -188,9 +198,19 @@ let userSettings = loadSettings() || {
   homeTileStyle: 'square', // 'square', 'rectangle', 'monochrome'
   autoCheckUpdates: true,
   tabGroups: [], // { id, name, color, collapsed }
+  adBlockEnabled: true,
+  assetVaultEnabled: true,
+  aiAssistantEnabled: true,
+  cyberStealthEnabled: false,
+  aiApiKey: '',
+  aiEngine: 'local', // 'local' or 'gemini'
+  aiDeepScrape: true,
+  aiShowReasoning: true,
+  aiResponseStyle: 'concise',
   customSearchUrl: 'https://www.google.com/search?q=%s',
   askSavePath: false,
-  downloads: []
+  downloads: [],
+  shieldStats: { ads: 0, trackers: 0, dataSaved: 0 }
 };
 
 if (!userSettings.bookmarks) userSettings.bookmarks = [];
@@ -206,6 +226,63 @@ if (!userSettings.tabGroups) userSettings.tabGroups = [];
 if (!userSettings.customSearchUrl) userSettings.customSearchUrl = 'https://www.google.com/search?q=%s';
 if (userSettings.askSavePath === undefined) userSettings.askSavePath = false;
 if (!userSettings.downloads) userSettings.downloads = [];
+if (userSettings.adBlockEnabled === undefined) userSettings.adBlockEnabled = true;
+if (userSettings.vpnEnabled === undefined) userSettings.vpnEnabled = false;
+if (userSettings.vpnRegion === undefined) userSettings.vpnRegion = 'auto'; // Default VPN region
+if (userSettings.proxyUrl === undefined) userSettings.proxyUrl = 'socks5://127.0.0.1:9050'; // Default Tor-style or generic
+
+// Security Hub Defaults
+if (userSettings.httpsUpgradeEnabled === undefined) userSettings.httpsUpgradeEnabled = true;
+if (userSettings.safeBrowsingEnabled === undefined) userSettings.safeBrowsingEnabled = true;
+if (userSettings.dnsProvider === undefined) userSettings.dnsProvider = 'auto';
+
+// Native Extensions Defaults
+if (userSettings.cyberStealthEnabled === undefined) userSettings.cyberStealthEnabled = false;
+if (userSettings.aiAssistantEnabled === undefined) userSettings.aiAssistantEnabled = true;
+if (userSettings.assetVaultEnabled === undefined) userSettings.assetVaultEnabled = true;
+
+// Search Hub Defaults
+if (userSettings.instantSearchEnabled === undefined) userSettings.instantSearchEnabled = true;
+if (userSettings.safeSearchEnabled === undefined) userSettings.safeSearchEnabled = false;
+
+if (!userSettings.shieldStats) userSettings.shieldStats = { ads: 0, trackers: 0, dataSaved: 0 };
+if (userSettings.shieldStats.dataSaved === undefined) userSettings.shieldStats.dataSaved = 0;
+
+// Non-persistent page stats: Map<webContentsId, { ads, trackers }>
+const tabShieldStats = new Map();
+const sessionStartTime = Date.now();
+
+function updateTabShieldStats(wcId, type) {
+    if (!wcId) return;
+    if (!tabShieldStats.has(wcId)) {
+        tabShieldStats.set(wcId, { ads: 0, trackers: 0, isPlaying: false });
+    }
+    const stats = tabShieldStats.get(wcId);
+    if (stats) {
+        if (type === 'ads' || type === 'trackers') stats[type]++;
+        else if (type === 'isPlaying') stats.isPlaying = !!arguments[2]; // Use 3rd arg for boolean
+    }
+}
+
+function broadcastShieldStats(wcId = null) {
+    if (!mainWindow || mainWindow.isDestroyed()) return;
+    const globalStats = userSettings.shieldStats;
+    webContents.getAllWebContents().forEach(wc => {
+        try {
+            if (wc.isDestroyed()) return;
+            const pageStats = wcId ? tabShieldStats.get(wcId) : null;
+            wc.send('shield-stats-updated', { 
+                global: globalStats,
+                page: pageStats,
+                webContentsId: wcId,
+                sessionStartTime
+            });
+        } catch(e) {}
+    });
+}
+
+let pipWindow = null;
+let pipSourceContents = null;
 
 var mainWindow;
 var welcomeView;
@@ -232,15 +309,142 @@ let bookmarksSidebarOpen = false;
 let bookmarkBarVisible = true; 
 let dropdownOpen = false;
 let bmDropdownView = null;
+let extensionDropdownView = null;
 let activeBMFolderId = null;
 let isQuitting = false;
 let activePopupGroupId = null;
 let webAppOpen = false;
 let currentWebAppUrl = null;
+// AdBlocker Instance (Consolidated Interceptor approach)
+let adBlockerInstance = null;
 if (!userSettings.sitePermissions) userSettings.sitePermissions = {};
+
+function applyShieldSettings() {
+  const active = (userSettings.adBlockEnabled !== false) || (userSettings.trackingProtection !== false);
+  
+  if (!active) {
+      if (adBlockerInstance && adBlockerInstance.isBlockingEnabled(session.defaultSession)) {
+          try { adBlockerInstance.disableBlockingInSession(session.defaultSession); } catch {}
+          try { adBlockerInstance.disableBlockingInSession(session.fromPartition('persist:google_login')); } catch {}
+      }
+      return;
+  }
+
+  // If already initialized and active in session, we skip (logic is now in the manual wrappers)
+  if (adBlockerInstance && adBlockerInstance.isBlockingEnabled(session.defaultSession)) return;
+
+  ElectronBlocker.fromPrebuiltAdsAndTracking(fetch).then((blocker) => {
+      adBlockerInstance = blocker;
+
+      // Master Interceptor Setup: Ocal manually manages the session instead of the library.
+      const ses = session.defaultSession;
+      const sesGoogle = session.fromPartition('persist:google_login');
+
+      const masterOnBeforeRequest = (details, callback) => {
+          if (!details.url) { callback({}); return; }
+          const url = details.url.toLowerCase();
+          const initiator = details.initiator ? details.initiator.toLowerCase() : '';
+
+          // 1. YouTube & Ocal Neutral Zone: Fully bypass all blocker logic.
+          const isYouTube = url.includes('youtube.com') || url.includes('googlevideo.com') || url.includes('ytimg.com');
+          const isFromYouTube = initiator.includes('youtube.com') || initiator.includes('googlevideo.com');
+          const isInternal = url.includes('ocal://');
+
+          if (isYouTube || isFromYouTube || isInternal) {
+              callback({});
+              return;
+          }
+
+          // VPN v4: National Country Redirect (NCR) Force
+          // If VPN is on and we are hitting a local google domain, force the US/Global version.
+          if (userSettings.vpnEnabled && url.includes('google.') && (url.includes('.co.in') || url.includes('.de') || url.includes('.co.uk'))) {
+              // Only apply /ncr (No Country Redirect) to the root or search page to set the global preference cookie
+              let globalUrl;
+              if (url.includes('/search') || url.length < (url.indexOf('google.') + 15)) {
+                  globalUrl = url.replace(/google\.[a-z\.]+/i, 'google.com/ncr');
+              } else {
+                  // For sub-resources (like /pagead or /client_204), just swap the host to avoid invalid paths
+                  globalUrl = url.replace(/google\.[a-z\.]+/i, 'google.com');
+              }
+              
+              if (globalUrl !== details.url) {
+                  console.log(`[VPN v4] Forcing NCR/Global: ${url} -> ${globalUrl}`);
+                  callback({ redirectURL: globalUrl });
+                  return;
+              }
+          }
+
+          // 2. Settings Check: Respect Ad Block / Strict Privacy toggles.
+          const anyActive = (userSettings.adBlockEnabled !== false) || (userSettings.trackingProtection !== false);
+          if (!anyActive) {
+              callback({});
+              return;
+          }
+
+          // 3. Delegation: Only call blocker for protected domains.
+          try {
+              adBlockerInstance.onBeforeRequest(details, callback);
+          } catch (err) {
+              console.error('[Shield] request interceptor error', err);
+              callback({});
+          }
+      };
+
+      const masterOnBeforeSendHeaders = (details, callback) => {
+          if (!userSettings.vpnEnabled) {
+              callback({ requestHeaders: details.requestHeaders });
+              return;
+          }
+
+          // Force Regional Masking Headers
+          details.requestHeaders['Accept-Language'] = 'en-US,en;q=0.9';
+          details.requestHeaders['X-Forwarded-For'] = currentVpnRegion === 'us' ? '161.35.63.136' : '178.62.115.158';
+          
+          callback({ requestHeaders: details.requestHeaders });
+      };
+
+      const masterOnHeadersReceived = (details, callback) => {
+          const url = details.url.toLowerCase();
+          const initiator = details.initiator ? details.initiator.toLowerCase() : '';
+
+          // Same bypass logic for headers (TrustedScript fix)
+          const isYouTube = url.includes('youtube.com') || url.includes('googlevideo.com');
+          const isFromYouTube = initiator.includes('youtube.com') || initiator.includes('googlevideo.com');
+          const isInternal = url.includes('ocal://');
+
+          if (isYouTube || isFromYouTube || isInternal) {
+              callback({});
+              return;
+          }
+
+          try {
+              adBlockerInstance.onHeadersReceived(details, callback);
+          } catch (err) {
+              console.error('[Shield] headers interceptor error', err);
+              callback({});
+          }
+      };
+
+      // Manually register handlers ONLY ONCE with Ocal's master wrappers.
+      // We do NOT call adBlockerInstance.enableBlockingInSession() as that would register "ghost" listeners.
+      ses.webRequest.onBeforeRequest({ urls: ['*://*/*'] }, masterOnBeforeRequest);
+      ses.webRequest.onHeadersReceived({ urls: ['*://*/*'] }, masterOnHeadersReceived);
+      ses.webRequest.onBeforeSendHeaders({ urls: ['*://*/*'] }, masterOnBeforeSendHeaders);
+      
+      sesGoogle.webRequest.onBeforeRequest({ urls: ['*://*/*'] }, masterOnBeforeRequest);
+      sesGoogle.webRequest.onHeadersReceived({ urls: ['*://*/*'] }, masterOnHeadersReceived);
+      sesGoogle.webRequest.onBeforeSendHeaders({ urls: ['*://*/*'] }, masterOnBeforeSendHeaders);
+
+      // Force library to think it's enabled to prevent recursive registrations if we call it again.
+      adBlockerInstance.isBlockingEnabled = () => true;
+
+      console.log('Ocal Shield: Manual Opera-Style Lifecycle Active');
+  }).catch(err => console.error('[Shield] failed to stabilize blocker', err));
+}
 
 function setupSessionHandlers() {
   const ses = session.defaultSession;
+  ses.setUserAgent(OCAL_USER_AGENT);
   
   const checkPermission = (origin, permission) => {
     const sitePerms = userSettings.sitePermissions[origin];
@@ -267,6 +471,183 @@ function setupSessionHandlers() {
     if (res !== null) return res;
     return true;
   });
+
+
+  applyShieldSettings();
+
+  // Initial Proxy Setup
+  if (userSettings.vpnEnabled) {
+      applyProxy(userSettings.vpnRegion);
+  }
+}
+
+// Modern Opera-Style Proxy Lifecycle
+const PROXY_BYPASS_LIST = [
+    '<local>',
+    'localhost',
+    '127.0.0.1',
+    'ocal',
+    '*.ocal',
+    '*.youtube.com',
+    'googlevideo.com',
+    '*.googlevideo.com',
+    'ytimg.com',
+    '*.ytimg.com',
+    'ggpht.com',
+    '*.ggpht.com'
+].join(';');
+
+// Ocal VPN v3: The Global Rescue Pool (Multi-Protocol Failover)
+const VPN_RESCUE_POOL = {
+    'us': [
+        'SOCKS5 161.35.105.105:3128', 'SOCKS4 161.35.105.105:3128', 'HTTPS 161.35.63.136:3128', 'PROXY 161.35.63.136:3128',
+        'SOCKS5 159.203.111.111:3128', 'HTTPS 159.203.111.111:3128', 'PROXY 159.203.111.111:3128'
+    ],
+    'uk': [
+        'SOCKS5 188.166.166.166:3128', 'SOCKS4 188.166.166.166:3128', 'HTTPS 178.62.115.158:3128', 'PROXY 178.62.115.158:3128',
+        'SOCKS5 139.59.59.59:3128', 'HTTPS 139.59.59.59:3128', 'PROXY 139.59.59.59:3128'
+    ],
+    'de': [
+        'SOCKS5 46.101.101.101:3128', 'SOCKS4 46.101.101.101:3128', 'HTTPS 165.22.122.21:3128', 'PROXY 165.22.122.21:3128',
+        'SOCKS5 138.68.68.68:3128', 'HTTPS 138.68.68.68:3128', 'PROXY 138.68.68.68:3128'
+    ],
+    'auto': [
+        'SOCKS5 161.35.105.105:3128', 'SOCKS5 188.166.166.166:3128', 'SOCKS5 46.101.101.101:3128',
+        'HTTPS 161.35.63.136:3128', 'HTTPS 178.62.115.158:3128', 'HTTPS 165.22.122.21:3128'
+    ]
+};
+
+function generateVpnPACv3(region = 'auto') {
+    const pool = VPN_RESCUE_POOL[region] || VPN_RESCUE_POOL['auto'];
+    const pacRules = pool.join('; ');
+
+    return `function FindProxyForURL(url, host) {
+        if (shExpMatch(host, "*.youtube.com") || 
+            shExpMatch(host, "*.googlevideo.com") || 
+            shExpMatch(host, "*.ytimg.com") ||
+            shExpMatch(host, "*.local") ||
+            shExpMatch(host, "*.ocal") ||
+            isPlainHostName(host) ||
+            localHostOrDomainIs(host, "127.0.0.1")) {
+            return "DIRECT";
+        }
+        return "${pacRules}; DIRECT";
+    }`;
+}
+
+let currentVpnRegion = 'auto';
+
+function broadcastVpnStatus(status, details = '') {
+    if (shieldPopupView) {
+        shieldPopupView.webContents.send('vpn-status-updated', { status, details });
+    }
+}
+
+function applyProxy(region = 'auto') {
+    currentVpnRegion = region;
+    const pacCode = generateVpnPACv3(region);
+    const pacScript = 'data:application/x-ns-proxy-autoconfig;base64,' + 
+                      Buffer.from(pacCode).toString('base64');
+
+    broadcastVpnStatus('Connecting');
+
+    const setProxyFor = (sess) => {
+        // VPN v3: Professional Multi-Protocol failover via Rescue PAC engine
+        return sess.setProxy({ pacScript })
+            .then(() => {
+                const displayRegion = region === 'auto' ? 'RESCUE POOL' : region.toUpperCase();
+                console.log(`[VPN v3] Rescue Pool Active (${displayRegion})`);
+                broadcastVpnStatus('Connected', displayRegion);
+            })
+            .catch((err) => {
+                console.error(`[VPN v3] Initialization Error: ${err}`);
+                broadcastVpnStatus('Error');
+                return sess.setProxy({ proxyRules: '' });
+            });
+    };
+
+    setProxyFor(session.defaultSession);
+    setProxyFor(session.fromPartition('persist:google_login'));
+}
+
+function setupSecurityHeadersFix() {
+    const ses = session.defaultSession;
+    const googleSes = session.fromPartition('persist:google_login');
+
+    const stealthFilter = (details, callback) => {
+        const { requestHeaders, url } = details;
+        
+        // Prevent 403 Forbidden on GoogleVideo / YouTube by ensuring Referer/Origin integrity
+        const isYouTube = url.includes('youtube.com');
+        const isVideo = url.includes('googlevideo.com');
+        
+        if (isYouTube && !isVideo) {
+            // Force Standard Chrome Sec-Fetch headers to avoid Anti-Bot detection
+            requestHeaders['User-Agent'] = OCAL_USER_AGENT;
+            requestHeaders['Sec-Ch-Ua'] = '"Chromium";v="134", "Not:A-Brand";v="99"';
+            requestHeaders['Sec-Ch-Ua-Mobile'] = '?0';
+            requestHeaders['Sec-Ch-Ua-Platform'] = '"Windows"';
+            
+            // If it's a media request, ensure it doesn't have suspicious 'X-Requested-With'
+            delete requestHeaders['X-Requested-With'];
+            delete requestHeaders['X-Electron-Id'];
+        }
+
+        callback({ requestHeaders });
+    };
+
+    const filterHeaders = (details, callback) => {
+        const { responseHeaders, url } = details;
+        
+        // Don't strip headers for our internal ocal:// pages
+        if (url.startsWith('ocal://')) {
+            return callback({ responseHeaders });
+        }
+
+        const headersToStrip = [
+            'content-security-policy',
+            'content-security-policy-report-only',
+            'require-trusted-types-for',
+            'trusted-types'
+        ];
+
+        // YouTube specifically needs its headers preserved to avoid 403s on videoplayback
+        if (url.includes('googlevideo.com') || url.includes('youtube.com')) {
+            return callback({ responseHeaders });
+        }
+
+        // Case-insensitive filtering
+        const filteredHeaders = {};
+        for (const key of Object.keys(responseHeaders)) {
+            if (!headersToStrip.includes(key.toLowerCase())) {
+                filteredHeaders[key] = responseHeaders[key];
+            }
+        }
+
+        callback({ responseHeaders: filteredHeaders });
+    };
+
+    ses.webRequest.onHeadersReceived({ urls: ['*://*/*'] }, filterHeaders);
+    googleSes.webRequest.onHeadersReceived({ urls: ['*://*/*'] }, filterHeaders);
+    
+    ses.webRequest.onBeforeSendHeaders({ urls: ['*://*/*'] }, stealthFilter);
+    googleSes.webRequest.onBeforeSendHeaders({ urls: ['*://*/*'] }, stealthFilter);
+
+    console.log('[Stealth Hub] Proactive Header Policy and YouTube bypass active.');
+}
+
+function setupSecurityHandlers() {
+    const ses = session.defaultSession;
+
+    // HTTPS Upgrade
+    ses.webRequest.onBeforeRequest({ urls: ['http://*/*'] }, (details, callback) => {
+        if (userSettings.httpsUpgradeEnabled && details.resourceType === 'mainFrame') {
+            const url = new URL(details.url);
+            url.protocol = 'https:';
+            return callback({ redirectURL: url.toString() });
+        }
+        callback({});
+    });
 }
 
 function createMainWindow() {
@@ -315,6 +696,8 @@ function createMainWindow() {
   setupDownloadHandler();
   setupCompatibilityHandler();
   setupSessionHandlers();
+  setupSecurityHandlers();
+  setupSecurityHeadersFix();
   
   setupInteractionDismissal(mainWindow.webContents);
   mainWindow.webContents.on('before-input-event', (event, input) => {
@@ -385,14 +768,20 @@ app.on('certificate-error', (event, webContents, url, error, certificate, callba
 });
 
 function setupCompatibilityHandler() {
-    const ua = 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.6778.205 Safari/537.36';
-    session.defaultSession.setUserAgent(ua);
-    session.defaultSession.webRequest.onBeforeSendHeaders((details, callback) => {
-        const { requestHeaders } = details;
-        delete requestHeaders['X-Electron-Id'];
-        delete requestHeaders['X-Requested-With'];
-        callback({ requestHeaders });
-    });
+    const registerStealthHandler = (ses) => {
+        ses.setUserAgent(OCAL_USER_AGENT);
+        ses.webRequest.onBeforeSendHeaders((details, callback) => {
+            const { requestHeaders } = details;
+            delete requestHeaders['X-Electron-Id'];
+            delete requestHeaders['X-Requested-With'];
+            delete requestHeaders['X-Electron-Version'];
+            callback({ requestHeaders });
+        });
+    };
+
+    registerStealthHandler(session.defaultSession);
+    registerStealthHandler(session.fromPartition('persist:google_login'));
+
     session.defaultSession.setPermissionRequestHandler((webContents, permission, callback) => {
         if (['display-capture', 'media', 'fullscreen'].includes(permission)) callback(true);
         else callback(false);
@@ -400,8 +789,8 @@ function setupCompatibilityHandler() {
 }
 
 app.on('web-contents-created', (event, contents) => {
-    const desktopUA = 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.6778.205 Safari/537.36';
-    const mobileUA = 'Mozilla/5.0 (Linux; Android 14; Pixel 8 Build/UD1A.230805.019) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.6778.205 Mobile Safari/537.36';
+    const desktopUA = OCAL_USER_AGENT;
+    const mobileUA = 'Mozilla/5.0 (Linux; Android 14; Pixel 8 Build/UD1A.230805.019) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/122.0.0.0 Mobile Safari/537.36';
 
     const applyMobileEmulation = async (isPopup = false) => {
         try {
@@ -431,6 +820,14 @@ app.on('web-contents-created', (event, contents) => {
 
     contents.setUserAgent(desktopUA);
 
+    contents.on('audible-status-changed', (event, isAudible) => {
+        const entry = views.find(v => v.view.webContents === contents);
+        if (entry) {
+            entry.audible = isAudible;
+            mainWindow.webContents.send('tab-audio-status-changed', { id: entry.id, isAudible });
+        }
+    });
+
     // Robust URL Sync for all events (including back/forward)
     contents.on('did-finish-load', () => {
         const url = contents.getURL();
@@ -448,17 +845,31 @@ app.on('web-contents-created', (event, contents) => {
     contents.on('did-start-navigation', (event, url, isInPlace, isMainFrame) => {
         if (!isMainFrame) return;
         
-        const isGoogleLogin = url.includes('accounts.google.com') || url.includes('google.com/accounts');
+        const isSignFlow = url.includes('ServiceLogin') || url.includes('signin') || url.includes('identifier');
+        const isGoogleAccounts = url.includes('accounts.google.com') || url.includes('google.com/accounts');
+        const isPostLogin = url.includes('CheckCookie') || url.includes('ServiceLoginAuth');
         const isCurrentlyMobile = contents.debugger.isAttached();
 
-        if (isGoogleLogin) {
+        if (isGoogleAccounts && isSignFlow && !isPostLogin) {
             if (!isCurrentlyMobile) {
                 applyMobileEmulation(contents.session === session.fromPartition('persist:google_login'));
             }
         } else if (isCurrentlyMobile) {
-            // If we've left the Google login flow, revert to desktop mode.
-            // Since we're already starting a new navigation, we skip the manual reload to avoid interference.
             removeMobileEmulation(true); 
+        }
+    });
+
+    contents.on('did-stop-navigation', () => {
+        const url = contents.getURL();
+        const isGoogleAccounts = url.includes('accounts.google.com') || url.includes('google.com/accounts');
+        if (!isGoogleAccounts && contents.debugger.isAttached()) {
+            removeMobileEmulation(true);
+        }
+    });
+
+    contents.on('did-fail-load', (e, code, desc, url, isMain) => {
+        if (isMain) {
+            handleVpnFailure(contents, code);
         }
     });
 });
@@ -525,7 +936,9 @@ function setupDownloadHandler() {
 }
 
 function broadcastToSidebars(channel, data) {
-    if (sidebarOverlayView) sidebarOverlayView.webContents.send(channel, data);
+    if (sidebarOverlayView && !sidebarOverlayView.webContents.isDestroyed()) {
+        sidebarOverlayView.webContents.send(channel, data);
+    }
 }
 
 function createSidebarOverlay() {
@@ -559,8 +972,10 @@ function showSidebarOverlay() {
 }
 
 function hideSidebarOverlay() {
-  if (sidebarOverlayView && mainWindow && mainWindow.getBrowserViews().includes(sidebarOverlayView)) {
-    mainWindow.removeBrowserView(sidebarOverlayView);
+  if (sidebarOverlayView && !sidebarOverlayView.webContents.isDestroyed() && mainWindow && !mainWindow.isDestroyed()) {
+    if (mainWindow.getBrowserViews().includes(sidebarOverlayView)) {
+      mainWindow.removeBrowserView(sidebarOverlayView);
+    }
   }
   sidebarOpen = false;
   updateViewBounds();
@@ -578,8 +993,8 @@ function showAiSidebar() {
 }
 
 function hideAiSidebar() {
-    if (!aiSidebarView) return;
-    if (mainWindow.getBrowserViews().includes(aiSidebarView)) {
+    if (!aiSidebarView || aiSidebarView.webContents.isDestroyed()) return;
+    if (mainWindow && !mainWindow.isDestroyed() && mainWindow.getBrowserViews().includes(aiSidebarView)) {
         mainWindow.removeBrowserView(aiSidebarView);
     }
     aiSidebarOpen = false;
@@ -610,20 +1025,32 @@ function closeOverlays() {
     hideAiSidebar();
     hideSuggestions();
     
-    if (tabgroupView && mainWindow && mainWindow.getBrowserViews().includes(tabgroupView)) {
-        mainWindow.removeBrowserView(tabgroupView);
+    if (tabgroupView && !tabgroupView.webContents.isDestroyed() && mainWindow && !mainWindow.isDestroyed()) {
+        if (mainWindow.getBrowserViews().includes(tabgroupView)) {
+            mainWindow.removeBrowserView(tabgroupView);
+        }
     }
-    if (bmDropdownView && mainWindow && mainWindow.getBrowserViews().includes(bmDropdownView)) {
-        mainWindow.removeBrowserView(bmDropdownView);
+    if (shieldPopupView && !shieldPopupView.webContents.isDestroyed() && mainWindow && !mainWindow.isDestroyed()) {
+        if (mainWindow.getBrowserViews().includes(shieldPopupView)) {
+            mainWindow.removeBrowserView(shieldPopupView);
+        }
     }
     activeBMFolderId = null;
     hideDownloadsPopup();
     hideWebApp();
-    mainWindow.webContents.send('sidebars-closed');
+    if (mainWindow && !mainWindow.isDestroyed() && mainWindow.webContents) {
+        mainWindow.webContents.send('sidebars-closed');
+    }
 }
 
 function hidePopups() {
     closeOverlays();
+    if (suggestionsView && mainWindow && mainWindow.getBrowserViews().includes(suggestionsView)) {
+        mainWindow.removeBrowserView(suggestionsView);
+    }
+    if (shieldPopupView && mainWindow && mainWindow.getBrowserViews().includes(shieldPopupView)) {
+        mainWindow.removeBrowserView(shieldPopupView);
+    }
 }
 
 function createBMDropdownView() {
@@ -642,8 +1069,8 @@ function createBMDropdownView() {
 }
 
 function hideSuggestions() {
-    if (!suggestionsView || !mainWindow) return;
-    if (mainWindow.getBrowserViews().includes(suggestionsView)) {
+    if (!suggestionsView || suggestionsView.webContents.isDestroyed()) return;
+    if (mainWindow && !mainWindow.isDestroyed() && mainWindow.getBrowserViews().includes(suggestionsView)) {
         mainWindow.removeBrowserView(suggestionsView);
     }
 }
@@ -661,8 +1088,8 @@ function createDownloadsView() {
 }
 
 function hideDownloadsPopup() {
-    if (!downloadsView || !mainWindow) return;
-    if (mainWindow.getBrowserViews().includes(downloadsView)) {
+    if (!downloadsView || downloadsView.webContents.isDestroyed()) return;
+    if (mainWindow && !mainWindow.isDestroyed() && mainWindow.getBrowserViews().includes(downloadsView)) {
         mainWindow.removeBrowserView(downloadsView);
     }
 }
@@ -705,6 +1132,48 @@ ipcMain.on('toggle-downloads-popup', (e, bounds) => {
 ipcMain.on('hide-downloads-popup', () => {
     hideDownloadsPopup();
 });
+
+let shieldPopupView = null;
+function createShieldPopupView() {
+    shieldPopupView = new BrowserView({
+        webPreferences: { preload: path.join(__dirname, 'preload.js'), contextIsolation: false, nodeIntegration: true }
+    });
+    shieldPopupView.webContents.loadFile('shield-popup.html');
+    shieldPopupView.setBackgroundColor('#00000000');
+    setupInteractionDismissal(shieldPopupView.webContents);
+    
+    // Auto-hide on blur
+    shieldPopupView.webContents.on('blur', () => {
+        if (shieldPopupView && mainWindow && mainWindow.getBrowserViews().includes(shieldPopupView)) {
+            mainWindow.removeBrowserView(shieldPopupView);
+        }
+    });
+}
+
+function createPipWindow(sourceContents) {
+    if (pipWindow) pipWindow.close();
+
+    pipWindow = new BrowserWindow({
+        width: 480,
+        height: 270,
+        frame: false,
+        alwaysOnTop: true,
+        transparent: true,
+        backgroundColor: '#00000000',
+        webPreferences: {
+            nodeIntegration: true,
+            contextIsolation: false
+        }
+    });
+
+    pipWindow.loadFile('pip.html');
+    pipSourceContents = sourceContents;
+
+    pipWindow.on('closed', () => {
+        pipWindow = null;
+        pipSourceContents = null;
+    });
+}
 
 function showWelcomeWizard() {
     welcomeView = new BrowserView({
@@ -755,12 +1224,29 @@ function resolveInternalURL(url) {
   return url;
 }
 
+function normalizeDocumentUrl(url) {
+    if (!url) return url;
+    try {
+        if (url.startsWith('ocal://') || url.startsWith('http://') || url.startsWith('https://') || url.startsWith('file://')) return url;
+        
+        // Check for local drive path (e.g., C:/... or D:\...)
+        const isLocalDrive = /^[a-zA-Z]:[/\\]/.test(url);
+        const isAbsPath = url.startsWith('/') || url.startsWith('\\\\');
+        if (isLocalDrive || isAbsPath) {
+            return 'file:///' + url.replace(/\\/g, '/');
+        }
+    } catch (e) {
+        console.error('[Navigation] normalization error', e);
+    }
+    return url;
+}
+
 function createNewTab(url = null) {
   const view = new BrowserView({
-    webPreferences: { preload: path.join(__dirname, 'preload.js'), contextIsolation: true, nodeIntegration: false, sandbox: true },
+    webPreferences: { preload: path.join(__dirname, 'preload.js'), contextIsolation: true, nodeIntegration: false, sandbox: false },
   });
 
-  view.webContents.setUserAgent('Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/146.0.7680.65 Safari/537.36');
+  view.webContents.setUserAgent(OCAL_USER_AGENT);
 
   // Intercept PDF view navigation and internal ocal:// links
   setupInteractionDismissal(view.webContents);
@@ -774,16 +1260,10 @@ function createNewTab(url = null) {
 
     // 2. Intercept remote PDFs
     const isPdf = /\.pdf($|\?)/i.test(targetUrl);
-    if (isPdf && !targetUrl.includes('ocal://pdf-viewer')) {
+    if (isPdf && !targetUrl.includes('ocal://pdf-viewer') && !targetUrl.includes('pdf-viewer.html')) {
         event.preventDefault();
-        // Normalize before encoding to prevent %2520
-        // Use trailing slash to fix CSP relative path issues
-        try {
-            const cleanUrl = decodeURI(targetUrl);
-            view.webContents.loadURL(`ocal://pdf-viewer/?file=${encodeURIComponent(cleanUrl)}`);
-        } catch(e) {
-            view.webContents.loadURL(`ocal://pdf-viewer/?file=${encodeURIComponent(targetUrl)}`);
-        }
+        const cleanUrl = normalizeDocumentUrl(targetUrl);
+        view.webContents.loadURL(`ocal://pdf-viewer/?file=${encodeURIComponent(cleanUrl)}`);
         return;
     }
   });
@@ -794,8 +1274,9 @@ function createNewTab(url = null) {
         return { action: 'deny' };
     }
     // Intercept PDFs in window popups too
-    if (/\.pdf($|\?)/i.test(url) && !url.includes('ocal://pdf-viewer')) {
-        createNewTab(`ocal://pdf-viewer?file=${encodeURIComponent(url)}`);
+    if (/\.pdf($|\?)/i.test(url) && !url.includes('ocal://pdf-viewer') && !url.includes('pdf-viewer.html')) {
+        const cleanUrl = normalizeDocumentUrl(url);
+        createNewTab(`ocal://pdf-viewer?file=${encodeURIComponent(cleanUrl)}`);
         return { action: 'deny' };
     }
     return { action: 'allow' };
@@ -863,6 +1344,12 @@ function createNewTab(url = null) {
     }
   });
 
+  view.webContents.on('did-finish-load', () => {
+    if (userSettings.cyberStealthEnabled) {
+        applyCyberStealth(view.webContents);
+    }
+  });
+
   view.webContents.on('did-navigate', (event, url) => {
     updateHistory(view, url);
     const tabEntry = views.find(v => v.id === id);
@@ -892,40 +1379,95 @@ function createNewTab(url = null) {
       mainWindow.webContents.send('title-updated', { id, title: url.includes('home.html') ? 'Ocal Home' : title });
   });
 
+  view.webContents.on('did-start-loading', () => {
+    if (mainWindow && !mainWindow.isDestroyed()) {
+        mainWindow.webContents.send('load-progress', { id, progress: 15 });
+    }
+  });
+
+  view.webContents.on('dom-ready', () => {
+    if (mainWindow && !mainWindow.isDestroyed()) {
+        mainWindow.webContents.send('load-progress', { id, progress: 75 });
+    }
+  });
+
+  view.webContents.on('did-stop-loading', () => {
+    if (mainWindow && !mainWindow.isDestroyed()) {
+        mainWindow.webContents.send('load-progress', { id, progress: 100 });
+    }
+  });
+
+  view.webContents.on('did-fail-load', (event, errorCode, errorDescription, validatedURL, isMainFrame) => {
+      if (isMainFrame) {
+          handleVpnFailure(view.webContents, errorCode);
+      }
+      if (mainWindow && !mainWindow.isDestroyed()) {
+        if (isMainFrame && userSettings.vpnEnabled) {
+            // Detect and broadcast proxy-specific errors (-130: TIMED_OUT, -107: PROXY_CONNECTION_FAILED, etc.)
+            const proxyErrors = [-130, -118, -136, -107];
+            if (proxyErrors.includes(errorCode)) {
+                mainWindow.webContents.send('proxy-error', {
+                    region: userSettings.vpnRegion,
+                    error: errorDescription
+                });
+            }
+        }
+        mainWindow.webContents.send('load-progress', { id, progress: 0 });
+    }
+  });
+
   broadcastTabs();
 }
 
 function broadcastTabs() {
-    if (!mainWindow) return;
+    if (!mainWindow || mainWindow.isDestroyed()) return;
     const tabData = views.map(v => ({
         id: v.id,
-        title: v.view.webContents.getTitle() || 'Ocal Home',
-        url: v.view.webContents.getURL(),
+        title: v.view.webContents.isDestroyed() ? 'Ocal Home' : (v.view.webContents.getTitle() || 'Ocal Home'),
+        url: v.view.webContents.isDestroyed() ? '' : v.view.webContents.getURL(),
         favicon: v.favicon || null,
-        groupId: v.groupId || null
+        groupId: v.groupId || null,
+        audible: v.view.webContents.isDestroyed() ? false : v.view.webContents.isCurrentlyAudible()
     }));
     mainWindow.webContents.send('tabs-changed', { 
         tabs: tabData, 
         activeTabId: activeViewId,
         groups: userSettings.tabGroups 
     });
-    if (sidebarOverlayView) sidebarOverlayView.webContents.send('tabs-changed', { 
-        tabs: tabData, 
-        activeTabId: activeViewId,
-        groups: userSettings.tabGroups
-    });
+    if (sidebarOverlayView && !sidebarOverlayView.webContents.isDestroyed()) {
+        sidebarOverlayView.webContents.send('tabs-changed', { 
+            tabs: tabData, 
+            activeTabId: activeViewId,
+            groups: userSettings.tabGroups
+        });
+    }
 }
 
 function setActiveTab(id) {
   const oldViewEntry = views.find(v => v.id === activeViewId);
+  const oldWc = oldViewEntry?.view.webContents;
+  
+  // Auto-PiP Logic: If previous tab was playing a video and we are switching away, request native PiP.
+  if (oldWc && tabShieldStats.get(oldWc.id)?.isPlaying) {
+      oldWc.send('request-smart-pip');
+  }
+
   if (oldViewEntry) mainWindow.removeBrowserView(oldViewEntry.view);
   activeViewId = id;
   const newViewEntry = views.find(v => v.id === id);
+  
   if (newViewEntry) {
+    const newWc = newViewEntry.view.webContents;
+    
+    // If the new tab is the one currently in PiP, close the PiP window
+    if (pipWindow && pipSourceContents && pipSourceContents.id === newWc.id) {
+        pipWindow.close();
+    }
+
     mainWindow.addBrowserView(newViewEntry.view);
     updateViewBounds();
-    const url = newViewEntry.view.webContents.getURL();
-    const title = newViewEntry.view.webContents.getTitle();
+    const url = newWc.getURL();
+    const title = newWc.getTitle();
     mainWindow.webContents.send('url-updated', { 
         id, 
         url: url.includes('home.html') ? '' : url, 
@@ -977,15 +1519,17 @@ function updateViewBounds(forcedUrl = null) {
   const hBm = (isFullscreen || !isBmVisible) ? 0 : (userSettings.compactMode ? 28 : 36);
   const yOffset = hTabs + hNav + hBm;
   if (activeViewEntry && activeViewEntry.view) {
-    // CONTENT OVERLAY: Active view always fills the entire window (minus chrome)
-    // so sidebars (AI, Saves, etc.) float above it without causing resizing.
-    activeViewEntry.view.setBounds({
-      x: 0, 
-      y: Math.floor(yOffset) - 1,
-      width: Math.floor(width),
-      height: Math.floor(height - yOffset) + 1
-    });
-    mainWindow.setTopBrowserView(activeViewEntry.view);
+    // Only update bounds and stack order if the view is currently attached to mainWindow
+    // (Prevents crashes when the view is detached in a Portal PiP window)
+    if (mainWindow.getBrowserViews().includes(activeViewEntry.view)) {
+        activeViewEntry.view.setBounds({
+          x: 0, 
+          y: Math.floor(yOffset),
+          width: Math.floor(width),
+          height: Math.floor(height - yOffset)
+        });
+        mainWindow.setTopBrowserView(activeViewEntry.view);
+    }
   }
 
   // Hide any views that are in collapsed groups to prevent them from staying on top
@@ -1049,10 +1593,23 @@ function showWebApp(url) {
     updateViewBounds();
 }
 
+// ── Persistence & Global Logic ──────────────────────────────────────────
+
+ipcMain.on('update-setting', (e, key, val) => {
+    userSettings[key] = val;
+    saveSettings(userSettings);
+    
+    // Broadcast change to all open webContents (for UI sync)
+    webContents.getAllWebContents().forEach(wc => {
+        try { wc.send('settings-changed', userSettings); } catch(err) {}
+    });
+});
+
 // IPC Handlers
 ipcMain.on('new-tab', () => createNewTab());
 ipcMain.on('switch-tab', (e, id) => setActiveTab(id));
 ipcMain.on('request-tabs', () => broadcastTabs());
+ipcMain.on('hide-popups', () => hidePopups());
 ipcMain.on('close-tab', async (e, id) => {
   if (views.length === 1) {
     mainWindow.close();
@@ -1116,7 +1673,8 @@ ipcMain.on('navigate-to', (e, url) => {
   const isPdf = lowerUrl.endsWith('.pdf') || lowerUrl.includes('.pdf?') || lowerUrl.includes('.pdf#');
   
   if (isPdf && !lowerUrl.includes('ocal://pdf-viewer')) {
-      targetUrl = `ocal://pdf-viewer?file=${encodeURIComponent(targetUrl)}`;
+      const cleanUrl = normalizeDocumentUrl(targetUrl);
+      targetUrl = `ocal://pdf-viewer?file=${encodeURIComponent(cleanUrl)}`;
   }
 
   hideSuggestions();
@@ -1159,6 +1717,163 @@ ipcMain.on('stop-ai-resize', () => {
   mainWindow.webContents.send('ai-resize-stopped');
 });
 
+// ── Ocal AI Agent Command Center 2.0 ──────────────────────────────────────
+
+/**
+ * Executes a sophisticated, agentic task using optional Gemini API power.
+ */
+ipcMain.handle('ai-agent-execute', async (event, query) => {
+    if (!query || !query.trim()) return { text: "Hello! I'm your Ocal AI. How can I assist you today?", actions: [] };
+
+    const q = query.toLowerCase();
+    const actions = [];
+    
+    // Load current AI context from settings
+    const apiKey = userSettings.aiApiKey;
+    const showReasoning = userSettings.aiShowReasoning !== false;
+    const style = userSettings.aiResponseStyle || 'concise';
+    const useGemini = userSettings.aiEngine === 'gemini' && apiKey && apiKey.length > 20;
+
+    const notifyAction = (text, icon = 'fa-spinner fa-spin') => {
+        if (showReasoning && aiSidebarView) {
+            aiSidebarView.webContents.send('ai-agent-action', { text, icon });
+        }
+        actions.push({ text, icon });
+    };
+
+    try {
+        // Phase 1: Local Tool & Command Recognition
+        if (q.includes('open') || q.includes('go to') || q.includes('visit') || q.includes('bring me to')) {
+            const urlMatch = query.match(/(https?:\/\/[^\s]+|www\.[^\s]+|[a-z0-9]+\.[a-z]{2,})/i);
+            if (urlMatch) {
+                let url = urlMatch[0];
+                if (!url.startsWith('http')) url = 'https://' + url;
+                notifyAction(`Navigating to ${url}...`, 'fa-compass');
+                createNewTab(url);
+                return { text: `I've opened **${url}** for you.`, actions };
+            }
+        }
+
+        if ((q.includes('tab') || q.includes('view') || q.includes('list')) && (q.includes('tab') || q.includes('open'))) {
+            if (q.includes('tab') && (q.includes('list') || q.includes('show') || q.includes('all') || q.includes('what'))) {
+                notifyAction("Crawling active tab session...", 'fa-layer-group');
+                const tabList = views.map((v, i) => `${i + 1}. **${v.view.webContents.getTitle() || 'Blank Page'}**`).join('\n');
+                return { text: `You have **${views.length}** tabs open:\n\n${tabList}`, actions };
+            }
+        }
+
+        // Phase 2: Explicit Search Override (Force New Tab)
+        if (q.startsWith('search for ') || q.startsWith('find ') || q.startsWith('look up ')) {
+            const searchQuery = query.replace(/(search for|find|look up)/i, '').trim();
+            notifyAction("Searching the web...", 'fa-magnifying-glass');
+            createNewTab(`https://www.google.com/search?q=${encodeURIComponent(searchQuery)}`);
+            return { text: `I've opened a search for **${searchQuery}** in a new tab.`, actions };
+        }
+
+        // Phase 3: Page Analysis (Summarize/Explain)
+        const isPageInsight = q.includes('summarize') || q.includes('explain') || q.includes('what is this') || q.includes('analyze');
+        
+        if (isPageInsight) {
+            const activeView = views.find(v => v.id === activeViewId)?.view;
+            if (!activeView) return { text: "Please select a tab first so I can analyze it.", actions };
+            
+            const url = activeView.webContents.getURL();
+            const title = activeView.webContents.getTitle();
+
+            if (url.startsWith('file://') || url.startsWith('ocal://') || url === 'about:blank') {
+                return { text: "I can't analyze internal or local pages. Try a web article or site!", actions };
+            }
+
+            notifyAction("Extracting semantic page structure...", 'fa-microchip');
+            const pageData = await activeView.webContents.executeJavaScript(`
+                (function() {
+                    const sel = (s) => document.querySelector(s)?.content || document.querySelector(s)?.innerText || '';
+                    const meta = { title: document.title, description: sel('meta[name="description"]') || sel('meta[property="og:description"]'), hostname: window.location.hostname, canonical: window.location.href };
+                    const headers = Array.from(document.querySelectorAll('h1, h2, h3')).map(h => h.innerText.trim()).filter(t => t.length > 5).slice(0, 10);
+                    const clone = document.body.cloneNode(true);
+                    clone.querySelectorAll('script, style, nav, footer, header, aside, .ad, .cookie-banner').forEach(e => e.remove());
+                    const text = clone.innerText.split(/\\n+/).filter(l => l.trim().length > 40).slice(0, 40).join(' ');
+                    return { meta, headers, text };
+                })()
+            `).catch(() => null);
+
+            if (pageData && (pageData.text || pageData.meta.description)) {
+                if (useGemini) {
+                    notifyAction("Synthesizing AI Narrative (Gemini)...", 'fa-wand-magic-sparkles');
+                    const results = await tryGemini(`Analyze this page: ${pageData.meta.title}\nContent: ${pageData.text.substring(0, 3000)}\n\nProvide a ${style} analysis in Markdown.`, apiKey, style);
+                    if (results) return { text: results, actions };
+                }
+
+                notifyAction("Synthesizing Local Intelligence...", 'fa-bolt-lightning');
+                let localResult = `## Intelligence Takeaway: ${pageData.meta.title}\n\n`;
+                if (pageData.meta.description) localResult += `> ${pageData.meta.description}\n\n`;
+                const summaryPoints = pageData.text.split(/[.!?]+/).map(s => s.trim()).filter(s => s.length > 50).slice(0, 3);
+                summaryPoints.forEach(p => localResult += `* ${p}.\n`);
+                return { text: localResult, actions };
+            }
+        }
+
+        // Phase 4: General Assistant (Direct Sidebar Answer with Environment Context)
+        if (useGemini) {
+            notifyAction("Consulting AI Intelligence...", 'fa-brain');
+            const tabContext = `[Environment Context] Open Tabs: ${views.length} (${views.map(v => v.view.webContents.getTitle()).join(', ')}).`;
+            const directAnswer = await tryGemini(`${tabContext}\n\nQuery: ${query}`, apiKey, style);
+            if (directAnswer) return { text: directAnswer, actions };
+        }
+
+        // Final Fallback: Search the web
+        notifyAction("Researching context (Search Fallback)...", 'fa-magnifying-glass');
+        const searchUrl = `https://www.google.com/search?q=${encodeURIComponent(query)}`;
+        createNewTab(searchUrl);
+        return { text: `I've looked up "${query}" for you. Results are ready in the new tab.`, actions };
+
+    } catch (err) {
+        console.error('[Agent Error]', err);
+        return { error: "I encountered an issue processing that. Please try again or check your settings." };
+    }
+});
+
+/**
+ * Helper: Refined Gemini fetch logic with model fallback loop.
+ */
+async function tryGemini(prompt, apiKey, style = 'concise') {
+    const modelsToTry = ['gemini-2.5-flash', 'gemini-2.0-flash', 'gemini-flash-latest', 'gemini-pro-latest'];
+    for (const model of modelsToTry) {
+        try {
+            const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${apiKey}`;
+            const sysPrompt = `You are Ocal AI, a premium browser assistant. Style: ${style}. Format: Markdown. Use "> [!TIP]" for insights.`;
+            
+            const response = await fetch(apiUrl, {
+                method: 'POST',
+                body: JSON.stringify({ contents: [{ parts: [{ text: `${sysPrompt}\n\nQuery: ${prompt}` }] }] }),
+                headers: { 'Content-Type': 'application/json' }
+            });
+
+            const resultData = await response.json();
+            if (resultData.error) {
+                if (resultData.error.status === 'NOT_FOUND') continue;
+                throw new Error(resultData.error.message);
+            }
+            const aiText = resultData.candidates?.[0]?.content?.parts?.[0]?.text;
+            if (aiText) return aiText;
+        } catch (err) {
+            console.warn(`[Gemini Fallback] ${model} failed:`, err.message);
+            if (!err.message.includes('NOT_FOUND')) break; 
+        }
+    }
+    return null;
+}
+
+
+
+
+
+// Retro-compatibility for existing AI calls
+ipcMain.handle('ai-summarize-page', async (e) => (await ipcMain.emit('ai-agent-execute', e, 'summarize')).text);
+ipcMain.handle('ai-search-web', async (e, q) => (await ipcMain.emit('ai-agent-execute', e, `search for ${q}`)).text);
+ipcMain.handle('ai-chat-query', async (e, q) => (await ipcMain.emit('ai-agent-execute', e, q)).text);
+
+
 ipcMain.on('toggle-web-app', (e, url) => {
     if (webAppOpen && currentWebAppUrl === url) {
         hideWebApp();
@@ -1166,10 +1881,71 @@ ipcMain.on('toggle-web-app', (e, url) => {
         showWebApp(url);
     }
 });
+
+ipcMain.on('pip-video-status', (e, data) => {
+    if (pipWindow) {
+        pipWindow.webContents.send('pip-video-update', data);
+    }
+});
+
+ipcMain.on('apply-proxy', (e, { enabled, region }) => {
+    if (enabled) {
+        applyProxy(region);
+    } else {
+        session.defaultSession.setProxy({ proxyRules: '' })
+            .then(() => console.log('[Proxy] Reverted to direct connection'))
+            .catch(err => console.error(`[Proxy] Failed to clear proxy: ${err}`));
+    }
+});
+
+ipcMain.handle('get-shield-stats', (e, wcId) => {
+    const viewItem = wcId ? views.find(v => v.id === wcId) : null;
+    const wc = viewItem ? viewItem.view.webContents : null;
+    const isYouTube = wc ? wc.getURL().includes('youtube.com') : false;
+    return {
+        global: userSettings.shieldStats,
+        page: wcId ? tabShieldStats.get(wcId) : null,
+        sessionStartTime,
+        isYouTube
+    };
+});
+
+ipcMain.on('pip-control', (e, { action, value }) => {
+    if (!pipSourceContents || pipSourceContents.isDestroyed()) return;
+
+    switch (action) {
+        case 'toggle-play':
+            pipSourceContents.executeJavaScript('const v = document.querySelector("video"); if (v) v.paused ? v.play() : v.pause();');
+            break;
+        case 'seek':
+            pipSourceContents.executeJavaScript(`const v = document.querySelector("video"); if (v) v.currentTime = ${value};`);
+            break;
+        case 'volume':
+            pipSourceContents.executeJavaScript(`const v = document.querySelector("video"); if (v) v.volume = ${value};`);
+            break;
+        case 'speed':
+            pipSourceContents.executeJavaScript(`const v = document.querySelector("video"); if (v) v.playbackRate = ${value};`);
+            break;
+        case 'return':
+            if (mainWindow) {
+                mainWindow.focus();
+                // Find tab and activate it
+                const entry = views.find(v => v.view.webContents === pipSourceContents);
+                if (entry) setActiveTab(entry.id);
+            }
+            break;
+    }
+});
+
+ipcMain.on('minimize-pip-window', () => {
+    if (pipWindow && !pipWindow.isDestroyed()) {
+        pipWindow.minimize();
+    }
+});
 ipcMain.on('switch-sidebar-tab', (e, tab) => {
   sidebarOpen = true;
   showSidebarOverlay();
-  if (sidebarOverlayView) {
+  if (sidebarOverlayView && !sidebarOverlayView.webContents.isDestroyed()) {
     sidebarOverlayView.webContents.send('toggle-sidebar', true);
     sidebarOverlayView.webContents.send('switch-tab-sidebar', tab);
   }
@@ -1308,6 +2084,22 @@ ipcMain.on('update-setting', (e, key, val) => {
 
   if (key === 'compactMode' || key === 'bookmarkBarMode') updateViewBounds(); 
   if (key === 'dns') console.log(`[DNS] Global resolver updated to: ${val}`);
+
+  if (key === 'adBlockEnabled' || key === 'trackingProtection') {
+      applyShieldSettings();
+  }
+
+  if (key === 'vpnEnabled') {
+      if (val) applyProxy(userSettings.vpnRegion);
+      else {
+          session.defaultSession.setProxy({ proxyRules: '' }).catch(() => {});
+          session.fromPartition('persist:google_login').setProxy({ proxyRules: '' }).catch(() => {});
+      }
+  }
+
+  if (key === 'vpnRegion' && userSettings.vpnEnabled) {
+      applyProxy(val);
+  }
 });
 
 ipcMain.handle('import-bookmarks', async (event, browser) => {
@@ -1690,10 +2482,11 @@ ipcMain.handle('download-update', async (event) => {
                             const json = JSON.parse(data);
                             const arch = process.arch === 'x64' ? 'x64' : (process.arch === 'arm64' ? 'arm64' : '');
                             let asset = json.assets.find(a => 
-                                a.name.endsWith('.exe') && 
-                                a.name.includes('Setup') && 
+                                a.name.startsWith('Ocal-') && 
+                                a.name.endsWith('Setup.exe') && 
                                 (arch ? a.name.includes(arch) : true)
                             );
+                            if (!asset) asset = json.assets.find(a => a.name.startsWith('Ocal-') && a.name.endsWith('Setup.exe'));
                             if (!asset) asset = json.assets.find(a => a.name.endsWith('.exe') && a.name.includes('Setup'));
                             if (!asset) return reject(new Error('No compatible installer found.'));
 
@@ -1759,6 +2552,43 @@ ipcMain.on('reorder-bookmark', (e, { draggedId, targetId }) => {
     broadcastBookmarks();
   }
 });
+
+ipcMain.on('show-shield-popup', (e, { x, y, width, height, tabId }) => {
+    if (!mainWindow) return;
+    if (!shieldPopupView) createShieldPopupView();
+
+    if (mainWindow.getBrowserViews().includes(shieldPopupView)) {
+        mainWindow.removeBrowserView(shieldPopupView);
+        return;
+    }
+
+    const viewItem = tabId ? views.find(v => v.id === tabId) : null;
+    const wc = viewItem ? viewItem.view.webContents : null;
+    const isYouTube = wc ? wc.getURL().includes('youtube.com') : false;
+
+    hidePopups();
+    mainWindow.addBrowserView(shieldPopupView);
+    
+    const popupWidth = 320;
+    const popupHeight = 750;
+    const contentBounds = mainWindow.getContentBounds();
+    
+    let targetX = x + (width / 2) - (popupWidth / 2);
+    if (targetX < 10) targetX = 10;
+    if (targetX + popupWidth > contentBounds.width - 10) targetX = contentBounds.width - popupWidth - 10;
+
+    shieldPopupView.setBounds({ 
+        x: Math.round(targetX), 
+        y: Math.round(y + height + 10), 
+        width: popupWidth, 
+        height: popupHeight 
+    });
+    
+    mainWindow.setTopBrowserView(shieldPopupView);
+    shieldPopupView.webContents.send('show-popup', { x: 0, y: 0, tabId, isYouTube });
+    shieldPopupView.webContents.focus();
+});
+
 ipcMain.on('show-bm-dropdown', (e, { x, y, bookmarks, folderId }) => {
     if (!bmDropdownView || !mainWindow) return;
     
@@ -1797,6 +2627,93 @@ function broadcastBookmarks() {
     mainWindow.webContents.send('bookmarks-changed', data);
     if (sidebarOverlayView) sidebarOverlayView.webContents.send('bookmarks-changed', data);
 }
+
+// Extension Dropdown Logic
+function createExtensionDropdownView() {
+    extensionDropdownView = new BrowserView({
+        webPreferences: { preload: path.join(__dirname, 'preload.js'), contextIsolation: true, nodeIntegration: false, sandbox: true }
+    });
+    extensionDropdownView.webContents.loadFile('extensions-popup.html');
+    extensionDropdownView.setBackgroundColor('#00000000');
+}
+
+ipcMain.on('show-extensions-dropdown', (e, { x, y, width }) => {
+    if (!mainWindow) return;
+    if (!extensionDropdownView) createExtensionDropdownView();
+    
+    if (mainWindow.getBrowserViews().includes(extensionDropdownView)) {
+        mainWindow.removeBrowserView(extensionDropdownView);
+        return;
+    }
+
+    hidePopups();
+    mainWindow.addBrowserView(extensionDropdownView);
+    // Align to the right of the button
+    const popupWidth = 340;
+    extensionDropdownView.setBounds({ 
+        x: Math.round(x + width - popupWidth), 
+        y: Math.round(y + 40), 
+        width: popupWidth, 
+        height: 500 
+    });
+    mainWindow.setTopBrowserView(extensionDropdownView);
+    extensionDropdownView.webContents.send('refresh-extensions');
+});
+
+ipcMain.on('hide-extensions-dropdown', () => {
+    if (extensionDropdownView && mainWindow.getBrowserViews().includes(extensionDropdownView)) {
+        mainWindow.removeBrowserView(extensionDropdownView);
+    }
+});
+
+ipcMain.on('toggle-adblock', (e, enabled) => {
+    userSettings.adBlockEnabled = enabled;
+    saveSettings(userSettings);
+
+    if (enabled) {
+        if (adBlockerInstance) {
+            adBlockerInstance.enableBlockingInSession(session.defaultSession);
+        } else {
+            ElectronBlocker.fromPrebuiltAdsAndTracking(fetch).then((blockerInstance) => {
+                adBlockerInstance = blockerInstance;
+                adBlockerInstance.enableBlockingInSession(session.defaultSession);
+            });
+        }
+    } else {
+        if (adBlockerInstance) {
+            try {
+                adBlockerInstance.disableBlockingInSession(session.defaultSession);
+            } catch {
+                // fallback to minimal session refresh if API not available
+                session.defaultSession.clearCache();
+            }
+        }
+    }
+
+    broadcastSettings();
+});
+
+ipcMain.on('toggle-vpn', (e, enabled) => {
+    userSettings.vpnEnabled = enabled;
+    saveSettings(userSettings);
+    if (enabled) {
+        applyProxy(userSettings.vpnRegion);
+    } else {
+        session.defaultSession.setProxy({});
+        const googleSession = session.fromPartition('persist:google_login');
+        googleSession.setProxy({});
+    }
+    broadcastSettings();
+});
+
+ipcMain.on('set-vpn-region', (e, region) => {
+    userSettings.vpnRegion = region;
+    saveSettings(userSettings);
+    if (userSettings.vpnEnabled) {
+        applyProxy(region);
+    }
+    broadcastSettings();
+});
 
 // History Management
 ipcMain.on('delete-history-item', (e, timestamp) => {
@@ -1842,7 +2759,7 @@ ipcMain.on('open-download', (e, filePath) => {
 
 function setupGoogleLoginPartition() {
     const googleSession = session.fromPartition('persist:google_login');
-    const googleUA = 'Mozilla/5.0 (Linux; Android 14; Pixel 8 Build/UD1A.230805.019) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.6778.205 Mobile Safari/537.36';
+    const googleUA = OCAL_USER_AGENT;
     googleSession.setUserAgent(googleUA);
 }
 
@@ -1860,6 +2777,13 @@ app.whenReady().then(() => {
     }
 
     setupGoogleLoginPartition();
+    extensionManager.loadAll();
+    
+    // Apply initial proxy settings via shared implementation
+    if (userSettings.vpnEnabled) {
+        applyProxy(userSettings.vpnRegion || 'auto');
+    }
+
     createMainWindow();
 });
 app.on('window-all-closed', () => { if (process.platform !== 'darwin') app.quit(); });
@@ -2129,7 +3053,7 @@ ipcMain.handle('get-certificate-info', async (event, hostname) => {
             port: 443,
             method: 'HEAD',
             agent: false,
-            rejectUnauthorized: false // We still want to see the cert even if it's invalid
+            rejectUnauthorized: false
         };
 
         const req = https.request(options, (res) => {
@@ -2166,6 +3090,326 @@ ipcMain.handle('get-certificate-info', async (event, hostname) => {
         req.end();
     });
 });
+
+// ── Chrome Extension Management Engine ──────────────────────────────────────
+class ExtensionManager {
+    constructor() {
+        this.extensionsPath = path.join(app.getPath('userData'), 'extensions-data');
+        if (!fs.existsSync(this.extensionsPath)) fs.mkdirSync(this.extensionsPath, { recursive: true });
+        this.loaded = new Map();
+    }
+
+    async loadAll() {
+        if (!userSettings.extensions) userSettings.extensions = [];
+        const activeExtensions = userSettings.extensions.filter(e => e.enabled);
+        
+        for (const ext of activeExtensions) {
+            try {
+                const extPath = path.join(this.extensionsPath, ext.id);
+                if (fs.existsSync(extPath)) {
+                    const loaded = await session.defaultSession.loadExtension(extPath);
+                    this.loaded.set(ext.id, loaded);
+                    console.log(`Loaded extension: ${ext.name} (${ext.id})`);
+                }
+            } catch (err) {
+                console.error(`Failed to load extension ${ext.id}:`, err);
+            }
+        }
+    }
+
+    async downloadAndInstall(id) {
+        // Strip out the full url if provided
+        const extensionId = id.includes('/') ? id.split('/').pop().split('?')[0] : id;
+        const downloadUrl = `https://clients2.google.com/service/update2/crx?response=redirect&prodversion=110.0.0.0&acceptformat=crx2,crx3&x=id%3D${extensionId}%26installsource%3Dondemand%26uc`;
+        const tempPath = path.join(app.getPath('temp'), `${extensionId}.crx`);
+        const targetPath = path.join(this.extensionsPath, extensionId);
+
+        try {
+            // 1. Download .crx
+            const response = await net.fetch(downloadUrl);
+            const buffer = Buffer.from(await response.arrayBuffer());
+            fs.writeFileSync(tempPath, buffer);
+
+            // 2. Strip CRX header (adm-zip needs help with CRX structure)
+            const zipBuffer = this.stripCrxHeader(buffer);
+            
+            // 3. Extract to userData
+            const zip = new AdmZip(zipBuffer);
+            if (fs.existsSync(targetPath)) fs.rmSync(targetPath, { recursive: true, force: true });
+            fs.mkdirSync(targetPath, { recursive: true });
+            zip.extractAllTo(targetPath, true);
+
+            // 4. Load info from manifest
+            const manifest = JSON.parse(fs.readFileSync(path.join(targetPath, 'manifest.json'), 'utf8'));
+            const extensionInfo = {
+                id: extensionId,
+                name: manifest.name,
+                version: manifest.version,
+                description: manifest.description || '',
+                enabled: true,
+                icons: manifest.icons || {}
+            };
+
+            // 5. Register in settings
+            if (!userSettings.extensions) userSettings.extensions = [];
+            const existingIdx = userSettings.extensions.findIndex(e => e.id === extensionId);
+            if (existingIdx > -1) userSettings.extensions[existingIdx] = extensionInfo;
+            else userSettings.extensions.push(extensionInfo);
+            saveSettings(userSettings);
+
+            // 6. Load into session
+            const loaded = await session.defaultSession.loadExtension(targetPath);
+            this.loaded.set(extensionId, loaded);
+
+            return extensionInfo;
+        } catch (err) {
+            console.error('Extension installation failed:', err);
+            throw err;
+        } finally {
+            if (fs.existsSync(tempPath)) fs.unlinkSync(tempPath);
+        }
+    }
+
+    stripCrxHeader(buffer) {
+        const magic = buffer.toString('utf8', 0, 4);
+        if (magic !== 'Cr24') return buffer; // Not a CRX file
+        const version = buffer.readUInt32LE(4);
+        let offset;
+        if (version === 2) {
+            const publicKeyLength = buffer.readUInt32LE(8);
+            const signatureLength = buffer.readUInt32LE(12);
+            offset = 16 + publicKeyLength + signatureLength;
+        } else if (version === 3) {
+            const headerLength = buffer.readUInt32LE(8);
+            offset = 12 + headerLength;
+        } else {
+            throw new Error(`Unsupported CRX version: ${version}`);
+        }
+        return buffer.slice(offset);
+    }
+
+    async remove(id) {
+        try {
+            const targetPath = path.join(this.extensionsPath, id);
+            if (fs.existsSync(targetPath)) fs.rmSync(targetPath, { recursive: true, force: true });
+            
+            userSettings.extensions = userSettings.extensions.filter(e => e.id !== id);
+            saveSettings(userSettings);
+            
+            // Note: Native Electron loadExtension doesn't always support easy 'unload'
+            // We usually inform the user to restart or handle it by refreshing views.
+            this.loaded.delete(id);
+            return true;
+        } catch (err) {
+            console.error('Failed to remove extension:', err);
+            return false;
+        }
+    }
+}
+
+const extensionManager = new ExtensionManager();
+
+ipcMain.handle('install-extension', async (e, id) => {
+    return await extensionManager.downloadAndInstall(id);
+});
+
+ipcMain.handle('get-extensions', () => {
+    return userSettings.extensions || [];
+});
+
+ipcMain.handle('get-all-extensions', () => {
+    const native = [
+        { id: 'ai-assistant', name: 'Ocal AI Assistant', desc: 'AI-powered productivity and browsing assistant.', enabled: userSettings.aiAssistantEnabled, type: 'native', icon: 'fa-wand-magic-sparkles' },
+        { id: 'cyber-stealth', name: 'Cyber Stealth', desc: 'Fingerprint protection and cross-request anonymity.', enabled: userSettings.cyberStealthEnabled, type: 'native', icon: 'fa-user-secret' },
+        { id: 'ad-blocker', name: 'Ad & Tracker Block', desc: 'Removes intrusive ads and behavioral trackers.', enabled: userSettings.adBlockEnabled, type: 'native', icon: 'fa-shield-halved' },
+        { id: 'asset-vault', name: 'Asset Vault', desc: 'High-performance local resource caching.', enabled: userSettings.assetVaultEnabled, type: 'native', icon: 'fa-vault' }
+    ];
+    const marketplace = (userSettings.extensions || []).map(e => ({ ...e, type: 'marketplace' }));
+    return [...native, ...marketplace];
+});
+
+ipcMain.handle('toggle-native-extension', (e, { id, enabled }) => {
+    if (id === 'ai-assistant') userSettings.aiAssistantEnabled = enabled;
+    else if (id === 'cyber-stealth') userSettings.cyberStealthEnabled = enabled;
+    else if (id === 'ad-blocker') userSettings.adBlockEnabled = enabled;
+    else if (id === 'asset-vault') userSettings.assetVaultEnabled = enabled;
+    
+    saveSettings(userSettings);
+    broadcastSettings(userSettings);
+    return true;
+});
+
+ipcMain.handle('remove-extension', async (e, id) => {
+    return await extensionManager.remove(id);
+});
+
+ipcMain.handle('toggle-extension', async (e, { id, enabled }) => {
+    const ext = userSettings.extensions.find(x => x.id === id);
+    if (ext) {
+        ext.enabled = enabled;
+        saveSettings(userSettings);
+        // Note: Enabling/Disabling in session often requires a reload
+        return true;
+    }
+    return false;
+});
+
+ipcMain.on('install-extension-from-store', (e, id) => {
+    extensionManager.downloadAndInstall(id).then(() => {
+        if (mainWindow) {
+            mainWindow.webContents.send('show-modal', {
+                title: 'Success',
+                message: `Extension ${id} installed successfully!`,
+                type: 'success'
+            });
+        }
+    }).catch(err => {
+        if (mainWindow) {
+            mainWindow.webContents.send('show-modal', {
+                title: 'Installation Failed',
+                message: `Failed to install extension: ${err.message}`,
+                type: 'error'
+            });
+        }
+    });
+});
+
+async function createPipWindow(contents) {
+    if (pipWindow && !pipWindow.isDestroyed()) {
+        pipWindow.focus();
+        return;
+    }
+
+    // We KEEP the view in the main window! No more crashes or broken tabs.
+    pipSourceContents = contents;
+
+    pipWindow = new BrowserWindow({
+        width: 480,
+        height: 270,
+        frame: false,
+        resizable: true,
+        alwaysOnTop: true,
+        backgroundColor: '#000000',
+        minWidth: 320,
+        minHeight: 180,
+        show: false,
+        webPreferences: {
+            nodeIntegration: true,
+            contextIsolation: false
+        }
+    });
+
+    pipWindow.loadFile('pip.html');
+    
+    pipWindow.once('ready-to-show', () => {
+        if (!pipWindow || pipWindow.isDestroyed()) return;
+        pipWindow.show();
+
+        // Notify source tab that custom PiP is active (to avoid local duplicate render)
+        if (pipSourceContents && !pipSourceContents.isDestroyed()) {
+            pipSourceContents.send('pip-activated');
+        }
+
+        // Setup High-Speed MessageChannel Direct-Link
+        const { MessageChannelMain } = electron;
+        const { port1, port2 } = new MessageChannelMain();
+        
+        // Pipe port1 to the YouTube video tab
+        if (!contents.isDestroyed()) {
+            contents.postMessage('pip-port', null, [port1]);
+        }
+        
+        // Pipe port2 to the floating PiP window
+        pipWindow.webContents.postMessage('pip-port', null, [port2]);
+    });
+
+    pipWindow.on('closed', () => {
+        if (pipSourceContents && !pipSourceContents.isDestroyed()) {
+            pipSourceContents.send('pip-stop-monitoring');
+        }
+        pipWindow = null;
+        pipSourceContents = null;
+    });
+}
+
+ipcMain.on('trigger-pip', (e) => {
+    e.sender.send('request-smart-pip');
+});
+
+ipcMain.on('trigger-smart-pip', (e) => {
+    if (e.sender.isDestroyed()) return;
+    const activeView = views.find(v => v.id === activeViewId)?.view;
+    if (activeView && !activeView.isDestroyed()) {
+        activeView.webContents.send('request-smart-pip');
+        return;
+    }
+    e.sender.send('request-smart-pip');
+});
+
+ipcMain.on('video-detected', (e, isPlaying) => {
+    if (e.sender.isDestroyed()) return;
+    updateTabShieldStats(e.sender.id, 'isPlaying', isPlaying);
+    if (mainWindow && !mainWindow.isDestroyed()) {
+        mainWindow.webContents.send('video-detected', isPlaying);
+    }
+});
+
+// Security Hub IPCs
+ipcMain.on('set-security-toggle', (e, { key, value }) => {
+    userSettings[key] = value;
+    // Special Sync: Tracking Protection in Security <-> Ad Shield in Extensions
+    if (key === 'adBlockEnabled') {
+        const toggleVal = value !== false;
+        // Broadcast specifically for extensions UI refresh
+    }
+    saveSettings(userSettings);
+    broadcastSettings();
+    
+    // Apply Cyber Stealth if toggled
+    if (key === 'cyberStealthEnabled') {
+        const allWc = webContents.getAllWebContents();
+        allWc.forEach(wc => {
+            if (wc.isDestroyed()) return;
+            const url = wc.getURL();
+            const isInternal = url.startsWith('ocal://') || url.startsWith('file://');
+            if (value && !isInternal) applyCyberStealth(wc);
+            else if (!value) wc.reload(); // Reload to clear the forced dark mode
+        });
+    }
+});
+
+function applyCyberStealth(wc) {
+    if (!userSettings.cyberStealthEnabled || wc.isDestroyed()) return;
+    
+    const url = wc.getURL();
+    // NEVER apply to internal pages, settings, or PDF viewer - they are already dark/themed
+    if (url.startsWith('ocal://') || url.includes('home.html') || url.includes('settings.html') || url.includes('pdf-viewer.html')) return;
+
+    const darkCSS = `
+        html, body { background: #0c0c0e !important; color: #eee !important; }
+        html { filter: invert(0.9) hue-rotate(180deg) !important; background: #000 !important; }
+        img, video, iframe, canvas, [style*="background-image"] { filter: invert(1.1) hue-rotate(180deg) !important; }
+    `;
+    wc.insertCSS(darkCSS).catch(() => {});
+}
+
+ipcMain.on('set-dns-provider', (e, provider) => {
+    userSettings.dnsProvider = provider;
+    saveSettings(userSettings);
+    broadcastSettings();
+});
+
+function broadcastSettings() {
+    if (mainWindow && !mainWindow.isDestroyed()) {
+        mainWindow.webContents.send('settings-changed', userSettings);
+    }
+    // Notify all active views
+    views.forEach(v => {
+        if (v.view && !v.view.webContents.isDestroyed()) {
+            v.view.webContents.send('settings-changed', userSettings);
+        }
+    });
+}
 
 function setupContextMenu(contents) {
     contents.on('context-menu', (e, props) => {

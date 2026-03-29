@@ -1,117 +1,442 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8">
-<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' https://cdnjs.cloudflare.com https://unpkg.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com https://cdnjs.cloudflare.com; font-src 'self' https://fonts.gstatic.com https://cdnjs.cloudflare.com; img-src 'self' data: https:; connect-src 'self' https://suggestqueries.google.com https://api.github.com https://cdnjs.cloudflare.com https://unpkg.com;">
-<title>Ocal AI Sidebar</title>
-<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-<style>
-    :root {
-        --accent: #a855f7;
-        --accent-glow: rgba(168, 85, 247, 0.4);
-        --bg: #0c0c0e;
-        --panel-bg: rgba(15, 15, 18, 0.75);
-        --border: rgba(255,255,255,0.08);
-        --text: #ffffff;
-    }
-    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-    html, body {
-        background: transparent;
-        overflow: hidden;
-        height: 100vh;
-        width: 100vw;
-        font-family: 'Inter', sans-serif;
-        display: flex;
-    }
-    
-    /* Resize Handle */
-    #resize-handle {
-        width: 6px;
-        height: 100%;
-        cursor: ew-resize;
-        background: transparent;
-        transition: background 0.2s;
-        z-index: 100;
-        flex-shrink: 0;
-    }
-    #resize-handle:hover, #resize-handle.active {
-        background: var(--accent-glow);
-    }
+    <meta charset="UTF-8">
+    <meta http-equiv="Content-Security-Policy" content="default-src 'self' 'unsafe-inline' 'unsafe-eval' https: data:; script-src 'self' 'unsafe-inline' 'unsafe-eval' https://cdnjs.cloudflare.com https://unpkg.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com https://cdnjs.cloudflare.com; font-src 'self' https://fonts.gstatic.com https://cdnjs.cloudflare.com;">
+    <title>Ocal AI Assistant</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&family=Outfit:wght@400;500;600;700&family=JetBrains+Mono&display=swap" rel="stylesheet">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/marked/9.1.5/marked.min.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/github-dark.min.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
+    <style>
+        :root {
+            --accent: #a855f7;
+            --accent-glow: rgba(168, 85, 247, 0.4);
+            --chrome: #0c0c0e; /* Solid Obsidian */
+            --border: rgba(255, 255, 255, 0.08);
+            --border-heavy: rgba(255, 255, 255, 0.15);
+            --text: #ffffff;
+            --text-dim: rgba(255, 255, 255, 0.6);
+            --text-muted: rgba(255, 255, 255, 0.3);
+            --panel-bg: #0c0c0e; /* Solid Matching Topbar */
+            --card-bg: rgba(255, 255, 255, 0.03);
+            --input-bg: rgba(255, 255, 255, 0.05);
+            --title-font: 'Outfit', -apple-system, sans-serif;
+            --font: 'Inter', -apple-system, sans-serif;
+            --mono: 'JetBrains Mono', monospace;
+        }
 
-    .ai-panel {
-        flex: 1;
-        background: var(--panel-bg);
-        backdrop-filter: blur(32px) saturate(180%);
-        border-left: 1px solid var(--border);
-        display: flex;
-        flex-direction: column;
-        overflow: hidden;
-        border-radius: 0 0 0 20px;
-        box-shadow: -10px 0 30px rgba(0,0,0,0.5);
-    }
+        *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+        
+        body {
+            background: transparent;
+            overflow: hidden;
+            height: 100vh;
+            width: 100vw;
+            font-family: var(--font);
+            display: flex;
+            color: var(--text);
+            -webkit-font-smoothing: antialiased;
+        }
 
-    .ai-header {
-        height: 48px;
-        display: flex;
-        align-items: center;
-        justify-content: space-between;
-        padding: 0 16px;
-        border-bottom: 1px solid var(--border);
-        flex-shrink: 0;
-    }
-    .ai-title {
-        font-size: 13px;
-        font-weight: 700;
-        color: #fff;
-        display: flex;
-        align-items: center;
-        gap: 8px;
-    }
-    .ai-title i { color: var(--accent); }
-    
-    .ai-btn {
-        width: 28px;
-        height: 28px;
-        border-radius: 8px;
-        border: none;
-        background: rgba(255,255,255,0.04);
-        color: rgba(255,255,255,0.6);
-        cursor: pointer;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        font-size: 11px;
-        transition: all 0.2s;
-    }
-    .ai-btn:hover { background: rgba(255,255,255,0.08); color: #fff; }
+        /* Resize Handle */
+        #resize-handle {
+            width: 6px;
+            height: 100%;
+            cursor: ew-resize;
+            background: transparent;
+            z-index: 100;
+            flex-shrink: 0;
+            transition: background 0.2s;
+        }
+        #resize-handle:hover, #resize-handle.active {
+            background: rgba(168, 85, 247, 0.2);
+        }
 
-    .ai-content {
-        flex: 1;
-        position: relative;
-        background: #000;
-    }
-    webview {
-        width: 100%;
-        height: 100%;
-        border: none;
-    }
-</style>
+        .ai-panel {
+            flex: 1;
+            background: var(--panel-bg);
+            border-left: 1px solid var(--border);
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+            position: relative;
+            box-shadow: -10px 0 40px rgba(0, 0, 0, 0.5);
+        }
+
+        .ai-header {
+            height: 48px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0 16px;
+            border-bottom: 1px solid var(--border);
+            flex-shrink: 0;
+            background: #08080a;
+            z-index: 10;
+        }
+
+        .ai-brand {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .ai-logo {
+            width: 20px;
+            height: 20px;
+            background: var(--accent);
+            border-radius: 4px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #000;
+            font-size: 10px;
+            transform: rotate(-15deg);
+        }
+
+        .ai-title-text h1 {
+            font-family: var(--title-font);
+            font-size: 13px;
+            font-weight: 700;
+            letter-spacing: -0.1px;
+            text-transform: uppercase;
+            color: var(--text-dim);
+            opacity: 0.8;
+        }
+
+        .ai-controls {
+            display: flex;
+            gap: 6px;
+        }
+
+        .control-btn {
+            width: 28px;
+            height: 28px;
+            border-radius: 6px;
+            border: none;
+            background: transparent;
+            color: var(--text-dim);
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.2s;
+            font-size: 11px;
+        }
+
+        .control-btn:hover {
+            background: rgba(255, 255, 255, 0.08);
+            color: #fff;
+        }
+
+        .ai-chat-view {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            min-height: 0;
+            z-index: 10;
+        }
+
+        .messages-scroll {
+            flex: 1;
+            overflow-y: auto;
+            padding: 20px 16px;
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+            scroll-behavior: smooth;
+        }
+
+        /* Custom Scrollbar */
+        .messages-scroll::-webkit-scrollbar { width: 4px; }
+        .messages-scroll::-webkit-scrollbar-track { background: transparent; }
+        .messages-scroll::-webkit-scrollbar-thumb { 
+            background: rgba(255,255,255,0.08); 
+            border-radius: 10px; 
+        }
+
+        .msg-group {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            max-width: 92%;
+            animation: message-in 0.3s ease-out forwards;
+        }
+
+        @keyframes message-in {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .msg-group.user { align-self: flex-end; }
+        .msg-group.ai { align-self: flex-start; }
+
+        .msg-bubble {
+            padding: 12px 16px;
+            border-radius: 12px;
+            font-size: 13.5px;
+            line-height: 1.6;
+            position: relative;
+        }
+
+        .user .msg-bubble {
+            background: var(--input-bg);
+            border: 1px solid var(--border-heavy);
+            border-bottom-right-radius: 4px;
+            color: #fff;
+        }
+
+        .ai .msg-bubble {
+            background: var(--card-bg);
+            border: 1px solid var(--border);
+            border-bottom-left-radius: 4px;
+            color: rgba(255,255,255,0.9);
+        }
+
+        /* Markdown Styles */
+        .msg-content p { margin-bottom: 12px; }
+        .msg-content p:last-child { margin-bottom: 0; }
+        .msg-content pre {
+            background: #050505;
+            padding: 14px;
+            border-radius: 12px;
+            overflow-x: auto;
+            margin: 10px 0;
+            border: 1px solid var(--border);
+        }
+        .msg-content code {
+            font-family: var(--mono);
+            font-size: 12px;
+        }
+        .msg-content :not(pre) > code {
+            background: rgba(255,255,255,0.08);
+            padding: 2px 5px;
+            border-radius: 4px;
+            color: var(--accent);
+        }
+
+        /* Agent Actions */
+        .agent-action {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 8px 12px;
+            background: var(--accent-dim);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 10px;
+            font-size: 11px;
+            font-weight: 500;
+            color: var(--text-dim);
+            margin-bottom: 4px;
+        }
+
+        .agent-action i { color: var(--accent); font-size: 10px; }
+
+        /* Thinking State */
+        .thinking {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            padding: 12px 16px;
+            background: #111114;
+            border-radius: 12px;
+            width: fit-content;
+        }
+
+        .dot {
+            width: 4px;
+            height: 4px;
+            background: var(--accent);
+            border-radius: 50%;
+            animation: dot-pulse 1.4s infinite ease-in-out;
+            opacity: 0.4;
+        }
+        .dot:nth-child(2) { animation-delay: 0.2s; }
+        .dot:nth-child(3) { animation-delay: 0.4s; }
+
+        @keyframes dot-pulse {
+            0%, 80%, 100% { transform: scale(0.7); opacity: 0.3; }
+            40% { transform: scale(1.3); opacity: 1; }
+        }
+
+        /* ── Premium Typography ── */
+        .msg-content h1, .msg-content h2, .msg-content h3 {
+            font-family: var(--title-font);
+            font-size: 15px; margin: 16px 0 10px; color: #fff;
+            letter-spacing: -0.2px; font-weight: 600;
+        }
+        .msg-content h4 {
+            font-family: var(--title-font);
+            font-size: 11px; text-transform: uppercase; letter-spacing: 0.05em;
+            color: var(--accent); margin: 16px 0 6px; font-weight: 700;
+        }
+        .msg-content blockquote {
+            border-left: 2px solid var(--accent);
+            background: var(--accent-dim);
+            padding: 12px 16px; border-radius: 4px 12px 12px 4px;
+            margin: 14px 0; color: rgba(255,255,255,0.7);
+            font-size: 13px;
+        }
+        .msg-content ul, .msg-content ol {
+            padding-left: 18px; margin: 10px 0;
+            display: flex; flex-direction: column; gap: 6px;
+        }
+        .msg-content li { font-size: 13px; color: rgba(255,255,255,0.85); }
+
+        /* Alerts */
+        .alert { border-radius: 12px; padding: 12px 16px; margin: 14px 0; font-size: 12.5px; border: 1px solid transparent; }
+        .alert-note { background: rgba(59, 130, 246, 0.05); border-color: rgba(59, 130, 246, 0.15); color: #93c5fd; }
+        .alert-tip { background: rgba(16, 185, 129, 0.05); border-color: rgba(16, 185, 129, 0.15); color: #6ee7b7; }
+        .alert-important { background: rgba(168, 85, 247, 0.05); border-color: rgba(168, 85, 247, 0.15); color: #d8b4fe; }
+
+        /* Input Zone */
+        .ai-input-wrapper {
+            padding: 16px;
+            border-top: 1px solid var(--border);
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            background: #08080a;
+            z-index: 10;
+        }
+
+        .quick-tools {
+            display: flex;
+            gap: 8px;
+            overflow-x: auto;
+            padding: 2px 0;
+        }
+        .quick-tools::-webkit-scrollbar { display: none; }
+
+        .tool-chip {
+            padding: 6px 14px;
+            background: var(--input-bg);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            font-family: var(--title-font);
+            font-size: 11px;
+            font-weight: 600;
+            letter-spacing: 0.02em;
+            color: var(--text-dim);
+            cursor: pointer;
+            white-space: nowrap;
+            transition: all 0.2s;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .tool-chip i { font-size: 9px; opacity: 0.7; }
+        .tool-chip:hover {
+            background: var(--accent);
+            border-color: var(--accent);
+            color: #000;
+            transform: translateY(-1px);
+        }
+        .tool-chip:hover i { opacity: 1; }
+
+        .input-container {
+            background: var(--input-bg);
+            border: 1px solid var(--border-heavy);
+            border-radius: 12px;
+            padding: 4px;
+            display: flex;
+            align-items: flex-end;
+            transition: all 0.2s cubic-bezier(0.19, 1, 0.22, 1);
+        }
+
+        .input-container:focus-within {
+            border-color: var(--accent);
+            background: rgba(255, 255, 255, 0.08);
+            box-shadow: 0 0 0 2px rgba(168, 85, 247, 0.15);
+        }
+
+        #ai-query {
+            flex: 1;
+            background: transparent;
+            border: none;
+            outline: none;
+            color: #fff;
+            padding: 10px 12px;
+            font-family: var(--font);
+            font-size: 13.5px;
+            resize: none;
+            max-height: 150px;
+            min-height: 20px;
+        }
+
+        #ai-query::placeholder { color: var(--text-muted); }
+
+        .send-btn {
+            width: 36px;
+            height: 36px;
+            border-radius: 10px;
+            border: none;
+            background: var(--accent);
+            color: #000;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.2s;
+            margin: 2px;
+        }
+
+        .send-btn:hover {
+            background: #fff;
+            box-shadow: 0 4px 15px var(--accent-glow);
+            transform: scale(1.05);
+        }
+
+    </style>
 </head>
 <body>
-    <div id="resize-handle" title="Drag to resize"></div>
+    <div id="resize-handle"></div>
     <div class="ai-panel">
         <div class="ai-header">
-            <div class="ai-title"><i class="fas fa-sparkles"></i> Gemini AI</div>
-            <div style="display:flex; gap:6px;">
-                <button class="ai-btn" id="reload-ai" title="Reload"><i class="fas fa-rotate-right"></i></button>
-                <button class="ai-btn" id="close-ai" title="Close"><i class="fas fa-xmark"></i></button>
+            <div class="ai-brand">
+                <div class="ai-logo"><i class="fas fa-bolt"></i></div>
+                <div class="ai-title-text">
+                    <h1>Ocal Assistant</h1>
+                </div>
+            </div>
+            <div class="ai-controls">
+                <button class="control-btn" id="clear-chat" title="Clear Chat"><i class="fas fa-trash-can"></i></button>
+                <button class="control-btn" id="close-ai" title="Close"><i class="fas fa-times"></i></button>
             </div>
         </div>
-        <div class="ai-content">
-            <webview id="ai-webview" src="https://gemini.google.com" partition="persist:sidebar" useragent="Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36"></webview>
+
+        <div class="ai-chat-view">
+            <div id="ai-chat-messages" class="messages-scroll">
+                <div class="msg-group ai">
+                    <div class="msg-bubble">
+                        <div class="msg-content">
+                            Hello! I am your <b>Ocal AI</b>. I can summarize complex pages, explain architectures, and help you find exactly what you're looking for.
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="ai-input-wrapper">
+                <div class="quick-tools">
+                    <button class="tool-chip" id="tool-summarize"><i class="fas fa-file-lines"></i> Summarize</button>
+                    <button class="tool-chip" id="tool-explain"><i class="fas fa-wand-magic-sparkles"></i> Explain</button>
+                    <button class="tool-chip" id="tool-tabs"><i class="fas fa-layer-group"></i> All Tabs</button>
+                    <button class="tool-chip" id="tool-search"><i class="fas fa-magnifying-glass"></i> Deep Search</button>
+                </div>
+                <div class="input-container">
+                    <textarea id="ai-query" placeholder="How can I assist you?" rows="1"></textarea>
+                    <button id="ai-send" class="send-btn"><i class="fas fa-arrow-up"></i></button>
+                </div>
+            </div>
         </div>
     </div>
 
     <script src="ai-sidebar.js"></script>
 </body>
+</html>
 </html>

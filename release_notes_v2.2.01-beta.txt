@@ -1,0 +1,41 @@
+OCAL BROWSER - RELEASE NOTES v2.2.01-beta
+=====================================
+
+Release Date: March 29, 2026
+Version: 2.2.01-beta
+
+This major beta release introduces the "Antigravity" signature AI interface, a custom premium PDF viewer, and critical stability fixes for the core browser engine.
+
+1. ENGINE STABILITY & SECURITY
+------------------------------
+- [FIX] Startup Crash Protection: Resolved a critical "TypeError: cannot read properties of undefined" that caused the browser to crash immediately on launch in certain environments.
+- [NEW] Environment Check: Implemented a persistent safety mechanism in the main process to verify that the application is running in the correct Electron context, providing descriptive fatal error diagnostics if misconfigured.
+- [FIX] Internal Protocol Security: Optimized the 'ocal://' custom scheme registration to ensure full Compatibility with Content Security Policy (CSP) and the Fetch API.
+
+2. ANTIGRAVITY SIGNATURE UI
+---------------------------
+- [NEW] Floating AI Sidebar: Replaced the standard sidebar with a futuristic, pill-shaped floating dock. Featuring high-end glassmorphism, circular icons, and the animated "Aura" glow effect.
+- [NEW] "Blade" Container: Implemented a sharp, detached container for web applications and AI interactions, providing a sleek, non-intrusive sidebar experience.
+
+3. CUSTOM PDF VIEWER
+--------------------
+- [NEW] Integrated PDF Experience: Built a dedicated internal `ocal://pdf-viewer` powered by PDF.js.
+- [NEW] Automatic Redirection: The browser now automatically intercepts all PDF requests (from the address bar or links) and renders them in our signature glassmorphic viewer.
+- [NEW] Premium Controls: Custom floating toolbars and smooth scrolling optimized for the Ocal aesthetic.
+
+4. USER INTERFACE REFINEMENT
+----------------------------
+- [NEW] Detached Bookmark Dropdowns: Modernized the bookmark system with detached, floating menus that match the glassmorphic home page design.
+- [FIX] Menu Dismissal: Implemented a global "click-outside-to-close" system for all internal browser menus and dropdowns.
+- [FIX] Tab Grouping: Resolved layout synchronization bugs where tab group popups would misalign when toggling the bookmark bar.
+
+5. DISTRIBUTION & INSTALLER
+---------------------------
+- [NEW] Formal v2.2.01-beta Release: Successfully generated and published official Squirrel Windows installers.
+- [NEW] Version Alignment: Synchronized versioning across package.json, main.js, and installer.iss for a cohesive build identity.
+
+-------------------------------------
+Copyright © 2026 Gaming Network Studio Media Group.
+Ocal Browser - Fast, Secure, and Agentic.
+- GitHub: https://github.com/neelkanth-patel26/Ocal-Browser
+- Website: https://gnstudioxrage.wixstudio.com/gamingnetworkstudio

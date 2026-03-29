@@ -1,0 +1,331 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ocal Labs - Power-Ups</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --accent: #a855f7;
+            --accent-glow: rgba(168, 85, 247, 0.4);
+            --bg: #0c0c0e;
+            --card-bg: rgba(255, 255, 255, 0.03);
+            --card-border: rgba(255, 255, 255, 0.08);
+            --text: #ffffff;
+            --text-dim: rgba(255, 255, 255, 0.6);
+        }
+
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body {
+            font-family: 'Outfit', 'Inter', sans-serif;
+            background: var(--bg);
+            color: var(--text);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            overflow-x: hidden;
+            padding: 80px 20px;
+        }
+
+        /* ── Background Aura ────────────────────────────────────────── */
+        .aura {
+            position: fixed;
+            top: 50%; left: 50%;
+            width: 800px; height: 800px;
+            background: radial-gradient(circle, var(--accent-glow) 0%, transparent 70%);
+            transform: translate(-50%, -50%);
+            z-index: -1;
+            filter: blur(100px);
+            opacity: 0.3;
+            pointer-events: none;
+        }
+
+        .container {
+            width: 100%;
+            max-width: 900px;
+            animation: fadeIn 0.8s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        header {
+            text-align: center;
+            margin-bottom: 60px;
+        }
+
+        h1 {
+            font-size: 42px;
+            font-weight: 700;
+            letter-spacing: -0.02em;
+            margin-bottom: 12px;
+            background: linear-gradient(135deg, #fff 0%, #a855f7 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        p.subtitle {
+            font-size: 18px;
+            color: var(--text-dim);
+            font-weight: 400;
+        }
+
+        .labs-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
+            gap: 24px;
+        }
+
+        .lab-card {
+            background: var(--card-bg);
+            backdrop-filter: blur(20px);
+            border: 1px solid var(--card-border);
+            border-radius: 24px;
+            padding: 32px;
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
+            position: relative;
+            transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+            overflow: hidden;
+        }
+
+        .lab-card:hover {
+            border-color: var(--accent-border);
+            background: rgba(255, 255, 255, 0.05);
+            transform: translateY(-4px);
+            box-shadow: 0 20px 40px rgba(0,0,0,0.4);
+        }
+
+        .lab-card::before {
+            content: '';
+            position: absolute;
+            top: 0; left: 0; width: 4px; height: 100%;
+            background: var(--accent);
+            opacity: 0;
+            transition: opacity 0.3s;
+        }
+
+        .lab-card:hover::before {
+            opacity: 1;
+        }
+
+        .lab-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .lab-icon {
+            width: 48px;
+            height: 48px;
+            background: var(--accent-dim);
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 20px;
+            color: var(--accent);
+            margin-bottom: 12px;
+        }
+
+        .lab-info h3 {
+            font-size: 20px;
+            font-weight: 600;
+            margin-bottom: 8px;
+        }
+
+        .lab-info p {
+            font-size: 14px;
+            color: var(--text-dim);
+            line-height: 1.6;
+        }
+
+        /* ── Toggle Switch ────────────────────────────────────────── */
+        .toggle-container {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin-top: auto;
+            padding-top: 20px;
+        }
+
+        .toggle {
+            width: 52px;
+            height: 28px;
+            background: rgba(255, 255, 255, 0.08);
+            border-radius: 100px;
+            position: relative;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .toggle::before {
+            content: '';
+            position: absolute;
+            top: 4px; left: 4px;
+            width: 20px; height: 20px;
+            background: #fff;
+            border-radius: 50%;
+            transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        }
+
+        .toggle.active {
+            background: var(--accent);
+            box-shadow: 0 0 20px var(--accent-glow);
+        }
+
+        .toggle.active::before {
+            left: 28px;
+        }
+
+        .toggle-status {
+            font-size: 13px;
+            font-weight: 600;
+            color: var(--text-dim);
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+
+        .toggle.active + .toggle-status {
+            color: var(--accent);
+        }
+
+        footer {
+            margin-top: 80px;
+            text-align: center;
+            font-size: 14px;
+            color: var(--text-muted);
+        }
+
+        footer strong { color: var(--accent); }
+    </style>
+</head>
+<body>
+
+    <div class="aura"></div>
+
+    <div class="container">
+        <header>
+            <h1>Ocal Labs</h1>
+            <p class="subtitle">Experience the future of browsing with our native power-ups.</p>
+        </header>
+
+        <div class="labs-grid">
+            <!-- AdBlocker -->
+            <div class="lab-card">
+                <div class="lab-icon"><i class="fas fa-shield-halved"></i></div>
+                <div class="lab-info">
+                    <h3>Shield (AdBlocker)</h3>
+                    <p>High-performance filtering that blocks intrusive ads and trackers. Browsing feels faster and cleaner instantly.</p>
+                </div>
+                <div class="toggle-container">
+                    <div class="toggle" id="toggle-adblock"></div>
+                    <span class="toggle-status">OFF</span>
+                </div>
+            </div>
+
+            <!-- YouTube Dislikes -->
+            <div class="lab-card">
+                <div class="lab-icon"><i class="fab fa-youtube"></i></div>
+                <div class="lab-info">
+                    <h3>YouTube Resurrector</h3>
+                    <p>Restores the official public dislike counts on YouTube using the Return YouTube Dislike API. See the true sentiment.</p>
+                </div>
+                <div class="toggle-container">
+                    <div class="toggle" id="toggle-dislikes"></div>
+                    <span class="toggle-status">OFF</span>
+                </div>
+            </div>
+
+            <!-- Video Popout -->
+            <div class="lab-card">
+                <div class="lab-icon"><i class="fas fa-up-right-from-square"></i></div>
+                <div class="lab-info">
+                    <h3>Video Master (PiP)</h3>
+                    <p>Detects videos on any website and provides a one-click floating Picture-in-Picture window. Multitask with ease.</p>
+                </div>
+                <div class="toggle-container">
+                    <div class="toggle" id="toggle-pip"></div>
+                    <span class="toggle-status">OFF</span>
+                </div>
+            </div>
+
+            <!-- VPN / Proxy -->
+            <div class="lab-card">
+                <div class="lab-icon"><i class="fas fa-ghost"></i></div>
+                <div class="lab-info">
+                    <h3>Ghost (Privacy Proxy)</h3>
+                    <p>Enable our privacy tunnel to mask your IP and encrypt your browsing traffic through a high-speed proxy mesh.</p>
+                </div>
+                <div class="toggle-container">
+                    <div class="toggle" id="toggle-vpn"></div>
+                    <span class="toggle-status">OFF</span>
+                </div>
+            </div>
+        </div>
+
+        <footer>
+            Experience built by <strong>Ocal Antigravity Core</strong>
+        </footer>
+    </div>
+
+    <script>
+        const toggles = {
+            adblock: document.getElementById('toggle-adblock'),
+            dislikes: document.getElementById('toggle-dislikes'),
+            pip: document.getElementById('toggle-pip'),
+            vpn: document.getElementById('toggle-vpn')
+        };
+
+        const updateToggle = (id, active) => {
+            const toggle = toggles[id];
+            if (active) {
+                toggle.classList.add('active');
+                toggle.nextElementSibling.innerText = 'ON';
+            } else {
+                toggle.classList.remove('active');
+                toggle.nextElementSibling.innerText = 'OFF';
+            }
+        };
+
+        // Load current state
+        window.electronAPI.getSettings().then(s => {
+            updateToggle('adblock', s.adBlockEnabled !== false);
+            updateToggle('dislikes', s.dislinkRestoration !== false);
+            updateToggle('pip', s.pipEnabled !== false);
+            updateToggle('vpn', !!s.vpnEnabled);
+        });
+
+        // Toggle logic
+        toggles.adblock.onclick = () => {
+            const active = !toggles.adblock.classList.contains('active');
+            updateToggle('adblock', active);
+            window.electronAPI.send('toggle-adblock', active);
+        };
+
+        toggles.vpn.onclick = () => {
+            const active = !toggles.vpn.classList.contains('active');
+            updateToggle('vpn', active);
+            window.electronAPI.send('toggle-vpn', active);
+        };
+
+        toggles.dislikes.onclick = () => {
+            const active = !toggles.dislikes.classList.contains('active');
+            updateToggle('dislikes', active);
+            window.electronAPI.updateSetting('dislinkRestoration', active);
+        };
+
+        toggles.pip.onclick = () => {
+            const active = !toggles.pip.classList.contains('active');
+            updateToggle('pip', active);
+            window.electronAPI.updateSetting('pipEnabled', active);
+        };
+    </script>
+</body>
+</html>

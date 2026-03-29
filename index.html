@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' https://cdnjs.cloudflare.com https://unpkg.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com https://cdnjs.cloudflare.com; font-src 'self' https://fonts.gstatic.com https://cdnjs.cloudflare.com; img-src 'self' data: https:; connect-src 'self' https://suggestqueries.google.com https://api.github.com https://cdnjs.cloudflare.com https://unpkg.com;">
+    <meta http-equiv="Content-Security-Policy" content="default-src 'self' ocal:; script-src 'self' 'unsafe-inline' https://cdnjs.cloudflare.com https://unpkg.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com https://cdnjs.cloudflare.com; font-src 'self' https://fonts.gstatic.com https://cdnjs.cloudflare.com; img-src 'self' data: https: chrome-extension:; connect-src 'self' https://suggestqueries.google.com https://api.github.com https://cdnjs.cloudflare.com https://unpkg.com https://clients2.google.com;">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Ocal</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -30,6 +30,11 @@
 
     <!-- ── Row 2: Navigation Bar ──────────────────────────────────── -->
     <div class="nav-bar">
+        <!-- Loading Progress Bar -->
+        <div class="loading-bar-container" id="loading-bar-container">
+            <div class="loading-bar" id="loading-bar"></div>
+        </div>
+        
         <!-- Left: nav controls -->
         <div class="nav-controls">
             <button class="nav-btn" id="back-btn" title="Back"><i class="fas fa-arrow-left"></i></button>
@@ -39,6 +44,13 @@
 
         <!-- Center: address bar -->
         <div class="omnibox" id="omnibox">
+            <div class="omnibox-shield" id="shield-status" title="AdBlocker Active">
+                <i class="fas fa-shield-halved"></i>
+                <span id="page-time-chip" style="display:none; font-size:9px; font-weight:700; margin-left:5px; background:var(--accent); color:#000; padding:1px 5px; border-radius:10px; box-shadow:0 0 8px var(--accent-glow);">0s</span>
+            </div>
+            <div class="omnibox-ghost" id="proxy-status" title="Privacy Proxy Active" style="display:none;">
+                <i class="fas fa-ghost"></i>
+            </div>
             <div class="omnibox-identity" id="identity-btn">
                 <i class="fas fa-lock site-lock-icon"></i>
             </div>
@@ -50,6 +62,7 @@
                 </div>
             </div>
             <div class="omnibox-actions">
+                <button class="omni-btn" id="pip-btn" title="Popout Video" style="display:none; color: var(--accent);"><i class="fas fa-up-right-from-square"></i></button>
                 <button class="omni-btn" id="bookmark-heart-btn" title="Bookmark this page"><i class="far fa-heart"></i></button>
                 <button class="omni-btn" id="screenshot-btn" title="Screenshot"><i class="fas fa-camera"></i></button>
                 <button class="omni-btn" id="download-icon-btn" title="Downloads"><i class="fas fa-arrow-down"></i></button>
@@ -59,6 +72,7 @@
         <!-- Right: toolbar actions -->
         <div class="invisible-wall"></div>
         <div class="toolbar-actions">
+            <button class="tool-btn" id="extensions-toolbar-btn" title="Extensions"><i class="fas fa-puzzle-piece"></i></button>
             <button class="ai-pill" id="ai-toolbar-btn">
                 <i class="fas fa-wand-magic-sparkles"></i>
                 <span>AI</span>
