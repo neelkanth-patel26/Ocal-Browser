@@ -137,6 +137,7 @@
         .nav-item[data-section="security"] .nav-item-icon   { --icon-c: #4ade80; }
         .nav-item[data-section="extensions"] .nav-item-icon { --icon-c: #fb923c; }
         .nav-item[data-section="shortcuts"] .nav-item-icon  { --icon-c: #facc15; }
+        .nav-item[data-section="ai"] .nav-item-icon         { --icon-c: #a855f7; }
         .nav-item[data-section="about"] .nav-item-icon      { --icon-c: #94a3b8; }
 
         .nav-item.active[data-section="general"] .nav-item-icon    { background: rgba(167,139,250,0.15); color: var(--icon-c); }
@@ -146,6 +147,7 @@
         .nav-item.active[data-section="security"] .nav-item-icon   { background: rgba(74,222,128,0.15); color: var(--icon-c); }
         .nav-item.active[data-section="extensions"] .nav-item-icon { background: rgba(251,146,60,0.15); color: var(--icon-c); }
         .nav-item.active[data-section="shortcuts"] .nav-item-icon  { background: rgba(250,204,21,0.15); color: var(--icon-c); }
+        .nav-item.active[data-section="ai"] .nav-item-icon         { background: rgba(168,85,247,0.15); color: var(--icon-c); }
         .nav-item.active[data-section="about"] .nav-item-icon      { background: rgba(148,163,184,0.15); color: var(--icon-c); }
 
         .nav-item:hover[data-section="general"] .nav-item-icon    { color: var(--icon-c); }
@@ -155,6 +157,7 @@
         .nav-item:hover[data-section="security"] .nav-item-icon   { color: var(--icon-c); }
         .nav-item:hover[data-section="extensions"] .nav-item-icon { color: var(--icon-c); }
         .nav-item:hover[data-section="shortcuts"] .nav-item-icon  { color: var(--icon-c); }
+        .nav-item:hover[data-section="ai"] .nav-item-icon         { color: var(--icon-c); }
         .nav-item:hover[data-section="about"] .nav-item-icon      { color: var(--icon-c); }
 
         .nav-divider {
@@ -616,9 +619,451 @@
             padding: 10px 0 0;
         }
 
-        /* Misc */
-        .hidden { display: none !important; }
-        .row { display: flex; align-items: center; justify-content: space-between; gap: 16px; }
+        /* ── Security Hub ── */
+        .shield-hero {
+            background: linear-gradient(145deg, rgba(74, 222, 128, 0.08) 0%, rgba(20, 20, 25, 0.4) 100%);
+            border: 1px solid rgba(74, 222, 128, 0.15);
+            border-radius: 20px; padding: 28px;
+            display: flex; align-items: center; gap: 24px;
+            margin-bottom: 30px; position: relative; overflow: hidden;
+        }
+        .shield-hero::after {
+            content: ''; position: absolute; top: -50%; right: -10%; 
+            width: 300px; height: 300px;
+            background: radial-gradient(circle, rgba(74, 222, 128, 0.1) 0%, transparent 70%);
+            pointer-events: none;
+        }
+        .shield-hero-icon {
+            width: 64px; height: 64px; border-radius: 18px;
+            background: rgba(74, 222, 128, 0.1); border: 1px solid rgba(74, 222, 128, 0.2);
+            display: flex; align-items: center; justify-content: center;
+            font-size: 28px; color: #4ade80;
+            box-shadow: 0 0 20px rgba(74, 222, 128, 0.15);
+            animation: shield-pulse 3s infinite ease-in-out;
+        }
+        @keyframes shield-pulse {
+            0%, 100% { transform: scale(1); box-shadow: 0 0 20px rgba(74, 222, 128, 0.15); }
+            50% { transform: scale(1.05); box-shadow: 0 0 35px rgba(74, 222, 128, 0.3); }
+        }
+        .shield-hero-body { flex: 1; }
+        .shield-status-badge {
+            display: inline-flex; align-items: center; gap: 6px;
+            padding: 4px 10px; border-radius: 8px; font-size: 10px; font-weight: 700;
+            text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 8px;
+        }
+        .shield-status-badge.ok { background: rgba(74, 222, 128, 0.15); color: #4ade80; border: 1px solid rgba(74, 222, 128, 0.2); }
+        .shield-status-badge.warning { background: rgba(251, 146, 60, 0.15); color: #fb923c; border: 1px solid rgba(251, 146, 60, 0.2); }
+        
+        .shield-title { font-size: 20px; font-weight: 700; color: #fff; margin-bottom: 4px; }
+        .shield-desc { font-size: 13px; color: var(--text-muted); line-height: 1.5; }
+
+        /* Privacy Dashboard Stats */
+        .stat-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 12px;
+            margin-bottom: 24px;
+        }
+        .stat-card {
+            background: linear-gradient(135deg, rgba(255,255,255,0.03) 0%, rgba(255,255,255,0.01) 100%);
+            border: 1px solid var(--glass-border);
+            border-radius: 14px;
+            padding: 20px 16px;
+            text-align: center;
+            position: relative;
+            overflow: hidden;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        .stat-card:hover {
+            border-color: var(--accent-border);
+            background: rgba(168, 85, 247, 0.04);
+            transform: translateY(-2px);
+        }
+
+        /* ── Extensions Storefront ── */
+        .ext-hero-banner {
+            background: linear-gradient(135deg, rgba(168, 85, 247, 0.12) 0%, rgba(99, 102, 241, 0.08) 100%);
+            border: 1px solid rgba(168, 85, 247, 0.2);
+            border-radius: 24px; padding: 40px;
+            display: flex; align-items: center; gap: 40px;
+            margin-bottom: 32px; position: relative; overflow: hidden;
+            box-shadow: 0 20px 50px rgba(0,0,0,0.3);
+            backdrop-filter: blur(20px);
+        }
+        .ext-hero-banner::after {
+            content: ''; position: absolute; top: -50%; right: -10%; 
+            width: 400px; height: 400px;
+            background: radial-gradient(circle, rgba(168, 85, 247, 0.15) 0%, transparent 70%);
+            pointer-events: none;
+        }
+        .ext-hero-banner.active { border-color: var(--accent-border); box-shadow: 0 0 35px rgba(168, 85, 247, 0.2); }
+        .ext-hero-icon {
+            width: 80px; height: 80px; border-radius: 24px;
+            background: var(--accent-dim); border: 1px solid rgba(168, 85, 247, 0.3);
+            display: flex; align-items: center; justify-content: center;
+            font-size: 36px; color: var(--accent);
+            box-shadow: 0 0 30px rgba(168, 85, 247, 0.2);
+        }
+
+        .ext-core-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+            margin-bottom: 32px;
+        }
+
+        .ext-card {
+            background: rgba(255, 255, 255, 0.03);
+            backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            border-radius: 24px;
+            padding: 26px;
+            display: flex; flex-direction: column; gap: 20px;
+            transition: all 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+            position: relative; overflow: hidden;
+        }
+        .ext-card:hover {
+            border-color: rgba(255,255,255,0.15);
+            background: rgba(255,255,255,0.05);
+            transform: translateY(-6px) scale(1.02);
+            box-shadow: 0 20px 45px rgba(0,0,0,0.4);
+        }
+        .ext-card.active { border-color: var(--accent-border); box-shadow: 0 0 25px rgba(168, 85, 247, 0.12); }
+        .ext-card.active.core { border-color: rgba(74, 222, 128, 0.3); box-shadow: 0 0 20px rgba(74, 222, 128, 0.06); }
+
+        .ext-icon-large {
+            width: 56px; height: 56px; border-radius: 18px;
+            background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.1);
+            display: flex; align-items: center; justify-content: center;
+            font-size: 24px; color: var(--text-dim); transition: all 0.3s;
+        }
+        .ext-card.active .ext-icon-large { background: var(--accent-dim); color: var(--accent); border-color: rgba(168, 85, 247, 0.2); }
+        .ext-card.active.core .ext-icon-large { background: rgba(74, 222, 128, 0.1); color: #4ade80; border-color: rgba(74, 222, 128, 0.2); }
+
+        .ext-utility-row {
+            background: rgba(255, 255, 255, 0.02);
+            border: 1px solid rgba(255, 255, 255, 0.06);
+            border-radius: 20px; padding: 20px 24px;
+            display: flex; align-items: center; gap: 20px;
+            transition: all 0.3s;
+        }
+        .ext-utility-row.active { border-color: var(--accent-border); }
+
+        .ext-studio-tag {
+            font-size: 9px; font-weight: 800; text-transform: uppercase; letter-spacing: 1px;
+            padding: 3px 8px; border-radius: 6px; background: rgba(255,255,255,0.05);
+            display: inline-flex; align-items: center; gap: 5px;
+        }
+        .ext-studio-tag.gaming { color: #4ade80; border: 1px solid rgba(74, 222, 128, 0.15); }
+        .ext-studio-tag.rage { color: #a855f7; border: 1px solid rgba(168, 85, 247, 0.15); }
+        
+        .stat-card::before {
+            content: '';
+            position: absolute;
+            top: -50%; left: -50%;
+            width: 200%; height: 200%;
+            background: radial-gradient(circle, var(--accent-glow) 0%, transparent 70%);
+            opacity: 0;
+            transition: opacity 0.3s;
+            pointer-events: none;
+        }
+        .stat-card:hover::before { opacity: 1; }
+        
+        .stat-value {
+            font-size: 28px;
+            font-weight: 800;
+            color: #fff;
+            margin-bottom: 4px;
+            letter-spacing: -0.04em;
+            display: block;
+            text-shadow: 0 0 20px rgba(0,0,0,0.5);
+        }
+        .stat-label {
+            font-size: 10px;
+            font-weight: 700;
+            text-transform: uppercase;
+            color: var(--text-muted);
+            letter-spacing: 1px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 6px;
+        }
+        .stat-label i { font-size: 10px; color: var(--accent); }
+
+        /* ── Redesigned Extensions Premium Styles ── */
+        .ext-toolbar-premium {
+            display: flex; align-items: center; justify-content: space-between;
+            gap: 20px; margin-bottom: 30px;
+        }
+
+        .ext-search-container {
+            flex: 1; position: relative;
+            background: rgba(255,255,255,0.03); border: 1px solid var(--glass-border);
+            border-radius: 14px; padding: 10px 16px;
+            display: flex; align-items: center; gap: 12px;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .ext-search-container:focus-within {
+            border-color: var(--accent-border);
+            box-shadow: 0 0 0 4px var(--accent-glow);
+            background: rgba(255,255,255,0.05);
+        }
+
+        .ext-search-container i { color: var(--text-muted); font-size: 14px; }
+        .ext-search-container input {
+            flex: 1; background: none; border: none; color: #fff;
+            font-size: 14px; font-family: 'Inter', sans-serif;
+        }
+
+        .filter-pills { display: flex; gap: 8px; }
+        .filter-pill {
+            padding: 8px 16px; border-radius: 10px;
+            background: rgba(255,255,255,0.03); border: 1px solid var(--glass-border);
+            color: var(--text-muted); font-size: 12px; font-weight: 600;
+            cursor: pointer; transition: all 0.2s;
+        }
+
+        .filter-pill:hover { background: rgba(255,255,255,0.06); color: #fff; }
+        .filter-pill.active {
+            background: var(--accent-dim); border-color: var(--accent-border);
+            color: #fff; box-shadow: 0 4px 12px var(--accent-glow);
+        }
+
+        /* Hero Module */
+        .ext-hero-module {
+            position: relative; border-radius: 28px; padding: 40px;
+            background: linear-gradient(135deg, rgba(168, 85, 247, 0.15) 0%, rgba(99, 102, 241, 0.08) 100%);
+            border: 1px solid rgba(168, 85, 247, 0.25);
+            margin-bottom: 40px; overflow: hidden;
+            box-shadow: 0 20px 50px rgba(0,0,0,0.3);
+            backdrop-filter: blur(10px);
+        }
+
+        .ext-hero-glow {
+            position: absolute; top: -50%; right: -10%;
+            width: 400px; height: 400px;
+            background: radial-gradient(circle, var(--accent-glow) 0%, transparent 70%);
+            pointer-events: none;
+        }
+
+        .ext-hero-content { display: flex; align-items: center; gap: 40px; position: relative; z-index: 1; }
+        .ext-hero-icon-container {
+            width: 100px; height: 100px; border-radius: 28px;
+            background: var(--accent-dim); border: 1px solid var(--accent-border);
+            display: flex; align-items: center; justify-content: center;
+            font-size: 42px; color: var(--accent);
+            box-shadow: 0 0 35px var(--accent-glow);
+            flex-shrink: 0;
+        }
+
+        .ext-hero-text h3 { font-size: 26px; font-weight: 800; letter-spacing: -0.04em; margin-bottom: 8px; }
+        .ext-hero-text p { font-size: 15px; color: var(--text-dim); line-height: 1.6; max-width: 500px; margin-bottom: 24px; }
+
+        .ext-badge {
+            display: inline-flex; padding: 4px 10px; border-radius: 6px;
+            font-size: 9px; font-weight: 800; letter-spacing: 1px; margin-bottom: 10px;
+        }
+        .ext-badge.primary { background: var(--accent); color: #fff; }
+
+        .ext-hero-footer { display: flex; align-items: center; gap: 20px; }
+
+        /* Status Indicator */
+        .ext-status-indicator {
+            display: flex; align-items: center; gap: 8px;
+            font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px;
+        }
+        .status-dot { width: 8px; height: 8px; border-radius: 50%; }
+        .ext-status-indicator.on { color: #4ade80; }
+        .ext-status-indicator.on .status-dot { background: #4ade80; box-shadow: 0 0 8px #4ade80; }
+        .ext-status-indicator.off { color: var(--text-muted); }
+        .ext-status-indicator.off .status-dot { background: rgba(255,255,255,0.2); }
+
+        /* Marketplace Grid */
+        .ext-grid-premium {
+            display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+            gap: 20px; margin-top: 15px;
+        }
+
+        .ext-item-card {
+            background: rgba(255,255,255,0.03); border: 1px solid var(--glass-border);
+            border-radius: 20px; padding: 24px;
+            transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+            display: flex; flex-direction: column; gap: 16px;
+        }
+
+        .ext-item-card:hover {
+            transform: translateY(-5px);
+            background: rgba(255,255,255,0.05);
+            border-color: rgba(255,255,255,0.15);
+            box-shadow: 0 15px 35px rgba(0,0,0,0.2);
+        }
+
+        .ext-item-header { display: flex; align-items: center; gap: 16px; }
+        .ext-item-icon {
+            width: 48px; height: 48px; border-radius: 14px;
+            display: flex; align-items: center; justify-content: center;
+            font-size: 20px; background: rgba(255,255,255,0.05);
+        }
+        .ext-item-icon.color-green { background: rgba(74, 222, 128, 0.1); color: #4ade80; }
+        .ext-item-icon.color-blue { background: rgba(59, 130, 246, 0.1); color: #3b82f6; }
+        .ext-item-icon.color-purple { background: rgba(168, 85, 247, 0.1); color: #a855f7; }
+
+        .ext-item-meta h5 { font-size: 15px; font-weight: 700; }
+        .ext-label { font-size: 8.5px; font-weight: 800; letter-spacing: 0.8px; margin-bottom: 2px; display: block; }
+        .ext-label.green { color: #4ade80; }
+        .ext-label.blue { color: #3b82f6; }
+        .ext-label.purple { color: #a855f7; }
+
+        .ext-item-desc { font-size: 12px; color: var(--text-muted); line-height: 1.5; flex: 1; }
+
+        .ext-item-footer {
+            display: flex; align-items: center; justify-content: space-between;
+            padding-top: 16px; border-top: 1px solid rgba(255,255,255,0.05);
+        }
+
+        .btn.mini { padding: 6px 14px; font-size: 11px; }
+
+        @keyframes sec-in-premium {
+            from { opacity: 0; transform: translateY(20px) scale(0.98); filter: blur(10px); }
+            to   { opacity: 1; transform: translateY(0) scale(1); filter: blur(0px); }
+        }
+
+        /* ── Redesigned Dashboard Premium Styles ── */
+        .dash-status-hero {
+            background: linear-gradient(135deg, rgba(255,255,255,0.05) 0%, rgba(255,255,255,0.02) 100%);
+            border: 1px solid var(--glass-border); border-radius: 24px;
+            padding: 30px; margin-bottom: 30px;
+            display: flex; align-items: center; justify-content: space-between;
+            backdrop-filter: blur(10px);
+        }
+
+        .dash-status-left { display: flex; align-items: center; gap: 24px; }
+        .dash-shield-icon {
+            width: 64px; height: 64px; border-radius: 18px;
+            background: var(--accent-dim); border: 1px solid var(--accent-border);
+            display: flex; align-items: center; justify-content: center;
+            font-size: 28px; color: var(--accent);
+            box-shadow: 0 0 20px var(--accent-glow);
+        }
+
+        .dash-shield-icon.pulsing { animation: dash-pulse 3s infinite cubic-bezier(0.4, 0, 0.2, 1); }
+        @keyframes dash-pulse {
+            0% { box-shadow: 0 0 0 0 var(--accent-glow); }
+            70% { box-shadow: 0 0 0 15px rgba(168, 85, 247, 0); }
+            100% { box-shadow: 0 0 0 0 rgba(168, 85, 247, 0); }
+        }
+
+        .dash-status-badge {
+            display: inline-block; padding: 4px 8px; border-radius: 6px;
+            background: rgba(74, 222, 128, 0.1); color: #4ade80;
+            font-size: 9px; font-weight: 800; letter-spacing: 1px; margin-bottom: 8px;
+        }
+
+        .dash-status-text h3 { font-size: 22px; font-weight: 800; margin-bottom: 4px; }
+        .dash-status-text p { font-size: 13px; color: var(--text-muted); }
+
+        .dash-status-right { display: flex; flex-direction: column; align-items: center; gap: 8px; }
+        .privacy-score-container { position: relative; width: 60px; height: 60px; }
+        .score-label {
+            position: absolute; inset: 0; display: flex; align-items: center; justify-content: center;
+            font-size: 18px; font-weight: 800; color: #fff;
+        }
+        .score-desc { font-size: 10px; font-weight: 700; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.5px; }
+
+        /* Grid */
+        .dash-grid-premium {
+            display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 16px; margin-bottom: 30px;
+        }
+
+        .dash-card-stat {
+            background: rgba(255,255,255,0.03); border: 1px solid var(--glass-border);
+            border-radius: 20px; padding: 20px;
+            display: flex; align-items: center; gap: 16px;
+            transition: all 0.3s;
+        }
+        .dash-card-stat:hover { background: rgba(255,255,255,0.06); border-color: rgba(255,255,255,0.15); transform: translateY(-2px); }
+
+        .dash-card-icon {
+            width: 44px; height: 44px; border-radius: 12px;
+            display: flex; align-items: center; justify-content: center; font-size: 18px;
+        }
+        .dash-card-icon.color-green { background: rgba(74, 222, 128, 0.1); color: #4ade80; }
+        .dash-card-icon.color-blue { background: rgba(59, 130, 246, 0.1); color: #3b82f6; }
+        .dash-card-icon.color-purple { background: rgba(168, 85, 247, 0.1); color: #a855f7; }
+        .dash-card-icon.color-orange { background: rgba(245, 158, 11, 0.1); color: #f59e0b; }
+
+        .dash-card-body { display: flex; flex-direction: column; }
+        .dash-card-body .stat-value { font-size: 20px; font-weight: 800; margin: 0; }
+        .dash-card-body .stat-label { font-size: 11px; color: var(--text-muted); font-weight: 600; }
+
+        /* Graph */
+        .dash-graph-container {
+            background: rgba(255,255,255,0.02); border: 1px solid var(--glass-border);
+            border-radius: 24px; padding: 30px; margin-bottom: 30px;
+            display: flex; gap: 20px; height: 240px; position: relative;
+        }
+        .dash-graph-y-axis {
+            display: flex; flex-direction: column; justify-content: space-between;
+            font-size: 10px; color: var(--text-muted); font-weight: 700;
+            padding-bottom: 25px;
+        }
+        .dash-graph-bars {
+            flex: 1; display: flex; align-items: flex-end; justify-content: space-between;
+            gap: 12px; height: 100%;
+        }
+        .graph-bar-wrapper {
+            flex: 1; display: flex; flex-direction: column; align-items: center; gap: 12px;
+            height: 100%; justify-content: flex-end;
+        }
+        .graph-bar {
+            width: 100%; background: rgba(255,255,255,0.05); border-radius: 6px 6px 0 0;
+            position: relative; transition: height 1s cubic-bezier(0.16, 1, 0.3, 1);
+            min-height: 4px; border: 1px solid rgba(255,255,255,0.05);
+        }
+        .graph-bar::after {
+            content: ''; position: absolute; inset: 0; background: linear-gradient(to top, var(--accent-dim), var(--accent));
+            opacity: 0.3; border-radius: inherit; transition: opacity 0.3s;
+        }
+        .graph-bar-wrapper:hover .graph-bar::after { opacity: 0.8; }
+        .graph-bar.active::after { opacity: 0.6; }
+        .graph-bar.active { border-color: var(--accent-border); box-shadow: 0 0 15px var(--accent-glow); }
+
+        .graph-label { font-size: 9px; color: var(--text-muted); font-weight: 700; }
+
+        /* Impact Module */
+        .dash-impact-module {
+            background: linear-gradient(135deg, var(--accent-dim) 0%, rgba(255,255,255,0.02) 100%);
+            border: 1px solid var(--accent-border); border-radius: 28px;
+            padding: 40px; margin-bottom: 30px; backdrop-filter: blur(10px);
+        }
+        .dash-impact-content { display: flex; align-items: center; gap: 50px; }
+        .dash-impact-visual { position: relative; width: 180px; height: 180px; flex-shrink: 0; }
+        .dash-impact-text {
+            position: absolute; inset: 0; display: flex; flex-direction: column;
+            align-items: center; justify-content: center; text-align: center;
+        }
+        .dash-impact-text .stat-value.big { font-size: 38px; font-weight: 800; margin: 0; }
+        .dash-impact-text .stat-label { font-size: 9px; letter-spacing: 1px; color: var(--text-muted); font-weight: 800; width: 80px; }
+
+        .dash-impact-info h3 { font-size: 24px; font-weight: 800; margin-bottom: 12px; }
+        .dash-impact-info p { font-size: 14px; color: var(--text-dim); line-height: 1.6; margin-bottom: 24px; }
+        
+        .dash-impact-stats { display: flex; gap: 30px; }
+        .mini-stat { display: flex; flex-direction: column; }
+        .mini-stat .val { font-size: 20px; font-weight: 800; color: #fff; }
+        .mini-stat .lab { font-size: 11px; color: var(--text-muted); font-weight: 600; }
+
+        @keyframes sec-in-premium {
+            from { opacity: 0; transform: translateY(20px) scale(0.98); filter: blur(10px); }
+            to   { opacity: 1; transform: translateY(0) scale(1); filter: blur(0px); }
+        }
+
+        .section#dashboard.active {
+            animation: sec-in-premium 0.6s cubic-bezier(0.16, 1, 0.3, 1);
+        }
     </style>
 </head>
 <body>
@@ -637,9 +1082,17 @@
         </div>
 
         <nav class="sidebar-nav">
+            <div class="nav-section-label">General</div>
+
+            <div class="nav-item active" data-section="dashboard">
+                <div class="nav-item-icon"><i class="fas fa-chart-line"></i></div>
+                <span>Dashboard</span>
+            </div>
+            
+            <div class="nav-divider"></div>
             <div class="nav-section-label">Preferences</div>
 
-            <div class="nav-item active" data-section="general">
+            <div class="nav-item" data-section="general">
                 <div class="nav-item-icon"><i class="fas fa-sliders"></i></div>
                 <span>General</span>
             </div>
@@ -671,6 +1124,10 @@
                 <div class="nav-item-icon"><i class="fas fa-keyboard"></i></div>
                 <span>Shortcuts</span>
             </div>
+            <div class="nav-item" data-section="ai">
+                <div class="nav-item-icon"><i class="fas fa-brain"></i></div>
+                <span>AI Assistant</span>
+            </div>
 
             <div class="nav-divider"></div>
 
@@ -691,8 +1148,125 @@
     <!-- MAIN CONTENT -->
     <main class="content">
 
+        <!-- ── DASHBOARD Redesign ── -->
+        <section id="dashboard" class="section active">
+            <div class="page-header">
+                <div class="page-eyebrow">Command Center</div>
+                <div class="page-title">Digital Privacy Hub</div>
+                <div class="page-desc">Real-time security analytics and global identity protection metrics.</div>
+            </div>
+            
+            <div class="page-body">
+                <!-- Advanced Status Header -->
+                <div class="dash-status-hero">
+                    <div class="dash-status-left">
+                        <div class="dash-shield-icon pulsing">
+                            <i class="fas fa-shield-halved"></i>
+                        </div>
+                        <div class="dash-status-text">
+                            <div class="dash-status-badge">SYSTEM SECURE</div>
+                            <h3>Active Protection</h3>
+                            <p>All security modules are operating at peak efficiency.</p>
+                        </div>
+                    </div>
+                    <div class="dash-status-right">
+                        <div class="privacy-score-container">
+                            <svg width="60" height="60" viewBox="0 0 60 60">
+                                <circle cx="30" cy="30" r="26" fill="none" stroke="rgba(255,255,255,0.05)" stroke-width="4"></circle>
+                                <circle id="score-ring" cx="30" cy="30" r="26" fill="none" stroke="var(--accent)" stroke-width="4" stroke-dasharray="163" stroke-dashoffset="16" stroke-linecap="round"></circle>
+                            </svg>
+                            <div class="score-label">98</div>
+                        </div>
+                        <span class="score-desc">Privacy Score</span>
+                    </div>
+                </div>
+
+                <!-- High-Density Stat Grid -->
+                <div class="dash-grid-premium">
+                    <div class="dash-card-stat">
+                        <div class="dash-card-icon color-green"><i class="fas fa-rectangle-ad"></i></div>
+                        <div class="dash-card-body">
+                            <span class="stat-value" id="dash-ads">0</span>
+                            <span class="stat-label">Ads Neutralized</span>
+                        </div>
+                    </div>
+                    <div class="dash-card-stat">
+                        <div class="dash-card-icon color-blue"><i class="fas fa-user-secret"></i></div>
+                        <div class="dash-card-body">
+                            <span class="stat-value" id="dash-trackers">0</span>
+                            <span class="stat-label">Trackers Blocked</span>
+                        </div>
+                    </div>
+                    <div class="dash-card-stat">
+                        <div class="dash-card-icon color-purple"><i class="fas fa-microchip"></i></div>
+                        <div class="dash-card-body">
+                            <span class="stat-value" id="dash-bandwidth">0 MB</span>
+                            <span class="stat-label">Data Conserved</span>
+                        </div>
+                    </div>
+                    <div class="dash-card-stat">
+                        <div class="dash-card-icon color-orange"><i class="fas fa-clock-rotate-left"></i></div>
+                        <div class="dash-card-body">
+                            <span class="stat-value" id="dash-uptime">0h 0m</span>
+                            <span class="stat-label">Uptime</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Threat Neutralization Activity Graph -->
+                <div class="group-label">Threat Neutralization (Last 24h)</div>
+                <div class="dash-graph-container">
+                    <div class="dash-graph-y-axis">
+                        <span>1k+</span>
+                        <span>500</span>
+                        <span>0</span>
+                    </div>
+                    <div class="dash-graph-bars" id="dash-graph">
+                        <!-- Bars will be generated by JS -->
+                        <div class="graph-bar-wrapper"><div class="graph-bar" style="height: 30%;"></div><span class="graph-label">00:00</span></div>
+                        <div class="graph-bar-wrapper"><div class="graph-bar" style="height: 45%;"></div><span class="graph-label">04:00</span></div>
+                        <div class="graph-bar-wrapper"><div class="graph-bar active" style="height: 85%;"></div><span class="graph-label">08:00</span></div>
+                        <div class="graph-bar-wrapper"><div class="graph-bar" style="height: 60%;"></div><span class="graph-label">12:00</span></div>
+                        <div class="graph-bar-wrapper"><div class="graph-bar" style="height: 35%;"></div><span class="graph-label">16:00</span></div>
+                        <div class="graph-bar-wrapper"><div class="graph-bar" style="height: 50%;"></div><span class="graph-label">20:00</span></div>
+                        <div class="graph-bar-wrapper"><div class="graph-bar" style="height: 20%;"></div><span class="graph-label">Live</span></div>
+                    </div>
+                </div>
+
+                <!-- Global Impact Section (Circular) -->
+                <div class="dash-impact-module">
+                    <div class="dash-impact-content">
+                        <div class="dash-impact-visual">
+                            <svg width="180" height="180" viewBox="0 0 180 180">
+                                <circle cx="90" cy="90" r="80" fill="none" stroke="rgba(255,255,255,0.03)" stroke-width="12"></circle>
+                                <circle id="time-ring" cx="90" cy="90" r="80" fill="none" stroke="var(--accent)" stroke-width="12" stroke-dasharray="502" stroke-dashoffset="502" stroke-linecap="round" style="filter: drop-shadow(0 0 10px var(--accent-glow)); transition: stroke-dashoffset 2s cubic-bezier(0.16,1,0.3,1);"></circle>
+                            </svg>
+                            <div class="dash-impact-text">
+                                <span class="stat-value big" id="dash-time">0m</span>
+                                <span class="stat-label">LIFETIME TIME SAVED</span>
+                            </div>
+                        </div>
+                        <div class="dash-impact-info">
+                            <h3>Human Efficiency Gain</h3>
+                            <p>Our blocking engine significantly reduces page weight, preventing tracking handshakes and ad-server redirects that waste your most valuable asset: time.</p>
+                            <div class="dash-impact-stats">
+                                <div class="mini-stat">
+                                    <span class="val" id="dash-security-events">0</span>
+                                    <span class="lab">Security Events Prev.</span>
+                                </div>
+                                <div class="mini-stat">
+                                    <span class="val" id="dash-speed-boost">0%</span>
+                                    <span class="lab">Avg. Speed Vector</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
         <!-- ── GENERAL ── -->
-        <section id="general" class="section active">
+        <section id="general" class="section">
             <div class="page-header">
                 <div class="page-eyebrow">General</div>
                 <div class="page-title">Appearance &amp; Behavior</div>
@@ -803,21 +1377,21 @@
         <!-- ── SEARCH ── -->
         <section id="search" class="section">
             <div class="page-header">
-                <div class="page-eyebrow">Search</div>
-                <div class="page-title">Search Engine</div>
-                <div class="page-desc">Configure your default search provider and smart address bar behavior.</div>
+                <div class="page-eyebrow">Discovery</div>
+                <div class="page-title">Search Hub</div>
+                <div class="page-desc">Configure your default search provider and customize your smart address bar behavior.</div>
             </div>
             <div class="page-body">
 
                 <div class="group">
-                    <div class="group-label">Default Provider</div>
-                    <div class="choice-grid" id="search-grid" style="grid-template-columns: repeat(3, 1fr);">
-                        <div class="choice-item" data-value="google">
+                    <div class="group-label">Search Provider</div>
+                    <div class="choice-grid" id="search-engine-grid" style="grid-template-columns: repeat(3, 1fr);">
+                        <div class="choice-item active" data-value="google">
                             <i class="fab fa-google"></i>
                             <span>Google</span>
                         </div>
                         <div class="choice-item" data-value="bing">
-                            <i class="fab fa-microsoft"></i>
+                            <i class="fas fa-b" style="font-weight: 800; font-family: serif;">B</i>
                             <span>Bing</span>
                         </div>
                         <div class="choice-item" data-value="duckduckgo">
@@ -829,22 +1403,21 @@
                             <span>Brave</span>
                         </div>
                         <div class="choice-item" data-value="yahoo">
-                            <i class="fab fa-yahoo"></i>
+                            <i class="fa-brands fa-yahoo"></i>
                             <span>Yahoo</span>
                         </div>
                         <div class="choice-item" data-value="custom">
-                            <i class="fas fa-code"></i>
+                            <i class="fas fa-terminal"></i>
                             <span>Custom</span>
                         </div>
                     </div>
 
-                    <!-- Custom Search URL (Only shown if Custom is selected) -->
                     <div id="custom-search-container" style="margin-top: 15px; display: none;">
-                        <div class="card" style="padding: 12px 16px;">
-                            <div class="card-row">
+                        <div class="card" style="padding: 12px 16px; border: 1px dashed rgba(255,255,255,0.1);">
+                            <div class="card-row" style="border:none;">
                                 <div class="card-info">
-                                    <h4 style="font-size: 13px;">Custom Search Engine URL</h4>
-                                    <p style="font-size: 11px;">Use <code>%s</code> as a placeholder for the search query.</p>
+                                    <h4 style="font-size: 13px;">Custom Engine URL</h4>
+                                    <p style="font-size: 11px;">Use <code>%s</code> as a placeholder for the query.</p>
                                 </div>
                                 <input type="text" id="custom-search-input" placeholder="https://example.com/search?q=%s" style="flex: 1; margin-left: 20px; background: rgba(255,255,255,0.05); border: 1px solid var(--glass-border); border-radius: 6px; padding: 8px 12px; color: #fff; font-family: 'Inter', sans-serif; font-size: 12px;">
                             </div>
@@ -853,28 +1426,27 @@
                 </div>
 
                 <div class="group">
-                    <div class="group-label">Behavior</div>
+                    <div class="group-label">Intelligence & Safety</div>
                     <div class="card">
                         <div class="card-row">
                             <div class="card-info">
-                                <h4>Search Suggestions</h4>
-                                <p>Show predictive suggestions as you type in the address bar.</p>
+                                <div style="display:flex; align-items:center; gap:10px;">
+                                    <i class="fas fa-bolt" style="color:var(--accent); font-size:14px;"></i>
+                                    <h4>Instant Search</h4>
+                                </div>
+                                <p>Receive real-time search suggestions in the address bar as you type.</p>
                             </div>
-                            <div class="toggle on" id="search-suggest-toggle"></div>
+                            <div class="toggle on" id="instant-search-toggle" onclick="toggleSearchFeature('instantSearchEnabled', this)"></div>
                         </div>
                         <div class="card-row">
                             <div class="card-info">
-                                <h4>Instant Search</h4>
-                                <p>Begin searching immediately as keystrokes are entered.</p>
+                                <div style="display:flex; align-items:center; gap:10px;">
+                                    <i class="fas fa-filter" style="color:#fb923c; font-size:13px;"></i>
+                                    <h4>Safe Search</h4>
+                                </div>
+                                <p>Automatically filter explicit content and sensitive results from search results.</p>
                             </div>
-                            <div class="toggle" id="instant-search-toggle"></div>
-                        </div>
-                        <div class="card-row">
-                            <div class="card-info">
-                                <h4>Safe Search</h4>
-                                <p>Filter explicit content from search results automatically.</p>
-                            </div>
-                            <div class="toggle" id="safe-search-toggle"></div>
+                            <div class="toggle" id="safe-search-toggle" onclick="toggleSearchFeature('safeSearchEnabled', this)"></div>
                         </div>
                     </div>
                 </div>
@@ -986,16 +1558,19 @@
         <!-- ── SECURITY ── -->
         <section id="security" class="section">
             <div class="page-header">
-                <div class="page-eyebrow">Security</div>
-                <div class="page-title">Privacy &amp; Protection</div>
-                <div class="page-desc">Real-time defense and privacy controls for your digital life.</div>
+                <div class="page-eyebrow">Privacy command center</div>
+                <div class="page-title">Native Shield</div>
+                <div class="page-desc">The Ocal Security Hub monitors every packet, ensuring your safety in real-time.</div>
             </div>
             <div class="page-body">
 
                 <div class="shield-hero">
-                    <div class="shield-hero-icon"><i class="fas fa-shield-check"></i></div>
+                    <div class="shield-hero-icon"><i class="fas fa-shield-halved"></i></div>
                     <div class="shield-hero-body">
-                        <div class="shield-status ok" id="protection-badge">Protected</div>
+                        <div class="shield-status-badge ok" id="protection-badge">
+                            <i class="fas fa-circle-check"></i>
+                            Maximum Protection active
+                        </div>
                         <div class="shield-title">Ocal Security</div>
                         <div class="shield-desc">All protection layers are active and monitoring your connection.</div>
                     </div>
@@ -1004,7 +1579,7 @@
                 <div class="group">
                     <div class="group-label">DNS Protection</div>
                     <div class="choice-grid" id="dns-grid" style="grid-template-columns: repeat(3, 1fr);">
-                        <div class="choice-item active" data-value="default">
+                        <div class="choice-item active" data-value="auto">
                             <i class="fas fa-network-wired"></i>
                             <span>Auto</span>
                         </div>
@@ -1024,24 +1599,46 @@
                     <div class="card">
                         <div class="card-row">
                             <div class="card-info">
-                                <h4>Safe Browsing</h4>
+                                <div style="display:flex; align-items:center; gap:10px;">
+                                    <i class="fas fa-globe" style="color:var(--accent); font-size:14px;"></i>
+                                    <h4>Safe Browsing</h4>
+                                </div>
                                 <p>Real-time protection against dangerous websites and malware downloads.</p>
                             </div>
-                            <div class="toggle on" id="safe-browsing-toggle"></div>
+                            <div class="toggle on" id="safe-browsing-toggle" onclick="toggleSecurityFeature('safeBrowsingEnabled', this)"></div>
                         </div>
                         <div class="card-row">
                             <div class="card-info">
-                                <h4>Tracking Protection</h4>
+                                <div style="display:flex; align-items:center; gap:10px;">
+                                    <i class="fas fa-user-secret" style="color:#f472b6; font-size:14px;"></i>
+                                    <h4>Tracking Protection</h4>
+                                </div>
                                 <p>Block third-party trackers and browser fingerprinting scripts.</p>
                             </div>
-                            <div class="toggle on" id="tracking-toggle-security"></div>
+                            <div class="toggle on" id="tracking-toggle-security" onclick="toggleSecurityFeature('trackingProtection', this)"></div>
                         </div>
                         <div class="card-row">
                             <div class="card-info">
-                                <h4>HTTPS Upgrade</h4>
+                                <div style="display:flex; align-items:center; gap:10px;">
+                                    <i class="fas fa-lock" style="color:#60a5fa; font-size:14px;"></i>
+                                    <h4>HTTPS Upgrade</h4>
+                                </div>
                                 <p>Automatically upgrade insecure HTTP connections to HTTPS.</p>
                             </div>
-                            <div class="toggle" id="https-toggle"></div>
+                            <div class="toggle on" id="https-toggle" onclick="toggleSecurityFeature('httpsUpgradeEnabled', this)"></div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="group" style="opacity: 0.6; pointer-events: none;">
+                    <div class="group-label">Advanced Defense (Experimental)</div>
+                    <div class="card">
+                        <div class="card-row">
+                            <div class="card-info">
+                                <h4>Sandboxed Execution</h4>
+                                <p>Run scripts in an isolated environment to prevent system access.</p>
+                            </div>
+                            <div class="toggle" id="sandbox-toggle"></div>
                         </div>
                     </div>
                 </div>
@@ -1049,55 +1646,111 @@
             </div>
         </section>
 
-        <!-- ── EXTENSIONS ── -->
+        <!-- ── EXTENSIONS Redesign ── -->
         <section id="extensions" class="section">
             <div class="page-header">
-                <div class="page-eyebrow">Extensions</div>
-                <div class="page-title">Native Modules</div>
-                <div class="page-desc">Manage built-in extensions that enhance your browsing workflow.</div>
+                <div class="page-eyebrow">Storefront</div>
+                <div class="page-title">Extension Hub</div>
+                <div class="page-desc">Superpower your Ocal experience with native extensions and modular power-ups.</div>
             </div>
+            
             <div class="page-body">
-
-                <div class="group">
-                    <div class="group-label">Installed</div>
-                    <div class="ext-card">
-                        <div class="ext-icon" style="background:rgba(74,222,128,0.1); color:#4ade80;"><i class="fas fa-vault"></i></div>
-                        <div class="ext-body">
-                            <h5>Asset Vault</h5>
-                            <p>Secure password and sensitive data manager.</p>
-                        </div>
-                        <button class="btn primary" style="font-size:11px; padding:6px 14px;">Active</button>
+                <!-- Advanced Toolbar -->
+                <div class="ext-toolbar-premium">
+                    <div class="ext-search-container">
+                        <i class="fas fa-magnifying-glass"></i>
+                        <input type="text" id="ext-search-input" placeholder="Search marketplace..." oninput="filterExtensions()">
+                    </div>
+                    <div class="filter-pills" id="ext-filter-group">
+                        <button class="filter-pill active" data-filter="all">All Modules</button>
+                        <button class="filter-pill" data-filter="core">Core</button>
+                        <button class="filter-pill" data-filter="privacy">Privacy</button>
+                        <button class="filter-pill" data-filter="utility">Utility</button>
                     </div>
                 </div>
 
-                <div class="group">
-                    <div class="group-label">Available</div>
-                    <div class="ext-card">
-                        <div class="ext-icon"><i class="fas fa-wand-magic-sparkles"></i></div>
-                        <div class="ext-body">
-                            <h5>Ocal AI Assistant</h5>
-                            <p>Native neural sidekick for browsing and summarization.</p>
+                <!-- Featured Hero Section -->
+                <div class="ext-hero-module" id="ext-ai">
+                    <div class="ext-hero-glow"></div>
+                    <div class="ext-hero-content">
+                        <div class="ext-hero-icon-container">
+                            <i class="fas fa-wand-magic-sparkles"></i>
                         </div>
-                        <button class="btn secondary" style="font-size:11px; padding:6px 14px;"><i class="fas fa-download"></i> Install</button>
-                    </div>
-                    <div class="ext-card">
-                        <div class="ext-icon" style="background:rgba(99,102,241,0.1); color:#818cf8;"><i class="fas fa-moon"></i></div>
-                        <div class="ext-body">
-                            <h5>Cyber Stealth</h5>
-                            <p>Theme-aware dark mode override for all websites.</p>
+                        <div class="ext-hero-text">
+                            <div class="ext-badge primary">FEATURED</div>
+                            <h3>Ocal AI Assistant Pro</h3>
+                            <p>Intelligent summaries, real-time research, and cross-tab automation powered by local and cloud models.</p>
+                            <div class="ext-hero-footer">
+                                <button class="btn primary" id="btn-ai" onclick="toggleExtension('aiAssistantEnabled')">Deploy Module</button>
+                                <div class="ext-status-indicator off" id="status-ai">
+                                    <span class="status-dot"></span>
+                                    <span>Available</span>
+                                </div>
+                            </div>
                         </div>
-                        <button class="btn secondary" style="font-size:11px; padding:6px 14px;"><i class="fas fa-download"></i> Install</button>
-                    </div>
-                    <div class="ext-card">
-                        <div class="ext-icon" style="background:rgba(251,146,60,0.1); color:#fb923c;"><i class="fas fa-shield-cat"></i></div>
-                        <div class="ext-body">
-                            <h5>Ad Shield</h5>
-                            <p>Block advertisements and trackers site-wide.</p>
-                        </div>
-                        <button class="btn secondary" style="font-size:11px; padding:6px 14px;"><i class="fas fa-download"></i> Install</button>
                     </div>
                 </div>
 
+                <!-- Extension Marketplace Grid -->
+                <div class="group-label">Marketplace</div>
+                <div class="ext-grid-premium" id="extensions-grid">
+                    <!-- Ad Shield -->
+                    <div class="ext-item-card active core" data-category="core" id="ext-adblock">
+                        <div class="ext-item-header">
+                            <div class="ext-item-icon color-green"><i class="fas fa-shield-cat"></i></div>
+                            <div class="ext-item-meta">
+                                <span class="ext-label green">CORE</span>
+                                <h5>Ad Shield</h5>
+                            </div>
+                        </div>
+                        <p class="ext-item-desc">Advanced ad and tracker blocking engine with zero-day detection.</p>
+                        <div class="ext-item-footer">
+                            <div class="ext-status-indicator on" id="status-adblock">
+                                <span class="status-dot"></span>
+                                <span>Active</span>
+                            </div>
+                            <button class="btn secondary mini" id="btn-adblock" onclick="window.toggleSecurityFeature('adBlockEnabled', this); setTimeout(renderExtensions, 100);">Manage</button>
+                        </div>
+                    </div>
+
+                    <!-- Asset Vault -->
+                    <div class="ext-item-card active core" data-category="core" id="ext-vault">
+                        <div class="ext-item-header">
+                            <div class="ext-item-icon color-blue"><i class="fas fa-vault"></i></div>
+                            <div class="ext-item-meta">
+                                <span class="ext-label blue">CORE</span>
+                                <h5>Asset Vault</h5>
+                            </div>
+                        </div>
+                        <p class="ext-item-desc">Military-grade encrypted storage for passwords and credit cards.</p>
+                        <div class="ext-item-footer">
+                            <div class="ext-status-indicator on" id="status-vault">
+                                <span class="status-dot"></span>
+                                <span>Active</span>
+                            </div>
+                            <button class="btn secondary mini" id="btn-vault" onclick="toggleExtension('assetVaultEnabled')">Manage</button>
+                        </div>
+                    </div>
+
+                    <!-- Cyber Stealth -->
+                    <div class="ext-item-card" data-category="privacy" id="ext-stealth">
+                        <div class="ext-item-header">
+                            <div class="ext-item-icon color-purple"><i class="fas fa-user-secret"></i></div>
+                            <div class="ext-item-meta">
+                                <span class="ext-label purple">PRIVACY</span>
+                                <h5>Cyber Stealth</h5>
+                            </div>
+                        </div>
+                        <p class="ext-item-desc">AI-driven fingerprint protection and cross-request anonymity.</p>
+                        <div class="ext-item-footer">
+                            <div class="ext-status-indicator off" id="status-stealth">
+                                <span class="status-dot"></span>
+                                <span>Available</span>
+                            </div>
+                            <button class="btn primary mini" id="btn-stealth" onclick="toggleExtension('cyberStealthEnabled')">Install</button>
+                        </div>
+                    </div>
+                </div>
             </div>
         </section>
 
@@ -1167,10 +1820,81 @@
                                 <div class="shortcut-info"><h4>Toggle Sidebar</h4><p>Open or close the side panel</p></div>
                                 <div class="key-stack"><div class="key-tag">Ctrl</div><div class="key-tag">Shift</div><div class="key-tag">B</div></div>
                             </div>
+                    </div>
+                </div>
+
+            </div>
+        </section>
+
+        <!-- ── AI ASSISTANT ── -->
+        <section id="ai" class="section">
+            <div class="page-header">
+                <div class="page-eyebrow">Artificial Intelligence</div>
+                <div class="page-title">Ocal AI Assistant</div>
+                <div class="page-desc">Configure your intelligent browsing companion and research engine.</div>
+            </div>
+            <div class="page-body">
+                <div class="group">
+                    <div class="group-label">Intelligence Engine</div>
+                    <div class="card">
+                        <div class="card-row">
+                            <div class="card-info">
+                                <h4>AI Engine</h4>
+                                <p>Choose between Ocal's local analysis (Custom) or Google's cloud intelligence (Gemini).</p>
+                            </div>
+                            <div class="choice-grid" id="ai-engine-grid" style="grid-template-columns:repeat(2,120px);">
+                                <div class="choice-item active" data-value="local"><i class="fas fa-microchip"></i><span>Ocal Local</span></div>
+                                <div class="choice-item" data-value="gemini"><i class="fas fa-cloud"></i><span>Gemini Pro</span></div>
+                            </div>
+                        </div>
+                        <div class="card-row">
+                            <div class="card-info">
+                                <h4>Gemini API Key</h4>
+                                <p>Power your assistant with Google's Gemini Pro for high-fidelity reasoning. <a href="https://aistudio.google.com/app/apikey" target="_blank" style="color:var(--accent); text-decoration:none;">Get a free API key here</a>.</p>
+                            </div>
+                            <div style="display:flex; align-items:center; gap:10px;">
+                                <input type="password" id="ai-api-key-input" placeholder="Paste your key here..." style="background:rgba(255,255,255,0.05); border:1px solid var(--chrome-border); border-radius:8px; padding:8px 12px; color:#fff; width:260px; font-family:monospace; font-size:12px;">
+                            </div>
                         </div>
                     </div>
                 </div>
 
+                <div class="group">
+                    <div class="group-label">Analysis Behavior</div>
+                    <div class="card">
+                        <div class="card-row">
+                            <div class="card-info">
+                                <h4>Deep Scraping</h4>
+                                <p>Allow the assistant to extract more comprehensive data from pages for better insights.</p>
+                            </div>
+                            <div class="toggle on" id="ai-deep-scrape-toggle"></div>
+                        </div>
+                        <div class="card-row">
+                            <div class="card-info">
+                                <h4>Show Reasoning Steps</h4>
+                                <p>Display the intermediate "thinking" phases while processing your requests.</p>
+                            </div>
+                            <div class="toggle on" id="ai-show-reasoning-toggle"></div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="group">
+                    <div class="group-label">Experience</div>
+                    <div class="card">
+                        <div class="card-row">
+                            <div class="card-info">
+                                <h4>Response Style</h4>
+                                <p>Choose how the AI should structure its output for maximum clarity.</p>
+                            </div>
+                            <div class="choice-grid" id="ai-style-grid" style="grid-template-columns:repeat(3,90px);">
+                                <div class="choice-item active" data-value="concise"><i class="fas fa-bolt"></i><span>Concise</span></div>
+                                <div class="choice-item" data-value="detailed"><i class="fas fa-list-check"></i><span>Detailed</span></div>
+                                <div class="choice-item" data-value="creative"><i class="fas fa-wand-magic-sparkles"></i><span>Creative</span></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
             </div>
         </section>
 

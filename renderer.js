@@ -15,6 +15,41 @@ window.electronAPI.onHtmlFullscreen((isFullscreen) => {
     document.body.classList.toggle('fullscreen', isFullscreen);
 });
 
+const loadingBar = document.getElementById('loading-bar');
+
+window.electronAPI.on('load-progress', (e, { id, progress }) => {
+    // 1. Update the loading-bar for the active tab
+    if (id === activeTabId) {
+        if (progress === 100) {
+            loadingBar.style.width = '100%';
+            loadingBar.classList.add('finished');
+            setTimeout(() => {
+                loadingBar.style.width = '0%';
+                loadingBar.classList.remove('active', 'finished');
+            }, 600);
+        } else if (progress === 0) {
+            loadingBar.style.width = '0%';
+            loadingBar.classList.remove('active', 'finished');
+        } else {
+            loadingBar.classList.remove('finished');
+            loadingBar.classList.add('active');
+            loadingBar.style.width = progress + '%';
+        }
+    }
+
+    // 2. Update the specific tab's internal loading state
+    const targetTab = tabs.find(t => t.id === id);
+    if (targetTab) {
+        const wasLoading = targetTab.loading;
+        targetTab.loading = progress > 0 && progress < 100;
+        
+        // Only re-render if the loading state actually changed (start or finish)
+        if (wasLoading !== targetTab.loading) {
+            renderTabs();
+        }
+    }
+});
+
 // ── Tab Rendering ──────────────────────────────────────────────────────────
 function renderTabs() {
     tabList.innerHTML = '';
@@ -103,6 +138,7 @@ function renderTabs() {
         el.innerHTML = `
             ${iconHtml}
             <span class="tab-title" style="${group ? `color: ${group.color}; opacity: 0.9;` : ''}">${tab.title || 'New Tab'}</span>
+            ${tab.audible ? '<i class="fas fa-volume-high tab-audio-icon"></i>' : ''}
             <i class="fas fa-times tab-close" data-id="${tab.id}"></i>
         `;
         el.onclick = (e) => {
@@ -110,6 +146,7 @@ function renderTabs() {
             activeTabId = tab.id;
             window.electronAPI.switchTab(tab.id);
             renderTabs();
+            updatePageTimeChip(tab.id);
         };
         tabList.appendChild(el);
     });
@@ -129,6 +166,7 @@ window.electronAPI.onTabsChanged((data) => {
     const active = tabs.find(t => t.id === activeTabId);
     if (active && addressInput) {
         syncOmnibox(active.url);
+        updatePageTimeChip(active.id);
     }
     if (lastSettings) applyGlobalSettings(lastSettings);
     renderTabs();
@@ -143,6 +181,7 @@ window.electronAPI.onUpdateURL((data) => {
     }
     if (data.id === activeTabId && addressInput) {
         syncOmnibox(data.url);
+        updatePageTimeChip(data.id);
         if (lastSettings) applyGlobalSettings(lastSettings);
     }
     renderTabs();
@@ -152,6 +191,14 @@ window.electronAPI.onFaviconUpdated((data) => {
     const tab = tabs.find(t => t.id === data.id);
     if (tab) {
         tab.favicon = data.favicon;
+        renderTabs();
+    }
+});
+
+window.electronAPI.on('tab-audio-status-changed', (e, { id, isAudible }) => {
+    const tab = tabs.find(t => t.id === id);
+    if (tab) {
+        tab.audible = isAudible;
         renderTabs();
     }
 });
@@ -229,6 +276,9 @@ function formatDisplayUrl(url) {
 }
 
 function getTabIconHtml(tab, tintColor) {
+    if (tab.loading) {
+        return `<i class="fas fa-circle-notch tab-favicon spinner" style="color:${tintColor || 'var(--accent)'}"></i>`;
+    }
     if (tab.favicon) return `<img src="${tab.favicon}" class="tab-favicon">`;
     
     const url = tab.url;
@@ -320,6 +370,7 @@ if (addressInput) {
             return;
         }
         suggestTimeout = setTimeout(() => {
+            if (lastSettings && lastSettings.instantSearchEnabled === false) return;
             const omnibox = document.getElementById('omnibox');
             if (!omnibox) return;
             const rect = omnibox.getBoundingClientRect();
@@ -390,11 +441,17 @@ document.addEventListener('DOMContentLoaded', () => {
     const hiBtn  = document.getElementById('history-sidebar-btn');
     const mnBtn  = document.getElementById('burger-menu-btn');
     const dlBtn  = document.getElementById('download-icon-btn');
+    const extBtn = document.getElementById('extensions-toolbar-btn');
 
     if (aiBtn) aiBtn.onclick = () => window.electronAPI.send('toggle-ai-sidebar');
     if (bmBtn) bmBtn.onclick = () => { window.electronAPI.send('toggle-sidebar', true); window.electronAPI.send('switch-sidebar-tab', 'bookmarks'); };
     if (hiBtn) hiBtn.onclick = () => { window.electronAPI.send('toggle-sidebar', true); window.electronAPI.send('switch-sidebar-tab', 'history'); };
     if (mnBtn) mnBtn.onclick = () => window.electronAPI.send('toggle-sidebar', true);
+    
+    if (extBtn) extBtn.onclick = () => {
+        const rect = extBtn.getBoundingClientRect();
+        window.electronAPI.send('show-extensions-dropdown', { x: rect.left, y: rect.bottom, width: rect.width });
+    };
     
     // Wire to new dedicated Downloads Module
     if (dlBtn) dlBtn.onclick = () => { 
@@ -405,6 +462,17 @@ document.addEventListener('DOMContentLoaded', () => {
     // Auto-reveal the popup when a background download starts
     window.electronAPI.on('open-downloads-popup-ui', () => {
         if (dlBtn) dlBtn.onclick();
+    });
+
+    const pipBtn = document.getElementById('pip-btn');
+    if (pipBtn) pipBtn.onclick = () => window.electronAPI.send('trigger-smart-pip');
+
+    window.electronAPI.on('video-detected', (e, detected) => {
+        if (pipBtn) pipBtn.style.display = detected ? 'flex' : 'none';
+        // Auto-hide PIP button after 10s if no update
+        if (detected) {
+            setTimeout(() => { if (pipBtn) pipBtn.style.display = 'none'; }, 10000);
+        }
     });
 
     const heartBtn = document.getElementById('bookmark-heart-btn');
@@ -430,6 +498,40 @@ document.addEventListener('DOMContentLoaded', () => {
         currentBookmarks = s.bookmarks || [];
         currentFolders   = s.folders   || [];
         renderBookmarkBar();
+        
+        // Initial Power-Up Icon state
+        const sStatus = document.getElementById('shield-status');
+        const pStatus = document.getElementById('proxy-status');
+        
+        if (sStatus) {
+            sStatus.style.display = 'flex';
+            sStatus.classList.toggle('inactive', s.adBlockEnabled === false && s.trackingProtection === false);
+            sStatus.onclick = (e) => {
+                e.stopPropagation();
+                const rect = sStatus.getBoundingClientRect();
+                window.electronAPI.send('show-shield-popup', { 
+                    x: rect.left, 
+                    y: rect.top, 
+                    width: rect.width, 
+                    height: rect.height,
+                    tabId: activeTabId
+                });
+            };
+        }
+        
+        if (pStatus) {
+            pStatus.style.display = s.vpnEnabled ? 'flex' : 'none';
+            pStatus.onclick = (e) => {
+                e.stopPropagation();
+                const rect = pStatus.getBoundingClientRect();
+                window.electronAPI.send('show-shield-popup', { 
+                    x: rect.left, 
+                    y: rect.top, 
+                    width: rect.width, 
+                    height: rect.height 
+                });
+            };
+        }
     });
 });
 
@@ -438,8 +540,18 @@ function applyGlobalSettings(s) {
     lastSettings = s;
     if (s.accentColor) document.documentElement.style.setProperty('--accent', s.accentColor);
     document.body.classList.toggle('compact-mode', !!s.compactMode);
-    // Bookmark visibility is now managed by the main process (single source of truth)
-    // to prevent gaps between the header and web content.
+    
+    // Update Power-Up Icons
+    const sStatus = document.getElementById('shield-status');
+    const pStatus = document.getElementById('proxy-status');
+    const aiBtn = document.getElementById('ai-toolbar-btn');
+
+    if (sStatus) {
+        sStatus.style.display = 'flex';
+        sStatus.classList.toggle('inactive', s.adBlockEnabled === false && s.trackingProtection === false);
+    }
+    if (pStatus) pStatus.style.display = s.vpnEnabled ? 'flex' : 'none';
+    if (aiBtn) aiBtn.style.display = s.aiAssistantEnabled ? 'flex' : 'none';
 }
 
 window.electronAPI.on('sync-bookmark-visibility', (isBmVisible) => {
@@ -451,7 +563,47 @@ window.electronAPI.onSettingsChanged((s) => {
     const active = tabs.find(t => t.id === activeTabId);
     if (active) updateOmniboxIcon(active.url);
 });
+function updatePageTimeChip(tabId) {
+    window.electronAPI.invoke('get-shield-stats', tabId).then(stats => {
+        const chip = document.getElementById('page-time-chip');
+        if (!chip) return;
+
+        if (stats && stats.page) {
+            const total = (stats.page.ads || 0) + (stats.page.trackers || 0);
+            if (total > 0) {
+                const s = total * 0.05;
+                chip.innerText = s < 1 ? s.toFixed(1) + 's' : Math.round(s) + 's';
+                chip.style.display = 'inline-block';
+            } else {
+                chip.style.display = 'none';
+            }
+        } else {
+            chip.style.display = 'none';
+        }
+    });
+}
+
+window.electronAPI.on('shield-stats-updated', (e, stats) => {
+    if (stats.webContentsId === activeTabId && stats.page) {
+        const total = (stats.page.ads || 0) + (stats.page.trackers || 0);
+        const chip = document.getElementById('page-time-chip');
+        if (chip) {
+            if (total > 0) {
+                const s = total * 0.05;
+                chip.innerText = s < 1 ? s.toFixed(1) + 's' : Math.round(s) + 's';
+                chip.style.display = 'inline-block';
+            } else {
+                chip.style.display = 'none';
+            }
+        }
+    }
+});
+
 window.electronAPI.getSettings().then(s => applyGlobalSettings(s));
+
+window.electronAPI.on('proxy-error', (e, data) => {
+    showToast(`Proxy Unstable: ${data.region.toUpperCase()} timed out. Try another region.`, 'fa-circle-exclamation');
+});
 
 // ── Bookmark Bar ───────────────────────────────────────────────────────────
 function showFolderDropdown(e, folderId) {

@@ -1,0 +1,504 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ocal Shield</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --accent: #a855f7;
+            --accent-glow: rgba(168, 85, 247, 0.4);
+            --accent-dim: rgba(168, 85, 247, 0.1);
+            --bg-glass: rgba(12, 12, 14, 0.92);
+            --border-glass: rgba(255, 255, 255, 0.08);
+            --text-primary: #ffffff;
+            --text-secondary: rgba(255, 255, 255, 0.6);
+            --danger: #ef4444;
+            --success: #22c55e;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            user-select: none;
+        }
+
+        body {
+            font-family: 'Outfit', sans-serif;
+            background: rgba(0, 0, 0, 0);
+            overflow: hidden;
+            width: 100vw;
+            height: 100vh;
+            color: var(--text-primary);
+            display: flex;
+            align-items: flex-start;
+            justify-content: flex-start;
+        }
+
+        .popup-overlay {
+            position: fixed;
+            inset: 0;
+            background: transparent;
+            z-index: 1;
+        }
+
+        .shield-card {
+            position: absolute;
+            background: var(--bg-glass);
+            backdrop-filter: blur(20px);
+            border: 1px solid var(--border-glass);
+            border-radius: 24px;
+            padding: 18px;
+            padding-bottom: 24px;
+            box-shadow: 0 12px 40px rgba(0, 0, 0, 0.6);
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
+            width: 320px;
+            z-index: 2;
+            opacity: 0;
+            transform: translateY(-10px);
+            transition: opacity 0.2s, transform 0.2s;
+            pointer-events: none;
+            overflow: visible;
+        }
+
+        /* Custom Scrollbar for Select Options */
+        .select-options::-webkit-scrollbar {
+            width: 6px;
+        }
+        .select-options::-webkit-scrollbar-track {
+            background: rgba(255, 255, 255, 0.02);
+            border-radius: 10px;
+        }
+        .select-options::-webkit-scrollbar-thumb {
+            background: var(--accent-glow);
+            border-radius: 10px;
+        }
+        .select-options::-webkit-scrollbar-thumb:hover {
+            background: var(--accent);
+        }
+
+        .shield-card.show {
+            opacity: 1;
+            transform: translateY(0);
+            pointer-events: all;
+        }
+
+        .header {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            border-bottom: 1px solid var(--border-glass);
+            padding-bottom: 12px;
+        }
+
+        .header i {
+            font-size: 20px;
+            color: var(--accent);
+            text-shadow: 0 0 10px var(--accent);
+        }
+
+        .header h2 {
+            font-size: 16px;
+            font-weight: 600;
+        }
+
+        .section {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        .stat-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+        }
+
+        .stat-item {
+            background: rgba(255, 255, 255, 0.04);
+            border-radius: 10px;
+            padding: 10px;
+            text-align: center;
+            border: 1px solid var(--border-glass);
+        }
+
+        .stat-value {
+            font-size: 20px;
+            font-weight: 700;
+            color: var(--accent);
+            display: block;
+        }
+
+        .stat-label {
+            font-size: 10px;
+            color: var(--text-secondary);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .toggle-item {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            background: rgba(255, 255, 255, 0.03);
+            padding: 10px 14px;
+            border-radius: 12px;
+            border: 1px solid var(--border-glass);
+            transition: 0.2s;
+        }
+
+        .toggle-item:hover {
+            border-color: var(--accent-glow);
+            background: rgba(255, 255, 255, 0.05);
+        }
+
+        .toggle-info {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .toggle-title {
+            font-size: 13px;
+            font-weight: 500;
+        }
+
+        .toggle-desc {
+            font-size: 11px;
+            color: var(--text-secondary);
+        }
+
+        .impact-card {
+            background: linear-gradient(135deg, var(--accent-dim) 0%, rgba(168, 85, 247, 0.02) 100%);
+            border: 1px solid var(--accent-glow);
+            border-radius: 12px;
+            padding: 12px;
+            margin: 0 0 12px 0;
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+        .impact-header {
+            font-size: 10px;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            color: var(--accent);
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+        .impact-stats {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-end;
+        }
+        .impact-value {
+            font-size: 20px;
+            font-weight: 700;
+            color: #fff;
+            line-height: 1;
+        }
+        .impact-label {
+            font-size: 10px;
+            color: var(--text-secondary);
+        }
+
+        .switch {
+            position: relative;
+            display: inline-block;
+            width: 36px;
+            height: 20px;
+        }
+
+        .switch input {
+            opacity: 0;
+            width: 0;
+            height: 0;
+        }
+
+        .slider {
+            position: absolute;
+            cursor: pointer;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: rgba(255, 255, 255, 0.1);
+            transition: .4s;
+            border-radius: 34px;
+        }
+
+        .slider:before {
+            position: absolute;
+            content: "";
+            height: 14px;
+            width: 14px;
+            left: 3px;
+            bottom: 3px;
+            background-color: white;
+            transition: .4s;
+            border-radius: 50%;
+        }
+
+        input:checked + .slider {
+            background-color: var(--accent);
+            box-shadow: 0 0 10px var(--accent);
+        }
+
+        input:checked + .slider:before {
+            transform: translateX(16px);
+        }
+
+        .vpn-section {
+            border-top: 1px solid var(--border-glass);
+            padding-top: 12px;
+        }
+
+        .region-select {
+            width: 100%;
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid var(--border-glass);
+            color: white;
+            padding: 8px 12px;
+            border-radius: 8px;
+            font-size: 12px;
+            outline: none;
+            cursor: pointer;
+            margin-top: 8px;
+        }
+
+        .note {
+            font-size: 10px;
+            color: var(--text-secondary);
+            font-style: italic;
+            margin-top: 8px;
+            line-height: 1.4;
+        }
+
+        /* Power-Up Animations */
+        @keyframes pulse {
+            0% { box-shadow: 0 0 0 0 var(--accent-glow); }
+            70% { box-shadow: 0 0 0 10px rgba(168, 85, 247, 0); }
+            100% { box-shadow: 0 0 0 0 rgba(168, 85, 247, 0); }
+        }
+
+        .active-pulse {
+            animation: pulse 2s infinite;
+        }
+
+        .status-pill {
+            font-size: 9px;
+            padding: 2px 8px;
+            border-radius: 10px;
+            background: rgba(255, 255, 255, 0.05);
+            color: var(--text-secondary);
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+
+        .status-dot {
+            width: 6px;
+            height: 6px;
+            border-radius: 50%;
+            background: var(--text-secondary);
+        }
+
+        .status-dot.active {
+            background: var(--success);
+            box-shadow: 0 0 8px var(--success);
+        }
+
+        .status-dot.connecting {
+            background: var(--accent);
+            animation: status-pulse 1.5s infinite;
+        }
+
+        @keyframes status-pulse {
+            0% { opacity: 1; transform: scale(1); }
+            50% { opacity: 0.4; transform: scale(0.8); }
+            100% { opacity: 1; transform: scale(1); }
+        }
+
+    </style>
+</head>
+<body>
+    <div class="popup-overlay" id="popup-overlay"></div>
+    <div class="shield-card" id="shield-card">
+        <div class="header">
+            <i class="fas fa-shield-halved"></i>
+            <h2>Ocal Power-Ups</h2>
+        </div>
+
+        <div id="compat-banner" style="display:none; padding:10px; background:rgba(255, 193, 7, 0.1); border:1px solid rgba(255, 193, 7, 0.2); border-radius:10px; margin-bottom:4px">
+            <div style="display:flex; align-items:center; gap:8px; color:#ffc107; font-size:11px; font-weight:700">
+                <i class="fas fa-triangle-exclamation"></i> COMPATIBILITY MODE
+            </div>
+            <p style="font-size:10px; color:rgba(255,255,255,0.7); margin-top:4px">Protection paused for YouTube to ensure optimal video playback.</p>
+        </div>
+
+        <div class="impact-card" id="page-impact-card">
+            <div class="impact-header">
+                <i class="fas fa-bolt"></i> IMPACT ON THIS PAGE
+            </div>
+            <div class="impact-stats">
+                <div>
+                    <div class="impact-value" id="page-ads">0</div>
+                    <div class="impact-label">Ads Blocked</div>
+                </div>
+                <div style="text-align: right;">
+                    <div class="impact-value" id="page-time">0s</div>
+                    <div class="impact-label">Time Saved</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="stat-grid">
+            <div class="stat-item">
+                <span class="stat-value" id="ads-blocked">0</span>
+                <span class="stat-label">Ads Blocked</span>
+            </div>
+            <div class="stat-item">
+                <span class="stat-value" id="trackers-blocked">0</span>
+                <span class="stat-label">Trackers</span>
+            </div>
+        </div>
+
+        <div class="section">
+            <div class="toggle-item">
+                <div class="toggle-info">
+                    <span class="toggle-title">Ad Block</span>
+                    <span class="toggle-desc">Remove intrusive ads</span>
+                </div>
+                <label class="switch">
+                    <input type="checkbox" id="adblock-toggle" checked>
+                    <span class="slider"></span>
+                </label>
+            </div>
+
+            <div class="toggle-item">
+                <div class="toggle-info">
+                    <span class="toggle-title">Strict Privacy</span>
+                    <span class="toggle-desc">Block cross-site tracking</span>
+                </div>
+                <label class="switch">
+                    <input type="checkbox" id="privacy-toggle" checked>
+                    <span class="slider"></span>
+                </label>
+            </div>
+        </div>
+
+        <div class="vpn-section">
+            <div class="toggle-item" style="background: transparent; border: none; padding: 0;">
+                <div class="toggle-info">
+                    <span class="toggle-title" style="display: flex; align-items: center; gap: 8px;">
+                        <i class="fas fa-globe-americas" style="color: var(--accent); font-size: 11px;"></i> Proxy VPN
+                        <div class="status-pill" id="vpn-status-pill" style="margin-left: 4px;">
+                            <div class="status-dot" id="vpn-status-dot"></div>
+                            <span id="vpn-status-text">OFF</span>
+                        </div>
+                    </span>
+                    <span class="toggle-desc">Change your IP address</span>
+                </div>
+                <label class="switch">
+                    <input type="checkbox" id="vpn-toggle">
+                    <span class="slider"></span>
+                </label>
+            </div>
+
+            <div class="custom-select" id="custom-select">
+                <div class="select-trigger" id="select-trigger">
+                    <span id="selected-region-text">Auto Selection (Optimal)</span>
+                    <i class="fas fa-chevron-down"></i>
+                </div>
+                <div class="select-options" id="select-options">
+                    <div class="option active" data-value="auto">Auto Selection (Optimal)</div>
+                    <div class="option" data-value="us">United States (Fast)</div>
+                    <div class="option" data-value="uk">United Kingdom</div>
+                    <div class="option" data-value="de">Germany</div>
+                    <div class="option" data-value="jp">Japan</div>
+                    <div class="option" data-value="in">India</div>
+                </div>
+            </div>
+
+            <p class="note"> Note: Proxy protection may result in slower connection speeds due to data routing.</p>
+        </div>
+    </div>
+
+    <style>
+        /* Custom Select Styling */
+        .custom-select {
+            position: relative;
+            width: 100%;
+            margin-top: 10px;
+            font-size: 13px;
+        }
+
+        .select-trigger {
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid var(--border-glass);
+            padding: 10px 14px;
+            border-radius: 10px;
+            cursor: pointer;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            transition: 0.2s;
+        }
+
+        .select-trigger:hover {
+            background: rgba(255, 255, 255, 0.08);
+            border-color: var(--accent-glow);
+        }
+
+        .select-options {
+            position: absolute;
+            top: calc(100% + 5px);
+            left: 0;
+            right: 0;
+            background: rgba(12, 12, 14, 0.95);
+            backdrop-filter: blur(20px);
+            border: 1px solid var(--border-glass);
+            border-radius: 12px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+            display: none;
+            flex-direction: column;
+            overflow-y: auto;
+            max-height: 180px;
+            z-index: 100;
+        }
+
+        .select-options.open {
+            display: flex;
+        }
+
+        .option {
+            padding: 10px 14px;
+            cursor: pointer;
+            transition: 0.2s;
+            color: var(--text-secondary);
+        }
+
+        .option:hover {
+            background: rgba(255, 255, 255, 0.05);
+            color: white;
+        }
+
+        .option.active {
+            background: var(--accent-dim);
+            color: var(--accent);
+            border-left: 3px solid var(--accent);
+        }
+    </style>
+
+    <script src="shield-popup.js"></script>
+</body>
+</html>

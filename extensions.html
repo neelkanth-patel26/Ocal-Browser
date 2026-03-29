@@ -1,0 +1,414 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ocal Extensions</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --accent: #a855f7;
+            --bg: rgba(13, 14, 18, 0.95);
+            --card-bg: rgba(255, 255, 255, 0.03);
+            --border: rgba(255, 255, 255, 0.08);
+            --text: #ffffff;
+            --text-dim: rgba(255, 255, 255, 0.6);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Outfit', sans-serif;
+        }
+
+        body {
+            background: #0d0e12;
+            color: var(--text);
+            min-height: 100vh;
+            padding: 60px 20px;
+            overflow-x: hidden;
+        }
+
+        .container {
+            max-width: 900px;
+            margin: 0 auto;
+        }
+
+        header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 40px;
+        }
+
+        h1 {
+            font-size: 2.5rem;
+            font-weight: 600;
+            background: linear-gradient(135deg, #fff 0%, var(--accent) 100%);
+            -webkit-background-clip: text;
+            background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .search-box {
+            position: relative;
+            width: 400px;
+        }
+
+        .search-box i {
+            position: absolute;
+            left: 15px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: var(--text-dim);
+        }
+
+        .search-box input {
+            width: 100%;
+            background: var(--card-bg);
+            border: 1px solid var(--border);
+            padding: 12px 12px 12px 45px;
+            border-radius: 12px;
+            color: white;
+            outline: none;
+            transition: 0.3s;
+        }
+
+        .search-box input:focus {
+            border-color: var(--accent);
+            box-shadow: 0 0 15px rgba(168, 85, 247, 0.2);
+        }
+
+        .install-section {
+            background: var(--card-bg);
+            border: 1px solid var(--border);
+            padding: 25px;
+            border-radius: 20px;
+            margin-bottom: 40px;
+            display: flex;
+            gap: 15px;
+            align-items: center;
+        }
+
+        .install-section input {
+            flex: 1;
+            background: rgba(0,0,0,0.2);
+            border: 1px solid var(--border);
+            padding: 12px 15px;
+            border-radius: 10px;
+            color: white;
+            outline: none;
+        }
+
+        .btn {
+            padding: 12px 25px;
+            border-radius: 10px;
+            border: none;
+            font-weight: 600;
+            cursor: pointer;
+            transition: 0.3s;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .btn-primary {
+            background: var(--accent);
+            color: white;
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(168, 85, 247, 0.4);
+        }
+
+        .btn-danger {
+            background: rgba(239, 68, 68, 0.1);
+            color: #ef4444;
+            border: 1px solid rgba(239, 68, 68, 0.2);
+        }
+
+        .btn-danger:hover {
+            background: rgba(239, 68, 68, 0.2);
+        }
+
+        .extension-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(400px, 1fr));
+            gap: 20px;
+        }
+
+        .extension-card {
+            background: var(--card-bg);
+            border: 1px solid var(--border);
+            border-radius: 20px;
+            padding: 20px;
+            display: flex;
+            gap: 20px;
+            transition: 0.3s;
+            backdrop-filter: blur(10px);
+        }
+
+        .extension-card:hover {
+            border-color: var(--accent);
+            transform: translateY(-5px);
+        }
+
+        .ext-icon {
+            width: 50px;
+            height: 50px;
+            border-radius: 12px;
+            background: rgba(255,255,255,0.05);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5rem;
+            flex-shrink: 0;
+        }
+
+        .ext-info {
+            flex: 1;
+        }
+
+        .ext-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            margin-bottom: 5px;
+        }
+
+        .ext-name {
+            font-size: 1.1rem;
+            font-weight: 600;
+        }
+
+        .ext-version {
+            font-size: 0.8rem;
+            color: var(--text-dim);
+            margin-bottom: 10px;
+        }
+
+        .ext-desc {
+            font-size: 0.9rem;
+            color: var(--text-dim);
+            line-height: 1.4;
+            margin-bottom: 15px;
+            display: -webkit-box;
+            -webkit-line-clamp: 2;
+            line-clamp: 2;
+            -webkit-box-orient: vertical;
+            overflow: hidden;
+        }
+
+        .ext-actions {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        /* Toggle Switch */
+        .switch {
+            position: relative;
+            display: inline-block;
+            width: 44px;
+            height: 24px;
+        }
+
+        .switch input {
+            opacity: 0;
+            width: 0;
+            height: 0;
+        }
+
+        .slider {
+            position: absolute;
+            cursor: pointer;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: rgba(255,255,255,0.1);
+            transition: .4s;
+            border-radius: 34px;
+        }
+
+        .slider:before {
+            position: absolute;
+            content: "";
+            height: 18px;
+            width: 18px;
+            left: 3px;
+            bottom: 3px;
+            background-color: white;
+            transition: .4s;
+            border-radius: 50%;
+        }
+
+        input:checked + .slider {
+            background-color: var(--accent);
+        }
+
+        input:checked + .slider:before {
+            transform: translateX(20px);
+        }
+
+        .loading-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.8);
+            display: none;
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+            backdrop-filter: blur(5px);
+        }
+
+        .loader {
+            width: 48px;
+            height: 48px;
+            border: 5px solid #FFF;
+            border-bottom-color: var(--accent);
+            border-radius: 50%;
+            display: inline-block;
+            box-sizing: border-box;
+            animation: rotation 1s linear infinite;
+        }
+
+        @keyframes rotation {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+    </style>
+</head>
+<body>
+    <div class="loading-overlay" id="loader">
+        <div style="text-align: center;">
+            <span class="loader"></span>
+            <p style="margin-top: 20px; font-weight: 600;">Installing Extension...</p>
+        </div>
+    </div>
+
+    <div class="container">
+        <header>
+            <h1>Extensions</h1>
+            <div class="search-box">
+                <i class="fas fa-search"></i>
+                <input type="text" placeholder="Search installed extensions..." id="searchExt">
+            </div>
+        </header>
+
+        <section class="install-section">
+            <i class="fab fa-chrome" style="font-size: 1.5rem; color: var(--accent);"></i>
+            <input type="text" placeholder="Enter Chrome Web Store URL or Extension ID (e.g., cpngonidonbe...)" id="extIdInput">
+            <button class="btn btn-primary" onclick="installExtension()">
+                <i class="fas fa-plus"></i> Install
+            </button>
+        </section>
+
+        <div class="extension-grid" id="extensionGrid">
+            <!-- Extensions will be loaded here -->
+        </div>
+    </div>
+
+    <script>
+        const { ipcRenderer } = require('electron');
+
+        async function loadExtensions() {
+            const extensions = await ipcRenderer.invoke('get-extensions');
+            const grid = document.getElementById('extensionGrid');
+            grid.innerHTML = '';
+
+            extensions.forEach(ext => {
+                const card = document.createElement('div');
+                card.className = 'extension-card';
+                
+                // Get icon (try largest icon available or fallback to font-awesome)
+                let iconHtml = `<div class="ext-icon"><i class="fas fa-plugin"></i></div>`;
+                if (ext.icons) {
+                    const iconSizes = Object.keys(ext.icons).map(Number).sort((a,b) => b-a);
+                    if (iconSizes.length > 0) {
+                        const iconPath = `chrome-extension://${ext.id}/${ext.icons[iconSizes[0]]}`;
+                        // Since we are in ocal://, we might need a resolver or specific session access
+                        // For now, use a generic icon if path fails, but Electron native handles chrome-extension://
+                        iconHtml = `<div class="ext-icon"><img src="${iconPath}" style="width:100%; height:100%; border-radius:inherit;" onerror="this.src='https://icons.duckduckgo.com/ip3/${ext.id}.ico'; this.onerror=function(){this.parentElement.innerHTML='<i class=\"fas fa-puzzle-piece\"></i>'}"></div>`;
+                    }
+                }
+
+                card.innerHTML = `
+                    ${iconHtml}
+                    <div class="ext-info">
+                        <div class="ext-header">
+                            <div class="ext-name">${ext.name}</div>
+                            <label class="switch">
+                                <input type="checkbox" ${ext.enabled ? 'checked' : ''} onchange="toggleExtension('${ext.id}', this.checked)">
+                                <span class="slider"></span>
+                            </label>
+                        </div>
+                        <div class="ext-version">Version ${ext.version} | ID: ${ext.id}</div>
+                        <div class="ext-desc">${ext.description || 'No description provided.'}</div>
+                        <div class="ext-actions">
+                            <span style="font-size: 0.8rem; color: var(--accent); cursor: pointer;" onclick="openStore('${ext.id}')">View in Store</span>
+                            <button class="btn btn-danger" style="padding: 6px 12px; font-size: 0.8rem;" onclick="removeExtension('${ext.id}')">
+                                <i class="fas fa-trash"></i> Remove
+                            </button>
+                        </div>
+                    </div>
+                `;
+                grid.appendChild(card);
+            });
+        }
+
+        async function installExtension() {
+            const input = document.getElementById('extIdInput');
+            const id = input.value.trim();
+            if (!id) return;
+
+            document.getElementById('loader').style.display = 'flex';
+            try {
+                const result = await ipcRenderer.invoke('install-extension', id);
+                input.value = '';
+                await loadExtensions();
+                alert(`Successfully installed ${result.name}!`);
+            } catch (err) {
+                alert('Failed to install extension. Please check the ID or URL.');
+            } finally {
+                document.getElementById('loader').style.display = 'none';
+            }
+        }
+
+        async function toggleExtension(id, enabled) {
+            await ipcRenderer.invoke('toggle-extension', { id, enabled });
+            // Some extensions require a reload of views to take effect
+        }
+
+        async function removeExtension(id) {
+            if (confirm('Are you sure you want to remove this extension?')) {
+                const success = await ipcRenderer.invoke('remove-extension', id);
+                if (success) await loadExtensions();
+            }
+        }
+
+        function openStore(id) {
+            window.open(`https://chromewebstore.google.com/detail/${id}`);
+        }
+
+        // Initial Load
+        loadExtensions();
+        
+        // Handle search
+        document.getElementById('searchExt').addEventListener('input', (e) => {
+            const term = e.target.value.toLowerCase();
+            const cards = document.querySelectorAll('.extension-card');
+            cards.forEach(card => {
+                const name = card.querySelector('.ext-name').textContent.toLowerCase();
+                card.style.display = name.includes(term) ? 'flex' : 'none';
+            });
+        });
+    </script>
+</body>
+</html>

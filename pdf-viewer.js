@@ -13,6 +13,44 @@ let currentSearchIdx = -1;
 let selectedColor = '#a855f7';
 let pageTextData = {}; 
 
+function hexToRgba(hex, alpha) {
+    if (!hex) return `rgba(168, 85, 247, ${alpha})`;
+    const r = parseInt(hex.slice(1, 3), 16);
+    const g = parseInt(hex.slice(3, 5), 16);
+    const b = parseInt(hex.slice(5, 7), 16);
+    return `rgba(${r}, ${g}, ${b}, ${alpha})`;
+}
+
+function applyAccent(color) {
+    if (!color) return;
+    selectedColor = color;
+    document.documentElement.style.setProperty('--accent', color);
+    document.documentElement.style.setProperty('--accent-glow', hexToRgba(color, 0.4));
+    document.documentElement.style.setProperty('--accent-dim', hexToRgba(color, 0.08));
+    if (colorWell) {
+        colorWell.style.backgroundColor = color;
+        colorWell.style.boxShadow = `0 0 15px ${color}40`;
+    }
+    // Update existing annotations that were using the previous "accent"
+    Object.keys(annotations).forEach(pIdx => {
+        annotations[pIdx].forEach(ann => {
+            if (ann.isAccent) ann.color = ann.type === 'path' && ann.tool === 'marker' ? hexToRgba(color, 0.2) : color;
+        });
+        const canv = document.querySelector(`#wrapper-${pIdx} .drawing-layer`);
+        if (canv) redrawAnnotations(canv, pIdx);
+    });
+}
+
+// Global Settings Sync
+window.electronAPI.on('settings-changed', (e, s) => {
+    if (s && s.accentColor) applyAccent(s.accentColor);
+});
+
+// Initial Accent Setup
+window.electronAPI.invoke('get-settings').then(s => {
+    if (s && s.accentColor) applyAccent(s.accentColor);
+});
+
 const viewport = document.getElementById('viewport');
 const pageContainer = document.getElementById('page-container-wrapper');
 const thumbnails = document.getElementById('thumbnails');
@@ -26,7 +64,16 @@ const floatingOverlay = document.getElementById('floating-input-overlay');
 const floatingInput = document.getElementById('floating-text-input');
 
 const urlParams = new URLSearchParams(window.location.search);
-const pdfUrl = urlParams.get('file');
+let pdfUrl = urlParams.get('file');
+
+// Defensive Correction: if it's a raw local path (C:\ or /...) that missed the main process normalization
+if (pdfUrl && !pdfUrl.startsWith('http') && !pdfUrl.startsWith('file://') && !pdfUrl.startsWith('ocal://')) {
+    const isLocalDrive = /^[a-zA-Z]:[/\\]/.test(pdfUrl);
+    const isAbsPath = pdfUrl.startsWith('/') || pdfUrl.startsWith('\\\\');
+    if (isLocalDrive || isAbsPath) {
+        pdfUrl = 'file:///' + pdfUrl.replace(/\\/g, '/');
+    }
+}
 
 const CHROMA_PRESETS = [
     '#a855f7', '#8b5cf6', '#7c3aed', '#6d28d9', // Purples
@@ -40,7 +87,15 @@ if (pdfUrl) {
         tryGoogleFallback(pdfUrl);
     } else {
         // If it's a local file, use the custom Ocal PDF viewer
-        document.getElementById('doc-title').textContent = decodeURIComponent(pdfUrl.split(/[\\\/]/).pop());
+        let cleanName = decodeURIComponent(pdfUrl.split(/[\\\/]/).pop());
+        // Second-pass cleanup: if for some reason the name still has ?file= (the recursion bug)
+        if (cleanName.includes('?file=')) {
+            const parts = cleanName.split('?file=');
+            cleanName = decodeURIComponent(parts[parts.length - 1]).split(/[\\\/]/).pop();
+        }
+        // Remove common URL fragments
+        cleanName = cleanName.split(/[?#]/)[0];
+        document.getElementById('doc-title').textContent = cleanName || 'Document';
         loadPDF(pdfUrl);
     }
 }
@@ -244,7 +299,11 @@ function setupDrawing(canvas, pageIdx, viewport) {
             ctx.lineJoin = 'round'; ctx.lineCap = 'round';
             ctx.beginPath(); ctx.moveTo(lastX, lastY); ctx.lineTo(x, y); ctx.stroke();
             if (!annotations[pageIdx]) annotations[pageIdx] = [];
-            annotations[pageIdx].push({ type: 'path', x1: lastX, y1: lastY, x2: x, y2: y, tool: currentTool, color: cfg.color });
+            annotations[pageIdx].push({ 
+                type: 'path', x1: lastX, y1: lastY, x2: x, y2: y, 
+                tool: currentTool, color: cfg.color, 
+                isAccent: selectedColor === cfg.color // Mark as accent if matching
+            });
         }
         lastX = x; lastY = y;
     };

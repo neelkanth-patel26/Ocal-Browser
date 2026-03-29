@@ -1,0 +1,442 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Video Pop-out</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Outfit:wght@500;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --accent: #a855f7;
+            --bg-glass: rgba(12, 12, 14, 0.7);
+            --border-glass: rgba(255, 255, 255, 0.08);
+            --text-primary: #ffffff;
+            --text-secondary: rgba(255, 255, 255, 0.6);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            user-select: none;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background: transparent;
+            overflow: hidden;
+            width: 100vw;
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .pip-container {
+            flex: 1;
+            position: relative;
+            background: #000;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            overflow: hidden;
+            border-radius: 12px;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.5);
+            border: 1px solid var(--border-glass);
+        }
+
+        #pip-video {
+            width: 100%;
+            height: 100%;
+            object-fit: contain;
+        }
+
+        .controls-overlay {
+            position: absolute;
+            inset: 0;
+            background: linear-gradient(to top, rgba(0,0,0,0.8) 0%, transparent 40%, transparent 60%, rgba(0,0,0,0.4) 100%);
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            padding: 16px;
+            opacity: 0;
+            transition: opacity 0.3s;
+            z-index: 10;
+        }
+
+        .pip-container:hover .controls-overlay {
+            opacity: 1;
+        }
+
+        .top-bar {
+            display: flex;
+            justify-content: flex-end;
+            gap: 12px;
+        }
+
+        .bottom-bar {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        .btn {
+            background: var(--bg-glass);
+            border: 1px solid var(--border-glass);
+            color: white;
+            padding: 8px;
+            border-radius: 8px;
+            cursor: pointer;
+            backdrop-filter: blur(10px);
+            transition: all 0.2s;
+            width: 32px;
+            height: 32px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 13px;
+        }
+
+        .btn:hover {
+            background: rgba(255, 255, 255, 0.1);
+            border-color: var(--accent);
+            transform: translateY(-2px);
+        }
+
+        .btn-large {
+            width: auto;
+            padding: 0 12px;
+            font-weight: 500;
+        }
+
+        .main-controls {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+        }
+
+        .progress-container {
+            flex: 1;
+            height: 4px;
+            background: rgba(255, 255, 255, 0.2);
+            border-radius: 2px;
+            position: relative;
+            cursor: pointer;
+        }
+
+        .progress-bar {
+            height: 100%;
+            background: var(--accent);
+            border-radius: 2px;
+            width: 0%;
+            position: relative;
+        }
+
+        .progress-bar::after {
+            content: '';
+            position: absolute;
+            right: -6px;
+            top: 50%;
+            transform: translateY(-50%);
+            width: 12px;
+            height: 12px;
+            background: white;
+            border-radius: 50%;
+            box-shadow: 0 0 10px var(--accent);
+            opacity: 0;
+            transition: opacity 0.2s;
+        }
+
+        .progress-container:hover .progress-bar::after {
+            opacity: 1;
+        }
+
+        .volume-container {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            width: 80px;
+        }
+
+        input[type="range"] {
+            -webkit-appearance: none;
+            appearance: none;
+            width: 100%;
+            background: transparent;
+        }
+
+        input[type="range"]::-webkit-slider-runnable-track {
+            width: 100%;
+            height: 3px;
+            background: rgba(255,255,255,0.2);
+            border-radius: 2px;
+        }
+
+        input[type="range"]::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            height: 10px;
+            width: 10px;
+            border-radius: 50%;
+            background: white;
+            cursor: pointer;
+            margin-top: -3.5px;
+            box-shadow: 0 0 5px var(--accent);
+        }
+
+        .time-display {
+            font-size: 11px;
+            color: var(--text-secondary);
+            font-variant-numeric: tabular-nums;
+            font-weight: 600;
+        }
+
+        /* Drag Handle - Only at the top edge */
+        .drag-handle {
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 35px;
+            -webkit-app-region: drag;
+            z-index: 100;
+            background: linear-gradient(135deg, rgba(168, 85, 247, 0.1) 0%, rgba(12, 12, 14, 0.8) 100%);
+            backdrop-filter: blur(20px);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+            display: flex;
+            align-items: center;
+            padding: 0 16px;
+        }
+
+        .window-title {
+            flex: 1;
+            color: white;
+            font-size: 12px;
+            font-weight: 600;
+            opacity: 0.8;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .window-controls {
+            display: flex;
+            gap: 8px;
+        }
+
+        .window-btn {
+            width: 28px;
+            height: 28px;
+            border-radius: 6px;
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            color: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: all 0.2s;
+            -webkit-app-region: no-drag;
+        }
+
+        .window-btn:hover {
+            background: rgba(168, 85, 247, 0.2);
+            border-color: rgba(168, 85, 247, 0.5);
+        }
+
+        .no-drag {
+            -webkit-app-region: no-drag;
+        }
+
+        .pip-container {
+            flex: 1;
+            position: relative;
+            background: #000;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            overflow: hidden;
+            border-radius: 12px;
+        }
+
+        #pip-canvas {
+            width: 100%;
+            height: 100%;
+            object-fit: contain;
+            position: absolute;
+            inset: 0;
+            z-index: 2;
+        }
+
+        #pip-thumbnail {
+            position: absolute;
+            inset: 0;
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            filter: blur(15px) brightness(0.6);
+            z-index: 1;
+            opacity: 0;
+            transition: opacity 0.8s ease;
+        }
+
+        .loader-container {
+            position: absolute;
+            z-index: 10;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 15px;
+            transition: opacity 0.4s;
+            pointer-events: none;
+        }
+
+        .ora-loader {
+            width: 36px;
+            height: 36px;
+            border: 3px solid rgba(168, 85, 247, 0.2);
+            border-top: 3px solid var(--accent);
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            filter: drop-shadow(0 0 10px var(--accent));
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .progress-container {
+            height: 6px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 4px;
+            position: relative;
+            cursor: pointer;
+            margin-bottom: 6px;
+            overflow: hidden;
+        }
+
+        .progress-bar {
+            height: 100%;
+            background: linear-gradient(90deg, #a855f7, #c084fc);
+            border-radius: 4px;
+            width: 0%;
+            position: relative;
+            z-index: 2;
+            box-shadow: 0 0 15px rgba(168, 85, 247, 0.6);
+        }
+
+        #buffer-bar {
+            position: absolute;
+            height: 100%;
+            background: rgba(255, 255, 255, 0.15);
+            width: 0%;
+            z-index: 1;
+        }
+
+        .controls-overlay {
+            background: linear-gradient(to top, rgba(0,0,0,0.9) 0%, transparent 40%, transparent 60%, rgba(0,0,0,0.5) 100%);
+            z-index: 20;
+        }
+
+        .top-bar {
+            padding: 12px 16px;
+            opacity: 0.4;
+            transition: opacity 0.3s;
+        }
+
+        .pip-container:hover .top-bar {
+            opacity: 1;
+        }
+
+        .bottom-bar {
+            padding: 16px;
+            background: rgba(12, 12, 14, 0.6);
+            backdrop-filter: blur(25px);
+            border-top: 1px solid rgba(255, 255, 255, 0.05);
+        }
+
+        .btn {
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            backdrop-filter: blur(5px);
+        }
+
+        .btn:hover {
+            background: rgba(168, 85, 247, 0.25);
+            border-color: var(--accent);
+            transform: translateY(-1px);
+            box-shadow: 0 4px 12px rgba(168, 85, 247, 0.2);
+        }
+
+        .main-controls {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+        }
+
+        .volume-container {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            width: 100px;
+        }
+    </style>
+</head>
+<body>
+    <div class="drag-handle">
+        <div class="window-title" id="window-title">Video Pop-out</div>
+        <div class="window-controls">
+            <div class="window-btn" id="minimize-btn" title="Minimize">
+                <i class="fas fa-minus"></i>
+            </div>
+            <div class="window-btn" id="return-btn" title="Return to Tab">
+                <i class="fas fa-external-link-alt"></i>
+            </div>
+            <div class="window-btn" id="close-btn" title="Close Pop-out">
+                <i class="fas fa-times"></i>
+            </div>
+        </div>
+    </div>
+    
+    <div class="pip-container">
+        <!-- Background Fallback -->
+        <img id="pip-thumbnail" src="" />
+        
+        <!-- Live Video Render -->
+        <canvas id="pip-canvas"></canvas>
+        
+        <!-- Premium Loader -->
+        <div class="loader-container" id="pip-loader">
+            <div class="ora-loader"></div>
+            <div style="color: white; font-size: 10px; font-weight: 700; opacity: 0.6; letter-spacing: 2px;">SYNCING</div>
+        </div>
+        
+        <div class="controls-overlay">
+
+            <div class="bottom-bar no-drag">
+                <div class="progress-container" id="progress-container">
+                    <div id="buffer-bar"></div>
+                    <div class="progress-bar" id="progress-bar"></div>
+                </div>
+                
+                <div class="main-controls">
+                    <div class="btn" id="play-pause-btn">
+                        <i class="fas fa-play"></i>
+                    </div>
+
+                    <div class="btn btn-large" id="speed-btn" style="min-width: 55px; font-size: 10px; font-weight: 800; letter-spacing: 0.5px;">1.0X</div>
+                    
+                    <div class="time-display" id="time-display">0:00 / 0:00</div>
+
+                    <div class="volume-container" style="margin-left: auto;">
+                        <i class="fas fa-volume-up" id="volume-icon" style="color: white; font-size: 11px; opacity: 0.5;"></i>
+                        <input type="range" id="volume-slider" min="0" max="100" value="100" style="width: 100%;">
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="pip.js"></script>
+</body>
+</html>
