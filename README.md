@@ -1,8 +1,8 @@
 <p align="center">
-  <img src="assets/banner.png" alt="Ocal Browser Banner" width="100%">
+  <img src="icon.png" alt="Ocal Browser Logo" width="128">
 </p>
 
-# 🌌 Ocal Browser - The Agentic Experience
+# 🌌 Ocal Browser - Project Rescue (v2.6.78-beta)
 
 <p align="center">
   <a href="https://github.com/neelkanth-patel26/Ocal-Browser/releases">
@@ -18,36 +18,36 @@
 
 ---
 
-## 🚀 Overview
+## 🚀 Overview: The Agentic Experience
 
 **Ocal** is a next-generation, high-performance web browser meticulously crafted for the **Agentic Era**. Built on the robust **Electron** framework, it merges a stunning **glassmorphic aesthetic** with industry-leading **stealth technologies**, providing a seamless bridge between human interaction and AI-driven automation.
 
 > [!IMPORTANT]
-> Ocal is specifically engineered to bypass common automated browser detection, making it the perfect choice for users who value privacy and for developers building the next wave of agentic tools.
+> **Project Rescue (v2.6.78)**: This definitive update introduces a complete reconstruction of our privacy engine, resolving location leaks, regional search engine hijacking, and security blockades on high-traffic platforms.
 
 ---
 
-## ✨ Key Features
+## ✨ Key Features: Project Rescue
+
+### 🌐 Global Rescue Pool (VPN v4)
+- **Multi-Protocol Failover**: Dynamic PAC Engine utilizing SOCKS5, HTTPS, and SOCKS4 for a resilient, unbreakable connection.
+- **Dynamic Geolocation Masking**: Native Geolocation API mocking that matches your secure node coordinates (US, UK, DE, JP, IN).
+- **Stealth SOCKS5 Nodes**: High-anonymity nodes that bypass ISP-level throttling and Google Search security layers.
+
+### 🛡️ CyberStealth & Shield Engine
+- **NCR (No Country Redirect) Force**: Automatically intercepts and forces `google.com/ncr` to defeat regional search hijacking.
+- **Anti-Fingerprinting**: Built-in mechanisms to sanitize Shadow DOM traces and guard against sophisticated canvas fingerprinting.
+- **TrustedScript Bypass**: Reworked AdBlocker lifecycle to eliminate violations and page-loading hangs on YouTube.
+
+### 🎬 Portal Engine: Zero-Lag PiP
+- **Direct-Link Streaming**: Integrated high-performance video popout engine.
+- **Glassmorphic Controls**: Immersive circular HUD for professional video management.
+- **Smart Detection**: Automatic overlay injection on YouTube, Twitch, and more.
 
 ### 💎 Premium Glassmorphic UI
-Experience a desktop interface that feels alive. Subtle blurs, sophisticated transparency, and dynamic accent colors adapt to your workflow, creating a fluid and premium browsing environment.
-
-### 🛡️ Stealth & Privacy Engine
-- **Anti-Detection**: Built-in mechanisms to mask Electron's fingerprint, bypassing "Not Secure" blocks on high-security platforms like Google.
-- **Smart Emulation**: Automatic CDPSession handling for seamless OAuth/Google logins.
-- **Tracking Protection**: Integrated blocking for invasive trackers and analytics.
-
-### 🍱 Compact & Focused Modes
-Toggle instantly between a feature-rich desktop experience and a distraction-free **Compact Mode**, maximizing screen real estate for coding, streaming, or deep work.
-
-### 🎬 In-Window Streaming Excellence
-A bespoke **In-Window Fullscreen** mode designed for YouTube and Twitch. Enjoy immersive viewing without the disruptive window transitions of traditional operating systems.
-
-### 🎮 Built-in Entertainment: Ocal Runner
-Need a break? Access **Ocal Runner**, our integrated high-speed mini-game, directly from the sidebar. High scores, neon visuals, and instant fun.
-
-### 🤖 Agentic IPC Bridge
-Exposed APIs and secure preload hooks allow AI agents to interact with the web with human-like precision, making Ocal the ultimate "Agentic OS" for the web.
+- **Antigravity Design**: Sophisticated transparency with mica effect and dynamic accent colors.
+- **Compact & Focused Modes**: Toggle instantly between desktop and distraction-free layouts.
+- **High-DPI 512px Shield**: Enhanced security popup with ultra-smooth interaction patterns.
 
 ---
 
@@ -58,21 +58,20 @@ Exposed APIs and secure preload hooks allow AI agents to interact with the web w
   <img src="https://img.shields.io/badge/JavaScript-F7DF1E?style=for-the-badge&logo=javascript&logoColor=black" alt="JavaScript">
   <img src="https://img.shields.io/badge/HTML5-E34F26?style=for-the-badge&logo=html5&logoColor=white" alt="HTML5">
   <img src="https://img.shields.io/badge/CSS3-1572B6?style=for-the-badge&logo=css3&logoColor=white" alt="CSS3">
-  <img src="https://img.shields.io/badge/GitHub_Actions-2088FF?style=for-the-badge&logo=github-actions&logoColor=white" alt="CI/CD">
+  <img src="https://img.shields.io/badge/InnoSetup-6-magenta?style=for-the-badge" alt="InnoSetup">
 </p>
 
-- **Rendering**: Chromium-based Electron core with optimized User-Agent spoofing.
-- **Styling**: Vanilla CSS with advanced backdrop-filter effects.
-- **Architecture**: Multi-process model with isolated BrowserViews for enhanced stability.
-- **Build System**: Powered by [Electron Forge](https://www.electronforge.io/) and [Electron Builder](https://www.electron.build/).
+- **Core**: Chromium-based Electron core with custom Stealth Proxy layer.
+- **Styling**: Vanilla CSS with advanced backdrop-filter and Mica effects.
+- **Build System**: Powered by [Electron Forge](https://www.electronforge.io/) and [Inno Setup 6](https://jrsoftware.org/isinfo.php).
 
 ---
 
 ## 💾 Installation
 
 1. Navigate to the [Latest Releases](https://github.com/neelkanth-patel26/Ocal-Browser/releases/latest).
-2. Download the `ocal-0.9.9 Setup.exe` (or the portable version).
-3. Execute the installer and start exploring the web in a new dimension.
+2. Download the `Ocal-2.6.78-beta-Setup.exe`.
+3. Execute the installer. We use **Inno Setup** to ensure a premium, reliable desktop installation experience.
 
 ---
 
@@ -80,7 +79,7 @@ Exposed APIs and secure preload hooks allow AI agents to interact with the web w
 
 We welcome contributors! Here's how to get your local environment ready:
 
-```bash
+```powershell
 # 1. Clone the repository
 git clone https://github.com/neelkanth-patel26/Ocal-Browser.git
 
@@ -90,8 +89,8 @@ npm install
 # 3. Launch Ocal in development mode
 npm start
 
-# 4. Generate a production installer
-npm run build-exe
+# 4. Generate a production installer (Requires Inno Setup 6)
+.\build-dist.ps1
 ```
 
 ---
