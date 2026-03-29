@@ -2,1158 +2,1289 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
+    <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline' https://cdnjs.cloudflare.com https://unpkg.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com https://cdnjs.cloudflare.com; font-src 'self' https://fonts.gstatic.com https://cdnjs.cloudflare.com; img-src 'self' data: https:; connect-src 'self' https://suggestqueries.google.com https://api.github.com https://cdnjs.cloudflare.com https://unpkg.com;">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Settings - Ocal</title>
+    <title>Settings — Ocal</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:ital,wght@0,300;0,400;0,500;0,600;0,700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
         :root {
             --bg: #0c0c0e;
             --accent: #a855f7;
-            --accent-glow: rgba(168, 85, 247, 0.4);
+            --accent-glow: rgba(168, 85, 247, 0.18);
+            --accent-dim: rgba(168, 85, 247, 0.09);
+            --accent-border: rgba(168, 85, 247, 0.28);
             --text: #ffffff;
-            --text-dim: rgba(255, 255, 255, 0.6);
-            --text-muted: rgba(255, 255, 255, 0.35);
-            --glass: rgba(255, 255, 255, 0.03);
-            --glass-border: rgba(255, 255, 255, 0.08);
-            --card-radius: 18px;
+            --text-dim: rgba(255,255,255,0.55);
+            --text-muted: rgba(255,255,255,0.28);
+            --glass: rgba(255,255,255,0.04);
+            --glass-border: rgba(255,255,255,0.07);
+            --card-radius: 12px;
+            --sidebar-w: 232px;
+            --chrome-border: rgba(255,255,255,0.07);
         }
 
-        * { box-sizing: border-box; margin: 0; padding: 0; }
-        body { 
-            font-family: 'Inter', sans-serif; 
-            background: var(--bg); 
-            color: var(--text); 
-            height: 100vh; 
-            display: flex; 
-            align-items: center; 
-            justify-content: center; 
-            overflow: hidden;
-            letter-spacing: -0.01em;
+        * { box-sizing: border-box; margin: 0; padding: 0; outline: none; }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background: var(--bg);
+            color: var(--text);
+            height: 100vh; width: 100vw;
+            display: flex; overflow: hidden;
+            -webkit-font-smoothing: antialiased;
         }
 
-        /* ── Aurora Background ───────────────────────────────────────── */
-        .aurora-container {
-            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-            z-index: -1; overflow: hidden; background: var(--bg);
-        }
-        .orb {
-            position: absolute; border-radius: 50%; opacity: 0.45; filter: blur(100px);
-            animation: move linear infinite; transition: background 1s ease;
-        }
-        @keyframes move {
-            0% { transform: translate(0, 0) scale(1); }
-            33% { transform: translate(30%, 20%) scale(1.2); }
-            66% { transform: translate(-20%, 40%) scale(0.8); }
-            100% { transform: translate(0, 0) scale(1); }
+        /* ── Background ──────────────────────────────────────────── */
+        .engine-bg {
+            position: fixed; inset: 0; z-index: -1;
+            background:
+                radial-gradient(ellipse at 0% 0%, rgba(168,85,247,0.07) 0%, transparent 55%),
+                radial-gradient(ellipse at 100% 100%, rgba(59,130,246,0.05) 0%, transparent 55%),
+                #0c0c0e;
         }
 
-        /* ── Main Layout ────────────────────────────────────────────── */
-        .settings-glass {
-            width: 90%;
-            max-width: 1100px;
-            height: 85vh;
-            background: rgba(15, 15, 18, 0.4);
-            backdrop-filter: blur(50px) saturate(180%);
-            border: 1px solid var(--glass-border);
-            border-radius: 32px;
-            display: flex;
-            overflow: hidden;
-            box-shadow: 0 40px 100px rgba(0,0,0,0.6);
-            animation: containerEntry 0.8s cubic-bezier(0.16, 1, 0.3, 1);
-        }
-        @keyframes containerEntry {
-            from { opacity: 0; transform: scale(0.95); filter: blur(10px); }
-            to { opacity: 1; transform: scale(1); filter: blur(0); }
-        }
-
-        /* ── Sidebar ──────────────────────────────────────────────── */
+        /* ══════════════════════════════════════════════════════════
+           SIDEBAR
+        ══════════════════════════════════════════════════════════ */
         .sidebar {
-            width: 260px;
-            background: rgba(255, 255, 255, 0.015);
-            border-right: 1px solid var(--glass-border);
-            padding: 40px 20px;
-            display: flex;
-            flex-direction: column;
-            gap: 6px;
+            width: var(--sidebar-w);
+            background: rgba(7, 7, 10, 0.9);
+            border-right: 1px solid var(--chrome-border);
+            display: flex; flex-direction: column;
+            flex-shrink: 0; overflow: hidden;
         }
+
+        /* Top brand area */
         .sidebar-header {
-            font-size: 11px;
-            font-weight: 700;
-            text-transform: uppercase;
-            color: var(--text-muted);
-            letter-spacing: 0.1em;
-            margin-bottom: 20px;
-            padding-left: 12px;
+            padding: 24px 18px 20px;
+            border-bottom: 1px solid rgba(255,255,255,0.05);
         }
-        .nav-item {
-            padding: 12px 16px;
-            border-radius: 12px;
-            cursor: pointer;
-            display: flex;
-            align-items: center;
-            gap: 12px;
-            color: var(--text-dim);
-            transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
-            font-size: 14px;
-            font-weight: 500;
-        }
-        .nav-item:hover { background: rgba(255, 255, 255, 0.05); color: #fff; }
-        .nav-item.active {
-            background: rgba(255, 255, 255, 0.1);
-            color: #fff;
-            box-shadow: 0 4px 15px rgba(0,0,0,0.2);
-            border: 1px solid rgba(255,255,255,0.05);
-        }
-        .nav-item i { font-size: 16px; color: var(--accent); }
-
-        /* ── Content ──────────────────────────────────────────────── */
-        .content {
-            flex: 1;
-            padding: 60px 80px;
-            overflow-y: overlay;
-            scrollbar-width: none;
-        }
-        .content::-webkit-scrollbar { display: none; }
-
-        .section { display: none; animation: sectionIn 0.5s cubic-bezier(0.16, 1, 0.3, 1); }
-        .section.active { display: block; }
-
-        @keyframes sectionIn {
-            from { opacity: 0; transform: translateX(20px); }
-            to { opacity: 1; transform: translateX(0); }
-        }
-
-        h1 { font-size: 32px; font-weight: 700; margin-bottom: 40px; letter-spacing: -0.03em; }
-        .group { margin-bottom: 48px; }
-        .group-title { font-size: 12px; font-weight: 700; text-transform: uppercase; color: var(--text-muted); letter-spacing: 0.05em; margin-bottom: 24px; }
-
-        /* ── Cards & Rows ────────────────────────────────────────── */
-        .card {
-            background: rgba(255,255,255,0.02);
-            border: 1px solid var(--glass-border);
-            border-radius: var(--card-radius);
-            padding: 24px;
-            margin-bottom: 16px;
-            transition: all 0.3s;
-        }
-        .card:hover { border-color: rgba(255,255,255,0.15); background: rgba(255,255,255,0.035); }
-
-        .row { display: flex; align-items: center; justify-content: space-between; gap: 20px; }
-        .row-info { flex: 1; }
-        .row-info h4 { font-size: 15px; font-weight: 600; margin-bottom: 4px; color: #fff; }
-        .row-info p { font-size: 13px; color: var(--text-dim); line-height: 1.5; }
-
-        /* ── Controls ────────────────────────────────────────────── */
-        select {
-            background: rgba(0,0,0,0.2);
-            border: 1px solid var(--glass-border);
-            color: #fff;
-            padding: 10px 16px;
-            border-radius: 10px;
-            outline: none;
-            font-size: 13px;
-            cursor: pointer;
-            transition: all 0.2s;
-        }
-        select:hover { border-color: var(--accent); }
-
-        .btn {
-            background: var(--accent);
-            color: #fff;
-            border: none;
-            padding: 12px 24px;
-            border-radius: 12px;
-            cursor: pointer;
-            font-size: 14px;
-            font-weight: 600;
-            transition: all 0.3s;
+        .sidebar-logo {
             display: flex; align-items: center; gap: 10px;
+            margin-bottom: 0;
         }
-        .btn:hover { transform: translateY(-2px); box-shadow: 0 10px 20px var(--accent-glow); filter: brightness(1.1); }
-        .btn:active { transform: translateY(0); }
-        .btn.secondary { background: rgba(255,255,255,0.08); color: #fff; }
-        .btn.secondary:hover { background: rgba(255,255,255,0.15); box-shadow: none; }
+        .sidebar-logo-icon {
+            width: 30px; height: 30px; border-radius: 8px;
+            background: linear-gradient(135deg, var(--accent), #7c3aed);
+            display: flex; align-items: center; justify-content: center;
+            font-size: 14px; font-weight: 800; color: #fff;
+            box-shadow: 0 4px 12px rgba(168,85,247,0.35);
+            flex-shrink: 0;
+        }
+        .sidebar-logo-text {
+            font-size: 13px; font-weight: 600; color: #fff; letter-spacing: -0.02em;
+        }
+        .sidebar-logo-sub {
+            font-size: 10px; color: var(--text-muted); margin-top: 1px; letter-spacing: 0.02em;
+        }
 
-        /* Custom Toggle */
-        .toggle {
-            width: 44px; height: 24px; background: rgba(255,255,255,0.1);
-            border-radius: 100px; position: relative; cursor: pointer; transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
-        }
-        .toggle::after {
-            content: ''; position: absolute; top: 3px; left: 3px; width: 18px; height: 18px;
-            background: #fff; border-radius: 50%; transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
-            box-shadow: 0 2px 4px rgba(0,0,0,0.2);
-        }
-        .toggle.on { background: var(--accent); }
-        .toggle.on::after { left: 23px; }
+        /* Nav sections */
+        .sidebar-nav { flex: 1; padding: 12px 10px; overflow-y: auto; scrollbar-width: none; }
+        .sidebar-nav::-webkit-scrollbar { display: none; }
 
-        /* Profile Cards */
-        .profile-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(160px, 1fr)); gap: 16px; }
-        .profile-card {
+        .nav-section-label {
+            font-size: 9.5px; font-weight: 700; text-transform: uppercase;
+            letter-spacing: 1.5px; color: var(--text-muted);
+            padding: 8px 10px 4px; margin-top: 4px;
+        }
+
+        .nav-item {
+            display: flex; align-items: center; gap: 10px;
+            padding: 9px 12px; border-radius: 9px; height: 38px;
+            color: var(--text-muted); font-size: 13px; font-weight: 500;
+            cursor: pointer; transition: all 0.15s ease;
+            position: relative; margin-bottom: 1px;
+        }
+        .nav-item-icon {
+            width: 28px; height: 28px; border-radius: 7px;
+            display: flex; align-items: center; justify-content: center;
+            font-size: 12px; flex-shrink: 0;
+            background: rgba(255,255,255,0.05);
+            color: var(--text-muted);
+            transition: all 0.15s;
+        }
+        .nav-item span { flex: 1; }
+        .nav-item:hover {
+            background: rgba(255,255,255,0.05);
+            color: rgba(255,255,255,0.8);
+        }
+        .nav-item:hover .nav-item-icon {
+            background: rgba(255,255,255,0.08);
+            color: rgba(255,255,255,0.7);
+        }
+        .nav-item.active {
+            background: rgba(168,85,247,0.1);
+            color: #fff;
+        }
+        .nav-item.active .nav-item-icon {
+            background: rgba(168,85,247,0.2);
+            color: var(--accent);
+            box-shadow: 0 0 10px rgba(168,85,247,0.2);
+        }
+        .nav-item.active::before {
+            content: ''; position: absolute; left: 0; top: 22%; height: 56%;
+            width: 3px; background: var(--accent); border-radius: 0 3px 3px 0;
+        }
+
+        /* Color-coded icons per section */
+        .nav-item[data-section="general"] .nav-item-icon    { --icon-c: #a78bfa; }
+        .nav-item[data-section="search"] .nav-item-icon     { --icon-c: #60a5fa; }
+        .nav-item[data-section="homepage"] .nav-item-icon   { --icon-c: #34d399; }
+        .nav-item[data-section="profiles"] .nav-item-icon   { --icon-c: #f472b6; }
+        .nav-item[data-section="security"] .nav-item-icon   { --icon-c: #4ade80; }
+        .nav-item[data-section="extensions"] .nav-item-icon { --icon-c: #fb923c; }
+        .nav-item[data-section="shortcuts"] .nav-item-icon  { --icon-c: #facc15; }
+        .nav-item[data-section="about"] .nav-item-icon      { --icon-c: #94a3b8; }
+
+        .nav-item.active[data-section="general"] .nav-item-icon    { background: rgba(167,139,250,0.15); color: var(--icon-c); }
+        .nav-item.active[data-section="search"] .nav-item-icon     { background: rgba(96,165,250,0.15); color: var(--icon-c); }
+        .nav-item.active[data-section="homepage"] .nav-item-icon   { background: rgba(52,211,153,0.15); color: var(--icon-c); }
+        .nav-item.active[data-section="profiles"] .nav-item-icon   { background: rgba(244,114,182,0.15); color: var(--icon-c); }
+        .nav-item.active[data-section="security"] .nav-item-icon   { background: rgba(74,222,128,0.15); color: var(--icon-c); }
+        .nav-item.active[data-section="extensions"] .nav-item-icon { background: rgba(251,146,60,0.15); color: var(--icon-c); }
+        .nav-item.active[data-section="shortcuts"] .nav-item-icon  { background: rgba(250,204,21,0.15); color: var(--icon-c); }
+        .nav-item.active[data-section="about"] .nav-item-icon      { background: rgba(148,163,184,0.15); color: var(--icon-c); }
+
+        .nav-item:hover[data-section="general"] .nav-item-icon    { color: var(--icon-c); }
+        .nav-item:hover[data-section="search"] .nav-item-icon     { color: var(--icon-c); }
+        .nav-item:hover[data-section="homepage"] .nav-item-icon   { color: var(--icon-c); }
+        .nav-item:hover[data-section="profiles"] .nav-item-icon   { color: var(--icon-c); }
+        .nav-item:hover[data-section="security"] .nav-item-icon   { color: var(--icon-c); }
+        .nav-item:hover[data-section="extensions"] .nav-item-icon { color: var(--icon-c); }
+        .nav-item:hover[data-section="shortcuts"] .nav-item-icon  { color: var(--icon-c); }
+        .nav-item:hover[data-section="about"] .nav-item-icon      { color: var(--icon-c); }
+
+        .nav-divider {
+            height: 1px; background: rgba(255,255,255,0.05);
+            margin: 8px 10px;
+        }
+
+        /* Sidebar footer */
+        .sidebar-footer {
+            padding: 14px 18px;
+            border-top: 1px solid rgba(255,255,255,0.05);
+        }
+        .sidebar-version {
+            font-size: 10px; color: var(--text-muted);
+            display: flex; align-items: center; gap: 6px;
+        }
+        .sidebar-version-dot {
+            width: 6px; height: 6px; border-radius: 50%;
+            background: #4ade80; box-shadow: 0 0 6px rgba(74,222,128,0.5);
+            flex-shrink: 0;
+        }
+
+        /* ══════════════════════════════════════════════════════════
+           CONTENT
+        ══════════════════════════════════════════════════════════ */
+        .content {
+            flex: 1; overflow-y: auto; scroll-behavior: smooth;
+            scrollbar-width: thin;
+            scrollbar-color: rgba(255,255,255,0.08) transparent;
+        }
+        .content::-webkit-scrollbar { width: 5px; }
+        .content::-webkit-scrollbar-track { background: transparent; }
+        .content::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.08); border-radius: 10px; }
+
+        .section { display: none; }
+        .section.active {
+            display: block;
+            animation: sec-in 0.25s cubic-bezier(0.16,1,0.3,1);
+        }
+        @keyframes sec-in {
+            from { opacity: 0; transform: translateY(10px); }
+            to   { opacity: 1; transform: translateY(0); }
+        }
+
+        /* Page header */
+        .page-header {
+            padding: 36px 48px 0;
+            border-bottom: 1px solid rgba(255,255,255,0.05);
+            padding-bottom: 20px;
+            margin-bottom: 32px;
+        }
+        .page-eyebrow {
+            font-size: 10px; font-weight: 700; text-transform: uppercase;
+            letter-spacing: 1.5px; color: var(--accent); margin-bottom: 6px;
+        }
+        .page-title {
+            font-size: 24px; font-weight: 700; letter-spacing: -0.04em;
+            color: #fff; margin-bottom: 4px;
+        }
+        .page-desc {
+            font-size: 13px; color: var(--text-muted); font-weight: 400;
+            line-height: 1.5;
+        }
+
+        /* Content body */
+        .page-body { padding: 0 48px 48px; }
+
+        /* Groups */
+        .group { margin-bottom: 32px; }
+        .group-label {
+            font-size: 10px; font-weight: 700; text-transform: uppercase;
+            letter-spacing: 1.5px; color: var(--text-muted);
+            margin-bottom: 10px; display: flex; align-items: center; gap: 8px;
+        }
+        .group-label::after {
+            content: ''; flex: 1; height: 1px;
+            background: rgba(255,255,255,0.05);
+        }
+
+        /* Cards */
+        .card {
             background: var(--glass);
             border: 1px solid var(--glass-border);
-            border-radius: 20px;
-            padding: 24px;
-            text-align: center;
-            cursor: pointer;
-            transition: all 0.3s;
+            border-radius: var(--card-radius);
+            margin-bottom: 6px;
+            overflow: hidden;
+            transition: border-color 0.15s;
         }
-        .profile-card:hover { transform: translateY(-4px); border-color: var(--accent); background: rgba(255,255,255,0.05); }
-        .profile-card.active { border-color: var(--accent); background: var(--accent-dim); box-shadow: 0 0 20px var(--accent-glow); }
-        .profile-card i { font-size: 32px; color: var(--accent); margin-bottom: 12px; }
-        .profile-card span { display: block; font-size: 14px; font-weight: 600; margin-bottom: 4px; }
-        .profile-card .status { font-size: 10px; color: var(--accent); font-weight: 700; letter-spacing: 0.1em; }
+        .card:hover { border-color: rgba(255,255,255,0.11); }
+        .card:last-child { margin-bottom: 0; }
 
-        .dot { 
-            width: 24px; height: 24px; border-radius: 50%; cursor: pointer; border: 2px solid transparent; 
-            transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1); box-shadow: 0 4px 10px rgba(0,0,0,0.3);
+        .card-row {
+            display: flex; align-items: center;
+            justify-content: space-between; gap: 16px;
+            padding: 14px 18px;
         }
-        .dot:hover { transform: scale(1.2); }
-        .dot.active { border-color: #fff; box-shadow: 0 0 15px currentColor; transform: scale(1.1); }
-        .accent-picker { display: flex; gap: 12px; }
-        
-        /* Options Grid */
-        .option-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 16px; }
-        .option-card {
-            background: rgba(255,255,255,0.02);
-            border: 1px solid var(--glass-border);
-            border-radius: 20px;
-            padding: 20px;
-            display: flex;
-            align-items: center;
-            gap: 16px;
-            cursor: pointer;
-            transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
-        }
-        .option-card:hover { background: rgba(255,255,255,0.05); transform: translateY(-2px); border-color: rgba(255,255,255,0.2); }
-        .option-card.active { border-color: var(--accent); background: rgba(255,255,255,0.06); box-shadow: 0 8px 25px var(--accent-glow); }
-        .option-icon {
-            width: 40px; height: 40px; border-radius: 12px;
-            background: var(--glass); display: flex; align-items: center; justify-content: center;
-            font-size: 18px; color: var(--accent);
-        }
-        .option-info h5 { font-size: 14px; font-weight: 600; margin-bottom: 2px; }
-        .option-info p { font-size: 11px; color: var(--text-muted); }
-
-        /* Security Hub */
-        .security-hub {
-            background: linear-gradient(135deg, rgba(168, 85, 247, 0.05), transparent);
-            border: 1px solid var(--glass-border); border-radius: 24px; padding: 30px; margin-bottom: 32px;
-            display: flex; align-items: center; gap: 24px;
-        }
-        .pulse-shield {
-            width: 60px; height: 60px; border-radius: 50%; background: var(--accent-glow);
-            display: flex; align-items: center; justify-content: center; position: relative;
-        }
-        .pulse-shield i { font-size: 24px; color: var(--accent); z-index: 2; }
-        .pulse-shield::after {
-            content: ''; position: absolute; inset: 0; border-radius: 50%;
-            background: var(--accent); opacity: 0.4; animation: shieldPulse 2s infinite;
-        }
-        @keyframes shieldPulse {
-            0% { transform: scale(1); opacity: 0.4; }
-            100% { transform: scale(1.6); opacity: 0; }
+        .card-row + .card-row {
+            border-top: 1px solid rgba(255,255,255,0.05);
         }
 
-        /* About Page */
-        .about-wrap {
-            height: 100%;
-            display: flex; flex-direction: column; align-items: center; justify-content: center;
-            text-align: center;
+        .card-info { flex: 1; min-width: 0; }
+        .card-info h4 {
+            font-size: 13.5px; font-weight: 600; color: #fff;
+            margin-bottom: 2px;
         }
-        .logo-breather {
-            width: 100px; height: 100px;
-            background: linear-gradient(135deg, #fff, var(--accent));
-            border-radius: 24px;
+        .card-info p {
+            font-size: 12px; color: var(--text-muted);
+            line-height: 1.5;
+        }
+
+        /* Toggle */
+        .toggle {
+            width: 38px; height: 22px;
+            background: rgba(255,255,255,0.1);
+            border-radius: 100px; position: relative; cursor: pointer;
+            transition: background 0.25s; flex-shrink: 0;
+            border: 1px solid rgba(255,255,255,0.08);
+        }
+        .toggle::after {
+            content: ''; position: absolute; top: 3px; left: 3px;
+            width: 14px; height: 14px;
+            background: rgba(255,255,255,0.5); border-radius: 50%;
+            transition: all 0.25s cubic-bezier(0.16,1,0.3,1);
+        }
+        .toggle.on { background: var(--accent); border-color: var(--accent); }
+        .toggle.on::after { left: 19px; background: #fff; box-shadow: 0 1px 4px rgba(0,0,0,0.3); }
+
+        /* Button */
+        .btn {
+            padding: 8px 16px; border-radius: 8px;
+            font-size: 12px; font-weight: 600; cursor: pointer;
+            transition: all 0.15s; font-family: 'Inter', sans-serif;
+            border: none; display: inline-flex; align-items: center; gap: 6px;
+            white-space: nowrap;
+        }
+        .btn.primary { background: var(--accent); color: #fff; box-shadow: 0 2px 10px var(--accent-glow); }
+        .btn.primary:hover { filter: brightness(1.1); transform: translateY(-1px); }
+        .btn.secondary { background: rgba(255,255,255,0.07); color: var(--text-dim); border: 1px solid var(--glass-border); }
+        .btn.secondary:hover { background: rgba(255,255,255,0.1); color: #fff; }
+        .btn.danger { background: rgba(239,68,68,0.1); color: #f87171; border: 1px solid rgba(239,68,68,0.2); }
+        .btn.danger:hover { background: rgba(239,68,68,0.18); color: #fca5a5; }
+
+        /* Color accent picker */
+        .color-row { display: flex; gap: 8px; align-items: center; }
+        .color-dot {
+            width: 26px; height: 26px; border-radius: 50%; cursor: pointer;
+            border: 2px solid transparent; transition: all 0.15s;
+            position: relative;
+        }
+        .color-dot:hover { transform: scale(1.15); }
+        .color-dot.active { border-color: #fff; box-shadow: 0 0 0 3px rgba(255,255,255,0.15); transform: scale(1.1); }
+
+        /* Grid choices */
+        .choice-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; }
+        .choice-item {
+            background: var(--glass); border: 1px solid var(--glass-border);
+            border-radius: 10px; padding: 14px 10px;
+            text-align: center; cursor: pointer; transition: all 0.15s;
+            display: flex; flex-direction: column; align-items: center; gap: 8px;
+        }
+        .choice-item i { font-size: 18px; color: var(--text-muted); transition: color 0.15s; }
+        .choice-item span { font-size: 12px; font-weight: 600; color: var(--text-muted); transition: color 0.15s; }
+        .choice-item:hover { background: rgba(255,255,255,0.07); border-color: rgba(255,255,255,0.12); }
+        .choice-item:hover i, .choice-item:hover span { color: rgba(255,255,255,0.8); }
+        .choice-item.active {
+            background: var(--accent-dim);
+            border-color: var(--accent-border);
+        }
+        .choice-item.active i { color: var(--accent); }
+        .choice-item.active span { color: #fff; }
+
+        /* Range slider */
+        .slider-row { display: flex; align-items: center; justify-content: space-between; margin-bottom: 10px; }
+        .slider-label { font-size: 13px; font-weight: 500; color: #fff; }
+        .slider-value { font-size: 11px; font-weight: 700; color: var(--accent); font-variant-numeric: tabular-nums; }
+        input[type="range"] {
+            -webkit-appearance: none; appearance: none;
+            width: 100%; height: 3px; border-radius: 100px;
+            background: rgba(255,255,255,0.1); cursor: pointer;
+        }
+        input[type="range"]::-webkit-slider-thumb {
+            -webkit-appearance: none; width: 16px; height: 16px;
+            background: #fff; border: 3px solid var(--accent);
+            border-radius: 50%; transition: transform 0.15s;
+            box-shadow: 0 0 8px var(--accent-glow);
+        }
+        input[type="range"]::-webkit-slider-thumb:hover { transform: scale(1.2); }
+
+        /* Shield hero card */
+        .shield-hero {
+            background: linear-gradient(135deg, rgba(168,85,247,0.06) 0%, rgba(99,102,241,0.04) 100%);
+            border: 1px solid rgba(168,85,247,0.15);
+            border-radius: 14px; padding: 20px; margin-bottom: 24px;
+            display: flex; align-items: center; gap: 18px; position: relative; overflow: hidden;
+        }
+        .shield-hero::before {
+            content: ''; position: absolute; right: -30px; top: -30px;
+            width: 140px; height: 140px; border-radius: 50%;
+            background: radial-gradient(circle, rgba(168,85,247,0.08) 0%, transparent 70%);
+        }
+        .shield-hero-icon {
+            width: 52px; height: 52px; border-radius: 14px; flex-shrink: 0;
+            background: linear-gradient(135deg, rgba(168,85,247,0.3), rgba(99,102,241,0.3));
+            border: 1px solid rgba(168,85,247,0.3);
             display: flex; align-items: center; justify-content: center;
-            font-size: 60px; font-weight: 900; color: #000;
-            box-shadow: 0 0 50px var(--accent-glow);
-            margin-bottom: 30px;
-            animation: orbBounce 4s ease-in-out infinite;
+            font-size: 22px; color: var(--accent); position: relative; z-index: 1;
         }
-        @keyframes orbBounce {
-            0%, 100% { transform: translateY(0) scale(1.05); box-shadow: 0 0 40px var(--accent-glow); }
-            50% { transform: translateY(-15px) scale(1); box-shadow: 0 0 80px var(--accent-glow); }
+        .shield-hero-body { flex: 1; position: relative; z-index: 1; }
+        .shield-status {
+            display: inline-flex; align-items: center; gap: 5px;
+            padding: 3px 10px; border-radius: 100px;
+            font-size: 10px; font-weight: 700; text-transform: uppercase;
+            letter-spacing: 0.8px; margin-bottom: 6px;
         }
-        .version-info {
-            background: rgba(255,255,255,0.05);
-            padding: 6px 16px; border-radius: 100px;
-            font-size: 11px; font-weight: 700; color: var(--text-muted);
-            letter-spacing: 0.1em; margin-bottom: 20px; border: 1px solid var(--glass-border);
+        .shield-status.ok { background: rgba(74,222,128,0.1); color: #4ade80; border: 1px solid rgba(74,222,128,0.2); }
+        .shield-status.ok::before { content: ''; width: 5px; height: 5px; border-radius: 50%; background: #4ade80; }
+        .shield-title { font-size: 16px; font-weight: 700; letter-spacing: -0.02em; margin-bottom: 2px; }
+        .shield-desc { font-size: 12px; color: var(--text-muted); }
+
+        /* Extension cards */
+        .ext-card {
+            background: var(--glass); border: 1px solid var(--glass-border);
+            border-radius: var(--card-radius); padding: 14px 18px;
+            display: flex; align-items: center; gap: 14px;
+            margin-bottom: 6px; transition: all 0.15s;
         }
-        .about-text { max-width: 400px; color: var(--text-dim); line-height: 1.6; margin-bottom: 40px; font-size: 14px; }
-        .company-brand { font-weight: 700; color: var(--accent); display: block; margin-top: 10px; }
-        
-        /* Extensions Special Styling */
-        .ext-container {
-            height: 60vh; display: flex; flex-direction: column; align-items: center; justify-content: center;
+        .ext-card:hover { border-color: rgba(255,255,255,0.11); background: rgba(255,255,255,0.05); }
+        .ext-icon {
+            width: 40px; height: 40px; border-radius: 10px; flex-shrink: 0;
+            display: flex; align-items: center; justify-content: center;
+            font-size: 18px; background: var(--accent-dim); color: var(--accent);
+        }
+        .ext-body { flex: 1; min-width: 0; }
+        .ext-body h5 { font-size: 13.5px; font-weight: 600; margin-bottom: 2px; }
+        .ext-body p { font-size: 11.5px; color: var(--text-muted); }
+
+        /* Shortcut cards */
+        .shortcut-row {
+            display: flex; align-items: center; justify-content: space-between;
+            padding: 12px 18px; border-bottom: 1px solid rgba(255,255,255,0.04);
+        }
+        .shortcut-row:last-child { border-bottom: none; }
+        .shortcut-info h4 { font-size: 13px; font-weight: 600; margin-bottom: 1px; }
+        .shortcut-info p { font-size: 11px; color: var(--text-muted); }
+        .key-stack { display: flex; gap: 4px; align-items: center; }
+        .key-tag {
+            background: rgba(255,255,255,0.07);
+            border: 1px solid rgba(255,255,255,0.1);
+            border-bottom: 2px solid rgba(255,255,255,0.16);
+            color: rgba(255,255,255,0.8);
+            padding: 3px 8px; border-radius: 5px;
+            font-size: 10px; font-weight: 700;
+            letter-spacing: 0.3px;
+            font-variant: small-caps;
+        }
+
+        /* Shortcut search */
+        .shortcut-search-bar {
+            display: flex; align-items: center; gap: 10px;
+            background: rgba(255,255,255,0.04); border: 1px solid var(--glass-border);
+            border-radius: 10px; padding: 10px 14px; margin-bottom: 20px;
+            transition: all 0.15s;
+        }
+        .shortcut-search-bar:focus-within {
+            border-color: var(--accent-border);
+            box-shadow: 0 0 0 3px var(--accent-glow);
+        }
+        .shortcut-search-bar i { color: var(--text-muted); font-size: 12px; }
+        .shortcut-search-bar input {
+            flex: 1; background: none; border: none; color: #fff;
+            font-size: 13px; font-family: 'Inter', sans-serif;
+        }
+        .shortcut-search-bar input::placeholder { color: var(--text-muted); }
+
+        /* Category pills for shortcuts */
+        .cat-pills { display: flex; gap: 6px; margin-bottom: 20px; }
+        .cat-pill {
+            display: flex; align-items: center; gap: 6px;
+            padding: 6px 12px; border-radius: 8px;
+            background: rgba(255,255,255,0.04); border: 1px solid var(--glass-border);
+            color: var(--text-muted); font-size: 12px; font-weight: 600;
+            cursor: pointer; transition: all 0.15s;
+        }
+        .cat-pill i { font-size: 11px; }
+        .cat-pill:hover { background: rgba(255,255,255,0.07); color: rgba(255,255,255,0.8); }
+        .cat-pill.active { background: var(--accent-dim); border-color: var(--accent-border); color: #fff; }
+
+        /* About page */
+        .about-hero {
+            text-align: center; padding: 32px 24px 24px;
+            background: var(--glass); border: 1px solid var(--glass-border);
+            border-radius: 14px; margin-bottom: 16px;
+        }
+        .about-logo {
+            width: 72px; height: 72px; margin: 0 auto 16px;
+            background: linear-gradient(135deg, #fff 0%, var(--accent) 100%);
+            border-radius: 20px; display: flex; align-items: center; justify-content: center;
+            font-size: 38px; font-weight: 800; color: #0c0c0e;
+            box-shadow: 0 12px 30px var(--accent-glow);
+        }
+        .about-name { font-size: 20px; font-weight: 700; letter-spacing: -0.03em; margin-bottom: 8px; }
+        .version-badge {
+            display: inline-flex; align-items: center; gap: 6px;
+            padding: 4px 12px; border-radius: 100px;
+            background: rgba(255,255,255,0.06); border: 1px solid rgba(255,255,255,0.1);
+            font-size: 11px; font-weight: 600; color: rgba(255,255,255,0.7);
+        }
+        .diag-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; margin-top: 12px; }
+        .diag-item {
+            background: rgba(255,255,255,0.03); padding: 10px 14px; border-radius: 10px;
+            border: 1px solid var(--glass-border); display: flex; justify-content: space-between; align-items: center;
+        }
+        .diag-item label { font-size: 10px; font-weight: 700; text-transform: uppercase; color: var(--text-muted); letter-spacing: 0.8px; }
+        .diag-item span { font-size: 11.5px; font-weight: 600; color: var(--text-dim); }
+
+        .update-panel {
+            background: var(--glass); border: 1px solid var(--glass-border);
+            border-radius: var(--card-radius); padding: 16px 18px;
+        }
+        .update-bar {
+            width: 100%; height: 3px; background: rgba(255,255,255,0.08);
+            border-radius: 100px; margin: 12px 0; display: none; overflow: hidden;
+        }
+        .update-fill { height: 100%; width: 0%; background: var(--accent); border-radius: 100px; transition: width 0.4s; }
+
+        /* Mini layout preview for home page */
+        .mini-layout {
+            width: 100%; height: 48px;
+            display: flex; flex-direction: column; justify-content: flex-start;
+            gap: 4px; margin-bottom: 4px;
+        }
+        .mini-search {
+            width: 100%; height: 8px; border-radius: 4px;
+            background: rgba(168,85,247,0.3); flex-shrink: 0;
+        }
+        .mini-grid {
+            display: grid; grid-template-columns: 1fr 1fr; gap: 3px; flex: 1;
+        }
+        .mini-tile { border-radius: 3px; background: rgba(255,255,255,0.08); }
+
+        /* Profile grid */
+        .profile-card {
+            background: var(--glass); border: 1px solid var(--glass-border);
+            border-radius: 12px; padding: 20px; text-align: center;
+            cursor: pointer; transition: all 0.15s;
+        }
+        .profile-card:hover { border-color: rgba(255,255,255,0.12); background: rgba(255,255,255,0.06); }
+        .profile-avatar {
+            width: 52px; height: 52px; border-radius: 16px;
+            margin: 0 auto 12px; display: flex; align-items: center;
+            justify-content: center; font-size: 20px;
+            background: var(--accent-dim); color: var(--accent);
+        }
+        .profile-name { font-size: 13px; font-weight: 600; margin-bottom: 3px; }
+        .profile-type { font-size: 11px; color: var(--text-muted); }
+
+        /* ── About Page ──────────────────────────────────────────── */
+        .about-layout {
+            display: grid;
+            grid-template-columns: 260px 1fr;
+            gap: 16px;
+            align-items: start;
+        }
+        .about-hero-card {
+            background: linear-gradient(160deg, rgba(168,85,247,0.1) 0%, rgba(99,102,241,0.06) 100%);
+            border: 1px solid rgba(168,85,247,0.18);
+            border-radius: 16px;
+            padding: 28px 20px 24px;
+            text-align: center;
             position: relative; overflow: hidden;
         }
-        .ext-icon-stack {
-            position: relative; width: 120px; height: 120px; margin-bottom: 40px;
-            animation: extFloat 6s ease-in-out infinite;
-        }
-        .ext-glass {
-            position: absolute; inset: 0; 
-            background: linear-gradient(135deg, rgba(255,255,255,0.2), transparent);
-            backdrop-filter: blur(10px); border: 1px solid rgba(255,255,255,0.1);
-            border-radius: 30px; box-shadow: 0 20px 40px rgba(0,0,0,0.3);
-            display: flex; align-items: center; justify-content: center; z-index: 2;
-        }
-        .ext-glow {
-            position: absolute; inset: -20px; background: var(--accent);
-            filter: blur(40px); opacity: 0.2; z-index: 1; border-radius: 50%;
-        }
-        .ext-particle {
-            position: absolute; width: 6px; height: 6px; background: var(--accent);
-            border-radius: 2px; opacity: 0.4; pointer-events: none;
-            animation: particleFloat 8s linear infinite;
-        }
-        @keyframes extFloat {
-            0%, 100% { transform: translateY(0) rotate(0deg); }
-            50% { transform: translateY(-20px) rotate(5deg); }
-        }
-        @keyframes particleFloat {
-            0% { transform: translate(0, 0) rotate(0deg); opacity: 0; }
-            20% { opacity: 0.6; }
-            80% { opacity: 0.6; }
-            100% { transform: translate(var(--dx), var(--dy)) rotate(360deg); opacity: 0; }
-        }
-        /* Search Engine & Layout Cards */
-        .search-engine-grid { display: grid; gap: 12px; }
-        .engine-card {
-            background: rgba(255,255,255,0.02);
-            border: 1px solid var(--glass-border);
-            border-radius: 16px;
-            padding: 20px;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            cursor: pointer;
-            transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
-            color: var(--text-dim);
-            position: relative;
-            overflow: hidden;
-            border-bottom: 2px solid transparent;
-        }
-        .engine-card:hover { 
-            background: rgba(255,255,255,0.05); 
-            border-color: rgba(255,255,255,0.15); 
-            transform: translateY(-4px); 
-        }
-        .engine-card.active {
-            background: rgba(168, 85, 247, 0.1);
-            border-color: var(--accent);
-            border-bottom-color: var(--accent);
-            color: #fff;
-            box-shadow: 0 12px 30px rgba(168, 85, 247, 0.2);
-            transform: translateY(-2px);
-        }
-
-        /* Mini Layout Mockups */
-        .layout-mockup {
-            width: 100px; height: 60px;
-            background: rgba(0,0,0,0.4); border-radius: 10px;
-            margin-bottom: 14px; position: relative;
-            border: 1px solid rgba(255,255,255,0.1);
-            padding: 6px; display: flex; flex-direction: column; gap: 6px;
-            transition: all 0.4s;
-            box-shadow: inset 0 2px 10px rgba(0,0,0,0.5);
-        }
-        .engine-card:hover .layout-mockup { border-color: rgba(168,85,247,0.4); transform: scale(1.05); }
-        .engine-card.active .layout-mockup { border-color: var(--accent); background: #000; }
-        
-        .mock-search { width: 100%; height: 8px; background: rgba(255,255,255,0.1); border-radius: 4px; transition: 0.3s; }
-        .engine-card.active .mock-search { 
-            background: var(--accent); 
-            box-shadow: 0 0 12px var(--accent-glow);
-            animation: mockPulse 2s infinite ease-in-out;
-        }
-        @keyframes mockPulse {
-            0% { opacity: 0.8; box-shadow: 0 0 8px var(--accent-glow); }
-            50% { opacity: 1; box-shadow: 0 0 16px var(--accent); }
-            100% { opacity: 0.8; box-shadow: 0 0 8px var(--accent-glow); }
-        }
-        
-        .mock-tiles { display: grid; grid-template-columns: repeat(4, 1fr); gap: 4px; }
-        .mock-tile { width: 100%; height: 12px; background: rgba(255,255,255,0.06); border-radius: 3px; }
-
-        .slider {
-            -webkit-appearance: none;
-            width: 100%; height: 8px;
-            background: linear-gradient(90deg, rgba(168,85,247,0.2) 0%, rgba(255,255,255,0.05) 100%);
-            border-radius: 100px; outline: none; transition: 0.3s;
-            border: 1px solid rgba(255,255,255,0.03);
-        }
-        .slider::-webkit-slider-thumb {
-            -webkit-appearance: none;
-            width: 20px; height: 20px;
-            background: #fff; border-radius: 50%;
-            cursor: pointer;
-            box-shadow: 0 0 20px var(--accent-glow);
-            border: 3px solid var(--accent);
-            transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
-        }
-        .slider::-webkit-slider-thumb:hover { transform: scale(1.2); box-shadow: 0 0 30px var(--accent); }
-
-        /* Sidebar items */
-        .sidebar-item {
-            padding: 10px 16px;
-            border-radius: 12px;
-            cursor: pointer;
-            display: flex;
-            align-items: center;
-            gap: 12px;
-            color: var(--text-dim);
-            transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
-            font-size: 14px;
-            font-weight: 500;
-        }
-        .sidebar-item:hover { background: rgba(255, 255, 255, 0.05); color: #fff; }
-        .sidebar-item.active {
-            background: rgba(255, 255, 255, 0.1);
-            color: #fff;
-            box-shadow: 0 4px 15px rgba(0,0,0,0.2);
-            border: 1px solid rgba(255,255,255,0.05);
-        }
-        .sidebar-item i { font-size: 16px; color: var(--accent); width: 18px; text-align: center; }
-
-        /* Update Progress Bar */
-        .update-progress-container {
-            margin-top: 16px;
-            background: rgba(255, 255, 255, 0.05);
-            height: 6px;
-            border-radius: 100px;
-            overflow: hidden;
-            border: 1px solid var(--glass-border);
-            display: none;
-        }
-        .update-progress-fill {
-            height: 100%;
-            background: linear-gradient(90deg, var(--accent), var(--accent-glow));
-            background-size: 200% 100%;
-            width: 0%;
-            transition: width 0.3s ease;
-            box-shadow: 0 0 10px var(--accent-glow);
-            position: relative;
-            overflow: hidden;
-        }
-        .update-progress-fill::after {
+        .about-hero-card::before {
             content: '';
-            position: absolute;
-            top: 0; left: 0; bottom: 0; right: 0;
-            background-image: linear-gradient(
-                -45deg, 
-                rgba(255, 255, 255, 0.2) 25%, 
-                transparent 25%, 
-                transparent 50%, 
-                rgba(255, 255, 255, 0.2) 50%, 
-                rgba(255, 255, 255, 0.2) 75%, 
-                transparent 75%, 
-                transparent
-            );
-            background-size: 30px 30px;
-            animation: move-stripes 1.5s linear infinite;
+            position: absolute; top: -40px; left: 50%; transform: translateX(-50%);
+            width: 180px; height: 180px; border-radius: 50%;
+            background: radial-gradient(circle, rgba(168,85,247,0.12) 0%, transparent 70%);
+            pointer-events: none;
         }
-        @keyframes move-stripes {
-            0% { background-position: 0 0; }
-            100% { background-position: 30px 0; }
+        .about-app-logo {
+            width: 72px; height: 72px; margin: 0 auto 16px;
+            border-radius: 20px;
+            background: linear-gradient(135deg, #fff 0%, var(--accent) 100%);
+            display: flex; align-items: center; justify-content: center;
+            font-size: 36px; font-weight: 800; color: #0c0c0e;
+            box-shadow: 0 10px 30px rgba(168,85,247,0.3);
+            position: relative; z-index: 1;
         }
-        .progress-meta {
-            display: flex;
-            justify-content: space-between;
-            font-size: 11px;
-            color: var(--text-dim);
-            margin-top: 8px;
-            font-family: inherit;
+        .about-app-name {
+            font-size: 17px; font-weight: 700; letter-spacing: -0.03em;
+            margin-bottom: 4px; position: relative; z-index: 1;
         }
+        .about-app-tagline {
+            font-size: 11px; color: var(--text-muted); margin-bottom: 16px;
+            position: relative; z-index: 1;
+        }
+        .about-ver-chip {
+            display: inline-flex; align-items: center; gap: 6px;
+            background: rgba(255,255,255,0.07); border: 1px solid rgba(255,255,255,0.1);
+            border-radius: 100px; padding: 5px 14px;
+            font-size: 11.5px; font-weight: 600; color: #fff;
+            margin-bottom: 8px;
+        }
+        .about-build-line {
+            font-size: 10px; color: var(--text-muted);
+        }
+        .about-divider {
+            height: 1px; background: rgba(255,255,255,0.06);
+            margin: 16px 0;
+        }
+        .about-links {
+            display: flex; flex-direction: column; gap: 6px;
+        }
+        .about-link-btn {
+            display: flex; align-items: center; gap: 10px;
+            padding: 9px 12px; border-radius: 9px;
+            font-size: 12px; font-weight: 500; color: var(--text-dim);
+            background: rgba(255,255,255,0.04); border: 1px solid transparent;
+            cursor: pointer; transition: all 0.15s; text-decoration: none;
+        }
+        .about-link-btn i { font-size: 13px; width: 14px; text-align: center; }
+        .about-link-btn:hover { background: rgba(255,255,255,0.08); color: #fff; border-color: var(--glass-border); }
+
+        .about-right { display: flex; flex-direction: column; gap: 16px; }
+
+        .diag-grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; }
+        .diag-item-2 {
+            background: rgba(255,255,255,0.03);
+            border: 1px solid var(--glass-border);
+            border-radius: 10px; padding: 12px 14px;
+            display: flex; flex-direction: column; gap: 4px;
+        }
+        .diag-item-2 label {
+            font-size: 9.5px; font-weight: 700; text-transform: uppercase;
+            letter-spacing: 1px; color: var(--text-muted);
+        }
+        .diag-item-2 span {
+            font-size: 13px; font-weight: 600; color: var(--text-dim);
+        }
+
+        .update-card {
+            background: var(--glass); border: 1px solid var(--glass-border);
+            border-radius: var(--card-radius); padding: 16px 18px;
+        }
+        .update-card-header {
+            display: flex; align-items: center; gap: 12px; margin-bottom: 14px;
+        }
+        .update-card-icon {
+            width: 36px; height: 36px; border-radius: 10px; flex-shrink: 0;
+            background: rgba(168,85,247,0.1); border: 1px solid rgba(168,85,247,0.2);
+            display: flex; align-items: center; justify-content: center;
+            color: var(--accent); font-size: 15px;
+        }
+        .update-card-info h4 { font-size: 13.5px; font-weight: 600; margin-bottom: 2px; }
+        .update-card-info p { font-size: 11.5px; color: var(--text-muted); }
+        .update-status-icon { margin-left: auto; font-size: 15px; color: var(--text-muted); }
+
+        .legal-line {
+            font-size: 11px; color: var(--text-muted); text-align: center;
+            padding: 10px 0 0;
+        }
+
+        /* Misc */
+        .hidden { display: none !important; }
+        .row { display: flex; align-items: center; justify-content: space-between; gap: 16px; }
     </style>
 </head>
 <body>
-    <div class="aurora-container" id="aurora"></div>
+    <div class="engine-bg"></div>
 
-    <div class="settings-glass">
-        <div class="sidebar">
-            <div class="sidebar-header">Preferences</div>
-            <div class="nav-item active" data-section="general">
-                <i class="fas fa-sliders"></i> General
-            </div>
-            <div class="nav-item" data-section="profiles">
-                <i class="fas fa-layer-group"></i> Profiles
-            </div>
-            <div class="nav-item" data-section="extensions">
-                <i class="fas fa-puzzle-piece"></i> Extensions
-            </div>
-            
-            <div class="sidebar-label" style="padding-left:16px; margin: 16px 0 8px 0; font-size:10px; font-weight:700; color:var(--text-dim); text-transform:uppercase; letter-spacing:1px;">Search & Style</div>
-            <div class="sidebar-item" data-section="search" style="display: flex; align-items: center; gap: 12px; padding: 10px 16px; border-radius: 12px; cursor: pointer; color: var(--text-dim); transition: 0.2s;">
-                <i class="fas fa-magnifying-glass" style="width: 16px;"></i> Search
-            </div>
-            <div class="sidebar-item" data-section="homepage" style="display: flex; align-items: center; gap: 12px; padding: 10px 16px; border-radius: 12px; cursor: pointer; color: var(--text-dim); transition: 0.2s;">
-                <i class="fas fa-house-user" style="width: 16px;"></i> Home Page
-            </div>
-            <div class="sidebar-item" data-section="security" style="display: flex; align-items: center; gap: 12px; padding: 10px 16px; border-radius: 12px; cursor: pointer; color: var(--text-dim); transition: 0.2s;">
-                <i class="fas fa-shield-halved" style="width: 16px;"></i> Security
-            </div>
-            <div class="nav-item" data-section="privacy">
-                <i class="fas fa-eye-slash"></i> Privacy
-            </div>
-            <div style="flex: 1;"></div>
-            <div class="nav-item" data-section="about">
-                <i class="fas fa-circle-info"></i> About
+    <!-- SIDEBAR -->
+    <aside class="sidebar">
+        <div class="sidebar-header">
+            <div class="sidebar-logo">
+                <div class="sidebar-logo-icon">O</div>
+                <div>
+                    <div class="sidebar-logo-text">Ocal Browser</div>
+                    <div class="sidebar-logo-sub">Settings</div>
+                </div>
             </div>
         </div>
 
-        <div class="content">
-            <!-- General -->
-            <div id="general" class="section active">
-                <h1>General Settings</h1>
-                
+        <nav class="sidebar-nav">
+            <div class="nav-section-label">Preferences</div>
+
+            <div class="nav-item active" data-section="general">
+                <div class="nav-item-icon"><i class="fas fa-sliders"></i></div>
+                <span>General</span>
+            </div>
+            <div class="nav-item" data-section="search">
+                <div class="nav-item-icon"><i class="fas fa-magnifying-glass"></i></div>
+                <span>Search</span>
+            </div>
+            <div class="nav-item" data-section="homepage">
+                <div class="nav-item-icon"><i class="fas fa-house"></i></div>
+                <span>Home Page</span>
+            </div>
+            <div class="nav-item" data-section="profiles">
+                <div class="nav-item-icon"><i class="fas fa-user-circle"></i></div>
+                <span>Profiles</span>
+            </div>
+
+            <div class="nav-divider"></div>
+            <div class="nav-section-label">System</div>
+
+            <div class="nav-item" data-section="security">
+                <div class="nav-item-icon"><i class="fas fa-shield-halved"></i></div>
+                <span>Security</span>
+            </div>
+            <div class="nav-item" data-section="extensions">
+                <div class="nav-item-icon"><i class="fas fa-puzzle-piece"></i></div>
+                <span>Extensions</span>
+            </div>
+            <div class="nav-item" data-section="shortcuts">
+                <div class="nav-item-icon"><i class="fas fa-keyboard"></i></div>
+                <span>Shortcuts</span>
+            </div>
+
+            <div class="nav-divider"></div>
+
+            <div class="nav-item" data-section="about">
+                <div class="nav-item-icon"><i class="fas fa-circle-info"></i></div>
+                <span>About</span>
+            </div>
+        </nav>
+
+        <div class="sidebar-footer">
+            <div class="sidebar-version">
+                <div class="sidebar-version-dot"></div>
+                <span id="sidebar-version-label">Up to date</span>
+            </div>
+        </div>
+    </aside>
+
+    <!-- MAIN CONTENT -->
+    <main class="content">
+
+        <!-- ── GENERAL ── -->
+        <section id="general" class="section active">
+            <div class="page-header">
+                <div class="page-eyebrow">General</div>
+                <div class="page-title">Appearance &amp; Behavior</div>
+                <div class="page-desc">Personalize your browsing environment and interface layout.</div>
+            </div>
+            <div class="page-body">
+
                 <div class="group">
-                    <div class="group-title">Personalization</div>
+                    <div class="group-label">Theme</div>
                     <div class="card">
-                        <div class="row">
-                            <div class="row-info">
+                        <div class="card-row">
+                            <div class="card-info">
                                 <h4>Accent Color</h4>
-                                <p>Set your theme color for the entire browser experience.</p>
+                                <p>Choose your universal theme color for the browser chrome.</p>
                             </div>
-                            <div class="accent-picker">
-                                <div class="dot" data-color="#a855f7" style="background:#a855f7"></div>
-                                <div class="dot" data-color="#3b82f6" style="background:#3b82f6"></div>
-                                <div class="dot" data-color="#ef4444" style="background:#ef4444"></div>
-                                <div class="dot" data-color="#10b981" style="background:#10b981"></div>
+                            <div class="color-row">
+                                <div class="color-dot active" data-color="#a855f7" style="background:#a855f7"></div>
+                                <div class="color-dot" data-color="#3b82f6" style="background:#3b82f6"></div>
+                                <div class="color-dot" data-color="#ef4444" style="background:#ef4444"></div>
+                                <div class="color-dot" data-color="#10b981" style="background:#10b981"></div>
+                                <div class="color-dot" data-color="#f59e0b" style="background:#f59e0b"></div>
+                                <div class="color-dot" data-color="#ec4899" style="background:#ec4899"></div>
                             </div>
                         </div>
                     </div>
+                </div>
 
+                <div class="group">
+                    <div class="group-label">Layout</div>
                     <div class="card">
-                        <div class="row">
-                            <div class="row-info">
+                        <div class="card-row">
+                            <div class="card-info">
                                 <h4>Compact Interface</h4>
-                                <p>Optimize spacing for maximum content visibility.</p>
+                                <p>Reduce the height of the tab bar and nav bar to save vertical space.</p>
                             </div>
                             <div class="toggle" id="compact-toggle"></div>
                         </div>
+                        <div class="card-row">
+                            <div class="card-info">
+                                <h4>Show Bookmark Bar</h4>
+                                <p>Control when the bookmark toolbar is visible below the nav bar.</p>
+                            </div>
+                            <div style="display:flex; gap:6px;">
+                                <div class="choice-grid" id="bookmark-bar-grid" style="grid-template-columns:repeat(3,80px);">
+                                    <div class="choice-item" data-value="always"><i class="fas fa-eye"></i><span>Always</span></div>
+                                    <div class="choice-item active" data-value="auto"><i class="fas fa-wand-magic-sparkles"></i><span>Auto</span></div>
+                                    <div class="choice-item" data-value="never"><i class="fas fa-eye-slash"></i><span>Never</span></div>
+                                </div>
+                            </div>
+                        </div>
                     </div>
                 </div>
-            </div>
 
-            <!-- Profiles -->
-            <div id="profiles" class="section">
-                <h1>Profiles</h1>
                 <div class="group">
-                    <div class="group-title">User Identities</div>
-                    <div class="profile-grid" id="profile-grid">
-                        <!-- Profiles injected here -->
-                    </div>
-                </div>
-            </div>
-
-            <!-- Extensions -->
-            <div id="extensions" class="section">
-                <h1>Extensions</h1>
-                <div class="ext-container">
-                    <!-- Particles will be injected by JS -->
-                    <div id="ext-particles"></div>
-                    
-                    <div class="ext-icon-stack">
-                        <div class="ext-glow"></div>
-                        <div class="ext-glass">
-                            <i class="fas fa-puzzle-piece" style="font-size: 50px; color: var(--accent); filter: drop-shadow(0 0 10px var(--accent-glow));"></i>
-                        </div>
-                    </div>
-
-                    <div class="version-info" style="color: var(--accent); background: var(--accent-glow); border-color: var(--accent); border-radius: 10px; padding: 4px 12px;">ECOSYSTEM ROADMAP</div>
-                    <h2 style="font-size: 32px; font-weight: 800; margin: 16px 0 8px; letter-spacing: -0.02em;">Coming Soon</h2>
-                    <p style="max-width: 440px; color: var(--text-dim); line-height: 1.6; text-align: center; font-size: 14px;">
-                        We're engineering a state-of-the-art extension engine designed for security and speed. 
-                        Soon, you'll be able to customize your Ocal experience with a vast marketplace of powerful addons.
-                    </p>
-                </div>
-            </div>
-
-            <!-- Home Page Section -->
-            <div id="homepage" class="section">
-                <h1 class="page-title">Home Page Customization</h1>
-                <p class="page-desc">Personalize your new tab experience with flexible layouts and styles.</p>
-
-                <div class="settings-grid" style="display: flex; flex-direction: column; gap: 30px; max-width: 600px;">
-                    <!-- Controls -->
-                    <div style="display: flex; flex-direction: column; gap: 24px;">
-                        <div class="setting-card">
-                            <div class="setting-info">
-                                <div class="setting-label">Search Bar Placement</div>
-                                <div class="setting-desc">Choose where the search bar sits on your home page.</div>
-                            </div>
-                            <div class="search-engine-grid" style="grid-template-columns: repeat(3, 1fr); margin-top: 12px; gap: 20px;">
-                                <div class="engine-card" id="layout-top" onclick="updateHomeLayout('top')">
-                                    <div class="layout-mockup">
-                                        <div class="mock-search"></div>
-                                        <div class="mock-tiles">
-                                            <div class="mock-tile"></div><div class="mock-tile"></div><div class="mock-tile"></div><div class="mock-tile"></div>
-                                        </div>
-                                    </div>
-                                    <span style="font-weight: 600;">Top</span>
-                                </div>
-                                <div class="engine-card active" id="layout-center" onclick="updateHomeLayout('center')">
-                                    <div class="layout-mockup" style="justify-content: center;">
-                                        <div class="mock-search" style="margin: 4px 0;"></div>
-                                        <div class="mock-tiles">
-                                            <div class="mock-tile"></div><div class="mock-tile"></div><div class="mock-tile"></div><div class="mock-tile"></div>
-                                        </div>
-                                    </div>
-                                    <span style="font-weight: 600;">Center</span>
-                                </div>
-                                <div class="engine-card" id="layout-bottom" onclick="updateHomeLayout('bottom')">
-                                    <div class="layout-mockup" style="justify-content: flex-end;">
-                                        <div class="mock-tiles">
-                                            <div class="mock-tile"></div><div class="mock-tile"></div><div class="mock-tile"></div><div class="mock-tile"></div>
-                                        </div>
-                                        <div class="mock-search"></div>
-                                    </div>
-                                    <span style="font-weight: 600;">Bottom</span>
-                                </div>
-                            </div>
-                        </div>
-
-                        <div class="setting-card">
-                            <div class="setting-info">
-                                <div class="setting-label">Tile Size</div>
-                                <div class="setting-desc">Adjust the scale of your speed dial shortcuts.</div>
-                            </div>
-                            <input type="range" min="80" max="160" value="80" class="slider" id="homeTileSize" oninput="updateHomeSetting('homeTileSize', this.value)">
-                        </div>
-
-                        <div class="setting-card">
-                            <div class="setting-info">
-                                <div class="setting-label">Tile Spacing</div>
-                                <div class="setting-desc">Control the density of your home page grid.</div>
-                            </div>
-                            <input type="range" min="10" max="40" value="20" class="slider" id="homeTileSpacing" oninput="updateHomeSetting('homeTileSpacing', this.value)">
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            <div id="privacy" class="section">
-                <h1>Privacy & Data</h1>
-                <div class="group">
-                    <div class="group-title">Data Management</div>
+                    <div class="group-label">Downloads</div>
                     <div class="card">
-                        <div class="row">
-                            <div class="row-info">
+                        <div class="card-row">
+                            <div class="card-info">
+                                <h4>Ask where to save</h4>
+                                <p>Always ask where to save each file before downloading.</p>
+                            </div>
+                            <div class="toggle" id="ask-save-toggle"></div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="group">
+                    <div class="group-label">Privacy &amp; Data</div>
+                    <div class="card">
+                        <div class="card-row">
+                            <div class="card-info">
                                 <h4>Clear Browsing History</h4>
-                                <p>Permanently remove records of all visited sites.</p>
+                                <p>Permanently remove records of all visited websites from your device.</p>
                             </div>
-                            <button class="btn secondary" id="clear-data-btn">Clear History</button>
+                            <button class="btn danger" id="clear-data-btn"><i class="fas fa-trash-can"></i> Clear History</button>
+                        </div>
+                        <div class="card-row">
+                            <div class="card-info">
+                                <h4>Wipe All Bookmarks</h4>
+                                <p>Remove all saved favorites and folders. This cannot be undone.</p>
+                            </div>
+                            <button class="btn danger" id="clear-bookmarks-btn"><i class="fas fa-bookmark"></i> Clear Bookmarks</button>
                         </div>
                     </div>
-                    
+                </div>
+
+                <div class="group">
+                    <div class="group-label">Browser Migration</div>
                     <div class="card">
-                        <div class="row">
-                            <div class="row-info">
-                                <h4>Tracking Protection</h4>
-                                <p>Block invasive trackers and third-party scripts.</p>
+                        <div class="card-row">
+                            <div class="card-info">
+                                <h4>Import Bookmarks</h4>
+                                <p>Migrate your favorites from other browsers to Ocal.</p>
                             </div>
-                            <div class="toggle" id="tracking-toggle"></div>
+                            <div style="display:flex; gap:10px;">
+                                <button class="btn" id="import-chrome-btn"><i class="fab fa-chrome"></i> Chrome</button>
+                                <button class="btn" id="import-edge-btn"><i class="fab fa-edge"></i> Edge</button>
+                                <button class="btn" id="import-file-btn"><i class="fas fa-file-import"></i> Choose File...</button>
+                            </div>
+                        </div>
+                        <div id="import-status" style="padding:10px 18px; font-size:12px; display:none; border-top:1px solid rgba(255,255,255,0.05);"></div>
+                    </div>
+                </div>
+
+            </div>
+        </section>
+
+        <!-- ── SEARCH ── -->
+        <section id="search" class="section">
+            <div class="page-header">
+                <div class="page-eyebrow">Search</div>
+                <div class="page-title">Search Engine</div>
+                <div class="page-desc">Configure your default search provider and smart address bar behavior.</div>
+            </div>
+            <div class="page-body">
+
+                <div class="group">
+                    <div class="group-label">Default Provider</div>
+                    <div class="choice-grid" id="search-grid" style="grid-template-columns: repeat(3, 1fr);">
+                        <div class="choice-item" data-value="google">
+                            <i class="fab fa-google"></i>
+                            <span>Google</span>
+                        </div>
+                        <div class="choice-item" data-value="bing">
+                            <i class="fab fa-microsoft"></i>
+                            <span>Bing</span>
+                        </div>
+                        <div class="choice-item" data-value="duckduckgo">
+                            <i class="fas fa-shield-cat"></i>
+                            <span>DuckDuckGo</span>
+                        </div>
+                        <div class="choice-item" data-value="brave">
+                            <i class="fa-brands fa-brave"></i>
+                            <span>Brave</span>
+                        </div>
+                        <div class="choice-item" data-value="yahoo">
+                            <i class="fab fa-yahoo"></i>
+                            <span>Yahoo</span>
+                        </div>
+                        <div class="choice-item" data-value="custom">
+                            <i class="fas fa-code"></i>
+                            <span>Custom</span>
+                        </div>
+                    </div>
+
+                    <!-- Custom Search URL (Only shown if Custom is selected) -->
+                    <div id="custom-search-container" style="margin-top: 15px; display: none;">
+                        <div class="card" style="padding: 12px 16px;">
+                            <div class="card-row">
+                                <div class="card-info">
+                                    <h4 style="font-size: 13px;">Custom Search Engine URL</h4>
+                                    <p style="font-size: 11px;">Use <code>%s</code> as a placeholder for the search query.</p>
+                                </div>
+                                <input type="text" id="custom-search-input" placeholder="https://example.com/search?q=%s" style="flex: 1; margin-left: 20px; background: rgba(255,255,255,0.05); border: 1px solid var(--glass-border); border-radius: 6px; padding: 8px 12px; color: #fff; font-family: 'Inter', sans-serif; font-size: 12px;">
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="group">
+                    <div class="group-label">Behavior</div>
+                    <div class="card">
+                        <div class="card-row">
+                            <div class="card-info">
+                                <h4>Search Suggestions</h4>
+                                <p>Show predictive suggestions as you type in the address bar.</p>
+                            </div>
+                            <div class="toggle on" id="search-suggest-toggle"></div>
+                        </div>
+                        <div class="card-row">
+                            <div class="card-info">
+                                <h4>Instant Search</h4>
+                                <p>Begin searching immediately as keystrokes are entered.</p>
+                            </div>
+                            <div class="toggle" id="instant-search-toggle"></div>
+                        </div>
+                        <div class="card-row">
+                            <div class="card-info">
+                                <h4>Safe Search</h4>
+                                <p>Filter explicit content from search results automatically.</p>
+                            </div>
+                            <div class="toggle" id="safe-search-toggle"></div>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+        </section>
+
+        <!-- ── HOME PAGE ── -->
+        <section id="homepage" class="section">
+            <div class="page-header">
+                <div class="page-eyebrow">Home Page</div>
+                <div class="page-title">New Tab</div>
+                <div class="page-desc">Customize your new tab dashboard layout and shortcut tiles.</div>
+            </div>
+            <div class="page-body">
+
+                <div class="group">
+                    <div class="group-label">Search Bar Position</div>
+                    <div class="choice-grid" style="grid-template-columns: repeat(3, 1fr);">
+                        <div class="choice-item" id="layout-top" onclick="updateHomeLayout('top')">
+                            <div class="mini-layout">
+                                <div class="mini-search"></div>
+                                <div class="mini-grid"><div class="mini-tile"></div><div class="mini-tile"></div><div class="mini-tile"></div><div class="mini-tile"></div></div>
+                            </div>
+                            <span>Top</span>
+                        </div>
+                        <div class="choice-item active" id="layout-center" onclick="updateHomeLayout('center')">
+                            <div class="mini-layout" style="justify-content:center;">
+                                <div class="mini-search" style="margin-top:18px;"></div>
+                            </div>
+                            <span>Center</span>
+                        </div>
+                        <div class="choice-item" id="layout-bottom" onclick="updateHomeLayout('bottom')">
+                            <div class="mini-layout" style="justify-content:flex-end;">
+                                <div class="mini-grid"><div class="mini-tile"></div><div class="mini-tile"></div><div class="mini-tile"></div><div class="mini-tile"></div></div>
+                                <div class="mini-search"></div>
+                            </div>
+                            <span>Bottom</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="group">
+                    <div class="group-label">Shortcut Tiles</div>
+                    <div class="card">
+                        <div class="card-row" style="flex-direction:column; align-items:stretch; gap:10px;">
+                            <div class="slider-row">
+                                <span class="slider-label">Tile Size</span>
+                                <span class="slider-value" id="label-tile-size">120px</span>
+                            </div>
+                            <input type="range" min="80" max="160" value="120" id="homeTileSize" oninput="updateHomeSetting('homeTileSize', this.value)">
+                        </div>
+                        <div class="card-row" style="flex-direction:column; align-items:stretch; gap:10px; border-top: 1px solid rgba(255,255,255,0.05);">
+                            <div class="slider-row">
+                                <span class="slider-label">Tile Spacing</span>
+                                <span class="slider-value" id="label-tile-spacing">20px</span>
+                            </div>
+                            <input type="range" min="10" max="40" value="20" id="homeTileSpacing" oninput="updateHomeSetting('homeTileSpacing', this.value)">
+                        </div>
+                    </div>
+                </div>
+
+                <div class="group">
+                    <div class="group-label">Tile Visual Style</div>
+                    <div class="choice-grid" id="tile-style-grid" style="grid-template-columns: repeat(3, 1fr);">
+                        <div class="choice-item active" data-value="square">
+                            <div style="width:20px;height:20px;background:rgba(255,255,255,0.06);border:1px solid rgba(255,255,255,0.12);border-radius:5px;"></div>
+                            <span>Glass</span>
+                        </div>
+                        <div class="choice-item" data-value="rectangle">
+                            <div style="width:24px;height:16px;background:rgba(255,255,255,0.15);border-radius:4px;"></div>
+                            <span>Solid</span>
+                        </div>
+                        <div class="choice-item" data-value="monochrome">
+                            <div style="width:20px;height:20px;border:2px solid var(--accent);border-radius:50%;box-shadow:0 0 8px var(--accent-glow);"></div>
+                            <span>Neon</span>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+        </section>
+
+        <!-- ── PROFILES ── -->
+        <section id="profiles" class="section">
+            <div class="page-header">
+                <div class="page-eyebrow">Profiles</div>
+                <div class="page-title">User Profiles</div>
+                <div class="page-desc">Manage separate browsing identities with isolated history and settings.</div>
+            </div>
+            <div class="page-body">
+                <div class="group">
+                    <div class="group-label">Active Profiles</div>
+                    <div class="choice-grid" id="profile-grid" style="grid-template-columns: repeat(3, 1fr);">
+                        <div class="profile-card">
+                            <div class="profile-avatar"><i class="fas fa-user"></i></div>
+                            <div class="profile-name">Default</div>
+                            <div class="profile-type">Personal</div>
+                        </div>
+                        <div class="profile-card" style="border-style:dashed; border-color:rgba(255,255,255,0.08); cursor:pointer; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:8px; min-height:110px;">
+                            <i class="fas fa-plus" style="font-size:20px; color:var(--text-muted);"></i>
+                            <span style="font-size:12px; color:var(--text-muted); font-weight:600;">Add Profile</span>
                         </div>
                     </div>
                 </div>
             </div>
+        </section>
 
-            <!-- Search -->
-            <div id="search" class="section">
-                <h1>Search Engine</h1>
-                <div class="group">
-                    <div class="group-title">Preferred Provider</div>
-                    <div class="option-grid" id="search-grid">
-                        <div class="option-card" data-value="google">
-                            <div class="option-icon"><i class="fab fa-google"></i></div>
-                            <div class="option-info">
-                                <h5>Google Search</h5>
-                                <p>Fast and reliable</p>
-                            </div>
-                        </div>
-                        <div class="option-card" data-value="bing">
-                            <div class="option-icon"><i class="fab fa-microsoft"></i></div>
-                            <div class="option-info">
-                                <h5>Microsoft Bing</h5>
-                                <p>Visual and integrated</p>
-                            </div>
-                        </div>
-                        <div class="option-card" data-value="duckduckgo">
-                            <div class="option-icon"><i class="fas fa-shield-cat"></i></div>
-                            <div class="option-info">
-                                <h5>DuckDuckGo</h5>
-                                <p>Private and secure</p>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-
-                <div class="group">
-                    <div class="group-title">Capabilities</div>
-                    <div class="card">
-                        <div class="row">
-                            <div class="row-info">
-                                <h4>Predictive Suggestions</h4>
-                                <p>Show search suggestions as you type in the address bar.</p>
-                            </div>
-                            <div class="toggle" id="search-suggest-toggle"></div>
-                        </div>
-                    </div>
-                </div>
+        <!-- ── SECURITY ── -->
+        <section id="security" class="section">
+            <div class="page-header">
+                <div class="page-eyebrow">Security</div>
+                <div class="page-title">Privacy &amp; Protection</div>
+                <div class="page-desc">Real-time defense and privacy controls for your digital life.</div>
             </div>
+            <div class="page-body">
 
-            <!-- Security -->
-            <div id="security" class="section">
-                <h1>Security</h1>
-                
-                <div class="security-hub">
-                    <div class="pulse-shield">
-                        <i class="fas fa-shield-check"></i>
-                    </div>
-                    <div>
-                        <h4 style="font-size: 18px; font-weight: 700; margin-bottom: 4px;">Security Hub</h4>
-                        <p style="font-size: 13px; color: var(--text-dim);">Your browser is protected by Ocal Advanced Shield.</p>
+                <div class="shield-hero">
+                    <div class="shield-hero-icon"><i class="fas fa-shield-check"></i></div>
+                    <div class="shield-hero-body">
+                        <div class="shield-status ok" id="protection-badge">Protected</div>
+                        <div class="shield-title">Ocal Security</div>
+                        <div class="shield-desc">All protection layers are active and monitoring your connection.</div>
                     </div>
                 </div>
 
                 <div class="group">
-                    <div class="group-title">Domain Protection</div>
-                    <div class="option-grid" id="dns-grid">
-                        <div class="option-card" data-value="default">
-                            <div class="option-icon"><i class="fas fa-network-wired"></i></div>
-                            <div class="option-info">
-                                <h5>System Default</h5>
-                                <p>Use OS settings</p>
-                            </div>
+                    <div class="group-label">DNS Protection</div>
+                    <div class="choice-grid" id="dns-grid" style="grid-template-columns: repeat(3, 1fr);">
+                        <div class="choice-item active" data-value="default">
+                            <i class="fas fa-network-wired"></i>
+                            <span>Auto</span>
                         </div>
-                        <div class="option-card" data-value="cloudflare">
-                            <div class="option-icon"><i class="fas fa-bolt"></i></div>
-                            <div class="option-info">
-                                <h5>Cloudflare</h5>
-                                <p>Ultra-fast 1.1.1.1</p>
-                            </div>
+                        <div class="choice-item" data-value="cloudflare">
+                            <i class="fas fa-bolt"></i>
+                            <span>Cloudflare</span>
                         </div>
-                        <div class="option-card" data-value="google">
-                            <div class="option-icon"><i class="fab fa-google"></i></div>
-                            <div class="option-info">
-                                <h5>Google DNS</h5>
-                                <p>Broad compatibility</p>
-                            </div>
+                        <div class="choice-item" data-value="google">
+                            <i class="fab fa-google"></i>
+                            <span>Google DNS</span>
                         </div>
                     </div>
                 </div>
 
                 <div class="group">
-                    <div class="group-title">Advanced</div>
+                    <div class="group-label">Safeguards</div>
                     <div class="card">
-                        <div class="row">
-                            <div class="row-info">
+                        <div class="card-row">
+                            <div class="card-info">
                                 <h4>Safe Browsing</h4>
-                                <p>Protect against malicious sites and dangerous downloads.</p>
+                                <p>Real-time protection against dangerous websites and malware downloads.</p>
                             </div>
-                            <div class="toggle" id="safe-browsing-toggle"></div>
+                            <div class="toggle on" id="safe-browsing-toggle"></div>
+                        </div>
+                        <div class="card-row">
+                            <div class="card-info">
+                                <h4>Tracking Protection</h4>
+                                <p>Block third-party trackers and browser fingerprinting scripts.</p>
+                            </div>
+                            <div class="toggle on" id="tracking-toggle-security"></div>
+                        </div>
+                        <div class="card-row">
+                            <div class="card-info">
+                                <h4>HTTPS Upgrade</h4>
+                                <p>Automatically upgrade insecure HTTP connections to HTTPS.</p>
+                            </div>
+                            <div class="toggle" id="https-toggle"></div>
                         </div>
                     </div>
                 </div>
+
             </div>
+        </section>
 
-            <!-- About -->
-            <div id="about" class="section">
-                <div class="about-wrap">
-                    <div class="logo-breather">O</div>
-                    <h1>Ocal Browser</h1>
-                    <div class="version-info" id="current-version-display">BUILD 0.9.9 · AGENTIC OS</div>
-                    <div class="about-text">
-                        Experience the next generation of browsing. Driven by intelligence, designed for pure performance.
-                        <span class="company-brand">Gaming Network Studio Media Group</span>
-                    </div>
-
-                    <div class="card" style="margin-top:20px; text-align:left;">
-                        <div class="row">
-                            <div class="row-info">
-                                <h4>Proactive Updates</h4>
-                                <p>Automatically check for new versions on startup.</p>
-                            </div>
-                            <div class="toggle" id="auto-update-toggle"></div>
-                        </div>
-                    </div>
-                    
-                    <div id="update-status-card" class="card" style="display:none; width:100%; max-width:500px; text-align:left; margin-bottom:20px; animation: modalIn 0.4s easeOut">
-                        <div class="row">
-                            <div class="row-info">
-                                <h4 id="update-title" style="color:var(--accent)">New Update Available!</h4>
-                                <p id="update-version-label" style="font-weight:700; margin-bottom:12px"></p>
-                                <div id="update-notes" style="font-size:12.5px; color:var(--text-dim); max-height:180px; overflow-y:auto; background:rgba(0,0,0,0.3); padding:16px; border-radius:14px; border:1px solid var(--glass-border); line-height:1.7; scrollbar-width:thin; scrollbar-color:var(--accent) transparent"></div>
-                                <div class="update-progress-container" id="update-progress-container" style="display:none;">
-                                    <div class="update-progress-fill" id="update-progress-fill"></div>
-                                </div>
-                                <div class="progress-meta" id="progress-meta" style="display:none;">
-                                    <span id="update-progress-text">Downloading...</span>
-                                    <span id="update-size-text">0 / 0 MB</span>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-
-                    <button class="btn" id="update-check-btn">
-                        Check for Updates <i class="fas fa-rotate"></i>
-                    </button>
-
-                    <button class="btn" id="download-update-btn" style="display:none; margin-top:12px; background:#10b981 !important">
-                        Download Now <i class="fas fa-download"></i>
-                    </button>
-                </div>
+        <!-- ── EXTENSIONS ── -->
+        <section id="extensions" class="section">
+            <div class="page-header">
+                <div class="page-eyebrow">Extensions</div>
+                <div class="page-title">Native Modules</div>
+                <div class="page-desc">Manage built-in extensions that enhance your browsing workflow.</div>
             </div>
-        </div>
-    </div>
+            <div class="page-body">
 
-    <script>
-        const aurora = document.getElementById('aurora');
-        function createOrbs() {
-            aurora.innerHTML = '';
-            for(let i=0; i<3; i++) {
-                const orb = document.createElement('div');
-                orb.className = 'orb';
-                const size = Math.random() * 400 + 300;
-                orb.style.width = size + 'px';
-                orb.style.height = size + 'px';
-                orb.style.left = Math.random() * 100 + '%';
-                orb.style.top = Math.random() * 100 + '%';
-                orb.style.background = 'var(--accent)';
-                orb.style.animationDuration = (Math.random() * 20 + 20) + 's';
-                orb.style.animationDelay = -(Math.random() * 20) + 's';
-                aurora.appendChild(orb);
-            }
-        }
-        createOrbs();
-
-        // Section switching
-        document.querySelectorAll('.nav-item').forEach(item => {
-            item.onclick = () => {
-                document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
-                document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
-                item.classList.add('active');
-                document.getElementById(item.dataset.section).classList.add('active');
-            };
-        });
-
-        // New section switching for nested sidebar items
-        document.querySelectorAll('.sidebar-item').forEach(item => {
-            item.onclick = () => {
-                // Deactivate all nav-items and sidebar-items
-                document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
-                document.querySelectorAll('.sidebar-item').forEach(si => si.classList.remove('active'));
-                document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
-
-                // Activate the parent nav-item (if applicable)
-                const parentNavItem = item.closest('.nav-item');
-                if (parentNavItem) {
-                    parentNavItem.classList.add('active');
-                }
-                // Activate the clicked sidebar-item
-                item.classList.add('active');
-                // Activate the corresponding section
-                document.getElementById(item.dataset.section).classList.add('active');
-            };
-        });
-
-
-        const toggleSync = (el, key, isOn) => {
-            el.classList.toggle('on', isOn);
-            el.onclick = () => {
-                const newState = !el.classList.contains('on');
-                el.classList.toggle('on', newState);
-                window.electronAPI.updateSetting(key, newState);
-            };
-        };
-
-        const profileGrid = document.getElementById('profile-grid');
-        const compactToggle = document.getElementById('compact-toggle');
-        const trackingToggle = document.getElementById('tracking-toggle');
-        const suggestToggle = document.getElementById('search-suggest-toggle');
-        const safeToggle = document.getElementById('safe-browsing-toggle');
-        const clearBtn = document.getElementById('clear-data-btn');
-        const updateBtn = document.getElementById('update-check-btn');
-
-        function initGridSelector(gridId, settingsKey) {
-            const grid = document.getElementById(gridId);
-            if (!grid) return;
-            grid.querySelectorAll('.option-card').forEach(card => {
-                card.onclick = () => {
-                    grid.querySelectorAll('.option-card').forEach(c => c.classList.remove('active'));
-                    card.classList.add('active');
-                    window.electronAPI.updateSetting(settingsKey, card.dataset.value);
-                };
-            });
-        }
-
-        function setGridValue(gridId, value) {
-            const grid = document.getElementById(gridId);
-            if (!grid) return;
-            grid.querySelectorAll('.option-card').forEach(card => {
-                card.classList.toggle('active', card.dataset.value === value);
-            });
-        }
-
-        initGridSelector('search-grid', 'searchEngine');
-        initGridSelector('dns-grid', 'dns');
-
-        clearBtn.onclick = () => {
-            clearBtn.innerText = 'Clearing...';
-            window.electronAPI.send('clear-history');
-            setTimeout(() => clearBtn.innerText = 'Cleared', 1000);
-            setTimeout(() => clearBtn.innerText = 'Clear History', 3000);
-        };
-
-        const autoUpdateToggle = document.getElementById('auto-update-toggle');
-
-        const statusCard = document.getElementById('update-status-card');
-        const updateTitle = document.getElementById('update-title');
-        const updateVersion = document.getElementById('update-version-label');
-        const updateNotes = document.getElementById('update-notes');
-        const downloadBtn = document.getElementById('download-update-btn');
-        const currentVersionEl = document.getElementById('current-version-display');
-
-        // Simple Markdown to HTML converter
-        function parseMD(md) {
-            if (!md) return '';
-            return md
-                .replace(/^### (.*$)/gim, '<h5 style="margin:16px 0 8px; color:#fff; font-size:13px; font-weight:700">$1</h5>')
-                .replace(/^## (.*$)/gim, '<h4 style="margin:20px 0 10px; color:var(--accent); font-size:14px; font-weight:800">$1</h4>')
-                .replace(/^# (.*$)/gim, '<h3 style="margin:24px 0 12px; color:#fff; font-size:16px; font-weight:800">$1</h3>')
-                .replace(/^\* (.*$)/gim, '<li style="margin-left:14px; margin-bottom:4px">$1</li>')
-                .replace(/^\- (.*$)/gim, '<li style="margin-left:14px; margin-bottom:4px">$1</li>')
-                .replace(/\*\*(.*)\*\*/gim, '<b style="color:#fff">$1</b>')
-                .replace(/\*(.*)\*/gim, '<i>$1</i>')
-                .replace(/\n$/gim, '<br />');
-        }
-
-        function isNewerVersion(latest, current) {
-            const l = latest.split('.').map(Number);
-            const c = current.split('.').map(Number);
-            for (let i = 0; i < Math.max(l.length, c.length); i++) {
-                const ln = l[i] || 0;
-                const cn = c[i] || 0;
-                if (ln > cn) return true;
-                if (ln < cn) return false;
-            }
-            return false;
-        }
-
-        let currentVer = '0.0.0';
-
-        updateBtn.onclick = async () => {
-            updateBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Checking...';
-            updateBtn.disabled = true;
-            statusCard.style.display = 'none';
-            downloadBtn.style.display = 'none';
-
-            try {
-                const latest = await window.electronAPI.checkForUpdate();
-                console.log('[UpdateCheck] Latest from GitHub:', latest);
-                console.log('[UpdateCheck] Current Build:', currentVer);
-
-                if (!latest) {
-                    updateBtn.innerHTML = '<i class="fas fa-check"></i> You are up to date';
-                    updateBtn.style.background = '#10b981';
-                    setTimeout(() => { 
-                        updateBtn.innerHTML = 'Check for Updates <i class="fas fa-rotate"></i>'; 
-                        updateBtn.style.background = '';
-                        updateBtn.disabled = false;
-                    }, 3000);
-                    return;
-                }
-
-                const isNewer = isNewerVersion(latest.version, currentVer);
-                console.log('[UpdateCheck] Is newer?', isNewer);
-
-                if (isNewer) {
-                    updateTitle.innerText = "New Version Available!";
-                    updateVersion.innerText = `Version ${latest.version}`;
-                    updateNotes.innerHTML = parseMD(latest.notes) || 'No release notes provided.';
-                    statusCard.style.display = 'block';
-                    downloadBtn.style.display = 'flex';
-                    downloadBtn.innerHTML = 'Download & Install <i class="fas fa-sparkles"></i>';
-                    
-                    downloadBtn.onclick = async () => {
-                        downloadBtn.disabled = true;
-                        downloadBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Downloading...';
-                        document.getElementById('update-progress-container').style.display = 'block';
-                        
-                        try {
-                            const installerPath = await window.electronAPI.downloadUpdate();
-                            console.log('[UpdateCheck] Download complete:', installerPath);
-                            
-                            downloadBtn.innerHTML = 'Restart and Update <i class="fas fa-power-off"></i>';
-                            downloadBtn.disabled = false;
-                            downloadBtn.style.background = '#3b82f6 !important';
-                            
-                            downloadBtn.onclick = () => {
-                                window.electronAPI.applyUpdate(installerPath);
-                            };
-                        } catch (err) {
-                            console.error('[UpdateCheck] Download error:', err);
-                            downloadBtn.innerHTML = 'Download Failed - Try again';
-                            downloadBtn.disabled = false;
-                        }
-                    };
-
-                    updateBtn.innerHTML = 'Check for Updates <i class="fas fa-rotate"></i>';
-                    updateBtn.disabled = false;
-                } else {
-                    updateBtn.innerHTML = '<i class="fas fa-check"></i> You are up to date';
-                    updateBtn.style.background = '#10b981';
-                    setTimeout(() => { 
-                        updateBtn.innerHTML = 'Check for Updates <i class="fas fa-rotate"></i>'; 
-                        updateBtn.style.background = '';
-                        updateBtn.disabled = false;
-                    }, 3000);
-                }
-            } catch(e) { 
-                console.error('[UpdateCheck] Error:', e);
-                updateBtn.innerText = 'Check Failed'; 
-                updateBtn.disabled = false;
-            }
-        };
-
-        function renderProfiles(settings) {
-            profileGrid.innerHTML = settings.profiles.map(p => `
-                <div class="profile-card ${settings.currentProfileId === p.id ? 'active' : ''}" onclick="window.electronAPI.switchProfile('${p.id}')">
-                    <i class="fas ${p.icon}"></i>
-                    <span>${p.name}</span>
-                    ${settings.currentProfileId === p.id ? '<div class="status">ACTIVE</div>' : ''}
+                <div class="group">
+                    <div class="group-label">Installed</div>
+                    <div class="ext-card">
+                        <div class="ext-icon" style="background:rgba(74,222,128,0.1); color:#4ade80;"><i class="fas fa-vault"></i></div>
+                        <div class="ext-body">
+                            <h5>Asset Vault</h5>
+                            <p>Secure password and sensitive data manager.</p>
+                        </div>
+                        <button class="btn primary" style="font-size:11px; padding:6px 14px;">Active</button>
+                    </div>
                 </div>
-            `).join('') + `
-                <div class="profile-card" style="border-style: dashed; opacity: 0.5;">
-                    <i class="fas fa-plus"></i>
-                    <span>Add New</span>
+
+                <div class="group">
+                    <div class="group-label">Available</div>
+                    <div class="ext-card">
+                        <div class="ext-icon"><i class="fas fa-wand-magic-sparkles"></i></div>
+                        <div class="ext-body">
+                            <h5>Ocal AI Assistant</h5>
+                            <p>Native neural sidekick for browsing and summarization.</p>
+                        </div>
+                        <button class="btn secondary" style="font-size:11px; padding:6px 14px;"><i class="fas fa-download"></i> Install</button>
+                    </div>
+                    <div class="ext-card">
+                        <div class="ext-icon" style="background:rgba(99,102,241,0.1); color:#818cf8;"><i class="fas fa-moon"></i></div>
+                        <div class="ext-body">
+                            <h5>Cyber Stealth</h5>
+                            <p>Theme-aware dark mode override for all websites.</p>
+                        </div>
+                        <button class="btn secondary" style="font-size:11px; padding:6px 14px;"><i class="fas fa-download"></i> Install</button>
+                    </div>
+                    <div class="ext-card">
+                        <div class="ext-icon" style="background:rgba(251,146,60,0.1); color:#fb923c;"><i class="fas fa-shield-cat"></i></div>
+                        <div class="ext-body">
+                            <h5>Ad Shield</h5>
+                            <p>Block advertisements and trackers site-wide.</p>
+                        </div>
+                        <button class="btn secondary" style="font-size:11px; padding:6px 14px;"><i class="fas fa-download"></i> Install</button>
+                    </div>
                 </div>
-            `;
-        }
 
-        const dots = document.querySelectorAll('.dot');
-        dots.forEach(dot => {
-            dot.onclick = () => {
-                const color = dot.dataset.color;
-                window.electronAPI.updateSetting('accentColor', color);
-                applyAccent(color);
-            };
-        });
+            </div>
+        </section>
 
-        function applyAccent(color) {
-            document.documentElement.style.setProperty('--accent', color);
-            dots.forEach(d => d.classList.toggle('active', d.dataset.color === color));
-            createOrbs(); 
-        }
+        <!-- ── SHORTCUTS ── -->
+        <section id="shortcuts" class="section">
+            <div class="page-header">
+                <div class="page-eyebrow">Shortcuts</div>
+                <div class="page-title">Key Commands</div>
+                <div class="page-desc">Master the Ocal interface with precision-mapped keyboard shortcuts.</div>
+            </div>
+            <div class="page-body">
 
-        function updateHomeLayout(layout) {
-            document.querySelectorAll('#homepage .engine-card').forEach(c => {
-                c.classList.toggle('active', c.id === `layout-${layout}`);
-            });
-            window.electronAPI.updateSetting('homeLayout', layout);
-        }
+                <div class="shortcut-search-bar">
+                    <i class="fas fa-magnifying-glass"></i>
+                    <input type="text" id="shortcut-search" placeholder="Filter commands…">
+                </div>
 
-        function updateHomeSetting(key, value) {
-            window.electronAPI.updateSetting(key, parseInt(value));
-        }
+                <div class="cat-pills">
+                    <button class="cat-pill active" data-cat="all"><i class="fas fa-layer-group"></i> All</button>
+                    <button class="cat-pill" data-cat="nav"><i class="fas fa-compass"></i> Navigation</button>
+                    <button class="cat-pill" data-cat="sys"><i class="fas fa-microchip"></i> System</button>
+                </div>
 
-        window.electronAPI.getSettings().then(s => {
-            if (s.accentColor) applyAccent(s.accentColor);
-            if (s.searchEngine) setGridValue('search-grid', s.searchEngine);
-            if (s.dns) setGridValue('dns-grid', s.dns);
-            if (s.homeLayout) {
-                document.querySelectorAll('#homepage .engine-card').forEach(c => {
-                    c.classList.toggle('active', c.id === `layout-${s.homeLayout}`);
-                });
-            }
-            if (s.homeTileSize) document.getElementById('homeTileSize').value = s.homeTileSize;
-            if (s.homeTileSpacing) document.getElementById('homeTileSpacing').value = s.homeTileSpacing;
-            
-            toggleSync(compactToggle, 'compactMode', !!s.compactMode);
-            toggleSync(trackingToggle, 'trackingProtection', !!s.trackingProtection);
-            toggleSync(suggestToggle, 'searchSuggest', !!s.searchSuggest);
-            toggleSync(safeToggle, 'safeBrowsing', !!s.safeBrowsing);
-            toggleSync(autoUpdateToggle, 'autoCheckUpdates', !!s.autoCheckUpdates);
-            renderProfiles(s);
-        });
+                <div id="shortcut-list">
+                    <div class="group" data-category="nav">
+                        <div class="group-label">Navigation</div>
+                        <div class="card">
+                            <div class="shortcut-row" data-keywords="new tab t ctrl">
+                                <div class="shortcut-info"><h4>New Tab</h4><p>Open a fresh browsing session</p></div>
+                                <div class="key-stack"><div class="key-tag">Ctrl</div><div class="key-tag">T</div></div>
+                            </div>
+                            <div class="shortcut-row" data-keywords="close tab w ctrl">
+                                <div class="shortcut-info"><h4>Close Tab</h4><p>Close the active tab</p></div>
+                                <div class="key-stack"><div class="key-tag">Ctrl</div><div class="key-tag">W</div></div>
+                            </div>
+                            <div class="shortcut-row" data-keywords="reload refresh r ctrl">
+                                <div class="shortcut-info"><h4>Reload Page</h4><p>Refresh the current document</p></div>
+                                <div class="key-stack"><div class="key-tag">Ctrl</div><div class="key-tag">R</div></div>
+                            </div>
+                            <div class="shortcut-row" data-keywords="back history alt left">
+                                <div class="shortcut-info"><h4>Go Back</h4><p>Navigate to previous page in history</p></div>
+                                <div class="key-stack"><div class="key-tag">Alt</div><div class="key-tag">←</div></div>
+                            </div>
+                            <div class="shortcut-row" data-keywords="forward history alt right">
+                                <div class="shortcut-info"><h4>Go Forward</h4><p>Navigate to next page in history</p></div>
+                                <div class="key-stack"><div class="key-tag">Alt</div><div class="key-tag">→</div></div>
+                            </div>
+                        </div>
+                    </div>
 
-        window.electronAPI.getAppVersion().then(v => {
-            currentVer = v;
-            currentVersionEl.innerText = `BUILD ${v} · AGENTIC OS`;
-        });
+                    <div class="group" data-category="sys">
+                        <div class="group-label">System</div>
+                        <div class="card">
+                            <div class="shortcut-row" data-keywords="search focus l ctrl">
+                                <div class="shortcut-info"><h4>Focus Address Bar</h4><p>Jump focus to the omnibox</p></div>
+                                <div class="key-stack"><div class="key-tag">Ctrl</div><div class="key-tag">L</div></div>
+                            </div>
+                            <div class="shortcut-row" data-keywords="ai sidebar shift a ctrl">
+                                <div class="shortcut-info"><h4>AI Copilot</h4><p>Open the AI assistant panel</p></div>
+                                <div class="key-stack"><div class="key-tag">Ctrl</div><div class="key-tag">Shift</div><div class="key-tag">A</div></div>
+                            </div>
+                            <div class="shortcut-row" data-keywords="settings preferences s alt">
+                                <div class="shortcut-info"><h4>Settings</h4><p>Open the preferences hub</p></div>
+                                <div class="key-stack"><div class="key-tag">Alt</div><div class="key-tag">S</div></div>
+                            </div>
+                            <div class="shortcut-row" data-keywords="sidebar bookmarks b ctrl shift">
+                                <div class="shortcut-info"><h4>Toggle Sidebar</h4><p>Open or close the side panel</p></div>
+                                <div class="key-stack"><div class="key-tag">Ctrl</div><div class="key-tag">Shift</div><div class="key-tag">B</div></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
 
-        window.electronAPI.onUpdateProgress((data) => {
-            const fill = document.getElementById('update-progress-fill');
-            const progressText = document.getElementById('update-progress-text');
-            const sizeText = document.getElementById('update-size-text');
-            const meta = document.getElementById('progress-meta');
-            
-            if (meta) meta.style.display = 'flex';
-            if (fill) fill.style.width = data.percent + '%';
-            if (progressText) progressText.innerText = `Downloading Ocal Update... ${data.percent}%`;
-            if (sizeText) sizeText.innerText = `${data.loaded} MB / ${data.total} MB`;
-            
-            document.getElementById('download-update-btn').innerHTML = `<i class="fas fa-spinner fa-spin"></i> Downloading... ${data.percent}%`;
-        });
+            </div>
+        </section>
 
-        window.electronAPI.onUpdateAvailable((latest) => {
-            if (latest) {
-                updateTitle.innerText = "New Version Available!";
-                updateVersion.innerText = `Version ${latest.version}`;
-                updateNotes.innerHTML = parseMD(latest.notes) || 'No release notes provided.';
-                statusCard.style.display = 'block';
-                downloadBtn.style.display = 'flex';
-                
-                // Set up the robust download handler logic exactly as in the button click
-                downloadBtn.innerHTML = 'Download & Install <i class="fas fa-sparkles"></i>';
-                downloadBtn.onclick = async () => {
-                    downloadBtn.disabled = true;
-                    downloadBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Downloading...';
-                    document.getElementById('update-progress-container').style.display = 'block';
-                    try {
-                        const installerPath = await window.electronAPI.downloadUpdate();
-                        downloadBtn.innerHTML = 'Restart and Update <i class="fas fa-power-off"></i>';
-                        downloadBtn.disabled = false;
-                        downloadBtn.style.background = '#3b82f6 !important';
-                        downloadBtn.onclick = () => window.electronAPI.applyUpdate(installerPath);
-                    } catch (err) {
-                        downloadBtn.innerHTML = 'Download Failed - Try again';
-                        downloadBtn.disabled = false;
-                    }
-                };
-            }
-        });
+        <!-- ── ABOUT ── -->
+        <section id="about" class="section">
+            <div class="page-header">
+                <div class="page-eyebrow">About</div>
+                <div class="page-title">Ocal Browser</div>
+                <div class="page-desc">Build information, diagnostics, and software updates.</div>
+            </div>
+            <div class="page-body">
 
-        // Listen for external sync
-        window.electronAPI.onSettingsChanged(s => {
-            if (s.accentColor) applyAccent(s.accentColor);
-        });
+                <div class="about-layout">
 
-        // Extensions Particles
-        function initExtParticles() {
-            const container = document.getElementById('ext-particles');
-            if (!container) return;
-            for(let i=0; i<15; i++) {
-                const p = document.createElement('div');
-                p.className = 'ext-particle';
-                p.style.left = '50%';
-                p.style.top = '50%';
-                p.style.setProperty('--dx', (Math.random() * 400 - 200) + 'px');
-                p.style.setProperty('--dy', (Math.random() * 400 - 200) + 'px');
-                p.style.animationDelay = (Math.random() * 8) + 's';
-                container.appendChild(p);
-            }
-        }
-        initExtParticles();
-    </script>
-</body>
-</html>
+                    <!-- Left: App identity -->
+                    <div class="about-hero-card">
+                        <div class="about-app-logo">O</div>
+                        <div class="about-app-name">Ocal Browser</div>
+                        <div class="about-app-tagline">Built for speed. Designed for you.</div>
+
+                        <div class="about-ver-chip">
+                            <i class="fas fa-circle-check" style="color:#4ade80; font-size:10px;"></i>
+                            <span id="current-version-display">Version — · —</span>
+                        </div>
+                        <div class="about-build-line" id="about-build-line">Loading build info…</div>
+
+                        <div class="about-divider"></div>
+
+                        <div class="about-links">
+                            <div class="about-link-btn" id="meta-github">
+                                <i class="fab fa-github"></i>
+                                GitHub Repository
+                            </div>
+                            <div class="about-link-btn" id="meta-discord">
+                                <i class="fab fa-discord"></i>
+                                Join Discord
+                            </div>
+                            <div class="about-link-btn" onclick="window.electronAPI && window.electronAPI.send('open-external','https://ocal.app')">
+                                <i class="fas fa-globe"></i>
+                                Website
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Right: Diagnostics + Update -->
+                    <div class="about-right">
+
+                        <div class="group" style="margin-bottom:0">
+                            <div class="group-label">System Info</div>
+                            <div class="diag-grid-2">
+                                <div class="diag-item-2">
+                                    <label>App Version</label>
+                                    <span id="diag-version">—</span>
+                                </div>
+                                <div class="diag-item-2">
+                                    <label>Architecture</label>
+                                    <span>x64 Native</span>
+                                </div>
+                                <div class="diag-item-2">
+                                    <label>Node.js</label>
+                                    <span>v20.10.0</span>
+                                </div>
+                                <div class="diag-item-2">
+                                    <label>Chromium</label>
+                                    <span>124.0.x</span>
+                                </div>
+                                <div class="diag-item-2">
+                                    <label>Electron</label>
+                                    <span id="diag-build">—</span>
+                                </div>
+                                <div class="diag-item-2">
+                                    <label>Platform</label>
+                                    <span>Windows 11</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="group" style="margin-bottom:0">
+                            <div class="group-label">Updates</div>
+                            <div class="update-card" id="update-dashboard">
+                                <div class="update-card-header">
+                                    <div class="update-card-icon"><i class="fas fa-cloud-arrow-down"></i></div>
+                                    <div class="update-card-info">
+                                        <h4 id="update-status-title">Software Updates</h4>
+                                        <p id="update-status-desc">Check for the latest Ocal release.</p>
+                                    </div>
+                                    <i id="update-status-icon" class="fas fa-arrows-rotate update-status-icon"></i>
+                                </div>
+                                <div class="update-bar"><div class="update-fill" id="update-progress-fill"></div></div>
+                                <button class="btn primary" id="update-check-btn" style="width:100%; justify-content:center;">
+                                    <i class="fas fa-circle-down"></i> Check for Updates
+                                </button>
+                                <!-- Expanded Info Hidden by default -->
+                                <div id="update-info-expanded" style="display:none; margin-top:15px; padding-top:15px; border-top:1px solid rgba(255,255,255,0.05);">
+                                    <div id="update-notes" style="font-size:11px; color:var(--text-dim); line-height:1.5;"></div>
+                                    <button class="btn primary" id="download-update-btn" style="width:100%; justify-content:center; margin-top:12px; display:none;">
+                                        <i class="fas fa-download"></i> Download Update
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="legal-line">
+                            &copy; 2026 GNS Media Group &middot; Ocal Browser Project
+                        </div>
+
+                    </div>
+                </div>
+
+            </div>
+        </section>
+
+    </main>
+
+    <script src="settings.js"></script>
 </body>
 </html>

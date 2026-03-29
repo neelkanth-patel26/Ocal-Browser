@@ -1,0 +1,180 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' https://cdnjs.cloudflare.com https://unpkg.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com https://cdnjs.cloudflare.com; font-src 'self' https://fonts.gstatic.com https://cdnjs.cloudflare.com; img-src 'self' data: https:; connect-src 'self' https://suggestqueries.google.com https://api.github.com https://cdnjs.cloudflare.com https://unpkg.com;">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <style>
+        :root {
+            --accent: #a855f7;
+            --chrome: #0c0c0e;
+            --text: #ffffff;
+            --text-dim: rgba(255,255,255,0.45);
+            --border: rgba(255,255,255,0.08);
+            --panel-bg: rgba(20, 20, 25, 0.95);
+        }
+        * { box-sizing: border-box; margin: 0; padding: 0; user-select: none; }
+        html, body {
+            background: transparent;
+            width: 100vw; height: 100vh;
+            overflow: hidden; pointer-events: none;
+            font-family: 'Inter', -apple-system, sans-serif;
+            color: var(--text);
+        }
+        .backdrop {
+            position: absolute; inset: 0; pointer-events: auto; background: rgba(0,0,0,0.01); z-index: 1;
+        }
+        .popup-panel {
+            position: absolute; z-index: 2; pointer-events: auto;
+            background: var(--panel-bg); backdrop-filter: blur(32px);
+            padding: 20px; border-radius: 16px; border: 1px solid var(--border);
+            box-shadow: 0 20px 60px rgba(0,0,0,0.6), 0 0 0 1px rgba(255,255,255,0.03);
+            width: 260px;
+            display: flex; flex-direction: column; gap: 4px;
+        }
+        .header {
+            display: flex;
+            align-items: center;
+            gap: 14px;
+            margin-bottom: 24px;
+        }
+        .icon-circle {
+            width: 40px;
+            height: 40px;
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: var(--accent);
+            box-shadow: 0 8px 24px color-mix(in srgb, var(--accent) 30%, transparent);
+            transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+            font-size: 18px;
+        }
+        .input-container {
+            flex: 1;
+            position: relative;
+        }
+        input {
+            background: rgba(255,255,255,0.04);
+            border: 1px solid var(--border);
+            color: #fff;
+            padding: 10px 14px;
+            border-radius: 10px;
+            outline: none;
+            width: 100%;
+            font-size: 14px;
+            font-weight: 500;
+            transition: all 0.2s;
+        }
+        input:focus { 
+            border-color: var(--accent); 
+            background: rgba(255,255,255,0.07);
+            box-shadow: 0 0 0 3px color-mix(in srgb, var(--accent) 15%, transparent);
+        }
+        
+        .section-label {
+            font-size: 10px;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            color: var(--text-dim);
+            margin-bottom: 12px;
+            display: block;
+        }
+
+        .color-grid {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 28px;
+            padding: 0 2px;
+        }
+        .color-dot {
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            cursor: pointer;
+            border: 2px solid transparent;
+            transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+            position: relative;
+        }
+        .color-dot:hover { transform: scale(1.3); }
+        .color-dot.active { 
+            border-color: #fff; 
+            transform: scale(1.2);
+            box-shadow: 0 0 12px currentColor;
+        }
+
+        .actions {
+            display: flex;
+            gap: 10px;
+        }
+        .btn {
+            flex: 1;
+            padding: 10px;
+            border-radius: 10px;
+            font-size: 12px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            border: 1px solid transparent;
+        }
+        .btn-secondary { 
+            background: rgba(255,255,255,0.04); 
+            color: var(--text-dim);
+            border-color: var(--border);
+        }
+        .btn-secondary:hover { 
+            background: color-mix(in srgb, var(--accent) 10%, transparent); 
+            color: #fff; 
+            border-color: color-mix(in srgb, var(--accent) 30%, transparent);
+            transform: translateY(-1px);
+        }
+        .btn-danger { 
+            background: color-mix(in srgb, var(--accent) 12%, transparent); 
+            color: var(--accent); 
+            border-color: color-mix(in srgb, var(--accent) 20%, transparent);
+        }
+        .btn-danger:hover { 
+            background: color-mix(in srgb, var(--accent) 20%, transparent); 
+            transform: translateY(-1px);
+            box-shadow: 0 4px 12px color-mix(in srgb, var(--accent) 20%, transparent);
+        }
+    </style>
+</head>
+<body>
+    <div class="backdrop" id="backdrop"></div>
+    <div class="popup-panel" id="popup-panel">
+        <div class="header">
+            <div class="icon-circle" id="group-icon"><i class="fas fa-layer-group"></i></div>
+            <div class="input-container">
+                <input type="text" id="group-name" placeholder="Group Name">
+            </div>
+        </div>
+
+        <span class="section-label">Group Color</span>
+        <div class="color-grid" id="color-grid">
+            <div class="color-dot" data-color="#ef4444" style="background: #ef4444; color: #ef4444"></div>
+            <div class="color-dot" data-color="#3b82f6" style="background: #3b82f6; color: #3b82f6"></div>
+            <div class="color-dot" data-color="#10b981" style="background: #10b981; color: #10b981"></div>
+            <div class="color-dot" data-color="#f59e0b" style="background: #f59e0b; color: #f59e0b"></div>
+            <div class="color-dot" data-color="#a855f7" style="background: #a855f7; color: #a855f7"></div>
+            <div class="color-dot" data-color="#6366f1" style="background: #6366f1; color: #6366f1"></div>
+        </div>
+
+        <div class="actions">
+            <div class="btn btn-secondary" id="ungroup-btn">
+                <i class="fas fa-object-ungroup"></i> Ungroup
+            </div>
+            <div class="btn btn-danger" id="close-btn">
+                <i class="fas fa-times"></i> Close
+            </div>
+        </div>
+    </div>
+
+    <script src="tabgroup.js"></script>
+</body>
+</html>

@@ -2,6 +2,7 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
+    <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' https://cdnjs.cloudflare.com https://unpkg.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com https://cdnjs.cloudflare.com; font-src 'self' https://fonts.gstatic.com https://cdnjs.cloudflare.com; img-src 'self' data: https:; connect-src 'self' https://suggestqueries.google.com https://api.github.com https://cdnjs.cloudflare.com https://unpkg.com;">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Ocal</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -14,9 +15,12 @@
 
     <!-- ── Row 1: Tab Bar ─────────────────────────────────────────── -->
     <div class="tab-bar">
-        <div id="tab-list"></div>
-        <button class="new-tab-btn" id="new-tab-btn" title="New tab"><i class="fas fa-plus"></i></button>
+        <div class="tab-area-container">
+            <div id="tab-list"></div>
+            <button class="new-tab-btn" id="new-tab-btn" title="New tab"><i class="fas fa-plus"></i></button>
+        </div>
         <div class="tab-drag-spacer"></div>
+        <div class="invisible-wall"></div>
         <div class="window-controls">
             <div class="ctrl-btn" id="min-btn"><i class="fas fa-minus"></i></div>
             <div class="ctrl-btn" id="max-btn"><i class="far fa-square"></i></div>
@@ -35,8 +39,16 @@
 
         <!-- Center: address bar -->
         <div class="omnibox" id="omnibox">
-            <div class="omnibox-icon"></div>
-            <input type="text" class="omnibox-input" id="address-input" placeholder="Search or enter address" autocomplete="off" spellcheck="false">
+            <div class="omnibox-identity" id="identity-btn">
+                <i class="fas fa-lock site-lock-icon"></i>
+            </div>
+            <div class="url-field-group">
+                <div class="omnibox-icon"></div>
+                <div class="url-overlay-area">
+                    <div class="pretty-url" id="pretty-url"></div>
+                    <input type="text" class="omnibox-input" id="address-input" placeholder="Search or enter address" autocomplete="off" spellcheck="false">
+                </div>
+            </div>
             <div class="omnibox-actions">
                 <button class="omni-btn" id="bookmark-heart-btn" title="Bookmark this page"><i class="far fa-heart"></i></button>
                 <button class="omni-btn" id="screenshot-btn" title="Screenshot"><i class="fas fa-camera"></i></button>
@@ -45,6 +57,7 @@
         </div>
 
         <!-- Right: toolbar actions -->
+        <div class="invisible-wall"></div>
         <div class="toolbar-actions">
             <button class="ai-pill" id="ai-toolbar-btn">
                 <i class="fas fa-wand-magic-sparkles"></i>

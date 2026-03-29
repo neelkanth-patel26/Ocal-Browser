@@ -25,14 +25,19 @@ contextBridge.exposeInMainWorld('electronAPI', {
 
   // Settings
   getSettings:    ()          => ipcRenderer.invoke('get-settings'),
+  getDownloads:   ()          => ipcRenderer.invoke('get-downloads'),
   updateSetting:  (key, val)  => ipcRenderer.send('update-setting', key, val),
+  importBookmarks: (browser)    => ipcRenderer.invoke('import-bookmarks', browser),
+  importBookmarkFile: ()         => ipcRenderer.invoke('import-bookmark-file'),
+  clearBookmarks:     ()         => ipcRenderer.send('clear-bookmarks'),
 
   // Bookmarks
   toggleBookmark: (bm)    => ipcRenderer.send('toggle-bookmark', bm),
 
-  // Generic send/receive
+  // Generic send/receive/invoke
   send: (channel, data)   => ipcRenderer.send(channel, data),
   on:   (channel, cb)     => ipcRenderer.on(channel, (e, d) => cb(e, d)),
+  invoke: (channel, data) => ipcRenderer.invoke(channel, data),
 
   // ── Listeners ──────────────────────────────────────────────────────────
   onTabsChanged:       (cb) => ipcRenderer.on('tabs-changed',          (e, d)    => cb(d)),
@@ -52,4 +57,7 @@ contextBridge.exposeInMainWorld('electronAPI', {
   onCloseAllSidebars:  (cb) => ipcRenderer.on('close-all-sidebars',    ()        => cb()),
   onHtmlFullscreen:    (cb) => ipcRenderer.on('html-fullscreen',       (e, v)    => cb(v)),
   onShowModal:         (cb) => ipcRenderer.on('show-modal',            (e, d)    => cb(d)),
+  onUpdateSiteInfo:    (cb) => ipcRenderer.on('update-site-info',      (e, d)    => cb(d)),
+  onShowBMDropdown:    (cb) => ipcRenderer.on('show-bm-dropdown',      (e, d)    => cb(d)),
+  onFaviconUpdated:    (cb) => ipcRenderer.on('favicon-updated',       (e, d)    => cb(d)),
 });

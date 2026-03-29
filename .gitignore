@@ -2,3 +2,7 @@ node_modules
 out/
 dist-inno/
 dist-builder/
+*.log
+test_electron.js
+startup_log.txt
+startup_final.log

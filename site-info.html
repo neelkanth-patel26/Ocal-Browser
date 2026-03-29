@@ -1,0 +1,304 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' https://cdnjs.cloudflare.com https://unpkg.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com https://cdnjs.cloudflare.com; font-src 'self' https://fonts.gstatic.com https://cdnjs.cloudflare.com; img-src 'self' data: https:; connect-src 'self' https://suggestqueries.google.com https://api.github.com https://cdnjs.cloudflare.com https://unpkg.com;">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        :root {
+            --accent: #a855f7;
+            --text: #ffffff;
+            --text-dim: rgba(255, 255, 255, 0.65);
+            --text-muted: rgba(255, 255, 255, 0.35);
+            --bg: rgba(22, 22, 28, 0.92);
+            --border: rgba(255, 255, 255, 0.08);
+            --hover: rgba(255, 255, 255, 0.06);
+        }
+
+        * { box-sizing: border-box; }
+
+        body {
+            margin: 0;
+            padding: 0;
+            font-family: 'Inter', -apple-system, sans-serif;
+            background: transparent;
+            color: var(--text);
+            overflow: hidden;
+            display: flex;
+            align-items: flex-start;
+            justify-content: flex-start;
+            height: 100vh;
+        }
+
+        .site-info-popup {
+            width: 320px;
+            background: var(--bg);
+            backdrop-filter: blur(44px) saturate(180%);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            box-shadow: 0 12px 60px rgba(0,0,0,0.8), 0 0 0 1px rgba(255,255,255,0.03);
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+            animation: sipPop 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+            position: relative;
+        }
+
+        @keyframes sipPop {
+            from { opacity: 0; transform: translateY(-8px) scale(0.98); }
+            to { opacity: 1; transform: translateY(0) scale(1); }
+        }
+
+        .screen {
+            display: none;
+            flex-direction: column;
+            width: 100%;
+            height: 100%;
+        }
+
+        .screen.active { display: flex; }
+
+        .sip-header { 
+            padding: 14px 16px; 
+            display: flex; 
+            align-items: center; 
+            justify-content: space-between; 
+            border-bottom: 1px solid rgba(255,255,255,0.04);
+        }
+        
+        .sip-header-left { display: flex; align-items: center; gap: 12px; }
+        .sip-back-btn {
+            width: 28px; height: 28px; border-radius: 8px; color: var(--text-dim);
+            font-size: 12px; cursor: pointer; display: flex; align-items: center; justify-content: center; transition: all 0.2s; border:none; background:none;
+        }
+        .sip-back-btn:hover { background: var(--hover); color: var(--text); }
+
+        .sip-title { font-size: 14px; font-weight: 600; color: #fff; }
+        .sip-domain { font-size: 12px; color: var(--text-dim); margin-top: 2px; }
+        
+        .sip-close {
+            width: 28px; height: 28px; border-radius: 8px; color: var(--text-muted);
+            font-size: 11px; cursor: pointer; display: flex; align-items: center; justify-content: center; transition: all 0.2s; border:none; background:none;
+        }
+        .sip-close:hover { background: var(--hover); color: #fff; }
+
+        .sip-content { padding: 12px 8px 16px; display: flex; flex-direction: column; }
+        
+        .sip-row { 
+            padding: 12px 12px; 
+            margin: 2px 4px;
+            border-radius: 12px; 
+            display: flex; 
+            align-items: center; 
+            gap: 16px; 
+            cursor: pointer; 
+            transition: all 0.2s ease-in-out; 
+        }
+        .sip-row:hover { background: var(--hover); }
+        .sip-row-icon { font-size: 15px; color: var(--text-dim); width: 20px; text-align: center; }
+        .sip-row-icon.secure { color: var(--accent); }
+        .sip-row-text { flex: 1; }
+        .sip-row-title { font-size: 13px; font-weight: 500; color: #fff; }
+        .sip-row-desc { font-size: 11.5px; color: var(--text-dim); margin-top: 3px; line-height: 1.4; }
+        .sip-arrow { font-size: 10px; color: var(--text-muted); }
+
+        .sip-separator { height: 1px; background: rgba(255,255,255,0.06); margin: 10px 14px; }
+        
+        .sip-permissions { display: flex; flex-direction: column; gap: 2px; }
+        .sip-perm-item { 
+            display: flex; 
+            align-items: center; 
+            justify-content: space-between; 
+            padding: 10px 16px; 
+            margin: 0 4px;
+            border-radius: 10px;
+            transition: background 0.2s;
+        }
+        .sip-perm-item:hover { background: var(--hover); }
+        .sip-perm-label { display: flex; align-items: center; gap: 14px; font-size: 13px; font-weight: 500; color: var(--text-dim); }
+        .sip-perm-label i { font-size: 14px; color: var(--text-dim); width: 18px; text-align: center; }
+
+        .sip-toggle {
+            width: 34px; height: 18px; background: rgba(255,255,255,0.12);
+            border-radius: 100px; position: relative; cursor: pointer;
+            transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+        .sip-toggle.on { background: var(--accent); }
+        .sip-toggle-dot {
+            position: absolute; top: 3px; left: 3px; width: 12px; height: 12px;
+            background: #fff; border-radius: 50%; transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+            box-shadow: 0 1px 3px rgba(0,0,0,0.3);
+        }
+        .sip-toggle.on .sip-toggle-dot { left: 19px; }
+
+        .sip-footer { margin-top: 8px; }
+        .sip-footer-item { 
+            margin: 2px 4px;
+            padding: 10px 14px; 
+            display: flex; 
+            align-items: center; 
+            gap: 14px; 
+            cursor: pointer; 
+            transition: all 0.2s; 
+            border-radius: 10px; 
+        }
+        .sip-footer-item:hover { background: var(--hover); }
+        .sip-footer-item i { font-size: 14px; color: var(--text-dim); width: 18px; text-align: center; }
+        .sip-footer-label { flex: 1; font-size: 12.5px; font-weight: 500; color: var(--text-dim); }
+        
+        .sip-reset-btn { 
+            background: none; border: none; cursor: pointer;
+            width: 100%; text-align: left; padding: 12px 18px;
+            font-size: 13px; font-weight: 600; color: var(--accent);
+            transition: opacity 0.2s;
+        }
+        .sip-reset-btn:hover { opacity: 0.8; }
+
+        /* Security Detail Specifics */
+        .security-desc { padding: 16px 18px; font-size: 13px; color: var(--text-dim); line-height: 1.5; }
+        .security-desc a { color: var(--accent); text-decoration: none; }
+        .security-desc a:hover { text-decoration: underline; }
+    </style>
+</head>
+<body>
+    <div class="site-info-popup">
+        <!-- Main Screen -->
+        <div class="screen active" id="main-screen">
+            <div class="sip-header">
+                <div class="sip-title">www.youtube.com</div>
+                <button class="sip-close" id="sip-close-btn-main"><i class="fas fa-times"></i></button>
+            </div>
+            
+            <div class="sip-content">
+                <div class="sip-row" id="go-to-security">
+                    <i class="fas fa-lock sip-row-icon secure"></i>
+                    <div class="sip-row-text">
+                        <div class="sip-row-title">Connection is secure</div>
+                        <div class="sip-row-desc">Your information is private as it is sent to this site.</div>
+                    </div>
+                    <i class="fas fa-chevron-right sip-arrow"></i>
+                </div>
+                
+                <div class="sip-separator"></div>
+                
+                <div class="sip-permissions">
+                    <div class="sip-perm-item">
+                        <div class="sip-perm-label"><i class="fas fa-bell"></i> Notifications</div>
+                        <div class="sip-toggle" id="toggle-notifications"><div class="sip-toggle-dot"></div></div>
+                    </div>
+                    <div class="sip-perm-item">
+                        <div class="sip-perm-label"><i class="fas fa-window-restore"></i> Pop-ups and redirects</div>
+                        <div class="sip-toggle on" id="toggle-popups"><div class="sip-toggle-dot"></div></div>
+                    </div>
+                    <div class="sip-perm-item">
+                        <div class="sip-perm-label"><i class="fas fa-volume-high"></i> Sound</div>
+                        <div class="sip-toggle on" id="toggle-sound"><div class="sip-toggle-dot"></div></div>
+                    </div>
+                </div>
+                
+                <button class="sip-reset-btn">Reset permissions</button>
+                
+                <div class="sip-separator"></div>
+                
+                <div class="sip-footer">
+                    <div class="sip-footer-item" id="cookies-btn">
+                        <i class="fas fa-cookie-bite"></i>
+                        <span class="sip-footer-label">Cookies and site data</span>
+                        <i class="fas fa-chevron-right sip-arrow"></i>
+                    </div>
+                    <div class="sip-footer-item" id="site-settings-btn">
+                        <i class="fas fa-gear"></i>
+                        <span class="sip-footer-label">Site settings</span>
+                        <i class="fas fa-arrow-up-right-from-square sip-arrow"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Security Detail Screen -->
+        <div class="screen" id="security-screen">
+            <div class="sip-header">
+                <div class="sip-header-left">
+                    <button class="sip-back-btn" id="back-sec-to-main"><i class="fas fa-arrow-left"></i></button>
+                    <div>
+                        <div class="sip-title">Security</div>
+                        <div class="sip-domain">youtube.com</div>
+                    </div>
+                </div>
+                <button class="sip-close"><i class="fas fa-times"></i></button>
+            </div>
+            
+            <div class="sip-content">
+                <div class="sip-row">
+                    <i class="fas fa-lock sip-row-icon"></i>
+                    <div class="sip-row-text">
+                        <div class="sip-row-title">Connection is secure</div>
+                        <div class="sip-row-desc">Your information (for example, passwords or credit card numbers) is private when it is sent to this site. <a href="#">Learn more</a></div>
+                    </div>
+                </div>
+                
+                <div class="sip-separator"></div>
+                
+                <div class="sip-footer-item" id="view-cert-btn">
+                    <i class="fas fa-certificate"></i>
+                    <span class="sip-footer-label">Certificate is valid</span>
+                    <i class="fas fa-arrow-up-right-from-square sip-arrow"></i>
+                </div>
+            </div>
+        </div>
+
+        <!-- Cookies and Site Data Screen -->
+        <div class="screen" id="cookies-screen">
+            <div class="sip-header">
+                <div class="sip-header-left">
+                    <button class="sip-back-btn" id="back-cook-to-main"><i class="fas fa-arrow-left"></i></button>
+                    <div>
+                        <div class="sip-title">On-device site data</div>
+                        <div class="sip-domain">youtube.com</div>
+                    </div>
+                </div>
+                <button class="sip-close"><i class="fas fa-times"></i></button>
+            </div>
+            
+            <div class="sip-content">
+                <div class="security-desc">
+                    To improve your visit, sites often save your activity — often to your device. <a href="#" id="manage-data-link">Manage site data</a>
+                </div>
+                
+                <div class="security-desc" style="padding-top:0; font-weight: 500; color: #fff;">
+                    Data from the site that you're visiting
+                    <div style="font-weight: 400; color: var(--text-dim); font-size: 11.5px; margin-top: 4px;">
+                        A site might save your preferred language or items that you want to buy. This info is available to the site and its subdomains.
+                    </div>
+                </div>
+
+                <div id="cookies-list" style="max-height: 240px; overflow-y: auto; margin-top: 8px;">
+                    <!-- Items like: accounts.youtube.com -->
+                </div>
+            </div>
+
+            <div style="padding: 16px; margin-top: auto; border-top: 1px solid rgba(255,255,255,0.04); display: flex; justify-content: flex-end;">
+                <button class="sip-back-btn" id="cookies-done-btn" style="width: auto; padding: 0 16px; background: var(--accent); color: #000; font-weight: 600;">Done</button>
+            </div>
+        </div>
+    </div>
+    <script src="site-info.js"></script>
+    <style>
+        .cookie-item {
+            display: flex;
+            align-items: center;
+            padding: 10px 16px;
+            gap: 12px;
+            transition: background 0.2s;
+        }
+        .cookie-item:hover { background: var(--hover); }
+        .cookie-favicon { width: 20px; height: 20px; border-radius: 4px; opacity: 0.8; }
+        .cookie-domain { flex: 1; font-size: 13px; color: var(--text-dim); }
+        .cookie-action { 
+            width: 28px; height: 28px; display: flex; align-items: center; justify-content: center;
+            color: var(--text-dim); cursor: pointer; transition: all 0.2s; border-radius: 6px;
+        }
+        .cookie-action:hover { background: rgba(239, 68, 68, 0.15); color: #ef4444; }
+    </style>
+</body>
+</html>

@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Ocal Browser - Feedback</title>
+    <link rel="stylesheet" href="style.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800&family=Outfit:wght@700&display=swap" rel="stylesheet">
+</head>
+<body>
+    <div class="survey-window">
+        <header class="header">
+            <img src="../icon.ico" class="logo">
+            <h2>Why are you leaving?</h2>
+            <p>We're sorry to see you go. Help us improve Ocal by sharing your feedback.</p>
+        </header>
+
+        <main class="content">
+            <div class="reason-grid">
+                <label class="reason-card">
+                    <input type="radio" name="reason" value="Bugs/Stability">
+                    <div class="card-inner">Bugs / Stability</div>
+                </label>
+                <label class="reason-card">
+                    <input type="radio" name="reason" value="Performance">
+                    <div class="card-inner">Slow / Heavy</div>
+                </label>
+                <label class="reason-card">
+                    <input type="radio" name="reason" value="Missing Features">
+                    <div class="card-inner">Missing Features</div>
+                </label>
+                <label class="reason-card">
+                    <input type="radio" name="reason" value="Switching Browsers">
+                    <div class="card-inner">Switching Choice</div>
+                </label>
+            </div>
+
+            <textarea id="feedbackText" placeholder="Tell us more (optional)..."></textarea>
+        </main>
+
+        <footer class="footer">
+            <button id="skipBtn" class="btn btn-secondary">Skip & Uninstall</button>
+            <button id="submitBtn" class="btn btn-primary" disabled>Submit & Uninstall</button>
+        </footer>
+    </div>
+    <script src="script.js"></script>
+</body>
+</html>
