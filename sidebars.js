@@ -476,6 +476,46 @@ function sortBookmarks() {
 }
 
 // ── History ────────────────────────────────────────────────────────────────
+function getHistoricalIcon(url, title = '', storedIcon = '') {
+    const u = String(url || '').toLowerCase();
+    
+    // 1. Internal Ocal Settings/System Pages
+    if (u.includes('settings.html') || u.includes('ocal://settings')) {
+        return `<div class="hist-favicon" style="background:rgba(168,85,247,0.12);color:var(--accent);display:flex;align-items:center;justify-content:center;"><i class="fas fa-gear" style="font-size:11px"></i></div>`;
+    }
+    if (u.includes('home.html') || u.includes('ocal://home') || u === 'ocal://') {
+        return `<div class="hist-favicon" style="background:rgba(168,85,247,0.12);color:var(--accent);display:flex;align-items:center;justify-content:center;"><i class="fas fa-house" style="font-size:11px"></i></div>`;
+    }
+    if (u.includes('pdf-viewer.html') || u.includes('.pdf') || u.includes('ocal://pdf')) {
+        return `<div class="hist-favicon" style="background:rgba(168,85,247,0.12);color:var(--accent);display:flex;align-items:center;justify-content:center;"><i class="fas fa-file-pdf" style="font-size:11px"></i></div>`;
+    }
+    if (u.includes('sidebars.html') || u.includes('ocal://history') || u.includes('ocal://saves')) {
+        return `<div class="hist-favicon" style="background:rgba(168,85,247,0.12);color:var(--accent);display:flex;align-items:center;justify-content:center;"><i class="fas fa-clock-rotate-left" style="font-size:11px"></i></div>`;
+    }
+
+    // 2. Proactive stored favicon usage
+    if (storedIcon) {
+        return `<img class="hist-favicon" src="${storedIcon}" 
+                onerror="this.outerHTML='<div class=\'hist-favicon-fallback\'><i class=\'fas fa-globe\'></i></div>'">`;
+    }
+
+    // 3. Extracted domain for normal websites (Fallback to Google Service)
+    let domain = '';
+    try {
+        const urlObj = new URL(url);
+        domain = urlObj.hostname;
+        if (urlObj.protocol === 'file:') domain = '';
+    } catch {}
+
+    if (!domain) {
+        return `<div class="hist-favicon-fallback"><i class="fas fa-globe"></i></div>`;
+    }
+
+    return `<img class="hist-favicon" src="https://www.google.com/s2/favicons?domain=${domain}&sz=32" 
+            onerror="this.outerHTML='<div class=\'hist-favicon-fallback\'><i class=\'fas fa-globe\'></i></div>'">`;
+}
+
+// ── History ────────────────────────────────────────────────────────────────
 function renderHistory() {
     const q = searchFilter;
     const items = q
@@ -495,25 +535,14 @@ function renderHistory() {
             item.className = 'hist-item active-tab-entry';
             if (tab.id === activeTabId) item.classList.add('current-active');
             
-            let iconHtml = `<img class="hist-favicon" src="https://www.google.com/s2/favicons?domain=${domain}&sz=32" onerror="this.src='https://www.google.com/s2/favicons?domain=google.com&sz=32'">`;
-            const lowerUrl = tab.url.toLowerCase();
-            const isPdf = lowerUrl.endsWith('.pdf') || lowerUrl.includes('.pdf?') || lowerUrl.includes('pdf-viewer.html');
-
-            if (isPdf) {
-                iconHtml = `<div class="hist-favicon" style="display:flex;align-items:center;justify-content:center;background:rgba(168,85,247,0.1);color:var(--accent);"><i class="fas fa-file-pdf" style="font-size:10px;"></i></div>`;
-            } else if (tab.url.includes('home.html') || tab.url === 'ocal://') {
-                iconHtml = `<div class="hist-favicon" style="display:flex;align-items:center;justify-content:center;background:rgba(168,85,247,0.1);color:var(--accent);"><i class="fas fa-home" style="font-size:10px;"></i></div>`;
-            } else if (tab.url.includes('settings.html')) {
-                iconHtml = `<div class="hist-favicon" style="display:flex;align-items:center;justify-content:center;background:rgba(168,85,247,0.1);color:var(--accent);"><i class="fas fa-gear" style="font-size:10px;"></i></div>`;
-            }
+            const iconHtml = getHistoricalIcon(tab.url, tab.title, tab.favicon);
 
             item.innerHTML = `
                 ${iconHtml}
                 <div class="hist-info">
                     <div class="hist-title">${esc(tab.title || 'New Tab')}</div>
-                    <div class="hist-meta">${esc(domain || 'ocal://')} · Active Now</div>
+                    <div class="hist-meta">${esc(domain || 'ocal://')} · Open Now</div>
                 </div>
-                ${tab.id === activeTabId ? '<div class="active-badge">CURRENT</div>' : ''}
             `;
             item.onclick = () => {
                 window.electronAPI.send('switch-tab', tab.id);
@@ -524,67 +553,55 @@ function renderHistory() {
         sbContent.appendChild(openWrap);
     }
 
-    // 2. Recommendations (Top 5 Sites) - Only if not searching
+    // 2. Recommendations (Top Domains)
     if (!q && historyItems.length > 5) {
         const counts = {};
         historyItems.forEach(h => {
             try {
-                const urlObj = new URL(h.url);
-                let domain = urlObj.hostname;
-                if (!domain && urlObj.protocol === 'file:') {
-                    if (urlObj.pathname.includes('settings.html')) domain = 'ocal:settings';
-                    else if (urlObj.pathname.includes('home.html')) domain = 'ocal:home';
-                    else domain = 'ocal:local';
+                const u = new URL(h.url);
+                let dom = u.hostname;
+                if (!dom && u.protocol === 'file:') {
+                    if (u.pathname.includes('settings.html')) dom = 'ocal:settings';
+                    else if (u.pathname.includes('home.html')) dom = 'ocal:home';
+                    else dom = 'ocal:local';
                 }
-                if (domain) counts[domain] = (counts[domain] || 0) + 1;
+                if (dom) counts[dom] = (counts[dom] || 0) + 1;
             } catch {}
         });
-        const topDomains = Object.entries(counts)
-            .sort((a,b) => b[1] - a[1])
-            .slice(0, 8);
+        const top = Object.entries(counts).sort((a,b) => b[1] - a[1]).slice(0, 8);
 
         const recomWrap = document.createElement('div');
         recomWrap.className = 'hist-recom';
-        recomWrap.innerHTML = `<div class="recom-title"><i class="fas fa-star"></i>Recommended</div><div class="recom-grid"></div>`;
+        recomWrap.innerHTML = `<div class="recom-title"><i class="fas fa-bolt"></i>Quick Access</div><div class="recom-grid"></div>`;
         const grid = recomWrap.querySelector('.recom-grid');
         
-        topDomains.forEach(([domain, count]) => {
+        top.forEach(([dom, count]) => {
             const item = document.createElement('div');
             item.className = 'recom-item';
             
-            let iconSrc = `https://www.google.com/s2/favicons?domain=${domain}&sz=64`;
-            let iconHtml = `<img src="${iconSrc}" onerror="this.onerror=null; this.src='https://www.google.com/s2/favicons?domain=ocal.com&sz=64'">`;
+            let iconHtml = '';
+            let name = dom.replace('www.','');
             
-            let label = domain.replace('www.','');
-
-            if (domain.startsWith('ocal:')) {
-                const isSettings = domain === 'ocal:settings';
-                const icon = isSettings ? 'fa-gear' : 'fa-house';
-                label = isSettings ? 'Settings' : 'Home';
-                iconHtml = `<div style="width:100%; height:100%; display:flex; align-items:center; justify-content:center; background:rgba(168,85,247,0.1); border-radius:12px; color:var(--accent); font-size:20px;"><i class="fas ${icon}"></i></div>`;
-            } else if (domain.toLowerCase().endsWith('.pdf') || domain.toLowerCase().includes('pdf-viewer')) {
-                label = label.split(/[?#]/)[0].split('/').pop() || 'Document';
-                iconHtml = `<div style="width:100%; height:100%; display:flex; align-items:center; justify-content:center; background:rgba(168,85,247,0.1); border-radius:12px; color:var(--accent); font-size:20px;"><i class="fas fa-file-pdf"></i></div>`;
+            if (dom.startsWith('ocal:')) {
+                const isSettings = dom === 'ocal:settings';
+                name = isSettings ? 'Settings' : 'Home';
+                iconHtml = `<div style="width:28px;height:28px;display:flex;align-items:center;justify-content:center;background:rgba(168,85,247,0.1);border-radius:8px;color:var(--accent);font-size:14px;"><i class="fas ${isSettings?'fa-gear':'fa-house'}"></i></div>`;
+            } else {
+                iconHtml = `<img src="https://www.google.com/s2/favicons?domain=${dom}&sz=64" onerror="this.outerHTML='<div class=\'hist-favicon-fallback\' style=\'width:28px;height:28px;font-size:14px;\'><i class=\'fas fa-globe\'></i></div>'">`;
             }
 
-            item.innerHTML = `
-                ${iconHtml}
-                <div class="recom-name">${esc(label)}</div>
-            `;
-            item.onclick = () => {
-                if (domain === 'ocal:settings') window.electronAPI.navigateTo('ocal://settings');
-                else if (domain === 'ocal:home') window.electronAPI.navigateTo('ocal://home');
-                else window.electronAPI.navigateTo('https://' + domain);
-            };
+            item.innerHTML = `${iconHtml}<div class="recom-name">${esc(name)}</div>`;
+            item.onclick = () => window.electronAPI.navigateTo(dom.startsWith('ocal:') ? `ocal://${name.toLowerCase()}` : `https://${dom}`);
             grid.appendChild(item);
         });
         sbContent.appendChild(recomWrap);
     }
 
+    // 3. Clear History
     if (items.length) {
         const clearBtn = document.createElement('div');
         clearBtn.className = 'hist-clear-row';
-        clearBtn.innerHTML = '<i class="fas fa-trash"></i>Clear History';
+        clearBtn.innerHTML = '<i class="fas fa-trash-can"></i>Clear History';
         clearBtn.onclick = () => {
             showModal({
                 title: 'Clear History',
@@ -595,7 +612,7 @@ function renderHistory() {
         sbContent.appendChild(clearBtn);
     }
 
-    // 2. Group by date + Domain Smart Collapse
+    // 4. History List Grouped by Date
     const groups = {};
     items.forEach(h => {
         const d = new Date(h.timestamp);
@@ -607,28 +624,13 @@ function renderHistory() {
     Object.entries(groups).forEach(([label, group]) => {
         const lbl = document.createElement('div');
         lbl.className = 'hist-date-label';
-        lbl.innerHTML = `<i class="fas fa-calendar-day"></i>${label}`;
+        lbl.innerHTML = label;
         sbContent.appendChild(lbl);
 
-        group.forEach((h, i) => {
+        group.forEach(h => {
             const domain = (() => { try { return new URL(h.url).hostname; } catch { return ''; } })();
             const time = new Date(h.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
-
-            let iconHtml = `<img class="hist-favicon" src="https://www.google.com/s2/favicons?domain=${domain}&sz=32" onerror="this.src='https://www.google.com/s2/favicons?domain=google.com&sz=32'">`;
-            const lowerUrl = h.url.toLowerCase();
-            const isPdf = lowerUrl.endsWith('.pdf') || lowerUrl.includes('.pdf?') || lowerUrl.includes('pdf-viewer.html');
-
-            if (isPdf) {
-                iconHtml = `<i class="fas fa-file-pdf hist-favicon" style="color:var(--accent);display:flex;align-items:center;justify-content:center;font-size:12px"></i>`;
-            } else if (h.url.includes('sidebars.html')) {
-                iconHtml = `<i class="fas fa-gear hist-favicon" style="color:var(--accent);display:flex;align-items:center;justify-content:center;font-size:12px"></i>`;
-            } else if (h.url.includes('settings.html')) {
-                iconHtml = `<i class="fas fa-gear hist-favicon" style="color:var(--accent);display:flex;align-items:center;justify-content:center;font-size:12px"></i>`;
-            } else if (h.url.includes('home.html')) {
-                iconHtml = `<i class="fas fa-house hist-favicon" style="color:var(--accent);display:flex;align-items:center;justify-content:center;font-size:12px"></i>`;
-            } else if (h.url.includes('game.html')) {
-                iconHtml = `<i class="fas fa-gamepad hist-favicon" style="color:var(--accent);display:flex;align-items:center;justify-content:center;font-size:12px"></i>`;
-            }
+            const iconHtml = getHistoricalIcon(h.url, h.title, h.favicon);
 
             const el = document.createElement('div');
             el.className = 'hist-item';
@@ -638,10 +640,10 @@ function renderHistory() {
                     <div class="hist-title">${esc(h.title || h.url)}</div>
                     <div class="hist-meta">${esc(domain || 'Local Page')} · ${time}</div>
                 </div>
-                <i class="fas fa-times hist-del" title="Remove"></i>
+                <div class="hist-del" title="Remove"><i class="fas fa-xmark"></i></div>
             `;
             el.querySelector('.hist-del').onclick = (e) => { e.stopPropagation(); window.electronAPI.send('delete-history-item', h.timestamp); };
-            el.onclick = (e) => { if (e.target.classList.contains('hist-del')) return; window.electronAPI.navigateTo(h.url); closeSidebar(); };
+            el.onclick = () => { window.electronAPI.navigateTo(h.url); closeSidebar(); };
             sbContent.appendChild(el);
         });
     });
@@ -656,18 +658,65 @@ function renderDownloads() {
     downloadItems.forEach(dl => {
         const el = document.createElement('div');
         el.className = 'dl-item';
-        const pct = dl.total > 0 ? Math.round((dl.received / dl.total) * 100) : 0;
+        const isFinished = dl.state === 'completed' || dl.state === 'cancelled' || dl.state === 'interrupted';
+        const pct = isFinished ? (dl.state === 'completed' ? 100 : 0) : (dl.total > 0 ? Math.round((dl.received / dl.total) * 100) : 0);
+        const icon = getFileIcon(dl.name);
+        
+        const sizeInfo = dl.total > 0 
+            ? `${(dl.received / (1024*1024)).toFixed(1)} / ${(dl.total / (1024*1024)).toFixed(1)} MB`
+            : `${(dl.received / (1024*1024)).toFixed(1)} MB`;
+
         el.innerHTML = `
-            <div class="dl-icon"><i class="fas fa-file-arrow-down"></i></div>
+            <div class="dl-icon"><i class="fas ${icon}"></i></div>
             <div class="dl-info">
-                <div class="dl-name">${esc(dl.name)}</div>
-                <div class="dl-status">${dl.state === 'progressing' ? pct + '%' : dl.state}</div>
-                <div class="dl-bar-bg"><div class="dl-bar" style="width:${pct}%"></div></div>
+                <div class="dl-name" title="${esc(dl.name)}">${esc(dl.name)}</div>
+                <div class="dl-status">
+                    <span style="${dl.state === 'completed' ? 'color:var(--accent);font-weight:700' : ''}">${dl.state === 'progressing' ? sizeInfo : dl.state}</span>
+                    ${dl.state === 'progressing' ? `<span>${pct}%</span>` : ''}
+                </div>
+                ${dl.state === 'progressing' ? `<div class="dl-bar-bg"><div class="dl-bar" style="width:${pct}%"></div></div>` : ''}
+            </div>
+            <div class="dl-actions">
+                <button class="dl-action-btn folder-btn" title="Show in folder"><i class="fas fa-folder-open"></i></button>
+                <button class="dl-action-btn del del-btn" title="Remove"><i class="fas fa-times"></i></button>
             </div>
         `;
+
+        el.querySelector('.folder-btn').onclick = (e) => {
+            e.stopPropagation();
+            window.electronAPI.send('show-item-in-folder', dl.path);
+        };
+        el.querySelector('.del-btn').onclick = (e) => {
+            e.stopPropagation();
+            window.electronAPI.send('remove-download-item', dl.id);
+        };
+
         el.onclick = () => window.electronAPI.send('open-download', dl.path);
         sbContent.appendChild(el);
     });
+}
+
+function getFileIcon(filename) {
+    const ext = filename.split('.').pop().toLowerCase();
+    const map = {
+        pdf: 'fa-file-pdf',
+        zip: 'fa-file-zipper',
+        rar: 'fa-file-zipper',
+        exe: 'fa-file-code',
+        js:  'fa-file-code',
+        css: 'fa-file-code',
+        html: 'fa-file-code',
+        jpg: 'fa-file-image',
+        jpeg: 'fa-file-image',
+        png: 'fa-file-image',
+        svg: 'fa-file-image',
+        gif: 'fa-file-image',
+        mp4: 'fa-file-video',
+        mov: 'fa-file-video',
+        mp3: 'fa-file-audio',
+        wav: 'fa-file-audio'
+    };
+    return map[ext] || 'fa-file-arrow-down';
 }
 
 

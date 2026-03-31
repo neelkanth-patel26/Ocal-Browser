@@ -655,25 +655,27 @@ window.addEventListener('DOMContentLoaded', () => {
     style.id = 'ocal-custom-scrollbar';
     style.textContent = `
         ::-webkit-scrollbar {
-            width: 14px !important;
-            height: 14px !important;
+            width: 8px !important;
+            height: 8px !important;
             background: transparent !important;
         }
         ::-webkit-scrollbar-track {
             background: transparent !important;
         }
         ::-webkit-scrollbar-thumb {
-            background: rgba(120, 120, 120, 0.35) !important;
+            background: rgba(255, 255, 255, 0.15) !important;
             border-radius: 10px !important;
-            border: 3px solid transparent !important;
+            border: 2px solid transparent !important;
             background-clip: padding-box !important;
+            transition: background 0.2s;
         }
         ::-webkit-scrollbar-thumb:hover {
-            background: rgba(168, 85, 247, 0.7) !important; /* Premium Purple Accent */
+            background: rgba(168, 85, 247, 0.8) !important; /* Intense Purple Accent */
         }
         ::-webkit-scrollbar-corner {
             background: transparent !important;
         }
+
     `;
     
     // Some sites overwrite document.body early, so inserting into documentElement is safer

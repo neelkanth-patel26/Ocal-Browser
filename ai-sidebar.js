@@ -71,8 +71,13 @@ const addMessage = async (content, isUser = false, actions = []) => {
     if (actions && actions.length > 0) {
         actions.forEach(action => {
             const actionEl = document.createElement('div');
-            actionEl.className = 'agent-action';
+            actionEl.className = `agent-action ${action.url ? 'clickable' : ''}`;
             actionEl.innerHTML = `<i class="fas ${action.icon || 'fa-cog fa-spin'}"></i> ${action.text}`;
+            
+            if (action.url) {
+                actionEl.onclick = () => window.electronAPI.send('open-external', action.url);
+            }
+            
             group.appendChild(actionEl);
         });
     }

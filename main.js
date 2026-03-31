@@ -210,7 +210,7 @@ let userSettings = loadSettings() || {
   customSearchUrl: 'https://www.google.com/search?q=%s',
   askSavePath: false,
   downloads: [],
-  shieldStats: { ads: 0, trackers: 0, dataSaved: 0 }
+  shieldStats: { ads: 0, trackers: 0, dataSaved: 0, history: [] }
 };
 
 if (!userSettings.bookmarks) userSettings.bookmarks = [];
@@ -245,8 +245,9 @@ if (userSettings.assetVaultEnabled === undefined) userSettings.assetVaultEnabled
 if (userSettings.instantSearchEnabled === undefined) userSettings.instantSearchEnabled = true;
 if (userSettings.safeSearchEnabled === undefined) userSettings.safeSearchEnabled = false;
 
-if (!userSettings.shieldStats) userSettings.shieldStats = { ads: 0, trackers: 0, dataSaved: 0 };
+if (!userSettings.shieldStats) userSettings.shieldStats = { ads: 0, trackers: 0, dataSaved: 0, history: [] };
 if (userSettings.shieldStats.dataSaved === undefined) userSettings.shieldStats.dataSaved = 0;
+if (!userSettings.shieldStats.history) userSettings.shieldStats.history = [];
 
 // Non-persistent page stats: Map<webContentsId, { ads, trackers }>
 const tabShieldStats = new Map();
@@ -259,8 +260,19 @@ function updateTabShieldStats(wcId, type) {
     }
     const stats = tabShieldStats.get(wcId);
     if (stats) {
-        if (type === 'ads' || type === 'trackers') stats[type]++;
-        else if (type === 'isPlaying') stats.isPlaying = !!arguments[2]; // Use 3rd arg for boolean
+        if (type === 'ads' || type === 'trackers') {
+            stats[type]++;
+            // Update Global Stats
+            if (userSettings.shieldStats) {
+                userSettings.shieldStats[type]++;
+                // Heuristic: 50KB for ad, 5KB for tracker
+                const bytesSaved = type === 'ads' ? 51200 : 5120;
+                userSettings.shieldStats.dataSaved += bytesSaved;
+                saveSettings(userSettings);
+                broadcastShieldStats(wcId);
+            }
+        }
+        else if (type === 'isPlaying') stats.isPlaying = !!arguments[2];
     }
 }
 
@@ -280,6 +292,26 @@ function broadcastShieldStats(wcId = null) {
         } catch(e) {}
     });
 }
+
+function updateShieldHistory() {
+    if (!userSettings.shieldStats.history) userSettings.shieldStats.history = [];
+    const now = Date.now();
+    const total = (userSettings.shieldStats.ads || 0) + (userSettings.shieldStats.trackers || 0);
+    
+    userSettings.shieldStats.history.push({ t: now, v: total });
+    
+    // Keep only last 744 points (31 days of hourly snapshots)
+    if (userSettings.shieldStats.history.length > 744) {
+        userSettings.shieldStats.history = userSettings.shieldStats.history.slice(-744);
+    }
+    
+    saveSettings(userSettings);
+}
+
+// Update every hour
+setInterval(updateShieldHistory, 60 * 60 * 1000);
+// Initial snapshot if history is empty
+if (userSettings.shieldStats.history.length === 0) updateShieldHistory();
 
 let pipWindow = null;
 let pipSourceContents = null;
@@ -383,7 +415,15 @@ function applyShieldSettings() {
 
           // 3. Delegation: Only call blocker for protected domains.
           try {
-              adBlockerInstance.onBeforeRequest(details, callback);
+              adBlockerInstance.onBeforeRequest(details, (res) => {
+                  if (res && res.cancel) {
+                      // Detect type (if possible, but usually ads/trackers)
+                      const type = details.resourceType === 'image' || details.resourceType === 'media' ? 'ads' : 'trackers';
+                      const wcId = details.webContentsId || (details.webContents && details.webContents.id);
+                      updateTabShieldStats(wcId, type);
+                  }
+                  callback(res);
+              });
           } catch (err) {
               console.error('[Shield] request interceptor error', err);
               callback({});
@@ -708,11 +748,9 @@ function createMainWindow() {
     minWidth: 1000,
     minHeight: 700,
     title: 'Ocal',
-    titleBarStyle: 'hidden',
     frame: false,
     transparent: false,
     backgroundColor: '#0c0c0e', // Solid background for better Win10 stability
-    backgroundMaterial: 'mica',
     resizable: true,
     fullscreenable: true,
     webPreferences: {
@@ -766,8 +804,14 @@ function createMainWindow() {
     setTimeout(checkForUpdatesSilently, 3000); 
   });
 
-  mainWindow.on('maximize', () => mainWindow.webContents.send('window-is-maximized', true));
-  mainWindow.on('unmaximize', () => mainWindow.webContents.send('window-is-maximized', false));
+  mainWindow.on('maximize', () => {
+    mainWindow.setResizable(false);
+    mainWindow.webContents.send('window-is-maximized', true);
+  });
+  mainWindow.on('unmaximize', () => {
+    mainWindow.setResizable(true);
+    mainWindow.webContents.send('window-is-maximized', false);
+  });
 
   mainWindow.on('close', (e) => {
     if (!isQuitting) {
@@ -1371,8 +1415,18 @@ function createNewTab(url = null) {
     if (favicons && favicons.length > 0) {
       const entry = views.find(v => v.id === id);
       if (entry) {
-        entry.favicon = favicons[0];
-        mainWindow.webContents.send('favicon-updated', { id, favicon: favicons[0] });
+        const icon = favicons[0];
+        entry.favicon = icon;
+        mainWindow.webContents.send('favicon-updated', { id, favicon: icon });
+        
+        // Persist to history if URL matches
+        const url = view.webContents.getURL();
+        const histIndex = userSettings.history.findIndex(h => h.url === url);
+        if (histIndex !== -1) {
+            userSettings.history[histIndex].favicon = icon;
+            saveSettings(userSettings);
+            broadcastHistory();
+        }
       }
     }
   });
@@ -1765,9 +1819,6 @@ ipcMain.on('stop-ai-resize', () => {
 
 // ── Ocal AI Agent Command Center 2.0 ──────────────────────────────────────
 
-/**
- * Executes a sophisticated, agentic task using optional Gemini API power.
- */
 ipcMain.handle('ai-agent-execute', async (event, query) => {
     if (!query || !query.trim()) return { text: "Hello! I'm your Ocal AI. How can I assist you today?", actions: [] };
 
@@ -1788,8 +1839,25 @@ ipcMain.handle('ai-agent-execute', async (event, query) => {
     };
 
     try {
+        // Phase 0: Local Agentic Heuristics (Always runs, cloud or local)
+        if (q.includes('close') && (q.includes('tab') || q.includes('this'))) {
+            notifyAction("Identifying active tab...", 'fa-trash-can');
+            const target = views.find(v => v.id === activeViewId);
+            if (target) {
+                closeTab(target.id);
+                return { text: "I've closed the active tab for you.", actions };
+            }
+        }
+
+        if (q.includes('tabs') && (q.includes('summary') || q.includes('all') || q.includes('everything'))) {
+            notifyAction("Crawling entire workspace...", 'fa-network-wired');
+            const info = views.map(v => `- **${v.view.webContents.getTitle() || 'Untitled'}** (${v.view.webContents.getURL().substring(0,40)}...)`).join('\n');
+            const summary = `You have **${views.length}** active tabs in your workspace:\n\n${info}\n\n> [!TIP]\n> I can jump to any of these or summarize a specific one if you tell me its name!`;
+            return { text: summary, actions };
+        }
+
         // Phase 1: Local Tool & Command Recognition
-        if (q.includes('open') || q.includes('go to') || q.includes('visit') || q.includes('bring me to')) {
+        if (q.includes('open') || q.includes('go to') || q.includes('visit')) {
             const urlMatch = query.match(/(https?:\/\/[^\s]+|www\.[^\s]+|[a-z0-9]+\.[a-z]{2,})/i);
             if (urlMatch) {
                 let url = urlMatch[0];
@@ -1800,22 +1868,6 @@ ipcMain.handle('ai-agent-execute', async (event, query) => {
             }
         }
 
-        if ((q.includes('tab') || q.includes('view') || q.includes('list')) && (q.includes('tab') || q.includes('open'))) {
-            if (q.includes('tab') && (q.includes('list') || q.includes('show') || q.includes('all') || q.includes('what'))) {
-                notifyAction("Crawling active tab session...", 'fa-layer-group');
-                const tabList = views.map((v, i) => `${i + 1}. **${v.view.webContents.getTitle() || 'Blank Page'}**`).join('\n');
-                return { text: `You have **${views.length}** tabs open:\n\n${tabList}`, actions };
-            }
-        }
-
-        // Phase 2: Explicit Search Override (Force New Tab)
-        if (q.startsWith('search for ') || q.startsWith('find ') || q.startsWith('look up ')) {
-            const searchQuery = query.replace(/(search for|find|look up)/i, '').trim();
-            notifyAction("Searching the web...", 'fa-magnifying-glass');
-            createNewTab(`https://www.google.com/search?q=${encodeURIComponent(searchQuery)}`);
-            return { text: `I've opened a search for **${searchQuery}** in a new tab.`, actions };
-        }
-
         // Phase 3: Page Analysis (Summarize/Explain)
         const isPageInsight = q.includes('summarize') || q.includes('explain') || q.includes('what is this') || q.includes('analyze');
         
@@ -1824,37 +1876,45 @@ ipcMain.handle('ai-agent-execute', async (event, query) => {
             if (!activeView) return { text: "Please select a tab first so I can analyze it.", actions };
             
             const url = activeView.webContents.getURL();
-            const title = activeView.webContents.getTitle();
-
             if (url.startsWith('file://') || url.startsWith('ocal://') || url === 'about:blank') {
                 return { text: "I can't analyze internal or local pages. Try a web article or site!", actions };
             }
 
-            notifyAction("Extracting semantic page structure...", 'fa-microchip');
+            notifyAction("Scanning DOM structure...", 'fa-microchip');
             const pageData = await activeView.webContents.executeJavaScript(`
                 (function() {
                     const sel = (s) => document.querySelector(s)?.content || document.querySelector(s)?.innerText || '';
-                    const meta = { title: document.title, description: sel('meta[name="description"]') || sel('meta[property="og:description"]'), hostname: window.location.hostname, canonical: window.location.href };
-                    const headers = Array.from(document.querySelectorAll('h1, h2, h3')).map(h => h.innerText.trim()).filter(t => t.length > 5).slice(0, 10);
+                    const meta = { title: document.title, description: sel('meta[name="description"]') || sel('meta[property="og:description"]'), hostname: window.location.hostname };
+                    
+                    // Intelligent content extraction
                     const clone = document.body.cloneNode(true);
                     clone.querySelectorAll('script, style, nav, footer, header, aside, .ad, .cookie-banner').forEach(e => e.remove());
-                    const text = clone.innerText.split(/\\n+/).filter(l => l.trim().length > 40).slice(0, 40).join(' ');
-                    return { meta, headers, text };
+                    
+                    // Simple sentence ranking (Local Heuristic)
+                    const sentences = clone.innerText.split(/[.!?]+/).map(s => s.trim()).filter(s => s.length > 60);
+                    const keywords = ['feature', 'release', 'update', 'broken', 'fix', 'price', 'cost', 'new', 'latest', 'problem', 'solution'];
+                    const ranked = sentences.map(s => ({
+                        text: s,
+                        score: keywords.reduce((acc, kw) => acc + (s.toLowerCase().includes(kw) ? 2 : 0), 0) + (s.length / 100)
+                    })).sort((a,b) => b.score - a.score).slice(0, 5);
+
+                    return { meta, ranked: ranked.map(r => r.text) };
                 })()
             `).catch(() => null);
 
-            if (pageData && (pageData.text || pageData.meta.description)) {
+            if (pageData) {
                 if (useGemini) {
                     notifyAction("Synthesizing AI Narrative (Gemini)...", 'fa-wand-magic-sparkles');
-                    const results = await tryGemini(`Analyze this page: ${pageData.meta.title}\nContent: ${pageData.text.substring(0, 3000)}\n\nProvide a ${style} analysis in Markdown.`, apiKey, style);
+                    const results = await tryGemini(`Analyze this page: ${pageData.meta.title}\nKey points: ${pageData.ranked.join('. ')}\n\nProvide a ${style} analysis in Markdown.`, apiKey, style);
                     if (results) return { text: results, actions };
                 }
 
-                notifyAction("Synthesizing Local Intelligence...", 'fa-bolt-lightning');
-                let localResult = `## Intelligence Takeaway: ${pageData.meta.title}\n\n`;
+                notifyAction("Performing Semantic Heuristics...", 'fa-brain');
+                let localResult = `### 🧬 Native Intelligence Analysis: ${pageData.meta.title}\n\n`;
                 if (pageData.meta.description) localResult += `> ${pageData.meta.description}\n\n`;
-                const summaryPoints = pageData.text.split(/[.!?]+/).map(s => s.trim()).filter(s => s.length > 50).slice(0, 3);
-                summaryPoints.forEach(p => localResult += `* ${p}.\n`);
+                localResult += `#### Key Takeaways:\n`;
+                pageData.ranked.forEach(p => localResult += `- ${p}.\n`);
+                localResult += `\n> [!NOTE]\n> This analysis was performed locally on your device for maximum privacy. For deeper reasoning, enable Gemini Pro in settings.`;
                 return { text: localResult, actions };
             }
         }
@@ -1867,11 +1927,32 @@ ipcMain.handle('ai-agent-execute', async (event, query) => {
             if (directAnswer) return { text: directAnswer, actions };
         }
 
-        // Final Fallback: Search the web
-        notifyAction("Researching context (Search Fallback)...", 'fa-magnifying-glass');
+        // Final Fallback: Live Web Intelligence (RAG-lite)
+        notifyAction("Researching live web data...", 'fa-earth-americas');
+        const snippets = await researchWeb(query);
+        
+        if (snippets && snippets.length > 0) {
+            notifyAction("Synthesizing search results...", 'fa-wand-magic-sparkles');
+            let synthesis = `### 🌐 Web Intelligence: ${query}\n\n`;
+            synthesis += `I've researched the live web to find the most relevant information for you:\n\n`;
+            
+            snippets.forEach((s, i) => {
+                synthesis += `> ${s}\n\n`;
+            });
+            
+            synthesis += `\n> [!TIP]\n> You can view the full results or dive deeper into these sources by opening the search page below.`;
+            
+            const searchUrl = `https://www.google.com/search?q=${encodeURIComponent(query)}`;
+            return { 
+                text: synthesis, 
+                actions: [...actions, { text: "Open Search Results", icon: "fa-external-link-alt", url: searchUrl }] 
+            };
+        }
+
+        // Search Fallback if no snippets found
         const searchUrl = `https://www.google.com/search?q=${encodeURIComponent(query)}`;
         createNewTab(searchUrl);
-        return { text: `I've looked up "${query}" for you. Results are ready in the new tab.`, actions };
+        return { text: `I've opened a search for **"${query}"** in a new tab. I can provide more details once you select a result!`, actions };
 
     } catch (err) {
         console.error('[Agent Error]', err);
@@ -1910,9 +1991,43 @@ async function tryGemini(prompt, apiKey, style = 'concise') {
     return null;
 }
 
+/**
+ * Helper: Perform a background web research for Local AI.
+ * Uses a simulated "Headless Search" pattern to extract snippets.
+ */
+async function researchWeb(query) {
+    try {
+        const searchUrl = `https://www.google.com/search?q=${encodeURIComponent(query)}&hl=en`;
+        const response = await fetch(searchUrl, {
+            headers: { 'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36' }
+        });
+        const html = await response.text();
+        
+        // Extract 3-5 snippets using regex
+        const snippets = [];
+        const matches = html.matchAll(/<div class="VwiC3b y67Nj fOa9pe[^>]*><span>(.*?)<\/span>/g);
+        for (const match of matches) {
+            if (snippets.length >= 4) break;
+            const text = match[1].replace(/<[^>]*>/g, '').trim();
+            if (text.length > 30) snippets.push(text);
+        }
 
+        // Fallback for different Google result headers or mobile-style layouts
+        if (snippets.length === 0) {
+            const matches2 = html.matchAll(/<span class="st">(.*?)<\/span>|<div class="kCrYT"><div><div class="BNeawe s3v9rd AP7Wnd">(.*?)<\/div>/g);
+            for (const match of matches2) {
+                if (snippets.length >= 4) break;
+                const m = match[1] || match[2];
+                if (m) snippets.push(m.replace(/<[^>]*>/g, '').trim());
+            }
+        }
 
-
+        return snippets.length > 0 ? snippets : null;
+    } catch (err) {
+        console.error('[Research Web Error]', err);
+        return null;
+    }
+}
 
 // Retro-compatibility for existing AI calls
 ipcMain.handle('ai-summarize-page', async (e) => (await ipcMain.emit('ai-agent-execute', e, 'summarize')).text);
@@ -2784,10 +2899,14 @@ function updateHistory(view, url) {
         const title = view.webContents.getTitle();
         mainWindow.webContents.send('url-updated', { id, url, title });
         
+        // Find existing tab favicon to save with history
+        const entry = views.find(v => v.id === id);
+        const favicon = entry?.favicon || '';
+
         // Don't add if the URL is the same as the last item (avoid duplicates from in-page nav)
         if (userSettings.history.length > 0 && userSettings.history[0].url === url) return;
 
-        const historyItem = { title: title || url, url, timestamp: Date.now() };
+        const historyItem = { title: title || url, url, timestamp: Date.now(), favicon };
         userSettings.history = [historyItem, ...(userSettings.history || [])].slice(0, 100);
         saveSettings(userSettings);
         broadcastHistory();
@@ -2800,7 +2919,22 @@ function broadcastHistory() {
 }
 
 ipcMain.on('open-download', (e, filePath) => {
+    if (!filePath) return;
+    shell.openPath(filePath);
+});
+
+ipcMain.on('show-item-in-folder', (e, filePath) => {
+    if (!filePath) return;
     shell.showItemInFolder(filePath);
+});
+
+ipcMain.on('remove-download-item', (e, id) => {
+    const index = downloads.findIndex(dl => dl.id === id);
+    if (index !== -1) {
+        downloads.splice(index, 1);
+        saveDownloadsToSettings();
+        broadcastToSidebars('download-updated', downloads);
+    }
 });
 
 function setupGoogleLoginPartition() {
