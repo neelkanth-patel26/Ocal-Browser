@@ -1,7 +1,7 @@
 $token = $env:GH_TOKEN
 $owner = "neelkanth-patel26"
 $repo = "Ocal-Browser"
-$tag = "v2.6.78-beta"
+$tag = "v3.0.013-beta"
 
 $releaseData = Get-Content "release_info.json" -Raw | ConvertFrom-Json
 
@@ -30,7 +30,7 @@ try {
     
     # Artifacts to upload
     $artifacts = @(
-        "dist-inno/Ocal-2.6.78-beta-Setup.exe"
+        "dist-inno/Ocal-3.0.013-beta-Setup.exe"
     )
 
     foreach ($file in $artifacts) {
