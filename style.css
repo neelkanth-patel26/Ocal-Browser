@@ -50,7 +50,32 @@ body {
   -webkit-font-smoothing: antialiased;
 }
 
-::-webkit-scrollbar { display: none; }
+/* Fix maximized window border/gap on Windows */
+body.maximized {
+  padding: 0;
+}
+
+/* ── Global Premium Scrollbar ────────────────────────────────── */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+  background: transparent;
+}
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.12);
+  border-radius: 10px;
+  border: 2px solid transparent;
+  background-clip: padding-box;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: rgba(168, 85, 247, 0.8);
+}
+::-webkit-scrollbar-corner {
+  background: transparent;
+}
 
 /* ── Fullscreen ────────────────────────────────────────────────── */
 body.fullscreen { grid-template-columns: 0 1fr; grid-template-rows: 0 0 0 1fr; }

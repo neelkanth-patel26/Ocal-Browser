@@ -1,7 +1,7 @@
 {
-  "tag_name": "v2.6.78-beta",
-  "name": "Ocal Browser v2.6.78-beta: Project Rescue",
-  "body": "The definitive Ocal update. Featuring VPN v4 (Total Regional Masking), Shield NCR (No Country Redirect), PAC Secure Bridge, and high-performance PiP Streaming. Fixed all Google Search timeouts and location leaks.",
+  "tag_name": "v3.0.013-beta",
+  "name": "Ocal Browser v3.0.013-beta: The Next Evolution",
+  "body": "A major milestone in Ocal development. Introducing Native Favicon Persistence, Elite History Management, and a completely modernized Sidebar aesthetic. This build marks the transition to the 3.0 generation of high-fidelity, agentic research tools.",
   "draft": false,
   "prerelease": true
 }

@@ -431,6 +431,7 @@ document.addEventListener('DOMContentLoaded', () => {
     if (reloadBtn)  reloadBtn.onclick  = () => window.electronAPI.send('nav-reload');
 
     window.electronAPI.onMaximized((isMax) => {
+        document.body.classList.toggle('maximized', isMax);
         if (maxBtn) maxBtn.innerHTML = isMax
             ? '<i class="far fa-window-restore"></i>'
             : '<i class="far fa-square"></i>';
