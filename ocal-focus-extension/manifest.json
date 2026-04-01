@@ -1,0 +1,18 @@
+{
+  "manifest_version": 3,
+  "name": "Ocal Focus",
+  "version": "1.0.0",
+  "description": "Boost your productivity with a Pomodoro timer and a built-in To-Do list, styled for Ocal Browser.",
+  "permissions": [
+    "storage",
+    "alarms"
+  ],
+  "action": {
+    "default_popup": "popup.html",
+    "default_title": "Ocal Focus"
+  },
+  "background": {
+    "service_worker": "background.js",
+    "type": "module"
+  }
+}
