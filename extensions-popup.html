@@ -6,16 +6,16 @@
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Outfit:wght@500;600;700&display=swap" rel="stylesheet">
     <style>
         :root {
-            --bg: rgba(7, 7, 10, 0.95);
+            --bg: rgba(20, 20, 25, 0.85);
             --accent: #a855f7;
-            --accent-glow: rgba(168, 85, 247, 0.15);
-            --accent-dim: rgba(168, 85, 247, 0.08);
+            --accent-glow: rgba(168, 85, 247, 0.4);
+            --accent-dim: rgba(168, 85, 247, 0.1);
             --card-bg: rgba(255, 255, 255, 0.03);
             --border: rgba(255, 255, 255, 0.08);
             --text: #ffffff;
-            --text-dim: rgba(255, 255, 255, 0.6);
+            --text-dim: rgba(255, 255, 255, 0.45);
             --font: 'Inter', sans-serif;
-            --title-font: 'Outfit', sans-serif;
+            --title-font: 'Outfit', 'Inter', sans-serif;
         }
 
         * { box-sizing: border-box; margin: 0; padding: 0; }
@@ -33,10 +33,10 @@
             width: 320px;
             background: var(--bg);
             border: 1px solid var(--border);
-            border-radius: 20px;
+            border-radius: 12px;
             padding: 16px;
-            box-shadow: 0 15px 40px rgba(0,0,0,0.6);
-            backdrop-filter: blur(25px);
+            box-shadow: 0 10px 40px rgba(0,0,0,0.5), 0 0 0 1px rgba(255,255,255,0.03);
+            backdrop-filter: blur(28px);
             display: flex; flex-direction: column;
             gap: 12px;
         }
@@ -139,8 +139,6 @@
     </div>
 
     <script>
-        const { ipcRenderer } = require('electron');
-
         function applyTheme(accent) {
             if (!accent) return;
             document.documentElement.style.setProperty('--accent', accent);
@@ -150,9 +148,9 @@
         }
 
         async function loadAll() {
-            const all = await ipcRenderer.invoke('get-all-extensions');
+            const all = await window.electronAPI.invoke('get-all-extensions');
             const list = document.getElementById('extList');
-            const settings = await ipcRenderer.invoke('get-settings');
+            const settings = await window.electronAPI.invoke('get-settings');
             
             if (settings.accentColor) applyTheme(settings.accentColor);
 
@@ -214,10 +212,10 @@
             item.onclick = async () => {
                 if (ext.type === 'native') {
                     const newState = !ext.enabled;
-                    const success = await ipcRenderer.invoke('toggle-native-extension', { id: ext.id, enabled: newState });
+                    const success = await window.electronAPI.invoke('toggle-native-extension', { id: ext.id, enabled: newState });
                     if (success) loadAll();
                 } else {
-                    ipcRenderer.send('action-extension', ext.id);
+                    window.electronAPI.send('action-extension', ext.id);
                 }
             };
             
@@ -225,7 +223,7 @@
         }
 
         function manageAll() {
-            ipcRenderer.send('open-extensions-page');
+            window.electronAPI.send('open-extensions-page');
         }
 
         loadAll();

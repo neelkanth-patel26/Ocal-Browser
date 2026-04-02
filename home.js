@@ -109,7 +109,7 @@ function applySettings(s) {
     // Handle Tile Style
     if (s.homeTileStyle) {
         document.querySelectorAll('.tile').forEach(tile => {
-            tile.classList.remove('style-square', 'style-rectangle', 'style-monochrome');
+            tile.classList.remove('style-square', 'style-rectangle', 'style-monochrome', 'style-glass-array', 'style-solid-matte', 'style-neon-orbit');
             tile.classList.add(`style-${s.homeTileStyle}`);
         });
     }

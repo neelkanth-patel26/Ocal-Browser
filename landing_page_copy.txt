@@ -1,0 +1,44 @@
+# Ocal Browser: The Elite Agentic Web Experience
+## Tagline: Faster. Smarter. Undetectable.
+
+### 🌟 Core Value Proposition
+Ocal is not just a browser—it exists at the intersection of high-fidelity design and agentic intelligence. Built for power users, researchers, and creators, Ocal redefines the boundaries of the digital workspace with a native AI core and the most advanced privacy shielding in the industry.
+
+---
+
+### 🛡️ Shield Hub v2.0: Invisible Protection
+*   **Bento-Grid Analytics**: Visualize your protection in real-time with our sleek, glassmorphic privacy dashboard.
+*   **Total Ad & Tracker Mitigation**: Surf without the noise. Ocal filters millions of ad and tracking scripts before they even hit your screen.
+*   **Ultra-Stealth Mode**: Advanced regional masking and geolocation mocking to keep your digital footprint truly private.
+*   **Security Pulse**: One-click security audits to ensure your connection is always hardened.
+
+### 🤖 Ocal AI Agent: Your Personal Web Co-Pilot
+*   **Native Assistant**: A dedicated AI sidebar that understands the context of your currently active tab.
+*   **Deep Scrape Technology**: Let the AI analyze entire web pages to extract insights, summarize research, or find hidden data in seconds.
+*   **Agentic Execution**: Ask Ocal to perform tasks—from organizing your workspace to answering complex multi-step queries.
+
+### 📄 Integrated PDF & Document Hub
+*   **Premium Reading Experience**: Stop downloading and switching apps. Open, read, and manage PDFs directly within Ocal’s high-performance internal viewer.
+*   **Cloud & Local Synergy**: Seamlessly bridge the gap between web documents and your local file system.
+
+### 🎨 Pro Purple-Glow Aesthetics
+*   **High-Density Design**: Every pixel is crafted with 'Inter' and 'Outfit' variable typography for maximum readability and a premium "Pro" feel.
+*   **Ambient Backgrounds**: A home page that breathes. Dynamic radial glows and glassmorphic tiles create a focused, airy environment.
+*   **Customizable Layouts**: Toggle between "Compact Mode" for vertical space-saving or the "Elite Grid" for full-screen immersion.
+
+### ⚙️ Engine Level Performance
+*   **System Native Integration**: Set Ocal as your default browser with one click. High-speed protocol handling for a seamless OS-wide experience.
+*   **Chromium-Grade Speed**: Built on a high-performance core (Electron/CEF architecture) optimized for low latency and zero memory leaks.
+*   **Smart PiP (Picture-in-Picture)**: Pop out any video into a floating, interactive window that stays on top of your workflow.
+
+---
+
+### 📥 Download Ocal Browser v3.2.238-beta
+**Platforms**: Windows (64-bit)
+**Size**: ~85MB
+**License**: ISC (Open & Secure)
+
+---
+
+### 🚀 Keywords for SEO
+Agentic Browser, Private Web Browser, AI Integrated Browser, Ad-Free Browsing, Custom PDF Viewer, Glassmorphic UI, Performance Browser 2026.

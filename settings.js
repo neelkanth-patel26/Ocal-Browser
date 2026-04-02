@@ -101,30 +101,6 @@ function initGridSelector(gridId, settingsKey) {
         };
     });
 }
-// Professional Update Sync
-document.getElementById('update-check-btn').addEventListener('click', async () => {
-    const btn = document.getElementById('update-check-btn');
-    const title = document.getElementById('update-status-title');
-    const desc = document.getElementById('update-status-desc');
-    const fill = document.getElementById('update-progress-fill');
-    const icon = document.getElementById('update-status-icon');
-
-    btn.disabled = true;
-    title.innerText = 'Checking for updates...';
-    desc.innerText = 'Connecting to Ocal update servers.';
-    icon.className = 'fas fa-arrows-rotate fa-spin';
-    
-    for(let i=0; i<=100; i+=5) {
-        fill.style.width = i + '%';
-        await sleep(40);
-    }
-    
-    title.innerText = 'System up to date';
-    desc.innerText = 'You are running the latest architectural build.';
-    icon.className = 'fas fa-check';
-    btn.innerText = 'UP TO DATE';
-    btn.style.opacity = '0.5';
-});
 
 // Extension Interactions
 document.querySelectorAll('.extension-card .btn.secondary, .extension-card .btn.primary').forEach(btn => {
@@ -298,17 +274,21 @@ function renderProfiles(s) {
     const grid = document.getElementById('profile-grid');
     if (!grid) return;
     grid.innerHTML = s.profiles.map(p => `
-        <div class="glass-card profile-card ${s.currentProfileId === p.id ? 'active' : ''}" onclick="window.electronAPI.switchProfile('${p.id}')">
-            <div class="profile-icon-container" style="background: ${s.currentProfileId === p.id ? 'var(--accent)' : 'rgba(255,255,255,0.05)'}; color: ${s.currentProfileId === p.id ? '#000' : 'var(--text)'};">
+        <div class="choice-item ${s.currentProfileId === p.id ? 'active' : ''}" onclick="window.electronAPI.switchProfile('${p.id}')" style="display:flex; flex-direction:column; align-items:center; justify-content:center; gap:16px; padding: 28px 16px;">
+            <div style="width: 54px; height: 54px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 24px; background: ${s.currentProfileId === p.id ? 'var(--accent)' : 'rgba(255,255,255,0.05)'}; color: ${s.currentProfileId === p.id ? '#000' : 'var(--text)'}; box-shadow: ${s.currentProfileId === p.id ? '0 0 20px var(--accent-glow)' : 'none'}; transition: all 0.3s; border: 1px solid ${s.currentProfileId === p.id ? 'rgba(255,255,255,0.3)' : 'rgba(255,255,255,0.1)'};">
                 <i class="fas ${p.icon}"></i>
             </div>
-            <h5>${p.name}</h5>
-            ${s.currentProfileId === p.id ? '<div class="protection-badge" style="background: var(--accent); color:#000; font-size:9px; margin-top:8px;">ACTIVE</div>' : ''}
+            <div style="display:flex; flex-direction:column; align-items:center; gap:6px;">
+                <h5 style="margin:0; font-size:15px; font-weight:800; color:#fff; letter-spacing:0.5px;">${p.name}</h5>
+                ${s.currentProfileId === p.id ? '<span style="font-size:10px; color:var(--accent); font-weight:800; letter-spacing:1px; background:rgba(168,85,247,0.15); padding:3px 8px; border-radius:10px; text-transform:uppercase;">Active Session</span>' : '<span style="font-size:10px; color:rgba(255,255,255,0.4); font-weight:700; letter-spacing:1px; text-transform:uppercase;">Inactive Alias</span>'}
+            </div>
         </div>
     `).join('') + `
-        <div class="glass-card profile-card" style="opacity:0.4; border-style:dashed; cursor: pointer;">
-            <div class="profile-icon-container"><i class="fas fa-plus"></i></div>
-            <h5>New Profile</h5>
+        <div class="choice-item" style="opacity:0.5; border-style:dashed; cursor: pointer; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:16px; padding: 28px 16px; background:transparent;">
+            <div style="width: 54px; height: 54px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 20px; background: rgba(255,255,255,0.03); color: rgba(255,255,255,0.4); border: 1px dashed rgba(255,255,255,0.2);">
+                <i class="fas fa-plus"></i>
+            </div>
+            <h5 style="margin:0; font-size:14px; font-weight:700; color:rgba(255,255,255,0.4);">New Profile</h5>
         </div>
     `;
 }
@@ -389,23 +369,29 @@ if (updateBtn) {
             if (latest && isNewerVersion(latest.version, currentVer)) {
                 showUpdateInfo(latest);
             } else {
-                updateStatusT.innerText = "Version Up to Date";
+                updateHub.classList.add('up-to-date');
+                updateStatusT.innerText = "System Up to Date";
                 updateStatusD.innerText = "You are running the latest production build of Ocal.";
                 updateStatusI.className = "fas fa-check-double";
-                updateStatusI.style.color = "#10b981";
-                updateStatusI.style.opacity = "1";
+                updateStatusI.style.color = ""; 
+                updateStatusI.style.opacity = "";
                 
-                updateBtn.innerHTML = 'Up to Date <i class="fas fa-check"></i>';
-                updateBtn.style.background = '#10b981';
+                updateBtn.innerHTML = 'Up to Date <i class="fas fa-check-circle"></i>';
+                updateBtn.classList.remove('primary');
+                updateBtn.classList.add('success');
                 
                 setTimeout(() => { 
+                    updateHub.classList.remove('up-to-date');
                     updateStatusT.innerText = "System Check";
                     updateStatusD.innerText = "Scanning for new dimensions of Ocal.";
                     updateStatusI.className = "fas fa-shield-check";
-                    updateStatusI.style.color = ""; updateStatusI.style.opacity = "0.5";
+                    updateStatusI.style.color = ""; 
+                    updateStatusI.style.opacity = "0.5";
                     updateBtn.innerHTML = 'Check for Update <i class="fas fa-bolt"></i>';
-                    updateBtn.style.background = ''; updateBtn.disabled = false;
-                }, 4000);
+                    updateBtn.classList.remove('success');
+                    updateBtn.classList.add('primary');
+                    updateBtn.disabled = false;
+                }, 5000);
             }
         } catch(e) { 
             updateHub.classList.remove('scanning');
@@ -477,7 +463,7 @@ window.electronAPI.getSettings().then(s => {
     setGridValue('search-grid', s.searchEngine || 'google');
     setGridValue('dns-grid', s.dns || 'default');
     setGridValue('bookmark-bar-grid', s.bookmarkBarMode || 'auto');
-    setGridValue('tile-style-grid', s.homeTileStyle || 'square');
+    setGridValue('tile-style-grid', s.homeTileStyle || 'glass-array');
     
     initGridSelector('search-grid', 'searchEngine');
     initGridSelector('dns-grid', 'dns');
@@ -505,6 +491,7 @@ window.electronAPI.getSettings().then(s => {
     
     initToggle('compact-toggle', 'compactMode', s.compactMode);
     initToggle('ask-save-toggle', 'askSavePath', s.askSavePath);
+    initToggle('pdf-viewer-toggle', 'pdfViewerEnabled', s.pdfViewerEnabled !== false);
     initToggle('search-suggest-toggle', 'searchSuggest', s.searchSuggest);
     initToggle('auto-update-toggle', 'autoCheckUpdates', s.autoCheckUpdates);
     
@@ -795,6 +782,18 @@ window.toggleSecurityFeature = (key, el) => {
 };
 
 // Extensions Management
+window.loadUnpackedExtension = async () => {
+    try {
+        const result = await window.electronAPI.loadUnpackedExtension();
+        if (result) {
+            alert(`Successfully loaded local extension: ${result.name}`);
+            window.electronAPI.getSettings().then(s => renderExtensions(s));
+        }
+    } catch (err) {
+        alert('Failed to load unpacked extension. Ensure it contains a valid manifest.json.');
+    }
+};
+
 function renderExtensions(s = null) {
     if (!s) return;
     
@@ -802,7 +801,8 @@ function renderExtensions(s = null) {
         { id: 'adblock', key: 'adBlockEnabled', title: 'Ad Shield' },
         { id: 'vault', key: 'assetVaultEnabled', title: 'Asset Vault' },
         { id: 'ai', key: 'aiAssistantEnabled', title: 'Ocal AI Assistant' },
-        { id: 'stealth', key: 'cyberStealthEnabled', title: 'Cyber Stealth' }
+        { id: 'stealth', key: 'cyberStealthEnabled', title: 'Cyber Stealth' },
+        { id: 'focus', key: 'ocalFocusEnabled', title: 'Ocal Focus' }
     ];
 
     exts.forEach(ext => {
@@ -820,6 +820,40 @@ function renderExtensions(s = null) {
         btn.className = isActive ? 'btn secondary mini' : 'btn primary mini';
         btn.innerText = isActive ? 'Manage' : 'Install';
     });
+
+    const grid = document.getElementById('extensions-grid');
+    if (!grid) return;
+
+    grid.querySelectorAll('.dynamic-ext').forEach(el => el.remove());
+
+    if (s.extensions && s.extensions.length > 0) {
+        s.extensions.forEach(ext => {
+            const el = document.createElement('div');
+            el.className = `ext-item-card custom dynamic-ext ${ext.enabled ? 'active' : ''}`;
+            el.dataset.category = 'custom';
+            el.innerHTML = `
+                <div class="ext-item-header">
+                    <div class="ext-item-icon color-purple"><i class="fas fa-puzzle-piece"></i></div>
+                    <div class="ext-item-meta">
+                        <span class="ext-label purple">${ext.isLocal ? 'LOCAL' : 'CUSTOM'}</span>
+                        <h5>${ext.name}</h5>
+                    </div>
+                </div>
+                <p class="ext-item-desc">${ext.description || 'No description provided.'}</p>
+                <div class="ext-item-footer">
+                    <div class="ext-status-indicator ${ext.enabled ? 'on' : 'off'}">
+                        <span class="status-dot"></span>
+                        <span>${ext.enabled ? 'Active' : 'Disabled'}</span>
+                    </div>
+                    <button class="btn ${ext.enabled ? 'secondary' : 'primary'} mini" onclick="window.electronAPI.toggleExtension('${ext.id}', ${!ext.enabled}); setTimeout(() => window.electronAPI.getSettings().then(s => renderExtensions(s)), 100);">${ext.enabled ? 'Disable' : 'Enable'}</button>
+                    ${ext.isLocal ? `<button class="btn danger mini" style="margin-left: 5px; padding: 4px 8px;" onclick="window.electronAPI.removeExtension('${ext.id}').then(() => window.electronAPI.getSettings().then(s => renderExtensions(s)))"><i class="fas fa-trash"></i></button>` : ''}
+                </div>
+            `;
+            grid.appendChild(el);
+        });
+    }
+
+    if (window.filterExtensions) window.filterExtensions();
 }
 
 window.toggleExtension = (key) => {
@@ -939,3 +973,52 @@ if (metaDiscord) {
 
 // Initialize migration
 initMigration();
+
+// Default Browser Logic
+async function checkDefaultBrowser() {
+    const isDefault = await window.electronAPI.checkDefaultBrowser();
+    const statusText = document.getElementById('default-browser-status');
+    const setBtn = document.getElementById('set-default-btn');
+    
+    if (statusText && setBtn) {
+        if (isDefault) {
+            statusText.innerText = "Ocal is your default browser.";
+            setBtn.innerText = "Default";
+            setBtn.disabled = true;
+            setBtn.classList.remove('primary');
+            setBtn.classList.add('secondary');
+            setBtn.style.opacity = "0.5";
+            setBtn.style.cursor = "default";
+        } else {
+            statusText.innerText = "Ocal is not currently your default browser.";
+            setBtn.innerText = "Make Default";
+            setBtn.disabled = false;
+            setBtn.classList.add('primary');
+            setBtn.classList.remove('secondary');
+            setBtn.style.opacity = "1";
+            setBtn.style.cursor = "pointer";
+        }
+    }
+}
+
+const setDefaultBtn = document.getElementById('set-default-btn');
+if (setDefaultBtn) {
+    setDefaultBtn.onclick = async () => {
+        const success = await window.electronAPI.setAsDefaultBrowser();
+        setDefaultBtn.innerText = "Opening Settings...";
+        
+        // Re-check periodically for a few seconds as the user might change it in the OS settings
+        let checks = 0;
+        const interval = setInterval(async () => {
+            await checkDefaultBrowser();
+            checks++;
+            if (checks > 20) clearInterval(interval);
+        }, 1000);
+    };
+}
+
+// Initial check
+checkDefaultBrowser();
+
+// Also check when window regains focus (user might have changed it in OS settings)
+window.onfocus = checkDefaultBrowser;

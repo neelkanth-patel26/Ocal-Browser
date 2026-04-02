@@ -41,6 +41,8 @@ contextBridge.exposeInMainWorld('electronAPI', {
   importBookmarks: (browser)    => ipcRenderer.invoke('import-bookmarks', browser),
   importBookmarkFile: ()         => ipcRenderer.invoke('import-bookmark-file'),
   clearBookmarks:     ()         => ipcRenderer.send('clear-bookmarks'),
+  checkDefaultBrowser: ()        => ipcRenderer.invoke('check-default-browser'),
+  setAsDefaultBrowser: ()        => ipcRenderer.invoke('set-as-default-browser'),
 
   // Bookmarks
   toggleBookmark: (bm)    => ipcRenderer.send('toggle-bookmark', bm),
@@ -52,6 +54,7 @@ contextBridge.exposeInMainWorld('electronAPI', {
 
   // Extensions
   installExtension: (id)   => ipcRenderer.invoke('install-extension', id),
+  loadUnpackedExtension: () => ipcRenderer.invoke('load-unpacked-extension'),
   getExtensions:    ()     => ipcRenderer.invoke('get-extensions'),
   removeExtension:  (id)   => ipcRenderer.invoke('remove-extension', id),
   toggleExtension:  (id, enabled) => ipcRenderer.invoke('toggle-extension', { id, enabled }),

@@ -62,3 +62,12 @@ function updateSelection(items) {
         items[selectedIndex].scrollIntoView({ block: 'nearest' });
     }
 }
+
+// ── Dynamic Resizing for Rounded Corners ────────────────────────────────────
+// Reports the actual content height back to the main process so the window 
+// can be resized to prevent clipping of the bottom rounded corners.
+const resizeObserver = new ResizeObserver(() => {
+    const height = document.body.offsetHeight;
+    window.electronAPI.send('resize-suggestions', height);
+});
+resizeObserver.observe(document.body);
