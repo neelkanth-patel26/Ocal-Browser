@@ -33,7 +33,7 @@ Ocal is not just a browser—it exists at the intersection of high-fidelity desi
 
 ---
 
-### 📥 Download Ocal Browser v3.2.238-beta
+### 📥 Download Ocal Browser v3.3.10-beta
 **Platforms**: Windows (64-bit)
 **Size**: ~85MB
 **License**: ISC (Open & Secure)
