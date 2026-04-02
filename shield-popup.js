@@ -51,19 +51,24 @@ ipcRenderer.invoke('get-settings').then(settings => {
 function updateUI(stats, isYouTube = false) {
     if (!stats) return;
     const global = stats.global || stats;
-    const page = stats.page || { ads: 0, trackers: 0 };
     
+    // Update Global Stats (Bottom Section)
     if (adsBlockedCount) adsBlockedCount.innerText = global.ads || 0;
     if (trackersCount) trackersCount.innerText = global.trackers || 0;
     
-    const pageAdsEl = document.getElementById('page-ads');
-    const pageTimeEl = document.getElementById('page-time');
-    
-    if (pageAdsEl) pageAdsEl.innerText = page.ads || 0;
-    if (pageTimeEl) {
-        const totalPageBlocks = (page.ads || 0) + (page.trackers || 0);
-        const pageSeconds = totalPageBlocks * 0.05;
-        pageTimeEl.innerText = pageSeconds < 1 ? pageSeconds.toFixed(1) + 's' : Math.round(pageSeconds) + 's';
+    // Update Page-Specific Stats (Top Section)
+    // Only update if page data is explicitly provided to avoid resetting to 0
+    // during global background updates.
+    if (stats.page) {
+        const pageAdsEl = document.getElementById('page-ads');
+        const pageTimeEl = document.getElementById('page-time');
+        
+        if (pageAdsEl) pageAdsEl.innerText = stats.page.ads || 0;
+        if (pageTimeEl) {
+            const totalPageBlocks = (stats.page.ads || 0) + (stats.page.trackers || 0);
+            const pageSeconds = totalPageBlocks * 0.05;
+            pageTimeEl.innerText = pageSeconds < 1 ? pageSeconds.toFixed(1) + 's' : Math.round(pageSeconds) + 's';
+        }
     }
 
     if (compatBanner) {

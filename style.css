@@ -2,24 +2,25 @@
 :root {
   --accent: #a855f7;
   --accent-glow: rgba(168,85,247,0.4);
-  --accent-dim: rgba(168,85,247,0.1);
-  --accent-border: rgba(168,85,247,0.3);
-  --chrome: #0c0c0e;
-  --chrome-lighter: #151518;
-  --chrome-border: rgba(255,255,255,0.06);
+  --accent-dim: rgba(168,85,247,0.12);
+  --accent-border: rgba(168,85,247,0.35);
+  --chrome: #0d0d10;
+  --chrome-lighter: #17171c;
+  --chrome-border: rgba(255,255,255,0.07);
   --text: #ffffff;
-  --text-dim: rgba(255,255,255,0.45);
-  --text-muted: rgba(255,255,255,0.25);
-  --hover: rgba(255,255,255,0.06);
-  --tab-h: 42px;
-  --nav-h: 46px;
+  --text-dim: rgba(255,255,255,0.5);
+  --text-muted: rgba(255,255,255,0.28);
+  --hover: rgba(255,255,255,0.07);
+  --tab-h: 44px;
+  --nav-h: 50px;
   --bm-h: 36px;
-  --panel-blur: blur(24px) saturate(180%);
+  --panel-blur: blur(28px) saturate(200%);
+  --topbar-gradient: linear-gradient(180deg, rgba(255,255,255,0.025) 0%, transparent 100%);
 }
 
 body.compact-mode {
-  --tab-h: 34px;
-  --nav-h: 38px;
+  --tab-h: 36px;
+  --nav-h: 40px;
   --bm-h: 28px;
 }
 body.hide-bookmarks {
@@ -88,12 +89,14 @@ body.fullscreen .bookmark-bar { display: none !important; }
 .tab-bar {
   grid-area: tabs;
   background: var(--chrome);
+  background-image: var(--topbar-gradient);
   display: flex;
   align-items: center;
   padding: 0 0 0 8px;
   -webkit-app-region: drag;
   z-index: 100;
-  border-bottom: 1px solid rgba(255,255,255,0.05);
+  border-bottom: 1px solid rgba(255,255,255,0.055);
+  box-shadow: 0 1px 0 rgba(0,0,0,0.3);
   user-select: none;
   gap: 0;
 }
@@ -122,15 +125,15 @@ body.fullscreen .bookmark-bar { display: none !important; }
   align-items: center;
   gap: 8px;
   padding: 0 14px;
-  height: 32px;
+  height: 34px;
   flex: 1 1 210px;
-  min-width: 32px;
-  max-width: 210px;
+  min-width: 36px;
+  max-width: 220px;
   width: auto;
-  font-size: 11.5px;
+  font-size: 12px;
   font-weight: 500;
   color: var(--text-dim);
-  border-radius: 8px;
+  border-radius: 9px;
   border: 1px solid transparent;
   cursor: pointer;
   transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1), flex-basis 0.2s;
@@ -138,27 +141,33 @@ body.fullscreen .bookmark-bar { display: none !important; }
   flex-shrink: 1;
   overflow: hidden;
   position: relative;
+  letter-spacing: 0.1px;
 }
-body.compact-mode .tab-item { height: 26px; padding: 0 10px; gap: 6px; }
-.tab-item:hover { background: var(--hover); color: var(--text); }
+body.compact-mode .tab-item { height: 28px; padding: 0 10px; gap: 6px; }
+.tab-item:hover {
+  background: rgba(255,255,255,0.06);
+  color: rgba(255,255,255,0.85);
+  border-color: rgba(255,255,255,0.06);
+}
 .tab-item.active {
-  background: rgba(255,255,255,0.07);
+  background: rgba(255,255,255,0.09);
   color: #fff;
-  border-color: rgba(255,255,255,0.08);
-  box-shadow: 0 2px 8px rgba(0,0,0,0.25);
+  border-color: rgba(255,255,255,0.1);
+  box-shadow: 0 2px 12px rgba(0,0,0,0.3), inset 0 1px 0 rgba(255,255,255,0.08);
 }
-/* Clean accent underline on active tab */
+/* Premium accent underline on active tab */
 .tab-item.active::after {
   content: '';
   position: absolute;
-  bottom: -1px; left: 20%; right: 20%;
+  bottom: -1px; left: 25%; right: 25%;
   height: 2px;
-  background: var(--accent);
+  background: linear-gradient(90deg, transparent, var(--accent), transparent);
   border-radius: 2px 2px 0 0;
-  box-shadow: 0 0 8px var(--accent-glow);
+  box-shadow: 0 0 10px var(--accent-glow);
+  opacity: 0.9;
 }
-.tab-item.dragging { opacity: 0.4; transform: scale(0.95); }
-.tab-item.drag-over { border-color: var(--accent); background: rgba(168,85,247,0.1); }
+.tab-item.dragging { opacity: 0.35; transform: scale(0.94); }
+.tab-item.drag-over { border-color: var(--accent-border); background: var(--accent-dim); box-shadow: 0 0 0 1px var(--accent-border); }
 .tab-item .tab-favicon {
   width: 14px;
   height: 14px;
@@ -176,25 +185,30 @@ body.compact-mode .tab-item { height: 26px; padding: 0 10px; gap: 6px; }
   font-size: 11px;
   color: var(--accent);
 }
-.tab-title { flex: 1; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; letter-spacing: 0.2px; min-width: 0; }
+.tab-title { flex: 1; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; letter-spacing: 0.15px; min-width: 0; }
 .tab-close {
-  font-size: 10px;
+  font-size: 9px;
   opacity: 0;
   padding: 4px;
   border-radius: 6px;
   flex-shrink: 0;
-  transition: all 0.2s;
+  transition: all 0.18s;
   color: var(--text-dim);
 }
 .tab-item:hover .tab-close,
-.tab-item.active .tab-close { opacity: 0.6; }
-.tab-close:hover { opacity: 1 !important; color: #fff; background: #ef4444; }
+.tab-item.active .tab-close { opacity: 0.5; }
+.tab-close:hover { opacity: 1 !important; color: #fff; background: rgba(239,68,68,0.8); border-radius: 5px; transform: scale(1.1); }
 .tab-audio-icon {
   font-size: 10px;
   color: var(--accent);
   margin-left: 4px;
-  opacity: 0.8;
+  opacity: 0.85;
   text-shadow: 0 0 8px var(--accent-glow);
+  animation: audio-pulse 2s ease-in-out infinite;
+}
+@keyframes audio-pulse {
+  0%, 100% { opacity: 0.85; }
+  50% { opacity: 0.5; }
 }
 
 /* ── Tab Groups ────────────────────────────────────────────────── */
@@ -245,21 +259,28 @@ body.compact-mode .tab-group-header { height: 22px; padding: 0 6px; }
 
 /* + new tab button */
 .new-tab-btn {
-  width: 30px; height: 30px;
-  border-radius: 9px;
+  width: 28px; height: 28px;
+  border-radius: 8px;
   color: var(--text-muted);
   font-size: 11px;
   display: flex; align-items: center; justify-content: center;
-  transition: all 0.2s;
+  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
   -webkit-app-region: no-drag;
   flex-shrink: 0;
   align-self: center;
-  margin-left: 4px;
-  background: rgba(255,255,255,0.03);
+  margin-left: 5px;
+  background: rgba(255,255,255,0.04);
   border: 1px solid var(--chrome-border);
 }
-body.compact-mode .new-tab-btn { width: 24px; height: 24px; border-radius: 6px; margin-left: 2px; }
-.new-tab-btn:hover { background: var(--accent-dim); color: var(--accent); border-color: var(--accent-border); transform: scale(1.05); }
+body.compact-mode .new-tab-btn { width: 24px; height: 24px; border-radius: 6px; margin-left: 3px; }
+.new-tab-btn:hover {
+  background: var(--accent-dim);
+  color: var(--accent);
+  border-color: var(--accent-border);
+  transform: scale(1.08);
+  box-shadow: 0 0 12px rgba(168,85,247,0.2);
+}
+.new-tab-btn:active { transform: scale(0.94); }
 
 .tab-drag-spacer { 
   flex: 1 1 10px; 
@@ -270,19 +291,21 @@ body.compact-mode .new-tab-btn { width: 24px; height: 24px; border-radius: 6px; 
 /* ── Invisible Wall (Divider) ─────────────────────────────────── */
 .invisible-wall {
   width: 1px;
-  height: 14px;
-  background: rgba(255,255,255,0.15);
-  margin: 0 10px;
+  height: 16px;
+  background: linear-gradient(to bottom, transparent, rgba(255,255,255,0.12), transparent);
+  margin: 0 8px;
   border-radius: 2px;
   flex-shrink: 0;
+  opacity: 0.8;
 }
 .tab-bar .invisible-wall { 
-  height: 16px; 
-  margin: 0 4px 0 10px;
-  opacity: 0.6;
+  height: 18px; 
+  margin: 0 4px 0 8px;
 }
 .nav-bar .invisible-wall {
   align-self: center;
+  height: 18px;
+  margin: 0 6px;
 }
 
 /* ── Window controls ────────────────────────────────────────── */
@@ -298,18 +321,20 @@ body.compact-mode .new-tab-btn { width: 24px; height: 24px; border-radius: 6px; 
   color: var(--text-dim);
   transition: all 0.15s;
 }
-.ctrl-btn:hover { background: rgba(255,255,255,0.08); color: var(--text); }
-.ctrl-close:hover { background: #c0392b; color: #fff; }
+.ctrl-btn:hover { background: rgba(255,255,255,0.07); color: var(--text); }
+.ctrl-close:hover { background: rgba(192,57,43,0.85); color: #fff; }
 
 /* ── Navigation Bar ────────────────────────────────────────────── */
 .nav-bar {
   grid-area: nav;
   background: var(--chrome);
+  background-image: linear-gradient(180deg, rgba(255,255,255,0.015) 0%, transparent 100%);
   display: flex;
   align-items: center;
-  padding: 0 10px;
-  gap: 6px;
-  box-shadow: 0 1px 0 rgba(255,255,255,0.05);
+  padding: 0 12px 12px 12px;
+  gap: 7px;
+  border-bottom: 1px solid rgba(255,255,255,0.05);
+  box-shadow: 0 2px 8px rgba(0,0,0,0.2);
   -webkit-app-region: no-drag;
   z-index: 99;
 }
@@ -322,18 +347,22 @@ body.compact-mode .new-tab-btn { width: 24px; height: 24px; border-radius: 6px; 
   flex-shrink: 0;
 }
 .nav-btn {
-  width: 30px; height: 30px;
-  border-radius: 8px;
+  width: 32px; height: 32px;
+  border-radius: 9px;
   color: var(--text-dim);
-  font-size: 12px;
+  font-size: 13px;
   display: flex; align-items: center; justify-content: center;
-  transition: all 0.15s cubic-bezier(0.16, 1, 0.3, 1);
+  transition: all 0.18s cubic-bezier(0.16, 1, 0.3, 1);
   background: transparent;
   border: none;
 }
-.nav-btn:hover { background: var(--hover); color: #fff; }
-body.compact-mode .nav-btn { width: 24px; height: 24px; font-size: 11px; }
-.nav-btn:active { transform: scale(0.93); }
+.nav-btn:hover {
+  background: rgba(255,255,255,0.08);
+  color: #fff;
+  transform: scale(1.05);
+}
+body.compact-mode .nav-btn { width: 26px; height: 26px; font-size: 11px; }
+.nav-btn:active { transform: scale(0.91); background: rgba(255,255,255,0.1); }
 
 /* Omnibox (address bar) */
 .omnibox {
@@ -341,20 +370,24 @@ body.compact-mode .nav-btn { width: 24px; height: 24px; font-size: 11px; }
   display: flex;
   align-items: center;
   gap: 8px;
-  background: rgba(255,255,255,0.04);
-  border: 1px solid var(--chrome-border);
-  border-radius: 10px;
-  height: 34px;
-  padding: 0 10px;
+  background: rgba(255,255,255,0.05);
+  border: 1px solid rgba(255,255,255,0.08);
+  border-radius: 11px;
+  height: 36px;
+  padding: 0 12px;
   position: relative;
-  transition: all 0.2s;
+  transition: all 0.22s cubic-bezier(0.16, 1, 0.3, 1);
+  box-shadow: inset 0 1px 0 rgba(255,255,255,0.04);
 }
-body.compact-mode .omnibox { height: 28px; padding: 0 8px; gap: 6px; border-radius: 8px; }
-.omnibox:hover { border-color: rgba(255,255,255,0.1); }
+body.compact-mode .omnibox { height: 30px; padding: 0 9px; gap: 6px; border-radius: 9px; }
+.omnibox:hover {
+  border-color: rgba(255,255,255,0.13);
+  background: rgba(255,255,255,0.065);
+}
 .omnibox:focus-within {
-  background: rgba(255,255,255,0.06);
+  background: rgba(255,255,255,0.07);
   border-color: var(--accent);
-  box-shadow: 0 0 0 3px rgba(168,85,247,0.08);
+  box-shadow: 0 0 0 3px rgba(168,85,247,0.12), inset 0 1px 0 rgba(168,85,247,0.06);
 }
 
 /* ── Site Identity Area ──────────────────────────────────────── */
@@ -549,32 +582,22 @@ body.compact-mode .omnibox { height: 28px; padding: 0 8px; gap: 6px; border-radi
 .omnibox-actions {
   display: flex;
   align-items: center;
-  gap: 6px;
+  gap: 4px;
   flex-shrink: 0;
 }
 .omni-btn {
-  width: 26px; height: 26px;
-  border-radius: 7px;
+  width: 27px; height: 27px;
+  border-radius: 8px;
   color: var(--text-dim);
-  font-size: 11px;
+  font-size: 11.5px;
   display: flex; align-items: center; justify-content: center;
-  transition: all 0.2s;
+  transition: all 0.18s cubic-bezier(0.16, 1, 0.3, 1);
 }
-.omni-btn:hover { background: var(--hover); color: #fff; }
+.omni-btn:hover { background: rgba(255,255,255,0.09); color: #fff; transform: scale(1.08); }
+.omni-btn:active { transform: scale(0.93); }
 #bookmark-heart-btn.active { color: #ef4444; }
-#bookmark-heart-btn i { transition: transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275); }
-#bookmark-heart-btn.active i { transform: scale(1.2); }
-
-#pip-btn i { 
-    animation: fa-bounce 2s infinite;
-    animation-play-state: paused;
-}
-#pip-btn:hover i { animation-play-state: running; }
-
-@keyframes fa-bounce {
-    0%, 100% { transform: translateY(0); }
-    50% { transform: translateY(-3px); }
-}
+#bookmark-heart-btn i { transition: transform 0.32s cubic-bezier(0.175, 0.885, 0.32, 1.275); }
+#bookmark-heart-btn.active i { transform: scale(1.25); }
 
 #pip-btn i { 
     animation: fa-bounce 2s infinite;
@@ -591,7 +614,7 @@ body.compact-mode .omnibox { height: 28px; padding: 0 8px; gap: 6px; border-radi
 .toolbar-actions {
   display: flex;
   align-items: center;
-  gap: 2px;
+  gap: 3px;
   flex-shrink: 0;
 }
 
@@ -599,43 +622,59 @@ body.compact-mode .omnibox { height: 28px; padding: 0 8px; gap: 6px; border-radi
   display: flex;
   align-items: center;
   gap: 6px;
-  padding: 5px 12px;
-  border-radius: 8px;
-  background: rgba(168,85,247,0.12);
-  border: 1px solid rgba(168,85,247,0.25);
-  color: #d8b4fe;
-  font-size: 11px;
+  padding: 6px 13px;
+  border-radius: 20px;
+  background: rgba(168,85,247,0.1);
+  border: 1px solid rgba(168,85,247,0.28);
+  color: #c084fc;
+  font-size: 11.5px;
   font-weight: 600;
   font-family: 'Inter', sans-serif;
-  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+  transition: all 0.22s cubic-bezier(0.16, 1, 0.3, 1);
   white-space: nowrap;
+  letter-spacing: 0.2px;
 }
-.ai-pill i { font-size: 10px; }
+.ai-pill i { font-size: 10px; transition: transform 0.22s; }
 .ai-pill:hover { 
-  background: rgba(168,85,247,0.2); 
-  border-color: rgba(168,85,247,0.5);
-  color: #fff;
-  box-shadow: 0 0 16px rgba(168,85,247,0.2);
+  background: rgba(168,85,247,0.18); 
+  border-color: rgba(168,85,247,0.55);
+  color: #e9d5ff;
+  box-shadow: 0 0 18px rgba(168,85,247,0.25), 0 2px 8px rgba(0,0,0,0.3);
+  transform: translateY(-1px);
 }
-.ai-pill:active { transform: scale(0.96); }
+.ai-pill:hover i { transform: rotate(-10deg) scale(1.2); }
+.ai-pill:active { transform: scale(0.96) translateY(0); }
 
 .tool-btn {
-  width: 30px; height: 30px;
-  border-radius: 8px;
+  width: 32px; height: 32px;
+  border-radius: 9px;
   color: var(--text-dim);
   font-size: 13px;
   display: flex; align-items: center; justify-content: center;
-  transition: all 0.15s;
+  transition: all 0.18s cubic-bezier(0.16, 1, 0.3, 1);
   background: transparent;
   border: none;
 }
-.tool-btn:hover { background: var(--hover); color: #fff; }
-body.compact-mode .tool-btn { width: 26px; height: 26px; border-radius: 7px; }
+.tool-btn:hover {
+  background: rgba(255,255,255,0.08);
+  color: #fff;
+  transform: scale(1.06);
+}
+.tool-btn:active { transform: scale(0.93); }
+body.compact-mode .tool-btn { width: 28px; height: 28px; border-radius: 7px; }
+
+/* Active state for tool buttons (e.g. when sidebar is open) */
+.tool-btn.active {
+  background: var(--accent-dim);
+  color: var(--accent);
+  border: 1px solid var(--accent-border);
+}
 
 /* ── Bookmark Bar ──────────────────────────────────────────────── */
 .bookmark-bar {
   grid-area: bookmarks;
   background: var(--chrome);
+  background-image: linear-gradient(180deg, rgba(255,255,255,0.01) 0%, transparent 100%);
   display: flex;
   align-items: center;
   overflow-x: auto;
@@ -643,6 +682,8 @@ body.compact-mode .tool-btn { width: 26px; height: 26px; border-radius: 7px; }
   height: var(--bm-h);
   min-height: 0;
   overflow: hidden;
+  padding: 0 8px 8px 8px;
+  border-bottom: 1px solid rgba(255,255,255,0.04);
 }
 body.hide-bookmarks .bookmark-bar {
   display: none !important;

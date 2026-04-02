@@ -210,7 +210,8 @@ let userSettings = loadSettings() || {
   customSearchUrl: 'https://www.google.com/search?q=%s',
   askSavePath: false,
   downloads: [],
-  shieldStats: { ads: 0, trackers: 0, dataSaved: 0, history: [] }
+  shieldStats: { ads: 0, trackers: 0, dataSaved: 0, history: [] },
+  pdfViewerEnabled: true
 };
 
 if (!userSettings.bookmarks) userSettings.bookmarks = [];
@@ -1353,7 +1354,11 @@ function createNewTab(url = null) {
     if (isPdf && !targetUrl.includes('ocal://pdf-viewer') && !targetUrl.includes('pdf-viewer.html')) {
         event.preventDefault();
         const cleanUrl = normalizeDocumentUrl(targetUrl);
-        view.webContents.loadURL(`ocal://pdf-viewer/?file=${encodeURIComponent(cleanUrl)}`);
+        if (userSettings.pdfViewerEnabled !== false) {
+            view.webContents.loadURL(`ocal://pdf-viewer/?file=${encodeURIComponent(cleanUrl)}`);
+        } else {
+            view.webContents.downloadURL(cleanUrl);
+        }
         return;
     }
   });
@@ -1366,7 +1371,11 @@ function createNewTab(url = null) {
     // Intercept PDFs in window popups too
     if (/\.pdf($|\?)/i.test(url) && !url.includes('ocal://pdf-viewer') && !url.includes('pdf-viewer.html')) {
         const cleanUrl = normalizeDocumentUrl(url);
-        createNewTab(`ocal://pdf-viewer?file=${encodeURIComponent(cleanUrl)}`);
+        if (userSettings.pdfViewerEnabled !== false) {
+            createNewTab(`ocal://pdf-viewer?file=${encodeURIComponent(cleanUrl)}`);
+        } else {
+            view.webContents.downloadURL(cleanUrl);
+        }
         return { action: 'deny' };
     }
     return { action: 'allow' };
@@ -1379,7 +1388,7 @@ function createNewTab(url = null) {
   let finalUrl = url;
   if (url && !url.startsWith('ocal://')) {
       const isPdf = /\.pdf($|\?)/i.test(url);
-      if (isPdf) {
+      if (isPdf && userSettings.pdfViewerEnabled !== false) {
           // Normalize before encoding to prevent %2520
           // Use trailing slash to fix CSP relative path issues
           try {
@@ -1394,7 +1403,7 @@ function createNewTab(url = null) {
   // Load the ocal:// URL directly so the address bar stays clean
   // The protocol handler will resolve it internally.
   if (finalUrl) {
-      view.webContents.loadURL(finalUrl);
+      view.webContents.loadURL(resolveInternalURL(finalUrl));
   } else {
       view.webContents.loadFile('home.html');
   }
@@ -1815,6 +1824,16 @@ ipcMain.on('start-ai-resize', () => {
 
 ipcMain.on('stop-ai-resize', () => {
   mainWindow.webContents.send('ai-resize-stopped');
+});
+
+ipcMain.handle('check-default-browser', () => {
+    return app.isDefaultProtocolClient('http');
+});
+
+ipcMain.handle('set-as-default-browser', () => {
+    const isDefault = app.setAsDefaultProtocolClient('http');
+    app.setAsDefaultProtocolClient('https');
+    return isDefault;
 });
 
 // ── Ocal AI Agent Command Center 2.0 ──────────────────────────────────────
@@ -2827,6 +2846,16 @@ ipcMain.on('hide-extensions-dropdown', () => {
     }
 });
 
+ipcMain.on('open-extensions-page', () => {
+    hidePopups();
+    createNewTab(`file://${__dirname}/extensions.html`);
+});
+
+ipcMain.on('action-extension', (e, id) => {
+    hidePopups();
+    // Native extensions can handle local toggles internally or via specific IPCs.
+});
+
 ipcMain.on('toggle-adblock', (e, enabled) => {
     userSettings.adBlockEnabled = enabled;
     saveSettings(userSettings);
@@ -3285,7 +3314,7 @@ class ExtensionManager {
         
         for (const ext of activeExtensions) {
             try {
-                const extPath = path.join(this.extensionsPath, ext.id);
+                const extPath = ext.isLocal ? ext.localPath : path.join(this.extensionsPath, ext.id);
                 if (fs.existsSync(extPath)) {
                     const loaded = await session.defaultSession.loadExtension(extPath);
                     this.loaded.set(ext.id, loaded);
@@ -3294,6 +3323,16 @@ class ExtensionManager {
             } catch (err) {
                 console.error(`Failed to load extension ${ext.id}:`, err);
             }
+        }
+
+        if (userSettings.ocalFocusEnabled) {
+            try {
+                const focusPath = path.join(__dirname, 'ocal-focus-extension');
+                if (fs.existsSync(focusPath)) {
+                    await session.defaultSession.loadExtension(focusPath);
+                    console.log('Loaded native module: Ocal Focus');
+                }
+            } catch (err) { console.error('Failed to load Ocal Focus:', err); }
         }
     }
 
@@ -3391,6 +3430,52 @@ const extensionManager = new ExtensionManager();
 
 ipcMain.handle('install-extension', async (e, id) => {
     return await extensionManager.downloadAndInstall(id);
+});
+
+ipcMain.handle('load-unpacked-extension', async (e) => {
+    const result = await dialog.showOpenDialog(mainWindow, {
+        title: 'Select Extension Directory',
+        properties: ['openDirectory']
+    });
+    
+    if (result.canceled || result.filePaths.length === 0) return null;
+    const dirPath = result.filePaths[0];
+
+    try {
+        const manifestPath = path.join(dirPath, 'manifest.json');
+        if (!fs.existsSync(manifestPath)) {
+            throw new Error("No manifest.json found in directory");
+        }
+        
+        const manifest = JSON.parse(fs.readFileSync(manifestPath, 'utf8'));
+        const extensionId = require('crypto').createHash('md5').update(dirPath).digest('hex');
+        
+        const extensionInfo = {
+            id: extensionId,
+            name: manifest.name,
+            version: manifest.version,
+            description: manifest.description || 'Unpacked Extension',
+            enabled: true,
+            icons: manifest.icons || {},
+            isLocal: true,
+            localPath: dirPath
+        };
+
+        if (!userSettings.extensions) userSettings.extensions = [];
+        const existingIdx = userSettings.extensions.findIndex(ext => ext.id === extensionId);
+        if (existingIdx > -1) userSettings.extensions[existingIdx] = extensionInfo;
+        else userSettings.extensions.push(extensionInfo);
+        
+        saveSettings(userSettings);
+
+        const loaded = await session.defaultSession.loadExtension(dirPath);
+        extensionManager.loaded.set(extensionId, loaded);
+
+        return extensionInfo;
+    } catch (err) {
+        console.error('Local extension error:', err);
+        throw err;
+    }
 });
 
 ipcMain.handle('get-extensions', () => {
@@ -3542,6 +3627,14 @@ ipcMain.on('set-security-toggle', (e, { key, value }) => {
         const toggleVal = value !== false;
         // Broadcast specifically for extensions UI refresh
     }
+    
+    if (key === 'ocalFocusEnabled') {
+        const focusPath = path.join(__dirname, 'ocal-focus-extension');
+        if (value && fs.existsSync(focusPath)) {
+            session.defaultSession.loadExtension(focusPath).catch(err => console.error('Failed to load Ocal Focus natively:', err));
+        }
+    }
+
     saveSettings(userSettings);
     broadcastSettings();
     

@@ -308,6 +308,9 @@
             <button class="btn btn-primary" onclick="installExtension()">
                 <i class="fas fa-plus"></i> Install
             </button>
+            <button class="btn btn-primary" onclick="loadUnpackedExtension()" style="background: rgba(255,255,255,0.1); color: var(--text);">
+                <i class="fas fa-folder-open"></i> Load Unpacked
+            </button>
         </section>
 
         <div class="extension-grid" id="extensionGrid">
@@ -376,6 +379,21 @@
                 alert(`Successfully installed ${result.name}!`);
             } catch (err) {
                 alert('Failed to install extension. Please check the ID or URL.');
+            } finally {
+                document.getElementById('loader').style.display = 'none';
+            }
+        }
+
+        async function loadUnpackedExtension() {
+            document.getElementById('loader').style.display = 'flex';
+            try {
+                const result = await ipcRenderer.invoke('load-unpacked-extension');
+                if (result) {
+                    await loadExtensions();
+                    alert(`Successfully loaded local extension ${result.name}!`);
+                }
+            } catch (err) {
+                alert('Failed to load unpacked extension. Ensure it contains a valid manifest.json.');
             } finally {
                 document.getElementById('loader').style.display = 'none';
             }

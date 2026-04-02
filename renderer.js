@@ -433,8 +433,8 @@ document.addEventListener('DOMContentLoaded', () => {
     window.electronAPI.onMaximized((isMax) => {
         document.body.classList.toggle('maximized', isMax);
         if (maxBtn) maxBtn.innerHTML = isMax
-            ? '<i class="far fa-window-restore"></i>'
-            : '<i class="far fa-square"></i>';
+            ? '<svg width="10" height="10" viewBox="0 0 10 10"><path d="M3,0.5 H9.5 V7 M0.5,3 H7 V9.5 H0.5 Z" fill="none" stroke="currentColor" stroke-width="1"/></svg>'
+            : '<svg width="10" height="10" viewBox="0 0 10 10"><rect x="0.5" y="0.5" width="9" height="9" fill="none" stroke="currentColor"/></svg>';
     });
 
     const aiBtn  = document.getElementById('ai-toolbar-btn');
