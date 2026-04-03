@@ -2,7 +2,7 @@
   <img src="icon.png" alt="Ocal Browser Logo" width="128">
 </p>
 
-# 🌌 Ocal Browser - Project Rescue (v2.6.78-beta)
+# 🌌 Ocal Browser - Project Rescue
 
 <p align="center">
   <a href="https://github.com/neelkanth-patel26/Ocal-Browser/releases">
@@ -23,7 +23,7 @@
 **Ocal** is a next-generation, high-performance web browser meticulously crafted for the **Agentic Era**. Built on the robust **Electron** framework, it merges a stunning **glassmorphic aesthetic** with industry-leading **stealth technologies**, providing a seamless bridge between human interaction and AI-driven automation.
 
 > [!IMPORTANT]
-> **Project Rescue (v2.6.78)**: This definitive update introduces a complete reconstruction of our privacy engine, resolving location leaks, regional search engine hijacking, and security blockades on high-traffic platforms.
+> **Project Rescue**: This definitive update introduces a complete reconstruction of our privacy engine, resolving location leaks, regional search engine hijacking, and security blockades on high-traffic platforms.
 
 ---
 
@@ -73,25 +73,6 @@
 2. Download the `Ocal-2.6.78-beta-Setup.exe`.
 3. Execute the installer. We use **Inno Setup** to ensure a premium, reliable desktop installation experience.
 
----
-
-## 👨‍💻 Development & Contribution
-
-We welcome contributors! Here's how to get your local environment ready:
-
-```powershell
-# 1. Clone the repository
-git clone https://github.com/neelkanth-patel26/Ocal-Browser.git
-
-# 2. Install dependencies
-npm install
-
-# 3. Launch Ocal in development mode
-npm start
-
-# 4. Generate a production installer (Requires Inno Setup 6)
-.\build-dist.ps1
-```
 
 ---
 
