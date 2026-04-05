@@ -1,3 +1,98 @@
+// ── Neural Shield V10: Deep Metadata Interceptor (Secondary & Sidebar Scrubbing) ──
+(function() {
+    console.log('[Neural Shield] Initializing Deep Interceptor V10...');
+
+    const AD_KEYS = [
+        'adPlacements', 'playerAds', 'adSlots', 'masthead', 
+        'adBreakHeartbeatParams', 'adEvents', 'ad_break',
+        'ads_engagement_panel', 'ad_slots', 'ads_info'
+    ];
+    
+    function neuralCleaner(obj) {
+        if (!obj || typeof obj !== 'object') return obj;
+        if (Array.isArray(obj)) {
+            // Filter out items that explicitly look like ads in lists (sidebar/search)
+            return obj.filter(item => {
+                if (item?.adSlotRenderer || item?.promotedSparklesWebRenderer || item?.adRenderer) {
+                    console.log('[Neural Shield] Scrubbing ad-renderer from list');
+                    return false;
+                }
+                return true;
+            }).map(neuralCleaner);
+        }
+
+        const cleaned = {};
+        for (const key in obj) {
+            if (AD_KEYS.includes(key)) {
+                cleaned[key] = Array.isArray(obj[key]) ? [] : {};
+                continue;
+            }
+            if (key === 'enforcementMessageViewModel' || key === 'enforcement_message_view_model') continue;
+            cleaned[key] = neuralCleaner(obj[key]);
+        }
+        return cleaned;
+    }
+
+    // ── 1. Fetch Interception (Priority Boosting & Metadata Scrubbing) ────────
+    const originalFetch = window.fetch;
+    window.fetch = async (...args) => {
+        let url = args[0] instanceof Request ? args[0].url : args[0];
+        
+        // Priority Boost
+        if (url.includes('googlevideo.com/videoplayback')) {
+            if (!url.includes('&priority=high')) {
+                url += '&priority=high';
+                if (args[0] instanceof Request) args[0] = new Request(url, args[0]);
+                else args[0] = url;
+            }
+        }
+
+        const response = await originalFetch(...args);
+        
+        if (url.includes('/v1/player') || url.includes('/v1/next')) {
+            const clone = response.clone();
+            try {
+                const json = await clone.json();
+                const cleanJson = neuralCleaner(json);
+                console.log('[Neural Shield] Neutralized ad metadata in Fetch (Safe)');
+                return new Response(JSON.stringify(cleanJson), {
+                    status: response.status,
+                    headers: response.headers
+                });
+            } catch (e) { return response; }
+        }
+        return response;
+    };
+
+    // ── 2. XHR Interception (Tracking & Scrubbing) ───────────────────────────
+    const originalOpen = XMLHttpRequest.prototype.open;
+    XMLHttpRequest.prototype.open = function(method, url) {
+        this._url = url;
+        this._isAdMetadata = url.includes('/v1/player') || url.includes('/v1/next');
+        return originalOpen.apply(this, arguments);
+    };
+
+    const originalSend = XMLHttpRequest.prototype.send;
+    XMLHttpRequest.prototype.send = function() {
+        if (this._isAdMetadata) {
+            const originalOnReadyStateChange = this.onreadystatechange;
+            this.onreadystatechange = function() {
+                if (this.readyState === 4 && this.status === 200) {
+                    try {
+                        const json = JSON.parse(this.responseText);
+                        const cleanJson = neuralCleaner(json);
+                        Object.defineProperty(this, 'responseText', { value: JSON.stringify(cleanJson), configurable: true });
+                        Object.defineProperty(this, 'response', { value: JSON.stringify(cleanJson), configurable: true });
+                        console.log('[Neural Shield] Neutralized ad metadata in XHR (Safe)');
+                    } catch (e) {}
+                }
+                if (originalOnReadyStateChange) originalOnReadyStateChange.apply(this, arguments);
+            };
+        }
+        return originalSend.apply(this, arguments);
+    };
+})();
+
 // ── Global Trusted Types Policy (Bypass YouTube Security Blocks) ────────────
 if (window.trustedTypes && window.trustedTypes.createPolicy) {
     if (!window.trustedTypes.defaultPolicy) {
@@ -495,16 +590,43 @@ ipcRenderer.on('pip-activated', () => {
     }
     video.style.opacity = '0.35';
     video.style.filter = 'blur(0px)';
+
+    // Inject Professional Suppression Style to hide YouTube's internal miniplayer/overlays
+    const styleId = 'ocal-pip-suppression-style';
+    if (!document.getElementById(styleId)) {
+        const style = document.createElement('style');
+        style.id = styleId;
+        style.textContent = `
+            .ytp-miniplayer-ui, .ytp-pause-overlay, .ytp-ce-element, 
+            .ytp-ad-overlay-container, .ytp-ad-skip-button-slot,
+            .ytp-cards-button, .ytp-paid-content-overlay {
+                display: none !important;
+                visibility: hidden !important;
+                opacity: 0 !important;
+                pointer-events: none !important;
+            }
+            #movie_player.ad-showing .html5-main-video {
+                opacity: 0 !important;
+            }
+        `;
+        document.head.appendChild(style);
+    }
 });
 
 ipcRenderer.on('pip-stop-monitoring', () => {
     pipStreaming = false;
     if (pipPort) { pipPort.close(); pipPort = null; }
+    
+    // Restore original video state
     const video = currentVideo || document.querySelector('video');
     if (video && pipOriginalStyles.has(video)) {
         video.style.cssText = pipOriginalStyles.get(video);
         pipOriginalStyles.delete(video);
     }
+
+    // Remove suppression style
+    const style = document.getElementById('ocal-pip-suppression-style');
+    if (style) style.remove();
 });
 
 ipcRenderer.on('pip-control-command', (event, data) => {
@@ -531,8 +653,8 @@ const startPipStream = async () => {
         }
 
         try {
-            // Send metadata updates at 1fps
-            if (frameCount++ % 30 === 0) {
+            // Send metadata updates at 10fps for smooth timeline/sync
+            if (frameCount++ % 6 === 0) {
                 let bufferedPercent = 0;
                 if (currentVideo.buffered.length > 0) {
                     bufferedPercent = (currentVideo.buffered.end(currentVideo.buffered.length - 1) / currentVideo.duration) * 100;
@@ -544,10 +666,10 @@ const startPipStream = async () => {
                 pipPort.postMessage({
                     type: 'status',
                     data: {
-                        isPlaying: true, currentTime: currentVideo.currentTime, duration: currentVideo.duration,
+                        isPlaying: !currentVideo.paused, currentTime: currentVideo.currentTime, duration: currentVideo.duration,
                         volume: currentVideo.volume, speed: currentVideo.playbackRate, buffered: bufferedPercent,
                         width: currentVideo.videoWidth || 16, height: currentVideo.videoHeight || 9,
-                        title: title
+                        title: title, muted: currentVideo.muted, looping: currentVideo.loop
                     }
                 });
             }
@@ -683,4 +805,16 @@ window.addEventListener('DOMContentLoaded', () => {
     
     // Some sites overwrite document.body early, so inserting into documentElement is safer
     document.documentElement.appendChild(style);
+});
+
+// Ocal Media Master Bridge
+window.addEventListener('ocal-media-detected', (e) => {
+    if (e.detail && Array.isArray(e.detail)) {
+        ipcRenderer.send('media-detected', e.detail);
+    }
+});
+
+window.addEventListener('trigger-media-popup', () => {
+    // Port to internal trigger that renderer.js listens for
+    window.dispatchEvent(new CustomEvent('trigger-media-popup-internal'));
 });

@@ -1,6 +1,6 @@
 {
   "name": "ocal",
-  "version": "3.3.10-beta",
+  "version": "3.4.40E-beta",
   "description": "Ocal Browser - Fast, Secure, and Agentic.",
   "main": "main.js",
   "author": "Gaming Network Studio Media Group",
@@ -28,7 +28,6 @@
     "electron-builder": "^26.8.1"
   },
   "dependencies": {
-    "@cliqz/adblocker-electron": "^1.35.0",
     "adm-zip": "^0.5.16",
     "cross-fetch": "^4.1.0",
     "electron-squirrel-startup": "^1.0.1"

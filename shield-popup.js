@@ -3,6 +3,7 @@ const { ipcRenderer } = require('electron');
 const adBlockToggle = document.getElementById('adblock-toggle');
 const privacyToggle = document.getElementById('privacy-toggle');
 const vpnToggle = document.getElementById('vpn-toggle');
+const dislikeToggle = document.getElementById('dislike-toggle');
 const selectTrigger = document.getElementById('select-trigger');
 const selectOptions = document.getElementById('select-options');
 const selectedText = document.getElementById('selected-region-text');
@@ -37,6 +38,7 @@ ipcRenderer.invoke('get-settings').then(settings => {
     adBlockToggle.checked = settings.adBlockEnabled !== false;
     privacyToggle.checked = settings.trackingProtection !== false;
     vpnToggle.checked = settings.vpnEnabled === true;
+    if (dislikeToggle) dislikeToggle.checked = settings.youtubeDislikeEnabled !== false;
     
     // Update selection text and active state
     const currentRegion = settings.vpnRegion || 'auto';
@@ -48,17 +50,37 @@ ipcRenderer.invoke('get-settings').then(settings => {
     });
 });
 
+function animateValue(obj, start, end) {
+    if (start === end) return;
+    const duration = 800;
+    const startTime = performance.now();
+    
+    function update(currentTime) {
+        const elapsed = currentTime - startTime;
+        const progress = Math.min(elapsed / duration, 1);
+        const ease = 1 - Math.pow(1 - progress, 5); // Ease out quint
+        const current = Math.floor(start + (end - start) * ease);
+        obj.innerText = current.toLocaleString();
+        if (progress < 1) requestAnimationFrame(update);
+    }
+    requestAnimationFrame(update);
+}
+
 function updateUI(stats, isYouTube = false) {
     if (!stats) return;
     const global = stats.global || stats;
     
     // Update Global Stats (Bottom Section)
-    if (adsBlockedCount) adsBlockedCount.innerText = global.ads || 0;
-    if (trackersCount) trackersCount.innerText = global.trackers || 0;
+    if (adsBlockedCount) {
+        const currentAds = parseInt(adsBlockedCount.innerText.replace(/,/g, '') || 0);
+        animateValue(adsBlockedCount, currentAds, global.ads || 0);
+    }
+    if (trackersCount) {
+        const currentTrackers = parseInt(trackersCount.innerText.replace(/,/g, '') || 0);
+        animateValue(trackersCount, currentTrackers, global.trackers || 0);
+    }
     
     // Update Page-Specific Stats (Top Section)
-    // Only update if page data is explicitly provided to avoid resetting to 0
-    // during global background updates.
     if (stats.page) {
         const pageAdsEl = document.getElementById('page-ads');
         const pageTimeEl = document.getElementById('page-time');
@@ -70,36 +92,6 @@ function updateUI(stats, isYouTube = false) {
             pageTimeEl.innerText = pageSeconds < 1 ? pageSeconds.toFixed(1) + 's' : Math.round(pageSeconds) + 's';
         }
     }
-
-    if (compatBanner) {
-        compatBanner.style.display = isYouTube ? 'block' : 'none';
-    }
-
-    // Force toggles OFF on YouTube as per user request
-    if (isYouTube) {
-        adBlockToggle.checked = false;
-        privacyToggle.checked = false;
-        adBlockToggle.disabled = true;
-        privacyToggle.disabled = true;
-        
-        // Visual feedback for disabled state
-        adBlockToggle.closest('.toggle-item').style.opacity = '0.5';
-        adBlockToggle.closest('.toggle-item').style.pointerEvents = 'none';
-        privacyToggle.closest('.toggle-item').style.opacity = '0.5';
-        privacyToggle.closest('.toggle-item').style.pointerEvents = 'none';
-    } else {
-        // Restore actual settings on other sites
-        ipcRenderer.invoke('get-settings').then(s => {
-            adBlockToggle.checked = s.adBlockEnabled !== false;
-            privacyToggle.checked = s.trackingProtection !== false;
-            adBlockToggle.disabled = false;
-            privacyToggle.disabled = false;
-            adBlockToggle.closest('.toggle-item').style.opacity = '1';
-            adBlockToggle.closest('.toggle-item').style.pointerEvents = 'all';
-            privacyToggle.closest('.toggle-item').style.opacity = '1';
-            privacyToggle.closest('.toggle-item').style.pointerEvents = 'all';
-        });
-    }
 }
 
 adBlockToggle.onchange = () => {
@@ -109,6 +101,12 @@ adBlockToggle.onchange = () => {
 privacyToggle.onchange = () => {
     ipcRenderer.send('update-setting', 'trackingProtection', privacyToggle.checked);
 };
+
+if (dislikeToggle) {
+    dislikeToggle.onchange = () => {
+        ipcRenderer.send('update-setting', 'youtubeDislikeEnabled', dislikeToggle.checked);
+    };
+}
 
 vpnToggle.onchange = () => {
     ipcRenderer.send('update-setting', 'vpnEnabled', vpnToggle.checked);
@@ -160,10 +158,22 @@ window.addEventListener('click', (e) => {
 
 // Listen for stat updates in real-time
 ipcRenderer.on('shield-stats-updated', (event, stats) => {
-    // Only update if it matches our tab or is a global update
-    if (!stats.webContentsId || stats.webContentsId === window._currentTabId) {
-        updateUI(stats);
+    // 1. ALWAYS update Global stats (it shows in every tab's popup)
+    if (stats.global) {
+        updateUI({ global: stats.global });
     }
+    
+    // 2. Only update PAGE stats if it matches our active tab ID
+    // We need to resolve the tabId to the webContentsId on the main side, 
+    // but main already did that and passed it as 'webContentsId'.
+    // However, shield-popup.js stores window._currentTabId (the string timestamp ID).
+    // We'll trust the main process to only send 'page' stats when relevant or 
+    // we could keep it simple and just update global. 
+    // Wait, the main process broadcasts THIS page's updates.
+    
+    ipcRenderer.invoke('get-shield-stats', window._currentTabId).then(freshStats => {
+        updateUI(freshStats);
+    });
 });
 
 // VPN Status Handling
@@ -212,5 +222,5 @@ ipcRenderer.on('show-popup', (event, { x, y, tabId, isYouTube }) => {
 
 popupOverlay.onclick = () => {
     shieldCard.classList.remove('show');
-    ipcRenderer.send('hide-popups'); // Signal main to remove this view
+    ipcRenderer.send('hide-popups'); 
 };
