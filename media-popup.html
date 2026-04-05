@@ -1,0 +1,160 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Media Master</title>
+    <link rel="stylesheet" href="assets/fontawesome/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --accent: #34d399; /* Media Master Green */
+            --accent-glow: rgba(52, 211, 153, 0.4);
+            --accent-dim: rgba(52, 211, 153, 0.1);
+            --bg-glass: rgba(13, 13, 16, 0.82);
+            --border-glass: rgba(255, 255, 255, 0.06);
+            --text-primary: #ffffff;
+            --text-secondary: rgba(255, 255, 255, 0.5);
+            --panel-blur: blur(44px) saturate(210%);
+        }
+
+        * {
+            margin: 0; padding: 0; box-sizing: border-box;
+            user-select: none; -webkit-font-smoothing: antialiased;
+        }
+
+        body {
+            font-family: 'Outfit', sans-serif;
+            background: transparent;
+            width: 100vw; height: 100vh;
+            color: var(--text-primary);
+            display: flex; align-items: flex-start; justify-content: flex-start;
+        }
+
+        .popup-overlay { position: fixed; inset: 0; background: transparent; z-index: 1; }
+
+        .media-card {
+            position: absolute;
+            background: var(--bg-glass);
+            backdrop-filter: var(--panel-blur);
+            border: 1px solid var(--border-glass);
+            border-radius: 20px;
+            padding: 20px;
+            box-shadow: 0 16px 64px rgba(0, 0, 0, 0.65), 0 0 0 1px rgba(255,255,255,0.03);
+            display: flex; flex-direction: column; gap: 16px;
+            width: 320px; z-index: 2;
+            opacity: 0; transform: translateY(-12px) scale(0.98);
+            transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+            pointer-events: none;
+        }
+
+        .media-card.show { opacity: 1; transform: translateY(0) scale(1); pointer-events: all; }
+
+        .header {
+            display: flex; align-items: center; gap: 12px;
+            border-bottom: 1px solid rgba(255,255,255,0.05);
+            padding-bottom: 16px;
+        }
+
+        .header i { font-size: 18px; color: var(--accent); filter: drop-shadow(0 0 8px var(--accent-glow)); }
+        .header h2 { font-size: 15px; font-weight: 700; letter-spacing: -0.01em; }
+
+        /* Media List */
+        .media-list {
+            display: flex; flex-direction: column; gap: 10px;
+            max-height: 300px; overflow-y: auto;
+            padding-right: 4px;
+        }
+
+        .media-item {
+            background: rgba(255,255,255,0.03);
+            border: 1px solid rgba(255,255,255,0.05);
+            border-radius: 14px; padding: 12px;
+            display: flex; align-items: center; gap: 14px;
+            transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+
+        .media-item:hover {
+            background: rgba(255,255,255,0.06);
+            border-color: rgba(255,255,255,0.1);
+            transform: translateX(4px);
+        }
+
+        .media-icon {
+            width: 38px; height: 38px; border-radius: 10px;
+            background: var(--accent-dim); color: var(--accent);
+            display: flex; align-items: center; justify-content: center;
+            font-size: 16px; flex-shrink: 0;
+        }
+
+        .media-info { flex: 1; min-width: 0; }
+        .media-title { font-size: 12.5px; font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; color: #fff; }
+        .media-meta { font-size: 10.5px; color: var(--text-secondary); margin-top: 3px; }
+
+        .download-btn {
+            width: 32px; height: 32px; border-radius: 50%;
+            background: rgba(255,255,255,0.08); color: #fff;
+            display: flex; align-items: center; justify-content: center;
+            font-size: 12px; cursor: pointer; transition: all 0.2s;
+            border: none;
+        }
+
+        .download-btn:hover {
+            background: var(--accent); color: #000;
+            transform: scale(1.15) rotate(-10deg);
+            box-shadow: 0 0 15px var(--accent-glow);
+        }
+
+        .empty-state {
+            text-align: center; padding: 40px 20px; color: var(--text-secondary); font-size: 13px;
+        }
+        .empty-state i { display: block; font-size: 32px; margin-bottom: 12px; opacity: 0.2; }
+
+        .footer-action {
+            margin-top: 8px; border-top: 1px solid rgba(255,255,255,0.06);
+            padding-top: 16px;
+        }
+
+        .primary-btn {
+            width: 100%; padding: 12px; border-radius: 12px;
+            background: var(--accent); color: #000;
+            font-size: 12px; font-weight: 800; border: none;
+            display: flex; align-items: center; justify-content: center; gap: 10px;
+            cursor: pointer; transition: all 0.2s;
+        }
+
+        .primary-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 24px var(--accent-glow);
+        }
+
+        /* Scrollbar */
+        .media-list::-webkit-scrollbar { width: 4px; }
+        .media-list::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.1); border-radius: 10px; }
+    </style>
+</head>
+<body>
+    <div class="popup-overlay" id="popup-overlay"></div>
+    <div class="media-card" id="media-card">
+        <div class="header">
+            <i class="fas fa-bolt"></i>
+            <h2>Ocal Media Master</h2>
+        </div>
+
+        <div class="media-list" id="media-list">
+            <div class="empty-state">
+                <i class="fas fa-search"></i>
+                Analyzing page for downloadable media assets...
+            </div>
+        </div>
+
+        <div id="footer-actions" style="display:none;" class="footer-action">
+            <button class="primary-btn" id="download-all-btn">
+                <i class="fas fa-download"></i> DOWNLOAD ALL DETECTED IMAGES
+            </button>
+        </div>
+    </div>
+
+    <script src="media-popup.js"></script>
+</body>
+</html>

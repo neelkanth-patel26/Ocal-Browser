@@ -147,6 +147,7 @@ function renderTabs() {
             window.electronAPI.switchTab(tab.id);
             renderTabs();
             updatePageTimeChip(tab.id);
+            updateMediaMasterIcon(tab.id);
         };
         tabList.appendChild(el);
     });
@@ -170,6 +171,7 @@ window.electronAPI.onTabsChanged((data) => {
     }
     if (lastSettings) applyGlobalSettings(lastSettings);
     renderTabs();
+    if (activeTabId) updateMediaMasterIcon(activeTabId);
 });
 
 window.electronAPI.onUpdateURL((data) => {
@@ -183,6 +185,7 @@ window.electronAPI.onUpdateURL((data) => {
         syncOmnibox(data.url);
         updatePageTimeChip(data.id);
         if (lastSettings) applyGlobalSettings(lastSettings);
+        updateMediaMasterIcon(data.id); // Refresh for navigation
     }
     renderTabs();
 });
@@ -465,6 +468,20 @@ document.addEventListener('DOMContentLoaded', () => {
         if (dlBtn) dlBtn.onclick();
     });
 
+    const mediaBtn = document.getElementById('media-master-btn');
+    if (mediaBtn) {
+        mediaBtn.onclick = (e) => {
+            e.stopPropagation();
+            const rect = mediaBtn.getBoundingClientRect();
+            window.electronAPI.send('show-media-popup', {
+                x: rect.left,
+                y: rect.bottom + 5,
+                width: rect.width,
+                tabId: activeTabId
+            });
+        };
+    }
+
     const pipBtn = document.getElementById('pip-btn');
     if (pipBtn) pipBtn.onclick = () => window.electronAPI.send('trigger-smart-pip');
 
@@ -583,7 +600,6 @@ function updatePageTimeChip(tabId) {
         }
     });
 }
-
 window.electronAPI.on('shield-stats-updated', (e, stats) => {
     if (stats.webContentsId === activeTabId && stats.page) {
         const total = (stats.page.ads || 0) + (stats.page.trackers || 0);
@@ -597,6 +613,50 @@ window.electronAPI.on('shield-stats-updated', (e, stats) => {
                 chip.style.display = 'none';
             }
         }
+    }
+});
+
+function updateMediaMasterIcon(tabId) {
+    window.electronAPI.invoke('get-tab-media', tabId).then(list => {
+        const btn = document.getElementById('media-master-btn');
+        const chip = document.getElementById('media-count-chip');
+        if (!btn || !chip) return;
+
+        if (list && list.length > 0) {
+            btn.style.display = 'flex';
+            chip.innerText = list.length;
+        } else {
+            btn.style.display = 'none';
+        }
+    });
+}
+
+window.electronAPI.on('media-master-updated', (e, { tabId, mediaList }) => {
+    if (tabId === activeTabId) {
+        const btn = document.getElementById('media-master-btn');
+        const chip = document.getElementById('media-count-chip');
+        if (!btn || !chip) return;
+
+        if (mediaList && mediaList.length > 0) {
+            btn.style.display = 'flex';
+            chip.innerText = mediaList.length;
+        } else {
+            btn.style.display = 'none';
+        }
+    }
+});
+
+// ── YouTube Specific Trigger Bridge ──
+window.addEventListener('trigger-media-popup-internal', () => {
+    const btn = document.getElementById('media-master-btn');
+    if (btn) {
+        const rect = btn.getBoundingClientRect();
+        window.electronAPI.send('show-media-popup', {
+            x: Math.round(rect.left + rect.width / 2),
+            y: Math.round(rect.bottom),
+            width: Math.round(rect.width),
+            tabId: activeTabId
+        });
     }
 });
 

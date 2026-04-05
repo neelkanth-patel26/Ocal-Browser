@@ -21,8 +21,8 @@ protocol.registerSchemesAsPrivileged([
   { scheme: 'ocal', privileges: { standard: true, secure: true, supportFetchAPI: true, corsEnabled: true } }
 ]);
 const path = require('path');
+const tabMediaMap = new Map(); // Stores detected media per tab ID
 const AdmZip = require('adm-zip');
-const { ElectronBlocker } = require('@cliqz/adblocker-electron');
 const fetch = require('cross-fetch').default || require('cross-fetch');
 
 // Disable QUIC (fixes Handshake -101 and Connection Reset issues)
@@ -197,6 +197,7 @@ let userSettings = loadSettings() || {
   homeTileSpacing: 20,
   homeTileStyle: 'square', // 'square', 'rectangle', 'monochrome'
   autoCheckUpdates: true,
+  confirmExit: true,
   tabGroups: [], // { id, name, color, collapsed }
   adBlockEnabled: true,
   assetVaultEnabled: true,
@@ -246,8 +247,22 @@ if (userSettings.assetVaultEnabled === undefined) userSettings.assetVaultEnabled
 if (userSettings.instantSearchEnabled === undefined) userSettings.instantSearchEnabled = true;
 if (userSettings.safeSearchEnabled === undefined) userSettings.safeSearchEnabled = false;
 
-if (!userSettings.shieldStats) userSettings.shieldStats = { ads: 0, trackers: 0, dataSaved: 0, history: [] };
-if (userSettings.shieldStats.dataSaved === undefined) userSettings.shieldStats.dataSaved = 0;
+// Shield Stats Initialization & Migration
+if (!userSettings.shieldStats) {
+    userSettings.shieldStats = { 
+        global: { ads: 0, trackers: 0, dataSaved: 0 },
+        sessionStartTime: Date.now(),
+        history: [] 
+    };
+}
+if (!userSettings.shieldStats.global) {
+    // Migrate old flat structure to new structured format
+    userSettings.shieldStats.global = {
+        ads: userSettings.shieldStats.ads || 0,
+        trackers: userSettings.shieldStats.trackers || 0,
+        dataSaved: userSettings.shieldStats.dataSaved || 0
+    };
+}
 if (!userSettings.shieldStats.history) userSettings.shieldStats.history = [];
 
 // Non-persistent page stats: Map<webContentsId, { ads, trackers }>
@@ -264,11 +279,15 @@ function updateTabShieldStats(wcId, type) {
         if (type === 'ads' || type === 'trackers') {
             stats[type]++;
             // Update Global Stats
-            if (userSettings.shieldStats) {
-                userSettings.shieldStats[type]++;
+            if (userSettings.shieldStats && userSettings.shieldStats.global) {
+                if (userSettings.shieldStats.global[type] === undefined) userSettings.shieldStats.global[type] = 0;
+                userSettings.shieldStats.global[type]++;
+                
                 // Heuristic: 50KB for ad, 5KB for tracker
                 const bytesSaved = type === 'ads' ? 51200 : 5120;
-                userSettings.shieldStats.dataSaved += bytesSaved;
+                if (userSettings.shieldStats.global.dataSaved === undefined) userSettings.shieldStats.global.dataSaved = 0;
+                userSettings.shieldStats.global.dataSaved += bytesSaved;
+                
                 saveSettings(userSettings);
                 broadcastShieldStats(wcId);
             }
@@ -279,12 +298,13 @@ function updateTabShieldStats(wcId, type) {
 
 function broadcastShieldStats(wcId = null) {
     if (!mainWindow || mainWindow.isDestroyed()) return;
-    const globalStats = userSettings.shieldStats;
-    webContents.getAllWebContents().forEach(wc => {
+    const globalStats = userSettings.shieldStats.global;
+    // We send to everyone so the dashboard and popups stay in sync
+    BrowserWindow.getAllWindows().forEach(bw => {
         try {
-            if (wc.isDestroyed()) return;
+            if (bw.isDestroyed()) return;
             const pageStats = wcId ? tabShieldStats.get(wcId) : null;
-            wc.send('shield-stats-updated', { 
+            bw.webContents.send('shield-stats-updated', { 
                 global: globalStats,
                 page: pageStats,
                 webContentsId: wcId,
@@ -326,6 +346,7 @@ var siteInfoView = null;
 var webAppView = null;
 var tabgroupView = null;
 var downloadsView = null;
+var mediaMasterView = null;
 var views = [];
 var downloads = userSettings.downloads || [];
 function saveDownloadsToSettings() {
@@ -348,139 +369,124 @@ let isQuitting = false;
 let activePopupGroupId = null;
 let webAppOpen = false;
 let currentWebAppUrl = null;
-// AdBlocker Instance (Consolidated Interceptor approach)
-let adBlockerInstance = null;
 if (!userSettings.sitePermissions) userSettings.sitePermissions = {};
 
 function applyShieldSettings() {
-  const active = (userSettings.adBlockEnabled !== false) || (userSettings.trackingProtection !== false);
-  
-  if (!active) {
-      if (adBlockerInstance && adBlockerInstance.isBlockingEnabled(session.defaultSession)) {
-          try { adBlockerInstance.disableBlockingInSession(session.defaultSession); } catch {}
-          try { adBlockerInstance.disableBlockingInSession(session.fromPartition('persist:google_login')); } catch {}
-      }
-      return;
-  }
+    setTimeout(() => {
+        if (global._shieldInterceptorsRegistered) return;
+        global._shieldInterceptorsRegistered = true;
 
-  // If already initialized and active in session, we skip (logic is now in the manual wrappers)
-  if (adBlockerInstance && adBlockerInstance.isBlockingEnabled(session.defaultSession)) return;
+        const ses = session.defaultSession;
+        const sesGoogle = session.fromPartition('persist:google_login');
 
-  ElectronBlocker.fromPrebuiltAdsAndTracking(fetch).then((blocker) => {
-      adBlockerInstance = blocker;
+        const masterOnBeforeRequest = (details, callback) => {
+            if (!details.url) { callback({}); return; }
+            const url = details.url.toLowerCase();
+            const wcId = details.webContentsId;
 
-      // Master Interceptor Setup: Ocal manually manages the session instead of the library.
-      const ses = session.defaultSession;
-      const sesGoogle = session.fromPartition('persist:google_login');
+            // 1. NEURAL SHIELD V9: Network-Level Ad-Blocklist (Pre-Empting uBlock)
+            const adPatterns = [
+                'doubleclick.net', 'googleadservices.com', 'partner.googleadservices.com',
+                'googlesyndication.com', 'adservice.google.com', 'pagead2.googlesyndication.com',
+                'youtube.com/pagead', 'youtube.com/ptracking', 'youtube.com/api/stats/ads',
+                'youtube.com/api/stats/qoe?adformat=', 'youtube.com/get_midroll_info',
+                'googlevideo.com/videoplayback?.*ad_v2', 
+                'googlevideo.com/videoplayback?.*ctier=a', 
+                'googlevideo.com/videoplayback?.*adfilter',
+                'googlevideo.com/videoplayback?.*oad=',
+                'googlevideo.com/initplayback?.*oad=',
+                'youtube.com/get_video_info?.*ad_v2',
+                'youtube.com/api/stats/ads'
+            ];
 
-      const masterOnBeforeRequest = (details, callback) => {
-          if (!details.url) { callback({}); return; }
-          const url = details.url.toLowerCase();
-          const initiator = details.initiator ? details.initiator.toLowerCase() : '';
+            const isNeuralAd = adPatterns.some(p => {
+                if (p.includes('.*')) return new RegExp(p).test(url);
+                return url.includes(p);
+            });
+            
+            if (isNeuralAd) {
+                if (wcId) updateTabShieldStats(wcId, 'ads');
+                callback({ cancel: true });
+                return;
+            }
 
-          // 1. YouTube & Ocal Neutral Zone: Fully bypass all blocker logic.
-          const isYouTube = url.includes('youtube.com') || url.includes('googlevideo.com') || url.includes('ytimg.com');
-          const isFromYouTube = initiator.includes('youtube.com') || initiator.includes('googlevideo.com');
-          const isInternal = url.includes('ocal://');
+            // 2. VPN v4: National Country Redirect (NCR) Force
+            // Ensures search results are not restricted by local ISP/region if VPN is enabled.
+            if (userSettings.vpnEnabled && url.includes('google.') && (url.includes('.co.in') || url.includes('.de') || url.includes('.co.uk'))) {
+                let globalUrl;
+                if (url.includes('/search') || url.length < (url.indexOf('google.') + 15)) {
+                    globalUrl = url.replace(/google\.[a-z\.]+/i, 'google.com/ncr');
+                } else {
+                    globalUrl = url.replace(/google\.[a-z\.]+/i, 'google.com');
+                }
+                if (globalUrl !== details.url) {
+                    console.log(`[VPN v4] Forcing NCR/Global: ${url} -> ${globalUrl}`);
+                    callback({ redirectURL: globalUrl });
+                    return;
+                }
+            }
+            callback({});
+        };
 
-          if (isYouTube || isFromYouTube || isInternal) {
-              callback({});
-              return;
-          }
+        const masterOnErrorOccurred = (details) => {
+            // Passive Tracking: If a request failed/was blocked by an extension, track it.
+            if (details.error === 'net::ERR_BLOCKED_BY_CLIENT' || details.error === 'net::ERR_ABORTED') {
+                const url = details.url.toLowerCase();
+                const wcId = details.webContentsId;
+                if (!wcId) return;
 
-          // VPN v4: National Country Redirect (NCR) Force
-          // If VPN is on and we are hitting a local google domain, force the US/Global version.
-          if (userSettings.vpnEnabled && url.includes('google.') && (url.includes('.co.in') || url.includes('.de') || url.includes('.co.uk'))) {
-              // Only apply /ncr (No Country Redirect) to the root or search page to set the global preference cookie
-              let globalUrl;
-              if (url.includes('/search') || url.length < (url.indexOf('google.') + 15)) {
-                  globalUrl = url.replace(/google\.[a-z\.]+/i, 'google.com/ncr');
-              } else {
-                  // For sub-resources (like /pagead or /client_204), just swap the host to avoid invalid paths
-                  globalUrl = url.replace(/google\.[a-z\.]+/i, 'google.com');
-              }
-              
-              if (globalUrl !== details.url) {
-                  console.log(`[VPN v4] Forcing NCR/Global: ${url} -> ${globalUrl}`);
-                  callback({ redirectURL: globalUrl });
-                  return;
-              }
-          }
+                // Simple heuristic for ad vs tracker
+                const isTracker = url.includes('pixel') || url.includes('tracker') || url.includes('telemetry') || url.includes('analytics');
+                updateTabShieldStats(wcId, isTracker ? 'trackers' : 'ads');
+            }
+        };
 
-          // 2. Settings Check: Respect Ad Block / Strict Privacy toggles.
-          const anyActive = (userSettings.adBlockEnabled !== false) || (userSettings.trackingProtection !== false);
-          if (!anyActive) {
-              callback({});
-              return;
-          }
+        const masterOnBeforeSendHeaders = (details, callback) => {
+            const headers = details.requestHeaders || {};
+            if (!userSettings.vpnEnabled) {
+                callback({ requestHeaders: headers });
+                return;
+            }
 
-          // 3. Delegation: Only call blocker for protected domains.
-          try {
-              adBlockerInstance.onBeforeRequest(details, (res) => {
-                  if (res && res.cancel) {
-                      // Detect type (if possible, but usually ads/trackers)
-                      const type = details.resourceType === 'image' || details.resourceType === 'media' ? 'ads' : 'trackers';
-                      const wcId = details.webContentsId || (details.webContents && details.webContents.id);
-                      updateTabShieldStats(wcId, type);
-                  }
-                  callback(res);
-              });
-          } catch (err) {
-              console.error('[Shield] request interceptor error', err);
-              callback({});
-          }
-      };
+            const url = details.url.toLowerCase();
+            const isVideo = url.includes('googlevideo.com');
 
-      const masterOnBeforeSendHeaders = (details, callback) => {
-          if (!userSettings.vpnEnabled) {
-              callback({ requestHeaders: details.requestHeaders });
-              return;
-          }
+            // Force Regional Masking Headers
+            headers['Accept-Language'] = 'en-US,en;q=0.9';
+            if (!isVideo) {
+                headers['X-Forwarded-For'] = currentVpnRegion === 'us' ? '161.35.63.136' : '178.62.115.158';
+            }
+            callback({ requestHeaders: headers });
+        };
 
-          // Force Regional Masking Headers
-          details.requestHeaders['Accept-Language'] = 'en-US,en;q=0.9';
-          details.requestHeaders['X-Forwarded-For'] = currentVpnRegion === 'us' ? '161.35.63.136' : '178.62.115.158';
-          
-          callback({ requestHeaders: details.requestHeaders });
-      };
+        const masterOnHeadersReceived = (details, callback) => {
+            const headers = details.responseHeaders || {};
+            // Inject Secure Content-Security-Policy to resolve Electron warnings 
+            // and protect against XSS, while allowing uBlock and internal resources.
+            if (!headers['content-security-policy'] && !headers['Content-Security-Policy']) {
+                headers['Content-Security-Policy'] = [
+                    "default-src 'self' 'unsafe-inline' 'unsafe-eval' data: blob: ocal: *; " + 
+                    "script-src 'self' 'unsafe-inline' 'unsafe-eval' data: blob: https:; " +
+                    "style-src 'self' 'unsafe-inline' https:; " +
+                    "img-src 'self' data: blob: https: *; " + 
+                    "font-src 'self' data: https:; " +
+                    "connect-src 'self' https: wss: *; " +
+                    "media-src 'self' data: blob: https: *; " +
+                    "worker-src 'self' blob:;"
+                ];
+            }
+            callback({ responseHeaders: headers });
+        };
 
-      const masterOnHeadersReceived = (details, callback) => {
-          const url = details.url.toLowerCase();
-          const initiator = details.initiator ? details.initiator.toLowerCase() : '';
+        [ses, sesGoogle].forEach(s => {
+            s.webRequest.onBeforeRequest({ urls: ['*://*/*'] }, masterOnBeforeRequest);
+            s.webRequest.onErrorOccurred({ urls: ['*://*/*'] }, masterOnErrorOccurred);
+            s.webRequest.onBeforeSendHeaders({ urls: ['*://*/*'] }, masterOnBeforeSendHeaders);
+            s.webRequest.onHeadersReceived({ urls: ['*://*/*'] }, masterOnHeadersReceived);
+        });
 
-          // Same bypass logic for headers (TrustedScript fix)
-          const isYouTube = url.includes('youtube.com') || url.includes('googlevideo.com');
-          const isFromYouTube = initiator.includes('youtube.com') || initiator.includes('googlevideo.com');
-          const isInternal = url.includes('ocal://');
-
-          if (isYouTube || isFromYouTube || isInternal) {
-              callback({});
-              return;
-          }
-
-          try {
-              adBlockerInstance.onHeadersReceived(details, callback);
-          } catch (err) {
-              console.error('[Shield] headers interceptor error', err);
-              callback({});
-          }
-      };
-
-      // Manually register handlers ONLY ONCE with Ocal's master wrappers.
-      // We do NOT call adBlockerInstance.enableBlockingInSession() as that would register "ghost" listeners.
-      ses.webRequest.onBeforeRequest({ urls: ['*://*/*'] }, masterOnBeforeRequest);
-      ses.webRequest.onHeadersReceived({ urls: ['*://*/*'] }, masterOnHeadersReceived);
-      ses.webRequest.onBeforeSendHeaders({ urls: ['*://*/*'] }, masterOnBeforeSendHeaders);
-      
-      sesGoogle.webRequest.onBeforeRequest({ urls: ['*://*/*'] }, masterOnBeforeRequest);
-      sesGoogle.webRequest.onHeadersReceived({ urls: ['*://*/*'] }, masterOnHeadersReceived);
-      sesGoogle.webRequest.onBeforeSendHeaders({ urls: ['*://*/*'] }, masterOnBeforeSendHeaders);
-
-      // Force library to think it's enabled to prevent recursive registrations if we call it again.
-      adBlockerInstance.isBlockingEnabled = () => true;
-
-      console.log('Ocal Shield: Manual Opera-Style Lifecycle Active');
-  }).catch(err => console.error('[Shield] failed to stabilize blocker', err));
+        console.log('Ocal Shield: Active (Stats Tracking & Fast-Fail Enabled)');
+    }, 500);
 }
 
 function setupSessionHandlers() {
@@ -669,13 +675,14 @@ function setupSecurityHeadersFix() {
         const isVideo = url.includes('googlevideo.com');
         
         if (isYouTube && !isVideo) {
-            // Force Standard Chrome Sec-Fetch headers to avoid Anti-Bot detection
-            requestHeaders['User-Agent'] = OCAL_USER_AGENT;
-            requestHeaders['Sec-Ch-Ua'] = '"Chromium";v="134", "Not:A-Brand";v="99"';
-            requestHeaders['Sec-Ch-Ua-Mobile'] = '?0';
-            requestHeaders['Sec-Ch-Ua-Platform'] = '"Windows"';
+            // ONLY modify if absolutely necessary, don't overwrite if uBlock already handled it
+            if (!requestHeaders['Sec-Ch-Ua']) {
+                requestHeaders['Sec-Ch-Ua'] = '"Chromium";v="134", "Not:A-Brand";v="99"';
+                requestHeaders['Sec-Ch-Ua-Mobile'] = '?0';
+                requestHeaders['Sec-Ch-Ua-Platform'] = '"Windows"';
+            }
             
-            // If it's a media request, ensure it doesn't have suspicious 'X-Requested-With'
+            // Clean suspicious headers that trigger YouTube ad-block detection
             delete requestHeaders['X-Requested-With'];
             delete requestHeaders['X-Electron-Id'];
         }
@@ -794,6 +801,7 @@ function createMainWindow() {
     if (!aiSidebarView) createAiSidebar();
     if (!suggestionsView) createSuggestionsView();
     if (!tabgroupView) createTabgroupView();
+    if (!mediaMasterView) createMediaMasterView();
     if (!bmDropdownView) createBMDropdownView();
     // Always open a tab on startup
     if (views.length === 0) {
@@ -816,11 +824,15 @@ function createMainWindow() {
 
   mainWindow.on('close', (e) => {
     if (!isQuitting) {
-      e.preventDefault();
-      showSidebarOverlay();
-      if (sidebarOverlayView) {
-        mainWindow.setTopBrowserView(sidebarOverlayView);
-        sidebarOverlayView.webContents.send('show-exit-modal');
+      if (userSettings.confirmExit !== false) {
+        e.preventDefault();
+        showSidebarOverlay();
+        if (sidebarOverlayView) {
+          mainWindow.setTopBrowserView(sidebarOverlayView);
+          sidebarOverlayView.webContents.send('show-exit-modal');
+        }
+      } else {
+        isQuitting = true;
       }
     }
   });
@@ -1333,11 +1345,35 @@ function normalizeDocumentUrl(url) {
 }
 
 function createNewTab(url = null) {
+  const id = Date.now().toString() + Math.random().toString(36).substring(2, 9);
   const view = new BrowserView({
     webPreferences: { preload: path.join(__dirname, 'preload.js'), contextIsolation: true, nodeIntegration: false, sandbox: false },
   });
 
+  // Clear media on navigation
+  view.webContents.on('did-start-navigation', (e, url, isInPlace) => {
+    if (!isInPlace) {
+      tabMedia[id] = [];
+      if (mainWindow && !mainWindow.isDestroyed()) {
+        mainWindow.webContents.send('media-master-updated', { tabId: id, mediaList: [] });
+      }
+    }
+  });
+
   view.webContents.setUserAgent(OCAL_USER_AGENT);
+
+  // Inject Robust YouTube AdShield fallback
+  view.webContents.on('did-finish-load', () => {
+    const url = view.webContents.getURL();
+    if (url.includes('youtube.com') && userSettings.adBlockEnabled !== false) {
+        const adShieldPath = path.join(__dirname, 'youtube-ad-remover.js');
+        if (fs.existsSync(adShieldPath)) {
+            const script = fs.readFileSync(adShieldPath, 'utf8');
+            view.webContents.executeJavaScript(script).catch(() => {});
+            console.log(`[YouTube Enhancer] DOM Injected into ${url} (Ad-Shield + Dislike Recovery)`);
+        }
+    }
+  });
 
   // Intercept PDF view navigation and internal ocal:// links
   setupInteractionDismissal(view.webContents);
@@ -1381,8 +1417,15 @@ function createNewTab(url = null) {
     return { action: 'allow' };
   });
 
-  const id = Date.now().toString();
   views.push({ id, view });
+
+  // Clear media on navigation
+  view.webContents.on('did-start-navigation', (e, url, isInPlace) => {
+    if (!isInPlace) {
+      tabMedia[id] = [];
+      mainWindow.webContents.send('media-master-updated', { tabId: id, mediaList: [] });
+    }
+  });
 
   // Initial Load Resolution
   let finalUrl = url;
@@ -1463,6 +1506,13 @@ function createNewTab(url = null) {
     updateHistory(view, url);
     const tabEntry = views.find(v => v.id === id);
     if (tabEntry) tabEntry.url = url;
+    
+    // Reset page-specific shield stats on navigation
+    if (tabShieldStats.has(view.webContents.id)) {
+        tabShieldStats.delete(view.webContents.id);
+        broadcastShieldStats(view.webContents.id);
+    }
+    
     broadcastTabs();
     updateViewBounds(url);
   });
@@ -1608,8 +1658,8 @@ function updateViewBounds(forcedUrl = null) {
   const { width, height } = mainWindow.getContentBounds();
   const isFullscreen = !!htmlFullscreenViewId;
 
-  const hTabs = isFullscreen ? 0 : (userSettings.compactMode ? 34 : 42);
-  const hNav  = isFullscreen ? 0 : (userSettings.compactMode ? 38 : 46);
+  const hTabs = isFullscreen ? 0 : (userSettings.compactMode ? 36 : 44);
+  const hNav  = isFullscreen ? 0 : (userSettings.compactMode ? 40 : 50);
   
   // Bookmark Bar Logic
   let isBmVisible = bookmarkBarVisible;
@@ -1702,17 +1752,8 @@ function showWebApp(url) {
     updateViewBounds();
 }
 
-// ── Persistence & Global Logic ──────────────────────────────────────────
+// Persistence & Global Logic ──────────────────────────────────────────
 
-ipcMain.on('update-setting', (e, key, val) => {
-    userSettings[key] = val;
-    saveSettings(userSettings);
-    
-    // Broadcast change to all open webContents (for UI sync)
-    webContents.getAllWebContents().forEach(wc => {
-        try { wc.send('settings-changed', userSettings); } catch(err) {}
-    });
-});
 
 // IPC Handlers
 ipcMain.on('new-tab', () => createNewTab());
@@ -1728,6 +1769,7 @@ ipcMain.on('close-tab', async (e, id) => {
         const [removed] = views.splice(index, 1);
         mainWindow.removeBrowserView(removed.view);
         removed.view.webContents.destroy();
+        delete tabMedia[id]; // Cleanup media storage
         if (activeViewId === id) {
             activeViewId = views.length > 0 ? views[Math.max(0, index - 1)].id : null;
             if (activeViewId) setActiveTab(activeViewId); else updateViewBounds();
@@ -1838,6 +1880,9 @@ ipcMain.handle('set-as-default-browser', () => {
 
 // ── Ocal AI Agent Command Center 2.0 ──────────────────────────────────────
 
+// Global AI Context for Multi-Turn Agentic Capabilities
+let aiSessionContext = { mode: null, data: {} };
+
 ipcMain.handle('ai-agent-execute', async (event, query) => {
     if (!query || !query.trim()) return { text: "Hello! I'm your Ocal AI. How can I assist you today?", actions: [] };
 
@@ -1858,6 +1903,78 @@ ipcMain.handle('ai-agent-execute', async (event, query) => {
     };
 
     try {
+        // Phase 1: Email Agent (Personal Productivity & Context Aware)
+        const qLower = q.trim();
+        if (qLower === 'cancel' || qLower === 'reset' || qLower === 'stop') {
+            aiSessionContext = { mode: null, data: {} };
+            return { text: "I've cleared the current email task. What else can I help you with?", actions: [] };
+        }
+
+        const isEmailIntent = q.includes('email') || q.includes('mail') || (q.includes('gmail') && !q.includes('open'));
+        
+        if (isEmailIntent || aiSessionContext.mode === 'email') {
+            // Initializing context if new
+            if (aiSessionContext.mode !== 'email') {
+                aiSessionContext.mode = 'email';
+                aiSessionContext.data = { to: '', subject: '', body: '' };
+            }
+
+            notifyAction("Processing Email Intel...", 'fa-envelope-open-text');
+
+            // 1. Data Collection & Extraction
+            const emailMatch = query.match(/([a-zA-Z0-9._-]+@[a-zA-Z0-9._-]+\.[a-zA-Z0-9_-]+)/i);
+            if (emailMatch) aiSessionContext.data.to = emailMatch[0];
+
+            const aboutMatch = query.match(/about\s+(.*?)(?:\s+saying|\s+telling|\s+asking|$)/i);
+            if (aboutMatch) aiSessionContext.data.subject = aboutMatch[1].trim();
+            
+            const contentMatch = query.match(/(?:saying|telling|asking|message)\s+(.*)/i);
+            if (contentMatch) aiSessionContext.data.body = contentMatch[1].trim();
+
+            // 2. Intelligent Context Inference (Filling missing gaps)
+            if (!emailMatch && !isEmailIntent && aiSessionContext.data.to && !aiSessionContext.data.body) {
+                aiSessionContext.data.body = query.trim();
+            }
+
+            // 3. Smart Subject Detection (If still missing)
+            if (aiSessionContext.data.body && !aiSessionContext.data.subject) {
+                const b = aiSessionContext.data.body.toLowerCase();
+                if (b.includes('fire') || b.includes('performance')) aiSessionContext.data.subject = "Urgent: Performance Review Update";
+                else if (b.includes('meeting') || b.includes('call')) aiSessionContext.data.subject = "Meeting Inquiry";
+                else if (b.includes('bug') || b.includes('error')) aiSessionContext.data.subject = "Bug Report / Feedback";
+                else aiSessionContext.data.subject = "Personal Message from Ocal Browser";
+            }
+
+            // 4. Content Professionalization (Ghostwriting)
+            if (aiSessionContext.data.to && aiSessionContext.data.body && !aiSessionContext.data._isProfessionalized) {
+                notifyAction("Synthesizing professional draft...", 'fa-wand-magic-sparkles');
+                const stylized = await professionalizeEmail(aiSessionContext.data.body, aiSessionContext.data.subject, apiKey);
+                aiSessionContext.data.body = stylized;
+                aiSessionContext.data._isProfessionalized = true; // Mark as processed to avoid loops
+            }
+
+            // 5. Action: Automatically Open Gmail if enough high-fidelity data exists
+            if (aiSessionContext.data.to && aiSessionContext.data.body && aiSessionContext.data._isProfessionalized) {
+                const gmailUrl = `https://mail.google.com/mail/?view=cm&fs=1&to=${encodeURIComponent(aiSessionContext.data.to)}&su=${encodeURIComponent(aiSessionContext.data.subject)}&body=${encodeURIComponent(aiSessionContext.data.body)}`;
+                
+                notifyAction("Draft Expanded & Ready! Opening Gmail...", 'fa-paper-plane');
+                createNewTab(gmailUrl);
+                
+                const responseText = `### 🌟 Professional Draft Prepared!\n\nI've **automatically opened** your rewritten message to **${aiSessionContext.data.to}** in a new Gmail tab.\n\n- **Expanded Subject:** *${aiSessionContext.data.subject}*\n- **Status:** Polished and stylish. Ready for your final review.\n\nOcal Email Sequence complete.`;
+                
+                aiSessionContext = { mode: null, data: {} };
+                return { text: responseText, actions: [{ text: "Re-open Stylish Draft", icon: "fa-envelope-open", url: gmailUrl }] };
+            }
+
+            // 5. Guided Prompting (Phase Transitions)
+            if (!aiSessionContext.data.to) {
+                return { text: "I can help you draft a professional email. **Who** is the recipient? (Please provide an email address)", actions: [] };
+            }
+            if (!aiSessionContext.data.body) {
+                return { text: `Drafting to **${aiSessionContext.data.to}**. **What would you like the message to say?**`, actions: [] };
+            }
+        }
+
         // Phase 0: Local Agentic Heuristics (Always runs, cloud or local)
         if (q.includes('close') && (q.includes('tab') || q.includes('this'))) {
             notifyAction("Identifying active tab...", 'fa-trash-can');
@@ -1979,6 +2096,29 @@ ipcMain.handle('ai-agent-execute', async (event, query) => {
     }
 });
 
+async function professionalizeEmail(notes, subject, apiKey) {
+    const prompt = `You are a professional assistant at Ocal. Convert these notes into a polished, stylish, and professional email: "${notes}".
+    The subject is: "${subject}". 
+    Format: Professional letter. Include greeting, body, and closing. 
+    Respond ONLY with the email body text. No preamble or explanations.`;
+    
+    // Attempt Gemini first
+    try {
+        if (apiKey) {
+            const expanded = await tryGemini(prompt, apiKey, 'formal');
+            if (expanded && expanded.length > 20) {
+                return expanded;
+            }
+        }
+    } catch (e) {
+        console.warn('[Professionalize] AI expansion failed, using fallback.');
+    }
+
+    // Fallback: Professional Template Engine
+    let template = `Dear Valued Colleague,\n\nI am writing to formally communicate regarding: ${subject}.\n\nSpecifically, ${notes}.\n\nPlease let me know if you have any questions or require further clarification on this matter.\n\nBest regards,\nOcal Browser Assistant`;
+    return template;
+}
+
 /**
  * Helper: Refined Gemini fetch logic with model fallback loop.
  */
@@ -2078,13 +2218,15 @@ ipcMain.on('apply-proxy', (e, { enabled, region }) => {
     }
 });
 
-ipcMain.handle('get-shield-stats', (e, wcId) => {
-    const viewItem = wcId ? views.find(v => v.id === wcId) : null;
+ipcMain.handle('get-shield-stats', (e, tabId) => {
+    const viewItem = tabId ? views.find(v => v.id === tabId) : null;
     const wc = viewItem ? viewItem.view.webContents : null;
-    const isYouTube = wc ? wc.getURL().includes('youtube.com') : false;
+    if (!wc) return { global: userSettings.shieldStats?.global || {}, page: null, sessionStartTime };
+    
+    const isYouTube = wc.getURL().includes('youtube.com');
     return {
-        global: userSettings.shieldStats,
-        page: wcId ? tabShieldStats.get(wcId) : null,
+        global: userSettings.shieldStats.global,
+        page: tabShieldStats.get(wc.id) || { ads: 0, trackers: 0 },
         sessionStartTime,
         isYouTube
     };
@@ -2100,8 +2242,37 @@ ipcMain.on('pip-control', (e, { action, value }) => {
         case 'seek':
             pipSourceContents.executeJavaScript(`const v = document.querySelector("video"); if (v) v.currentTime = ${value};`);
             break;
+        case 'skip':
+            pipSourceContents.executeJavaScript(`const v = document.querySelector("video"); if (v) v.currentTime += ${value};`);
+            break;
+        case 'toggle-mute':
+            pipSourceContents.executeJavaScript('const v = document.querySelector("video"); if (v) v.muted = !v.muted;');
+            break;
+        case 'toggle-pip-pin':
+            if (pipWindow) {
+                const isTop = pipWindow.isAlwaysOnTop();
+                pipWindow.setAlwaysOnTop(!isTop);
+            }
+            break;
+        case 'next-video':
+            // Targets the YouTube "Next" button or general browser navigation as fallback
+            pipSourceContents.executeJavaScript(`
+                const nextBtn = document.querySelector('.ytp-next-button') || document.querySelector('a.ytp-next-button');
+                if (nextBtn) nextBtn.click();
+            `);
+            break;
+        case 'toggle-captions':
+            // Targets the YouTube "Subtitles" button
+            pipSourceContents.executeJavaScript(`
+                const subBtn = document.querySelector('.ytp-subtitles-button');
+                if (subBtn) subBtn.click();
+            `);
+            break;
+        case 'toggle-loop':
+            pipSourceContents.executeJavaScript('const v = document.querySelector("video"); if (v) v.loop = !v.loop;');
+            break;
         case 'volume':
-            pipSourceContents.executeJavaScript(`const v = document.querySelector("video"); if (v) v.volume = ${value};`);
+            pipSourceContents.executeJavaScript(`const v = document.querySelector("video"); if (v) { v.volume = ${value}; if (v.volume > 0) v.muted = false; }`);
             break;
         case 'speed':
             pipSourceContents.executeJavaScript(`const v = document.querySelector("video"); if (v) v.playbackRate = ${value};`);
@@ -2167,6 +2338,72 @@ ipcMain.on('hide-tab-group-popup', () => {
         mainWindow.removeBrowserView(tabgroupView);
     }
     activePopupGroupId = null;
+});
+
+function createMediaMasterView() {
+    mediaMasterView = new BrowserView({
+        webPreferences: {
+            preload: path.join(__dirname, 'preload.js'),
+            nodeIntegration: false,
+            contextIsolation: true
+        }
+    });
+    mediaMasterView.webContents.loadFile('media-popup.html');
+}
+
+ipcMain.on('show-media-popup', (e, { x, y, width, tabId }) => {
+    if (!mediaMasterView || !mainWindow) return;
+
+    if (!mainWindow.getBrowserViews().includes(mediaMasterView)) {
+        mainWindow.addBrowserView(mediaMasterView);
+    }
+
+    const { width: winWidth, height: winHeight } = mainWindow.getContentBounds();
+    mediaMasterView.setBounds({ x: 0, y: 0, width: winWidth, height: winHeight });
+    mainWindow.setTopBrowserView(mediaMasterView);
+
+    mediaMasterView.webContents.send('popup-data', { x, y, width, tabId });
+});
+
+// ── Media Master Asset Management ──
+const tabMedia = {}; // { tabId: [mediaAssets] }
+
+ipcMain.on('media-detected', (event, mediaList) => {
+    const webContents = event.sender;
+    const tab = views.find(v => v.view.webContents === webContents);
+    if (!tab) return;
+
+    // Merge or replace media for this tab
+    if (!tabMedia[tab.id]) tabMedia[tab.id] = [];
+    
+    // Simple deduplication by URL
+    const existingUrls = new Set(tabMedia[tab.id].map(m => m.url));
+    const newItems = mediaList.filter(m => !existingUrls.has(m.url));
+    
+    if (newItems.length > 0) {
+        tabMedia[tab.id] = [...tabMedia[tab.id], ...newItems];
+        // Broadcast to renderer for toolbar icon update
+        mainWindow.webContents.send('media-master-updated', { 
+            tabId: tab.id, 
+            mediaList: tabMedia[tab.id] 
+        });
+    }
+});
+
+ipcMain.handle('get-tab-media', (e, tabId) => {
+    return tabMedia[tabId] || [];
+});
+
+ipcMain.on('download-media', (e, { url }) => {
+    // We send the download request to the main window's webContents or the sender's webContents
+    // Electron's downloadURL works on a session or webContents.
+    e.sender.downloadURL(url);
+});
+
+ipcMain.on('hide-media-popup', () => {
+    if (mediaMasterView && mainWindow.getBrowserViews().includes(mediaMasterView)) {
+        mainWindow.removeBrowserView(mediaMasterView);
+    }
 });
 
 ipcMain.on('request-tab-group-data', (e) => {
@@ -2860,25 +3097,8 @@ ipcMain.on('toggle-adblock', (e, enabled) => {
     userSettings.adBlockEnabled = enabled;
     saveSettings(userSettings);
 
-    if (enabled) {
-        if (adBlockerInstance) {
-            adBlockerInstance.enableBlockingInSession(session.defaultSession);
-        } else {
-            ElectronBlocker.fromPrebuiltAdsAndTracking(fetch).then((blockerInstance) => {
-                adBlockerInstance = blockerInstance;
-                adBlockerInstance.enableBlockingInSession(session.defaultSession);
-            });
-        }
-    } else {
-        if (adBlockerInstance) {
-            try {
-                adBlockerInstance.disableBlockingInSession(session.defaultSession);
-            } catch {
-                // fallback to minimal session refresh if API not available
-                session.defaultSession.clearCache();
-            }
-        }
-    }
+    // uBlock native loading handles session injection via ExtensionManager dynamically
+    // The legacy ad blocker was removed.
 
     broadcastSettings();
 });
@@ -2972,9 +3192,12 @@ function setupGoogleLoginPartition() {
     googleSession.setUserAgent(googleUA);
 }
 
-app.whenReady().then(() => {
-    // Register ocal:// protocol
-    if (protocol.handle) { // Modern Electron
+app.whenReady().then(async () => {
+    // 1. Core Extension Loading (Highest Priority)
+    await extensionManager.loadAll();
+
+    // 2. Register ocal:// protocol
+    if (protocol.handle) {
         protocol.handle('ocal', (request) => {
             const url = request.url;
             const resolved = resolveInternalURL(url);
@@ -2986,7 +3209,6 @@ app.whenReady().then(() => {
     }
 
     setupGoogleLoginPartition();
-    extensionManager.loadAll();
     
     // Apply initial proxy settings via shared implementation
     if (userSettings.vpnEnabled) {
@@ -3311,14 +3533,20 @@ class ExtensionManager {
     async loadAll() {
         if (!userSettings.extensions) userSettings.extensions = [];
         const activeExtensions = userSettings.extensions.filter(e => e.enabled);
+        const targetSessions = [
+            session.defaultSession,
+            session.fromPartition('persist:google_login')
+        ];
         
         for (const ext of activeExtensions) {
             try {
                 const extPath = ext.isLocal ? ext.localPath : path.join(this.extensionsPath, ext.id);
                 if (fs.existsSync(extPath)) {
-                    const loaded = await session.defaultSession.loadExtension(extPath);
-                    this.loaded.set(ext.id, loaded);
-                    console.log(`Loaded extension: ${ext.name} (${ext.id})`);
+                    for (const ses of targetSessions) {
+                        const loaded = await ses.loadExtension(extPath);
+                        this.loaded.set(ext.id + '_' + ses.getStoragePath(), loaded);
+                    }
+                    console.log(`Loaded extension: ${ext.name} (${ext.id}) into all sessions.`);
                 }
             } catch (err) {
                 console.error(`Failed to load extension ${ext.id}:`, err);
@@ -3329,10 +3557,47 @@ class ExtensionManager {
             try {
                 const focusPath = path.join(__dirname, 'ocal-focus-extension');
                 if (fs.existsSync(focusPath)) {
-                    await session.defaultSession.loadExtension(focusPath);
-                    console.log('Loaded native module: Ocal Focus');
+                    for (const ses of targetSessions) {
+                        await ses.loadExtension(focusPath);
+                    }
+                    console.log('Loaded native module: Ocal Focus (Global)');
                 }
             } catch (err) { console.error('Failed to load Ocal Focus:', err); }
+        }
+
+        if (userSettings.adBlockEnabled !== false) {
+            try {
+                const ublockPath = path.join(__dirname, 'ublock-origin-extension', 'uBlock0.chromium');
+                if (fs.existsSync(ublockPath)) {
+                    for (const ses of targetSessions) {
+                        await ses.loadExtension(ublockPath);
+                    }
+                    console.log('Loaded native module: uBlock Origin (Global)');
+                }
+            } catch (err) { console.error('Failed to load uBlock Origin:', err); }
+        }
+        if (userSettings.youtubeDislikeEnabled !== false) {
+            try {
+                const dislikePath = path.join(__dirname, 'return-youtube-dislike-extension');
+                if (fs.existsSync(dislikePath)) {
+                    for (const ses of targetSessions) {
+                        await ses.loadExtension(dislikePath);
+                    }
+                    console.log('Loaded native module: Return YouTube Dislike (Global)');
+                }
+            } catch (err) { console.error('Failed to load Return YouTube Dislike:', err); }
+        }
+
+        if (userSettings.mediaMasterEnabled !== false) {
+            try {
+                const mediaPath = path.join(__dirname, 'ocal-media-master-extension');
+                if (fs.existsSync(mediaPath)) {
+                    for (const ses of targetSessions) {
+                        await ses.loadExtension(mediaPath);
+                    }
+                    console.log('Loaded native module: Ocal Media Master (Global)');
+                }
+            } catch (err) { console.error('Failed to load Ocal Media Master:', err); }
         }
     }
 
@@ -3486,7 +3751,9 @@ ipcMain.handle('get-all-extensions', () => {
     const native = [
         { id: 'ai-assistant', name: 'Ocal AI Assistant', desc: 'AI-powered productivity and browsing assistant.', enabled: userSettings.aiAssistantEnabled, type: 'native', icon: 'fa-wand-magic-sparkles' },
         { id: 'cyber-stealth', name: 'Cyber Stealth', desc: 'Fingerprint protection and cross-request anonymity.', enabled: userSettings.cyberStealthEnabled, type: 'native', icon: 'fa-user-secret' },
-        { id: 'ad-blocker', name: 'Ad & Tracker Block', desc: 'Removes intrusive ads and behavioral trackers.', enabled: userSettings.adBlockEnabled, type: 'native', icon: 'fa-shield-halved' },
+        { id: 'ad-blocker', name: 'uBlock Origin', desc: 'An efficient ad blocker. Easy on CPU and memory.', enabled: userSettings.adBlockEnabled, type: 'native', icon: 'fa-shield-halved' },
+        { id: 'dislike-recovery', name: 'Return YouTube Dislike', desc: 'Standalone extension to restore dislike counts on YouTube.', enabled: userSettings.youtubeDislikeEnabled, type: 'native', icon: 'fa-thumbs-down' },
+        { id: 'media-master', name: 'Ocal Media Master', desc: 'Professional video and image downloader for all sites.', enabled: userSettings.mediaMasterEnabled, type: 'native', icon: 'fa-download' },
         { id: 'asset-vault', name: 'Asset Vault', desc: 'High-performance local resource caching.', enabled: userSettings.assetVaultEnabled, type: 'native', icon: 'fa-vault' }
     ];
     const marketplace = (userSettings.extensions || []).map(e => ({ ...e, type: 'marketplace' }));
@@ -3497,6 +3764,8 @@ ipcMain.handle('toggle-native-extension', (e, { id, enabled }) => {
     if (id === 'ai-assistant') userSettings.aiAssistantEnabled = enabled;
     else if (id === 'cyber-stealth') userSettings.cyberStealthEnabled = enabled;
     else if (id === 'ad-blocker') userSettings.adBlockEnabled = enabled;
+    else if (id === 'dislike-recovery') userSettings.youtubeDislikeEnabled = enabled;
+    else if (id === 'media-master') userSettings.mediaMasterEnabled = enabled;
     else if (id === 'asset-vault') userSettings.assetVaultEnabled = enabled;
     
     saveSettings(userSettings);
@@ -3604,7 +3873,7 @@ ipcMain.on('trigger-pip', (e) => {
 ipcMain.on('trigger-smart-pip', (e) => {
     if (e.sender.isDestroyed()) return;
     const activeView = views.find(v => v.id === activeViewId)?.view;
-    if (activeView && !activeView.isDestroyed()) {
+    if (activeView && !activeView.webContents.isDestroyed()) {
         activeView.webContents.send('request-smart-pip');
         return;
     }
@@ -3623,11 +3892,26 @@ ipcMain.on('video-detected', (e, isPlaying) => {
 ipcMain.on('set-security-toggle', (e, { key, value }) => {
     userSettings[key] = value;
     // Special Sync: Tracking Protection in Security <-> Ad Shield in Extensions
-    if (key === 'adBlockEnabled') {
-        const toggleVal = value !== false;
-        // Broadcast specifically for extensions UI refresh
+    // Sync both sessions for AdBlock toggle
+    if (key === 'adBlockEnabled' || key === 'trackingProtection') {
+        const ublockEnabled = userSettings.adBlockEnabled !== false;
+        const ublockPath = path.join(__dirname, 'ublock-origin-extension', 'uBlock0.chromium');
+        
+        const sessions = [session.defaultSession, session.fromPartition('persist:google_login')];
+        sessions.forEach(ses => {
+            if (ublockEnabled && fs.existsSync(ublockPath)) {
+                ses.loadExtension(ublockPath).catch(err => console.error(`Failed to reload uBlock in session ${ses.getStoragePath()}:`, err));
+            }
+        });
     }
-    
+
+    if (key === 'youtubeDislikeEnabled') {
+        const dislikePath = path.join(__dirname, 'return-youtube-dislike-extension');
+        if (value && fs.existsSync(dislikePath)) {
+            session.defaultSession.loadExtension(dislikePath).catch(err => console.error('Failed to load Dislike Extension:', err));
+        }
+    }
+
     if (key === 'ocalFocusEnabled') {
         const focusPath = path.join(__dirname, 'ocal-focus-extension');
         if (value && fs.existsSync(focusPath)) {

@@ -1,33 +1,62 @@
 const { ipcRenderer } = require('electron');
 
-// We use the exposed electronAPI if available, but since this is a separate window, 
-// we might need to use ipcRenderer directly if contextIsolation is on and it's not preloaded.
-// Actually, I'll assume we use the same preload.js or similar.
-
-const playPauseBtn = document.getElementById('play-pause-btn');
-const progressContainer = document.getElementById('progress-container');
-const progressBar = document.getElementById('progress-bar');
-const bufferBar = document.getElementById('buffer-bar');
-const timeDisplay = document.getElementById('time-display');
-const volumeSlider = document.getElementById('volume-slider');
-const closeBtn = document.getElementById('close-btn');
-const returnBtn = document.getElementById('return-btn');
-const speedBtn = document.getElementById('speed-btn');
-const videoTitle = document.getElementById('video-title');
-const windowTitle = document.getElementById('window-title');
-const minimizeBtn = document.getElementById('minimize-btn');
+const container = document.getElementById('pip-container');
+const overlay = document.getElementById('controls-overlay');
 const pipCanvas = document.getElementById('pip-canvas');
 const ctx = pipCanvas.getContext('2d', { alpha: false });
 const loader = document.getElementById('pip-loader');
 const thumbnail = document.getElementById('pip-thumbnail');
 
+const playPauseBtn = document.getElementById('play-pause-btn');
+const playIcon = document.getElementById('play-icon');
+const skipBackBtn = document.getElementById('skip-back-btn');
+const nextBtn = document.getElementById('next-btn');
+const volumeBtn = document.getElementById('volume-icon-btn');
+const volumeIcon = document.getElementById('volume-icon');
+const pinBtn = document.getElementById('pin-btn');
+const captionsBtn = document.getElementById('captions-btn');
+const returnBtn = document.getElementById('return-btn');
+const closeBtn = document.getElementById('close-btn');
+
+const progressBar = document.getElementById('progress-bar');
+const progressContainer = document.getElementById('progress-container');
+const timeDisplay = document.getElementById('time-display');
+const speedIndicator = document.getElementById('speed-indicator');
+
 let isPlaying = false;
 let duration = 0;
 let currentTime = 0;
 let currentSpeed = 1.0;
+let isMuted = false;
 let firstFrameReceived = false;
+let controlsTimeout;
 
-// Direct-Link MessagePort Receiver
+// ── Hover / Visibility Logic ──────────────────────────────────────────
+function showControls() {
+    container.classList.add('show-controls');
+    clearTimeout(controlsTimeout);
+    controlsTimeout = setTimeout(() => {
+        if (isPlaying) container.classList.remove('show-controls');
+    }, 3500);
+}
+
+container.onmousemove = showControls;
+container.onclick = showControls;
+
+// ── Accent Palette Logic ──────────────────────────────────────────────
+document.querySelectorAll('.accent-dot').forEach(dot => {
+    dot.onclick = (e) => {
+        e.stopPropagation();
+        const color = dot.getAttribute('data-color');
+        document.documentElement.style.setProperty('--accent', color);
+        document.documentElement.style.setProperty('--accent-glow', color + '66'); // 40% alpha in hex
+        
+        document.querySelectorAll('.accent-dot').forEach(d => d.classList.remove('active'));
+        dot.classList.add('active');
+    };
+});
+
+// ── Direct-Link MessagePort Receiver ──────────────────────────────────
 ipcRenderer.on('pip-port', (event) => {
     const port = event.ports[0];
     port.start();
@@ -54,64 +83,80 @@ ipcRenderer.on('pip-port', (event) => {
             duration = data.duration;
             currentTime = data.currentTime;
             currentSpeed = data.speed || 1.0;
+            isMuted = data.muted || false;
             
             // Update UI
-            playPauseBtn.innerHTML = isPlaying ? '<i class="fas fa-pause"></i>' : '<i class="fas fa-play"></i>';
+            playIcon.className = isPlaying ? 'fas fa-pause' : 'fas fa-play';
             const progress = (currentTime / duration) * 100;
             progressBar.style.width = `${progress}%`;
             
-            if (bufferBar && data.buffered !== undefined) {
-                bufferBar.style.width = `${data.buffered}%`;
-            }
-
             timeDisplay.innerText = `${formatTime(currentTime)} / ${formatTime(duration)}`;
-            speedBtn.innerText = `${currentSpeed.toFixed(1)}X`;
-            
-            if (data.title) {
-                videoTitle.innerText = data.title;
-                windowTitle.innerText = data.title || 'Video Pop-out';
-            }
-            
-            // Sync volume slider if it hasn't been touched
-            if (document.activeElement !== volumeSlider) {
-                volumeSlider.value = data.volume * 100;
-            }
+            speedIndicator.innerText = `${currentSpeed.toFixed(1)}X`;
+
+            // Style Volume Icon
+            volumeIcon.className = isMuted ? 'fas fa-volume-mute' : 'fas fa-volume-up';
+            volumeBtn.style.color = isMuted ? '#ef4444' : 'white';
         }
     };
 });
 
-playPauseBtn.onclick = () => {
+// ── Control Actions ───────────────────────────────────────────────────
+playPauseBtn.onclick = (e) => {
+    e.stopPropagation();
     ipcRenderer.send('pip-control', { action: 'toggle-play' });
 };
 
-speedBtn.onclick = () => {
-    const speeds = [1.0, 1.5, 2.0];
-    let nextIdx = (speeds.indexOf(currentSpeed) + 1) % speeds.length;
-    let nextSpeed = speeds[nextIdx];
-    ipcRenderer.send('pip-control', { action: 'speed', value: nextSpeed });
+skipBackBtn.onclick = (e) => {
+    e.stopPropagation();
+    ipcRenderer.send('pip-control', { action: 'skip', value: -10 });
+};
+
+nextBtn.onclick = (e) => {
+    e.stopPropagation();
+    ipcRenderer.send('pip-control', { action: 'next-video' });
+};
+
+volumeBtn.onclick = (e) => {
+    e.stopPropagation();
+    ipcRenderer.send('pip-control', { action: 'toggle-mute' });
+};
+
+pinBtn.onclick = (e) => {
+    e.stopPropagation();
+    ipcRenderer.send('toggle-pip-pin');
+    pinBtn.style.color = pinBtn.style.color === 'var(--accent)' ? 'white' : 'var(--accent)';
+};
+
+captionsBtn.onclick = (e) => {
+    e.stopPropagation();
+    ipcRenderer.send('pip-control', { action: 'toggle-captions' });
+};
+
+speedIndicator.onclick = (e) => {
+    e.stopPropagation();
+    const speeds = [0.5, 1.0, 1.5, 2.0];
+    let currentIdx = speeds.indexOf(parseFloat(currentSpeed.toFixed(1)));
+    if (currentIdx === -1) currentIdx = 1;
+    let nextIdx = (currentIdx + 1) % speeds.length;
+    ipcRenderer.send('pip-control', { action: 'speed', value: speeds[nextIdx] });
 };
 
 progressContainer.onclick = (e) => {
+    e.stopPropagation();
     const rect = progressContainer.getBoundingClientRect();
     const x = e.clientX - rect.left;
     const percentage = x / rect.width;
     ipcRenderer.send('pip-control', { action: 'seek', value: percentage * duration });
 };
 
-volumeSlider.oninput = () => {
-    ipcRenderer.send('pip-control', { action: 'volume', value: volumeSlider.value / 100 });
-};
-
-minimizeBtn.onclick = () => {
-    ipcRenderer.send('minimize-pip-window');
-};
-
-closeBtn.onclick = () => {
+returnBtn.onclick = (e) => {
+    e.stopPropagation();
+    ipcRenderer.send('pip-control', { action: 'return' });
     window.close();
 };
 
-returnBtn.onclick = () => {
-    ipcRenderer.send('pip-control', { action: 'return' });
+closeBtn.onclick = (e) => {
+    e.stopPropagation();
     window.close();
 };
 
@@ -125,3 +170,6 @@ function formatTime(seconds) {
     }
     return `${m}:${s.toString().padStart(2, '0')}`;
 }
+
+// Initial show
+showControls();

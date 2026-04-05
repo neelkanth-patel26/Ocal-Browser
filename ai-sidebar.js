@@ -15,6 +15,7 @@ const toolSummarize = document.getElementById('tool-summarize');
 const toolTabs = document.getElementById('tool-tabs');
 const toolSearch = document.getElementById('tool-search');
 const toolExplain = document.getElementById('tool-explain');
+const toolEmail = document.getElementById('tool-email');
 
 // Configure Highlight.js
 hljs.configure({ ignoreUnescapedHTML: true });
@@ -188,6 +189,7 @@ toolSummarize?.addEventListener('click', () => handleSend("Please summarize the 
 toolExplain?.addEventListener('click', () => handleSend("Please explain what this page is about in detail."));
 toolTabs?.addEventListener('click', () => handleSend("List all my open tabs."));
 toolSearch?.addEventListener('click', () => handleSend("Perform a Deep Search for information. What would you like me to find?"));
+toolEmail?.addEventListener('click', () => handleSend("I'd like to compose an email. Help me draft it."));
 
 // Resize Logic
 if (handle) {

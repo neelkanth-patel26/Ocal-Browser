@@ -494,11 +494,14 @@ window.electronAPI.getSettings().then(s => {
     initToggle('pdf-viewer-toggle', 'pdfViewerEnabled', s.pdfViewerEnabled !== false);
     initToggle('search-suggest-toggle', 'searchSuggest', s.searchSuggest);
     initToggle('auto-update-toggle', 'autoCheckUpdates', s.autoCheckUpdates);
+    initToggle('confirm-exit-toggle', 'confirmExit', s.confirmExit !== false);
     
     // Security Hub Toggles
     initToggle('safe-browsing-toggle', 'safeBrowsingEnabled', s.safeBrowsingEnabled);
     initToggle('tracking-toggle-security', 'trackingProtection', s.trackingProtection);
     initToggle('https-toggle', 'httpsUpgradeEnabled', s.httpsUpgradeEnabled);
+    initToggle('dislike-toggle-security', 'youtubeDislikeEnabled', s.youtubeDislikeEnabled !== false);
+    initToggle('media-master-toggle-security', 'mediaMasterEnabled', s.mediaMasterEnabled !== false);
 
     if (s.dnsProvider) setGridValue('dns-grid', s.dnsProvider);
     
@@ -798,7 +801,7 @@ function renderExtensions(s = null) {
     if (!s) return;
     
     const exts = [
-        { id: 'adblock', key: 'adBlockEnabled', title: 'Ad Shield' },
+        { id: 'adblock', key: 'adBlockEnabled', title: 'uBlock Origin' },
         { id: 'vault', key: 'assetVaultEnabled', title: 'Asset Vault' },
         { id: 'ai', key: 'aiAssistantEnabled', title: 'Ocal AI Assistant' },
         { id: 'stealth', key: 'cyberStealthEnabled', title: 'Cyber Stealth' },

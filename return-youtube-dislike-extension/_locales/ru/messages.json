@@ -1,0 +1,86 @@
+{
+  "extensionName": {
+    "message": "Return YouTube Dislike"
+  },
+  "extensionNameBeta": {
+    "message": "Return YouTube Dislike Beta"
+  },
+  "extensionDesc": {
+    "message": "Возвращает способность видеть дизлайки"
+  },
+  "textDeveloper": {
+    "message": "Дмитрий Селиванов и сообщество"
+  },
+  "linkWebsite": {
+    "message": "Сайт"
+  },
+  "linkFAQ": {
+    "message": "ЧАВО"
+  },
+  "linkDonate": {
+    "message": "Пожертвовать"
+  },
+  "linkHelp": {
+    "message": "Помощь"
+  },
+  "legendSettings": {
+    "message": "Настройки"
+  },
+  "textSettings": {
+    "message": "Отключить отправку лайков/дизлайков"
+  },
+  "textSettingsHover": {
+    "message": "Отключает отправку ваших отметок нравится/не нравится"
+  },
+  "textUpdate": {
+    "message": "обновление до"
+  },
+  "version30installed": {
+    "message": "Версия 3.0.0.16 установлена"
+  },
+  "whatsnew": {
+    "message": "Что нового"
+  },
+  "shortsSupport": {
+    "message": "Поддержка YouTube Shorts"
+  },
+  "customColors": {
+    "message": "Выбор цветов панели дизлайков и кнопок"
+  },
+  "customNumberFormats": {
+    "message": "Выбор формата чисел"
+  },
+  "considerDonating": {
+    "message": "Единственный источник доходов позволяющий расширению продолжать работу - ваши пожертвования. Пожалуйста, поддержите нас и помогите нам развиваться."
+  },
+  "roundNumbers": {
+    "message": "Показывать округленные числа"
+  },
+  "roundNumbersHover": {
+    "message": "Округлить значение счетчика (это параметр YouTube по умолчанию)."
+  },
+  "reformatLikes": {
+    "message": "Форматировать количество лайков"
+  },
+  "reformatLikesHover": {
+    "message": "Делает значение статистики более последовательным."
+  },
+  "numberFormat": {
+    "message": "Числовой формат"
+  },
+  "colorizeRatio": {
+    "message": "Раскрасьте полосу неприязни"
+  },
+  "colorizeRatioHover": {
+    "message": "Раскрасьте полосу неприязни собственными цветами."
+  },
+  "colorizeThumbs": {
+    "message": "Раскрасьте кнопки"
+  },
+  "colorizeThumbsHover": {
+    "message": "Раскрасьте кнопки нравится и не нравится с помощью пользовательских цветов."
+  },
+  "colorTheme": {
+    "message": "Цветовая схема:"
+  }
+}

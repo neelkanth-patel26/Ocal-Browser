@@ -8,7 +8,7 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:ital,wght@0,300;0,400;0,500;0,600;0,700&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="assets/fontawesome/css/all.min.css">
     <style>
         :root {
             --bg: #0c0c0e;
@@ -1698,6 +1698,13 @@
                                 </div>
                                 <button class="btn primary mini" id="set-default-btn" style="padding: 10px 16px;">Make Default</button>
                             </div>
+                            <div class="pref-row">
+                                <div class="pref-row-info">
+                                    <div class="pref-label">Confirm before Exiting</div>
+                                    <div class="pref-desc">Show a confirmation dialog when you click the close button.</div>
+                                </div>
+                                <div class="toggle" id="confirm-exit-toggle"></div>
+                            </div>
                         </div>
                     </div>
 
@@ -2101,6 +2108,20 @@
                                 </div>
                                 <div class="toggle on" id="https-toggle" onclick="toggleSecurityFeature('httpsUpgradeEnabled', this)"></div>
                             </div>
+                            <div class="pref-row" id="youtube-dislike-row">
+                                <div class="pref-row-info">
+                                    <div class="pref-label">Restore YouTube Dislikes</div>
+                                    <div class="pref-desc" style="max-width:none;">Display community dislike counts on YouTube videos.</div>
+                                </div>
+                                <div class="toggle on" id="dislike-toggle-security" onclick="toggleSecurityFeature('youtubeDislikeEnabled', this)"></div>
+                            </div>
+                            <div class="pref-row" id="media-master-row">
+                                <div class="pref-row-info">
+                                    <div class="pref-label">Media Extraction Engine</div>
+                                    <div class="pref-desc" style="max-width:none;">Professional-grade video and image detection on all pages.</div>
+                                </div>
+                                <div class="toggle on" id="media-master-toggle-security" onclick="toggleSecurityFeature('mediaMasterEnabled', this)"></div>
+                            </div>
                         </div>
                     </div>
 
@@ -2195,8 +2216,8 @@
                                     </div>
                                 </div>
                                 <span style="font-size:9px; font-weight:800; color:#4ade80; letter-spacing:1px; margin-bottom:4px; display:block;">CORE</span>
-                                <h3 style="font-size:16px; font-weight:700; color:#fff; margin:0 0 6px 0;">Ad Shield</h3>
-                                <p style="font-size:12px; color:var(--text-muted); margin:0 0 20px 0;">Advanced ad and tracker blocking engine with zero-day detection.</p>
+                                <h3 style="font-size:16px; font-weight:700; color:#fff; margin:0 0 6px 0;">uBlock Origin</h3>
+                                <p style="font-size:12px; color:var(--text-muted); margin:0 0 20px 0;">An efficient ad blocker. Easy on CPU and memory.</p>
                                 <button class="btn secondary" id="btn-adblock" onclick="window.toggleSecurityFeature('adBlockEnabled', this); setTimeout(renderExtensions, 100);" style="width:100%; justify-content:center;">Manage</button>
                             </div>
 
