@@ -51,9 +51,9 @@ body {
   -webkit-font-smoothing: antialiased;
 }
 
-/* Fix maximized window border/gap on Windows */
+/* Fix maximized window border/gap on Windows 10 */
 body.maximized {
-  padding: 0;
+  padding: 8px;
 }
 
 /* ── Global Premium Scrollbar ────────────────────────────────── */

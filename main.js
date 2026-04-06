@@ -27,10 +27,15 @@ const fetch = require('cross-fetch').default || require('cross-fetch');
 
 // Disable QUIC (fixes Handshake -101 and Connection Reset issues)
 app.commandLine.appendSwitch('disable-quic');
+// Enable High-DPI support for sharp rendering on Windows
+app.commandLine.appendSwitch('high-dpi-support', '1');
 // Enable modern TLS features
 app.commandLine.appendSwitch('enable-features', 'Tls13EarlyData');
 // Hide the fact that we are an automated/embedded browser (Crucial for Google Login)
 app.commandLine.appendSwitch('disable-blink-features', 'AutomationControlled');
+
+// Disable the default Electron menu bar on Windows/Linux to prevent UI shifting
+Menu.setApplicationMenu(null);
 
 const OCAL_USER_AGENT = 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/134.0.0.0 Safari/537.36';
 app.userAgentFallback = OCAL_USER_AGENT;
@@ -761,6 +766,8 @@ function createMainWindow() {
     backgroundColor: '#0c0c0e', // Solid background for better Win10 stability
     resizable: true,
     fullscreenable: true,
+    titleBarStyle: 'hidden', // Ensures native title bar is fully hidden on Windows 10
+    thickFrame: true, // Enables standard Windows resizing and snapping for frameless windows
     webPreferences: {
       preload: path.join(__dirname, 'preload.js'),
       contextIsolation: true,
@@ -1075,7 +1082,7 @@ function showSidebarOverlay() {
 }
 
 function hideSidebarOverlay() {
-  if (sidebarOverlayView && !sidebarOverlayView.webContents.isDestroyed() && mainWindow && !mainWindow.isDestroyed()) {
+  if (sidebarOverlayView && !sidebarOverlayView.isDestroyed() && !sidebarOverlayView.webContents.isDestroyed() && mainWindow && !mainWindow.isDestroyed()) {
     if (mainWindow.getBrowserViews().includes(sidebarOverlayView)) {
       mainWindow.removeBrowserView(sidebarOverlayView);
     }
@@ -1096,9 +1103,10 @@ function showAiSidebar() {
 }
 
 function hideAiSidebar() {
-    if (!aiSidebarView || aiSidebarView.webContents.isDestroyed()) return;
-    if (mainWindow && !mainWindow.isDestroyed() && mainWindow.getBrowserViews().includes(aiSidebarView)) {
-        mainWindow.removeBrowserView(aiSidebarView);
+    if (aiSidebarView && !aiSidebarView.webContents.isDestroyed()) {
+        if (mainWindow && !mainWindow.isDestroyed() && mainWindow.getBrowserViews().includes(aiSidebarView)) {
+            mainWindow.removeBrowserView(aiSidebarView);
+        }
     }
     aiSidebarOpen = false;
     updateViewBounds();
@@ -1141,7 +1149,7 @@ function closeOverlays() {
     activeBMFolderId = null;
     hideDownloadsPopup();
     hideWebApp();
-    if (mainWindow && !mainWindow.isDestroyed() && mainWindow.webContents) {
+    if (mainWindow && !mainWindow.isDestroyed() && !mainWindow.webContents.isDestroyed()) {
         mainWindow.webContents.send('sidebars-closed');
     }
 }
@@ -1604,35 +1612,44 @@ function broadcastTabs() {
 
 function setActiveTab(id) {
   const oldViewEntry = views.find(v => v.id === activeViewId);
-  const oldWc = oldViewEntry?.view.webContents;
+  const oldWc = (oldViewEntry && !oldViewEntry.view.isDestroyed()) ? oldViewEntry.view.webContents : null;
   
   // Auto-PiP Logic: If previous tab was playing a video and we are switching away, request native PiP.
-  if (oldWc && tabShieldStats.get(oldWc.id)?.isPlaying) {
+  if (oldWc && !oldWc.isDestroyed() && tabShieldStats.get(oldWc.id)?.isPlaying) {
       oldWc.send('request-smart-pip');
   }
 
-  if (oldViewEntry) mainWindow.removeBrowserView(oldViewEntry.view);
+  if (oldViewEntry && !oldViewEntry.view.isDestroyed() && !mainWindow.isDestroyed()) {
+      if (mainWindow.getBrowserViews().includes(oldViewEntry.view)) {
+          mainWindow.removeBrowserView(oldViewEntry.view);
+      }
+  }
   activeViewId = id;
   const newViewEntry = views.find(v => v.id === id);
   
-  if (newViewEntry) {
+  if (newViewEntry && !newViewEntry.view.isDestroyed() && !mainWindow.isDestroyed()) {
     const newWc = newViewEntry.view.webContents;
     
     // If the new tab is the one currently in PiP, close the PiP window
-    if (pipWindow && pipSourceContents && pipSourceContents.id === newWc.id) {
+    if (pipWindow && !pipWindow.isDestroyed() && pipSourceContents && !pipSourceContents.isDestroyed() && pipSourceContents.id === newWc.id) {
         pipWindow.close();
     }
 
-    mainWindow.addBrowserView(newViewEntry.view);
+    if (!mainWindow.getBrowserViews().includes(newViewEntry.view)) {
+        mainWindow.addBrowserView(newViewEntry.view);
+    }
     updateViewBounds();
-    const url = newWc.getURL();
-    const title = newWc.getTitle();
-    mainWindow.webContents.send('url-updated', { 
-        id, 
-        url: url.includes('home.html') ? '' : url, 
-        title: url.includes('home.html') ? 'Ocal Home' : title,
-        favicon: newViewEntry.favicon || null
-    });
+    
+    if (!newWc.isDestroyed()) {
+        const url = newWc.getURL();
+        const title = newWc.getTitle();
+        mainWindow.webContents.send('url-updated', { 
+            id, 
+            url: url.includes('home.html') ? '' : url, 
+            title: url.includes('home.html') ? 'Ocal Home' : title,
+            favicon: newViewEntry.favicon || null
+        });
+    }
   }
   broadcastTabs();
 }
@@ -1654,9 +1671,13 @@ function isHomeURL(url) {
 }
 
 function updateViewBounds(forcedUrl = null) {
-  if (!mainWindow) return;
-  const { width, height } = mainWindow.getContentBounds();
+  if (!mainWindow || mainWindow.isDestroyed()) return;
+  const isMaximized = mainWindow.isMaximized();
+  const { width, height } = isMaximized ? mainWindow.getBounds() : mainWindow.getContentBounds();
   const isFullscreen = !!htmlFullscreenViewId;
+
+  // Windows 10 maximized windows bleed 8px off-screen; we must offset this
+  const winOffset = (isMaximized && process.platform === 'win32') ? 8 : 0;
 
   const hTabs = isFullscreen ? 0 : (userSettings.compactMode ? 36 : 44);
   const hNav  = isFullscreen ? 0 : (userSettings.compactMode ? 40 : 50);
@@ -1665,7 +1686,7 @@ function updateViewBounds(forcedUrl = null) {
   let isBmVisible = bookmarkBarVisible;
   const activeViewEntry = views.find(v => v.id === activeViewId);
   const activeView = activeViewEntry?.view;
-  const url = forcedUrl || (activeView ? activeView.webContents.getURL() : '');
+  const url = forcedUrl || (activeView && !activeView.webContents.isDestroyed() ? activeView.webContents.getURL() : '');
   const isHome = isHomeURL(url);
   
   if (userSettings.bookmarkBarMode === 'always') isBmVisible = true;
@@ -1673,19 +1694,24 @@ function updateViewBounds(forcedUrl = null) {
   else if (userSettings.bookmarkBarMode === 'auto') isBmVisible = isHome;
 
   // Notify renderer of our source-of-truth visibility (crucial to prevent gaps!)
-  mainWindow.webContents.send('sync-bookmark-visibility', isBmVisible);
+  if (!mainWindow.webContents.isDestroyed()) {
+    mainWindow.webContents.send('sync-bookmark-visibility', isBmVisible);
+  }
 
   const hBm = (isFullscreen || !isBmVisible) ? 0 : (userSettings.compactMode ? 28 : 36);
-  const yOffset = hTabs + hNav + hBm;
+  // yPadding accounts for the potential 1px overlap on Windows 10
+  const yPadding = (process.platform === 'win32') ? 1 : 0;
+  const yOffset = hTabs + hNav + hBm + yPadding;
+
   if (activeViewEntry && activeViewEntry.view) {
     // Only update bounds and stack order if the view is currently attached to mainWindow
     // (Prevents crashes when the view is detached in a Portal PiP window)
-    if (mainWindow.getBrowserViews().includes(activeViewEntry.view)) {
+    if (!activeViewEntry.view.isDestroyed() && mainWindow.getBrowserViews().includes(activeViewEntry.view)) {
         activeViewEntry.view.setBounds({
-          x: 0, 
-          y: Math.floor(yOffset),
-          width: Math.floor(width),
-          height: Math.floor(height - yOffset)
+          x: Math.round(winOffset), 
+          y: Math.round(yOffset + winOffset),
+          width: Math.round(width - (winOffset * 2)),
+          height: Math.round(height - yOffset - (winOffset * 2))
         });
         mainWindow.setTopBrowserView(activeViewEntry.view);
     }
@@ -1694,29 +1720,29 @@ function updateViewBounds(forcedUrl = null) {
   // Hide any views that are in collapsed groups to prevent them from staying on top
   views.forEach(v => {
     const group = userSettings.tabGroups.find(g => g.id === v.groupId);
-    if (v.id !== activeViewId && group && group.collapsed) {
+    if (v.id !== activeViewId && group && group.collapsed && !v.view.isDestroyed()) {
         mainWindow.removeBrowserView(v.view);
     }
   });
 
   // 1. Stack AI Sidebar (on the right)
-  if (aiSidebarView && mainWindow.getBrowserViews().includes(aiSidebarView)) {
+  if (aiSidebarView && !aiSidebarView.isDestroyed() && mainWindow.getBrowserViews().includes(aiSidebarView)) {
     aiSidebarView.setBounds({ 
-        x: Math.floor(width - aiSidebarWidth), 
-        y: Math.floor(yOffset), 
-        width: Math.floor(aiSidebarWidth), 
-        height: Math.floor(height - yOffset) 
+        x: Math.round(width - aiSidebarWidth - winOffset), 
+        y: Math.round(yOffset + winOffset), 
+        width: Math.round(aiSidebarWidth), 
+        height: Math.round(height - yOffset - (winOffset * 2)) 
     });
     mainWindow.setTopBrowserView(aiSidebarView);
   }
 
   // 2. Stack Sidebar Overlay (on the left, covering the whole window for backdrop)
-  if (sidebarOverlayView && mainWindow.getBrowserViews().includes(sidebarOverlayView)) {
+  if (sidebarOverlayView && !sidebarOverlayView.isDestroyed() && mainWindow.getBrowserViews().includes(sidebarOverlayView)) {
     sidebarOverlayView.setBounds({ 
-        x: 0, 
-        y: Math.floor(yOffset), 
-        width: Math.floor(width), 
-        height: Math.floor(height - yOffset) 
+        x: Math.round(winOffset), 
+        y: Math.round(yOffset + winOffset), 
+        width: Math.round(width - (winOffset * 2)), 
+        height: Math.round(height - yOffset - (winOffset * 2)) 
     });
     mainWindow.setTopBrowserView(sidebarOverlayView);
   }
@@ -2995,10 +3021,10 @@ ipcMain.on('show-shield-popup', (e, { x, y, width, height, tabId }) => {
     if (targetX + popupWidth > contentBounds.width - 10) targetX = contentBounds.width - popupWidth - 10;
 
     shieldPopupView.setBounds({ 
-        x: Math.round(targetX), 
-        y: Math.round(y + height + 10), 
-        width: popupWidth, 
-        height: popupHeight 
+        x: Math.round(targetX + winOffset), 
+        y: Math.round(y + height + 10 + winOffset), 
+        width: Math.round(popupWidth), 
+        height: Math.round(popupHeight) 
     });
     
     mainWindow.setTopBrowserView(shieldPopupView);
@@ -3020,7 +3046,12 @@ ipcMain.on('show-bm-dropdown', (e, { x, y, bookmarks, folderId }) => {
     mainWindow.addBrowserView(bmDropdownView);
     
     // Initial safe size, will be refined by dropdown-resize IPC
-    bmDropdownView.setBounds({ x: Math.round(x), y: Math.round(y), width: 330, height: 500 });
+    bmDropdownView.setBounds({ 
+        x: Math.round(x + winOffset), 
+        y: Math.round(y + winOffset), 
+        width: 330, 
+        height: 500 
+    });
     bmDropdownView.webContents.send('show-bm-dropdown', { bookmarks });
     mainWindow.setTopBrowserView(bmDropdownView);
 });
@@ -3068,9 +3099,9 @@ ipcMain.on('show-extensions-dropdown', (e, { x, y, width }) => {
     // Align to the right of the button
     const popupWidth = 340;
     extensionDropdownView.setBounds({ 
-        x: Math.round(x + width - popupWidth), 
-        y: Math.round(y + 40), 
-        width: popupWidth, 
+        x: Math.round(x + width - popupWidth + winOffset), 
+        y: Math.round(y + 40 + winOffset), 
+        width: Math.round(popupWidth), 
         height: 500 
     });
     mainWindow.setTopBrowserView(extensionDropdownView);
@@ -3310,14 +3341,17 @@ ipcMain.on('suggest-search', async (e, query) => {
 });
 
 ipcMain.on('show-suggestions', (e, bounds) => {
-    if (!suggestionsView || !mainWindow) return;
+    if (!suggestionsView || !mainWindow || mainWindow.isDestroyed()) return;
     if (!mainWindow.getBrowserViews().includes(suggestionsView)) {
         mainWindow.addBrowserView(suggestionsView);
     }
+    const isMaximized = mainWindow.isMaximized();
+    const winOffset = (isMaximized && process.platform === 'win32') ? 8 : 0;
+    
     suggestionsView.setBounds({
-        x: Math.floor(bounds.x),
-        y: Math.floor(bounds.y + bounds.height),
-        width: Math.floor(bounds.width),
+        x: Math.round(bounds.x + winOffset),
+        y: Math.round(bounds.y + bounds.height + winOffset),
+        width: Math.round(bounds.width),
         height: 350
     });
     mainWindow.setTopBrowserView(suggestionsView);
@@ -3347,20 +3381,23 @@ function hideSiteInfo() {
 }
 
 ipcMain.on('show-site-info', (e, bounds) => {
-    if (!mainWindow) return;
+    if (!mainWindow || mainWindow.isDestroyed()) return;
     if (!siteInfoView) createSiteInfoView();
     
     const activeView = views.find(v => v.id === activeViewId)?.view;
-    const url = activeView ? activeView.webContents.getURL() : '';
+    const url = activeView && !activeView.webContents.isDestroyed() ? activeView.webContents.getURL() : '';
     
     if (!mainWindow.getBrowserViews().includes(siteInfoView)) {
         mainWindow.addBrowserView(siteInfoView);
     }
     
+    const isMaximized = mainWindow.isMaximized();
+    const winOffset = (isMaximized && process.platform === 'win32') ? 8 : 0;
+
     // Position below the address bar identity area
     siteInfoView.setBounds({
-        x: Math.floor(bounds.x),
-        y: Math.floor(bounds.y + bounds.height + 4),
+        x: Math.round(bounds.x + winOffset),
+        y: Math.round(bounds.y + bounds.height + 4 + winOffset),
         width: 320,
         height: 480 // Sufficient height for the content
     });
