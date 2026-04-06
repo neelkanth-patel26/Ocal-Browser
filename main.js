@@ -1612,14 +1612,14 @@ function broadcastTabs() {
 
 function setActiveTab(id) {
   const oldViewEntry = views.find(v => v.id === activeViewId);
-  const oldWc = (oldViewEntry && !oldViewEntry.view.isDestroyed()) ? oldViewEntry.view.webContents : null;
+  const oldWc = (oldViewEntry && oldViewEntry.view && oldViewEntry.view.webContents && !oldViewEntry.view.webContents.isDestroyed()) ? oldViewEntry.view.webContents : null;
   
   // Auto-PiP Logic: If previous tab was playing a video and we are switching away, request native PiP.
   if (oldWc && !oldWc.isDestroyed() && tabShieldStats.get(oldWc.id)?.isPlaying) {
       oldWc.send('request-smart-pip');
   }
 
-  if (oldViewEntry && !oldViewEntry.view.isDestroyed() && !mainWindow.isDestroyed()) {
+  if (oldViewEntry && oldViewEntry.view && oldViewEntry.view.webContents && !oldViewEntry.view.webContents.isDestroyed() && !mainWindow.isDestroyed()) {
       if (mainWindow.getBrowserViews().includes(oldViewEntry.view)) {
           mainWindow.removeBrowserView(oldViewEntry.view);
       }
@@ -1627,7 +1627,7 @@ function setActiveTab(id) {
   activeViewId = id;
   const newViewEntry = views.find(v => v.id === id);
   
-  if (newViewEntry && !newViewEntry.view.isDestroyed() && !mainWindow.isDestroyed()) {
+  if (newViewEntry && newViewEntry.view && newViewEntry.view.webContents && !newViewEntry.view.webContents.isDestroyed() && !mainWindow.isDestroyed()) {
     const newWc = newViewEntry.view.webContents;
     
     // If the new tab is the one currently in PiP, close the PiP window
@@ -1706,7 +1706,7 @@ function updateViewBounds(forcedUrl = null) {
   if (activeViewEntry && activeViewEntry.view) {
     // Only update bounds and stack order if the view is currently attached to mainWindow
     // (Prevents crashes when the view is detached in a Portal PiP window)
-    if (!activeViewEntry.view.isDestroyed() && mainWindow.getBrowserViews().includes(activeViewEntry.view)) {
+    if (activeViewEntry.view.webContents && !activeViewEntry.view.webContents.isDestroyed() && mainWindow.getBrowserViews().includes(activeViewEntry.view)) {
         activeViewEntry.view.setBounds({
           x: Math.round(winOffset), 
           y: Math.round(yOffset + winOffset),
@@ -1720,13 +1720,13 @@ function updateViewBounds(forcedUrl = null) {
   // Hide any views that are in collapsed groups to prevent them from staying on top
   views.forEach(v => {
     const group = userSettings.tabGroups.find(g => g.id === v.groupId);
-    if (v.id !== activeViewId && group && group.collapsed && !v.view.isDestroyed()) {
+    if (v.id !== activeViewId && group && group.collapsed && v.view && v.view.webContents && !v.view.webContents.isDestroyed()) {
         mainWindow.removeBrowserView(v.view);
     }
   });
 
   // 1. Stack AI Sidebar (on the right)
-  if (aiSidebarView && !aiSidebarView.isDestroyed() && mainWindow.getBrowserViews().includes(aiSidebarView)) {
+  if (aiSidebarView && aiSidebarView.webContents && !aiSidebarView.webContents.isDestroyed() && mainWindow.getBrowserViews().includes(aiSidebarView)) {
     aiSidebarView.setBounds({ 
         x: Math.round(width - aiSidebarWidth - winOffset), 
         y: Math.round(yOffset + winOffset), 
@@ -1737,7 +1737,7 @@ function updateViewBounds(forcedUrl = null) {
   }
 
   // 2. Stack Sidebar Overlay (on the left, covering the whole window for backdrop)
-  if (sidebarOverlayView && !sidebarOverlayView.isDestroyed() && mainWindow.getBrowserViews().includes(sidebarOverlayView)) {
+  if (sidebarOverlayView && sidebarOverlayView.webContents && !sidebarOverlayView.webContents.isDestroyed() && mainWindow.getBrowserViews().includes(sidebarOverlayView)) {
     sidebarOverlayView.setBounds({ 
         x: Math.round(winOffset), 
         y: Math.round(yOffset + winOffset), 
