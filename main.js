@@ -891,13 +891,18 @@ function createSurveyWindow() {
 
   surveyWindow.loadFile(path.join(__dirname, 'uninstaller', 'index.html'));
 
-  ipcMain.on('uninstall-survey-complete', (e, mailtoLink) => {
+  ipcMain.once('uninstall-survey-complete', (e, mailtoLink) => {
     shell.openExternal(mailtoLink);
-    setTimeout(() => app.quit(), 500);
+    setTimeout(() => {
+      app.quit();
+      // Safety thermal exit if Chromium/Electron doesn't shut down in time
+      setTimeout(() => process.exit(0), 2000);
+    }, 500);
   });
 
-  ipcMain.on('uninstall-survey-close', () => {
+  ipcMain.once('uninstall-survey-close', () => {
     app.quit();
+    setTimeout(() => process.exit(0), 1000);
   });
 }
 
@@ -1368,6 +1373,7 @@ function resolveInternalURL(url) {
   // 1. Exact Page Mappings
   if (cleanBase === 'settings' || cleanBase === 'ocal://settings') return 'file://' + path.join(__dirname, 'settings.html');
   if (url.startsWith('ocal://settings#')) return 'file://' + path.join(__dirname, 'settings.html') + url.substring(15);
+  if (cleanBase === 'file-manager' || cleanBase === 'ocal://file-manager') return 'file://' + path.join(__dirname, 'file-manager.html');
   
   if (cleanBase === 'ocal://site-settings') {
       const qIdx = url.indexOf('?');
@@ -1971,6 +1977,21 @@ ipcMain.handle('set-as-default-browser', () => {
 // Global AI Context for Multi-Turn Agentic Capabilities
 let aiSessionContext = { mode: null, data: {} };
 
+const AI_SITE_MAP = {
+    'instagram': 'https://www.instagram.com',
+    'insta': 'https://www.instagram.com',
+    'facebook': 'https://www.facebook.com',
+    'fb': 'https://www.facebook.com',
+    'youtube': 'https://www.youtube.com',
+    'yt': 'https://www.youtube.com',
+    'twitter': 'https://www.twitter.com',
+    'x': 'https://www.twitter.com',
+    'netflix': 'https://www.netflix.com',
+    'gmail': 'https://mail.google.com',
+    'google': 'https://www.google.com',
+    'github': 'https://www.github.com'
+};
+
 ipcMain.handle('ai-agent-execute', async (event, query) => {
     if (!query || !query.trim()) return { text: "Hello! I'm your Ocal AI. How can I assist you today?", actions: [] };
 
@@ -1991,7 +2012,86 @@ ipcMain.handle('ai-agent-execute', async (event, query) => {
     };
 
     try {
-        // Phase 1: Email Agent (Personal Productivity & Context Aware)
+        // --- Multi-Task Sequencing ---
+        // Split by " and then ", " then ", " and " (if followed by a command)
+        const subTasks = query.split(/\s+and\s+then\s+|\s+then\s+|\s+and\s+followed\s+by\s+|\s+;\s+/gi).map(t => t.trim()).filter(Boolean);
+        
+        if (subTasks.length > 1) {
+            notifyAction(`Sequencing ${subTasks.length} tasks...`, 'fa-list-check');
+            let results = [];
+            let allActions = [];
+            
+            for (const task of subTasks) {
+                const res = await ipcMain.handlers['ai-agent-execute'](event, task);
+                if (res.text) results.push(res.text);
+                if (res.actions) allActions.push(...res.actions);
+            }
+            
+            return { 
+                text: `### 📋 Multi-Task Result\n\n${results.join('\n\n---\n\n')}`, 
+                actions: allActions 
+            };
+        }
+
+        // --- Phase 0: Context Discovery (What is the user looking at?) ---
+        const activeTab = views.find(v => v.id === activeViewId);
+        const activeUrl = activeTab ? activeTab.view.webContents.getURL() : '';
+        const activeTitle = activeTab ? activeTab.view.webContents.getTitle() : '';
+        const pageContext = { url: activeUrl, title: activeTitle };
+        const isPdfExplorer = activeUrl.startsWith('ocal://file-manager') || activeUrl.includes('file-manager.html');
+
+        // --- Phase 1: PDF Explorer Agency (If in PDF module) ---
+        if (isPdfExplorer) {
+            // Local Heuristics for PDF Discovery
+            if (q.includes('largest') || q.includes('biggest') || q.includes('find') || q.includes('search')) {
+                notifyAction("Querying Local Document Index...", 'fa-database');
+                
+                // Fetch the list from the system (reuse existing logic)
+                const paths = [
+                    app.getPath('downloads'), app.getPath('documents'), app.getPath('desktop'),
+                    path.join(app.getPath('home'), 'Pictures'), path.join(app.getPath('home'), 'Videos'), path.join(app.getPath('home'), 'Music')
+                ];
+                
+                let allFiles = [];
+                const scan = (dir, depth = 0) => {
+                    if (depth > 2) return;
+                    try {
+                        const items = fs.readdirSync(dir, { withFileTypes: true });
+                        for (const item of items) {
+                            const fullPath = path.join(dir, item.name);
+                            if (item.isDirectory()) scan(fullPath, depth + 1);
+                            else if (item.name.toLowerCase().endsWith('.pdf')) {
+                                const stats = fs.statSync(fullPath);
+                                allFiles.push({ name: item.name, path: fullPath, size: stats.size });
+                            }
+                        }
+                    } catch (e) {}
+                };
+                paths.forEach(p => scan(p));
+
+                if (q.includes('largest') || q.includes('biggest')) {
+                    const largest = allFiles.sort((a,b) => b.size - a.size)[0];
+                    if (largest) {
+                        return { 
+                            text: `In your PDF Library, the largest document is **${largest.name}** (${(largest.size / 1024 / 1024).toFixed(1)} MB).`, 
+                            actions: [{ text: "Open Largest PDF", icon: "fa-arrow-up-right-from-square", url: `ocal://open-file?path=${encodeURIComponent(largest.path)}` }] 
+                        };
+                    }
+                }
+
+                if (q.includes('find') || q.includes('search')) {
+                    const searchTerm = query.replace(/find|search for|show me/gi, '').trim();
+                    if (searchTerm) {
+                        return { 
+                            text: `I've analyzed your system for **"${searchTerm}"**. I can filter this for you in the active tab.`,
+                            actions: [{ text: `Filter for "${searchTerm}"`, icon: "fa-filter", command: "pdf-filter", term: searchTerm }]
+                        };
+                    }
+                }
+            }
+        }
+
+        // --- Phase 2: Email Agent (Personal Productivity & Context Aware) ---
         const qLower = q.trim();
         if (qLower === 'cancel' || qLower === 'reset' || qLower === 'stop') {
             aiSessionContext = { mode: null, data: {} };
@@ -2007,7 +2107,7 @@ ipcMain.handle('ai-agent-execute', async (event, query) => {
                 aiSessionContext.data = { to: '', subject: '', body: '' };
             }
 
-            notifyAction("Processing Email Intel...", 'fa-envelope-open-text');
+            notifyAction("Initializing Email Workspace...", 'fa-envelope-open-text');
 
             // 1. Data Collection & Extraction
             const emailMatch = query.match(/([a-zA-Z0-9._-]+@[a-zA-Z0-9._-]+\.[a-zA-Z0-9_-]+)/i);
@@ -2036,7 +2136,7 @@ ipcMain.handle('ai-agent-execute', async (event, query) => {
             // 4. Content Professionalization (Ghostwriting)
             if (aiSessionContext.data.to && aiSessionContext.data.body && !aiSessionContext.data._isProfessionalized) {
                 notifyAction("Synthesizing professional draft...", 'fa-wand-magic-sparkles');
-                const stylized = await professionalizeEmail(aiSessionContext.data.body, aiSessionContext.data.subject, apiKey);
+                const stylized = await professionalizeEmail(aiSessionContext.data.body, aiSessionContext.data.subject, apiKey, pageContext);
                 aiSessionContext.data.body = stylized;
                 aiSessionContext.data._isProfessionalized = true; // Mark as processed to avoid loops
             }
@@ -2056,10 +2156,16 @@ ipcMain.handle('ai-agent-execute', async (event, query) => {
 
             // 5. Guided Prompting (Phase Transitions)
             if (!aiSessionContext.data.to) {
-                return { text: "I can help you draft a professional email. **Who** is the recipient? (Please provide an email address)", actions: [] };
+                return { 
+                    text: `### 📧 Email Agent Mode\nI'm ready to help you compose or professionalize a message.\n\n**Who is the recipient?**\n(Please provide an email address to start)`, 
+                    actions: [] 
+                };
             }
             if (!aiSessionContext.data.body) {
-                return { text: `Drafting to **${aiSessionContext.data.to}**. **What would you like the message to say?**`, actions: [] };
+                return { 
+                    text: `### 📧 Drafting Workspace\n**Recipient:** \`${aiSessionContext.data.to}\`\n\n**What would you like the message to say?**\nJust type the main points; I'll polish the tone for you.`, 
+                    actions: [{ text: "Change Recipient", icon: "fa-user-pen", command: "reset-email" }] 
+                };
             }
         }
 
@@ -2081,7 +2187,27 @@ ipcMain.handle('ai-agent-execute', async (event, query) => {
         }
 
         // Phase 1: Local Tool & Command Recognition
-        if (q.includes('open') || q.includes('go to') || q.includes('visit')) {
+        if (q.match(/(open|go\s*to|visit|launch|opne|vosit|gho\s*to)\s+(.*)/i)) {
+            const intentMatch = q.match(/(?:open|go\s*to|visit|launch|opne|vosit|gho\s*to)\s+([a-z0-9]+)/i);
+            const target = intentMatch ? intentMatch[1].toLowerCase() : null;
+
+            if (target) {
+                // Fuzzy/Key mapping for popular sites
+                const siteKeys = Object.keys(AI_SITE_MAP);
+                const bestMatchKey = siteKeys.find(key => target.includes(key) || key.includes(target) || (target.length > 3 && key.startsWith(target.substring(0,3))));
+                
+                if (bestMatchKey) {
+                    const url = AI_SITE_MAP[bestMatchKey];
+                    notifyAction(`Intelligent Navigation: ${bestMatchKey}...`, 'fa-bolt-lightning');
+                    createNewTab(url);
+                    const prettyName = bestMatchKey.charAt(0).toUpperCase() + bestMatchKey.slice(1);
+                    return { 
+                        text: `### 🚀 Quick-Launch Success!\n\nI recognized your intent for **${prettyName}** (even with the typo!). Navigating you there now.\n\n> [!TIP]\n> Ocal's Direct Navigation engine is typo-tolerant and instant.`, 
+                        actions: [{ text: `Launch ${prettyName}`, icon: "fa-rocket", url }] 
+                    };
+                }
+            }
+
             const urlMatch = query.match(/(https?:\/\/[^\s]+|www\.[^\s]+|[a-z0-9]+\.[a-z]{2,})/i);
             if (urlMatch) {
                 let url = urlMatch[0];
@@ -2184,26 +2310,58 @@ ipcMain.handle('ai-agent-execute', async (event, query) => {
     }
 });
 
-async function professionalizeEmail(notes, subject, apiKey) {
-    const prompt = `You are a professional assistant at Ocal. Convert these notes into a polished, stylish, and professional email: "${notes}".
-    The subject is: "${subject}". 
-    Format: Professional letter. Include greeting, body, and closing. 
-    Respond ONLY with the email body text. No preamble or explanations.`;
+async function professionalizeEmail(notes, subject, apiKey, context = {}) {
+    let contextStr = '';
+    if (context && context.title) {
+        contextStr = `\nBrowsing Context: User is currently looking at "${context.title}" (${context.url}). Use this to make the email more personal if relevant.`;
+    }
+
+    const prompt = `You are Ocal AI Concierge. 
+    Mission: Professionalize these notes into a warm, elite, and stylish email draft.
+    
+    User Notes: "${notes}"
+    Subject: "${subject}"
+    ${contextStr}
+    
+    Constraints:
+    - NO Markdown Alerts (no > [!TIP] or > [!NOTE]). Do not include technical metadata.
+    - NO Placeholders (do not use "[Recipient Name]" or "[Your Name]").
+    - Greeting: Start with a warm "Hello," or "Hi," unless a name is explicitly known from notes.
+    - Style: High-performance, concise, and human. 
+    - Signature: End exactly with this signature block:
+    
+      Best regards,
+      Ocal AI Assistant
+      Sent via Ocal Agent | Your High-Performance Browser
+      
+    Respond ONLY with the email text.`;
     
     // Attempt Gemini first
     try {
         if (apiKey) {
             const expanded = await tryGemini(prompt, apiKey, 'formal');
-            if (expanded && expanded.length > 20) {
+            if (expanded && expanded.length > 10) {
                 return expanded;
             }
         }
     } catch (e) {
-        console.warn('[Professionalize] AI expansion failed, using fallback.');
+        console.warn('[Professionalize] AI expansion failed:', e.message);
     }
 
-    // Fallback: Professional Template Engine
-    let template = `Dear Valued Colleague,\n\nI am writing to formally communicate regarding: ${subject}.\n\nSpecifically, ${notes}.\n\nPlease let me know if you have any questions or require further clarification on this matter.\n\nBest regards,\nOcal Browser Assistant`;
+    // Fallback: Adaptive Premium Template Engine
+    const isShort = notes.length < 60;
+    let greeting = "Hello,";
+    
+    if (isShort) {
+        // Human-First Direct Messaging (Natural & Warm)
+        let template = `${greeting}\n\nI'm reaching out to **${notes.trim()}**.\n\nI hope you're having a great day! \n\nBest regards,\n\n**Ocal Professional Assistant**\n*Sent via Ocal Agent*`;
+        return template;
+    }
+
+    let bodyIntro = `I'm reaching out regarding **${subject}**`;
+    if (context && context.title) bodyIntro += ` after reviewing the latest details on **${context.title}**`;
+
+    let template = `${greeting}\n\n${bodyIntro}.\n\nSpecifically, I wanted to follow up on the following:\n\n> ${notes}\n\nPlease let me know if there's anything else needed to move this forward.\n\nBest regards,\n\n**Ocal Professional Assistant**\n*Sent via Ocal Agent | Your High-Performance Browser*`;
     return template;
 }
 
@@ -2211,11 +2369,15 @@ async function professionalizeEmail(notes, subject, apiKey) {
  * Helper: Refined Gemini fetch logic with model fallback loop.
  */
 async function tryGemini(prompt, apiKey, style = 'concise') {
-    const modelsToTry = ['gemini-2.5-flash', 'gemini-2.0-flash', 'gemini-flash-latest', 'gemini-pro-latest'];
+    const modelsToTry = ['gemini-1.5-flash', 'gemini-1.5-pro', 'gemini-pro', 'gemini-flash-latest'];
     for (const model of modelsToTry) {
         try {
             const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${apiKey}`;
-            const sysPrompt = `You are Ocal AI, a premium browser assistant. Style: ${style}. Format: Markdown. Use "> [!TIP]" for insights.`;
+            const sysPrompt = `You are Ocal AI, a high-performance browser assistant. 
+            Context: You have access to the user's tabs and browser environment.
+            Capabilities: You can summarize pages, navigate to sites, and handle MULTI-TASK requests.
+            Style: ${style}. Format: Markdown. Use "> [!TIP]" for insights and "> [!NOTE]" for technical details.
+            If a user asks for multiple things, address them sequentially in your response.`;
             
             const response = await fetch(apiUrl, {
                 method: 'POST',
@@ -2225,14 +2387,14 @@ async function tryGemini(prompt, apiKey, style = 'concise') {
 
             const resultData = await response.json();
             if (resultData.error) {
-                if (resultData.error.status === 'NOT_FOUND') continue;
-                throw new Error(resultData.error.message);
+                console.warn(`[Gemini API Warning] ${model}:`, resultData.error.message);
+                continue; // Try next model on error (High demand, quota, etc.)
             }
             const aiText = resultData.candidates?.[0]?.content?.parts?.[0]?.text;
             if (aiText) return aiText;
         } catch (err) {
             console.warn(`[Gemini Fallback] ${model} failed:`, err.message);
-            if (!err.message.includes('NOT_FOUND')) break; 
+            continue; // Continue to next model regardless of error type
         }
     }
     return null;
@@ -2281,6 +2443,15 @@ ipcMain.handle('ai-summarize-page', async (e) => (await ipcMain.emit('ai-agent-e
 ipcMain.handle('ai-search-web', async (e, q) => (await ipcMain.emit('ai-agent-execute', e, `search for ${q}`)).text);
 ipcMain.handle('ai-chat-query', async (e, q) => (await ipcMain.emit('ai-agent-execute', e, q)).text);
 
+
+ipcMain.on('execute-agent-command', (event, action) => {
+    const activeTab = views.find(v => v.id === activeViewId);
+    if (!activeTab || !activeTab.view || activeTab.view.webContents.isDestroyed()) return;
+
+    if (action.command === 'pdf-filter') {
+        activeTab.view.webContents.send('perform-agent-command', action);
+    }
+});
 
 ipcMain.on('toggle-web-app', (e, url) => {
     if (webAppOpen && currentWebAppUrl === url) {
@@ -3286,6 +3457,11 @@ function setupGoogleLoginPartition() {
 }
 
 app.whenReady().then(async () => {
+    if (isUninstallSurvey) {
+        createSurveyWindow();
+        return;
+    }
+
     // 1. Core Extension Loading (Highest Priority)
     await extensionManager.loadAll();
 
@@ -3576,6 +3752,94 @@ ipcMain.on('reorder-tabs', (e, { fromIndex, toIndex }) => {
     const tabEntry = views.splice(fromIndex, 1)[0];
     views.splice(toIndex, 0, tabEntry);
     broadcastTabs();
+});
+
+// ── File Manager (System Explorer) IPCs ─────────────────────────────────────
+ipcMain.handle('get-system-folders', () => {
+    return {
+        home: app.getPath('home'),
+        documents: app.getPath('documents'),
+        downloads: app.getPath('downloads'),
+        desktop: app.getPath('desktop'),
+        pictures: app.getPath('pictures'),
+        videos: app.getPath('videos'),
+        music: app.getPath('music')
+    };
+});
+
+ipcMain.handle('get-directory-entries', async (event, dirPath) => {
+    try {
+        const entries = fs.readdirSync(dirPath, { withFileTypes: true });
+        return entries.map(dirent => {
+            const fullPath = path.join(dirPath, dirent.name);
+            let stats;
+            try { stats = fs.statSync(fullPath); } catch (e) { stats = { size: 0, mtime: new Date() }; }
+            
+            return {
+                name: dirent.name,
+                path: fullPath,
+                isDirectory: dirent.isDirectory(),
+                size: stats.size,
+                mtime: stats.mtime
+            };
+        });
+    } catch (e) { return []; }
+});
+
+ipcMain.handle('analyze-system-files', async () => {
+    const targets = [
+        app.getPath('downloads'),
+        app.getPath('documents'),
+        app.getPath('desktop'),
+        app.getPath('pictures'),
+        app.getPath('videos'),
+        app.getPath('music')
+    ];
+    let allPdfs = [];
+    
+    const findPdfsRecursive = (dir, depth = 0) => {
+        if (depth > 3) return; // Limit depth for performance
+        try {
+            if (!fs.existsSync(dir)) return;
+            const entries = fs.readdirSync(dir, { withFileTypes: true });
+            
+            for (const dirent of entries) {
+                const fullPath = path.join(dir, dirent.name);
+                if (dirent.isDirectory()) {
+                    findPdfsRecursive(fullPath, depth + 1);
+                } else if (dirent.isFile() && dirent.name.toLowerCase().endsWith('.pdf')) {
+                    try {
+                        const stats = fs.statSync(fullPath);
+                        allPdfs.push({
+                            name: dirent.name,
+                            path: fullPath,
+                            size: stats.size,
+                            mtime: stats.mtime,
+                            source: path.basename(dir)
+                        });
+                    } catch (e) {}
+                }
+            }
+        } catch (e) {}
+    };
+
+    for (const target of targets) {
+        findPdfsRecursive(target);
+    }
+    
+    // Sort by most recent first and cap at a reasonable number for UI performance
+    return allPdfs.sort((a,b) => b.mtime - a.mtime).slice(0, 500);
+});
+
+ipcMain.handle('open-system-item', async (event, fullPath) => {
+    return await shell.openPath(fullPath);
+});
+
+ipcMain.handle('delete-system-item', async (event, fullPath) => {
+    try {
+        await shell.trashItem(fullPath);
+        return true;
+    } catch (e) { return false; }
 });
 
 ipcMain.handle('get-certificate-info', async (event, hostname) => {

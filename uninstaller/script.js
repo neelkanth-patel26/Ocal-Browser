@@ -17,6 +17,10 @@ document.addEventListener('DOMContentLoaded', () => {
     });
 
     submitBtn.addEventListener('click', () => {
+        submitBtn.disabled = true;
+        skipBtn.disabled = true;
+        submitBtn.innerHTML = "Processing...";
+        
         const feedback = feedbackText.value || "No additional feedback.";
         const email = "gns.media.group@outlook.com";
         const subject = encodeURIComponent("Ocal Browser - Uninstall Feedback");
@@ -29,6 +33,9 @@ document.addEventListener('DOMContentLoaded', () => {
     });
 
     skipBtn.addEventListener('click', () => {
+        submitBtn.disabled = true;
+        skipBtn.disabled = true;
+        skipBtn.innerHTML = "Uninstalling...";
         ipc.send('uninstall-survey-close');
     });
 });

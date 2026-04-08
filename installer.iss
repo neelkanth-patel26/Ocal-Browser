@@ -1,12 +1,12 @@
 [Setup]
 AppName=Ocal Browser
-AppVersion=3.7.70beta
+AppVersion=2.8.00 beta
 AppPublisher=Gaming Network Studio Media Group
 AppPublisherURL=https://github.com/neelkanth-patel26/Ocal-Browser
 DefaultDirName={autopf}\Ocal
 DefaultGroupName=Ocal
 OutputDir=dist-inno
-OutputBaseFilename=Ocal-3.7.70beta-Setup
+OutputBaseFilename=Ocal-2.8.00beta-Setup
 SetupIconFile=icon.ico
 Compression=lzma
 SolidCompression=yes
@@ -30,9 +30,10 @@ Name: "{autodesktop}\Ocal Browser"; Filename: "{app}\ocal.exe"; Tasks: desktopic
 
 [Registry]
 Root: HKCR; Subkey: ".pdf"; ValueType: string; ValueName: ""; ValueData: "Ocal.PDF"; Flags: uninsdeletevalue
-Root: HKCR; Subkey: "Ocal.PDF"; ValueType: string; ValueName: ""; ValueData: "PDF Document"; Flags: uninsdeletekey
-Root: HKCR; Subkey: "Ocal.PDF\DefaultIcon"; ValueType: string; ValueName: ""; ValueData: "{app}\icon-pdf.ico"; Flags: uninsdeletekey
+Root: HKCR; Subkey: "Ocal.PDF"; ValueType: string; ValueName: ""; ValueData: "Ocal PDF Document"; Flags: uninsdeletekey
+Root: HKCR; Subkey: "Ocal.PDF\DefaultIcon"; ValueType: string; ValueName: ""; ValueData: "{app}\icon-pdf.ico,0"; Flags: uninsdeletekey
 Root: HKCR; Subkey: "Ocal.PDF\shell\open\command"; ValueType: string; ValueName: ""; ValueData: """{app}\ocal.exe"" ""%1"""; Flags: uninsdeletekey
+Root: HKCR; Subkey: "Ocal.PDF\shell\open"; ValueType: string; ValueName: "FriendlyAppName"; ValueData: "Ocal Browser"; Flags: uninsdeletekey
 
 [Run]
 Filename: "{app}\ocal.exe"; Parameters: "--install"; Description: "Complete Premium Setup (Import Data, AI Sync)"; Flags: nowait postinstall skipifsilent

@@ -1,0 +1,87 @@
+    <title>PDF Explorer | Ocal</title>
+    <link rel="stylesheet" href="assets/fontawesome/css/all.min.css">
+    <link rel="stylesheet" href="file-manager.css">
+</head>
+<body class="pro-studio">
+    <div class="app-container">
+        <!-- Sidebar -->
+        <aside class="sidebar">
+            <div class="sidebar-header">
+                <i class="fas fa-file-pdf brand-icon"></i>
+                <span>PDF Explorer</span>
+            </div>
+            
+            <nav class="sidebar-nav">
+                <div class="nav-section">
+                    <div class="section-title">Quick Access</div>
+                    <button class="nav-item active" data-folder="home"><i class="fas fa-house"></i> Home</button>
+                    <button class="nav-item" data-folder="downloads"><i class="fas fa-download"></i> Downloads</button>
+                    <button class="nav-item" data-folder="documents"><i class="fas fa-file-lines"></i> Documents</button>
+                    <button class="nav-item" data-folder="desktop"><i class="fas fa-desktop"></i> Desktop</button>
+                </div>
+                
+                <div class="nav-section">
+                    <div class="section-title">Media</div>
+                    <button class="nav-item" data-folder="pictures"><i class="fas fa-image"></i> Pictures</button>
+                    <button class="nav-item" data-folder="videos"><i class="fas fa-clapperboard"></i> Videos</button>
+                    <button class="nav-item" data-folder="music"><i class="fas fa-music"></i> Music</button>
+                </div>
+            </nav>
+
+            <div class="sidebar-footer">
+                <div class="privacy-note">
+                    <i class="fas fa-shield-halved"></i>
+                    <span>All your PDFs are processed locally. Nothing is sent to online servers.</span>
+                </div>
+                <button id="analyze-btn" class="analyze-btn">
+                    <i class="fas fa-layer-group"></i>
+                    <span>Fetch All PDFs</span>
+                </button>
+            </div>
+        </aside>
+
+        <!-- Main Content -->
+        <main class="main-content">
+            <header class="content-header">
+                <div class="header-main-info">
+                    <h1 class="page-title">PDF Library</h1>
+                    <div class="breadcrumbs" id="breadcrumbs">
+                        <span>This PC</span>
+                    </div>
+                </div>
+                
+                <div class="header-actions">
+                    <div class="search-box">
+                        <i class="fas fa-magnifying-glass"></i>
+                        <input type="text" id="file-search" placeholder="Search PDFs...">
+                    </div>
+                    <div class="view-toggles">
+                        <button class="view-btn active" id="view-grid" title="Grid View"><i class="fas fa-grip"></i></button>
+                        <button class="view-btn" id="view-list" title="List View"><i class="fas fa-list"></i></button>
+                    </div>
+                </div>
+            </header>
+
+            <div class="explorer-body">
+                <div id="file-grid" class="file-grid">
+                    <!-- Files will be injected here -->
+                    <div class="loading-state">
+                        <i class="fas fa-circle-notch fa-spin"></i>
+                        <span>Fetching system items...</span>
+                    </div>
+                </div>
+            </div>
+            
+            <footer class="content-footer" id="status-bar">
+                <span id="item-count">0 items</span>
+                <span class="path-display" id="current-path">/</span>
+            </footer>
+        </main>
+    </div>
+
+    <!-- Context Menu Placeholder -->
+    <div id="context-menu" class="custom-context-menu"></div>
+
+    <script src="file-manager.js"></script>
+</body>
+</html>

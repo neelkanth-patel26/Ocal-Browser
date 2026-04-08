@@ -12,9 +12,6 @@ const handle = document.getElementById('resize-handle');
 
 // Quick Tools
 const toolSummarize = document.getElementById('tool-summarize');
-const toolTabs = document.getElementById('tool-tabs');
-const toolSearch = document.getElementById('tool-search');
-const toolExplain = document.getElementById('tool-explain');
 const toolEmail = document.getElementById('tool-email');
 
 // Configure Highlight.js
@@ -77,6 +74,8 @@ const addMessage = async (content, isUser = false, actions = []) => {
             
             if (action.url) {
                 actionEl.onclick = () => window.electronAPI.send('open-external', action.url);
+            } else if (action.command) {
+                actionEl.onclick = () => window.electronAPI.send('execute-agent-command', action);
             }
             
             group.appendChild(actionEl);
@@ -186,9 +185,6 @@ closeBtn?.addEventListener('click', () => {
 
 // Tool Handlers
 toolSummarize?.addEventListener('click', () => handleSend("Please summarize the contents of this page."));
-toolExplain?.addEventListener('click', () => handleSend("Please explain what this page is about in detail."));
-toolTabs?.addEventListener('click', () => handleSend("List all my open tabs."));
-toolSearch?.addEventListener('click', () => handleSend("Perform a Deep Search for information. What would you like me to find?"));
 toolEmail?.addEventListener('click', () => handleSend("I'd like to compose an email. Help me draft it."));
 
 // Resize Logic
