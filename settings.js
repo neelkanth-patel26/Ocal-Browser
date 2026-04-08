@@ -489,6 +489,11 @@ window.electronAPI.getSettings().then(s => {
     if (s.homeTileSize) window.updateHomeSetting('homeTileSize', s.homeTileSize, true);
     if (s.homeTileSpacing) window.updateHomeSetting('homeTileSpacing', s.homeTileSpacing, true);
     
+    // Homepage Widgets
+    initToggle('show-todo-toggle', 'showDailyFocus', s.showDailyFocus !== false);
+    initToggle('show-timer-toggle', 'showFocusFlow', s.showFocusFlow !== false);
+    initToggle('show-weather-toggle', 'showWeather', s.showWeather !== false);
+
     initToggle('compact-toggle', 'compactMode', s.compactMode);
     initToggle('ask-save-toggle', 'askSavePath', s.askSavePath);
     initToggle('pdf-viewer-toggle', 'pdfViewerEnabled', s.pdfViewerEnabled !== false);

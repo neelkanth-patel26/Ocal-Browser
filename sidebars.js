@@ -102,6 +102,7 @@ function showModal({ title, message, onConfirm, onCancel }) {
 window.electronAPI.onShowModal((data) => showModal(data));
 
 window.electronAPI.onSettingsChanged((s) => {
+    console.log('[Sidebar] Settings updated, history count:', s.history?.length || 0);
     currentSettings = s;
     historyItems = s.history || [];
     if (s.accentColor) document.documentElement.style.setProperty('--accent', s.accentColor);
@@ -725,52 +726,6 @@ function esc(str) {
     return String(str || '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
 }
 
-function showModal({ title, message, onConfirm }) {
-    const overlay = document.getElementById('modal-overlay');
-    const container = document.getElementById('modal-container');
-    const titleEl = document.getElementById('modal-title');
-    const bodyEl = document.getElementById('modal-body');
-    const confirmBtn = document.getElementById('modal-confirm');
-    const cancelBtn = document.getElementById('modal-cancel');
-
-    if (!overlay || !confirmBtn || !cancelBtn) return;
-
-    // Custom Icon for Exit
-    const iconEl = document.getElementById('modal-icon');
-    if (iconEl) {
-        if (title === 'Confirm Exit') {
-            iconEl.innerHTML = '<i class="fas fa-power-off"></i>';
-            iconEl.style.color = '#ef4444';
-            iconEl.style.background = 'rgba(239, 68, 68, 0.1)';
-            iconEl.style.borderColor = 'rgba(239, 68, 68, 0.2)';
-            iconEl.style.boxShadow = '0 10px 30px rgba(239, 68, 68, 0.2)';
-        } else {
-            iconEl.innerHTML = '<i class="fas fa-triangle-exclamation"></i>';
-            iconEl.style.color = 'var(--accent)';
-            iconEl.style.background = 'var(--accent-dim)';
-            iconEl.style.borderColor = 'var(--accent-border)';
-            iconEl.style.boxShadow = '0 10px 30px var(--accent-glow)';
-        }
-    }
-
-    titleEl.textContent = title;
-    bodyEl.textContent = message;
-    overlay.style.display = 'flex';
-
-    const close = () => { 
-        overlay.style.display = 'none'; 
-        // Important: tell main to hide the overlay view if no sidebar is open
-        window.electronAPI.send('close-all-sidebars');
-    };
-
-    confirmBtn.onclick = () => { onConfirm(); close(); };
-    cancelBtn.onclick = close;
-    
-    // Backdrop click to dismiss
-    overlay.onclick = (e) => {
-        if (e.target === overlay) close();
-    };
-}
 
 // ── Final Event Listener Assignment ──────────────────────────────────────
 if (backdrop) backdrop.addEventListener('click', closeSidebar);

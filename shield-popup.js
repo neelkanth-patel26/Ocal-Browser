@@ -109,11 +109,7 @@ if (dislikeToggle) {
 }
 
 vpnToggle.onchange = () => {
-    ipcRenderer.send('update-setting', 'vpnEnabled', vpnToggle.checked);
-    ipcRenderer.send('apply-proxy', { 
-        enabled: vpnToggle.checked, 
-        region: getSelectedValue()
-    });
+    ipcRenderer.send('toggle-vpn', vpnToggle.checked);
 };
 
 selectTrigger.onclick = () => {
@@ -126,13 +122,7 @@ options.forEach(opt => {
         updateSelectionUI(val);
         selectOptions.classList.remove('open');
         
-        if (vpnToggle.checked) {
-            ipcRenderer.send('apply-proxy', { 
-                enabled: true, 
-                region: val 
-            });
-        }
-        ipcRenderer.send('update-setting', 'vpnRegion', val);
+        ipcRenderer.send('set-vpn-region', val);
     };
 });
 
@@ -158,22 +148,21 @@ window.addEventListener('click', (e) => {
 
 // Listen for stat updates in real-time
 ipcRenderer.on('shield-stats-updated', (event, stats) => {
-    // 1. ALWAYS update Global stats (it shows in every tab's popup)
+    // 1. ALWAYS update Global stats
     if (stats.global) {
         updateUI({ global: stats.global });
     }
     
     // 2. Only update PAGE stats if it matches our active tab ID
-    // We need to resolve the tabId to the webContentsId on the main side, 
-    // but main already did that and passed it as 'webContentsId'.
-    // However, shield-popup.js stores window._currentTabId (the string timestamp ID).
-    // We'll trust the main process to only send 'page' stats when relevant or 
-    // we could keep it simple and just update global. 
-    // Wait, the main process broadcasts THIS page's updates.
-    
-    ipcRenderer.invoke('get-shield-stats', window._currentTabId).then(freshStats => {
-        updateUI(freshStats);
-    });
+    // The main process sends webContentsId. If we don't have it, we can fallback to the tabId.
+    if (stats.page) {
+        // If the popup is open for a specific tab, and that tab just got a block, update it.
+        // We compare the incoming webContentsId if available, but since this is a 
+        // global broadcast to all windows, the popup will just refresh its current view.
+        ipcRenderer.invoke('get-shield-stats', window._currentTabId).then(freshStats => {
+            updateUI(freshStats);
+        });
+    }
 });
 
 // VPN Status Handling

@@ -174,7 +174,14 @@ contextBridge.exposeInMainWorld('electronAPI', {
   onShowModal:         (cb) => ipcRenderer.on('show-modal',            (e, d)    => cb(d)),
   onUpdateSiteInfo:    (cb) => ipcRenderer.on('update-site-info',      (e, d)    => cb(d)),
   onShowBMDropdown:    (cb) => ipcRenderer.on('show-bm-dropdown',      (e, d)    => cb(d)),
-  onFaviconUpdated:    (cb) => ipcRenderer.on('favicon-updated',       (e, d)    => cb(d)),
+  onFaviconUpdated:    (cb) => ipcRenderer.on('favicon-updated',       (e, d) => cb(d)),
+
+  // ── Ocal VPN Bridge (Extension Interface) ──────────────────────────
+  vpnBridge: {
+    setProxy: (pacCode, region) => ipcRenderer.send('vpn-set-proxy', { pacCode, region }),
+    clearProxy: () => ipcRenderer.send('vpn-clear-proxy'),
+    onCommand: (cb) => ipcRenderer.on('vpn-extension-command', (e, d) => cb(d))
+  }
 });
 
 // ── Chrome Web Store Bypass & Injection ──────────────────────────────────────────

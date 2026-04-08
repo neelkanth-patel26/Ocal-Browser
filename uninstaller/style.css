@@ -9,17 +9,24 @@
 
 * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Inter', sans-serif; }
 
-body { background: #000; height: 100vh; display: flex; justify-content: center; align-items: center; color: var(--text-primary); overflow: hidden; }
+body { background: #000; height: 100vh; display: flex; justify-content: center; align-items: flex-start; color: var(--text-primary); overflow: auto; padding-top: 40px; padding-bottom: 40px; }
+
+/* Custom Premium Scrollbar */
+::-webkit-scrollbar { width: 8px; }
+::-webkit-scrollbar-track { background: rgba(0,0,0,0.2); }
+::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.1); border-radius: 4px; }
+::-webkit-scrollbar-thumb:hover { background: rgba(255,255,255,0.2); }
 
 .survey-window {
     width: 600px;
-    height: 520px;
     background: var(--bg-main);
     border: 1px solid var(--border-color);
     display: flex;
     flex-direction: column;
     padding: 40px;
     animation: slide-up 0.4s ease;
+    margin-bottom: 40px;
+    flex-shrink: 0;
 }
 
 .header { text-align: center; margin-bottom: 30px; }

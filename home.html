@@ -2,403 +2,287 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline' https://cdnjs.cloudflare.com https://unpkg.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com https://cdnjs.cloudflare.com; font-src 'self' https://fonts.gstatic.com https://cdnjs.cloudflare.com; img-src 'self' data: https:; connect-src 'self' https://suggestqueries.google.com https://api.github.com https://cdnjs.cloudflare.com https://unpkg.com;">
+    <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline' https://cdnjs.cloudflare.com https://unpkg.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com https://cdnjs.cloudflare.com; font-src 'self' https://fonts.gstatic.com https://cdnjs.cloudflare.com; img-src 'self' data: https:; connect-src 'self' https://suggestqueries.google.com https://api.github.com https://cdnjs.cloudflare.com https://unpkg.com https://wttr.in;">
     <title>Ocal Home</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@200;300;400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@200;300;400;500;600;700&family=Outfit:wght@100;200;300;400;500;600&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="assets/fontawesome/css/all.min.css">
     <style>
-        *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+        *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; outline: none; }
 
         :root {
             --accent: #a855f7;
-            --accent-glow: rgba(168,85,247,0.25);
-            --accent-dim: rgba(168,85,247,0.12);
-            --accent-border: rgba(168,85,247,0.3);
+            --accent-glow: rgba(168, 85, 247, 0.4);
             --bg: #0d0d10;
-            --chrome: #0d0d10;
-            --chrome-border: rgba(255,255,255,0.07);
-            --glass: rgba(255,255,255,0.04);
-            --glass-border: rgba(255,255,255,0.09);
-            --glass-hover: rgba(255,255,255,0.07);
-            --text: #fff;
-            --text-dim: rgba(255,255,255,0.55);
-            --text-muted: rgba(255,255,255,0.28);
-            --hover: rgba(255,255,255,0.07);
-            --tile-size: 76px;
-            --tile-gap: 18px;
-            --card-radius: 18px;
+            --glass: rgba(255, 255, 255, 0.04);
+            --glass-border: rgba(255, 255, 255, 0.08);
+            --text-main: #ffffff;
+            --text-dim: rgba(255, 255, 255, 0.5);
+            --text-muted: rgba(255, 255, 255, 0.25);
+            --font-title: 'Outfit', sans-serif;
+            --font-main: 'Inter', sans-serif;
+            --panel-blur: blur(40px) saturate(200%);
+
+            /* Dynamic Metrics */
+            --tile-size: 80px;
+            --tile-gap: 32px;
         }
 
         body {
-            font-family: 'Inter', -apple-system, sans-serif;
+            font-family: var(--font-main);
             background: var(--bg);
-            color: var(--text);
+            color: var(--text-main);
             height: 100vh; width: 100vw;
             overflow: hidden;
-            display: flex; flex-direction: column;
-            align-items: center; justify-content: center;
             position: relative;
             -webkit-font-smoothing: antialiased;
+            opacity: 0; transform: translateY(10px);
+            transition: opacity 0.8s ease, transform 0.8s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+        body.loaded { opacity: 1; transform: translateY(0); }
+
+        .ambient-lighting {
+            position: fixed; inset: 0; z-index: -1;
+            background: 
+                radial-gradient(circle at 50% 12%, rgba(168, 85, 247, 0.08) 0%, transparent 45%),
+                radial-gradient(circle at 10% 10%, rgba(59, 130, 246, 0.03) 0%, transparent 40%),
+                radial-gradient(circle at 90% 90%, rgba(168, 85, 247, 0.02) 0%, transparent 40%),
+                radial-gradient(circle at 50% 50%, #121217 0%, #0d0d10 100%);
         }
 
-        /* Ambient background glow */
-        body::before {
-            content: '';
-            position: fixed; inset: 0;
-            background:
-                radial-gradient(ellipse 60% 40% at 50% 0%, rgba(168,85,247,0.13) 0%, transparent 70%),
-                radial-gradient(ellipse 40% 30% at 20% 100%, rgba(99,102,241,0.07) 0%, transparent 60%),
-                radial-gradient(ellipse 35% 25% at 80% 80%, rgba(168,85,247,0.05) 0%, transparent 50%);
-            pointer-events: none; z-index: 0;
-            animation: ambientShift 12s ease-in-out infinite alternate;
-        }
-        @keyframes ambientShift {
-            from { opacity: 0.8; }
-            to { opacity: 1; }
-        }
-
-        /* ── Main Content ─────────────────────────────────────────── */
-        .content {
+        .dashboard {
+            display: grid;
+            grid-template-columns: 340px 1fr 340px;
+            gap: 60px;
+            width: 100%; height: 100vh;
+            padding: 70px 60px;
             position: relative; z-index: 10;
+        }
+
+        .dashboard.layout-top .col-center { justify-content: flex-start; padding-top: 40px; }
+        .dashboard.layout-center .col-center { justify-content: center; }
+        .dashboard.layout-bottom .col-center { justify-content: flex-end; padding-bottom: 80px; }
+
+        .glass-panel {
+            background: var(--glass);
+            backdrop-filter: var(--panel-blur);
+            border: 1px solid var(--glass-border);
+            border-radius: 18px;
             display: flex; flex-direction: column;
-            align-items: center;
-            gap: 40px;
-            width: 100%; max-width: 820px;
-            height: 100vh;
-            padding: 40px 32px;
-            animation: slideUp 0.7s cubic-bezier(0.16, 1, 0.3, 1) both;
+            overflow: hidden;
+            height: fit-content;
+            max-height: 85vh;
+            transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+            box-shadow: 0 10px 40px rgba(0,0,0,0.3);
         }
+        .glass-panel:hover { background: rgba(255, 255, 255, 0.06); border-color: rgba(255, 255, 255, 0.15); transform: translateY(-2px); }
 
-        @keyframes slideUp {
-            from { opacity: 0; transform: translateY(28px); }
-            to   { opacity: 1; transform: translateY(0); }
+        .col-side { display: flex; flex-direction: column; gap: 32px; }
+        .widget-head { padding: 24px 24px 12px; display: flex; align-items: center; justify-content: space-between; }
+        .widget-title { font-size: 10px; font-weight: 800; letter-spacing: 2.5px; text-transform: uppercase; color: var(--text-muted); opacity: 0.8; }
+
+        .todo-stack { flex: 1; overflow-y: auto; padding: 0 16px 20px; display: flex; flex-direction: column; gap: 10px; }
+        .todo-card {
+            display: flex; align-items: center; gap: 14px; padding: 14px 18px;
+            border-radius: 12px; background: rgba(255,255,255,0.06);
+            border: 1.5px solid rgba(255, 255, 255, 0.05); 
+            transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1); cursor: pointer;
         }
-
-        /* ── Clock ────────────────────────────────────────────────── */
-        .clock-block {
-            text-align: center;
-            display: flex; flex-direction: column; align-items: center; gap: 14px;
+        .todo-card:hover { background: rgba(255,255,255,0.1); border-color: var(--accent); transform: translateX(4px); }
+        .todo-checkbox { width: 18px; height: 18px; border-radius: 5px; border: 1.5px solid var(--text-dim); position: relative; flex-shrink: 0; transition: 0.2s; }
+        .todo-card.done .todo-checkbox { background: var(--accent); border-color: var(--accent); box-shadow: 0 0 12px var(--accent-glow); }
+        .todo-card.done .todo-checkbox::after {
+            content: '\f00c'; font-family: 'Font Awesome 6 Free'; font-weight: 900;
+            position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%);
+            font-size: 9px; color: #fff;
         }
+        .todo-label { font-size: 14px; color: #fff; flex: 1; font-weight: 400; opacity: 0.8; }
+        .todo-card.done .todo-label { text-decoration: line-through; opacity: 0.4; }
+        .del-todo { font-size: 11px; color: var(--text-muted); opacity: 0; transition: 0.2s; cursor: pointer; }
+        .todo-card:hover .del-todo { opacity: 0.8; }
+        .del-todo:hover { color: #f43f5e; opacity: 1 !important; transform: scale(1.2); }
+        .todo-input-wrap { padding: 18px 24px; border-top: 1px solid var(--glass-border); background: rgba(0,0,0,0.1); position: relative; }
+        .todo-input { width: 100%; background: none; border: none; font-size: 13px; color: #fff; opacity: 0.5; font-weight: 500; transition: 0.3s; }
+        .todo-input:focus { opacity: 1; color: var(--accent); }
+        .todo-input-wrap::after { content: ''; position: absolute; bottom: 0; left: 0; width: 0; height: 2px; background: var(--accent); transition: 0.4s cubic-bezier(0.16, 1, 0.3, 1); }
+        .todo-input-wrap:focus-within::after { width: 100%; }
 
-        .clock {
-            font-size: 96px;
-            font-weight: 200;
-            letter-spacing: -7px;
-            line-height: 1;
-            color: #fff;
-            font-variant-numeric: tabular-nums;
-            text-shadow: 0 2px 40px rgba(168,85,247,0.18), 0 0 80px rgba(168,85,247,0.08);
+        /* ── Center Piece ── */
+        .col-center { display: flex; flex-direction: column; align-items: center; gap: 54px; text-align: center; transition: all 0.5s cubic-bezier(0.16, 1, 0.3, 1); }
+        
+        .clock-pillar { display: flex; flex-direction: column; gap: 8px; }
+        .time-display { 
+            font-family: var(--font-title); font-size: 104px; font-weight: 200; 
+            letter-spacing: 2px; line-height: 1; color: #fff; 
+            filter: drop-shadow(0 0 30px rgba(255,255,255,0.15)); 
+            transition: all 0.5s cubic-bezier(0.16, 1, 0.3, 1);
         }
-
-        .clock-colon {
-            animation: blink 1s step-start infinite;
-            display: inline-block;
+        .clock-colon { opacity: 0.8; animation: clock-pulse 2s infinite ease-in-out; margin: 0 4px; }
+        @keyframes clock-pulse {
+            0%, 100% { opacity: 0.3; transform: scale(0.95); }
+            50% { opacity: 1; transform: scale(1.05); }
+        }
+        .greeting-display { 
+            font-size: 9px; font-weight: 700; letter-spacing: 4px; 
+            text-transform: uppercase; color: var(--text-dim); 
+            display: flex; align-items: center; justify-content: center; gap: 12px; 
             opacity: 0.7;
         }
-        @keyframes blink { 50% { opacity: 0.15; } }
+        .greeting-dot { width: 3px; height: 3px; border-radius: 50%; background: var(--accent); opacity: 0.6; box-shadow: 0 0 8px var(--accent); }
 
-        .meta-row {
-            display: flex; align-items: center; gap: 10px;
-            font-size: 10.5px; font-weight: 600;
-            letter-spacing: 3.5px; text-transform: uppercase;
-            color: var(--text-muted);
+        .search-container { width: 100%; max-width: 680px; position: relative; }
+        .search-field { 
+            display: flex; align-items: center; gap: 18px; height: 68px; padding: 0 16px 0 28px; 
+            background: rgba(255,255,255,0.02); border: 1.5px solid var(--glass-border); border-radius: 20px; 
+            transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1); 
+            box-shadow: 0 15px 45px rgba(0,0,0,0.25);
         }
-        .meta-dot {
-            width: 4px; height: 4px; border-radius: 50%;
-            background: var(--accent);
-            animation: pulseDot 2.5s ease-in-out infinite;
+        .search-field:focus-within { 
+            background: rgba(255,255,255,0.06); border-color: var(--accent); 
+            box-shadow: 0 0 40px rgba(168, 85, 247, 0.1), 0 0 0 1.5px var(--accent); 
+            transform: translateY(-2px);
         }
-        @keyframes pulseDot {
-            0%, 100% { box-shadow: 0 0 6px var(--accent); transform: scale(1); }
-            50% { box-shadow: 0 0 14px var(--accent); transform: scale(1.5); }
-        }
-
-        /* ── Search Bar ───────────────────────────────────────────── */
-        .search-wrap { width: 100%; }
-
-        .search-bar {
-            display: flex; align-items: center; gap: 12px;
-            width: 100%; height: 54px;
-            background: rgba(255,255,255,0.05);
-            border: 1px solid rgba(255,255,255,0.09);
-            border-radius: 14px;
-            padding: 0 18px;
-            transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
-            box-shadow: inset 0 1px 0 rgba(255,255,255,0.04), 0 4px 24px rgba(0,0,0,0.22);
-        }
-        .search-bar:focus-within {
-            background: rgba(255,255,255,0.07);
-            border-color: var(--accent);
-            box-shadow: 0 0 0 3px rgba(168,85,247,0.15), inset 0 1px 0 rgba(168,85,247,0.05), 0 8px 32px rgba(0,0,0,0.3);
-        }
-        .search-bar .search-icon {
-            font-size: 14px;
-            color: var(--text-muted);
-            transition: color 0.25s, transform 0.25s;
-            flex-shrink: 0;
-        }
-        .search-bar:focus-within .search-icon {
-            color: var(--accent);
-            transform: scale(1.12);
-        }
-        .search-input {
-            flex: 1; background: none; border: none; outline: none;
-            font-size: 15px; font-family: 'Inter', sans-serif; font-weight: 400;
-            color: #fff; letter-spacing: 0.1px;
-        }
+        .search-input { flex: 1; background: none; border: none; font-size: 18px; color: #fff; font-weight: 300; letter-spacing: 0.5px; }
         .search-input::placeholder { color: var(--text-muted); }
-        .search-enter-hint {
-            font-size: 10px; font-weight: 700;
-            color: var(--text-muted); letter-spacing: 0.5px;
-            background: rgba(255,255,255,0.06);
-            border: 1px solid var(--glass-border);
-            padding: 4px 9px; border-radius: 7px;
-            opacity: 0; transition: opacity 0.2s;
-            flex-shrink: 0; white-space: nowrap;
-        }
-        .search-bar:focus-within .search-enter-hint { opacity: 1; }
-
-        /* ── Quick Launch Shelf ───────────────────────────────────── */
-        .shelf {
-            display: flex; gap: var(--tile-gap);
-            justify-content: center; flex-wrap: wrap;
-            width: 100%;
-        }
-
-        .tile {
-            display: flex; flex-direction: column; align-items: center; gap: 10px;
-            cursor: pointer;
-            transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
-        }
-        .tile-icon {
-            width: var(--tile-size); height: var(--tile-size);
-            border-radius: var(--card-radius);
-            background: rgba(255,255,255,0.05);
-            border: 1px solid rgba(255,255,255,0.09);
-            backdrop-filter: blur(20px);
+        .search-enter { 
+            width: 44px; height: 44px; border-radius: 14px; 
+            background: rgba(255,255,255,0.06); border: 1px solid rgba(255,255,255,0.1); 
+            color: var(--text-muted); font-size: 14px; cursor: pointer; transition: 0.3s;
             display: flex; align-items: center; justify-content: center;
-            font-size: 30px;
-            color: var(--text-dim);
-            transition: inherit;
-            position: relative; overflow: hidden;
-            box-shadow: 0 4px 16px rgba(0,0,0,0.2), inset 0 1px 0 rgba(255,255,255,0.06);
         }
-        .tile-icon::before {
-            content: '';
-            position: absolute; inset: 0;
-            background: linear-gradient(135deg, rgba(255,255,255,0.08) 0%, transparent 55%);
-        }
-        .tile-label {
-            font-size: 11.5px; font-weight: 500;
-            color: var(--text-muted); letter-spacing: 0.2px;
-            transition: color 0.25s;
-            max-width: var(--tile-size);
-            white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
-            text-align: center;
-        }
-        .tile:hover .tile-icon {
-            transform: translateY(-8px) scale(1.04);
-            box-shadow: 0 24px 40px rgba(0,0,0,0.45), inset 0 1px 0 rgba(255,255,255,0.1);
-            border-color: rgba(255,255,255,0.18);
-            background: rgba(255,255,255,0.09);
-        }
-        .tile:hover .tile-label { color: var(--text-dim); }
+        .search-enter:hover { background: var(--accent); color: #fff; border-color: transparent; box-shadow: 0 8px 20px rgba(168, 85, 247, 0.3); transform: rotate(45deg) scale(1.1); }
+        .search-enter i { transition: 0.3s; }
+        .search-enter:hover i { transform: rotate(-45deg); }
 
-        /* ── Hover Transitions ────────────────────────────────────────── */
-        .tile:hover .tile-icon {
-            transform: translateY(-8px) scale(1.04);
-            box-shadow: 0 24px 40px rgba(0,0,0,0.45), inset 0 1px 0 rgba(255,255,255,0.1);
-            border-color: rgba(255,255,255,0.25) !important;
-            background: rgba(255,255,255,0.12) !important;
-            color: #fff !important;
-            filter: brightness(1.2) grayscale(1);
-            text-shadow: 0 0 15px rgba(255,255,255,0.3);
-        }
-        .tile:hover .tile-label { color: #fff; font-weight: 600; }
+        /* ── Focus Flow Redesign ── */
+        .timer-container { position: relative; width: 180px; height: 180px; margin: 20px auto; display: flex; align-items: center; justify-content: center; }
+        .timer-svg { position: absolute; top: 0; left: 0; transform: rotate(-90deg); width: 180px; height: 180px; }
+        .timer-svg circle { fill: none; stroke: var(--glass-border); stroke-width: 8; stroke-linecap: round; }
+        .timer-svg .progress { stroke: var(--accent); stroke-dasharray: 502; stroke-dashoffset: 502; transition: stroke-dashoffset 0.5s ease; filter: drop-shadow(0 0 8px var(--accent-glow)); }
 
-        /* ── Layout Variants & Premium Styles ─────────────────────────────────── */
-        .content.layout-top    { justify-content: flex-start; padding-top: 80px; }
-        .content.layout-center { justify-content: center; }
-        .content.layout-bottom { justify-content: flex-end; padding-bottom: 100px; flex-direction: column-reverse; }
-        .content.layout-bottom .clock-block { order: 2; margin-bottom: 30px; }
-        .content.layout-bottom .shelf       { order: 1; margin-bottom: 20px; }
-        .content.layout-bottom .search-wrap { order: 0; }
-
-        /* Style: Glassmorphic Array (Soft & Airy) */
-        .tile.style-glass-array .tile-icon {
-            background: rgba(255,255,255,0.05);
-            backdrop-filter: blur(50px) saturate(210%);
-            border: 1px solid rgba(255,255,255,0.14);
-            box-shadow: 0 16px 48px rgba(0,0,0,0.25), inset 0 2px 0 rgba(255,255,255,0.08);
-            border-radius: 28px; /* Soft bubble corners */
-        }
-        .tile.style-glass-array:hover .tile-icon {
-            background: rgba(255,255,255,0.12);
-            transform: translateY(-10px) scale(1.08);
+        /* ── Dynamic Shortcut Grid ── */
+        .tiles-grid { display: flex; gap: var(--tile-gap); justify-content: center; flex-wrap: wrap; transition: gap 0.3s; padding: 10px; }
+        .tile-item { display: flex; flex-direction: column; align-items: center; gap: 16px; cursor: pointer; }
+        
+        .tile-box { 
+            width: var(--tile-size); height: var(--tile-size);
+            display: flex; align-items: center; justify-content: center; 
+            font-size: calc(var(--tile-size) * 0.42); 
+            color: var(--text-dim); transition: all 0.5s cubic-bezier(0.16, 1, 0.3, 1); 
+            aspect-ratio: 1/1; flex-shrink: 0;
         }
 
-        /* Style: Solid Matte Structure (Hard & Industrial) */
-        .tile.style-solid-matte .tile-icon {
-            width: calc(var(--tile-size) * 1.5);
-            height: calc(var(--tile-size) * 0.85);
-            background: #111114; /* Deep, opaque stealth matte */
-            border: 1.2px solid rgba(255,255,255,0.1);
-            border-radius: 6px; /* Sharp industrial corners */
-            box-shadow: 0 10px 30px rgba(0,0,0,0.6), 0 2px 0 rgba(0,0,0,1);
-            backdrop-filter: none;
-            overflow: hidden;
+        .style-glass { 
+            background: rgba(255, 255, 255, 0.04); backdrop-filter: var(--panel-blur); 
+            border: 1px solid var(--glass-border); border-radius: calc(var(--tile-size) * 0.28); 
         }
-        .tile.style-solid-matte .tile-label { max-width: calc(var(--tile-size) * 1.5); }
-        .tile.style-solid-matte .tile-icon::before {
-            /* Override the default gloss highlight with a matte subtle top edge */
-            background: linear-gradient(180deg, rgba(255,255,255,0.04) 0%, transparent 15%);
-        }
-        .tile.style-solid-matte .tile-icon i { 
-            filter: drop-shadow(0 2px 4px rgba(0,0,0,0.5)); 
-            opacity: 0.8;
-            color: rgba(255,255,255,0.7);
-        }
-        .tile.style-solid-matte:hover .tile-icon {
-            background: #16161a;
-            border-color: rgba(255,255,255,0.22);
-            transform: translateY(-6px); /* Less floaty, more solid */
-        }
-        .tile.style-solid-matte:hover .tile-icon i { opacity: 1; color: #fff; }
+        .tile-item:hover .style-glass { background: rgba(168, 85, 247, 0.15); border-color: var(--accent); color: #fff; transform: translateY(-8px) scale(1.05); box-shadow: 0 15px 35px rgba(0,0,0,0.4), 0 0 20px var(--accent-glow); }
 
-        /* Style: Neon Circular Orbit (Futuristic) */
-        .tile.style-neon-orbit .tile-icon {
-            width: var(--tile-size);
-            height: var(--tile-size);
-            border-radius: 50%;
-            background: transparent;
-            border: 1px solid rgba(255,255,255,0.1);
-            position: relative;
-            box-shadow: inset 0 0 20px rgba(255,255,255,0.02);
-            transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+        .style-matte { 
+            background: #1a1a1f; border: 2px solid #2a2a2f; border-radius: 12px; backdrop-filter: none; 
         }
-        .tile.style-neon-orbit:hover .tile-icon {
-            border-color: #fff;
-            box-shadow: 0 0 40px rgba(255,255,255,0.2), inset 0 0 20px rgba(255,255,255,0.05);
-            transform: scale(1.1) rotate(5deg);
-        }
-        /* Dashboard Orbit Trace */
-        .tile.style-neon-orbit .tile-icon::after {
-            content: ''; position: absolute; inset: -4px; border-radius: 50%;
-            border: 1px dashed rgba(255,255,255,0.15);
-            opacity: 0; transition: opacity 0.4s, transform 0.6s;
-            pointer-events: none;
-        }
-        .tile.style-neon-orbit:hover .tile-icon::after {
-            opacity: 0.5; transform: rotate(180deg);
-        }
+        .tile-item:hover .style-matte { background: #222229; border-color: var(--accent); color: #fff; transform: scale(1.1); box-shadow: 0 10px 30px rgba(0,0,0,0.5); }
 
-        /* ── Bottom Status Bar ────────────────────────────────────── */
-        .bottom-bar {
-            position: fixed; bottom: 0; left: 0; right: 0;
-            height: 42px;
-            display: flex; align-items: center; justify-content: space-between;
-            padding: 0 16px;
-            background: linear-gradient(0deg, rgba(13,13,16,0.98) 60%, transparent 100%);
-            border-top: 1px solid rgba(255,255,255,0.05);
-            z-index: 100;
+        .style-neon { 
+            background: transparent; border: 2.5px solid var(--accent); border-radius: 50%; backdrop-filter: none; 
+            box-shadow: 0 0 15px rgba(168, 85, 247, 0.1); 
         }
-        .bottom-action {
-            display: flex; align-items: center; gap: 7px;
-            padding: 5px 12px; border-radius: 9px;
-            background: transparent; border: 1px solid transparent;
-            color: var(--text-muted);
-            font-size: 11.5px; font-weight: 500;
-            font-family: 'Inter', sans-serif;
-            cursor: pointer;
-            transition: all 0.2s cubic-bezier(0.16,1,0.3,1);
-            letter-spacing: 0.2px;
-        }
-        .bottom-action i { font-size: 11px; transition: transform 0.2s; }
-        .bottom-action:hover {
-            background: rgba(255,255,255,0.06);
-            border-color: rgba(255,255,255,0.09);
-            color: #fff; transform: translateY(-1px);
-        }
-        .bottom-action:hover i { transform: scale(1.15); }
-        .bottom-brand {
-            font-size: 9px; font-weight: 800;
-            letter-spacing: 4px; text-transform: uppercase;
-            color: var(--text-muted); opacity: 0.45;
-        }
+        .tile-item:hover .style-neon { box-shadow: 0 0 30px var(--accent); color: #fff; transform: rotate(360deg) scale(1.15); border-width: 3px; }
 
-        /* ── Responsive ───────────────────────────────────────────── */
-        @media (max-width: 900px) {
-            .clock { font-size: 72px; letter-spacing: -5px; }
-            :root { --tile-size: 64px; }
+        .tile-label { font-size: 10px; font-weight: 700; color: var(--text-muted); transition: 0.3s; letter-spacing: 1px; text-transform: uppercase; }
+        .tile-item:hover .tile-label { color: #fff; transform: translateY(4px); letter-spacing: 2px; }
+
+        /* side widgets */
+        .timer-val { font-family: var(--font-title); font-size: 38px; font-weight: 300; color: #fff; letter-spacing: -1px; z-index: 5; }
+        .timer-acts { display: flex; justify-content: center; gap: 14px; margin-bottom: 28px; }
+        .timer-btn { width: 48px; height: 48px; border-radius: 14px; background: rgba(255,255,255,0.04); border: 1px solid var(--glass-border); color: #fff; cursor: pointer; transition: 0.3s; display: flex; align-items: center; justify-content: center; font-size: 15px; }
+        .timer-btn:hover { background: rgba(255,255,255,0.1); border-color: rgba(255,255,255,0.25); transform: translateY(-3px) scale(1.05); }
+        .timer-btn.active { background: #f43f5e; border-color: transparent; box-shadow: 0 8px 25px rgba(244, 63, 94, 0.4); }
+
+        .weather-panel { padding: 32px; display: flex; align-items: center; gap: 24px; }
+        .weather-icon { font-size: 38px; color: var(--accent); filter: drop-shadow(0 0 15px var(--accent-glow)); transition: 0.5s; }
+        .weather-panel:hover .weather-icon { transform: scale(1.15) rotate(15deg); }
+        .weather-t { font-size: 38px; font-weight: 400; font-family: var(--font-title); color: #fff; letter-spacing: -1px; }
+        .wrapper-city { display: flex; align-items: center; justify-content: center; gap: 8px; cursor: pointer; transition: 0.3s; }
+        .wrapper-city:hover { transform: scale(1.05); }
+        .weather-c { font-size: 10px; color: var(--text-muted); text-transform: uppercase; letter-spacing: 3px; font-weight: 800; transition: 0.2s; }
+        .wrapper-city:hover .weather-c { color: var(--accent); }
+        .edit-loc-icon { font-size: 11px; color: var(--accent); opacity: 0; transition: 0.3s; transform: translateY(-1px); }
+        .wrapper-city:hover .edit-loc-icon { opacity: 0.6; }
+        .location-input { background: rgba(0,0,0,0.2); border: 1px solid var(--glass-border); border-radius: 8px; padding: 6px 12px; font-size: 10px; color: var(--accent); text-transform: uppercase; letter-spacing: 2px; font-weight: 800; outline: none; width: 140px; display: none; text-align: center; }
+
+        /* ── Improved Command Footer ── */
+        .footer-hub { position: fixed; bottom: 42px; left: 0; right: 0; display: flex; justify-content: center; z-index: 1000; }
+        .footer-capsule { 
+            display: flex; align-items: center; gap: 12px;
+            background: rgba(15, 15, 20, 0.75); 
+            backdrop-filter: blur(50px) saturate(220%); 
+            border: 1px solid rgba(255,255,255,0.08); 
+            border-radius: 16px; padding: 6px 8px;
+            box-shadow: 0 20px 50px rgba(0,0,0,0.5), inset 0 1px 1px rgba(255,255,255,0.05);
+            transition: 0.4s cubic-bezier(0.16, 1, 0.3, 1);
         }
-        @media (max-height: 650px) {
-            .content { gap: 24px; }
-            .clock { font-size: 58px; }
+        .footer-capsule:hover { transform: translateY(-4px); border-color: rgba(168, 85, 247, 0.3); box-shadow: 0 25px 60px rgba(0,0,0,0.6), 0 0 30px rgba(168, 85, 247, 0.05); }
+        
+        .capsule-btn { 
+            display: flex; align-items: center; gap: 10px;
+            background: none; border: none; padding: 12px 24px; border-radius: 12px; 
+            color: var(--text-dim); font-size: 10px; font-weight: 800; letter-spacing: 1.5px; 
+            cursor: pointer; transition: 0.3s;
         }
+        .capsule-btn i { font-size: 13px; opacity: 0.6; transition: 0.3s; }
+        .capsule-btn:hover { background: rgba(255,255,255,0.06); color: #fff; }
+        .capsule-btn:hover i { opacity: 1; transform: scale(1.1); color: var(--accent); }
+        
+        .brand-text { font-size: 11px; font-weight: 900; letter-spacing: 12px; color: var(--text-muted); margin: 0 20px; opacity: 0.15; transition: 0.5s; }
+        .footer-capsule:hover .brand-text { opacity: 0.4; letter-spacing: 16px; color: var(--accent); }
+
+        ::-webkit-scrollbar { width: 4px; }
+        ::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.1); border-radius: 10px; }
+        ::-webkit-scrollbar-thumb:hover { background: var(--accent); }
     </style>
 </head>
-
 <body>
-    <div class="content">
-        <!-- Clock -->
-        <div class="clock-block">
-            <div class="clock" id="clock">
-                <span id="clock-h">00</span><span class="clock-colon">:</span><span id="clock-m">00</span>
+    <div class="ambient-lighting"></div>
+    <main class="dashboard layout-center" id="dashboard-main">
+        <aside class="col-side">
+            <div class="glass-panel" id="todo-panel">
+                <div class="widget-head"><span class="widget-title">Daily Focus</span><i class="fas fa-list-check" style="opacity: 0.3; font-size: 12px;"></i></div>
+                <div class="todo-stack" id="todo-list"></div>
+                <div class="todo-input-wrap"><input type="text" class="todo-input" id="todo-input" placeholder="Initiate task sequence..."></div>
             </div>
-            <div class="meta-row">
-                <span id="greeting">GOOD MORNING</span>
-                <div class="meta-dot"></div>
-                <span id="date-display">...</span>
+        </aside>
+        <section class="col-center">
+            <header class="clock-pillar">
+                <div class="time-display" id="clock">12:12</div>
+                <div class="greeting-display"><span id="greeting-txt">GOOD AFTERNOON</span><div class="greeting-dot"></div><span id="date-txt">WEDNESDAY, APRIL 8</span></div>
+            </header>
+            <div class="search-container">
+                <div class="search-field"><i class="fas fa-magnifying-glass" style="opacity: 0.3; font-size: 16px;"></i><input type="text" class="search-input" id="home-search" placeholder="Search the Ocal space..." autofocus autocomplete="off"><div class="search-enter" id="search-btn"><i class="fas fa-arrow-right"></i></div></div>
             </div>
-        </div>
-
-        <!-- Search -->
-        <div class="search-wrap">
-            <div class="search-bar">
-                <i class="fas fa-magnifying-glass search-icon"></i>
-                <input type="text" class="search-input" id="home-search"
-                    placeholder="Search or enter an address" autofocus autocomplete="off">
-                <span class="search-enter-hint">&#8629; ENTER</span>
+            <nav class="tiles-grid">
+                <div class="tile-item" data-url="youtube.com"><div class="tile-box style-glass"><i class="fab fa-youtube"></i></div><span class="tile-label">YouTube</span></div>
+                <div class="tile-item" data-url="spotify.com"><div class="tile-box style-glass"><i class="fab fa-spotify"></i></div><span class="tile-label">Spotify</span></div>
+                <div class="tile-item" data-url="amazon.com"><div class="tile-box style-glass"><i class="fab fa-amazon"></i></div><span class="tile-label">Amazon</span></div>
+                <div class="tile-item" data-url="discord.com"><div class="tile-box style-glass"><i class="fab fa-discord"></i></div><span class="tile-label">Discord</span></div>
+                <div class="tile-item" data-url="github.com"><div class="tile-box style-glass"><i class="fab fa-github"></i></div><span class="tile-label">GitHub</span></div>
+            </nav>
+        </section>
+        <aside class="col-side">
+            <div class="glass-panel" id="timer-panel" style="text-align: center; padding-bottom: 20px;">
+                <div class="widget-head"><span class="widget-title">Focus Flow</span><i class="fas fa-brain" style="opacity: 0.3; font-size: 12px;"></i></div>
+                <div class="timer-container">
+                    <svg class="timer-svg"><circle cx="90" cy="90" r="80"/><circle class="progress" id="timer-progress" cx="90" cy="90" r="80"/></svg>
+                    <div class="timer-val" id="timer-display">25:00</div>
+                </div>
+                <div class="timer-acts"><button class="timer-btn" id="timer-toggle"><i class="fas fa-play"></i></button><button class="timer-btn" id="timer-reset"><i class="fas fa-rotate-left"></i></button></div>
             </div>
-        </div>
-
-        <!-- Quick Launch Shelf -->
-        <div class="shelf" id="shelf">
-            <div class="tile" data-url="youtube.com">
-                <div class="tile-icon"><i class="fab fa-youtube"></i></div>
-                <span class="tile-label">YouTube</span>
-            </div>
-            <div class="tile" data-url="spotify.com">
-                <div class="tile-icon"><i class="fab fa-spotify"></i></div>
-                <span class="tile-label">Spotify</span>
-            </div>
-            <div class="tile" data-url="amazon.com">
-                <div class="tile-icon"><i class="fab fa-amazon"></i></div>
-                <span class="tile-label">Amazon</span>
-            </div>
-            <div class="tile" data-url="discord.com">
-                <div class="tile-icon"><i class="fab fa-discord"></i></div>
-                <span class="tile-label">Discord</span>
-            </div>
-            <div class="tile" data-url="github.com">
-                <div class="tile-icon"><i class="fab fa-github"></i></div>
-                <span class="tile-label">GitHub</span>
-            </div>
-        </div>
-    </div>
-
-    <!-- Bottom status-bar -->
-    <div class="bottom-bar">
-        <div class="bottom-action" id="settings-btn">
-            <i class="fas fa-gear"></i> Settings
-        </div>
-        <div class="bottom-brand">OCAL BROWSER</div>
-        <div class="bottom-action" id="history-btn">
-            <i class="fas fa-clock-rotate-left"></i> History
-        </div>
-    </div>
-
+            <div class="glass-panel weather-panel" id="weather-panel"><i class="fas fa-cloud-sun weather-icon"></i><div class="weather-info"><div class="weather-t" id="weather-temp">32°C</div><div class="wrapper-city" id="city-trigger"><span class="weather-c" id="weather-city">VIKHROLI</span><i class="fas fa-location-dot edit-loc-icon"></i></div><input type="text" class="location-input" id="location-input" placeholder="ENTER CITY..."></div></div>
+        </aside>
+    </main>
+    <footer class="footer-hub">
+        <div class="footer-capsule"><button class="capsule-btn" id="settings-btn"><i class="fas fa-sliders"></i> SETTINGS</button><div class="brand-text">OCAL</div><button class="capsule-btn" id="history-btn"><i class="fas fa-clock-rotate-left"></i> HISTORY</button></div>
+    </footer>
     <script src="home.js"></script>
 </body>
 </html>
