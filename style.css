@@ -53,7 +53,7 @@ body {
 
 /* Fix maximized window border/gap on Windows 10 */
 body.maximized {
-  padding: 8px;
+  padding: 0;
 }
 
 /* ── Global Premium Scrollbar ────────────────────────────────── */

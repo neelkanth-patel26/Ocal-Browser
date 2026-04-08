@@ -1,78 +1,284 @@
-const clockH    = document.getElementById('clock-h');
-const clockM    = document.getElementById('clock-m');
-const greetingEl = document.getElementById('greeting');
-const dateEl    = document.getElementById('date-display');
-const searchEl  = document.getElementById('home-search');
-const orbs      = document.querySelectorAll('.orb');
+/**
+ * Ocal Browser Home Logic - Premium Polish & Entry
+ */
 
-const days   = ['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'];
-const months = ['January','February','March','April','May','June','July','August','September','October','November','December'];
+const days = ['SUNDAY', 'MONDAY', 'TUESDAY', 'WEDNESDAY', 'THURSDAY', 'FRIDAY', 'SATURDAY'];
+const months = ['JANUARY', 'FEBRUARY', 'MARCH', 'APRIL', 'MAY', 'JUNE', 'JULY', 'AUGUST', 'SEPTEMBER', 'OCTOBER', 'NOVEMBER', 'DECEMBER'];
 
-const GREETINGS = {
-    morning:   'GOOD MORNING',
-    afternoon: 'GOOD AFTERNOON',
-    evening:   'GOOD EVENING',
-    night:     'GOOD NIGHT'
-};
+// ── Elements ─────────────────────────────────────────────────────
+const clockEl = document.getElementById('clock');
+const greetingTxt = document.getElementById('greeting-txt');
+const dateTxt = document.getElementById('date-txt');
+const searchInput = document.getElementById('home-search');
+const searchBtn = document.getElementById('search-btn');
+const todoInput = document.getElementById('todo-input');
+const todoListEl = document.getElementById('todo-list');
+const timerDisplay = document.getElementById('timer-display');
+const timerToggle = document.getElementById('timer-toggle');
+const timerReset = document.getElementById('timer-reset');
+const dashMain = document.getElementById('dashboard-main');
 
-function tick() {
-    const now = new Date();
-    const h = now.getHours();
-    const m = now.getMinutes();
-    if (clockH) clockH.textContent = String(h).padStart(2, '0');
-    if (clockM) clockM.textContent = String(m).padStart(2, '0');
-
-    let group = 'night';
-    if (h >= 5  && h < 12) group = 'morning';
-    if (h >= 12 && h < 17) group = 'afternoon';
-    if (h >= 17 && h < 22) group = 'evening';
-
-    if (greetingEl) greetingEl.textContent = GREETINGS[group];
-    if (dateEl) dateEl.textContent = `${days[now.getDay()]}, ${months[now.getMonth()]} ${now.getDate()}`;
-}
-
-setInterval(tick, 1000);
-tick();
-
-// ── Search ───────────────────────────────────────────────────────
-if (searchEl) {
-    searchEl.addEventListener('keydown', e => {
-        if (e.key !== 'Enter' || !searchEl.value.trim()) return;
-        const q = searchEl.value.trim();
-        if (/^https?:\/\//.test(q)) window.location.href = q;
-        else if (/^[\w-]+\.[a-z]{2,}/.test(q) && !q.includes(' ')) window.location.href = 'https://' + q;
-        else window.location.href = 'https://www.google.com/search?q=' + encodeURIComponent(q);
-    });
-}
-
-// ── Parallax Orbs ────────────────────────────────────────────────
-document.addEventListener('mousemove', e => {
-    const cx = window.innerWidth  / 2;
-    const cy = window.innerHeight / 2;
-    const dx = (e.clientX - cx) / 50;
-    const dy = (e.clientY - cy) / 50;
-    orbs.forEach((orb, i) => {
-        const d = (i + 1) * 0.6;
-        orb.style.transform = `translate(${dx * d}px, ${dy * d}px)`;
-    });
+// ── Entry Animation ──
+document.addEventListener('DOMContentLoaded', () => {
+    setTimeout(() => {
+        document.body.classList.add('loaded');
+    }, 100);
 });
 
-// ── Quick Tiles ──────────────────────────────────────────────────
-document.querySelectorAll('.tile').forEach(tile => {
+// ── Tick (Clock & Dynamic Greeting) ──────────────────────────────
+function updateTick() {
+    const now = new Date();
+    const hours = now.getHours();
+    const minutes = now.getMinutes();
+    
+    if (clockEl) clockEl.innerHTML = `${String(hours).padStart(2, '0')}<span class="clock-colon">:</span>${String(minutes).padStart(2, '0')}`;
+
+    if (greetingTxt) {
+        let greet = 'GOOD NIGHT';
+        if (hours >= 5 && hours < 12) greet = 'GOOD MORNING';
+        else if (hours >= 12 && hours < 17) greet = 'GOOD AFTERNOON';
+        else if (hours >= 17 && hours < 21) greet = 'GOOD EVENING';
+        greetingTxt.textContent = greet;
+    }
+
+    if (dateTxt) dateTxt.textContent = `${days[now.getDay()]}, ${months[now.getMonth()]} ${now.getDate()}`;
+}
+setInterval(updateTick, 1000);
+updateTick();
+
+// ── Search Logic ───────────────────────────────────────────────
+function executeSearch() {
+    if (!searchInput) return;
+    const q = searchInput.value.trim();
+    if (!q) return;
+
+    if (/^https?:\/\//.test(q)) {
+        window.location.href = q;
+    } else if (/^[\w-]+\.[a-z]{2,}/.test(q) && !q.includes(' ')) {
+        window.location.href = 'https://' + q;
+    } else {
+        window.location.href = 'https://www.google.com/search?q=' + encodeURIComponent(q);
+    }
+}
+
+if (searchInput) {
+    searchInput.addEventListener('keydown', e => {
+        if (e.key === 'Enter') executeSearch();
+    });
+}
+if (searchBtn) searchBtn.onclick = () => executeSearch();
+
+// ── To-Do Manager ──────────────────────────────────────────────
+class TodoManager {
+    constructor() {
+        try {
+            this.todos = JSON.parse(localStorage.getItem('ocal-todos') || '[]');
+            if (!Array.isArray(this.todos)) this.todos = [];
+        } catch (e) {
+            console.error('Failed to parse todos:', e);
+            this.todos = [];
+        }
+        this.render();
+        if (todoInput) {
+            todoInput.addEventListener('keydown', e => {
+                if (e.key === 'Enter' && todoInput.value.trim()) {
+                    this.add(todoInput.value.trim());
+                    todoInput.value = '';
+                }
+            });
+        }
+    }
+    add(text) {
+        this.todos.push({ id: Date.now(), text, done: false });
+        this.save();
+        this.render();
+    }
+    toggle(id) {
+        this.todos = this.todos.map(t => t.id === id ? { ...t, done: !t.done } : t);
+        this.save();
+        this.render();
+    }
+    delete(id) {
+        this.todos = this.todos.filter(t => t.id !== id);
+        this.save();
+        this.render();
+    }
+    save() { localStorage.setItem('ocal-todos', JSON.stringify(this.todos)); }
+    render() {
+        if (!todoListEl) return;
+        todoListEl.innerHTML = '';
+        this.todos.forEach(todo => {
+            const el = document.createElement('div');
+            el.className = `todo-card ${todo.done ? 'done' : ''}`;
+            el.innerHTML = `
+                <div class="todo-checkbox"></div>
+                <span class="todo-label">${todo.text}</span>
+                <i class="fas fa-trash-can del-todo"></i>
+            `;
+            el.onclick = () => this.toggle(todo.id);
+            el.querySelector('.del-todo').onclick = (e) => {
+                e.stopPropagation();
+                this.delete(todo.id);
+            };
+            todoListEl.appendChild(el);
+        });
+    }
+}
+new TodoManager();
+
+// ── Focus Timer ───────────────────────────────────────────────
+class FocusTimer {
+    constructor() {
+        this.timeLeft = 25 * 60;
+        this.timerId = null;
+        this.timerToggle = timerToggle;
+        this.timerReset = timerReset;
+        this.progressEl = document.getElementById('timer-progress');
+        this.totalSeconds = 25 * 60;
+        if (timerToggle) timerToggle.onclick = () => this.toggle();
+        if (timerReset) timerReset.onclick = () => this.reset();
+        this.updateDisplay();
+    }
+    toggle() {
+        if (this.isRunning) this.pause();
+        else this.start();
+    }
+    start() {
+        this.isRunning = true;
+        if (timerToggle) {
+            timerToggle.innerHTML = '<i class="fas fa-pause"></i>';
+            timerToggle.classList.add('active');
+        }
+        this.timerId = setInterval(() => {
+            this.timeLeft--;
+            this.updateDisplay();
+            if (this.timeLeft <= 0) this.complete();
+        }, 1000);
+    }
+    pause() {
+        this.isRunning = false;
+        clearInterval(this.timerId);
+        if (timerToggle) {
+            timerToggle.innerHTML = '<i class="fas fa-play"></i>';
+            timerToggle.classList.remove('active');
+        }
+    }
+    reset() {
+        this.pause();
+        this.timeLeft = 25 * 60;
+        this.updateDisplay();
+    }
+    complete() { this.pause(); alert('Focus session complete!'); this.reset(); }
+    updateDisplay() {
+        const mins = Math.floor(this.timeLeft / 60);
+        const secs = this.timeLeft % 60;
+        if (timerDisplay) timerDisplay.textContent = `${String(mins).padStart(2, '0')}:${String(secs).padStart(2, '0')}`;
+        
+        if (this.progressEl) {
+            const offset = 502 - (502 * (this.timeLeft / this.totalSeconds));
+            this.progressEl.style.strokeDashoffset = offset;
+        }
+    }
+}
+new FocusTimer();
+
+// ── Precise Weather Engine ──
+const weatherIconMap = {
+    '113': 'fa-sun', '116': 'fa-cloud-sun', '119': 'fa-cloud', '122': 'fa-cloud',
+    '143': 'fa-smog', '176': 'fa-cloud-rain', '182': 'fa-cloud-meatball',
+    '200': 'fa-cloud-bolt', '227': 'fa-snowflake', '230': 'fa-wind',
+    '248': 'fa-smog', '260': 'fa-smog', '263': 'fa-cloud-showers-water',
+    '266': 'fa-cloud-showers-heavy', '296': 'fa-cloud-rain', '299': 'fa-cloud-showers-heavy',
+    '302': 'fa-cloud-showers-heavy', '308': 'fa-cloud-showers-heavy',
+    '311': 'fa-cloud-rain', '353': 'fa-cloud-showers-water', '389': 'fa-cloud-bolt'
+};
+
+async function updateWeather() {
+    const tempEl = document.getElementById('weather-temp');
+    const cityEl = document.getElementById('weather-city');
+    const iconEl = document.querySelector('.weather-icon');
+    const locInput = document.getElementById('location-input');
+
+    const fetchWeather = async (locStr = '') => {
+        try {
+            const response = await fetch(`https://wttr.in/${locStr}?format=j1`);
+            const data = await response.json();
+            const current = data.current_condition[0];
+            const city = data.nearest_area[0].areaName[0].value;
+            const code = current.weatherCode;
+
+            if (tempEl) tempEl.textContent = `${current.temp_C}°C`;
+            if (cityEl) cityEl.textContent = city.toUpperCase();
+            if (iconEl && weatherIconMap[code]) {
+                iconEl.className = `fas ${weatherIconMap[code]} weather-icon`;
+            }
+        } catch (e) { console.warn('Weather fetch failed.'); }
+    };
+
+    // Manual Location Toggle
+    const cityTrigger = document.getElementById('city-trigger');
+    if (cityTrigger && locInput) {
+        cityTrigger.onclick = () => {
+            cityTrigger.style.display = 'none';
+            locInput.style.display = 'block';
+            locInput.value = cityEl.textContent;
+            locInput.focus();
+            locInput.select();
+        };
+
+        const submitLoc = () => {
+            const newLoc = locInput.value.trim();
+            if (newLoc) {
+                if (cityEl) cityEl.textContent = 'SEARCHING...';
+                localStorage.setItem('ocal-weather-loc', newLoc);
+                fetchWeather(newLoc);
+            } else {
+                localStorage.removeItem('ocal-weather-loc');
+                updateWeather(); // Re-run auto-detect
+            }
+            cityTrigger.style.display = 'flex';
+            locInput.style.display = 'none';
+        };
+
+        locInput.onkeydown = (e) => {
+            if (e.key === 'Enter') submitLoc();
+            if (e.key === 'Escape') {
+                cityTrigger.style.display = 'flex';
+                locInput.style.display = 'none';
+            }
+        };
+        locInput.onblur = submitLoc;
+    }
+
+    const savedLoc = localStorage.getItem('ocal-weather-loc');
+    if (savedLoc) {
+        fetchWeather(savedLoc);
+    } else if ("geolocation" in navigator) {
+        navigator.geolocation.getCurrentPosition(
+            pos => fetchWeather(`${pos.coords.latitude},${pos.coords.longitude}`),
+            () => fetchWeather(),
+            { timeout: 10000 }
+        );
+    } else { fetchWeather(); }
+}
+updateWeather();
+setInterval(updateWeather, 30 * 60 * 1000);
+
+// ── Shortcut Click Engine ──────────────────────────────────────
+document.querySelectorAll('.tile-item').forEach(tile => {
     tile.onclick = () => {
         const url = tile.dataset.url;
         if (url) window.location.href = 'https://' + url;
     };
 });
 
-// ── Bottom Bar Actions ───────────────────────────────────────────
+// ── Global Actions (IPC) ───────────────────────────────────────
 const settingsBtn = document.getElementById('settings-btn');
 if (settingsBtn) {
     settingsBtn.onclick = () => {
         if (window.electronAPI) window.electronAPI.send('open-settings');
     };
 }
-
 const historyBtn = document.getElementById('history-btn');
 if (historyBtn) {
     historyBtn.onclick = () => {
@@ -83,37 +289,40 @@ if (historyBtn) {
     };
 }
 
-// ── Dynamic Accent & Settings ────────────────────────────────────
+// ── Repaired & Responsive System ──
 function applySettings(s) {
     if (!s) return;
     const root = document.documentElement;
+    if (s.accentColor) root.style.setProperty('--accent', s.accentColor);
 
-    if (s.accentColor) {
-        root.style.setProperty('--accent', s.accentColor);
-        const r = parseInt(s.accentColor.slice(1, 3), 16);
-        const g = parseInt(s.accentColor.slice(3, 5), 16);
-        const b = parseInt(s.accentColor.slice(5, 7), 16);
-        root.style.setProperty('--accent-glow', `rgba(${r},${g},${b},0.25)`);
+    if (s.homeLayout && dashMain) {
+        dashMain.classList.remove('layout-top', 'layout-center', 'layout-bottom');
+        dashMain.classList.add(`layout-${s.homeLayout}`);
     }
 
-    if (s.homeTileSize) root.style.setProperty('--tile-size', s.homeTileSize + 'px');
-    if (s.homeTileSpacing) root.style.setProperty('--tile-gap', s.homeTileSpacing + 'px');
+    if (s.homeTileSize) root.style.setProperty('--tile-size', `${s.homeTileSize}px`);
+    if (s.homeTileSpacing) root.style.setProperty('--tile-gap', `${s.homeTileSpacing}px`);
 
-    // Handle Layout
-    const content = document.querySelector('.content');
-    if (content && s.homeLayout) {
-        content.classList.remove('layout-top', 'layout-center', 'layout-bottom');
-        content.classList.add(`layout-${s.homeLayout}`);
-    }
+    const activeStyle = s.homeTileStyle || 'glass-array';
+    const tiles = document.querySelectorAll('.tile-box');
+    tiles.forEach(tile => {
+        tile.classList.remove('style-glass', 'style-matte', 'style-neon');
+        if (activeStyle === 'glass-array') tile.classList.add('style-glass');
+        else if (activeStyle === 'solid-matte') tile.classList.add('style-matte');
+        else if (activeStyle === 'neon-orbit') tile.classList.add('style-neon');
+        else tile.classList.add('style-glass');
+    });
 
-    // Handle Tile Style
-    if (s.homeTileStyle) {
-        document.querySelectorAll('.tile').forEach(tile => {
-            tile.classList.remove('style-square', 'style-rectangle', 'style-monochrome', 'style-glass-array', 'style-solid-matte', 'style-neon-orbit');
-            tile.classList.add(`style-${s.homeTileStyle}`);
-        });
-    }
+    // Widget Visibility
+    const todoPanel = document.getElementById('todo-panel');
+    const timerPanel = document.getElementById('timer-panel');
+    const weatherPanel = document.getElementById('weather-panel');
+
+    if (todoPanel) todoPanel.style.display = (s.showDailyFocus !== false) ? 'flex' : 'none';
+    if (timerPanel) timerPanel.style.display = (s.showFocusFlow !== false) ? 'flex' : 'none';
+    if (weatherPanel) weatherPanel.style.display = (s.showWeather !== false) ? 'flex' : 'none';
 }
+
 
 if (window.electronAPI) {
     window.electronAPI.onSettingsChanged(s => applySettings(s));

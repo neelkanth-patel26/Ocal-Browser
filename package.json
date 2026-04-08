@@ -1,6 +1,6 @@
 {
   "name": "ocal",
-  "version": "3.5.30beta",
+  "version": "3.7.50beta",
   "description": "Ocal Browser - Fast, Secure, and Agentic.",
   "main": "main.js",
   "author": "Gaming Network Studio Media Group",
@@ -46,6 +46,15 @@
       ],
       "icon": "icon.png"
     },
+    "fileAssociations": [
+      {
+        "ext": "pdf",
+        "name": "PDF Document",
+        "description": "Portable Document Format",
+        "icon": "icon-pdf.png",
+        "role": "Viewer"
+      }
+    ],
     "nsis": {
       "oneClick": false,
       "allowToChangeInstallationDirectory": true,

@@ -222,6 +222,8 @@ let userSettings = loadSettings() || {
 
 if (!userSettings.bookmarks) userSettings.bookmarks = [];
 if (!userSettings.folders) userSettings.folders = [];
+if (!userSettings.history) userSettings.history = [];
+if (!userSettings.downloads) userSettings.downloads = [];
 if (!userSettings.bookmarkBarMode) userSettings.bookmarkBarMode = 'auto';
 if (!userSettings.homeLayout) userSettings.homeLayout = 'center';
 if (!userSettings.homeTileSize) userSettings.homeTileSize = 80;
@@ -274,6 +276,15 @@ if (!userSettings.shieldStats.history) userSettings.shieldStats.history = [];
 const tabShieldStats = new Map();
 const sessionStartTime = Date.now();
 
+let _shieldSaveTimer = null;
+function throttleShieldSave() {
+    if (_shieldSaveTimer) return;
+    _shieldSaveTimer = setTimeout(() => {
+        saveSettings(userSettings);
+        _shieldSaveTimer = null;
+    }, 2500); // Only save to disk once every 2.5s if busy
+}
+
 function updateTabShieldStats(wcId, type) {
     if (!wcId) return;
     if (!tabShieldStats.has(wcId)) {
@@ -293,7 +304,7 @@ function updateTabShieldStats(wcId, type) {
                 if (userSettings.shieldStats.global.dataSaved === undefined) userSettings.shieldStats.global.dataSaved = 0;
                 userSettings.shieldStats.global.dataSaved += bytesSaved;
                 
-                saveSettings(userSettings);
+                throttleShieldSave();
                 broadcastShieldStats(wcId);
             }
         }
@@ -344,8 +355,15 @@ let pipSourceContents = null;
 
 var mainWindow;
 var welcomeView;
+
+function getWinOffset() {
+    if (!mainWindow || mainWindow.isDestroyed()) return 0;
+    return (mainWindow.isMaximized() && process.platform === 'win32') ? 8 : 0;
+}
+
 var sidebarOverlayView = null;
 var aiSidebarView = null;
+var vpnExtensionId = null; // Stores discovered VPN extension webContentsId
 var suggestionsView = null;
 var siteInfoView = null;
 var webAppView = null;
@@ -440,8 +458,13 @@ function applyShieldSettings() {
                 const wcId = details.webContentsId;
                 if (!wcId) return;
 
-                // Simple heuristic for ad vs tracker
-                const isTracker = url.includes('pixel') || url.includes('tracker') || url.includes('telemetry') || url.includes('analytics');
+                // Better heuristic for ad vs tracker
+                const trackerKeywords = [
+                    'pixel', 'tracker', 'telemetry', 'analytics', 'metrics', 'collect', 'collectors',
+                    'tag-manager', 'googletagmanager', 'doubleclick', 'scorecardresearch',
+                    'quantserve', 'taboola', 'outbrain', 'beacon', 'stat-collector', 'log-event'
+                ];
+                const isTracker = trackerKeywords.some(kw => url.includes(kw));
                 updateTabShieldStats(wcId, isTracker ? 'trackers' : 'ads');
             }
         };
@@ -458,9 +481,7 @@ function applyShieldSettings() {
 
             // Force Regional Masking Headers
             headers['Accept-Language'] = 'en-US,en;q=0.9';
-            if (!isVideo) {
-                headers['X-Forwarded-For'] = currentVpnRegion === 'us' ? '161.35.63.136' : '178.62.115.158';
-            }
+            // Legacy X-Forwarded-For removed to allow actual VPN nodes to handle masking
             callback({ requestHeaders: headers });
         };
 
@@ -549,70 +570,66 @@ const PROXY_BYPASS_LIST = [
     '*.ggpht.com'
 ].join(';');
 
-// Ocal VPN v3: The Global Rescue Pool (Multi-Protocol Failover)
-const VPN_RESCUE_POOL = {
-    'us': [
-        'SOCKS5 161.35.105.105:3128', 'SOCKS4 161.35.105.105:3128', 'HTTPS 161.35.63.136:3128', 'PROXY 161.35.63.136:3128',
-        'SOCKS5 159.203.111.111:3128', 'HTTPS 159.203.111.111:3128', 'PROXY 159.203.111.111:3128'
-    ],
-    'uk': [
-        'SOCKS5 188.166.166.166:3128', 'SOCKS4 188.166.166.166:3128', 'HTTPS 178.62.115.158:3128', 'PROXY 178.62.115.158:3128',
-        'SOCKS5 139.59.59.59:3128', 'HTTPS 139.59.59.59:3128', 'PROXY 139.59.59.59:3128'
-    ],
-    'de': [
-        'SOCKS5 46.101.101.101:3128', 'SOCKS4 46.101.101.101:3128', 'HTTPS 165.22.122.21:3128', 'PROXY 165.22.122.21:3128',
-        'SOCKS5 138.68.68.68:3128', 'HTTPS 138.68.68.68:3128', 'PROXY 138.68.68.68:3128'
-    ],
-    'auto': [
-        'SOCKS5 161.35.105.105:3128', 'SOCKS5 188.166.166.166:3128', 'SOCKS5 46.101.101.101:3128',
-        'HTTPS 161.35.63.136:3128', 'HTTPS 178.62.115.158:3128', 'HTTPS 165.22.122.21:3128'
-    ]
-};
+// Ocal Internal Redirect Pool (Pre-VPN)
+const INTERNAL_RESCUE_DASHBOARD = 'ocal://home';
 
-function generateVpnPACv3(region = 'auto') {
-    const pool = VPN_RESCUE_POOL[region] || VPN_RESCUE_POOL['auto'];
-    const pacRules = pool.join('; ');
-
-    return `function FindProxyForURL(url, host) {
-        if (shExpMatch(host, "*.youtube.com") || 
-            shExpMatch(host, "*.googlevideo.com") || 
-            shExpMatch(host, "*.ytimg.com") ||
-            shExpMatch(host, "*.local") ||
-            shExpMatch(host, "*.ocal") ||
-            isPlainHostName(host) ||
-            localHostOrDomainIs(host, "127.0.0.1")) {
-            return "DIRECT";
+function applyProxy(region, enabled = true) {
+    const command = { type: 'TOGGLE_VPN', enabled, region: region || 'auto' };
+    
+    // 1. Send to all Renderers (Shield Popups, etc.)
+    BrowserWindow.getAllWindows().forEach(bw => {
+        if (!bw.isDestroyed()) {
+            bw.webContents.send('vpn-extension-command', command);
         }
-        return "${pacRules}; DIRECT";
-    }`;
-}
+    });
 
-let currentVpnRegion = 'auto';
-
-function broadcastVpnStatus(status, details = '') {
-    if (shieldPopupView) {
-        shieldPopupView.webContents.send('vpn-status-updated', { status, details });
+    // 2. Target the specific discovery-identified extension
+    if (vpnExtensionId) {
+        const wc = webContents.fromId(vpnExtensionId);
+        if (wc && !wc.isDestroyed()) {
+            wc.postMessage('vpn-extension-command', command);
+            wc.send('vpn-extension-command', command);
+            return; // Target found and messaged
+        }
     }
+
+    // 3. Fallback: Search all webContents
+    webContents.getAllWebContents().forEach(wc => {
+        try {
+            if (!wc.isDestroyed() && (wc.getURL().includes('ocal-vpn-extension') || wc.getURL().includes('background.js'))) {
+                wc.postMessage('vpn-extension-command', command);
+                wc.send('vpn-extension-command', command);
+                
+                const js = `self.dispatchEvent(new MessageEvent('message', { data: ${JSON.stringify({ type: 'vpn-extension-command', payload: command })} }));`;
+                wc.executeJavaScript(js).catch(() => {});
+            }
+        } catch (e) {}
+    });
 }
 
-function applyProxy(region = 'auto') {
-    currentVpnRegion = region;
-    const pacCode = generateVpnPACv3(region);
+// ── Ocal VPN Bridge (Modular External Extension Interface) ──────────────────
+// This allows d:\Brower\ocal-vpn-extension to control the browser's proxy settings.
+ipcMain.on('vpn-set-proxy', (e, { pacCode, region }) => {
+    // Basic validation to prevent malformed PAC scripts
+    if (!pacCode || typeof pacCode !== 'string' || !pacCode.includes('FindProxyForURL')) {
+        console.error('[Ocal VPN] Invalid PAC code received from extension');
+        return;
+    }
+
     const pacScript = 'data:application/x-ns-proxy-autoconfig;base64,' + 
                       Buffer.from(pacCode).toString('base64');
-
+    
     broadcastVpnStatus('Connecting');
 
     const setProxyFor = (sess) => {
-        // VPN v3: Professional Multi-Protocol failover via Rescue PAC engine
         return sess.setProxy({ pacScript })
             .then(() => {
                 const displayRegion = region === 'auto' ? 'RESCUE POOL' : region.toUpperCase();
-                console.log(`[VPN v3] Rescue Pool Active (${displayRegion})`);
+                console.log(`[Ocal VPN] External Control Active: ${displayRegion}`);
                 broadcastVpnStatus('Connected', displayRegion);
             })
             .catch((err) => {
-                console.error(`[VPN v3] Initialization Error: ${err}`);
+                console.error(`[Ocal VPN] Initialisation Error: ${err}`);
                 broadcastVpnStatus('Error');
                 return sess.setProxy({ proxyRules: '' });
             });
@@ -620,23 +637,35 @@ function applyProxy(region = 'auto') {
 
     setProxyFor(session.defaultSession);
     setProxyFor(session.fromPartition('persist:google_login'));
+});
+
+// Listener for extension signals via console/messenger
+ipcMain.on('vpn-signal', (e, data) => {
+    if (data.type === 'SET_PROXY') {
+        ipcMain.emit('vpn-set-proxy', e, data);
+    } else if (data.type === 'CLEAR_PROXY') {
+        ipcMain.emit('vpn-clear-proxy', e);
+    }
+});
+
+ipcMain.on('vpn-clear-proxy', () => {
+    session.defaultSession.setProxy({});
+    session.fromPartition('persist:google_login').setProxy({});
+    broadcastVpnStatus('OFF');
+});
+
+function broadcastVpnStatus(status, details = '') {
+    if (shieldPopupView && !shieldPopupView.webContents.isDestroyed()) {
+        shieldPopupView.webContents.send('vpn-status-updated', { status, details });
+    }
 }
 
 function handleVpnFailure(contents, code) {
     if (userSettings.vpnEnabled) {
-        console.warn(`[VPN v3] Connection Failure (Code: ${code}) for URL: ${contents.getURL()}`);
+        console.warn(`[VPN] Connection Failure (Code: ${code}) for URL: ${contents.getURL()}`);
         
-        // If it's a timeout or connection reset, try switching to 'auto' (RESCUE POOL)
-        if (code === -105 || code === -102 || code === -118) {
-            console.log('[VPN v3] Proactive Failover to RESCUE POOL initiated.');
-            broadcastVpnStatus('Retrying', 'Failing over...');
-            applyProxy('auto');
-            setTimeout(() => {
-                if (!contents.isDestroyed()) contents.reload();
-            }, 1000);
-        } else {
-            broadcastVpnStatus('Error', `Code ${code}`);
-        }
+        // Failover logic now handled by the VPN extension's Rescue PAC
+        broadcastVpnStatus('Error', `Code ${code}`);
     }
 }
 
@@ -848,7 +877,7 @@ function createMainWindow() {
 function createSurveyWindow() {
   const surveyWindow = new BrowserWindow({
     width: 600,
-    height: 500,
+    height: 600,
     frame: false,
     resizable: false,
     backgroundColor: '#0c0c0e',
@@ -899,6 +928,27 @@ function setupCompatibilityHandler() {
 }
 
 app.on('web-contents-created', (event, contents) => {
+    // ── Ocal Extension Signaling Bridge ──────────────────────────
+    // Allows Native Modules (like VPN) to signal via console logs
+    contents.on('console-message', (e, level, message) => {
+        if (message.startsWith('SIGNAL_INIT ')) {
+            try {
+                const data = JSON.parse(message.replace('SIGNAL_INIT ', ''));
+                if (data.type === 'vpn-extension') {
+                    vpnExtensionId = contents.id;
+                    console.log(`[Ocal Extension Bridge] Discovered VPN Extension (ID: ${vpnExtensionId})`);
+                }
+            } catch (err) {}
+        } else if (message.startsWith('SIGNAL_SET_PROXY ')) {
+            try {
+                const data = JSON.parse(message.replace('SIGNAL_SET_PROXY ', ''));
+                ipcMain.emit('vpn-set-proxy', {}, data);
+            } catch (err) { console.error('[Ocal Extension Bridge] Malformed signal:', err); }
+        } else if (message.startsWith('SIGNAL_CLEAR_PROXY')) {
+            ipcMain.emit('vpn-clear-proxy', {});
+        }
+    });
+
     const desktopUA = OCAL_USER_AGENT;
     const mobileUA = 'Mozilla/5.0 (Linux; Android 14; Pixel 8 Build/UD1A.230805.019) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/122.0.0.0 Mobile Safari/537.36';
 
@@ -1082,7 +1132,7 @@ function showSidebarOverlay() {
 }
 
 function hideSidebarOverlay() {
-  if (sidebarOverlayView && !sidebarOverlayView.isDestroyed() && !sidebarOverlayView.webContents.isDestroyed() && mainWindow && !mainWindow.isDestroyed()) {
+  if (sidebarOverlayView && !sidebarOverlayView.webContents.isDestroyed() && mainWindow && !mainWindow.isDestroyed()) {
     if (mainWindow.getBrowserViews().includes(sidebarOverlayView)) {
       mainWindow.removeBrowserView(sidebarOverlayView);
     }
@@ -1206,37 +1256,47 @@ function hideDownloadsPopup() {
 }
 
 ipcMain.on('toggle-downloads-popup', (e, bounds) => {
-    if (!downloadsView) createDownloadsView();
+    let isFirstLoad = false;
+    if (!downloadsView) {
+        createDownloadsView();
+        isFirstLoad = true;
+    }
     
     if (mainWindow.getBrowserViews().includes(downloadsView)) {
         hideDownloadsPopup();
     } else {
-        // Prevent immediate re-opening if the user clicked the toggle button to close it
         if (Date.now() - lastDownloadsBlurTime < 150) return;
 
         closeOverlays();
-        
         mainWindow.addBrowserView(downloadsView);
         mainWindow.setTopBrowserView(downloadsView);
         
+        const contentBounds = mainWindow.getContentBounds();
         let targetX = bounds.x - 180;
-        let contentBounds = mainWindow.getContentBounds();
-        
-        // Ensure it doesn't bleed off the right edge bounds map
         if (targetX + 350 > contentBounds.width) {
             targetX = contentBounds.width - 360;
         }
-        
+
         downloadsView.setBounds({
             x: 0,
             y: 0,
             width: contentBounds.width,
             height: contentBounds.height
         });
-        
-        downloadsView.webContents.send('show-popup', { x: targetX, y: bounds.y });
-        downloadsView.webContents.focus();
-        downloadsView.webContents.send('download-updated', downloads);
+
+        const sendPopup = () => {
+            if (downloadsView && !downloadsView.webContents.isDestroyed()) {
+                downloadsView.webContents.send('show-popup', { x: targetX, y: bounds.y });
+                downloadsView.webContents.focus();
+                downloadsView.webContents.send('download-updated', downloads);
+            }
+        };
+
+        if (isFirstLoad) {
+            downloadsView.webContents.once('did-finish-load', sendPopup);
+        } else {
+            sendPopup();
+        }
     }
 });
 
@@ -1481,11 +1541,14 @@ function createNewTab(url = null) {
         
         // Persist to history if URL matches
         const url = view.webContents.getURL();
-        const histIndex = userSettings.history.findIndex(h => h.url === url);
-        if (histIndex !== -1) {
-            userSettings.history[histIndex].favicon = icon;
-            saveSettings(userSettings);
-            broadcastHistory();
+        // Safety check for history existence
+        if (userSettings.history) {
+            const histIndex = userSettings.history.findIndex(h => h.url === url);
+            if (histIndex > -1) {
+                userSettings.history[histIndex].favicon = icon;
+                saveSettings(userSettings);
+                broadcastHistory();
+            }
         }
       }
     }
@@ -1673,11 +1736,10 @@ function isHomeURL(url) {
 function updateViewBounds(forcedUrl = null) {
   if (!mainWindow || mainWindow.isDestroyed()) return;
   const isMaximized = mainWindow.isMaximized();
-  const { width, height } = isMaximized ? mainWindow.getBounds() : mainWindow.getContentBounds();
+  const { width, height } = mainWindow.getContentBounds();
   const isFullscreen = !!htmlFullscreenViewId;
 
-  // Windows 10 maximized windows bleed 8px off-screen; we must offset this
-  const winOffset = (isMaximized && process.platform === 'win32') ? 8 : 0;
+  const winOffset = 0; // Simplified for modern Electron styling
 
   const hTabs = isFullscreen ? 0 : (userSettings.compactMode ? 36 : 44);
   const hNav  = isFullscreen ? 0 : (userSettings.compactMode ? 40 : 50);
@@ -1708,10 +1770,10 @@ function updateViewBounds(forcedUrl = null) {
     // (Prevents crashes when the view is detached in a Portal PiP window)
     if (activeViewEntry.view.webContents && !activeViewEntry.view.webContents.isDestroyed() && mainWindow.getBrowserViews().includes(activeViewEntry.view)) {
         activeViewEntry.view.setBounds({
-          x: Math.round(winOffset), 
-          y: Math.round(yOffset + winOffset),
-          width: Math.round(width - (winOffset * 2)),
-          height: Math.round(height - yOffset - (winOffset * 2))
+          x: 0, 
+          y: Math.round(yOffset),
+          width: Math.round(width),
+          height: Math.round(height - yOffset)
         });
         mainWindow.setTopBrowserView(activeViewEntry.view);
     }
@@ -2521,9 +2583,7 @@ ipcMain.on('update-setting', (e, key, val) => {
   saveSettings(userSettings); 
 
   // Broadcast to all relevant views
-  mainWindow.webContents.send('settings-changed', userSettings); 
-  if (sidebarOverlayView) sidebarOverlayView.webContents.send('settings-changed', userSettings);
-  views.forEach(v => v.view.webContents.send('settings-changed', userSettings));
+  broadcastSettings(userSettings);
 
   if (key === 'compactMode' || key === 'bookmarkBarMode') updateViewBounds(); 
   if (key === 'dns') console.log(`[DNS] Global resolver updated to: ${val}`);
@@ -2544,6 +2604,7 @@ ipcMain.on('update-setting', (e, key, val) => {
       applyProxy(val);
   }
 });
+
 
 ipcMain.handle('import-bookmarks', async (event, browser) => {
     try {
@@ -3020,6 +3081,7 @@ ipcMain.on('show-shield-popup', (e, { x, y, width, height, tabId }) => {
     if (targetX < 10) targetX = 10;
     if (targetX + popupWidth > contentBounds.width - 10) targetX = contentBounds.width - popupWidth - 10;
 
+    const winOffset = getWinOffset();
     shieldPopupView.setBounds({ 
         x: Math.round(targetX + winOffset), 
         y: Math.round(y + height + 10 + winOffset), 
@@ -3045,6 +3107,7 @@ ipcMain.on('show-bm-dropdown', (e, { x, y, bookmarks, folderId }) => {
     activeBMFolderId = folderId;
     mainWindow.addBrowserView(bmDropdownView);
     
+    const winOffset = getWinOffset();
     // Initial safe size, will be refined by dropdown-resize IPC
     bmDropdownView.setBounds({ 
         x: Math.round(x + winOffset), 
@@ -3098,6 +3161,7 @@ ipcMain.on('show-extensions-dropdown', (e, { x, y, width }) => {
     mainWindow.addBrowserView(extensionDropdownView);
     // Align to the right of the button
     const popupWidth = 340;
+    const winOffset = getWinOffset();
     extensionDropdownView.setBounds({ 
         x: Math.round(x + width - popupWidth + winOffset), 
         y: Math.round(y + 40 + winOffset), 
@@ -3131,29 +3195,27 @@ ipcMain.on('toggle-adblock', (e, enabled) => {
     // uBlock native loading handles session injection via ExtensionManager dynamically
     // The legacy ad blocker was removed.
 
-    broadcastSettings();
+    broadcastSettings(userSettings);
 });
 
 ipcMain.on('toggle-vpn', (e, enabled) => {
     userSettings.vpnEnabled = enabled;
     saveSettings(userSettings);
-    if (enabled) {
-        applyProxy(userSettings.vpnRegion);
-    } else {
-        session.defaultSession.setProxy({});
-        const googleSession = session.fromPartition('persist:google_login');
-        googleSession.setProxy({});
-    }
-    broadcastSettings();
+    
+    applyProxy(userSettings.vpnRegion, enabled);
+    
+    broadcastSettings(userSettings);
 });
 
 ipcMain.on('set-vpn-region', (e, region) => {
     userSettings.vpnRegion = region;
     saveSettings(userSettings);
+    
     if (userSettings.vpnEnabled) {
-        applyProxy(region);
+        applyProxy(region, true);
     }
-    broadcastSettings();
+
+    broadcastSettings(userSettings);
 });
 
 // History Management
@@ -3187,15 +3249,15 @@ function updateHistory(view, url) {
         if (userSettings.history.length > 0 && userSettings.history[0].url === url) return;
 
         const historyItem = { title: title || url, url, timestamp: Date.now(), favicon };
-        userSettings.history = [historyItem, ...(userSettings.history || [])].slice(0, 100);
+        if (!Array.isArray(userSettings.history)) userSettings.history = [];
+        userSettings.history = [historyItem, ...userSettings.history].slice(0, 100);
         saveSettings(userSettings);
         broadcastHistory();
     }
 }
 
 function broadcastHistory() {
-    mainWindow.webContents.send('settings-changed', userSettings);
-    if (sidebarOverlayView) sidebarOverlayView.webContents.send('settings-changed', userSettings);
+    broadcastSettings(userSettings);
 }
 
 ipcMain.on('open-download', (e, filePath) => {
@@ -3241,9 +3303,16 @@ app.whenReady().then(async () => {
 
     setupGoogleLoginPartition();
     
-    // Apply initial proxy settings via shared implementation
+    // Apply initial proxy settings via the Ocal VPN extension
     if (userSettings.vpnEnabled) {
-        applyProxy(userSettings.vpnRegion || 'auto');
+        // We broadcast the toggle command. The extension, once loaded, will handle it.
+        BrowserWindow.getAllWindows().forEach(bw => {
+            bw.webContents.send('vpn-extension-command', { 
+                type: 'TOGGLE_VPN', 
+                enabled: true, 
+                region: userSettings.vpnRegion || 'auto' 
+            });
+        });
     }
 
     createMainWindow();
@@ -3345,8 +3414,7 @@ ipcMain.on('show-suggestions', (e, bounds) => {
     if (!mainWindow.getBrowserViews().includes(suggestionsView)) {
         mainWindow.addBrowserView(suggestionsView);
     }
-    const isMaximized = mainWindow.isMaximized();
-    const winOffset = (isMaximized && process.platform === 'win32') ? 8 : 0;
+    const winOffset = getWinOffset();
     
     suggestionsView.setBounds({
         x: Math.round(bounds.x + winOffset),
@@ -3391,13 +3459,10 @@ ipcMain.on('show-site-info', (e, bounds) => {
         mainWindow.addBrowserView(siteInfoView);
     }
     
-    const isMaximized = mainWindow.isMaximized();
-    const winOffset = (isMaximized && process.platform === 'win32') ? 8 : 0;
-
     // Position below the address bar identity area
     siteInfoView.setBounds({
-        x: Math.round(bounds.x + winOffset),
-        y: Math.round(bounds.y + bounds.height + 4 + winOffset),
+        x: Math.round(bounds.x),
+        y: Math.round(bounds.y + bounds.height + 4),
         width: 320,
         height: 480 // Sufficient height for the content
     });
@@ -3636,6 +3701,17 @@ class ExtensionManager {
                 }
             } catch (err) { console.error('Failed to load Ocal Media Master:', err); }
         }
+
+        // 5. OCAL VPN EXTENSION (Modular Migration)
+        try {
+            const vpnExtensionPath = path.join(__dirname, 'ocal-vpn-extension');
+            if (fs.existsSync(vpnExtensionPath)) {
+                for (const ses of targetSessions) {
+                    await ses.loadExtension(vpnExtensionPath);
+                }
+                console.log('Loaded native module: Ocal VPN (Global)');
+            }
+        } catch (err) { console.error('Failed to load Ocal VPN extension:', err); }
     }
 
     async downloadAndInstall(id) {
@@ -3750,6 +3826,13 @@ ipcMain.handle('load-unpacked-extension', async (e) => {
         }
         
         const manifest = JSON.parse(fs.readFileSync(manifestPath, 'utf8'));
+        
+        // Ensure critical arrays are initialized
+        if (!userSettings.bookmarks) userSettings.bookmarks = [];
+        if (!userSettings.folders) userSettings.folders = [];
+        if (!userSettings.history) userSettings.history = [];
+        if (!userSettings.downloads) userSettings.downloads = [];
+        
         const extensionId = require('crypto').createHash('md5').update(dirPath).digest('hex');
         
         const extensionInfo = {
@@ -3996,6 +4079,10 @@ ipcMain.on('set-dns-provider', (e, provider) => {
 function broadcastSettings() {
     if (mainWindow && !mainWindow.isDestroyed()) {
         mainWindow.webContents.send('settings-changed', userSettings);
+    }
+    // Also notify the sidebar
+    if (sidebarOverlayView && !sidebarOverlayView.webContents.isDestroyed()) {
+        sidebarOverlayView.webContents.send('settings-changed', userSettings);
     }
     // Notify all active views
     views.forEach(v => {
