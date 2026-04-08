@@ -1,7 +1,7 @@
 {
-  "tag_name": "v3.7.50beta",
-  "name": "Ocal Browser V3.7.50beta: The Professional Update",
-  "body": "### 🚀 Ocal Browser V3.7.50beta: The Professional Update\n\nThis release introduces the professional version of Ocal Browser, featuring dedicated PDF handling and elite browsing capabilities.\n\n#### 📄 Professional PDF Handling\n- **Dedicated PDF Icon**: Introduced a sleek, professional-grade icon for PDF files associated with Ocal Browser on Windows.\n- **Registry Integration**: Seamless integration with Windows Explorer for a premium document viewing experience.\n\n#### 🛡️ Neural Shield Core\n- **Advanced Ad-Blocking**: Integrated the latest filter paradigms for an ad-free experience.\n- **Stealth Browsing**: Improved tracker blocking and fingerprint protection.\n\n#### 🎥 Media Integration\n- **Enhanced YouTube Support**: Native integration for dislike restoration and ad-neutralization.\n- **Smart Media Agent**: Improved PiP and downloading logic.\n\n#### ⚙️ Technical Update\n- **Version 3.7.50 Core**: Stabilized the underlying hardware acceleration and window management.\n",
+  "tag_name": "v3.7.70beta",
+  "name": "Ocal Browser V3.7.70beta: The Professional Fix",
+  "body": "### 🚀 Ocal Browser V3.7.70beta: The Professional Fix\n\nThis release introduces critical fixes for document handling and upgrades the browser to the latest stable beta.\n\n#### 📄 PDF Icon Fix\n- **Resolved Missing Icons**: PDF files now correctly display the professional Ocal icon in all Windows Explorer view modes.\n- **Binary Icon Integration**: Upgraded from a simple PNG to a multi-resolution binary ICO format for native Windows support.\n\n#### 🛡️ Neural Shield Core\n- **Advanced Ad-Blocking**: Integrated the latest filter paradigms for an ad-free experience.\n- **Stealth Browsing**: Improved tracker blocking and fingerprint protection.\n\n#### 🎥 Media Integration\n- **Enhanced YouTube Support**: Native integration for dislike restoration and ad-neutralization.\n- **Smart Media Agent**: Improved PiP and downloading logic.\n\n#### ⚙️ Technical Update\n- **Version 3.7.70 Core**: Stabilized the underlying hardware acceleration and window management.\n",
   "draft": false,
-  "prerelease": true
+  "release": true
 }
