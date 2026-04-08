@@ -70,7 +70,7 @@
 ## 💾 Installation
 
 1. Navigate to the [Latest Releases](https://github.com/neelkanth-patel26/Ocal-Browser/releases/latest).
-2. Download the `Ocal-2.6.78-beta-Setup.exe`.
+2. Download the `Ocal-3.7.50beta-Setup.exe`.
 3. Execute the installer. We use **Inno Setup** to ensure a premium, reliable desktop installation experience.
 
 

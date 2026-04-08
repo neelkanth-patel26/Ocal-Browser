@@ -274,6 +274,7 @@ function formatDisplayUrl(url) {
         } catch(e) {}
         return 'ocal://settings';
     }
+    if (url.includes('file-manager.html')) return 'ocal://file-manager';
     if (url.includes('game.html')) return 'ocal://game';
     return url;
 }
@@ -290,6 +291,7 @@ function getTabIconHtml(tab, tintColor) {
     if (!url || url.includes('home.html')) return `<i class="fas fa-house tab-favicon" style="color:${accentColor}"></i>`;
     if (url.includes('settings.html')) return `<i class="fas fa-gear tab-favicon" style="color:${accentColor}"></i>`;
     if (url.includes('pdf-viewer.html') || url.endsWith('.pdf')) return `<i class="fas fa-file-pdf tab-favicon" style="color:${accentColor}"></i>`;
+    if (url.includes('file-manager.html') || url.startsWith('ocal://file-manager')) return `<i class="fas fa-folder-tree tab-favicon" style="color:${accentColor}"></i>`;
     if (url.includes('game.html')) return `<i class="fas fa-gamepad tab-favicon" style="color:${accentColor}"></i>`;
     
     // Search Engines
@@ -312,6 +314,10 @@ function updateOmniboxIcon(url) {
     }
     if (url && (url.includes('pdf-viewer.html') || url.endsWith('.pdf'))) {
         iconContainer.innerHTML = '<i class="fas fa-file-pdf" style="color:var(--accent)"></i>';
+        return;
+    }
+    if (url && (url.includes('file-manager.html') || url.startsWith('ocal://file-manager'))) {
+        iconContainer.innerHTML = '<i class="fas fa-folder-tree" style="color:var(--accent)"></i>';
         return;
     }
 
@@ -450,6 +456,8 @@ document.addEventListener('DOMContentLoaded', () => {
     if (aiBtn) aiBtn.onclick = () => window.electronAPI.send('toggle-ai-sidebar');
     if (bmBtn) bmBtn.onclick = () => { window.electronAPI.send('toggle-sidebar', true); window.electronAPI.send('switch-sidebar-tab', 'bookmarks'); };
     if (hiBtn) hiBtn.onclick = () => { window.electronAPI.send('toggle-sidebar', true); window.electronAPI.send('switch-sidebar-tab', 'history'); };
+    const fmBtn = document.getElementById('file-manager-btn');
+    if (fmBtn) fmBtn.onclick = () => window.electronAPI.navigateTo('ocal://file-manager');
     if (mnBtn) mnBtn.onclick = () => window.electronAPI.send('toggle-sidebar', true);
     
     if (extBtn) extBtn.onclick = () => {
