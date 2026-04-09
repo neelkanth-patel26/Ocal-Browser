@@ -1,12 +1,12 @@
 [Setup]
 AppName=Ocal Browser
-AppVersion=2.8.00 beta
+AppVersion=4.0.00beta
 AppPublisher=Gaming Network Studio Media Group
 AppPublisherURL=https://github.com/neelkanth-patel26/Ocal-Browser
 DefaultDirName={autopf}\Ocal
 DefaultGroupName=Ocal
 OutputDir=dist-inno
-OutputBaseFilename=Ocal-2.8.00beta-Setup
+OutputBaseFilename=Ocal-4.0.00beta-Setup
 SetupIconFile=icon.ico
 Compression=lzma
 SolidCompression=yes
@@ -22,7 +22,7 @@ Name: "desktopicon"; Description: "{cm:CreateDesktopIcon}"; GroupDescription: "{
 Source: "out\ocal-win32-x64\ocal.exe"; DestDir: "{app}"; Flags: ignoreversion
 Source: "out\ocal-win32-x64\*"; DestDir: "{app}"; Flags: ignoreversion recursesubdirs createallsubdirs
 Source: "uninstaller\*"; DestDir: "{app}\uninstaller"; Flags: ignoreversion recursesubdirs createallsubdirs
-Source: "icon-pdf.ico"; DestDir: "{app}"; Flags: ignoreversion
+Source: "pdf-icon.ico"; DestDir: "{app}"; Flags: ignoreversion
 
 [Icons]
 Name: "{group}\Ocal Browser"; Filename: "{app}\ocal.exe"
@@ -31,7 +31,7 @@ Name: "{autodesktop}\Ocal Browser"; Filename: "{app}\ocal.exe"; Tasks: desktopic
 [Registry]
 Root: HKCR; Subkey: ".pdf"; ValueType: string; ValueName: ""; ValueData: "Ocal.PDF"; Flags: uninsdeletevalue
 Root: HKCR; Subkey: "Ocal.PDF"; ValueType: string; ValueName: ""; ValueData: "Ocal PDF Document"; Flags: uninsdeletekey
-Root: HKCR; Subkey: "Ocal.PDF\DefaultIcon"; ValueType: string; ValueName: ""; ValueData: "{app}\icon-pdf.ico,0"; Flags: uninsdeletekey
+Root: HKCR; Subkey: "Ocal.PDF\DefaultIcon"; ValueType: string; ValueName: ""; ValueData: "{app}\pdf-icon.ico,0"; Flags: uninsdeletekey
 Root: HKCR; Subkey: "Ocal.PDF\shell\open\command"; ValueType: string; ValueName: ""; ValueData: """{app}\ocal.exe"" ""%1"""; Flags: uninsdeletekey
 Root: HKCR; Subkey: "Ocal.PDF\shell\open"; ValueType: string; ValueName: "FriendlyAppName"; ValueData: "Ocal Browser"; Flags: uninsdeletekey
 
