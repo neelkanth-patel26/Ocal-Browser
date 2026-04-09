@@ -28,9 +28,7 @@ const fetch = require('cross-fetch').default || require('cross-fetch');
 // Disable QUIC (fixes Handshake -101 and Connection Reset issues)
 app.commandLine.appendSwitch('disable-quic');
 // Enable High-DPI support for sharp rendering on Windows
-if (process.platform === 'win32') {
-    app.commandLine.appendSwitch('high-dpi-support', '1');
-}
+app.commandLine.appendSwitch('high-dpi-support', '1');
 // Enable modern TLS features
 app.commandLine.appendSwitch('enable-features', 'Tls13EarlyData');
 // Hide the fact that we are an automated/embedded browser (Crucial for Google Login)
@@ -39,15 +37,7 @@ app.commandLine.appendSwitch('disable-blink-features', 'AutomationControlled');
 // Disable the default Electron menu bar on Windows/Linux to prevent UI shifting
 Menu.setApplicationMenu(null);
 
-function getUserAgent() {
-    const isWin = process.platform === 'win32';
-    const isMac = process.platform === 'darwin';
-    if (isWin) return 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/134.0.0.0 Safari/537.36';
-    if (isMac) return 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/134.0.0.0 Safari/537.36';
-    return 'Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/134.0.0.0 Safari/537.36';
-}
-
-const OCAL_USER_AGENT = getUserAgent();
+const OCAL_USER_AGENT = 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/134.0.0.0 Safari/537.36';
 app.userAgentFallback = OCAL_USER_AGENT;
 
 // Single Instance Lock
@@ -82,12 +72,8 @@ function getArgumentURL(argv) {
   return candidate;
 }
 
-if (process.platform === 'win32' && (process.argv.includes('--install') || process.argv.includes('--squirrel-install'))) {
-  try {
-    require('./installer-main.js');
-  } catch (e) {
-    console.error('Failed to run Windows installer logic:', e);
-  }
+if (process.argv.includes('--install') || process.argv.includes('--squirrel-install')) {
+  require('./installer-main.js');
   return;
 }
 
@@ -372,7 +358,7 @@ var welcomeView;
 
 function getWinOffset() {
     if (!mainWindow || mainWindow.isDestroyed()) return 0;
-    return (mainWindow.isMaximized() && (process.platform === 'win32' || process.platform === 'linux')) ? 8 : 0;
+    return (mainWindow.isMaximized() && process.platform === 'win32') ? 8 : 0;
 }
 
 var sidebarOverlayView = null;
@@ -727,7 +713,7 @@ function setupSecurityHeadersFix() {
             if (!requestHeaders['Sec-Ch-Ua']) {
                 requestHeaders['Sec-Ch-Ua'] = '"Chromium";v="134", "Not:A-Brand";v="99"';
                 requestHeaders['Sec-Ch-Ua-Mobile'] = '?0';
-                requestHeaders['Sec-Ch-Ua-Platform'] = process.platform === 'win32' ? '"Windows"' : (process.platform === 'darwin' ? '"macOS"' : '"Linux"');
+                requestHeaders['Sec-Ch-Ua-Platform'] = '"Windows"';
             }
             
             // Clean suspicious headers that trigger YouTube ad-block detection
