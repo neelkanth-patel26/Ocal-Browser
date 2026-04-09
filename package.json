@@ -1,6 +1,6 @@
 {
   "name": "ocal",
-  "version": "2.8.00 beta",
+  "version": "4.0.00beta",
   "description": "Ocal Browser - Fast, Secure, and Agentic.",
   "main": "main.js",
   "author": "Gaming Network Studio Media Group",
@@ -10,10 +10,16 @@
     "make": "electron-forge make",
     "publish": "electron-forge publish",
     "build-exe": "electron-builder --win portable",
-    "build-premium": "electron-builder --win nsis"
+    "build-premium": "electron-builder --win nsis",
+    "make-linux": "electron-forge make --platform linux",
+    "build-linux": "electron-builder --linux"
   },
   "keywords": [],
   "license": "ISC",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/neelkanth-patel26/Ocal-Browser.git"
+  },
   "devDependencies": {
     "@electron-forge/cli": "^7.6.0",
     "@electron-forge/maker-deb": "^7.6.0",
@@ -39,6 +45,13 @@
     "directories": {
       "output": "dist-builder"
     },
+    "publish": [
+      {
+        "provider": "github",
+        "owner": "neelkanth-patel26",
+        "repo": "Ocal-Browser"
+      }
+    ],
     "win": {
       "target": [
         "nsis",
@@ -46,12 +59,22 @@
       ],
       "icon": "icon.png"
     },
+    "linux": {
+      "target": [
+        "AppImage",
+        "deb",
+        "rpm"
+      ],
+      "icon": "icon.png",
+      "category": "WebBrowser",
+      "executableName": "ocal"
+    },
     "fileAssociations": [
       {
         "ext": "pdf",
         "name": "PDF Document",
         "description": "Portable Document Format",
-        "icon": "icon-pdf.ico",
+        "icon": "pdf-icon.ico",
         "role": "Viewer"
       }
     ],
