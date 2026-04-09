@@ -3,23 +3,17 @@
   "version": "4.0.00beta",
   "description": "Ocal Browser - Fast, Secure, and Agentic.",
   "main": "main.js",
-  "author": "Gaming Network Studio Media Group <contact@ocal.com>",
+  "author": "Gaming Network Studio Media Group",
   "scripts": {
     "start": "electron-forge start",
     "package": "electron-forge package",
     "make": "electron-forge make",
     "publish": "electron-forge publish",
     "build-exe": "electron-builder --win portable",
-    "build-premium": "electron-builder --win nsis",
-    "make-linux": "electron-forge make --platform linux",
-    "build-linux": "electron-builder --linux"
+    "build-premium": "electron-builder --win nsis"
   },
   "keywords": [],
   "license": "ISC",
-  "repository": {
-    "type": "git",
-    "url": "https://github.com/neelkanth-patel26/Ocal-Browser.git"
-  },
   "devDependencies": {
     "@electron-forge/cli": "^7.6.0",
     "@electron-forge/maker-deb": "^7.6.0",
@@ -45,30 +39,12 @@
     "directories": {
       "output": "dist-builder"
     },
-    "publish": [
-      {
-        "provider": "github",
-        "owner": "neelkanth-patel26",
-        "repo": "Ocal-Browser"
-      }
-    ],
     "win": {
       "target": [
         "nsis",
         "portable"
       ],
       "icon": "icon.png"
-    },
-    "linux": {
-      "target": [
-        "AppImage",
-        "deb",
-        "rpm"
-      ],
-      "maintainer": "Gaming Network Studio Media Group <contact@ocal.com>",
-      "icon": "icon.png",
-      "category": "WebBrowser",
-      "executableName": "ocal"
     },
     "fileAssociations": [
       {

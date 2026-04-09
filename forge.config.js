@@ -29,27 +29,11 @@ module.exports = {
     },
     {
       name: '@electron-forge/maker-deb',
-      config: {
-        options: {
-          maintainer: 'Gaming Network Studio Media Group',
-          homepage: 'https://github.com/neelkanth-patel26/Ocal-Browser',
-          categories: ['Network', 'WebBrowser'],
-          description: 'Ocal Browser - Fast, Secure, and Agentic.',
-          genericName: 'Web Browser'
-        }
-      },
+      config: {},
     },
     {
       name: '@electron-forge/maker-rpm',
-      config: {
-        options: {
-          maintainer: 'Gaming Network Studio Media Group',
-          homepage: 'https://github.com/neelkanth-patel26/Ocal-Browser',
-          categories: ['Network', 'WebBrowser'],
-          description: 'Ocal Browser - Fast, Secure, and Agentic.',
-          genericName: 'Web Browser'
-        }
-      },
+      config: {},
     },
   ],
   plugins: [
