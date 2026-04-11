@@ -1,65 +1,108 @@
 let selectedIndex = -1;
-let currentSuggestions = [];
+let flatItems = []; // To track keyboard-navigable items
 
 const list = document.getElementById('list');
+const refinementsBar = document.getElementById('refinements');
 
 window.electronAPI.on('update-suggestions', (e, data) => {
-    currentSuggestions = data || [];
-    renderSuggestions();
+    renderSuggestions(data);
 });
 
-function renderSuggestions() {
+function renderSuggestions(data) {
     list.innerHTML = '';
+    refinementsBar.innerHTML = '';
+    refinementsBar.style.display = 'none';
+    flatItems = [];
     selectedIndex = -1;
-    
-    if (currentSuggestions.length === 0) return;
 
-    currentSuggestions.forEach((s, idx) => {
-        const item = document.createElement('div');
-        item.className = 'suggestion-item';
-        
-        const isHistory = s.type === 'history';
-        const iconClass = isHistory ? 'fa-clock-rotate-left' : 'fa-magnifying-glass';
-        
-        item.innerHTML = `
-            <div class="icon"><i class="fas ${iconClass}"></i></div>
-            <div class="text">${s.text}</div>
-            <div class="type">${s.type || 'search'}</div>
-        `;
-        
-        item.onclick = () => {
-            window.electronAPI.send('suggestion-selected', s.text);
-        };
-        
-        list.appendChild(item);
-    });
+    if (!data) return;
+
+    // 1. Render Refinements (Horizontal Bar)
+    if (data.refinements && data.refinements.length > 0) {
+        refinementsBar.style.display = 'flex';
+        data.refinements.forEach(r => {
+            const pill = document.createElement('div');
+            pill.className = 'refinement-pill';
+            pill.textContent = r;
+            pill.onclick = () => window.electronAPI.send('suggestion-selected', r);
+            refinementsBar.appendChild(pill);
+        });
+    }
+
+    // 2. Render Best Match
+    if (data.bestMatch) {
+        addHeader('Top Result');
+        addSuggestionItem(data.bestMatch, true);
+    }
+
+    // 3. Render Suggestions Grouped by Type
+    const history = data.suggestions.filter(s => s.type === 'history' || s.type === 'bookmark');
+    const search = data.suggestions.filter(s => s.type === 'search');
+
+    if (history.length > 0) {
+        addHeader('Recently Visited');
+        history.forEach(s => addSuggestionItem(s));
+    }
+
+    if (search.length > 0) {
+        addHeader('Search Suggestions');
+        search.forEach(s => addSuggestionItem(s));
+    }
+}
+
+function addHeader(text) {
+    const header = document.createElement('div');
+    header.className = 'category-header';
+    header.textContent = text;
+    list.appendChild(header);
+}
+
+function addSuggestionItem(s, isBest = false) {
+    const item = document.createElement('div');
+    item.className = `suggestion-item ${isBest ? 'best-match' : ''}`;
+    
+    const iconClass = s.type === 'history' ? 'fa-clock-rotate-left' : 
+                     s.type === 'bookmark' ? 'fa-bookmark' : 'fa-magnifying-glass';
+    
+    item.innerHTML = `
+        <div class="icon"><i class="fas ${iconClass}"></i></div>
+        <div class="text">${s.text}</div>
+        <div class="type">${s.type || 'search'}</div>
+    `;
+    
+    item.onclick = () => {
+        window.electronAPI.send('suggestion-selected', s.url || s.text);
+    };
+    
+    flatItems.push({ element: item, data: s });
+    list.appendChild(item);
 }
 
 window.addEventListener('keydown', (e) => {
-    const items = document.querySelectorAll('.suggestion-item');
-    if (items.length === 0) return;
+    if (flatItems.length === 0) return;
 
     if (e.key === 'ArrowDown') {
-        selectedIndex = (selectedIndex + 1) % items.length;
-        updateSelection(items);
+        selectedIndex = (selectedIndex + 1) % flatItems.length;
+        updateSelection();
     } else if (e.key === 'ArrowUp') {
-        selectedIndex = (selectedIndex - 1 + items.length) % items.length;
-        updateSelection(items);
+        selectedIndex = (selectedIndex - 1 + flatItems.length) % flatItems.length;
+        updateSelection();
     } else if (e.key === 'Enter') {
         if (selectedIndex >= 0) {
-            window.electronAPI.send('suggestion-selected', currentSuggestions[selectedIndex].text);
+            const item = flatItems[selectedIndex].data;
+            window.electronAPI.send('suggestion-selected', item.url || item.text);
         }
     } else if (e.key === 'Escape') {
         window.electronAPI.send('hide-suggestions');
     }
 });
 
-function updateSelection(items) {
-    items.forEach((item, idx) => {
-        item.classList.toggle('selected', idx === selectedIndex);
+function updateSelection() {
+    flatItems.forEach((item, idx) => {
+        item.element.classList.toggle('selected', idx === selectedIndex);
     });
     if (selectedIndex >= 0) {
-        items[selectedIndex].scrollIntoView({ block: 'nearest' });
+        flatItems[selectedIndex].element.scrollIntoView({ block: 'nearest' });
     }
 }
 

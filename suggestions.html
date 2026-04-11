@@ -19,7 +19,7 @@
 
         body {
             margin: 0;
-            padding: 12px 12px 24px 12px; /* Increased bottom padding to prevent curve clipping */
+            padding: 0; /* No padding to allow container to touch window edges */
             font-family: 'Inter', -apple-system, sans-serif;
             background: transparent;
             overflow: hidden;
@@ -30,20 +30,41 @@
         }
 
         .container {
-            background: rgba(14, 14, 18, 0.82);
+            background: rgba(18, 18, 22, 0.7); /* Deep glassmorphism */
             backdrop-filter: var(--panel-blur);
             border: 1px solid var(--border);
-            border-radius: 24px; /* Slightly more aggressive rounding */
-            box-shadow: none;
-            overflow: hidden;
-            animation: slideDown 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+            border-top: none; /* No top border where it attaches to the omnibox */
+            border-radius: 0 0 16px 16px; /* Squared top, rounded bottom */
+            box-shadow: 0 12px 40px rgba(0,0,0,0.5);
+            overflow-y: auto;
+            overflow-x: hidden;
+            max-height: 100vh; /* Controlled by BrowserView height cap in main.js */
+            animation: slideDown 0.2s cubic-bezier(0.16, 1, 0.3, 1);
             position: relative;
-            margin-bottom: 4px;
+        }
+
+        /* ── Custom Scrollbar ───────────────────────────────── */
+        ::-webkit-scrollbar {
+            width: 5px;
+        }
+        ::-webkit-scrollbar-track {
+            background: transparent;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 10px;
+            transition: all 0.3s;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: rgba(255, 255, 255, 0.12);
+        }
+        .container:hover::-webkit-scrollbar-thumb {
+            background: rgba(255, 255, 255, 0.08);
         }
 
         @keyframes slideDown {
-            from { opacity: 0; transform: translateY(-10px) scale(0.98); }
-            to { opacity: 1; transform: translateY(0) scale(1); }
+            from { opacity: 0; transform: translateY(-4px); }
+            to { opacity: 1; transform: translateY(0); }
         }
 
         /* Top-light highlight to match topbar */
@@ -134,11 +155,65 @@
             padding: 3px 8px;
             border-radius: 6px;
             opacity: 0.6;
+            transition: all 0.2s;
+        }
+
+        /* ── Categories & Refinements ───────────────────────── */
+        .category-header {
+            font-size: 10px;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            color: var(--text-muted);
+            padding: 12px 16px 4px 16px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .category-header::after {
+            content: ''; flex: 1; height: 1px; background: rgba(255,255,255,0.03);
+        }
+
+        .refinements-bar {
+            display: flex;
+            gap: 8px;
+            padding: 8px 16px;
+            overflow-x: auto;
+            scrollbar-width: none;
+            border-bottom: 1px solid rgba(255,255,255,0.03);
+            background: rgba(255,255,255,0.01);
+        }
+        .refinements-bar::-webkit-scrollbar { display: none; }
+
+        .refinement-pill {
+            padding: 6px 14px;
+            background: rgba(255,255,255,0.04);
+            border: 1px solid rgba(255,255,255,0.06);
+            border-radius: 100px;
+            font-size: 12px;
+            color: var(--text-dim);
+            white-space: nowrap;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        .refinement-pill:hover {
+            background: rgba(255,255,255,0.08);
+            border-color: rgba(255,255,255,0.15);
+            color: #fff;
+            transform: translateY(-1px);
+        }
+
+        /* Special Best Match styling */
+        .suggestion-item.best-match {
+            background: rgba(168, 85, 247, 0.04);
+            border-left: 2px solid var(--accent);
+            border-radius: 4px 12px 12px 4px;
         }
     </style>
 </head>
 <body>
     <div class="container">
+        <div id="refinements" class="refinements-bar" style="display:none;"></div>
         <div class="suggestion-list" id="list">
             <!-- Suggestions injected here -->
         </div>

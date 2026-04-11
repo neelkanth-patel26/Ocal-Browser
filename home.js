@@ -145,6 +145,7 @@ class FocusTimer {
     }
     start() {
         this.isRunning = true;
+        document.body.classList.add('focus-active');
         if (timerToggle) {
             timerToggle.innerHTML = '<i class="fas fa-pause"></i>';
             timerToggle.classList.add('active');
@@ -157,6 +158,7 @@ class FocusTimer {
     }
     pause() {
         this.isRunning = false;
+        document.body.classList.remove('focus-active');
         clearInterval(this.timerId);
         if (timerToggle) {
             timerToggle.innerHTML = '<i class="fas fa-play"></i>';
@@ -168,14 +170,19 @@ class FocusTimer {
         this.timeLeft = 25 * 60;
         this.updateDisplay();
     }
-    complete() { this.pause(); alert('Focus session complete!'); this.reset(); }
+    complete() { 
+        this.pause(); 
+        // Using a non-blocking notification if possible, but keeping alert for now as per original
+        alert('Focus session complete!'); 
+        this.reset(); 
+    }
     updateDisplay() {
         const mins = Math.floor(this.timeLeft / 60);
         const secs = this.timeLeft % 60;
         if (timerDisplay) timerDisplay.textContent = `${String(mins).padStart(2, '0')}:${String(secs).padStart(2, '0')}`;
         
         if (this.progressEl) {
-            const offset = 502 - (502 * (this.timeLeft / this.totalSeconds));
+            const offset = 440 - (440 * (this.timeLeft / this.totalSeconds));
             this.progressEl.style.strokeDashoffset = offset;
         }
     }
@@ -197,6 +204,10 @@ async function updateWeather() {
     const tempEl = document.getElementById('weather-temp');
     const cityEl = document.getElementById('weather-city');
     const iconEl = document.querySelector('.weather-icon');
+    const condEl = document.getElementById('weather-condition');
+    const humEl = document.getElementById('weather-humidity');
+    const windEl = document.getElementById('weather-wind');
+    const feelsEl = document.getElementById('weather-feels');
     const locInput = document.getElementById('location-input');
 
     const fetchWeather = async (locStr = '') => {
@@ -206,13 +217,22 @@ async function updateWeather() {
             const current = data.current_condition[0];
             const city = data.nearest_area[0].areaName[0].value;
             const code = current.weatherCode;
+            const desc = current.weatherDesc[0].value;
 
             if (tempEl) tempEl.textContent = `${current.temp_C}°C`;
             if (cityEl) cityEl.textContent = city.toUpperCase();
+            if (condEl) condEl.textContent = desc.toUpperCase();
+            if (humEl) humEl.textContent = `${current.humidity}%`;
+            if (windEl) windEl.textContent = `${current.windspeedKmph} KM/H`;
+            if (feelsEl) feelsEl.textContent = `${current.FeelsLikeC}°C`;
+            
             if (iconEl && weatherIconMap[code]) {
                 iconEl.className = `fas ${weatherIconMap[code]} weather-icon`;
             }
-        } catch (e) { console.warn('Weather fetch failed.'); }
+        } catch (e) { 
+            console.warn('Weather fetch failed.'); 
+            if (condEl) condEl.textContent = 'OFFLINE';
+        }
     };
 
     // Manual Location Toggle

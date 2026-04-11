@@ -234,3 +234,31 @@ window.electronAPI.on('ai-agent-action', (e, action) => {
     messagesEl.appendChild(actionEl);
     scrollToBottom();
 });
+
+// Animation Handshake logic
+window.electronAPI.on('start-sidebar-exit', () => {
+    document.body.classList.add('closing');
+    // Wait for the animation to finish before signaling completion
+    // The CSS animation is 400ms, so 450ms is a safe buffer
+    setTimeout(() => {
+        window.electronAPI.send('sidebar-exit-complete');
+    }, 450);
+});
+
+window.electronAPI.on('sidebar-shown', () => {
+    document.body.classList.remove('closing');
+    const panel = document.querySelector('.ai-panel');
+    if (panel) {
+        // Remove the class first
+        panel.classList.remove('animate-in');
+        
+        // Wait for two frames to ensure the browser has registered the removal
+        // and rendered the initial hidden state (prevents the "black" flash)
+        requestAnimationFrame(() => {
+            requestAnimationFrame(() => {
+                panel.classList.add('animate-in');
+            });
+        });
+    }
+});
+

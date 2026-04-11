@@ -163,8 +163,8 @@ function renderFiles(items, customTitle = null) {
     if (filteredItems.length === 0) {
         fileGrid.innerHTML = `
             <div class="loading-state">
-                <i class="fas fa-file-circle-exclamation" style="opacity:0.3; font-size: 3rem;"></i>
-                <span>No PDF files found in this directory</span>
+                <i class="fas fa-file-circle-exclamation" style="opacity:0.2; font-size: 4rem; color: var(--accent);"></i>
+                <span style="font-weight: 600; letter-spacing: 1px; opacity: 0.5;">NO PDF FILES DETECTED</span>
             </div>
         `;
         return;
@@ -222,32 +222,32 @@ function renderFiles(items, customTitle = null) {
 }
 
 function getFileIcon(item) {
-    if (item.isDirectory) return { icon: 'fas fa-folder', color: '#f8d775' };
+    if (item.isDirectory) return { icon: 'fas fa-folder', color: '#fbbf24' }; // Warm Amber
     
     const ext = item.name.split('.').pop().toLowerCase();
     switch(ext) {
-        case 'pdf': return { icon: 'fas fa-file-pdf', color: '#ff4b2b' };
+        case 'pdf': return { icon: 'fas fa-file-pdf', color: '#f43f5e' }; // Rose Red
         case 'jpg':
         case 'jpeg':
         case 'png':
         case 'gif':
-        case 'webp': return { icon: 'fas fa-file-image', color: '#4facfe' };
+        case 'webp': return { icon: 'fas fa-file-image', color: '#3b82f6' }; // Blue
         case 'mp4':
         case 'mkv':
-        case 'mov': return { icon: 'fas fa-file-video', color: '#00f2fe' };
+        case 'mov': return { icon: 'fas fa-file-video', color: '#8b5cf6' }; // Violet
         case 'mp3':
         case 'wav':
-        case 'flac': return { icon: 'fas fa-file-audio', color: '#f093fb' };
+        case 'flac': return { icon: 'fas fa-file-audio', color: '#ec4899' }; // Pink
         case 'zip':
         case 'rar':
-        case '7z': return { icon: 'fas fa-file-zipper', color: '#f6d365' };
+        case '7z': return { icon: 'fas fa-file-zipper', color: '#10b981' }; // Emerald
         case 'js':
         case 'html':
         case 'css':
-        case 'json': return { icon: 'fas fa-file-code', color: '#a18cd1' };
+        case 'json': return { icon: 'fas fa-file-code', color: '#a855f7' }; // Purple
         case 'txt':
-        case 'md': return { icon: 'fas fa-file-lines', color: '#d2d2d2' };
-        default: return { icon: 'fas fa-file', color: '#999999' };
+        case 'md': return { icon: 'fas fa-file-lines', color: '#94a3b8' }; // Slate
+        default: return { icon: 'fas fa-file', color: '#64748b' };
     }
 }
 
