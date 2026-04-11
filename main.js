@@ -315,6 +315,7 @@ function updateTabShieldStats(wcId, type) {
 function broadcastShieldStats(wcId = null) {
     if (!mainWindow || mainWindow.isDestroyed()) return;
     const globalStats = userSettings.shieldStats.global;
+    
     // We send to everyone so the dashboard and popups stay in sync
     BrowserWindow.getAllWindows().forEach(bw => {
         try {
@@ -329,6 +330,7 @@ function broadcastShieldStats(wcId = null) {
         } catch(e) {}
     });
 }
+
 
 function updateShieldHistory() {
     if (!userSettings.shieldStats.history) userSettings.shieldStats.history = [];
@@ -1124,6 +1126,13 @@ function createAiSidebar() {
     aiSidebarView.setBackgroundColor('#00000000');
     setupContextMenu(aiSidebarView.webContents);
     setupInteractionDismissal(aiSidebarView.webContents);
+
+    // Ensure entrance animation plays on first load if it's being shown
+    aiSidebarView.webContents.on('dom-ready', () => {
+        if (aiSidebarOpen && aiSidebarView && !aiSidebarView.webContents.isDestroyed()) {
+            aiSidebarView.webContents.send('sidebar-shown');
+        }
+    });
 }
 
 function showSidebarOverlay() {
@@ -1149,23 +1158,50 @@ function hideSidebarOverlay() {
 function showAiSidebar() {
     if (!aiSidebarView) createAiSidebar();
     if (sidebarOpen) hideSidebarOverlay();
+    
     if (!mainWindow.getBrowserViews().includes(aiSidebarView)) {
         mainWindow.addBrowserView(aiSidebarView);
     }
+    
     aiSidebarOpen = true;
     mainWindow.setTopBrowserView(aiSidebarView);
     updateViewBounds();
+
+    // Signal renderer to play entrance animation
+    if (aiSidebarView && !aiSidebarView.webContents.isDestroyed()) {
+        aiSidebarView.webContents.send('sidebar-shown');
+    }
 }
 
 function hideAiSidebar() {
     if (aiSidebarView && !aiSidebarView.webContents.isDestroyed()) {
         if (mainWindow && !mainWindow.isDestroyed() && mainWindow.getBrowserViews().includes(aiSidebarView)) {
-            mainWindow.removeBrowserView(aiSidebarView);
+            // Initiate exit animation instead of immediate removal
+            aiSidebarView.webContents.send('start-sidebar-exit');
+            
+            // Safety timeout: remove after 600ms if renderer doesn't respond
+            setTimeout(() => {
+                if (aiSidebarView && !aiSidebarView.webContents.isDestroyed() && 
+                    mainWindow && !mainWindow.isDestroyed() && 
+                    mainWindow.getBrowserViews().includes(aiSidebarView) && aiSidebarOpen === false) {
+                    mainWindow.removeBrowserView(aiSidebarView);
+                    updateViewBounds();
+                }
+            }, 600);
         }
     }
     aiSidebarOpen = false;
     updateViewBounds();
 }
+
+ipcMain.on('sidebar-exit-complete', () => {
+    if (aiSidebarView && !aiSidebarView.webContents.isDestroyed() && 
+        mainWindow && !mainWindow.isDestroyed() && 
+        mainWindow.getBrowserViews().includes(aiSidebarView)) {
+        mainWindow.removeBrowserView(aiSidebarView);
+        updateViewBounds();
+    }
+});
 
 function createSuggestionsView() {
     suggestionsView = new BrowserView({
@@ -1238,6 +1274,9 @@ function hideSuggestions() {
     if (!suggestionsView || suggestionsView.webContents.isDestroyed()) return;
     if (mainWindow && !mainWindow.isDestroyed() && mainWindow.getBrowserViews().includes(suggestionsView)) {
         mainWindow.removeBrowserView(suggestionsView);
+    }
+    if (mainWindow && !mainWindow.isDestroyed()) {
+        mainWindow.webContents.send('suggestions-hidden');
     }
 }
 
@@ -1374,6 +1413,11 @@ function resolveInternalURL(url) {
   if (cleanBase === 'settings' || cleanBase === 'ocal://settings') return 'file://' + path.join(__dirname, 'settings.html');
   if (url.startsWith('ocal://settings#')) return 'file://' + path.join(__dirname, 'settings.html') + url.substring(15);
   if (cleanBase === 'file-manager' || cleanBase === 'ocal://file-manager') return 'file://' + path.join(__dirname, 'file-manager.html');
+  if (cleanBase === 'ocal://offline') return 'file://' + path.join(__dirname, 'offline.html');
+  if (cleanBase === 'ocal://games') return 'file://' + path.join(__dirname, 'games.html');
+  if (cleanBase === 'ocal://tetris') return 'file://' + path.join(__dirname, 'tetris.html');
+  if (cleanBase === 'ocal://game' || cleanBase === 'ocal://snake') return 'file://' + path.join(__dirname, 'snake.html');
+  if (cleanBase === 'ocal://pulse' || cleanBase === 'ocal://runner') return 'file://' + path.join(__dirname, 'game.html');
   
   if (cleanBase === 'ocal://site-settings') {
       const qIdx = url.indexOf('?');
@@ -1636,10 +1680,26 @@ function createNewTab(url = null) {
   view.webContents.on('did-fail-load', (event, errorCode, errorDescription, validatedURL, isMainFrame) => {
       if (isMainFrame) {
           handleVpnFailure(view.webContents, errorCode);
+
+          // Connectivity Rescue Logic
+          const connectivityErrors = [
+              -106, // ERR_INTERNET_DISCONNECTED
+              -105, // ERR_NAME_NOT_RESOLVED
+              -118, // ERR_CONNECTION_TIMED_OUT
+              -100, // ERR_CONNECTION_CLOSED
+              -102, // ERR_CONNECTION_REFUSED
+              -101  // ERR_CONNECTION_RESET
+          ];
+
+          if (connectivityErrors.includes(errorCode) && !validatedURL.startsWith('ocal://') && !validatedURL.startsWith('file://')) {
+              console.log(`[Rescue] Connectivity Error ${errorCode} on ${validatedURL}. Redirecting to Offline Page.`);
+              view.webContents.loadURL('ocal://offline');
+          }
       }
+
       if (mainWindow && !mainWindow.isDestroyed()) {
         if (isMainFrame && userSettings.vpnEnabled) {
-            // Detect and broadcast proxy-specific errors (-130: TIMED_OUT, -107: PROXY_CONNECTION_FAILED, etc.)
+            // Detect and broadcast proxy-specific errors
             const proxyErrors = [-130, -118, -136, -107];
             if (proxyErrors.includes(errorCode)) {
                 mainWindow.webContents.send('proxy-error', {
@@ -1853,6 +1913,7 @@ function showWebApp(url) {
 ipcMain.on('new-tab', () => createNewTab());
 ipcMain.on('switch-tab', (e, id) => setActiveTab(id));
 ipcMain.on('request-tabs', () => broadcastTabs());
+ipcMain.on('open-external', (e, url) => createNewTab(url));
 ipcMain.on('hide-popups', () => hidePopups());
 ipcMain.on('close-tab', async (e, id) => {
   if (views.length === 1) {
@@ -3557,28 +3618,68 @@ ipcMain.on('capture-screenshot', async (e, type) => {
 ipcMain.on('suggest-search', async (e, query) => {
     if (!query) { hideSuggestions(); return; }
     try {
-        let results = [];
+        let suggestions = [];
+        let refinements = [];
+        let bestMatch = null;
         
-        // 1. Online Suggestions (only if enabled)
+        // 1. Online Suggestions & Refinements
         if (userSettings.searchSuggest !== false) {
             try {
                 const response = await fetch(`https://suggestqueries.google.com/complete/search?client=chrome&q=${encodeURIComponent(query)}`);
                 const data = await response.json();
-                results = data[1].map(s => ({ text: s, type: 'search' }));
+                
+                // data[1] contains suggestions
+                if (data[1]) {
+                    suggestions = data[1].map(s => ({ text: s, type: 'search' }));
+                }
+
+                // data[3] or metadata can contain refinements
+                if (data[4] && data[4]['google:suggesttype']) {
+                    // Extract potential refinements (this is a heuristic for 'chrome' client)
+                    refinements = data[1]
+                        .filter((_, i) => data[4]['google:suggesttype'][i] === 'NAVIGATION')
+                        .slice(0, 5);
+                }
             } catch (err) { console.error('Online suggest fetch failed'); }
         }
 
-        // 2. History Suggestions (always included unless query is empty)
-        if (userSettings.history && Array.isArray(userSettings.history)) {
-            const hResults = userSettings.history
-                .filter(h => (h.title && h.title.toLowerCase().includes(query.toLowerCase())) || (h.url && h.url.toLowerCase().includes(query.toLowerCase())))
-                .slice(0, 3)
-                .map(h => ({ text: h.title, url: h.url, type: 'history' }));
-            results.unshift(...hResults);
+        // 2. History & Bookmark Integration (Smart Ranking)
+        const history = Array.isArray(userSettings.history) ? userSettings.history : [];
+        const bookmarks = Array.isArray(userSettings.bookmarks) ? userSettings.bookmarks : [];
+        const combinedSaved = [...history, ...bookmarks];
+
+        const savedMatches = combinedSaved
+            .filter(h => (h.title && h.title.toLowerCase().includes(query.toLowerCase())) || (h.url && h.url.toLowerCase().includes(query.toLowerCase())))
+            .map(h => ({ 
+                text: h.title || h.url, 
+                url: h.url, 
+                type: bookmarks.some(b => b.url === h.url) ? 'bookmark' : 'history' 
+            }));
+
+        // Identify Best Match (pins exact start matches)
+        const exactMatch = savedMatches.find(m => 
+            m.text.toLowerCase().startsWith(query.toLowerCase()) || 
+            (m.url && m.url.toLowerCase().startsWith(query.toLowerCase().replace(/^https?:\/\/(www\.)?/, '')))
+        );
+
+        if (exactMatch) {
+            bestMatch = exactMatch;
+            // Remove from main list to avoid duplication
+            const idx = savedMatches.indexOf(exactMatch);
+            if (idx > -1) savedMatches.splice(idx, 1);
         }
 
-        if (results.length > 0) {
-            if (suggestionsView) suggestionsView.webContents.send('update-suggestions', results.slice(0, 8));
+        // Combine and limit
+        const finalSuggestions = [...savedMatches.slice(0, 3), ...suggestions].slice(0, 8);
+
+        if (finalSuggestions.length > 0 || bestMatch || refinements.length > 0) {
+            if (suggestionsView) {
+                suggestionsView.webContents.send('update-suggestions', {
+                    bestMatch,
+                    suggestions: finalSuggestions,
+                    refinements: refinements.length > 0 ? refinements : []
+                });
+            }
         } else {
             hideSuggestions();
         }
@@ -3593,12 +3694,19 @@ ipcMain.on('show-suggestions', (e, bounds) => {
     const winOffset = getWinOffset();
     
     suggestionsView.setBounds({
-        x: Math.round(bounds.x + winOffset),
-        y: Math.round(bounds.y + bounds.height + winOffset),
+        x: Math.round(bounds.x),
+        y: Math.round(bounds.y + bounds.height),
         width: Math.round(bounds.width),
         height: 350
     });
     mainWindow.setTopBrowserView(suggestionsView);
+});
+
+ipcMain.on('resize-suggestions', (e, height) => {
+    if (!suggestionsView || !mainWindow || mainWindow.isDestroyed()) return;
+    const bounds = suggestionsView.getBounds();
+    const cappedHeight = Math.min(height, 480); // Cap at 480px for standard dropdown size
+    suggestionsView.setBounds({ ...bounds, height: cappedHeight });
 });
 
 ipcMain.on('hide-suggestions', () => hideSuggestions());
@@ -4355,6 +4463,31 @@ function broadcastSettings() {
         }
     });
 }
+
+// ── Dashboard Real-time Telemetry ──
+setInterval(async () => {
+    try {
+        const memory = await process.getProcessMemoryInfo();
+        const systemMemory = process.getSystemMemoryInfo();
+        
+        // Broadcast combined shield and system stats
+        const payload = {
+            ...userSettings.shieldStats,
+            memory,
+            systemMemory,
+            uptime: Date.now() - (app.uptimeStart || Date.now()) // Calculated from init
+        };
+
+        const allWebContents = webContents.getAllWebContents();
+        allWebContents.forEach(wc => {
+            if (!wc.isDestroyed() && wc.getURL().includes('settings.html')) {
+                wc.send('shield-stats-updated', payload);
+            }
+        });
+    } catch (e) {
+        // Silently handle errors if process info is temporarily unavailable
+    }
+}, 3000);
 
 function setupContextMenu(contents) {
     contents.on('context-menu', (e, props) => {

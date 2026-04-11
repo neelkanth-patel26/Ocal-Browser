@@ -83,6 +83,12 @@ function showModal({ title, message, onConfirm, onCancel }) {
         modalOverlay.classList.remove('active');
         modalConfirmBtn.onclick = null;
         modalCancelBtn.onclick = null;
+        
+        // If no sidebar is currently open, we must notify the main process to 
+        // release the interaction layer so the browser remains clickable.
+        if (sidebar && !sidebar.classList.contains('open')) {
+            window.electronAPI.send('close-all-sidebars');
+        }
     };
 
     modalConfirmBtn.onclick = () => {
@@ -659,6 +665,9 @@ function renderDownloads() {
     downloadItems.forEach(dl => {
         const el = document.createElement('div');
         el.className = 'dl-item';
+        const type = getFileType(dl.name);
+        el.dataset.type = type;
+
         const isFinished = dl.state === 'completed' || dl.state === 'cancelled' || dl.state === 'interrupted';
         const pct = isFinished ? (dl.state === 'completed' ? 100 : 0) : (dl.total > 0 ? Math.round((dl.received / dl.total) * 100) : 0);
         const icon = getFileIcon(dl.name);
@@ -718,6 +727,15 @@ function getFileIcon(filename) {
         wav: 'fa-file-audio'
     };
     return map[ext] || 'fa-file-arrow-down';
+}
+
+function getFileType(filename) {
+    const ext = filename.split('.').pop().toLowerCase();
+    if (ext === 'pdf') return 'pdf';
+    if (['jpg', 'jpeg', 'png', 'gif', 'svg'].includes(ext)) return 'img';
+    if (['mp4', 'mov', 'mp3', 'wav', 'm4a'].includes(ext)) return 'media';
+    if (['js', 'html', 'css', 'json', 'py', 'cpp', 'rs', 'go'].includes(ext)) return 'code';
+    return 'other';
 }
 
 

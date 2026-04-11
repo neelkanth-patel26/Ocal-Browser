@@ -112,22 +112,52 @@ function renderTabs() {
 
         el.ondragover = (e) => {
             e.preventDefault();
-            el.classList.add('drag-over');
-        };
-
-        el.ondragleave = () => el.classList.remove('drag-over');
-
-        el.ondrop = (e) => {
-            e.preventDefault();
-            el.classList.remove('drag-over');
-            const fromIndex = parseInt(e.dataTransfer.getData('tab-index'));
-            const toIndex = index;
-            if (fromIndex !== toIndex) {
-                window.electronAPI.send('reorder-tabs', { fromIndex, toIndex });
+            const rect = el.getBoundingClientRect();
+            const x = e.clientX - rect.left;
+            // Center 50% is the 'group' zone
+            const isCenter = x > rect.width * 0.25 && x < rect.width * 0.75;
+            
+            if (isCenter) {
+                el.classList.add('group-target');
+                el.classList.remove('drag-over');
+            } else {
+                el.classList.add('drag-over');
+                el.classList.remove('group-target');
             }
         };
 
-        el.ondragend = () => el.classList.remove('dragging');
+        el.ondragleave = () => el.classList.remove('drag-over', 'group-target');
+
+        el.ondrop = (e) => {
+            e.preventDefault();
+            el.classList.remove('drag-over', 'group-target');
+            const fromIndex = parseInt(e.dataTransfer.getData('tab-index'));
+            const toIndex = index;
+            
+            const rect = el.getBoundingClientRect();
+            const x = e.clientX - rect.left;
+            const isGroupDrop = x > rect.width * 0.25 && x < rect.width * 0.75;
+
+            if (fromIndex !== toIndex) {
+                if (isGroupDrop) {
+                    const sourceTab = tabs[fromIndex];
+                    const targetTab = tabs[toIndex];
+                    if (targetTab.groupId) {
+                        window.electronAPI.send('add-to-group', { tabId: sourceTab.id, groupId: targetTab.groupId });
+                    } else {
+                        window.electronAPI.send('create-tab-group', { 
+                            name: 'New Group', 
+                            color: '#a855f7', 
+                            tabIds: [sourceTab.id, targetTab.id] 
+                        });
+                    }
+                } else {
+                    window.electronAPI.send('reorder-tabs', { fromIndex, toIndex });
+                }
+            }
+        };
+
+        el.ondragend = () => el.classList.remove('dragging', 'drag-over', 'group-target');
         el.oncontextmenu = (e) => {
             e.preventDefault();
             showTabContextMenu(e, tab.id);
@@ -390,6 +420,7 @@ if (addressInput) {
                 width: rect.width,
                 height: rect.height
             });
+            omnibox.classList.add('has-suggestions');
         }, 150);
     });
 
@@ -412,6 +443,11 @@ window.electronAPI.on('execute-suggestion', (e, text) => {
     addressInput.value = text;
     window.electronAPI.navigateTo(text);
     addressInput.blur();
+});
+
+window.electronAPI.on('suggestions-hidden', () => {
+    const omnibox = document.getElementById('omnibox');
+    if (omnibox) omnibox.classList.remove('has-suggestions');
 });
 
 window.electronAPI.on('focus-address-bar', () => {
@@ -817,17 +853,21 @@ function showTabContextMenu(e, tabId) {
             hideContextMenu();
         });
     } else {
-        const groupSub = addMenuSub(menu, 'Add to Group', 'fa-object-group');
-        addMenuOption(groupSub, 'New Group', 'fa-plus', () => {
+        // Promoted: New Group is now top-level for ungrouped tabs
+        addMenuOption(menu, 'Add to New Group', 'fa-plus', () => {
             window.electronAPI.send('create-tab-group', { name: 'New Group', color: '#a855f7', tabIds: [tabId] });
             hideContextMenu();
         });
-        tabGroups.forEach(g => {
-            addMenuOption(groupSub, g.name, 'fa-circle', () => {
-                window.electronAPI.send('add-to-group', { tabId, groupId: g.id });
-                hideContextMenu();
-            }, g.color);
-        });
+
+        if (tabGroups.length > 0) {
+            const groupSub = addMenuSub(menu, 'Add to Existing Group', 'fa-object-group');
+            tabGroups.forEach(g => {
+                addMenuOption(groupSub, g.name, 'fa-circle', () => {
+                    window.electronAPI.send('add-to-group', { tabId, groupId: g.id });
+                    hideContextMenu();
+                }, g.color);
+            });
+        }
     }
 
     addMenuSeparator(menu);

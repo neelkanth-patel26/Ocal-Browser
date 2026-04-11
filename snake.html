@@ -1,0 +1,150 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; img-src 'self' data:;">
+    <title>Ocal Snake | Neon Slither</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;700;800&family=Inter:wght@400;600&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --accent: #10b981;
+            --accent-glow: rgba(16, 185, 129, 0.4);
+            --bg: #050508;
+            --glass: rgba(255, 255, 255, 0.03);
+            --glass-border: rgba(255, 255, 255, 0.1);
+        }
+
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+
+        body {
+            background: var(--bg);
+            color: #fff;
+            font-family: 'Inter', sans-serif;
+            overflow: hidden;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
+            width: 100vw;
+            user-select: none;
+        }
+
+        .ambient-bg {
+            position: fixed; inset: 0;
+            background: radial-gradient(circle at 50% 50%, #0b2e1a 0%, #050508 100%);
+            z-index: -1;
+        }
+
+        .game-wrapper {
+            position: relative;
+            background: rgba(0,0,0,0.4);
+            border: 1px solid var(--glass-border);
+            border-radius: 32px;
+            backdrop-filter: blur(30px);
+            padding: 40px;
+            box-shadow: 0 50px 150px rgba(0,0,0,0.8);
+            animation: fadeIn 0.8s cubic-bezier(0.16, 1, 0.3, 1);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        @keyframes fadeIn { from { opacity: 0; transform: scale(0.95); } to { opacity: 1; transform: scale(1); } }
+
+        .hud {
+            width: 100%;
+            display: flex; justify-content: space-between;
+            margin-bottom: 24px;
+        }
+
+        .pill {
+            background: var(--glass);
+            border: 1px solid var(--glass-border);
+            padding: 10px 24px;
+            border-radius: 100px;
+            display: flex; align-items: baseline; gap: 8px;
+        }
+        .label { font-size: 11px; font-weight: 800; color: rgba(255,255,255,0.3); text-transform: uppercase; letter-spacing: 1px; }
+        .val { font-family: 'Outfit', sans-serif; font-size: 24px; font-weight: 800; color: var(--accent); text-shadow: 0 0 15px var(--accent-glow); }
+
+        .canvas-container {
+            position: relative;
+            background: rgba(0,0,0,0.6);
+            border: 1px solid rgba(255,255,255,0.1);
+            border-radius: 12px;
+            overflow: hidden;
+        }
+
+        canvas { display: block; }
+
+        /* Overlays */
+        .overlay {
+            position: absolute; inset: 0;
+            background: rgba(0,0,0,0.8);
+            backdrop-filter: blur(15px);
+            display: none; flex-direction: column;
+            align-items: center; justify-content: center;
+            z-index: 100;
+        }
+        .overlay.active { display: flex; }
+
+        h2 { font-family: 'Outfit', sans-serif; font-size: 40px; font-weight: 800; margin-bottom: 8px; }
+        .btn {
+            background: var(--accent); color: #fff; border: none;
+            padding: 16px 40px; border-radius: 16px;
+            font-family: 'Outfit', sans-serif; font-size: 18px; font-weight: 800;
+            cursor: pointer; transition: all 0.3s;
+            margin-top: 24px;
+            box-shadow: 0 8px 25px var(--accent-glow);
+        }
+        .btn:hover { transform: translateY(-4px); box-shadow: 0 12px 35px var(--accent-glow); filter: brightness(1.1); }
+
+        .footer-hint {
+            margin-top: 24px;
+            font-size: 11px; color: rgba(255,255,255,0.3);
+            display: flex; gap: 20px;
+        }
+        .back-link { color: var(--accent); text-decoration: none; font-weight: 800; letter-spacing: 1px; opacity: 0.6; }
+    </style>
+</head>
+<body>
+    <div class="ambient-bg"></div>
+
+    <div class="game-wrapper">
+        <div class="hud">
+            <div class="pill">
+                <span class="label">Score</span>
+                <span class="val" id="score">0</span>
+            </div>
+            <div class="pill">
+                <span class="label">Best</span>
+                <span class="val" id="best">0</span>
+            </div>
+        </div>
+
+        <div class="canvas-container">
+            <canvas id="gameCanvas"></canvas>
+            
+            <div class="overlay active" id="startOverlay">
+                <h2>OCAL SNAKE</h2>
+                <div style="opacity: 0.6;">Stabilizing Neural Link...</div>
+                <button class="btn" id="startBtn">INITIALIZE</button>
+            </div>
+
+            <div class="overlay" id="gameOverOverlay">
+                <h2 style="color: #ef4444;">SYSTEM FATAL</h2>
+                <div id="finalScore" style="font-size: 20px; opacity: 0.6;">Score: 0</div>
+                <button class="btn" id="restartBtn">RETRY LINK</button>
+            </div>
+        </div>
+
+        <div class="footer-hint">
+            <span>ARROWS/WASD to Navigate</span>
+            <a href="games.html" class="back-link">EXIT TO HUB</a>
+        </div>
+    </div>
+
+    <script src="snake.js"></script>
+</body>
+</html>

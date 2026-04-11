@@ -333,137 +333,116 @@ html, body {
     font-size: 12px; flex-shrink: 0;
 }
 
-/* ── Download / Files Specifics ─────────────────────────────── */
+/* ── Download / Files Specifics 3.0 ── */
 .dl-item {
-    display: flex; align-items: flex-start; gap: 14px;
-    padding: 14px 16px; margin: 6px 10px;
-    background: rgba(255,255,255,0.03);
-    border: 1px solid rgba(255,255,255,0.08);
-    border-radius: 16px; position: relative; overflow: hidden;
-    transition: all 0.22s cubic-bezier(0.16,1,0.3,1);
+    display: flex; align-items: center; gap: 16px;
+    padding: 16px; margin: 8px 12px;
+    background: rgba(255,255,255,0.02);
+    border: 1px solid rgba(255,255,255,0.06);
+    border-radius: 20px; position: relative; overflow: hidden;
+    transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+    backdrop-filter: blur(10px);
 }
 .dl-item:hover {
-    background: rgba(255,255,255,0.055);
-    border-color: rgba(168,85,247,0.25);
-    transform: translateX(3px);
-    box-shadow: 0 6px 24px rgba(0,0,0,0.25);
+    background: rgba(255, 255, 255, 0.05);
+    border-color: rgba(255, 255, 255, 0.12);
+    transform: translateY(-2px) scale(1.01);
+    box-shadow: 0 12px 30px rgba(0,0,0,0.3);
 }
 
 .dl-icon {
-    width: 44px; height: 44px; border-radius: 13px;
-    background: rgba(168,85,247,0.1);
-    border: 1px solid rgba(168,85,247,0.2);
+    width: 48px; height: 48px; border-radius: 14px;
+    background: rgba(255,255,255,0.05);
+    border: 1px solid rgba(255,255,255,0.08);
     display: flex; align-items: center; justify-content: center;
-    color: var(--accent); font-size: 18px; flex-shrink: 0;
-    transition: all 0.3s cubic-bezier(0.16,1,0.3,1);
-    box-shadow: 0 4px 12px rgba(168,85,247,0.1);
-}
-.dl-item:hover .dl-icon {
-    background: linear-gradient(135deg, var(--accent), #7c3aed);
-    color: #fff;
-    transform: scale(1.08) rotate(-6deg);
-    box-shadow: 0 6px 20px rgba(168,85,247,0.4);
-    border-color: transparent;
+    color: var(--text-dim); font-size: 20px; flex-shrink: 0;
+    transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+    position: relative;
 }
 
-.dl-info { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 5px; }
-.dl-name { font-size: 13px; font-weight: 600; color: #fff; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+/* Color Coding via Type */
+.dl-item[data-type="pdf"] .dl-icon { color: #f43f5e; background: rgba(244, 63, 94, 0.1); border-color: rgba(244, 63, 94, 0.2); }
+.dl-item[data-type="img"] .dl-icon { color: #3b82f6; background: rgba(59, 130, 246, 0.1); border-color: rgba(59, 130, 246, 0.2); }
+.dl-item[data-type="media"] .dl-icon { color: #a855f7; background: rgba(168, 85, 247, 0.1); border-color: rgba(168, 85, 247, 0.2); }
+.dl-item[data-type="code"] .dl-icon { color: #10b981; background: rgba(16, 185, 129, 0.1); border-color: rgba(16, 185, 129, 0.2); }
+
+.dl-item:hover .dl-icon {
+    transform: scale(1.1) rotate(-8deg);
+    box-shadow: 0 0 20px rgba(255,255,255,0.05);
+}
+
+.dl-info { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 4px; }
+.dl-name { font-size: 13.5px; font-weight: 600; color: #fff; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; letter-spacing: -0.2px; }
 .dl-status {
-    font-size: 11px; color: var(--text-muted);
-    font-weight: 500; display: flex; align-items: center; justify-content: space-between;
+    font-size: 10.5px; color: var(--text-muted);
+    font-weight: 600; display: flex; align-items: center; justify-content: space-between;
+    text-transform: uppercase; letter-spacing: 0.5px;
 }
-.dl-status-pill {
-    display: inline-flex; align-items: center; gap: 5px;
-    padding: 2px 8px; border-radius: 100px;
-    font-size: 10px; font-weight: 700;
-    background: rgba(74,222,128,0.1); color: #4ade80;
-    border: 1px solid rgba(74,222,128,0.2);
-}
-.dl-status-pill.active {
-    background: rgba(168,85,247,0.12); color: #c084fc;
-    border-color: rgba(168,85,247,0.25);
-}
+
 .dl-bar-bg {
-    width: 100%; height: 3px;
-    background: rgba(255,255,255,0.06);
+    width: 100%; height: 4px;
+    background: rgba(255,255,255,0.05);
     border-radius: 100px; overflow: hidden;
-    margin-top: 2px;
+    margin-top: 6px;
 }
 .dl-bar {
     height: 100%;
-    background: linear-gradient(90deg, var(--accent), #d8b4fe);
+    background: var(--accent);
     border-radius: 100px;
-    transition: width 0.4s ease-out;
+    transition: width 0.4s cubic-bezier(0.16, 1, 0.3, 1);
     position: relative;
-    box-shadow: 0 0 6px rgba(168,85,247,0.5);
+    box-shadow: 0 0 10px var(--accent-glow);
 }
 .dl-bar::after {
     content: ''; position: absolute; top: 0; right: 0; bottom: 0;
-    width: 30px;
-    background: linear-gradient(90deg, transparent, rgba(255,255,255,0.5));
-    filter: blur(3px);
+    width: 10px; background: #fff; filter: blur(4px); opacity: 0.6;
 }
 
 .dl-actions {
-    display: flex; flex-direction: column; gap: 4px;
-    opacity: 0; transform: translateX(8px);
-    transition: all 0.22s cubic-bezier(0.16,1,0.3,1);
+    display: flex; align-items: center; gap: 6px;
+    opacity: 0; transform: translateX(10px);
+    transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
 }
 .dl-item:hover .dl-actions { opacity: 1; transform: translateX(0); }
 .dl-action-btn {
-    width: 30px; height: 30px; border-radius: 9px;
+    width: 32px; height: 32px; border-radius: 10px;
     background: rgba(255,255,255,0.05);
-    border: 1px solid rgba(255,255,255,0.09);
-    color: var(--text-muted); cursor: pointer;
+    border: 1px solid rgba(255,255,255,0.08);
+    color: var(--text-dim); cursor: pointer;
     display: flex; align-items: center; justify-content: center;
-    font-size: 11px; transition: all 0.18s;
+    font-size: 12px; transition: 0.2s;
 }
-.dl-action-btn:hover { background: rgba(255,255,255,0.12); color: #fff; border-color: rgba(255,255,255,0.18); transform: scale(1.08); }
-.dl-action-btn.del:hover { color: #f87171; background: rgba(239,68,68,0.1); border-color: rgba(239,68,68,0.25); }
+.dl-action-btn:hover { background: rgba(255,255,255,0.1); color: #fff; border-color: rgba(255,255,255,0.2); transform: scale(1.1); }
+.dl-action-btn.del:hover { color: #f43f5e; background: rgba(244, 63, 94, 0.1); border-color: rgba(244, 63, 94, 0.2); }
 
-/* ── Empty State ───────────────────────────────────────────── */
-.empty-state {
-    display: flex; flex-direction: column; align-items: center; justify-content: center;
-    padding: 80px 40px; text-align: center; gap: 16px;
-}
-.empty-state-icon {
-    width: 72px; height: 72px; border-radius: 22px;
-    background: rgba(168,85,247,0.07);
-    border: 1px solid rgba(168,85,247,0.15);
-    display: flex; align-items: center; justify-content: center;
-    margin-bottom: 4px;
-}
-.empty-state i { font-size: 30px; color: var(--accent); opacity: 0.5; }
-.empty-state p { font-size: 13.5px; color: var(--text-muted); font-weight: 500; line-height: 1.6; max-width: 200px; }
-
-/* ── Modal Overlay Layer ───────────────────────────────────── */
+/* ── Pro System Modal Layer ── */
 #modal-overlay {
-    position: fixed; inset: 0; background: rgba(0,0,0,0.6); backdrop-filter: blur(14px);
+    position: fixed; inset: 0; background: rgba(0,0,0,0.5); backdrop-filter: blur(12px);
     display: none; align-items: center; justify-content: center; z-index: 10000;
     pointer-events: auto;
 }
 #modal-overlay.active { display: flex; }
 #modal-container {
-    width: 420px; background: rgba(22, 22, 28, 0.8); backdrop-filter: blur(50px) saturate(210%);
-    border: 1px solid rgba(255,255,255,0.1); border-radius: 36px; padding: 48px 40px;
-    display: flex; flex-direction: column; gap: 28px; box-shadow: 0 40px 120px rgba(0,0,0,0.9);
-    animation: modalIn 0.5s cubic-bezier(0.16, 1, 0.3, 1); text-align: center;
+    margin-top: 40px;
+    width: 400px; background: rgba(18, 18, 22, 0.75); backdrop-filter: blur(40px) saturate(210%);
+    border: 1px solid rgba(255,255,255,0.06); border-radius: 12px; padding: 32px 30px;
+    display: flex; flex-direction: column; gap: 24px; box-shadow: 0 40px 100px rgba(0,0,0,0.8);
+    animation: modalIn 0.4s cubic-bezier(0.16, 1, 0.3, 1); text-align: center;
 }
-@keyframes modalIn { from { transform: scale(0.92) translateY(20px); opacity: 0; } to { transform: scale(1) translateY(0); opacity: 1; } }
+@keyframes modalIn { from { transform: scale(0.96) translateY(10px); opacity: 0; } to { transform: scale(1) translateY(0); opacity: 1; } }
 
 #modal-icon {
-    width: 72px; height: 72px; border-radius: 22px; background: var(--accent-dim);
-    border: 1px solid var(--accent-border); color: var(--accent); font-size: 28px;
+    width: 56px; height: 56px; border-radius: 12px; background: rgba(168,85,247,0.1);
+    border: 1px solid rgba(168,85,247,0.15); color: var(--accent); font-size: 20px;
     display: flex; align-items: center; justify-content: center; margin: 0 auto 4px;
-    box-shadow: 0 10px 30px var(--accent-glow);
+    box-shadow: 0 8px 25px rgba(168,85,247,0.08);
 }
-#modal-title { font-size: 24px; font-weight: 810; color: #fff; letter-spacing: -0.04em; }
+#modal-title { font-size: 20px; font-weight: 700; color: #fff; letter-spacing: -0.02em; }
 #modal-body { font-size: 15px; color: var(--text-dim); line-height: 1.7; font-weight: 500; }
 
 #modal-footer { display: flex; gap: 14px; margin-top: 12px; }
 #modal-footer button {
     flex: 1; height: 52px; border-radius: 16px; font-size: 15px; font-weight: 750;
-    cursor: pointer; transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1); border: 1px solid transparent;
 }
 #modal-cancel { background: rgba(255,255,255,0.06); color: var(--text-dim); border-color: rgba(255,255,255,0.08) !important; }
 #modal-cancel:hover { background: rgba(255,255,255,0.12); color: #fff; transform: translateY(-1px); }
@@ -479,6 +458,20 @@ html, body {
 }
 .icon-btn:hover { background: rgba(255,255,255,0.08); color: #fff; }
 .icon-btn.del:hover { color: #ef4444; }
+
+/* Empty State UI */
+.empty-state {
+    display: flex; flex-direction: column; align-items: center; justify-content: center;
+    padding: 80px 40px; color: var(--text-muted); text-align: center; gap: 20px;
+}
+.empty-state i { 
+    font-size: 48px; color: var(--accent); opacity: 0.15;
+    filter: drop-shadow(0 0 20px var(--accent-glow));
+}
+.empty-state p { 
+    font-size: 14px; font-weight: 600; color: var(--text-dim);
+    letter-spacing: -0.01em; opacity: 0.7;
+}
 
 /* Settings items */
 .setting-row { padding: 14px 18px; border-bottom: 1px solid var(--border); }
