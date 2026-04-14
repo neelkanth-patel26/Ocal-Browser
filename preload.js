@@ -153,6 +153,12 @@ contextBridge.exposeInMainWorld('electronAPI', {
   getExtensions:    ()     => ipcRenderer.invoke('get-extensions'),
   removeExtension:  (id)   => ipcRenderer.invoke('remove-extension', id),
   toggleExtension:  (id, enabled) => ipcRenderer.invoke('toggle-extension', { id, enabled }),
+  
+  // Profiles
+  switchProfile: (id)      => ipcRenderer.send('switch-profile', id),
+  createProfile: (data)    => ipcRenderer.invoke('create-profile', data),
+  deleteProfile: (id)      => ipcRenderer.send('delete-profile', id),
+  editProfile:   (data)    => ipcRenderer.send('edit-profile', data),
 
   // ── Listeners ──────────────────────────────────────────────────────────
   onTabsChanged:       (cb) => ipcRenderer.on('tabs-changed',          (e, d)    => cb(d)),

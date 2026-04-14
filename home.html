@@ -5,383 +5,148 @@
     <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline' https://cdnjs.cloudflare.com https://unpkg.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com https://cdnjs.cloudflare.com; font-src 'self' https://fonts.gstatic.com https://cdnjs.cloudflare.com; img-src 'self' data: https:; connect-src 'self' https://suggestqueries.google.com https://api.github.com https://cdnjs.cloudflare.com https://unpkg.com https://wttr.in;">
     <title>Ocal Home</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@200;300;400;500;600;700&family=Outfit:wght@100;200;300;400;500;600&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Outfit:wght@200;300;400;500;600;700;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="assets/fontawesome/css/all.min.css">
-    <style>
-        *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; outline: none; }
-
-        :root {
-            --accent: #a855f7;
-            --accent-glow: rgba(168, 85, 247, 0.4);
-            --bg: #0b0b0e;
-            --glass: rgba(14, 14, 18, 0.5);
-            --glass-border: rgba(255, 255, 255, 0.06);
-            --text-main: #ffffff;
-            --text-dim: rgba(255, 255, 255, 0.65);
-            --text-muted: rgba(255, 255, 255, 0.3);
-            --font-title: 'Outfit', sans-serif;
-            --font-main: 'Inter', sans-serif;
-            --panel-blur: blur(40px) saturate(220%);
-
-            /* Dynamic Metrics (Compact) */
-            --tile-size: 68px;
-            --tile-gap: 24px;
-        }
-
-        body {
-            font-family: var(--font-main);
-            background: var(--bg);
-            color: var(--text-main);
-            height: 100vh; width: 100vw;
-            overflow: hidden;
-            position: relative;
-            -webkit-font-smoothing: antialiased;
-            opacity: 0; transform: scale(1.015);
-            transition: opacity 1.2s ease, transform 1.2s cubic-bezier(0.16, 1, 0.3, 1);
-        }
-        body.loaded { opacity: 1; transform: scale(1); }
-
-        /* ── Neural Architecture Backdrop ── */
-        .ambient-lighting {
-            position: fixed; inset: 0; z-index: -1;
-            background: #09090c;
-            overflow: hidden;
-        }
-        .neural-point {
-            position: absolute; border-radius: 50%;
-            filter: blur(100px); opacity: 0.35;
-            animation: neural-float 25s infinite alternate cubic-bezier(0.45, 0, 0.55, 1);
-        }
-        .point-1 { width: 50vw; height: 50vw; top: -15%; left: -10%; background: radial-gradient(circle, rgba(168, 85, 247, 0.1) 0%, transparent 75%); animation-duration: 28s; }
-        .point-2 { width: 40vw; height: 40vw; bottom: -10%; right: -5%; background: radial-gradient(circle, rgba(59, 130, 246, 0.06) 0%, transparent 75%); animation-duration: 35s; animation-delay: -7s; }
-        .point-3 { width: 30vw; height: 30vw; top: 35%; left: 35%; background: radial-gradient(circle, rgba(168, 85, 247, 0.04) 0%, transparent 75%); animation-duration: 22s; animation-delay: -3s; }
-
-        @keyframes neural-float {
-            0% { transform: translate(0, 0) rotate(0deg) scale(1); }
-            100% { transform: translate(4%, 4%) rotate(5deg) scale(1.1); }
-        }
-
-        .dashboard {
-            display: grid;
-            grid-template-columns: 310px 1fr 310px;
-            gap: 40px;
-            width: 100%; height: 100vh;
-            padding: 85px 50px 45px;
-            position: relative; z-index: 10;
-        }
-
-        .dashboard.layout-top .col-center { justify-content: flex-start; padding-top: 30px; }
-        .dashboard.layout-center .col-center { justify-content: center; }
-        .dashboard.layout-bottom .col-center { justify-content: flex-end; padding-bottom: 60px; }
-
-        .glass-panel {
-            background: var(--glass);
-            backdrop-filter: var(--panel-blur);
-            -webkit-backdrop-filter: var(--panel-blur);
-            border: 1px solid var(--glass-border);
-            border-radius: 20px;
-            display: flex; flex-direction: column;
-            overflow: hidden;
-            transition: all 0.5s cubic-bezier(0.16, 1, 0.3, 1);
-            box-shadow: 0 12px 40px rgba(0,0,0,0.5), inset 0 1px 1px rgba(255,255,255,0.03);
-            position: relative;
-        }
-        .glass-panel::after {
-            content: ''; position: absolute; inset: 0;
-            background: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3%3Cfilter id='noiseFilter'%3%3CfeTurbulence type='fractalNoise' baseFrequency='0.6' numOctaves='3' stitchTiles='stitch'/%3%3C/filter%3%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)'/%3%3C/svg%3");
-            opacity: 0.025; pointer-events: none;
-        }
-        .glass-panel:hover { 
-            background: rgba(20, 20, 26, 0.6); 
-            border-color: rgba(255, 255, 255, 0.12); 
-            transform: translateY(-3px);
-            box-shadow: 0 20px 60px rgba(0,0,0,0.6), 0 0 25px rgba(168,85,247,0.04);
-        }
-
-        .col-side { display: flex; flex-direction: column; gap: 24px; }
-        .widget-head { padding: 22px 22px 12px; display: flex; align-items: center; justify-content: space-between; }
-        .widget-title { font-size: 9.5px; font-weight: 900; letter-spacing: 2px; text-transform: uppercase; color: var(--text-muted); opacity: 0.9; }
-
-        .todo-stack { flex: 1; overflow-y: auto; padding: 0 16px 20px; display: flex; flex-direction: column; gap: 10px; }
-        .todo-card {
-            display: flex; align-items: center; gap: 12px; padding: 12px 16px;
-            border-radius: 12px; background: rgba(255,255,255,0.04);
-            border: 1px solid transparent; 
-            transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1); cursor: pointer;
-        }
-        .todo-card:hover { 
-            background: rgba(255,255,255,0.07); 
-            border-color: rgba(168, 85, 247, 0.3); 
-            transform: translateX(4px); 
-        }
-        .todo-checkbox { width: 18px; height: 18px; border-radius: 100px; border: 1.5px solid var(--text-muted); position: relative; flex-shrink: 0; transition: 0.3s; }
-        .todo-card.done .todo-checkbox { background: var(--accent); border-color: var(--accent); box-shadow: 0 0 12px var(--accent-glow); }
-        .todo-card.done .todo-checkbox::after {
-            content: '\f00c'; font-family: 'Font Awesome 6 Free'; font-weight: 900;
-            position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%);
-            font-size: 9px; color: #fff;
-        }
-        .todo-label { font-size: 13.5px; color: #fff; flex: 1; font-weight: 500; opacity: 0.8; }
-        .todo-card.done .todo-label { text-decoration: line-through; opacity: 0.35; }
-        .del-todo { font-size: 11px; color: var(--text-muted); opacity: 0; transition: 0.2s; cursor: pointer; }
-        .todo-card:hover .del-todo { opacity: 0.5; }
-        .del-todo:hover { color: #f43f5e; opacity: 1 !important; transform: scale(1.15); }
-        
-        .todo-input-wrap { padding: 16px 22px; border-top: 1px solid rgba(255,255,255,0.02); background: rgba(0,0,0,0.1); position: relative; }
-        .todo-input { width: 100%; background: none; border: none; font-size: 13px; color: #fff; opacity: 0.45; font-weight: 600; transition: 0.3s; }
-        .todo-input:focus { opacity: 1; color: var(--accent); }
-        .todo-input-wrap::after { content: ''; position: absolute; bottom: 0; left: 0; width: 0; height: 1.5px; background: var(--accent); transition: 0.5s cubic-bezier(0.16, 1, 0.3, 1); box-shadow: 0 0 8px var(--accent); }
-        .todo-input-wrap:focus-within::after { width: 100%; }
-
-        /* ── Center Piece (Compact) ── */
-        .col-center { display: flex; flex-direction: column; align-items: center; gap: 48px; text-align: center; transition: all 0.6s cubic-bezier(0.16, 1, 0.3, 1); }
-        
-        .clock-pillar { display: flex; flex-direction: column; gap: 8px; }
-        .time-display { 
-            font-family: var(--font-title); font-size: 96px; font-weight: 100; 
-            letter-spacing: -2px; line-height: 1; color: #fff; 
-            filter: drop-shadow(0 0 40px rgba(255,255,255,0.12)); 
-            transition: all 0.6s cubic-bezier(0.16, 1, 0.3, 1);
-            display: flex; align-items: center; justify-content: center;
-        }
-        .clock-colon { 
-            opacity: 0.5; animation: clock-pulse 2.5s infinite ease-in-out; 
-            margin: 0 5px; font-weight: 300;
-            transform: translateY(-3px);
-        }
-        @keyframes clock-pulse {
-            0%, 100% { opacity: 0.2; transform: scale(0.98); }
-            50% { opacity: 0.7; transform: scale(1.02); }
-        }
-        .greeting-display { 
-            font-size: 9px; font-weight: 950; letter-spacing: 4px; 
-            text-transform: uppercase; color: var(--text-dim); 
-            display: flex; align-items: center; justify-content: center; gap: 12px; 
-            opacity: 0.8;
-        }
-        .greeting-dot { width: 3.5px; height: 3.5px; border-radius: 50%; background: var(--accent); opacity: 0.8; box-shadow: 0 0 8px var(--accent); }
-
-        .search-container { width: 100%; max-width: 640px; position: relative; }
-        .search-field { 
-            display: flex; align-items: center; gap: 18px; height: 60px; padding: 0 16px 0 28px; 
-            background: rgba(14, 14, 18, 0.45); border: 1px solid var(--glass-border); border-radius: 100px; 
-            transition: all 0.5s cubic-bezier(0.16, 1, 0.3, 1); 
-            box-shadow: 0 15px 45px rgba(0,0,0,0.3);
-            backdrop-filter: blur(20px);
-        }
-        .search-field:focus-within { 
-            background: rgba(168, 85, 247, 0.04); border-color: rgba(168, 85, 247, 0.4); 
-            box-shadow: 0 0 40px rgba(168, 85, 247, 0.12), 0 0 0 0.5px var(--accent); 
-            transform: translateY(-3px);
-        }
-        .search-input { flex: 1; background: none; border: none; font-size: 17px; color: #fff; font-weight: 300; letter-spacing: 0.6px; }
-        .search-input::placeholder { color: var(--text-muted); font-weight: 400; opacity: 0.5; }
-        .search-enter { 
-            width: 40px; height: 40px; border-radius: 100px; 
-            background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.08); 
-            color: var(--text-muted); font-size: 13px; cursor: pointer; transition: 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-            display: flex; align-items: center; justify-content: center;
-        }
-        .search-enter:hover { 
-            background: var(--accent); color: #fff; border-color: transparent; 
-            box-shadow: 0 8px 20px rgba(168, 85, 247, 0.35); 
-            transform: rotate(45deg) scale(1.1); 
-        }
-        .search-enter i { transition: 0.4s; }
-        .search-enter:hover i { transform: rotate(-45deg); }
-
-        /* ── Focus Flow (Compact) ── */
-        .timer-container { 
-            position: relative; width: 160px; height: 160px; margin: 24px auto; 
-            display: flex; align-items: center; justify-content: center; 
-            background: rgba(255,255,255,0.02); border-radius: 50%;
-            box-shadow: inset 0 0 20px rgba(0,0,0,0.2);
-        }
-        .timer-svg { position: absolute; top: 0; left: 0; transform: rotate(-90deg); width: 160px; height: 160px; pointer-events: none; }
-        .timer-svg circle { fill: none; stroke: rgba(255,255,255,0.04); stroke-width: 6; stroke-linecap: round; }
-        .timer-svg .progress { 
-            stroke: var(--accent); stroke-dasharray: 440; stroke-dashoffset: 440; 
-            stroke-width: 7;
-            transition: stroke-dashoffset 0.8s cubic-bezier(0.16, 1, 0.3, 1); 
-            filter: drop-shadow(0 0 8px var(--accent-glow)); 
-        }
-
-        /* ── Dynamic Shortcut Grid (Compact Cluster) ── */
-        .tiles-grid { display: flex; gap: var(--tile-gap); justify-content: center; flex-wrap: wrap; transition: all 0.5s; padding: 10px; }
-        .tile-item { display: flex; flex-direction: column; align-items: center; gap: 14px; cursor: pointer; }
-        
-        .tile-box { 
-            width: var(--tile-size); height: var(--tile-size);
-            display: flex; align-items: center; justify-content: center; 
-            font-size: calc(var(--tile-size) * 0.42); 
-            color: var(--text-dim); transition: all 0.5s cubic-bezier(0.16, 1, 0.3, 1); 
-            aspect-ratio: 1/1; flex-shrink: 0; position: relative;
-        }
-
-        .style-glass { 
-            background: rgba(255, 255, 255, 0.04); backdrop-filter: blur(20px) saturate(150%); 
-            border: 1px solid rgba(255, 255, 255, 0.07); border-radius: 100px; 
-            box-shadow: 0 6px 20px rgba(0,0,0,0.25), inset 0 1px 1.5px rgba(255,255,255,0.03);
-        }
-        .tile-item:hover .style-glass { 
-            background: rgba(168, 85, 247, 0.12); 
-            border-color: rgba(168, 85, 247, 0.4); 
-            color: #fff; 
-            transform: translateY(-8px) scale(1.08); 
-            box-shadow: 0 15px 35px rgba(0,0,0,0.5), 0 0 20px rgba(168, 85, 247, 0.15); 
-        }
-
-        .style-matte { 
-            background: #121216; border: 1.5px solid #222228; border-radius: 12px; backdrop-filter: none; 
-        }
-        .tile-item:hover .style-matte { background: #18181f; border-color: var(--accent); color: #fff; transform: translateY(-5px) scale(1.08); box-shadow: 0 12px 30px rgba(0,0,0,0.5); }
-
-        .style-neon { 
-            background: transparent; border: 2px solid var(--accent); border-radius: 50%; backdrop-filter: none; 
-            box-shadow: 0 0 12px rgba(168, 85, 247, 0.12); 
-        }
-        .tile-item:hover .style-neon { box-shadow: 0 0 35px var(--accent); color: #fff; transform: rotate(360deg) scale(1.15); border-width: 2.5px; }
-
-        .tile-label { font-size: 9.5px; font-weight: 900; color: var(--text-muted); transition: 0.4s; letter-spacing: 1.2px; text-transform: uppercase; }
-        .tile-item:hover .tile-label { color: #fff; transform: translateY(3px); letter-spacing: 2.2px; opacity: 1; }
-
-        /* side widgets refined */
-        .timer-val { font-family: var(--font-title); font-size: 36px; font-weight: 200; color: #fff; letter-spacing: -1.2px; z-index: 5; filter: drop-shadow(0 0 12px rgba(255,255,255,0.08)); }
-        .timer-acts { display: flex; justify-content: center; gap: 14px; margin-bottom: 24px; }
-        .timer-btn { width: 44px; height: 44px; border-radius: 100px; background: rgba(255,255,255,0.04); border: 1px solid var(--glass-border); color: #fff; cursor: pointer; transition: 0.4s cubic-bezier(0.16, 1, 0.3, 1); display: flex; align-items: center; justify-content: center; font-size: 14px; }
-        .timer-btn:hover { background: rgba(255,255,255,0.1); border-color: rgba(255,255,255,0.25); transform: translateY(-3px) scale(1.1); }
-        .timer-btn.active { background: #f43f5e; border-color: transparent; box-shadow: 0 8px 25px rgba(244, 63, 94, 0.4); }
-
-        .weather-panel { padding: 22px; display: flex; flex-direction: column; gap: 18px; align-items: stretch; text-align: left; }
-        .weather-top { display: flex; align-items: center; gap: 20px; }
-        .weather-icon { font-size: 38px; color: var(--accent); filter: drop-shadow(0 0 15px var(--accent-glow)); transition: 0.6s cubic-bezier(0.175, 0.885, 0.32, 1.275); }
-        .weather-panel:hover .weather-icon { transform: scale(1.1) rotate(8deg); }
-        .weather-main-info { display: flex; flex-direction: column; gap: 2px; }
-        .weather-t { font-size: 36px; font-weight: 200; font-family: var(--font-title); color: #fff; letter-spacing: -1.5px; line-height: 1; }
-        .weather-st { font-size: 11px; font-weight: 600; color: var(--text-dim); text-transform: uppercase; letter-spacing: 1px; opacity: 0.8; }
-        
-        .weather-metrics { display: flex; justify-content: space-between; padding: 12px 0; border-top: 1px solid rgba(255,255,255,0.03); border-bottom: 1px solid rgba(255,255,255,0.03); }
-        .w-metric { display: flex; flex-direction: column; align-items: center; gap: 6px; flex: 1; }
-        .w-metric i { font-size: 11px; color: var(--accent); opacity: 0.6; }
-        .w-metric span { font-size: 10px; font-weight: 700; color: #fff; letter-spacing: 0.5px; }
-
-        .weather-footer { display: flex; align-items: center; justify-content: center; width: 100%; }
-        .wrapper-city { display: flex; align-items: center; justify-content: center; gap: 8px; cursor: pointer; transition: 0.4s; width: 100%; }
-        .wrapper-city:hover { transform: translateY(-1px); }
-        .weather-c { font-size: 9px; color: var(--text-muted); text-transform: uppercase; letter-spacing: 3px; font-weight: 950; transition: 0.3s; }
-        .wrapper-city:hover .weather-c { color: var(--accent); opacity: 1; }
-        .edit-loc-icon { font-size: 10px; color: var(--accent); opacity: 0; transition: 0.4s; }
-        .wrapper-city:hover .edit-loc-icon { opacity: 0.6; }
-        .location-input { background: rgba(0,0,0,0.3); border: 1px solid var(--accent); border-radius: 100px; padding: 6px 14px; font-size: 10px; color: #fff; text-transform: uppercase; letter-spacing: 2px; font-weight: 950; outline: none; width: 100%; display: none; text-align: center; }
-
-        /* ── Compact Command Footer 3.0 ── */
-        .footer-hub { position: fixed; bottom: 42px; left: 0; right: 0; display: flex; justify-content: center; z-index: 1000; }
-        .footer-capsule { 
-            display: flex; align-items: center; gap: 8px;
-            background: rgba(10, 10, 14, 0.7); 
-            backdrop-filter: blur(40px) saturate(210%); 
-            border: 1px solid rgba(255,255,255,0.06); 
-            border-radius: 100px; padding: 6px;
-            box-shadow: 0 20px 50px rgba(0,0,0,0.5), inset 0 1px 1px rgba(255,255,255,0.03);
-            transition: 0.5s cubic-bezier(0.16, 1, 0.3, 1);
-        }
-        .footer-capsule:hover { transform: translateY(-4px); border-color: rgba(168, 85, 247, 0.3); box-shadow: 0 25px 60px rgba(0,0,0,0.6); }
-        
-        .capsule-btn { 
-            display: flex; align-items: center; gap: 8px;
-            background: rgba(255,255,255,0.03); border: 1px solid transparent; padding: 10px 18px; border-radius: 100px; 
-            color: var(--text-dim); font-size: 10px; font-weight: 900; letter-spacing: 1.5px; 
-            cursor: pointer; transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
-        }
-        .capsule-btn i { font-size: 13px; opacity: 0.6; transition: 0.4s; }
-        .capsule-btn:hover { background: rgba(255,255,255,0.07); color: #fff; border-color: rgba(255,255,255,0.05); }
-        .capsule-btn:hover i { opacity: 1; transform: scale(1.1); color: var(--accent); }
-        
-        .brand-text { font-size: 9px; font-weight: 950; letter-spacing: 10px; color: var(--text-muted); margin: 0 12px; opacity: 0.15; transition: 0.6s cubic-bezier(0.16, 1, 0.3, 1); pointer-events: none; }
-        .footer-capsule:hover .brand-text { opacity: 0.4; letter-spacing: 14px; color: var(--accent); }
-
-        /* Focus Aura State */
-        body.focus-active .ambient-lighting::after {
-            content: ''; position: fixed; inset: 0;
-            background: radial-gradient(circle at 50% 50%, rgba(244, 63, 94, 0.08) 0%, transparent 60%);
-            animation: focus-breathing 4s infinite alternate ease-in-out;
-            pointer-events: none;
-        }
-        @keyframes focus-breathing {
-            0% { opacity: 0.3; transform: scale(0.9); }
-            100% { opacity: 1; transform: scale(1.1); }
-        }
-
-        ::-webkit-scrollbar { width: 4px; }
-        ::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.1); border-radius: 10px; }
-        ::-webkit-scrollbar-thumb:hover { background: var(--accent); }
-    </style>
+    <link rel="stylesheet" href="home.css">
 </head>
-<body>
+<body class="pro-studio">
+    <!-- Ambient Neural Backdrop -->
     <div class="ambient-lighting">
         <div class="neural-point point-1"></div>
         <div class="neural-point point-2"></div>
         <div class="neural-point point-3"></div>
     </div>
+
     <main class="dashboard layout-center" id="dashboard-main">
+        <!-- Sidebar: Daily Focus (Todo) -->
         <aside class="col-side">
             <div class="glass-panel" id="todo-panel">
-                <div class="widget-head"><span class="widget-title">Daily Focus</span><i class="fas fa-list-check" style="opacity: 0.3; font-size: 12px;"></i></div>
-                <div class="todo-stack" id="todo-list"></div>
-                <div class="todo-input-wrap"><input type="text" class="todo-input" id="todo-input" placeholder="Initiate task sequence..."></div>
+                <div class="widget-head">
+                    <span class="widget-title">Mission Control</span>
+                    <i class="fas fa-layer-group" style="opacity: 0.2; font-size: 14px;"></i>
+                </div>
+                <div class="todo-stack" id="todo-list">
+                    <!-- Dynamic Component Injection -->
+                </div>
+                <div class="todo-input-wrap">
+                    <input type="text" class="todo-input" id="todo-input" placeholder="Initiate task sequence...">
+                </div>
             </div>
         </aside>
+
+        <!-- Center: Clock & Core Interaction -->
         <section class="col-center">
             <header class="clock-pillar">
-                <div class="time-display" id="clock">12:12</div>
-                <div class="greeting-display"><span id="greeting-txt">GOOD AFTERNOON</span><div class="greeting-dot"></div><span id="date-txt">WEDNESDAY, APRIL 8</span></div>
+                <div class="time-display" id="clock">
+                    00<span class="clock-colon">:</span>00
+                </div>
+                <div class="greeting-display">
+                    <span id="greeting-txt">INITIALIZING SESSION</span>
+                    <div class="greeting-dot"></div>
+                    <span id="date-txt" class="date-str">SYSTEM STATUS: OPTIMAL</span>
+                </div>
             </header>
+
             <div class="search-container">
-                <div class="search-field"><i class="fas fa-magnifying-glass" style="opacity: 0.3; font-size: 16px;"></i><input type="text" class="search-input" id="home-search" placeholder="Search the Ocal space..." autofocus autocomplete="off"><div class="search-enter" id="search-btn"><i class="fas fa-arrow-right"></i></div></div>
+                <div class="search-field">
+                    <i class="fas fa-magnifying-glass" style="opacity: 0.3; font-size: 18px;"></i>
+                    <input type="text" class="search-input" id="home-search" placeholder="Querying neural space..." autofocus autocomplete="off">
+                    <div class="search-enter" id="search-btn">
+                        <i class="fas fa-arrow-right"></i>
+                    </div>
+                </div>
             </div>
+
             <nav class="tiles-grid">
-                <div class="tile-item" data-url="youtube.com"><div class="tile-box style-glass"><i class="fab fa-youtube"></i></div><span class="tile-label">YouTube</span></div>
-                <div class="tile-item" data-url="spotify.com"><div class="tile-box style-glass"><i class="fab fa-spotify"></i></div><span class="tile-label">Spotify</span></div>
-                <div class="tile-item" data-url="amazon.com"><div class="tile-box style-glass"><i class="fab fa-amazon"></i></div><span class="tile-label">Amazon</span></div>
-                <div class="tile-item" data-url="discord.com"><div class="tile-box style-glass"><i class="fab fa-discord"></i></div><span class="tile-label">Discord</span></div>
-                <div class="tile-item" data-url="github.com"><div class="tile-box style-glass"><i class="fab fa-github"></i></div><span class="tile-label">GitHub</span></div>
+                <div class="tile-item" data-url="youtube.com">
+                    <div class="tile-box style-glass"><i class="fab fa-youtube"></i></div>
+                    <span class="tile-label">YouTube</span>
+                </div>
+                <div class="tile-item" data-url="spotify.com">
+                    <div class="tile-box style-glass"><i class="fab fa-spotify"></i></div>
+                    <span class="tile-label">Spotify</span>
+                </div>
+                <div class="tile-item" data-url="amazon.com">
+                    <div class="tile-box style-glass"><i class="fab fa-amazon"></i></div>
+                    <span class="tile-label">Amazon</span>
+                </div>
+                <div class="tile-item" data-url="discord.com">
+                    <div class="tile-box style-glass"><i class="fab fa-discord"></i></div>
+                    <span class="tile-label">Discord</span>
+                </div>
+                <div class="tile-item" data-url="github.com">
+                    <div class="tile-box style-glass"><i class="fab fa-github"></i></div>
+                    <span class="tile-label">GitHub</span>
+                </div>
             </nav>
         </section>
+
+        <!-- Sidebar: Focus Flow (Timer) & Environment (Weather) -->
         <aside class="col-side">
-            <div class="glass-panel" id="timer-panel" style="text-align: center; padding-bottom: 20px;">
-                <div class="widget-head"><span class="widget-title">Focus Flow</span><i class="fas fa-brain" style="opacity: 0.3; font-size: 12px;"></i></div>
+            <div class="glass-panel" id="timer-panel">
+                <div class="widget-head">
+                    <span class="widget-title">Focus Flow</span>
+                    <i class="fas fa-brain" style="opacity: 0.2; font-size: 14px;"></i>
+                </div>
                 <div class="timer-container">
-                    <svg class="timer-svg" viewBox="0 0 160 160"><circle cx="80" cy="80" r="70"/><circle class="progress" id="timer-progress" cx="80" cy="80" r="70"/></svg>
+                    <svg class="timer-svg" viewBox="0 0 170 170">
+                        <circle cx="85" cy="85" r="75"/>
+                        <circle class="progress" id="timer-progress" cx="85" cy="85" r="75"/>
+                    </svg>
                     <div class="timer-val" id="timer-display">25:00</div>
                 </div>
-                <div class="timer-acts"><button class="timer-btn" id="timer-toggle"><i class="fas fa-play"></i></button><button class="timer-btn" id="timer-reset"><i class="fas fa-rotate-left"></i></button></div>
+                <div class="timer-acts">
+                    <button class="timer-btn" id="timer-toggle"><i class="fas fa-play"></i></button>
+                    <button class="timer-btn" id="timer-reset"><i class="fas fa-rotate-left"></i></button>
+                </div>
             </div>
+
             <div class="glass-panel weather-panel" id="weather-panel">
                 <div class="weather-top">
                     <i class="fas fa-cloud-sun weather-icon"></i>
                     <div class="weather-main-info">
                         <div class="weather-t" id="weather-temp">--°C</div>
-                        <div class="weather-st" id="weather-condition">LOADING...</div>
+                        <div class="weather-st" id="weather-condition">LOADING ENVIRONMENT...</div>
                     </div>
                 </div>
                 <div class="weather-metrics">
-                    <div class="w-metric"><i class="fas fa-droplet"></i> <span id="weather-humidity">--%</span></div>
-                    <div class="w-metric"><i class="fas fa-wind"></i> <span id="weather-wind">-- KM/H</span></div>
-                    <div class="w-metric"><i class="fas fa-temperature-half"></i> <span id="weather-feels">--°C</span></div>
+                    <div class="w-metric">
+                        <i class="fas fa-droplet"></i> 
+                        <span id="weather-humidity">--%</span>
+                    </div>
+                    <div class="w-metric">
+                        <i class="fas fa-wind"></i> 
+                        <span id="weather-wind">-- KM/H</span>
+                    </div>
+                    <div class="w-metric">
+                        <i class="fas fa-temperature-half"></i> 
+                        <span id="weather-feels">--°C</span>
+                    </div>
                 </div>
                 <div class="weather-footer">
                     <div class="wrapper-city" id="city-trigger">
-                        <span class="weather-c" id="weather-city">DETECTING...</span>
+                        <span class="weather-c" id="weather-city">DETECTING GEOLOCATION...</span>
                         <i class="fas fa-location-dot edit-loc-icon"></i>
                     </div>
-                    <input type="text" class="location-input" id="location-input" placeholder="ENTER CITY...">
+                    <input type="text" class="location-input" id="location-input" placeholder="ENTER SECTOR...">
                 </div>
             </div>
         </aside>
     </main>
+
+    <!-- Global Command Capsule -->
     <footer class="footer-hub">
-        <div class="footer-capsule"><button class="capsule-btn" id="settings-btn"><i class="fas fa-sliders"></i> SETTINGS</button><div class="brand-text">OCAL</div><button class="capsule-btn" id="history-btn"><i class="fas fa-clock-rotate-left"></i> HISTORY</button></div>
+        <div class="footer-capsule">
+            <button class="capsule-btn" id="settings-btn">
+                <i class="fas fa-sliders"></i> SETTINGS
+            </button>
+            <div class="brand-text">OCAL</div>
+            <button class="capsule-btn" id="history-btn">
+                <i class="fas fa-clock-rotate-left"></i> HISTORY
+            </button>
+        </div>
     </footer>
+
     <script src="home.js"></script>
 </body>
 </html>

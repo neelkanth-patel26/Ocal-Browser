@@ -15,28 +15,10 @@ window.electronAPI.onHtmlFullscreen((isFullscreen) => {
     document.body.classList.toggle('fullscreen', isFullscreen);
 });
 
-const loadingBar = document.getElementById('loading-bar');
 
 window.electronAPI.on('load-progress', (e, { id, progress }) => {
-    // 1. Update the loading-bar for the active tab
-    if (id === activeTabId) {
-        if (progress === 100) {
-            loadingBar.style.width = '100%';
-            loadingBar.classList.add('finished');
-            setTimeout(() => {
-                loadingBar.style.width = '0%';
-                loadingBar.classList.remove('active', 'finished');
-            }, 600);
-        } else if (progress === 0) {
-            loadingBar.style.width = '0%';
-            loadingBar.classList.remove('active', 'finished');
-        } else {
-            loadingBar.classList.remove('finished');
-            loadingBar.classList.add('active');
-            loadingBar.style.width = progress + '%';
-        }
-    }
-
+    // 1. Progress bar removed from UI - only handling internal tab states
+    
     // 2. Update the specific tab's internal loading state
     const targetTab = tabs.find(t => t.id === id);
     if (targetTab) {

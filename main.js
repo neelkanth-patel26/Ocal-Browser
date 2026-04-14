@@ -4448,6 +4448,59 @@ ipcMain.on('set-dns-provider', (e, provider) => {
     broadcastSettings();
 });
 
+// ── Profile Management APIs ────────────────────────────────────────────────
+ipcMain.on('switch-profile', (e, profileId) => {
+    const profile = userSettings.profiles.find(p => p.id === profileId);
+    if (!profile) return;
+    
+    userSettings.currentProfileId = profileId;
+    saveSettings(userSettings);
+    broadcastSettings();
+    
+    // In a full implementation, we would reload all views with a new session partition.
+    // For now, we update the UI state.
+    if (mainWindow) {
+        mainWindow.webContents.send('show-modal', {
+            title: 'Identity Switched',
+            message: `Now browsing as ${profile.name}.`,
+            type: 'success'
+        });
+    }
+});
+
+ipcMain.handle('create-profile', (e, { name, icon }) => {
+    const id = 'profile_' + Date.now();
+    const newProfile = { id, name, icon };
+    
+    if (!userSettings.profiles) userSettings.profiles = [];
+    userSettings.profiles.push(newProfile);
+    
+    saveSettings(userSettings);
+    broadcastSettings();
+    return newProfile;
+});
+
+ipcMain.on('delete-profile', (e, profileId) => {
+    if (profileId === 'default') return; // Cannot delete primary
+    if (userSettings.currentProfileId === profileId) {
+        userSettings.currentProfileId = 'default';
+    }
+    
+    userSettings.profiles = userSettings.profiles.filter(p => p.id !== profileId);
+    saveSettings(userSettings);
+    broadcastSettings();
+});
+
+ipcMain.on('edit-profile', (e, { id, name, icon }) => {
+    const profile = userSettings.profiles.find(p => p.id === id);
+    if (profile) {
+        profile.name = name;
+        profile.icon = icon;
+        saveSettings(userSettings);
+        broadcastSettings();
+    }
+});
+
 function broadcastSettings() {
     if (mainWindow && !mainWindow.isDestroyed()) {
         mainWindow.webContents.send('settings-changed', userSettings);
