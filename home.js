@@ -182,7 +182,7 @@ class FocusTimer {
         if (timerDisplay) timerDisplay.textContent = `${String(mins).padStart(2, '0')}:${String(secs).padStart(2, '0')}`;
         
         if (this.progressEl) {
-            const offset = 440 - (440 * (this.timeLeft / this.totalSeconds));
+            const offset = 471 - (471 * (this.timeLeft / this.totalSeconds));
             this.progressEl.style.strokeDashoffset = offset;
         }
     }

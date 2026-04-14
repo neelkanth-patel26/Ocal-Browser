@@ -1,92 +1,127 @@
-    <title>PDF Explorer | Ocal</title>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PDF Intelligence | Ocal Explorer</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@200;300;400;500;600;700&family=Outfit:wght@100;200;300;400;500;600&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Outfit:wght@200;300;400;500;600;700;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="assets/fontawesome/css/all.min.css">
     <link rel="stylesheet" href="file-manager.css">
 </head>
 <body class="pro-studio">
+    <!-- Ambient Neural Backdrop -->
     <div class="ambient-lighting">
         <div class="neural-point point-1"></div>
         <div class="neural-point point-2"></div>
         <div class="neural-point point-3"></div>
     </div>
+
     <div class="app-container">
-        <!-- Sidebar -->
+        <!-- Sidebar Navigation -->
         <aside class="sidebar">
             <div class="sidebar-header">
-                <i class="fas fa-file-pdf brand-icon"></i>
-                <span>PDF Explorer</span>
+                <div class="brand-cluster">
+                    <div class="brand-shell">
+                        <i class="fas fa-microchip brand-icon"></i>
+                    </div>
+                    <div class="brand-text">
+                        <span class="brand-eyebrow">NEURAL ENGINE</span>
+                        <span class="brand-name">Ocal Explorer</span>
+                    </div>
+                </div>
             </div>
             
             <nav class="sidebar-nav">
                 <div class="nav-section">
-                    <div class="section-title">Quick Access</div>
-                    <button class="nav-item active" data-folder="home"><i class="fas fa-house"></i> Home</button>
-                    <button class="nav-item" data-folder="downloads"><i class="fas fa-download"></i> Downloads</button>
-                    <button class="nav-item" data-folder="documents"><i class="fas fa-file-lines"></i> Documents</button>
-                    <button class="nav-item" data-folder="desktop"><i class="fas fa-desktop"></i> Desktop</button>
+                    <div class="section-title">Global Access</div>
+                    <button class="nav-item active" data-folder="home">
+                        <i class="fas fa-house"></i> <span>Home Core</span>
+                    </button>
+                    <button class="nav-item" data-folder="downloads">
+                        <i class="fas fa-download"></i> <span>Received Files</span>
+                    </button>
+                    <button class="nav-item" data-folder="documents">
+                        <i class="fas fa-file-invoice"></i> <span>Information Assets</span>
+                    </button>
+                    <button class="nav-item" data-folder="desktop">
+                        <i class="fas fa-desktop"></i> <span>Surface Terminal</span>
+                    </button>
                 </div>
                 
                 <div class="nav-section">
-                    <div class="section-title">Media</div>
-                    <button class="nav-item" data-folder="pictures"><i class="fas fa-image"></i> Pictures</button>
-                    <button class="nav-item" data-folder="videos"><i class="fas fa-clapperboard"></i> Videos</button>
-                    <button class="nav-item" data-folder="music"><i class="fas fa-music"></i> Music</button>
+                    <div class="section-title">Media Clusters</div>
+                    <button class="nav-item" data-folder="pictures"><i class="fas fa-image"></i> <span>Visual Data</span></button>
+                    <button class="nav-item" data-folder="videos"><i class="fas fa-clapperboard"></i> <span>Motion Assets</span></button>
+                    <button class="nav-item" data-folder="music"><i class="fas fa-music"></i> <span>Sonic Streams</span></button>
                 </div>
             </nav>
 
             <div class="sidebar-footer">
-                <div class="privacy-note">
-                    <i class="fas fa-shield-halved"></i>
-                    <span>All your PDFs are processed locally. Nothing is sent to online servers.</span>
+                <div class="security-cluster">
+                    <div class="security-badge">
+                        <i class="fas fa-shield-halved"></i>
+                        <span>LOCAL INSULATION ACTIVE</span>
+                    </div>
+                    <p>Neural processing is contained within this machine's local isolation layer.</p>
                 </div>
                 <button id="analyze-btn" class="analyze-btn">
+                    <div class="btn-glow"></div>
                     <i class="fas fa-layer-group"></i>
-                    <span>Fetch All PDFs</span>
+                    <span>Aggregated Discovery</span>
                 </button>
             </div>
         </aside>
 
-        <!-- Main Content -->
+        <!-- Dynamic Content Terminal -->
         <main class="main-content">
             <header class="content-header">
                 <div class="header-main-info">
-                    <h1 class="page-title">PDF Library</h1>
+                    <div class="page-eyebrow">Local Intelligence</div>
+                    <h1 class="page-title">Digital Library</h1>
                     <div class="breadcrumbs" id="breadcrumbs">
-                        <span>This PC</span>
+                        <span>This Node</span>
                     </div>
                 </div>
                 
                 <div class="header-actions">
                     <div class="search-box">
                         <i class="fas fa-magnifying-glass"></i>
-                        <input type="text" id="file-search" placeholder="Search PDFs...">
+                        <input type="text" id="file-search" placeholder="Querying PDF assets...">
+                        <div class="search-accent"></div>
                     </div>
-                    <div class="view-toggles">
-                        <button class="view-btn active" id="view-grid" title="Grid View"><i class="fas fa-grip"></i></button>
-                        <button class="view-btn" id="view-list" title="List View"><i class="fas fa-list"></i></button>
+                    <div class="view-terminal" id="view-toggles">
+                        <button class="view-btn active" id="view-grid" title="Grid Schematic"><i class="fas fa-grip"></i></button>
+                        <button class="view-btn" id="view-list" title="Structural List"><i class="fas fa-list"></i></button>
                     </div>
                 </div>
             </header>
 
             <div class="explorer-body">
                 <div id="file-grid" class="file-grid">
-                    <!-- Files will be injected here -->
+                    <!-- Dynamic Component Injection -->
                     <div class="loading-state">
+                        <div class="spinner-shimmer"></div>
                         <i class="fas fa-circle-notch fa-spin"></i>
-                        <span>Fetching system items...</span>
+                        <span>Synchronizing item index...</span>
                     </div>
                 </div>
             </div>
             
             <footer class="content-footer" id="status-bar">
-                <span id="item-count">0 items</span>
-                <span class="path-display" id="current-path">/</span>
+                <div class="status-left">
+                    <i class="fas fa-database"></i>
+                    <span id="item-count">0 assets registered</span>
+                </div>
+                <div class="status-right">
+                    <span class="path-label">POINTER:</span>
+                    <span class="path-display" id="current-path">ROOT://</span>
+                </div>
             </footer>
         </main>
     </div>
 
-    <!-- Context Menu Placeholder -->
+    <!-- Interface Context Terminal -->
     <div id="context-menu" class="custom-context-menu"></div>
 
     <script src="file-manager.js"></script>

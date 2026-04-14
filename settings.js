@@ -270,27 +270,203 @@ if (shieldCard) {
 }
 
 // Profiles
+// Profiles logic
 function renderProfiles(s) {
     const grid = document.getElementById('profile-grid');
     if (!grid) return;
-    grid.innerHTML = s.profiles.map(p => `
-        <div class="choice-item ${s.currentProfileId === p.id ? 'active' : ''}" onclick="window.electronAPI.switchProfile('${p.id}')" style="display:flex; flex-direction:column; align-items:center; justify-content:center; gap:16px; padding: 28px 16px;">
-            <div style="width: 54px; height: 54px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 24px; background: ${s.currentProfileId === p.id ? 'var(--accent)' : 'rgba(255,255,255,0.05)'}; color: ${s.currentProfileId === p.id ? '#000' : 'var(--text)'}; box-shadow: ${s.currentProfileId === p.id ? '0 0 20px var(--accent-glow)' : 'none'}; transition: all 0.3s; border: 1px solid ${s.currentProfileId === p.id ? 'rgba(255,255,255,0.3)' : 'rgba(255,255,255,0.1)'};">
-                <i class="fas ${p.icon}"></i>
+    grid.innerHTML = (s.profiles || []).map(p => `
+        <div class="choice-item ${s.currentProfileId === p.id ? 'active' : ''}" style="display:flex; flex-direction:column; align-items:center; justify-content:center; gap:20px; padding: 32px 24px; position: relative; min-height: 180px;">
+            <div class="profile-actions" style="position: absolute; top: 12px; right: 12px; display: flex; gap: 8px; opacity: 0; transition: 0.2s;">
+                <button onclick="editProfilePrompt('${p.id}')" style="background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); color: #fff; width: 28px; height: 28px; border-radius: 8px; cursor: pointer; font-size: 11px;"><i class="fas fa-pen"></i></button>
+                ${p.id !== 'default' ? `<button onclick="deleteProfile('${p.id}', '${p.name}')" style="background: rgba(239, 68, 68, 0.1); border: 1px solid rgba(239, 68, 68, 0.2); color: #ef4444; width: 28px; height: 28px; border-radius: 8px; cursor: pointer; font-size: 11px;"><i class="fas fa-trash"></i></button>` : ''}
             </div>
-            <div style="display:flex; flex-direction:column; align-items:center; gap:6px;">
-                <h5 style="margin:0; font-size:15px; font-weight:800; color:#fff; letter-spacing:0.5px;">${p.name}</h5>
-                ${s.currentProfileId === p.id ? '<span style="font-size:10px; color:var(--accent); font-weight:800; letter-spacing:1px; background:rgba(168,85,247,0.15); padding:3px 8px; border-radius:10px; text-transform:uppercase;">Active Session</span>' : '<span style="font-size:10px; color:rgba(255,255,255,0.4); font-weight:700; letter-spacing:1px; text-transform:uppercase;">Inactive Alias</span>'}
+            
+            <div onclick="window.electronAPI.switchProfile('${p.id}')" style="cursor:pointer; display:flex; flex-direction:column; align-items:center; gap:16px; width: 100%;">
+                <div style="width: 68px; height: 68px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 30px; background: ${s.currentProfileId === p.id ? 'var(--accent)' : 'rgba(255,255,255,0.05)'}; color: ${s.currentProfileId === p.id ? '#000' : 'var(--text)'}; box-shadow: ${s.currentProfileId === p.id ? '0 0 30px var(--accent-glow)' : 'none'}; transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1); border: 2px solid ${s.currentProfileId === p.id ? 'rgba(255,255,255,0.4)' : 'rgba(255,255,255,0.08)'};">
+                    <i class="fas ${p.icon || 'fa-user'}"></i>
+                </div>
+                <div style="display:flex; flex-direction:column; align-items:center; gap:6px; text-align: center;">
+                    <h5 style="margin:0; font-size:16px; font-weight:850; color:#fff; letter-spacing:0.5px;">${p.name}</h5>
+                    ${s.currentProfileId === p.id 
+                        ? '<span style="font-size: 9px; color:var(--accent); font-weight:900; letter-spacing:1.5px; background:rgba(168,85,247,0.12); padding:4px 10px; border-radius:100px; text-transform:uppercase; border: 1px solid rgba(168,85,247,0.2);">Active Session</span>' 
+                        : '<span style="font-size: 9px; color:rgba(255,255,255,0.4); font-weight:800; letter-spacing:1px; text-transform:uppercase;">Inactive Alias</span>'}
+                </div>
             </div>
+            
+            <style>
+                .choice-item:hover .profile-actions { opacity: 1; }
+            </style>
         </div>
     `).join('') + `
-        <div class="choice-item" style="opacity:0.5; border-style:dashed; cursor: pointer; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:16px; padding: 28px 16px; background:transparent;">
-            <div style="width: 54px; height: 54px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 20px; background: rgba(255,255,255,0.03); color: rgba(255,255,255,0.4); border: 1px dashed rgba(255,255,255,0.2);">
+        <div class="choice-item" onclick="createProfilePrompt()" style="opacity:0.4; border-style:dashed; cursor: pointer; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:16px; padding: 32px 24px; background:transparent; min-height: 180px;">
+            <div style="width: 60px; height: 60px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 24px; background: rgba(255,255,255,0.03); color: rgba(255,255,255,0.3); border: 2px dashed rgba(255,255,255,0.12);">
                 <i class="fas fa-plus"></i>
             </div>
-            <h5 style="margin:0; font-size:14px; font-weight:700; color:rgba(255,255,255,0.4);">New Profile</h5>
+            <h5 style="margin:0; font-size:14px; font-weight:800; color:rgba(255,255,255,0.3); letter-spacing: 0.5px;">New Profile</h5>
         </div>
     `;
+}
+
+// Modal Logic
+function showModal(contentHtml) {
+    const overlay = document.getElementById('studio-modal-overlay');
+    const modal = document.getElementById('studio-modal');
+    if (!overlay || !modal) return;
+    
+    modal.innerHTML = contentHtml;
+    overlay.style.display = 'flex';
+    setTimeout(() => {
+        overlay.style.opacity = '1';
+        modal.style.transform = 'scale(1) translateY(0)';
+    }, 10);
+}
+
+function closeModal() {
+    const overlay = document.getElementById('studio-modal-overlay');
+    const modal = document.getElementById('studio-modal');
+    if (!overlay || !modal) return;
+    
+    overlay.style.opacity = '0';
+    modal.style.transform = 'scale(0.9) translateY(20px)';
+    setTimeout(() => {
+        overlay.style.display = 'none';
+        modal.innerHTML = '';
+    }, 300);
+}
+
+// Close on overlay click
+document.getElementById('studio-modal-overlay')?.addEventListener('click', (e) => {
+    if (e.target.id === 'studio-modal-overlay') closeModal();
+});
+
+const PROFILE_ICONS = ['fa-user', 'fa-user-ninja', 'fa-user-astronaut', 'fa-user-secret', 'fa-user-tie', 'fa-ghost', 'fa-robot', 'fa-skull', 'fa-crown', 'fa-eye'];
+
+function createProfilePrompt() {
+    let selectedIcon = 'fa-user';
+    
+    const content = `
+        <h3 style="margin:0 0 8px 0; color:#fff; font-size:22px; font-weight:850; letter-spacing:-0.5px;">New Browsing Identity</h3>
+        <p style="color:rgba(255,255,255,0.5); font-size:13px; margin-bottom:28px;">Profiles allow you to maintain separate workspaces with isolated sandboxes.</p>
+        
+        <div style="margin-bottom:24px;">
+            <label style="display:block; font-size:10px; font-weight:900; color:rgba(255,255,255,0.3); text-transform:uppercase; letter-spacing:1.5px; margin-bottom:12px;">Profile Alias</label>
+            <input type="text" id="new-profile-name" placeholder="Work, Guest, Secondary..." style="width:100%; background:rgba(0,0,0,0.2); border:1px solid rgba(255,255,255,0.1); border-radius:14px; padding:14px 18px; color:#fff; font-family:'Inter', sans-serif; font-size:14px; outline:none; transition:0.3s;" onfocus="this.style.borderColor='var(--accent)'; this.style.boxShadow='0 0 15px rgba(168,85,247,0.1)';">
+        </div>
+        
+        <div style="margin-bottom:32px;">
+            <label style="display:block; font-size:10px; font-weight:900; color:rgba(255,255,255,0.3); text-transform:uppercase; letter-spacing:1.5px; margin-bottom:12px;">Visual Signature</label>
+            <div style="display:grid; grid-template-columns: repeat(5, 1fr); gap:12px;" id="icon-selector">
+                ${PROFILE_ICONS.map(icon => `
+                    <div class="icon-chip ${icon === 'fa-user' ? 'active' : ''}" onclick="selectProfileIcon(this, '${icon}')" style="aspect-ratio:1; border-radius:12px; border:1px solid rgba(255,255,255,0.08); background:rgba(255,255,255,0.03); display:flex; align-items:center; justify-content:center; color:rgba(255,255,255,0.4); cursor:pointer; transition:0.3s;">
+                        <i class="fas ${icon}"></i>
+                    </div>
+                `).join('')}
+            </div>
+        </div>
+        
+        <div style="display:flex; gap:12px; justify-content:flex-end;">
+            <button class="btn secondary" onclick="closeModal()" style="padding:12px 24px; font-size:12px; font-weight:800; letter-spacing:0.5px;">CANCEL</button>
+            <button class="btn primary" onclick="confirmCreateProfile()" style="padding:12px 32px; font-size:12px; font-weight:800; letter-spacing:0.5px; background:linear-gradient(135deg, var(--accent) 0%, #7c3aed 100%);">CREATE IDENTITY</button>
+        </div>
+        
+        <style>
+            .icon-chip.active { border-color: var(--accent); color: var(--accent); background: rgba(168,85,247,0.08); box-shadow: 0 0 15px rgba(168,85,247,0.1); }
+            .icon-chip:hover:not(.active) { background: rgba(255,255,255,0.06); border-color: rgba(255,255,255,0.15); color: #fff; }
+        </style>
+    `;
+    
+    showModal(content);
+    window._selectedProfileIcon = 'fa-user';
+}
+
+window.selectProfileIcon = (el, icon) => {
+    document.querySelectorAll('.icon-chip').forEach(c => c.classList.remove('active'));
+    el.classList.add('active');
+    window._selectedProfileIcon = icon;
+};
+
+async function confirmCreateProfile() {
+    const nameInput = document.getElementById('new-profile-name');
+    const name = nameInput.value.trim() || 'New Profile';
+    const icon = window._selectedProfileIcon || 'fa-user';
+    
+    closeModal();
+    if (window.electronAPI && window.electronAPI.createProfile) {
+        await window.electronAPI.createProfile({ name, icon });
+    }
+}
+
+async function editProfilePrompt(id) {
+    if (!window.currentSettings) return;
+    const profile = window.currentSettings.profiles.find(p => p.id === id);
+    if (!profile) return;
+    
+    window._selectedProfileIcon = profile.icon || 'fa-user';
+    
+    const content = `
+        <h3 style="margin:0 0 8px 0; color:#fff; font-size:22px; font-weight:850; letter-spacing:-0.5px;">Modify Identity</h3>
+        <p style="color:rgba(255,255,255,0.5); font-size:13px; margin-bottom:28px;">Update the visual and descriptive signature of this alias.</p>
+        
+        <div style="margin-bottom:24px;">
+            <label style="display:block; font-size:10px; font-weight:900; color:rgba(255,255,255,0.3); text-transform:uppercase; letter-spacing:1.5px; margin-bottom:12px;">Identity Name</label>
+            <input type="text" id="edit-profile-name" value="${profile.name}" style="width:100%; background:rgba(0,0,0,0.2); border:1px solid rgba(255,255,255,0.1); border-radius:14px; padding:14px 18px; color:#fff; font-family:'Inter', sans-serif; font-size:14px; outline:none; transition:0.3s;" onfocus="this.style.borderColor='var(--accent)'; this.style.boxShadow='0 0 15px rgba(168,85,247,0.1)';">
+        </div>
+        
+        <div style="margin-bottom:32px;">
+            <label style="display:block; font-size:10px; font-weight:900; color:rgba(255,255,255,0.3); text-transform:uppercase; letter-spacing:1.5px; margin-bottom:12px;">Visual Signature</label>
+            <div style="display:grid; grid-template-columns: repeat(5, 1fr); gap:12px;" id="icon-selector">
+                ${PROFILE_ICONS.map(icon => `
+                    <div class="icon-chip ${icon === window._selectedProfileIcon ? 'active' : ''}" onclick="selectProfileIcon(this, '${icon}')" style="aspect-ratio:1; border-radius:12px; border:1px solid rgba(255,255,255,0.08); background:rgba(255,255,255,0.03); display:flex; align-items:center; justify-content:center; color:rgba(255,255,255,0.4); cursor:pointer; transition:0.3s;">
+                        <i class="fas ${icon}"></i>
+                    </div>
+                `).join('')}
+            </div>
+        </div>
+        
+        <div style="display:flex; gap:12px; justify-content:flex-end;">
+            <button class="btn secondary" onclick="closeModal()" style="padding:12px 24px; font-size:12px; font-weight:800; letter-spacing:0.5px;">CANCEL</button>
+            <button class="btn primary" onclick="confirmEditProfile('${id}')" style="padding:12px 32px; font-size:12px; font-weight:800; letter-spacing:0.5px; background:linear-gradient(135deg, var(--accent) 0%, #7c3aed 100%);">SAVE CHANGES</button>
+        </div>
+        
+        <style>
+            .icon-chip.active { border-color: var(--accent); color: var(--accent); background: rgba(168,85,247,0.08); box-shadow: 0 0 15px rgba(168,85,247,0.1); }
+            .icon-chip:hover:not(.active) { background: rgba(255,255,255,0.06); border-color: rgba(255,255,255,0.15); color: #fff; }
+        </style>
+    `;
+    
+    showModal(content);
+}
+
+async function confirmEditProfile(id) {
+    const nameInput = document.getElementById('edit-profile-name');
+    const name = nameInput.value.trim() || 'Profile';
+    const icon = window._selectedProfileIcon || 'fa-user';
+    
+    closeModal();
+    if (window.electronAPI && window.electronAPI.editProfile) {
+        window.electronAPI.editProfile({ id, name, icon });
+    }
+}
+
+async function deleteProfile(id, name) {
+    const content = `
+        <h3 style="margin:0 0 8px 0; color:#ef4444; font-size:22px; font-weight:850; letter-spacing:-0.5px;">Terminate Identity?</h3>
+        <p style="color:rgba(255,255,255,0.7); font-size:14px; margin-bottom:28px;">This will permanently delete the <strong>${name}</strong> workspace and all localized site data, cookies, and history.</p>
+        
+        <div style="display:flex; gap:12px; justify-content:flex-end;">
+            <button class="btn secondary" onclick="closeModal()" style="padding:12px 24px; font-size:12px; font-weight:800; letter-spacing:0.5px;">CANCEL</button>
+            <button class="btn primary" onclick="confirmDeleteProfile('${id}')" style="padding:12px 32px; font-size:12px; font-weight:800; letter-spacing:0.5px; background:#ef4444; border-color:#ef4444;">DELETE PERMANENTLY</button>
+        </div>
+    `;
+    
+    showModal(content);
+}
+
+function confirmDeleteProfile(id) {
+    closeModal();
+    if (window.electronAPI && window.electronAPI.deleteProfile) {
+        window.electronAPI.deleteProfile(id);
+    }
 }
 
 // History Clear
@@ -688,9 +864,9 @@ function updateShieldDashboard(stats) {
 
     // 5. Privacy Score
     if (privacyScoreRing) {
-        // Circumference for R=46 is ~289
+        // Circumference for R=62 is ~389
         const score = 98; // Static 98 for Pro Studio index
-        const offset = 289 - (289 * score / 100);
+        const offset = 389 - (389 * score / 100);
         privacyScoreRing.style.strokeDashoffset = offset;
         const scoreLabel = document.querySelector('.score-label');
         if (scoreLabel) scoreLabel.innerText = Math.round(score);
@@ -863,11 +1039,13 @@ window.toggleExtension = (key) => {
     setTimeout(() => { btn.disabled = false; }, 500);
 };
 
-// Search Hub Handlers
-window.toggleSearchFeature = (key, el) => {
+// Feature Hub Handlers (Search & Security)
+window.toggleSecurityFeature = (key, el) => {
     const isOn = el.classList.toggle('on');
     window.electronAPI.send('set-security-toggle', { key, value: isOn });
 };
+
+window.toggleSearchFeature = window.toggleSecurityFeature;
 
 window.updateSearchEngine = (val) => {
     setGridValue('search-engine-grid', val);
@@ -896,10 +1074,68 @@ document.getElementById('dns-grid').addEventListener('click', (e) => {
     window.electronAPI.send('set-dns-provider', val);
 });
 
+// Dashboard Telemetry Simulation
+function startDashboardTelemetry() {
+    setInterval(() => {
+        if (document.getElementById('dashboard').classList.contains('active')) {
+            const mem = (Math.random() * 0.5 + 1.2).toFixed(1);
+            const memBar = document.getElementById('memory-bar');
+            if (memBar) {
+                memBar.style.width = `${(mem / 8) * 100}%`;
+                document.getElementById('memory-value').innerText = `${mem} GB`;
+            }
+
+            // Simulate neutralized ads increasing
+            const ads = document.getElementById('dash-ads');
+            if (ads) {
+                const current = parseInt(ads.innerText);
+                if (Math.random() > 0.8) ads.innerText = current + 1;
+            }
+
+            // Animate clock/uptime ring
+            const ring = document.getElementById('time-ring');
+            if (ring) {
+                const uptime = Math.floor((Date.now() - window.sessionStart) / 1000 / 60);
+                document.getElementById('dash-time').innerText = `${uptime}m`;
+                const offset = 389 - (Math.min(uptime, 60) / 60) * 389;
+                ring.style.strokeDashoffset = offset;
+            }
+        }
+    }, 3000);
+}
+
+window.sessionStart = Date.now();
+document.addEventListener('DOMContentLoaded', startDashboardTelemetry);
+
+// Update Management
+window.checkForUpdates = () => {
+    const btn = event.currentTarget;
+    const originalText = btn.innerHTML;
+    btn.innerHTML = '<i class="fas fa-circle-notch fa-spin"></i> SEARCING...';
+    btn.disabled = true;
+
+    setTimeout(() => {
+        btn.innerHTML = '<i class="fas fa-check"></i> SYSTEM UP TO DATE';
+        btn.style.background = 'rgba(74, 222, 128, 0.2)';
+        btn.style.color = '#4ade80';
+        btn.style.borderColor = 'rgba(74, 222, 128, 0.4)';
+        
+        setTimeout(() => {
+            btn.innerHTML = originalText;
+            btn.disabled = false;
+            btn.style.background = '';
+            btn.style.color = '';
+            btn.style.borderColor = '';
+        }, 3000);
+    }, 2500);
+};
+
 window.electronAPI.onSettingsChanged(s => {
+    window.currentSettings = s;
     if (s.accentColor) applyAccent(s.accentColor);
     updateProtectionLevel(s);
     renderExtensions(s);
+    renderProfiles(s);
 });
 
 // Browser Migration
