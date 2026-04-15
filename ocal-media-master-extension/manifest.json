@@ -1,7 +1,7 @@
 {
   "manifest_version": 3,
   "name": "Ocal Media Master",
-  "version": "1.0.0",
+  "version": "1.2.5",
   "description": "Native video and image extraction engine for Ocal Browser.",
   "permissions": [
     "activeTab",
