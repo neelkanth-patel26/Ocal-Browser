@@ -1253,6 +1253,16 @@ function hidePopups() {
     if (shieldPopupView && mainWindow && mainWindow.getBrowserViews().includes(shieldPopupView)) {
         mainWindow.removeBrowserView(shieldPopupView);
     }
+    if (bmDropdownView && mainWindow && mainWindow.getBrowserViews().includes(bmDropdownView)) {
+        mainWindow.removeBrowserView(bmDropdownView);
+    }
+    if (extensionDropdownView && mainWindow && mainWindow.getBrowserViews().includes(extensionDropdownView)) {
+        mainWindow.removeBrowserView(extensionDropdownView);
+    }
+    if (siteInfoView && mainWindow && mainWindow.getBrowserViews().includes(siteInfoView)) {
+        mainWindow.removeBrowserView(siteInfoView);
+    }
+    activeBMFolderId = null;
 }
 
 function createBMDropdownView() {
@@ -1467,6 +1477,7 @@ function createNewTab(url = null) {
   const view = new BrowserView({
     webPreferences: { preload: path.join(__dirname, 'preload.js'), contextIsolation: true, nodeIntegration: false, sandbox: false },
   });
+  view.setBackgroundColor('#ffffff');
 
   // Clear media on navigation
   view.webContents.on('did-start-navigation', (e, url, isInPlace) => {
@@ -3315,10 +3326,10 @@ ipcMain.on('show-shield-popup', (e, { x, y, width, height, tabId }) => {
 
     const winOffset = getWinOffset();
     shieldPopupView.setBounds({ 
-        x: Math.round(targetX + winOffset), 
+        x: Math.round(targetX + winOffset) - 15, 
         y: Math.round(y + height + 10 + winOffset), 
-        width: Math.round(popupWidth), 
-        height: Math.round(popupHeight) 
+        width: Math.round(popupWidth) + 30, 
+        height: Math.round(popupHeight) + 30 
     });
     
     mainWindow.setTopBrowserView(shieldPopupView);
@@ -3331,6 +3342,7 @@ ipcMain.on('show-bm-dropdown', (e, { x, y, bookmarks, folderId }) => {
     
     // Toggle logic: if clicking the same folder, just hide it
     if (activeBMFolderId === folderId) {
+        activeBMFolderId = null;
         hidePopups();
         return;
     }
@@ -3342,10 +3354,10 @@ ipcMain.on('show-bm-dropdown', (e, { x, y, bookmarks, folderId }) => {
     const winOffset = getWinOffset();
     // Initial safe size, will be refined by dropdown-resize IPC
     bmDropdownView.setBounds({ 
-        x: Math.round(x + winOffset), 
+        x: Math.round(x + winOffset) - 15, 
         y: Math.round(y + winOffset), 
-        width: 330, 
-        height: 500 
+        width: 360, 
+        height: 530 
     });
     bmDropdownView.webContents.send('show-bm-dropdown', { bookmarks });
     mainWindow.setTopBrowserView(bmDropdownView);
@@ -3354,7 +3366,7 @@ ipcMain.on('show-bm-dropdown', (e, { x, y, bookmarks, folderId }) => {
 ipcMain.on('resize-bm-dropdown', (e, { width, height }) => {
     if (!bmDropdownView || !mainWindow) return;
     const bounds = bmDropdownView.getBounds();
-    bmDropdownView.setBounds({ x: bounds.x, y: bounds.y, width: Math.round(width), height: Math.round(height) });
+    bmDropdownView.setBounds({ x: bounds.x, y: bounds.y, width: Math.round(width) + 30, height: Math.round(height) + 30 });
 });
 
 ipcMain.on('hide-bm-dropdown', () => {
@@ -3395,10 +3407,10 @@ ipcMain.on('show-extensions-dropdown', (e, { x, y, width }) => {
     const popupWidth = 340;
     const winOffset = getWinOffset();
     extensionDropdownView.setBounds({ 
-        x: Math.round(x + width - popupWidth + winOffset), 
+        x: Math.round(x + width - popupWidth + winOffset) - 15, 
         y: Math.round(y + 40 + winOffset), 
-        width: Math.round(popupWidth), 
-        height: 500 
+        width: Math.round(popupWidth) + 30, 
+        height: 530 
     });
     mainWindow.setTopBrowserView(extensionDropdownView);
     extensionDropdownView.webContents.send('refresh-extensions');
@@ -3736,19 +3748,23 @@ ipcMain.on('show-site-info', (e, bounds) => {
     if (!mainWindow || mainWindow.isDestroyed()) return;
     if (!siteInfoView) createSiteInfoView();
     
+    if (mainWindow.getBrowserViews().includes(siteInfoView)) {
+        mainWindow.removeBrowserView(siteInfoView);
+        return;
+    }
+
     const activeView = views.find(v => v.id === activeViewId)?.view;
     const url = activeView && !activeView.webContents.isDestroyed() ? activeView.webContents.getURL() : '';
+
+    hidePopups();
+    mainWindow.addBrowserView(siteInfoView);
     
-    if (!mainWindow.getBrowserViews().includes(siteInfoView)) {
-        mainWindow.addBrowserView(siteInfoView);
-    }
-    
-    // Position below the address bar identity area
+    // Position below the address bar identity area with shadow margin
     siteInfoView.setBounds({
-        x: Math.round(bounds.x),
+        x: Math.round(bounds.x) - 15,
         y: Math.round(bounds.y + bounds.height + 4),
-        width: 320,
-        height: 480 // Sufficient height for the content
+        width: 350,
+        height: 500 // Sufficient height for the content and shadow padding
     });
     
     mainWindow.setTopBrowserView(siteInfoView);
@@ -3762,7 +3778,15 @@ ipcMain.on('show-site-info', (e, bounds) => {
         }
     } catch (e) {}
 
-    siteInfoView.webContents.send('update-site-info', { url, permissions });
+    const sendUpdate = () => {
+        siteInfoView.webContents.send('update-site-info', { url, permissions });
+    };
+
+    if (siteInfoView.webContents.isLoading()) {
+        siteInfoView.webContents.once('did-finish-load', sendUpdate);
+    } else {
+        sendUpdate();
+    }
 });
 
 ipcMain.on('update-site-permission', (e, { origin, permission, value }) => {
@@ -4426,22 +4450,6 @@ ipcMain.on('set-security-toggle', (e, { key, value }) => {
         });
     }
 });
-
-function applyCyberStealth(wc) {
-    if (!userSettings.cyberStealthEnabled || wc.isDestroyed()) return;
-    
-    const url = wc.getURL();
-    // NEVER apply to internal pages, settings, or PDF viewer - they are already dark/themed
-    if (url.startsWith('ocal://') || url.includes('home.html') || url.includes('settings.html') || url.includes('pdf-viewer.html')) return;
-
-    const darkCSS = `
-        html, body { background: #0c0c0e !important; color: #eee !important; }
-        html { filter: invert(0.9) hue-rotate(180deg) !important; background: #000 !important; }
-        img, video, iframe, canvas, [style*="background-image"] { filter: invert(1.1) hue-rotate(180deg) !important; }
-    `;
-    wc.insertCSS(darkCSS).catch(() => {});
-}
-
 ipcMain.on('set-dns-provider', (e, provider) => {
     userSettings.dnsProvider = provider;
     saveSettings(userSettings);

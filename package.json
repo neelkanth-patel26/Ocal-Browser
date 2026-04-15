@@ -1,6 +1,6 @@
 {
   "name": "ocal",
-  "version": "4.1.20-beta",
+  "version": "4.2.0-beta",
   "description": "Ocal Browser - Fast, Secure, and Agentic.",
   "main": "main.js",
   "author": "Gaming Network Studio Media Group",
@@ -15,20 +15,20 @@
   "keywords": [],
   "license": "ISC",
   "devDependencies": {
-    "@electron-forge/cli": "^7.6.0",
-    "@electron-forge/maker-deb": "^7.6.0",
-    "@electron-forge/maker-rpm": "^7.6.0",
-    "@electron-forge/maker-squirrel": "^7.6.0",
-    "@electron-forge/maker-zip": "^7.6.0",
-    "@electron-forge/plugin-auto-unpack-natives": "^7.6.0",
-    "@electron-forge/plugin-fuses": "^7.6.0",
+    "@electron-forge/cli": "^7.11.1",
+    "@electron-forge/maker-deb": "^7.11.1",
+    "@electron-forge/maker-rpm": "^7.11.1",
+    "@electron-forge/maker-squirrel": "^7.11.1",
+    "@electron-forge/maker-zip": "^7.11.1",
+    "@electron-forge/plugin-auto-unpack-natives": "^7.11.1",
+    "@electron-forge/plugin-fuses": "^7.11.1",
     "@electron-forge/publisher-github": "^7.11.1",
-    "@electron/fuses": "^1.8.0",
-    "electron": "^34.0.0",
+    "@electron/fuses": "^2.1.1",
+    "electron": "^41.2.0",
     "electron-builder": "^26.8.1"
   },
   "dependencies": {
-    "adm-zip": "^0.5.16",
+    "adm-zip": "^0.5.17",
     "cross-fetch": "^4.1.0",
     "electron-squirrel-startup": "^1.0.1"
   },
