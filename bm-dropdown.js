@@ -1,5 +1,12 @@
 const container = document.getElementById('menu-container');
 
+// Theme Synchronization
+window.electronAPI.invoke('get-settings').then(s => {
+    if (s && s.themeMode) document.body.setAttribute('data-theme', s.themeMode);
+});
+
+
+
 window.electronAPI.onShowBMDropdown((data) => {
     container.innerHTML = '';
     const bms = data.bookmarks || [];

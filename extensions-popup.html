@@ -18,6 +18,37 @@
             --title-font: 'Outfit', 'Inter', sans-serif;
         }
 
+        /* ── Light Theme (Flashbang Mode) ─────────────────────────── */
+        body[data-theme="light"] {
+            --bg: #ffffff;
+            --card-bg: rgba(0, 0, 0, 0.03);
+            --border: rgba(0, 0, 0, 0.1);
+            --text: #000000;
+            --text-dim: #222222;
+        }
+
+        body[data-theme="light"] .popup-container {
+            background: #ffffff !important;
+            border-color: rgba(0,0,0,0.15) !important;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.15) !important;
+        }
+
+        body[data-theme="light"] .header h3 {
+            background: linear-gradient(135deg, #000 0%, var(--accent) 100%);
+            -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+        }
+
+        body[data-theme="light"] .ext-item:hover {
+            background: rgba(0,0,0,0.06) !important;
+            border-color: rgba(0,0,0,0.08) !important;
+        }
+
+        body[data-theme="light"] .ext-name { color: #000 !important; }
+        body[data-theme="light"] .ext-icon-wrapper { border-color: rgba(0,0,0,0.05) !important; }
+        body[data-theme="light"] .toggle-switch { background: rgba(0,0,0,0.1) !important; }
+        body[data-theme="light"] .toggle-switch.on { background: var(--accent) !important; }
+
+
         * { box-sizing: border-box; margin: 0; padding: 0; }
 
         body {
@@ -151,8 +182,11 @@
             const settings = await window.electronAPI.invoke('get-settings');
             
             if (settings.accentColor) applyTheme(settings.accentColor);
+            if (settings.themeMode) document.body.setAttribute('data-theme', settings.themeMode);
+
 
             list.innerHTML = '';
+
             
             const native = all.filter(e => e.type === 'native');
             const marketplace = all.filter(e => e.type === 'marketplace' && e.enabled);

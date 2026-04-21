@@ -98,9 +98,15 @@ function initGridSelector(gridId, settingsKey) {
                 const customContainer = document.getElementById('custom-search-container');
                 if (customContainer) customContainer.style.display = (val === 'custom') ? 'block' : 'none';
             }
+
+            // Real-time theme application
+            if (gridId === 'theme-mode-grid') {
+                applyTheme(val);
+            }
         };
     });
 }
+
 
 // Extension Interactions
 document.querySelectorAll('.extension-card .btn.secondary, .extension-card .btn.primary').forEach(btn => {
@@ -139,6 +145,12 @@ function applyAccent(color) {
     
     dots.forEach(d => d.classList.toggle('active', d.dataset.color === color));
 }
+
+function applyTheme(theme) {
+    document.body.setAttribute('data-theme', theme);
+    localStorage.setItem('ocal-settings-theme', theme);
+}
+
 
 // Home Page Controls
 window.updateHomeLayout = function(layout, skipUpdate = false) {
@@ -286,10 +298,10 @@ function renderProfiles(s) {
                     <i class="fas ${p.icon || 'fa-user'}"></i>
                 </div>
                 <div style="display:flex; flex-direction:column; align-items:center; gap:6px; text-align: center;">
-                    <h5 style="margin:0; font-size:16px; font-weight:850; color:#fff; letter-spacing:0.5px;">${p.name}</h5>
+                    <h5 style="margin:0; font-size:16px; font-weight:850; color:var(--text); letter-spacing:0.5px;">${p.name}</h5>
                     ${s.currentProfileId === p.id 
-                        ? '<span style="font-size: 9px; color:var(--accent); font-weight:900; letter-spacing:1.5px; background:rgba(168,85,247,0.12); padding:4px 10px; border-radius:100px; text-transform:uppercase; border: 1px solid rgba(168,85,247,0.2);">Active Session</span>' 
-                        : '<span style="font-size: 9px; color:rgba(255,255,255,0.4); font-weight:800; letter-spacing:1px; text-transform:uppercase;">Inactive Alias</span>'}
+                        ? '<span style="font-size: 9px; color:var(--accent); font-weight:900; letter-spacing:1.5px; background:var(--accent-dim); padding:4px 10px; border-radius:100px; text-transform:uppercase; border: 1px solid var(--accent-border);">Active Session</span>' 
+                        : '<span style="font-size: 9px; color:var(--text-dim); font-weight:800; letter-spacing:1px; text-transform:uppercase;">Inactive Alias</span>'}
                 </div>
             </div>
             
@@ -298,11 +310,11 @@ function renderProfiles(s) {
             </style>
         </div>
     `).join('') + `
-        <div class="choice-item" onclick="createProfilePrompt()" style="opacity:0.4; border-style:dashed; cursor: pointer; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:16px; padding: 32px 24px; background:transparent; min-height: 180px;">
-            <div style="width: 60px; height: 60px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 24px; background: rgba(255,255,255,0.03); color: rgba(255,255,255,0.3); border: 2px dashed rgba(255,255,255,0.12);">
+        <div class="choice-item" onclick="createProfilePrompt()" style="opacity:0.6; border-style:dashed; cursor: pointer; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:16px; padding: 32px 24px; background:transparent; min-height: 180px;">
+            <div style="width: 60px; height: 60px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 24px; background: var(--glass); color: var(--text-dim); border: 2px dashed var(--glass-border);">
                 <i class="fas fa-plus"></i>
             </div>
-            <h5 style="margin:0; font-size:14px; font-weight:800; color:rgba(255,255,255,0.3); letter-spacing: 0.5px;">New Profile</h5>
+            <h5 style="margin:0; font-size:14px; font-weight:800; color:var(--text-dim); letter-spacing: 0.5px;">New Profile</h5>
         </div>
     `;
 }
@@ -345,19 +357,19 @@ function createProfilePrompt() {
     let selectedIcon = 'fa-user';
     
     const content = `
-        <h3 style="margin:0 0 8px 0; color:#fff; font-size:22px; font-weight:850; letter-spacing:-0.5px;">New Browsing Identity</h3>
-        <p style="color:rgba(255,255,255,0.5); font-size:13px; margin-bottom:28px;">Profiles allow you to maintain separate workspaces with isolated sandboxes.</p>
+        <h3 style="margin:0 0 8px 0; color:var(--text); font-size:22px; font-weight:850; letter-spacing:-0.5px;">New Browsing Identity</h3>
+        <p style="color:var(--text-dim); font-size:13px; margin-bottom:28px;">Profiles allow you to maintain separate workspaces with isolated sandboxes.</p>
         
         <div style="margin-bottom:24px;">
-            <label style="display:block; font-size:10px; font-weight:900; color:rgba(255,255,255,0.3); text-transform:uppercase; letter-spacing:1.5px; margin-bottom:12px;">Profile Alias</label>
-            <input type="text" id="new-profile-name" placeholder="Work, Guest, Secondary..." style="width:100%; background:rgba(0,0,0,0.2); border:1px solid rgba(255,255,255,0.1); border-radius:14px; padding:14px 18px; color:#fff; font-family:'Inter', sans-serif; font-size:14px; outline:none; transition:0.3s;" onfocus="this.style.borderColor='var(--accent)'; this.style.boxShadow='0 0 15px rgba(168,85,247,0.1)';">
+            <label style="display:block; font-size:10px; font-weight:900; color:var(--text-muted); text-transform:uppercase; letter-spacing:1.5px; margin-bottom:12px;">Profile Alias</label>
+            <input type="text" id="new-profile-name" placeholder="Work, Guest, Secondary..." style="width:100%; background:var(--glass-hover); border:1px solid var(--glass-border); border-radius:14px; padding:14px 18px; color:var(--text); font-family:'Inter', sans-serif; font-size:14px; outline:none; transition:0.3s;" onfocus="this.style.borderColor='var(--accent)'; this.style.boxShadow='0 0 15px var(--accent-glow)';">
         </div>
         
         <div style="margin-bottom:32px;">
-            <label style="display:block; font-size:10px; font-weight:900; color:rgba(255,255,255,0.3); text-transform:uppercase; letter-spacing:1.5px; margin-bottom:12px;">Visual Signature</label>
+            <label style="display:block; font-size:10px; font-weight:900; color:var(--text-muted); text-transform:uppercase; letter-spacing:1.5px; margin-bottom:12px;">Visual Signature</label>
             <div style="display:grid; grid-template-columns: repeat(5, 1fr); gap:12px;" id="icon-selector">
                 ${PROFILE_ICONS.map(icon => `
-                    <div class="icon-chip ${icon === 'fa-user' ? 'active' : ''}" onclick="selectProfileIcon(this, '${icon}')" style="aspect-ratio:1; border-radius:12px; border:1px solid rgba(255,255,255,0.08); background:rgba(255,255,255,0.03); display:flex; align-items:center; justify-content:center; color:rgba(255,255,255,0.4); cursor:pointer; transition:0.3s;">
+                    <div class="icon-chip ${icon === 'fa-user' ? 'active' : ''}" onclick="selectProfileIcon(this, '${icon}')" style="aspect-ratio:1; border-radius:12px; border:1px solid var(--glass-border); background:var(--glass); display:flex; align-items:center; justify-content:center; color:var(--text-dim); cursor:pointer; transition:0.3s;">
                         <i class="fas ${icon}"></i>
                     </div>
                 `).join('')}
@@ -404,19 +416,19 @@ async function editProfilePrompt(id) {
     window._selectedProfileIcon = profile.icon || 'fa-user';
     
     const content = `
-        <h3 style="margin:0 0 8px 0; color:#fff; font-size:22px; font-weight:850; letter-spacing:-0.5px;">Modify Identity</h3>
-        <p style="color:rgba(255,255,255,0.5); font-size:13px; margin-bottom:28px;">Update the visual and descriptive signature of this alias.</p>
+        <h3 style="margin:0 0 8px 0; color:var(--text); font-size:22px; font-weight:850; letter-spacing:-0.5px;">Modify Identity</h3>
+        <p style="color:var(--text-dim); font-size:13px; margin-bottom:28px;">Update the visual and descriptive signature of this alias.</p>
         
         <div style="margin-bottom:24px;">
-            <label style="display:block; font-size:10px; font-weight:900; color:rgba(255,255,255,0.3); text-transform:uppercase; letter-spacing:1.5px; margin-bottom:12px;">Identity Name</label>
-            <input type="text" id="edit-profile-name" value="${profile.name}" style="width:100%; background:rgba(0,0,0,0.2); border:1px solid rgba(255,255,255,0.1); border-radius:14px; padding:14px 18px; color:#fff; font-family:'Inter', sans-serif; font-size:14px; outline:none; transition:0.3s;" onfocus="this.style.borderColor='var(--accent)'; this.style.boxShadow='0 0 15px rgba(168,85,247,0.1)';">
+            <label style="display:block; font-size:10px; font-weight:900; color:var(--text-muted); text-transform:uppercase; letter-spacing:1.5px; margin-bottom:12px;">Identity Name</label>
+            <input type="text" id="edit-profile-name" value="${profile.name}" style="width:100%; background:var(--glass-hover); border:1px solid var(--glass-border); border-radius:14px; padding:14px 18px; color:var(--text); font-family:'Inter', sans-serif; font-size:14px; outline:none; transition:0.3s;" onfocus="this.style.borderColor='var(--accent)'; this.style.boxShadow='0 0 15px var(--accent-glow)';">
         </div>
         
         <div style="margin-bottom:32px;">
-            <label style="display:block; font-size:10px; font-weight:900; color:rgba(255,255,255,0.3); text-transform:uppercase; letter-spacing:1.5px; margin-bottom:12px;">Visual Signature</label>
+            <label style="display:block; font-size:10px; font-weight:900; color:var(--text-muted); text-transform:uppercase; letter-spacing:1.5px; margin-bottom:12px;">Visual Signature</label>
             <div style="display:grid; grid-template-columns: repeat(5, 1fr); gap:12px;" id="icon-selector">
                 ${PROFILE_ICONS.map(icon => `
-                    <div class="icon-chip ${icon === window._selectedProfileIcon ? 'active' : ''}" onclick="selectProfileIcon(this, '${icon}')" style="aspect-ratio:1; border-radius:12px; border:1px solid rgba(255,255,255,0.08); background:rgba(255,255,255,0.03); display:flex; align-items:center; justify-content:center; color:rgba(255,255,255,0.4); cursor:pointer; transition:0.3s;">
+                    <div class="icon-chip ${icon === window._selectedProfileIcon ? 'active' : ''}" onclick="selectProfileIcon(this, '${icon}')" style="aspect-ratio:1; border-radius:12px; border:1px solid var(--glass-border); background:var(--glass); display:flex; align-items:center; justify-content:center; color:var(--text-dim); cursor:pointer; transition:0.3s;">
                         <i class="fas ${icon}"></i>
                     </div>
                 `).join('')}
@@ -429,8 +441,8 @@ async function editProfilePrompt(id) {
         </div>
         
         <style>
-            .icon-chip.active { border-color: var(--accent); color: var(--accent); background: rgba(168,85,247,0.08); box-shadow: 0 0 15px rgba(168,85,247,0.1); }
-            .icon-chip:hover:not(.active) { background: rgba(255,255,255,0.06); border-color: rgba(255,255,255,0.15); color: #fff; }
+            .icon-chip.active { border-color: var(--accent); color: var(--accent); background: var(--accent-dim); box-shadow: 0 0 15px var(--accent-glow); }
+            .icon-chip:hover:not(.active) { background: var(--glass-hover); border-color: var(--accent-border); color: var(--text); }
         </style>
     `;
     
@@ -451,7 +463,7 @@ async function confirmEditProfile(id) {
 async function deleteProfile(id, name) {
     const content = `
         <h3 style="margin:0 0 8px 0; color:#ef4444; font-size:22px; font-weight:850; letter-spacing:-0.5px;">Terminate Identity?</h3>
-        <p style="color:rgba(255,255,255,0.7); font-size:14px; margin-bottom:28px;">This will permanently delete the <strong>${name}</strong> workspace and all localized site data, cookies, and history.</p>
+        <p style="color:var(--text-dim); font-size:14px; margin-bottom:28px;">This will permanently delete the <strong>${name}</strong> workspace and all localized site data, cookies, and history.</p>
         
         <div style="display:flex; gap:12px; justify-content:flex-end;">
             <button class="btn secondary" onclick="closeModal()" style="padding:12px 24px; font-size:12px; font-weight:800; letter-spacing:0.5px;">CANCEL</button>
@@ -503,39 +515,37 @@ const populateReleaseNotes = (version, notesHtml) => {
 const formatGitHubMarkdown = (markdown) => {
     if (!markdown) return '';
     
-    // Clean up headers and convert bullets
-    return markdown
-        .replace(/^##\s+(.*)/gm, '<p style="margin: 15px 0 5px 0; color: #fff; font-weight: 800; font-size: 13px; text-transform: uppercase; letter-spacing: 0.5px;">$1</p>')
-        .replace(/^###\s+(.*)/gm, '<p style="margin: 10px 0 5px 0; color: var(--accent); font-weight: 700; font-size: 11px; text-transform: uppercase;">$1</p>')
-        .replace(/^\*\s+(.*)/gm, '<li style="margin-bottom: 4px;">$1</li>')
-        .replace(/^-\s+(.*)/gm, '<li style="margin-bottom: 4px;">$1</li>')
-        .replace(/`([^`]+)`/g, '<code style="background: rgba(255,255,255,0.05); padding: 2px 4px; border-radius: 4px; color: var(--accent);">$1</code>')
-        .replace(/\*\*([^*]+)\*\*/g, '<strong>$1</strong>');
+    // Convert to the minimalist catalog style
+    return `<div style="font-family: 'Consolas', 'Monaco', 'Courier New', monospace; font-size: 11px; color: var(--text-dim); white-space: pre-wrap;">` + 
+        markdown
+        .replace(/^##\s+(.*)/gm, '<strong style="color: var(--text);">$1</strong>')
+        .replace(/^###\s+(.*)/gm, '<strong style="color: var(--accent);">$1</strong>')
+        .replace(/^\*\s+(.*)/gm, '• $1')
+        .replace(/^- \s+(.*)/gm, '• $1')
+        .replace(/`([^`]+)`/g, '$1')
+        .replace(/\*\*([^*]+)\*\*/g, '$1') +
+        `</div>`;
 };
 
 const currentVersionHighlights = `
-    <p style="margin-top: 0; color: #fff; font-weight: 800; text-transform: uppercase; letter-spacing: 0.5px;">The Agentic Orchestrator</p>
-    <p style="color: rgba(255,255,255,0.5); font-size: 12px; margin-bottom: 15px;">This release transforms Ocal into a high-performance, context-aware digital agent.</p>
-    
-    <p style="color: var(--accent); font-weight: 700; font-size: 11px; text-transform: uppercase; margin-bottom: 8px;">Neural Agentic Logic (V4)</p>
-    <ul style="padding-left: 18px; list-style-type: square; margin-bottom: 12px;">
-        <li><strong>Autonomous Workflow:</strong> Heuristic task-chaining for complex multi-step commands.</li>
-        <li><strong>Agentic IPC Bridge:</strong> Native process-level integration via direct IPC signaling.</li>
-        <li><strong>Predictive Navigation:</strong> High-fidelity URL prediction and instant-hit matching.</li>
-    </ul>
+    <div style="font-family: 'Consolas', 'Monaco', 'Courier New', monospace; font-size: 11px; color: var(--text-dim); white-space: pre-wrap; line-height: 1.5; padding: 10px;">
+<strong style="color: var(--text); font-size: 13px;">V4.3.09-BETA</strong>
+OCAL BROWSER - UPDATE CATALOG Version: 4.3.09-beta Release Date: April 15, 2026 ----------------------------------------------------------------------- [UI & AESTHETICS: GLASS 3.0] ----------
+-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
-    <p style="color: var(--accent); font-weight: 700; font-size: 11px; text-transform: uppercase; margin-bottom: 8px;">Premium Obsidian UI</p>
-    <ul style="padding-left: 18px; list-style-type: square; margin-bottom: 12px;">
-        <li><strong>Liquid Glass:</strong> Enhanced glassmorphism parity across the AI sidebar.</li>
-        <li><strong>Micro-Animations:</strong> Smooth pulsing 'Active Task' indicators.</li>
-    </ul>
+• COMPLETED MODERNIZATION: Fully implemented the "Glass 3.0" design language across 
+  all core browser components.
+• MODAL SYSTEM: Refined the "Confirm Exit" and general modal interfaces with 
+  multi-layered glass borders, high-saturation backdrop blurs, and premium fade-in animations.
+• TAB DEEP STYLE: Replaced complex tab gradients with a flat, minimalist 
+  accent-colored side indicator to match the "Home" page aesthetic.
+• FLOATING ISLANDS: Standardized 10px spacing and 16px corner rounding across 
+  all contextual dropdowns and persistent UI modules.
+• LIGHT MODE (FLASHBANG): Implemented a perfectly flat, high-contrast professional 
+  aesthetic. System-wide removal of box-shadow and blur for maximum clarity.
 
-    <p style="color: var(--accent); font-weight: 700; font-size: 11px; text-transform: uppercase; margin-bottom: 8px;">Stability & Engineering</p>
-    <ul style="padding-left: 18px; margin-bottom: 0;">
-        <li><code style="color: #4ade80;">[FIXED]</code> Exit Confirmation Logic regression.</li>
-        <li><code style="color: #4ade80;">[FIXED]</code> PDF Icon Registry associations.</li>
-        <li><code style="color: #a855f7;">[OPTIMIZED]</code> Startup Sequence I/O throttling.</li>
-    </ul>
+-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+    </div>
 `;
 
 const syncReleaseCatalogWithGitHub = async (v) => {
@@ -544,8 +554,8 @@ const syncReleaseCatalogWithGitHub = async (v) => {
         if (!response.ok) throw new Error('API Rate Limit');
         const data = await response.json();
         
-        let htmlContent = `<p style="margin-top: 0; color: #fff; font-weight: 800; text-transform: uppercase; letter-spacing: 0.5px;">${data.name}</p>`;
-        htmlContent += `<div style="font-size: 12px; color: rgba(255,255,255,0.8); line-height: 1.6;">${formatGitHubMarkdown(data.body)}</div>`;
+        let htmlContent = `<p style="margin-top: 0; color: var(--text); font-weight: 800; text-transform: uppercase; letter-spacing: 0.5px;">${data.name}</p>`;
+        htmlContent += `<div style="font-size: 12px; color: var(--text-dim); line-height: 1.6;">${formatGitHubMarkdown(data.body)}</div>`;
         
         populateReleaseNotes(data.tag_name.replace('v', ''), htmlContent);
         console.log('GitHub Release Sync: Success');
@@ -719,6 +729,11 @@ window.electronAPI.getSettings().then(s => {
     initGridSelector('dns-grid', 'dns');
     initGridSelector('bookmark-bar-grid', 'bookmarkBarMode');
     initGridSelector('tile-style-grid', 'homeTileStyle');
+    initGridSelector('theme-mode-grid', 'themeMode');
+    
+    if (s.themeMode) applyTheme(s.themeMode);
+    else localStorage.setItem('ocal-settings-theme', 'dark'); // Default fallback
+    setGridValue('theme-mode-grid', s.themeMode || 'dark');
     
     // Custom Search URL Specific Logic
     const customInp = document.getElementById('custom-search-input');
@@ -750,6 +765,7 @@ window.electronAPI.getSettings().then(s => {
     initToggle('search-suggest-toggle', 'searchSuggest', s.searchSuggest);
     initToggle('auto-update-toggle', 'autoCheckUpdates', s.autoCheckUpdates);
     initToggle('confirm-exit-toggle', 'confirmExit', s.confirmExit !== false);
+    initToggle('battery-saver-toggle', 'batterySaver', s.batterySaver);
     
     // Security Hub Toggles
     initToggle('safe-browsing-toggle', 'safeBrowsingEnabled', s.safeBrowsingEnabled);

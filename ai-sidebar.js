@@ -214,17 +214,21 @@ function applyAccent(color) {
     document.documentElement.style.setProperty('--accent', color);
     document.documentElement.style.setProperty('--accent-glow', hexToRgba(color, 0.4));
     document.documentElement.style.setProperty('--accent-dim', hexToRgba(color, 0.08));
+    document.documentElement.style.setProperty('--accent-border', hexToRgba(color, 0.25));
 }
 
 // Listen for global settings changes
 window.electronAPI.on('settings-changed', (e, s) => {
     if (s && s.accentColor) applyAccent(s.accentColor);
+    if (s && s.themeMode) document.body.setAttribute('data-theme', s.themeMode);
 });
 
 // Get initial settings on load
 window.electronAPI.invoke('get-settings').then(s => {
     if (s && s.accentColor) applyAccent(s.accentColor);
+    if (s && s.themeMode) document.body.setAttribute('data-theme', s.themeMode);
 });
+
 
 // Global Agent Actions
 window.electronAPI.on('ai-agent-action', (e, action) => {

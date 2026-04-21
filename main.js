@@ -10,7 +10,8 @@ if (typeof electron === 'string' || !electron.app) {
 
 const { 
     app, BrowserWindow, BrowserView, webContents, ipcMain, dialog, 
-    shell, session, Menu, MenuItem, clipboard, protocol, net 
+    shell, session, Menu, MenuItem, clipboard, protocol, net,
+    powerMonitor, Notification 
 } = electron;
 
 // Disable deprecation warnings in the console (silences punycode and setPreloads from 3rd-party libs)
@@ -37,7 +38,7 @@ app.commandLine.appendSwitch('disable-blink-features', 'AutomationControlled');
 // Disable the default Electron menu bar on Windows/Linux to prevent UI shifting
 Menu.setApplicationMenu(null);
 
-const OCAL_USER_AGENT = 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/134.0.0.0 Safari/537.36';
+const OCAL_USER_AGENT = 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/123.0.0.0 Safari/537.36';
 app.userAgentFallback = OCAL_USER_AGENT;
 
 // Single Instance Lock
@@ -217,7 +218,8 @@ let userSettings = loadSettings() || {
   askSavePath: false,
   downloads: [],
   shieldStats: { ads: 0, trackers: 0, dataSaved: 0, history: [] },
-  pdfViewerEnabled: true
+  pdfViewerEnabled: true,
+  batterySaver: false
 };
 
 if (!userSettings.bookmarks) userSettings.bookmarks = [];
@@ -370,7 +372,9 @@ var suggestionsView = null;
 var siteInfoView = null;
 var webAppView = null;
 var tabgroupView = null;
-var downloadsView = null;
+let isAlwaysOnTop = false;
+
+let downloadsView = null;
 var mediaMasterView = null;
 var views = [];
 var downloads = userSettings.downloads || [];
@@ -794,7 +798,7 @@ function createMainWindow() {
     title: 'Ocal',
     frame: false,
     transparent: false,
-    backgroundColor: '#0c0c0e', // Solid background for better Win10 stability
+    backgroundColor: userSettings.themeMode === 'light' ? '#ffffff' : '#0c0c0e', // Dynamic background to match theme and prevent flashbang
     resizable: true,
     fullscreenable: true,
     titleBarStyle: 'hidden', // Ensures native title bar is fully hidden on Windows 10
@@ -803,6 +807,7 @@ function createMainWindow() {
       preload: path.join(__dirname, 'preload.js'),
       contextIsolation: true,
       nodeIntegration: false,
+      devTools: false
     },
   });
 
@@ -888,6 +893,7 @@ function createSurveyWindow() {
       preload: path.join(__dirname, 'preload.js'),
       contextIsolation: true,
       nodeIntegration: false,
+      devTools: false
     },
   });
 
@@ -1110,7 +1116,7 @@ function broadcastToSidebars(channel, data) {
 
 function createSidebarOverlay() {
     sidebarOverlayView = new BrowserView({
-        webPreferences: { preload: path.join(__dirname, 'preload.js'), contextIsolation: true, nodeIntegration: false, webviewTag: true },
+        webPreferences: { preload: path.join(__dirname, 'preload.js'), contextIsolation: true, nodeIntegration: false, devTools: false, webviewTag: true },
     });
     sidebarOverlayView.webContents.loadFile('sidebars.html');
     sidebarOverlayView.setBackgroundColor('#00000000');
@@ -1120,7 +1126,7 @@ function createSidebarOverlay() {
 
 function createAiSidebar() {
     aiSidebarView = new BrowserView({
-        webPreferences: { preload: path.join(__dirname, 'preload.js'), contextIsolation: true, nodeIntegration: false, webviewTag: true },
+        webPreferences: { preload: path.join(__dirname, 'preload.js'), contextIsolation: true, nodeIntegration: false, devTools: false, webviewTag: true },
     });
     aiSidebarView.webContents.loadFile('ai-sidebar.html');
     aiSidebarView.setBackgroundColor('#00000000');
@@ -1475,9 +1481,15 @@ function normalizeDocumentUrl(url) {
 function createNewTab(url = null) {
   const id = Date.now().toString() + Math.random().toString(36).substring(2, 9);
   const view = new BrowserView({
-    webPreferences: { preload: path.join(__dirname, 'preload.js'), contextIsolation: true, nodeIntegration: false, sandbox: false },
+    webPreferences: { 
+      preload: path.join(__dirname, 'preload.js'), 
+      contextIsolation: true, 
+      nodeIntegration: false, 
+      sandbox: false, 
+      devTools: true 
+    },
   });
-  view.setBackgroundColor('#ffffff');
+  view.setBackgroundColor(userSettings.themeMode === 'light' ? '#ffffff' : '#0c0c0e');
 
   // Clear media on navigation
   view.webContents.on('did-start-navigation', (e, url, isInPlace) => {
@@ -1491,9 +1503,23 @@ function createNewTab(url = null) {
 
   view.webContents.setUserAgent(OCAL_USER_AGENT);
 
-  // Inject Robust YouTube AdShield fallback
+  // Inject Robust YouTube AdShield fallback & Battery Saver
   view.webContents.on('did-finish-load', () => {
     const url = view.webContents.getURL();
+    
+    // Battery Saver Logic
+    if (userSettings.batterySaver) {
+        view.webContents.insertCSS(`
+            * { 
+                animation: none !important; 
+                transition: none !important; 
+                scroll-behavior: auto !important;
+            }
+            img { image-rendering: -webkit-optimize-contrast !important; }
+        `);
+        // Limit frame rate if possible (not directly via API easily, but animation removal helps)
+    }
+
     if (url.includes('youtube.com') && userSettings.adBlockEnabled !== false) {
         const adShieldPath = path.join(__dirname, 'youtube-ad-remover.js');
         if (fs.existsSync(adShieldPath)) {
@@ -1899,7 +1925,7 @@ function hideWebApp() {
 function showWebApp(url) {
     if (!webAppView) {
         webAppView = new BrowserView({
-            webPreferences: { preload: path.join(__dirname, 'preload.js'), contextIsolation: true, nodeIntegration: false, sandbox: true }
+            webPreferences: { preload: path.join(__dirname, 'preload.js'), contextIsolation: true, nodeIntegration: false, devTools: false, sandbox: true }
         });
         setupContextMenu(webAppView.webContents);
         setupInteractionDismissal(webAppView.webContents);
@@ -2004,6 +2030,14 @@ ipcMain.on('nav-reload', () => (views.find(v => v.id === activeViewId)?.view)?.w
 ipcMain.on('window-minimize', () => mainWindow.minimize());
 ipcMain.on('window-maximize', () => { if (mainWindow.isMaximized()) mainWindow.unmaximize(); else mainWindow.maximize(); });
 ipcMain.on('window-close', () => mainWindow.close());
+
+ipcMain.on('window-toggle-pin', () => {
+    isAlwaysOnTop = !isAlwaysOnTop;
+    mainWindow.setAlwaysOnTop(isAlwaysOnTop, 'screen-saver');
+    mainWindow.webContents.send('window-pin-status', isAlwaysOnTop);
+});
+
+
 
 ipcMain.on('toggle-sidebar', (e, open) => {
   sidebarOpen = (open === undefined) ? !sidebarOpen : open;
@@ -2676,6 +2710,7 @@ function createMediaMasterView() {
         webPreferences: {
             preload: path.join(__dirname, 'preload.js'),
             nodeIntegration: false,
+            devTools: false,
             contextIsolation: true
         }
     });
@@ -2830,6 +2865,7 @@ ipcMain.on('update-setting', (e, key, val) => {
 
   if (key === 'compactMode' || key === 'bookmarkBarMode') updateViewBounds(); 
   if (key === 'dns') console.log(`[DNS] Global resolver updated to: ${val}`);
+  if (key === 'batterySaver') applyBatterySaverGlobally();
 
   if (key === 'adBlockEnabled' || key === 'trackingProtection') {
       applyShieldSettings();
@@ -2845,6 +2881,17 @@ ipcMain.on('update-setting', (e, key, val) => {
 
   if (key === 'vpnRegion' && userSettings.vpnEnabled) {
       applyProxy(val);
+  }
+  if (key === 'themeMode') {
+      const bgColor = val === 'light' ? '#ffffff' : '#0c0c0e';
+      if (mainWindow && !mainWindow.isDestroyed()) {
+          mainWindow.setBackgroundColor(bgColor);
+      }
+      views.forEach(v => {
+          if (v.view && !v.view.webContents.isDestroyed()) {
+              v.view.setBackgroundColor(bgColor);
+          }
+      });
   }
 });
 
@@ -3011,6 +3058,9 @@ ipcMain.on('clear-bookmarks', (event) => {
 // Common Keyboard Shortcuts
 function handleShortcuts(event, input) {
     if (input.type !== 'keyDown') return;
+    const { code, control, shift, alt, meta } = input;
+
+
 
     const cmdOrCtrl = process.platform === 'darwin' ? input.meta : input.control;
 
@@ -3066,10 +3116,31 @@ function handleShortcuts(event, input) {
         if (existing) setActiveTab(existing.id);
         else createNewTab(settingsUrl);
     }
-    // F12: DevTools
-    else if (input.key === 'F12') {
+    // F12, Ctrl + Shift + I: Dynamic DevTools activation
+    else if (input.key === 'F12' || (cmdOrCtrl && input.shift && input.key.toLowerCase() === 'i')) {
+        event.preventDefault();
         const v = views.find(v => v.id === activeViewId)?.view;
-        if (v) v.webContents.openDevTools({ mode: 'detach' });
+        if (v) {
+            const url = v.webContents.getURL();
+            const isInternal = url.startsWith('ocal://') || url.startsWith('file://');
+            if (!isInternal) {
+                v.webContents.toggleDevTools({ mode: 'detach' });
+            } else {
+                console.log('[Security] Inspect Element blocked for internal path:', url);
+            }
+        }
+    }
+    // Ctrl + U: Dynamic View Source
+    else if (cmdOrCtrl && input.key.toLowerCase() === 'u') {
+        const v = views.find(v => v.id === activeViewId)?.view;
+        if (v) {
+            const url = v.webContents.getURL();
+            const isInternal = url.startsWith('ocal://') || url.startsWith('file://');
+            if (isInternal) {
+                event.preventDefault();
+                console.log('[Security] View Source blocked for internal path:', url);
+            }
+        }
     }
 }
 
@@ -3386,7 +3457,7 @@ function broadcastBookmarks() {
 // Extension Dropdown Logic
 function createExtensionDropdownView() {
     extensionDropdownView = new BrowserView({
-        webPreferences: { preload: path.join(__dirname, 'preload.js'), contextIsolation: true, nodeIntegration: false, sandbox: true }
+        webPreferences: { preload: path.join(__dirname, 'preload.js'), contextIsolation: true, nodeIntegration: false, devTools: false, sandbox: true }
     });
     extensionDropdownView.webContents.loadFile('extensions-popup.html');
     extensionDropdownView.setBackgroundColor('#00000000');
@@ -3731,7 +3802,7 @@ ipcMain.on('suggestion-selected', (e, text) => {
 // ── Site Info Popup Logic ───────────────────────────────────────────────────
 function createSiteInfoView() {
     siteInfoView = new BrowserView({
-        webPreferences: { preload: path.join(__dirname, 'preload.js'), contextIsolation: true, nodeIntegration: false, sandbox: true }
+        webPreferences: { preload: path.join(__dirname, 'preload.js'), contextIsolation: true, nodeIntegration: false, devTools: false, sandbox: true }
     });
     siteInfoView.webContents.loadFile('site-info.html');
     siteInfoView.setBackgroundColor('#00000000');
@@ -4586,9 +4657,66 @@ function setupContextMenu(contents) {
         menu.append(new MenuItem({ label: 'Back', enabled: contents.navigationHistory.canGoBack(), click: () => { contents.navigationHistory.goBack(); } }));
         menu.append(new MenuItem({ label: 'Forward', enabled: contents.navigationHistory.canGoForward(), click: () => { contents.navigationHistory.goForward(); } }));
         menu.append(new MenuItem({ label: 'Reload', click: () => { contents.reload(); } }));
-        menu.append(new MenuItem({ type: 'separator' }));
-        menu.append(new MenuItem({ label: 'Inspect Element', click: () => { contents.inspectElement(props.x, props.y); } }));
+        
+        // Dynamic Inspect Element: Allowed only on non-internal pages
+        const ctxUrl = contents.getURL();
+        const isInternalCtx = ctxUrl.startsWith('ocal://') || ctxUrl.startsWith('file://');
+        if (!isInternalCtx) {
+            menu.append(new MenuItem({ type: 'separator' }));
+            menu.append(new MenuItem({ label: 'Inspect Element', click: () => { contents.inspectElement(props.x, props.y); } }));
+        }
 
         menu.popup({ window: BrowserWindow.fromWebContents(contents) });
     });
 }
+
+// ── Battery Saver Engine ──
+function applyBatterySaverGlobally() {
+    const isBatterySaver = userSettings.batterySaver;
+    const css = `
+        * { 
+            animation: none !important; 
+            transition: none !important; 
+            scroll-behavior: auto !important;
+        }
+    `;
+
+    // 1. Inject into Chrome (Main UI)
+    if (mainWindow && !mainWindow.isDestroyed()) {
+        if (isBatterySaver) mainWindow.webContents.insertCSS(css);
+        else mainWindow.webContents.reload(); // Simple way to clear injected CSS
+    }
+
+    // 2. Inject into all active tabs
+    views.forEach(v => {
+        if (v.view && !v.view.webContents.isDestroyed()) {
+            if (isBatterySaver) {
+                v.view.webContents.insertCSS(css);
+                // Pause background heavy logic if possible
+                v.view.webContents.setAudioMuted(true);
+            } else {
+                v.view.webContents.setAudioMuted(false);
+                v.view.webContents.reload(); 
+            }
+        }
+    });
+
+    console.log(`[Sustainability] Battery Saver Mode: ${isBatterySaver ? 'ENABLED' : 'DISABLED'}`);
+}
+
+// ── Power Monitor ──
+powerMonitor.on('on-battery', () => {
+    if (!userSettings.batterySaver) {
+        const notif = new Notification({
+            title: 'Ocal Energy Intelligence',
+            body: 'Device is now on battery power. Enable Battery Saver in settings for maximum runtime.',
+            icon: path.join(__dirname, 'icon.png')
+        });
+        notif.show();
+        notif.on('click', () => { createNewTab('ocal://settings#general'); });
+    }
+});
+
+powerMonitor.on('on-ac', () => {
+    // Optional: maybe auto-disable? User probably wants choice.
+});

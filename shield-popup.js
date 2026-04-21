@@ -30,11 +30,14 @@ function applyAccent(color) {
 // Global Settings Sync
 ipcRenderer.on('settings-changed', (e, s) => {
     if (s && s.accentColor) applyAccent(s.accentColor);
+    if (s && s.themeMode) document.body.setAttribute('data-theme', s.themeMode);
 });
 
 // Load Initial State
 ipcRenderer.invoke('get-settings').then(settings => {
     applyAccent(settings.accentColor);
+    if (settings.themeMode) document.body.setAttribute('data-theme', settings.themeMode);
+
     adBlockToggle.checked = settings.adBlockEnabled !== false;
     privacyToggle.checked = settings.trackingProtection !== false;
     vpnToggle.checked = settings.vpnEnabled === true;

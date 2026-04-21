@@ -310,10 +310,29 @@ if (historyBtn) {
 }
 
 // ── Repaired & Responsive System ──
+function hexToRgba(hex, alpha) {
+    let r = 0, g = 0, b = 0;
+    if (hex.length === 4) {
+        r = parseInt(hex[1] + hex[1], 16);
+        g = parseInt(hex[2] + hex[2], 16);
+        b = parseInt(hex[3] + hex[3], 16);
+    } else if (hex.length === 7) {
+        r = parseInt(hex.substring(1, 3), 16);
+        g = parseInt(hex.substring(3, 5), 16);
+        b = parseInt(hex.substring(5, 7), 16);
+    }
+    return `rgba(${r}, ${g}, ${b}, ${alpha})`;
+}
+
 function applySettings(s) {
     if (!s) return;
     const root = document.documentElement;
-    if (s.accentColor) root.style.setProperty('--accent', s.accentColor);
+    if (s.accentColor) {
+        root.style.setProperty('--accent', s.accentColor);
+        root.style.setProperty('--accent-glow', hexToRgba(s.accentColor, 0.45));
+        root.style.setProperty('--accent-dim', hexToRgba(s.accentColor, 0.15));
+        root.style.setProperty('--accent-border', hexToRgba(s.accentColor, 0.4));
+    }
 
     if (s.homeLayout && dashMain) {
         dashMain.classList.remove('layout-top', 'layout-center', 'layout-bottom');
@@ -341,7 +360,11 @@ function applySettings(s) {
     if (todoPanel) todoPanel.style.display = (s.showDailyFocus !== false) ? 'flex' : 'none';
     if (timerPanel) timerPanel.style.display = (s.showFocusFlow !== false) ? 'flex' : 'none';
     if (weatherPanel) weatherPanel.style.display = (s.showWeather !== false) ? 'flex' : 'none';
+
+    document.body.classList.toggle('battery-saver', !!s.batterySaver);
+    document.body.setAttribute('data-theme', s.themeMode || 'dark');
 }
+
 
 
 if (window.electronAPI) {

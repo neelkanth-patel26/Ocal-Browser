@@ -107,11 +107,30 @@ function showModal({ title, message, onConfirm, onCancel }) {
 // ── IPC Listeners ────────────────────────────────────────────────
 window.electronAPI.onShowModal((data) => showModal(data));
 
+function hexToRgba(hex, alpha) {
+    let r = 0, g = 0, b = 0;
+    if (hex.length === 4) {
+        r = parseInt(hex[1] + hex[1], 16);
+        g = parseInt(hex[2] + hex[2], 16);
+        b = parseInt(hex[3] + hex[3], 16);
+    } else if (hex.length === 7) {
+        r = parseInt(hex.substring(1, 3), 16);
+        g = parseInt(hex.substring(3, 5), 16);
+        b = parseInt(hex.substring(5, 7), 16);
+    }
+    return `rgba(${r}, ${g}, ${b}, ${alpha})`;
+}
+
 window.electronAPI.onSettingsChanged((s) => {
-    console.log('[Sidebar] Settings updated, history count:', s.history?.length || 0);
     currentSettings = s;
     historyItems = s.history || [];
-    if (s.accentColor) document.documentElement.style.setProperty('--accent', s.accentColor);
+    if (s.accentColor) {
+        document.documentElement.style.setProperty('--accent', s.accentColor);
+        document.documentElement.style.setProperty('--accent-glow', hexToRgba(s.accentColor, 0.35));
+        document.documentElement.style.setProperty('--accent-dim', hexToRgba(s.accentColor, 0.12));
+        document.documentElement.style.setProperty('--accent-border', hexToRgba(s.accentColor, 0.28));
+    }
+    document.body.setAttribute('data-theme', s.themeMode || 'dark');
     if (currentTab === 'history') render();
 });
 
@@ -177,7 +196,13 @@ window.electronAPI.getSettings().then(s => {
     historyItems = s.history || [];
     bookmarks    = s.bookmarks || [];
     folders      = s.folders   || [];
-    if (s.accentColor) document.documentElement.style.setProperty('--accent', s.accentColor);
+    if (s.accentColor) {
+        document.documentElement.style.setProperty('--accent', s.accentColor);
+        document.documentElement.style.setProperty('--accent-glow', hexToRgba(s.accentColor, 0.35));
+        document.documentElement.style.setProperty('--accent-dim', hexToRgba(s.accentColor, 0.12));
+        document.documentElement.style.setProperty('--accent-border', hexToRgba(s.accentColor, 0.28));
+    }
+    document.body.setAttribute('data-theme', s.themeMode || 'dark');
     
     // Fetch downloads too
     window.electronAPI.getDownloads().then(dl => {
@@ -419,12 +444,12 @@ function addFolder() {
     row.style.cssText = 'display:flex;gap:6px;padding:6px 12px 4px;flex-shrink:0';
     row.innerHTML = `
         <input id="new-folder-name" type="text" placeholder="Folder name..."
-            style="flex:1;background:rgba(255,255,255,0.06);border:1px solid rgba(168,85,247,0.4);
-                   border-radius:7px;padding:6px 10px;color:#fff;font-size:12px;
+            style="flex:1;background:var(--glass-hover);border:1px solid var(--accent-border);
+                   border-radius:7px;padding:6px 10px;color:var(--text);font-size:12px;
                    font-family:Inter,sans-serif;outline:none">
         <button id="new-folder-confirm"
-            style="padding:6px 12px;border-radius:7px;background:rgba(168,85,247,0.2);
-                   border:1px solid rgba(168,85,247,0.4);color:#fff;font-size:11px;
+            style="padding:6px 12px;border-radius:7px;background:var(--accent-dim);
+                   border:1px solid var(--accent-border);color:var(--text);font-size:11px;
                    font-family:Inter,sans-serif;cursor:pointer">Add</button>
     `;
 
@@ -488,16 +513,16 @@ function getHistoricalIcon(url, title = '', storedIcon = '') {
     
     // 1. Internal Ocal Settings/System Pages
     if (u.includes('settings.html') || u.includes('ocal://settings')) {
-        return `<div class="hist-favicon" style="background:rgba(168,85,247,0.12);color:var(--accent);display:flex;align-items:center;justify-content:center;"><i class="fas fa-gear" style="font-size:11px"></i></div>`;
+        return `<div class="hist-favicon" style="background:var(--accent-dim);color:var(--accent);display:flex;align-items:center;justify-content:center;"><i class="fas fa-gear" style="font-size:11px"></i></div>`;
     }
     if (u.includes('home.html') || u.includes('ocal://home') || u === 'ocal://') {
-        return `<div class="hist-favicon" style="background:rgba(168,85,247,0.12);color:var(--accent);display:flex;align-items:center;justify-content:center;"><i class="fas fa-house" style="font-size:11px"></i></div>`;
+        return `<div class="hist-favicon" style="background:var(--accent-dim);color:var(--accent);display:flex;align-items:center;justify-content:center;"><i class="fas fa-house" style="font-size:11px"></i></div>`;
     }
     if (u.includes('pdf-viewer.html') || u.includes('.pdf') || u.includes('ocal://pdf')) {
-        return `<div class="hist-favicon" style="background:rgba(168,85,247,0.12);color:var(--accent);display:flex;align-items:center;justify-content:center;"><i class="fas fa-file-pdf" style="font-size:11px"></i></div>`;
+        return `<div class="hist-favicon" style="background:var(--accent-dim);color:var(--accent);display:flex;align-items:center;justify-content:center;"><i class="fas fa-file-pdf" style="font-size:11px"></i></div>`;
     }
     if (u.includes('sidebars.html') || u.includes('ocal://history') || u.includes('ocal://saves')) {
-        return `<div class="hist-favicon" style="background:rgba(168,85,247,0.12);color:var(--accent);display:flex;align-items:center;justify-content:center;"><i class="fas fa-clock-rotate-left" style="font-size:11px"></i></div>`;
+        return `<div class="hist-favicon" style="background:var(--accent-dim);color:var(--accent);display:flex;align-items:center;justify-content:center;"><i class="fas fa-clock-rotate-left" style="font-size:11px"></i></div>`;
     }
 
     // 2. Proactive stored favicon usage
@@ -592,7 +617,7 @@ function renderHistory() {
             if (dom.startsWith('ocal:')) {
                 const isSettings = dom === 'ocal:settings';
                 name = isSettings ? 'Settings' : 'Home';
-                iconHtml = `<div style="width:28px;height:28px;display:flex;align-items:center;justify-content:center;background:rgba(168,85,247,0.1);border-radius:8px;color:var(--accent);font-size:14px;"><i class="fas ${isSettings?'fa-gear':'fa-house'}"></i></div>`;
+                iconHtml = `<div style="width:28px;height:28px;display:flex;align-items:center;justify-content:center;background:var(--accent-dim);border-radius:8px;color:var(--accent);font-size:14px;"><i class="fas ${isSettings?'fa-gear':'fa-house'}"></i></div>`;
             } else {
                 iconHtml = `<img src="https://www.google.com/s2/favicons?domain=${dom}&sz=64" onerror="this.outerHTML='<div class=\'hist-favicon-fallback\' style=\'width:28px;height:28px;font-size:14px;\'><i class=\'fas fa-globe\'></i></div>'">`;
             }

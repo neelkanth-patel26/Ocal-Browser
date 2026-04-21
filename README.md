@@ -2,7 +2,7 @@
   <img src="icon.png" alt="Ocal Browser Logo" width="128">
 </p>
 
-# 🌌 Ocal Browser - Project Rescue
+# 🌌 Ocal Browser - Stability Core (v5.0.00)
 
 <p align="center">
   <a href="https://github.com/neelkanth-patel26/Ocal-Browser/releases">
@@ -23,11 +23,11 @@
 **Ocal** is a next-generation, high-performance web browser meticulously crafted for the **Agentic Era**. Built on the robust **Electron** framework, it merges a stunning **glassmorphic aesthetic** with industry-leading **stealth technologies**, providing a seamless bridge between human interaction and AI-driven automation.
 
 > [!IMPORTANT]
-> **Project Rescue**: This definitive update introduces a complete reconstruction of our privacy engine, resolving location leaks, regional search engine hijacking, and security blockades on high-traffic platforms.
+> **Stability Core**: This milestone v5.0.00 update transitions Ocal Browser to a stable foundation. It incorporates a major security refresh, Chromium engine update (v41.2.1), and architecture stabilization to ensure a premium, reliable agentic experience.
 
 ---
 
-## ✨ Key Features: Project Rescue
+## ✨ Key Features: Stability Core
 
 ### 🌐 Global Rescue Pool (VPN v4)
 - **Multi-Protocol Failover**: Dynamic PAC Engine utilizing SOCKS5, HTTPS, and SOCKS4 for a resilient, unbreakable connection.
@@ -70,7 +70,7 @@
 ## 💾 Installation
 
 1. Navigate to the [Latest Releases](https://github.com/neelkanth-patel26/Ocal-Browser/releases/latest).
-2. Download the `Ocal-3.7.50beta-Setup.exe`.
+2. Download the `Ocal-5.0.00-Setup.exe`.
 3. Execute the installer. We use **Inno Setup** to ensure a premium, reliable desktop installation experience.
 
 

@@ -20,6 +20,64 @@
             --panel-blur: blur(44px) saturate(210%);
         }
 
+
+        /* ── Light Theme (Flashbang Mode) ─────────────────────────── */
+        body[data-theme="light"] {
+            --bg-glass: #ffffff;
+            --border-glass: rgba(0, 0, 0, 0.15);
+            --text-primary: #000000;
+            --text-secondary: #222222;
+            --accent-dim: rgba(168, 85, 247, 0.08);
+        }
+
+
+        body[data-theme="light"] .shield-card {
+            background: #ffffff !important;
+            border-color: rgba(0, 0, 0, 0.18) !important;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.1) !important;
+            backdrop-filter: none !important;
+        }
+
+
+        body[data-theme="light"] .shield-card::before {
+            background: linear-gradient(180deg, rgba(0,0,0,0.02) 0%, transparent 15%);
+        }
+
+        body[data-theme="light"] .stat-item {
+            background: rgba(0, 0, 0, 0.03);
+            border-color: rgba(0, 0, 0, 0.05);
+        }
+
+        body[data-theme="light"] .toggle-item {
+            background: rgba(0, 0, 0, 0.02);
+            border-color: rgba(0, 0, 0, 0.04);
+        }
+
+        body[data-theme="light"] .toggle-title, body[data-theme="light"] .header h2, body[data-theme="light"] .impact-value, body[data-theme="light"] .select-trigger {
+            color: #1d1d1f;
+        }
+
+        body[data-theme="light"] .slider {
+            background: rgba(0, 0, 0, 0.1);
+        }
+
+        body[data-theme="light"] .select-trigger {
+            background: rgba(0, 0, 0, 0.03);
+            border-color: rgba(0, 0, 0, 0.08);
+        }
+
+        body[data-theme="light"] .select-options {
+            background: #fff;
+            border-color: rgba(0, 0, 0, 0.15);
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+        }
+
+        body[data-theme="light"] .option:hover {
+            background: rgba(0, 0, 0, 0.05);
+            color: #000;
+        }
+
+
         * {
             margin: 0;
             padding: 0;
