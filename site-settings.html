@@ -21,6 +21,30 @@
             --panel-blur: blur(48px) saturate(210%);
         }
 
+        /* ── Light Mode Overrides ────────────────────────────────── */
+        body[data-theme="light"] {
+            --bg: #ffffff;
+            --surface: #f9fafb;
+            --surface-hover: #f1f5f9;
+            --text: #000000;
+            --text-dim: #334155;
+            --text-muted: #64748b;
+            --border: rgba(0, 0, 0, 0.1);
+        }
+
+        body[data-theme="light"] .ambient-lighting { background: #ffffff !important; }
+        body[data-theme="light"] .neural-point { opacity: 0.1 !important; }
+        body[data-theme="light"] .hostname { color: #000 !important; text-shadow: none !important; }
+        body[data-theme="light"] .card { background: #ffffff !important; border-color: rgba(0,0,0,0.1) !important; box-shadow: 0 4px 12px rgba(0,0,0,0.03) !important; }
+        body[data-theme="light"] .row-title { color: #000 !important; }
+        body[data-theme="light"] select { background-color: #f9fafb !important; color: #000 !important; border-color: #e2e8f0 !important; background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='14' height='14' viewBox='0 0 24 24' fill='none' stroke='rgba(0,0,0,0.6)' stroke-width='2.5' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E") !important; }
+        body[data-theme="light"] .action-btn { background: #f1f5f9 !important; border-color: #cbd5e1 !important; color: #475569 !important; }
+        body[data-theme="light"] .action-btn:hover { background: #e2e8f0 !important; color: #000 !important; }
+        body[data-theme="light"] .action-btn.danger { background: rgba(239, 68, 68, 0.05) !important; color: #dc2626 !important; border-color: rgba(239, 68, 68, 0.2) !important; }
+        body[data-theme="light"] .action-btn.danger:hover { background: #fee2e2 !important; color: #991b1b !important; }
+        body[data-theme="light"] .usage-info { color: #000 !important; }
+        body[data-theme="light"] .back-btn { background: #f1f5f9 !important; border-color: #e2e8f0 !important; color: #000 !important; }
+
         * { box-sizing: border-box; }
         
         ::-webkit-scrollbar { width: 8px; height: 8px; }

@@ -1,0 +1,107 @@
+OCAL BROWSER - UPDATE CATALOG
+Version: 5.0.00
+Release Date: April 21, 2026
+
+-------------------------------------------------------------------------------
+[STABILITY CORE: THE v5 MILESTONE]
+-------------------------------------------------------------------------------
+* MAJOR SECURITY UPDATE: Addressed 27 high-risk vulnerabilities and refreshed 
+  the entire module dependency tree.
+* CHROMIUM REFRESH: Upgraded the core engine to Electron v41.2.1, ensuring 
+  unmatched stability and performance with the latest web standards.
+* STABILITY BASELINE: Transitioned from beta to stable production status 
+  with optimized window architecture and memory management.
+* ARCHITECTURE STABILIZATION: Refined the internal event-loop and resource 
+  handling for long-running browser sessions.
+
+-------------------------------------------------------------------------------
+Version: 4.4.0-beta
+Release Date: April 16, 2026
+
+-------------------------------------------------------------------------------
+[WINDOW CONTROLS: THE MODERN LOOK]
+-------------------------------------------------------------------------------
+* MINIMALIST CONTROLS: Completely redesigned window control buttons (Close, 
+  Minimize, Maximize) with premium iconography and smoother hover interactions.
+* ALWAYS-ON-TOP: Removed the legacy "Always on Top" toggle from the top bar 
+  to reduce clutter and modernize the interface layout.
+* ADAPTIVE BUTTONS: Controls now feature high-contrast visibility modes, 
+  ensuring they remain perfectly legible against any background.
+
+-------------------------------------------------------------------------------
+[LIGHT THEME: FLASHBANG REDUX]
+-------------------------------------------------------------------------------
+* THEME PERFECTION: Finalized the "Flashbang" light theme, resolving issues 
+  with white-on-white text and low-contrast icons.
+* OPAQUE GLASS: Implemented opaque-white variants for sidebars and settings 
+  panels to ensure consistent readability in bright environments.
+* ACCENT SYNC: All UI components (toggles, sliders, buttons) now correctly 
+  adopt the global accent color in light mode.
+
+-------------------------------------------------------------------------------
+[USER EXPERIENCE & POLISH]
+-------------------------------------------------------------------------------
+* SETTINGS STABILITY: Eliminated the initial "flash" or layout shift when 
+  loading the settings dashboard.
+* COMPONENT GEOMETRY: Standardized toggle and button dimensions (Standard 
+  height: 24px) for a more professional, uniform aesthetic.
+* TAB UNIFORMITY: Enforced consistent tab widths across the top bar to 
+  improve visual rhythm and predictability.
+* PERFORMANCE: Improved startup speed by optimizing theme initialization 
+  and animation sequences.
+
+-------------------------------------------------------------------------------
+Version: 4.3.09-beta
+Release Date: April 15, 2026
+
+-------------------------------------------------------------------------------
+[UI & AESTHETICS: GLASS 3.0]
+-------------------------------------------------------------------------------
+* COMPLETED MODERNIZATION: Fully implemented the "Glass 3.0" design language across 
+  all core browser components.
+* MODAL SYSTEM: Refined the "Confirm Exit" and general modal interfaces with 
+  multi-layered glass borders, high-saturation backdrop blurs, and premium 
+  fade-in animations.
+* TAB DEEP STYLE: Replaced complex tab gradients with a flat, minimalist 
+  accent-colored side indicator to match the "Home" page aesthetic.
+* FLOATING ISLANDS: Standardized 10px spacing and 16px corner rounding across 
+  all web content containers.
+
+-------------------------------------------------------------------------------
+[PDF VIEWER: PRO UPGRADE]
+-------------------------------------------------------------------------------
+* NAVIGATION FIX: Resolved issue where up/down arrows in the toolbar failed 
+  to change pages.
+* HIGH-FIDELITY THUMBNAILS: Increased sidebar preview resolution (scale 0.5) 
+  to eliminate blurriness.
+* SEQUENTIAL SEARCH: Refactored search engine to follow a strict top-to-bottom 
+  progression rather than random jumps.
+* SEARCH CONTROLS: Added dedicated "Next" and "Previous" match buttons to the 
+  search toolbar.
+* DIRECT JUMP: Enabled the page number input field to allow users to type 
+  and jump directly to any page.
+
+-------------------------------------------------------------------------------
+[SEARCH & OMNIBOX]
+-------------------------------------------------------------------------------
+* INSTANT SUGGESTIONS: Removed the "slideDown" animation delay from the search 
+  suggestions panel for an instantaneous feel.
+* DYNAMIC ACCENTS: Search suggestions now automatically sync with the 
+  browser's global accent color in real-time.
+* OMNIBOX PERSISTENCE: Fixed a critical bug where address bar text would 
+  disappear or turn black when clicking outside the bar.
+* PRETTY URL SYNC: The "Pretty URL" layer now updates as you type, ensuring 
+  no visual flicker between focus states.
+
+-------------------------------------------------------------------------------
+[BUILD & SYSTEM]
+-------------------------------------------------------------------------------
+* INSTALLER: Automated the Inno Setup compilation process for a streamlined 
+  premium installation experience.
+* RELEASES: Integrated automated GitHub Release deployment (v4.3.09-beta).
+* PERFORMANCE: Optimized suggestion rendering and background-blur resource 
+  usage for smoother scrolling.
+
+-------------------------------------------------------------------------------
+Gaming Network Studio Media Group - 2026
+-------------------------------------------------------------------------------

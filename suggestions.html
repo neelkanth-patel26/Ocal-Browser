@@ -8,6 +8,8 @@
         :root {
             --accent: #a855f7;
             --accent-glow: rgba(168,85,247,0.4);
+            --accent-dim: rgba(168,85,247,0.12);
+            --accent-border: rgba(168,85,247,0.25);
             --chrome: #0d0d10;
             --text: #ffffff;
             --text-dim: rgba(255,255,255,0.5);
@@ -16,6 +18,17 @@
             --border: rgba(255,255,255,0.08);
             --panel-blur: blur(32px) saturate(210%);
         }
+        
+        /* ── Light Theme (Flashbang Mode) ─────────────────────────── */
+        body[data-theme="light"] {
+            --chrome: #ffffff;
+            --text: #000000;
+            --text-dim: #111111;
+            --text-muted: #333333;
+            --hover: rgba(0, 0, 0, 0.05);
+            --border: rgba(0, 0, 0, 0.15);
+        }
+
 
         body {
             margin: 0;
@@ -37,9 +50,50 @@
             overflow-y: auto;
             overflow-x: hidden;
             max-height: 100vh; /* Controlled by BrowserView height cap in main.js */
-            animation: slideDown 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+            /* Removed slow slideDown animation */
             position: relative;
         }
+
+        body[data-theme="light"] .container {
+            background: #ffffff !important;
+            border-color: rgba(0,0,0,0.15) !important;
+            box-shadow: 0 12px 40px rgba(0,0,0,0.1) !important;
+        }
+
+        body[data-theme="light"] .container::before {
+            background: none !important;
+        }
+
+        body[data-theme="light"] .suggestion-item:hover {
+            background: rgba(0,0,0,0.05) !important;
+            color: #000 !important;
+        }
+
+        body[data-theme="light"] .suggestion-item.selected {
+            background: var(--accent-dim) !important;
+            color: var(--accent) !important;
+        }
+
+        body[data-theme="light"] .type {
+            background: rgba(0,0,0,0.05) !important;
+            color: rgba(0,0,0,0.5) !important;
+        }
+
+        body[data-theme="light"] .category-header::after {
+            background: rgba(0,0,0,0.1) !important;
+        }
+
+        body[data-theme="light"] .refinement-pill {
+            background: rgba(0,0,0,0.03) !important;
+            border-color: rgba(0,0,0,0.08) !important;
+            color: #333 !important;
+        }
+
+        body[data-theme="light"] .refinement-pill:hover {
+            background: rgba(0,0,0,0.06) !important;
+            color: #000 !important;
+        }
+
 
         /* ── Custom Scrollbar ───────────────────────────────── */
         ::-webkit-scrollbar {
@@ -101,8 +155,8 @@
         }
 
         .suggestion-item.selected {
-            background: rgba(168, 85, 247, 0.12);
-            border-color: rgba(168, 85, 247, 0.25);
+            background: var(--accent-dim);
+            border-color: var(--accent-border);
             color: #fff;
             box-shadow: 0 4px 16px rgba(0,0,0,0.25);
             transform: translateX(4px);
@@ -203,7 +257,8 @@
 
         /* Special Best Match styling */
         .suggestion-item.best-match {
-            background: rgba(168, 85, 247, 0.04);
+            background: var(--accent-dim);
+            opacity: 0.95;
             border-left: 2px solid var(--accent);
             border-radius: 4px 12px 12px 4px;
         }

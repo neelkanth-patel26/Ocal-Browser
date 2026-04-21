@@ -404,6 +404,9 @@ if (addressInput) {
             });
             omnibox.classList.add('has-suggestions');
         }, 150);
+
+        // Keep pretty-url in sync so it doesn't "disappear" on blur
+        updatePrettyUrl(addressInput.value);
     });
 
     addressInput.addEventListener('keydown', (e) => {
@@ -418,7 +421,19 @@ if (addressInput) {
         }
     });
     // Select all on focus
-    addressInput.addEventListener('focus', () => addressInput.select());
+    addressInput.addEventListener('focus', () => {
+        addressInput.select();
+    });
+
+    // Revert/Sync on blur
+    addressInput.addEventListener('blur', () => {
+        const active = tabs.find(t => t.id === activeTabId);
+        if (active && (!addressInput.value.trim() || addressInput.value === formatDisplayUrl(active.url))) {
+            syncOmnibox(active.url);
+        } else {
+            updatePrettyUrl(addressInput.value);
+        }
+    });
 }
 
 window.electronAPI.on('execute-suggestion', (e, text) => {
@@ -443,10 +458,27 @@ window.electronAPI.on('focus-address-bar', () => {
 document.addEventListener('DOMContentLoaded', () => {
     const minBtn   = document.getElementById('min-btn');
     const maxBtn   = document.getElementById('max-btn');
+    const tabArea  = document.querySelector('.tab-bar');
     const closeBtn = document.getElementById('close-btn');
+    
+    if (tabArea) {
+        tabArea.ondblclick = (e) => {
+            // Only maximize if not clicking on buttons or tabs
+            if (e.target.classList.contains('tab-bar') || e.target.classList.contains('tab-drag-spacer')) {
+                window.electronAPI.maximize();
+            }
+        };
+    }
+
+
     if (minBtn)   minBtn.onclick   = () => window.electronAPI.minimize();
     if (maxBtn)   maxBtn.onclick   = () => window.electronAPI.maximize();
     if (closeBtn) closeBtn.onclick = () => window.electronAPI.close();
+    
+
+
+
+
 
     // ── Navigation Controls ─────────────────────────────
     const backBtn    = document.getElementById('back-btn');
@@ -460,8 +492,8 @@ document.addEventListener('DOMContentLoaded', () => {
     window.electronAPI.onMaximized((isMax) => {
         document.body.classList.toggle('maximized', isMax);
         if (maxBtn) maxBtn.innerHTML = isMax
-            ? '<svg width="10" height="10" viewBox="0 0 10 10"><path d="M3,0.5 H9.5 V7 M0.5,3 H7 V9.5 H0.5 Z" fill="none" stroke="currentColor" stroke-width="1"/></svg>'
-            : '<svg width="10" height="10" viewBox="0 0 10 10"><rect x="0.5" y="0.5" width="9" height="9" fill="none" stroke="currentColor"/></svg>';
+            ? '<svg width="12" height="12" viewBox="0 0 12 12"><path d="M4 4V2.5h5.5V8H8 M2.5 4h5.5v5.5H2.5z" fill="none" stroke="currentColor" stroke-width="1.2"/></svg>'
+            : '<svg width="12" height="12" viewBox="0 0 12 12"><rect x="2.5" y="2.5" width="7" height="7" fill="none" stroke="currentColor" stroke-width="1.2"/></svg>';
     });
 
     const aiBtn  = document.getElementById('ai-toolbar-btn');
@@ -579,11 +611,32 @@ document.addEventListener('DOMContentLoaded', () => {
     });
 });
 
+function hexToRgba(hex, alpha) {
+    let r = 0, g = 0, b = 0;
+    if (hex.length === 4) {
+        r = parseInt(hex[1] + hex[1], 16);
+        g = parseInt(hex[2] + hex[2], 16);
+        b = parseInt(hex[3] + hex[3], 16);
+    } else if (hex.length === 7) {
+        r = parseInt(hex.substring(1, 3), 16);
+        g = parseInt(hex.substring(3, 5), 16);
+        b = parseInt(hex.substring(5, 7), 16);
+    }
+    return `rgba(${r}, ${g}, ${b}, ${alpha})`;
+}
+
 // ── Settings ───────────────────────────────────────────────────────────────
 function applyGlobalSettings(s) {
     lastSettings = s;
-    if (s.accentColor) document.documentElement.style.setProperty('--accent', s.accentColor);
+    if (s.accentColor) {
+        document.documentElement.style.setProperty('--accent', s.accentColor);
+        document.documentElement.style.setProperty('--accent-glow', hexToRgba(s.accentColor, 0.45));
+        document.documentElement.style.setProperty('--accent-dim', hexToRgba(s.accentColor, 0.15));
+        document.documentElement.style.setProperty('--accent-border', hexToRgba(s.accentColor, 0.4));
+    }
     document.body.classList.toggle('compact-mode', !!s.compactMode);
+    document.body.classList.toggle('battery-saver', !!s.batterySaver);
+    document.body.setAttribute('data-theme', s.themeMode || 'dark');
     
     // Update Power-Up Icons
     const sStatus = document.getElementById('shield-status');

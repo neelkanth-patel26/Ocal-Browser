@@ -14,6 +14,33 @@
             --text-muted: #94a3b8;
         }
 
+        /* ── Light Theme (Flashbang Mode) ─────────────────────────── */
+        body[data-theme="light"] {
+            --bg-glass: #ffffff;
+            --border-glass: rgba(0,0,0,0.1);
+            --text-muted: #444444;
+        }
+
+        body[data-theme="light"] .dropdown-container {
+            background: #ffffff !important;
+            border-color: rgba(0,0,0,0.15) !important;
+            box-shadow: none !important;
+        }
+
+        body[data-theme="light"] .menu-option {
+            color: #000 !important;
+        }
+
+        body[data-theme="light"] .menu-option:hover {
+            background: var(--accent-dim) !important;
+            color: var(--accent) !important;
+        }
+
+        body[data-theme="light"] .menu-option img {
+            background: rgba(0,0,0,0.05) !important;
+        }
+
+
         body {
             margin: 0; padding: 15px;
             font-family: 'Inter', -apple-system, sans-serif;

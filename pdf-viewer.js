@@ -9,7 +9,9 @@ let currentTool = 'hand';
 let currentTheme = 'dark';
 let annotations = {}; 
 let searchResults = [];
+let lastSearchPageNum = -1;
 let currentSearchIdx = -1;
+let currentSearchId = 0;
 let selectedColor = '#a855f7';
 let pageTextData = {}; 
 
@@ -27,6 +29,7 @@ function applyAccent(color) {
     document.documentElement.style.setProperty('--accent', color);
     document.documentElement.style.setProperty('--accent-glow', hexToRgba(color, 0.4));
     document.documentElement.style.setProperty('--accent-dim', hexToRgba(color, 0.08));
+    document.documentElement.style.setProperty('--accent-border', hexToRgba(color, 0.25));
     if (colorWell) {
         colorWell.style.backgroundColor = color;
         colorWell.style.boxShadow = `0 0 15px ${color}40`;
@@ -41,14 +44,27 @@ function applyAccent(color) {
     });
 }
 
-// Global Settings Sync
-window.electronAPI.on('settings-changed', (e, s) => {
-    if (s && s.accentColor) applyAccent(s.accentColor);
+// Initial Setup
+window.electronAPI.invoke('get-settings').then(s => {
+    if (s) {
+        if (s.accentColor) applyAccent(s.accentColor);
+        if (s.themeMode) {
+            currentTheme = s.themeMode;
+            document.body.setAttribute('data-theme', currentTheme);
+        }
+    }
 });
 
-// Initial Accent Setup
-window.electronAPI.invoke('get-settings').then(s => {
-    if (s && s.accentColor) applyAccent(s.accentColor);
+// Settings Update Sync
+window.electronAPI.on('settings-changed', (e, s) => {
+    if (s) {
+        if (s.accentColor) applyAccent(s.accentColor);
+        if (s.themeMode && s.themeMode !== currentTheme) {
+            currentTheme = s.themeMode;
+            document.body.setAttribute('data-theme', currentTheme);
+            renderAllPages(); 
+        }
+    }
 });
 
 const viewport = document.getElementById('viewport');
@@ -87,15 +103,6 @@ if (pdfUrl) {
         tryGoogleFallback(pdfUrl);
     } else {
         // If it's a local file, use the custom Ocal PDF viewer
-        let cleanName = decodeURIComponent(pdfUrl.split(/[\\\/]/).pop());
-        // Second-pass cleanup: if for some reason the name still has ?file= (the recursion bug)
-        if (cleanName.includes('?file=')) {
-            const parts = cleanName.split('?file=');
-            cleanName = decodeURIComponent(parts[parts.length - 1]).split(/[\\\/]/).pop();
-        }
-        // Remove common URL fragments
-        cleanName = cleanName.split(/[?#]/)[0];
-        document.getElementById('doc-title').textContent = cleanName || 'Document';
         loadPDF(pdfUrl);
     }
 }
@@ -107,11 +114,6 @@ function initChroma() {
         const swatch = document.createElement('div');
         swatch.className = 'chroma-swatch';
         swatch.style.cssText = `background:${color}; width:100%; aspect-ratio:1; border-radius:10px; cursor:pointer; border:2px solid transparent; transition:0.2s;`;
-        swatchex = () => {
-            selectedColor = color;
-            updateColorWell();
-            chromaCard.style.display = 'none';
-        };
         swatch.onclick = () => selectColor(color);
         chromaGrid.appendChild(swatch);
     });
@@ -139,6 +141,7 @@ function selectColor(color) {
     selectedColor = color;
     updateColorWell();
     chromaHex.value = color.replace('#', '').toUpperCase();
+    chromaCard.style.display = 'none';
 }
 
 function updateColorWell() {
@@ -150,23 +153,14 @@ initChroma();
 
 async function loadPDF(url) {
     try {
-        pdfDoc = await pdfjsLib.getDocument(url).promise;
+        const loadingTask = pdfjsLib.getDocument(url);
+        pdfDoc = await loadingTask.promise;
         document.getElementById('page-count').textContent = pdfDoc.numPages;
-        
-        await renderAllPages();
-        await renderThumbnails();
-        
-        document.getElementById('loader').style.opacity = '0';
-        setTimeout(() => document.getElementById('loader').style.display = 'none', 400);
-    } catch (err) { 
-        console.error('Error loading PDF locally:', err);
-        // Fallback for remote URLs
-        if (url.startsWith('http')) {
-            tryGoogleFallback(url);
-        } else {
-            alert('This document could not be loaded locally.');
-            document.getElementById('loader').style.display = 'none';
-        }
+        renderThumbnails();
+        renderAllPages();
+    } catch (e) {
+        console.error(e);
+        alert('Failed to load PDF.');
     }
 }
 
@@ -185,49 +179,76 @@ function tryGoogleFallback(url) {
     fallback.innerHTML = `<iframe src="https://docs.google.com/viewer?url=${encodeURIComponent(url)}&embedded=true"></iframe>`;
     
     // Final UI cleanup
-    document.getElementById('loader').style.display = 'none';
     
     // Notify user
     document.getElementById('doc-title').textContent = "(Cloud Preview) " + decodeURIComponent(url.split('/').pop());
     document.getElementById('doc-title').style.opacity = '1';
 }
 
+let currentRenderId = 0;
+let thumbRenderId = 0;
+
 async function renderThumbnails() {
+    const renderId = ++thumbRenderId;
     thumbnails.innerHTML = '';
+    
     for (let i = 1; i <= pdfDoc.numPages; i++) {
+        if (renderId !== thumbRenderId) return;
+        
         const page = await pdfDoc.getPage(i);
+        const group = document.createElement('div');
+        group.className = 'thumb-group';
+        
         const thumbWrap = document.createElement('div');
-        thumbWrap.className = `thumb ${i === 1 ? 'active' : ''}`;
+        thumbWrap.className = `thumb ${i === pageNum ? 'active' : ''}`;
         thumbWrap.id = `thumb-${i}`;
+        
         const canvas = document.createElement('canvas');
-        const v = page.getViewport({ scale: 0.15 });
+        const v = page.getViewport({ scale: 0.2, rotation });
         canvas.width = v.width; canvas.height = v.height;
+        
+        if (renderId !== thumbRenderId) return;
         await page.render({ canvasContext: canvas.getContext('2d'), viewport: v }).promise;
+        
+        if (renderId !== thumbRenderId) return;
         thumbWrap.appendChild(canvas);
-        const container = document.createElement('div');
-        container.appendChild(thumbWrap);
+        thumbWrap.onclick = () => scrollToPage(i);
+        
         const num = document.createElement('div');
         num.className = 'thumb-num'; num.textContent = i;
-        container.appendChild(num);
-        thumbWrap.onclick = () => scrollToPage(i);
-        thumbnails.appendChild(container);
+        
+        group.appendChild(thumbWrap);
+        group.appendChild(num);
+        thumbnails.appendChild(group);
     }
 }
 
 async function renderAllPages() {
+    const savedNum = pageNum;
+    const renderId = ++currentRenderId;
+    
+    // 1. Clear and Prepare
     pageContainer.innerHTML = '';
+    
+    // 2. Immediate Placeholder Creation (Fast)
+    // Create all wrappers with correct dimensions so the scroll area is instantly correct
+    const renderTasks = [];
     for (let i = 1; i <= pdfDoc.numPages; i++) {
+        if (renderId !== currentRenderId) return;
+        
         const page = await pdfDoc.getPage(i);
-        const textContent = await page.getTextContent();
-        pageTextData[i] = textContent.items;
+        const v = page.getViewport({ scale, rotation });
+        
         const wrapper = document.createElement('div');
         wrapper.className = 'page-wrapper';
         wrapper.id = `wrapper-${i}`;
+        wrapper.style.width = v.width + 'px'; 
+        wrapper.style.height = v.height + 'px';
+        
         const canvas = document.createElement('canvas');
-        const v = page.getViewport({ scale, rotation });
         canvas.width = v.width; canvas.height = v.height;
-        wrapper.style.width = v.width + 'px'; wrapper.style.height = v.height + 'px';
         wrapper.appendChild(canvas);
+        
         const drawingCanvas = document.createElement('canvas');
         drawingCanvas.className = 'drawing-layer';
         drawingCanvas.width = v.width; drawingCanvas.height = v.height;
@@ -235,17 +256,38 @@ async function renderAllPages() {
         drawingCanvas.style.pointerEvents = currentTool === 'hand' ? 'none' : 'auto';
         setupDrawing(drawingCanvas, i, v);
         wrapper.appendChild(drawingCanvas);
+        
         pageContainer.appendChild(wrapper);
-        await page.render({ canvasContext: canvas.getContext('2d'), viewport: v }).promise;
-        if (annotations[i]) redrawAnnotations(drawingCanvas, i);
+        renderTasks.push({ page, canvas, drawingCanvas, i, v });
     }
-}
 
-function hexToRgba(hex, alpha) {
-    const r = parseInt(hex.slice(1, 3), 16);
-    const g = parseInt(hex.slice(3, 5), 16);
-    const b = parseInt(hex.slice(5, 7), 16);
-    return `rgba(${r}, ${g}, ${b}, ${alpha})`;
+    // 3. Instant Position Restoration
+    // Now that all wrappers exist with correct heights, we can jump back before rendering content
+    if (renderId === currentRenderId) {
+        scrollToPage(savedNum, 'auto');
+    }
+
+    // 4. Prioritized Content Rendering
+    // Sort tasks to render the current page first, then others
+    renderTasks.sort((a, b) => {
+        if (a.i === savedNum) return -1;
+        if (b.i === savedNum) return 1;
+        return Math.abs(a.i - savedNum) - Math.abs(b.i - savedNum);
+    });
+
+    for (const task of renderTasks) {
+        if (renderId !== currentRenderId) return;
+        
+        // Render PDF content
+        await task.page.render({ canvasContext: task.canvas.getContext('2d'), viewport: task.v }).promise;
+        
+        // Refresh annotations
+        if (annotations[task.i]) redrawAnnotations(task.drawingCanvas, task.i);
+        
+        // Capture text content for searching
+        const textContent = await task.page.getTextContent();
+        pageTextData[task.i] = textContent.items;
+    }
 }
 
 // ── Drawing & Annotations ──
@@ -377,22 +419,162 @@ function redrawAnnotations(canvas, pageIdx) {
 }
 
 // ── Search & Navigation ──
-async function performSearch(query) {
-    if (!query) { searchResults = []; updateSearchUI(); return; }
-    searchResults = [];
+function clearAllSearchHighlights() {
     for (let i = 1; i <= pdfDoc.numPages; i++) {
-        const page = await pdfDoc.getPage(i); const textContent = await page.getTextContent();
-        const text = textContent.items.map(it => it.str).join(' ');
-        if (text.toLowerCase().includes(query.toLowerCase())) searchResults.push(i);
+        const wrapper = document.getElementById(`wrapper-${i}`);
+        if (!wrapper) continue;
+        const draw = wrapper.querySelector('.drawing-layer');
+        if (draw) redrawAnnotations(draw, i);
     }
-    currentSearchIdx = searchResults.length > 0 ? 0 : -1;
-    updateSearchUI(); if (currentSearchIdx !== -1) scrollToPage(searchResults[currentSearchIdx]);
+}
+
+async function performSearch(query) {
+    const searchId = ++currentSearchId;
+    
+    // Clear everything if starting fresh
+    clearAllSearchHighlights();
+    lastSearchPageNum = -1;
+    
+    if (!query || query.trim().length === 0) { 
+        searchResults = []; 
+        currentSearchIdx = -1; 
+        updateSearchUI(); 
+        return; 
+    }
+    
+    searchResults = [];
+    const q = query.toLowerCase();
+    
+    for (let i = 1; i <= pdfDoc.numPages; i++) {
+        if (searchId !== currentSearchId) return;
+        const page = await pdfDoc.getPage(i); 
+        const textContent = await page.getTextContent();
+        textContent.items.forEach((item, idx) => {
+            const str = item.str.toLowerCase();
+            let lastIdx = -1;
+            while ((lastIdx = str.indexOf(q, lastIdx + 1)) !== -1) {
+                searchResults.push({ 
+                    pageNum: i, 
+                    itemIdx: idx, 
+                    matchIdx: lastIdx,
+                    matchLen: q.length,
+                    str: item.str, 
+                    transform: item.transform,
+                    width: item.width,
+                    height: item.height,
+                    viewBox: page.viewBox
+                });
+            }
+        });
+    }
+    
+    if (searchResults.length > 0) {
+        currentSearchIdx = 0;
+        updateSearchUI();
+    } else {
+        currentSearchIdx = -1;
+        document.getElementById('search-count').textContent = '0/0';
+    }
+}
+
+function searchNext() {
+    if (searchResults.length === 0) return;
+    currentSearchIdx = (currentSearchIdx + 1) % searchResults.length;
+    updateSearchUI();
+}
+
+function searchPrev() {
+    if (searchResults.length === 0) return;
+    currentSearchIdx = (currentSearchIdx - 1 + searchResults.length) % searchResults.length;
+    updateSearchUI();
 }
 
 function updateSearchUI() {
     const count = document.getElementById('search-count');
     count.textContent = currentSearchIdx === -1 ? '0/0' : `${currentSearchIdx + 1}/${searchResults.length}`;
+    if (currentSearchIdx !== -1) {
+        jumpToSearchResult(searchResults[currentSearchIdx]);
+    }
 }
+
+async function jumpToSearchResult(res) {
+    // Clear highlight on the PREVIOUS match page if it's different
+    if (lastSearchPageNum !== -1 && lastSearchPageNum !== res.pageNum) {
+        const prevWrap = document.getElementById(`wrapper-${lastSearchPageNum}`);
+        if (prevWrap) {
+            const prevDraw = prevWrap.querySelector('.drawing-layer');
+            if (prevDraw) redrawAnnotations(prevDraw, lastSearchPageNum);
+        }
+    }
+    
+    lastSearchPageNum = res.pageNum;
+    scrollToPage(res.pageNum);
+    
+    const page = await pdfDoc.getPage(res.pageNum);
+    const v = page.getViewport({ scale, rotation });
+    const wrapper = document.getElementById(`wrapper-${res.pageNum}`);
+    const draw = wrapper.querySelector('.drawing-layer');
+    const ctx = draw.getContext('2d');
+    
+    redrawAnnotations(draw, res.pageNum); 
+    
+    // transform: [scX, skX, skY, scY, tx, ty]
+    const [scX, skX, skY, scY, tx, ty] = res.transform;
+    const charWidth = res.width / res.str.length;
+    const offsetX = res.matchIdx * charWidth;
+    const wordWidth = res.matchLen * charWidth;
+
+    // Convert PDF coordinates to viewport coordinates (respects rotation/scale)
+    // tx, ty is the bottom-left of the text block in PDF space
+    const [vx, vy] = v.convertToViewportPoint(tx + offsetX, ty);
+    
+    // PDF space is bottom-up, so ty+scY is the top. 
+    // converToViewportPoint handles the Y-flip.
+    const [vx2, vy2] = v.convertToViewportPoint(tx + offsetX + wordWidth, ty + scY);
+
+    const x = Math.min(vx, vx2);
+    const y = Math.min(vy, vy2);
+    const w = Math.abs(vx2 - vx);
+    const h = Math.abs(vy2 - vy);
+
+    // Ultra-visible highlight
+    ctx.fillStyle = 'rgba(255, 60, 0, 0.35)'; // Bright Red-Orange for contrast
+    ctx.strokeStyle = '#ff3c00';
+    ctx.lineWidth = 2;
+    ctx.strokeRect(x - 1, y - 1, w + 2, h + 2);
+    ctx.fillRect(x, y, w, h);
+}
+
+function itemWidthApprox(str, v) {
+    return str.length * 8 * (v.width / v.viewBox[2]);
+}
+
+// ── Navigation Listeners ──
+document.getElementById('prev-btn').onclick = () => {
+    if (pageNum > 1) scrollToPage(pageNum - 1);
+};
+document.getElementById('next-btn').onclick = () => {
+    if (pdfDoc && pageNum < pdfDoc.numPages) scrollToPage(pageNum + 1);
+};
+
+// ── Search Listeners ──
+document.getElementById('search-next').onclick = searchNext;
+document.getElementById('search-prev').onclick = searchPrev;
+document.getElementById('search-input').onkeydown = (e) => {
+    if (e.key === 'Enter') searchNext();
+    if (e.key === 'Escape') {
+        document.getElementById('search-box').style.display = 'none';
+    }
+};
+
+document.getElementById('page-num').onchange = (e) => {
+    let val = parseInt(e.target.value);
+    if (!isNaN(val) && pdfDoc && val >= 1 && val <= pdfDoc.numPages) {
+        scrollToPage(val);
+    } else {
+        e.target.value = pageNum;
+    }
+};
 
 document.querySelectorAll('.btn[id^="tool-"]').forEach(btn => {
     btn.onclick = () => {
@@ -407,15 +589,25 @@ document.querySelectorAll('.btn[id^="tool-"]').forEach(btn => {
     };
 });
 
-document.getElementById('rotate-btn').onclick = () => { rotation = (rotation + 90) % 360; renderAllPages(); };
+document.getElementById('rotate-btn').onclick = () => { 
+    rotation = (rotation + 90) % 360; 
+    renderAllPages(); 
+    renderThumbnails(); // Reworked: sync rotation to sidebar
+};
 document.getElementById('theme-btn').onclick = () => {
     currentTheme = currentTheme === 'dark' ? 'sepia' : (currentTheme === 'sepia' ? 'light' : 'dark');
     document.body.setAttribute('data-theme', currentTheme); renderAllPages();
 };
 
-function scrollToPage(num) {
+let isRestoringScroll = false;
+function scrollToPage(num, behavior = 'smooth') {
     const el = document.getElementById(`wrapper-${num}`);
-    if (el) el.scrollIntoView({ behavior: 'smooth' });
+    if (el) {
+        isRestoringScroll = true;
+        el.scrollIntoView({ behavior });
+        // Clear the flag after a short delay to allow onscroll to settle
+        setTimeout(() => { isRestoringScroll = false; }, 100);
+    }
 }
 
 document.getElementById('download-btn').onclick = async () => {
@@ -458,10 +650,22 @@ document.getElementById('hide-sidebar').onclick = () => document.getElementById(
 document.getElementById('show-sidebar').onclick = () => document.getElementById('sidebar').classList.remove('collapsed');
 document.getElementById('search-input').oninput = (e) => performSearch(e.target.value);
 viewport.onscroll = () => {
+    if (isRestoringScroll) return;
     const wraps = pageContainer.querySelectorAll('.page-wrapper');
     wraps.forEach((w, idx) => {
-        const r = w.getBoundingClientRect(); if (r.top < window.innerHeight/2 && r.bottom > window.innerHeight/2) {
-            pageNum = idx + 1; document.getElementById('page-num').value = pageNum;
+        const r = w.getBoundingClientRect(); 
+        if (r.top < window.innerHeight/2 && r.bottom > window.innerHeight/2) {
+            pageNum = idx + 1; 
+            document.getElementById('page-num').value = pageNum;
+            
+            // Sync thumbnails
+            document.querySelectorAll('.thumb').forEach(t => t.classList.remove('active'));
+            const activeThumb = document.getElementById(`thumb-${pageNum}`);
+            if (activeThumb) {
+                activeThumb.classList.add('active');
+                if (activeThumb.scrollIntoViewIfNeeded) activeThumb.scrollIntoViewIfNeeded({ behavior: 'smooth', block: 'center' });
+                else activeThumb.scrollIntoView({ behavior: 'smooth', block: 'center' });
+            }
         }
     });
 };

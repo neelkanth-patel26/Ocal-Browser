@@ -114,3 +114,39 @@ const resizeObserver = new ResizeObserver(() => {
     window.electronAPI.send('resize-suggestions', height);
 });
 resizeObserver.observe(document.body);
+
+// ── Accent Color Synchronization ─────────────────────────────────────────────
+function hexToRgba(hex, alpha) {
+    if (!hex) return `rgba(168, 85, 247, ${alpha})`;
+    const r = parseInt(hex.slice(1, 3), 16);
+    const g = parseInt(hex.slice(3, 5), 16);
+    const b = parseInt(hex.slice(5, 7), 16);
+    return `rgba(${r}, ${g}, ${b}, ${alpha})`;
+}
+
+function applyAccent(color) {
+    if (!color) return;
+    document.documentElement.style.setProperty('--accent', color);
+    document.documentElement.style.setProperty('--accent-glow', hexToRgba(color, 0.4));
+    document.documentElement.style.setProperty('--accent-dim', hexToRgba(color, 0.12));
+    document.documentElement.style.setProperty('--accent-border', hexToRgba(color, 0.25));
+}
+
+// Initial fetch
+window.electronAPI.getSettings().then(s => {
+    if (s && s.accentColor) applyAccent(s.accentColor);
+});
+
+// Real-time updates
+window.electronAPI.onSettingsChanged(s => {
+    if (s && s.accentColor) applyAccent(s.accentColor);
+    if (s && s.themeMode) document.body.setAttribute('data-theme', s.themeMode);
+});
+
+// Theme Initialization
+window.electronAPI.getSettings().then(s => {
+    if (s && s.accentColor) applyAccent(s.accentColor);
+    if (s && s.themeMode) document.body.setAttribute('data-theme', s.themeMode);
+});
+
+
