@@ -6,13 +6,13 @@
     <link rel="stylesheet" href="assets/fontawesome/css/all.min.css">
     <style>
         :root {
-            --accent: #a855f7;
+            --accent: #ffffff;
             --text: #ffffff;
-            --text-dim: rgba(255, 255, 255, 0.65);
-            --text-muted: rgba(255, 255, 255, 0.35);
-            --bg: rgba(22, 22, 28, 0.92);
-            --border: rgba(255, 255, 255, 0.08);
-            --hover: rgba(255, 255, 255, 0.06);
+            --text-dim: #a3a3a3;
+            --text-muted: #404040;
+            --bg: #000000;
+            --border: #171717;
+            --hover: #0a0a0a;
         }
 
         * { box-sizing: border-box; }
@@ -20,25 +20,21 @@
         body {
             margin: 0;
             padding: 15px;
-            font-family: 'Inter', -apple-system, sans-serif;
+            font-family: 'Geist Mono', monospace;
             background: transparent;
             color: var(--text);
             overflow: hidden;
-            display: flex;
-            align-items: flex-start;
-            justify-content: flex-start;
-            height: 100vh;
+            border-radius: 0px !important;
         }
 
         .site-info-popup {
             width: 320px;
-            background: rgba(20, 20, 25, 0.98);
-            border: 1px solid rgba(255, 255, 255, 0.2);
-            border-radius: 12px;
+            background: #000000;
+            border: 1px solid #171717;
+            border-radius: 0px;
             display: flex;
             flex-direction: column;
             overflow: hidden;
-            animation: sipPop 0.25s cubic-bezier(0.16, 1, 0.3, 1);
             position: relative;
         }
 
@@ -66,7 +62,7 @@
         
         .sip-header-left { display: flex; align-items: center; gap: 12px; }
         .sip-back-btn {
-            width: 28px; height: 28px; border-radius: 8px; color: var(--text-dim);
+            width: 28px; height: 28px; border-radius: 0px; color: var(--text-dim);
             font-size: 12px; cursor: pointer; display: flex; align-items: center; justify-content: center; transition: all 0.2s; border:none; background:none;
         }
         .sip-back-btn:hover { background: var(--hover); color: var(--text); }
@@ -75,7 +71,7 @@
         .sip-domain { font-size: 12px; color: var(--text-dim); margin-top: 2px; }
         
         .sip-close {
-            width: 28px; height: 28px; border-radius: 8px; color: var(--text-muted);
+            width: 28px; height: 28px; border-radius: 0px; color: var(--text-muted);
             font-size: 11px; cursor: pointer; display: flex; align-items: center; justify-content: center; transition: all 0.2s; border:none; background:none;
         }
         .sip-close:hover { background: var(--hover); color: #fff; }
@@ -85,7 +81,7 @@
         .sip-row { 
             padding: 12px 12px; 
             margin: 2px 4px;
-            border-radius: 12px; 
+            border-radius: 0px; 
             display: flex; 
             align-items: center; 
             gap: 16px; 
@@ -109,7 +105,7 @@
             justify-content: space-between; 
             padding: 10px 16px; 
             margin: 0 4px;
-            border-radius: 10px;
+            border-radius: 0px;
             transition: background 0.2s;
         }
         .sip-perm-item:hover { background: var(--hover); }
@@ -118,13 +114,13 @@
 
         .sip-toggle {
             width: 34px; height: 18px; background: rgba(255,255,255,0.12);
-            border-radius: 100px; position: relative; cursor: pointer;
+            border-radius: 0px; position: relative; cursor: pointer;
             transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
         }
         .sip-toggle.on { background: var(--accent); }
         .sip-toggle-dot {
             position: absolute; top: 3px; left: 3px; width: 12px; height: 12px;
-            background: #fff; border-radius: 50%; transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+            background: #fff; border-radius: 0px; transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
             box-shadow: 0 1px 3px rgba(0,0,0,0.3);
         }
         .sip-toggle.on .sip-toggle-dot { left: 19px; }
@@ -138,7 +134,7 @@
             gap: 14px; 
             cursor: pointer; 
             transition: all 0.2s; 
-            border-radius: 10px; 
+            border-radius: 0px; 
         }
         .sip-footer-item:hover { background: var(--hover); }
         .sip-footer-item i { font-size: 14px; color: var(--text-dim); width: 18px; text-align: center; }

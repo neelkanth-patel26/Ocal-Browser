@@ -6,16 +6,16 @@
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Outfit:wght@500;600;700&display=swap" rel="stylesheet">
     <style>
         :root {
-            --bg: rgba(20, 20, 25, 0.85);
-            --accent: #a855f7;
-            --accent-glow: rgba(168, 85, 247, 0.4);
-            --accent-dim: rgba(168, 85, 247, 0.1);
-            --card-bg: rgba(255, 255, 255, 0.03);
-            --border: rgba(255, 255, 255, 0.08);
+            --bg: #000000;
+            --accent: #ffffff;
+            --accent-glow: transparent;
+            --accent-dim: #171717;
+            --card-bg: #000000;
+            --border: #171717;
             --text: #ffffff;
-            --text-dim: rgba(255, 255, 255, 0.45);
-            --font: 'Inter', sans-serif;
-            --title-font: 'Outfit', 'Inter', sans-serif;
+            --text-dim: #a3a3a3;
+            --font: 'Geist Mono', monospace;
+            --title-font: 'Geist Mono', monospace;
         }
 
         /* ── Light Theme (Flashbang Mode) ─────────────────────────── */
@@ -49,7 +49,11 @@
         body[data-theme="light"] .toggle-switch.on { background: var(--accent) !important; }
 
 
-        * { box-sizing: border-box; margin: 0; padding: 0; }
+        * { 
+            box-sizing: border-box; 
+            margin: 0; padding: 0; 
+            border-radius: 0px !important;
+        }
 
         body {
             background: transparent;
@@ -62,9 +66,8 @@
 
         .popup-container {
             width: 320px;
-            background: rgba(20, 20, 25, 0.98);
-            border: 1px solid rgba(255, 255, 255, 0.2);
-            border-radius: 12px;
+            background: #000000;
+            border: 1px solid #171717;
             padding: 16px;
             display: flex; flex-direction: column;
             gap: 12px;
@@ -77,8 +80,7 @@
 
         .header h3 {
             font-family: var(--title-font); font-size: 15px; font-weight: 700;
-            background: linear-gradient(135deg, #fff 0%, var(--accent) 100%);
-            -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+            color: #fff;
         }
 
         .manage-link {

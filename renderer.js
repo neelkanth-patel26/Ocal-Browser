@@ -46,7 +46,7 @@ function renderTabs() {
                 header.className = 'tab-group-header';
                 header.innerHTML = `
                     <div class="tab-group-dot" style="background: ${group.color}; color: ${group.color}"></div>
-                    <span class="tab-group-name" style="color: ${group.color}; text-shadow: 0 0 8px ${group.color}44;">${group.name}</span>
+                    <span class="tab-group-name" style="color: ${group.color};">${group.name}</span>
                 `;
                 header.onclick = () => window.electronAPI.send('toggle-group-collapse', group.id);
                 

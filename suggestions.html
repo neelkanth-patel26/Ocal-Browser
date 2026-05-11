@@ -6,17 +6,17 @@
     <link rel="stylesheet" href="assets/fontawesome/css/all.min.css">
     <style>
         :root {
-            --accent: #a855f7;
-            --accent-glow: rgba(168,85,247,0.4);
-            --accent-dim: rgba(168,85,247,0.12);
-            --accent-border: rgba(168,85,247,0.25);
-            --chrome: #0d0d10;
+            --accent: #ffffff;
+            --accent-glow: transparent;
+            --accent-dim: #171717;
+            --accent-border: #ffffff;
+            --chrome: #000000;
             --text: #ffffff;
-            --text-dim: rgba(255,255,255,0.5);
-            --text-muted: rgba(255,255,255,0.28);
-            --hover: rgba(255,255,255,0.07);
-            --border: rgba(255,255,255,0.08);
-            --panel-blur: blur(32px) saturate(210%);
+            --text-dim: #a3a3a3;
+            --text-muted: #404040;
+            --hover: #0a0a0a;
+            --border: #171717;
+            --panel-blur: none;
         }
         
         /* ── Light Theme (Flashbang Mode) ─────────────────────────── */
@@ -32,8 +32,8 @@
 
         body {
             margin: 0;
-            padding: 0; /* No padding to allow container to touch window edges */
-            font-family: 'Inter', -apple-system, sans-serif;
+            padding: 0;
+            font-family: 'Geist Mono', monospace;
             background: transparent;
             overflow: hidden;
             display: flex;
@@ -43,10 +43,9 @@
         }
 
         .container {
-            background: rgba(18, 18, 22, 0.98);
-            border: 1px solid rgba(255, 255, 255, 0.2);
-            border-top: none; /* No top border where it attaches to the omnibox */
-            border-radius: 0 0 16px 16px; /* Squared top, rounded bottom */
+            background: #000000;
+            border: 1px solid #171717;
+            border-top: none;
             overflow-y: auto;
             overflow-x: hidden;
             max-height: 100vh; /* Controlled by BrowserView height cap in main.js */
@@ -56,8 +55,8 @@
 
         body[data-theme="light"] .container {
             background: #ffffff !important;
-            border-color: rgba(0,0,0,0.15) !important;
-            box-shadow: 0 12px 40px rgba(0,0,0,0.1) !important;
+            border-color: #000000 !important;
+            box-shadow: none !important;
         }
 
         body[data-theme="light"] .container::before {
@@ -104,7 +103,6 @@
         }
         ::-webkit-scrollbar-thumb {
             background: rgba(255, 255, 255, 0.05);
-            border-radius: 10px;
             transition: all 0.3s;
         }
         ::-webkit-scrollbar-thumb:hover {
@@ -141,9 +139,7 @@
             align-items: center;
             gap: 14px;
             padding: 12px 16px;
-            border-radius: 12px;
             cursor: pointer;
-            transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
             color: var(--text-dim);
             border: 1px solid transparent;
         }
@@ -158,16 +154,13 @@
             background: var(--accent-dim);
             border-color: var(--accent-border);
             color: #fff;
-            box-shadow: 0 4px 16px rgba(0,0,0,0.25);
-            transform: translateX(4px);
             position: relative;
         }
 
         /* Selected accent left-marker to match tab-activeunderline */
         .suggestion-item.selected::before {
             content: ''; position: absolute; left: 0; top: 25%; bottom: 25%;
-            width: 3px; background: var(--accent); border-radius: 0 4px 4px 0;
-            box-shadow: 0 0 12px var(--accent-glow);
+            width: 3px; background: var(--accent);
         }
 
         .icon {
@@ -203,9 +196,8 @@
             text-transform: uppercase;
             letter-spacing: 0.8px;
             color: var(--text-muted);
-            background: rgba(255,255,255,0.04);
+            background: #171717;
             padding: 3px 8px;
-            border-radius: 6px;
             opacity: 0.6;
             transition: all 0.2s;
         }
@@ -239,9 +231,8 @@
 
         .refinement-pill {
             padding: 6px 14px;
-            background: rgba(255,255,255,0.04);
-            border: 1px solid rgba(255,255,255,0.06);
-            border-radius: 100px;
+            background: #0a0a0a;
+            border: 1px solid #171717;
             font-size: 12px;
             color: var(--text-dim);
             white-space: nowrap;
@@ -260,7 +251,6 @@
             background: var(--accent-dim);
             opacity: 0.95;
             border-left: 2px solid var(--accent);
-            border-radius: 4px 12px 12px 4px;
         }
     </style>
 </head>

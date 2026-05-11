@@ -6,29 +6,29 @@
     <link rel="stylesheet" href="assets/fontawesome/css/all.min.css">
     <style>
         :root {
-            --accent: #a855f7;
-            --chrome: #0c0c0e;
+            --accent: #ffffff;
+            --chrome: #000000;
             --text: #ffffff;
-            --text-dim: rgba(255,255,255,0.45);
-            --border: rgba(255,255,255,0.08);
-            --panel-bg: rgba(20, 20, 25, 0.95);
+            --text-dim: #a3a3a3;
+            --border: #171717;
+            --panel-bg: #000000;
         }
         * { box-sizing: border-box; margin: 0; padding: 0; user-select: none; }
         html, body {
             background: transparent;
             width: 100vw; height: 100vh;
             overflow: hidden; pointer-events: none;
-            font-family: 'Inter', -apple-system, sans-serif;
+            font-family: 'Geist Mono', monospace;
             color: var(--text);
+            border-radius: 0px !important;
         }
         .backdrop {
             position: absolute; inset: 0; pointer-events: auto; background: rgba(0,0,0,0.01); z-index: 1;
         }
         .popup-panel {
             position: absolute; z-index: 2; pointer-events: auto;
-            background: var(--panel-bg); backdrop-filter: blur(32px);
-            padding: 20px; border-radius: 16px; border: 1px solid var(--border);
-            box-shadow: 0 20px 60px rgba(0,0,0,0.6), 0 0 0 1px rgba(255,255,255,0.03);
+            background: var(--panel-bg);
+            padding: 20px; border-radius: 0px; border: 1px solid var(--border);
             width: 260px;
             display: flex; flex-direction: column; gap: 4px;
         }
@@ -41,13 +41,11 @@
         .icon-circle {
             width: 40px;
             height: 40px;
-            border-radius: 12px;
             display: flex;
             align-items: center;
             justify-content: center;
             background: var(--accent);
-            box-shadow: 0 8px 24px color-mix(in srgb, var(--accent) 30%, transparent);
-            transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+            color: #000;
             font-size: 18px;
         }
         .input-container {
@@ -59,7 +57,7 @@
             border: 1px solid var(--border);
             color: #fff;
             padding: 10px 14px;
-            border-radius: 10px;
+            border-radius: 0px;
             outline: none;
             width: 100%;
             font-size: 14px;
@@ -69,7 +67,7 @@
         input:focus { 
             border-color: var(--accent); 
             background: rgba(255,255,255,0.07);
-            box-shadow: 0 0 0 3px color-mix(in srgb, var(--accent) 15%, transparent);
+            box-shadow: none;
         }
         
         .section-label {
@@ -91,7 +89,7 @@
         .color-dot {
             width: 20px;
             height: 20px;
-            border-radius: 50%;
+            border-radius: 0px;
             cursor: pointer;
             border: 2px solid transparent;
             transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
@@ -101,7 +99,7 @@
         .color-dot.active { 
             border-color: #fff; 
             transform: scale(1.2);
-            box-shadow: 0 0 12px currentColor;
+            box-shadow: none;
         }
 
         .actions {
@@ -111,7 +109,7 @@
         .btn {
             flex: 1;
             padding: 10px;
-            border-radius: 10px;
+            border-radius: 0px;
             font-size: 12px;
             font-weight: 600;
             cursor: pointer;
@@ -141,7 +139,7 @@
         .btn-danger:hover { 
             background: color-mix(in srgb, var(--accent) 20%, transparent); 
             transform: translateY(-1px);
-            box-shadow: 0 4px 12px color-mix(in srgb, var(--accent) 20%, transparent);
+            box-shadow: none;
         }
     </style>
 </head>

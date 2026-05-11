@@ -8,12 +8,12 @@
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Outfit:wght@500;600;700&display=swap" rel="stylesheet">
     <style>
         :root {
-            --accent: #a855f7;
-            --accent-glow: rgba(168, 85, 247, 0.4);
-            --bg-glass: rgba(10, 10, 14, 0.6);
-            --border-glass: rgba(255, 255, 255, 0.1);
+            --accent: #ffffff;
+            --accent-glow: transparent;
+            --bg-glass: #000000;
+            --border-glass: #171717;
             --text-primary: #ffffff;
-            --text-secondary: rgba(255, 255, 255, 0.6);
+            --text-secondary: #a3a3a3;
         }
 
         * {
@@ -21,17 +21,17 @@
             padding: 0;
             box-sizing: border-box;
             user-select: none;
+            border-radius: 0px !important;
         }
 
         body {
-            font-family: 'Outfit', 'Inter', sans-serif;
+            font-family: 'Geist Mono', monospace;
             background: transparent;
             overflow: hidden;
             width: 100vw;
             height: 100vh;
             display: flex;
             flex-direction: column;
-            border-radius: 22px; /* Super rounded corners as per goal photo */
         }
 
         .pip-container {
@@ -42,8 +42,7 @@
             align-items: center;
             justify-content: center;
             overflow: hidden;
-            border-radius: 22px;
-            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.5);
+            border-radius: 0px;
             border: 1px solid var(--border-glass);
             -webkit-app-region: drag; /* Draggable by surface */
         }
@@ -72,14 +71,13 @@
         .controls-overlay {
             position: absolute;
             inset: 0;
-            background: linear-gradient(to top, rgba(0,0,0,0.85) 0%, transparent 40%, transparent 60%, rgba(0,0,0,0.6) 100%);
+            background: rgba(0,0,0,0.8);
             display: flex;
             flex-direction: column;
             justify-content: space-between;
             opacity: 0;
             transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
             z-index: 50;
-            backdrop-filter: blur(8px);
             -webkit-app-region: no-drag;
             padding: 24px;
             pointer-events: none;

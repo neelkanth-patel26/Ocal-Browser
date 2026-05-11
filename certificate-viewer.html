@@ -9,19 +9,19 @@
     <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
     <style>
         :root {
-            --bg: #0c0c0e;
-            --surface: #1a1a20;
-            --accent: #a855f7;
+            --bg: #000000;
+            --surface: #000000;
+            --accent: #ffffff;
             --text: #ffffff;
-            --text-dim: rgba(255, 255, 255, 0.7);
-            --text-muted: rgba(255, 255, 255, 0.4);
-            --border: rgba(255, 255, 255, 0.08);
-            --hover: rgba(255, 255, 255, 0.05);
+            --text-dim: #a3a3a3;
+            --text-muted: #404040;
+            --border: #171717;
+            --hover: #0a0a0a;
         }
 
-        * { box-sizing: border-box; margin: 0; padding: 0; }
+        * { box-sizing: border-box; margin: 0; padding: 0; border-radius: 0px !important; }
         body { 
-            font-family: 'Inter', sans-serif; 
+            font-family: 'Geist Mono', monospace; 
             background: var(--bg); 
             color: var(--text);
             height: 100vh; overflow: hidden;
@@ -30,14 +30,13 @@
 
         .header {
             padding: 30px 40px 20px;
-            background: rgba(12, 12, 14, 0.8);
-            backdrop-filter: blur(20px);
+            background: #000000;
             border-bottom: 1px solid var(--border);
         }
 
         .title-row { display: flex; align-items: center; gap: 15px; margin-bottom: 20px; }
         .cert-icon { font-size: 24px; color: var(--accent); }
-        h1 { font-family: 'Outfit', sans-serif; font-size: 22px; font-weight: 700; }
+        h1 { font-family: 'Geist Mono', monospace; font-size: 22px; font-weight: 700; }
 
         .tabs { display: flex; gap: 30px; }
         .tab { 

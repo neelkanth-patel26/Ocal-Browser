@@ -9,6 +9,7 @@ function createInstallerWindow() {
         width: 800,
         height: 520,
         frame: false,
+        icon: path.join(__dirname, 'icon.ico'),
         transparent: true,
         resizable: false,
         backgroundColor: '#00000000',

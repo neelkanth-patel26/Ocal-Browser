@@ -1,38 +1,49 @@
+@import url('https://cdn.jsdelivr.net/fontsource/fonts/geist-sans@latest/latin-400-normal.css');
+@import url('https://cdn.jsdelivr.net/fontsource/fonts/geist-sans@latest/latin-700-normal.css');
+@import url('https://cdn.jsdelivr.net/fontsource/fonts/geist-mono@latest/latin-400-normal.css');
+
 /* ── Variables ─────────────────────────────────────────────────── */
 :root {
-  --accent: #a855f7;
-  --accent-glow: rgba(168,85,247,0.45);
-  --accent-dim: rgba(168,85,247,0.15);
-  --accent-border: rgba(168,85,247,0.4);
-  --chrome: rgba(13, 13, 16, 0.85); /* Made translucent for glass effect */
-  --chrome-lighter: rgba(23, 23, 28, 0.9);
-  --chrome-border: rgba(255, 255, 255, 0.08);
+  --background: #000000;
+  --foreground: #ffffff;
+  --accent: #ffffff;
+  --accent-glow: transparent;
+  --accent-dim: #171717;
+  --accent-border: #ffffff;
+  --chrome: #000000;
+  --chrome-lighter: #0a0a0a;
+  --chrome-border: #171717;
   --text: #ffffff;
-  --text-dim: rgba(255, 255, 255, 0.6);
-  --text-muted: rgba(255, 255, 255, 0.35);
-  --hover: rgba(255, 255, 255, 0.08);
+  --text-dim: #a3a3a3;
+  --text-muted: #404040;
+  --hover: #171717;
   --tab-h: 44px;
-  --nav-h: 52px; /* Slightly taller for better breathing room */
+  --nav-h: 52px;
   --bm-h: 40px;
-  --panel-blur: blur(32px) saturate(210%);
-  --topbar-gradient: linear-gradient(180deg, rgba(255,255,255,0.05) 0%, transparent 100%);
-  --inner-glow: inset 0 1px 1px rgba(255, 255, 255, 0.05);
-  --font-title: 'Outfit', -apple-system, BlinkMacSystemFont, sans-serif;
-  --font-main: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+  --panel-blur: none;
+  --topbar-gradient: none;
+  --inner-glow: none;
+  --font-title: 'Geist', -apple-system, BlinkMacSystemFont, sans-serif;
+  --font-main: 'Geist Mono', monospace;
+  --font-mono: 'Geist Mono', monospace;
+  --radius: 0px;
 }
 
 /* ── Light Theme (Flashbang Mode) ─────────────────────────── */
 body[data-theme="light"] {
-  --chrome: #ffffff;
-  --chrome-lighter: #ffffff;
-  --chrome-border: rgba(0, 0, 0, 0.15);
-  --text: #000000;
-  --text-dim: #111111;
-  --text-muted: #444444;
-  --hover: rgba(0, 0, 0, 0.08);
+  --background: oklch(1 0 0);
+  --foreground: oklch(0.145 0 0);
+  --accent: oklch(0.205 0 0);
+  --chrome: oklch(1 0 0);
+  --chrome-lighter: oklch(1 0 0);
+  --chrome-border: oklch(0 0 0 / 15%);
+  --text: oklch(0.145 0 0);
+  --text-dim: oklch(0.145 0 0 / 70%);
+  --text-muted: oklch(0.145 0 0 / 40%);
+  --hover: oklch(0 0 0 / 8%);
   --topbar-gradient: none;
   --inner-glow: none;
-  --panel-blur: none; /* Flashbang is sharp and white */
+  --panel-blur: none;
 }
 
 /* Global Light Mode Reset for Flat Aesthetic */
@@ -57,14 +68,22 @@ body.hide-bookmarks {
 }
 
 /* ── Reset ─────────────────────────────────────────────────────── */
-*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+*, *::before, *::after { 
+  box-sizing: border-box; 
+  margin: 0; padding: 0; 
+  border-radius: var(--radius) !important;
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+}
+*::-webkit-scrollbar { display: none; }
+
 button { background: none; border: none; cursor: pointer; font-family: inherit; }
 
 body {
-  font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
-  background: var(--chrome, #0b0b0e);
+  font-family: var(--font-main);
+  background: var(--background);
   color: var(--text);
-  transition: background 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+  transition: none;
   width: 100vw; height: 100vh;
   overflow: hidden;
   display: grid;
@@ -88,25 +107,12 @@ body.battery-saver *::after {
   transition: none !important;
 }
 
-/* ── Cinematic Backdrop ── */
+/* ── Clean Backdrop ── */
 .ambient-lighting {
   position: fixed; inset: 0; z-index: -1;
-  background: var(--chrome, #09090c);
+  background: var(--background);
   overflow: hidden;
   pointer-events: none;
-}
-.neural-point {
-  position: absolute; border-radius: 50%;
-  filter: blur(140px); opacity: 0.35;
-  animation: neural-float 30s infinite alternate cubic-bezier(0.45, 0, 0.55, 1);
-}
-.point-1 { width: 60vw; height: 60vw; top: -20%; left: -10%; background: radial-gradient(circle, rgba(168, 85, 247, 0.12) 0%, transparent 70%); }
-.point-2 { width: 45vw; height: 45vw; bottom: -10%; right: -5%; background: radial-gradient(circle, rgba(59, 130, 246, 0.08) 0%, transparent 70%); animation-delay: -10s; }
-.point-3 { width: 35vw; height: 35vw; top: 40%; left: 40%; background: radial-gradient(circle, rgba(168, 85, 247, 0.05) 0%, transparent 70%); animation-delay: -5s; }
-
-@keyframes neural-float {
-  0% { transform: translate(0, 0) scale(1); }
-  100% { transform: translate(6%, 6%) scale(1.15) rotate(10deg); }
 }
 
 body[data-theme="light"] {
@@ -136,7 +142,7 @@ body[data-theme="light"] .tab-item {
 body[data-theme="light"] .tab-item.active {
   background: #ffffff !important;
   border-color: var(--accent) !important;
-  box-shadow: 0 4px 12px rgba(0,0,0,0.1) !important;
+  box-shadow: none !important;
 }
 
 body[data-theme="light"] .tab-item.active .tab-title {
@@ -147,7 +153,7 @@ body[data-theme="light"] .tab-item.active .tab-title {
 body[data-theme="light"] .omnibox {
   background: #ffffff !important;
   border-color: rgba(0,0,0,0.2) !important;
-  box-shadow: 0 2px 8px rgba(0,0,0,0.05) !important;
+  box-shadow: none !important;
 }
 
 body[data-theme="light"] .omnibox input {
@@ -331,15 +337,13 @@ body.fullscreen .bookmark-bar { display: none !important; }
 /* ── Tab Bar ───────────────────────────────────────────────────── */
 .tab-bar {
   grid-area: tabs;
-  background: rgba(13, 13, 16, 0.4);
-  backdrop-filter: var(--panel-blur);
+  background: var(--background);
   display: flex;
   align-items: center;
-  padding: 0 10px;
+  padding: 0;
   -webkit-app-region: drag;
   z-index: 100;
-  overflow: visible; /* Allow controls to be seen if they have z-index */
-  box-shadow: inset 0 -1px 0 rgba(255,255,255,0.04);
+  border-bottom: 1px solid var(--chrome-border);
   user-select: none;
   gap: 0;
 }
@@ -368,25 +372,24 @@ body.fullscreen .bookmark-bar { display: none !important; }
   align-items: center;
   gap: 10px;
   padding: 0 14px;
-  height: 34px;
+  height: 100%;
   flex: 0 1 220px;
   min-width: 45px;
   max-width: 220px;
   font-family: var(--font-main);
-  font-size: 13px;
+  font-size: 12px;
   font-weight: 500;
   color: var(--text-dim);
-  border-radius: 14px; /* More pill-like, matching omnibox */
-  border: 1px solid rgba(255, 255, 255, 0.05);
-  background: rgba(255, 255, 255, 0.05);
+  border: none;
+  border-right: 1px solid var(--chrome-border);
+  background: var(--background);
   cursor: pointer;
-  transition: all 0.35s cubic-bezier(0.16, 1, 0.3, 1);
+  transition: none;
   -webkit-app-region: no-drag;
   position: relative;
   overflow: hidden;
-  letter-spacing: 0.15px;
-  margin: 0 3px;
-  backdrop-filter: blur(20px);
+  letter-spacing: 0px;
+  margin: 0;
 }
 body.compact-mode .tab-item { height: 28px; padding: 0 10px; border-radius: 8px; }
 
@@ -398,24 +401,14 @@ body.compact-mode .tab-item { height: 28px; padding: 0 10px; border-radius: 8px;
 }
 
 .tab-item.active {
-  background: rgba(255, 255, 255, 0.1); /* Slightly more prominent */
+  background: #0a0a0a;
   color: #fff;
-  border-color: rgba(255, 255, 255, 0.2);
-  box-shadow: 0 8px 32px rgba(0,0,0,0.4);
-  font-family: var(--font-title);
-  letter-spacing: 0.2px;
+  border-bottom: 2px solid #ffffff;
 }
 
 /* Premium dashboard accent on active tab - matching Home page accents */
 .tab-item.active::after {
-  content: '';
-  position: absolute;
-  bottom: 1px; left: 15%; right: 15%;
-  height: 2px;
-  background: var(--accent);
-  border-radius: 10px;
-  opacity: 0.8;
-  box-shadow: 0 0 10px var(--accent-glow);
+  display: none;
 }
 .tab-item.dragging { opacity: 0.35; transform: scale(0.94); }
 .tab-item.drag-over { border-color: var(--accent-border); background: rgba(255,255,255,0.03); }
@@ -479,24 +472,20 @@ body.compact-mode .tab-item { height: 28px; padding: 0 10px; border-radius: 8px;
   align-items: center;
   gap: 10px;
   padding: 0 16px;
-  height: 34px;
-  border-radius: 17px;
+  height: 100%;
+  background: var(--background);
+  border-right: 1px solid var(--chrome-border);
   cursor: pointer;
-  transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
-  background: rgba(255,255,255,0.08);
-  border: 1px solid rgba(255,255,255,0.1);
-  margin: 0 8px;
   -webkit-app-region: no-drag;
   flex-shrink: 0;
-  box-shadow: 0 6px 20px rgba(0,0,0,0.3);
 }
-body.compact-mode .tab-group-header { height: 28px; padding: 0 12px; border-radius: 14px; gap: 8px; }
+body.compact-mode .tab-group-header { height: 28px; padding: 0 12px; border-radius: 0px; gap: 8px; }
 .tab-group-header:hover { 
-  background: rgba(255,255,255,0.12); 
-  transform: translateY(-1px);
-  box-shadow: 0 6px 20px rgba(0,0,0,0.35);
+  background: var(--hover); 
+  transform: none;
+  box-shadow: none;
 }
-.tab-group-header:active { transform: scale(0.96); }
+.tab-group-header:active { transform: none; }
 .tab-group-header.drag-over { 
   border-color: var(--accent); 
   background: var(--accent-dim); 
@@ -504,13 +493,13 @@ body.compact-mode .tab-group-header { height: 28px; padding: 0 12px; border-radi
 }
 
 .tab-group-dot {
-  width: 7px; height: 7px;
-  border-radius: 50%;
-  box-shadow: 0 0 12px currentColor, 0 0 3px currentColor;
+  width: 8px; height: 8px;
+  border-radius: 0px !important;
+  box-shadow: none;
   background: currentColor;
-  transition: all 0.3s ease;
+  transition: none;
 }
-.tab-group-header:hover .tab-group-dot { transform: scale(1.2); filter: brightness(1.2); }
+.tab-group-header:hover .tab-group-dot { transform: none; filter: brightness(1.2); }
 .tab-group-name {
   font-size: 10px;
   font-weight: 700;
@@ -522,6 +511,7 @@ body.compact-mode .tab-group-header { height: 28px; padding: 0 12px; border-radi
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
+  text-shadow: none !important;
 }
 
 /* Connect grouped tabs visually - Unified with normal tabs */
@@ -624,15 +614,14 @@ body.compact-mode .new-tab-btn { width: 24px; height: 24px; border-radius: 6px; 
 /* ── Navigation Bar ────────────────────────────────────────────── */
 .nav-bar {
   grid-area: nav;
-  background: transparent;
-  backdrop-filter: var(--panel-blur);
+  background: var(--background);
   display: flex;
   align-items: center;
   padding: 0 16px;
   gap: 10px;
-  box-shadow: var(--inner-glow);
   height: var(--nav-h);
   justify-content: space-between;
+  border-bottom: 1px solid var(--chrome-border);
   -webkit-app-region: no-drag;
   z-index: 99;
 }
@@ -669,17 +658,11 @@ body.compact-mode .nav-btn { width: 26px; height: 26px; font-size: 11px; }
   display: flex;
   align-items: center;
   gap: 12px;
-  background: rgba(255,255,255,0.04);
-  border: 1px solid rgba(255,255,255,0.09);
-  border-radius: 14px; /* More modern, softer look */
-  height: 40px; /* Slightly taller */
+  background: #0a0a0a;
+  border: 1px solid #171717;
+  height: 36px;
   padding: 0 16px;
   position: relative;
-  transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1), border-radius 0.2s ease;
-  box-shadow: 
-    inset 0 1px 2px rgba(0,0,0,0.2), 
-    inset 0 0 0 1px rgba(255,255,255,0.01),
-    0 2px 10px rgba(0,0,0,0.25);
 }
 /* Morphing for seamless suggestions integration */
 .omnibox.has-suggestions {
@@ -700,11 +683,7 @@ body.compact-mode .omnibox { height: 32px; padding: 0 10px; gap: 6px; border-rad
   transform: translateY(-0.5px);
 }
 .omnibox:focus-within {
-  background: rgba(15,15,18,0.55);
-  border-color: var(--accent);
-  box-shadow: 0 0 0 3px rgba(168,85,247,0.18), 0 12px 32px rgba(0,0,0,0.4);
-  backdrop-filter: blur(16px);
-  transform: translateY(0);
+  border-color: #ffffff;
 }
 
 /* ── Site Identity Area ──────────────────────────────────────── */
@@ -1538,18 +1517,18 @@ body.hide-bookmarks .bookmark-bar {
 
 #extensions .page-body {
   padding: 1.2rem 1.2rem 1.5rem;
-  border-radius: 16px;
-  background: linear-gradient(180deg, rgba(12, 13, 19, 0.95), rgba(9, 10, 15, 0.9));
-  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.45);
-  border: 1px solid rgba(120, 88, 255, 0.22);
+  border-radius: 0px !important;
+  background: var(--background);
+  box-shadow: none !important;
+  border: 1px solid var(--chrome-border);
 }
 
 #extensions .ext-toolbar {
   margin-bottom: 14px;
-  border: 1px solid rgba(120, 88, 255, 0.33);
-  border-radius: 10px;
+  border: 1px solid var(--chrome-border);
+  border-radius: 0px !important;
   padding: 9px;
-  background: rgba(0, 0, 0, 0.25);
+  background: var(--background);
 }
 
 .ext-core-grid {
@@ -1560,20 +1539,21 @@ body.hide-bookmarks .bookmark-bar {
 }
 
 .ext-card {
-  border-radius: 14px;
-  background: linear-gradient(130deg, rgba(27, 29, 39, 0.85), rgba(14, 15, 21, 0.88));
-  border: 1px solid rgba(146, 121, 255, 0.3);
+  border-radius: 0px !important;
+  background: var(--background);
+  border: 1px solid var(--chrome-border);
   padding: 16px 14px;
   display: flex;
   flex-direction: column;
   gap: 12px;
-  transition: transform 0.18s ease, box-shadow 0.18s ease, border-color 0.18s ease;
+  transition: none;
 }
 
 .ext-card:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 18px 35px rgba(110, 60, 255, 0.22);
-  border-color: rgba(168, 126, 255, 0.4);
+  transform: none;
+  box-shadow: none !important;
+  border-color: var(--accent);
+  background: var(--hover);
 }
 
 
@@ -1594,9 +1574,10 @@ body.hide-bookmarks .bookmark-bar {
   height: 42px;
   display: grid;
   place-items: center;
-  border-radius: 8px;
-  background: rgba(255,255,255,0.1);
+  border-radius: 0px !important;
+  background: rgba(255,255,255,0.05);
   font-size: 18px;
+  border: 1px solid var(--chrome-border);
 }
 
 .ext-info h5 {
@@ -1638,12 +1619,12 @@ body.hide-bookmarks .bookmark-bar {
 .ext-status.off { color: #fbbf24; }
 
 .btn.primary {
-  border-radius: 8px;
+  border-radius: 0px !important;
   padding: 6px 12px;
 }
 
 .btn.secondary {
-  border-radius: 8px;
+  border-radius: 0px !important;
   padding: 6px 12px;
   background: rgba(255,255,255,0.08);
   border: 1px solid rgba(255,255,255,0.14);
@@ -1679,10 +1660,10 @@ body.hide-bookmarks .bookmark-bar {
 
 #extensions .ext-hero-banner {
   width: 100%;
-  border: 1px solid rgba(116, 94, 255, 0.35);
-  background: linear-gradient(135deg, rgba(40,42,50,0.9), rgba(8,8,15,0.6));
-  box-shadow: 0 0 35px rgba(91, 33, 220, 0.25);
-  border-radius: 16px;
+  border: 1px solid var(--chrome-border);
+  background: var(--background);
+  box-shadow: none !important;
+  border-radius: 0px !important;
   padding: 20px;
   margin-bottom: 18px;
 }
@@ -1722,10 +1703,10 @@ body.hide-bookmarks .bookmark-bar {
 }
 
 #extensions .ext-card {
-  background: linear-gradient(180deg, rgba(19,20,29,0.9) 0%, rgba(15,16,23,0.94) 100%);
-  border: 1px solid rgba(255,255,255,0.09);
+  background: var(--background);
+  border: 1px solid var(--chrome-border);
   padding: 16px;
-  border-radius: 14px;
+  border-radius: 0px !important;
   min-height: 120px;
 }
 

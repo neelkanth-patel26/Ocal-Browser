@@ -31,14 +31,10 @@ document.addEventListener('DOMContentLoaded', async () => {
     // 1. Fetch system folders
     systemFolders = await window.electronAPI.invoke('get-system-folders');
     
-    // 2. Sync Theme & Settings
+    // 2. Sync Settings (Monochromatic enforced)
     window.electronAPI.getSettings().then(s => {
-        if (s.accentColor) {
-            document.documentElement.style.setProperty('--accent', s.accentColor);
-            // Derive RGB for transitions/transparency
-            const rgb = hexToRgb(s.accentColor);
-            if (rgb) document.documentElement.style.setProperty('--accent-rgb', `${rgb.r}, ${rgb.g}, ${rgb.b}`);
-        }
+        // Strict monochromatic parity
+        document.documentElement.style.setProperty('--accent', '#ffffff');
     });
 
     // 3. Setup Sidebar Nav
@@ -186,14 +182,13 @@ function renderFiles(items, customTitle = null) {
         const dateStr = new Date(item.mtime).toLocaleDateString();
 
         el.innerHTML = `
-            <div class="file-icon" style="color: ${iconInfo.color}">
+            <div class="file-icon">
                 <i class="${iconInfo.icon}"></i>
             </div>
             <div class="file-name" title="${item.name}">${item.name}</div>
             <div class="file-meta-list">
                 <span class="meta-size">${sizeStr}</span>
                 <span class="meta-date">${dateStr}</span>
-                ${item.source ? `<span class="meta-source" style="opacity:0.5">[${item.source}]</span>` : ''}
             </div>
         `;
 
@@ -222,32 +217,32 @@ function renderFiles(items, customTitle = null) {
 }
 
 function getFileIcon(item) {
-    if (item.isDirectory) return { icon: 'fas fa-folder', color: '#fbbf24' }; // Warm Amber
+    if (item.isDirectory) return { icon: 'fas fa-folder' };
     
     const ext = item.name.split('.').pop().toLowerCase();
     switch(ext) {
-        case 'pdf': return { icon: 'fas fa-file-pdf', color: '#f43f5e' }; // Rose Red
+        case 'pdf': return { icon: 'fas fa-file-pdf' };
         case 'jpg':
         case 'jpeg':
         case 'png':
         case 'gif':
-        case 'webp': return { icon: 'fas fa-file-image', color: '#3b82f6' }; // Blue
+        case 'webp': return { icon: 'fas fa-file-image' };
         case 'mp4':
         case 'mkv':
-        case 'mov': return { icon: 'fas fa-file-video', color: '#8b5cf6' }; // Violet
+        case 'mov': return { icon: 'fas fa-file-video' };
         case 'mp3':
         case 'wav':
-        case 'flac': return { icon: 'fas fa-file-audio', color: '#ec4899' }; // Pink
+        case 'flac': return { icon: 'fas fa-file-audio' };
         case 'zip':
         case 'rar':
-        case '7z': return { icon: 'fas fa-file-zipper', color: '#10b981' }; // Emerald
+        case '7z': return { icon: 'fas fa-file-zipper' };
         case 'js':
         case 'html':
         case 'css':
-        case 'json': return { icon: 'fas fa-file-code', color: '#a855f7' }; // Purple
+        case 'json': return { icon: 'fas fa-file-code' };
         case 'txt':
-        case 'md': return { icon: 'fas fa-file-lines', color: '#94a3b8' }; // Slate
-        default: return { icon: 'fas fa-file', color: '#64748b' };
+        case 'md': return { icon: 'fas fa-file-lines' };
+        default: return { icon: 'fas fa-file' };
     }
 }
 

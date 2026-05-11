@@ -9,16 +9,16 @@
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     <style>
         :root {
-            --bg: #0b0b0e;
-            --surface: rgba(20, 20, 25, 0.65);
-            --surface-hover: rgba(255, 255, 255, 0.04);
-            --accent: #a855f7;
-            --accent-glow: rgba(168, 85, 247, 0.45);
+            --bg: #000000;
+            --surface: #000000;
+            --surface-hover: #0a0a0a;
+            --accent: #ffffff;
+            --accent-glow: transparent;
             --text: #ffffff;
-            --text-dim: rgba(255, 255, 255, 0.6);
-            --text-muted: rgba(255, 255, 255, 0.35);
-            --border: rgba(255, 255, 255, 0.08);
-            --panel-blur: blur(48px) saturate(210%);
+            --text-dim: #a3a3a3;
+            --text-muted: #404040;
+            --border: #171717;
+            --panel-blur: none;
         }
 
         /* ── Light Mode Overrides ────────────────────────────────── */
@@ -62,26 +62,16 @@
         body {
             margin: 0;
             padding: 0;
-            font-family: 'Inter', -apple-system, sans-serif;
+            font-family: 'Geist Mono', monospace;
             background: var(--bg);
             color: var(--text);
             overflow-x: hidden;
             scrollbar-width: thin;
+            border-radius: 0px !important;
         }
 
         /* Ambient Background */
-        .ambient-lighting {
-            position: fixed; inset: 0; z-index: -1;
-            background: #09090c;
-            overflow: hidden; pointer-events: none;
-        }
-        .neural-point {
-            position: absolute; border-radius: 50%;
-            filter: blur(140px); opacity: 0.35;
-            animation: neural-float 30s infinite alternate cubic-bezier(0.45, 0, 0.55, 1);
-        }
-        .point-1 { width: 60vw; height: 60vw; top: -20%; left: -10%; background: radial-gradient(circle, rgba(168, 85, 247, 0.12) 0%, transparent 70%); }
-        .point-2 { width: 45vw; height: 45vw; bottom: -10%; right: -5%; background: radial-gradient(circle, rgba(59, 130, 246, 0.08) 0%, transparent 70%); animation-delay: -10s; }
+        .ambient-lighting { display: none; }
         
         @keyframes neural-float {
             0% { transform: translate(0, 0) scale(1); }
@@ -104,12 +94,11 @@
         }
 
         .back-btn {
-            width: 44px; height: 44px; border-radius: 14px;
-            background: rgba(255,255,255,0.03); border: 1px solid var(--border);
+            width: 44px; height: 44px; border-radius: 0px;
+            background: #000; border: 1px solid var(--border);
             color: var(--text-dim); cursor: pointer;
             display: flex; align-items: center; justify-content: center;
             transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
-            backdrop-filter: var(--panel-blur);
         }
         .back-btn:hover { background: rgba(255,255,255,0.08); color: #fff; transform: scale(1.05); border-color: rgba(255,255,255,0.15); box-shadow: 0 8px 24px rgba(0,0,0,0.3); }
         .back-btn:active { transform: scale(0.95); }
@@ -130,9 +119,9 @@
         }
 
         .card {
-            background: rgba(26, 26, 32, 0.98);
-            border: 1px solid rgba(255, 255, 255, 0.15);
-            border-radius: 20px;
+            background: #000;
+            border: 1px solid var(--border);
+            border-radius: 0px;
             overflow: hidden;
             position: relative;
         }

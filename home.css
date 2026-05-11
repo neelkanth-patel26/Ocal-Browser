@@ -1,37 +1,43 @@
+@import url('https://cdn.jsdelivr.net/fontsource/fonts/geist-sans@latest/latin-400-normal.css');
+@import url('https://cdn.jsdelivr.net/fontsource/fonts/geist-sans@latest/latin-700-normal.css');
+@import url('https://cdn.jsdelivr.net/fontsource/fonts/geist-mono@latest/latin-400-normal.css');
+
 :root {
-    --accent: #a855f7;
-    --accent-glow: rgba(168, 85, 247, 0.4);
-    --accent-dim: rgba(168, 85, 247, 0.15);
-    --accent-border: rgba(168, 85, 247, 0.35);
-    --accent-rgb: 168, 85, 247;
-    --bg: transparent;
-    --glass: rgba(10, 10, 14, 0.55);
-    --glass-border: rgba(255, 255, 255, 0.08);
+    --background: #000000;
+    --foreground: #ffffff;
+    --accent: #ffffff;
+    --accent-glow: transparent;
+    --accent-dim: #171717;
+    --accent-border: #ffffff;
+    --bg: #000000;
+    --glass: #000000;
+    --glass-border: #171717;
     --text-main: #ffffff;
-    --text-dim: rgba(255, 255, 255, 0.75);
-    --text-muted: rgba(255, 255, 255, 0.45);
-    --font-title: 'Outfit', sans-serif;
-    --font-main: 'Inter', sans-serif;
-    --panel-blur: blur(60px) saturate(210%);
+    --text-dim: #a3a3a3;
+    --text-muted: #404040;
+    --font-title: 'Geist', sans-serif;
+    --font-main: 'Geist Mono', monospace;
+    --panel-blur: none;
     --tile-size: 56px;
     --tile-gap: 20px;
+    --radius: 0px;
 }
 
 /* ── Dark Theme (Default) ─────────────────────────────────── */
 body[data-theme="dark"] {
-    --bg: #09090b;
-    --glass: rgba(10, 10, 14, 0.55);
-    --text-main: #ffffff;
+    --bg: oklch(0.145 0 0);
+    --glass: oklch(0.145 0 0 / 55%);
+    --text-main: oklch(0.985 0 0);
 }
 
 /* ── Light Theme (Flashbang Mode) ─────────────────────────── */
 body[data-theme="light"] {
-    --bg: #ffffff;
-    --glass: #ffffff;
-    --glass-border: rgba(0, 0, 0, 0.15);
-    --text-main: #000000;
-    --text-dim: #111111;
-    --text-muted: #333333;
+    --bg: oklch(1 0 0);
+    --glass: oklch(1 0 0);
+    --glass-border: oklch(0 0 0 / 15%);
+    --text-main: oklch(0.145 0 0);
+    --text-dim: oklch(0.145 0 0 / 70%);
+    --text-muted: oklch(0.145 0 0 / 40%);
 }
 
 /* Global Light Mode Reset for Flat Aesthetic */
@@ -46,7 +52,12 @@ body[data-theme="light"] *::after {
 
 
 
-*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; outline: none; }
+*, *::before, *::after { 
+  box-sizing: border-box; 
+  margin: 0; padding: 0; 
+  outline: none; 
+  border-radius: var(--radius) !important;
+}
 
 body {
     font-family: var(--font-main);
@@ -56,8 +67,8 @@ body {
     overflow: hidden;
     position: relative;
     -webkit-font-smoothing: antialiased;
-    opacity: 0; transform: scale(1.02);
-    transition: opacity 1.8s cubic-bezier(0.16, 1, 0.3, 1), transform 1.8s cubic-bezier(0.16, 1, 0.3, 1), background 0.4s ease;
+    opacity: 0;
+    transition: opacity 1.8s cubic-bezier(0.16, 1, 0.3, 1), background 0.4s ease;
 }
 
 body.loaded { opacity: 1; transform: scale(1); }
@@ -95,21 +106,13 @@ body.loaded .col-side { opacity: 1; transform: translateY(0); }
 /* ── Studio Cards ── */
 .glass-panel {
     background: var(--glass);
-    backdrop-filter: var(--panel-blur);
-    -webkit-backdrop-filter: var(--panel-blur);
     border: 1px solid var(--glass-border);
-    border-radius: 20px;
     display: flex; flex-direction: column;
     overflow: hidden;
-    transition: all 0.7s cubic-bezier(0.16, 1, 0.3, 1);
-    box-shadow: 0 15px 45px rgba(0,0,0,0.5), inset 0 1px 1px rgba(255,255,255,0.05);
     position: relative;
 }
 .glass-panel:hover { 
-    background: rgba(14, 14, 18, 0.75); 
-    border-color: rgba(255,255,255,0.15); 
-    transform: translateY(-4px) scale(1.005);
-    box-shadow: 0 25px 65px rgba(0,0,0,0.65), 0 0 15px rgba(var(--accent-rgb), 0.1);
+    border-color: #ffffff; 
 }
 
 body[data-theme="light"] .glass-panel {
@@ -297,7 +300,7 @@ body[data-theme="light"] .greeting-display {
     border: 1px solid rgba(255,255,255,0.02); 
     transition: all 0.4s cubic-bezier(0.16, 1, 1, 1); cursor: pointer;
 }
-.todo-card:hover { background: rgba(255,255,255,0.06); border-color: rgba(255,255,255,0.06); transform: translateX(6px); }
+.todo-card:hover { background: #171717; transform: none; }
 .todo-checkbox { width: 20px; height: 20px; border-radius: 100px; border: 2px solid rgba(255,255,255,0.15); position: relative; flex-shrink: 0; transition: 0.4s; }
 .todo-card.done .todo-checkbox { background: var(--accent); border-color: var(--accent); box-shadow: 0 0 15px var(--accent-glow); }
 .todo-card.done .todo-checkbox::after {
@@ -345,14 +348,10 @@ body[data-theme="light"] .greeting-display {
 .search-container { width: 100%; max-width: 580px; position: relative; }
 .search-field { 
     display: flex; align-items: center; gap: 16px; height: 56px; padding: 0 16px 0 24px; 
-    background: rgba(14, 14, 18, 0.4); border: 1px solid var(--glass-border); border-radius: 100px; 
-    transition: all 0.6s cubic-bezier(0.16, 1, 0.3, 1); 
-    box-shadow: 0 15px 40px rgba(0,0,0,0.3);
-    backdrop-filter: blur(30px);
+    background: #0a0a0a; border: 1px solid #171717;
 }
 .search-field:focus-within { 
-    background: var(--accent-dim); border-color: var(--accent); 
-    box-shadow: 0 0 40px var(--accent-glow), 0 0 0 1px var(--accent-border); 
+    border-color: #ffffff; 
 }
 .search-input { flex: 1; background: none; border: none; font-size: 16px; color: #fff; font-weight: 400; letter-spacing: 0.5px; }
 .search-input::placeholder { color: var(--text-muted); opacity: 0.4; }
@@ -454,10 +453,9 @@ body[data-theme="light"] .greeting-display {
 .footer-hub { position: fixed; bottom: 32px; left: 0; right: 0; display: flex; justify-content: center; z-index: 1000; }
 .footer-capsule { 
     display: flex; align-items: center; gap: 8px;
-    background: rgba(10, 10, 14, 0.75); 
-    backdrop-filter: blur(40px) saturate(200%); 
-    border: 1px solid rgba(255,255,255,0.06); 
-    border-radius: 100px; padding: 6px;
+    background: #000000; 
+    border: 1px solid #171717; 
+    padding: 6px;
     animation: capsule-slide-up 1s cubic-bezier(0.16, 1, 0.3, 1) forwards;
     transform: translateY(50px);
     opacity: 0;
