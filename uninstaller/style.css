@@ -1,13 +1,22 @@
+@import url('https://cdn.jsdelivr.net/fontsource/fonts/geist-sans@latest/latin-400-normal.css');
+@import url('https://cdn.jsdelivr.net/fontsource/fonts/geist-sans@latest/latin-700-normal.css');
+@import url('https://cdn.jsdelivr.net/fontsource/fonts/geist-mono@latest/latin-400-normal.css');
+
 :root {
-    --bg-main: #0a0a0c;
-    --text-primary: rgba(255, 255, 255, 0.95);
-    --text-secondary: rgba(255, 255, 255, 0.5);
-    --accent-color: #6366f1;
-    --accent-hover: #4f46e5;
-    --border-color: rgba(255, 255, 255, 0.08);
+    --bg-main: #000000;
+    --text-primary: #ffffff;
+    --text-secondary: #a3a3a3;
+    --accent-color: #ffffff;
+    --accent-hover: #e5e5e5;
+    --border-color: #171717;
+    --radius: 0px;
 }
 
-* { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Inter', sans-serif; }
+* { 
+    margin: 0; padding: 0; box-sizing: border-box; 
+    font-family: 'Geist Mono', monospace; 
+    border-radius: var(--radius) !important;
+}
 
 body { background: #000; height: 100vh; display: flex; justify-content: center; align-items: flex-start; color: var(--text-primary); overflow: auto; padding-top: 40px; padding-bottom: 40px; }
 
@@ -31,7 +40,7 @@ body { background: #000; height: 100vh; display: flex; justify-content: center; 
 
 .header { text-align: center; margin-bottom: 30px; }
 .logo { width: 48px; height: 48px; margin-bottom: 20px; }
-.header h2 { font-family: 'Outfit', sans-serif; font-size: 28px; font-weight: 700; margin-bottom: 10px; }
+.header h2 { font-family: 'Geist', sans-serif; font-size: 28px; font-weight: 700; margin-bottom: 10px; }
 .header p { color: var(--text-secondary); font-size: 14px; line-height: 1.5; }
 
 .reason-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 15px; margin-bottom: 25px; }
@@ -52,7 +61,7 @@ body { background: #000; height: 100vh; display: flex; justify-content: center; 
 .reason-card input:checked + .card-inner {
     background: var(--accent-color);
     border-color: var(--accent-color);
-    color: #fff;
+    color: #000;
 }
 
 textarea {
@@ -80,7 +89,7 @@ textarea {
     border: none;
 }
 
-.btn-primary { background: var(--accent-color); color: #fff; }
+.btn-primary { background: var(--accent-color); color: #000; }
 .btn-primary:disabled { opacity: 0.3; cursor: default; }
 .btn-secondary { background: transparent; color: var(--text-secondary); border: 1px solid var(--border-color); }
 

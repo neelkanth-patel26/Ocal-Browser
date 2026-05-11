@@ -30,10 +30,14 @@ const fetch = require('cross-fetch').default || require('cross-fetch');
 app.commandLine.appendSwitch('disable-quic');
 // Enable High-DPI support for sharp rendering on Windows
 app.commandLine.appendSwitch('high-dpi-support', '1');
-// Enable modern TLS features
-app.commandLine.appendSwitch('enable-features', 'Tls13EarlyData');
-// Hide the fact that we are an automated/embedded browser (Crucial for Google Login)
+// Enable modern TLS features and Print Preview
+app.commandLine.appendSwitch('enable-features', 'Tls13EarlyData,PrintPreview');
+// Hide the fact that we are an automated/embedded browser
 app.commandLine.appendSwitch('disable-blink-features', 'AutomationControlled');
+// Enable Chrome-style Print Preview
+app.commandLine.appendSwitch('enable-print-browser');
+app.commandLine.appendSwitch('enable-print-preview');
+app.commandLine.appendSwitch('disable-print-preview', 'false');
 
 // Disable the default Electron menu bar on Windows/Linux to prevent UI shifting
 Menu.setApplicationMenu(null);
@@ -660,6 +664,13 @@ ipcMain.on('vpn-clear-proxy', () => {
     broadcastVpnStatus('OFF');
 });
 
+ipcMain.on('print-document', (event) => {
+    const wc = event.sender;
+    if (wc && !wc.isDestroyed()) {
+        wc.print({ silent: false, printBackground: true });
+    }
+});
+
 function broadcastVpnStatus(status, details = '') {
     if (shieldPopupView && !shieldPopupView.webContents.isDestroyed()) {
         shieldPopupView.webContents.send('vpn-status-updated', { status, details });
@@ -796,6 +807,7 @@ function createMainWindow() {
     minWidth: 1000,
     minHeight: 700,
     title: 'Ocal',
+    icon: path.join(__dirname, 'icon.ico'),
     frame: false,
     transparent: false,
     backgroundColor: userSettings.themeMode === 'light' ? '#ffffff' : '#0c0c0e', // Dynamic background to match theme and prevent flashbang
@@ -942,7 +954,6 @@ function setupCompatibilityHandler() {
 
 app.on('web-contents-created', (event, contents) => {
     // ── Ocal Extension Signaling Bridge ──────────────────────────
-    // Allows Native Modules (like VPN) to signal via console logs
     contents.on('console-message', (e, level, message) => {
         if (message.startsWith('SIGNAL_INIT ')) {
             try {

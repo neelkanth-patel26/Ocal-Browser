@@ -7,11 +7,11 @@
     <link rel="stylesheet" href="assets/fontawesome/css/all.min.css">
     <style>
         :root {
-            --accent: #a855f7;
-            --accent-dim: rgba(168, 85, 247, 0.1);
-            --bg-glass: rgba(15, 15, 20, 0.75);
-            --border-glass: rgba(255, 255, 255, 0.08);
-            --text-muted: #94a3b8;
+            --accent: #ffffff;
+            --accent-dim: #171717;
+            --bg-glass: #000000;
+            --border-glass: #171717;
+            --text-muted: #a3a3a3;
         }
 
         /* ── Light Theme (Flashbang Mode) ─────────────────────────── */
@@ -43,22 +43,22 @@
 
         body {
             margin: 0; padding: 15px;
-            font-family: 'Inter', -apple-system, sans-serif;
+            font-family: 'Geist Mono', monospace;
             background: transparent;
             overflow: hidden;
             user-select: none;
+            border-radius: 0px !important;
         }
 
         .dropdown-container {
             width: fit-content; min-width: 200px;
             max-width: 320px; max-height: 480px;
-            background: rgba(15, 15, 20, 0.98);
-            border: 1px solid rgba(255, 255, 255, 0.2);
-            border-radius: 14px;
+            background: #000000;
+            border: 1px solid #171717;
+            border-radius: 0px;
             overflow-y: auto; overflow-x: hidden;
             display: flex; flex-direction: column;
             padding: 6px;
-            animation: slideIn 0.15s cubic-bezier(0, 0, 0.2, 1);
         }
 
         @keyframes slideIn {
@@ -68,7 +68,7 @@
 
         .menu-option {
             display: flex; align-items: center; gap: 10px;
-            padding: 10px 14px; border-radius: 10px;
+            padding: 10px 14px; border-radius: 0px;
             cursor: pointer; transition: 0.15s;
             color: #fff; font-size: 13px; font-weight: 500;
         }

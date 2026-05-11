@@ -13,23 +13,23 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
     <style>
         :root {
-            --accent: #a855f7; /* Matching Browser Default */
-            --accent-glow: rgba(168, 85, 247, 0.4);
-            --accent-dim: rgba(168, 85, 247, 0.08);
-            --accent-border: rgba(168, 85, 247, 0.25);
-            --chrome: #0d0d10; /* Match Top Bar Exactly */
-            --topbar-gradient: linear-gradient(180deg, rgba(255,255,255,0.025) 0%, transparent 100%);
-            --border: rgba(255, 255, 255, 0.07);
-            --border-heavy: rgba(255, 255, 255, 0.12);
-            --text: #fafafa;
-            --text-dim: #a1a1aa;
-            --text-muted: #52525b;
-            --panel-bg: #0d0d10; 
-            --card-bg: rgba(24, 24, 27, 0.95);
-            --input-bg: rgba(9, 9, 11, 0.9);
-            --title-font: 'Outfit', sans-serif;
-            --font: 'Inter', sans-serif;
-            --mono: 'JetBrains Mono', monospace;
+            --accent: #ffffff;
+            --accent-glow: transparent;
+            --accent-dim: #171717;
+            --accent-border: #ffffff;
+            --chrome: #000000;
+            --topbar-gradient: none;
+            --border: #171717;
+            --border-heavy: #171717;
+            --text: #ffffff;
+            --text-dim: #a3a3a3;
+            --text-muted: #404040;
+            --panel-bg: #000000; 
+            --card-bg: #000000;
+            --input-bg: #000000;
+            --title-font: 'Geist Mono', monospace;
+            --font: 'Geist Mono', monospace;
+            --mono: 'Geist Mono', monospace;
         }
 
 
@@ -64,7 +64,11 @@
         body[data-theme="light"] #ai-query { color: #000; }
 
 
-        *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+        *, *::before, *::after { 
+            box-sizing: border-box; 
+            margin: 0; padding: 0; 
+            border-radius: 0px !important;
+        }
         
         body {
             background: transparent;
@@ -95,13 +99,11 @@
         .ai-panel {
             flex: 1;
             background: var(--panel-bg);
-            background-image: var(--topbar-gradient);
             border-left: 1px solid var(--border);
             display: flex;
             flex-direction: column;
             overflow: hidden;
             position: relative;
-            box-shadow: -15px 0 35px rgba(0, 0, 0, 0.5);
             opacity: 0;
             visibility: hidden;
             will-change: transform, opacity;
@@ -149,14 +151,12 @@
         .ai-logo {
             width: 24px;
             height: 24px;
-            background: linear-gradient(135deg, var(--accent), #7c3aed);
-            border-radius: 6px;
+            background: #ffffff;
             display: flex;
             align-items: center;
             justify-content: center;
-            color: #fff;
+            color: #000;
             font-size: 11px;
-            box-shadow: 0 0 10px var(--accent-glow);
         }
 
         .ai-title-text h1 {

@@ -8,23 +8,24 @@
     <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600&display=swap" rel="stylesheet">
     <style>
         :root {
-            --accent: #a855f7;
-            --bg: rgba(13, 14, 18, 0.95);
-            --card-bg: rgba(255, 255, 255, 0.03);
-            --border: rgba(255, 255, 255, 0.08);
+            --accent: #ffffff;
+            --bg: #000000;
+            --card-bg: #000000;
+            --border: #171717;
             --text: #ffffff;
-            --text-dim: rgba(255, 255, 255, 0.6);
+            --text-dim: #a3a3a3;
         }
 
         * {
             margin: 0;
             padding: 0;
             box-sizing: border-box;
-            font-family: 'Outfit', sans-serif;
+            font-family: 'Geist Mono', monospace;
+            border-radius: 0px !important;
         }
 
         body {
-            background: #0d0e12;
+            background: #000000;
             color: var(--text);
             min-height: 100vh;
             padding: 60px 20px;
@@ -46,10 +47,7 @@
         h1 {
             font-size: 2.5rem;
             font-weight: 600;
-            background: linear-gradient(135deg, #fff 0%, var(--accent) 100%);
-            -webkit-background-clip: text;
-            background-clip: text;
-            -webkit-text-fill-color: transparent;
+            color: #fff;
         }
 
         .search-box {
@@ -143,12 +141,10 @@
         .extension-card {
             background: var(--card-bg);
             border: 1px solid var(--border);
-            border-radius: 20px;
             padding: 20px;
             display: flex;
             gap: 20px;
             transition: 0.3s;
-            backdrop-filter: blur(10px);
         }
 
         .extension-card:hover {

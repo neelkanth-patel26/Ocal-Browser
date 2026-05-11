@@ -34,12 +34,10 @@ navItems.forEach(item => {
         
         if (current) {
             current.style.opacity = '0';
-            current.style.filter = 'blur(10px) brightness(0.5)';
             current.style.transform = 'translateY(10px) scale(0.98)';
-            await sleep(250);
+            await sleep(200);
             current.classList.remove('active');
             current.style.opacity = '';
-            current.style.filter = '';
             current.style.transform = '';
         }
 
@@ -48,13 +46,11 @@ navItems.forEach(item => {
             target.classList.add('active');
             target.style.opacity = '0';
             target.style.transform = 'translateY(-10px) scale(1.02)';
-            target.style.filter = 'blur(10px)';
             // Trigger reflow
             target.offsetHeight; 
-            target.style.transition = 'all 0.4s cubic-bezier(0.2, 0.8, 0.2, 1)';
+            target.style.transition = 'all 0.3s cubic-bezier(0.16, 1, 0.3, 1)';
             target.style.opacity = '1';
             target.style.transform = 'translateY(0) scale(1)';
-            target.style.filter = 'blur(0px)';
         }
     };
 });
@@ -287,20 +283,20 @@ function renderProfiles(s) {
     const grid = document.getElementById('profile-grid');
     if (!grid) return;
     grid.innerHTML = (s.profiles || []).map(p => `
-        <div class="choice-item ${s.currentProfileId === p.id ? 'active' : ''}" style="display:flex; flex-direction:column; align-items:center; justify-content:center; gap:20px; padding: 32px 24px; position: relative; min-height: 180px;">
+        <div class="choice-item ${s.currentProfileId === p.id ? 'active' : ''}" style="display:flex; flex-direction:column; align-items:center; justify-content:center; gap:20px; padding: 32px 24px; position: relative; min-height: 180px; border-radius: 0px !important;">
             <div class="profile-actions" style="position: absolute; top: 12px; right: 12px; display: flex; gap: 8px; opacity: 0; transition: 0.2s;">
-                <button onclick="editProfilePrompt('${p.id}')" style="background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); color: #fff; width: 28px; height: 28px; border-radius: 8px; cursor: pointer; font-size: 11px;"><i class="fas fa-pen"></i></button>
-                ${p.id !== 'default' ? `<button onclick="deleteProfile('${p.id}', '${p.name}')" style="background: rgba(239, 68, 68, 0.1); border: 1px solid rgba(239, 68, 68, 0.2); color: #ef4444; width: 28px; height: 28px; border-radius: 8px; cursor: pointer; font-size: 11px;"><i class="fas fa-trash"></i></button>` : ''}
+                <button onclick="editProfilePrompt('${p.id}')" style="background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); color: #fff; width: 28px; height: 28px; border-radius: 0px; cursor: pointer; font-size: 11px;"><i class="fas fa-pen"></i></button>
+                ${p.id !== 'default' ? `<button onclick="deleteProfile('${p.id}', '${p.name}')" style="background: rgba(239, 68, 68, 0.1); border: 1px solid rgba(239, 68, 68, 0.2); color: #ef4444; width: 28px; height: 28px; border-radius: 0px; cursor: pointer; font-size: 11px;"><i class="fas fa-trash"></i></button>` : ''}
             </div>
             
             <div onclick="window.electronAPI.switchProfile('${p.id}')" style="cursor:pointer; display:flex; flex-direction:column; align-items:center; gap:16px; width: 100%;">
-                <div style="width: 68px; height: 68px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 30px; background: ${s.currentProfileId === p.id ? 'var(--accent)' : 'rgba(255,255,255,0.05)'}; color: ${s.currentProfileId === p.id ? '#000' : 'var(--text)'}; box-shadow: ${s.currentProfileId === p.id ? '0 0 30px var(--accent-glow)' : 'none'}; transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1); border: 2px solid ${s.currentProfileId === p.id ? 'rgba(255,255,255,0.4)' : 'rgba(255,255,255,0.08)'};">
+                <div style="width: 68px; height: 68px; border-radius: 0px; display: flex; align-items: center; justify-content: center; font-size: 30px; background: ${s.currentProfileId === p.id ? 'var(--accent)' : 'rgba(255,255,255,0.05)'}; color: ${s.currentProfileId === p.id ? '#000' : 'var(--text)'}; box-shadow: none; transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1); border: 2px solid ${s.currentProfileId === p.id ? 'rgba(255,255,255,0.4)' : 'rgba(255,255,255,0.08)'};">
                     <i class="fas ${p.icon || 'fa-user'}"></i>
                 </div>
                 <div style="display:flex; flex-direction:column; align-items:center; gap:6px; text-align: center;">
                     <h5 style="margin:0; font-size:16px; font-weight:850; color:var(--text); letter-spacing:0.5px;">${p.name}</h5>
                     ${s.currentProfileId === p.id 
-                        ? '<span style="font-size: 9px; color:var(--accent); font-weight:900; letter-spacing:1.5px; background:var(--accent-dim); padding:4px 10px; border-radius:100px; text-transform:uppercase; border: 1px solid var(--accent-border);">Active Session</span>' 
+                        ? '<span style="font-size: 9px; color:var(--accent); font-weight:900; letter-spacing:1.5px; background:var(--accent-dim); padding:4px 10px; border-radius: 0px; text-transform:uppercase; border: 1px solid var(--accent-border);">Active Session</span>' 
                         : '<span style="font-size: 9px; color:var(--text-dim); font-weight:800; letter-spacing:1px; text-transform:uppercase;">Inactive Alias</span>'}
                 </div>
             </div>
@@ -310,8 +306,8 @@ function renderProfiles(s) {
             </style>
         </div>
     `).join('') + `
-        <div class="choice-item" onclick="createProfilePrompt()" style="opacity:0.6; border-style:dashed; cursor: pointer; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:16px; padding: 32px 24px; background:transparent; min-height: 180px;">
-            <div style="width: 60px; height: 60px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 24px; background: var(--glass); color: var(--text-dim); border: 2px dashed var(--glass-border);">
+        <div class="choice-item" onclick="createProfilePrompt()" style="opacity:0.6; border-style:dashed; cursor: pointer; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:16px; padding: 32px 24px; background:transparent; min-height: 180px; border-radius: 0px !important;">
+            <div style="width: 60px; height: 60px; border-radius: 0px; display: flex; align-items: center; justify-content: center; font-size: 24px; background: var(--glass); color: var(--text-dim); border: 2px dashed var(--glass-border);">
                 <i class="fas fa-plus"></i>
             </div>
             <h5 style="margin:0; font-size:14px; font-weight:800; color:var(--text-dim); letter-spacing: 0.5px;">New Profile</h5>
@@ -339,11 +335,11 @@ function closeModal() {
     if (!overlay || !modal) return;
     
     overlay.style.opacity = '0';
-    modal.style.transform = 'scale(0.9) translateY(20px)';
+    modal.style.transform = 'scale(0.98) translateY(10px)';
     setTimeout(() => {
         overlay.style.display = 'none';
         modal.innerHTML = '';
-    }, 300);
+    }, 200);
 }
 
 // Close on overlay click
@@ -357,19 +353,19 @@ function createProfilePrompt() {
     let selectedIcon = 'fa-user';
     
     const content = `
-        <h3 style="margin:0 0 8px 0; color:var(--text); font-size:22px; font-weight:850; letter-spacing:-0.5px;">New Browsing Identity</h3>
+        <h3 style="margin:0 0 8px 0; color:var(--text); font-size:22px; font-weight:850; letter-spacing:-0.5px;">New User Profile</h3>
         <p style="color:var(--text-dim); font-size:13px; margin-bottom:28px;">Profiles allow you to maintain separate workspaces with isolated sandboxes.</p>
         
         <div style="margin-bottom:24px;">
             <label style="display:block; font-size:10px; font-weight:900; color:var(--text-muted); text-transform:uppercase; letter-spacing:1.5px; margin-bottom:12px;">Profile Alias</label>
-            <input type="text" id="new-profile-name" placeholder="Work, Guest, Secondary..." style="width:100%; background:var(--glass-hover); border:1px solid var(--glass-border); border-radius:14px; padding:14px 18px; color:var(--text); font-family:'Inter', sans-serif; font-size:14px; outline:none; transition:0.3s;" onfocus="this.style.borderColor='var(--accent)'; this.style.boxShadow='0 0 15px var(--accent-glow)';">
+            <input type="text" id="new-profile-name" placeholder="Work, Guest, Secondary..." style="width:100%; background:var(--glass-hover); border:1px solid var(--glass-border); border-radius: 0px; padding:14px 18px; color:var(--text); font-family: 'Geist Mono', monospace; font-size:14px; outline:none; transition:0.3s;" onfocus="this.style.borderColor='var(--accent)';">
         </div>
         
         <div style="margin-bottom:32px;">
             <label style="display:block; font-size:10px; font-weight:900; color:var(--text-muted); text-transform:uppercase; letter-spacing:1.5px; margin-bottom:12px;">Visual Signature</label>
             <div style="display:grid; grid-template-columns: repeat(5, 1fr); gap:12px;" id="icon-selector">
                 ${PROFILE_ICONS.map(icon => `
-                    <div class="icon-chip ${icon === 'fa-user' ? 'active' : ''}" onclick="selectProfileIcon(this, '${icon}')" style="aspect-ratio:1; border-radius:12px; border:1px solid var(--glass-border); background:var(--glass); display:flex; align-items:center; justify-content:center; color:var(--text-dim); cursor:pointer; transition:0.3s;">
+                    <div class="icon-chip ${icon === 'fa-user' ? 'active' : ''}" onclick="selectProfileIcon(this, '${icon}')" style="aspect-ratio:1; border-radius: 0px; border:1px solid var(--glass-border); background:var(--glass); display:flex; align-items:center; justify-content:center; color:var(--text-dim); cursor:pointer; transition:0.3s;">
                         <i class="fas ${icon}"></i>
                     </div>
                 `).join('')}
@@ -377,12 +373,12 @@ function createProfilePrompt() {
         </div>
         
         <div style="display:flex; gap:12px; justify-content:flex-end;">
-            <button class="btn secondary" onclick="closeModal()" style="padding:12px 24px; font-size:12px; font-weight:800; letter-spacing:0.5px;">CANCEL</button>
-            <button class="btn primary" onclick="confirmCreateProfile()" style="padding:12px 32px; font-size:12px; font-weight:800; letter-spacing:0.5px; background:linear-gradient(135deg, var(--accent) 0%, #7c3aed 100%);">CREATE IDENTITY</button>
+            <button class="btn secondary" onclick="closeModal()" style="padding:12px 24px; font-size:12px; font-weight:800; letter-spacing:0.5px; border-radius: 0px;">CANCEL</button>
+            <button class="btn primary" onclick="confirmCreateProfile()" style="padding:12px 32px; font-size:12px; font-weight:800; letter-spacing:0.5px; border-radius: 0px;">CREATE IDENTITY</button>
         </div>
         
         <style>
-            .icon-chip.active { border-color: var(--accent); color: var(--accent); background: rgba(168,85,247,0.08); box-shadow: 0 0 15px rgba(168,85,247,0.1); }
+            .icon-chip.active { border-color: var(--accent); color: var(--accent); background: rgba(255,255,255,0.08); box-shadow: none; }
             .icon-chip:hover:not(.active) { background: rgba(255,255,255,0.06); border-color: rgba(255,255,255,0.15); color: #fff; }
         </style>
     `;
@@ -421,14 +417,14 @@ async function editProfilePrompt(id) {
         
         <div style="margin-bottom:24px;">
             <label style="display:block; font-size:10px; font-weight:900; color:var(--text-muted); text-transform:uppercase; letter-spacing:1.5px; margin-bottom:12px;">Identity Name</label>
-            <input type="text" id="edit-profile-name" value="${profile.name}" style="width:100%; background:var(--glass-hover); border:1px solid var(--glass-border); border-radius:14px; padding:14px 18px; color:var(--text); font-family:'Inter', sans-serif; font-size:14px; outline:none; transition:0.3s;" onfocus="this.style.borderColor='var(--accent)'; this.style.boxShadow='0 0 15px var(--accent-glow)';">
+            <input type="text" id="edit-profile-name" value="${profile.name}" style="width:100%; background:var(--glass-hover); border:1px solid var(--glass-border); border-radius: 0px ; padding:14px 18px; color:var(--text); font-family: 'Geist Mono', monospace; font-size:14px; outline:none; transition:0.3s;" onfocus="this.style.borderColor='var(--accent)'; this.style.boxShadow='0 0 15px var(--accent-glow)';">
         </div>
         
         <div style="margin-bottom:32px;">
-            <label style="display:block; font-size:10px; font-weight:900; color:var(--text-muted); text-transform:uppercase; letter-spacing:1.5px; margin-bottom:12px;">Visual Signature</label>
+            <label style="display:block; font-size:10px; font-weight:900; color:var(--text-muted); text-transform:uppercase; letter-spacing:1.5px; margin-bottom:12px;">Profile Icon</label>
             <div style="display:grid; grid-template-columns: repeat(5, 1fr); gap:12px;" id="icon-selector">
                 ${PROFILE_ICONS.map(icon => `
-                    <div class="icon-chip ${icon === window._selectedProfileIcon ? 'active' : ''}" onclick="selectProfileIcon(this, '${icon}')" style="aspect-ratio:1; border-radius:12px; border:1px solid var(--glass-border); background:var(--glass); display:flex; align-items:center; justify-content:center; color:var(--text-dim); cursor:pointer; transition:0.3s;">
+                    <div class="icon-chip ${icon === window._selectedProfileIcon ? 'active' : ''}" onclick="selectProfileIcon(this, '${icon}')" style="aspect-ratio:1; border-radius: 0px ; border:1px solid var(--glass-border); background:var(--glass); display:flex; align-items:center; justify-content:center; color:var(--text-dim); cursor:pointer; transition:0.3s;">
                         <i class="fas ${icon}"></i>
                     </div>
                 `).join('')}
@@ -441,7 +437,7 @@ async function editProfilePrompt(id) {
         </div>
         
         <style>
-            .icon-chip.active { border-color: var(--accent); color: var(--accent); background: var(--accent-dim); box-shadow: 0 0 15px var(--accent-glow); }
+            .icon-chip.active { border-color: var(--accent); color: var(--accent); background: var(--accent-dim); box-shadow: none ; }
             .icon-chip:hover:not(.active) { background: var(--glass-hover); border-color: var(--accent-border); color: var(--text); }
         </style>
     `;

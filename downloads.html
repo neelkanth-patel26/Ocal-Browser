@@ -10,7 +10,7 @@
     <link rel="stylesheet" href="assets/fontawesome/css/all.min.css">
     <style>
         :root {
-            --panel-bg: rgba(20, 20, 25, 0.95);
+            --panel-bg: #000000;
         }
         * { box-sizing: border-box; }
         html, body {
@@ -20,9 +20,10 @@
             height: 100vh;
             background: transparent;
             overflow: hidden;
-            font-family: 'Inter', -apple-system, sans-serif;
+            font-family: 'Geist Mono', monospace;
             color: var(--text);
             user-select: none;
+            border-radius: 0px !important;
         }
         
         .backdrop {
@@ -36,17 +37,13 @@
             position: absolute;
             z-index: 2;
             background: var(--panel-bg);
-            backdrop-filter: blur(32px);
-            -webkit-backdrop-filter: blur(32px);
-            border-radius: 16px;
+            border-radius: 0px;
             border: 1px solid var(--border);
-            box-shadow: 0 16px 40px rgba(0,0,0,0.6), 0 0 0 1px rgba(255,255,255,0.03);
             display: flex;
             flex-direction: column;
             width: 350px;
             height: 450px;
             overflow: hidden;
-            transition: left 0.1s, top 0.1s;
         }
 
         .header {
@@ -70,9 +67,8 @@
         
         .header-title i {
             color: var(--accent);
-            background: rgba(168, 85, 247, 0.15);
+            background: #171717;
             padding: 6px;
-            border-radius: 8px;
             font-size: 12px;
         }
 
@@ -133,18 +129,16 @@
             transform: translateX(0);
         }
         .dl-action-btn {
-            background: rgba(255, 255, 255, 0.06);
-            border: 1px solid rgba(255,255,255,0.05);
+            background: #0a0a0a;
+            border: 1px solid #171717;
             color: #fff;
             width: 30px;
             height: 30px;
-            border-radius: 8px;
             cursor: pointer;
             display: flex;
             align-items: center;
             justify-content: center;
             font-size: 12px;
-            transition: all 0.2s;
         }
         .dl-action-btn:hover {
             background: var(--accent);

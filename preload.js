@@ -187,7 +187,10 @@ contextBridge.exposeInMainWorld('electronAPI', {
     setProxy: (pacCode, region) => ipcRenderer.send('vpn-set-proxy', { pacCode, region }),
     clearProxy: () => ipcRenderer.send('vpn-clear-proxy'),
     onCommand: (cb) => ipcRenderer.on('vpn-extension-command', (e, d) => cb(d))
-  }
+  },
+  
+  // Printing
+  print: () => ipcRenderer.send('print-document')
 });
 
 // ── Chrome Web Store Bypass & Injection ──────────────────────────────────────────

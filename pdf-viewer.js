@@ -32,7 +32,7 @@ function applyAccent(color) {
     document.documentElement.style.setProperty('--accent-border', hexToRgba(color, 0.25));
     if (colorWell) {
         colorWell.style.backgroundColor = color;
-        colorWell.style.boxShadow = `0 0 15px ${color}40`;
+        colorWell.style.boxShadow = 'none';
     }
     // Update existing annotations that were using the previous "accent"
     Object.keys(annotations).forEach(pIdx => {
@@ -113,7 +113,7 @@ function initChroma() {
     CHROMA_PRESETS.forEach(color => {
         const swatch = document.createElement('div');
         swatch.className = 'chroma-swatch';
-        swatch.style.cssText = `background:${color}; width:100%; aspect-ratio:1; border-radius:10px; cursor:pointer; border:2px solid transparent; transition:0.2s;`;
+        swatch.style.cssText = `background:${color}; width:100%; aspect-ratio:1; border-radius:0px; cursor:pointer; border:1px solid rgba(255,255,255,0.1); transition:0.1s;`;
         swatch.onclick = () => selectColor(color);
         chromaGrid.appendChild(swatch);
     });
@@ -146,7 +146,7 @@ function selectColor(color) {
 
 function updateColorWell() {
     colorWell.style.backgroundColor = selectedColor;
-    colorWell.style.boxShadow = `0 0 15px ${selectedColor}40`;
+    colorWell.style.boxShadow = 'none';
 }
 
 initChroma();
@@ -406,7 +406,7 @@ function redrawAnnotations(canvas, pageIdx) {
     (annotations[pageIdx] || []).forEach(item => {
         ctx.globalCompositeOperation = 'source-over'; 
         if (item.type === 'text') {
-            ctx.font = 'bold 22px Outfit'; ctx.fillStyle = item.color;
+            ctx.font = 'bold 22px "Geist Mono"'; ctx.fillStyle = item.color;
             ctx.textBaseline = 'hanging'; ctx.fillText(item.text, item.x, item.y);
         } else if (item.type === 'path') {
             ctx.strokeStyle = item.color || selectedColor; ctx.lineWidth = item.tool === 'pen' ? 2.2 : 18;
@@ -597,6 +597,13 @@ document.getElementById('rotate-btn').onclick = () => {
 document.getElementById('theme-btn').onclick = () => {
     currentTheme = currentTheme === 'dark' ? 'sepia' : (currentTheme === 'sepia' ? 'light' : 'dark');
     document.body.setAttribute('data-theme', currentTheme); renderAllPages();
+};
+document.getElementById('print-btn').onclick = () => {
+    if (window.electronAPI && window.electronAPI.print) {
+        window.electronAPI.print();
+    } else {
+        window.print();
+    }
 };
 
 let isRestoringScroll = false;
