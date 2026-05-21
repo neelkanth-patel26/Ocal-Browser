@@ -7,11 +7,11 @@
     <style>
         :root {
             --accent: #ffffff;
-            --chrome: #000000;
+            --chrome: #0c0c0c;
             --text: #ffffff;
-            --text-dim: #a3a3a3;
-            --border: #171717;
-            --panel-bg: #000000;
+            --text-dim: #666666;
+            --border: #252525;
+            --panel-bg: #111111;
         }
         * { box-sizing: border-box; margin: 0; padding: 0; user-select: none; }
         html, body {
@@ -20,7 +20,6 @@
             overflow: hidden; pointer-events: none;
             font-family: 'Geist Mono', monospace;
             color: var(--text);
-            border-radius: 0px !important;
         }
         .backdrop {
             position: absolute; inset: 0; pointer-events: auto; background: rgba(0,0,0,0.01); z-index: 1;
@@ -28,7 +27,7 @@
         .popup-panel {
             position: absolute; z-index: 2; pointer-events: auto;
             background: var(--panel-bg);
-            padding: 20px; border-radius: 0px; border: 1px solid var(--border);
+            padding: 20px; border-radius: 12px; border: 1px solid var(--border);
             width: 260px;
             display: flex; flex-direction: column; gap: 4px;
         }
@@ -47,6 +46,7 @@
             background: var(--accent);
             color: #000;
             font-size: 18px;
+            border-radius: 8px;
         }
         .input-container {
             flex: 1;
@@ -57,7 +57,7 @@
             border: 1px solid var(--border);
             color: #fff;
             padding: 10px 14px;
-            border-radius: 0px;
+            border-radius: 8px;
             outline: none;
             width: 100%;
             font-size: 14px;
@@ -89,7 +89,7 @@
         .color-dot {
             width: 20px;
             height: 20px;
-            border-radius: 0px;
+            border-radius: 50%;
             cursor: pointer;
             border: 2px solid transparent;
             transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
@@ -109,7 +109,7 @@
         .btn {
             flex: 1;
             padding: 10px;
-            border-radius: 0px;
+            border-radius: 8px;
             font-size: 12px;
             font-weight: 600;
             cursor: pointer;

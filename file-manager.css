@@ -3,23 +3,23 @@
 @import url('https://cdn.jsdelivr.net/fontsource/fonts/geist-mono@latest/latin-400-normal.css');
 
 :root {
-    --background: #000000;
-    --foreground: #ffffff;
-    --accent: #ffffff;
+    --background: #0c0c0c;
+    --foreground: #e8e8e8;
+    --accent: #e8ff47;
     --accent-glow: transparent;
-    --accent-dim: #111111;
-    --accent-border: #ffffff;
-    --bg: #000000;
-    --glass: #000000;
-    --glass-border: #171717;
-    --text-main: #ffffff;
-    --text-dim: #a3a3a3;
-    --text-muted: #404040;
+    --accent-dim: rgba(232, 255, 71, 0.1);
+    --accent-border: rgba(232, 255, 71, 0.3);
+    --bg: #0c0c0c;
+    --glass: #111111;
+    --glass-border: #252525;
+    --text-main: #e8e8e8;
+    --text-dim: #666666;
+    --text-muted: #3a3a3a;
     --font-title: 'Geist', sans-serif;
     --font-main: 'Geist Mono', monospace;
     --panel-blur: none;
-    --radius: 0px;
-    --border: #222222;
+    --radius: 12px;
+    --border: #252525;
     --hover: #171717;
 }
 
@@ -28,7 +28,7 @@
     margin: 0;
     padding: 0;
     outline: none;
-    border-radius: var(--radius) !important;
+    border-radius: var(--radius);
 }
 
 body {
@@ -126,7 +126,7 @@ body {
     text-transform: uppercase; letter-spacing: 1px;
     display: flex; align-items: center; justify-content: center; gap: 12px;
     cursor: pointer; position: relative; overflow: hidden;
-    border-radius: 0px !important;
+    border-radius: 8px;
 }
 .analyze-btn:hover { background: #fff; color: #000; border-color: #fff; }
 
@@ -174,7 +174,7 @@ body {
 
 .file-item {
     display: flex; flex-direction: column; align-items: center; padding: 32px 20px;
-    border-radius: 0px !important; background: transparent; border: 1px solid var(--border);
+    border-radius: 8px; background: transparent; border: 1px solid var(--border);
     transition: none; position: relative; cursor: pointer;
 }
 .file-item:hover {
