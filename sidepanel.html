@@ -6,10 +6,11 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <style>
         :root {
-            --bg: #000000;
-            --border: #171717;
-            --text: #ffffff;
-            --accent: #ffffff;
+            --bg: #0c0c0c;
+            --border: #252525;
+            --text: #e8e8e8;
+            --accent: #e8ff47;
+            --radius: 12px;
         }
         body {
             margin: 0;
@@ -22,7 +23,7 @@
             display: flex;
             flex-direction: column;
             border-left: 1px solid var(--border);
-            border-radius: 0px !important;
+            border-radius: var(--radius);
         }
         .header {
             height: 38px;

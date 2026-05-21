@@ -6,16 +6,16 @@
     <link rel="stylesheet" href="assets/fontawesome/css/all.min.css">
     <style>
         :root {
-            --accent: #ffffff;
-            --accent-glow: transparent;
-            --accent-dim: #171717;
-            --accent-border: #ffffff;
-            --chrome: #000000;
-            --text: #ffffff;
-            --text-dim: #a3a3a3;
-            --text-muted: #404040;
-            --hover: #0a0a0a;
-            --border: #171717;
+            --accent: #e8ff47;
+            --accent-glow: rgba(232, 255, 71, 0.2);
+            --accent-dim: rgba(232, 255, 71, 0.12);
+            --accent-border: #e8ff47;
+            --chrome: #0c0c0c;
+            --text: #e8e8e8;
+            --text-dim: #666666;
+            --text-muted: #3a3a3a;
+            --hover: #1e1e1e;
+            --border: #252525;
             --panel-blur: none;
         }
         
@@ -43,14 +43,16 @@
         }
 
         .container {
-            background: #000000;
-            border: 1px solid #171717;
+            background: #0c0c0c;
+            border: 1px solid #252525;
             border-top: none;
             overflow-y: auto;
             overflow-x: hidden;
             max-height: 100vh; /* Controlled by BrowserView height cap in main.js */
             /* Removed slow slideDown animation */
             position: relative;
+            border-bottom-left-radius: 12px;
+            border-bottom-right-radius: 12px;
         }
 
         body[data-theme="light"] .container {
@@ -117,12 +119,7 @@
             to { opacity: 1; transform: translateY(0); }
         }
 
-        /* Top-light highlight to match topbar */
-        .container::before {
-            content: ''; position: absolute; inset: 0;
-            background: linear-gradient(180deg, rgba(255,255,255,0.04) 0%, transparent 15%);
-            pointer-events: none;
-        }
+        /* Removed top-light highlight to fix white line */
 
         .suggestion-list {
             list-style: none;
@@ -142,6 +139,7 @@
             cursor: pointer;
             color: var(--text-dim);
             border: 1px solid transparent;
+            border-radius: 8px;
         }
 
         .suggestion-item:hover {
@@ -196,10 +194,11 @@
             text-transform: uppercase;
             letter-spacing: 0.8px;
             color: var(--text-muted);
-            background: #171717;
+            background: #1e1e1e;
             padding: 3px 8px;
             opacity: 0.6;
             transition: all 0.2s;
+            border-radius: 6px;
         }
 
         /* ── Categories & Refinements ───────────────────────── */
@@ -231,13 +230,14 @@
 
         .refinement-pill {
             padding: 6px 14px;
-            background: #0a0a0a;
-            border: 1px solid #171717;
+            background: #111111;
+            border: 1px solid #252525;
             font-size: 12px;
             color: var(--text-dim);
             white-space: nowrap;
             cursor: pointer;
             transition: all 0.2s;
+            border-radius: 8px;
         }
         .refinement-pill:hover {
             background: rgba(255,255,255,0.08);

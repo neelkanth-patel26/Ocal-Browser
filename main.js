@@ -376,6 +376,7 @@ var suggestionsView = null;
 var siteInfoView = null;
 var webAppView = null;
 var tabgroupView = null;
+var tabContextView = null;
 let isAlwaysOnTop = false;
 
 let downloadsView = null;
@@ -856,6 +857,7 @@ function createMainWindow() {
     if (!aiSidebarView) createAiSidebar();
     if (!suggestionsView) createSuggestionsView();
     if (!tabgroupView) createTabgroupView();
+    if (!tabContextView) createTabContextView();
     if (!mediaMasterView) createMediaMasterView();
     if (!bmDropdownView) createBMDropdownView();
     // Always open a tab on startup
@@ -1237,6 +1239,15 @@ function createTabgroupView() {
     setupInteractionDismissal(tabgroupView.webContents);
 }
 
+function createTabContextView() {
+    tabContextView = new BrowserView({
+        webPreferences: { preload: path.join(__dirname, 'preload.js'), contextIsolation: true, nodeIntegration: false }
+    });
+    tabContextView.webContents.loadFile('tab-context.html');
+    tabContextView.setBackgroundColor('#00000000');
+    setupInteractionDismissal(tabContextView.webContents);
+}
+
 function closeOverlays() {
     sidebarOpen = false;
     aiSidebarOpen = false;
@@ -1247,6 +1258,11 @@ function closeOverlays() {
     if (tabgroupView && !tabgroupView.webContents.isDestroyed() && mainWindow && !mainWindow.isDestroyed()) {
         if (mainWindow.getBrowserViews().includes(tabgroupView)) {
             mainWindow.removeBrowserView(tabgroupView);
+        }
+    }
+    if (tabContextView && !tabContextView.webContents.isDestroyed() && mainWindow && !mainWindow.isDestroyed()) {
+        if (mainWindow.getBrowserViews().includes(tabContextView)) {
+            mainWindow.removeBrowserView(tabContextView);
         }
     }
     if (shieldPopupView && !shieldPopupView.webContents.isDestroyed() && mainWindow && !mainWindow.isDestroyed()) {
@@ -2716,6 +2732,68 @@ ipcMain.on('hide-tab-group-popup', () => {
     activePopupGroupId = null;
 });
 
+ipcMain.on('show-tab-context', (e, data) => {
+    if (!tabContextView || !mainWindow) return;
+    
+    const contentBounds = mainWindow.getContentBounds();
+    tabContextView.setBounds({ 
+        x: 0, 
+        y: 0, 
+        width: contentBounds.width, 
+        height: contentBounds.height 
+    });
+
+    if (!mainWindow.getBrowserViews().includes(tabContextView)) {
+        mainWindow.addBrowserView(tabContextView);
+    }
+    mainWindow.setTopBrowserView(tabContextView);
+    
+    tabContextView._x = data.x;
+    tabContextView._y = data.y;
+    tabContextView.webContents.send('render-tab-context', data);
+});
+
+ipcMain.on('hide-tab-context', () => {
+    if (tabContextView && mainWindow && mainWindow.getBrowserViews().includes(tabContextView)) {
+        mainWindow.removeBrowserView(tabContextView);
+    }
+});
+
+ipcMain.on('resize-tab-context', (e, data) => {
+    if (tabContextView && tabContextView._x !== undefined) {
+        const contentBounds = mainWindow.getContentBounds();
+        let finalX = tabContextView._x;
+        let finalY = tabContextView._y;
+        
+        if (finalX + data.width > contentBounds.width) finalX = contentBounds.width - data.width - 5;
+        if (finalY + data.height > contentBounds.height) finalY = contentBounds.height - data.height - 5;
+
+        tabContextView.setBounds({ 
+            x: Math.round(finalX), 
+            y: Math.round(finalY), 
+            width: Math.round(data.width), 
+            height: Math.round(data.height) 
+        });
+    }
+});
+
+ipcMain.on('tab-context-action', (e, data) => {
+    if (tabContextView && mainWindow && mainWindow.getBrowserViews().includes(tabContextView)) {
+        mainWindow.removeBrowserView(tabContextView);
+    }
+    if (mainWindow && !mainWindow.isDestroyed()) {
+        if (data.action === 'close-tab') {
+            mainWindow.webContents.send('close-tab-trigger', data.tabId);
+        } else if (data.action === 'create-tab-group') {
+            mainWindow.webContents.send('create-tab-group-trigger', data.tabId);
+        } else if (data.action === 'remove-from-group') {
+            mainWindow.webContents.send('remove-from-group-trigger', data.tabId);
+        } else if (data.action === 'add-to-group') {
+            mainWindow.webContents.send('add-to-group-trigger', { tabId: data.tabId, groupId: data.groupId });
+        }
+    }
+});
+
 function createMediaMasterView() {
     mediaMasterView = new BrowserView({
         webPreferences: {
@@ -3486,12 +3564,14 @@ ipcMain.on('show-extensions-dropdown', (e, { x, y, width }) => {
     hidePopups();
     mainWindow.addBrowserView(extensionDropdownView);
     // Align to the right of the button
-    const popupWidth = 340;
+    const popupWidth = 320;
     const winOffset = getWinOffset();
+    let targetX = x + width - popupWidth;
+
     extensionDropdownView.setBounds({ 
-        x: Math.round(x + width - popupWidth + winOffset) - 15, 
-        y: Math.round(y + 40 + winOffset), 
-        width: Math.round(popupWidth) + 30, 
+        x: Math.round(targetX + winOffset) - 15, 
+        y: Math.round(y + 10 + winOffset), 
+        width: popupWidth + 30, 
         height: 530 
     });
     mainWindow.setTopBrowserView(extensionDropdownView);

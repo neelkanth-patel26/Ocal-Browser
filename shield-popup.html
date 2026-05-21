@@ -8,16 +8,17 @@
     <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700&display=swap" rel="stylesheet">
     <style>
         :root {
-            --accent: #ffffff;
-            --accent-glow: transparent;
-            --accent-dim: #171717;
-            --bg-glass: #000000;
-            --border-glass: #171717;
-            --text-primary: #ffffff;
-            --text-secondary: #a3a3a3;
+            --accent: #e8ff47;
+            --accent-glow: rgba(232, 255, 71, 0.2);
+            --accent-dim: rgba(232, 255, 71, 0.12);
+            --bg-glass: #0c0c0c;
+            --border-glass: #252525;
+            --text-primary: #e8e8e8;
+            --text-secondary: #666666;
             --danger: #ef4444;
             --success: #34d399;
             --panel-blur: none;
+            --radius: 12px;
         }
 
 
@@ -83,8 +84,7 @@
             padding: 0;
             box-sizing: border-box;
             user-select: none;
-            -webkit-font-smoothing: antialiased;
-            border-radius: 0px !important;
+            border-radius: var(--radius);
         }
 
         body {
@@ -109,8 +109,8 @@
 
         .shield-card {
             position: relative;
-            background: #000000;
-            border: 1px solid #171717;
+            background: #111111;
+            border: 1px solid #252525;
             padding: 20px;
             padding-bottom: 24px;
             display: flex;
@@ -160,8 +160,8 @@
         }
 
         .impact-card {
-            background: #0a0a0a;
-            border: 1px solid #171717;
+            background: rgba(255,255,255,0.02);
+            border: 1px solid rgba(255,255,255,0.05);
             padding: 14px;
             margin-bottom: 4px;
             position: relative;
@@ -208,8 +208,8 @@
         }
 
         .stat-item {
-            background: rgba(255, 255, 255, 0.035);
-            border-radius: 0px;
+            background: rgba(255, 255, 255, 0.02);
+            border-radius: 8px;
             padding: 14px 10px;
             text-align: center;
             border: 1px solid rgba(255, 255, 255, 0.05);
@@ -241,9 +241,9 @@
             display: flex;
             align-items: center;
             justify-content: space-between;
-            background: rgba(255, 255, 255, 0.025);
+            background: rgba(255, 255, 255, 0.02);
             padding: 12px 14px;
-            border-radius: 0px;
+            border-radius: 8px;
             border: 1px solid rgba(255, 255, 255, 0.04);
             transition: all 0.2s;
         }
@@ -272,6 +272,7 @@
             display: inline-block;
             width: 40px;
             height: 20px;
+            flex-shrink: 0;
         }
 
         .switch input { opacity: 0; width: 0; height: 0; }
@@ -282,7 +283,7 @@
             inset: 0;
             background: rgba(255, 255, 255, 0.08);
             transition: 0.3s cubic-bezier(0.16, 1, 0.3, 1);
-            border-radius: 0px;
+            border-radius: 100px;
         }
 
         .slider:before {
@@ -294,18 +295,20 @@
             bottom: 4px;
             background: #fff;
             transition: 0.2s cubic-bezier(0.16, 1, 0.3, 1);
-            border-radius: 0px;
-            box-shadow: none;
+            border-radius: 50%;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.3);
         }
 
         input:checked + .slider {
-            background: #fff !important;
+            background: var(--accent) !important;
+            border-radius: 100px !important;
             box-shadow: none;
         }
 
         input:checked + .slider:before {
             transform: translateX(20px);
-            background: #000 !important;
+            background: #111111 !important;
+            box-shadow: none;
         }
 
         .vpn-section {
@@ -316,8 +319,8 @@
 
         .status-pill {
             font-size: 9px;
-            padding: 2px 8px;
-            border-radius: 0px;
+            padding: 3px 8px;
+            border-radius: 100px;
             background: rgba(255, 255, 255, 0.05);
             color: var(--text-secondary);
             font-weight: 800;
@@ -332,7 +335,7 @@
         .status-dot {
             width: 8px;
             height: 8px;
-            border-radius: 0px;
+            border-radius: 50%;
             background: var(--text-secondary);
         }
 
@@ -477,10 +480,10 @@
         }
 
         .select-trigger {
-            background: rgba(255, 255, 255, 0.04);
+            background: rgba(255, 255, 255, 0.02);
             border: 1px solid rgba(255, 255, 255, 0.06);
             padding: 12px 16px;
-            border-radius: 0px;
+            border-radius: 8px;
             cursor: pointer;
             display: flex;
             justify-content: space-between;
@@ -502,9 +505,9 @@
             bottom: calc(100% + 8px);
             left: 0;
             right: 0;
-            background: rgba(13, 13, 16, 1);
-            border: 1px solid rgba(255, 255, 255, 0.2);
-            border-radius: 0px;
+            background: #111111;
+            border: 1px solid #252525;
+            border-radius: 8px;
             display: none;
             flex-direction: column;
             overflow-y: auto;
@@ -528,7 +531,7 @@
             cursor: pointer;
             transition: all 0.2s;
             color: var(--text-secondary);
-            border-radius: 0px;
+            border-radius: 4px;
             font-size: 12.5px;
             font-weight: 500;
         }

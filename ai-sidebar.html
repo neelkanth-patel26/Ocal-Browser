@@ -13,20 +13,21 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
     <style>
         :root {
-            --accent: #ffffff;
-            --accent-glow: transparent;
-            --accent-dim: #171717;
-            --accent-border: #ffffff;
-            --chrome: #000000;
+            --accent: #e8ff47;
+            --accent-glow: rgba(232, 255, 71, 0.2);
+            --accent-dim: rgba(232, 255, 71, 0.12);
+            --accent-border: #e8ff47;
+            --chrome: #0c0c0c;
             --topbar-gradient: none;
-            --border: #171717;
-            --border-heavy: #171717;
-            --text: #ffffff;
-            --text-dim: #a3a3a3;
-            --text-muted: #404040;
-            --panel-bg: #000000; 
-            --card-bg: #000000;
-            --input-bg: #000000;
+            --border: #252525;
+            --border-heavy: #252525;
+            --text: #e8e8e8;
+            --text-dim: #666666;
+            --text-muted: #3a3a3a;
+            --panel-bg: #0c0c0c; 
+            --card-bg: #111111;
+            --input-bg: #111111;
+            --radius: 12px;
             --title-font: 'Geist Mono', monospace;
             --font: 'Geist Mono', monospace;
             --mono: 'Geist Mono', monospace;
@@ -67,7 +68,7 @@
         *, *::before, *::after { 
             box-sizing: border-box; 
             margin: 0; padding: 0; 
-            border-radius: 0px !important;
+            border-radius: var(--radius);
         }
         
         body {
@@ -149,14 +150,16 @@
         }
 
         .ai-logo {
-            width: 24px;
-            height: 24px;
-            background: #ffffff;
+            width: 28px;
+            height: 28px;
+            background: linear-gradient(135deg, #ffffff, #f0f0f0);
             display: flex;
             align-items: center;
             justify-content: center;
             color: #000;
-            font-size: 11px;
+            font-size: 12px;
+            border-radius: 8px;
+            box-shadow: 0 2px 8px rgba(255, 255, 255, 0.15), inset 0 1px 0 rgba(255, 255, 255, 1);
         }
 
         .ai-title-text h1 {
@@ -362,7 +365,7 @@
         }
         .msg-content blockquote {
             border-left: 3px solid var(--accent);
-            background: rgba(217, 70, 239, 0.03);
+            background: var(--accent-dim);
             padding: 14px 20px; border-radius: 4px 14px 14px 4px;
             margin: 16px 0; color: var(--text-dim);
             font-size: 13.5px;
@@ -410,8 +413,8 @@
         }
 
         .tool-chip:hover {
-            background: rgba(217, 70, 239, 0.1);
-            border-color: rgba(217, 70, 239, 0.3);
+            background: var(--accent-dim);
+            border-color: var(--accent-border);
             color: var(--accent);
             transform: translateY(-2px);
             box-shadow: 0 5px 15px rgba(0,0,0,0.3);
@@ -431,7 +434,7 @@
         .input-container:focus-within {
             border-color: var(--accent);
             background: #0d0d0f;
-            box-shadow: 0 0 0 3px rgba(217, 70, 239, 0.1);
+            box-shadow: 0 0 0 3px var(--accent-dim);
         }
 
         #ai-query {
@@ -453,8 +456,8 @@
             height: 40px;
             border-radius: 12px;
             border: none;
-            background: linear-gradient(135deg, var(--accent), #7c3aed);
-            color: #fff;
+            background: var(--accent);
+            color: #000;
             cursor: pointer;
             display: flex;
             align-items: center;

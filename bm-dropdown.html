@@ -7,11 +7,12 @@
     <link rel="stylesheet" href="assets/fontawesome/css/all.min.css">
     <style>
         :root {
-            --accent: #ffffff;
-            --accent-dim: #171717;
-            --bg-glass: #000000;
-            --border-glass: #171717;
-            --text-muted: #a3a3a3;
+            --accent: #e8ff47;
+            --accent-dim: rgba(232, 255, 71, 0.12);
+            --bg-glass: #0c0c0c;
+            --border-glass: #252525;
+            --text-muted: #666666;
+            --radius: 12px;
         }
 
         /* ── Light Theme (Flashbang Mode) ─────────────────────────── */
@@ -42,20 +43,19 @@
 
 
         body {
-            margin: 0; padding: 15px;
+            margin: 0; padding: 0px 15px 15px 15px;
             font-family: 'Geist Mono', monospace;
             background: transparent;
             overflow: hidden;
-            user-select: none;
-            border-radius: 0px !important;
+            border-radius: var(--radius);
         }
 
         .dropdown-container {
             width: fit-content; min-width: 200px;
             max-width: 320px; max-height: 480px;
-            background: #000000;
-            border: 1px solid #171717;
-            border-radius: 0px;
+            background: #0c0c0c;
+            border: 1px solid #252525;
+            border-radius: var(--radius);
             overflow-y: auto; overflow-x: hidden;
             display: flex; flex-direction: column;
             padding: 6px;

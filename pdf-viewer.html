@@ -11,19 +11,20 @@
     <link href="https://fonts.googleapis.com/css2?family=Geist+Mono:wght@400;700&display=swap" rel="stylesheet">
     <style>
         :root {
-            --bg: #000000;
-            --surface: #000000;
-            --accent: #ffffff;
+            --bg: #0c0c0c;
+            --surface: #111111;
+            --accent: #e8ff47;
             --accent-glow: transparent;
-            --accent-dim: #111111;
-            --text: #ffffff;
-            --text-dim: #a3a3a3;
-            --border: #171717;
-            --toolbar-bg: #000000;
-            --toolbar-border: #171717;
-            --btn-hover: #111111;
+            --accent-dim: rgba(232, 255, 71, 0.1);
+            --text: #e8e8e8;
+            --text-dim: #666666;
+            --border: #252525;
+            --toolbar-bg: #111111;
+            --toolbar-border: #252525;
+            --btn-hover: #171717;
             --sidebar-w: 240px;
             --panel-blur: none;
+            --radius: 12px;
         }
 
         [data-theme="sepia"] { 
@@ -48,7 +49,7 @@
             --btn-hover: #eeeeee;
         }
 
-        * { box-sizing: border-box; margin: 0; padding: 0; border-radius: 0px !important; }
+        * { box-sizing: border-box; margin: 0; padding: 0; border-radius: 8px; }
         body { 
             font-family: 'Geist Mono', monospace; 
             background: var(--bg); 
@@ -209,7 +210,7 @@
         
         .page-num-jump {
             background: #000; border: 1px solid var(--border);
-            border-radius: 0px !important; padding: 0 8px; height: 34px;
+            border-radius: var(--radius); padding: 0 8px; height: 34px;
             display: flex; align-items: center; gap: 4px;
             font-size: 11px; font-weight: 700; color: var(--text-dim);
         }
@@ -253,7 +254,7 @@
 
         #search-input {
             background: #000; border: 1px solid var(--border); 
-            border-radius: 0px !important; padding: 6px 10px; 
+            border-radius: var(--radius); padding: 6px 10px; 
             color: var(--text); font-size: 11px; outline: none; width: 100px; 
             transition: all 0.15s; font-family: 'Geist Mono';
         }

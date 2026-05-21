@@ -1,11 +1,11 @@
 :root {
-    --accent: #a855f7;
-    --accent-hover: #9333ea;
-    --bg: #0d0e12;
-    --card-bg: rgba(255, 255, 255, 0.03);
-    --border: rgba(255, 255, 255, 0.08);
-    --text: #ffffff;
-    --text-dim: rgba(255, 255, 255, 0.6);
+    --accent: #e8ff47;
+    --accent-hover: #c4d732;
+    --bg: #0c0c0c;
+    --card-bg: #111111;
+    --border: #252525;
+    --text: #e8e8e8;
+    --text-dim: #666666;
     --font: 'Outfit', system-ui, sans-serif;
 }
 
@@ -49,7 +49,7 @@ header {
 .glass-card {
     background: var(--card-bg);
     border: 1px solid var(--border);
-    border-radius: 16px;
+    border-radius: 12px;
     padding: 16px;
     backdrop-filter: blur(12px);
     margin-bottom: 16px;

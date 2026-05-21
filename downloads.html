@@ -10,7 +10,8 @@
     <link rel="stylesheet" href="assets/fontawesome/css/all.min.css">
     <style>
         :root {
-            --panel-bg: #000000;
+            --panel-bg: #0c0c0c;
+            --radius: 12px;
         }
         * { box-sizing: border-box; }
         html, body {
@@ -22,8 +23,7 @@
             overflow: hidden;
             font-family: 'Geist Mono', monospace;
             color: var(--text);
-            user-select: none;
-            border-radius: 0px !important;
+            border-radius: var(--radius);
         }
         
         .backdrop {
@@ -37,7 +37,7 @@
             position: absolute;
             z-index: 2;
             background: var(--panel-bg);
-            border-radius: 0px;
+            border-radius: var(--radius);
             border: 1px solid var(--border);
             display: flex;
             flex-direction: column;

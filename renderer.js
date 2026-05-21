@@ -403,7 +403,7 @@ if (addressInput) {
                 height: rect.height
             });
             omnibox.classList.add('has-suggestions');
-        }, 150);
+        }, 0);
 
         // Keep pretty-url in sync so it doesn't "disappear" on blur
         updatePrettyUrl(addressInput.value);
@@ -878,83 +878,47 @@ window.addEventListener('mousedown', (e) => {
 
 // ── Context Menus ──────────────────────────────────────────────────────
 function showTabContextMenu(e, tabId) {
+    e.preventDefault();
     const tab = tabs.find(t => t.id === tabId);
-    const menu = createContextMenu(e);
     
-    // Group options
-    if (tab.groupId) {
-        addMenuOption(menu, 'Remove from Group', 'fa-object-ungroup', () => {
-            window.electronAPI.send('remove-from-group', tabId);
-            hideContextMenu();
-        });
-    } else {
-        // Promoted: New Group is now top-level for ungrouped tabs
-        addMenuOption(menu, 'Add to New Group', 'fa-plus', () => {
-            window.electronAPI.send('create-tab-group', { name: 'New Group', color: '#a855f7', tabIds: [tabId] });
-            hideContextMenu();
-        });
-
-        if (tabGroups.length > 0) {
-            const groupSub = addMenuSub(menu, 'Add to Existing Group', 'fa-object-group');
-            tabGroups.forEach(g => {
-                addMenuOption(groupSub, g.name, 'fa-circle', () => {
-                    window.electronAPI.send('add-to-group', { tabId, groupId: g.id });
-                    hideContextMenu();
-                }, g.color);
-            });
-        }
+    // Find the tab we clicked on to anchor below it
+    const tabEl = e.target.closest ? e.target.closest('.tab') : null;
+    let x = e.pageX;
+    let y = e.pageY;
+    
+    if (tabEl) {
+        const tabRect = tabEl.getBoundingClientRect();
+        x = tabRect.left;
+        y = tabRect.bottom + 6;
     }
-
-    addMenuSeparator(menu);
-    addMenuOption(menu, 'Close Tab', 'fa-xmark', () => {
-        window.electronAPI.send('close-tab', tabId);
-        hideContextMenu();
+    
+    window.electronAPI.send('show-tab-context', {
+        x, y,
+        tabId: tabId,
+        groupId: tab.groupId,
+        tabGroups: tabGroups
     });
 }
 
-function showGroupContextMenu(e, group) {
-    // Legacy - replaced by tabgroup.html popup
-}
-
-function createContextMenu(e) {
-    hideContextMenu();
-    const menu = document.createElement('div');
-    menu.className = 'custom-context-menu';
-    menu.style.left = e.pageX + 'px';
-    menu.style.top = e.pageY + 'px';
-    document.body.appendChild(menu);
-    return menu;
-}
-
-function addMenuOption(parent, label, icon, onClick, color) {
-    const opt = document.createElement('div');
-    opt.className = 'menu-option';
-    opt.innerHTML = `<i class="fas ${icon}" style="${color ? 'color:'+color : ''}"></i> <span>${label}</span>`;
-    opt.onclick = onClick;
-    parent.appendChild(opt);
-}
-
-function addMenuSub(parent, label, icon) {
-    const opt = document.createElement('div');
-    opt.className = 'menu-option has-sub';
-    opt.innerHTML = `<i class="fas ${icon}"></i> <span>${label}</span> <i class="fas fa-chevron-right" style="font-size:8px; margin-left:auto;"></i>`;
-    const sub = document.createElement('div');
-    sub.className = 'menu-sub';
-    opt.appendChild(sub);
-    parent.appendChild(opt);
-    return sub;
-}
-
-function addMenuSeparator(parent) {
-    const sep = document.createElement('div');
-    sep.className = 'menu-separator';
-    parent.appendChild(sep);
-}
-
 function hideContextMenu() {
-    const old = document.querySelector('.custom-context-menu');
-    if (old) old.remove();
+    window.electronAPI.send('hide-tab-context');
 }
+
+// IPC Triggers from Tab Context View
+window.electronAPI.on('close-tab-trigger', (event, tabId) => {
+    window.electronAPI.send('close-tab', tabId);
+});
+window.electronAPI.on('create-tab-group-trigger', (event, tabId) => {
+    window.electronAPI.send('create-tab-group', { name: 'New Group', color: '#a855f7', tabIds: [tabId] });
+});
+window.electronAPI.on('remove-from-group-trigger', (event, tabId) => {
+    window.electronAPI.send('remove-from-group', tabId);
+});
+window.electronAPI.on('add-to-group-trigger', (event, data) => {
+    window.electronAPI.send('add-to-group', { tabId: data.tabId, groupId: data.groupId });
+});
+
+
 
 window.electronAPI.send('request-tabs');
 
