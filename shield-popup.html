@@ -237,6 +237,12 @@
             letter-spacing: 0.6px;
         }
 
+        .section {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
         .toggle-item {
             display: flex;
             align-items: center;
@@ -434,41 +440,7 @@
             </div>
         </div>
 
-        <div class="vpn-section">
-            <div class="toggle-item" style="background: transparent; border: none; padding: 0;">
-                <div class="toggle-info">
-                    <span class="toggle-title" style="display: flex; align-items: center; gap: 8px;">
-                        <i class="fas fa-globe-americas" style="color: var(--accent); font-size: 11px;"></i> Proxy VPN
-                        <div class="status-pill" id="vpn-status-pill" style="margin-left: 4px;">
-                            <div class="status-dot" id="vpn-status-dot"></div>
-                            <span id="vpn-status-text">OFF</span>
-                        </div>
-                    </span>
-                    <span class="toggle-desc">Change your IP address</span>
-                </div>
-                <label class="switch">
-                    <input type="checkbox" id="vpn-toggle">
-                    <span class="slider"></span>
-                </label>
-            </div>
 
-            <div class="custom-select" id="custom-select">
-                <div class="select-trigger" id="select-trigger">
-                    <span id="selected-region-text">Auto Selection (Optimal)</span>
-                    <i class="fas fa-chevron-down"></i>
-                </div>
-                <div class="select-options" id="select-options">
-                    <div class="option active" data-value="auto">Auto Selection (Optimal)</div>
-                    <div class="option" data-value="us">United States (Fast)</div>
-                    <div class="option" data-value="uk">United Kingdom</div>
-                    <div class="option" data-value="de">Germany</div>
-                    <div class="option" data-value="jp">Japan</div>
-                    <div class="option" data-value="in">India</div>
-                </div>
-            </div>
-
-            <p class="note"> Note: Proxy protection may result in slower connection speeds due to data routing.</p>
-        </div>
     </div>
 
     <style>

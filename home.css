@@ -415,15 +415,28 @@ body[data-theme="light"] .greeting-display {
     position: relative; width: 140px; height: 140px; margin: 20px auto; 
     display: flex; align-items: center; justify-content: center; 
     background: rgba(255,255,255,0.02); border-radius: 50%;
+    transition: transform 1.5s cubic-bezier(0.25, 0.46, 0.45, 0.94);
 }
-.timer-svg { position: absolute; top: 0; left: 0; transform: rotate(-90deg); width: 140px; height: 140px; pointer-events: none; }
+.timer-svg { position: absolute; top: 0; left: 0; transform: rotate(-90deg); width: 140px; height: 140px; pointer-events: none; overflow: visible; }
 .timer-svg circle { fill: none; stroke: rgba(255,255,255,0.03); stroke-width: 6; stroke-linecap: round; }
 .timer-svg .progress { 
     stroke: var(--accent); stroke-dasharray: 471; stroke-dashoffset: 471; 
     stroke-width: 7;
-    transition: stroke-dashoffset 0.8s cubic-bezier(0.16, 1, 0.3, 1); 
+    filter: drop-shadow(0 0 15px var(--accent-glow));
+    transition: stroke-dashoffset 0.8s cubic-bezier(0.16, 1, 0.3, 1), transform 1.5s ease;
+    transform-origin: center;
 }
 .timer-val { font-family: var(--font-title); font-size: 32px; font-weight: 200; color: #fff; letter-spacing: -1px; z-index: 5; }
+.breathe-val { font-family: var(--font-title); font-size: 20px; font-weight: 600; color: #fff; letter-spacing: 2px; z-index: 5; text-transform: uppercase; text-shadow: 0 0 10px rgba(255,255,255,0.3); transition: opacity 0.5s; }
+
+.ff-mode-toggle { display: flex; gap: 12px; background: rgba(0,0,0,0.2); padding: 4px 8px; border-radius: 100px; border: 1px solid rgba(255,255,255,0.05); }
+.ff-mode { font-size: 9px; font-weight: 800; color: var(--text-dim); cursor: pointer; padding: 4px 8px; border-radius: 100px; transition: 0.3s; letter-spacing: 1px; }
+.ff-mode.active { background: rgba(255,255,255,0.1); color: var(--accent); text-shadow: 0 0 8px var(--accent-glow); }
+
+/* Breathe Mode Animations */
+.timer-container.breathe-inhale { transform: scale(1.15); }
+.timer-container.breathe-exhale { transform: scale(0.9); }
+
 .timer-acts { display: flex; justify-content: center; gap: 12px; margin-bottom: 20px; }
 .timer-btn { width: 40px; height: 40px; border-radius: 100px; background: rgba(255,255,255,0.04); border: 1px solid var(--glass-border); color: #fff; cursor: pointer; transition: 0.4s; display: flex; align-items: center; justify-content: center; font-size: 14px; }
 .timer-btn:hover { background: rgba(255,255,255,0.08); transform: translateY(-2px); }

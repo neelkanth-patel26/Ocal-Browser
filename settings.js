@@ -235,19 +235,21 @@ document.querySelectorAll('.ext-card .btn').forEach(btn => {
     };
 });
 
+function filterExtSettings() {
+    const query = document.getElementById('ext-search-input')?.value.toLowerCase().trim() || '';
+    document.querySelectorAll('#ext-settings-grid .ext-card-row').forEach(card => {
+        const name = (card.dataset.extname || card.querySelector('.ext-card-name')?.innerText || '').toLowerCase();
+        card.style.display = !query || name.includes(query) ? '' : 'none';
+    });
+}
+
 function filterExtensions() {
     const query = document.getElementById('ext-search-input')?.value.toLowerCase().trim() || '';
-    const activeFilter = document.querySelector('.filter-pill.active')?.dataset.filter || 'all';
-
-    document.querySelectorAll('#extensions-grid .ext-item-card').forEach(card => {
-        const category = card.dataset.category || 'all';
-        const name = (card.querySelector('h5')?.innerText || '').toLowerCase();
-        const description = (card.querySelector('.ext-item-desc')?.innerText || '').toLowerCase();
-
-        const matchesFilter = activeFilter === 'all' || category === activeFilter;
-        const matchesQuery = !query || name.includes(query) || description.includes(query);
-
-        card.style.display = (matchesFilter && matchesQuery) ? '' : 'none';
+    // Support both old grid and new grid
+    const cards = document.querySelectorAll('#ext-settings-grid .ext-card-row, #extensions-grid .ext-item-card');
+    cards.forEach(card => {
+        const name = (card.dataset.extname || card.querySelector('.ext-card-name, h5')?.innerText || '').toLowerCase();
+        card.style.display = !query || name.includes(query) ? '' : 'none';
     });
 }
 
@@ -262,7 +264,27 @@ document.querySelectorAll('.filter-pill').forEach(btn => {
     });
 });
 
+filterExtSettings();
 filterExtensions();
+
+// CWS Install from Settings
+window.installExtFromSettings = async function() {
+    const input = document.getElementById('ext-cws-input');
+    const id = input?.value.trim();
+    if (!id) return;
+    const loader = document.getElementById('ext-install-loader');
+    if (loader) loader.style.display = 'flex';
+    try {
+        const result = await window.electronAPI.invoke('install-extension', id);
+        if (input) input.value = '';
+        window.electronAPI.getSettings().then(s => renderExtensions(s));
+        alert(`Successfully installed ${result.name}!`);
+    } catch (err) {
+        alert('Failed to install extension. Please check the ID or URL.');
+    } finally {
+        if (loader) loader.style.display = 'none';
+    }
+};
 
 // Security Pulse Trigger
 const shieldCard = document.querySelector('.shield-card');
@@ -282,37 +304,47 @@ if (shieldCard) {
 function renderProfiles(s) {
     const grid = document.getElementById('profile-grid');
     if (!grid) return;
-    grid.innerHTML = (s.profiles || []).map(p => `
-        <div class="choice-item ${s.currentProfileId === p.id ? 'active' : ''}" style="display:flex; flex-direction:column; align-items:center; justify-content:center; gap:20px; padding: 32px 24px; position: relative; min-height: 180px; border-radius: 0px !important;">
-            <div class="profile-actions" style="position: absolute; top: 12px; right: 12px; display: flex; gap: 8px; opacity: 0; transition: 0.2s;">
-                <button onclick="editProfilePrompt('${p.id}')" style="background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); color: #fff; width: 28px; height: 28px; border-radius: 0px; cursor: pointer; font-size: 11px;"><i class="fas fa-pen"></i></button>
-                ${p.id !== 'default' ? `<button onclick="deleteProfile('${p.id}', '${p.name}')" style="background: rgba(239, 68, 68, 0.1); border: 1px solid rgba(239, 68, 68, 0.2); color: #ef4444; width: 28px; height: 28px; border-radius: 0px; cursor: pointer; font-size: 11px;"><i class="fas fa-trash"></i></button>` : ''}
-            </div>
-            
-            <div onclick="window.electronAPI.switchProfile('${p.id}')" style="cursor:pointer; display:flex; flex-direction:column; align-items:center; gap:16px; width: 100%;">
-                <div style="width: 68px; height: 68px; border-radius: 0px; display: flex; align-items: center; justify-content: center; font-size: 30px; background: ${s.currentProfileId === p.id ? 'var(--accent)' : 'rgba(255,255,255,0.05)'}; color: ${s.currentProfileId === p.id ? '#000' : 'var(--text)'}; box-shadow: none; transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1); border: 2px solid ${s.currentProfileId === p.id ? 'rgba(255,255,255,0.4)' : 'rgba(255,255,255,0.08)'};">
-                    <i class="fas ${p.icon || 'fa-user'}"></i>
+    grid.innerHTML = (s.profiles || []).map((p, index) => `
+        <div class="card-row" style="cursor: pointer; position: relative; padding: 20px; transition: all 0.2s; ${index === s.profiles.length - 1 ? 'border-bottom: none;' : ''}" 
+             onclick="window.electronAPI.switchProfile('${p.id}')"
+             onmouseover="this.style.background='rgba(255, 255, 255, 0.03)'"
+             onmouseout="this.style.background=''">
+            <div style="display: flex; align-items: center; gap: 20px; flex: 1;">
+                <div style="position: relative;">
+                    <div style="width: 56px; height: 56px; background: ${s.currentProfileId === p.id ? 'var(--accent)' : 'rgba(255, 255, 255, 0.05)'}; border-radius: 50%; display: flex; align-items: center; justify-content: center; color: ${s.currentProfileId === p.id ? '#000' : 'var(--text-dim)'}; font-size: 24px; flex-shrink: 0; transition: all 0.3s; border: 2px solid ${s.currentProfileId === p.id ? 'var(--accent)' : 'rgba(255, 255, 255, 0.08)'};">
+                        <i class="fas ${p.icon || 'fa-user'}"></i>
+                    </div>
+                    ${s.currentProfileId === p.id ? '<div style="position: absolute; bottom: -2px; right: -2px; width: 18px; height: 18px; background: #4ade80; border-radius: 50%; border: 2px solid var(--background); display: flex; align-items: center; justify-content: center;"><i class="fas fa-check" style="font-size: 8px; color: #000;"></i></div>' : ''}
                 </div>
-                <div style="display:flex; flex-direction:column; align-items:center; gap:6px; text-align: center;">
-                    <h5 style="margin:0; font-size:16px; font-weight:850; color:var(--text); letter-spacing:0.5px;">${p.name}</h5>
-                    ${s.currentProfileId === p.id 
-                        ? '<span style="font-size: 9px; color:var(--accent); font-weight:900; letter-spacing:1.5px; background:var(--accent-dim); padding:4px 10px; border-radius: 0px; text-transform:uppercase; border: 1px solid var(--accent-border);">Active Session</span>' 
-                        : '<span style="font-size: 9px; color:var(--text-dim); font-weight:800; letter-spacing:1px; text-transform:uppercase;">Inactive Alias</span>'}
+                <div class="card-info" style="flex: 1; min-width: 0;">
+                    <h4 style="font-size: 16px; margin-bottom: 6px; display: flex; align-items: center; gap: 10px; font-weight: 600;">
+                        ${p.name}
+                        ${s.currentProfileId === p.id ? '<span style="font-size: 10px; color: #4ade80; font-weight: 800; letter-spacing: 0.5px; background: rgba(74, 222, 128, 0.1); padding: 4px 10px; border-radius: 6px; text-transform: uppercase; border: 1px solid rgba(74, 222, 128, 0.2);">Active</span>' : ''}
+                    </h4>
+                    <p style="font-size: 13px; color: var(--text-dim);">
+                        ${s.currentProfileId === p.id ? 'Currently active • Click to view details' : 'Isolated cookies, history, and settings • Click to switch'}
+                    </p>
                 </div>
             </div>
-            
-            <style>
-                .choice-item:hover .profile-actions { opacity: 1; }
-            </style>
-        </div>
-    `).join('') + `
-        <div class="choice-item" onclick="createProfilePrompt()" style="opacity:0.6; border-style:dashed; cursor: pointer; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:16px; padding: 32px 24px; background:transparent; min-height: 180px; border-radius: 0px !important;">
-            <div style="width: 60px; height: 60px; border-radius: 0px; display: flex; align-items: center; justify-content: center; font-size: 24px; background: var(--glass); color: var(--text-dim); border: 2px dashed var(--glass-border);">
-                <i class="fas fa-plus"></i>
+            <div style="display: flex; gap: 10px; align-items: center;" onclick="event.stopPropagation();">
+                <button onclick="editProfilePrompt('${p.id}')" 
+                        style="background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); color: var(--text-dim); padding: 8px 14px; border-radius: 8px; cursor: pointer; font-size: 13px; display: flex; align-items: center; gap: 6px; transition: all 0.2s; font-weight: 500;" 
+                        onmouseover="this.style.background='rgba(255,255,255,0.1)'; this.style.color='#fff'; this.style.borderColor='rgba(255,255,255,0.2)';" 
+                        onmouseout="this.style.background='rgba(255,255,255,0.05)'; this.style.color='var(--text-dim)'; this.style.borderColor='rgba(255,255,255,0.1)';">
+                    <i class="fas fa-pen" style="font-size: 11px;"></i>
+                    <span>Edit</span>
+                </button>
+                ${p.id !== 'default' ? `
+                <button onclick="deleteProfile('${p.id}', '${p.name}')" 
+                        style="background: rgba(239, 68, 68, 0.1); border: 1px solid rgba(239, 68, 68, 0.2); color: #ef4444; padding: 8px 14px; border-radius: 8px; cursor: pointer; font-size: 13px; display: flex; align-items: center; gap: 6px; transition: all 0.2s; font-weight: 500;" 
+                        onmouseover="this.style.background='rgba(239, 68, 68, 0.2)'; this.style.borderColor='rgba(239, 68, 68, 0.3)';" 
+                        onmouseout="this.style.background='rgba(239, 68, 68, 0.1)'; this.style.borderColor='rgba(239, 68, 68, 0.2)';">
+                    <i class="fas fa-trash" style="font-size: 11px;"></i>
+                    <span>Delete</span>
+                </button>` : ''}
             </div>
-            <h5 style="margin:0; font-size:14px; font-weight:800; color:var(--text-dim); letter-spacing: 0.5px;">New Profile</h5>
         </div>
-    `;
+    `).join('');
 }
 
 // Modal Logic
@@ -606,7 +638,10 @@ if (updateBtn) {
             // Artificial delay to make it feel deliberate
             await sleep(2500);
 
-            const latest = await window.electronAPI.checkForUpdate();
+            const latest = await Promise.race([
+                window.electronAPI.checkForUpdate(),
+                new Promise(resolve => setTimeout(() => resolve(null), 15000))
+            ]);
             updateHub.classList.remove('scanning');
             
             console.log('Update Check:', {
@@ -643,7 +678,19 @@ if (updateBtn) {
             }
         } catch(e) { 
             updateHub.classList.remove('scanning');
-            updateBtn.innerText = 'Error checking'; updateBtn.disabled = false; 
+            updateStatusT.innerText = "Check Failed";
+            updateStatusD.innerText = "Unable to check for updates. Please try again later.";
+            updateBtn.innerHTML = 'Error checking'; 
+            updateBtn.disabled = false; 
+            console.error('Update check error:', e);
+            
+            // Reset after 5 seconds
+            setTimeout(() => {
+                updateStatusT.innerText = "System Check";
+                updateStatusD.innerText = "Scanning for new dimensions of Ocal.";
+                updateBtn.innerHTML = 'Check for Update <i class="fas fa-bolt"></i>';
+                updateBtn.disabled = false;
+            }, 5000);
         }
     };
 }
@@ -747,6 +794,19 @@ window.electronAPI.getSettings().then(s => {
     if (s.homeLayout) window.updateHomeLayout(s.homeLayout, true);
     if (s.homeTileStyle) setGridValue('tile-style-grid', s.homeTileStyle);
     
+    // Initialize tile style radio buttons
+    const tileStyleRadios = document.querySelectorAll('input[name="tile-style"]');
+    tileStyleRadios.forEach(radio => {
+        if (radio.dataset.value === s.homeTileStyle) {
+            radio.checked = true;
+        }
+        radio.addEventListener('change', () => {
+            if (radio.checked) {
+                window.electronAPI.updateSetting('homeTileStyle', radio.dataset.value);
+            }
+        });
+    });
+    
     if (s.homeTileSize) window.updateHomeSetting('homeTileSize', s.homeTileSize, true);
     if (s.homeTileSpacing) window.updateHomeSetting('homeTileSpacing', s.homeTileSpacing, true);
     
@@ -777,6 +837,34 @@ window.electronAPI.getSettings().then(s => {
     renderExtensions(s);
     
     if (s.searchEngine) setGridValue('search-engine-grid', s.searchEngine);
+    
+    // Initialize search engine radio buttons
+    const searchEngineRadios = document.querySelectorAll('input[name="search-engine"]');
+    const searchEngineRows = document.querySelectorAll('[data-search-engine]');
+    
+    searchEngineRadios.forEach(radio => {
+        if (radio.value === s.searchEngine) {
+            radio.checked = true;
+        }
+    });
+    
+    searchEngineRows.forEach(row => {
+        row.addEventListener('click', () => {
+            const engine = row.dataset.searchEngine;
+            const radio = row.querySelector('input[type="radio"]');
+            if (radio) {
+                radio.checked = true;
+                window.electronAPI.updateSetting('searchEngine', engine);
+                
+                // Show/hide custom search container
+                const customContainer = document.getElementById('custom-search-container');
+                if (customContainer) {
+                    customContainer.style.display = (engine === 'custom') ? 'block' : 'none';
+                }
+            }
+        });
+    });
+    
     if (s.customSearchUrl) {
         const customInput = document.getElementById('custom-search-input');
         if (customInput) customInput.value = s.customSearchUrl;
@@ -980,32 +1068,37 @@ window.loadUnpackedExtension = async () => {
 
 function renderExtensions(s = null) {
     if (!s) return;
-    
-    const exts = [
-        { id: 'adblock', key: 'adBlockEnabled', title: 'uBlock Origin' },
-        { id: 'vault', key: 'assetVaultEnabled', title: 'Asset Vault' },
-        { id: 'ai', key: 'aiAssistantEnabled', title: 'Ocal AI Assistant' },
-        { id: 'stealth', key: 'cyberStealthEnabled', title: 'Cyber Stealth' },
-        { id: 'focus', key: 'ocalFocusEnabled', title: 'Ocal Focus' }
+
+    const builtins = [
+        { id: 'adblock',  key: 'adBlockEnabled',     toggleId: 'toggle-adblock',  defaultOn: true },
+        { id: 'vault',   key: 'assetVaultEnabled',   toggleId: 'toggle-vault',    defaultOn: false },
+        { id: 'ai',      key: 'aiAssistantEnabled',  toggleId: 'toggle-ai',       defaultOn: false },
+        { id: 'stealth', key: 'cyberStealthEnabled', toggleId: 'toggle-stealth',  defaultOn: false },
+        { id: 'focus',   key: 'ocalFocusEnabled',    toggleId: 'toggle-focus',    defaultOn: false },
     ];
 
-    exts.forEach(ext => {
-        const card = document.getElementById(`ext-${ext.id}`);
+    builtins.forEach(ext => {
+        const card   = document.getElementById(`ext-${ext.id}`);
         const status = document.getElementById(`status-${ext.id}`);
-        const btn = document.getElementById(`btn-${ext.id}`);
-        if (!card || !status || !btn) return;
+        const toggle = document.getElementById(ext.toggleId);
+        if (!card) return;
 
-        const isActive = ext.key === 'adBlockEnabled' ? (s[ext.key] !== false) : s[ext.key];
-        
-        card.classList.toggle('active', isActive);
-        status.className = `ext-status-indicator ${isActive ? 'on' : 'off'}`;
-        status.innerHTML = `<span class="status-dot"></span><span>${isActive ? 'Active' : 'Available'}</span>`;
-        
-        btn.className = isActive ? 'btn secondary mini' : 'btn primary mini';
-        btn.innerText = isActive ? 'Manage' : 'Install';
+        const isActive = ext.key === 'adBlockEnabled' ? (s[ext.key] !== false) : !!s[ext.key];
+
+        // Toggle checkbox state
+        if (toggle) toggle.checked = isActive;
+
+        // Status indicator
+        if (status) {
+            status.className = `ext-status-indicator ${isActive ? 'on' : 'off'}`;
+            status.innerHTML = `<span class="status-dot"></span><span>${isActive ? 'Active' : 'Idle'}</span>`;
+        }
+
+
     });
 
-    const grid = document.getElementById('extensions-grid');
+    // Dynamic (installed) extensions
+    const grid = document.getElementById('ext-settings-grid');
     if (!grid) return;
 
     grid.querySelectorAll('.dynamic-ext').forEach(el => el.remove());
@@ -1013,31 +1106,40 @@ function renderExtensions(s = null) {
     if (s.extensions && s.extensions.length > 0) {
         s.extensions.forEach(ext => {
             const el = document.createElement('div');
-            el.className = `ext-item-card custom dynamic-ext ${ext.enabled ? 'active' : ''}`;
-            el.dataset.category = 'custom';
+            el.className = 'ext-card-row dynamic-ext';
+            el.dataset.extname = (ext.name || '').toLowerCase();
             el.innerHTML = `
-                <div class="ext-item-header">
-                    <div class="ext-item-icon color-purple"><i class="fas fa-puzzle-piece"></i></div>
-                    <div class="ext-item-meta">
-                        <span class="ext-label purple">${ext.isLocal ? 'LOCAL' : 'CUSTOM'}</span>
-                        <h5>${ext.name}</h5>
-                    </div>
+                <div class="ext-card-icon" style="background:rgba(251,146,60,0.1); color:#fb923c;">
+                    <i class="fas fa-puzzle-piece"></i>
                 </div>
-                <p class="ext-item-desc">${ext.description || 'No description provided.'}</p>
-                <div class="ext-item-footer">
-                    <div class="ext-status-indicator ${ext.enabled ? 'on' : 'off'}">
-                        <span class="status-dot"></span>
-                        <span>${ext.enabled ? 'Active' : 'Disabled'}</span>
+                <div class="ext-card-info">
+                    <div class="ext-card-header">
+                        <span class="ext-card-name">${ext.name}</span>
+                        <label class="ext-toggle-wrap">
+                            <input type="checkbox" ${ext.enabled ? 'checked' : ''}
+                                onchange="window.electronAPI.toggleExtension('${ext.id}', this.checked); setTimeout(() => window.electronAPI.getSettings().then(s => renderExtensions(s)), 100);">
+                            <span class="ext-slider"></span>
+                        </label>
                     </div>
-                    <button class="btn ${ext.enabled ? 'secondary' : 'primary'} mini" onclick="window.electronAPI.toggleExtension('${ext.id}', ${!ext.enabled}); setTimeout(() => window.electronAPI.getSettings().then(s => renderExtensions(s)), 100);">${ext.enabled ? 'Disable' : 'Enable'}</button>
-                    ${ext.isLocal ? `<button class="btn danger mini" style="margin-left: 5px; padding: 4px 8px;" onclick="window.electronAPI.removeExtension('${ext.id}').then(() => window.electronAPI.getSettings().then(s => renderExtensions(s)))"><i class="fas fa-trash"></i></button>` : ''}
+                    <div class="ext-card-version">Version ${ext.version || '?'} &middot; ID: ${ext.id}</div>
+                    <div class="ext-card-desc">${ext.description || 'No description provided.'}</div>
+                    <div class="ext-card-footer">
+                        <span class="ext-card-tag local">${ext.isLocal ? 'LOCAL' : 'INSTALLED'}</span>
+                        <div class="ext-card-actions">
+                            <span class="ext-status-indicator ${ext.enabled ? 'on' : 'off'}">
+                                <span class="status-dot"></span>
+                                <span>${ext.enabled ? 'Active' : 'Disabled'}</span>
+                            </span>
+                            ${ext.isLocal ? `<button class="ext-remove-btn" onclick="window.electronAPI.removeExtension('${ext.id}').then(() => window.electronAPI.getSettings().then(s => renderExtensions(s)))"><i class="fas fa-trash"></i> Remove</button>` : `<a class="ext-view-link" onclick="window.open('https://chromewebstore.google.com/detail/${ext.id}')">View in Store</a>`}
+                        </div>
+                    </div>
                 </div>
             `;
             grid.appendChild(el);
         });
     }
 
-    if (window.filterExtensions) window.filterExtensions();
+    if (window.filterExtSettings) window.filterExtSettings();
 }
 
 window.toggleExtension = (key) => {
@@ -1058,20 +1160,6 @@ window.toggleSecurityFeature = (key, el) => {
 };
 
 window.toggleSearchFeature = window.toggleSecurityFeature;
-
-window.updateSearchEngine = (val) => {
-    setGridValue('search-engine-grid', val);
-    window.electronAPI.send('set-security-toggle', { key: 'searchEngine', value: val });
-    
-    const customContainer = document.getElementById('custom-search-container');
-    if (customContainer) customContainer.style.display = (val === 'custom') ? 'block' : 'none';
-};
-
-document.getElementById('search-engine-grid').addEventListener('click', (e) => {
-    const item = e.target.closest('.choice-item');
-    if (!item) return;
-    updateSearchEngine(item.dataset.value);
-});
 
 document.getElementById('custom-search-input')?.addEventListener('input', (e) => {
     window.electronAPI.send('set-security-toggle', { key: 'customSearchUrl', value: e.target.value });

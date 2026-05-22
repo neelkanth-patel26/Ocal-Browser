@@ -596,17 +596,7 @@ document.addEventListener('DOMContentLoaded', () => {
         }
         
         if (pStatus) {
-            pStatus.style.display = s.vpnEnabled ? 'flex' : 'none';
-            pStatus.onclick = (e) => {
-                e.stopPropagation();
-                const rect = pStatus.getBoundingClientRect();
-                window.electronAPI.send('show-shield-popup', { 
-                    x: rect.left, 
-                    y: rect.top, 
-                    width: rect.width, 
-                    height: rect.height 
-                });
-            };
+            pStatus.style.display = 'none'; // Feature removed
         }
     });
 });
@@ -647,7 +637,7 @@ function applyGlobalSettings(s) {
         sStatus.style.display = 'flex';
         sStatus.classList.toggle('inactive', s.adBlockEnabled === false && s.trackingProtection === false);
     }
-    if (pStatus) pStatus.style.display = s.vpnEnabled ? 'flex' : 'none';
+    if (pStatus) pStatus.style.display = 'none';
     if (aiBtn) aiBtn.style.display = s.aiAssistantEnabled ? 'flex' : 'none';
 }
 

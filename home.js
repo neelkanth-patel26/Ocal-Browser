@@ -129,57 +129,145 @@ new TodoManager();
 // ── Focus Timer ───────────────────────────────────────────────
 class FocusTimer {
     constructor() {
+        this.mode = 'timer'; // 'timer' or 'breathe'
         this.timeLeft = 25 * 60;
         this.timerId = null;
-        this.timerToggle = timerToggle;
-        this.timerReset = timerReset;
+        this.breatheInterval = null;
+        
+        this.timerToggle = document.getElementById('timer-toggle');
+        this.timerReset = document.getElementById('timer-reset');
         this.progressEl = document.getElementById('timer-progress');
+        this.timerDisplay = document.getElementById('timer-display');
+        this.breatheDisplay = document.getElementById('breathe-display');
+        this.timerContainer = document.getElementById('timer-container');
+        
+        this.modeTimerBtn = document.getElementById('ff-mode-timer');
+        this.modeBreatheBtn = document.getElementById('ff-mode-breathe');
+        
         this.totalSeconds = 25 * 60;
-        if (timerToggle) timerToggle.onclick = () => this.toggle();
-        if (timerReset) timerReset.onclick = () => this.reset();
+        
+        if (this.timerToggle) this.timerToggle.onclick = () => this.toggle();
+        if (this.timerReset) this.timerReset.onclick = () => this.reset();
+        
+        if (this.modeTimerBtn) this.modeTimerBtn.onclick = () => this.setMode('timer');
+        if (this.modeBreatheBtn) this.modeBreatheBtn.onclick = () => this.setMode('breathe');
+        
         this.updateDisplay();
     }
+    
+    setMode(newMode) {
+        if (this.mode === newMode) return;
+        this.pause();
+        this.mode = newMode;
+        
+        if (this.modeTimerBtn) {
+            this.modeTimerBtn.classList.toggle('active', newMode === 'timer');
+            this.modeBreatheBtn.classList.toggle('active', newMode === 'breathe');
+        }
+        
+        if (newMode === 'timer') {
+            if (this.timerDisplay) this.timerDisplay.style.display = 'block';
+            if (this.breatheDisplay) this.breatheDisplay.style.display = 'none';
+            if (this.timerContainer) {
+                this.timerContainer.classList.remove('breathe-inhale', 'breathe-exhale');
+            }
+            this.updateDisplay();
+        } else {
+            if (this.timerDisplay) this.timerDisplay.style.display = 'none';
+            if (this.breatheDisplay) {
+                this.breatheDisplay.style.display = 'block';
+                this.breatheDisplay.textContent = 'READY';
+            }
+            if (this.progressEl) this.progressEl.style.strokeDashoffset = 0; // Full circle
+        }
+    }
+    
     toggle() {
         if (this.isRunning) this.pause();
         else this.start();
     }
+    
     start() {
         this.isRunning = true;
         document.body.classList.add('focus-active');
-        if (timerToggle) {
-            timerToggle.innerHTML = '<i class="fas fa-pause"></i>';
-            timerToggle.classList.add('active');
+        if (this.timerToggle) {
+            this.timerToggle.innerHTML = '<i class="fas fa-pause"></i>';
+            this.timerToggle.classList.add('active');
         }
-        this.timerId = setInterval(() => {
-            this.timeLeft--;
-            this.updateDisplay();
-            if (this.timeLeft <= 0) this.complete();
-        }, 1000);
+        
+        if (this.mode === 'timer') {
+            this.timerId = setInterval(() => {
+                this.timeLeft--;
+                this.updateDisplay();
+                if (this.timeLeft <= 0) this.complete();
+            }, 1000);
+        } else {
+            this.startBreathing();
+        }
     }
+    
+    startBreathing() {
+        // 4s Inhale, 4s Exhale rhythm
+        let step = 'inhale';
+        const breatheCycle = () => {
+            if (!this.isRunning) return;
+            if (step === 'inhale') {
+                if (this.breatheDisplay) this.breatheDisplay.textContent = 'INHALE';
+                if (this.timerContainer) {
+                    this.timerContainer.classList.remove('breathe-exhale');
+                    this.timerContainer.classList.add('breathe-inhale');
+                }
+                step = 'exhale';
+                this.breatheInterval = setTimeout(breatheCycle, 4000);
+            } else {
+                if (this.breatheDisplay) this.breatheDisplay.textContent = 'EXHALE';
+                if (this.timerContainer) {
+                    this.timerContainer.classList.remove('breathe-inhale');
+                    this.timerContainer.classList.add('breathe-exhale');
+                }
+                step = 'inhale';
+                this.breatheInterval = setTimeout(breatheCycle, 4000);
+            }
+        };
+        breatheCycle();
+    }
+    
     pause() {
         this.isRunning = false;
         document.body.classList.remove('focus-active');
         clearInterval(this.timerId);
-        if (timerToggle) {
-            timerToggle.innerHTML = '<i class="fas fa-play"></i>';
-            timerToggle.classList.remove('active');
+        clearTimeout(this.breatheInterval);
+        
+        if (this.timerToggle) {
+            this.timerToggle.innerHTML = '<i class="fas fa-play"></i>';
+            this.timerToggle.classList.remove('active');
+        }
+        if (this.mode === 'breathe' && this.timerContainer) {
+            this.timerContainer.classList.remove('breathe-inhale', 'breathe-exhale');
+            if (this.breatheDisplay) this.breatheDisplay.textContent = 'PAUSED';
         }
     }
+    
     reset() {
         this.pause();
-        this.timeLeft = 25 * 60;
-        this.updateDisplay();
+        if (this.mode === 'timer') {
+            this.timeLeft = 25 * 60;
+            this.updateDisplay();
+        } else {
+            if (this.breatheDisplay) this.breatheDisplay.textContent = 'READY';
+        }
     }
+    
     complete() { 
         this.pause(); 
-        // Using a non-blocking notification if possible, but keeping alert for now as per original
         alert('Focus session complete!'); 
         this.reset(); 
     }
+    
     updateDisplay() {
         const mins = Math.floor(this.timeLeft / 60);
         const secs = this.timeLeft % 60;
-        if (timerDisplay) timerDisplay.textContent = `${String(mins).padStart(2, '0')}:${String(secs).padStart(2, '0')}`;
+        if (this.timerDisplay) this.timerDisplay.textContent = `${String(mins).padStart(2, '0')}:${String(secs).padStart(2, '0')}`;
         
         if (this.progressEl) {
             const offset = 471 - (471 * (this.timeLeft / this.totalSeconds));

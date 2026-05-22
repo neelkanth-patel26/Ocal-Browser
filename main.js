@@ -242,8 +242,7 @@ if (!userSettings.customSearchUrl) userSettings.customSearchUrl = 'https://www.g
 if (userSettings.askSavePath === undefined) userSettings.askSavePath = false;
 if (!userSettings.downloads) userSettings.downloads = [];
 if (userSettings.adBlockEnabled === undefined) userSettings.adBlockEnabled = true;
-if (userSettings.vpnEnabled === undefined) userSettings.vpnEnabled = false;
-if (userSettings.vpnRegion === undefined) userSettings.vpnRegion = 'auto'; // Default VPN region
+
 if (userSettings.proxyUrl === undefined) userSettings.proxyUrl = 'socks5://127.0.0.1:9050'; // Default Tor-style or generic
 
 // Security Hub Defaults
@@ -371,7 +370,7 @@ function getWinOffset() {
 
 var sidebarOverlayView = null;
 var aiSidebarView = null;
-var vpnExtensionId = null; // Stores discovered VPN extension webContentsId
+
 var suggestionsView = null;
 var siteInfoView = null;
 var webAppView = null;
@@ -444,21 +443,6 @@ function applyShieldSettings() {
                 return;
             }
 
-            // 2. VPN v4: National Country Redirect (NCR) Force
-            // Ensures search results are not restricted by local ISP/region if VPN is enabled.
-            if (userSettings.vpnEnabled && url.includes('google.') && (url.includes('.co.in') || url.includes('.de') || url.includes('.co.uk'))) {
-                let globalUrl;
-                if (url.includes('/search') || url.length < (url.indexOf('google.') + 15)) {
-                    globalUrl = url.replace(/google\.[a-z\.]+/i, 'google.com/ncr');
-                } else {
-                    globalUrl = url.replace(/google\.[a-z\.]+/i, 'google.com');
-                }
-                if (globalUrl !== details.url) {
-                    console.log(`[VPN v4] Forcing NCR/Global: ${url} -> ${globalUrl}`);
-                    callback({ redirectURL: globalUrl });
-                    return;
-                }
-            }
             callback({});
         };
 
@@ -482,11 +466,6 @@ function applyShieldSettings() {
 
         const masterOnBeforeSendHeaders = (details, callback) => {
             const headers = details.requestHeaders || {};
-            if (!userSettings.vpnEnabled) {
-                callback({ requestHeaders: headers });
-                return;
-            }
-
             const url = details.url.toLowerCase();
             const isVideo = url.includes('googlevideo.com');
 
@@ -547,6 +526,10 @@ function setupSessionHandlers() {
         const res = checkPermission(origin, permission === 'media' ? 'audio' : permission);
         if (res !== null) return callback(res);
     } catch (e) {}
+    // Default deny for sensitive permissions like geolocation if not explicitly allowed
+    if (permission === 'geolocation' || permission === 'notifications') {
+        return callback(false);
+    }
     callback(true);
   });
 
@@ -559,10 +542,6 @@ function setupSessionHandlers() {
 
   applyShieldSettings();
 
-  // Initial Proxy Setup
-  if (userSettings.vpnEnabled) {
-      applyProxy(userSettings.vpnRegion);
-  }
 }
 
 // Modern Opera-Style Proxy Lifecycle
@@ -581,89 +560,8 @@ const PROXY_BYPASS_LIST = [
     '*.ggpht.com'
 ].join(';');
 
-// Ocal Internal Redirect Pool (Pre-VPN)
+// Ocal Internal Redirect Pool
 const INTERNAL_RESCUE_DASHBOARD = 'ocal://home';
-
-function applyProxy(region, enabled = true) {
-    const command = { type: 'TOGGLE_VPN', enabled, region: region || 'auto' };
-    
-    // 1. Send to all Renderers (Shield Popups, etc.)
-    BrowserWindow.getAllWindows().forEach(bw => {
-        if (!bw.isDestroyed()) {
-            bw.webContents.send('vpn-extension-command', command);
-        }
-    });
-
-    // 2. Target the specific discovery-identified extension
-    if (vpnExtensionId) {
-        const wc = webContents.fromId(vpnExtensionId);
-        if (wc && !wc.isDestroyed()) {
-            wc.postMessage('vpn-extension-command', command);
-            wc.send('vpn-extension-command', command);
-            return; // Target found and messaged
-        }
-    }
-
-    // 3. Fallback: Search all webContents
-    webContents.getAllWebContents().forEach(wc => {
-        try {
-            if (!wc.isDestroyed() && (wc.getURL().includes('ocal-vpn-extension') || wc.getURL().includes('background.js'))) {
-                wc.postMessage('vpn-extension-command', command);
-                wc.send('vpn-extension-command', command);
-                
-                const js = `self.dispatchEvent(new MessageEvent('message', { data: ${JSON.stringify({ type: 'vpn-extension-command', payload: command })} }));`;
-                wc.executeJavaScript(js).catch(() => {});
-            }
-        } catch (e) {}
-    });
-}
-
-// ── Ocal VPN Bridge (Modular External Extension Interface) ──────────────────
-// This allows d:\Brower\ocal-vpn-extension to control the browser's proxy settings.
-ipcMain.on('vpn-set-proxy', (e, { pacCode, region }) => {
-    // Basic validation to prevent malformed PAC scripts
-    if (!pacCode || typeof pacCode !== 'string' || !pacCode.includes('FindProxyForURL')) {
-        console.error('[Ocal VPN] Invalid PAC code received from extension');
-        return;
-    }
-
-    const pacScript = 'data:application/x-ns-proxy-autoconfig;base64,' + 
-                      Buffer.from(pacCode).toString('base64');
-    
-    broadcastVpnStatus('Connecting');
-
-    const setProxyFor = (sess) => {
-        return sess.setProxy({ pacScript })
-            .then(() => {
-                const displayRegion = region === 'auto' ? 'RESCUE POOL' : region.toUpperCase();
-                console.log(`[Ocal VPN] External Control Active: ${displayRegion}`);
-                broadcastVpnStatus('Connected', displayRegion);
-            })
-            .catch((err) => {
-                console.error(`[Ocal VPN] Initialisation Error: ${err}`);
-                broadcastVpnStatus('Error');
-                return sess.setProxy({ proxyRules: '' });
-            });
-    };
-
-    setProxyFor(session.defaultSession);
-    setProxyFor(session.fromPartition('persist:google_login'));
-});
-
-// Listener for extension signals via console/messenger
-ipcMain.on('vpn-signal', (e, data) => {
-    if (data.type === 'SET_PROXY') {
-        ipcMain.emit('vpn-set-proxy', e, data);
-    } else if (data.type === 'CLEAR_PROXY') {
-        ipcMain.emit('vpn-clear-proxy', e);
-    }
-});
-
-ipcMain.on('vpn-clear-proxy', () => {
-    session.defaultSession.setProxy({});
-    session.fromPartition('persist:google_login').setProxy({});
-    broadcastVpnStatus('OFF');
-});
 
 ipcMain.on('print-document', (event) => {
     const wc = event.sender;
@@ -671,21 +569,6 @@ ipcMain.on('print-document', (event) => {
         wc.print({ silent: false, printBackground: true });
     }
 });
-
-function broadcastVpnStatus(status, details = '') {
-    if (shieldPopupView && !shieldPopupView.webContents.isDestroyed()) {
-        shieldPopupView.webContents.send('vpn-status-updated', { status, details });
-    }
-}
-
-function handleVpnFailure(contents, code) {
-    if (userSettings.vpnEnabled) {
-        console.warn(`[VPN] Connection Failure (Code: ${code}) for URL: ${contents.getURL()}`);
-        
-        // Failover logic now handled by the VPN extension's Rescue PAC
-        broadcastVpnStatus('Error', `Code ${code}`);
-    }
-}
 
 function applyCyberStealth(webContents) {
     if (!userSettings.cyberStealthEnabled) return;
@@ -960,18 +843,8 @@ app.on('web-contents-created', (event, contents) => {
         if (message.startsWith('SIGNAL_INIT ')) {
             try {
                 const data = JSON.parse(message.replace('SIGNAL_INIT ', ''));
-                if (data.type === 'vpn-extension') {
-                    vpnExtensionId = contents.id;
-                    console.log(`[Ocal Extension Bridge] Discovered VPN Extension (ID: ${vpnExtensionId})`);
-                }
+
             } catch (err) {}
-        } else if (message.startsWith('SIGNAL_SET_PROXY ')) {
-            try {
-                const data = JSON.parse(message.replace('SIGNAL_SET_PROXY ', ''));
-                ipcMain.emit('vpn-set-proxy', {}, data);
-            } catch (err) { console.error('[Ocal Extension Bridge] Malformed signal:', err); }
-        } else if (message.startsWith('SIGNAL_CLEAR_PROXY')) {
-            ipcMain.emit('vpn-clear-proxy', {});
         }
     });
 
@@ -1055,7 +928,7 @@ app.on('web-contents-created', (event, contents) => {
 
     contents.on('did-fail-load', (e, code, desc, url, isMain) => {
         if (isMain) {
-            handleVpnFailure(contents, code);
+
         }
     });
 });
@@ -1743,7 +1616,7 @@ function createNewTab(url = null) {
 
   view.webContents.on('did-fail-load', (event, errorCode, errorDescription, validatedURL, isMainFrame) => {
       if (isMainFrame) {
-          handleVpnFailure(view.webContents, errorCode);
+
 
           // Connectivity Rescue Logic
           const connectivityErrors = [
@@ -1762,16 +1635,6 @@ function createNewTab(url = null) {
       }
 
       if (mainWindow && !mainWindow.isDestroyed()) {
-        if (isMainFrame && userSettings.vpnEnabled) {
-            // Detect and broadcast proxy-specific errors
-            const proxyErrors = [-130, -118, -136, -107];
-            if (proxyErrors.includes(errorCode)) {
-                mainWindow.webContents.send('proxy-error', {
-                    region: userSettings.vpnRegion,
-                    error: errorDescription
-                });
-            }
-        }
         mainWindow.webContents.send('load-progress', { id, progress: 0 });
     }
   });
@@ -2600,16 +2463,6 @@ ipcMain.on('pip-video-status', (e, data) => {
     }
 });
 
-ipcMain.on('apply-proxy', (e, { enabled, region }) => {
-    if (enabled) {
-        applyProxy(region);
-    } else {
-        session.defaultSession.setProxy({ proxyRules: '' })
-            .then(() => console.log('[Proxy] Reverted to direct connection'))
-            .catch(err => console.error(`[Proxy] Failed to clear proxy: ${err}`));
-    }
-});
-
 ipcMain.handle('get-shield-stats', (e, tabId) => {
     const viewItem = tabId ? views.find(v => v.id === tabId) : null;
     const wc = viewItem ? viewItem.view.webContents : null;
@@ -2960,17 +2813,6 @@ ipcMain.on('update-setting', (e, key, val) => {
       applyShieldSettings();
   }
 
-  if (key === 'vpnEnabled') {
-      if (val) applyProxy(userSettings.vpnRegion);
-      else {
-          session.defaultSession.setProxy({ proxyRules: '' }).catch(() => {});
-          session.fromPartition('persist:google_login').setProxy({ proxyRules: '' }).catch(() => {});
-      }
-  }
-
-  if (key === 'vpnRegion' && userSettings.vpnEnabled) {
-      applyProxy(val);
-  }
   if (key === 'themeMode') {
       const bgColor = val === 'light' ? '#ffffff' : '#0c0c0e';
       if (mainWindow && !mainWindow.isDestroyed()) {
@@ -3287,6 +3129,16 @@ async function checkForUpdatesSilently() {
 
 ipcMain.handle('check-for-update', async () => {
     return new Promise((resolve) => {
+        let resolved = false;
+        
+        // Set a timeout to prevent hanging
+        const timeout = setTimeout(() => {
+            if (!resolved) {
+                resolved = true;
+                resolve(null);
+            }
+        }, 15000); // 15 second timeout
+        
         try {
             const { net } = require('electron');
             const request = net.request({
@@ -3299,26 +3151,40 @@ ipcMain.handle('check-for-update', async () => {
                 let data = '';
                 response.on('data', (chunk) => data += chunk.toString());
                 response.on('end', () => {
-                    if (response.statusCode === 200) {
-                        try {
-                            const json = JSON.parse(data);
-                            resolve({
-                                version: json.tag_name.replace(/^v/, ''),
-                                notes: json.body,
-                                url: json.html_url
-                            });
-                        } catch (e) {
+                    if (!resolved) {
+                        resolved = true;
+                        clearTimeout(timeout);
+                        if (response.statusCode === 200) {
+                            try {
+                                const json = JSON.parse(data);
+                                resolve({
+                                    version: json.tag_name.replace(/^v/, ''),
+                                    notes: json.body,
+                                    url: json.html_url
+                                });
+                            } catch (e) {
+                                resolve(null);
+                            }
+                        } else {
                             resolve(null);
                         }
-                    } else {
-                        resolve(null);
                     }
                 });
             });
-            request.on('error', () => resolve(null));
+            request.on('error', () => {
+                if (!resolved) {
+                    resolved = true;
+                    clearTimeout(timeout);
+                    resolve(null);
+                }
+            });
             request.end();
         } catch (e) {
-            resolve(null);
+            if (!resolved) {
+                resolved = true;
+                clearTimeout(timeout);
+                resolve(null);
+            }
         }
     });
 });
@@ -3604,26 +3470,6 @@ ipcMain.on('toggle-adblock', (e, enabled) => {
     broadcastSettings(userSettings);
 });
 
-ipcMain.on('toggle-vpn', (e, enabled) => {
-    userSettings.vpnEnabled = enabled;
-    saveSettings(userSettings);
-    
-    applyProxy(userSettings.vpnRegion, enabled);
-    
-    broadcastSettings(userSettings);
-});
-
-ipcMain.on('set-vpn-region', (e, region) => {
-    userSettings.vpnRegion = region;
-    saveSettings(userSettings);
-    
-    if (userSettings.vpnEnabled) {
-        applyProxy(region, true);
-    }
-
-    broadcastSettings(userSettings);
-});
-
 // History Management
 ipcMain.on('delete-history-item', (e, timestamp) => {
     userSettings.history = userSettings.history.filter(h => h.timestamp !== timestamp);
@@ -3713,18 +3559,7 @@ app.whenReady().then(async () => {
     }
 
     setupGoogleLoginPartition();
-    
-    // Apply initial proxy settings via the Ocal VPN extension
-    if (userSettings.vpnEnabled) {
-        // We broadcast the toggle command. The extension, once loaded, will handle it.
-        BrowserWindow.getAllWindows().forEach(bw => {
-            bw.webContents.send('vpn-extension-command', { 
-                type: 'TOGGLE_VPN', 
-                enabled: true, 
-                region: userSettings.vpnRegion || 'auto' 
-            });
-        });
-    }
+
 
     createMainWindow();
 });
@@ -4259,19 +4094,7 @@ class ExtensionManager {
                 }
             } catch (err) { console.error('Failed to load Ocal Media Master:', err); }
         }
-
-        // 5. OCAL VPN EXTENSION (Modular Migration)
-        try {
-            const vpnExtensionPath = path.join(__dirname, 'ocal-vpn-extension');
-            if (fs.existsSync(vpnExtensionPath)) {
-                for (const ses of targetSessions) {
-                    await ses.loadExtension(vpnExtensionPath);
-                }
-                console.log('Loaded native module: Ocal VPN (Global)');
-            }
-        } catch (err) { console.error('Failed to load Ocal VPN extension:', err); }
     }
-
     async downloadAndInstall(id) {
         // Strip out the full url if provided
         const extensionId = id.includes('/') ? id.split('/').pop().split('?')[0] : id;
