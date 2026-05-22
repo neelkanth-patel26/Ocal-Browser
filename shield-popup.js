@@ -2,12 +2,7 @@ const { ipcRenderer } = require('electron');
 
 const adBlockToggle = document.getElementById('adblock-toggle');
 const privacyToggle = document.getElementById('privacy-toggle');
-const vpnToggle = document.getElementById('vpn-toggle');
 const dislikeToggle = document.getElementById('dislike-toggle');
-const selectTrigger = document.getElementById('select-trigger');
-const selectOptions = document.getElementById('select-options');
-const selectedText = document.getElementById('selected-region-text');
-const options = document.querySelectorAll('.option');
 const adsBlockedCount = document.getElementById('ads-blocked');
 const trackersCount = document.getElementById('trackers-blocked');
 const compatBanner = document.getElementById('compat-banner');
@@ -40,12 +35,7 @@ ipcRenderer.invoke('get-settings').then(settings => {
 
     adBlockToggle.checked = settings.adBlockEnabled !== false;
     privacyToggle.checked = settings.trackingProtection !== false;
-    vpnToggle.checked = settings.vpnEnabled === true;
     if (dislikeToggle) dislikeToggle.checked = settings.youtubeDislikeEnabled !== false;
-    
-    // Update selection text and active state
-    const currentRegion = settings.vpnRegion || 'auto';
-    updateSelectionUI(currentRegion);
     
     // Stats
     ipcRenderer.invoke('get-shield-stats', window._currentTabId).then(stats => {
@@ -111,44 +101,6 @@ if (dislikeToggle) {
     };
 }
 
-vpnToggle.onchange = () => {
-    ipcRenderer.send('toggle-vpn', vpnToggle.checked);
-};
-
-selectTrigger.onclick = () => {
-    selectOptions.classList.toggle('open');
-};
-
-options.forEach(opt => {
-    opt.onclick = () => {
-        const val = opt.getAttribute('data-value');
-        updateSelectionUI(val);
-        selectOptions.classList.remove('open');
-        
-        ipcRenderer.send('set-vpn-region', val);
-    };
-});
-
-function updateSelectionUI(val) {
-    options.forEach(opt => {
-        const match = opt.getAttribute('data-value') === val;
-        opt.classList.toggle('active', match);
-        if (match) selectedText.innerText = opt.innerText;
-    });
-}
-
-function getSelectedValue() {
-    const active = document.querySelector('.option.active');
-    return active ? active.getAttribute('data-value') : 'auto';
-}
-
-// Close dropdown if clicking outside (inside the popup window)
-window.addEventListener('click', (e) => {
-    if (!selectTrigger.contains(e.target) && !selectOptions.contains(e.target)) {
-        selectOptions.classList.remove('open');
-    }
-});
-
 // Listen for stat updates in real-time
 ipcRenderer.on('shield-stats-updated', (event, stats) => {
     // 1. ALWAYS update Global stats
@@ -168,36 +120,7 @@ ipcRenderer.on('shield-stats-updated', (event, stats) => {
     }
 });
 
-// VPN Status Handling
-const vpnStatusDot = document.getElementById('vpn-status-dot');
-const vpnStatusText = document.getElementById('vpn-status-text');
 
-ipcRenderer.on('vpn-status-updated', (event, { status, details }) => {
-    if (!vpnStatusDot || !vpnStatusText) return;
-    
-    vpnStatusDot.classList.remove('active', 'connecting');
-    vpnStatusText.style.color = 'inherit';
-
-    if (status === 'Connected') {
-        vpnStatusDot.classList.add('active');
-        vpnStatusText.innerText = `Connected (${details || 'OK'})`;
-        vpnStatusText.style.color = 'var(--success)';
-    } else if (status === 'Connecting' || status === 'Retrying' || status === 'Healing' || status === 'Rescue Switch') {
-        vpnStatusDot.classList.add('connecting');
-        if (status === 'Rescue Switch') {
-            vpnStatusText.innerText = `Rescue: Switching to ${details}`;
-        } else if (status === 'Healing') {
-            vpnStatusText.innerText = 'Optimizing Node...';
-        } else {
-            vpnStatusText.innerText = status === 'Retrying' ? 'Retrying Node...' : 'Connecting...';
-        }
-    } else if (status === 'Error') {
-        vpnStatusText.innerText = 'Service Error';
-        vpnStatusText.style.color = 'var(--danger)';
-    } else {
-        vpnStatusText.innerText = 'OFF';
-    }
-});
 
 const shieldCard = document.getElementById('shield-card');
 const popupOverlay = document.getElementById('popup-overlay');

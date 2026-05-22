@@ -84,14 +84,18 @@
             <div class="glass-panel" id="timer-panel">
                 <div class="widget-head">
                     <span class="widget-title">Focus Flow</span>
-                    <i class="fas fa-brain" style="opacity: 0.2; font-size: 14px;"></i>
+                    <div class="ff-mode-toggle">
+                        <span class="ff-mode active" id="ff-mode-timer">TIMER</span>
+                        <span class="ff-mode" id="ff-mode-breathe">BREATHE</span>
+                    </div>
                 </div>
-                <div class="timer-container">
+                <div class="timer-container" id="timer-container">
                     <svg class="timer-svg" viewBox="0 0 170 170">
                         <circle cx="85" cy="85" r="75"/>
                         <circle class="progress" id="timer-progress" cx="85" cy="85" r="75"/>
                     </svg>
                     <div class="timer-val" id="timer-display">25:00</div>
+                    <div class="breathe-val" id="breathe-display" style="display: none;">READY</div>
                 </div>
                 <div class="timer-acts">
                     <button class="timer-btn" id="timer-toggle"><i class="fas fa-play"></i></button>

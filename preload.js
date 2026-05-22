@@ -182,13 +182,7 @@ contextBridge.exposeInMainWorld('electronAPI', {
   onShowBMDropdown:    (cb) => ipcRenderer.on('show-bm-dropdown',      (e, d)    => cb(d)),
   onFaviconUpdated:    (cb) => ipcRenderer.on('favicon-updated',       (e, d) => cb(d)),
 
-  // ── Ocal VPN Bridge (Extension Interface) ──────────────────────────
-  vpnBridge: {
-    setProxy: (pacCode, region) => ipcRenderer.send('vpn-set-proxy', { pacCode, region }),
-    clearProxy: () => ipcRenderer.send('vpn-clear-proxy'),
-    onCommand: (cb) => ipcRenderer.on('vpn-extension-command', (e, d) => cb(d))
-  },
-  
+
   // Printing
   print: () => ipcRenderer.send('print-document')
 });
@@ -735,57 +729,6 @@ ipcRenderer.on('pip-stop-monitoring', () => {
     if (pipPort) { pipPort.close(); pipPort = null; }
 });
 
-// ── Ocal VPN v4: Total Regional Masking (Geolocation Mocking) ──────────────────
-(async () => {
-    let currentSettings = await ipcRenderer.invoke('get-settings');
-    
-    const MOCK_COORDS = {
-        'us': { latitude: 37.7749, longitude: -122.4194 }, // San Francisco
-        'uk': { latitude: 51.5074, longitude: -0.1278 },  // London
-        'de': { latitude: 52.5200, longitude: 13.4050 },  // Berlin
-        'jp': { latitude: 35.6762, longitude: 139.6503 }, // Tokyo
-        'in': { latitude: 23.0225, longitude: 72.5714 }   // Ahmedabad
-    };
-
-    const originalGetCurrentPosition = navigator.geolocation.getCurrentPosition;
-    const originalWatchPosition = navigator.geolocation.watchPosition;
-
-    const mockGeolocation = (success, error, options) => {
-        const region = currentSettings.vpnRegion || 'auto';
-        const coords = MOCK_COORDS[region] || MOCK_COORDS['us'];
-
-        if (currentSettings.vpnEnabled) {
-            console.log(`[VPN v4] Mocking Geolocation for region: ${region}`);
-            const mockResponse = {
-                coords: {
-                    ...coords,
-                    accuracy: 10,
-                    altitude: null,
-                    altitudeAccuracy: null,
-                    heading: null,
-                    speed: null
-                },
-                timestamp: Date.now()
-            };
-            success(mockResponse);
-        } else {
-            originalGetCurrentPosition.apply(navigator.geolocation, [success, error, options]);
-        }
-    };
-
-    navigator.geolocation.getCurrentPosition = mockGeolocation;
-    navigator.geolocation.watchPosition = (success, error, options) => {
-        if (currentSettings.vpnEnabled) {
-            mockGeolocation(success, error, options);
-            return 12345; // Dummy ID
-        }
-        return originalWatchPosition.apply(navigator.geolocation, [success, error, options]);
-    };
-
-    ipcRenderer.on('settings-changed', (e, newSettings) => {
-        currentSettings = newSettings;
-    });
-})();
 
 // ── Global Custom Scrollbar Injection ─────────────────────────────────────────
 window.addEventListener('DOMContentLoaded', () => {

@@ -50,253 +50,150 @@
             --text-muted: #3a3a3a;
         }
 
-        /* ── Light Theme (Flashbang Mode) ─────────────────────────── */
+        /* ── Light Theme (Chrome-style) ─────────────────────────── */
         body[data-theme="light"] {
             --bg: #ffffff;
-            --text: #000000;
-            --text-dim: #404040;
-            --text-muted: #888888;
+            --text: #202124;
+            --text-dim: #5f6368;
+            --text-muted: #80868b;
             --glass: #ffffff;
-            --glass-border: #e5e5e5;
-            --chrome-border: #e5e5e5;
+            --glass-border: #dadce0;
+            --chrome-border: #dadce0;
         }
 
-
-        body[data-theme="light"] .engine-bg {
-            background: #ffffff !important;
-        }
 
         body[data-theme="light"] .sidebar {
-            background: #ffffff !important;
-            border-right-color: #000000;
-            box-shadow: none !important;
-            backdrop-filter: none !important;
+            background: #f8f9fa;
+            border-right-color: #dadce0;
         }
 
         body[data-theme="light"] .sidebar-header {
-            background: none !important;
-            border-bottom-color: #e5e5e5;
+            background: #f8f9fa;
+            border-bottom-color: #dadce0;
         }
 
         body[data-theme="light"] .sidebar-logo-text {
-            color: #000 !important;
-            text-shadow: none !important;
-        }
-
-        body[data-theme="light"] .sidebar-logo-sub {
-            color: rgba(0, 0, 0, 0.5) !important;
-        }
-
-        body[data-theme="light"] .studio-card {
-            background: #ffffff !important;
-            border-color: #000000 !important;
-            box-shadow: none !important;
-        }
-
-        body[data-theme="light"] .studio-card-title h3 {
-            color: #1d1d1f;
-        }
-
-        body[data-theme="light"] .studio-row:not(:last-child) {
-            border-bottom-color: rgba(0, 0, 0, 0.05);
-        }
-
-        body[data-theme="light"] .studio-row-label {
-            color: #1d1d1f;
-        }
-
-        body[data-theme="light"] .choice-item {
-            background: rgba(0, 0, 0, 0.02);
-            border-color: rgba(0, 0, 0, 0.05);
-            color: #1d1d1f;
-        }
-
-        body[data-theme="light"] .choice-item h5 {
-            color: #1d1d1f;
-        }
-
-        body[data-theme="light"] .choice-item:hover {
-            background: rgba(0, 0, 0, 0.04);
-            border-color: rgba(0, 0, 0, 0.1);
-        }
-
-        body[data-theme="light"] .choice-item.active {
-            border-color: var(--accent);
-            background: var(--accent-dim);
-        }
-
-        /* Security Dashboard Fixes */
-        body[data-theme="light"] .dash-status-badge {
-            background: #dcfce7 !important;
-            color: #166534 !important;
-            border-color: #bbf7d0 !important;
-        }
-
-        body[data-theme="light"] .dash-status-badge::before {
-            background: #166534 !important;
-            box-shadow: 0 0 5px #166534 !important;
-        }
-
-        body[data-theme="light"] .dash-card-stat {
-            background: #ffffff !important;
-            border: 1px solid rgba(0, 0, 0, 0.08) !important;
-        }
-
-        body[data-theme="light"] .dash-card-info h5 {
-            color: #000 !important;
-        }
-
-        body[data-theme="light"] .dash-card-value {
-            color: #000 !important;
-        }
-
-        body[data-theme="light"] .score-label {
-            color: #000 !important;
-        }
-
-        body[data-theme="light"] .score-label::after {
-            color: #666 !important;
-        }
-
-        body[data-theme="light"] .score-desc {
-            color: #333 !important;
-        }
-
-        body[data-theme="light"] .dash-graph-y-axis {
-            color: #666 !important;
-        }
-
-        body[data-theme="light"] .graph-label {
-            color: #666 !important;
-        }
-
-        body[data-theme="light"] .dash-graph-svg-container {
-            filter: grayscale(0.2) brightness(0.9);
-        }
-
-        body[data-theme="light"] .sidebar-logo-sub {
-            color: rgba(0, 0, 0, 0.5) !important;
-        }
-
-        body[data-theme="light"] .nav-section-label {
-            color: rgba(0, 0, 0, 0.4) !important;
-        }
-
-        body[data-theme="light"] .nav-section-label::after {
-            background: linear-gradient(90deg, rgba(0, 0, 0, 0.1), transparent) !important;
+            color: #202124;
         }
 
         body[data-theme="light"] .nav-item {
-            color: rgba(0, 0, 0, 0.6) !important;
+            color: #5f6368;
         }
 
         body[data-theme="light"] .nav-item:hover {
-            background: rgba(0, 0, 0, 0.05) !important;
-            color: #000 !important;
+            background: rgba(0, 0, 0, 0.04);
+            color: #202124;
         }
 
         body[data-theme="light"] .nav-item.active {
-            background: var(--accent-dim) !important;
-            color: var(--accent) !important;
+            background: #e8f0fe;
+            color: #1a73e8;
+            border-left-color: #1a73e8;
         }
 
-        body[data-theme="light"] .nav-item i {
-            color: inherit !important;
+        body[data-theme="light"] .nav-section-label {
+            color: #80868b;
         }
 
-        /* Content & Sections */
-        body[data-theme="light"] .content {
-            background: #f9f9fb !important;
+        body[data-theme="light"] .sidebar-version-status {
+            color: #5f6368;
         }
 
-        body[data-theme="light"] .page-header {
-            border-bottom-color: rgba(0, 0, 0, 0.06);
+        /* Light mode card styling */
+        body[data-theme="light"] .card {
+            background: #ffffff;
+            border: 1px solid #dadce0;
+            box-shadow: 0 1px 3px rgba(60, 64, 67, 0.1);
+        }
+
+        body[data-theme="light"] .card:hover {
+            border-color: #bdc1c6;
+            box-shadow: 0 2px 6px rgba(60, 64, 67, 0.15);
         }
 
         body[data-theme="light"] .page-title {
-            color: #000;
+            color: #202124;
         }
 
         body[data-theme="light"] .page-desc {
-            color: #444;
-        }
-
-        body[data-theme="light"] .group-label {
-            color: rgba(0, 0, 0, 0.5);
-        }
-
-        body[data-theme="light"] .group-label::after {
-            background: rgba(0, 0, 0, 0.1);
-        }
-
-        /* Cards */
-        body[data-theme="light"] .card {
-            background: #ffffff !important;
-            border-color: rgba(0, 0, 0, 0.1) !important;
-            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.02) !important;
-        }
-
-        body[data-theme="light"] .card-row+.card-row {
-            border-top-color: rgba(0, 0, 0, 0.05);
+            color: #5f6368;
         }
 
         body[data-theme="light"] .card-info h4 {
-            color: #000;
+            color: #202124;
         }
 
         body[data-theme="light"] .card-info p {
-            color: #555;
+            color: #5f6368;
         }
 
-        /* Form Elements */
+        body[data-theme="light"] .card-row {
+            border-bottom-color: #e8eaed;
+        }
+
+        body[data-theme="light"] .card-row:hover {
+            background: #f8f9fa;
+        }
+
+        body[data-theme="light"] .content {
+            background: #ffffff;
+        }
+
+        body[data-theme="light"] .group-label {
+            color: #5f6368;
+            padding: 0 4px;
+        }
+
         body[data-theme="light"] .toggle {
-            background: #ffffff !important;
-            border: 1px solid #000000 !important;
-            border-radius: 0px !important;
-            box-shadow: none !important;
+            background: #dadce0;
         }
 
         body[data-theme="light"] .toggle::after {
-            background: #000000 !important;
-            border-radius: 0px !important;
-            box-shadow: none !important;
-            border: none !important;
+            background: #fff;
         }
 
         body[data-theme="light"] .toggle.on {
-            background: #000000 !important;
-            border-color: #000000 !important;
-            box-shadow: none !important;
+            background: #1a73e8;
         }
 
         body[data-theme="light"] .toggle.on::after {
-            background: #ffffff !important;
-            border-radius: 0px !important;
+            background: #fff;
+        }
+
+        body[data-theme="light"] .btn.primary {
+            background: #1a73e8;
+            color: #fff;
+            border-color: #1a73e8;
         }
 
         body[data-theme="light"] .btn.secondary {
-            background: #f0f0f2;
-            color: #1d1d1f;
-            border-color: rgba(0, 0, 0, 0.08);
+            background: transparent;
+            color: #1a73e8;
+            border-color: #dadce0;
         }
 
         body[data-theme="light"] .btn.danger {
-            background: rgba(239, 68, 68, 0.08);
-            color: #dc2626;
-            border-color: rgba(239, 68, 68, 0.15);
+            background: rgba(239, 68, 68, 0.1);
+            color: #d32f2f;
+            border-color: rgba(239, 68, 68, 0.3);
         }
 
-        body[data-theme="light"] .slider-label {
-            color: #1d1d1f;
+        body[data-theme="light"] .btn.danger:hover {
+            background: rgba(239, 68, 68, 0.15);
         }
 
-        body[data-theme="light"] input[type="range"] {
-            background: #e2e8f0 !important;
+        /* Dashboard specific light mode */
+        body[data-theme="light"] #dash-ads,
+        body[data-theme="light"] #dash-trackers,
+        body[data-theme="light"] #dash-bandwidth {
+            color: #202124;
         }
 
-        body[data-theme="light"] input[type="range"]::-webkit-slider-thumb {
-            border-color: var(--accent) !important;
-            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1) !important;
+        body[data-theme="light"] #dash-uptime,
+        body[data-theme="light"] #memory-value,
+        body[data-theme="light"] #dash-active-profile {
+            color: #5f6368;
+            font-weight: 400;
         }
 
         /* Hub components */
@@ -1533,10 +1430,10 @@
         }
 
         /* ══════════════════════════════════════════════════════════
-           SIDEBAR
+           SIDEBAR - Chrome-style
         ══════════════════════════════════════════════════════════ */
         .sidebar {
-            width: var(--sidebar-w);
+            width: 256px;
             background: var(--bg);
             border-right: 1px solid var(--chrome-border);
             display: flex;
@@ -1546,33 +1443,33 @@
             z-index: 10;
         }
 
-        /* Top brand area */
+        /* Top brand area - Chrome-style */
         .sidebar-header {
-            padding: 34px 26px 26px;
+            padding: 24px 20px;
             border-bottom: 1px solid rgba(255, 255, 255, 0.04);
-            background: linear-gradient(180deg, rgba(255, 255, 255, 0.03) 0%, transparent 100%);
+            background: transparent;
         }
 
         .sidebar-logo {
             display: flex;
             align-items: center;
-            gap: 14px;
+            gap: 12px;
             margin-bottom: 0;
             cursor: default;
         }
 
         .sidebar-logo-icon {
-            width: 38px;
-            height: 38px;
-            background: #ffffff;
+            width: 32px;
+            height: 32px;
+            background: var(--accent);
             display: flex;
             align-items: center;
             justify-content: center;
-            font-size: 18px;
+            font-size: 16px;
             font-weight: 900;
             color: #000;
             flex-shrink: 0;
-            border: 1px solid #171717;
+            border-radius: 8px;
         }
 
         .sidebar-logo:hover .sidebar-logo-icon {
@@ -1580,26 +1477,20 @@
         }
 
         .sidebar-logo-text {
-            font-size: 15px;
-            font-weight: 900;
+            font-size: 20px;
+            font-weight: 600;
             color: #fff;
-            letter-spacing: -0.4px;
-            text-shadow: none;
+            letter-spacing: -0.5px;
         }
 
         .sidebar-logo-sub {
-            font-size: 10px;
-            font-weight: 800;
-            color: rgba(255, 255, 255, 0.4);
-            margin-top: 1px;
-            letter-spacing: 0.15em;
-            text-transform: uppercase;
+            display: none;
         }
 
-        /* Nav sections */
+        /* Nav sections - Chrome-style */
         .sidebar-nav {
             flex: 1;
-            padding: 24px 16px;
+            padding: 8px 0;
             overflow-y: auto;
             scrollbar-width: none;
         }
@@ -1609,55 +1500,42 @@
         }
 
         .nav-section-label {
-            font-size: 9px;
-            font-weight: 900;
+            font-size: 11px;
+            font-weight: 600;
             text-transform: uppercase;
-            letter-spacing: 2.2px;
-            color: rgba(255, 255, 255, 0.22);
-            padding: 16px 14px 10px;
-            margin-top: 8px;
-            display: flex;
-            align-items: center;
-            gap: 10px;
-        }
-
-        .nav-section-label::after {
-            content: '';
-            flex: 1;
-            height: 1px;
-            background: linear-gradient(90deg, rgba(255, 255, 255, 0.06), transparent);
+            letter-spacing: 0.8px;
+            color: rgba(255, 255, 255, 0.4);
+            padding: 16px 20px 8px;
+            margin-top: 0;
         }
 
         .nav-item {
             display: flex;
             align-items: center;
-            gap: 12px;
-            padding: 10px 14px;
-            border-radius: 13px;
-            height: 46px;
-            color: rgba(255, 255, 255, 0.55);
-            font-size: 13.5px;
-            font-weight: 600;
+            gap: 16px;
+            padding: 10px 20px;
+            border-radius: 0;
+            height: 40px;
+            color: rgba(255, 255, 255, 0.7);
+            font-size: 14px;
+            font-weight: 400;
             cursor: pointer;
-            transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+            transition: all 0.2s ease;
             position: relative;
-            margin-bottom: 5px;
-            border: 1px solid transparent;
+            margin: 0;
+            border: none;
+            border-left: 3px solid transparent;
         }
 
         .nav-item-icon {
-            width: 32px;
-            height: 32px;
-            border-radius: 9px;
+            width: 20px;
+            height: 20px;
             display: flex;
             align-items: center;
             justify-content: center;
-            font-size: 13px;
+            font-size: 16px;
             flex-shrink: 0;
-            background: rgba(255, 255, 255, 0.04);
-            color: rgba(255, 255, 255, 0.45);
-            transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
-            border: 1px solid rgba(255, 255, 255, 0.02);
+            color: inherit;
         }
 
         .nav-item span {
@@ -1666,43 +1544,14 @@
         }
 
         .nav-item:hover {
-            background: rgba(255, 255, 255, 0.04);
+            background: rgba(255, 255, 255, 0.05);
             color: #fff;
-            transform: translateX(5px);
-            border-color: rgba(255, 255, 255, 0.04);
-        }
-
-        .nav-item:hover .nav-item-icon {
-            background: rgba(255, 255, 255, 0.08);
-            color: var(--icon-c, #fff);
-            transform: scale(1.08) rotate(3deg);
-            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
         }
 
         .nav-item.active {
-            background: #ffffff;
-            box-shadow: none;
-            border: 1px solid #ffffff;
-            color: #000;
-        }
-
-        .nav-item.active .nav-item-icon {
-            background: #000000;
-            color: #ffffff;
-            box-shadow: none;
-            border-color: #ffffff;
-        }
-
-        .nav-item.active::before {
-            content: '';
-            position: absolute;
-            left: -14px;
-            top: 20%;
-            height: 60%;
-            width: 4px;
-            border-radius: 0px;
-            background: #ffffff;
-            box-shadow: none;
+            background: rgba(255, 255, 255, 0.08);
+            color: var(--accent);
+            border-left-color: var(--accent);
         }
 
         /* Color-coded icons with orchestrated glow */
@@ -1768,42 +1617,39 @@
 
         .nav-divider {
             height: 1px;
-            background: rgba(255, 255, 255, 0.04);
-            margin: 12px 14px;
+            background: rgba(255, 255, 255, 0.06);
+            margin: 8px 20px;
         }
 
-        /* Sidebar footer styling */
+        /* Sidebar footer styling - Chrome-style */
         .sidebar-footer {
-            padding: 18px 24px;
-            border-top: 1px solid rgba(255, 255, 255, 0.05);
-            background: linear-gradient(0deg, rgba(255, 255, 255, 0.01) 0%, transparent 100%);
+            padding: 16px 20px;
+            border-top: 1px solid rgba(255, 255, 255, 0.06);
+            background: transparent;
         }
 
         .sidebar-version {
-            font-size: 10px;
-            color: var(--text-muted);
+            font-size: 12px;
+            color: rgba(255, 255, 255, 0.5);
             display: flex;
             flex-direction: column;
-            gap: 8px;
+            gap: 4px;
         }
 
         .sidebar-version-status {
             display: flex;
             align-items: center;
             gap: 8px;
-            font-weight: 700;
-            color: rgba(255, 255, 255, 0.4);
-            letter-spacing: 0.5px;
+            font-weight: 400;
+            color: rgba(255, 255, 255, 0.5);
         }
 
         .sidebar-version-dot {
-            width: 7px;
-            height: 7px;
+            width: 6px;
+            height: 6px;
             border-radius: 50%;
             background: #4ade80;
-            box-shadow: 0 0 10px rgba(74, 222, 128, 0.6);
             flex-shrink: 0;
-            animation: pulse-secure 3s infinite;
         }
 
         @keyframes pulse-secure {
@@ -1821,15 +1667,7 @@
         }
 
         .sidebar-secure-badge {
-            font-size: 8px;
-            font-weight: 900;
-            color: #4ade80;
-            text-transform: uppercase;
-            background: rgba(74, 222, 128, 0.08);
-            padding: 2px 6px;
-            border-radius: 4px;
-            border: 1px solid rgba(74, 222, 128, 0.15);
-            align-self: flex-start;
+            display: none;
         }
 
         /* ══════════════════════════════════════════════════════════
@@ -1885,95 +1723,84 @@
             }
         }
 
-        /* Page header */
+        /* Page header - Chrome-style */
         .page-header {
-            padding: 36px 48px 0;
-            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
-            padding-bottom: 20px;
-            margin-bottom: 32px;
+            padding: 48px 56px 24px;
+            border-bottom: none;
+            margin-bottom: 0;
         }
 
         .page-eyebrow {
-            font-size: 10px;
-            font-weight: 700;
-            text-transform: uppercase;
-            letter-spacing: 1.5px;
-            color: var(--accent);
-            margin-bottom: 6px;
+            display: none;
         }
 
         .page-title {
-            font-size: 24px;
-            font-weight: 700;
-            letter-spacing: -0.04em;
+            font-size: 32px;
+            font-weight: 400;
+            letter-spacing: 0;
             color: #fff;
-            margin-bottom: 4px;
+            margin-bottom: 8px;
         }
 
         .page-desc {
-            font-size: 13px;
-            color: var(--text-muted);
+            font-size: 14px;
+            color: rgba(255, 255, 255, 0.6);
             font-weight: 400;
-            line-height: 1.5;
+            line-height: 1.6;
         }
 
-        /* Content body */
+        /* Content body - Chrome-style */
         .page-body {
-            padding: 0 48px 48px;
+            padding: 24px 56px 56px;
         }
 
-        /* Groups */
+        /* Groups - Chrome-style with card spacing */
         .group {
-            margin-bottom: 32px;
+            margin-bottom: 0;
         }
 
         .group-label {
-            font-size: 10px;
-            font-weight: 700;
-            text-transform: uppercase;
-            letter-spacing: 1.5px;
-            color: var(--text-muted);
-            margin-bottom: 10px;
-            display: flex;
-            align-items: center;
-            gap: 8px;
+            font-size: 13px;
+            font-weight: 500;
+            text-transform: none;
+            letter-spacing: 0;
+            color: rgba(255, 255, 255, 0.9);
+            margin-bottom: 12px;
+            display: block;
+            padding: 0 4px;
         }
 
-        .group-label::after {
-            content: '';
-            flex: 1;
-            height: 1px;
-            background: rgba(255, 255, 255, 0.05);
-        }
-
-        /* Cards */
+        /* Cards - Chrome-style with backgrounds */
         .card {
-            background: var(--glass);
-            border: 1px solid var(--glass-border);
-            border-radius: 0;
-            margin-bottom: 6px;
+            background: rgba(255, 255, 255, 0.03);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            border-radius: 8px;
+            margin-bottom: 0;
             overflow: hidden;
-            transition: border-color 0.15s;
+            transition: all 0.2s ease;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
         }
 
         .card:hover {
-            border-color: rgba(255, 255, 255, 0.11);
-        }
-
-        .card:last-child {
-            margin-bottom: 0;
+            border-color: rgba(255, 255, 255, 0.15);
+            box-shadow: 0 2px 6px rgba(0, 0, 0, 0.15);
         }
 
         .card-row {
             display: flex;
             align-items: center;
             justify-content: space-between;
-            gap: 16px;
-            padding: 14px 18px;
+            gap: 24px;
+            padding: 16px 20px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.06);
         }
 
-        .card-row+.card-row {
-            border-top: 1px solid rgba(255, 255, 255, 0.05);
+        .card-row:last-child {
+            border-bottom: none;
+        }
+
+        .card-row:hover {
+            background: rgba(255, 255, 255, 0.02);
         }
 
         .card-info {
@@ -1982,66 +1809,63 @@
         }
 
         .card-info h4 {
-            font-size: 13.5px;
-            font-weight: 600;
+            font-size: 14px;
+            font-weight: 400;
             color: #fff;
-            margin-bottom: 2px;
+            margin-bottom: 4px;
         }
 
         .card-info p {
-            font-size: 12px;
-            color: var(--text-muted);
+            font-size: 13px;
+            color: rgba(255, 255, 255, 0.6);
             line-height: 1.5;
         }
 
-        /* Toggle */
+        /* Toggle - Chrome-style */
         .toggle {
-            width: 44px;
-            height: 22px;
-            background: #000;
-            border: 1px solid #fff;
-            border-radius: 100px !important;
+            width: 48px;
+            height: 24px;
+            background: rgba(255, 255, 255, 0.2);
+            border: none;
+            border-radius: 12px;
             position: relative;
             cursor: pointer;
             transition: all 0.2s;
             flex-shrink: 0;
-            box-shadow: none !important;
         }
 
         .toggle::after {
             content: '';
             position: absolute;
-            top: 3px;
-            left: 3px;
-            width: 14px;
-            height: 14px;
+            top: 2px;
+            left: 2px;
+            width: 20px;
+            height: 20px;
             background: #fff;
-            border-radius: 50% !important;
+            border-radius: 50%;
             transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
-            box-shadow: none !important;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.3);
         }
 
         .toggle.on {
-            background: #fff;
-            border-color: #fff;
+            background: var(--accent);
         }
 
         .toggle.on::after {
-            left: 25px;
+            left: 26px;
             background: #000;
-            box-shadow: none !important;
         }
 
-        /* Button */
+        /* Button - Chrome-style */
         .btn {
             padding: 8px 16px;
-            border-radius: 0px !important;
-            font-size: 12px;
-            font-weight: 600;
+            border-radius: 4px;
+            font-size: 13px;
+            font-weight: 500;
             cursor: pointer;
             transition: all 0.15s;
-            font-family: 'Geist Mono', monospace;
-            border: 1px solid var(--border);
+            font-family: inherit;
+            border: 1px solid transparent;
             display: inline-flex;
             align-items: center;
             gap: 6px;
@@ -2049,38 +1873,33 @@
         }
 
         .btn.primary {
-            background: #fff;
+            background: var(--accent);
             color: #000;
-            box-shadow: none !important;
-            border-color: #fff;
+            border-color: var(--accent);
         }
 
         .btn.primary:hover {
-            filter: none !important;
-            background: #eee;
-            transform: translateY(-1px);
+            opacity: 0.9;
         }
 
         .btn.secondary {
             background: transparent;
-            color: #fff;
-            border: 1px solid #fff;
+            color: var(--accent);
+            border: 1px solid rgba(255, 255, 255, 0.2);
         }
 
         .btn.secondary:hover {
-            background: #fff;
-            color: #000;
+            background: rgba(255, 255, 255, 0.05);
         }
 
         .btn.danger {
             background: transparent;
             color: #f87171;
-            border: 1px solid #f87171;
+            border: 1px solid rgba(248, 113, 113, 0.3);
         }
 
         .btn.danger:hover {
-            background: #f87171;
-            color: #000;
+            background: rgba(248, 113, 113, 0.1);
         }
 
         /* Color accent picker */
@@ -2091,34 +1910,35 @@
         }
 
         .color-dot {
-            width: 24px;
-            height: 24px;
-            border-radius: 0px !important;
+            width: 28px;
+            height: 28px;
+            border-radius: 50%;
             cursor: pointer;
-            border: 1px solid var(--border);
-            transition: all 0.15s;
+            border: 2px solid transparent;
+            transition: all 0.2s;
             position: relative;
             padding: 0;
         }
 
         .color-dot:hover {
-            transform: scale(1.1);
-            border-color: var(--text);
+            transform: scale(1.15);
         }
 
         .color-dot.active {
-            border-color: #fff;
-            border-width: 2px;
+            border-color: var(--text);
             transform: scale(1.1);
-            box-shadow: none !important;
         }
 
         .color-dot.active::after {
-            content: '';
+            content: '\2713';
             position: absolute;
-            inset: -4px;
-            border: 1px solid #fff;
-            opacity: 0.5;
+            inset: 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 14px;
+            font-weight: bold;
+            color: rgba(0, 0, 0, 0.8);
         }
 
         /* Grid choices */
@@ -2436,7 +2256,8 @@
             position: relative;
         }
 
-        .shortcut-row:hover .key-tag {
+        .shortcut-row:hover .key-tag,
+        .card-row:hover .key-tag {
             border-color: rgba(168, 85, 247, 0.3);
             border-bottom-color: rgba(168, 85, 247, 0.4);
             transform: translateY(-2px) scale(1.05);
@@ -3242,6 +3063,278 @@
             border-color: var(--accent-border);
             background: rgba(168, 85, 247, 0.04);
             transform: translateY(-2px);
+        }
+
+        /* ── Extensions Section (matches extensions.html style) ── */
+        .ext-install-bar {
+            background: rgba(255,255,255,0.03);
+            border: 1px solid rgba(255,255,255,0.08);
+            border-radius: 16px;
+            padding: 20px 24px;
+            display: flex;
+            align-items: center;
+            gap: 14px;
+            margin-bottom: 28px;
+        }
+
+        body[data-theme="light"] .ext-install-bar {
+            background: #f8f9fa !important;
+            border-color: #e2e8f0 !important;
+        }
+
+        .ext-install-bar i.fab {
+            font-size: 1.4rem;
+            color: var(--accent);
+            flex-shrink: 0;
+        }
+
+        .ext-install-bar input {
+            flex: 1;
+            background: rgba(0,0,0,0.2);
+            border: 1px solid rgba(255,255,255,0.08);
+            border-radius: 10px;
+            padding: 10px 14px;
+            color: var(--text);
+            font-family: inherit;
+            font-size: 13px;
+            outline: none;
+            transition: border-color 0.2s;
+        }
+
+        .ext-install-bar input:focus {
+            border-color: var(--accent);
+            box-shadow: 0 0 0 3px var(--accent-glow);
+        }
+
+        body[data-theme="light"] .ext-install-bar input {
+            background: #fff !important;
+            border-color: #ddd !important;
+            color: #000 !important;
+        }
+
+        /* Extension card row layout (matches extensions.html) */
+        .ext-card-row {
+            background: rgba(255,255,255,0.03);
+            border: none;
+            border-radius: 16px;
+            padding: 20px;
+            display: flex;
+            gap: 18px;
+            align-items: flex-start;
+            transition: background 0.25s, transform 0.25s;
+            margin-bottom: 0;
+        }
+
+        .ext-card-row:hover {
+            background: rgba(255,255,255,0.055);
+            transform: translateY(-3px);
+        }
+
+        body[data-theme="light"] .ext-card-row {
+            background: #f8f9fa !important;
+            border: none !important;
+        }
+
+        body[data-theme="light"] .ext-card-row:hover {
+            background: #f0f0f2 !important;
+        }
+
+        .ext-card-icon {
+            width: 50px;
+            height: 50px;
+            border-radius: 14px;
+            background: rgba(255,255,255,0.06);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.4rem;
+            flex-shrink: 0;
+        }
+
+        body[data-theme="light"] .ext-card-icon {
+            background: #f3f4f6 !important;
+        }
+
+        .ext-card-info {
+            flex: 1;
+            min-width: 0;
+        }
+
+        .ext-card-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            margin-bottom: 4px;
+        }
+
+        .ext-card-name {
+            font-size: 15px;
+            font-weight: 700;
+            color: var(--text);
+        }
+
+        body[data-theme="light"] .ext-card-name {
+            color: #000 !important;
+        }
+
+        .ext-card-version {
+            font-size: 11px;
+            color: var(--text-dim);
+            margin-bottom: 8px;
+        }
+
+        .ext-card-desc {
+            font-size: 12px;
+            color: var(--text-dim);
+            line-height: 1.5;
+            margin-bottom: 14px;
+            display: -webkit-box;
+            -webkit-line-clamp: 2;
+            line-clamp: 2;
+            -webkit-box-orient: vertical;
+            overflow: hidden;
+        }
+
+        body[data-theme="light"] .ext-card-desc {
+            color: #555 !important;
+        }
+
+        .ext-card-footer {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .ext-card-tag {
+            font-size: 9px;
+            font-weight: 800;
+            letter-spacing: 1px;
+            text-transform: uppercase;
+            padding: 3px 8px;
+            border-radius: 6px;
+        }
+
+        .ext-card-tag.core { background: rgba(74,222,128,0.1); color: #4ade80; }
+        .ext-card-tag.privacy { background: rgba(239,68,68,0.1); color: #f87171; }
+        .ext-card-tag.utility { background: rgba(168,85,247,0.1); color: #a855f7; }
+        .ext-card-tag.ai { background: rgba(168,85,247,0.12); color: #a855f7; }
+        .ext-card-tag.local { background: rgba(251,146,60,0.1); color: #fb923c; }
+
+        /* Toggle switch (from extensions.html) */
+        .ext-toggle-wrap {
+            position: relative;
+            display: inline-block;
+            width: 44px;
+            height: 24px;
+            flex-shrink: 0;
+        }
+
+        .ext-toggle-wrap input {
+            opacity: 0;
+            width: 0;
+            height: 0;
+            position: absolute;
+        }
+
+        .ext-slider {
+            position: absolute;
+            cursor: pointer;
+            inset: 0;
+            background-color: rgba(255,255,255,0.1);
+            border: 1px solid rgba(255,255,255,0.07);
+            transition: .3s cubic-bezier(0.16, 1, 0.3, 1);
+            border-radius: 100px;
+        }
+
+        .ext-slider:before {
+            position: absolute;
+            content: "";
+            height: 16px;
+            width: 16px;
+            left: 3px;
+            bottom: 3px;
+            background-color: white;
+            transition: .3s cubic-bezier(0.16, 1, 0.3, 1);
+            border-radius: 50%;
+        }
+
+        .ext-toggle-wrap input:checked + .ext-slider {
+            background-color: var(--accent);
+            border-color: var(--accent);
+            box-shadow: 0 0 10px var(--accent-glow);
+        }
+
+        .ext-toggle-wrap input:checked + .ext-slider:before {
+            transform: translateX(20px);
+            background-color: #000;
+        }
+
+        body[data-theme="light"] .ext-slider {
+            background-color: #ddd !important;
+            border-color: #ccc !important;
+        }
+
+        .ext-card-actions {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .ext-view-link {
+            font-size: 11px;
+            color: var(--accent);
+            cursor: pointer;
+            text-decoration: none;
+            opacity: 0.85;
+        }
+
+        .ext-view-link:hover { opacity: 1; }
+
+        .ext-remove-btn {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            padding: 5px 12px;
+            border-radius: 8px;
+            border: 1px solid rgba(239,68,68,0.25);
+            background: rgba(239,68,68,0.08);
+            color: #f87171;
+            font-size: 11px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+
+        .ext-remove-btn:hover { background: rgba(239,68,68,0.18); }
+
+        #ext-settings-grid {
+            display: flex;
+            flex-direction: column;
+            gap: 14px;
+        }
+
+        .ext-loading-overlay {
+            position: fixed;
+            inset: 0;
+            background: rgba(0,0,0,0.7);
+            display: none;
+            justify-content: center;
+            align-items: center;
+            z-index: 9999;
+            backdrop-filter: blur(6px);
+        }
+
+        .ext-loader-spin {
+            width: 48px;
+            height: 48px;
+            border: 4px solid rgba(255,255,255,0.15);
+            border-top-color: var(--accent);
+            border-radius: 50%;
+            animation: spin 0.8s linear infinite;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
         }
 
         /* ── Extensions Storefront ── */
@@ -5183,7 +5276,7 @@
                 <span>General</span>
             </div>
             <div class="nav-item" data-section="search">
-                <div class="nav-item-icon"><i class="fas fa-magnifying-glass"></i></div>
+                <div class="nav-item-icon"><i class="fas fa-globe"></i></div>
                 <span>Search</span>
             </div>
             <div class="nav-item" data-section="homepage">
@@ -5248,234 +5341,176 @@
         <!-- ── DASHBOARD Redesign ── -->
         <section id="dashboard" class="section active">
             <div class="page-header">
-                <div class="page-eyebrow">Command Center</div>
-                <div class="page-title">Digital Intelligence Center</div>
-                <div class="page-desc">Real-time security analytics and global identity protection metrics for Ocal
-                    Logic.</div>
+                <div class="page-title">Dashboard</div>
+                <div class="page-desc">Overview of your browser performance, security, and activity.</div>
             </div>
 
             <div class="page-body">
-                <div class="studio-prefs-grid" style="grid-template-columns: repeat(2, 1fr); gap: 20px;">
-
-                    <!-- HERO: Active Protection (Full Span) -->
-                    <div class="studio-card full-span"
-                        style="background: linear-gradient(135deg, rgba(232,255,71,0.06) 0%, rgba(232,255,71,0.02) 100%);">
-                        <div class="studio-card-body"
-                            style="display: flex; align-items: center; justify-content: space-between; gap: 40px; padding: 48px 52px;">
-
-                            <div style="display: flex; align-items: center; gap: 32px; flex: 1;">
-                                <div class="dash-shield-icon"
-                                    style="width: 72px; height: 72px; background: var(--accent); color: #0c0c0c; border-radius: 20px; display: flex; align-items: center; justify-content: center; font-size: 32px; box-shadow: 0 12px 30px var(--accent-glow);">
-                                    <i class="fas fa-shield-halved"></i>
-                                </div>
-                                <div class="dash-status-text">
-                                    <div class="dash-status-badge"
-                                        style="background: rgba(74,222,128,0.15); color: #4ade80; font-size: 10px; font-weight: 800; padding: 4px 12px; border-radius: 100px; display: inline-block; margin-bottom: 12px; letter-spacing: 1px; border: 1px solid rgba(74,222,128,0.2);">
-                                        UNIFIED SECURITY ACTIVE</div>
-                                    <h3
-                                        style="font-size: 36px; font-weight: 850; color: var(--text); margin-bottom: 8px; letter-spacing: -1px;">
-                                        System Secure</h3>
-                                    <p
-                                        style="font-size: 15px; color: var(--text-dim); line-height: 1.6; max-width: 400px;">
-                                        Telemetry is sanitized. Interception layers are active at the kernel level
-                                        across all active navigation sessions.</p>
-                                </div>
-                            </div>
-
-                            <div class="studio-diag-container"
-                                style="position: relative; width: 160px; height: 160px; display: flex; align-items: center; justify-content: center; flex-shrink: 0;">
-                                <svg width="160" height="160" viewBox="0 0 140 140"
-                                    style="position: absolute; transform: rotate(-90deg); overflow: visible;">
-                                    <circle cx="70" cy="70" r="62" fill="none" stroke="rgba(255,255,255,0.04)"
-                                        stroke-width="12"></circle>
-                                    <circle id="score-ring" cx="70" cy="70" r="62" fill="none" stroke="var(--accent)"
-                                        stroke-width="12" stroke-dasharray="389" stroke-dashoffset="0"
-                                        stroke-linecap="round"
-                                        style="filter: drop-shadow(0 0 15px var(--accent-glow)); transition: stroke-dashoffset 2s cubic-bezier(0.16,1,0.3,1);">
-                                    </circle>
-                                </svg>
-                                <div
-                                    style="display: flex; flex-direction: column; align-items: center; line-height: 1;">
-                                    <span class="score-label"
-                                        style="font-size: 42px; font-weight: 900; color: var(--text);">98</span>
-                                    <span
-                                        style="font-size: 10px; font-weight: 800; color: var(--text-muted); letter-spacing: 2px; margin-top: 4px; text-transform: uppercase;">INDEX</span>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-
-                    <!-- MODULE: Uptime & Identity -->
-                    <div class="studio-card" style="background: rgba(255,255,255,0.015);">
-                        <div class="studio-card-header" style="border-bottom: none; padding-bottom: 0;">
-                            <div class="studio-card-icon" style="background: rgba(232,255,71,0.1);"><i
-                                    class="fas fa-microchip"></i></div>
-                            <div class="studio-card-title">
-                                <h3>Logic Node</h3>
-                                <p>Core session diagnostics.</p>
-                            </div>
-                        </div>
-                        <div class="studio-card-body" style="padding: 24px 28px 32px;">
-                            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px;">
-                                <div
-                                    style="background: var(--glass); border-radius: 16px; padding: 20px; border: 1px solid var(--glass-border);">
-                                    <div
-                                        style="font-size: 10px; font-weight: 800; color: var(--text-dim); margin-bottom: 8px; text-transform: uppercase; letter-spacing: 1px;">
-                                        Session Uptime</div>
-                                    <div id="dash-uptime"
-                                        style="font-size: 24px; font-weight: 900; color: var(--text);">0h 0m</div>
-                                </div>
-                                <div
-                                    style="background: var(--glass); border-radius: 16px; padding: 20px; border: 1px solid var(--glass-border);">
-                                    <div
-                                        style="font-size: 10px; font-weight: 800; color: var(--text-dim); margin-bottom: 8px; text-transform: uppercase; letter-spacing: 1px;">
-                                        Profile Node</div>
-                                    <div id="dash-active-profile"
-                                        style="font-size: 18px; font-weight: 900; color: var(--accent);">Main Node</div>
-                                </div>
-                            </div>
-                            <div style="margin-top: 20px;">
-                                <div style="display: flex; justify-content: space-between; margin-bottom: 10px;">
-                                    <label
-                                        style="font-size: 10px; font-weight: 800; color: var(--text-muted); letter-spacing: 1px;">MEMORY
-                                        ALLOCATION</label>
-                                    <span id="memory-value" style="font-size: 11px; font-weight: 900; color: #fff;">0.0
-                                        GB</span>
-                                </div>
-                                <div class="pulse-bar-wrap"
-                                    style="height: 8px; background: rgba(255,255,255,0.05); border-radius: 100px; overflow: hidden;">
-                                    <div class="pulse-bar" id="memory-bar"
-                                        style="width: 20%; height: 100%; background: var(--accent); box-shadow: 0 0 15px var(--accent-glow);">
+                <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 24px;">
+                    
+                    <!-- Security Status Card -->
+                    <div class="group" style="margin-bottom: 0;">
+                        <div class="group-label" style="margin-bottom: 12px;">Security & Privacy</div>
+                        <div class="card">
+                            <div class="card-row" style="padding: 24px 20px;">
+                                <div style="display: flex; align-items: center; gap: 16px; flex: 1;">
+                                    <div style="width: 48px; height: 48px; background: rgba(74, 222, 128, 0.1); border-radius: 50%; display: flex; align-items: center; justify-content: center; color: #4ade80; font-size: 20px; flex-shrink: 0;">
+                                        <i class="fas fa-shield-check"></i>
+                                    </div>
+                                    <div class="card-info">
+                                        <h4 style="font-size: 15px; margin-bottom: 4px;">Protection is active</h4>
+                                        <p style="font-size: 13px;">Safe Browsing protects you from dangerous sites</p>
                                     </div>
                                 </div>
                             </div>
+                            <div class="card-row" style="padding: 16px 20px;">
+                                <button class="btn secondary" onclick="showSection('security')" style="width: 100%;">Review security settings</button>
+                            </div>
                         </div>
                     </div>
 
-                    <!-- MODULE: Neutralization Stats -->
-                    <div class="studio-card" style="background: rgba(255,255,255,0.015);">
-                        <div class="studio-card-header" style="border-bottom: none; padding-bottom: 0;">
-                            <div class="studio-card-icon" style="background: rgba(74,222,128,0.1); color: #4ade80;"><i
-                                    class="fas fa-ghost"></i></div>
-                            <div class="studio-card-title">
-                                <h3>Neural Intercept</h3>
-                                <p>Silenced signals and noise.</p>
+                    <!-- Performance Card -->
+                    <div class="group" style="margin-bottom: 0;">
+                        <div class="group-label" style="margin-bottom: 12px;">Performance</div>
+                        <div class="card">
+                            <div class="card-row">
+                                <div class="card-info">
+                                    <h4>Session uptime</h4>
+                                    <p id="dash-uptime">0h 0m</p>
+                                </div>
+                            </div>
+                            <div class="card-row">
+                                <div class="card-info">
+                                    <h4>Memory usage</h4>
+                                    <p id="memory-value">0.0 GB</p>
+                                </div>
+                            </div>
+                            <div class="card-row">
+                                <div class="card-info">
+                                    <h4>Active profile</h4>
+                                    <p id="dash-active-profile">Main Node</p>
+                                </div>
+                                <button class="btn secondary" onclick="showSection('profiles')">Manage</button>
                             </div>
                         </div>
-                        <div class="studio-card-body" style="padding: 24px 28px 32px;">
-                            <div style="display: flex; flex-direction: column; gap: 12px;">
-                                <div
-                                    style="display:flex; align-items:center; justify-content:space-between; background:rgba(0,0,0,0.15); padding:14px 20px; border-radius:14px; border: 1px solid rgba(255,255,255,0.03);">
-                                    <div style="display:flex; align-items:center; gap:12px;">
-                                        <i class="fas fa-rectangle-ad" style="color:#4ade80; font-size:14px;"></i>
-                                        <span
-                                            style="font-size:13px; font-weight:600; color:rgba(255,255,255,0.6);">Neutralized
-                                            Ads</span>
+                    </div>
+
+                    <!-- Privacy Stats Card -->
+                    <div class="group" style="margin-bottom: 0;">
+                        <div class="group-label" style="margin-bottom: 12px;">Privacy protection</div>
+                        <div class="card">
+                            <div class="card-row">
+                                <div class="card-info">
+                                    <h4>Ads blocked</h4>
+                                    <p>Lifetime</p>
+                                </div>
+                                <span id="dash-ads" style="font-size: 20px; font-weight: 500; color: var(--text);">0</span>
+                            </div>
+                            <div class="card-row">
+                                <div class="card-info">
+                                    <h4>Trackers blocked</h4>
+                                    <p>Lifetime</p>
+                                </div>
+                                <span id="dash-trackers" style="font-size: 20px; font-weight: 500; color: var(--text);">0</span>
+                            </div>
+                            <div class="card-row">
+                                <div class="card-info">
+                                    <h4>Data saved</h4>
+                                    <p>Estimated bandwidth</p>
+                                </div>
+                                <span id="dash-bandwidth" style="font-size: 20px; font-weight: 500; color: var(--text);">0 MB</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Appearance Card -->
+                    <div class="group" style="margin-bottom: 0;">
+                        <div class="group-label" style="margin-bottom: 12px;">Appearance</div>
+                        <div class="card">
+                            <div class="card-row" style="cursor: pointer;" onclick="showSection('general')">
+                                <div style="display: flex; align-items: center; gap: 16px; flex: 1;">
+                                    <div style="width: 40px; height: 40px; background: rgba(255, 255, 255, 0.05); border-radius: 50%; display: flex; align-items: center; justify-content: center; color: var(--text-dim); font-size: 18px;">
+                                        <i class="fas fa-palette"></i>
                                     </div>
-                                    <span id="dash-ads" style="font-size:18px; font-weight:900; color:#fff;">0</span>
-                                </div>
-                                <div
-                                    style="display:flex; align-items:center; justify-content:space-between; background:rgba(0,0,0,0.15); padding:14px 20px; border-radius:14px; border: 1px solid rgba(255,255,255,0.03);">
-                                    <div style="display:flex; align-items:center; gap:12px;">
-                                        <i class="fas fa-fingerprint" style="color:#60a5fa; font-size:14px;"></i>
-                                        <span
-                                            style="font-size:13px; font-weight:600; color:rgba(255,255,255,0.6);">Blocked
-                                            Trackers</span>
+                                    <div class="card-info">
+                                        <h4>Customize theme</h4>
+                                        <p>Colors, fonts, and layout</p>
                                     </div>
-                                    <span id="dash-trackers"
-                                        style="font-size:18px; font-weight:900; color:#fff;">0</span>
                                 </div>
-                                <div
-                                    style="display:flex; align-items:center; justify-content:space-between; background:rgba(0,0,0,0.15); padding:14px 20px; border-radius:14px; border: 1px solid rgba(255,255,255,0.03);">
-                                    <div style="display:flex; align-items:center; gap:12px;">
-                                        <i class="fas fa-database" style="color:#facc15; font-size:14px;"></i>
-                                        <span
-                                            style="font-size:13px; font-weight:600; color:rgba(255,255,255,0.6);">Resource
-                                            Savings</span>
+                                <i class="fas fa-chevron-right" style="color: var(--text-dim); font-size: 14px;"></i>
+                            </div>
+                            <div class="card-row" style="cursor: pointer;" onclick="showSection('homepage')">
+                                <div style="display: flex; align-items: center; gap: 16px; flex: 1;">
+                                    <div style="width: 40px; height: 40px; background: rgba(255, 255, 255, 0.05); border-radius: 50%; display: flex; align-items: center; justify-content: center; color: var(--text-dim); font-size: 18px;">
+                                        <i class="fas fa-house"></i>
                                     </div>
-                                    <span id="dash-bandwidth" style="font-size:16px; font-weight:900; color:#fff;">0
-                                        MB</span>
+                                    <div class="card-info">
+                                        <h4>Home page</h4>
+                                        <p>Customize your new tab page</p>
+                                    </div>
                                 </div>
+                                <i class="fas fa-chevron-right" style="color: var(--text-dim); font-size: 14px;"></i>
                             </div>
                         </div>
                     </div>
 
-                    <!-- MODULE: Efficiency Dashboard -->
-                    <div class="studio-card full-span" style="background: rgba(232,255,71,0.02);">
-                        <div class="studio-card-body"
-                            style="padding: 32px 48px; display: flex; align-items: center; justify-content: space-between;">
-                            <div style="display: flex; align-items: center; gap: 24px;">
-                                <div
-                                    style="width: 56px; height: 56px; border-radius: 16px; background: rgba(96,165,250,0.15); color: #60a5fa; display: flex; align-items: center; justify-content: center; font-size: 24px;">
-                                    <i class="fas fa-bolt"></i>
+                    <!-- Search Engine Card -->
+                    <div class="group" style="margin-bottom: 0;">
+                        <div class="group-label" style="margin-bottom: 12px;">Search engine</div>
+                        <div class="card">
+                            <div class="card-row" style="cursor: pointer;" onclick="showSection('search')">
+                                <div style="display: flex; align-items: center; gap: 16px; flex: 1;">
+                                    <div style="width: 40px; height: 40px; background: rgba(255, 255, 255, 0.05); border-radius: 50%; display: flex; align-items: center; justify-content: center; color: var(--text-dim); font-size: 18px;">
+                                        <i class="fas fa-globe"></i>
+                                    </div>
+                                    <div class="card-info">
+                                        <h4>Manage search engines</h4>
+                                        <p>Set your default search provider</p>
+                                    </div>
                                 </div>
-                                <div class="efficiency-info">
-                                    <h4 style="font-size: 18px; font-weight: 800; color: #fff; margin-bottom: 4px;">
-                                        Engine Efficiency</h4>
-                                    <p style="font-size: 13px; color: var(--text-muted); font-weight: 500;">Native
-                                        interception reduces network overhead by suppressing redundant request cycles.
-                                    </p>
-                                </div>
-                            </div>
-                            <div
-                                style="display: flex; gap: 48px; border-left: 1px solid rgba(255,255,255,0.05); padding-left: 48px;">
-                                <div style="text-align: center;">
-                                    <div id="dash-time" style="font-size: 32px; font-weight: 900; color: #fff;">0m</div>
-                                    <div
-                                        style="font-size: 10px; font-weight: 800; color: #60a5fa; text-transform: uppercase; letter-spacing: 1px; margin-top: 4px;">
-                                        Time Retained</div>
-                                </div>
-                                <div style="text-align: center;">
-                                    <div id="dash-speed-boost" style="font-size: 32px; font-weight: 900; color: #fff;">
-                                        0%</div>
-                                    <div
-                                        style="font-size: 10px; font-weight: 800; color: #4ade80; text-transform: uppercase; letter-spacing: 1px; margin-top: 4px;">
-                                        Boost Ratio</div>
-                                </div>
+                                <i class="fas fa-chevron-right" style="color: var(--text-dim); font-size: 14px;"></i>
                             </div>
                         </div>
                     </div>
 
-
-                    <!-- Quick Navigation Terminal -->
-                    <div class="studio-card full-span">
-                        <div class="studio-card-header">
-                            <div class="studio-card-icon" style="color: #facc15; background: rgba(250, 204, 21, 0.1);">
-                                <i class="fas fa-terminal"></i></div>
-                            <div class="studio-card-title">
-                                <h3>Command Shortcuts</h3>
-                                <p>Instant access to core browser subsystem configurations.</p>
-                            </div>
-                        </div>
-                        <div class="studio-card-body" style="padding: 24px 28px 32px;">
-                            <div style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px;">
-                                <div onclick="showSection('security')" class="choice-item"
-                                    style="background:rgba(255,255,255,0.03); padding: 24px 12px; cursor: pointer; border-radius: 16px; transition: 0.3s;">
-                                    <i class="fas fa-shield-halved" style="font-size: 20px; color: #4ade80;"></i>
-                                    <span
-                                        style="font-size: 11px; font-weight: 800; margin-top: 10px; color:rgba(255,255,255,0.7); letter-spacing:1px;">SECURITY</span>
+                    <!-- Extensions Card -->
+                    <div class="group" style="margin-bottom: 0;">
+                        <div class="group-label" style="margin-bottom: 12px;">Extensions</div>
+                        <div class="card">
+                            <div class="card-row" style="cursor: pointer;" onclick="showSection('extensions')">
+                                <div style="display: flex; align-items: center; gap: 16px; flex: 1;">
+                                    <div style="width: 40px; height: 40px; background: rgba(255, 255, 255, 0.05); border-radius: 50%; display: flex; align-items: center; justify-content: center; color: var(--text-dim); font-size: 18px;">
+                                        <i class="fas fa-puzzle-piece"></i>
+                                    </div>
+                                    <div class="card-info">
+                                        <h4>Manage extensions</h4>
+                                        <p>Add or remove browser extensions</p>
+                                    </div>
                                 </div>
-                                <div onclick="showSection('profiles')" class="choice-item"
-                                    style="background:rgba(255,255,255,0.03); padding: 24px 12px; cursor: pointer; border-radius: 16px; transition: 0.3s;">
-                                    <i class="fas fa-users" style="font-size: 20px; color: #f472b6;"></i>
-                                    <span
-                                        style="font-size: 11px; font-weight: 800; margin-top: 10px; color:rgba(255,255,255,0.7); letter-spacing:1px;">PROFILES</span>
-                                </div>
-                                <div onclick="showSection('extensions')" class="choice-item"
-                                    style="background:rgba(255,255,255,0.03); padding: 24px 12px; cursor: pointer; border-radius: 16px; transition: 0.3s;">
-                                    <i class="fas fa-puzzle-piece" style="font-size: 20px; color: #fb923c;"></i>
-                                    <span
-                                        style="font-size: 11px; font-weight: 800; margin-top: 10px; color:rgba(255,255,255,0.7); letter-spacing:1px;">EXTENSIONS</span>
-                                </div>
-                                <div onclick="showSection('shortcuts')" class="choice-item"
-                                    style="background:rgba(255,255,255,0.03); padding: 24px 12px; cursor: pointer; border-radius: 16px; transition: 0.3s;">
-                                    <i class="fas fa-keyboard" style="font-size: 20px; color: #facc15;"></i>
-                                    <span
-                                        style="font-size: 11px; font-weight: 800; margin-top: 10px; color:rgba(255,255,255,0.7); letter-spacing:1px;">SHORTCUTS</span>
-                                </div>
+                                <i class="fas fa-chevron-right" style="color: var(--text-dim); font-size: 14px;"></i>
                             </div>
                         </div>
                     </div>
+
+                    <!-- Profiles Card -->
+                    <div class="group" style="margin-bottom: 0;">
+                        <div class="group-label" style="margin-bottom: 12px;">People</div>
+                        <div class="card">
+                            <div class="card-row" style="cursor: pointer;" onclick="showSection('profiles')">
+                                <div style="display: flex; align-items: center; gap: 16px; flex: 1;">
+                                    <div style="width: 40px; height: 40px; background: rgba(255, 255, 255, 0.05); border-radius: 50%; display: flex; align-items: center; justify-content: center; color: var(--text-dim); font-size: 18px;">
+                                        <i class="fas fa-user-circle"></i>
+                                    </div>
+                                    <div class="card-info">
+                                        <h4>Manage profiles</h4>
+                                        <p>Add or switch browser profiles</p>
+                                    </div>
+                                </div>
+                                <i class="fas fa-chevron-right" style="color: var(--text-dim); font-size: 14px;"></i>
+                            </div>
+                        </div>
+                    </div>
+
                 </div>
             </div>
         </section>
@@ -5483,553 +5518,455 @@
         <!-- ── GENERAL ── -->
         <section id="general" class="section">
             <div class="page-header">
-                <div class="page-eyebrow">General</div>
-                <div class="page-title">Appearance &amp; Behavior</div>
-                <div class="page-desc">Personalize your browsing environment and interface layout.</div>
+                <div class="page-title">Appearance</div>
+                <div class="page-desc">Customize how Ocal looks and behaves.</div>
             </div>
             <div class="page-body">
+                <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 24px;">
 
-                <div class="studio-prefs-grid">
-
-                    <!-- Visual Identity Card -->
-                    <div class="studio-card">
-                        <div class="studio-card-header">
-                            <div class="studio-card-icon"
-                                style="color: var(--accent); background: var(--accent-dim); border-color: var(--accent-border);">
-                                <i class="fas fa-palette"></i></div>
-                            <div class="studio-card-title">
-                                <h3>Visual Identity</h3>
-                                <p>Universal brand theme and interface accents.</p>
+                    <!-- Theme Card -->
+                    <div class="group" style="margin-bottom: 0;">
+                        <div class="group-label" style="margin-bottom: 12px;">Theme</div>
+                        <div class="card">
+                            <div class="card-row">
+                                <div class="card-info">
+                                    <h4>Mode</h4>
+                                    <p>Choose light or dark theme</p>
+                                </div>
+                                <div class="toggle on" id="theme-mode-toggle"></div>
                             </div>
-                        </div>
-                        <div class="studio-card-body">
-                            <div class="studio-row" style="flex-direction: column; align-items: flex-start; gap: 12px;">
-                                <div class="studio-row-info">
-                                    <div class="studio-row-label">Theme Engine</div>
-                                    <div class="studio-row-desc">Universal browser chrome and home page theme
-                                        synchronization.</div>
+                            <div class="card-row">
+                                <div class="card-info">
+                                    <h4>Accent color</h4>
+                                    <p>Customize your browser's accent color</p>
                                 </div>
-                                <div class="swatch-grid">
-                                    <div class="swatch-dot color-dot active" data-color="#e8ff47"
-                                        style="background:#e8ff47"></div>
-                                    <div class="swatch-dot color-dot" data-color="#ffffff" style="background:#ffffff">
-                                    </div>
-                                    <div class="swatch-dot color-dot" data-color="#a855f7" style="background:#a855f7">
-                                    </div>
-                                    <div class="swatch-dot color-dot" data-color="#3b82f6" style="background:#3b82f6">
-                                    </div>
-                                    <div class="swatch-dot color-dot" data-color="#ef4444" style="background:#ef4444">
-                                    </div>
-                                    <div class="swatch-dot color-dot" data-color="#10b981" style="background:#10b981">
-                                    </div>
-                                    <div class="swatch-dot color-dot" data-color="#f59e0b" style="background:#f59e0b">
-                                    </div>
-                                    <div class="swatch-dot color-dot" data-color="#ec4899" style="background:#ec4899">
-                                    </div>
+                                <div class="color-row">
+                                    <div class="color-dot active" data-color="#e8ff47" style="background:#e8ff47"></div>
+                                    <div class="color-dot" data-color="#ffffff" style="background:#ffffff"></div>
+                                    <div class="color-dot" data-color="#a855f7" style="background:#a855f7"></div>
+                                    <div class="color-dot" data-color="#3b82f6" style="background:#3b82f6"></div>
+                                    <div class="color-dot" data-color="#ef4444" style="background:#ef4444"></div>
+                                    <div class="color-dot" data-color="#10b981" style="background:#10b981"></div>
                                 </div>
-                            </div>
-                            <!-- Theme Mode Row -->
-                            <div class="studio-row"
-                                style="flex-direction: column; align-items: flex-start; gap: 12px; border-bottom: 1px solid rgba(255,255,255,0.05); padding-bottom: 20px;">
-                                <div class="studio-row-info">
-                                    <div class="studio-row-label">Theme Mode</div>
-                                    <div class="studio-row-desc">Select your preferred interface aesthetic.</div>
-                                </div>
-                                <div class="grid-selector" id="theme-mode-grid"
-                                    style="display: grid; grid-template-columns: 1fr; gap: 12px; width: 100%;">
-                                    <div class="choice-item active" data-value="dark"
-                                        style="display: flex; align-items: center; justify-content: center; gap: 10px; padding: 12px; border-radius: 10px;">
-                                        <i class="fas fa-moon"></i>
-                                        <span style="font-size: 11px; font-weight: 700;">Dark</span>
-                                    </div>
-                                </div>
-                            </div>
-                            <div class="studio-row" onclick="showSection('homepage')" style="cursor: pointer;">
-
-                                <div class="studio-row-info">
-                                    <div class="studio-row-label">Home Page Aesthetics</div>
-                                    <div class="studio-row-desc">Configure layout and shortcut visual profiles.</div>
-                                </div>
-                                <i class="fas fa-chevron-right" style="opacity: 0.3; font-size: 10px;"></i>
                             </div>
                         </div>
                     </div>
 
-                    <!-- Interface Layout Card -->
-                    <div class="studio-card">
-                        <div class="studio-card-header">
-                            <div class="studio-card-icon"><i class="fas fa-layer-group"></i></div>
-                            <div class="studio-card-title">
-                                <h3>Interface Layout</h3>
-                                <p>Fine-tune UI density and toolbar behavior.</p>
-                            </div>
-                        </div>
-                        <div class="studio-card-body">
-                            <div class="studio-row">
-                                <div class="studio-row-info">
-                                    <div class="studio-row-label">Compact Interface</div>
-                                    <div class="studio-row-desc">Reduce the height of the tab bar and nav bar.</div>
+                    <!-- Layout Card -->
+                    <div class="group" style="margin-bottom: 0;">
+                        <div class="group-label" style="margin-bottom: 12px;">Layout</div>
+                        <div class="card">
+                            <div class="card-row">
+                                <div class="card-info">
+                                    <h4>Compact mode</h4>
+                                    <p>Reduce spacing in the browser interface</p>
                                 </div>
                                 <div class="toggle" id="compact-toggle"></div>
                             </div>
-                            <div class="studio-row">
-                                <div class="studio-row-info">
-                                    <div class="studio-row-label">Bookmark Bar Visibility</div>
-                                    <div class="studio-row-desc">Control when the bookmark toolbar is visible.</div>
+                            <div class="card-row">
+                                <div class="card-info">
+                                    <h4>Show bookmarks bar</h4>
+                                    <p>Always show your bookmarks</p>
                                 </div>
-                                <div class="choice-grid" id="bookmark-bar-grid"
-                                    style="grid-template-columns:repeat(3,90px); margin-left: auto;">
-                                    <div class="choice-item" data-value="always"><i
-                                            class="fas fa-eye"></i><span>Always</span></div>
-                                    <div class="choice-item active" data-value="auto"><i
-                                            class="fas fa-wand-magic-sparkles"></i><span>Auto</span></div>
-                                    <div class="choice-item" data-value="never"><i
-                                            class="fas fa-eye-slash"></i><span>Never</span></div>
-                                </div>
+                                <div class="toggle on" id="bookmarks-bar-toggle"></div>
                             </div>
                         </div>
                     </div>
 
-                    <!-- Sustainability Card -->
-                    <div class="studio-card">
-                        <div class="studio-card-header">
-                            <div class="studio-card-icon"><i class="fas fa-bolt"></i></div>
-                            <div class="studio-card-title">
-                                <h3>Sustainability</h3>
-                                <p>Manage resource consumption and energy efficiency.</p>
+                    <!-- Downloads Card -->
+                    <div class="group" style="margin-bottom: 0;">
+                        <div class="group-label" style="margin-bottom: 12px;">Downloads</div>
+                        <div class="card">
+                            <div class="card-row">
+                                <div class="card-info">
+                                    <h4>Ask where to save each file</h4>
+                                    <p>Choose download location for each file</p>
+                                </div>
+                                <div class="toggle" id="ask-save-toggle"></div>
+                            </div>
+                            <div class="card-row">
+                                <div class="card-info">
+                                    <h4>Open PDF files internally</h4>
+                                    <p>Use Ocal's built-in PDF viewer</p>
+                                </div>
+                                <div class="toggle on" id="pdf-viewer-toggle"></div>
                             </div>
                         </div>
-                        <div class="studio-card-body">
-                            <div class="studio-row">
-                                <div class="studio-row-info">
-                                    <div class="studio-row-label">Battery Saver Mode</div>
-                                    <div class="studio-row-desc">Disable all animations and reduce background resource
-                                        usage. <span style="color:var(--accent); font-weight: 600;">High
-                                            Performance</span> is paused.</div>
+                    </div>
+
+                    <!-- System Card -->
+                    <div class="group" style="margin-bottom: 0;">
+                        <div class="group-label" style="margin-bottom: 12px;">System</div>
+                        <div class="card">
+                            <div class="card-row">
+                                <div class="card-info">
+                                    <h4>Default browser</h4>
+                                    <p id="default-browser-status">Checking status...</p>
+                                </div>
+                                <button class="btn secondary" id="set-default-btn">Make default</button>
+                            </div>
+                            <div class="card-row">
+                                <div class="card-info">
+                                    <h4>Confirm before closing</h4>
+                                    <p>Show confirmation when closing browser</p>
+                                </div>
+                                <div class="toggle on" id="confirm-exit-toggle"></div>
+                            </div>
+                            <div class="card-row">
+                                <div class="card-info">
+                                    <h4>Battery saver mode</h4>
+                                    <p>Reduce animations and background activity</p>
                                 </div>
                                 <div class="toggle" id="battery-saver-toggle"></div>
                             </div>
                         </div>
                     </div>
 
-                    <!-- System Intelligence Card -->
-                    <div class="studio-card">
-                        <div class="studio-card-header">
-                            <div class="studio-card-icon"><i class="fas fa-window-restore"></i></div>
-                            <div class="studio-card-title">
-                                <h3>System Intelligence</h3>
-                                <p>Manage how Ocal interacts with your OS.</p>
-                            </div>
-                        </div>
-                        <div class="studio-card-body">
-                            <div class="studio-row">
-                                <div class="studio-row-info">
-                                    <div class="studio-row-label">Default Browser</div>
-                                    <div class="studio-row-desc" id="default-browser-status">Checking status...</div>
+                    <!-- Privacy & Data Card -->
+                    <div class="group" style="margin-bottom: 0;">
+                        <div class="group-label" style="margin-bottom: 12px;">Privacy & Data</div>
+                        <div class="card">
+                            <div class="card-row">
+                                <div class="card-info">
+                                    <h4>Clear browsing data</h4>
+                                    <p>Delete history, cookies, and cached files</p>
                                 </div>
-                                <button class="btn primary mini" id="set-default-btn">Make Default</button>
+                                <button class="btn secondary" id="clear-data-btn">Clear data</button>
                             </div>
-                            <div class="studio-row">
-                                <div class="studio-row-info">
-                                    <div class="studio-row-label">Confirm before Exiting</div>
-                                    <div class="studio-row-desc">Show a confirmation dialog when closing.</div>
+                            <div class="card-row">
+                                <div class="card-info">
+                                    <h4>Clear bookmarks</h4>
+                                    <p>Delete all saved bookmarks</p>
                                 </div>
-                                <div class="toggle" id="confirm-exit-toggle"></div>
+                                <button class="btn danger" id="clear-bookmarks-btn">Clear bookmarks</button>
                             </div>
                         </div>
                     </div>
 
-                    <!-- File Management Card -->
-                    <div class="studio-card">
-                        <div class="studio-card-header">
-                            <div class="studio-card-icon"><i class="fas fa-download"></i></div>
-                            <div class="studio-card-title">
-                                <h3>File Management</h3>
-                                <p>Handle downloads and document interactions.</p>
-                            </div>
-                        </div>
-                        <div class="studio-card-body">
-                            <div class="studio-row">
-                                <div class="studio-row-info">
-                                    <div class="studio-row-label">Local PDF Viewer</div>
-                                    <div class="studio-row-desc">Open PDF files internally using Ocal.</div>
+                    <!-- Import Data Card -->
+                    <div class="group" style="margin-bottom: 0;">
+                        <div class="group-label" style="margin-bottom: 12px;">Import bookmarks and settings</div>
+                        <div class="card">
+                            <div class="card-row" style="cursor: pointer;" id="import-chrome-btn">
+                                <div style="display: flex; align-items: center; gap: 16px; flex: 1;">
+                                    <div style="width: 40px; height: 40px; background: rgba(255, 255, 255, 0.05); border-radius: 50%; display: flex; align-items: center; justify-content: center; color: var(--text-dim); font-size: 18px;">
+                                        <i class="fab fa-chrome"></i>
+                                    </div>
+                                    <div class="card-info">
+                                        <h4>Import from Chrome</h4>
+                                        <p>Bookmarks and settings</p>
+                                    </div>
                                 </div>
-                                <div class="toggle" id="pdf-viewer-toggle"></div>
+                                <i class="fas fa-chevron-right" style="color: var(--text-dim); font-size: 14px;"></i>
                             </div>
-                            <div class="studio-row">
-                                <div class="studio-row-info">
-                                    <div class="studio-row-label">Ask where to save</div>
-                                    <div class="studio-row-desc">Prompt for location before downloading.</div>
+                            <div class="card-row" style="cursor: pointer;" id="import-edge-btn">
+                                <div style="display: flex; align-items: center; gap: 16px; flex: 1;">
+                                    <div style="width: 40px; height: 40px; background: rgba(255, 255, 255, 0.05); border-radius: 50%; display: flex; align-items: center; justify-content: center; color: var(--text-dim); font-size: 18px;">
+                                        <i class="fab fa-edge"></i>
+                                    </div>
+                                    <div class="card-info">
+                                        <h4>Import from Edge</h4>
+                                        <p>Bookmarks and settings</p>
+                                    </div>
                                 </div>
-                                <div class="toggle" id="ask-save-toggle"></div>
+                                <i class="fas fa-chevron-right" style="color: var(--text-dim); font-size: 14px;"></i>
                             </div>
-                        </div>
-                    </div>
-
-                    <!-- Data Integrity Card -->
-                    <div class="studio-card full-span">
-                        <div class="studio-card-header">
-                            <div class="studio-card-icon"><i class="fas fa-user-shield"></i></div>
-                            <div class="studio-card-title">
-                                <h3>Data Integrity</h3>
-                                <p>Permanently erase local records and stored configurations.</p>
-                            </div>
-                        </div>
-                        <div class="studio-card-body" style="display: flex; flex-direction: row;">
-                            <div class="studio-row" style="flex: 1;">
-                                <div class="studio-row-info">
-                                    <div class="studio-row-label">Clear Browsing History</div>
-                                    <div class="studio-row-desc">Remove all local browsing history.</div>
+                            <div class="card-row" style="cursor: pointer;" id="import-file-btn">
+                                <div style="display: flex; align-items: center; gap: 16px; flex: 1;">
+                                    <div style="width: 40px; height: 40px; background: rgba(255, 255, 255, 0.05); border-radius: 50%; display: flex; align-items: center; justify-content: center; color: var(--text-dim); font-size: 18px;">
+                                        <i class="fas fa-file-import"></i>
+                                    </div>
+                                    <div class="card-info">
+                                        <h4>Import from HTML file</h4>
+                                        <p>Import bookmarks from file</p>
+                                    </div>
                                 </div>
-                                <button class="btn danger mini" id="clear-data-btn" style="padding: 10px 16px;"><i
-                                        class="fas fa-trash-can"></i> Clear History</button>
-                            </div>
-                            <div class="studio-row"
-                                style="flex: 1; border-top: none; border-left: 1px solid rgba(255,255,255,0.03);">
-                                <div class="studio-row-info">
-                                    <div class="studio-row-label">Wipe All Bookmarks</div>
-                                    <div class="studio-row-desc">Destroy all saved bookmark data.</div>
-                                </div>
-                                <button class="btn danger mini" id="clear-bookmarks-btn" style="padding: 10px 16px;"><i
-                                        class="fas fa-bookmark"></i> Wipe Data</button>
+                                <i class="fas fa-chevron-right" style="color: var(--text-dim); font-size: 14px;"></i>
                             </div>
                         </div>
-                    </div>
-
-                    <!-- Browser Migration Card -->
-                    <div class="studio-card full-span">
-                        <div class="studio-card-header">
-                            <div class="studio-card-icon"><i class="fas fa-truck-fast"></i></div>
-                            <div class="studio-card-title">
-                                <h3>Browser Migration</h3>
-                                <p>Migrate your favorites and profile setups from other browsers into Ocal.</p>
-                            </div>
-                        </div>
-                        <div class="migration-grid">
-                            <div class="migration-item" id="import-chrome-btn">
-                                <i class="fab fa-chrome"></i>
-                                <span>Chrome</span>
-                            </div>
-                            <div class="migration-item" id="import-edge-btn">
-                                <i class="fab fa-edge"></i>
-                                <span>Edge</span>
-                            </div>
-                            <div class="migration-item" id="import-file-btn" style="grid-column: span 2;">
-                                <i class="fas fa-file-import"></i>
-                                <span>Import from HTML File...</span>
-                            </div>
-                        </div>
-                        <div id="import-status"
-                            style="margin: 0 28px 24px; font-size: 13px; color: #4ade80; text-align: center; display:none; background: rgba(74,222,128,0.1); padding: 12px; border-radius: 12px; border: 1px solid rgba(74,222,128,0.2);">
-                        </div>
+                        <div id="import-status" style="margin-top: 12px; font-size: 13px; color: #4ade80; display:none; background: rgba(74,222,128,0.1); padding: 12px 16px; border-radius: 8px; border: 1px solid rgba(74,222,128,0.2);"></div>
                     </div>
 
                 </div>
-
             </div>
         </section>
 
         <!-- ── SEARCH ── -->
         <section id="search" class="section">
             <div class="page-header">
-                <div class="page-eyebrow">Discovery</div>
-                <div class="page-title">Search Hub</div>
-                <div class="page-desc">Configure your default search provider and customize your smart address bar
-                    behavior.</div>
+                <div class="page-title">Search</div>
+                <div class="page-desc">Manage your default search engine and search settings.</div>
             </div>
             <div class="page-body">
+                <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 24px;">
 
-                <div class="studio-prefs-grid">
-
-                    <!-- Search Discovery Card -->
-                    <div class="studio-card full-span">
-                        <div class="studio-card-header" style="border-bottom: none; padding-bottom: 0;">
-                            <div class="studio-card-icon"><i class="fas fa-magnifying-glass"></i></div>
-                            <div class="studio-card-title">
-                                <h3>Discovery Algorithm</h3>
-                                <p>Select the default data provider for your address bar queries.</p>
+                    <!-- Search Engine Card -->
+                    <div class="group" style="margin-bottom: 0; grid-column: span 2;">
+                        <div class="group-label" style="margin-bottom: 12px;">Search engine</div>
+                        <div class="card">
+                            <div class="card-row" style="cursor: pointer;" data-search-engine="google">
+                                <div style="display: flex; align-items: center; gap: 16px; flex: 1;">
+                                    <div style="width: 40px; height: 40px; background: rgba(255, 255, 255, 0.05); border-radius: 50%; display: flex; align-items: center; justify-content: center; color: #4285F4; font-size: 18px; flex-shrink: 0;">
+                                        <i class="fab fa-google"></i>
+                                    </div>
+                                    <div class="card-info">
+                                        <h4>Google</h4>
+                                        <p>Search with Google</p>
+                                    </div>
+                                </div>
+                                <input type="radio" name="search-engine" value="google" checked style="width: 20px; height: 20px; cursor: pointer;">
                             </div>
-                        </div>
-                        <div class="studio-card-body" style="padding: 24px 28px 28px;">
-                            <div class="choice-grid" id="search-engine-grid"
-                                style="grid-template-columns: repeat(3, 1fr); gap: 14px;">
-                                <div class="choice-item active" data-value="google"
-                                    style="padding: 20px 14px; gap: 12px;">
-                                    <i class="fab fa-google" style="font-size: 24px;"></i>
-                                    <span style="font-size: 13px; font-weight: 700;">Google</span>
+                            <div class="card-row" style="cursor: pointer;" data-search-engine="bing">
+                                <div style="display: flex; align-items: center; gap: 16px; flex: 1;">
+                                    <div style="width: 40px; height: 40px; background: rgba(255, 255, 255, 0.05); border-radius: 50%; display: flex; align-items: center; justify-content: center; color: #0078d4; font-size: 18px; flex-shrink: 0;">
+                                        <i class="fas fa-b" style="font-weight: 900; font-family: sans-serif;"></i>
+                                    </div>
+                                    <div class="card-info">
+                                        <h4>Bing</h4>
+                                        <p>Search with Bing</p>
+                                    </div>
                                 </div>
-                                <div class="choice-item" data-value="bing" style="padding: 20px 14px; gap: 12px;">
-                                    <i class="fas fa-b"
-                                        style="font-size: 24px; font-weight: 900; font-family: sans-serif; color: #0078d4;"></i>
-                                    <span style="font-size: 13px; font-weight: 700;">Bing</span>
+                                <input type="radio" name="search-engine" value="bing" style="width: 20px; height: 20px; cursor: pointer;">
+                            </div>
+                            <div class="card-row" style="cursor: pointer;" data-search-engine="duckduckgo">
+                                <div style="display: flex; align-items: center; gap: 16px; flex: 1;">
+                                    <div style="width: 40px; height: 40px; background: rgba(255, 255, 255, 0.05); border-radius: 50%; display: flex; align-items: center; justify-content: center; color: #de5833; font-size: 18px; flex-shrink: 0;">
+                                        <i class="fas fa-shield-cat"></i>
+                                    </div>
+                                    <div class="card-info">
+                                        <h4>DuckDuckGo</h4>
+                                        <p>Search with DuckDuckGo</p>
+                                    </div>
                                 </div>
-                                <div class="choice-item" data-value="duckduckgo" style="padding: 20px 14px; gap: 12px;">
-                                    <i class="fas fa-shield-cat" style="font-size: 24px; color: #de5833;"></i>
-                                    <span style="font-size: 13px; font-weight: 700;">DuckDuckGo</span>
+                                <input type="radio" name="search-engine" value="duckduckgo" style="width: 20px; height: 20px; cursor: pointer;">
+                            </div>
+                            <div class="card-row" style="cursor: pointer;" data-search-engine="brave">
+                                <div style="display: flex; align-items: center; gap: 16px; flex: 1;">
+                                    <div style="width: 40px; height: 40px; background: rgba(255, 255, 255, 0.05); border-radius: 50%; display: flex; align-items: center; justify-content: center; color: #fb542b; font-size: 18px; flex-shrink: 0;">
+                                        <i class="fa-brands fa-brave"></i>
+                                    </div>
+                                    <div class="card-info">
+                                        <h4>Brave</h4>
+                                        <p>Search with Brave</p>
+                                    </div>
                                 </div>
-                                <div class="choice-item" data-value="brave" style="padding: 20px 14px; gap: 12px;">
-                                    <i class="fa-brands fa-brave" style="font-size: 24px; color: #fb542b;"></i>
-                                    <span style="font-size: 13px; font-weight: 700;">Brave</span>
+                                <input type="radio" name="search-engine" value="brave" style="width: 20px; height: 20px; cursor: pointer;">
+                            </div>
+                            <div class="card-row" style="cursor: pointer;" data-search-engine="yahoo">
+                                <div style="display: flex; align-items: center; gap: 16px; flex: 1;">
+                                    <div style="width: 40px; height: 40px; background: rgba(255, 255, 255, 0.05); border-radius: 50%; display: flex; align-items: center; justify-content: center; color: #6001d2; font-size: 18px; flex-shrink: 0;">
+                                        <i class="fa-brands fa-yahoo"></i>
+                                    </div>
+                                    <div class="card-info">
+                                        <h4>Yahoo</h4>
+                                        <p>Search with Yahoo</p>
+                                    </div>
                                 </div>
-                                <div class="choice-item" data-value="yahoo" style="padding: 20px 14px; gap: 12px;">
-                                    <i class="fa-brands fa-yahoo" style="font-size: 24px; color: #6001d2;"></i>
-                                    <span style="font-size: 13px; font-weight: 700;">Yahoo</span>
+                                <input type="radio" name="search-engine" value="yahoo" style="width: 20px; height: 20px; cursor: pointer;">
+                            </div>
+                            <div class="card-row" style="cursor: pointer;" data-search-engine="custom">
+                                <div style="display: flex; align-items: center; gap: 16px; flex: 1;">
+                                    <div style="width: 40px; height: 40px; background: rgba(255, 255, 255, 0.05); border-radius: 50%; display: flex; align-items: center; justify-content: center; color: var(--accent); font-size: 18px; flex-shrink: 0;">
+                                        <i class="fas fa-terminal"></i>
+                                    </div>
+                                    <div class="card-info">
+                                        <h4>Custom</h4>
+                                        <p>Use a custom search engine</p>
+                                    </div>
                                 </div>
-                                <div class="choice-item" data-value="custom" style="padding: 20px 14px; gap: 12px;">
-                                    <i class="fas fa-terminal" style="font-size: 24px; color: var(--accent);"></i>
-                                    <span style="font-size: 13px; font-weight: 700;">Custom</span>
-                                </div>
+                                <input type="radio" name="search-engine" value="custom" style="width: 20px; height: 20px; cursor: pointer;">
                             </div>
                         </div>
                     </div>
 
-                    <!-- Custom Search Integration -->
-                    <div id="custom-search-container" class="studio-card full-span"
-                        style="display: none; margin-top: -12px;">
-                        <div class="studio-card-body" style="padding: 0;">
-                            <div class="studio-row"
-                                style="background: rgba(var(--accent-rgb), 0.03); border: 1px dashed var(--accent-border); margin: 0 16px 16px; border-radius: 16px; padding: 24px 28px;">
-                                <div class="studio-row-info">
-                                    <div class="studio-row-label">Custom Engine Endpoint</div>
-                                    <div class="studio-row-desc">Use <code
-                                            style="background:rgba(255,255,255,0.1); padding:2px 4px; border-radius:4px; color:var(--accent);">%s</code>
-                                        as the query placeholder.</div>
+                    <!-- Custom Search URL Card (Hidden by default) -->
+                    <div id="custom-search-container" class="group" style="margin-bottom: 0; grid-column: span 2; display: none;">
+                        <div class="group-label" style="margin-bottom: 12px;">Custom search engine</div>
+                        <div class="card">
+                            <div class="card-row">
+                                <div class="card-info" style="flex: 1;">
+                                    <h4>Search URL</h4>
+                                    <p>Use %s as the query placeholder</p>
                                 </div>
-                                <input type="text" id="custom-search-input"
-                                    placeholder="https://example.com/search?q=%s"
-                                    style="flex: 1; max-width: 420px; background: var(--glass); border: 1px solid var(--glass-border); border-radius: 12px; padding: 14px 18px; color: var(--text); font-family: 'Inter', sans-serif; font-size: 13px; transition: all 0.3s; outline: none; box-shadow: inset 0 2px 4px rgba(0,0,0,0.1);">
+                                <input type="text" id="custom-search-input" placeholder="https://example.com/search?q=%s" style="flex: 1; max-width: 420px; background: var(--glass); border: 1px solid var(--glass-border); border-radius: 8px; padding: 10px 14px; color: var(--text); font-family: 'Inter', sans-serif; font-size: 13px; outline: none;">
                             </div>
                         </div>
                     </div>
 
-                    <!-- Intelligence & Predictions -->
-                    <div class="studio-card">
-                        <div class="studio-card-header">
-                            <div class="studio-card-icon" style="color: #fbbf24; background: rgba(251, 191, 36, 0.1);">
-                                <i class="fas fa-bolt"></i></div>
-                            <div class="studio-card-title">
-                                <h3>Smart Suggestions</h3>
-                                <p>Accelerate your workflow with predictive results.</p>
-                            </div>
-                        </div>
-                        <div class="studio-card-body">
-                            <div class="studio-row">
-                                <div class="studio-row-info">
-                                    <div class="studio-row-label">Instant Suggestions</div>
-                                    <div class="studio-row-desc">Real-time predictive results as you type.</div>
+                    <!-- Suggestions Card -->
+                    <div class="group" style="margin-bottom: 0;">
+                        <div class="group-label" style="margin-bottom: 12px;">Suggestions</div>
+                        <div class="card">
+                            <div class="card-row">
+                                <div class="card-info">
+                                    <h4>Show search suggestions</h4>
+                                    <p>Get suggestions as you type in the address bar</p>
                                 </div>
-                                <div class="toggle on" id="instant-search-toggle"
-                                    onclick="toggleSearchFeature('instantSearchEnabled', this)"></div>
+                                <div class="toggle on" id="instant-search-toggle" onclick="toggleSearchFeature('instantSearchEnabled', this)"></div>
                             </div>
                         </div>
                     </div>
 
-                    <!-- Content Integrity -->
-                    <div class="studio-card">
-                        <div class="studio-card-header">
-                            <div class="studio-card-icon" style="color: #ef4444; background: rgba(239, 68, 68, 0.1);"><i
-                                    class="fas fa-filter"></i></div>
-                            <div class="studio-card-title">
-                                <h3>Result Filtering</h3>
-                                <p>Enforce strict content safety rules for results.</p>
-                            </div>
-                        </div>
-                        <div class="studio-card-body">
-                            <div class="studio-row">
-                                <div class="studio-row-info">
-                                    <div class="studio-row-label">Strict Safe Search</div>
-                                    <div class="studio-row-desc">Automatically filter explicit content.</div>
+                    <!-- Safe Search Card -->
+                    <div class="group" style="margin-bottom: 0;">
+                        <div class="group-label" style="margin-bottom: 12px;">Safe search</div>
+                        <div class="card">
+                            <div class="card-row">
+                                <div class="card-info">
+                                    <h4>Filter explicit results</h4>
+                                    <p>Block inappropriate content from search results</p>
                                 </div>
-                                <div class="toggle" id="safe-search-toggle"
-                                    onclick="toggleSearchFeature('safeSearchEnabled', this)"></div>
+                                <div class="toggle" id="safe-search-toggle" onclick="toggleSearchFeature('safeSearchEnabled', this)"></div>
                             </div>
                         </div>
                     </div>
 
                 </div>
-
             </div>
         </section>
 
         <!-- ── HOME PAGE ── -->
         <section id="homepage" class="section">
             <div class="page-header">
-                <div class="page-eyebrow">Home Page</div>
-                <div class="page-title">New Tab Engine</div>
-                <div class="page-desc">Customize your new tab dashboard layout and shortcut tiles.</div>
+                <div class="page-title">Home Page</div>
+                <div class="page-desc">Customize your new tab page layout and appearance.</div>
             </div>
             <div class="page-body">
+                <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 24px;">
 
-                <div class="studio-prefs-grid">
-
-                    <!-- Layout Architecture Card -->
-                    <div class="studio-card full-span">
-                        <div class="studio-card-header">
-                            <div class="studio-card-icon"><i class="fas fa-border-all"></i></div>
-                            <div class="studio-card-title">
-                                <h3>Architectural Layout</h3>
-                                <p>Control the structural positioning of the search array and shortcut grid.</p>
+                    <!-- Layout Card -->
+                    <div class="group" style="margin-bottom: 0; grid-column: span 2;">
+                        <div class="group-label" style="margin-bottom: 12px;">Layout</div>
+                        <div class="card">
+                            <div class="card-row" style="padding: 20px;">
+                                <div class="card-info">
+                                    <h4>Page layout</h4>
+                                    <p>Choose how content is positioned on your new tab page</p>
+                                </div>
                             </div>
-                        </div>
-                        <div class="studio-card-body">
-                            <div class="choice-grid"
-                                style="grid-template-columns: repeat(3, 1fr); gap: 20px; padding: 24px 28px;">
-                                <div class="choice-item" id="layout-top" onclick="updateHomeLayout('top')"
-                                    style="padding: 24px 16px;">
-                                    <div class="mini-layout">
-                                        <div class="mini-search"></div>
-                                        <div class="mini-grid">
-                                            <div class="mini-tile"></div>
-                                            <div class="mini-tile"></div>
-                                            <div class="mini-tile"></div>
-                                            <div class="mini-tile"></div>
+                            <div class="card-row" style="padding: 20px; border-top: 1px solid rgba(255, 255, 255, 0.06);">
+                                <div class="choice-grid" style="grid-template-columns: repeat(3, 1fr); gap: 12px; width: 100%;">
+                                    <div class="choice-item" id="layout-top" onclick="updateHomeLayout('top')" style="padding: 20px 14px; gap: 10px;">
+                                        <div class="mini-layout">
+                                            <div class="mini-search"></div>
+                                            <div class="mini-grid">
+                                                <div class="mini-tile"></div>
+                                                <div class="mini-tile"></div>
+                                                <div class="mini-tile"></div>
+                                                <div class="mini-tile"></div>
+                                            </div>
                                         </div>
+                                        <span style="font-size: 13px; font-weight: 600;">Top</span>
                                     </div>
-                                    <span style="font-weight: 700;">Top Aligned</span>
-                                </div>
-                                <div class="choice-item active" id="layout-center" onclick="updateHomeLayout('center')"
-                                    style="padding: 24px 16px;">
-                                    <div class="mini-layout" style="justify-content:center;">
-                                        <div class="mini-search"></div>
-                                    </div>
-                                    <span style="font-weight: 700;">Absolute Center</span>
-                                </div>
-                                <div class="choice-item" id="layout-bottom" onclick="updateHomeLayout('bottom')"
-                                    style="padding: 24px 16px;">
-                                    <div class="mini-layout" style="justify-content:flex-end;">
-                                        <div class="mini-grid">
-                                            <div class="mini-tile"></div>
-                                            <div class="mini-tile"></div>
-                                            <div class="mini-tile"></div>
-                                            <div class="mini-tile"></div>
+                                    <div class="choice-item active" id="layout-center" onclick="updateHomeLayout('center')" style="padding: 20px 14px; gap: 10px;">
+                                        <div class="mini-layout" style="justify-content:center;">
+                                            <div class="mini-search"></div>
                                         </div>
-                                        <div class="mini-search"></div>
+                                        <span style="font-size: 13px; font-weight: 600;">Center</span>
                                     </div>
-                                    <span style="font-weight: 700;">Bottom Anchored</span>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-
-                    <!-- Metrics & Density Card -->
-                    <div class="studio-card">
-                        <div class="studio-card-header">
-                            <div class="studio-card-icon"><i class="fas fa-arrows-up-down-left-right"></i></div>
-                            <div class="studio-card-title">
-                                <h3>Metrical Density</h3>
-                                <p>Fine-tune the physical footprint of your shortcut array.</p>
-                            </div>
-                        </div>
-                        <div class="studio-card-body">
-                            <div class="studio-row" style="flex-direction: column; align-items: stretch; gap: 16px;">
-                                <div class="studio-row-info"
-                                    style="display: flex; justify-content: space-between; align-items: center;">
-                                    <div class="studio-row-label">Tile Size Matrix</div>
-                                    <div class="badge" id="label-tile-size"
-                                        style="background: var(--accent-dim); color: var(--accent); padding: 4px 10px; border-radius: 8px; font-weight: 800; font-size: 11px;">
-                                        120px</div>
-                                </div>
-                                <input type="range" min="80" max="160" value="120" id="homeTileSize"
-                                    oninput="updateHomeSetting('homeTileSize', this.value)">
-                            </div>
-                            <div class="studio-row" style="flex-direction: column; align-items: stretch; gap: 16px;">
-                                <div class="studio-row-info"
-                                    style="display: flex; justify-content: space-between; align-items: center;">
-                                    <div class="studio-row-label">Grid Spacing</div>
-                                    <div class="badge" id="label-tile-spacing"
-                                        style="background: var(--accent-dim); color: var(--accent); padding: 4px 10px; border-radius: 8px; font-weight: 800; font-size: 11px;">
-                                        20px</div>
-                                </div>
-                                <input type="range" min="10" max="40" value="20" id="homeTileSpacing"
-                                    oninput="updateHomeSetting('homeTileSpacing', this.value)">
-                            </div>
-                        </div>
-                    </div>
-
-                    <!-- Visual Texture Card -->
-                    <div class="studio-card">
-                        <div class="studio-card-header">
-                            <div class="studio-card-icon"><i class="fas fa-wand-magic-sparkles"></i></div>
-                            <div class="studio-card-title">
-                                <h3>Material Render</h3>
-                                <p>Select the surfacing texture for your interface components.</p>
-                            </div>
-                        </div>
-                        <div class="studio-card-body" style="padding: 12px 0;">
-                            <div class="choice-grid" id="tile-style-grid"
-                                style="grid-template-columns: 1fr; gap: 8px; padding: 0 28px 16px;">
-                                <div class="choice-item active" data-value="glass-array"
-                                    style="display: flex; flex-direction: row; justify-content: flex-start; gap: 16px; padding: 14px 20px;">
-                                    <div
-                                        style="width:28px;height:28px;background:rgba(255,255,255,0.06);border:1px solid rgba(255,255,255,0.12);border-radius:8px;backdrop-filter:blur(8px);box-shadow: 0 4px 12px rgba(0,0,0,0.2);">
-                                    </div>
-                                    <div style="display: flex; flex-direction: column;">
-                                        <span style="font-size: 13px; font-weight: 700;">Glassmorphic Array</span>
-                                        <span
-                                            style="font-size: 11px; color: var(--text-muted); font-weight: 500;">Premium
-                                            frosted transparency.</span>
-                                    </div>
-                                </div>
-                                <div class="choice-item" data-value="solid-matte"
-                                    style="display: flex; flex-direction: row; justify-content: flex-start; gap: 16px; padding: 14px 20px;">
-                                    <div
-                                        style="width:28px;height:28px;background:rgba(255,255,255,0.15);border-radius:4px;">
-                                    </div>
-                                    <div style="display: flex; flex-direction: column;">
-                                        <span style="font-size: 13px; font-weight: 700;">Solid Matte Structure</span>
-                                        <span
-                                            style="font-size: 11px; color: var(--text-muted); font-weight: 500;">Minimalist
-                                            opaque surfacing.</span>
-                                    </div>
-                                </div>
-                                <div class="choice-item" data-value="neon-orbit"
-                                    style="display: flex; flex-direction: row; justify-content: flex-start; gap: 16px; padding: 14px 20px;">
-                                    <div
-                                        style="width:28px;height:28px;border:2px solid var(--accent);border-radius:50%;box-shadow:0 0 10px var(--accent-glow);">
-                                    </div>
-                                    <div style="display: flex; flex-direction: column;">
-                                        <span style="font-size: 13px; font-weight: 700;">Neon Circular Orbit</span>
-                                        <span
-                                            style="font-size: 11px; color: var(--text-muted); font-weight: 500;">Vibrant
-                                            electric signatures.</span>
+                                    <div class="choice-item" id="layout-bottom" onclick="updateHomeLayout('bottom')" style="padding: 20px 14px; gap: 10px;">
+                                        <div class="mini-layout" style="justify-content:flex-end;">
+                                            <div class="mini-grid">
+                                                <div class="mini-tile"></div>
+                                                <div class="mini-tile"></div>
+                                                <div class="mini-tile"></div>
+                                                <div class="mini-tile"></div>
+                                            </div>
+                                            <div class="mini-search"></div>
+                                        </div>
+                                        <span style="font-size: 13px; font-weight: 600;">Bottom</span>
                                     </div>
                                 </div>
                             </div>
                         </div>
                     </div>
 
-                    <!-- Marketplace & Widgets Card -->
-                    <div class="studio-card full-span">
-                        <div class="studio-card-header">
-                            <div class="studio-card-icon"
-                                style="background: rgba(74, 222, 128, 0.1); color: #4ade80; border-color: rgba(74, 222, 128, 0.2);">
-                                <i class="fas fa-cubes"></i></div>
-                            <div class="studio-card-title">
-                                <h3>Module Engine</h3>
-                                <p>Enable and configure persistent productivity extensions on your dashboard.</p>
+                    <!-- Tile Appearance Card -->
+                    <div class="group" style="margin-bottom: 0;">
+                        <div class="group-label" style="margin-bottom: 12px;">Tile appearance</div>
+                        <div class="card">
+                            <div class="card-row" style="flex-direction: column; align-items: stretch; gap: 12px;">
+                                <div style="display: flex; justify-content: space-between; align-items: center;">
+                                    <div class="card-info">
+                                        <h4>Tile size</h4>
+                                        <p>Adjust the size of shortcut tiles</p>
+                                    </div>
+                                    <div id="label-tile-size" style="background: var(--accent-dim); color: var(--accent); padding: 4px 10px; border-radius: 6px; font-weight: 700; font-size: 11px;">120px</div>
+                                </div>
+                                <input type="range" min="80" max="160" value="120" id="homeTileSize" oninput="updateHomeSetting('homeTileSize', this.value)">
+                            </div>
+                            <div class="card-row" style="flex-direction: column; align-items: stretch; gap: 12px;">
+                                <div style="display: flex; justify-content: space-between; align-items: center;">
+                                    <div class="card-info">
+                                        <h4>Tile spacing</h4>
+                                        <p>Adjust spacing between tiles</p>
+                                    </div>
+                                    <div id="label-tile-spacing" style="background: var(--accent-dim); color: var(--accent); padding: 4px 10px; border-radius: 6px; font-weight: 700; font-size: 11px;">20px</div>
+                                </div>
+                                <input type="range" min="10" max="40" value="20" id="homeTileSpacing" oninput="updateHomeSetting('homeTileSpacing', this.value)">
                             </div>
                         </div>
-                        <div class="studio-card-body" style="display: grid; grid-template-columns: 1fr 1fr;">
-                            <div class="studio-row">
-                                <div class="studio-row-info">
-                                    <div class="studio-row-label">Daily Focus Engine</div>
-                                    <div class="studio-row-desc">Interactive task sequence and to-do list.</div>
+                    </div>
+
+                    <!-- Tile Style Card -->
+                    <div class="group" style="margin-bottom: 0;">
+                        <div class="group-label" style="margin-bottom: 12px;">Tile style</div>
+                        <div class="card">
+                            <div class="card-row" style="cursor: pointer;" onclick="document.querySelector('[data-value=\'glass-array\']').click();">
+                                <div style="display: flex; align-items: center; gap: 16px; flex: 1;">
+                                    <div style="width:32px;height:32px;background:rgba(255,255,255,0.06);border:1px solid rgba(255,255,255,0.12);border-radius:8px;backdrop-filter:blur(8px);box-shadow: 0 4px 12px rgba(0,0,0,0.2); flex-shrink: 0;"></div>
+                                    <div class="card-info">
+                                        <h4>Glassmorphic</h4>
+                                        <p>Frosted glass transparency effect</p>
+                                    </div>
+                                </div>
+                                <input type="radio" name="tile-style" id="tile-style-glass" data-value="glass-array" checked style="width: 20px; height: 20px; cursor: pointer;">
+                            </div>
+                            <div class="card-row" style="cursor: pointer;" onclick="document.querySelector('[data-value=\'solid-matte\']').click();">
+                                <div style="display: flex; align-items: center; gap: 16px; flex: 1;">
+                                    <div style="width:32px;height:32px;background:rgba(255,255,255,0.15);border-radius:4px; flex-shrink: 0;"></div>
+                                    <div class="card-info">
+                                        <h4>Solid</h4>
+                                        <p>Minimalist opaque tiles</p>
+                                    </div>
+                                </div>
+                                <input type="radio" name="tile-style" id="tile-style-solid" data-value="solid-matte" style="width: 20px; height: 20px; cursor: pointer;">
+                            </div>
+                            <div class="card-row" style="cursor: pointer;" onclick="document.querySelector('[data-value=\'neon-orbit\']').click();">
+                                <div style="display: flex; align-items: center; gap: 16px; flex: 1;">
+                                    <div style="width:32px;height:32px;border:2px solid var(--accent);border-radius:50%;box-shadow:0 0 10px var(--accent-glow); flex-shrink: 0;"></div>
+                                    <div class="card-info">
+                                        <h4>Neon</h4>
+                                        <p>Vibrant glowing borders</p>
+                                    </div>
+                                </div>
+                                <input type="radio" name="tile-style" id="tile-style-neon" data-value="neon-orbit" style="width: 20px; height: 20px; cursor: pointer;">
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Widgets Card -->
+                    <div class="group" style="margin-bottom: 0; grid-column: span 2;">
+                        <div class="group-label" style="margin-bottom: 12px;">Widgets</div>
+                        <div class="card">
+                            <div class="card-row">
+                                <div class="card-info">
+                                    <h4>To-do list</h4>
+                                    <p>Show task list on new tab page</p>
                                 </div>
                                 <div class="toggle on" id="show-todo-toggle"></div>
                             </div>
-                            <div class="studio-row" style="border-left: 1px solid rgba(255,255,255,0.03);">
-                                <div class="studio-row-info">
-                                    <div class="studio-row-label">Focus Flow Timer</div>
-                                    <div class="studio-row-desc">Integrated Pomodoro deep work utility.</div>
+                            <div class="card-row">
+                                <div class="card-info">
+                                    <h4>Focus timer</h4>
+                                    <p>Show Pomodoro timer widget</p>
                                 </div>
                                 <div class="toggle on" id="show-timer-toggle"></div>
                             </div>
-                            <div class="studio-row"
-                                style="border-top: 1px solid rgba(255,255,255,0.03); grid-column: span 2;">
-                                <div class="studio-row-info">
-                                    <div class="studio-row-label">Metabolic Weather Hub</div>
-                                    <div class="studio-row-desc">Real-time local atmospheric conditions and temperature.
-                                    </div>
+                            <div class="card-row">
+                                <div class="card-info">
+                                    <h4>Weather</h4>
+                                    <p>Show local weather conditions</p>
                                 </div>
                                 <div class="toggle on" id="show-weather-toggle"></div>
                             </div>
@@ -6037,98 +5974,94 @@
                     </div>
 
                 </div>
-
             </div>
         </section>
 
         <!-- ── PROFILES ── -->
         <section id="profiles" class="section">
             <div class="page-header">
-                <div class="page-eyebrow">Profiles</div>
-                <div class="page-title">Identity Management</div>
-                <div class="page-desc">Manage separate browsing identities with isolated history, cookies, and local
-                    configurations.</div>
+                <div class="page-title">Profiles</div>
+                <div class="page-desc">Manage separate browsing identities with isolated history, cookies, and settings.</div>
             </div>
             <div class="page-body">
+                <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 24px;">
 
-                <div class="studio-prefs-grid">
-
-                    <!-- Identity Architecture Hub -->
-                    <div class="studio-card full-span" style="position: relative; overflow: hidden;">
-
-                        <div class="studio-card-header">
-                            <div class="studio-card-icon"><i class="fas fa-users-viewfinder"></i></div>
-                            <div class="studio-card-title">
-                                <h3>Identity Hub</h3>
-                                <p>Switch between independent user workspaces and secure digital aliases.</p>
-                            </div>
-                            <button class="btn secondary mini" onclick="createProfilePrompt()"
-                                style="margin-left: auto;">
-                                <i class="fas fa-plus"></i> NEW IDENTITY
+                    <!-- Active Profiles Card -->
+                    <div class="group" style="margin-bottom: 0; grid-column: span 2;">
+                        <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 12px;">
+                            <div class="group-label">Your profiles</div>
+                            <button class="btn primary" onclick="createProfilePrompt()" style="padding: 8px 16px; font-size: 13px;">
+                                <i class="fas fa-plus"></i> New profile
                             </button>
                         </div>
-                        <div class="studio-card-body" style="padding: 24px 28px 40px;">
-                            <div class="choice-grid" id="profile-grid"
-                                style="grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 20px;">
+                        <div class="card" style="padding: 0; overflow: hidden;">
+                            <div id="profile-grid" style="display: flex; flex-direction: column;">
                                 <!-- Dynamically Rendered by settings.js -->
                             </div>
                         </div>
                     </div>
 
-                    <!-- Isolation Insights -->
-                    <div class="studio-card">
-                        <div class="studio-card-header">
-                            <div class="studio-card-icon" style="color: #4ade80; background: rgba(74, 222, 128, 0.1);">
-                                <i class="fas fa-box-archive"></i></div>
-                            <div class="studio-card-title">
-                                <h3>Data Islanding</h3>
-                                <p>Profiles are cryptographically isolated from each other.</p>
-                            </div>
-                        </div>
-                        <div class="studio-card-body">
-                            <div class="studio-row">
-                                <div class="studio-row-info">
-                                    <div class="studio-row-label">Sandboxed Cookies</div>
-                                    <div class="studio-row-desc">Logins and data do not leak between profiles.</div>
+                    <!-- Data Isolation Card -->
+                    <div class="group" style="margin-bottom: 0;">
+                        <div class="group-label" style="margin-bottom: 12px;">Data isolation</div>
+                        <div class="card">
+                            <div class="card-row" style="padding: 24px 20px;">
+                                <div style="display: flex; align-items: center; gap: 16px; flex: 1;">
+                                    <div style="width: 48px; height: 48px; background: rgba(74, 222, 128, 0.1); border-radius: 50%; display: flex; align-items: center; justify-content: center; color: #4ade80; font-size: 20px; flex-shrink: 0;">
+                                        <i class="fas fa-shield-halved"></i>
+                                    </div>
+                                    <div class="card-info">
+                                        <h4 style="font-size: 15px; margin-bottom: 4px;">Sandboxed data</h4>
+                                        <p style="font-size: 13px;">Each profile has its own cookies, history, and cache</p>
+                                    </div>
                                 </div>
                             </div>
-                            <div class="studio-row">
-                                <div class="studio-row-info">
-                                    <div class="studio-row-label">Isolated History</div>
-                                    <div class="studio-row-desc">Separate browsing records for each workspace.</div>
+                            <div class="card-row">
+                                <div class="card-info">
+                                    <h4>Isolated cookies</h4>
+                                    <p>Login sessions don't leak between profiles</p>
+                                </div>
+                            </div>
+                            <div class="card-row">
+                                <div class="card-info">
+                                    <h4>Separate history</h4>
+                                    <p>Browsing records are kept independent</p>
                                 </div>
                             </div>
                         </div>
                     </div>
 
-                    <!-- Future Capabilities -->
-                    <div class="studio-card">
-                        <div class="studio-card-header">
-                            <div class="studio-card-icon" style="color: #fbbf24; background: rgba(251, 191, 36, 0.1);">
-                                <i class="fas fa-cloud-arrow-up"></i></div>
-                            <div class="studio-card-title">
-                                <h3>Secure Sync</h3>
-                                <p>Encrypted data synchronization across identities.</p>
-                            </div>
-                        </div>
-                        <div class="studio-card-body">
-                            <div class="studio-row">
-                                <div class="studio-row-info">
-                                    <div class="studio-row-label">Cross-Device Identity</div>
-                                    <div class="studio-row-desc">Access your aliases from any Ocal node.</div>
+                    <!-- Profile Features Card -->
+                    <div class="group" style="margin-bottom: 0;">
+                        <div class="group-label" style="margin-bottom: 12px;">Profile features</div>
+                        <div class="card">
+                            <div class="card-row" style="padding: 24px 20px;">
+                                <div style="display: flex; align-items: center; gap: 16px; flex: 1;">
+                                    <div style="width: 48px; height: 48px; background: rgba(168, 85, 247, 0.1); border-radius: 50%; display: flex; align-items: center; justify-content: center; color: #a855f7; font-size: 20px; flex-shrink: 0;">
+                                        <i class="fas fa-user-shield"></i>
+                                    </div>
+                                    <div class="card-info">
+                                        <h4 style="font-size: 15px; margin-bottom: 4px;">Multiple identities</h4>
+                                        <p style="font-size: 13px;">Switch between work, personal, and guest profiles</p>
+                                    </div>
                                 </div>
                             </div>
-                            <div class="studio-row">
-                                <div class="studio-row-info">
-                                    <div class="studio-row-label">Alias Protection</div>
-                                    <div class="studio-row-desc">Generate random identities for privacy.</div>
+                            <div class="card-row">
+                                <div class="card-info">
+                                    <h4>Custom icons</h4>
+                                    <p>Personalize each profile with unique icons</p>
+                                </div>
+                            </div>
+                            <div class="card-row">
+                                <div class="card-info">
+                                    <h4>Quick switching</h4>
+                                    <p>Instantly switch between profiles without restarting</p>
                                 </div>
                             </div>
                         </div>
                     </div>
 
                 </div>
-
             </div>
         </section>
 
@@ -6333,177 +6266,164 @@
         </section>
 
         <!-- ── EXTENSIONS ── -->
+        <!-- Loading overlay for installs -->
+        <div class="ext-loading-overlay" id="ext-install-loader">
+            <div style="text-align:center;">
+                <div class="ext-loader-spin"></div>
+                <p style="margin-top:16px; font-size:13px; font-weight:600; color:var(--text);">Installing Extension...</p>
+            </div>
+        </div>
+
         <section id="extensions" class="section">
             <div class="page-header">
-                <div class="page-eyebrow">Storefront</div>
-                <div class="page-title">Extension Hub</div>
-                <div class="page-desc">Superpower your Ocal experience with native extensions and modular power-ups.
-                </div>
+                <div class="page-title">Extensions</div>
+                <div class="page-desc">Manage installed Chrome extensions and built-in Ocal modules.</div>
             </div>
 
             <div class="page-body">
-                <div class="prefs-grid">
 
-                    <!-- Advanced Toolbar -->
-                    <div class="pref-module pref-section-full" style="padding: 16px 24px;">
-                        <div style="display: flex; justify-content: space-between; align-items: center; gap: 20px;">
-                            <div style="display: flex; align-items: center; flex: 1; gap: 15px;">
-                                <div class="shortcut-search-bar" style="margin: 0; min-width: 320px;">
-                                    <i class="fas fa-magnifying-glass"></i>
-                                    <input type="text" id="ext-search-input" placeholder="Search marketplace..."
-                                        oninput="filterExtensions()">
-                                </div>
-                                <div class="cat-pills" id="ext-filter-group" style="margin: 0;">
-                                    <button class="cat-pill active" data-filter="all">All Modules</button>
-                                    <button class="cat-pill" data-filter="core">Core</button>
-                                    <button class="cat-pill" data-filter="privacy">Privacy</button>
-                                    <button class="cat-pill" data-filter="utility">Utility</button>
-                                </div>
-                            </div>
-                            <button class="btn secondary" onclick="loadUnpackedExtension()"
-                                style="background: rgba(255,255,255,0.05); border: 1px dashed rgba(255,255,255,0.2);">
-                                <i class="fas fa-folder-open"></i> Load Unpacked
-                            </button>
+                <!-- Install from Chrome Web Store -->
+                <div class="ext-install-bar">
+                    <i class="fab fa-chrome"></i>
+                    <input type="text" id="ext-cws-input" placeholder="Enter Chrome Web Store URL or Extension ID (e.g. cjpalhdlnbpafiamejdnhcphjbkeiagm)">
+                    <button class="btn primary" onclick="installExtFromSettings()" style="padding:10px 20px; font-size:13px; white-space:nowrap;">
+                        <i class="fas fa-plus"></i> Install
+                    </button>
+                    <button class="btn secondary" onclick="loadUnpackedExtension()" style="padding:10px 16px; font-size:13px; white-space:nowrap;">
+                        <i class="fas fa-folder-open"></i> Load Unpacked
+                    </button>
+                </div>
+
+                <!-- Search bar -->
+                <div class="shortcut-search-bar" style="margin-bottom:24px;">
+                    <i class="fas fa-magnifying-glass"></i>
+                    <input type="text" id="ext-search-input" placeholder="Search extensions..." oninput="filterExtSettings()">
+                </div>
+
+                <!-- All Extensions (built-in + installed) -->
+                <div id="ext-settings-grid">
+
+                    <!-- uBlock Origin -->
+                    <div class="ext-card-row" data-extname="ublock origin ad blocker" id="ext-adblock">
+                        <div class="ext-card-icon" style="background:rgba(74,222,128,0.1); color:#4ade80;">
+                            <i class="fas fa-shield-cat"></i>
                         </div>
-                    </div>
-
-                    <div class="pref-module pref-section-full" id="ext-ai">
-                        <div class="pref-header"
-                            style="margin-bottom:0; display:flex; align-items:center; justify-content:space-between;">
-                            <div style="display:flex; align-items:center; gap:20px;">
-                                <div class="pref-icon theme" style="width:64px; height:64px; font-size:28px;"><i
-                                        class="fas fa-wand-magic-sparkles"></i></div>
-                                <div>
-                                    <div
-                                        style="font-size:10px; font-weight:800; color:#a855f7; letter-spacing:1px; margin-bottom:4px; text-transform:uppercase;">
-                                        Featured</div>
-                                    <h3 style="font-size:22px; font-weight:800; margin:0 0 4px 0;">Ocal AI Assistant Pro
-                                    </h3>
-                                    <p style="font-size:13px; margin:0;">Intelligent summaries, real-time research, and
-                                        cross-tab automation powered by local and cloud models.</p>
-                                </div>
+                        <div class="ext-card-info">
+                            <div class="ext-card-header">
+                                <span class="ext-card-name">uBlock Origin</span>
+                                <label class="ext-toggle-wrap">
+                                    <input type="checkbox" id="toggle-adblock" checked onchange="window.toggleSecurityFeature('adBlockEnabled', {classList:{toggle:()=>this.checked,contains:()=>!this.checked}}); window.electronAPI.send('set-security-toggle',{key:'adBlockEnabled',value:this.checked}); setTimeout(()=>window.electronAPI.getSettings().then(s=>renderExtensions(s)),100);">
+                                    <span class="ext-slider"></span>
+                                </label>
                             </div>
-                            <div style="display:flex; flex-direction:column; align-items:flex-end; gap:10px;">
-                                <div class="ext-status-indicator off" id="status-ai"
-                                    style="display:flex; align-items:center; gap:6px; font-size:11px; font-weight:700; text-transform:uppercase; letter-spacing:1px;">
-                                    <div class="status-dot" style="width:6px; height:6px; border-radius:50%;"></div>
-                                    Idle
+                            <div class="ext-card-version">Built-in · Core Module</div>
+                            <div class="ext-card-desc">An efficient, wide-spectrum ad blocker. Easy on CPU and memory.</div>
+                            <div class="ext-card-footer">
+                                <span class="ext-card-tag core">CORE</span>
+                                <div class="ext-card-actions">
+                                    <span class="ext-status-indicator" id="status-adblock"><span class="status-dot"></span><span>Active</span></span>
                                 </div>
-                                <button class="btn primary" id="btn-ai" onclick="toggleExtension('aiAssistantEnabled')"
-                                    style="padding:10px 24px; font-size:13px;">Deploy Module</button>
                             </div>
                         </div>
                     </div>
 
-                    <!-- Marketplace Grid Container -->
-                    <div class="pref-module pref-section-full"
-                        style="padding: 0; background: transparent; border: none; box-shadow: none;">
-                        <h4 class="marketplace-title"
-                            style="font-size:11px; font-weight:800; text-transform:uppercase; letter-spacing:2px; margin-bottom:16px; margin-top:8px;">
-                            Marketplace</h4>
-                        <div id="extensions-grid" style="display:grid; grid-template-columns:repeat(2, 1fr); gap:20px;">
-
-                            <!-- Ad Shield -->
-                            <div class="pref-module ext-item-card core" data-category="core" id="ext-adblock"
-                                style="padding:20px;">
-                                <div
-                                    style="display:flex; justify-content:space-between; align-items:flex-start; margin-bottom:16px;">
-                                    <div class="pref-icon downloads"
-                                        style="background:rgba(74,222,128,0.1); color:#4ade80;"><i
-                                            class="fas fa-shield-cat"></i></div>
-                                    <div class="ext-status-indicator on" id="status-adblock"
-                                        style="display:flex; align-items:center; gap:6px; font-size:10px; font-weight:800; color:#4ade80; text-transform:uppercase; letter-spacing:1px; background:rgba(74,222,128,0.1); padding:4px 8px; border-radius:6px;">
-                                        <div class="status-dot"
-                                            style="width:6px; height:6px; background:#4ade80; border-radius:50%; box-shadow:0 0 6px rgba(74,222,128,0.5);">
-                                        </div> Active
-                                    </div>
-                                </div>
-                                <span
-                                    style="font-size:9px; font-weight:800; color:#4ade80; letter-spacing:1px; margin-bottom:4px; display:block;">CORE</span>
-                                <h3 style="font-size:16px; font-weight:700; color:var(--text); margin:0 0 6px 0;">uBlock
-                                    Origin</h3>
-                                <p style="font-size:12px; color:var(--text-dim); margin:0 0 20px 0;">An efficient ad
-                                    blocker. Easy on CPU and memory.</p>
-                                <button class="btn secondary" id="btn-adblock"
-                                    onclick="window.toggleSecurityFeature('adBlockEnabled', this); setTimeout(renderExtensions, 100);"
-                                    style="width:100%; justify-content:center;">Manage</button>
+                    <!-- Asset Vault -->
+                    <div class="ext-card-row" data-extname="asset vault password manager" id="ext-vault">
+                        <div class="ext-card-icon" style="background:rgba(59,130,246,0.1); color:#3b82f6;">
+                            <i class="fas fa-vault"></i>
+                        </div>
+                        <div class="ext-card-info">
+                            <div class="ext-card-header">
+                                <span class="ext-card-name">Asset Vault</span>
+                                <label class="ext-toggle-wrap">
+                                    <input type="checkbox" id="toggle-vault" onchange="window.electronAPI.send('set-security-toggle',{key:'assetVaultEnabled',value:this.checked}); setTimeout(()=>window.electronAPI.getSettings().then(s=>renderExtensions(s)),100);">
+                                    <span class="ext-slider"></span>
+                                </label>
                             </div>
-
-                            <!-- Asset Vault -->
-                            <div class="pref-module ext-item-card core" data-category="core" id="ext-vault"
-                                style="padding:20px;">
-                                <div
-                                    style="display:flex; justify-content:space-between; align-items:flex-start; margin-bottom:16px;">
-                                    <div class="pref-icon layout"
-                                        style="background:rgba(59,130,246,0.1); color:#3b82f6;"><i
-                                            class="fas fa-vault"></i></div>
-                                    <div class="ext-status-indicator on" id="status-vault"
-                                        style="display:flex; align-items:center; gap:6px; font-size:10px; font-weight:800; color:#4ade80; text-transform:uppercase; letter-spacing:1px; background:rgba(74,222,128,0.1); padding:4px 8px; border-radius:6px;">
-                                        <div class="status-dot"
-                                            style="width:6px; height:6px; background:#4ade80; border-radius:50%; box-shadow:0 0 6px rgba(74,222,128,0.5);">
-                                        </div> Active
-                                    </div>
+                            <div class="ext-card-version">Built-in · Core Module</div>
+                            <div class="ext-card-desc">Military-grade encrypted storage for passwords and credit cards.</div>
+                            <div class="ext-card-footer">
+                                <span class="ext-card-tag core">CORE</span>
+                                <div class="ext-card-actions">
+                                    <span class="ext-status-indicator" id="status-vault"><span class="status-dot"></span><span>Idle</span></span>
                                 </div>
-                                <span
-                                    style="font-size:9px; font-weight:800; color:#3b82f6; letter-spacing:1px; margin-bottom:4px; display:block;">CORE</span>
-                                <h3 style="font-size:16px; font-weight:700; color:var(--text); margin:0 0 6px 0;">Asset
-                                    Vault</h3>
-                                <p style="font-size:12px; color:var(--text-dim); margin:0 0 20px 0;">Military-grade
-                                    encrypted storage for passwords and credit cards.</p>
-                                <button class="btn secondary" id="btn-vault"
-                                    onclick="toggleExtension('assetVaultEnabled')"
-                                    style="width:100%; justify-content:center;">Manage</button>
                             </div>
-
-                            <!-- Cyber Stealth -->
-                            <div class="pref-module ext-item-card" data-category="privacy" id="ext-stealth"
-                                style="padding:20px;">
-                                <div
-                                    style="display:flex; justify-content:space-between; align-items:flex-start; margin-bottom:16px;">
-                                    <div class="pref-icon privacy"><i class="fas fa-user-secret"></i></div>
-                                    <div class="ext-status-indicator off" id="status-stealth"
-                                        style="display:flex; align-items:center; gap:6px; font-size:10px; font-weight:800; text-transform:uppercase; letter-spacing:1px; padding:4px 8px; border-radius:6px;">
-                                        <div class="status-dot" style="width:6px; height:6px; border-radius:50%;"></div>
-                                        Idle
-                                    </div>
-                                </div>
-                                <span
-                                    style="font-size:9px; font-weight:800; color:#ef4444; letter-spacing:1px; margin-bottom:4px; display:block;">PRIVACY</span>
-                                <h3 style="font-size:16px; font-weight:700; color:var(--text); margin:0 0 6px 0;">Cyber
-                                    Stealth</h3>
-                                <p style="font-size:12px; color:var(--text-dim); margin:0 0 20px 0;">AI-driven
-                                    fingerprint protection and cross-request anonymity.</p>
-                                <button class="btn primary" id="btn-stealth"
-                                    onclick="toggleExtension('cyberStealthEnabled')"
-                                    style="width:100%; justify-content:center;">Install Module</button>
-                            </div>
-
-                            <!-- Ocal Focus -->
-                            <div class="pref-module ext-item-card" data-category="utility" id="ext-focus"
-                                style="padding:20px;">
-                                <div
-                                    style="display:flex; justify-content:space-between; align-items:flex-start; margin-bottom:16px;">
-                                    <div class="pref-icon theme"
-                                        style="background:rgba(168,85,247,0.1); color:#a855f7;"><i
-                                            class="fas fa-clock"></i></div>
-                                    <div class="ext-status-indicator off" id="status-focus"
-                                        style="display:flex; align-items:center; gap:6px; font-size:10px; font-weight:800; text-transform:uppercase; letter-spacing:1px; padding:4px 8px; border-radius:6px;">
-                                        <div class="status-dot" style="width:6px; height:6px; border-radius:50%;"></div>
-                                        Idle
-                                    </div>
-                                </div>
-                                <span
-                                    style="font-size:9px; font-weight:800; color:#a855f7; letter-spacing:1px; margin-bottom:4px; display:block;">UTILITY</span>
-                                <h3 style="font-size:16px; font-weight:700; color:var(--text); margin:0 0 6px 0;">Ocal
-                                    Focus</h3>
-                                <p style="font-size:12px; color:var(--text-dim); margin:0 0 20px 0;">Boost your
-                                    productivity with a Pomodoro timer and built-in To-Do list.</p>
-                                <button class="btn primary" id="btn-focus" onclick="toggleExtension('ocalFocusEnabled')"
-                                    style="width:100%; justify-content:center;">Install Module</button>
-                            </div>
-
                         </div>
                     </div>
+
+                    <!-- Ocal AI Assistant -->
+                    <div class="ext-card-row" data-extname="ocal ai assistant pro" id="ext-ai">
+                        <div class="ext-card-icon" style="background:rgba(168,85,247,0.1); color:#a855f7;">
+                            <i class="fas fa-wand-magic-sparkles"></i>
+                        </div>
+                        <div class="ext-card-info">
+                            <div class="ext-card-header">
+                                <span class="ext-card-name">Ocal AI Assistant</span>
+                                <label class="ext-toggle-wrap">
+                                    <input type="checkbox" id="toggle-ai" onchange="window.electronAPI.send('set-security-toggle',{key:'aiAssistantEnabled',value:this.checked}); setTimeout(()=>window.electronAPI.getSettings().then(s=>renderExtensions(s)),100);">
+                                    <span class="ext-slider"></span>
+                                </label>
+                            </div>
+                            <div class="ext-card-version">Built-in · AI Module</div>
+                            <div class="ext-card-desc">Intelligent summaries, real-time research, and cross-tab automation powered by local and cloud models.</div>
+                            <div class="ext-card-footer">
+                                <span class="ext-card-tag ai">AI</span>
+                                <div class="ext-card-actions">
+                                    <span class="ext-status-indicator" id="status-ai"><span class="status-dot"></span><span>Idle</span></span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Cyber Stealth -->
+                    <div class="ext-card-row" data-extname="cyber stealth fingerprint privacy" id="ext-stealth">
+                        <div class="ext-card-icon" style="background:rgba(239,68,68,0.08); color:#f87171;">
+                            <i class="fas fa-user-secret"></i>
+                        </div>
+                        <div class="ext-card-info">
+                            <div class="ext-card-header">
+                                <span class="ext-card-name">Cyber Stealth</span>
+                                <label class="ext-toggle-wrap">
+                                    <input type="checkbox" id="toggle-stealth" onchange="window.electronAPI.send('set-security-toggle',{key:'cyberStealthEnabled',value:this.checked}); setTimeout(()=>window.electronAPI.getSettings().then(s=>renderExtensions(s)),100);">
+                                    <span class="ext-slider"></span>
+                                </label>
+                            </div>
+                            <div class="ext-card-version">Built-in · Privacy Module</div>
+                            <div class="ext-card-desc">AI-driven fingerprint protection and cross-request anonymity.</div>
+                            <div class="ext-card-footer">
+                                <span class="ext-card-tag privacy">PRIVACY</span>
+                                <div class="ext-card-actions">
+                                    <span class="ext-status-indicator" id="status-stealth"><span class="status-dot"></span><span>Idle</span></span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Ocal Focus -->
+                    <div class="ext-card-row" data-extname="ocal focus pomodoro productivity timer" id="ext-focus">
+                        <div class="ext-card-icon" style="background:rgba(168,85,247,0.1); color:#a855f7;">
+                            <i class="fas fa-clock"></i>
+                        </div>
+                        <div class="ext-card-info">
+                            <div class="ext-card-header">
+                                <span class="ext-card-name">Ocal Focus</span>
+                                <label class="ext-toggle-wrap">
+                                    <input type="checkbox" id="toggle-focus" onchange="window.electronAPI.send('set-security-toggle',{key:'ocalFocusEnabled',value:this.checked}); setTimeout(()=>window.electronAPI.getSettings().then(s=>renderExtensions(s)),100);">
+                                    <span class="ext-slider"></span>
+                                </label>
+                            </div>
+                            <div class="ext-card-version">Built-in · Utility Module</div>
+                            <div class="ext-card-desc">Boost your productivity with a Pomodoro timer and built-in To-Do list.</div>
+                            <div class="ext-card-footer">
+                                <span class="ext-card-tag utility">UTILITY</span>
+                                <div class="ext-card-actions">
+                                    <span class="ext-status-indicator" id="status-focus"><span class="status-dot"></span><span>Idle</span></span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Dynamically loaded extensions will be appended here by renderExtensions() -->
 
                 </div>
             </div>
@@ -6512,30 +6432,19 @@
         <!-- ── SHORTCUTS ── -->
         <section id="shortcuts" class="section">
             <div class="page-header">
-                <div class="page-eyebrow">Shortcuts</div>
-                <div class="page-title">Key Commands</div>
+                <div class="page-title">Shortcuts</div>
                 <div class="page-desc">Master the Ocal interface with precision-mapped keyboard shortcuts.</div>
             </div>
             <div class="page-body">
+                <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 24px;">
 
-                <div class="shortcut-search-bar">
-                    <i class="fas fa-magnifying-glass"></i>
-                    <input type="text" id="shortcut-search" placeholder="Filter commands…">
-                </div>
-
-                <div class="cat-pills">
-                    <button class="cat-pill active" data-cat="all"><i class="fas fa-layer-group"></i> All</button>
-                    <button class="cat-pill" data-cat="nav"><i class="fas fa-compass"></i> Navigation</button>
-                    <button class="cat-pill" data-cat="sys"><i class="fas fa-microchip"></i> System</button>
-                </div>
-
-                <div id="shortcut-list">
-                    <div class="group" data-category="nav">
-                        <div class="group-label">Navigation</div>
+                    <!-- Navigation shortcuts -->
+                    <div class="group" style="margin-bottom: 0;">
+                        <div class="group-label" style="margin-bottom: 12px;">Navigation</div>
                         <div class="card">
-                            <div class="shortcut-row" data-keywords="new tab t ctrl">
-                                <div class="shortcut-info">
-                                    <h4><i class="fas fa-plus"></i> New Tab</h4>
+                            <div class="card-row" data-keywords="new tab t ctrl">
+                                <div class="card-info">
+                                    <h4><i class="fas fa-plus" style="width:14px;"></i> New Tab</h4>
                                     <p>Open a fresh browsing session</p>
                                 </div>
                                 <div class="key-stack">
@@ -6543,9 +6452,9 @@
                                     <div class="key-tag">T</div>
                                 </div>
                             </div>
-                            <div class="shortcut-row" data-keywords="close tab w ctrl">
-                                <div class="shortcut-info">
-                                    <h4><i class="fas fa-xmark"></i> Close Tab</h4>
+                            <div class="card-row" data-keywords="close tab w ctrl">
+                                <div class="card-info">
+                                    <h4><i class="fas fa-xmark" style="width:14px;"></i> Close Tab</h4>
                                     <p>Close the active tab</p>
                                 </div>
                                 <div class="key-stack">
@@ -6553,9 +6462,9 @@
                                     <div class="key-tag">W</div>
                                 </div>
                             </div>
-                            <div class="shortcut-row" data-keywords="reload refresh r ctrl">
-                                <div class="shortcut-info">
-                                    <h4><i class="fas fa-rotate-right"></i> Reload Page</h4>
+                            <div class="card-row" data-keywords="reload refresh r ctrl">
+                                <div class="card-info">
+                                    <h4><i class="fas fa-rotate-right" style="width:14px;"></i> Reload Page</h4>
                                     <p>Refresh the current document</p>
                                 </div>
                                 <div class="key-stack">
@@ -6563,20 +6472,20 @@
                                     <div class="key-tag">R</div>
                                 </div>
                             </div>
-                            <div class="shortcut-row" data-keywords="back history alt left">
-                                <div class="shortcut-info">
-                                    <h4><i class="fas fa-arrow-left"></i> Go Back</h4>
-                                    <p>Navigate to previous page in history</p>
+                            <div class="card-row" data-keywords="back history alt left">
+                                <div class="card-info">
+                                    <h4><i class="fas fa-arrow-left" style="width:14px;"></i> Go Back</h4>
+                                    <p>Navigate to previous page</p>
                                 </div>
                                 <div class="key-stack">
                                     <div class="key-tag">Alt</div>
                                     <div class="key-tag">←</div>
                                 </div>
                             </div>
-                            <div class="shortcut-row" data-keywords="forward history alt right">
-                                <div class="shortcut-info">
-                                    <h4><i class="fas fa-arrow-right"></i> Go Forward</h4>
-                                    <p>Navigate to next page in history</p>
+                            <div class="card-row" data-keywords="forward history alt right">
+                                <div class="card-info">
+                                    <h4><i class="fas fa-arrow-right" style="width:14px;"></i> Go Forward</h4>
+                                    <p>Navigate to next page</p>
                                 </div>
                                 <div class="key-stack">
                                     <div class="key-tag">Alt</div>
@@ -6586,12 +6495,13 @@
                         </div>
                     </div>
 
-                    <div class="group" data-category="sys">
-                        <div class="group-label">System</div>
+                    <!-- System shortcuts -->
+                    <div class="group" style="margin-bottom: 0;">
+                        <div class="group-label" style="margin-bottom: 12px;">System</div>
                         <div class="card">
-                            <div class="shortcut-row" data-keywords="search focus l ctrl">
-                                <div class="shortcut-info">
-                                    <h4><i class="fas fa-magnifying-glass"></i> Focus Address Bar</h4>
+                            <div class="card-row" data-keywords="search focus l ctrl">
+                                <div class="card-info">
+                                    <h4><i class="fas fa-magnifying-glass" style="width:14px;"></i> Focus Address Bar</h4>
                                     <p>Jump focus to the omnibox</p>
                                 </div>
                                 <div class="key-stack">
@@ -6599,9 +6509,9 @@
                                     <div class="key-tag">L</div>
                                 </div>
                             </div>
-                            <div class="shortcut-row" data-keywords="ai sidebar shift a ctrl">
-                                <div class="shortcut-info">
-                                    <h4><i class="fas fa-brain"></i> AI Copilot</h4>
+                            <div class="card-row" data-keywords="ai sidebar shift a ctrl">
+                                <div class="card-info">
+                                    <h4><i class="fas fa-brain" style="width:14px;"></i> AI Copilot</h4>
                                     <p>Open the AI assistant panel</p>
                                 </div>
                                 <div class="key-stack">
@@ -6610,9 +6520,9 @@
                                     <div class="key-tag">A</div>
                                 </div>
                             </div>
-                            <div class="shortcut-row" data-keywords="settings preferences s alt">
-                                <div class="shortcut-info">
-                                    <h4><i class="fas fa-gear"></i> Settings</h4>
+                            <div class="card-row" data-keywords="settings preferences s alt">
+                                <div class="card-info">
+                                    <h4><i class="fas fa-gear" style="width:14px;"></i> Settings</h4>
                                     <p>Open the preferences hub</p>
                                 </div>
                                 <div class="key-stack">
@@ -6620,9 +6530,9 @@
                                     <div class="key-tag">S</div>
                                 </div>
                             </div>
-                            <div class="shortcut-row" data-keywords="sidebar bookmarks b ctrl shift">
-                                <div class="shortcut-info">
-                                    <h4><i class="fas fa-columns-list"></i> Toggle Sidebar</h4>
+                            <div class="card-row" data-keywords="sidebar bookmarks b ctrl shift">
+                                <div class="card-info">
+                                    <h4><i class="fas fa-columns-list" style="width:14px;"></i> Toggle Sidebar</h4>
                                     <p>Open or close the side panel</p>
                                 </div>
                                 <div class="key-stack">
@@ -6635,6 +6545,7 @@
                     </div>
 
                 </div>
+            </div>
         </section>
 
         <!-- ── AI ASSISTANT ── -->
