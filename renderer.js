@@ -44,6 +44,7 @@ function renderTabs() {
             if (group) {
                 const header = document.createElement('div');
                 header.className = 'tab-group-header';
+                header.style.setProperty('--group-color', group.color);
                 header.innerHTML = `
                     <div class="tab-group-dot" style="background: ${group.color}; color: ${group.color}"></div>
                     <span class="tab-group-name" style="color: ${group.color};">${group.name}</span>
@@ -84,7 +85,10 @@ function renderTabs() {
 
         const el = document.createElement('div');
         el.className = `tab-item ${tab.id === activeTabId ? 'active' : ''} ${tab.groupId ? 'grouped' : ''} ${isCollapsed ? 'collapsed' : ''}`;
-        if (tab.groupId && group) el.style.borderColor = group.color;
+        if (tab.groupId && group) {
+            el.style.borderColor = group.color;
+            el.style.setProperty('--group-color', group.color);
+        }
         el.draggable = true;
 
         el.ondragstart = (e) => {
@@ -968,11 +972,10 @@ function updateSidebarActiveStates(url) {
     if (sbBookBtn) sbBookBtn.classList.remove('active');
     if (sbGamesBtn) sbGamesBtn.classList.remove('active');
 
-    if (!url) return;
-
-    if (url.includes('home.html')) {
+    // Treat empty URL (new tabs/start page) or home.html/ocal://home as the bookmarks start page
+    if (!url || url === '' || url.includes('home.html') || url.includes('ocal://home')) {
         if (sbBookBtn) sbBookBtn.classList.add('active');
-    } else if (url.includes('game.html') || url.includes('games.html')) {
+    } else if (url.includes('game.html') || url.includes('games.html') || url.includes('ocal://game')) {
         if (sbGamesBtn) sbGamesBtn.classList.add('active');
     }
 }
