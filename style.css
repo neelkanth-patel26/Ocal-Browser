@@ -4,7 +4,7 @@
 
 /* ── Variables ─────────────────────────────────────────────────── */
 :root {
-  --background: #0c0c0c;
+  --background: #080809;
   --foreground: #e8e8e8;
   --accent: #09f0a0;
   --accent-glow: rgba(9, 240, 160, 0.2);
@@ -190,14 +190,14 @@ body[data-theme="light"] .sidebar-separator {
 }
 
 .sidebar-item {
-  width: 28px;
-  height: 28px;
-  border-radius: 8px;
+  width: 34px;
+  height: 34px;
+  border-radius: 10px;
   display: flex;
   align-items: center;
   justify-content: center;
   color: #a0a0a5; /* Desaturated gray */
-  font-size: 13px;
+  font-size: 15px;
   cursor: pointer;
   background: transparent;
   border: 1px solid transparent;
@@ -218,14 +218,7 @@ body[data-theme="light"] .sidebar-item {
 
 /* Active indicator dot */
 .sidebar-item.active::before {
-  content: '';
-  position: absolute;
-  left: -6px;
-  top: 25%;
-  bottom: 25%;
-  width: 3px;
-  background: var(--accent, #09f0a0);
-  border-radius: 0 3px 3px 0;
+  display: none;
 }
 
 /* Brand squircle backgrounds on hover */
@@ -358,13 +351,19 @@ body[data-theme="light"] .ambient-lighting {
   display: none;
 }
 
-body[data-theme="light"] .tab-bar,
+body[data-theme="light"] .tab-bar {
+  background: #ffffff !important;
+  backdrop-filter: none !important;
+  box-shadow: none !important;
+  border-bottom: 1px solid var(--chrome-border) !important;
+}
+
 body[data-theme="light"] .nav-bar,
 body[data-theme="light"] .bookmark-bar {
   background: #ffffff !important;
   backdrop-filter: none !important;
-  box-shadow: none !important;
-  border-bottom: 1px solid var(--chrome-border);
+  border: none !important;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.04) !important;
 }
 
 body[data-theme="light"] .tab-item {
@@ -525,16 +524,6 @@ body[data-theme="light"] .menu-option:hover {
 body[data-theme="light"] .menu-separator {
   background: rgba(0,0,0,0.1) !important;
 }
-
-
-
-
-body[data-theme="light"] ::-webkit-scrollbar-thumb {
-  background: rgba(0, 0, 0, 0.3);
-}
-
-
-
 /* Fix maximized window border/gap on Windows 10 */
 body.maximized {
   padding: 0;
@@ -542,21 +531,25 @@ body.maximized {
 
 /* ── Global Premium Scrollbar ────────────────────────────────── */
 ::-webkit-scrollbar {
-  width: 8px;
-  height: 8px;
+  width: 6px;
+  height: 6px;
   background: transparent;
 }
 ::-webkit-scrollbar-track {
   background: transparent;
 }
 ::-webkit-scrollbar-thumb {
-  background: rgba(255, 255, 255, 0.12);
+  background: rgba(255, 255, 255, 0.16);
   border-radius: 10px;
-  border: 2px solid transparent;
-  background-clip: padding-box;
+}
+body[data-theme="light"] ::-webkit-scrollbar-thumb {
+  background: rgba(0, 0, 0, 0.16);
 }
 ::-webkit-scrollbar-thumb:hover {
-  background: var(--accent);
+  background: rgba(255, 255, 255, 0.36);
+}
+body[data-theme="light"] ::-webkit-scrollbar-thumb:hover {
+  background: rgba(0, 0, 0, 0.36);
 }
 ::-webkit-scrollbar-corner {
   background: transparent;
@@ -579,7 +572,7 @@ body.fullscreen .bookmark-bar { display: none !important; }
   padding: 0;
   -webkit-app-region: drag;
   z-index: 100;
-  border-bottom: 1px solid var(--chrome-border);
+  border-bottom: none;
   user-select: none;
   gap: 0;
 }
@@ -602,6 +595,7 @@ body.fullscreen .bookmark-bar { display: none !important; }
   gap: 1px;
   min-width: 0;
   flex: 1 1 auto;
+  padding-left: 6px; /* Shift tabs slightly right away from sidebar, but keep it tight */
 }
 
 .tab-item {
@@ -618,7 +612,7 @@ body.fullscreen .bookmark-bar { display: none !important; }
   font-weight: 500;
   color: var(--text-dim);
   border: 1px solid transparent;
-  border-radius: 20px !important;
+  border-radius: 8px !important;
   background: transparent;
   cursor: pointer;
   transition: background 0.2s ease, color 0.2s ease;
@@ -636,7 +630,7 @@ body.compact-mode .tab-item { height: 28px; padding: 0 10px; border-radius: 8px;
 
 .tab-item.active {
   background: #111113;
-  border-color: rgba(255, 255, 255, 0.06);
+  border-color: transparent;
   color: #fff;
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.25);
 }
@@ -706,22 +700,22 @@ body.compact-mode .tab-item { height: 28px; padding: 0 10px; border-radius: 8px;
   display: flex;
   align-items: center;
   gap: 8px;
-  padding: 0 12px 0 6px;
-  height: calc(100% - 8px);
-  margin: 4px 2px;
-  background: var(--background);
-  border: 1px solid transparent;
-  border-radius: 8px;
+  padding: 0 10px 0 8px;
+  height: calc(100% - 12px);
+  margin: 6px 4px;
+  background: color-mix(in srgb, var(--group-color, var(--hover)) 8%, transparent);
+  border: 1px solid color-mix(in srgb, var(--group-color, var(--chrome-border)) 15%, transparent);
+  border-radius: 12px;
   cursor: pointer;
   -webkit-app-region: no-drag;
   flex-shrink: 0;
-  transition: background 0.2s ease, border-color 0.2s ease;
+  transition: all 0.22s cubic-bezier(0.16, 1, 0.3, 1);
   box-shadow: none;
 }
 body.compact-mode .tab-group-header { height: 28px; padding: 0 10px 0 6px; border-radius: 8px; gap: 8px; }
 .tab-group-header:hover { 
-  background: var(--hover); 
-  border-color: var(--chrome-border);
+  background: color-mix(in srgb, var(--group-color, var(--hover)) 16%, transparent);
+  border-color: color-mix(in srgb, var(--group-color, var(--chrome-border)) 35%, transparent);
 }
 .tab-group-header:active { transform: none; }
 .tab-group-header.drag-over { 
@@ -730,29 +724,43 @@ body.compact-mode .tab-group-header { height: 28px; padding: 0 10px 0 6px; borde
 }
 
 .tab-group-dot {
-  width: 4px;
-  height: 16px;
-  border-radius: 4px;
+  width: 3px;
+  height: 14px;
+  border-radius: 100px;
   background: currentColor;
-  box-shadow: none;
+  box-shadow: 0 0 8px color-mix(in srgb, var(--group-color, currentColor) 60%, transparent);
+  flex-shrink: 0;
 }
 .tab-group-header:hover .tab-group-dot { filter: brightness(1.2); }
 .tab-group-name {
-  font-size: 12px;
-  font-weight: 500;
+  font-size: 10.5px;
+  font-weight: 700;
   color: var(--text-main);
   max-width: 120px;
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
+  text-transform: uppercase;
+  letter-spacing: 0.8px;
 }
 
 /* Connect grouped tabs visually - Unified with normal tabs */
 .tab-item.grouped {
-  margin: 0 3px; 
+  margin: 4px 2px;
+  background: color-mix(in srgb, var(--group-color) 4%, transparent);
+  border: 1px solid color-mix(in srgb, var(--group-color) 12%, transparent);
+  transition: all 0.22s cubic-bezier(0.16, 1, 0.3, 1);
+}
+.tab-item.grouped:hover {
+  background: color-mix(in srgb, var(--group-color) 10%, transparent);
+  border-color: color-mix(in srgb, var(--group-color) 25%, transparent);
+  color: #fff;
 }
 .tab-item.grouped.active {
-  box-shadow: none;
+  background: color-mix(in srgb, var(--group-color) 16%, #111113) !important;
+  border-color: var(--group-color) !important;
+  color: #ffffff !important;
+  box-shadow: 0 4px 16px color-mix(in srgb, var(--group-color) 30%, transparent) !important;
 }
 .tab-item.grouped.collapsed { display: none; }
 
@@ -848,16 +856,19 @@ body.compact-mode .new-tab-btn { width: 24px; height: 24px; border-radius: 6px; 
 /* ── Navigation Bar ────────────────────────────────────────────── */
 .nav-bar {
   grid-area: nav;
-  background: #0d0d0f;
+  background: #111113;
+  border: none;
+  border-radius: 12px;
   display: flex;
   align-items: center;
-  padding: 0 16px;
+  padding: 0 20px;
   gap: 10px;
-  height: var(--nav-h);
+  height: calc(100% - 4px);
+  margin: 2px 8px;
   justify-content: space-between;
-  border-bottom: 1px solid var(--chrome-border);
   -webkit-app-region: no-drag;
   z-index: 101;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
 }
 
 /* Nav controls (back/forward/reload) */
@@ -891,8 +902,8 @@ body.compact-mode .nav-btn { width: 26px; height: 26px; font-size: 11px; }
   display: flex;
   align-items: center;
   gap: 12px;
-  background: rgba(255, 255, 255, 0.04);
-  border: 1px solid rgba(255, 255, 255, 0.07);
+  background: transparent;
+  border: 1px solid transparent;
   height: 36px;
   padding: 0 18px;
   position: relative;
@@ -909,13 +920,12 @@ body.compact-mode .nav-btn { width: 26px; height: 26px; font-size: 11px; }
 }
 .omnibox.has-suggestions:focus-within {
   border-bottom-color: transparent;
-  box-shadow: 0 0 0 2px rgba(168,85,247,0.15);
+  box-shadow: 0 0 0 2px var(--accent-glow);
 }
 body.compact-mode .omnibox { height: 32px; padding: 0 10px; gap: 6px; border-radius: 10px; }
 .omnibox:hover {
-  border-color: rgba(255,255,255,0.15);
-  background: rgba(255,255,255,0.06);
-  box-shadow: inset 0 1px 2px rgba(0,0,0,0.2);
+  border-color: rgba(255, 255, 255, 0.05);
+  background: rgba(255, 255, 255, 0.03);
 }
 .omnibox:focus-within {
   border-color: var(--accent, #09f0a0) !important;
@@ -1190,10 +1200,10 @@ body[data-theme="light"] .pretty-url .path { color: #888 !important; opacity: 1;
   flex-shrink: 0;
 }
 .omni-btn {
-  width: 34px; height: 34px;
-  border-radius: 10px;
+  width: 28px; height: 28px;
+  border-radius: 50%;
   color: var(--text-dim);
-  font-size: 14px;
+  font-size: 12px;
   display: flex; align-items: center; justify-content: center;
   transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
 }
@@ -1291,21 +1301,42 @@ body.compact-mode .tool-btn { width: 28px; height: 28px; border-radius: 7px; }
 /* ── Bookmark Bar ──────────────────────────────────────────────── */
 .bookmark-bar {
   grid-area: bookmarks;
-  background: transparent;
+  background: #111113;
+  border: none;
+  border-radius: 12px;
   display: flex;
   align-items: center;
   overflow-x: auto;
   -webkit-app-region: no-drag;
-  height: var(--bm-h);
+  height: calc(100% - 6px);
+  margin: 2px 8px 4px 8px;
   min-height: 0;
   overflow: hidden;
-  padding: 0 16px; /* Removed vertical gap, matched horizontal padding with nav-bar */
+  padding: 0 20px; /* Removed vertical gap, matched horizontal padding with nav-bar */
   z-index: 102;
+  font-family: 'Inter', sans-serif;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
 }
 body.hide-bookmarks .bookmark-bar {
   display: none !important;
 }
 .bookmark-bar::-webkit-scrollbar { display: none; }
+ 
+.web-content-container {
+  grid-area: content;
+  background: #000000;
+  border: none;
+  border-radius: 12px;
+  margin: 2px 8px 8px 8px;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.25);
+  overflow: hidden;
+  z-index: 99;
+}
+body[data-theme="light"] .web-content-container {
+  background: #ffffff !important;
+  border: none !important;
+  box-shadow: 0 4px 16px rgba(0,0,0,0.04) !important;
+}
 
 .web-folder {
   display: flex;
@@ -1320,13 +1351,15 @@ body.hide-bookmarks .bookmark-bar {
   transition: all 0.2s;
   flex-shrink: 0;
   position: relative;
-  background: rgba(168,85,247,0.06);
-  border: 1px solid rgba(168,85,247,0.15);
+  background: var(--accent-dim);
+  border: 1px solid var(--accent-border);
+  font-family: 'Inter', sans-serif;
+  line-height: 1;
 }
 .web-folder:hover { 
-  background: rgba(168,85,247,0.12); 
+  background: rgba(9, 240, 160, 0.2); 
   color: #fff; 
-  border-color: rgba(168,85,247,0.3);
+  border-color: var(--accent);
   transform: translateY(-1px);
 }
 .web-folder .fa-folder { color: var(--accent); font-size: 11px; }
@@ -1345,6 +1378,8 @@ body.hide-bookmarks .bookmark-bar {
   transition: all 0.2s;
   flex-shrink: 0;
   white-space: nowrap;
+  font-family: 'Inter', sans-serif;
+  line-height: 1;
 }
 .bookmark-bar-item:hover,
 .bookmark-bar-folder:hover { 

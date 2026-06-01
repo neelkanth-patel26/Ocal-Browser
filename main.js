@@ -8,10 +8,10 @@ if (typeof electron === 'string' || !electron.app) {
     process.exit(1);
 }
 
-const { 
-    app, BrowserWindow, BrowserView, webContents, ipcMain, dialog, 
+const {
+    app, BrowserWindow, BrowserView, webContents, ipcMain, dialog,
     shell, session, Menu, MenuItem, clipboard, protocol, net,
-    powerMonitor, Notification 
+    powerMonitor, Notification
 } = electron;
 
 // Disable deprecation warnings in the console (silences punycode and setPreloads from 3rd-party libs)
@@ -19,7 +19,7 @@ process.noDeprecation = true;
 
 // Register internal protocol as standard/secure to allow 'self' in CSP
 protocol.registerSchemesAsPrivileged([
-  { scheme: 'ocal', privileges: { standard: true, secure: true, supportFetchAPI: true, corsEnabled: true } }
+    { scheme: 'ocal', privileges: { standard: true, secure: true, supportFetchAPI: true, corsEnabled: true } }
 ]);
 const path = require('path');
 const tabMediaMap = new Map(); // Stores detected media per tab ID
@@ -59,43 +59,43 @@ function setupInteractionDismissal(contents) {
 }
 
 function getArgumentURL(argv) {
-  // Arguments are typically: [executable, ...flags, targetFileOrURL]
-  // We look for the first argument that isn't a flag and might be a path/URL
-  const candidate = argv.find((arg, i) => {
-      if (i === 0 || arg.startsWith('-') || arg.startsWith('--')) return false;
-      // Exclude common dev-mode arguments like '.' or './'
-      if (arg === '.' || arg === './' || arg === '.\\') return false;
-      return true;
-  });
-  
-  if (!candidate) return null;
+    // Arguments are typically: [executable, ...flags, targetFileOrURL]
+    // We look for the first argument that isn't a flag and might be a path/URL
+    const candidate = argv.find((arg, i) => {
+        if (i === 0 || arg.startsWith('-') || arg.startsWith('--')) return false;
+        // Exclude common dev-mode arguments like '.' or './'
+        if (arg === '.' || arg === './' || arg === '.\\') return false;
+        return true;
+    });
 
-  // Convert local Windows paths to file:// URLs
-  if (/^[a-zA-Z]:[/\\]/.test(candidate) || candidate.startsWith('/') || candidate.startsWith('\\\\')) {
-    return 'file:///' + candidate.replace(/\\/g, '/');
-  }
-  return candidate;
+    if (!candidate) return null;
+
+    // Convert local Windows paths to file:// URLs
+    if (/^[a-zA-Z]:[/\\]/.test(candidate) || candidate.startsWith('/') || candidate.startsWith('\\\\')) {
+        return 'file:///' + candidate.replace(/\\/g, '/');
+    }
+    return candidate;
 }
 
 if (process.argv.includes('--install') || process.argv.includes('--squirrel-install')) {
-  require('./installer-main.js');
-  return;
+    require('./installer-main.js');
+    return;
 }
 
 if (!gotTheLock) {
-  app.quit();
+    app.quit();
 } else {
-  app.on('second-instance', (event, commandLine, workingDirectory) => {
-    if (mainWindow) {
-      if (mainWindow.isMinimized()) mainWindow.restore();
-      mainWindow.focus();
+    app.on('second-instance', (event, commandLine, workingDirectory) => {
+        if (mainWindow) {
+            if (mainWindow.isMinimized()) mainWindow.restore();
+            mainWindow.focus();
 
-      const targetUrl = getArgumentURL(commandLine);
-      if (targetUrl) {
-        createNewTab(targetUrl);
-      }
-    }
-  });
+            const targetUrl = getArgumentURL(commandLine);
+            if (targetUrl) {
+                createNewTab(targetUrl);
+            }
+        }
+    });
 }
 
 const fs = require('fs');
@@ -105,30 +105,30 @@ let lastSaveAsPath = null;
 const settingsPath = path.join(app.getPath('userData'), 'settings.json');
 
 function loadSettings() {
-  try {
-    if (fs.existsSync(settingsPath)) {
-      const data = fs.readFileSync(settingsPath, 'utf8');
-      return JSON.parse(data);
+    try {
+        if (fs.existsSync(settingsPath)) {
+            const data = fs.readFileSync(settingsPath, 'utf8');
+            return JSON.parse(data);
+        }
+    } catch (e) {
+        console.error('Failed to load settings:', e);
     }
-  } catch (e) {
-    console.error('Failed to load settings:', e);
-  }
-  return null;
+    return null;
 }
 
 function saveSettings(settings) {
-  try {
-    fs.writeFileSync(settingsPath, JSON.stringify(settings, null, 2));
-  } catch (e) {
-    console.error('Failed to save settings:', e);
-  }
+    try {
+        fs.writeFileSync(settingsPath, JSON.stringify(settings, null, 2));
+    } catch (e) {
+        console.error('Failed to save settings:', e);
+    }
 }
 
 function importChromiumBookmarks() {
     const importDir = path.join(app.getPath('userData'), 'imported');
     const importFile = path.join(importDir, 'bookmarks');
     const importHtmlFile = path.join(importDir, 'bookmarks.html');
-    
+
     let imported = [];
 
     // 1. Try JSON Import (Chrome/Edge internal format)
@@ -155,7 +155,7 @@ function importChromiumBookmarks() {
                 Object.values(data.roots).forEach(root => root.children && root.children.forEach(processNode));
             }
             fs.unlinkSync(importFile);
-        } catch (err) {}
+        } catch (err) { }
     }
 
     // 2. Try HTML Import (Netscape Bookmark File format)
@@ -174,7 +174,7 @@ function importChromiumBookmarks() {
                 });
             }
             fs.unlinkSync(importHtmlFile);
-        } catch (err) {}
+        } catch (err) { }
     }
 
     if (imported.length > 0) {
@@ -190,40 +190,40 @@ function importChromiumBookmarks() {
 
 // Initial Settings
 let userSettings = loadSettings() || {
-  setupComplete: false,
-  searchEngine: 'google',
-  dns: 'default',
-  accentColor: '#09f0a0',
-  compactMode: false,
-  trackingProtection: true,
-  forceShieldIcon: true,
-  profiles: [{ id: 'default', name: 'Personal', icon: 'fa-user' }],
-  history: [],
-  bookmarks: [],
-  folders: [],
-  bookmarkBarMode: 'auto',
-  homeLayout: 'center', // 'top', 'center', 'bottom'
-  homeTileSize: 80,
-  homeTileSpacing: 20,
-  homeTileStyle: 'square', // 'square', 'rectangle', 'monochrome'
-  autoCheckUpdates: true,
-  confirmExit: true,
-  tabGroups: [], // { id, name, color, collapsed }
-  adBlockEnabled: true,
-  assetVaultEnabled: true,
-  aiAssistantEnabled: true,
-  cyberStealthEnabled: false,
-  aiApiKey: '',
-  aiEngine: 'local', // 'local' or 'gemini'
-  aiDeepScrape: true,
-  aiShowReasoning: true,
-  aiResponseStyle: 'concise',
-  customSearchUrl: 'https://www.google.com/search?q=%s',
-  askSavePath: false,
-  downloads: [],
-  shieldStats: { ads: 0, trackers: 0, dataSaved: 0, history: [] },
-  pdfViewerEnabled: true,
-  batterySaver: false
+    setupComplete: false,
+    searchEngine: 'google',
+    dns: 'default',
+    accentColor: '#09f0a0',
+    compactMode: false,
+    trackingProtection: true,
+    forceShieldIcon: true,
+    profiles: [{ id: 'default', name: 'Personal', icon: 'fa-user' }],
+    history: [],
+    bookmarks: [],
+    folders: [],
+    bookmarkBarMode: 'auto',
+    homeLayout: 'center', // 'top', 'center', 'bottom'
+    homeTileSize: 80,
+    homeTileSpacing: 20,
+    homeTileStyle: 'square', // 'square', 'rectangle', 'monochrome'
+    autoCheckUpdates: true,
+    confirmExit: true,
+    tabGroups: [], // { id, name, color, collapsed }
+    adBlockEnabled: true,
+    assetVaultEnabled: true,
+    aiAssistantEnabled: true,
+    cyberStealthEnabled: false,
+    aiApiKey: '',
+    aiEngine: 'local', // 'local' or 'gemini'
+    aiDeepScrape: true,
+    aiShowReasoning: true,
+    aiResponseStyle: 'concise',
+    customSearchUrl: 'https://www.google.com/search?q=%s',
+    askSavePath: false,
+    downloads: [],
+    shieldStats: { ads: 0, trackers: 0, dataSaved: 0, history: [] },
+    pdfViewerEnabled: true,
+    batterySaver: false
 };
 
 if (!userSettings.bookmarks) userSettings.bookmarks = [];
@@ -261,10 +261,10 @@ if (userSettings.safeSearchEnabled === undefined) userSettings.safeSearchEnabled
 
 // Shield Stats Initialization & Migration
 if (!userSettings.shieldStats) {
-    userSettings.shieldStats = { 
+    userSettings.shieldStats = {
         global: { ads: 0, trackers: 0, dataSaved: 0 },
         sessionStartTime: Date.now(),
-        history: [] 
+        history: []
     };
 }
 if (!userSettings.shieldStats.global) {
@@ -303,12 +303,12 @@ function updateTabShieldStats(wcId, type) {
             if (userSettings.shieldStats && userSettings.shieldStats.global) {
                 if (userSettings.shieldStats.global[type] === undefined) userSettings.shieldStats.global[type] = 0;
                 userSettings.shieldStats.global[type]++;
-                
+
                 // Heuristic: 50KB for ad, 5KB for tracker
                 const bytesSaved = type === 'ads' ? 51200 : 5120;
                 if (userSettings.shieldStats.global.dataSaved === undefined) userSettings.shieldStats.global.dataSaved = 0;
                 userSettings.shieldStats.global.dataSaved += bytesSaved;
-                
+
                 throttleShieldSave();
                 broadcastShieldStats(wcId);
             }
@@ -320,19 +320,19 @@ function updateTabShieldStats(wcId, type) {
 function broadcastShieldStats(wcId = null) {
     if (!mainWindow || mainWindow.isDestroyed()) return;
     const globalStats = userSettings.shieldStats.global;
-    
+
     // We send to everyone so the dashboard and popups stay in sync
     BrowserWindow.getAllWindows().forEach(bw => {
         try {
             if (bw.isDestroyed()) return;
             const pageStats = wcId ? tabShieldStats.get(wcId) : null;
-            bw.webContents.send('shield-stats-updated', { 
+            bw.webContents.send('shield-stats-updated', {
                 global: globalStats,
                 page: pageStats,
                 webContentsId: wcId,
                 sessionStartTime
             });
-        } catch(e) {}
+        } catch (e) { }
     });
 }
 
@@ -341,14 +341,14 @@ function updateShieldHistory() {
     if (!userSettings.shieldStats.history) userSettings.shieldStats.history = [];
     const now = Date.now();
     const total = (userSettings.shieldStats.ads || 0) + (userSettings.shieldStats.trackers || 0);
-    
+
     userSettings.shieldStats.history.push({ t: now, v: total });
-    
+
     // Keep only last 744 points (31 days of hourly snapshots)
     if (userSettings.shieldStats.history.length > 744) {
         userSettings.shieldStats.history = userSettings.shieldStats.history.slice(-744);
     }
-    
+
     saveSettings(userSettings);
 }
 
@@ -393,7 +393,7 @@ let aiSidebarWidth = 550;
 let historySidebarOpen = false;
 let downloadsSidebarOpen = false;
 let bookmarksSidebarOpen = false;
-let bookmarkBarVisible = true; 
+let bookmarkBarVisible = true;
 let dropdownOpen = false;
 let bmDropdownView = null;
 let extensionDropdownView = null;
@@ -423,8 +423,8 @@ function applyShieldSettings() {
                 'googlesyndication.com', 'adservice.google.com', 'pagead2.googlesyndication.com',
                 'youtube.com/pagead', 'youtube.com/ptracking', 'youtube.com/api/stats/ads',
                 'youtube.com/api/stats/qoe?adformat=', 'youtube.com/get_midroll_info',
-                'googlevideo.com/videoplayback?.*ad_v2', 
-                'googlevideo.com/videoplayback?.*ctier=a', 
+                'googlevideo.com/videoplayback?.*ad_v2',
+                'googlevideo.com/videoplayback?.*ctier=a',
                 'googlevideo.com/videoplayback?.*adfilter',
                 'googlevideo.com/videoplayback?.*oad=',
                 'googlevideo.com/initplayback?.*oad=',
@@ -436,7 +436,7 @@ function applyShieldSettings() {
                 if (p.includes('.*')) return new RegExp(p).test(url);
                 return url.includes(p);
             });
-            
+
             if (isNeuralAd) {
                 if (wcId) updateTabShieldStats(wcId, 'ads');
                 callback({ cancel: true });
@@ -481,10 +481,10 @@ function applyShieldSettings() {
             // and protect against XSS, while allowing uBlock and internal resources.
             if (!headers['content-security-policy'] && !headers['Content-Security-Policy']) {
                 headers['Content-Security-Policy'] = [
-                    "default-src 'self' 'unsafe-inline' 'unsafe-eval' data: blob: ocal: *; " + 
+                    "default-src 'self' 'unsafe-inline' 'unsafe-eval' data: blob: ocal: *; " +
                     "script-src 'self' 'unsafe-inline' 'unsafe-eval' data: blob: https:; " +
                     "style-src 'self' 'unsafe-inline' https:; " +
-                    "img-src 'self' data: blob: https: *; " + 
+                    "img-src 'self' data: blob: https: *; " +
                     "font-src 'self' data: https:; " +
                     "connect-src 'self' https: wss: *; " +
                     "media-src 'self' data: blob: https: *; " +
@@ -506,41 +506,41 @@ function applyShieldSettings() {
 }
 
 function setupSessionHandlers() {
-  const ses = session.defaultSession;
-  ses.setUserAgent(OCAL_USER_AGENT);
-  
-  const checkPermission = (origin, permission) => {
-    const sitePerms = userSettings.sitePermissions[origin];
-    if (sitePerms && sitePerms[permission]) {
-        const val = sitePerms[permission];
-        if (val === 'allow') return true;
-        if (val === 'block') return false;
-        // 'default' or 'ask' falls through to default behavior
-    }
-    return null;
-  };
+    const ses = session.defaultSession;
+    ses.setUserAgent(OCAL_USER_AGENT);
 
-  ses.setPermissionRequestHandler((webContents, permission, callback) => {
-    try {
-        const origin = new URL(webContents.getURL()).origin;
-        const res = checkPermission(origin, permission === 'media' ? 'audio' : permission);
-        if (res !== null) return callback(res);
-    } catch (e) {}
-    // Default deny for sensitive permissions like geolocation if not explicitly allowed
-    if (permission === 'geolocation' || permission === 'notifications') {
-        return callback(false);
-    }
-    callback(true);
-  });
+    const checkPermission = (origin, permission) => {
+        const sitePerms = userSettings.sitePermissions[origin];
+        if (sitePerms && sitePerms[permission]) {
+            const val = sitePerms[permission];
+            if (val === 'allow') return true;
+            if (val === 'block') return false;
+            // 'default' or 'ask' falls through to default behavior
+        }
+        return null;
+    };
 
-  ses.setPermissionCheckHandler((webContents, permission, origin) => {
-    const res = checkPermission(origin, permission);
-    if (res !== null) return res;
-    return true;
-  });
+    ses.setPermissionRequestHandler((webContents, permission, callback) => {
+        try {
+            const origin = new URL(webContents.getURL()).origin;
+            const res = checkPermission(origin, permission === 'media' ? 'audio' : permission);
+            if (res !== null) return callback(res);
+        } catch (e) { }
+        // Default deny for sensitive permissions like geolocation if not explicitly allowed
+        if (permission === 'geolocation' || permission === 'notifications') {
+            return callback(false);
+        }
+        callback(true);
+    });
+
+    ses.setPermissionCheckHandler((webContents, permission, origin) => {
+        const res = checkPermission(origin, permission);
+        if (res !== null) return res;
+        return true;
+    });
 
 
-  applyShieldSettings();
+    applyShieldSettings();
 
 }
 
@@ -595,7 +595,7 @@ function applyCyberStealth(webContents) {
         })();
     `;
 
-    webContents.executeJavaScript(stealthScript).catch(() => {});
+    webContents.executeJavaScript(stealthScript).catch(() => { });
 }
 
 function setupSecurityHeadersFix() {
@@ -604,11 +604,11 @@ function setupSecurityHeadersFix() {
 
     const stealthFilter = (details, callback) => {
         const { requestHeaders, url } = details;
-        
+
         // Prevent 403 Forbidden on GoogleVideo / YouTube by ensuring Referer/Origin integrity
         const isYouTube = url.includes('youtube.com');
         const isVideo = url.includes('googlevideo.com');
-        
+
         if (isYouTube && !isVideo) {
             // ONLY modify if absolutely necessary, don't overwrite if uBlock already handled it
             if (!requestHeaders['Sec-Ch-Ua']) {
@@ -616,7 +616,7 @@ function setupSecurityHeadersFix() {
                 requestHeaders['Sec-Ch-Ua-Mobile'] = '?0';
                 requestHeaders['Sec-Ch-Ua-Platform'] = '"Windows"';
             }
-            
+
             // Clean suspicious headers that trigger YouTube ad-block detection
             delete requestHeaders['X-Requested-With'];
             delete requestHeaders['X-Electron-Id'];
@@ -627,7 +627,7 @@ function setupSecurityHeadersFix() {
 
     const filterHeaders = (details, callback) => {
         const { responseHeaders, url } = details;
-        
+
         // Don't strip headers for our internal ocal:// pages
         if (url.startsWith('ocal://')) {
             return callback({ responseHeaders });
@@ -658,7 +658,7 @@ function setupSecurityHeadersFix() {
 
     ses.webRequest.onHeadersReceived({ urls: ['*://*/*'] }, filterHeaders);
     googleSes.webRequest.onHeadersReceived({ urls: ['*://*/*'] }, filterHeaders);
-    
+
     ses.webRequest.onBeforeSendHeaders({ urls: ['*://*/*'] }, stealthFilter);
     googleSes.webRequest.onBeforeSendHeaders({ urls: ['*://*/*'] }, stealthFilter);
 
@@ -680,139 +680,139 @@ function setupSecurityHandlers() {
 }
 
 function createMainWindow() {
-  if (isUninstallSurvey) {
-      createSurveyWindow();
-      return;
-  }
-
-  mainWindow = new BrowserWindow({
-    width: 1350,
-    height: 900,
-    minWidth: 1000,
-    minHeight: 700,
-    title: 'Ocal',
-    icon: path.join(__dirname, 'icon.ico'),
-    frame: false,
-    transparent: false,
-    backgroundColor: userSettings.themeMode === 'light' ? '#ffffff' : '#0c0c0e', // Dynamic background to match theme and prevent flashbang
-    resizable: true,
-    fullscreenable: true,
-    titleBarStyle: 'hidden', // Ensures native title bar is fully hidden on Windows 10
-    titleBarOverlay: false, // Prevents Electron's native titlebar overlay from stealing clicks
-    thickFrame: true, // Enables standard Windows resizing and snapping for frameless windows
-    webPreferences: {
-      preload: path.join(__dirname, 'preload.js'),
-      contextIsolation: true,
-      nodeIntegration: false,
-      devTools: false
-    },
-  });
-
-  mainWindow.loadFile('index.html');
-
-  if (!userSettings.setupComplete && fs.existsSync(path.join(__dirname, 'welcome.html'))) {
-    importChromiumBookmarks();
-    showWelcomeWizard();
-  } else {
-    userSettings.setupComplete = true;
-    saveSettings(userSettings);
-  }
-
-  mainWindow.setMaxListeners(50);
-  mainWindow.on('resize', () => {
-    updateViewBounds();
-    if (welcomeView) {
-      const { width, height } = mainWindow.getContentBounds();
-      welcomeView.setBounds({ x: 0, y: 0, width, height });
+    if (isUninstallSurvey) {
+        createSurveyWindow();
+        return;
     }
-  });
 
-  // These should be initialized once, not on every reload
-  setupDownloadHandler();
-  setupCompatibilityHandler();
-  setupSessionHandlers();
-  setupSecurityHandlers();
-  setupSecurityHeadersFix();
-  
-  setupInteractionDismissal(mainWindow.webContents);
-  mainWindow.webContents.on('before-input-event', (event, input) => {
-    handleShortcuts(event, input);
-  });
+    mainWindow = new BrowserWindow({
+        width: 1350,
+        height: 900,
+        minWidth: 1000,
+        minHeight: 700,
+        title: 'Ocal',
+        icon: path.join(__dirname, 'icon.ico'),
+        frame: false,
+        transparent: false,
+        backgroundColor: userSettings.themeMode === 'light' ? '#ffffff' : '#0c0c0e', // Dynamic background to match theme and prevent flashbang
+        resizable: true,
+        fullscreenable: true,
+        titleBarStyle: 'hidden', // Ensures native title bar is fully hidden on Windows 10
+        titleBarOverlay: false, // Prevents Electron's native titlebar overlay from stealing clicks
+        thickFrame: true, // Enables standard Windows resizing and snapping for frameless windows
+        webPreferences: {
+            preload: path.join(__dirname, 'preload.js'),
+            contextIsolation: true,
+            nodeIntegration: false,
+            devTools: false
+        },
+    });
 
-  mainWindow.webContents.on('did-finish-load', () => {
-    if (!sidebarOverlayView) createSidebarOverlay();
-    if (!aiSidebarView) createAiSidebar();
-    if (!suggestionsView) createSuggestionsView();
-    if (!tabgroupView) createTabgroupView();
-    if (!tabContextView) createTabContextView();
-    if (!mediaMasterView) createMediaMasterView();
-    if (!bmDropdownView) createBMDropdownView();
-    // Always open a tab on startup
-    if (views.length === 0) {
-        const startupUrl = getArgumentURL(process.argv);
-        createNewTab(startupUrl);
+    mainWindow.loadFile('index.html');
+
+    if (!userSettings.setupComplete && fs.existsSync(path.join(__dirname, 'welcome.html'))) {
+        importChromiumBookmarks();
+        showWelcomeWizard();
+    } else {
+        userSettings.setupComplete = true;
+        saveSettings(userSettings);
     }
-    
-    // Proactive background update check
-    setTimeout(checkForUpdatesSilently, 3000); 
-  });
 
-  mainWindow.on('maximize', () => {
-    mainWindow.setResizable(false);
-    mainWindow.webContents.send('window-is-maximized', true);
-  });
-  mainWindow.on('unmaximize', () => {
-    mainWindow.setResizable(true);
-    mainWindow.webContents.send('window-is-maximized', false);
-  });
-
-  mainWindow.on('close', (e) => {
-    if (!isQuitting) {
-      if (userSettings.confirmExit !== false) {
-        e.preventDefault();
-        showSidebarOverlay();
-        if (sidebarOverlayView) {
-          mainWindow.setTopBrowserView(sidebarOverlayView);
-          sidebarOverlayView.webContents.send('show-exit-modal');
+    mainWindow.setMaxListeners(50);
+    mainWindow.on('resize', () => {
+        updateViewBounds();
+        if (welcomeView) {
+            const { width, height } = mainWindow.getContentBounds();
+            welcomeView.setBounds({ x: 0, y: 0, width, height });
         }
-      } else {
-        isQuitting = true;
-      }
-    }
-  });
+    });
+
+    // These should be initialized once, not on every reload
+    setupDownloadHandler();
+    setupCompatibilityHandler();
+    setupSessionHandlers();
+    setupSecurityHandlers();
+    setupSecurityHeadersFix();
+
+    setupInteractionDismissal(mainWindow.webContents);
+    mainWindow.webContents.on('before-input-event', (event, input) => {
+        handleShortcuts(event, input);
+    });
+
+    mainWindow.webContents.on('did-finish-load', () => {
+        if (!sidebarOverlayView) createSidebarOverlay();
+        if (!aiSidebarView) createAiSidebar();
+        if (!suggestionsView) createSuggestionsView();
+        if (!tabgroupView) createTabgroupView();
+        if (!tabContextView) createTabContextView();
+        if (!mediaMasterView) createMediaMasterView();
+        if (!bmDropdownView) createBMDropdownView();
+        // Always open a tab on startup
+        if (views.length === 0) {
+            const startupUrl = getArgumentURL(process.argv);
+            createNewTab(startupUrl);
+        }
+
+        // Proactive background update check
+        setTimeout(checkForUpdatesSilently, 3000);
+    });
+
+    mainWindow.on('maximize', () => {
+        mainWindow.setResizable(false);
+        mainWindow.webContents.send('window-is-maximized', true);
+    });
+    mainWindow.on('unmaximize', () => {
+        mainWindow.setResizable(true);
+        mainWindow.webContents.send('window-is-maximized', false);
+    });
+
+    mainWindow.on('close', (e) => {
+        if (!isQuitting) {
+            if (userSettings.confirmExit !== false) {
+                e.preventDefault();
+                showSidebarOverlay();
+                if (sidebarOverlayView) {
+                    mainWindow.setTopBrowserView(sidebarOverlayView);
+                    sidebarOverlayView.webContents.send('show-exit-modal');
+                }
+            } else {
+                isQuitting = true;
+            }
+        }
+    });
 }
 
 function createSurveyWindow() {
-  const surveyWindow = new BrowserWindow({
-    width: 600,
-    height: 600,
-    frame: false,
-    resizable: false,
-    backgroundColor: '#0c0c0e',
-    backgroundMaterial: 'mica',
-    webPreferences: {
-      preload: path.join(__dirname, 'preload.js'),
-      contextIsolation: true,
-      nodeIntegration: false,
-      devTools: false
-    },
-  });
+    const surveyWindow = new BrowserWindow({
+        width: 600,
+        height: 600,
+        frame: false,
+        resizable: false,
+        backgroundColor: '#0c0c0e',
+        backgroundMaterial: 'mica',
+        webPreferences: {
+            preload: path.join(__dirname, 'preload.js'),
+            contextIsolation: true,
+            nodeIntegration: false,
+            devTools: false
+        },
+    });
 
-  surveyWindow.loadFile(path.join(__dirname, 'uninstaller', 'index.html'));
+    surveyWindow.loadFile(path.join(__dirname, 'uninstaller', 'index.html'));
 
-  ipcMain.once('uninstall-survey-complete', (e, mailtoLink) => {
-    shell.openExternal(mailtoLink);
-    setTimeout(() => {
-      app.quit();
-      // Safety thermal exit if Chromium/Electron doesn't shut down in time
-      setTimeout(() => process.exit(0), 2000);
-    }, 500);
-  });
+    ipcMain.once('uninstall-survey-complete', (e, mailtoLink) => {
+        shell.openExternal(mailtoLink);
+        setTimeout(() => {
+            app.quit();
+            // Safety thermal exit if Chromium/Electron doesn't shut down in time
+            setTimeout(() => process.exit(0), 2000);
+        }, 500);
+    });
 
-  ipcMain.once('uninstall-survey-close', () => {
-    app.quit();
-    setTimeout(() => process.exit(0), 1000);
-  });
+    ipcMain.once('uninstall-survey-close', () => {
+        app.quit();
+        setTimeout(() => process.exit(0), 1000);
+    });
 }
 
 app.on('certificate-error', (event, webContents, url, error, certificate, callback) => {
@@ -848,7 +848,7 @@ app.on('web-contents-created', (event, contents) => {
             try {
                 const data = JSON.parse(message.replace('SIGNAL_INIT ', ''));
 
-            } catch (err) {}
+            } catch (err) { }
         }
     });
 
@@ -865,7 +865,7 @@ app.on('web-contents-created', (event, contents) => {
             });
             await contents.debugger.sendCommand('Network.setUserAgentOverride', { userAgent: mobileUA });
             await contents.debugger.sendCommand('Emulation.setTouchEmulationEnabled', { enabled: true, configuration: 'mobile' });
-        } catch (e) {}
+        } catch (e) { }
     };
 
     const removeMobileEmulation = async (skipReload = false) => {
@@ -878,7 +878,7 @@ app.on('web-contents-created', (event, contents) => {
                     setTimeout(() => { if (!contents.isDestroyed()) contents.reload(); }, 100);
                 }
             }
-        } catch (e) {}
+        } catch (e) { }
     };
 
     contents.setUserAgent(desktopUA);
@@ -897,17 +897,17 @@ app.on('web-contents-created', (event, contents) => {
         const id = views.find(v => v.view.webContents === contents)?.id;
         if (id) {
             const title = contents.getTitle();
-            mainWindow.webContents.send('url-updated', { 
-                id, 
-                url: url.includes('home.html') ? '' : url, 
-                title: url.includes('home.html') ? 'Ocal Home' : title 
+            mainWindow.webContents.send('url-updated', {
+                id,
+                url: url.includes('home.html') ? '' : url,
+                title: url.includes('home.html') ? 'Ocal Home' : title
             });
         }
     });
 
     contents.on('did-start-navigation', (event, url, isInPlace, isMainFrame) => {
         if (!isMainFrame) return;
-        
+
         const isSignFlow = url.includes('ServiceLogin') || url.includes('signin') || url.includes('identifier');
         const isGoogleAccounts = url.includes('accounts.google.com') || url.includes('google.com/accounts');
         const isPostLogin = url.includes('CheckCookie') || url.includes('ServiceLoginAuth');
@@ -918,7 +918,7 @@ app.on('web-contents-created', (event, contents) => {
                 applyMobileEmulation(contents.session === session.fromPartition('persist:google_login'));
             }
         } else if (isCurrentlyMobile) {
-            removeMobileEmulation(true); 
+            removeMobileEmulation(true);
         }
     });
 
@@ -941,7 +941,7 @@ function setupDownloadHandler() {
     session.defaultSession.on('will-download', (event, item, webContents) => {
         const downloadId = Date.now().toString();
         const fileName = item.getFilename();
-        
+
         let savePath = lastSaveAsPath;
         if (!savePath || userSettings.askSavePath) {
             const result = dialog.showSaveDialogSync(mainWindow, {
@@ -950,7 +950,7 @@ function setupDownloadHandler() {
                 buttonLabel: 'Save',
                 filters: [{ name: 'All Files', extensions: ['*'] }]
             });
-            
+
             if (result) {
                 savePath = result;
             } else {
@@ -962,12 +962,12 @@ function setupDownloadHandler() {
         lastSaveAsPath = null;
         item.setSavePath(savePath);
 
-        const dlItem = { 
-            id: downloadId, 
-            name: path.basename(savePath), 
-            state: 'progressing', 
-            received: 0, 
-            total: item.getTotalBytes(), 
+        const dlItem = {
+            id: downloadId,
+            name: path.basename(savePath),
+            state: 'progressing',
+            received: 0,
+            total: item.getTotalBytes(),
             path: savePath,
             timestamp: Date.now()
         };
@@ -975,7 +975,7 @@ function setupDownloadHandler() {
         saveDownloadsToSettings();
 
         if (!downloadsView) createDownloadsView();
-        
+
         mainWindow.webContents.send('open-downloads-popup-ui');
         if (downloadsView) downloadsView.webContents.send('download-updated', downloads);
         broadcastToSidebars('download-updated', downloads);
@@ -1042,23 +1042,23 @@ function showSidebarOverlay() {
 }
 
 function hideSidebarOverlay() {
-  if (sidebarOverlayView && !sidebarOverlayView.webContents.isDestroyed() && mainWindow && !mainWindow.isDestroyed()) {
-    if (mainWindow.getBrowserViews().includes(sidebarOverlayView)) {
-      mainWindow.removeBrowserView(sidebarOverlayView);
+    if (sidebarOverlayView && !sidebarOverlayView.webContents.isDestroyed() && mainWindow && !mainWindow.isDestroyed()) {
+        if (mainWindow.getBrowserViews().includes(sidebarOverlayView)) {
+            mainWindow.removeBrowserView(sidebarOverlayView);
+        }
     }
-  }
-  sidebarOpen = false;
-  updateViewBounds();
+    sidebarOpen = false;
+    updateViewBounds();
 }
 
 function showAiSidebar() {
     if (!aiSidebarView) createAiSidebar();
     if (sidebarOpen) hideSidebarOverlay();
-    
+
     if (!mainWindow.getBrowserViews().includes(aiSidebarView)) {
         mainWindow.addBrowserView(aiSidebarView);
     }
-    
+
     aiSidebarOpen = true;
     mainWindow.setTopBrowserView(aiSidebarView);
     updateViewBounds();
@@ -1074,11 +1074,11 @@ function hideAiSidebar() {
         if (mainWindow && !mainWindow.isDestroyed() && mainWindow.getBrowserViews().includes(aiSidebarView)) {
             // Initiate exit animation instead of immediate removal
             aiSidebarView.webContents.send('start-sidebar-exit');
-            
+
             // Safety timeout: remove after 600ms if renderer doesn't respond
             setTimeout(() => {
-                if (aiSidebarView && !aiSidebarView.webContents.isDestroyed() && 
-                    mainWindow && !mainWindow.isDestroyed() && 
+                if (aiSidebarView && !aiSidebarView.webContents.isDestroyed() &&
+                    mainWindow && !mainWindow.isDestroyed() &&
                     mainWindow.getBrowserViews().includes(aiSidebarView) && aiSidebarOpen === false) {
                     mainWindow.removeBrowserView(aiSidebarView);
                     updateViewBounds();
@@ -1091,8 +1091,8 @@ function hideAiSidebar() {
 }
 
 ipcMain.on('sidebar-exit-complete', () => {
-    if (aiSidebarView && !aiSidebarView.webContents.isDestroyed() && 
-        mainWindow && !mainWindow.isDestroyed() && 
+    if (aiSidebarView && !aiSidebarView.webContents.isDestroyed() &&
+        mainWindow && !mainWindow.isDestroyed() &&
         mainWindow.getBrowserViews().includes(aiSidebarView)) {
         mainWindow.removeBrowserView(aiSidebarView);
         updateViewBounds();
@@ -1131,7 +1131,7 @@ function closeOverlays() {
     hideSidebarOverlay();
     hideAiSidebar();
     hideSuggestions();
-    
+
     if (tabgroupView && !tabgroupView.webContents.isDestroyed() && mainWindow && !mainWindow.isDestroyed()) {
         if (mainWindow.getBrowserViews().includes(tabgroupView)) {
             mainWindow.removeBrowserView(tabgroupView);
@@ -1225,7 +1225,7 @@ ipcMain.on('toggle-downloads-popup', (e, bounds) => {
         createDownloadsView();
         isFirstLoad = true;
     }
-    
+
     if (mainWindow.getBrowserViews().includes(downloadsView)) {
         hideDownloadsPopup();
     } else {
@@ -1234,7 +1234,7 @@ ipcMain.on('toggle-downloads-popup', (e, bounds) => {
         closeOverlays();
         mainWindow.addBrowserView(downloadsView);
         mainWindow.setTopBrowserView(downloadsView);
-        
+
         const contentBounds = mainWindow.getContentBounds();
         let targetX = bounds.x - 180;
         if (targetX + 350 > contentBounds.width) {
@@ -1276,7 +1276,7 @@ function createShieldPopupView() {
     shieldPopupView.webContents.loadFile('shield-popup.html');
     shieldPopupView.setBackgroundColor('#00000000');
     setupInteractionDismissal(shieldPopupView.webContents);
-    
+
     // Auto-hide on blur
     shieldPopupView.webContents.on('blur', () => {
         if (shieldPopupView && mainWindow && mainWindow.getBrowserViews().includes(shieldPopupView)) {
@@ -1323,53 +1323,53 @@ function showWelcomeWizard() {
 }
 
 function resolveInternalURL(url) {
-  if (!url) return url;
-  
-  // Strip query and hash for path matching
-  const basePart = url.split(/[?#]/)[0];
-  const cleanBase = basePart.toLowerCase().replace(/\/$/, ''); // remove trailing slash for comparison
-  
-  // 1. Exact Page Mappings
-  if (cleanBase === 'settings' || cleanBase === 'ocal://settings') return 'file://' + path.join(__dirname, 'settings.html');
-  if (url.startsWith('ocal://settings#')) return 'file://' + path.join(__dirname, 'settings.html') + url.substring(15);
-  if (cleanBase === 'file-manager' || cleanBase === 'ocal://file-manager') return 'file://' + path.join(__dirname, 'file-manager.html');
-  if (cleanBase === 'ocal://offline') return 'file://' + path.join(__dirname, 'offline.html');
-  if (cleanBase === 'ocal://games') return 'file://' + path.join(__dirname, 'games.html');
-  if (cleanBase === 'ocal://tetris') return 'file://' + path.join(__dirname, 'tetris.html');
-  if (cleanBase === 'ocal://game' || cleanBase === 'ocal://snake') return 'file://' + path.join(__dirname, 'snake.html');
-  if (cleanBase === 'ocal://pulse' || cleanBase === 'ocal://runner') return 'file://' + path.join(__dirname, 'game.html');
-  
-  if (cleanBase === 'ocal://site-settings') {
-      const qIdx = url.indexOf('?');
-      return 'file://' + path.join(__dirname, 'site-settings.html') + (qIdx !== -1 ? url.substring(qIdx) : '');
-  }
-  // Standardize with trailing slash to avoid CSP relative path issues
-  if (cleanBase === 'ocal://pdf-viewer') {
-      const qIdx = url.indexOf('?');
-      return 'file://' + path.join(__dirname, 'pdf-viewer.html') + (qIdx !== -1 ? url.substring(qIdx) : '');
-  }
-  if (cleanBase === 'ocal://certificate-viewer') {
-      const qIdx = url.indexOf('?');
-      return 'file://' + path.join(__dirname, 'certificate-viewer.html') + (qIdx !== -1 ? url.substring(qIdx) : '');
-  }
+    if (!url) return url;
 
-  // 2. Resource/Asset Resolution (ocal://host/file.js -> __dirname/file.js)
-  if (url.startsWith('ocal://')) {
-      const pathPart = url.replace(/ocal:\/\/[^\/]+\//, ''); // Strip ocal://host/
-      if (pathPart && pathPart !== url) {
-          const filePath = path.join(__dirname, pathPart.split(/[?#]/)[0]);
-          if (fs.existsSync(filePath)) return 'file://' + filePath;
-      }
-  }
+    // Strip query and hash for path matching
+    const basePart = url.split(/[?#]/)[0];
+    const cleanBase = basePart.toLowerCase().replace(/\/$/, ''); // remove trailing slash for comparison
 
-  return url;
+    // 1. Exact Page Mappings
+    if (cleanBase === 'settings' || cleanBase === 'ocal://settings') return 'file://' + path.join(__dirname, 'settings.html');
+    if (url.startsWith('ocal://settings#')) return 'file://' + path.join(__dirname, 'settings.html') + url.substring(15);
+    if (cleanBase === 'file-manager' || cleanBase === 'ocal://file-manager') return 'file://' + path.join(__dirname, 'file-manager.html');
+    if (cleanBase === 'ocal://offline') return 'file://' + path.join(__dirname, 'offline.html');
+    if (cleanBase === 'ocal://games') return 'file://' + path.join(__dirname, 'games.html');
+    if (cleanBase === 'ocal://tetris') return 'file://' + path.join(__dirname, 'tetris.html');
+    if (cleanBase === 'ocal://game' || cleanBase === 'ocal://snake') return 'file://' + path.join(__dirname, 'snake.html');
+    if (cleanBase === 'ocal://pulse' || cleanBase === 'ocal://runner') return 'file://' + path.join(__dirname, 'game.html');
+
+    if (cleanBase === 'ocal://site-settings') {
+        const qIdx = url.indexOf('?');
+        return 'file://' + path.join(__dirname, 'site-settings.html') + (qIdx !== -1 ? url.substring(qIdx) : '');
+    }
+    // Standardize with trailing slash to avoid CSP relative path issues
+    if (cleanBase === 'ocal://pdf-viewer') {
+        const qIdx = url.indexOf('?');
+        return 'file://' + path.join(__dirname, 'pdf-viewer.html') + (qIdx !== -1 ? url.substring(qIdx) : '');
+    }
+    if (cleanBase === 'ocal://certificate-viewer') {
+        const qIdx = url.indexOf('?');
+        return 'file://' + path.join(__dirname, 'certificate-viewer.html') + (qIdx !== -1 ? url.substring(qIdx) : '');
+    }
+
+    // 2. Resource/Asset Resolution (ocal://host/file.js -> __dirname/file.js)
+    if (url.startsWith('ocal://')) {
+        const pathPart = url.replace(/ocal:\/\/[^\/]+\//, ''); // Strip ocal://host/
+        if (pathPart && pathPart !== url) {
+            const filePath = path.join(__dirname, pathPart.split(/[?#]/)[0]);
+            if (fs.existsSync(filePath)) return 'file://' + filePath;
+        }
+    }
+
+    return url;
 }
 
 function normalizeDocumentUrl(url) {
     if (!url) return url;
     try {
         if (url.startsWith('ocal://') || url.startsWith('http://') || url.startsWith('https://') || url.startsWith('file://')) return url;
-        
+
         // Check for local drive path (e.g., C:/... or D:\...)
         const isLocalDrive = /^[a-zA-Z]:[/\\]/.test(url);
         const isAbsPath = url.startsWith('/') || url.startsWith('\\\\');
@@ -1383,37 +1383,139 @@ function normalizeDocumentUrl(url) {
 }
 
 function createNewTab(url = null) {
-  const id = Date.now().toString() + Math.random().toString(36).substring(2, 9);
-  const view = new BrowserView({
-    webPreferences: { 
-      preload: path.join(__dirname, 'preload.js'), 
-      contextIsolation: true, 
-      nodeIntegration: false, 
-      sandbox: false, 
-      devTools: true 
-    },
-  });
-  view.setBackgroundColor(userSettings.themeMode === 'light' ? '#ffffff' : '#0c0c0e');
+    const id = Date.now().toString() + Math.random().toString(36).substring(2, 9);
+    const view = new BrowserView({
+        webPreferences: {
+            preload: path.join(__dirname, 'preload.js'),
+            contextIsolation: true,
+            nodeIntegration: false,
+            sandbox: false,
+            devTools: true
+        },
+    });
+    view.setBackgroundColor('#00000000');
 
-  // Clear media on navigation
-  view.webContents.on('did-start-navigation', (e, url, isInPlace) => {
-    if (!isInPlace) {
-      tabMedia[id] = [];
-      if (mainWindow && !mainWindow.isDestroyed()) {
-        mainWindow.webContents.send('media-master-updated', { tabId: id, mediaList: [] });
-      }
-    }
-  });
+    // Clear media on navigation
+    view.webContents.on('did-start-navigation', (e, url, isInPlace) => {
+        if (!isInPlace) {
+            tabMedia[id] = [];
+            if (mainWindow && !mainWindow.isDestroyed()) {
+                mainWindow.webContents.send('media-master-updated', { tabId: id, mediaList: [] });
+            }
+        }
+    });
 
-  view.webContents.setUserAgent(OCAL_USER_AGENT);
+    view.webContents.setUserAgent(OCAL_USER_AGENT);
 
-  // Inject Robust YouTube AdShield fallback & Battery Saver
-  view.webContents.on('did-finish-load', () => {
-    const url = view.webContents.getURL();
-    
-    // Battery Saver Logic
-    if (userSettings.batterySaver) {
-        view.webContents.insertCSS(`
+    // Inject Rounded Corners inside Web Pages (bypasses Electron native child window restrictions)
+    view.webContents.on('dom-ready', () => {
+        const url = view.webContents.getURL();
+        const isInternal = url.startsWith('ocal://') || url.startsWith('file://') || url.includes('home.html');
+
+        // 1. Root rounding for internal pages, and transparent backgrounds for remote pages (prevents scroll-blocking)
+        if (isInternal) {
+            view.webContents.insertCSS(`
+                html, body {
+                    border-radius: 12px !important;
+                    overflow: hidden !important;
+                    background: transparent !important;
+                }
+                html:fullscreen, body:fullscreen,
+                html:-webkit-full-screen, body:-webkit-full-screen,
+                html:fullscreen *, body:fullscreen *,
+                html:-webkit-full-screen *, body:-webkit-full-screen * {
+                    border-radius: 0px !important;
+                }
+            `);
+        } else {
+            view.webContents.insertCSS(`
+                html, body {
+                    background: transparent !important;
+                }
+            `);
+        }
+
+        // 2. Viewport-level corner masks for remote pages (handles scrolling content & bottom corners)
+        if (!isInternal) {
+            const maskColor = userSettings.themeMode === 'light' ? '#ffffff' : '#000000';
+            const sbColor = userSettings.themeMode === 'light' ? 'rgba(0,0,0,0.16)' : 'rgba(255,255,255,0.16)';
+            const sbHover = userSettings.themeMode === 'light' ? 'rgba(0,0,0,0.36)' : 'rgba(255,255,255,0.36)';
+
+            view.webContents.insertCSS(`
+                .ocal-corner-mask {
+                    position: fixed !important;
+                    width: 12px !important;
+                    height: 12px !important;
+                    z-index: 2147483647 !important;
+                    pointer-events: none !important;
+                    --mask-bg: ${maskColor};
+                }
+                .ocal-corner-mask-tl { top: 0 !important; left: 0 !important; background: radial-gradient(circle at 100% 100%, transparent 12px, var(--mask-bg) 12.5px) !important; }
+                .ocal-corner-mask-tr { top: 0 !important; right: 0 !important; background: radial-gradient(circle at 0% 100%, transparent 12px, var(--mask-bg) 12.5px) !important; }
+                .ocal-corner-mask-bl { bottom: 0 !important; left: 0 !important; background: radial-gradient(circle at 100% 0%, transparent 12px, var(--mask-bg) 12.5px) !important; }
+                .ocal-corner-mask-br { bottom: 0 !important; right: 0 !important; background: radial-gradient(circle at 0% 0%, transparent 12px, var(--mask-bg) 12.5px) !important; }
+                
+                /* Hide corner masks in fullscreen */
+                html:fullscreen .ocal-corner-mask,
+                html:-webkit-full-screen .ocal-corner-mask {
+                    display: none !important;
+                }
+
+                /* Premium Simple & Compact Scrollbars */
+                ::-webkit-scrollbar {
+                    width: 6px !important;
+                    height: 6px !important;
+                }
+                ::-webkit-scrollbar-track {
+                    background: transparent !important;
+                }
+                ::-webkit-scrollbar-thumb {
+                    background: ${sbColor} !important;
+                    border-radius: 10px !important;
+                }
+                ::-webkit-scrollbar-thumb:hover {
+                    background: ${sbHover} !important;
+                }
+            `);
+
+            const injectScript = `
+                (function() {
+                    if (document.getElementById('ocal-corner-masks-container')) return;
+                    const container = document.createElement('div');
+                    container.id = 'ocal-corner-masks-container';
+                    container.style.position = 'fixed';
+                    container.style.inset = '0';
+                    container.style.pointerEvents = 'none';
+                    container.style.zIndex = '2147483647';
+                    
+                    const tl = document.createElement('div'); tl.className = 'ocal-corner-mask ocal-corner-mask-tl';
+                    const tr = document.createElement('div'); tr.className = 'ocal-corner-mask ocal-corner-mask-tr';
+                    const bl = document.createElement('div'); bl.className = 'ocal-corner-mask ocal-corner-mask-bl';
+                    const br = document.createElement('div'); br.className = 'ocal-corner-mask ocal-corner-mask-br';
+                    
+                    container.appendChild(tl);
+                    container.appendChild(tr);
+                    container.appendChild(bl);
+                    container.appendChild(br);
+                    
+                    if (document.body) {
+                        document.body.appendChild(container);
+                    } else {
+                        document.documentElement.appendChild(container);
+                    }
+                })();
+            `;
+            view.webContents.executeJavaScript(injectScript).catch(() => {});
+        }
+    });
+
+    // Inject Robust YouTube AdShield fallback & Battery Saver
+    view.webContents.on('did-finish-load', () => {
+        const url = view.webContents.getURL();
+
+        // Battery Saver Logic
+        if (userSettings.batterySaver) {
+            view.webContents.insertCSS(`
             * { 
                 animation: none !important; 
                 transition: none !important; 
@@ -1421,229 +1523,229 @@ function createNewTab(url = null) {
             }
             img { image-rendering: -webkit-optimize-contrast !important; }
         `);
-        // Limit frame rate if possible (not directly via API easily, but animation removal helps)
-    }
-
-    if (url.includes('youtube.com') && userSettings.adBlockEnabled !== false) {
-        const adShieldPath = path.join(__dirname, 'youtube-ad-remover.js');
-        if (fs.existsSync(adShieldPath)) {
-            const script = fs.readFileSync(adShieldPath, 'utf8');
-            view.webContents.executeJavaScript(script).catch(() => {});
-            console.log(`[YouTube Enhancer] DOM Injected into ${url} (Ad-Shield + Dislike Recovery)`);
+            // Limit frame rate if possible (not directly via API easily, but animation removal helps)
         }
-    }
-  });
 
-  // Intercept PDF view navigation and internal ocal:// links
-  setupInteractionDismissal(view.webContents);
-  view.webContents.on('will-navigate', (event, targetUrl) => {
-    // 1. If it's already an internal URL, just resolve and load (prevents loops)
-    if (targetUrl.startsWith('ocal://')) {
-        event.preventDefault();
-        view.webContents.loadURL(targetUrl);
-        return;
-    }
-
-    // 2. Intercept remote PDFs
-    const isPdf = /\.pdf($|\?)/i.test(targetUrl);
-    if (isPdf && !targetUrl.includes('ocal://pdf-viewer') && !targetUrl.includes('pdf-viewer.html')) {
-        event.preventDefault();
-        const cleanUrl = normalizeDocumentUrl(targetUrl);
-        if (userSettings.pdfViewerEnabled !== false) {
-            view.webContents.loadURL(`ocal://pdf-viewer/?file=${encodeURIComponent(cleanUrl)}`);
-        } else {
-            view.webContents.downloadURL(cleanUrl);
-        }
-        return;
-    }
-  });
-
-  view.webContents.setWindowOpenHandler(({ url }) => {
-    if (url.startsWith('ocal://')) {
-        createNewTab(url);
-        return { action: 'deny' };
-    }
-    // Intercept PDFs in window popups too
-    if (/\.pdf($|\?)/i.test(url) && !url.includes('ocal://pdf-viewer') && !url.includes('pdf-viewer.html')) {
-        const cleanUrl = normalizeDocumentUrl(url);
-        if (userSettings.pdfViewerEnabled !== false) {
-            createNewTab(`ocal://pdf-viewer?file=${encodeURIComponent(cleanUrl)}`);
-        } else {
-            view.webContents.downloadURL(cleanUrl);
-        }
-        return { action: 'deny' };
-    }
-    return { action: 'allow' };
-  });
-
-  views.push({ id, view });
-
-  // Clear media on navigation
-  view.webContents.on('did-start-navigation', (e, url, isInPlace) => {
-    if (!isInPlace) {
-      tabMedia[id] = [];
-      mainWindow.webContents.send('media-master-updated', { tabId: id, mediaList: [] });
-    }
-  });
-
-  // Initial Load Resolution
-  let finalUrl = url;
-  if (url && !url.startsWith('ocal://')) {
-      const isPdf = /\.pdf($|\?)/i.test(url);
-      if (isPdf && userSettings.pdfViewerEnabled !== false) {
-          // Normalize before encoding to prevent %2520
-          // Use trailing slash to fix CSP relative path issues
-          try {
-              const cleanUrl = decodeURI(url);
-              finalUrl = `ocal://pdf-viewer/?file=${encodeURIComponent(cleanUrl)}`;
-          } catch(e) {
-              finalUrl = `ocal://pdf-viewer/?file=${encodeURIComponent(url)}`;
-          }
-      }
-  }
-  
-  // Load the ocal:// URL directly so the address bar stays clean
-  // The protocol handler will resolve it internally.
-  if (finalUrl) {
-      view.webContents.loadURL(resolveInternalURL(finalUrl));
-  } else {
-      view.webContents.loadFile('home.html');
-  }
-
-  setActiveTab(id);
-
-  // HTML fullscreen events — hide/show chrome
-  view.webContents.on('enter-html-full-screen', () => setHtmlFullscreen(id, true));
-  view.webContents.on('leave-html-full-screen', () => setHtmlFullscreen(id, false));
-
-  // Auto-hide overlays on click in the content
-  view.webContents.on('before-input-event', (event, input) => {
-    if (input.type === 'mouseDown') closeOverlays();
-    handleShortcuts(event, input);
-  });
-
-  view.webContents.on('page-favicon-updated', (event, favicons) => {
-    if (favicons && favicons.length > 0) {
-      const entry = views.find(v => v.id === id);
-      if (entry) {
-        const icon = favicons[0];
-        entry.favicon = icon;
-        mainWindow.webContents.send('favicon-updated', { id, favicon: icon });
-        
-        // Persist to history if URL matches
-        const url = view.webContents.getURL();
-        // Safety check for history existence
-        if (userSettings.history) {
-            const histIndex = userSettings.history.findIndex(h => h.url === url);
-            if (histIndex > -1) {
-                userSettings.history[histIndex].favicon = icon;
-                saveSettings(userSettings);
-                broadcastHistory();
+        if (url.includes('youtube.com') && userSettings.adBlockEnabled !== false) {
+            const adShieldPath = path.join(__dirname, 'youtube-ad-remover.js');
+            if (fs.existsSync(adShieldPath)) {
+                const script = fs.readFileSync(adShieldPath, 'utf8');
+                view.webContents.executeJavaScript(script).catch(() => { });
+                console.log(`[YouTube Enhancer] DOM Injected into ${url} (Ad-Shield + Dislike Recovery)`);
             }
         }
-      }
-    }
-  });
+    });
 
-  view.webContents.on('did-start-navigation', (event, url, isInPlace, isMainFrame) => {
-    if (isMainFrame) {
-      hideSuggestions();
-      // Proactively tell renderer to hide BM bar if navigating away from home
-      const tabEntry = views.find(v => v.id === id);
-      if (tabEntry) {
-          tabEntry.url = url;
-          broadcastTabs();
-          updateViewBounds(url);
-      }
-    }
-  });
+    // Intercept PDF view navigation and internal ocal:// links
+    setupInteractionDismissal(view.webContents);
+    view.webContents.on('will-navigate', (event, targetUrl) => {
+        // 1. If it's already an internal URL, just resolve and load (prevents loops)
+        if (targetUrl.startsWith('ocal://')) {
+            event.preventDefault();
+            view.webContents.loadURL(targetUrl);
+            return;
+        }
 
-  view.webContents.on('did-finish-load', () => {
-    if (userSettings.cyberStealthEnabled) {
-        applyCyberStealth(view.webContents);
-    }
-  });
+        // 2. Intercept remote PDFs
+        const isPdf = /\.pdf($|\?)/i.test(targetUrl);
+        if (isPdf && !targetUrl.includes('ocal://pdf-viewer') && !targetUrl.includes('pdf-viewer.html')) {
+            event.preventDefault();
+            const cleanUrl = normalizeDocumentUrl(targetUrl);
+            if (userSettings.pdfViewerEnabled !== false) {
+                view.webContents.loadURL(`ocal://pdf-viewer/?file=${encodeURIComponent(cleanUrl)}`);
+            } else {
+                view.webContents.downloadURL(cleanUrl);
+            }
+            return;
+        }
+    });
 
-  view.webContents.on('did-navigate', (event, url) => {
-    updateHistory(view, url);
-    const tabEntry = views.find(v => v.id === id);
-    if (tabEntry) tabEntry.url = url;
-    
-    // Reset page-specific shield stats on navigation
-    if (tabShieldStats.has(view.webContents.id)) {
-        tabShieldStats.delete(view.webContents.id);
-        broadcastShieldStats(view.webContents.id);
+    view.webContents.setWindowOpenHandler(({ url }) => {
+        if (url.startsWith('ocal://')) {
+            createNewTab(url);
+            return { action: 'deny' };
+        }
+        // Intercept PDFs in window popups too
+        if (/\.pdf($|\?)/i.test(url) && !url.includes('ocal://pdf-viewer') && !url.includes('pdf-viewer.html')) {
+            const cleanUrl = normalizeDocumentUrl(url);
+            if (userSettings.pdfViewerEnabled !== false) {
+                createNewTab(`ocal://pdf-viewer?file=${encodeURIComponent(cleanUrl)}`);
+            } else {
+                view.webContents.downloadURL(cleanUrl);
+            }
+            return { action: 'deny' };
+        }
+        return { action: 'allow' };
+    });
+
+    views.push({ id, view });
+
+    // Clear media on navigation
+    view.webContents.on('did-start-navigation', (e, url, isInPlace) => {
+        if (!isInPlace) {
+            tabMedia[id] = [];
+            mainWindow.webContents.send('media-master-updated', { tabId: id, mediaList: [] });
+        }
+    });
+
+    // Initial Load Resolution
+    let finalUrl = url;
+    if (url && !url.startsWith('ocal://')) {
+        const isPdf = /\.pdf($|\?)/i.test(url);
+        if (isPdf && userSettings.pdfViewerEnabled !== false) {
+            // Normalize before encoding to prevent %2520
+            // Use trailing slash to fix CSP relative path issues
+            try {
+                const cleanUrl = decodeURI(url);
+                finalUrl = `ocal://pdf-viewer/?file=${encodeURIComponent(cleanUrl)}`;
+            } catch (e) {
+                finalUrl = `ocal://pdf-viewer/?file=${encodeURIComponent(url)}`;
+            }
+        }
     }
-    
+
+    // Load the ocal:// URL directly so the address bar stays clean
+    // The protocol handler will resolve it internally.
+    if (finalUrl) {
+        view.webContents.loadURL(resolveInternalURL(finalUrl));
+    } else {
+        view.webContents.loadFile('home.html');
+    }
+
+    setActiveTab(id);
+
+    // HTML fullscreen events — hide/show chrome
+    view.webContents.on('enter-html-full-screen', () => setHtmlFullscreen(id, true));
+    view.webContents.on('leave-html-full-screen', () => setHtmlFullscreen(id, false));
+
+    // Auto-hide overlays on click in the content
+    view.webContents.on('before-input-event', (event, input) => {
+        if (input.type === 'mouseDown') closeOverlays();
+        handleShortcuts(event, input);
+    });
+
+    view.webContents.on('page-favicon-updated', (event, favicons) => {
+        if (favicons && favicons.length > 0) {
+            const entry = views.find(v => v.id === id);
+            if (entry) {
+                const icon = favicons[0];
+                entry.favicon = icon;
+                mainWindow.webContents.send('favicon-updated', { id, favicon: icon });
+
+                // Persist to history if URL matches
+                const url = view.webContents.getURL();
+                // Safety check for history existence
+                if (userSettings.history) {
+                    const histIndex = userSettings.history.findIndex(h => h.url === url);
+                    if (histIndex > -1) {
+                        userSettings.history[histIndex].favicon = icon;
+                        saveSettings(userSettings);
+                        broadcastHistory();
+                    }
+                }
+            }
+        }
+    });
+
+    view.webContents.on('did-start-navigation', (event, url, isInPlace, isMainFrame) => {
+        if (isMainFrame) {
+            hideSuggestions();
+            // Proactively tell renderer to hide BM bar if navigating away from home
+            const tabEntry = views.find(v => v.id === id);
+            if (tabEntry) {
+                tabEntry.url = url;
+                broadcastTabs();
+                updateViewBounds(url);
+            }
+        }
+    });
+
+    view.webContents.on('did-finish-load', () => {
+        if (userSettings.cyberStealthEnabled) {
+            applyCyberStealth(view.webContents);
+        }
+    });
+
+    view.webContents.on('did-navigate', (event, url) => {
+        updateHistory(view, url);
+        const tabEntry = views.find(v => v.id === id);
+        if (tabEntry) tabEntry.url = url;
+
+        // Reset page-specific shield stats on navigation
+        if (tabShieldStats.has(view.webContents.id)) {
+            tabShieldStats.delete(view.webContents.id);
+            broadcastShieldStats(view.webContents.id);
+        }
+
+        broadcastTabs();
+        updateViewBounds(url);
+    });
+
+    setupContextMenu(view.webContents);
+
+    // Intercept window.open; load in the same view per user request
+    view.webContents.setWindowOpenHandler(({ url }) => {
+        view.webContents.loadURL(url);
+        return { action: 'deny' };
+    });
+
+    view.webContents.on('did-navigate-in-page', (event, url) => {
+        updateHistory(view, url);
+        const tabEntry = views.find(v => v.id === id);
+        if (tabEntry) tabEntry.url = url;
+        broadcastTabs();
+        updateViewBounds(url);
+    });
+
+    view.webContents.on('page-title-updated', (event, title) => {
+        const url = view.webContents.getURL();
+        mainWindow.webContents.send('title-updated', { id, title: url.includes('home.html') ? 'Ocal Home' : title });
+    });
+
+    view.webContents.on('did-start-loading', () => {
+        if (mainWindow && !mainWindow.isDestroyed()) {
+            mainWindow.webContents.send('load-progress', { id, progress: 15 });
+        }
+    });
+
+    view.webContents.on('dom-ready', () => {
+        if (mainWindow && !mainWindow.isDestroyed()) {
+            mainWindow.webContents.send('load-progress', { id, progress: 75 });
+        }
+    });
+
+    view.webContents.on('did-stop-loading', () => {
+        if (mainWindow && !mainWindow.isDestroyed()) {
+            mainWindow.webContents.send('load-progress', { id, progress: 100 });
+        }
+    });
+
+    view.webContents.on('did-fail-load', (event, errorCode, errorDescription, validatedURL, isMainFrame) => {
+        if (isMainFrame) {
+
+
+            // Connectivity Rescue Logic
+            const connectivityErrors = [
+                -106, // ERR_INTERNET_DISCONNECTED
+                -105, // ERR_NAME_NOT_RESOLVED
+                -118, // ERR_CONNECTION_TIMED_OUT
+                -100, // ERR_CONNECTION_CLOSED
+                -102, // ERR_CONNECTION_REFUSED
+                -101  // ERR_CONNECTION_RESET
+            ];
+
+            if (connectivityErrors.includes(errorCode) && !validatedURL.startsWith('ocal://') && !validatedURL.startsWith('file://')) {
+                console.log(`[Rescue] Connectivity Error ${errorCode} on ${validatedURL}. Redirecting to Offline Page.`);
+                view.webContents.loadURL('ocal://offline');
+            }
+        }
+
+        if (mainWindow && !mainWindow.isDestroyed()) {
+            mainWindow.webContents.send('load-progress', { id, progress: 0 });
+        }
+    });
+
     broadcastTabs();
-    updateViewBounds(url);
-  });
-
-  setupContextMenu(view.webContents);
-
-  // Intercept window.open; load in the same view per user request
-  view.webContents.setWindowOpenHandler(({ url }) => {
-    view.webContents.loadURL(url);
-    return { action: 'deny' };
-  });
-
-  view.webContents.on('did-navigate-in-page', (event, url) => {
-    updateHistory(view, url);
-    const tabEntry = views.find(v => v.id === id);
-    if (tabEntry) tabEntry.url = url;
-    broadcastTabs();
-    updateViewBounds(url);
-  });
-
-  view.webContents.on('page-title-updated', (event, title) => {
-      const url = view.webContents.getURL();
-      mainWindow.webContents.send('title-updated', { id, title: url.includes('home.html') ? 'Ocal Home' : title });
-  });
-
-  view.webContents.on('did-start-loading', () => {
-    if (mainWindow && !mainWindow.isDestroyed()) {
-        mainWindow.webContents.send('load-progress', { id, progress: 15 });
-    }
-  });
-
-  view.webContents.on('dom-ready', () => {
-    if (mainWindow && !mainWindow.isDestroyed()) {
-        mainWindow.webContents.send('load-progress', { id, progress: 75 });
-    }
-  });
-
-  view.webContents.on('did-stop-loading', () => {
-    if (mainWindow && !mainWindow.isDestroyed()) {
-        mainWindow.webContents.send('load-progress', { id, progress: 100 });
-    }
-  });
-
-  view.webContents.on('did-fail-load', (event, errorCode, errorDescription, validatedURL, isMainFrame) => {
-      if (isMainFrame) {
-
-
-          // Connectivity Rescue Logic
-          const connectivityErrors = [
-              -106, // ERR_INTERNET_DISCONNECTED
-              -105, // ERR_NAME_NOT_RESOLVED
-              -118, // ERR_CONNECTION_TIMED_OUT
-              -100, // ERR_CONNECTION_CLOSED
-              -102, // ERR_CONNECTION_REFUSED
-              -101  // ERR_CONNECTION_RESET
-          ];
-
-          if (connectivityErrors.includes(errorCode) && !validatedURL.startsWith('ocal://') && !validatedURL.startsWith('file://')) {
-              console.log(`[Rescue] Connectivity Error ${errorCode} on ${validatedURL}. Redirecting to Offline Page.`);
-              view.webContents.loadURL('ocal://offline');
-          }
-      }
-
-      if (mainWindow && !mainWindow.isDestroyed()) {
-        mainWindow.webContents.send('load-progress', { id, progress: 0 });
-    }
-  });
-
-  broadcastTabs();
 }
 
 function broadcastTabs() {
@@ -1656,14 +1758,14 @@ function broadcastTabs() {
         groupId: v.groupId || null,
         audible: v.view.webContents.isDestroyed() ? false : v.view.webContents.isCurrentlyAudible()
     }));
-    mainWindow.webContents.send('tabs-changed', { 
-        tabs: tabData, 
+    mainWindow.webContents.send('tabs-changed', {
+        tabs: tabData,
         activeTabId: activeViewId,
-        groups: userSettings.tabGroups 
+        groups: userSettings.tabGroups
     });
     if (sidebarOverlayView && !sidebarOverlayView.webContents.isDestroyed()) {
-        sidebarOverlayView.webContents.send('tabs-changed', { 
-            tabs: tabData, 
+        sidebarOverlayView.webContents.send('tabs-changed', {
+            tabs: tabData,
             activeTabId: activeViewId,
             groups: userSettings.tabGroups
         });
@@ -1671,154 +1773,163 @@ function broadcastTabs() {
 }
 
 function setActiveTab(id) {
-  const oldViewEntry = views.find(v => v.id === activeViewId);
-  const oldWc = (oldViewEntry && oldViewEntry.view && oldViewEntry.view.webContents && !oldViewEntry.view.webContents.isDestroyed()) ? oldViewEntry.view.webContents : null;
-  
-  // Auto-PiP Logic: If previous tab was playing a video and we are switching away, request native PiP.
-  if (oldWc && !oldWc.isDestroyed() && tabShieldStats.get(oldWc.id)?.isPlaying) {
-      oldWc.send('request-smart-pip');
-  }
+    const oldViewEntry = views.find(v => v.id === activeViewId);
+    const oldWc = (oldViewEntry && oldViewEntry.view && oldViewEntry.view.webContents && !oldViewEntry.view.webContents.isDestroyed()) ? oldViewEntry.view.webContents : null;
 
-  if (oldViewEntry && oldViewEntry.view && oldViewEntry.view.webContents && !oldViewEntry.view.webContents.isDestroyed() && !mainWindow.isDestroyed()) {
-      if (mainWindow.getBrowserViews().includes(oldViewEntry.view)) {
-          mainWindow.removeBrowserView(oldViewEntry.view);
-      }
-  }
-  activeViewId = id;
-  const newViewEntry = views.find(v => v.id === id);
-  
-  if (newViewEntry && newViewEntry.view && newViewEntry.view.webContents && !newViewEntry.view.webContents.isDestroyed() && !mainWindow.isDestroyed()) {
-    const newWc = newViewEntry.view.webContents;
-    
-    // If the new tab is the one currently in PiP, close the PiP window
-    if (pipWindow && !pipWindow.isDestroyed() && pipSourceContents && !pipSourceContents.isDestroyed() && pipSourceContents.id === newWc.id) {
-        pipWindow.close();
+    // Auto-PiP Logic: If previous tab was playing a video and we are switching away, request native PiP.
+    if (oldWc && !oldWc.isDestroyed() && tabShieldStats.get(oldWc.id)?.isPlaying) {
+        oldWc.send('request-smart-pip');
     }
 
-    if (!mainWindow.getBrowserViews().includes(newViewEntry.view)) {
-        mainWindow.addBrowserView(newViewEntry.view);
+    if (oldViewEntry && oldViewEntry.view && oldViewEntry.view.webContents && !oldViewEntry.view.webContents.isDestroyed() && !mainWindow.isDestroyed()) {
+        if (mainWindow.getBrowserViews().includes(oldViewEntry.view)) {
+            mainWindow.removeBrowserView(oldViewEntry.view);
+        }
     }
-    updateViewBounds();
-    
-    if (!newWc.isDestroyed()) {
-        const url = newWc.getURL();
-        const title = newWc.getTitle();
-        mainWindow.webContents.send('url-updated', { 
-            id, 
-            url: url.includes('home.html') ? '' : url, 
-            title: url.includes('home.html') ? 'Ocal Home' : title,
-            favicon: newViewEntry.favicon || null
-        });
+    activeViewId = id;
+    const newViewEntry = views.find(v => v.id === id);
+
+    if (newViewEntry && newViewEntry.view && newViewEntry.view.webContents && !newViewEntry.view.webContents.isDestroyed() && !mainWindow.isDestroyed()) {
+        const newWc = newViewEntry.view.webContents;
+
+        // If the new tab is the one currently in PiP, close the PiP window
+        if (pipWindow && !pipWindow.isDestroyed() && pipSourceContents && !pipSourceContents.isDestroyed() && pipSourceContents.id === newWc.id) {
+            pipWindow.close();
+        }
+
+        if (!mainWindow.getBrowserViews().includes(newViewEntry.view)) {
+            mainWindow.addBrowserView(newViewEntry.view);
+        }
+        updateViewBounds();
+
+        if (!newWc.isDestroyed()) {
+            const url = newWc.getURL();
+            const title = newWc.getTitle();
+            mainWindow.webContents.send('url-updated', {
+                id,
+                url: url.includes('home.html') ? '' : url,
+                title: url.includes('home.html') ? 'Ocal Home' : title,
+                favicon: newViewEntry.favicon || null
+            });
+        }
     }
-  }
-  broadcastTabs();
+    broadcastTabs();
 }
 
 // Track which view is in HTML fullscreen
 let htmlFullscreenViewId = null;
 
 function setHtmlFullscreen(id, isFullscreen) {
-  htmlFullscreenViewId = isFullscreen ? id : null;
-  // Tell the chrome UI to hide/show
-  mainWindow.webContents.send('html-fullscreen', isFullscreen);
-  updateViewBounds();
+    htmlFullscreenViewId = isFullscreen ? id : null;
+    // Tell the chrome UI to hide/show
+    mainWindow.webContents.send('html-fullscreen', isFullscreen);
+    updateViewBounds();
 }
 
 function isHomeURL(url) {
-  if (!url || url === '' || url === 'about:blank') return true;
-  // Only detect as home if it's the specific home.html file, not just a search string containing it
-  return url.startsWith('file://') && url.toLowerCase().includes('home.html');
+    if (!url || url === '' || url === 'about:blank') return true;
+    // Only detect as home if it's the specific home.html file, not just a search string containing it
+    return url.startsWith('file://') && url.toLowerCase().includes('home.html');
 }
 
 function updateViewBounds(forcedUrl = null) {
-  if (!mainWindow || mainWindow.isDestroyed()) return;
-  const isMaximized = mainWindow.isMaximized();
-  const { width, height } = mainWindow.getContentBounds();
-  const isFullscreen = !!htmlFullscreenViewId;
+    if (!mainWindow || mainWindow.isDestroyed()) return;
+    const isMaximized = mainWindow.isMaximized();
+    const { width, height } = mainWindow.getContentBounds();
+    const isFullscreen = !!htmlFullscreenViewId;
 
-  const winOffset = 0; // Simplified for modern Electron styling
+    const winOffset = 0; // Simplified for modern Electron styling
 
-  const hTabs = isFullscreen ? 0 : (userSettings.compactMode ? 36 : 44);
-  const hNav  = isFullscreen ? 0 : (userSettings.compactMode ? 40 : 50);
-  
-  // Bookmark Bar Logic
-  let isBmVisible = bookmarkBarVisible;
-  const activeViewEntry = views.find(v => v.id === activeViewId);
-  const activeView = activeViewEntry?.view;
-  const url = forcedUrl || (activeView && !activeView.webContents.isDestroyed() ? activeView.webContents.getURL() : '');
-  const isHome = isHomeURL(url);
-  
-  if (userSettings.bookmarkBarMode === 'always') isBmVisible = true;
-  else if (userSettings.bookmarkBarMode === 'never') isBmVisible = false;
-  else if (userSettings.bookmarkBarMode === 'auto') isBmVisible = isHome;
+    const hTabs = isFullscreen ? 0 : (userSettings.compactMode ? 36 : 44);
+    const hNav = isFullscreen ? 0 : (userSettings.compactMode ? 40 : 52);
 
-  // Notify renderer of our source-of-truth visibility (crucial to prevent gaps!)
-  if (!mainWindow.webContents.isDestroyed()) {
-    mainWindow.webContents.send('sync-bookmark-visibility', isBmVisible);
-  }
+    // Bookmark Bar Logic
+    let isBmVisible = bookmarkBarVisible;
+    const activeViewEntry = views.find(v => v.id === activeViewId);
+    const activeView = activeViewEntry?.view;
+    const url = forcedUrl || (activeView && !activeView.webContents.isDestroyed() ? activeView.webContents.getURL() : '');
+    const isHome = isHomeURL(url);
 
-  const hBm = (isFullscreen || !isBmVisible) ? 0 : (userSettings.compactMode ? 28 : 36);
-  // yPadding accounts for the potential 1px overlap on Windows 10
-  const yPadding = (process.platform === 'win32') ? 1 : 0;
-  const yOffset = hTabs + hNav + hBm + yPadding;
+    if (userSettings.bookmarkBarMode === 'always') isBmVisible = true;
+    else if (userSettings.bookmarkBarMode === 'never') isBmVisible = false;
+    else if (userSettings.bookmarkBarMode === 'auto') isBmVisible = isHome;
 
-  const wSidebar = isFullscreen ? 0 : 48;
+    // Notify renderer of our source-of-truth visibility (crucial to prevent gaps!)
+    if (!mainWindow.webContents.isDestroyed()) {
+        mainWindow.webContents.send('sync-bookmark-visibility', isBmVisible);
+    }
 
-  if (activeViewEntry && activeViewEntry.view) {
-    // Only update bounds and stack order if the view is currently attached to mainWindow
-    // (Prevents crashes when the view is detached in a Portal PiP window)
-    if (activeViewEntry.view.webContents && !activeViewEntry.view.webContents.isDestroyed() && mainWindow.getBrowserViews().includes(activeViewEntry.view)) {
-        activeViewEntry.view.setBounds({
-          x: wSidebar, 
-          y: Math.round(yOffset),
-          width: Math.round(width - wSidebar),
-          height: Math.round(height - yOffset)
+    const hBm = (isFullscreen || !isBmVisible) ? 0 : (userSettings.compactMode ? 32 : 40);
+    // yPadding accounts for the potential 1px overlap on Windows 10
+    const yPadding = (process.platform === 'win32') ? 1 : 0;
+    const yOffset = hTabs + hNav + hBm + yPadding;
+
+    const wSidebar = isFullscreen ? 0 : 48;
+
+    if (activeViewEntry && activeViewEntry.view) {
+        // Only update bounds and stack order if the view is currently attached to mainWindow
+        // (Prevents crashes when the view is detached in a Portal PiP window)
+        if (activeViewEntry.view.webContents && !activeViewEntry.view.webContents.isDestroyed() && mainWindow.getBrowserViews().includes(activeViewEntry.view)) {
+            if (isFullscreen) {
+                activeViewEntry.view.setBounds({
+                    x: 0,
+                    y: 0,
+                    width: width,
+                    height: height
+                });
+            } else {
+                activeViewEntry.view.setBounds({
+                    x: Math.round(wSidebar + 8),
+                    y: Math.round(yOffset + 2),
+                    width: Math.round(width - wSidebar - 16),
+                    height: Math.round(height - yOffset - 10)
+                });
+            }
+            mainWindow.setTopBrowserView(activeViewEntry.view);
+        }
+    }
+
+    // Hide any views that are in collapsed groups to prevent them from staying on top
+    views.forEach(v => {
+        const group = userSettings.tabGroups.find(g => g.id === v.groupId);
+        if (v.id !== activeViewId && group && group.collapsed && v.view && v.view.webContents && !v.view.webContents.isDestroyed()) {
+            mainWindow.removeBrowserView(v.view);
+        }
+    });
+
+    // 1. Stack AI Sidebar (on the right)
+    if (aiSidebarView && aiSidebarView.webContents && !aiSidebarView.webContents.isDestroyed() && mainWindow.getBrowserViews().includes(aiSidebarView)) {
+        aiSidebarView.setBounds({
+            x: Math.round(width - aiSidebarWidth - winOffset),
+            y: Math.round(yOffset + winOffset),
+            width: Math.round(aiSidebarWidth),
+            height: Math.round(height - yOffset - (winOffset * 2))
         });
-        mainWindow.setTopBrowserView(activeViewEntry.view);
+        mainWindow.setTopBrowserView(aiSidebarView);
     }
-  }
 
-  // Hide any views that are in collapsed groups to prevent them from staying on top
-  views.forEach(v => {
-    const group = userSettings.tabGroups.find(g => g.id === v.groupId);
-    if (v.id !== activeViewId && group && group.collapsed && v.view && v.view.webContents && !v.view.webContents.isDestroyed()) {
-        mainWindow.removeBrowserView(v.view);
+    // 2. Stack Sidebar Overlay (on the left, covering the whole window for backdrop)
+    if (sidebarOverlayView && sidebarOverlayView.webContents && !sidebarOverlayView.webContents.isDestroyed() && mainWindow.getBrowserViews().includes(sidebarOverlayView)) {
+        sidebarOverlayView.setBounds({
+            x: Math.round(wSidebar + winOffset),
+            y: Math.round(yOffset + winOffset),
+            width: Math.round(width - wSidebar - (winOffset * 2)),
+            height: Math.round(height - yOffset - (winOffset * 2))
+        });
+        mainWindow.setTopBrowserView(sidebarOverlayView);
     }
-  });
 
-  // 1. Stack AI Sidebar (on the right)
-  if (aiSidebarView && aiSidebarView.webContents && !aiSidebarView.webContents.isDestroyed() && mainWindow.getBrowserViews().includes(aiSidebarView)) {
-    aiSidebarView.setBounds({ 
-        x: Math.round(width - aiSidebarWidth - winOffset), 
-        y: Math.round(yOffset + winOffset), 
-        width: Math.round(aiSidebarWidth), 
-        height: Math.round(height - yOffset - (winOffset * 2)) 
-    });
-    mainWindow.setTopBrowserView(aiSidebarView);
-  }
-
-  // 2. Stack Sidebar Overlay (on the left, covering the whole window for backdrop)
-  if (sidebarOverlayView && sidebarOverlayView.webContents && !sidebarOverlayView.webContents.isDestroyed() && mainWindow.getBrowserViews().includes(sidebarOverlayView)) {
-    sidebarOverlayView.setBounds({ 
-        x: Math.round(wSidebar + winOffset), 
-        y: Math.round(yOffset + winOffset), 
-        width: Math.round(width - wSidebar - (winOffset * 2)), 
-        height: Math.round(height - yOffset - (winOffset * 2)) 
-    });
-    mainWindow.setTopBrowserView(sidebarOverlayView);
-  }
-
-  // 3. Stack WebApp View (sliding drawer on the left next to Left Sidebar)
-  if (webAppOpen && webAppView && webAppView.webContents && !webAppView.webContents.isDestroyed() && mainWindow.getBrowserViews().includes(webAppView)) {
-    const webAppWidth = 460;
-    webAppView.setBounds({
-      x: wSidebar,
-      y: Math.round(yOffset),
-      width: webAppWidth,
-      height: Math.round(height - yOffset)
-    });
-    mainWindow.setTopBrowserView(webAppView);
-  }
+    // 3. Stack WebApp View (sliding drawer on the left next to Left Sidebar)
+    if (webAppOpen && webAppView && webAppView.webContents && !webAppView.webContents.isDestroyed() && mainWindow.getBrowserViews().includes(webAppView)) {
+        const webAppWidth = 960;
+        webAppView.setBounds({
+            x: wSidebar,
+            y: Math.round(yOffset),
+            width: webAppWidth,
+            height: Math.round(height - yOffset)
+        });
+        mainWindow.setTopBrowserView(webAppView);
+    }
 }
 
 // Deduplicated closeOverlays removed here
@@ -1846,7 +1957,7 @@ function showWebApp(url) {
     }
 
     if (!mainWindow.getBrowserViews().includes(webAppView)) mainWindow.addBrowserView(webAppView);
-    
+
     webAppOpen = true;
     updateViewBounds();
 }
@@ -1861,75 +1972,75 @@ ipcMain.on('request-tabs', () => broadcastTabs());
 ipcMain.on('open-external', (e, url) => createNewTab(url));
 ipcMain.on('hide-popups', () => hidePopups());
 ipcMain.on('close-tab', async (e, id) => {
-  if (views.length === 1) {
-    mainWindow.close();
-  } else {
-    const index = views.findIndex(v => v.id === id);
-    if (index !== -1) {
-        const [removed] = views.splice(index, 1);
-        mainWindow.removeBrowserView(removed.view);
-        removed.view.webContents.destroy();
-        delete tabMedia[id]; // Cleanup media storage
-        if (activeViewId === id) {
-            activeViewId = views.length > 0 ? views[Math.max(0, index - 1)].id : null;
-            if (activeViewId) setActiveTab(activeViewId); else updateViewBounds();
+    if (views.length === 1) {
+        mainWindow.close();
+    } else {
+        const index = views.findIndex(v => v.id === id);
+        if (index !== -1) {
+            const [removed] = views.splice(index, 1);
+            mainWindow.removeBrowserView(removed.view);
+            removed.view.webContents.destroy();
+            delete tabMedia[id]; // Cleanup media storage
+            if (activeViewId === id) {
+                activeViewId = views.length > 0 ? views[Math.max(0, index - 1)].id : null;
+                if (activeViewId) setActiveTab(activeViewId); else updateViewBounds();
+            }
+            broadcastTabs();
         }
-        broadcastTabs();
     }
-  }
 });
 
 ipcMain.on('navigate-to', (e, url) => {
-  const activeView = views.find(v => v.id === activeViewId)?.view;
-  if (!activeView) return;
-  
-  // Clean the input (strip whitespace and common quotes from copy-pasting)
-  let cleanUrl = url.trim();
-  if ((cleanUrl.startsWith('"') && cleanUrl.endsWith('"')) || (cleanUrl.startsWith("'") && cleanUrl.endsWith("'"))) {
-      cleanUrl = cleanUrl.substring(1, cleanUrl.length - 1);
-  }
+    const activeView = views.find(v => v.id === activeViewId)?.view;
+    if (!activeView) return;
 
-  let targetUrl = cleanUrl;
+    // Clean the input (strip whitespace and common quotes from copy-pasting)
+    let cleanUrl = url.trim();
+    if ((cleanUrl.startsWith('"') && cleanUrl.endsWith('"')) || (cleanUrl.startsWith("'") && cleanUrl.endsWith("'"))) {
+        cleanUrl = cleanUrl.substring(1, cleanUrl.length - 1);
+    }
 
-  // 1. Detect Local Drive Paths (e.g., C:/...)
-  const isLocalDrive = /^[a-zA-Z]:[/\\]/.test(cleanUrl);
-  const isAbsPath = cleanUrl.startsWith('/') || cleanUrl.startsWith('\\\\');
-  if ((isLocalDrive || isAbsPath) && !cleanUrl.startsWith('file://')) {
-      targetUrl = 'file:///' + cleanUrl.replace(/\\/g, '/');
-  }
+    let targetUrl = cleanUrl;
 
-  // 2. Protocol Resolution
-  if (!targetUrl.startsWith('http://') && !targetUrl.startsWith('https://') && !targetUrl.startsWith('file://') && !targetUrl.startsWith('ocal://')) {
-       if (cleanUrl === 'settings' || cleanUrl === 'ocal://settings') targetUrl = 'file://' + path.join(__dirname, 'settings.html');
-       else if (cleanUrl.startsWith('ocal://settings#')) targetUrl = 'file://' + path.join(__dirname, 'settings.html') + cleanUrl.substring(15);
-       else if (cleanUrl.includes('.') && !cleanUrl.includes(' ')) targetUrl = 'https://' + cleanUrl;
-       else {
-           const engine = userSettings.searchEngine || 'google';
-           let baseUrl = 'https://www.google.com/search?q=';
-           if (engine === 'bing') baseUrl = 'https://www.bing.com/search?q=';
-           else if (engine === 'duckduckgo') baseUrl = 'https://duckduckgo.com/?q=';
-           else if (engine === 'brave') baseUrl = 'https://search.brave.com/search?q=';
-           else if (engine === 'yahoo') baseUrl = 'https://search.yahoo.com/search?p=';
-           
-           if (engine === 'custom' && userSettings.customSearchUrl) {
-               targetUrl = userSettings.customSearchUrl.replace('%s', encodeURIComponent(cleanUrl));
-           } else {
-               targetUrl = baseUrl + encodeURIComponent(cleanUrl);
-           }
-       }
-  }
+    // 1. Detect Local Drive Paths (e.g., C:/...)
+    const isLocalDrive = /^[a-zA-Z]:[/\\]/.test(cleanUrl);
+    const isAbsPath = cleanUrl.startsWith('/') || cleanUrl.startsWith('\\\\');
+    if ((isLocalDrive || isAbsPath) && !cleanUrl.startsWith('file://')) {
+        targetUrl = 'file:///' + cleanUrl.replace(/\\/g, '/');
+    }
 
-  // 3. Final PDF Interception (More robust detection for history clicks)
-  const lowerUrl = targetUrl.toLowerCase();
-  const isPdf = lowerUrl.endsWith('.pdf') || lowerUrl.includes('.pdf?') || lowerUrl.includes('.pdf#');
-  
-  if (isPdf && !lowerUrl.includes('ocal://pdf-viewer')) {
-      const cleanUrl = normalizeDocumentUrl(targetUrl);
-      targetUrl = `ocal://pdf-viewer?file=${encodeURIComponent(cleanUrl)}`;
-  }
+    // 2. Protocol Resolution
+    if (!targetUrl.startsWith('http://') && !targetUrl.startsWith('https://') && !targetUrl.startsWith('file://') && !targetUrl.startsWith('ocal://')) {
+        if (cleanUrl === 'settings' || cleanUrl === 'ocal://settings') targetUrl = 'file://' + path.join(__dirname, 'settings.html');
+        else if (cleanUrl.startsWith('ocal://settings#')) targetUrl = 'file://' + path.join(__dirname, 'settings.html') + cleanUrl.substring(15);
+        else if (cleanUrl.includes('.') && !cleanUrl.includes(' ')) targetUrl = 'https://' + cleanUrl;
+        else {
+            const engine = userSettings.searchEngine || 'google';
+            let baseUrl = 'https://www.google.com/search?q=';
+            if (engine === 'bing') baseUrl = 'https://www.bing.com/search?q=';
+            else if (engine === 'duckduckgo') baseUrl = 'https://duckduckgo.com/?q=';
+            else if (engine === 'brave') baseUrl = 'https://search.brave.com/search?q=';
+            else if (engine === 'yahoo') baseUrl = 'https://search.yahoo.com/search?p=';
 
-  hideSuggestions();
-  activeView.webContents.loadURL(resolveInternalURL(targetUrl));
+            if (engine === 'custom' && userSettings.customSearchUrl) {
+                targetUrl = userSettings.customSearchUrl.replace('%s', encodeURIComponent(cleanUrl));
+            } else {
+                targetUrl = baseUrl + encodeURIComponent(cleanUrl);
+            }
+        }
+    }
+
+    // 3. Final PDF Interception (More robust detection for history clicks)
+    const lowerUrl = targetUrl.toLowerCase();
+    const isPdf = lowerUrl.endsWith('.pdf') || lowerUrl.includes('.pdf?') || lowerUrl.includes('.pdf#');
+
+    if (isPdf && !lowerUrl.includes('ocal://pdf-viewer')) {
+        const cleanUrl = normalizeDocumentUrl(targetUrl);
+        targetUrl = `ocal://pdf-viewer?file=${encodeURIComponent(cleanUrl)}`;
+    }
+
+    hideSuggestions();
+    activeView.webContents.loadURL(resolveInternalURL(targetUrl));
 });
 
 ipcMain.on('nav-back', () => { const v = views.find(v => v.id === activeViewId)?.view; if (v?.webContents.navigationHistory.canGoBack()) v.webContents.navigationHistory.goBack(); });
@@ -1948,32 +2059,32 @@ ipcMain.on('window-toggle-pin', () => {
 
 
 ipcMain.on('toggle-sidebar', (e, open) => {
-  sidebarOpen = (open === undefined) ? !sidebarOpen : open;
-  if (sidebarOpen) {
-    showSidebarOverlay();
-    if (sidebarOverlayView) sidebarOverlayView.webContents.send('toggle-sidebar', true);
-  } else {
-    if (sidebarOverlayView) sidebarOverlayView.webContents.send('toggle-sidebar', false);
-    hideSidebarOverlay(); // This line is now redundant as the overlay will hide itself based on the message
-  }
+    sidebarOpen = (open === undefined) ? !sidebarOpen : open;
+    if (sidebarOpen) {
+        showSidebarOverlay();
+        if (sidebarOverlayView) sidebarOverlayView.webContents.send('toggle-sidebar', true);
+    } else {
+        if (sidebarOverlayView) sidebarOverlayView.webContents.send('toggle-sidebar', false);
+        hideSidebarOverlay(); // This line is now redundant as the overlay will hide itself based on the message
+    }
 });
 
 ipcMain.on('toggle-ai-sidebar', (e, open) => {
-  aiSidebarOpen = (open === undefined) ? !aiSidebarOpen : open;
-  if (aiSidebarOpen) showAiSidebar(); else hideAiSidebar();
+    aiSidebarOpen = (open === undefined) ? !aiSidebarOpen : open;
+    if (aiSidebarOpen) showAiSidebar(); else hideAiSidebar();
 });
 
 ipcMain.on('set-ai-sidebar-width', (e, width) => {
-  aiSidebarWidth = width;
-  updateViewBounds();
+    aiSidebarWidth = width;
+    updateViewBounds();
 });
 
 ipcMain.on('start-ai-resize', () => {
-  mainWindow.webContents.send('ai-resize-started');
+    mainWindow.webContents.send('ai-resize-started');
 });
 
 ipcMain.on('stop-ai-resize', () => {
-  mainWindow.webContents.send('ai-resize-stopped');
+    mainWindow.webContents.send('ai-resize-stopped');
 });
 
 ipcMain.handle('check-default-browser', () => {
@@ -2011,7 +2122,7 @@ ipcMain.handle('ai-agent-execute', async (event, query) => {
 
     const q = query.toLowerCase();
     const actions = [];
-    
+
     // Load current AI context from settings
     const apiKey = userSettings.aiApiKey;
     const showReasoning = userSettings.aiShowReasoning !== false;
@@ -2029,21 +2140,21 @@ ipcMain.handle('ai-agent-execute', async (event, query) => {
         // --- Multi-Task Sequencing ---
         // Split by " and then ", " then ", " and " (if followed by a command)
         const subTasks = query.split(/\s+and\s+then\s+|\s+then\s+|\s+and\s+followed\s+by\s+|\s+;\s+/gi).map(t => t.trim()).filter(Boolean);
-        
+
         if (subTasks.length > 1) {
             notifyAction(`Sequencing ${subTasks.length} tasks...`, 'fa-list-check');
             let results = [];
             let allActions = [];
-            
+
             for (const task of subTasks) {
                 const res = await ipcMain.handlers['ai-agent-execute'](event, task);
                 if (res.text) results.push(res.text);
                 if (res.actions) allActions.push(...res.actions);
             }
-            
-            return { 
-                text: `### 📋 Multi-Task Result\n\n${results.join('\n\n---\n\n')}`, 
-                actions: allActions 
+
+            return {
+                text: `### 📋 Multi-Task Result\n\n${results.join('\n\n---\n\n')}`,
+                actions: allActions
             };
         }
 
@@ -2059,13 +2170,13 @@ ipcMain.handle('ai-agent-execute', async (event, query) => {
             // Local Heuristics for PDF Discovery
             if (q.includes('largest') || q.includes('biggest') || q.includes('find') || q.includes('search')) {
                 notifyAction("Querying Local Document Index...", 'fa-database');
-                
+
                 // Fetch the list from the system (reuse existing logic)
                 const paths = [
                     app.getPath('downloads'), app.getPath('documents'), app.getPath('desktop'),
                     path.join(app.getPath('home'), 'Pictures'), path.join(app.getPath('home'), 'Videos'), path.join(app.getPath('home'), 'Music')
                 ];
-                
+
                 let allFiles = [];
                 const scan = (dir, depth = 0) => {
                     if (depth > 2) return;
@@ -2079,16 +2190,16 @@ ipcMain.handle('ai-agent-execute', async (event, query) => {
                                 allFiles.push({ name: item.name, path: fullPath, size: stats.size });
                             }
                         }
-                    } catch (e) {}
+                    } catch (e) { }
                 };
                 paths.forEach(p => scan(p));
 
                 if (q.includes('largest') || q.includes('biggest')) {
-                    const largest = allFiles.sort((a,b) => b.size - a.size)[0];
+                    const largest = allFiles.sort((a, b) => b.size - a.size)[0];
                     if (largest) {
-                        return { 
-                            text: `In your PDF Library, the largest document is **${largest.name}** (${(largest.size / 1024 / 1024).toFixed(1)} MB).`, 
-                            actions: [{ text: "Open Largest PDF", icon: "fa-arrow-up-right-from-square", url: `ocal://open-file?path=${encodeURIComponent(largest.path)}` }] 
+                        return {
+                            text: `In your PDF Library, the largest document is **${largest.name}** (${(largest.size / 1024 / 1024).toFixed(1)} MB).`,
+                            actions: [{ text: "Open Largest PDF", icon: "fa-arrow-up-right-from-square", url: `ocal://open-file?path=${encodeURIComponent(largest.path)}` }]
                         };
                     }
                 }
@@ -2096,7 +2207,7 @@ ipcMain.handle('ai-agent-execute', async (event, query) => {
                 if (q.includes('find') || q.includes('search')) {
                     const searchTerm = query.replace(/find|search for|show me/gi, '').trim();
                     if (searchTerm) {
-                        return { 
+                        return {
                             text: `I've analyzed your system for **"${searchTerm}"**. I can filter this for you in the active tab.`,
                             actions: [{ text: `Filter for "${searchTerm}"`, icon: "fa-filter", command: "pdf-filter", term: searchTerm }]
                         };
@@ -2113,7 +2224,7 @@ ipcMain.handle('ai-agent-execute', async (event, query) => {
         }
 
         const isEmailIntent = q.includes('email') || q.includes('mail') || (q.includes('gmail') && !q.includes('open'));
-        
+
         if (isEmailIntent || aiSessionContext.mode === 'email') {
             // Initializing context if new
             if (aiSessionContext.mode !== 'email') {
@@ -2129,7 +2240,7 @@ ipcMain.handle('ai-agent-execute', async (event, query) => {
 
             const aboutMatch = query.match(/about\s+(.*?)(?:\s+saying|\s+telling|\s+asking|$)/i);
             if (aboutMatch) aiSessionContext.data.subject = aboutMatch[1].trim();
-            
+
             const contentMatch = query.match(/(?:saying|telling|asking|message)\s+(.*)/i);
             if (contentMatch) aiSessionContext.data.body = contentMatch[1].trim();
 
@@ -2158,27 +2269,27 @@ ipcMain.handle('ai-agent-execute', async (event, query) => {
             // 5. Action: Automatically Open Gmail if enough high-fidelity data exists
             if (aiSessionContext.data.to && aiSessionContext.data.body && aiSessionContext.data._isProfessionalized) {
                 const gmailUrl = `https://mail.google.com/mail/?view=cm&fs=1&to=${encodeURIComponent(aiSessionContext.data.to)}&su=${encodeURIComponent(aiSessionContext.data.subject)}&body=${encodeURIComponent(aiSessionContext.data.body)}`;
-                
+
                 notifyAction("Draft Expanded & Ready! Opening Gmail...", 'fa-paper-plane');
                 createNewTab(gmailUrl);
-                
+
                 const responseText = `### 🌟 Professional Draft Prepared!\n\nI've **automatically opened** your rewritten message to **${aiSessionContext.data.to}** in a new Gmail tab.\n\n- **Expanded Subject:** *${aiSessionContext.data.subject}*\n- **Status:** Polished and stylish. Ready for your final review.\n\nOcal Email Sequence complete.`;
-                
+
                 aiSessionContext = { mode: null, data: {} };
                 return { text: responseText, actions: [{ text: "Re-open Stylish Draft", icon: "fa-envelope-open", url: gmailUrl }] };
             }
 
             // 5. Guided Prompting (Phase Transitions)
             if (!aiSessionContext.data.to) {
-                return { 
-                    text: `### 📧 Email Agent Mode\nI'm ready to help you compose or professionalize a message.\n\n**Who is the recipient?**\n(Please provide an email address to start)`, 
-                    actions: [] 
+                return {
+                    text: `### 📧 Email Agent Mode\nI'm ready to help you compose or professionalize a message.\n\n**Who is the recipient?**\n(Please provide an email address to start)`,
+                    actions: []
                 };
             }
             if (!aiSessionContext.data.body) {
-                return { 
-                    text: `### 📧 Drafting Workspace\n**Recipient:** \`${aiSessionContext.data.to}\`\n\n**What would you like the message to say?**\nJust type the main points; I'll polish the tone for you.`, 
-                    actions: [{ text: "Change Recipient", icon: "fa-user-pen", command: "reset-email" }] 
+                return {
+                    text: `### 📧 Drafting Workspace\n**Recipient:** \`${aiSessionContext.data.to}\`\n\n**What would you like the message to say?**\nJust type the main points; I'll polish the tone for you.`,
+                    actions: [{ text: "Change Recipient", icon: "fa-user-pen", command: "reset-email" }]
                 };
             }
         }
@@ -2195,7 +2306,7 @@ ipcMain.handle('ai-agent-execute', async (event, query) => {
 
         if (q.includes('tabs') && (q.includes('summary') || q.includes('all') || q.includes('everything'))) {
             notifyAction("Crawling entire workspace...", 'fa-network-wired');
-            const info = views.map(v => `- **${v.view.webContents.getTitle() || 'Untitled'}** (${v.view.webContents.getURL().substring(0,40)}...)`).join('\n');
+            const info = views.map(v => `- **${v.view.webContents.getTitle() || 'Untitled'}** (${v.view.webContents.getURL().substring(0, 40)}...)`).join('\n');
             const summary = `You have **${views.length}** active tabs in your workspace:\n\n${info}\n\n> [!TIP]\n> I can jump to any of these or summarize a specific one if you tell me its name!`;
             return { text: summary, actions };
         }
@@ -2208,16 +2319,16 @@ ipcMain.handle('ai-agent-execute', async (event, query) => {
             if (target) {
                 // Fuzzy/Key mapping for popular sites
                 const siteKeys = Object.keys(AI_SITE_MAP);
-                const bestMatchKey = siteKeys.find(key => target.includes(key) || key.includes(target) || (target.length > 3 && key.startsWith(target.substring(0,3))));
-                
+                const bestMatchKey = siteKeys.find(key => target.includes(key) || key.includes(target) || (target.length > 3 && key.startsWith(target.substring(0, 3))));
+
                 if (bestMatchKey) {
                     const url = AI_SITE_MAP[bestMatchKey];
                     notifyAction(`Intelligent Navigation: ${bestMatchKey}...`, 'fa-bolt-lightning');
                     createNewTab(url);
                     const prettyName = bestMatchKey.charAt(0).toUpperCase() + bestMatchKey.slice(1);
-                    return { 
-                        text: `### 🚀 Quick-Launch Success!\n\nI recognized your intent for **${prettyName}** (even with the typo!). Navigating you there now.\n\n> [!TIP]\n> Ocal's Direct Navigation engine is typo-tolerant and instant.`, 
-                        actions: [{ text: `Launch ${prettyName}`, icon: "fa-rocket", url }] 
+                    return {
+                        text: `### 🚀 Quick-Launch Success!\n\nI recognized your intent for **${prettyName}** (even with the typo!). Navigating you there now.\n\n> [!TIP]\n> Ocal's Direct Navigation engine is typo-tolerant and instant.`,
+                        actions: [{ text: `Launch ${prettyName}`, icon: "fa-rocket", url }]
                     };
                 }
             }
@@ -2234,11 +2345,11 @@ ipcMain.handle('ai-agent-execute', async (event, query) => {
 
         // Phase 3: Page Analysis (Summarize/Explain)
         const isPageInsight = q.includes('summarize') || q.includes('explain') || q.includes('what is this') || q.includes('analyze');
-        
+
         if (isPageInsight) {
             const activeView = views.find(v => v.id === activeViewId)?.view;
             if (!activeView) return { text: "Please select a tab first so I can analyze it.", actions };
-            
+
             const url = activeView.webContents.getURL();
             if (url.startsWith('file://') || url.startsWith('ocal://') || url === 'about:blank') {
                 return { text: "I can't analyze internal or local pages. Try a web article or site!", actions };
@@ -2294,22 +2405,22 @@ ipcMain.handle('ai-agent-execute', async (event, query) => {
         // Final Fallback: Live Web Intelligence (RAG-lite)
         notifyAction("Researching live web data...", 'fa-earth-americas');
         const snippets = await researchWeb(query);
-        
+
         if (snippets && snippets.length > 0) {
             notifyAction("Synthesizing search results...", 'fa-wand-magic-sparkles');
             let synthesis = `### 🌐 Web Intelligence: ${query}\n\n`;
             synthesis += `I've researched the live web to find the most relevant information for you:\n\n`;
-            
+
             snippets.forEach((s, i) => {
                 synthesis += `> ${s}\n\n`;
             });
-            
+
             synthesis += `\n> [!TIP]\n> You can view the full results or dive deeper into these sources by opening the search page below.`;
-            
+
             const searchUrl = `https://www.google.com/search?q=${encodeURIComponent(query)}`;
-            return { 
-                text: synthesis, 
-                actions: [...actions, { text: "Open Search Results", icon: "fa-external-link-alt", url: searchUrl }] 
+            return {
+                text: synthesis,
+                actions: [...actions, { text: "Open Search Results", icon: "fa-external-link-alt", url: searchUrl }]
             };
         }
 
@@ -2349,7 +2460,7 @@ async function professionalizeEmail(notes, subject, apiKey, context = {}) {
       Sent via Ocal Agent | Your High-Performance Browser
       
     Respond ONLY with the email text.`;
-    
+
     // Attempt Gemini first
     try {
         if (apiKey) {
@@ -2365,7 +2476,7 @@ async function professionalizeEmail(notes, subject, apiKey, context = {}) {
     // Fallback: Adaptive Premium Template Engine
     const isShort = notes.length < 60;
     let greeting = "Hello,";
-    
+
     if (isShort) {
         // Human-First Direct Messaging (Natural & Warm)
         let template = `${greeting}\n\nI'm reaching out to **${notes.trim()}**.\n\nI hope you're having a great day! \n\nBest regards,\n\n**Ocal Professional Assistant**\n*Sent via Ocal Agent*`;
@@ -2392,7 +2503,7 @@ async function tryGemini(prompt, apiKey, style = 'concise') {
             Capabilities: You can summarize pages, navigate to sites, and handle MULTI-TASK requests.
             Style: ${style}. Format: Markdown. Use "> [!TIP]" for insights and "> [!NOTE]" for technical details.
             If a user asks for multiple things, address them sequentially in your response.`;
-            
+
             const response = await fetch(apiUrl, {
                 method: 'POST',
                 body: JSON.stringify({ contents: [{ parts: [{ text: `${sysPrompt}\n\nQuery: ${prompt}` }] }] }),
@@ -2425,7 +2536,7 @@ async function researchWeb(query) {
             headers: { 'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36' }
         });
         const html = await response.text();
-        
+
         // Extract 3-5 snippets using regex
         const snippets = [];
         const matches = html.matchAll(/<div class="VwiC3b y67Nj fOa9pe[^>]*><span>(.*?)<\/span>/g);
@@ -2485,7 +2596,7 @@ ipcMain.handle('get-shield-stats', (e, tabId) => {
     const viewItem = tabId ? views.find(v => v.id === tabId) : null;
     const wc = viewItem ? viewItem.view.webContents : null;
     if (!wc) return { global: userSettings.shieldStats?.global || {}, page: null, sessionStartTime };
-    
+
     const isYouTube = wc.getURL().includes('youtube.com');
     return {
         global: userSettings.shieldStats.global,
@@ -2557,12 +2668,12 @@ ipcMain.on('minimize-pip-window', () => {
     }
 });
 ipcMain.on('switch-sidebar-tab', (e, tab) => {
-  sidebarOpen = true;
-  showSidebarOverlay();
-  if (sidebarOverlayView && !sidebarOverlayView.webContents.isDestroyed()) {
-    sidebarOverlayView.webContents.send('toggle-sidebar', true);
-    sidebarOverlayView.webContents.send('switch-tab-sidebar', tab);
-  }
+    sidebarOpen = true;
+    showSidebarOverlay();
+    if (sidebarOverlayView && !sidebarOverlayView.webContents.isDestroyed()) {
+        sidebarOverlayView.webContents.send('toggle-sidebar', true);
+        sidebarOverlayView.webContents.send('switch-tab-sidebar', tab);
+    }
 });
 ipcMain.on('close-all-sidebars', () => closeOverlays());
 
@@ -2574,7 +2685,7 @@ ipcMain.on('open-tab-group-popup', (e, { groupId, x, y }) => {
     if (!mainWindow.getBrowserViews().includes(tabgroupView)) {
         mainWindow.addBrowserView(tabgroupView);
     }
-    
+
     const popupWidth = 260;
     activePopupGroupId = groupId;
 
@@ -2583,13 +2694,13 @@ ipcMain.on('open-tab-group-popup', (e, { groupId, x, y }) => {
     let finalX = x;
     if (x + popupWidth > contentBounds.width) finalX = contentBounds.width - popupWidth - 10;
 
-    tabgroupView.setBounds({ 
-        x: 0, 
-        y: 0, 
-        width: contentBounds.width, 
-        height: contentBounds.height 
+    tabgroupView.setBounds({
+        x: 0,
+        y: 0,
+        width: contentBounds.width,
+        height: contentBounds.height
     });
-    
+
     tabgroupView.webContents.send('show-popup', { x: finalX, y });
 
     mainWindow.setTopBrowserView(tabgroupView);
@@ -2605,20 +2716,20 @@ ipcMain.on('hide-tab-group-popup', () => {
 
 ipcMain.on('show-tab-context', (e, data) => {
     if (!tabContextView || !mainWindow) return;
-    
+
     const contentBounds = mainWindow.getContentBounds();
-    tabContextView.setBounds({ 
-        x: 0, 
-        y: 0, 
-        width: contentBounds.width, 
-        height: contentBounds.height 
+    tabContextView.setBounds({
+        x: 0,
+        y: 0,
+        width: contentBounds.width,
+        height: contentBounds.height
     });
 
     if (!mainWindow.getBrowserViews().includes(tabContextView)) {
         mainWindow.addBrowserView(tabContextView);
     }
     mainWindow.setTopBrowserView(tabContextView);
-    
+
     tabContextView._x = data.x;
     tabContextView._y = data.y;
     tabContextView.webContents.send('render-tab-context', data);
@@ -2635,15 +2746,15 @@ ipcMain.on('resize-tab-context', (e, data) => {
         const contentBounds = mainWindow.getContentBounds();
         let finalX = tabContextView._x;
         let finalY = tabContextView._y;
-        
+
         if (finalX + data.width > contentBounds.width) finalX = contentBounds.width - data.width - 5;
         if (finalY + data.height > contentBounds.height) finalY = contentBounds.height - data.height - 5;
 
-        tabContextView.setBounds({ 
-            x: Math.round(finalX), 
-            y: Math.round(finalY), 
-            width: Math.round(data.width), 
-            height: Math.round(data.height) 
+        tabContextView.setBounds({
+            x: Math.round(finalX),
+            y: Math.round(finalY),
+            width: Math.round(data.width),
+            height: Math.round(data.height)
         });
     }
 });
@@ -2701,17 +2812,17 @@ ipcMain.on('media-detected', (event, mediaList) => {
 
     // Merge or replace media for this tab
     if (!tabMedia[tab.id]) tabMedia[tab.id] = [];
-    
+
     // Simple deduplication by URL
     const existingUrls = new Set(tabMedia[tab.id].map(m => m.url));
     const newItems = mediaList.filter(m => !existingUrls.has(m.url));
-    
+
     if (newItems.length > 0) {
         tabMedia[tab.id] = [...tabMedia[tab.id], ...newItems];
         // Broadcast to renderer for toolbar icon update
-        mainWindow.webContents.send('media-master-updated', { 
-            tabId: tab.id, 
-            mediaList: tabMedia[tab.id] 
+        mainWindow.webContents.send('media-master-updated', {
+            tabId: tab.id,
+            mediaList: tabMedia[tab.id]
         });
     }
 });
@@ -2741,12 +2852,12 @@ ipcMain.on('request-tab-group-data', (e) => {
 });
 
 ipcMain.on('set-bar-visible', (e, visible) => { bookmarkBarVisible = visible; updateViewBounds(); });
-ipcMain.on('open-screenshot-toolbar', (e, data) => { 
-  showSidebarOverlay(); 
-  if (sidebarOverlayView) {
-    mainWindow.setTopBrowserView(sidebarOverlayView);
-    sidebarOverlayView.webContents.send('show-screenshot-toolbar', data); 
-  }
+ipcMain.on('open-screenshot-toolbar', (e, data) => {
+    showSidebarOverlay();
+    if (sidebarOverlayView) {
+        mainWindow.setTopBrowserView(sidebarOverlayView);
+        sidebarOverlayView.webContents.send('show-screenshot-toolbar', data);
+    }
 });
 ipcMain.on('execute-app-quit', () => {
     isQuitting = true;
@@ -2816,32 +2927,32 @@ ipcMain.on('ungroup', (e, groupId) => {
     broadcastTabs();
 });
 
-ipcMain.on('update-setting', (e, key, val) => { 
-  userSettings[key] = val; 
-  saveSettings(userSettings); 
+ipcMain.on('update-setting', (e, key, val) => {
+    userSettings[key] = val;
+    saveSettings(userSettings);
 
-  // Broadcast to all relevant views
-  broadcastSettings(userSettings);
+    // Broadcast to all relevant views
+    broadcastSettings(userSettings);
 
-  if (key === 'compactMode' || key === 'bookmarkBarMode') updateViewBounds(); 
-  if (key === 'dns') console.log(`[DNS] Global resolver updated to: ${val}`);
-  if (key === 'batterySaver') applyBatterySaverGlobally();
+    if (key === 'compactMode' || key === 'bookmarkBarMode') updateViewBounds();
+    if (key === 'dns') console.log(`[DNS] Global resolver updated to: ${val}`);
+    if (key === 'batterySaver') applyBatterySaverGlobally();
 
-  if (key === 'adBlockEnabled' || key === 'trackingProtection') {
-      applyShieldSettings();
-  }
+    if (key === 'adBlockEnabled' || key === 'trackingProtection') {
+        applyShieldSettings();
+    }
 
-  if (key === 'themeMode') {
-      const bgColor = val === 'light' ? '#ffffff' : '#0c0c0e';
-      if (mainWindow && !mainWindow.isDestroyed()) {
-          mainWindow.setBackgroundColor(bgColor);
-      }
-      views.forEach(v => {
-          if (v.view && !v.view.webContents.isDestroyed()) {
-              v.view.setBackgroundColor(bgColor);
-          }
-      });
-  }
+    if (key === 'themeMode') {
+        const bgColor = val === 'light' ? '#ffffff' : '#0c0c0e';
+        if (mainWindow && !mainWindow.isDestroyed()) {
+            mainWindow.setBackgroundColor(bgColor);
+        }
+        views.forEach(v => {
+            if (v.view && !v.view.webContents.isDestroyed()) {
+                v.view.setBackgroundColor('#00000000');
+            }
+        });
+    }
 });
 
 
@@ -2849,7 +2960,7 @@ ipcMain.handle('import-bookmarks', async (event, browser) => {
     try {
         let bookmarkPath = '';
         const appData = process.env.LOCALAPPDATA;
-        
+
         if (browser === 'chrome') {
             bookmarkPath = path.join(appData, 'Google/Chrome/User Data/Default/Bookmarks');
         } else if (browser === 'edge') {
@@ -2873,7 +2984,7 @@ ipcMain.handle('import-bookmarks', async (event, browser) => {
             const existing = userSettings.folders.find(f => f.name.toLowerCase() === name.toLowerCase());
             if (existing) return existing.id;
             if (folderMap.has(name)) return folderMap.get(name);
-            
+
             const newId = 'f-' + Date.now() + Math.random().toString(36).substr(2, 5);
             userSettings.folders.push({ id: newId, name: name });
             folderMap.set(name, newId);
@@ -2882,7 +2993,7 @@ ipcMain.handle('import-bookmarks', async (event, browser) => {
 
         function parseNode(node, folderId = null) {
             if (node.type === 'url') {
-                imported.push({ title: node.name, url: node.url, folderId: folderId, id: Date.now() + Math.random().toString(36).substr(2,9) });
+                imported.push({ title: node.name, url: node.url, folderId: folderId, id: Date.now() + Math.random().toString(36).substr(2, 9) });
             } else if (node.type === 'folder' && node.children) {
                 const newFolderId = getOrCreateFolder(node.name);
                 node.children.forEach(child => parseNode(child, newFolderId || folderId));
@@ -2943,7 +3054,7 @@ ipcMain.handle('import-bookmark-file', async (event) => {
         if (ext === '.json') {
             const data = JSON.parse(fs.readFileSync(filePath, 'utf8'));
             function parseNode(node, folderId = null) {
-                if (node.type === 'url') imported.push({ title: node.name, url: node.url, folderId: folderId, id: Date.now() + Math.random().toString(36).substr(2,9) });
+                if (node.type === 'url') imported.push({ title: node.name, url: node.url, folderId: folderId, id: Date.now() + Math.random().toString(36).substr(2, 9) });
                 else if (node.type === 'folder' && node.children) {
                     const newFolderId = getOrCreateFolder(node.name);
                     node.children.forEach(child => parseNode(child, newFolderId || folderId));
@@ -2967,11 +3078,11 @@ ipcMain.handle('import-bookmark-file', async (event) => {
                 }
                 const urlMatch = /<A\s+HREF="([^"]+)"[^>]*>(.*?)<\/A>/i.exec(line);
                 if (urlMatch) {
-                    imported.push({ 
-                        url: urlMatch[1], 
-                        title: urlMatch[2], 
+                    imported.push({
+                        url: urlMatch[1],
+                        title: urlMatch[2],
                         folderId: currentFolderId,
-                        id: Date.now() + Math.random().toString(36).substr(2,9)
+                        id: Date.now() + Math.random().toString(36).substr(2, 9)
                     });
                 }
             }
@@ -3136,19 +3247,19 @@ async function checkForUpdatesSilently() {
                                 });
                             }
                         }
-                    } catch (e) {}
+                    } catch (e) { }
                 }
             });
         });
-        request.on('error', () => {});
+        request.on('error', () => { });
         request.end();
-    } catch (e) {}
+    } catch (e) { }
 }
 
 ipcMain.handle('check-for-update', async () => {
     return new Promise((resolve) => {
         let resolved = false;
-        
+
         // Set a timeout to prevent hanging
         const timeout = setTimeout(() => {
             if (!resolved) {
@@ -3156,7 +3267,7 @@ ipcMain.handle('check-for-update', async () => {
                 resolve(null);
             }
         }, 15000); // 15 second timeout
-        
+
         try {
             const { net } = require('electron');
             const request = net.request({
@@ -3272,9 +3383,9 @@ ipcMain.handle('download-update', async (event) => {
                         try {
                             const json = JSON.parse(data);
                             const arch = process.arch === 'x64' ? 'x64' : (process.arch === 'arm64' ? 'arm64' : '');
-                            let asset = json.assets.find(a => 
-                                a.name.startsWith('Ocal-') && 
-                                a.name.endsWith('Setup.exe') && 
+                            let asset = json.assets.find(a =>
+                                a.name.startsWith('Ocal-') &&
+                                a.name.endsWith('Setup.exe') &&
                                 (arch ? a.name.includes(arch) : true)
                             );
                             if (!asset) asset = json.assets.find(a => a.name.startsWith('Ocal-') && a.name.endsWith('Setup.exe'));
@@ -3310,38 +3421,38 @@ ipcMain.on('apply-update', (event, installerPath) => {
 ipcMain.handle('get-bookmarks', () => ({ bookmarks: userSettings.bookmarks, folders: userSettings.folders }));
 ipcMain.handle('get-history', () => userSettings.history || []);
 ipcMain.on('toggle-bookmark', (e, bm) => {
-  const exists = userSettings.bookmarks.find(b => b.url === bm.url);
-  if (exists) {
-    userSettings.bookmarks = userSettings.bookmarks.filter(b => b.url !== bm.url);
-  } else {
-    bm.id = Date.now().toString();
-    userSettings.bookmarks.push(bm);
-  }
-  saveSettings(userSettings);
-  broadcastBookmarks();
+    const exists = userSettings.bookmarks.find(b => b.url === bm.url);
+    if (exists) {
+        userSettings.bookmarks = userSettings.bookmarks.filter(b => b.url !== bm.url);
+    } else {
+        bm.id = Date.now().toString();
+        userSettings.bookmarks.push(bm);
+    }
+    saveSettings(userSettings);
+    broadcastBookmarks();
 });
 ipcMain.on('add-bookmark', (e, bm) => { bm.id = Date.now().toString(); userSettings.bookmarks.push(bm); saveSettings(userSettings); broadcastBookmarks(); });
 ipcMain.on('remove-bookmark', (e, url) => { userSettings.bookmarks = userSettings.bookmarks.filter(b => b.url !== url); saveSettings(userSettings); broadcastBookmarks(); });
 ipcMain.on('edit-bookmark', (e, data) => {
-  const b = userSettings.bookmarks.find(x => x.id === data.id);
-  if (b) {
-    if (data.title !== undefined) b.title = data.title;
-    if (data.url   !== undefined) b.url   = data.url;
-    if ('folderId' in data) b.folderId = data.folderId || undefined;
-  }
-  saveSettings(userSettings);
-  broadcastBookmarks();
-});
-ipcMain.on('reorder-bookmark', (e, { draggedId, targetId }) => {
-  const bks = userSettings.bookmarks;
-  const draggedIdx = bks.findIndex(b => b.id === draggedId);
-  const targetIdx = bks.findIndex(b => b.id === targetId);
-  if (draggedIdx > -1 && targetIdx > -1) {
-    const [dragged] = bks.splice(draggedIdx, 1);
-    bks.splice(targetIdx, 0, dragged);
+    const b = userSettings.bookmarks.find(x => x.id === data.id);
+    if (b) {
+        if (data.title !== undefined) b.title = data.title;
+        if (data.url !== undefined) b.url = data.url;
+        if ('folderId' in data) b.folderId = data.folderId || undefined;
+    }
     saveSettings(userSettings);
     broadcastBookmarks();
-  }
+});
+ipcMain.on('reorder-bookmark', (e, { draggedId, targetId }) => {
+    const bks = userSettings.bookmarks;
+    const draggedIdx = bks.findIndex(b => b.id === draggedId);
+    const targetIdx = bks.findIndex(b => b.id === targetId);
+    if (draggedIdx > -1 && targetIdx > -1) {
+        const [dragged] = bks.splice(draggedIdx, 1);
+        bks.splice(targetIdx, 0, dragged);
+        saveSettings(userSettings);
+        broadcastBookmarks();
+    }
 });
 
 ipcMain.on('show-shield-popup', (e, { x, y, width, height, tabId }) => {
@@ -3359,23 +3470,23 @@ ipcMain.on('show-shield-popup', (e, { x, y, width, height, tabId }) => {
 
     hidePopups();
     mainWindow.addBrowserView(shieldPopupView);
-    
+
     const popupWidth = 320;
     const popupHeight = 750;
     const contentBounds = mainWindow.getContentBounds();
-    
+
     let targetX = x + (width / 2) - (popupWidth / 2);
     if (targetX < 10) targetX = 10;
     if (targetX + popupWidth > contentBounds.width - 10) targetX = contentBounds.width - popupWidth - 10;
 
     const winOffset = getWinOffset();
-    shieldPopupView.setBounds({ 
-        x: Math.round(targetX + winOffset) - 15, 
-        y: Math.round(y + height + 10 + winOffset), 
-        width: Math.round(popupWidth) + 30, 
-        height: Math.round(popupHeight) + 30 
+    shieldPopupView.setBounds({
+        x: Math.round(targetX + winOffset) - 15,
+        y: Math.round(y + height + 10 + winOffset),
+        width: Math.round(popupWidth) + 30,
+        height: Math.round(popupHeight) + 30
     });
-    
+
     mainWindow.setTopBrowserView(shieldPopupView);
     shieldPopupView.webContents.send('show-popup', { x: 0, y: 0, tabId, isYouTube });
     shieldPopupView.webContents.focus();
@@ -3383,7 +3494,7 @@ ipcMain.on('show-shield-popup', (e, { x, y, width, height, tabId }) => {
 
 ipcMain.on('show-bm-dropdown', (e, { x, y, bookmarks, folderId }) => {
     if (!bmDropdownView || !mainWindow) return;
-    
+
     // Toggle logic: if clicking the same folder, just hide it
     if (activeBMFolderId === folderId) {
         activeBMFolderId = null;
@@ -3394,14 +3505,14 @@ ipcMain.on('show-bm-dropdown', (e, { x, y, bookmarks, folderId }) => {
     hidePopups();
     activeBMFolderId = folderId;
     mainWindow.addBrowserView(bmDropdownView);
-    
+
     const winOffset = getWinOffset();
     // Initial safe size, will be refined by dropdown-resize IPC
-    bmDropdownView.setBounds({ 
-        x: Math.round(x + winOffset) - 15, 
-        y: Math.round(y + winOffset), 
-        width: 360, 
-        height: 530 
+    bmDropdownView.setBounds({
+        x: Math.round(x + winOffset) - 15,
+        y: Math.round(y + winOffset),
+        width: 360,
+        height: 530
     });
     bmDropdownView.webContents.send('show-bm-dropdown', { bookmarks });
     mainWindow.setTopBrowserView(bmDropdownView);
@@ -3439,7 +3550,7 @@ function createExtensionDropdownView() {
 ipcMain.on('show-extensions-dropdown', (e, { x, y, width }) => {
     if (!mainWindow) return;
     if (!extensionDropdownView) createExtensionDropdownView();
-    
+
     if (mainWindow.getBrowserViews().includes(extensionDropdownView)) {
         mainWindow.removeBrowserView(extensionDropdownView);
         return;
@@ -3452,11 +3563,11 @@ ipcMain.on('show-extensions-dropdown', (e, { x, y, width }) => {
     const winOffset = getWinOffset();
     let targetX = x + width - popupWidth;
 
-    extensionDropdownView.setBounds({ 
-        x: Math.round(targetX + winOffset) - 15, 
-        y: Math.round(y + 10 + winOffset), 
-        width: popupWidth + 30, 
-        height: 530 
+    extensionDropdownView.setBounds({
+        x: Math.round(targetX + winOffset) - 15,
+        y: Math.round(y + 10 + winOffset),
+        width: popupWidth + 30,
+        height: 530
     });
     mainWindow.setTopBrowserView(extensionDropdownView);
     extensionDropdownView.webContents.send('refresh-extensions');
@@ -3510,20 +3621,20 @@ function updateHistory(view, url) {
     } else {
         const title = view.webContents.getTitle();
         mainWindow.webContents.send('url-updated', { id, url, title });
-        
+
         // Find existing tab favicon to save with history
         const entry = views.find(v => v.id === id);
         const favicon = entry?.favicon || '';
 
         // Check if it is an internal browser page and skip history storage
-        const isInternalPage = url.startsWith('ocal://') || 
+        const isInternalPage = url.startsWith('ocal://') ||
             (url.startsWith('file://') && url.endsWith('.html')) ||
             [
-                'settings.html', 'site-settings.html', 'downloads.html', 'extensions.html', 
-                'game.html', 'games.html', 'home.html', 'offline.html', 'uninstaller', 
-                'pip.html', 'sidebars.html', 'sidepanel.html', 'suggestions.html', 
-                'tab-context.html', 'tabgroup.html', 'shield-popup.html', 'site-info.html', 
-                'media-popup.html', 'ai-sidebar.html', 'certificate-viewer.html', 
+                'settings.html', 'site-settings.html', 'downloads.html', 'extensions.html',
+                'game.html', 'games.html', 'home.html', 'offline.html', 'uninstaller',
+                'pip.html', 'sidebars.html', 'sidepanel.html', 'suggestions.html',
+                'tab-context.html', 'tabgroup.html', 'shield-popup.html', 'site-info.html',
+                'media-popup.html', 'ai-sidebar.html', 'certificate-viewer.html',
                 'bm-dropdown.html', 'file-manager.html', 'snake.html', 'tetris.html'
             ].some(page => url.toLowerCase().includes(page.toLowerCase()));
 
@@ -3600,59 +3711,59 @@ app.on('activate', () => { if (BrowserWindow.getAllWindows().length === 0) creat
 
 // Screenshot & Thumbnail IPCs
 ipcMain.on('capture-thumbnail', async (e) => {
-  const activeView = views.find(v => v.id === activeViewId)?.view;
-  if (!activeView) return;
-  const image = await activeView.webContents.capturePage();
-  e.sender.send('thumbnail-captured', image.toDataURL());
+    const activeView = views.find(v => v.id === activeViewId)?.view;
+    if (!activeView) return;
+    const image = await activeView.webContents.capturePage();
+    e.sender.send('thumbnail-captured', image.toDataURL());
 });
 
 ipcMain.on('capture-screenshot', async (e, type) => {
-  const activeView = views.find(v => v.id === activeViewId)?.view;
-  if (!activeView) return;
+    const activeView = views.find(v => v.id === activeViewId)?.view;
+    if (!activeView) return;
 
-  let image;
-  let filters = [{ name: 'Images', extensions: ['png', 'jpg'] }];
+    let image;
+    let filters = [{ name: 'Images', extensions: ['png', 'jpg'] }];
 
-  if (type === 'visible') {
-    image = await activeView.webContents.capturePage();
-  } else if (type === 'full') {
-    const size = await activeView.webContents.executeJavaScript(`({w: document.documentElement.scrollWidth, h: document.documentElement.scrollHeight})`);
-    // Note: resizing for a clean full-page capture
-    const originalBounds = activeView.getBounds();
-    activeView.setBounds({ x: originalBounds.x, y: originalBounds.y, width: size.w, height: size.h });
-    image = await activeView.webContents.capturePage();
-    activeView.setBounds(originalBounds);
-  } else if (type === 'pdf') {
-    const data = await activeView.webContents.printToPDF({});
-    const { filePath } = await dialog.showSaveDialog(mainWindow, {
-      title: 'Save Page as PDF',
-      defaultPath: path.join(app.getPath('downloads'), `Screenshot_${Date.now()}.pdf`),
-      filters: [{ name: 'PDF', extensions: ['pdf'] }]
-    });
-    if (filePath) {
-      const fs = require('fs');
-      fs.writeFileSync(filePath, data);
-      e.sender.send('screenshot-saved', filePath);
+    if (type === 'visible') {
+        image = await activeView.webContents.capturePage();
+    } else if (type === 'full') {
+        const size = await activeView.webContents.executeJavaScript(`({w: document.documentElement.scrollWidth, h: document.documentElement.scrollHeight})`);
+        // Note: resizing for a clean full-page capture
+        const originalBounds = activeView.getBounds();
+        activeView.setBounds({ x: originalBounds.x, y: originalBounds.y, width: size.w, height: size.h });
+        image = await activeView.webContents.capturePage();
+        activeView.setBounds(originalBounds);
+    } else if (type === 'pdf') {
+        const data = await activeView.webContents.printToPDF({});
+        const { filePath } = await dialog.showSaveDialog(mainWindow, {
+            title: 'Save Page as PDF',
+            defaultPath: path.join(app.getPath('downloads'), `Screenshot_${Date.now()}.pdf`),
+            filters: [{ name: 'PDF', extensions: ['pdf'] }]
+        });
+        if (filePath) {
+            const fs = require('fs');
+            fs.writeFileSync(filePath, data);
+            e.sender.send('screenshot-saved', filePath);
+        }
+        return;
     }
-    return;
-  }
 
-  if (image) {
-    const { filePath } = await dialog.showSaveDialog(mainWindow, {
-      title: 'Save Screenshot',
-      defaultPath: path.join(app.getPath('downloads'), `Screenshot_${Date.now()}.png`),
-      filters
-    });
-    if (filePath) {
-      const fs = require('fs');
-      try {
-          fs.writeFileSync(filePath, image.toPNG());
-          mainWindow.webContents.send('screenshot-saved', filePath);
-      } catch (err) {
-          console.error("Failed to save screenshot", err);
-      }
+    if (image) {
+        const { filePath } = await dialog.showSaveDialog(mainWindow, {
+            title: 'Save Screenshot',
+            defaultPath: path.join(app.getPath('downloads'), `Screenshot_${Date.now()}.png`),
+            filters
+        });
+        if (filePath) {
+            const fs = require('fs');
+            try {
+                fs.writeFileSync(filePath, image.toPNG());
+                mainWindow.webContents.send('screenshot-saved', filePath);
+            } catch (err) {
+                console.error("Failed to save screenshot", err);
+            }
+        }
     }
-  }
 });
 
 // Deduplicated search utility functions removed here
@@ -3662,13 +3773,13 @@ ipcMain.on('suggest-search', async (e, query) => {
         let suggestions = [];
         let refinements = [];
         let bestMatch = null;
-        
+
         // 1. Online Suggestions & Refinements
         if (userSettings.searchSuggest !== false) {
             try {
                 const response = await fetch(`https://suggestqueries.google.com/complete/search?client=chrome&q=${encodeURIComponent(query)}`);
                 const data = await response.json();
-                
+
                 // data[1] contains suggestions
                 if (data[1]) {
                     suggestions = data[1].map(s => ({ text: s, type: 'search' }));
@@ -3691,15 +3802,15 @@ ipcMain.on('suggest-search', async (e, query) => {
 
         const savedMatches = combinedSaved
             .filter(h => (h.title && h.title.toLowerCase().includes(query.toLowerCase())) || (h.url && h.url.toLowerCase().includes(query.toLowerCase())))
-            .map(h => ({ 
-                text: h.title || h.url, 
-                url: h.url, 
-                type: bookmarks.some(b => b.url === h.url) ? 'bookmark' : 'history' 
+            .map(h => ({
+                text: h.title || h.url,
+                url: h.url,
+                type: bookmarks.some(b => b.url === h.url) ? 'bookmark' : 'history'
             }));
 
         // Identify Best Match (pins exact start matches)
-        const exactMatch = savedMatches.find(m => 
-            m.text.toLowerCase().startsWith(query.toLowerCase()) || 
+        const exactMatch = savedMatches.find(m =>
+            m.text.toLowerCase().startsWith(query.toLowerCase()) ||
             (m.url && m.url.toLowerCase().startsWith(query.toLowerCase().replace(/^https?:\/\/(www\.)?/, '')))
         );
 
@@ -3733,7 +3844,7 @@ ipcMain.on('show-suggestions', (e, bounds) => {
         mainWindow.addBrowserView(suggestionsView);
     }
     const winOffset = getWinOffset();
-    
+
     suggestionsView.setBounds({
         x: Math.round(bounds.x),
         y: Math.round(bounds.y + bounds.height),
@@ -3776,7 +3887,7 @@ function hideSiteInfo() {
 ipcMain.on('show-site-info', (e, bounds) => {
     if (!mainWindow || mainWindow.isDestroyed()) return;
     if (!siteInfoView) createSiteInfoView();
-    
+
     if (mainWindow.getBrowserViews().includes(siteInfoView)) {
         mainWindow.removeBrowserView(siteInfoView);
         return;
@@ -3787,7 +3898,7 @@ ipcMain.on('show-site-info', (e, bounds) => {
 
     hidePopups();
     mainWindow.addBrowserView(siteInfoView);
-    
+
     // Position below the address bar identity area with shadow margin
     siteInfoView.setBounds({
         x: Math.round(bounds.x) - 15,
@@ -3795,9 +3906,9 @@ ipcMain.on('show-site-info', (e, bounds) => {
         width: 350,
         height: 500 // Sufficient height for the content and shadow padding
     });
-    
+
     mainWindow.setTopBrowserView(siteInfoView);
-    
+
     // Fetch permissions for this origin to pass to the popup
     let permissions = { notifications: 'allow', popups: 'allow', audio: 'allow' };
     try {
@@ -3805,7 +3916,7 @@ ipcMain.on('show-site-info', (e, bounds) => {
         if (userSettings.sitePermissions[origin]) {
             permissions = { ...permissions, ...userSettings.sitePermissions[origin] };
         }
-    } catch (e) {}
+    } catch (e) { }
 
     const sendUpdate = () => {
         siteInfoView.webContents.send('update-site-info', { url, permissions });
@@ -3821,7 +3932,7 @@ ipcMain.on('show-site-info', (e, bounds) => {
 ipcMain.on('update-site-permission', (e, { origin, permission, value }) => {
     if (!origin) return;
     if (!userSettings.sitePermissions[origin]) userSettings.sitePermissions[origin] = {};
-    
+
     // Map internal permission names to Electron ones if needed
     const key = permission === 'sound' ? 'audio' : permission;
     userSettings.sitePermissions[origin][key] = value;
@@ -3841,10 +3952,10 @@ ipcMain.on('get-site-data', async (event, origin) => {
         const domain = url.hostname;
         // Search for all cookies related to this domain (including subdomains)
         const cookies = await session.defaultSession.cookies.get({ domain });
-        
+
         // Extract unique domains
         const domains = [...new Set(cookies.map(c => c.domain.startsWith('.') ? c.domain.substring(1) : c.domain))];
-        
+
         event.reply('update-site-data', domains);
     } catch (e) {
         event.reply('update-site-data', []);
@@ -3856,7 +3967,7 @@ ipcMain.handle('get-site-usage', async (event, origin) => {
         const url = new URL(origin);
         // We look for all cookies that match or are subdomains of the hostname
         const cookies = await session.defaultSession.cookies.get({ domain: url.hostname });
-        
+
         // Simplified estimate: each cookie is ~4KB in overhead/storage for the DB
         return {
             bytes: cookies.length * 4096,
@@ -3895,7 +4006,7 @@ ipcMain.handle('delete-site-data', async (event, { origin, domain }) => {
         // 2. Deep clean cookies by domain (catch .domain.com and subdomains)
         const domainPattern = host.startsWith('www.') ? host.substring(4) : host;
         const cookies = await session.defaultSession.cookies.get({ domain: domainPattern });
-        
+
         for (const cookie of cookies) {
             const cookieUrl = `http${cookie.secure ? 's' : ''}://${cookie.domain}${cookie.path}`;
             await session.defaultSession.cookies.remove(cookieUrl, cookie.name);
@@ -3935,7 +4046,7 @@ ipcMain.handle('get-directory-entries', async (event, dirPath) => {
             const fullPath = path.join(dirPath, dirent.name);
             let stats;
             try { stats = fs.statSync(fullPath); } catch (e) { stats = { size: 0, mtime: new Date() }; }
-            
+
             return {
                 name: dirent.name,
                 path: fullPath,
@@ -3957,13 +4068,13 @@ ipcMain.handle('analyze-system-files', async () => {
         app.getPath('music')
     ];
     let allPdfs = [];
-    
+
     const findPdfsRecursive = (dir, depth = 0) => {
         if (depth > 3) return; // Limit depth for performance
         try {
             if (!fs.existsSync(dir)) return;
             const entries = fs.readdirSync(dir, { withFileTypes: true });
-            
+
             for (const dirent of entries) {
                 const fullPath = path.join(dir, dirent.name);
                 if (dirent.isDirectory()) {
@@ -3978,18 +4089,18 @@ ipcMain.handle('analyze-system-files', async () => {
                             mtime: stats.mtime,
                             source: path.basename(dir)
                         });
-                    } catch (e) {}
+                    } catch (e) { }
                 }
             }
-        } catch (e) {}
+        } catch (e) { }
     };
 
     for (const target of targets) {
         findPdfsRecursive(target);
     }
-    
+
     // Sort by most recent first and cap at a reasonable number for UI performance
-    return allPdfs.sort((a,b) => b.mtime - a.mtime).slice(0, 500);
+    return allPdfs.sort((a, b) => b.mtime - a.mtime).slice(0, 500);
 });
 
 ipcMain.handle('open-system-item', async (event, fullPath) => {
@@ -4064,7 +4175,7 @@ class ExtensionManager {
             session.defaultSession,
             session.fromPartition('persist:google_login')
         ];
-        
+
         for (const ext of activeExtensions) {
             try {
                 const extPath = ext.isLocal ? ext.localPath : path.join(this.extensionsPath, ext.id);
@@ -4142,7 +4253,7 @@ class ExtensionManager {
 
             // 2. Strip CRX header (adm-zip needs help with CRX structure)
             const zipBuffer = this.stripCrxHeader(buffer);
-            
+
             // 3. Extract to userData
             const zip = new AdmZip(zipBuffer);
             if (fs.existsSync(targetPath)) fs.rmSync(targetPath, { recursive: true, force: true });
@@ -4202,10 +4313,10 @@ class ExtensionManager {
         try {
             const targetPath = path.join(this.extensionsPath, id);
             if (fs.existsSync(targetPath)) fs.rmSync(targetPath, { recursive: true, force: true });
-            
+
             userSettings.extensions = userSettings.extensions.filter(e => e.id !== id);
             saveSettings(userSettings);
-            
+
             // Note: Native Electron loadExtension doesn't always support easy 'unload'
             // We usually inform the user to restart or handle it by refreshing views.
             this.loaded.delete(id);
@@ -4228,7 +4339,7 @@ ipcMain.handle('load-unpacked-extension', async (e) => {
         title: 'Select Extension Directory',
         properties: ['openDirectory']
     });
-    
+
     if (result.canceled || result.filePaths.length === 0) return null;
     const dirPath = result.filePaths[0];
 
@@ -4237,17 +4348,17 @@ ipcMain.handle('load-unpacked-extension', async (e) => {
         if (!fs.existsSync(manifestPath)) {
             throw new Error("No manifest.json found in directory");
         }
-        
+
         const manifest = JSON.parse(fs.readFileSync(manifestPath, 'utf8'));
-        
+
         // Ensure critical arrays are initialized
         if (!userSettings.bookmarks) userSettings.bookmarks = [];
         if (!userSettings.folders) userSettings.folders = [];
         if (!userSettings.history) userSettings.history = [];
         if (!userSettings.downloads) userSettings.downloads = [];
-        
+
         const extensionId = require('crypto').createHash('md5').update(dirPath).digest('hex');
-        
+
         const extensionInfo = {
             id: extensionId,
             name: manifest.name,
@@ -4263,7 +4374,7 @@ ipcMain.handle('load-unpacked-extension', async (e) => {
         const existingIdx = userSettings.extensions.findIndex(ext => ext.id === extensionId);
         if (existingIdx > -1) userSettings.extensions[existingIdx] = extensionInfo;
         else userSettings.extensions.push(extensionInfo);
-        
+
         saveSettings(userSettings);
 
         const loaded = await session.defaultSession.loadExtension(dirPath);
@@ -4300,7 +4411,7 @@ ipcMain.handle('toggle-native-extension', (e, { id, enabled }) => {
     else if (id === 'dislike-recovery') userSettings.youtubeDislikeEnabled = enabled;
     else if (id === 'media-master') userSettings.mediaMasterEnabled = enabled;
     else if (id === 'asset-vault') userSettings.assetVaultEnabled = enabled;
-    
+
     saveSettings(userSettings);
     broadcastSettings(userSettings);
     return true;
@@ -4367,7 +4478,7 @@ async function createPipWindow(contents) {
     });
 
     pipWindow.loadFile('pip.html');
-    
+
     pipWindow.once('ready-to-show', () => {
         if (!pipWindow || pipWindow.isDestroyed()) return;
         pipWindow.show();
@@ -4380,12 +4491,12 @@ async function createPipWindow(contents) {
         // Setup High-Speed MessageChannel Direct-Link
         const { MessageChannelMain } = electron;
         const { port1, port2 } = new MessageChannelMain();
-        
+
         // Pipe port1 to the YouTube video tab
         if (!contents.isDestroyed()) {
             contents.postMessage('pip-port', null, [port1]);
         }
-        
+
         // Pipe port2 to the floating PiP window
         pipWindow.webContents.postMessage('pip-port', null, [port2]);
     });
@@ -4429,7 +4540,7 @@ ipcMain.on('set-security-toggle', (e, { key, value }) => {
     if (key === 'adBlockEnabled' || key === 'trackingProtection') {
         const ublockEnabled = userSettings.adBlockEnabled !== false;
         const ublockPath = path.join(__dirname, 'ublock-origin-extension', 'uBlock0.chromium');
-        
+
         const sessions = [session.defaultSession, session.fromPartition('persist:google_login')];
         sessions.forEach(ses => {
             if (ublockEnabled && fs.existsSync(ublockPath)) {
@@ -4454,7 +4565,7 @@ ipcMain.on('set-security-toggle', (e, { key, value }) => {
 
     saveSettings(userSettings);
     broadcastSettings();
-    
+
     // Apply Cyber Stealth if toggled
     if (key === 'cyberStealthEnabled') {
         const allWc = webContents.getAllWebContents();
@@ -4477,11 +4588,11 @@ ipcMain.on('set-dns-provider', (e, provider) => {
 ipcMain.on('switch-profile', (e, profileId) => {
     const profile = userSettings.profiles.find(p => p.id === profileId);
     if (!profile) return;
-    
+
     userSettings.currentProfileId = profileId;
     saveSettings(userSettings);
     broadcastSettings();
-    
+
     // In a full implementation, we would reload all views with a new session partition.
     // For now, we update the UI state.
     if (mainWindow) {
@@ -4496,10 +4607,10 @@ ipcMain.on('switch-profile', (e, profileId) => {
 ipcMain.handle('create-profile', (e, { name, icon }) => {
     const id = 'profile_' + Date.now();
     const newProfile = { id, name, icon };
-    
+
     if (!userSettings.profiles) userSettings.profiles = [];
     userSettings.profiles.push(newProfile);
-    
+
     saveSettings(userSettings);
     broadcastSettings();
     return newProfile;
@@ -4510,7 +4621,7 @@ ipcMain.on('delete-profile', (e, profileId) => {
     if (userSettings.currentProfileId === profileId) {
         userSettings.currentProfileId = 'default';
     }
-    
+
     userSettings.profiles = userSettings.profiles.filter(p => p.id !== profileId);
     saveSettings(userSettings);
     broadcastSettings();
@@ -4547,7 +4658,7 @@ setInterval(async () => {
     try {
         const memory = await process.getProcessMemoryInfo();
         const systemMemory = process.getSystemMemoryInfo();
-        
+
         // Broadcast combined shield and system stats
         const payload = {
             ...userSettings.shieldStats,
@@ -4603,7 +4714,7 @@ function setupContextMenu(contents) {
         menu.append(new MenuItem({ label: 'Back', enabled: contents.navigationHistory.canGoBack(), click: () => { contents.navigationHistory.goBack(); } }));
         menu.append(new MenuItem({ label: 'Forward', enabled: contents.navigationHistory.canGoForward(), click: () => { contents.navigationHistory.goForward(); } }));
         menu.append(new MenuItem({ label: 'Reload', click: () => { contents.reload(); } }));
-        
+
         // Dynamic Inspect Element: Allowed only on non-internal pages
         const ctxUrl = contents.getURL();
         const isInternalCtx = ctxUrl.startsWith('ocal://') || ctxUrl.startsWith('file://');
@@ -4642,7 +4753,7 @@ function applyBatterySaverGlobally() {
                 v.view.webContents.setAudioMuted(true);
             } else {
                 v.view.webContents.setAudioMuted(false);
-                v.view.webContents.reload(); 
+                v.view.webContents.reload();
             }
         }
     });

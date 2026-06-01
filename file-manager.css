@@ -247,6 +247,6 @@ body {
 .menu-item.danger i { color: #ff0000; }
 .menu-item.danger:hover { background: #ff0000; color: #fff; }
 
-::-webkit-scrollbar { width: 4px; }
-::-webkit-scrollbar-thumb { background: var(--border); border-radius: var(--radius); }
-::-webkit-scrollbar-thumb:hover { background: var(--accent); }
+::-webkit-scrollbar { width: 5px; height: 5px; }
+::-webkit-scrollbar-thumb { background: rgba(128, 128, 128, 0.25); border-radius: 10px; }
+::-webkit-scrollbar-thumb:hover { background: rgba(128, 128, 128, 0.55); }
