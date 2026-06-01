@@ -9,27 +9,34 @@
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     <style>
         :root {
-            --bg: #000000;
-            --surface: #000000;
-            --surface-hover: #0a0a0a;
-            --accent: #ffffff;
+            --bg: #0c0c0c;
+            --surface: #111111;
+            --surface-hover: #141414;
+            --accent: #e8ff47;
             --accent-glow: transparent;
-            --text: #ffffff;
+            --accent-dim: rgba(232, 255, 71, 0.12);
+            --accent-border: rgba(232, 255, 71, 0.25);
+            --text: #e8e8e8;
             --text-dim: #a3a3a3;
-            --text-muted: #404040;
-            --border: #171717;
+            --text-muted: #666666;
+            --border: #252525;
             --panel-blur: none;
+            --radius-sm: 2px;
+            --radius-lg: 4px;
         }
 
         /* ── Light Mode Overrides ────────────────────────────────── */
         body[data-theme="light"] {
             --bg: #ffffff;
-            --surface: #f9fafb;
-            --surface-hover: #f1f5f9;
-            --text: #000000;
-            --text-dim: #334155;
-            --text-muted: #64748b;
-            --border: rgba(0, 0, 0, 0.1);
+            --surface: #fafafa;
+            --surface-hover: #f5f5f5;
+            --accent: #0c0c0c;
+            --accent-dim: #f5f5f5;
+            --accent-border: #0c0c0c;
+            --text: #0c0c0c;
+            --text-dim: #525252;
+            --text-muted: #a3a3a3;
+            --border: #e5e5e5;
         }
 
         body[data-theme="light"] .ambient-lighting { background: #ffffff !important; }
@@ -94,8 +101,8 @@
         }
 
         .back-btn {
-            width: 44px; height: 44px; border-radius: 0px;
-            background: #000; border: 1px solid var(--border);
+            width: 44px; height: 44px; border-radius: var(--radius-sm);
+            background: var(--surface); border: 1px solid var(--border);
             color: var(--text-dim); cursor: pointer;
             display: flex; align-items: center; justify-content: center;
             transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
@@ -119,9 +126,9 @@
         }
 
         .card {
-            background: #000;
+            background: var(--surface);
             border: 1px solid var(--border);
-            border-radius: 0px;
+            border-radius: var(--radius-lg);
             overflow: hidden;
             position: relative;
         }
@@ -155,7 +162,7 @@
         .row-desc { font-size: 12.5px; color: var(--text-muted); margin-top: 4px; line-height: 1.4; letter-spacing: 0.1px; }
 
         .action-btn {
-            padding: 10px 20px; border-radius: 12px; font-size: 13px; font-weight: 600;
+            padding: 10px 20px; border-radius: var(--radius-sm); font-size: 13px; font-weight: 600;
             cursor: pointer; transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1); 
             border: 1px solid rgba(255,255,255,0.15);
             background: rgba(255,255,255,0.06); color: var(--text-dim);
@@ -171,7 +178,7 @@
             background: rgba(255,255,255,0.03);
             color: var(--text-dim);
             border: 1px solid rgba(255,255,255,0.08);
-            border-radius: 12px;
+            border-radius: var(--radius-sm);
             padding: 10px 16px;
             font-size: 13.5px;
             font-weight: 500;
@@ -186,7 +193,7 @@
             padding-right: 40px;
         }
         select:hover { background: rgba(255,255,255,0.06); border-color: rgba(255,255,255,0.15); color: #fff; }
-        select:focus { border-color: var(--accent); box-shadow: 0 0 0 3px rgba(168,85,247,0.15); color: #fff; }
+        select:focus { border-color: var(--accent); box-shadow: none; color: #fff; }
         select option { background: #1a1a20; color: #fff; }
 
         .usage-display { display: flex; align-items: center; justify-content: space-between; width: 100%; }

@@ -289,14 +289,21 @@ const weatherIconMap = {
 };
 
 async function updateWeather() {
+    // Original Sidebar elements
     const tempEl = document.getElementById('weather-temp');
     const cityEl = document.getElementById('weather-city');
-    const iconEl = document.querySelector('.weather-icon');
+    const iconEl = document.querySelector('.weather-panel .weather-icon');
     const condEl = document.getElementById('weather-condition');
     const humEl = document.getElementById('weather-humidity');
     const windEl = document.getElementById('weather-wind');
     const feelsEl = document.getElementById('weather-feels');
     const locInput = document.getElementById('location-input');
+
+    // Elegant Floating elements
+    const fTempEl = document.getElementById('floating-weather-temp');
+    const fCityEl = document.getElementById('floating-weather-city');
+    const fIconEl = document.getElementById('floating-weather-icon');
+    const fLocInput = document.getElementById('floating-location-input');
 
     const fetchWeather = async (locStr = '') => {
         try {
@@ -307,29 +314,39 @@ async function updateWeather() {
             const code = current.weatherCode;
             const desc = current.weatherDesc[0].value;
 
-            if (tempEl) tempEl.textContent = `${current.temp_C}°C`;
+            // Update sidebar elements
+            if (tempEl) tempEl.textContent = `${current.temp_C} °C`;
             if (cityEl) cityEl.textContent = city.toUpperCase();
             if (condEl) condEl.textContent = desc.toUpperCase();
             if (humEl) humEl.textContent = `${current.humidity}%`;
             if (windEl) windEl.textContent = `${current.windspeedKmph} KM/H`;
-            if (feelsEl) feelsEl.textContent = `${current.FeelsLikeC}°C`;
-            
+            if (feelsEl) feelsEl.textContent = `${current.FeelsLikeC} °C`;
             if (iconEl && weatherIconMap[code]) {
                 iconEl.className = `fas ${weatherIconMap[code]} weather-icon`;
             }
+
+            // Update floating elements
+            if (fTempEl) fTempEl.textContent = `${current.temp_C} °C`;
+            if (fCityEl) {
+                fCityEl.innerHTML = `${city.toUpperCase()} <i class="fas fa-pencil edit-icon-floating"></i>`;
+            }
+            if (fIconEl && weatherIconMap[code]) {
+                fIconEl.className = `fas ${weatherIconMap[code]} weather-icon`;
+            }
         } catch (e) { 
-            console.warn('Weather fetch failed.'); 
+            console.warn('Weather fetch failed.', e); 
             if (condEl) condEl.textContent = 'OFFLINE';
+            if (fCityEl) fCityEl.innerHTML = `OFFLINE <i class="fas fa-pencil edit-icon-floating"></i>`;
         }
     };
 
-    // Manual Location Toggle
+    // Sidebar Location Toggle
     const cityTrigger = document.getElementById('city-trigger');
     if (cityTrigger && locInput) {
         cityTrigger.onclick = () => {
             cityTrigger.style.display = 'none';
             locInput.style.display = 'block';
-            locInput.value = cityEl.textContent;
+            locInput.value = cityEl ? cityEl.textContent : '';
             locInput.focus();
             locInput.select();
         };
@@ -356,6 +373,43 @@ async function updateWeather() {
             }
         };
         locInput.onblur = submitLoc;
+    }
+
+    // Elegant Floating Location Toggle
+    if (fCityEl && fLocInput) {
+        fCityEl.onclick = () => {
+            fCityEl.style.display = 'none';
+            fLocInput.style.display = 'block';
+            
+            // Extract city text only, removing any icon HTML or extra spaces
+            const currentCity = fCityEl.innerText.trim();
+            fLocInput.value = currentCity;
+            fLocInput.focus();
+            fLocInput.select();
+        };
+
+        const submitFloatingLoc = () => {
+            const newLoc = fLocInput.value.trim();
+            if (newLoc) {
+                if (fCityEl) fCityEl.innerHTML = `SEARCHING... <i class="fas fa-pencil edit-icon-floating"></i>`;
+                localStorage.setItem('ocal-weather-loc', newLoc);
+                fetchWeather(newLoc);
+            } else {
+                localStorage.removeItem('ocal-weather-loc');
+                updateWeather(); // Re-run auto-detect
+            }
+            fCityEl.style.display = 'block';
+            fLocInput.style.display = 'none';
+        };
+
+        fLocInput.onkeydown = (e) => {
+            if (e.key === 'Enter') submitFloatingLoc();
+            if (e.key === 'Escape') {
+                fCityEl.style.display = 'block';
+                fLocInput.style.display = 'none';
+            }
+        };
+        fLocInput.onblur = submitFloatingLoc;
     }
 
     const savedLoc = localStorage.getItem('ocal-weather-loc');

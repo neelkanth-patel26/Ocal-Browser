@@ -754,7 +754,7 @@ window.addEventListener('DOMContentLoaded', () => {
             transition: background 0.2s;
         }
         ::-webkit-scrollbar-thumb:hover {
-            background: rgba(168, 85, 247, 0.8) !important; /* Intense Purple Accent */
+            background: var(--accent, rgba(168, 85, 247, 0.8)) !important;
         }
         ::-webkit-scrollbar-corner {
             background: transparent !important;

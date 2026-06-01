@@ -180,6 +180,7 @@ window.electronAPI.onTabsChanged((data) => {
     if (active && addressInput) {
         syncOmnibox(active.url);
         updatePageTimeChip(active.id);
+        updateSidebarActiveStates(active.url);
     }
     if (lastSettings) applyGlobalSettings(lastSettings);
     renderTabs();
@@ -198,6 +199,7 @@ window.electronAPI.onUpdateURL((data) => {
         updatePageTimeChip(data.id);
         if (lastSettings) applyGlobalSettings(lastSettings);
         updateMediaMasterIcon(data.id); // Refresh for navigation
+        updateSidebarActiveStates(data.url);
     }
     renderTabs();
 });
@@ -509,6 +511,38 @@ document.addEventListener('DOMContentLoaded', () => {
     const fmBtn = document.getElementById('file-manager-btn');
     if (fmBtn) fmBtn.onclick = () => window.electronAPI.navigateTo('ocal://file-manager');
     if (mnBtn) mnBtn.onclick = () => window.electronAPI.send('toggle-sidebar', true);
+    
+    // ── Left Sidebar Event Listeners ─────────────────────────────
+    const sbSavesBtn = document.getElementById('sb-saves-btn');
+    const sbHistoryBtn = document.getElementById('sb-history-btn');
+    const sbSettingsBtn = document.getElementById('sb-settings-btn');
+    const sbLogoBtn = document.getElementById('sidebar-logo-btn');
+    const sbBookBtn = document.getElementById('sb-book-btn');
+    const sbGamesBtn = document.getElementById('sb-games-btn');
+
+    if (sbSavesBtn) sbSavesBtn.onclick = () => { window.electronAPI.send('toggle-sidebar', true); window.electronAPI.send('switch-sidebar-tab', 'bookmarks'); };
+    if (sbHistoryBtn) sbHistoryBtn.onclick = () => { window.electronAPI.send('toggle-sidebar', true); window.electronAPI.send('switch-sidebar-tab', 'history'); };
+    if (sbSettingsBtn) sbSettingsBtn.onclick = () => window.electronAPI.send('open-settings');
+    if (sbLogoBtn) sbLogoBtn.onclick = () => window.electronAPI.send('toggle-sidebar', true);
+
+    // Bookmarks and Games Hub Top Shortcuts Click Handling
+    if (sbBookBtn) {
+        sbBookBtn.onclick = () => {
+            window.electronAPI.navigateTo('ocal://home'); // Navigate to home/start page
+        };
+    }
+    if (sbGamesBtn) {
+        sbGamesBtn.onclick = () => {
+            window.electronAPI.navigateTo('ocal://game'); // Navigate to Ocal Games hub
+        };
+    }
+
+    document.querySelectorAll('.left-sidebar .social-btn').forEach(btn => {
+        btn.onclick = () => {
+            const url = btn.getAttribute('data-url');
+            if (url) window.electronAPI.send('toggle-web-app', url);
+        };
+    });
     
     if (extBtn) extBtn.onclick = () => {
         const rect = extBtn.getBoundingClientRect();
@@ -912,9 +946,6 @@ window.electronAPI.on('add-to-group-trigger', (event, data) => {
 
 window.electronAPI.send('request-tabs');
 
-// ── Site Info Popup Logic ───────────────────────────────────────────────────
-const identityBtn = document.getElementById('identity-btn');
-
 if (identityBtn) {
     identityBtn.onclick = (e) => {
         e.stopPropagation();
@@ -927,4 +958,21 @@ if (identityBtn) {
             height: rect.height
         });
     };
+}
+
+// ── Dynamic Left Sidebar Active Highlights ──
+function updateSidebarActiveStates(url) {
+    const sbBookBtn = document.getElementById('sb-book-btn');
+    const sbGamesBtn = document.getElementById('sb-games-btn');
+    
+    if (sbBookBtn) sbBookBtn.classList.remove('active');
+    if (sbGamesBtn) sbGamesBtn.classList.remove('active');
+
+    if (!url) return;
+
+    if (url.includes('home.html')) {
+        if (sbBookBtn) sbBookBtn.classList.add('active');
+    } else if (url.includes('game.html') || url.includes('games.html')) {
+        if (sbGamesBtn) sbGamesBtn.classList.add('active');
+    }
 }

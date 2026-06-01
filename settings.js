@@ -23,6 +23,22 @@ function showSection(id) {
     if (window.location.hash !== `#${id}`) {
         history.replaceState(null, null, `#${id}`);
     }
+
+    // Dynamic settings path updates
+    const pathSpan = document.querySelector('.settings-address-bar .path');
+    if (pathSpan) {
+        let displayName = sectionName;
+        if (id === 'homepage') displayName = 'Home Page';
+        else if (id === 'ai') displayName = 'AI Assistant';
+        pathSpan.textContent = `settings / ${displayName}`;
+    }
+
+    // Reset global search on tab changes
+    const searchInput = document.getElementById('settings-global-search');
+    if (searchInput) {
+        searchInput.value = '';
+        filterGlobalSettings();
+    }
 }
 
 navItems.forEach(item => {
@@ -299,55 +315,66 @@ if (shieldCard) {
     };
 }
 
-// Profiles
-// Profiles logic
 function renderProfiles(s) {
     const grid = document.getElementById('profile-grid');
     if (!grid) return;
-    grid.innerHTML = (s.profiles || []).map((p, index) => `
-        <div class="card-row" style="cursor: pointer; position: relative; padding: 20px; transition: all 0.2s; ${index === s.profiles.length - 1 ? 'border-bottom: none;' : ''}" 
+    
+    let html = (s.profiles || []).map((p, index) => `
+        <div class="choice-item profile-card ${s.currentProfileId === p.id ? 'active' : ''}" 
              onclick="window.electronAPI.switchProfile('${p.id}')"
-             onmouseover="this.style.background='rgba(255, 255, 255, 0.03)'"
-             onmouseout="this.style.background=''">
-            <div style="display: flex; align-items: center; gap: 20px; flex: 1;">
-                <div style="position: relative;">
-                    <div style="width: 56px; height: 56px; background: ${s.currentProfileId === p.id ? 'var(--accent)' : 'rgba(255, 255, 255, 0.05)'}; border-radius: 50%; display: flex; align-items: center; justify-content: center; color: ${s.currentProfileId === p.id ? '#000' : 'var(--text-dim)'}; font-size: 24px; flex-shrink: 0; transition: all 0.3s; border: 2px solid ${s.currentProfileId === p.id ? 'var(--accent)' : 'rgba(255, 255, 255, 0.08)'};">
-                        <i class="fas ${p.icon || 'fa-user'}"></i>
-                    </div>
-                    ${s.currentProfileId === p.id ? '<div style="position: absolute; bottom: -2px; right: -2px; width: 18px; height: 18px; background: #4ade80; border-radius: 50%; border: 2px solid var(--background); display: flex; align-items: center; justify-content: center;"><i class="fas fa-check" style="font-size: 8px; color: #000;"></i></div>' : ''}
+             style="display: flex; flex-direction: column; align-items: center; padding: 24px; gap: 14px; position: relative; transition: var(--spring-transition); border-radius: var(--radius-lg); background: var(--glass); border: 1px solid var(--glass-border); cursor: pointer;">
+            
+            <div style="position: relative;">
+                <div class="profile-avatar-wrap" style="width: 64px; height: 64px; background: ${s.currentProfileId === p.id ? 'var(--accent)' : 'rgba(255, 255, 255, 0.05)'}; border-radius: 50%; display: flex; align-items: center; justify-content: center; color: ${s.currentProfileId === p.id ? '#000' : 'var(--text-dim)'}; font-size: 26px; border: 2px solid ${s.currentProfileId === p.id ? 'var(--accent)' : 'rgba(255, 255, 255, 0.08)'}; transition: all 0.3s;">
+                    <i class="fas ${p.icon || 'fa-user'}"></i>
                 </div>
-                <div class="card-info" style="flex: 1; min-width: 0;">
-                    <h4 style="font-size: 16px; margin-bottom: 6px; display: flex; align-items: center; gap: 10px; font-weight: 600;">
-                        ${p.name}
-                        ${s.currentProfileId === p.id ? '<span style="font-size: 10px; color: #4ade80; font-weight: 800; letter-spacing: 0.5px; background: rgba(74, 222, 128, 0.1); padding: 4px 10px; border-radius: 6px; text-transform: uppercase; border: 1px solid rgba(74, 222, 128, 0.2);">Active</span>' : ''}
-                    </h4>
-                    <p style="font-size: 13px; color: var(--text-dim);">
-                        ${s.currentProfileId === p.id ? 'Currently active • Click to view details' : 'Isolated cookies, history, and settings • Click to switch'}
-                    </p>
-                </div>
+                ${s.currentProfileId === p.id ? '<div style="position: absolute; bottom: -2px; right: -2px; width: 20px; height: 20px; background: #4ade80; border-radius: 50%; border: 2px solid var(--background); display: flex; align-items: center; justify-content: center;"><i class="fas fa-check" style="font-size: 9px; color: #000;"></i></div>' : ''}
             </div>
-            <div style="display: flex; gap: 10px; align-items: center;" onclick="event.stopPropagation();">
-                <button onclick="editProfilePrompt('${p.id}')" 
-                        style="background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); color: var(--text-dim); padding: 8px 14px; border-radius: 8px; cursor: pointer; font-size: 13px; display: flex; align-items: center; gap: 6px; transition: all 0.2s; font-weight: 500;" 
-                        onmouseover="this.style.background='rgba(255,255,255,0.1)'; this.style.color='#fff'; this.style.borderColor='rgba(255,255,255,0.2)';" 
-                        onmouseout="this.style.background='rgba(255,255,255,0.05)'; this.style.color='var(--text-dim)'; this.style.borderColor='rgba(255,255,255,0.1)';">
-                    <i class="fas fa-pen" style="font-size: 11px;"></i>
+
+            <div style="text-align: center; width: 100%;">
+                <h4 style="font-size: 15px; margin: 0 0 4px 0; font-weight: 700; color: var(--text); display: flex; align-items: center; justify-content: center; gap: 8px;">
+                    ${p.name}
+                    ${s.currentProfileId === p.id ? '<span style="font-size: 9px; color: #4ade80; font-weight: 800; background: rgba(74, 222, 128, 0.1); padding: 2px 8px; border-radius: 4px; border: 1px solid rgba(74, 222, 128, 0.2);">ACTIVE</span>' : ''}
+                </h4>
+                <p style="font-size: 12px; color: var(--text-dim); line-height: 1.4; margin: 0;">
+                    ${s.currentProfileId === p.id ? 'Active node session' : 'Isolated sandboxed node'}
+                </p>
+            </div>
+
+            <div style="display: flex; gap: 8px; width: 100%; margin-top: 10px; justify-content: center;" onclick="event.stopPropagation();">
+                <button class="btn secondary" onclick="editProfilePrompt('${p.id}')" 
+                        style="flex: 1; max-width: 100px; padding: 6px 12px; font-size: 11px; display: flex; align-items: center; justify-content: center; gap: 6px; font-weight: 600;">
+                    <i class="fas fa-pen" style="font-size: 9px;"></i>
                     <span>Edit</span>
                 </button>
                 ${p.id !== 'default' ? `
-                <button onclick="deleteProfile('${p.id}', '${p.name}')" 
-                        style="background: rgba(239, 68, 68, 0.1); border: 1px solid rgba(239, 68, 68, 0.2); color: #ef4444; padding: 8px 14px; border-radius: 8px; cursor: pointer; font-size: 13px; display: flex; align-items: center; gap: 6px; transition: all 0.2s; font-weight: 500;" 
-                        onmouseover="this.style.background='rgba(239, 68, 68, 0.2)'; this.style.borderColor='rgba(239, 68, 68, 0.3)';" 
-                        onmouseout="this.style.background='rgba(239, 68, 68, 0.1)'; this.style.borderColor='rgba(239, 68, 68, 0.2)';">
-                    <i class="fas fa-trash" style="font-size: 11px;"></i>
+                <button class="btn secondary" onclick="deleteProfile('${p.id}', '${p.name}')" 
+                        style="flex: 1; max-width: 100px; padding: 6px 12px; font-size: 11px; display: flex; align-items: center; justify-content: center; gap: 6px; font-weight: 600; color: #ef4444; border-color: rgba(239, 68, 68, 0.15); background: rgba(239, 68, 68, 0.04);" 
+                        onmouseover="this.style.background='rgba(239, 68, 68, 0.1)'; this.style.color='#ef4444';" 
+                        onmouseout="this.style.background='rgba(239, 68, 68, 0.04)';">
+                    <i class="fas fa-trash" style="font-size: 9px;"></i>
                     <span>Delete</span>
                 </button>` : ''}
             </div>
         </div>
     `).join('');
-}
 
-// Modal Logic
+    // Append the dashed "+ Create New Node" card
+    html += `
+        <div class="choice-item add-profile-card" onclick="createProfilePrompt()" 
+             style="display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 24px; gap: 14px; border-radius: var(--radius-lg); cursor: pointer; transition: var(--spring-transition); min-height: 184px; text-align: center;">
+            <div class="add-avatar-circle" style="width: 52px; height: 52px; border-radius: 50%; border: 1px dashed var(--text-muted); display: flex; align-items: center; justify-content: center; color: var(--text-dim); font-size: 20px; transition: all 0.3s; background: rgba(255, 255, 255, 0.02);">
+                <i class="fas fa-plus"></i>
+            </div>
+            <div style="display: flex; flex-direction: column; gap: 2px;">
+                <span style="font-size: 13px; font-weight: 700; color: var(--text-dim); transition: color 0.2s;">Create New Node</span>
+                <span style="font-size: 11px; color: var(--text-muted);">Launch isolated workspace</span>
+            </div>
+        </div>
+    `;
+
+    grid.innerHTML = html;
+}
 function showModal(contentHtml) {
     const overlay = document.getElementById('studio-modal-overlay');
     const modal = document.getElementById('studio-modal');
@@ -390,14 +417,14 @@ function createProfilePrompt() {
         
         <div style="margin-bottom:24px;">
             <label style="display:block; font-size:10px; font-weight:900; color:var(--text-muted); text-transform:uppercase; letter-spacing:1.5px; margin-bottom:12px;">Profile Alias</label>
-            <input type="text" id="new-profile-name" placeholder="Work, Guest, Secondary..." style="width:100%; background:var(--glass-hover); border:1px solid var(--glass-border); border-radius: 0px; padding:14px 18px; color:var(--text); font-family: 'Geist Mono', monospace; font-size:14px; outline:none; transition:0.3s;" onfocus="this.style.borderColor='var(--accent)';">
+            <input type="text" id="new-profile-name" placeholder="Work, Guest, Secondary..." style="width:100%; background:var(--glass-hover); border:1px solid var(--glass-border); border-radius: var(--radius-sm); padding:14px 18px; color:var(--text); font-family: 'Geist Mono', monospace; font-size:14px; outline:none; transition:0.3s;" onfocus="this.style.borderColor='var(--accent)';">
         </div>
         
         <div style="margin-bottom:32px;">
             <label style="display:block; font-size:10px; font-weight:900; color:var(--text-muted); text-transform:uppercase; letter-spacing:1.5px; margin-bottom:12px;">Visual Signature</label>
             <div style="display:grid; grid-template-columns: repeat(5, 1fr); gap:12px;" id="icon-selector">
                 ${PROFILE_ICONS.map(icon => `
-                    <div class="icon-chip ${icon === 'fa-user' ? 'active' : ''}" onclick="selectProfileIcon(this, '${icon}')" style="aspect-ratio:1; border-radius: 0px; border:1px solid var(--glass-border); background:var(--glass); display:flex; align-items:center; justify-content:center; color:var(--text-dim); cursor:pointer; transition:0.3s;">
+                    <div class="icon-chip ${icon === 'fa-user' ? 'active' : ''}" onclick="selectProfileIcon(this, '${icon}')" style="aspect-ratio:1; border-radius: var(--radius-sm); border:1px solid var(--glass-border); background:var(--glass); display:flex; align-items:center; justify-content:center; color:var(--text-dim); cursor:pointer; transition:0.3s;">
                         <i class="fas ${icon}"></i>
                     </div>
                 `).join('')}
@@ -405,8 +432,8 @@ function createProfilePrompt() {
         </div>
         
         <div style="display:flex; gap:12px; justify-content:flex-end;">
-            <button class="btn secondary" onclick="closeModal()" style="padding:12px 24px; font-size:12px; font-weight:800; letter-spacing:0.5px; border-radius: 0px;">CANCEL</button>
-            <button class="btn primary" onclick="confirmCreateProfile()" style="padding:12px 32px; font-size:12px; font-weight:800; letter-spacing:0.5px; border-radius: 0px;">CREATE IDENTITY</button>
+            <button class="btn secondary" onclick="closeModal()" style="padding:12px 24px; font-size:12px; font-weight:800; letter-spacing:0.5px; border-radius: var(--radius-sm);">CANCEL</button>
+            <button class="btn primary" onclick="confirmCreateProfile()" style="padding:12px 32px; font-size:12px; font-weight:800; letter-spacing:0.5px; border-radius: var(--radius-sm);">CREATE IDENTITY</button>
         </div>
         
         <style>
@@ -449,14 +476,14 @@ async function editProfilePrompt(id) {
         
         <div style="margin-bottom:24px;">
             <label style="display:block; font-size:10px; font-weight:900; color:var(--text-muted); text-transform:uppercase; letter-spacing:1.5px; margin-bottom:12px;">Identity Name</label>
-            <input type="text" id="edit-profile-name" value="${profile.name}" style="width:100%; background:var(--glass-hover); border:1px solid var(--glass-border); border-radius: 0px ; padding:14px 18px; color:var(--text); font-family: 'Geist Mono', monospace; font-size:14px; outline:none; transition:0.3s;" onfocus="this.style.borderColor='var(--accent)'; this.style.boxShadow='0 0 15px var(--accent-glow)';">
+            <input type="text" id="edit-profile-name" value="${profile.name}" style="width:100%; background:var(--glass-hover); border:1px solid var(--glass-border); border-radius: var(--radius-sm); padding:14px 18px; color:var(--text); font-family: 'Geist Mono', monospace; font-size:14px; outline:none; transition:0.3s;" onfocus="this.style.borderColor='var(--accent)';">
         </div>
         
         <div style="margin-bottom:32px;">
             <label style="display:block; font-size:10px; font-weight:900; color:var(--text-muted); text-transform:uppercase; letter-spacing:1.5px; margin-bottom:12px;">Profile Icon</label>
             <div style="display:grid; grid-template-columns: repeat(5, 1fr); gap:12px;" id="icon-selector">
                 ${PROFILE_ICONS.map(icon => `
-                    <div class="icon-chip ${icon === window._selectedProfileIcon ? 'active' : ''}" onclick="selectProfileIcon(this, '${icon}')" style="aspect-ratio:1; border-radius: 0px ; border:1px solid var(--glass-border); background:var(--glass); display:flex; align-items:center; justify-content:center; color:var(--text-dim); cursor:pointer; transition:0.3s;">
+                    <div class="icon-chip ${icon === window._selectedProfileIcon ? 'active' : ''}" onclick="selectProfileIcon(this, '${icon}')" style="aspect-ratio:1; border-radius: var(--radius-sm); border:1px solid var(--glass-border); background:var(--glass); display:flex; align-items:center; justify-content:center; color:var(--text-dim); cursor:pointer; transition:0.3s;">
                         <i class="fas ${icon}"></i>
                     </div>
                 `).join('')}
@@ -465,7 +492,7 @@ async function editProfilePrompt(id) {
         
         <div style="display:flex; gap:12px; justify-content:flex-end;">
             <button class="btn secondary" onclick="closeModal()" style="padding:12px 24px; font-size:12px; font-weight:800; letter-spacing:0.5px;">CANCEL</button>
-            <button class="btn primary" onclick="confirmEditProfile('${id}')" style="padding:12px 32px; font-size:12px; font-weight:800; letter-spacing:0.5px; background:linear-gradient(135deg, var(--accent) 0%, #7c3aed 100%);">SAVE CHANGES</button>
+            <button class="btn primary" onclick="confirmEditProfile('${id}')" style="padding:12px 32px; font-size:12px; font-weight:800; letter-spacing:0.5px;">SAVE CHANGES</button>
         </div>
         
         <style>
@@ -831,6 +858,7 @@ window.electronAPI.getSettings().then(s => {
     initToggle('media-master-toggle-security', 'mediaMasterEnabled', s.mediaMasterEnabled !== false);
 
     if (s.dnsProvider) setGridValue('dns-grid', s.dnsProvider);
+    initGridSelector('dns-grid', 'dnsProvider');
     
     updateProtectionLevel(s);
     renderProfiles(s);
@@ -1087,6 +1115,7 @@ function renderExtensions(s = null) {
 
         // Toggle checkbox state
         if (toggle) toggle.checked = isActive;
+        if (isActive) { card.classList.add('is-active'); } else { card.classList.remove('is-active'); }
 
         // Status indicator
         if (status) {
@@ -1106,32 +1135,39 @@ function renderExtensions(s = null) {
     if (s.extensions && s.extensions.length > 0) {
         s.extensions.forEach(ext => {
             const el = document.createElement('div');
-            el.className = 'ext-card-row dynamic-ext';
+            el.className = 'card ext-card-row dynamic-ext' + (ext.enabled ? ' is-active' : '');
             el.dataset.extname = (ext.name || '').toLowerCase();
+            el.style.display = 'flex';
+            el.style.flexDirection = 'column';
+            el.style.padding = '20px';
             el.innerHTML = `
-                <div class="ext-card-icon" style="background:rgba(251,146,60,0.1); color:#fb923c;">
-                    <i class="fas fa-puzzle-piece"></i>
-                </div>
-                <div class="ext-card-info">
-                    <div class="ext-card-header">
-                        <span class="ext-card-name">${ext.name}</span>
-                        <label class="ext-toggle-wrap">
-                            <input type="checkbox" ${ext.enabled ? 'checked' : ''}
-                                onchange="window.electronAPI.toggleExtension('${ext.id}', this.checked); setTimeout(() => window.electronAPI.getSettings().then(s => renderExtensions(s)), 100);">
-                            <span class="ext-slider"></span>
-                        </label>
-                    </div>
-                    <div class="ext-card-version">Version ${ext.version || '?'} &middot; ID: ${ext.id}</div>
-                    <div class="ext-card-desc">${ext.description || 'No description provided.'}</div>
-                    <div class="ext-card-footer">
-                        <span class="ext-card-tag local">${ext.isLocal ? 'LOCAL' : 'INSTALLED'}</span>
-                        <div class="ext-card-actions">
-                            <span class="ext-status-indicator ${ext.enabled ? 'on' : 'off'}">
-                                <span class="status-dot"></span>
-                                <span>${ext.enabled ? 'Active' : 'Disabled'}</span>
-                            </span>
-                            ${ext.isLocal ? `<button class="ext-remove-btn" onclick="window.electronAPI.removeExtension('${ext.id}').then(() => window.electronAPI.getSettings().then(s => renderExtensions(s)))"><i class="fas fa-trash"></i> Remove</button>` : `<a class="ext-view-link" onclick="window.open('https://chromewebstore.google.com/detail/${ext.id}')">View in Store</a>`}
+                <div style="display: flex; align-items: flex-start; justify-content: space-between; margin-bottom: 12px;">
+                    <div style="display: flex; align-items: center; gap: 12px;">
+                        <div style="width: 40px; height: 40px; background: rgba(251,146,60,0.1); border-radius: 50%; display: flex; align-items: center; justify-content: center; color: #fb923c; font-size: 18px; flex-shrink: 0;">
+                            <i class="fas fa-puzzle-piece"></i>
                         </div>
+                        <div>
+                            <h4 style="font-size: 15px; font-weight: 700; color: var(--text); margin: 0 0 4px 0;">${ext.name}</h4>
+                            <div style="font-size: 11px; color: var(--text-muted);">Version ${ext.version || '?'} &middot; ID: ${ext.id}</div>
+                        </div>
+                    </div>
+                    <label class="ext-toggle-wrap">
+                        <input type="checkbox" ${ext.enabled ? 'checked' : ''}
+                            onchange="window.electronAPI.toggleExtension('${ext.id}', this.checked); setTimeout(() => window.electronAPI.getSettings().then(s => renderExtensions(s)), 100);">
+                        <span class="ext-slider"></span>
+                    </label>
+                </div>
+                <div style="font-size: 13px; color: var(--text-dim); line-height: 1.5; flex: 1;">
+                    ${ext.description || 'No description provided.'}
+                </div>
+                <div style="display: flex; align-items: center; justify-content: space-between; margin-top: 16px; padding-top: 16px; border-top: 1px solid var(--glass-border);">
+                    <span style="background: rgba(255,255,255,0.05); padding: 4px 8px; border-radius: 6px; font-size: 10px; font-weight: 800; color: var(--text-muted); letter-spacing: 0.5px;">${ext.isLocal ? 'LOCAL' : 'INSTALLED'}</span>
+                    <div style="display: flex; align-items: center; gap: 12px;">
+                        <span style="display: flex; align-items: center; gap: 6px; font-size: 11px; font-weight: 600; color: ${ext.enabled ? '#4ade80' : 'var(--text-muted)'};">
+                            <span style="width: 6px; height: 6px; border-radius: 50%; background: ${ext.enabled ? '#4ade80' : 'var(--text-muted)'};"></span>
+                            ${ext.enabled ? 'Active' : 'Disabled'}
+                        </span>
+                        ${ext.isLocal ? `<button class="btn secondary" style="padding: 4px 10px; font-size: 11px;" onclick="window.electronAPI.removeExtension('${ext.id}').then(() => window.electronAPI.getSettings().then(s => renderExtensions(s)))"><i class="fas fa-trash"></i> Remove</button>` : `<button class="btn secondary" style="padding: 4px 10px; font-size: 11px;" onclick="window.open('https://chromewebstore.google.com/detail/${ext.id}')">View</button>`}
                     </div>
                 </div>
             `;
@@ -1354,3 +1390,26 @@ checkDefaultBrowser();
 
 // Also check when window regains focus (user might have changed it in OS settings)
 window.onfocus = checkDefaultBrowser;
+
+// ── Global Settings Real-time Card Search ──
+window.filterGlobalSettings = function() {
+    const query = document.getElementById('settings-global-search')?.value.toLowerCase().trim() || '';
+    const currentSection = document.querySelector('.section.active');
+    if (!currentSection) return;
+    
+    // Filter cards and rows inside the active section
+    const groups = currentSection.querySelectorAll('.group');
+    const cards = currentSection.querySelectorAll('.card, .pref-module, .ext-card-row, .ext-item-card, .about-card, .update-card, .shortcut-row');
+    
+    cards.forEach(card => {
+        const text = card.innerText.toLowerCase();
+        const match = !query || text.includes(query);
+        card.style.display = match ? '' : 'none';
+    });
+    
+    // Filter parent groups / grids based on visibility
+    groups.forEach(group => {
+        const visibleItems = Array.from(group.querySelectorAll('.card, .pref-module, .ext-card-row, .ext-item-card, .about-card, .update-card, .shortcut-row')).some(c => c.style.display !== 'none');
+        group.style.display = (visibleItems || !query) ? '' : 'none';
+    });
+};

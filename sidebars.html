@@ -11,12 +11,12 @@
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
 :root {
-    --accent: #e8ff47;
-    --accent-glow: rgba(232, 255, 71, 0.2);
-    --accent-dim: rgba(232, 255, 71, 0.12);
-    --accent-border: #e8ff47;
-    --bg: #0c0c0c;
-    --panel-bg: #0c0c0c;
+    --accent: #09f0a0;
+    --accent-glow: rgba(9, 240, 160, 0.2);
+    --accent-dim: rgba(9, 240, 160, 0.12);
+    --accent-border: #09f0a0;
+    --bg: #111111;
+    --panel-bg: #111111;
     --border: #252525;
     --hover: #1e1e1e;
     --glass: #111111;
@@ -74,41 +74,48 @@ html, body {
     pointer-events: auto;
     box-shadow: none !important;
 }
+.panel::before {
+    content: ''; position: absolute; inset: 0;
+    background: linear-gradient(180deg, rgba(255,255,255,0.04) 0%, transparent 15%);
+    pointer-events: none;
+    border-radius: inherit;
+    z-index: 1001;
+}
 .panel.open { transform: translateX(0) scale(1); opacity: 1; }
 
 /* ── Panel Header ─────────────────────────────────────────── */
 .panel-header {
     display: flex; align-items: center; justify-content: space-between;
-    padding: 22px 20px 12px; flex-shrink: 0;
-    border-bottom: 1px solid var(--border);
+    padding: 16px 20px; flex-shrink: 0;
+    border-bottom: 1px solid rgba(255,255,255,0.05);
     background: var(--bg);
 }
 .panel-title {
-    font-size: 17px; font-weight: 700; color: var(--text);
-    letter-spacing: -0.03em;
+    font-size: 15px; font-weight: 700; color: var(--text);
+    letter-spacing: -0.01em;
 }
 .panel-close {
-    width: 30px; height: 30px; border-radius: var(--radius);
-    background: var(--bg);
-    border: 1px solid var(--border);
+    width: 28px; height: 28px; border-radius: 50% !important;
+    background: transparent;
+    border: none;
     color: var(--text-dim); cursor: pointer;
     display: flex; align-items: center; justify-content: center; font-size: 11px;
     transition: all 0.2s cubic-bezier(0.16,1,0.3,1);
 }
-.panel-close:hover { background: var(--text); color: var(--bg); transform: none; border-color: var(--text); }
+.panel-close:hover { background: rgba(255,255,255,0.06); color: #fff; transform: scale(1.08); border-color: transparent; }
 
 /* ── Premium Pill Tabs ───────────────────────────────────────── */
-.tab-strip-container { padding: 14px 16px 10px; }
+.tab-strip-container { padding: 16px 16px 8px; }
 .tab-strip {
     display: flex;
-    background: var(--bg);
-    border: 1px solid var(--border);
-    border-radius: var(--radius);
+    background: rgba(255, 255, 255, 0.02);
+    border: 1px solid rgba(255, 255, 255, 0.04);
+    border-radius: 100px !important;
     padding: 2px; gap: 2px; position: relative;
 }
 .tab-pill {
     flex: 1; height: 34px; border: none; background: transparent;
-    color: var(--text-dim); cursor: pointer; border-radius: var(--radius);
+    color: var(--text-dim); cursor: pointer; border-radius: 100px !important;
     font-size: 11.5px; font-weight: 600;
     display: flex; align-items: center;
     justify-content: center; gap: 7px;
@@ -116,10 +123,11 @@ html, body {
     z-index: 1; letter-spacing: 0.1px;
 }
 .tab-pill.active {
-    color: var(--bg);
-    background: var(--text);
+    color: #000000;
+    background: var(--accent, #09f0a0);
     box-shadow: none !important;
-    border: 1px solid var(--text);
+    border: 1px solid var(--accent, #09f0a0);
+    font-weight: 700;
 }
 .tab-pill i { font-size: 12px; color: inherit; transition: transform 0.2s; }
 .tab-pill:hover:not(.active) { color: var(--text); background: var(--hover); }
@@ -128,16 +136,16 @@ html, body {
 .panel-search { padding: 0 16px 12px; flex-shrink: 0; }
 .search-row {
     display: flex; align-items: center; gap: 10px;
-    background: var(--bg);
-    border: 1px solid var(--border);
-    border-radius: var(--radius); padding: 10px 14px;
-    transition: all 0.2s;
+    background: rgba(255, 255, 255, 0.04);
+    border: 1px solid rgba(255, 255, 255, 0.07);
+    border-radius: 100px !important; padding: 10px 14px;
+    transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
     box-shadow: none !important;
 }
 .search-row:focus-within {
-    border-color: var(--text);
-    background: var(--hover);
-    box-shadow: none !important;
+    border-color: var(--accent, #09f0a0) !important;
+    background: rgba(0, 0, 0, 0.4) !important;
+    box-shadow: 0 0 12px var(--accent-glow), inset 0 1px 2px rgba(0,0,0,0.3) !important;
 }
 .search-row i { font-size: 12px; color: var(--text-muted); flex-shrink: 0; }
 .search-row input {
@@ -152,9 +160,9 @@ html, body {
 
 .bm-toolbar { display: flex; gap: 6px; padding: 4px 16px 12px; }
 .bm-tool-btn {
-    flex: 1; height: 34px; border-radius: var(--radius);
-    background: var(--bg);
-    border: 1px solid var(--border);
+    flex: 1; height: 34px; border-radius: 8px;
+    background: rgba(255, 255, 255, 0.02);
+    border: 1px solid rgba(255, 255, 255, 0.04);
     color: var(--text); font-size: 11.5px;
     font-weight: 600; font-family: 'Geist Mono', monospace;
     cursor: pointer; display: flex;
@@ -162,22 +170,23 @@ html, body {
     transition: all 0.2s;
 }
 .bm-tool-btn:hover {
-    border-color: var(--text); color: var(--bg);
-    background: var(--text);
+    border-color: rgba(255, 255, 255, 0.08); color: #fff;
+    background: rgba(255, 255, 255, 0.045);
     transform: none;
     box-shadow: none !important;
 }
 
 .bm-item, .bm-folder-hdr {
     display: flex; align-items: center; gap: 12px;
-    padding: 9px 14px; border-radius: var(--radius);
-    margin: 2px 10px; cursor: pointer;
+    padding: 10px 12px; border-radius: 8px;
+    margin: 4px 10px; cursor: pointer;
     transition: all 0.18s cubic-bezier(0.16, 1, 0.3, 1);
-    position: relative; border: 1px solid transparent;
+    position: relative; border: 1px solid rgba(255,255,255,0.04);
+    background: rgba(255,255,255,0.02);
 }
 .bm-item:hover, .bm-folder-hdr:hover {
-    background: var(--hover);
-    border-color: var(--border);
+    background: rgba(255, 255, 255, 0.045);
+    border-color: rgba(255, 255, 255, 0.08);
     transform: none;
 }
 .current-active { 
@@ -200,7 +209,7 @@ html, body {
     box-shadow: none !important;
 }
 
-.bm-favicon, .hist-favicon { width: 16px; height: 16px; border-radius: var(--radius); flex-shrink: 0; background: rgba(255,255,255,0.05); }
+.bm-favicon, .hist-favicon { width: 16px; height: 16px; border-radius: 4px; flex-shrink: 0; background: rgba(255,255,255,0.05); }
 .bm-info, .hist-info { flex: 1; min-width: 0; }
 .bm-title, .hist-title { font-size: 13px; font-weight: 500; color: #fff; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; outline: none; }
 .bm-url, .hist-meta { font-size: 10.5px; color: var(--text-muted); margin-top: 1px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
@@ -285,21 +294,21 @@ html, body {
 
 .hist-item {
     display: flex; align-items: center; gap: 14px;
-    padding: 12px 16px; margin: 5px 10px;
-    background: var(--bg);
-    border: 1px solid var(--border);
-    border-radius: var(--radius);
+    padding: 10px 12px; margin: 4px 10px;
+    background: rgba(255, 255, 255, 0.02);
+    border: 1px solid rgba(255, 255, 255, 0.04);
+    border-radius: 8px;
     cursor: pointer; position: relative; overflow: hidden;
     transition: all 0.2s;
 }
 .hist-item::before {
     content: ''; position: absolute; left: 0; top: 0; bottom: 0; width: 3px;
-    background: var(--text);
-    opacity: 0; transition: opacity 0.2s; border-radius: var(--radius);
+    background: var(--accent);
+    opacity: 0; transition: opacity 0.2s; border-radius: 8px;
 }
 .hist-item:hover {
-    background: var(--hover);
-    border-color: var(--text);
+    background: rgba(255, 255, 255, 0.045);
+    border-color: rgba(255, 255, 255, 0.08);
     transform: none;
     box-shadow: none !important;
 }
@@ -317,12 +326,12 @@ html, body {
     opacity: 0; transform: scale(1); transition: all 0.15s;
     background: var(--bg); color: var(--text-dim);
     border: 1px solid var(--border);
-    border-radius: var(--radius); flex-shrink: 0;
+    border-radius: 50% !important; flex-shrink: 0;
     width: 28px; height: 28px; display: flex; align-items: center; justify-content: center; 
     font-size: 10px; cursor: pointer;
 }
 .hist-item:hover .hist-del { opacity: 1; transform: scale(1); }
-.hist-del:hover { background: rgba(239,68,68,0.3) !important; color: #fff !important; }
+.hist-del:hover { background: rgba(239,68,68,0.2) !important; color: #fff !important; }
 
 /* ── History Date Label ──────────────────────────────────── */
 .hist-date-label {
@@ -348,26 +357,26 @@ html, body {
 /* ── Download / Files Specifics 3.0 ── */
 .dl-item {
     display: flex; align-items: center; gap: 16px;
-    padding: 16px; margin: 8px 12px;
-    background: var(--bg);
-    border: 1px solid var(--border);
-    border-radius: var(--radius); position: relative; overflow: hidden;
+    padding: 12px 14px; margin: 4px 10px;
+    background: rgba(255, 255, 255, 0.02);
+    border: 1px solid rgba(255, 255, 255, 0.04);
+    border-radius: 8px; position: relative; overflow: hidden;
     transition: all 0.2s;
     backdrop-filter: none !important;
 }
 .dl-item:hover {
-    background: var(--hover);
-    border-color: var(--text);
+    background: rgba(255, 255, 255, 0.045);
+    border-color: rgba(255, 255, 255, 0.08);
     transform: none;
     box-shadow: none !important;
 }
 
 .dl-icon {
-    width: 48px; height: 48px; border-radius: var(--radius);
+    width: 44px; height: 44px; border-radius: 8px;
     background: rgba(255,255,255,0.05);
     border: 1px solid rgba(255,255,255,0.08);
     display: flex; align-items: center; justify-content: center;
-    color: var(--text-dim); font-size: 20px; flex-shrink: 0;
+    color: var(--text-dim); font-size: 18px; flex-shrink: 0;
     transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
     position: relative;
 }
@@ -416,14 +425,14 @@ html, body {
 }
 .dl-item:hover .dl-actions { opacity: 1; transform: translateX(0); }
 .dl-action-btn {
-    width: 32px; height: 32px; border-radius: var(--radius);
+    width: 30px; height: 30px; border-radius: 50% !important;
     background: rgba(255,255,255,0.05);
     border: 1px solid rgba(255,255,255,0.08);
     color: var(--text-dim); cursor: pointer;
     display: flex; align-items: center; justify-content: center;
-    font-size: 12px; transition: 0.2s;
+    font-size: 11px; transition: 0.2s;
 }
-.dl-action-btn:hover { background: rgba(255,255,255,0.1); color: #fff; border-color: rgba(255,255,255,0.2); transform: none; }
+.dl-action-btn:hover { background: rgba(255,255,255,0.06); color: #fff; border-color: rgba(255,255,255,0.1); transform: scale(1.08); }
 .dl-action-btn.del:hover { color: #f43f5e; background: rgba(244, 63, 94, 0.1); border-color: rgba(244, 63, 94, 0.2); }
 
 /* ── Pro System Modal Layer (Glass 3.0) ── */
@@ -508,11 +517,11 @@ html, body {
 #modal-confirm:active { transform: translateY(0) scale(0.97); }
 
 .icon-btn {
-    width: 28px; height: 28px; border-radius: var(--radius); background: transparent;
+    width: 28px; height: 28px; border-radius: 50% !important; background: transparent;
     border: none; color: var(--text-muted); cursor: pointer; display: flex;
     align-items: center; justify-content: center; font-size: 11px; transition: 0.2s;
 }
-.icon-btn:hover { background: rgba(255,255,255,0.08); color: #fff; }
+.icon-btn:hover { background: rgba(255,255,255,0.08); color: #fff; transform: scale(1.08); }
 .icon-btn.del:hover { color: #ef4444; }
 
 /* Empty State UI */
