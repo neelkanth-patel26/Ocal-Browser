@@ -193,7 +193,7 @@ let userSettings = loadSettings() || {
   setupComplete: false,
   searchEngine: 'google',
   dns: 'default',
-  accentColor: '#a855f7',
+  accentColor: '#09f0a0',
   compactMode: false,
   trackingProtection: true,
   forceShieldIcon: true,
@@ -698,6 +698,7 @@ function createMainWindow() {
     resizable: true,
     fullscreenable: true,
     titleBarStyle: 'hidden', // Ensures native title bar is fully hidden on Windows 10
+    titleBarOverlay: false, // Prevents Electron's native titlebar overlay from stealing clicks
     thickFrame: true, // Enables standard Windows resizing and snapping for frameless windows
     webPreferences: {
       preload: path.join(__dirname, 'preload.js'),
@@ -709,9 +710,12 @@ function createMainWindow() {
 
   mainWindow.loadFile('index.html');
 
-  if (!userSettings.setupComplete) {
+  if (!userSettings.setupComplete && fs.existsSync(path.join(__dirname, 'welcome.html'))) {
     importChromiumBookmarks();
     showWelcomeWizard();
+  } else {
+    userSettings.setupComplete = true;
+    saveSettings(userSettings);
   }
 
   mainWindow.setMaxListeners(50);
@@ -1758,14 +1762,16 @@ function updateViewBounds(forcedUrl = null) {
   const yPadding = (process.platform === 'win32') ? 1 : 0;
   const yOffset = hTabs + hNav + hBm + yPadding;
 
+  const wSidebar = isFullscreen ? 0 : 48;
+
   if (activeViewEntry && activeViewEntry.view) {
     // Only update bounds and stack order if the view is currently attached to mainWindow
     // (Prevents crashes when the view is detached in a Portal PiP window)
     if (activeViewEntry.view.webContents && !activeViewEntry.view.webContents.isDestroyed() && mainWindow.getBrowserViews().includes(activeViewEntry.view)) {
         activeViewEntry.view.setBounds({
-          x: 0, 
+          x: wSidebar, 
           y: Math.round(yOffset),
-          width: Math.round(width),
+          width: Math.round(width - wSidebar),
           height: Math.round(height - yOffset)
         });
         mainWindow.setTopBrowserView(activeViewEntry.view);
@@ -1794,12 +1800,24 @@ function updateViewBounds(forcedUrl = null) {
   // 2. Stack Sidebar Overlay (on the left, covering the whole window for backdrop)
   if (sidebarOverlayView && sidebarOverlayView.webContents && !sidebarOverlayView.webContents.isDestroyed() && mainWindow.getBrowserViews().includes(sidebarOverlayView)) {
     sidebarOverlayView.setBounds({ 
-        x: Math.round(winOffset), 
+        x: Math.round(wSidebar + winOffset), 
         y: Math.round(yOffset + winOffset), 
-        width: Math.round(width - (winOffset * 2)), 
+        width: Math.round(width - wSidebar - (winOffset * 2)), 
         height: Math.round(height - yOffset - (winOffset * 2)) 
     });
     mainWindow.setTopBrowserView(sidebarOverlayView);
+  }
+
+  // 3. Stack WebApp View (sliding drawer on the left next to Left Sidebar)
+  if (webAppOpen && webAppView && webAppView.webContents && !webAppView.webContents.isDestroyed() && mainWindow.getBrowserViews().includes(webAppView)) {
+    const webAppWidth = 460;
+    webAppView.setBounds({
+      x: wSidebar,
+      y: Math.round(yOffset),
+      width: webAppWidth,
+      height: Math.round(height - yOffset)
+    });
+    mainWindow.setTopBrowserView(webAppView);
   }
 }
 
@@ -3497,14 +3515,28 @@ function updateHistory(view, url) {
         const entry = views.find(v => v.id === id);
         const favicon = entry?.favicon || '';
 
-        // Don't add if the URL is the same as the last item (avoid duplicates from in-page nav)
-        if (userSettings.history.length > 0 && userSettings.history[0].url === url) return;
+        // Check if it is an internal browser page and skip history storage
+        const isInternalPage = url.startsWith('ocal://') || 
+            (url.startsWith('file://') && url.endsWith('.html')) ||
+            [
+                'settings.html', 'site-settings.html', 'downloads.html', 'extensions.html', 
+                'game.html', 'games.html', 'home.html', 'offline.html', 'uninstaller', 
+                'pip.html', 'sidebars.html', 'sidepanel.html', 'suggestions.html', 
+                'tab-context.html', 'tabgroup.html', 'shield-popup.html', 'site-info.html', 
+                'media-popup.html', 'ai-sidebar.html', 'certificate-viewer.html', 
+                'bm-dropdown.html', 'file-manager.html', 'snake.html', 'tetris.html'
+            ].some(page => url.toLowerCase().includes(page.toLowerCase()));
 
-        const historyItem = { title: title || url, url, timestamp: Date.now(), favicon };
-        if (!Array.isArray(userSettings.history)) userSettings.history = [];
-        userSettings.history = [historyItem, ...userSettings.history].slice(0, 100);
-        saveSettings(userSettings);
-        broadcastHistory();
+        if (!isInternalPage) {
+            // Don't add if the URL is the same as the last item (avoid duplicates from in-page nav)
+            if (userSettings.history.length > 0 && userSettings.history[0].url === url) return;
+
+            const historyItem = { title: title || url, url, timestamp: Date.now(), favicon };
+            if (!Array.isArray(userSettings.history)) userSettings.history = [];
+            userSettings.history = [historyItem, ...userSettings.history].slice(0, 100);
+            saveSettings(userSettings);
+            broadcastHistory();
+        }
     }
 }
 

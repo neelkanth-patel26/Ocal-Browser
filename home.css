@@ -5,10 +5,10 @@
 :root {
     --background: #0c0c0c;
     --foreground: #e8e8e8;
-    --accent: #e8ff47;
-    --accent-glow: rgba(232, 255, 71, 0.2);
-    --accent-dim: rgba(232, 255, 71, 0.12);
-    --accent-border: #e8ff47;
+    --accent: #09f0a0;
+    --accent-glow: rgba(9, 240, 160, 0.2);
+    --accent-dim: rgba(9, 240, 160, 0.12);
+    --accent-border: #09f0a0;
     --bg: #0c0c0c;
     --glass: #111111;
     --glass-border: #252525;
@@ -61,7 +61,7 @@ body[data-theme="light"] *::after {
 
 body {
     font-family: var(--font-main);
-    background: var(--bg);
+    background: url('assets/mirage_wallpaper.png') no-repeat center center / cover !important;
     color: var(--text-main);
     height: 100vh; width: 100vw;
     overflow: hidden;
@@ -533,3 +533,280 @@ body.focus-active::after {
 ::-webkit-scrollbar { width: 5px; }
 ::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.08); border-radius: 10px; }
 ::-webkit-scrollbar-thumb:hover { background: var(--accent); }
+
+/* ── Floating Weather (Opera start page style) ── */
+.floating-weather {
+  position: absolute;
+  top: 40px;
+  left: 45px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  z-index: 100;
+  pointer-events: auto;
+  font-family: var(--font-title), sans-serif; /* Perfect typographic synergy with homepage central clock */
+  color: #ffffff;
+  background: none !important;
+  border: none !important;
+  box-shadow: none !important;
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
+  padding: 0 !important;
+  text-shadow: 0 1px 4px rgba(0, 0, 0, 0.8); /* Ensures pristine legibility on the sky background */
+  animation: fade-in 1.2s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+@keyframes fade-in {
+  from { opacity: 0; transform: translateY(-10px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.weather-icon-wrapper {
+  width: auto !important;
+  height: auto !important;
+  background: none !important;
+  border: none !important;
+  box-shadow: none !important;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  padding: 0 !important;
+  transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.floating-weather:hover .weather-icon-wrapper {
+  transform: scale(1.1);
+}
+
+.floating-weather .weather-icon {
+  font-size: 22px; /* Prominent elegant size */
+  color: #ffffff;
+  filter: drop-shadow(0 1px 3px rgba(0, 0, 0, 0.6));
+  transition: all 0.3s ease;
+}
+
+/* Custom icon colors and solar/storm glowing effects based on weather status */
+.floating-weather .weather-icon.fa-sun {
+  color: #ffb300 !important; /* Warm solar amber */
+  filter: drop-shadow(0 0 6px rgba(255, 179, 0, 0.6)) !important;
+}
+.floating-weather .weather-icon.fa-cloud-sun {
+  color: #ffca28 !important; /* Soft sun behind cloud */
+  filter: drop-shadow(0 0 6px rgba(255, 202, 40, 0.4)) !important;
+}
+.floating-weather .weather-icon.fa-cloud {
+  color: #e0e0e0 !important; /* Cool grey cloud */
+  filter: drop-shadow(0 0 4px rgba(224, 224, 224, 0.3)) !important;
+}
+.floating-weather .weather-icon.fa-cloud-rain,
+.floating-weather .weather-icon.fa-cloud-showers-heavy,
+.floating-weather .weather-icon.fa-cloud-showers-water {
+  color: #64b5f6 !important; /* Rain blue */
+  filter: drop-shadow(0 0 6px rgba(100, 181, 246, 0.5)) !important;
+}
+
+.weather-details {
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+}
+
+.weather-temp-row {
+  display: flex;
+  align-items: baseline;
+}
+
+.floating-weather .weather-t {
+  font-family: var(--font-title), sans-serif;
+  font-size: 16px;
+  font-weight: 300; /* Ultra-sleek premium light weight matching central clock */
+  letter-spacing: -0.2px;
+  color: #ffffff;
+  line-height: 1.1;
+}
+
+.floating-city-wrapper {
+  display: flex;
+  align-items: center;
+  position: relative;
+}
+
+.floating-weather .weather-c {
+  font-family: var(--font-main), monospace; /* Typographical synergy with greeting */
+  font-size: 9px;
+  font-weight: 700;
+  letter-spacing: 2px; /* Nice expanded tracking matching greeting */
+  color: rgba(255, 255, 255, 0.65); /* Desaturated light gray label */
+  text-transform: uppercase;
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  cursor: pointer;
+  transition: color 0.2s, opacity 0.2s;
+}
+
+.floating-weather .weather-c:hover {
+  color: var(--accent) !important; /* Highlight city with mint green on hover */
+  opacity: 1;
+}
+
+.floating-weather .edit-icon-floating {
+  font-size: 8px;
+  opacity: 0;
+  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+  transform: translateX(-3px);
+  color: var(--accent) !important;
+}
+
+.floating-weather:hover .edit-icon-floating {
+  opacity: 0.8;
+  transform: translateX(0);
+}
+
+.floating-location-input {
+  display: none;
+  background: rgba(0, 0, 0, 0.55);
+  border: 1px solid var(--accent); /* Premium mint green border matching Ocal controls */
+  border-radius: 6px;
+  padding: 2px 6px;
+  font-size: 9px;
+  color: #ffffff;
+  font-family: var(--font-main), monospace;
+  font-weight: 700;
+  letter-spacing: 0.8px;
+  text-transform: uppercase;
+  outline: none;
+  width: 100px;
+  height: 18px;
+  box-shadow: 0 0 8px var(--accent-glow);
+}
+
+.floating-location-input:focus {
+  border-color: var(--accent);
+  box-shadow: 0 0 12px var(--accent-glow);
+}
+
+/* ── Google Search Pill (Opera style) ── */
+.search-field {
+  background: #ffffff !important;
+  border: 1px solid rgba(255, 255, 255, 0.05) !important;
+  border-radius: 100px !important;
+  height: 48px !important;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.25) !important;
+  display: flex;
+  align-items: center;
+  padding: 0 16px 0 20px !important;
+  gap: 12px !important;
+  transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1) !important;
+}
+
+.search-field:focus-within {
+  box-shadow: 0 8px 30px rgba(0, 0, 0, 0.35), 0 0 0 3px rgba(255, 255, 255, 0.1) !important;
+  transform: translateY(-1px);
+}
+
+.google-logo {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.search-input {
+  color: #111111 !important;
+  font-size: 14.5px !important;
+  font-weight: 400 !important;
+  letter-spacing: -0.1px !important;
+  font-family: var(--font-title) !important;
+}
+
+.search-input::placeholder {
+  color: #757575 !important;
+  opacity: 0.75 !important;
+}
+
+.search-btn-magnifier {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  color: #5f6368;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 15px;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.search-btn-magnifier:hover {
+  color: #111111;
+  background: rgba(0, 0, 0, 0.05);
+}
+
+/* ── Speed Dial Cards (Opera inspired white rounded boxes) ── */
+.tiles-grid {
+  gap: 22px !important;
+}
+
+.tile-box {
+  width: 120px !important;
+  height: 76px !important;
+  border-radius: 20px !important; /* Perfect smooth rounded corners */
+  background: #ffffff !important; /* Solid premium white background */
+  border: 1px solid rgba(255, 255, 255, 0.1) !important;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.25) !important;
+  color: #1a1a1a !important; /* High contrast black icon */
+  font-size: 26px !important; /* Large logo in center */
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1) !important;
+}
+
+.tile-item:hover .tile-box {
+  background: #ffffff !important;
+  color: #000000 !important;
+  transform: translateY(-6px) scale(1.03) !important;
+  box-shadow: 0 15px 30px rgba(0, 0, 0, 0.4), 0 0 15px rgba(255,255,255,0.15) !important;
+}
+
+.tile-label {
+  font-size: 11px !important;
+  font-weight: 500 !important;
+  color: #ffffff !important; /* Premium white label text */
+  text-transform: none !important;
+  letter-spacing: 0.1px !important;
+  text-shadow: 0 1px 4px rgba(0, 0, 0, 0.8) !important; /* Perfect contrast on any background */
+  margin-top: 4px;
+}
+
+.tile-item:hover .tile-label {
+  color: #ffffff !important;
+  text-shadow: 0 2px 8px rgba(0, 0, 0, 1) !important;
+  transform: translateY(1px);
+}
+
+/* Icons brand colors overridden to uniform desaturated black for premium look */
+.tile-box i,
+.tile-box svg {
+  color: #111111 !important;
+}
+
+/* ── Minimalist Grid Override (Opera Start Page) ── */
+.col-side {
+  display: none !important;
+}
+
+.clock-pillar {
+  display: none !important;
+}
+
+.footer-hub {
+  display: none !important;
+}
+
+.dashboard {
+  grid-template-columns: 1fr !important;
+  padding: 120px 40px 60px !important;
+}
