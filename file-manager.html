@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>PDF Intelligence | Ocal Explorer</title>
+    <title>File Manager | Ocal Browser</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Geist+Mono:wght@100..900&family=Geist:wght@100..900&display=swap" rel="stylesheet">
@@ -11,50 +11,43 @@
     <link rel="stylesheet" href="file-manager.css">
 </head>
 <body class="pro-studio">
-    <!-- Ambient Neural Backdrop -->
-    <div class="ambient-lighting">
-        <div class="neural-point point-1"></div>
-        <div class="neural-point point-2"></div>
-        <div class="neural-point point-3"></div>
-    </div>
-
     <div class="app-container">
         <!-- Sidebar Navigation -->
         <aside class="sidebar">
             <div class="sidebar-header">
                 <div class="brand-cluster">
                     <div class="brand-shell">
-                        <i class="fas fa-microchip brand-icon"></i>
+                        <i class="fas fa-folder-open brand-icon"></i>
                     </div>
                     <div class="brand-text">
-                        <span class="brand-eyebrow">NEURAL ENGINE</span>
-                        <span class="brand-name">Ocal Explorer</span>
+                        <span class="brand-eyebrow">FILE SYSTEM</span>
+                        <span class="brand-name">File Manager</span>
                     </div>
                 </div>
             </div>
             
             <nav class="sidebar-nav">
                 <div class="nav-section">
-                    <div class="section-title">Global Access</div>
+                    <div class="section-title">Quick Access</div>
                     <button class="nav-item active" data-folder="home">
-                        <i class="fas fa-house"></i> <span>Home Core</span>
+                        <i class="fas fa-house"></i> <span>Home</span>
                     </button>
                     <button class="nav-item" data-folder="downloads">
-                        <i class="fas fa-download"></i> <span>Received Files</span>
+                        <i class="fas fa-download"></i> <span>Downloads</span>
                     </button>
                     <button class="nav-item" data-folder="documents">
-                        <i class="fas fa-file-invoice"></i> <span>Information Assets</span>
+                        <i class="fas fa-file-lines"></i> <span>Documents</span>
                     </button>
                     <button class="nav-item" data-folder="desktop">
-                        <i class="fas fa-desktop"></i> <span>Surface Terminal</span>
+                        <i class="fas fa-desktop"></i> <span>Desktop</span>
                     </button>
                 </div>
                 
                 <div class="nav-section">
-                    <div class="section-title">Media Clusters</div>
-                    <button class="nav-item" data-folder="pictures"><i class="fas fa-image"></i> <span>Visual Data</span></button>
-                    <button class="nav-item" data-folder="videos"><i class="fas fa-clapperboard"></i> <span>Motion Assets</span></button>
-                    <button class="nav-item" data-folder="music"><i class="fas fa-music"></i> <span>Sonic Streams</span></button>
+                    <div class="section-title">Media</div>
+                    <button class="nav-item" data-folder="pictures"><i class="fas fa-image"></i> <span>Pictures</span></button>
+                    <button class="nav-item" data-folder="videos"><i class="fas fa-video"></i> <span>Videos</span></button>
+                    <button class="nav-item" data-folder="music"><i class="fas fa-music"></i> <span>Music</span></button>
                 </div>
             </nav>
 
@@ -62,14 +55,14 @@
                 <div class="security-cluster">
                     <div class="security-badge">
                         <i class="fas fa-shield-halved"></i>
-                        <span>LOCAL INSULATION ACTIVE</span>
+                        <span>Secure Local Storage</span>
                     </div>
-                    <p>Neural processing is contained within this machine's local isolation layer.</p>
+                    <p>All file indexing and processing happens locally on your computer.</p>
                 </div>
                 <button id="analyze-btn" class="analyze-btn">
                     <div class="btn-glow"></div>
-                    <i class="fas fa-layer-group"></i>
-                    <span>Aggregated Discovery</span>
+                    <i class="fas fa-magnifying-glass-folder"></i>
+                    <span>Find all PDFs</span>
                 </button>
             </div>
         </aside>
@@ -78,45 +71,43 @@
         <main class="main-content">
             <header class="content-header">
                 <div class="header-main-info">
-                    <div class="page-eyebrow">Local Intelligence</div>
-                    <h1 class="page-title">Digital Library</h1>
+                    <div class="page-eyebrow">Local Files</div>
+                    <h1 class="page-title">PDF Explorer</h1>
                     <div class="breadcrumbs" id="breadcrumbs">
-                        <span>This Node</span>
+                        <span>This PC</span>
                     </div>
                 </div>
                 
                 <div class="header-actions">
                     <div class="search-box">
                         <i class="fas fa-magnifying-glass"></i>
-                        <input type="text" id="file-search" placeholder="Querying PDF assets...">
+                        <input type="text" id="file-search" placeholder="Search PDF files...">
                         <div class="search-accent"></div>
                     </div>
                     <div class="view-terminal" id="view-toggles">
-                        <button class="view-btn active" id="view-grid" title="Grid Schematic"><i class="fas fa-grip"></i></button>
-                        <button class="view-btn" id="view-list" title="Structural List"><i class="fas fa-list"></i></button>
+                        <button class="view-btn active" id="view-grid" title="Grid View"><i class="fas fa-grip"></i></button>
+                        <button class="view-btn" id="view-list" title="List View"><i class="fas fa-list"></i></button>
                     </div>
                 </div>
             </header>
 
             <div class="explorer-body">
                 <div id="file-grid" class="file-grid">
-                    <!-- Dynamic Component Injection -->
                     <div class="loading-state">
-                        <div class="spinner-shimmer"></div>
                         <i class="fas fa-circle-notch fa-spin"></i>
-                        <span>Synchronizing item index...</span>
+                        <span>Searching files...</span>
                     </div>
                 </div>
             </div>
             
             <footer class="content-footer" id="status-bar">
                 <div class="status-left">
-                    <i class="fas fa-database"></i>
-                    <span id="item-count">0 assets registered</span>
+                    <i class="fas fa-file-pdf"></i>
+                    <span id="item-count">0 files found</span>
                 </div>
                 <div class="status-right">
-                    <span class="path-label">POINTER:</span>
-                    <span class="path-display" id="current-path">ROOT://</span>
+                    <span class="path-label">Path:</span>
+                    <span class="path-display" id="current-path">This PC</span>
                 </div>
             </footer>
         </main>

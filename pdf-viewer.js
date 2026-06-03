@@ -181,8 +181,11 @@ function tryGoogleFallback(url) {
     // Final UI cleanup
     
     // Notify user
-    document.getElementById('doc-title').textContent = "(Cloud Preview) " + decodeURIComponent(url.split('/').pop());
-    document.getElementById('doc-title').style.opacity = '1';
+    const docTitle = document.getElementById('doc-title');
+    if (docTitle) {
+        docTitle.textContent = "(Cloud Preview) " + decodeURIComponent(url.split('/').pop());
+        docTitle.style.opacity = '1';
+    }
 }
 
 let currentRenderId = 0;
@@ -191,6 +194,7 @@ let thumbRenderId = 0;
 async function renderThumbnails() {
     const renderId = ++thumbRenderId;
     thumbnails.innerHTML = '';
+    const dpr = window.devicePixelRatio || 1;
     
     for (let i = 1; i <= pdfDoc.numPages; i++) {
         if (renderId !== thumbRenderId) return;
@@ -204,8 +208,10 @@ async function renderThumbnails() {
         thumbWrap.id = `thumb-${i}`;
         
         const canvas = document.createElement('canvas');
-        const v = page.getViewport({ scale: 0.2, rotation });
+        const v = page.getViewport({ scale: 0.6 * dpr, rotation });
         canvas.width = v.width; canvas.height = v.height;
+        canvas.style.width = '100%';
+        canvas.style.height = '100%';
         
         if (renderId !== thumbRenderId) return;
         await page.render({ canvasContext: canvas.getContext('2d'), viewport: v }).promise;
@@ -226,6 +232,8 @@ async function renderThumbnails() {
 async function renderAllPages() {
     const savedNum = pageNum;
     const renderId = ++currentRenderId;
+    const dpr = window.devicePixelRatio || 1;
+    const RENDER_SHARPNESS_FACTOR = 2;
     
     // 1. Clear and Prepare
     pageContainer.innerHTML = '';
@@ -237,28 +245,31 @@ async function renderAllPages() {
         if (renderId !== currentRenderId) return;
         
         const page = await pdfDoc.getPage(i);
-        const v = page.getViewport({ scale, rotation });
+        const displayViewport = page.getViewport({ scale: scale, rotation });
+        const renderViewport = page.getViewport({ scale: scale * RENDER_SHARPNESS_FACTOR * dpr, rotation });
         
         const wrapper = document.createElement('div');
         wrapper.className = 'page-wrapper';
         wrapper.id = `wrapper-${i}`;
-        wrapper.style.width = v.width + 'px'; 
-        wrapper.style.height = v.height + 'px';
+        wrapper.style.width = displayViewport.width + 'px'; 
+        wrapper.style.height = displayViewport.height + 'px';
         
         const canvas = document.createElement('canvas');
-        canvas.width = v.width; canvas.height = v.height;
+        canvas.width = renderViewport.width; canvas.height = renderViewport.height;
+        canvas.style.width = '100%'; canvas.style.height = '100%';
         wrapper.appendChild(canvas);
         
         const drawingCanvas = document.createElement('canvas');
         drawingCanvas.className = 'drawing-layer';
-        drawingCanvas.width = v.width; drawingCanvas.height = v.height;
+        drawingCanvas.width = renderViewport.width; drawingCanvas.height = renderViewport.height;
         drawingCanvas.style.position = 'absolute'; drawingCanvas.style.top = '0'; drawingCanvas.style.left = '0';
+        drawingCanvas.style.width = '100%'; drawingCanvas.style.height = '100%';
         drawingCanvas.style.pointerEvents = currentTool === 'hand' ? 'none' : 'auto';
-        setupDrawing(drawingCanvas, i, v);
+        setupDrawing(drawingCanvas, i, renderViewport);
         wrapper.appendChild(drawingCanvas);
         
         pageContainer.appendChild(wrapper);
-        renderTasks.push({ page, canvas, drawingCanvas, i, v });
+        renderTasks.push({ page, canvas, drawingCanvas, i, v: renderViewport });
     }
 
     // 3. Instant Position Restoration
@@ -305,7 +316,7 @@ function setupDrawing(canvas, pageIdx, viewport) {
         lastX = (e.clientX - rect.left) * (canvas.width / rect.width);
         lastY = (e.clientY - rect.top) * (canvas.height / rect.height);
         if (currentTool === 'text') { showFloatingInput(e.clientX, e.clientY, pageIdx, lastX, lastY, canvas); drawing = false; }
-        else if (currentTool === 'eraser' && smartEraseAt(pageIdx, lastX, lastY)) redrawAnnotations(canvas, pageIdx);
+        else if (currentTool === 'eraser' && smartEraseAt(pageIdx, lastX, lastY, canvas)) redrawAnnotations(canvas, pageIdx);
     };
 
     canvas.onmousemove = (e) => {
@@ -321,9 +332,10 @@ function setupDrawing(canvas, pageIdx, viewport) {
         };
         const cfg = configs[currentTool];
         if (!cfg) return;
+        const dpr = window.devicePixelRatio || 1;
         if (currentTool === 'eraser') {
-            if (smartEraseAt(pageIdx, x, y)) redrawAnnotations(canvas, pageIdx);
-            ctx.globalCompositeOperation = 'destination-out'; ctx.lineWidth = cfg.width;
+            if (smartEraseAt(pageIdx, x, y, canvas)) redrawAnnotations(canvas, pageIdx);
+            ctx.globalCompositeOperation = 'destination-out'; ctx.lineWidth = cfg.width * scale * dpr;
             ctx.beginPath(); ctx.moveTo(lastX, lastY); ctx.lineTo(x, y); ctx.stroke();
         } else if (currentTool === 'highlight') {
             const hit = findWordAt(pageIdx, x, y, viewport);
@@ -331,18 +343,30 @@ function setupDrawing(canvas, pageIdx, viewport) {
                 const box = hit.box;
                 if (!annotations[pageIdx]) annotations[pageIdx] = [];
                 if (!annotations[pageIdx].some(a => a.type === 'rect' && a.id === hit.id)) {
-                    annotations[pageIdx].push({ type: 'rect', id: hit.id, x: box.x, y: box.y, w: box.w, h: box.h, color: cfg.color });
+                    annotations[pageIdx].push({ 
+                        type: 'rect', 
+                        id: hit.id, 
+                        x_pct: box.x / canvas.width, 
+                        y_pct: box.y / canvas.height, 
+                        w_pct: box.w / canvas.width, 
+                        h_pct: box.h / canvas.height, 
+                        color: cfg.color 
+                    });
                     redrawAnnotations(canvas, pageIdx);
                 }
             }
         } else {
             ctx.globalCompositeOperation = 'source-over';
-            ctx.strokeStyle = cfg.color; ctx.lineWidth = cfg.width;
+            ctx.strokeStyle = cfg.color; ctx.lineWidth = cfg.width * scale * dpr;
             ctx.lineJoin = 'round'; ctx.lineCap = 'round';
             ctx.beginPath(); ctx.moveTo(lastX, lastY); ctx.lineTo(x, y); ctx.stroke();
             if (!annotations[pageIdx]) annotations[pageIdx] = [];
             annotations[pageIdx].push({ 
-                type: 'path', x1: lastX, y1: lastY, x2: x, y2: y, 
+                type: 'path', 
+                x1_pct: lastX / canvas.width, 
+                y1_pct: lastY / canvas.height, 
+                x2_pct: x / canvas.width, 
+                y2_pct: y / canvas.height, 
                 tool: currentTool, color: cfg.color, 
                 isAccent: selectedColor === cfg.color // Mark as accent if matching
             });
@@ -364,19 +388,34 @@ floatingInput.onkeydown = (e) => {
     if (e.key === 'Enter' && floatingInput.value.trim()) {
         const { pageIdx, x, y, canvas } = textToolState;
         if (!annotations[pageIdx]) annotations[pageIdx] = [];
-        annotations[pageIdx].push({ type: 'text', x, y, text: floatingInput.value.trim(), color: selectedColor });
+        annotations[pageIdx].push({ 
+            type: 'text', 
+            x_pct: x / canvas.width, 
+            y_pct: y / canvas.height, 
+            text: floatingInput.value.trim(), 
+            color: selectedColor 
+        });
         redrawAnnotations(canvas, pageIdx); closeFloatingInput();
     } else if (e.key === 'Escape') closeFloatingInput();
 };
 
 function closeFloatingInput() { floatingOverlay.style.display = 'none'; textToolState = null; }
 
-function smartEraseAt(pageIdx, x, y) {
+function smartEraseAt(pageIdx, x, y, canvas) {
     if (!annotations[pageIdx]) return false;
     const count = annotations[pageIdx].length;
     annotations[pageIdx] = annotations[pageIdx].filter(item => {
-        if (item.type === 'rect') return !(x >= item.x && x <= item.x + item.w && y >= item.y && y <= item.y + item.h);
-        if (item.type === 'text') { const d = Math.sqrt(Math.pow(x - item.x, 2) + Math.pow(y - (item.y + 10), 2)); return d > 35; }
+        const itemX = item.x_pct * canvas.width;
+        const itemY = item.y_pct * canvas.height;
+        if (item.type === 'rect') {
+            const itemW = item.w_pct * canvas.width;
+            const itemH = item.h_pct * canvas.height;
+            return !(x >= itemX && x <= itemX + itemW && y >= itemY && y <= itemY + itemH);
+        }
+        if (item.type === 'text') {
+            const d = Math.sqrt(Math.pow(x - itemX, 2) + Math.pow(y - (itemY + 10), 2));
+            return d > 35;
+        }
         return true;
     });
     return annotations[pageIdx].length !== count;
@@ -403,17 +442,25 @@ function findWordAt(pageIdx, x, y, viewport) {
 function redrawAnnotations(canvas, pageIdx) {
     const ctx = canvas.getContext('2d');
     ctx.clearRect(0,0, canvas.width, canvas.height); 
+    const dpr = window.devicePixelRatio || 1;
+    const RENDER_SHARPNESS_FACTOR = 2;
+    const renderScale = scale * RENDER_SHARPNESS_FACTOR * dpr;
     (annotations[pageIdx] || []).forEach(item => {
         ctx.globalCompositeOperation = 'source-over'; 
         if (item.type === 'text') {
-            ctx.font = 'bold 22px "Geist Mono"'; ctx.fillStyle = item.color;
-            ctx.textBaseline = 'hanging'; ctx.fillText(item.text, item.x, item.y);
+            ctx.font = `bold ${Math.round(22 * renderScale)}px "Geist Mono"`; ctx.fillStyle = item.color;
+            ctx.textBaseline = 'hanging'; 
+            ctx.fillText(item.text, item.x_pct * canvas.width, item.y_pct * canvas.height);
         } else if (item.type === 'path') {
-            ctx.strokeStyle = item.color || selectedColor; ctx.lineWidth = item.tool === 'pen' ? 2.2 : 18;
+            ctx.strokeStyle = item.color || selectedColor; ctx.lineWidth = (item.tool === 'pen' ? 2.2 : 18) * renderScale;
             ctx.lineJoin = 'round'; ctx.lineCap = 'round';
-            ctx.beginPath(); ctx.moveTo(item.x1, item.y1); ctx.lineTo(item.x2, item.y2); ctx.stroke();
+            ctx.beginPath(); 
+            ctx.moveTo(item.x1_pct * canvas.width, item.y1_pct * canvas.height); 
+            ctx.lineTo(item.x2_pct * canvas.width, item.y2_pct * canvas.height); 
+            ctx.stroke();
         } else if (item.type === 'rect') {
-            ctx.fillStyle = item.color; ctx.fillRect(item.x, item.y, item.w, item.h);
+            ctx.fillStyle = item.color; 
+            ctx.fillRect(item.x_pct * canvas.width, item.y_pct * canvas.height, item.w_pct * canvas.width, item.h_pct * canvas.height);
         }
     });
 }
@@ -511,7 +558,9 @@ async function jumpToSearchResult(res) {
     scrollToPage(res.pageNum);
     
     const page = await pdfDoc.getPage(res.pageNum);
-    const v = page.getViewport({ scale, rotation });
+    const dpr = window.devicePixelRatio || 1;
+    const RENDER_SHARPNESS_FACTOR = 2;
+    const renderViewport = page.getViewport({ scale: scale * RENDER_SHARPNESS_FACTOR * dpr, rotation });
     const wrapper = document.getElementById(`wrapper-${res.pageNum}`);
     const draw = wrapper.querySelector('.drawing-layer');
     const ctx = draw.getContext('2d');
@@ -523,24 +572,24 @@ async function jumpToSearchResult(res) {
     const charWidth = res.width / res.str.length;
     const offsetX = res.matchIdx * charWidth;
     const wordWidth = res.matchLen * charWidth;
-
+ 
     // Convert PDF coordinates to viewport coordinates (respects rotation/scale)
     // tx, ty is the bottom-left of the text block in PDF space
-    const [vx, vy] = v.convertToViewportPoint(tx + offsetX, ty);
+    const [vx, vy] = renderViewport.convertToViewportPoint(tx + offsetX, ty);
     
     // PDF space is bottom-up, so ty+scY is the top. 
     // converToViewportPoint handles the Y-flip.
-    const [vx2, vy2] = v.convertToViewportPoint(tx + offsetX + wordWidth, ty + scY);
-
+    const [vx2, vy2] = renderViewport.convertToViewportPoint(tx + offsetX + wordWidth, ty + scY);
+ 
     const x = Math.min(vx, vx2);
     const y = Math.min(vy, vy2);
     const w = Math.abs(vx2 - vx);
     const h = Math.abs(vy2 - vy);
-
+ 
     // Ultra-visible highlight
     ctx.fillStyle = 'rgba(255, 60, 0, 0.35)'; // Bright Red-Orange for contrast
     ctx.strokeStyle = '#ff3c00';
-    ctx.lineWidth = 2;
+    ctx.lineWidth = 2 * RENDER_SHARPNESS_FACTOR * dpr;
     ctx.strokeRect(x - 1, y - 1, w + 2, h + 2);
     ctx.fillRect(x, y, w, h);
 }
@@ -625,19 +674,18 @@ document.getElementById('download-btn').onclick = async () => {
         for (let i = 0; i < pgs.length; i++) {
             const pIdx = i + 1; const annots = annotations[pIdx] || []; if (annots.length === 0) continue;
             const pdfPage = pgs[i]; const { width: pW, height: pH } = pdfPage.getSize();
-            const origPage = await pdfDoc.getPage(pIdx); const v = origPage.getViewport({ scale, rotation });
             for (const it of annots) {
                 const hToR = (h) => { const r = parseInt(h.slice(1,3), 16)/255; const g = parseInt(h.slice(3,5), 16)/255; const b = parseInt(h.slice(5,7), 16)/255; return rgb(r, g, b); };
                 const c = hToR(it.color || selectedColor);
                 if (it.type === 'rect') {
-                    const px = (it.x/v.width)*pW; const py = pH - ((it.y/v.height)*pH) - ((it.h/v.height)*pH);
-                    pdfPage.drawRectangle({ x: px, y: py, width: (it.w/v.width)*pW, height: (it.h/v.height)*pH, color: c, opacity: 0.3 });
+                    const px = it.x_pct * pW; const py = pH - (it.y_pct * pH) - (it.h_pct * pH);
+                    pdfPage.drawRectangle({ x: px, y: py, width: it.w_pct * pW, height: it.h_pct * pH, color: c, opacity: 0.3 });
                 } else if (it.type === 'text') {
-                    const px = (it.x/v.width)*pW; const py = pH - ((it.y/v.height)*pH) - 16;
+                    const px = it.x_pct * pW; const py = pH - (it.y_pct * pH) - 16;
                     pdfPage.drawText(it.text, { x: px, y: py, size: 18, color: c });
                 } else if (it.type === 'path') {
-                    const x1 = (it.x1/v.width)*pW; const y1 = pH-((it.y1/v.height)*pH);
-                    const x2 = (it.x2/v.width)*pW; const y2 = pH-((it.y2/v.height)*pH);
+                    const x1 = it.x1_pct * pW; const y1 = pH - (it.y1_pct * pH);
+                    const x2 = it.x2_pct * pW; const y2 = pH - (it.y2_pct * pH);
                     pdfPage.drawLine({ start: { x: x1, y: y1 }, end: { x: x2, y: y2 }, thickness: it.tool === 'pen' ? 1.5 : 12, color: c, opacity: it.tool === 'pen' ? 1 : 0.2 });
                 }
             }

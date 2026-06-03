@@ -152,8 +152,10 @@ dots.forEach(dot => {
 });
 function applyAccent(color) {
     document.documentElement.style.setProperty('--accent', color);
-    const glow = color.replace(')', ', 0.3)').replace('rgb', 'rgba').replace('hsl', 'hsla');
-    document.documentElement.style.setProperty('--accent-glow', glow);
+    document.documentElement.style.setProperty('--accent-glow', `color-mix(in srgb, ${color} 30%, transparent)`);
+    document.documentElement.style.setProperty('--accent-dim', `color-mix(in srgb, ${color} 12%, transparent)`);
+    document.documentElement.style.setProperty('--accent-border', color);
+    localStorage.setItem('ocal-settings-accent', color);
     
     dots.forEach(d => d.classList.toggle('active', d.dataset.color === color));
 }
@@ -319,37 +321,39 @@ function renderProfiles(s) {
     const grid = document.getElementById('profile-grid');
     if (!grid) return;
     
-    let html = (s.profiles || []).map((p, index) => `
-        <div class="choice-item profile-card ${s.currentProfileId === p.id ? 'active' : ''}" 
+    let html = (s.profiles || []).map((p, index) => {
+        const isActive = (s.currentProfileId || 'default') === p.id;
+        return `
+        <div class="choice-item profile-card ${isActive ? 'active' : ''}" 
              onclick="window.electronAPI.switchProfile('${p.id}')"
-             style="display: flex; flex-direction: column; align-items: center; padding: 24px; gap: 14px; position: relative; transition: var(--spring-transition); border-radius: var(--radius-lg); background: var(--glass); border: 1px solid var(--glass-border); cursor: pointer;">
+             style="display: flex; flex-direction: column; align-items: center; padding: 24px; gap: 14px; position: relative; cursor: pointer; min-height: 184px;">
             
             <div style="position: relative;">
-                <div class="profile-avatar-wrap" style="width: 64px; height: 64px; background: ${s.currentProfileId === p.id ? 'var(--accent)' : 'rgba(255, 255, 255, 0.05)'}; border-radius: 50%; display: flex; align-items: center; justify-content: center; color: ${s.currentProfileId === p.id ? '#000' : 'var(--text-dim)'}; font-size: 26px; border: 2px solid ${s.currentProfileId === p.id ? 'var(--accent)' : 'rgba(255, 255, 255, 0.08)'}; transition: all 0.3s;">
+                <div class="profile-avatar-wrap" style="width: 64px; height: 64px; background: ${isActive ? 'var(--accent)' : 'rgba(255, 255, 255, 0.05)'}; border-radius: 50%; display: flex; align-items: center; justify-content: center; color: ${isActive ? '#000' : 'var(--text-dim)'}; font-size: 26px; border: 2px solid ${isActive ? 'var(--accent)' : 'rgba(255, 255, 255, 0.08)'}; transition: none;">
                     <i class="fas ${p.icon || 'fa-user'}"></i>
                 </div>
-                ${s.currentProfileId === p.id ? '<div style="position: absolute; bottom: -2px; right: -2px; width: 20px; height: 20px; background: #4ade80; border-radius: 50%; border: 2px solid var(--background); display: flex; align-items: center; justify-content: center;"><i class="fas fa-check" style="font-size: 9px; color: #000;"></i></div>' : ''}
+                ${isActive ? '<div style="position: absolute; bottom: -2px; right: -2px; width: 20px; height: 20px; background: #4ade80; border-radius: 50%; border: 2px solid var(--bg); display: flex; align-items: center; justify-content: center;"><i class="fas fa-check" style="font-size: 9px; color: #000;"></i></div>' : ''}
             </div>
 
             <div style="text-align: center; width: 100%;">
                 <h4 style="font-size: 15px; margin: 0 0 4px 0; font-weight: 700; color: var(--text); display: flex; align-items: center; justify-content: center; gap: 8px;">
                     ${p.name}
-                    ${s.currentProfileId === p.id ? '<span style="font-size: 9px; color: #4ade80; font-weight: 800; background: rgba(74, 222, 128, 0.1); padding: 2px 8px; border-radius: 4px; border: 1px solid rgba(74, 222, 128, 0.2);">ACTIVE</span>' : ''}
+                    ${isActive ? '<span style="font-size: 9px; color: #4ade80; font-weight: 800; background: rgba(74, 222, 128, 0.1); padding: 2px 8px; border-radius: 4px; border: 1px solid rgba(74, 222, 128, 0.2);">ACTIVE</span>' : ''}
                 </h4>
                 <p style="font-size: 12px; color: var(--text-dim); line-height: 1.4; margin: 0;">
-                    ${s.currentProfileId === p.id ? 'Active node session' : 'Isolated sandboxed node'}
+                    ${isActive ? 'Active node session' : 'Isolated sandboxed node'}
                 </p>
             </div>
 
-            <div style="display: flex; gap: 8px; width: 100%; margin-top: 10px; justify-content: center;" onclick="event.stopPropagation();">
+            <div style="display: flex; gap: 8px; width: 100%; margin-top: auto; justify-content: center;" onclick="event.stopPropagation();">
                 <button class="btn secondary" onclick="editProfilePrompt('${p.id}')" 
-                        style="flex: 1; max-width: 100px; padding: 6px 12px; font-size: 11px; display: flex; align-items: center; justify-content: center; gap: 6px; font-weight: 600;">
+                        style="flex: 1; max-width: 100px; padding: 6px 12px; font-size: 11px; display: flex; align-items: center; justify-content: center; gap: 6px; font-weight: 600; transition: none;">
                     <i class="fas fa-pen" style="font-size: 9px;"></i>
                     <span>Edit</span>
                 </button>
                 ${p.id !== 'default' ? `
                 <button class="btn secondary" onclick="deleteProfile('${p.id}', '${p.name}')" 
-                        style="flex: 1; max-width: 100px; padding: 6px 12px; font-size: 11px; display: flex; align-items: center; justify-content: center; gap: 6px; font-weight: 600; color: #ef4444; border-color: rgba(239, 68, 68, 0.15); background: rgba(239, 68, 68, 0.04);" 
+                        style="flex: 1; max-width: 100px; padding: 6px 12px; font-size: 11px; display: flex; align-items: center; justify-content: center; gap: 6px; font-weight: 600; color: #ef4444; border-color: rgba(239, 68, 68, 0.15); background: rgba(239, 68, 68, 0.04); transition: none;" 
                         onmouseover="this.style.background='rgba(239, 68, 68, 0.1)'; this.style.color='#ef4444';" 
                         onmouseout="this.style.background='rgba(239, 68, 68, 0.04)';">
                     <i class="fas fa-trash" style="font-size: 9px;"></i>
@@ -357,17 +361,18 @@ function renderProfiles(s) {
                 </button>` : ''}
             </div>
         </div>
-    `).join('');
+    `;
+    }).join('');
 
     // Append the dashed "+ Create New Node" card
     html += `
         <div class="choice-item add-profile-card" onclick="createProfilePrompt()" 
-             style="display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 24px; gap: 14px; border-radius: var(--radius-lg); cursor: pointer; transition: var(--spring-transition); min-height: 184px; text-align: center;">
-            <div class="add-avatar-circle" style="width: 52px; height: 52px; border-radius: 50%; border: 1px dashed var(--text-muted); display: flex; align-items: center; justify-content: center; color: var(--text-dim); font-size: 20px; transition: all 0.3s; background: rgba(255, 255, 255, 0.02);">
+             style="display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 24px; gap: 14px; cursor: pointer; min-height: 184px; text-align: center;">
+            <div class="add-avatar-circle" style="width: 52px; height: 52px; border-radius: 50%; border: 1px dashed var(--text-muted); display: flex; align-items: center; justify-content: center; color: var(--text-dim); font-size: 20px; background: rgba(255, 255, 255, 0.02); transition: none;">
                 <i class="fas fa-plus"></i>
             </div>
             <div style="display: flex; flex-direction: column; gap: 2px;">
-                <span style="font-size: 13px; font-weight: 700; color: var(--text-dim); transition: color 0.2s;">Create New Node</span>
+                <span style="font-size: 13px; font-weight: 700; color: var(--text-dim);">Create New Node</span>
                 <span style="font-size: 11px; color: var(--text-muted);">Launch isolated workspace</span>
             </div>
         </div>
@@ -792,12 +797,23 @@ window.electronAPI.getSettings().then(s => {
     if (s.accentColor) applyAccent(s.accentColor);
     setGridValue('search-grid', s.searchEngine || 'google');
     setGridValue('dns-grid', s.dns || 'default');
-    setGridValue('bookmark-bar-grid', s.bookmarkBarMode || 'auto');
+    const bmToggle = document.getElementById('bookmarks-bar-toggle');
+    if (bmToggle) {
+        bmToggle.classList.toggle('on', s.bookmarkBarMode === 'always');
+    }
+    setGridValue('sidebar-mode-grid', s.sidebarMode || 'visible');
     setGridValue('tile-style-grid', s.homeTileStyle || 'glass-array');
     
     initGridSelector('search-grid', 'searchEngine');
     initGridSelector('dns-grid', 'dns');
-    initGridSelector('bookmark-bar-grid', 'bookmarkBarMode');
+    if (bmToggle) {
+        bmToggle.onclick = () => {
+            const newState = !bmToggle.classList.contains('on');
+            bmToggle.classList.toggle('on', newState);
+            window.electronAPI.updateSetting('bookmarkBarMode', newState ? 'always' : 'never');
+        };
+    }
+    initGridSelector('sidebar-mode-grid', 'sidebarMode');
     initGridSelector('tile-style-grid', 'homeTileStyle');
     initGridSelector('theme-mode-grid', 'themeMode');
     
@@ -823,8 +839,12 @@ window.electronAPI.getSettings().then(s => {
     
     // Initialize tile style radio buttons
     const tileStyleRadios = document.querySelectorAll('input[name="tile-style"]');
+    let initialTileStyle = s.homeTileStyle || 'glass-array';
+    if (initialTileStyle === 'square' || initialTileStyle === 'rectangle' || initialTileStyle === 'monochrome') {
+        initialTileStyle = 'glass-array';
+    }
     tileStyleRadios.forEach(radio => {
-        if (radio.dataset.value === s.homeTileStyle) {
+        if (radio.dataset.value === initialTileStyle) {
             radio.checked = true;
         }
         radio.addEventListener('change', () => {
@@ -861,6 +881,7 @@ window.electronAPI.getSettings().then(s => {
     initGridSelector('dns-grid', 'dnsProvider');
     
     updateProtectionLevel(s);
+    window.currentSettings = s;
     renderProfiles(s);
     renderExtensions(s);
     
@@ -908,8 +929,104 @@ window.electronAPI.getSettings().then(s => {
         aiKeyInp.value = s.aiApiKey || '';
         aiKeyInp.onchange = () => window.electronAPI.updateSetting('aiApiKey', aiKeyInp.value);
     }
-    setGridValue('ai-engine-grid', s.aiEngine || 'local');
+
+    const openaiKeyInp = document.getElementById('openai-api-key-input');
+    if (openaiKeyInp) {
+        openaiKeyInp.value = s.openaiApiKey || '';
+        openaiKeyInp.onchange = () => window.electronAPI.updateSetting('openaiApiKey', openaiKeyInp.value);
+    }
+
+    const customEndpointInp = document.getElementById('custom-endpoint-input');
+    if (customEndpointInp) {
+        customEndpointInp.value = s.customEndpoint || '';
+        customEndpointInp.onchange = () => window.electronAPI.updateSetting('customEndpoint', customEndpointInp.value);
+    }
+
+    const customModelInp = document.getElementById('custom-model-input');
+    if (customModelInp) {
+        customModelInp.value = s.customModel || '';
+        customModelInp.onchange = () => window.electronAPI.updateSetting('customModel', customModelInp.value);
+    }
+
+    const customKeyInp = document.getElementById('custom-key-input');
+    if (customKeyInp) {
+        customKeyInp.value = s.customApiKey || '';
+        customKeyInp.onchange = () => window.electronAPI.updateSetting('customApiKey', customKeyInp.value);
+    }
+
+    function updateAISettingsVisibility(engine) {
+        const geminiRow = document.getElementById('gemini-key-row');
+        const openaiKeyRow = document.getElementById('openai-key-row');
+        const customEndpointRow = document.getElementById('custom-endpoint-row');
+        const customModelRow = document.getElementById('custom-model-row');
+        const customKeyRow = document.getElementById('custom-key-row');
+        const localModelRow = document.getElementById('local-model-row');
+        const localEndpointRow = document.getElementById('local-endpoint-row');
+
+        if (geminiRow) geminiRow.style.display = (engine === 'gemini') ? 'flex' : 'none';
+        if (openaiKeyRow) openaiKeyRow.style.display = (engine === 'openai') ? 'flex' : 'none';
+        if (customEndpointRow) customEndpointRow.style.display = (engine === 'custom') ? 'flex' : 'none';
+        if (customModelRow) customModelRow.style.display = (engine === 'custom') ? 'flex' : 'none';
+        if (customKeyRow) customKeyRow.style.display = (engine === 'custom') ? 'flex' : 'none';
+        if (localModelRow) localModelRow.style.display = (engine === 'local') ? 'flex' : 'none';
+        if (localEndpointRow) localEndpointRow.style.display = (engine === 'local') ? 'flex' : 'none';
+    }
+
+    const activeEngine = s.aiEngine || 'local';
+    setGridValue('ai-engine-grid', activeEngine);
     initGridSelector('ai-engine-grid', 'aiEngine');
+    updateAISettingsVisibility(activeEngine);
+
+    const aiEngineGrid = document.getElementById('ai-engine-grid');
+    if (aiEngineGrid) {
+        aiEngineGrid.querySelectorAll('.choice-item').forEach(item => {
+            const originalClick = item.onclick;
+            item.onclick = () => {
+                if (originalClick) originalClick();
+                updateAISettingsVisibility(item.dataset.value);
+            };
+        });
+    }
+
+    // Local Model and Endpoint Settings bindings
+    const localModelSelect = document.getElementById('local-model-select');
+    const localEndpointInp = document.getElementById('local-endpoint-input');
+
+    async function fetchOllamaModels(endpoint) {
+        if (!localModelSelect) return;
+        localModelSelect.innerHTML = '<option value="auto">Auto-detect (Heuristics)</option>';
+        try {
+            const url = `${endpoint.replace(/\/$/, '')}/api/tags`;
+            const res = await fetch(url);
+            if (res.ok) {
+                const data = await res.json();
+                if (data.models && Array.isArray(data.models)) {
+                    data.models.forEach(model => {
+                        const opt = document.createElement('option');
+                        opt.value = model.name;
+                        opt.textContent = model.name;
+                        localModelSelect.appendChild(opt);
+                    });
+                    localModelSelect.value = s.localModel || 'auto';
+                }
+            }
+        } catch (e) {
+            console.warn('Ollama not running or inaccessible:', e.message);
+        }
+    }
+
+    if (localModelSelect) {
+        localModelSelect.value = s.localModel || 'auto';
+        localModelSelect.onchange = () => window.electronAPI.updateSetting('localModel', localModelSelect.value);
+    }
+    if (localEndpointInp) {
+        localEndpointInp.value = s.localEndpoint || 'http://localhost:11434';
+        localEndpointInp.onchange = () => {
+            window.electronAPI.updateSetting('localEndpoint', localEndpointInp.value);
+            fetchOllamaModels(localEndpointInp.value);
+        };
+        fetchOllamaModels(localEndpointInp.value);
+    }
 
     initToggle('ai-deep-scrape-toggle', 'aiDeepScrape', s.aiDeepScrape !== false);
     initToggle('ai-show-reasoning-toggle', 'aiShowReasoning', s.aiShowReasoning !== false);

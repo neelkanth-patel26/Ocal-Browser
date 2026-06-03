@@ -12,8 +12,8 @@ const finalScoreEl = document.getElementById('final-score');
 const restartBtn = document.getElementById('restartBtn');
 
 // Config
-const ACCENT = '#a855f7';
-const ACCENT_GLOW = 'rgba(168, 85, 247, 0.4)';
+let ACCENT = '#a855f7';
+let ACCENT_GLOW = 'rgba(168, 85, 247, 0.4)';
 const CANVAS_WIDTH = 800;
 const CANVAS_HEIGHT = 400;
 const GROUND_Y = 320;
@@ -29,6 +29,44 @@ let frameCount = 0;
 let animationId;
 
 bestVal.innerText = highScore;
+
+function updateColors() {
+    const computedAccent = getComputedStyle(document.documentElement).getPropertyValue('--accent').trim();
+    if (computedAccent) {
+        ACCENT = computedAccent;
+        
+        const hexToRgba = (hex, alpha) => {
+            const result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
+            if (!result) return `rgba(168, 85, 247, ${alpha})`;
+            const r = parseInt(result[1], 16);
+            const g = parseInt(result[2], 16);
+            const b = parseInt(result[3], 16);
+            return `rgba(${r}, ${g}, ${b}, ${alpha})`;
+        };
+        
+        ACCENT_GLOW = hexToRgba(computedAccent, 0.4);
+    }
+}
+updateColors();
+
+// Listen for updates from settings
+if (window.electronAPI) {
+    window.electronAPI.getSettings().then(s => {
+        if (s.accentColor) updateColors();
+    });
+    window.electronAPI.onSettingsChanged((s) => {
+        if (s.accentColor) setTimeout(updateColors, 50);
+    });
+}
+
+function getRgbValues(hex) {
+    const result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
+    if (!result) return '168, 85, 247';
+    const r = parseInt(result[1], 16);
+    const g = parseInt(result[2], 16);
+    const b = parseInt(result[3], 16);
+    return `${r}, ${g}, ${b}`;
+}
 
 // ── Particle System ───────────────────────────────────────────
 class Particle {
@@ -158,7 +196,7 @@ const player = {
 // ── Background Rendering ──────────────────────────────────────
 function drawBackground() {
     // 1. Grid lines (3D perspective)
-    ctx.strokeStyle = 'rgba(168, 85, 247, 0.15)';
+    ctx.strokeStyle = `rgba(${getRgbValues(ACCENT)}, 0.15)`;
     ctx.lineWidth = 1;
 
     // Horizon line
@@ -183,7 +221,7 @@ function drawBackground() {
         const y = GROUND_Y + i * gridSpacing - gridOffset;
         if (y < GROUND_Y) continue;
         const opacity = (y - GROUND_Y) / (CANVAS_HEIGHT - GROUND_Y);
-        ctx.strokeStyle = `rgba(168, 85, 247, ${opacity * 0.3})`;
+        ctx.strokeStyle = `rgba(${getRgbValues(ACCENT)}, ${opacity * 0.3})`;
         ctx.beginPath();
         ctx.moveTo(0, y);
         ctx.lineTo(CANVAS_WIDTH, y);

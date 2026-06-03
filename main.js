@@ -205,7 +205,8 @@ let userSettings = loadSettings() || {
     homeLayout: 'center', // 'top', 'center', 'bottom'
     homeTileSize: 80,
     homeTileSpacing: 20,
-    homeTileStyle: 'square', // 'square', 'rectangle', 'monochrome'
+    homeTileStyle: 'glass-array', // 'glass-array', 'solid-matte', 'neon-orbit'
+    sidebarMode: 'visible', // 'visible', 'hidden', 'autohide'
     autoCheckUpdates: true,
     confirmExit: true,
     tabGroups: [], // { id, name, color, collapsed }
@@ -223,19 +224,35 @@ let userSettings = loadSettings() || {
     downloads: [],
     shieldStats: { ads: 0, trackers: 0, dataSaved: 0, history: [] },
     pdfViewerEnabled: true,
-    batterySaver: false
+    batterySaver: false,
+    localModel: 'auto',
+    localEndpoint: 'http://localhost:11434',
+    openaiApiKey: '',
+    customEndpoint: '',
+    customModel: '',
+    customApiKey: ''
 };
 
 if (!userSettings.bookmarks) userSettings.bookmarks = [];
+if (!userSettings.localModel) userSettings.localModel = 'auto';
+if (!userSettings.localEndpoint) userSettings.localEndpoint = 'http://localhost:11434';
+if (!userSettings.openaiApiKey) userSettings.openaiApiKey = '';
+if (!userSettings.customEndpoint) userSettings.customEndpoint = '';
+if (!userSettings.customModel) userSettings.customModel = '';
+if (!userSettings.customApiKey) userSettings.customApiKey = '';
 if (!userSettings.folders) userSettings.folders = [];
 if (!userSettings.history) userSettings.history = [];
 if (!userSettings.downloads) userSettings.downloads = [];
+if (!userSettings.currentProfileId) userSettings.currentProfileId = 'default';
 if (!userSettings.bookmarkBarMode) userSettings.bookmarkBarMode = 'auto';
 if (!userSettings.homeLayout) userSettings.homeLayout = 'center';
 if (!userSettings.homeTileSize) userSettings.homeTileSize = 80;
 if (!userSettings.sitePermissions) userSettings.sitePermissions = {};
 if (!userSettings.homeTileSpacing) userSettings.homeTileSpacing = 20;
-if (!userSettings.homeTileStyle) userSettings.homeTileStyle = 'square';
+if (!userSettings.homeTileStyle || userSettings.homeTileStyle === 'square' || userSettings.homeTileStyle === 'rectangle' || userSettings.homeTileStyle === 'monochrome') {
+    userSettings.homeTileStyle = 'glass-array';
+}
+if (!userSettings.sidebarMode) userSettings.sidebarMode = 'visible';
 if (userSettings.autoCheckUpdates === undefined) userSettings.autoCheckUpdates = true;
 if (!userSettings.tabGroups) userSettings.tabGroups = [];
 if (!userSettings.customSearchUrl) userSettings.customSearchUrl = 'https://www.google.com/search?q=%s';
@@ -402,6 +419,9 @@ let isQuitting = false;
 let activePopupGroupId = null;
 let webAppOpen = false;
 let currentWebAppUrl = null;
+let webAppLoadingTimeout = null;
+let lastYOffset = 96;
+let lastWSidebar = 44;
 if (!userSettings.sitePermissions) userSettings.sitePermissions = {};
 
 function applyShieldSettings() {
@@ -1011,7 +1031,6 @@ function createSidebarOverlay() {
     sidebarOverlayView.webContents.loadFile('sidebars.html');
     sidebarOverlayView.setBackgroundColor('#00000000');
     setupContextMenu(sidebarOverlayView.webContents);
-    setupInteractionDismissal(sidebarOverlayView.webContents);
 }
 
 function createAiSidebar() {
@@ -1021,7 +1040,6 @@ function createAiSidebar() {
     aiSidebarView.webContents.loadFile('ai-sidebar.html');
     aiSidebarView.setBackgroundColor('#00000000');
     setupContextMenu(aiSidebarView.webContents);
-    setupInteractionDismissal(aiSidebarView.webContents);
 
     // Ensure entrance animation plays on first load if it's being shown
     aiSidebarView.webContents.on('dom-ready', () => {
@@ -1330,6 +1348,7 @@ function resolveInternalURL(url) {
     const cleanBase = basePart.toLowerCase().replace(/\/$/, ''); // remove trailing slash for comparison
 
     // 1. Exact Page Mappings
+    if (cleanBase === 'home' || cleanBase === 'ocal://home') return 'file://' + path.join(__dirname, 'home.html');
     if (cleanBase === 'settings' || cleanBase === 'ocal://settings') return 'file://' + path.join(__dirname, 'settings.html');
     if (url.startsWith('ocal://settings#')) return 'file://' + path.join(__dirname, 'settings.html') + url.substring(15);
     if (cleanBase === 'file-manager' || cleanBase === 'ocal://file-manager') return 'file://' + path.join(__dirname, 'file-manager.html');
@@ -1425,12 +1444,6 @@ function createNewTab(url = null) {
                 html:fullscreen *, body:fullscreen *,
                 html:-webkit-full-screen *, body:-webkit-full-screen * {
                     border-radius: 0px !important;
-                }
-            `);
-        } else {
-            view.webContents.insertCSS(`
-                html, body {
-                    background: transparent !important;
                 }
             `);
         }
@@ -1864,7 +1877,13 @@ function updateViewBounds(forcedUrl = null) {
     const yPadding = (process.platform === 'win32') ? 1 : 0;
     const yOffset = hTabs + hNav + hBm + yPadding;
 
-    const wSidebar = isFullscreen ? 0 : 48;
+    let wSidebar = 44;
+    if (isFullscreen || userSettings.sidebarMode === 'hidden' || userSettings.sidebarMode === 'autohide') {
+        wSidebar = 0;
+    }
+
+    lastYOffset = yOffset;
+    lastWSidebar = wSidebar;
 
     if (activeViewEntry && activeViewEntry.view) {
         // Only update bounds and stack order if the view is currently attached to mainWindow
@@ -1934,6 +1953,10 @@ function updateViewBounds(forcedUrl = null) {
 
 // Deduplicated closeOverlays removed here
 function hideWebApp() {
+    if (webAppLoadingTimeout) {
+        clearTimeout(webAppLoadingTimeout);
+        webAppLoadingTimeout = null;
+    }
     webAppOpen = false;
     currentWebAppUrl = null;
     if (webAppView && mainWindow) mainWindow.removeBrowserView(webAppView);
@@ -1942,6 +1965,11 @@ function hideWebApp() {
 }
 
 function showWebApp(url) {
+    if (webAppLoadingTimeout) {
+        clearTimeout(webAppLoadingTimeout);
+        webAppLoadingTimeout = null;
+    }
+
     if (!webAppView) {
         webAppView = new BrowserView({
             webPreferences: { preload: path.join(__dirname, 'preload.js'), contextIsolation: true, nodeIntegration: false, devTools: false, sandbox: true }
@@ -1951,15 +1979,27 @@ function showWebApp(url) {
         webAppView.webContents.setWindowOpenHandler(({ url }) => { createNewTab(url); return { action: 'deny' }; });
     }
 
-    if (currentWebAppUrl !== url) {
-        webAppView.webContents.loadURL(url);
-        currentWebAppUrl = url;
-    }
+    // Always load the loading animation first
+    const loadingUrl = 'file:///' + path.join(__dirname, 'sidebar-loading.html').replace(/\\/g, '/') + '?url=' + encodeURIComponent(url);
+    webAppView.webContents.loadURL(loadingUrl);
+    currentWebAppUrl = url;
 
     if (!mainWindow.getBrowserViews().includes(webAppView)) mainWindow.addBrowserView(webAppView);
 
     webAppOpen = true;
     updateViewBounds();
+
+    if (mainWindow && !mainWindow.webContents.isDestroyed()) {
+        mainWindow.webContents.send('web-app-opened', url);
+    }
+
+    // Delay actual load by 2 seconds to simulate loading
+    webAppLoadingTimeout = setTimeout(() => {
+        if (webAppOpen && currentWebAppUrl === url && webAppView && !webAppView.webContents.isDestroyed()) {
+            webAppView.webContents.loadURL(url);
+        }
+        webAppLoadingTimeout = null;
+    }, 2000);
 }
 
 // Persistence & Global Logic ──────────────────────────────────────────
@@ -1970,7 +2010,14 @@ ipcMain.on('new-tab', () => createNewTab());
 ipcMain.on('switch-tab', (e, id) => setActiveTab(id));
 ipcMain.on('request-tabs', () => broadcastTabs());
 ipcMain.on('open-external', (e, url) => createNewTab(url));
-ipcMain.on('hide-popups', () => hidePopups());
+ipcMain.on('hide-popups', (e) => {
+    if (e && e.sender) {
+        if (webAppView && e.sender === webAppView.webContents) return;
+        if (aiSidebarView && e.sender === aiSidebarView.webContents) return;
+        if (sidebarOverlayView && e.sender === sidebarOverlayView.webContents) return;
+    }
+    hidePopups();
+});
 ipcMain.on('close-tab', async (e, id) => {
     if (views.length === 1) {
         mainWindow.close();
@@ -2123,11 +2170,9 @@ ipcMain.handle('ai-agent-execute', async (event, query) => {
     const q = query.toLowerCase();
     const actions = [];
 
-    // Load current AI context from settings
-    const apiKey = userSettings.aiApiKey;
+    const activeEngine = userSettings.aiEngine || 'local';
     const showReasoning = userSettings.aiShowReasoning !== false;
     const style = userSettings.aiResponseStyle || 'concise';
-    const useGemini = userSettings.aiEngine === 'gemini' && apiKey && apiKey.length > 20;
 
     const notifyAction = (text, icon = 'fa-spinner fa-spin') => {
         if (showReasoning && aiSidebarView) {
@@ -2136,7 +2181,129 @@ ipcMain.handle('ai-agent-execute', async (event, query) => {
         actions.push({ text, icon });
     };
 
+    const queryActiveLLM = async (prompt, customStyle = style) => {
+        if (activeEngine === 'gemini') {
+            return await tryGemini(prompt, userSettings.aiApiKey, customStyle);
+        } else if (activeEngine === 'openai') {
+            return await tryOpenAI(prompt, customStyle);
+        } else if (activeEngine === 'custom') {
+            return await tryCustomProvider(prompt, customStyle);
+        } else {
+            return await queryLocalLLM(prompt, customStyle);
+        }
+    };
+
     try {
+        // --- Early Conversational Intercepts ---
+        const GREETINGS = ['hi', 'hello', 'hey', 'yo', 'greetings', 'hola', 'bonjour', 'howdy', 'sup', 'good morning', 'good afternoon', 'good evening'];
+        const cleanQuery = q.trim().replace(/[.,\/#!$%\^&\*;:{}=\-_`~()?]/g, "");
+        const isSimpleGreeting = GREETINGS.includes(cleanQuery);
+
+        if (isSimpleGreeting) {
+            return {
+                text: "Hello! I'm your Ocal AI Assistant. How can I assist you today?",
+                actions: []
+            };
+        }
+
+        if (q.includes('who owns') || q.includes('who own') || q.includes('owner of') || q.includes('who is the owner')) {
+            if (q.includes('ocal') || q.includes('browser')) {
+                return {
+                    text: "Ocal Browser is owned and developed by **Gaming Network Studio**.\n\nYou can find more details on their official website: [Gaming Network Studio](https://gamingnetworkstudio.vercel.app).",
+                    actions: [{ text: "Visit Gaming Network Studio", icon: "fa-globe", url: "https://gamingnetworkstudio.vercel.app" }]
+                };
+            }
+        }
+
+        if (q.includes('settings') && (q.includes('what') || q.includes('how') || q.includes('explain') || q.includes('list'))) {
+            return {
+                text: `### ⚙️ Ocal Settings Guide\n\nOcal Browser settings are divided into the following sections:\n1. **Dashboard**: Live stats on ad-blocking, bandwidth saved, and system memory.\n2. **General**: Startup settings, default browser checks, and download location.\n3. **Search**: Select your search engine (Google, Bing, custom) and toggle suggestions.\n4. **Home Page**: Customize layouts, wallpapers, and tile shortcuts.\n5. **Profiles**: Create and switch browser identities (aliases) to keep data isolated.\n6. **Security & Shields**: Manage ad-blocking shields, proxy servers, HTTPS upgrades, and DoH.\n7. **Extensions**: Load unpacked extensions or install from the Chrome Web Store.\n8. **Shortcuts**: Customize keyboard hotkeys and mouse navigation gestures.\n9. **AI Assistant**: Set up models (Ollama, Gemini, ChatGPT) and configure keys.\n10. **About**: View Ocal version details, copyright, and check for updates.\n\n**How to access settings:**\n- Click the **Easy Setup / Settings** button at the bottom of the left sidebar.\n- Type \`ocal://settings\` in the address bar.\n- Ask me to *"open settings [section]"* (e.g. *"open settings ai"*).`,
+                actions: [
+                    { text: "Open General Settings", icon: "fa-cog", command: "open-settings", section: "general" },
+                    { text: "Open AI Settings", icon: "fa-robot", command: "open-settings", section: "ai" }
+                ]
+            };
+        }
+
+        if (q.includes('settings') && (q.includes('open') || q.includes('go to') || q.includes('visit') || q.includes('show'))) {
+            const matchedSection = ['general', 'search', 'homepage', 'profiles', 'security', 'extensions', 'shortcuts', 'ai', 'about', 'dashboard'].find(sec => q.includes(sec));
+            const sectionToOpen = matchedSection || 'general';
+            notifyAction(`Opening settings: ${sectionToOpen}...`, 'fa-gear');
+            createNewTab(`ocal://settings#${sectionToOpen}`);
+            return {
+                text: `I've opened the **${sectionToOpen.toUpperCase()}** settings page for you.`,
+                actions: [{ text: `Open ${sectionToOpen.toUpperCase()} Settings`, icon: "fa-cog", url: `ocal://settings#${sectionToOpen}` }]
+            };
+        }
+
+        if (q.includes('bookmark') && (q.includes('open') || q.includes('go to') || q.includes('visit'))) {
+            const searchTerm = q.replace(/open|go to|visit|bookmark/gi, '').trim();
+            if (searchTerm && userSettings.bookmarks) {
+                const match = userSettings.bookmarks.find(b => b.title.toLowerCase().includes(searchTerm) || b.url.toLowerCase().includes(searchTerm));
+                if (match) {
+                    notifyAction(`Opening bookmark: ${match.title}...`, 'fa-bookmark');
+                    createNewTab(match.url);
+                    return {
+                        text: `I've found and opened your bookmark **"${match.title}"** (${match.url}).`,
+                        actions: [{ text: `Open ${match.title}`, icon: "fa-external-link-alt", url: match.url }]
+                    };
+                } else {
+                    return {
+                        text: `I couldn't find any bookmark matching **"${searchTerm}"**.`,
+                        actions: []
+                    };
+                }
+            }
+        }
+
+        if (cleanQuery === 'help' || q.includes('what can you do') || q.includes('how to use')) {
+            return {
+                text: `### 🚀 What I Can Do\n\n- **Direct Navigation**: Type "open youtube" or "go to github".\n- **Summarization**: Click the **Summarize** button or ask me to "summarize this page".\n- **Email Workspace**: Click **Compose Email** or ask me to draft/professionalize a message.\n- **Tab Management**: Ask me to "close this tab" or "show all tabs".\n- **Smart Search**: Ask any question to search the web and synthesize results.`,
+                actions: []
+            };
+        }
+
+        if (q.includes('how are you') || q.includes('how are you doing') || q.includes('how\'s it going') || q.includes('how is it going') || q.includes('how you doing') || q.includes('how are you today')) {
+            return {
+                text: "I'm doing great, thank you! I'm running locally on your device, keeping your browsing experience fast, secure, and smart. How are you doing today? 😊",
+                actions: []
+            };
+        }
+
+        if (q.includes('who created you') || q.includes('who made you') || q.includes('who is your creator') || q.includes('who built you')) {
+            return {
+                text: "I was created by the Ocal team to serve as an intelligent, high-performance browser assistant integrated directly into your workspace. 🚀",
+                actions: []
+            };
+        }
+
+        if (q.includes('what is ocal') || q.includes('what is ocal browser') || q.includes('tell me about ocal')) {
+            return {
+                text: "Ocal is a modern, high-performance web browser designed with built-in ad blocking, security shields, a local AI assistant, sidebars, and customizable theme settings.",
+                actions: []
+            };
+        }
+
+        if (q.includes('who are you') || q.includes('your name') || q.includes('what are you')) {
+            return {
+                text: "I am Ocal AI, your high-performance browser assistant. I run locally on your system or connect to cloud APIs to manage tabs, search the web, and answer questions.",
+                actions: []
+            };
+        }
+
+        if (q.includes('thank you') || q.includes('thanks')) {
+            return {
+                text: "You're very welcome! Let me know if there's anything else I can do for you.",
+                actions: []
+            };
+        }
+
+        if (q.includes('i love you') || q.includes('you are awesome') || q.includes('you are great') || q.includes('good job') || q.includes('well done')) {
+            return {
+                text: "Thank you so much! That's very kind of you. I'm glad I can make your browsing experience better! ❤️",
+                actions: []
+            };
+        }
         // --- Multi-Task Sequencing ---
         // Split by " and then ", " then ", " and " (if followed by a command)
         const subTasks = query.split(/\s+and\s+then\s+|\s+then\s+|\s+and\s+followed\s+by\s+|\s+;\s+/gi).map(t => t.trim()).filter(Boolean);
@@ -2378,10 +2545,35 @@ ipcMain.handle('ai-agent-execute', async (event, query) => {
             `).catch(() => null);
 
             if (pageData) {
-                if (useGemini) {
-                    notifyAction("Synthesizing AI Narrative (Gemini)...", 'fa-wand-magic-sparkles');
-                    const results = await tryGemini(`Analyze this page: ${pageData.meta.title}\nKey points: ${pageData.ranked.join('. ')}\n\nProvide a ${style} analysis in Markdown.`, apiKey, style);
-                    if (results) return { text: results, actions };
+                notifyAction("Synthesizing AI Narrative...", 'fa-wand-magic-sparkles');
+                const prompt = `Analyze this page: ${pageData.meta.title}\nKey points: ${pageData.ranked.join('. ')}\n\nProvide a ${style} analysis in Markdown.`;
+                const results = await queryActiveLLM(prompt, style);
+                if (results) {
+                    let providerNote = "";
+                    if (activeEngine === 'local') {
+                        let resolvedModelName = userSettings.localModel || 'auto';
+                        if (resolvedModelName === 'auto') {
+                            const endpoint = userSettings.localEndpoint || 'http://localhost:11434';
+                            try {
+                                const tagsUrl = `${endpoint.replace(/\/$/, '')}/api/tags`;
+                                const tagsRes = await fetch(tagsUrl);
+                                if (tagsRes.ok) {
+                                    const tagsData = await tagsRes.json();
+                                    if (tagsData.models && tagsData.models.length > 0) {
+                                        resolvedModelName = tagsData.models[0].name;
+                                    }
+                                }
+                            } catch (e) {}
+                        }
+                        providerNote = `\n\n> [!NOTE]\n> Analyzed locally using **${resolvedModelName}** for maximum privacy.`;
+                    } else if (activeEngine === 'gemini') {
+                        providerNote = `\n\n> [!NOTE]\n> Analyzed using **Gemini Pro**.`;
+                    } else if (activeEngine === 'openai') {
+                        providerNote = `\n\n> [!NOTE]\n> Analyzed using **ChatGPT**.`;
+                    } else if (activeEngine === 'custom') {
+                        providerNote = `\n\n> [!NOTE]\n> Analyzed using custom model **${userSettings.customModel || 'OpenAI-compatible'}**.`;
+                    }
+                    return { text: results + providerNote, actions };
                 }
 
                 notifyAction("Performing Semantic Heuristics...", 'fa-brain');
@@ -2389,18 +2581,15 @@ ipcMain.handle('ai-agent-execute', async (event, query) => {
                 if (pageData.meta.description) localResult += `> ${pageData.meta.description}\n\n`;
                 localResult += `#### Key Takeaways:\n`;
                 pageData.ranked.forEach(p => localResult += `- ${p}.\n`);
-                localResult += `\n> [!NOTE]\n> This analysis was performed locally on your device for maximum privacy. For deeper reasoning, enable Gemini Pro in settings.`;
+                localResult += `\n> [!NOTE]\n> This analysis was performed locally using native heuristics. To enable smarter analysis, select a model provider in settings.`;
                 return { text: localResult, actions };
             }
         }
 
         // Phase 4: General Assistant (Direct Sidebar Answer with Environment Context)
-        if (useGemini) {
-            notifyAction("Consulting AI Intelligence...", 'fa-brain');
-            const tabContext = `[Environment Context] Open Tabs: ${views.length} (${views.map(v => v.view.webContents.getTitle()).join(', ')}).`;
-            const directAnswer = await tryGemini(`${tabContext}\n\nQuery: ${query}`, apiKey, style);
-            if (directAnswer) return { text: directAnswer, actions };
-        }
+        const tabContext = `[Environment Context] Open Tabs: ${views.length} (${views.map(v => v.view.webContents.getTitle()).join(', ')}).`;
+        const directAnswer = await queryActiveLLM(`${tabContext}\n\nQuery: ${query}`, style);
+        if (directAnswer) return { text: directAnswer, actions };
 
         // Final Fallback: Live Web Intelligence (RAG-lite)
         notifyAction("Researching live web data...", 'fa-earth-americas');
@@ -2408,26 +2597,40 @@ ipcMain.handle('ai-agent-execute', async (event, query) => {
 
         if (snippets && snippets.length > 0) {
             notifyAction("Synthesizing search results...", 'fa-wand-magic-sparkles');
-            let synthesis = `### 🌐 Web Intelligence: ${query}\n\n`;
-            synthesis += `I've researched the live web to find the most relevant information for you:\n\n`;
+            const synthesisPrompt = `Synthesize these search snippets to answer the query: "${query}"\n\nSearch Snippets:\n${snippets.map((s, idx) => `[${idx + 1}] ${s}`).join('\n')}\n\nProvide a synthesized answer in Markdown.`;
+            
+            const synthesis = await queryActiveLLM(synthesisPrompt, style);
+
+            if (synthesis) {
+                const searchUrl = `https://www.google.com/search?q=${encodeURIComponent(query)}`;
+                return {
+                    text: `### 🌐 Web Intelligence: ${query}\n\n${synthesis}\n\n> [!TIP]\n> You can view the full results or dive deeper into these sources by opening the search page below.`,
+                    actions: [...actions, { text: "Open Search Results", icon: "fa-external-link-alt", url: searchUrl }]
+                };
+            }
+
+            let fallbackSynthesis = `### 🌐 Web Intelligence: ${query}\n\n`;
+            fallbackSynthesis += `Based on real-time web search, here is the most relevant information:\n\n`;
 
             snippets.forEach((s, i) => {
-                synthesis += `> ${s}\n\n`;
+                fallbackSynthesis += `- **Source ${i + 1}**: ${s}\n\n`;
             });
 
-            synthesis += `\n> [!TIP]\n> You can view the full results or dive deeper into these sources by opening the search page below.`;
+            fallbackSynthesis += `---\n> [!NOTE]\n> This research was compiled locally via web heuristics. To get fully synthesized conversational answers, you can enable a local LLM or cloud model in settings.`;
 
             const searchUrl = `https://www.google.com/search?q=${encodeURIComponent(query)}`;
             return {
-                text: synthesis,
+                text: fallbackSynthesis,
                 actions: [...actions, { text: "Open Search Results", icon: "fa-external-link-alt", url: searchUrl }]
             };
         }
 
         // Search Fallback if no snippets found
         const searchUrl = `https://www.google.com/search?q=${encodeURIComponent(query)}`;
-        createNewTab(searchUrl);
-        return { text: `I've opened a search for **"${query}"** in a new tab. I can provide more details once you select a result!`, actions };
+        return { 
+            text: `I couldn't reach any AI models and was unable to fetch web snippets for **"${query}"**.\n\nWould you like to search the web in a new tab?`, 
+            actions: [...actions, { text: "Search in New Tab", icon: "fa-search", url: searchUrl }] 
+        };
 
     } catch (err) {
         console.error('[Agent Error]', err);
@@ -2461,17 +2664,38 @@ async function professionalizeEmail(notes, subject, apiKey, context = {}) {
       
     Respond ONLY with the email text.`;
 
-    // Attempt Gemini first
+    // Try active provider first, with fallbacks
+    const activeEngine = userSettings.aiEngine || 'local';
+    let result = null;
     try {
-        if (apiKey) {
-            const expanded = await tryGemini(prompt, apiKey, 'formal');
-            if (expanded && expanded.length > 10) {
-                return expanded;
-            }
+        if (activeEngine === 'gemini') {
+            result = await tryGemini(prompt, userSettings.aiApiKey, 'formal');
+        } else if (activeEngine === 'openai') {
+            result = await tryOpenAI(prompt, 'formal');
+        } else if (activeEngine === 'custom') {
+            result = await tryCustomProvider(prompt, 'formal');
+        } else {
+            result = await queryLocalLLM(prompt, 'formal');
         }
+        if (result && result.length > 10) return result;
     } catch (e) {
-        console.warn('[Professionalize] AI expansion failed:', e.message);
+        console.warn('[Professionalize] Active AI provider failed:', e.message);
     }
+
+    // Fallbacks
+    if (!result && userSettings.aiApiKey) {
+        try { result = await tryGemini(prompt, userSettings.aiApiKey, 'formal'); } catch (e) {}
+    }
+    if (!result && userSettings.openaiApiKey) {
+        try { result = await tryOpenAI(prompt, 'formal'); } catch (e) {}
+    }
+    if (!result && userSettings.customEndpoint) {
+        try { result = await tryCustomProvider(prompt, 'formal'); } catch (e) {}
+    }
+    if (!result) {
+        try { result = await queryLocalLLM(prompt, 'formal'); } catch (e) {}
+    }
+    if (result && result.length > 10) return result;
 
     // Fallback: Adaptive Premium Template Engine
     const isShort = notes.length < 60;
@@ -2488,6 +2712,138 @@ async function professionalizeEmail(notes, subject, apiKey, context = {}) {
 
     let template = `${greeting}\n\n${bodyIntro}.\n\nSpecifically, I wanted to follow up on the following:\n\n> ${notes}\n\nPlease let me know if there's anything else needed to move this forward.\n\nBest regards,\n\n**Ocal Professional Assistant**\n*Sent via Ocal Agent | Your High-Performance Browser*`;
     return template;
+}
+
+/**
+ * Helper: Query OpenAI (ChatGPT)
+ */
+async function tryOpenAI(prompt, style = 'concise') {
+    const apiKey = userSettings.openaiApiKey;
+    if (!apiKey) return null;
+
+    try {
+        const response = await fetch('https://api.openai.com/v1/chat/completions', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${apiKey}`
+            },
+            body: JSON.stringify({
+                model: 'gpt-4o-mini',
+                messages: [
+                    { role: 'system', content: `You are Ocal AI, a helpful browser assistant. Style: ${style}. Format: Markdown.` },
+                    { role: 'user', content: prompt }
+                ],
+                temperature: 0.7
+            })
+        });
+
+        if (response.ok) {
+            const data = await response.json();
+            return data.choices?.[0]?.message?.content || null;
+        } else {
+            console.warn('[OpenAI Error]', response.statusText);
+        }
+    } catch (e) {
+        console.warn('[OpenAI Request Failed]', e.message);
+    }
+    return null;
+}
+
+/**
+ * Helper: Query Custom OpenAI-Compatible Provider
+ */
+async function tryCustomProvider(prompt, style = 'concise') {
+    const endpoint = userSettings.customEndpoint;
+    const model = userSettings.customModel || 'deepseek-chat';
+    const apiKey = userSettings.customApiKey;
+    if (!endpoint) return null;
+
+    try {
+        const url = `${endpoint.replace(/\/$/, '')}/chat/completions`;
+        const headers = {
+            'Content-Type': 'application/json'
+        };
+        if (apiKey) {
+            headers['Authorization'] = `Bearer ${apiKey}`;
+        }
+
+        const response = await fetch(url, {
+            method: 'POST',
+            headers: headers,
+            body: JSON.stringify({
+                model: model,
+                messages: [
+                    { role: 'system', content: `You are Ocal AI, a helpful browser assistant. Style: ${style}. Format: Markdown.` },
+                    { role: 'user', content: prompt }
+                ],
+                temperature: 0.7
+            })
+        });
+
+        if (response.ok) {
+            const data = await response.json();
+            return data.choices?.[0]?.message?.content || null;
+        } else {
+            console.warn('[Custom Provider Error]', response.statusText);
+        }
+    } catch (e) {
+        console.warn('[Custom Provider Request Failed]', e.message);
+    }
+    return null;
+}
+
+/**
+ * Helper: Query local LLM (Ollama) if running on the device.
+ */
+async function queryLocalLLM(prompt, style = 'concise') {
+    const endpoint = userSettings.localEndpoint || 'http://localhost:11434';
+    let model = userSettings.localModel || 'auto';
+
+    try {
+        // 1. Auto-discover the first available model from Ollama if set to auto
+        if (model === 'auto') {
+            const tagsUrl = `${endpoint.replace(/\/$/, '')}/api/tags`;
+            const tagsRes = await fetch(tagsUrl);
+            if (tagsRes.ok) {
+                const tagsData = await tagsRes.json();
+                if (tagsData.models && tagsData.models.length > 0) {
+                    model = tagsData.models[0].name;
+                }
+            }
+        }
+
+        if (model === 'auto') {
+            return null; // Gracefully degrade if no model was found/Ollama is not running
+        }
+
+        // 2. Post chat query request to Ollama
+        const chatUrl = `${endpoint.replace(/\/$/, '')}/api/chat`;
+        const sysPrompt = `You are Ocal AI, a high-performance local browser assistant.
+        Style: ${style}. Format: Markdown. Keep responses brief and relevant.`;
+
+        const response = await fetch(chatUrl, {
+            method: 'POST',
+            body: JSON.stringify({
+                model: model,
+                messages: [
+                    { role: 'system', content: sysPrompt },
+                    { role: 'user', content: prompt }
+                ],
+                stream: false
+            }),
+            headers: { 'Content-Type': 'application/json' }
+        });
+
+        if (response.ok) {
+            const data = await response.json();
+            const text = data.message?.content;
+            if (text) return text;
+        }
+    } catch (e) {
+        console.warn('[Local LLM Warning] Local model query failed:', e.message);
+    }
+    return null;
 }
 
 /**
@@ -2529,7 +2885,57 @@ async function tryGemini(prompt, apiKey, style = 'concise') {
  * Helper: Perform a background web research for Local AI.
  * Uses a simulated "Headless Search" pattern to extract snippets.
  */
+/**
+ * Helper: Decode HTML/XML entities in text.
+ */
+function decodeHtmlEntities(str) {
+    if (!str) return '';
+    return str
+        .replace(/&#x27;/g, "'")
+        .replace(/&apos;/g, "'")
+        .replace(/&quot;/g, '"')
+        .replace(/&#x22;/g, '"')
+        .replace(/&amp;/g, '&')
+        .replace(/&#x26;/g, '&')
+        .replace(/&lt;/g, '<')
+        .replace(/&#x3C;/g, '<')
+        .replace(/&gt;/g, '>')
+        .replace(/&#x3E;/g, '>')
+        .replace(/&#x2F;/g, '/')
+        .replace(/&nbsp;/g, ' ')
+        .replace(/\s+/g, ' ')
+        .trim();
+}
+
+/**
+ * Helper: Perform a background web research for Local AI.
+ * Uses a simulated "Headless Search" pattern to extract snippets.
+ */
 async function researchWeb(query) {
+    // 1. Try DuckDuckGo HTML Search first (highly reliable, no robot blocks)
+    try {
+        const ddgUrl = `https://html.duckduckgo.com/html/?q=${encodeURIComponent(query)}`;
+        const response = await fetch(ddgUrl, {
+            headers: { 'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36' }
+        });
+        if (response.ok) {
+            const html = await response.text();
+            const snippets = [];
+            const matches = html.matchAll(/<a class="result__snippet"[^>]*>([\s\S]*?)<\/a>/g);
+            for (const match of matches) {
+                if (snippets.length >= 4) break;
+                const text = match[1].replace(/<[^>]*>/g, '').replace(/\s+/g, ' ').trim();
+                if (text.length > 20) {
+                    snippets.push(decodeHtmlEntities(text));
+                }
+            }
+            if (snippets.length > 0) return snippets;
+        }
+    } catch (e) {
+        console.warn('[Research Web] DuckDuckGo fallback failed:', e.message);
+    }
+
+    // 2. Fallback to Google Search
     try {
         const searchUrl = `https://www.google.com/search?q=${encodeURIComponent(query)}&hl=en`;
         const response = await fetch(searchUrl, {
@@ -2543,7 +2949,7 @@ async function researchWeb(query) {
         for (const match of matches) {
             if (snippets.length >= 4) break;
             const text = match[1].replace(/<[^>]*>/g, '').trim();
-            if (text.length > 30) snippets.push(text);
+            if (text.length > 30) snippets.push(decodeHtmlEntities(text));
         }
 
         // Fallback for different Google result headers or mobile-style layouts
@@ -2552,7 +2958,7 @@ async function researchWeb(query) {
             for (const match of matches2) {
                 if (snippets.length >= 4) break;
                 const m = match[1] || match[2];
-                if (m) snippets.push(m.replace(/<[^>]*>/g, '').trim());
+                if (m) snippets.push(decodeHtmlEntities(m.replace(/<[^>]*>/g, '').trim()));
             }
         }
 
@@ -2570,6 +2976,11 @@ ipcMain.handle('ai-chat-query', async (e, q) => (await ipcMain.emit('ai-agent-ex
 
 
 ipcMain.on('execute-agent-command', (event, action) => {
+    if (action.command === 'open-settings') {
+        createNewTab(`ocal://settings#${action.section || 'general'}`);
+        return;
+    }
+
     const activeTab = views.find(v => v.id === activeViewId);
     if (!activeTab || !activeTab.view || activeTab.view.webContents.isDestroyed()) return;
 
@@ -2861,7 +3272,7 @@ ipcMain.on('open-screenshot-toolbar', (e, data) => {
 });
 ipcMain.on('execute-app-quit', () => {
     isQuitting = true;
-    app.quit();
+    app.exit(0);
 });
 
 // Tab Grouping IPCs
@@ -2934,7 +3345,7 @@ ipcMain.on('update-setting', (e, key, val) => {
     // Broadcast to all relevant views
     broadcastSettings(userSettings);
 
-    if (key === 'compactMode' || key === 'bookmarkBarMode') updateViewBounds();
+    if (key === 'compactMode' || key === 'bookmarkBarMode' || key === 'sidebarMode') updateViewBounds();
     if (key === 'dns') console.log(`[DNS] Global resolver updated to: ${val}`);
     if (key === 'batterySaver') applyBatterySaverGlobally();
 
@@ -3847,7 +4258,7 @@ ipcMain.on('show-suggestions', (e, bounds) => {
 
     suggestionsView.setBounds({
         x: Math.round(bounds.x),
-        y: Math.round(bounds.y + bounds.height),
+        y: Math.round(bounds.y + bounds.height + 6),
         width: Math.round(bounds.width),
         height: 350
     });
@@ -4644,6 +5055,10 @@ function broadcastSettings() {
     // Also notify the sidebar
     if (sidebarOverlayView && !sidebarOverlayView.webContents.isDestroyed()) {
         sidebarOverlayView.webContents.send('settings-changed', userSettings);
+    }
+    // Also notify the AI sidebar
+    if (aiSidebarView && !aiSidebarView.webContents.isDestroyed()) {
+        aiSidebarView.webContents.send('settings-changed', userSettings);
     }
     // Notify all active views
     views.forEach(v => {
