@@ -86,7 +86,6 @@ function renderTabs() {
         const el = document.createElement('div');
         el.className = `tab-item ${tab.id === activeTabId ? 'active' : ''} ${tab.groupId ? 'grouped' : ''} ${isCollapsed ? 'collapsed' : ''}`;
         if (tab.groupId && group) {
-            el.style.borderColor = group.color;
             el.style.setProperty('--group-color', group.color);
         }
         el.draggable = true;
@@ -293,7 +292,10 @@ function formatDisplayUrl(url) {
         return 'ocal://settings';
     }
     if (url.includes('file-manager.html')) return 'ocal://file-manager';
-    if (url.includes('game.html')) return 'ocal://game';
+    if (url.includes('games.html')) return 'ocal://games';
+    if (url.includes('snake.html')) return 'ocal://snake';
+    if (url.includes('tetris.html')) return 'ocal://tetris';
+    if (url.includes('game.html')) return 'ocal://runner';
     return url;
 }
 
@@ -310,7 +312,9 @@ function getTabIconHtml(tab, tintColor) {
     if (url.includes('settings.html')) return `<i class="fas fa-gear tab-favicon" style="color:${accentColor}"></i>`;
     if (url.includes('pdf-viewer.html') || url.endsWith('.pdf')) return `<i class="fas fa-file-pdf tab-favicon" style="color:${accentColor}"></i>`;
     if (url.includes('file-manager.html') || url.startsWith('ocal://file-manager')) return `<i class="fas fa-folder-tree tab-favicon" style="color:${accentColor}"></i>`;
-    if (url.includes('game.html')) return `<i class="fas fa-gamepad tab-favicon" style="color:${accentColor}"></i>`;
+    if (url.includes('game.html') || url.includes('games.html') || url.includes('snake.html') || url.includes('tetris.html') || url.startsWith('ocal://games') || url.startsWith('ocal://snake') || url.startsWith('ocal://tetris') || url.startsWith('ocal://runner') || url.startsWith('ocal://game')) {
+        return `<i class="fas fa-gamepad tab-favicon" style="color:${accentColor}"></i>`;
+    }
     
     // Search Engines
     if (url.includes('google.com')) return '<i class="fab fa-google tab-favicon" style="color:#4285F4"></i>';
@@ -547,6 +551,43 @@ document.addEventListener('DOMContentLoaded', () => {
             if (url) window.electronAPI.send('toggle-web-app', url);
         };
     });
+
+    // Dismiss overlays/sidebars when clicking outside the sidebar
+    document.addEventListener('mousedown', (e) => {
+        const leftSidebar = document.getElementById('left-sidebar');
+        // Only trigger close-all-sidebars if click is outside left sidebar
+        const isInsideSidebar = leftSidebar && leftSidebar.contains(e.target);
+        if (!isInsideSidebar) {
+            window.electronAPI.send('hide-popups');
+        }
+    });
+
+    window.electronAPI.on('web-app-opened', (e, openedUrl) => {
+        document.querySelectorAll('.left-sidebar .social-btn').forEach(btn => {
+            const btnUrl = btn.getAttribute('data-url');
+            if (btnUrl === openedUrl) {
+                btn.classList.add('active');
+            } else {
+                btn.classList.remove('active');
+            }
+        });
+        const sbBookBtn = document.getElementById('sb-book-btn');
+        const sbGamesBtn = document.getElementById('sb-games-btn');
+        if (sbBookBtn) sbBookBtn.classList.remove('active');
+        if (sbGamesBtn) sbGamesBtn.classList.remove('active');
+    });
+
+    window.electronAPI.on('web-app-closed', () => {
+        document.querySelectorAll('.left-sidebar .social-btn').forEach(btn => {
+            btn.classList.remove('active');
+        });
+        const activeTab = tabs.find(t => t.id === activeTabId);
+        if (activeTab) {
+            updateSidebarActiveStates(activeTab.url);
+        } else {
+            updateSidebarActiveStates('');
+        }
+    });
     
     if (extBtn) extBtn.onclick = () => {
         const rect = extBtn.getBoundingClientRect();
@@ -665,6 +706,10 @@ function applyGlobalSettings(s) {
     document.body.classList.toggle('compact-mode', !!s.compactMode);
     document.body.classList.toggle('battery-saver', !!s.batterySaver);
     document.body.setAttribute('data-theme', s.themeMode || 'dark');
+    
+    document.body.classList.toggle('sidebar-visible', s.sidebarMode === 'visible' || !s.sidebarMode);
+    document.body.classList.toggle('sidebar-hidden', s.sidebarMode === 'hidden');
+    document.body.classList.toggle('sidebar-autohide', s.sidebarMode === 'autohide');
     
     // Update Power-Up Icons
     const sStatus = document.getElementById('shield-status');
@@ -966,6 +1011,9 @@ if (identityBtn) {
 
 // ── Dynamic Left Sidebar Active Highlights ──
 function updateSidebarActiveStates(url) {
+    if (document.querySelector('.left-sidebar .social-btn.active')) {
+        return;
+    }
     const sbBookBtn = document.getElementById('sb-book-btn');
     const sbGamesBtn = document.getElementById('sb-games-btn');
     

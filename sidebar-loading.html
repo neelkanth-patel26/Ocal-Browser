@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Connecting...</title>
+    <style>
+        :root {
+            --background: #080809;
+            --foreground: #e8e8e8;
+            --accent: #09f0a0;
+            --font-title: 'Geist', -apple-system, BlinkMacSystemFont, sans-serif;
+        }
+        body {
+            background-color: var(--background);
+            color: var(--foreground);
+            font-family: var(--font-title);
+            margin: 0;
+            padding: 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
+            width: 100vw;
+            overflow: hidden;
+            user-select: none;
+        }
+        .container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            gap: 20px;
+            text-align: center;
+        }
+        /* Custom Loader */
+        .spinner {
+            width: 44px;
+            height: 44px;
+            border: 3px solid rgba(255, 255, 255, 0.03);
+            border-top: 3px solid var(--accent);
+            border-radius: 50%;
+            animation: spin 1s cubic-bezier(0.4, 0, 0.2, 1) infinite;
+            filter: drop-shadow(0 0 8px rgba(9, 240, 160, 0.4));
+        }
+        .loading-text {
+            font-size: 13px;
+            font-weight: 500;
+            letter-spacing: 0.5px;
+            color: rgba(232, 232, 232, 0.6);
+            animation: pulse 1.8s ease-in-out infinite;
+        }
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        @keyframes pulse {
+            0%, 100% { opacity: 0.5; }
+            50% { opacity: 1; }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="spinner"></div>
+        <div class="loading-text" id="status">Connecting securely...</div>
+    </div>
+    <script>
+        const params = new URLSearchParams(window.location.search);
+        const urlParam = params.get('url') || '';
+        let appName = 'Web Application';
+        if (urlParam.includes('whatsapp.com')) appName = 'WhatsApp';
+        else if (urlParam.includes('instagram.com')) appName = 'Instagram';
+        else if (urlParam.includes('x.com') || urlParam.includes('twitter.com')) appName = 'Twitter/X';
+        else if (urlParam.includes('discord.com')) appName = 'Discord';
+        else if (urlParam.includes('spotify.com')) appName = 'Spotify';
+        
+        document.getElementById('status').innerText = `Establishing connection to ${appName}...`;
+    </script>
+</body>
+</html>

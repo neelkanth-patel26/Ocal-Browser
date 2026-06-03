@@ -14,6 +14,19 @@
     <link rel="stylesheet" href="home.css">
 </head>
 <body class="pro-studio">
+    <script>
+        (function () {
+            const t = localStorage.getItem('ocal-settings-theme');
+            if (t) document.body.setAttribute('data-theme', t);
+            const a = localStorage.getItem('ocal-settings-accent');
+            if (a) {
+                document.documentElement.style.setProperty('--accent', a);
+                document.documentElement.style.setProperty('--accent-glow', `color-mix(in srgb, ${a} 30%, transparent)`);
+                document.documentElement.style.setProperty('--accent-dim', `color-mix(in srgb, ${a} 12%, transparent)`);
+                document.documentElement.style.setProperty('--accent-border', a);
+            }
+        })();
+    </script>
     <!-- Premium Wallpaper Background to enable perfect corner clipping -->
     <div class="wallpaper-bg"></div>
 
@@ -35,10 +48,10 @@
 
     <main class="dashboard layout-center" id="dashboard-main">
         <!-- Sidebar: Daily Focus (Todo) -->
-        <aside class="col-side">
+        <aside class="col-side" id="left-sidebar">
             <div class="glass-panel" id="todo-panel">
                 <div class="widget-head">
-                    <span class="widget-title">Mission Control</span>
+                    <span class="widget-title">Todo List</span>
                     <i class="fas fa-layer-group" style="opacity: 0.2; font-size: 14px;"></i>
                 </div>
                 <div class="todo-stack" id="todo-list">
@@ -106,7 +119,7 @@
         </section>
 
         <!-- Sidebar: Focus Flow (Timer) & Environment (Weather) -->
-        <aside class="col-side">
+        <aside class="col-side" id="right-sidebar">
             <div class="glass-panel" id="timer-panel">
                 <div class="widget-head">
                     <span class="widget-title">Focus Flow</span>

@@ -217,16 +217,59 @@ function applyAccent(color) {
     document.documentElement.style.setProperty('--accent-border', hexToRgba(color, 0.25));
 }
 
+async function updateActiveModelBadge(s) {
+    const badge = document.getElementById('active-model-badge');
+    if (!badge) return;
+    
+    const engine = s.aiEngine || 'local';
+    let label = '';
+    
+    if (engine === 'gemini') {
+        label = 'Gemini Pro';
+    } else if (engine === 'openai') {
+        label = 'ChatGPT';
+    } else if (engine === 'custom') {
+        label = s.customModel || 'Custom AI';
+    } else {
+        let model = s.localModel || 'auto';
+        if (model === 'auto') {
+            const endpoint = s.localEndpoint || 'http://localhost:11434';
+            try {
+                const url = `${endpoint.replace(/\/$/, '')}/api/tags`;
+                const res = await fetch(url);
+                if (res.ok) {
+                    const data = await res.json();
+                    if (data.models && data.models.length > 0) {
+                        model = data.models[0].name;
+                    } else {
+                        model = 'Heuristics';
+                    }
+                } else {
+                    model = 'Heuristics';
+                }
+            } catch (e) {
+                model = 'Heuristics';
+            }
+        }
+        label = `Local: ${model}`;
+    }
+    
+    badge.textContent = label;
+    badge.style.display = 'inline-block';
+}
+
 // Listen for global settings changes
 window.electronAPI.on('settings-changed', (e, s) => {
     if (s && s.accentColor) applyAccent(s.accentColor);
     if (s && s.themeMode) document.body.setAttribute('data-theme', s.themeMode);
+    if (s) updateActiveModelBadge(s);
 });
 
 // Get initial settings on load
 window.electronAPI.invoke('get-settings').then(s => {
     if (s && s.accentColor) applyAccent(s.accentColor);
     if (s && s.themeMode) document.body.setAttribute('data-theme', s.themeMode);
+    if (s) updateActiveModelBadge(s);
 });
 
 

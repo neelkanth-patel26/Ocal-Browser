@@ -20,20 +20,34 @@
     </div>
 
     <!-- ── Column 1: Left Sidebar ─────────────────────────────────── -->
+    <div class="sidebar-hover-trigger" id="sidebar-hover-trigger"></div>
     <div class="left-sidebar" id="left-sidebar">
         <!-- Top: Logo / Brand Menu -->
         <div class="sidebar-logo-container">
             <button class="sidebar-logo-btn" id="sidebar-logo-btn" title="Ocal Menu">
-                <span class="sidebar-logo-text">O</span>
+                <svg class="sidebar-logo-svg" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <defs>
+                        <linearGradient id="ocal-logo-grad" x1="2" y1="2" x2="22" y2="22" gradientUnits="userSpaceOnUse">
+                            <stop offset="0%" stop-color="var(--accent)" />
+                            <stop offset="100%" stop-color="color-mix(in srgb, var(--accent) 30%, #000000)" />
+                        </linearGradient>
+                    </defs>
+                    <!-- Outer premium orbital ring with custom cuts -->
+                    <path d="M12 2C6.48 2 2 6.48 2 12C2 17.52 6.48 22 12 22C17.52 22 22 17.52 22 12C22 9.24 20.88 6.74 19.07 4.93L17.66 6.34C19.11 7.79 20 9.79 20 12C20 16.42 16.42 20 12 20C7.58 20 4 16.42 4 12C4 7.58 7.58 4 12 4C13.1 4 14.15 4.22 15.11 4.62L16.63 3.1C15.22 2.4 13.66 2 12 2Z" fill="url(#ocal-logo-grad)"/>
+                    <!-- Inner nesting C-curve representing Ocal smart core -->
+                    <path d="M12 7C9.24 7 7 9.24 7 12C7 14.76 9.24 17 12 17C14.76 17 17 14.76 17 12C17 10.9 16.64 9.88 16.03 9.06L14.61 10.48C14.86 10.92 15 11.44 15 12C15 13.66 13.66 15 12 15C10.34 15 9 13.66 9 12C9 10.34 10.34 9 12 9C12.56 9 13.08 9.14 13.52 9.39L14.94 7.97C14.12 7.36 13.1 7 12 7Z" fill="url(#ocal-logo-grad)"/>
+                    <!-- Central focal point -->
+                    <circle cx="12" cy="12" r="2" fill="url(#ocal-logo-grad)"/>
+                </svg>
             </button>
         </div>
 
         <!-- Top Shortcuts: Bookmarks & Games -->
         <div class="sidebar-top-shortcuts">
-            <button class="sidebar-item" id="sb-book-btn" title="Bookmarks (Start Page)">
+            <button class="sidebar-item" id="sb-book-btn" data-title="Bookmarks (Start Page)">
                 <i class="fas fa-book-open"></i>
             </button>
-            <button class="sidebar-item" id="sb-games-btn" title="Games Hub">
+            <button class="sidebar-item" id="sb-games-btn" data-title="Games Hub">
                 <i class="fas fa-gamepad"></i>
             </button>
         </div>
@@ -42,32 +56,32 @@
 
         <!-- Middle: Social Shortcuts / Web Apps & AI -->
         <div class="sidebar-shortcuts">
-            <button class="sidebar-item social-btn" id="sb-wa-btn" data-url="https://web.whatsapp.com" title="WhatsApp">
+            <button class="sidebar-item social-btn" id="sb-wa-btn" data-url="https://web.whatsapp.com" data-title="WhatsApp">
                 <i class="fab fa-whatsapp"></i>
             </button>
-            <button class="sidebar-item social-btn" id="sb-ig-btn" data-url="https://www.instagram.com" title="Instagram">
+            <button class="sidebar-item social-btn" id="sb-ig-btn" data-url="https://www.instagram.com" data-title="Instagram">
                 <i class="fab fa-instagram"></i>
             </button>
-            <button class="sidebar-item social-btn" id="sb-tw-btn" data-url="https://x.com" title="Twitter/X">
+            <button class="sidebar-item social-btn" id="sb-tw-btn" data-url="https://x.com" data-title="Twitter/X">
                 <i class="fab fa-x-twitter"></i>
             </button>
-            <button class="sidebar-item social-btn" id="sb-dc-btn" data-url="https://discord.com/app" title="Discord">
+            <button class="sidebar-item social-btn" id="sb-dc-btn" data-url="https://discord.com/app" data-title="Discord">
                 <i class="fab fa-discord"></i>
             </button>
-            <button class="sidebar-item social-btn" id="sb-sp-btn" data-url="https://open.spotify.com" title="Spotify">
+            <button class="sidebar-item social-btn" id="sb-sp-btn" data-url="https://open.spotify.com" data-title="Spotify">
                 <i class="fab fa-spotify"></i>
             </button>
         </div>
 
         <!-- Bottom: Bookmarks, History, Settings -->
         <div class="sidebar-bottom">
-            <button class="sidebar-item" id="sb-saves-btn" title="Saved Bookmarks">
+            <button class="sidebar-item" id="sb-saves-btn" data-title="Saved Bookmarks">
                 <i class="far fa-heart"></i>
             </button>
-            <button class="sidebar-item" id="sb-history-btn" title="History">
+            <button class="sidebar-item" id="sb-history-btn" data-title="History">
                 <i class="fas fa-clock-rotate-left"></i>
             </button>
-            <button class="sidebar-item" id="sb-settings-btn" title="Easy Setup / Settings">
+            <button class="sidebar-item" id="sb-settings-btn" data-title="Easy Setup / Settings">
                 <i class="fas fa-sliders"></i>
             </button>
         </div>
@@ -152,6 +166,8 @@
 
     <!-- ── Row 3: Bookmark Bar ────────────────────────────────────── -->
     <div class="bookmark-bar" id="bookmark-bar"></div>
+
+
 
     <!-- ── Row 4: Floating Web Content Frame ──────────────────────── -->
     <div class="web-content-container" id="web-content-container"></div>

@@ -15,7 +15,7 @@ const finalScoreEl = document.getElementById('finalScore');
 const GRID_SIZE = 20;
 const TILE_COUNT = 20;
 const CANVAS_SIZE = 400;
-const ACCENT = '#10b981';
+let ACCENT = '#09f0a0';
 
 canvas.width = CANVAS_SIZE;
 canvas.height = CANVAS_SIZE;
@@ -33,6 +33,25 @@ let gameSpeed = 100;
 let lastTime = 0;
 
 bestEl.innerText = bestScore;
+
+// Helper to resolve the active accent color from CSS
+function updateColors() {
+    const computedAccent = getComputedStyle(document.documentElement).getPropertyValue('--accent').trim();
+    if (computedAccent) {
+        ACCENT = computedAccent;
+    }
+}
+updateColors();
+
+// Listen for updates from settings
+if (window.electronAPI) {
+    window.electronAPI.getSettings().then(s => {
+        if (s.accentColor) updateColors();
+    });
+    window.electronAPI.onSettingsChanged((s) => {
+        if (s.accentColor) setTimeout(updateColors, 50);
+    });
+}
 
 // ── Particle System ───────────────────────────────────────────
 class Particle {
@@ -94,7 +113,7 @@ function draw() {
             segment.x * GRID_SIZE, segment.y * GRID_SIZE,
             (segment.x + 1) * GRID_SIZE, (segment.y + 1) * GRID_SIZE
         );
-        grad.addColorStop(0, '#34d399');
+        grad.addColorStop(0, '#ffffff');
         grad.addColorStop(1, ACCENT);
         
         ctx.fillStyle = grad;
@@ -186,7 +205,7 @@ function handleGameOver() {
         localStorage.setItem('ocalSnakeHighScore', bestScore);
         bestEl.innerText = bestScore;
     }
-    finalScoreEl.innerText = `Final Length: ${score}`;
+    finalScoreEl.innerText = `Final Score: ${score}`;
     gameOverOverlay.classList.add('active');
     spawnParticles(snake[0].x * GRID_SIZE, snake[0].y * GRID_SIZE, ACCENT, 30);
 }

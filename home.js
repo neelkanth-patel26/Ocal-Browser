@@ -498,10 +498,33 @@ function applySettings(s) {
     const todoPanel = document.getElementById('todo-panel');
     const timerPanel = document.getElementById('timer-panel');
     const weatherPanel = document.getElementById('weather-panel');
+    const leftSidebar = document.getElementById('left-sidebar');
+    const rightSidebar = document.getElementById('right-sidebar');
+    const floatingWeather = document.getElementById('floating-weather');
 
-    if (todoPanel) todoPanel.style.display = (s.showDailyFocus !== false) ? 'flex' : 'none';
-    if (timerPanel) timerPanel.style.display = (s.showFocusFlow !== false) ? 'flex' : 'none';
-    if (weatherPanel) weatherPanel.style.display = (s.showWeather !== false) ? 'flex' : 'none';
+    const showTodo = (s.showDailyFocus !== false);
+    const showTimer = (s.showFocusFlow !== false);
+    const showWeather = (s.showWeather !== false);
+    const sidebarsActive = showTodo || showTimer;
+
+    const useFloatingWeather = showWeather && !sidebarsActive;
+    const useSidebarWeather = showWeather && sidebarsActive;
+
+    if (todoPanel) todoPanel.style.display = showTodo ? 'flex' : 'none';
+    if (timerPanel) timerPanel.style.display = showTimer ? 'flex' : 'none';
+    if (weatherPanel) weatherPanel.style.display = useSidebarWeather ? 'flex' : 'none';
+
+    if (leftSidebar) leftSidebar.style.display = showTodo ? 'flex' : 'none';
+    if (rightSidebar) rightSidebar.style.display = (showTimer || useSidebarWeather) ? 'flex' : 'none';
+
+    if (floatingWeather) {
+        floatingWeather.style.display = useFloatingWeather ? 'flex' : 'none';
+    }
+
+    if (dashMain) {
+        dashMain.classList.toggle('has-left-sidebar', showTodo);
+        dashMain.classList.toggle('has-right-sidebar', showTimer || useSidebarWeather);
+    }
 
     document.body.classList.toggle('battery-saver', !!s.batterySaver);
     document.body.setAttribute('data-theme', s.themeMode || 'dark');

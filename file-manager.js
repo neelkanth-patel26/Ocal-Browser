@@ -11,8 +11,6 @@ let currentPath = '';
 window.electronAPI.on('perform-agent-command', (e, action) => {
     if (action.command === 'pdf-filter') {
         const query = action.term.toLowerCase();
-        // Since currentItems might not be available in global scope if not set, 
-        // we'll use a local filter on the rendered list or trigger a search.
         const searchInput = document.getElementById('file-search');
         if (searchInput) {
             searchInput.value = action.term;
@@ -26,15 +24,35 @@ let systemFolders = {};
 let isListView = true;
 let selectedItems = new Set();
 
+// Helper to apply accent color dynamically
+function applyAccent(accentColor) {
+    if (!accentColor) return;
+    document.documentElement.style.setProperty('--accent', accentColor);
+    
+    const hexToRgba = (hex, alpha) => {
+        const result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
+        if (!result) return `rgba(9, 240, 160, ${alpha})`;
+        const r = parseInt(result[1], 16);
+        const g = parseInt(result[2], 16);
+        const b = parseInt(result[3], 16);
+        return `rgba(${r}, ${g}, ${b}, ${alpha})`;
+    };
+    
+    document.documentElement.style.setProperty('--accent-glow', hexToRgba(accentColor, 0.25));
+    document.documentElement.style.setProperty('--accent-dim', hexToRgba(accentColor, 0.15));
+    document.documentElement.style.setProperty('--accent-border', hexToRgba(accentColor, 0.4));
+}
+
 // ── Initialization ─────────────────────────────────────────────────────────
 document.addEventListener('DOMContentLoaded', async () => {
     // 1. Fetch system folders
     systemFolders = await window.electronAPI.invoke('get-system-folders');
     
-    // 2. Sync Settings (Monochromatic enforced)
+    // 2. Sync Settings (Accent Color sync)
     window.electronAPI.getSettings().then(s => {
-        // Strict monochromatic parity
-        document.documentElement.style.setProperty('--accent', '#ffffff');
+        if (s.accentColor) {
+            applyAccent(s.accentColor);
+        }
     });
 
     // 3. Setup Sidebar Nav
@@ -74,17 +92,17 @@ document.addEventListener('DOMContentLoaded', async () => {
         }
     });
 
-    // 7. Analyze Feature
+    // 7. Find all PDFs Feature
     analyzeBtn.onclick = async () => {
         analyzeBtn.disabled = true;
         const originalHtml = analyzeBtn.innerHTML;
-        analyzeBtn.innerHTML = '<i class="fas fa-circle-notch fa-spin"></i> Fetching...';
+        analyzeBtn.innerHTML = '<i class="fas fa-circle-notch fa-spin"></i> Searching...';
         
-        document.querySelector('.page-title').innerText = "All PDFs";
+        document.querySelector('.page-title').innerText = "All PDF Files";
         
         const pdfOnly = await window.electronAPI.invoke('analyze-system-files');
         currentItems = pdfOnly;
-        renderFiles(pdfOnly, "All PDFs");
+        renderFiles(pdfOnly);
         
         analyzeBtn.disabled = false;
         analyzeBtn.innerHTML = originalHtml;
@@ -104,7 +122,7 @@ async function navigateTo(path) {
     fileGrid.innerHTML = `
         <div class="loading-state">
             <i class="fas fa-circle-notch fa-spin"></i>
-            <span>Opening ${path.split('\\').pop()}...</span>
+            <span>Opening ${path.split('\\').pop() || path}...</span>
         </div>
     `;
 
@@ -136,8 +154,6 @@ function updateBreadcrumbs(path) {
         item.className = 'breadcrumb-item';
         item.innerText = part;
         
-        // Reconstruction of path for navigation
-        // Very simplified, assuming Windows backslashes for now as requested
         currentBuildPath += (i === 0 ? '' : '\\') + part;
         const target = i === 0 ? part + ':\\' : path.split(part)[0] + part;
         
@@ -147,20 +163,20 @@ function updateBreadcrumbs(path) {
 }
 
 // ── Rendering ──────────────────────────────────────────────────────────────
-function renderFiles(items, customTitle = null) {
+function renderFiles(items) {
     fileGrid.innerHTML = '';
     
     // Strict Filter: Only show PDF files
     const filteredItems = items.filter(item => {
         return item.name.toLowerCase().endsWith('.pdf');
     });
-    itemCountEl.innerText = `${filteredItems.length} items found`;
+    itemCountEl.innerText = `${filteredItems.length} files found`;
 
     if (filteredItems.length === 0) {
         fileGrid.innerHTML = `
             <div class="loading-state">
-                <i class="fas fa-file-circle-exclamation" style="opacity:0.2; font-size: 4rem; color: var(--accent);"></i>
-                <span style="font-weight: 600; letter-spacing: 1px; opacity: 0.5;">NO PDF FILES DETECTED</span>
+                <i class="fas fa-file-circle-exclamation" style="opacity: 0.3; font-size: 42px; color: var(--accent);"></i>
+                <span>No PDF files found</span>
             </div>
         `;
         return;
@@ -264,6 +280,9 @@ function toggleSelection(item, el) {
     }
 }
 
+// Global exposure for event callbacks
+window.setViewMode = setViewMode;
+
 function clearSelection() {
     selectedItems.clear();
     document.querySelectorAll('.file-item.selected').forEach(el => el.classList.remove('selected'));
@@ -275,15 +294,6 @@ function formatBytes(bytes) {
     const sizes = ['B', 'KB', 'MB', 'GB', 'TB'];
     const i = Math.floor(Math.log(bytes) / Math.log(k));
     return parseFloat((bytes / Math.pow(k, i)).toFixed(1)) + ' ' + sizes[i];
-}
-
-function hexToRgb(hex) {
-    const result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
-    return result ? {
-        r: parseInt(result[1], 16),
-        g: parseInt(result[2], 16),
-        b: parseInt(result[3], 16)
-    } : null;
 }
 
 // ── Context Menu ───────────────────────────────────────────────────────────
@@ -299,7 +309,7 @@ function showContextMenu(e, item) {
         <div class="menu-item" onclick="handleCopyPath('${item.path.replace(/\\/g, '\\\\')}')">
             <i class="fas fa-link"></i> Copy Path
         </div>
-        <div class="menu-divider" style="height:1px; background:rgba(255,255,255,0.05); margin:4px 0;"></div>
+        <div class="menu-divider"></div>
         <div class="menu-item danger" onclick="handleDelete('${item.path.replace(/\\/g, '\\\\')}')">
             <i class="fas fa-trash"></i> Move to Trash
         </div>
@@ -318,6 +328,11 @@ window.handleCopyPath = (path) => {
 window.handleDelete = async (path) => {
     const success = await window.electronAPI.invoke('delete-system-item', path);
     if (success) {
-        navigateTo(currentPath); // Refresh
+        if (currentPath) {
+            navigateTo(currentPath);
+        } else {
+            // If in "All PDF Files" view, re-trigger search to update list
+            analyzeBtn.click();
+        }
     }
 };
