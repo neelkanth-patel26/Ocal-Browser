@@ -1233,13 +1233,13 @@ body.compact-mode .omnibox { height: 32px; padding: 0 10px; gap: 6px; border-rad
   align-items: center; 
   justify-content: center;
   flex-shrink: 0;
-  color: var(--text-dim);
+  color: rgba(255, 255, 255, 0.85);
   font-size: 14px;
   transition: all 0.2s ease;
 }
 
 .omnibox-icon:hover {
-  color: #fff;
+  color: #ffffff;
 }
 
 .omnibox-icon i { font-size: 13px; opacity: 0.8; }
