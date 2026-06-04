@@ -75,9 +75,29 @@ async function run() {
         process.exit(1);
     }
 
+    const filename = path.basename(FILE_PATH);
     if (!fs.existsSync(FILE_PATH)) {
         console.error(`File NOT found: ${FILE_PATH}`);
         process.exit(1);
+    }
+
+    const existingAsset = release.assets && release.assets.find(a => a.name === filename);
+    if (existingAsset) {
+        console.log(`Deleting existing asset ${filename} (ID: ${existingAsset.id})...`);
+        const delRes = await request({
+            hostname: 'api.github.com',
+            path: `/repos/${REPO}/releases/assets/${existingAsset.id}`,
+            method: 'DELETE',
+            headers: {
+                'Authorization': `token ${TOKEN}`,
+                'User-Agent': 'Ocal-Build-Agent'
+            }
+        });
+        if (delRes.statusCode === 204) {
+            console.log('Asset deleted successfully.');
+        } else {
+            console.warn('Failed to delete asset:', delRes.body);
+        }
     }
 
     const uploadUrl = release.upload_url.replace('{?name,label}', `?name=${path.basename(FILE_PATH)}`);
