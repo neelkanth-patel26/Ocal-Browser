@@ -141,3 +141,39 @@ window.onblur = () => {
     window.electronAPI.send('hide-site-info');
 };
 
+// Theme Synchronization
+async function applyTheme() {
+    try {
+        const s = await window.electronAPI.invoke('get-settings');
+        if (s.accentColor) {
+            const accent = s.accentColor;
+            document.documentElement.style.setProperty('--accent', accent);
+            const r = parseInt(accent.slice(1,3), 16), g = parseInt(accent.slice(3,5), 16), b = parseInt(accent.slice(5,7), 16);
+            document.documentElement.style.setProperty('--accent-glow', `rgba(${r}, ${g}, ${b}, 0.2)`);
+            document.documentElement.style.setProperty('--accent-dim', `rgba(${r}, ${g}, ${b}, 0.12)`);
+            document.documentElement.style.setProperty('--accent-border', `rgba(${r}, ${g}, ${b}, 0.2)`);
+        }
+        if (s.themeMode === 'light') {
+            document.body.setAttribute('data-theme', 'light');
+        } else {
+            document.body.removeAttribute('data-theme');
+        }
+    } catch(e) {}
+}
+applyTheme();
+window.electronAPI.on('settings-changed', (s) => {
+    if (s.accentColor) {
+        const accent = s.accentColor;
+        document.documentElement.style.setProperty('--accent', accent);
+        const r = parseInt(accent.slice(1,3), 16), g = parseInt(accent.slice(3,5), 16), b = parseInt(accent.slice(5,7), 16);
+        document.documentElement.style.setProperty('--accent-glow', `rgba(${r}, ${g}, ${b}, 0.2)`);
+        document.documentElement.style.setProperty('--accent-dim', `rgba(${r}, ${g}, ${b}, 0.12)`);
+        document.documentElement.style.setProperty('--accent-border', `rgba(${r}, ${g}, ${b}, 0.2)`);
+    }
+    if (s.themeMode === 'light') {
+        document.body.setAttribute('data-theme', 'light');
+    } else {
+        document.body.removeAttribute('data-theme');
+    }
+});
+

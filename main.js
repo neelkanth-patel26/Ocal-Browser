@@ -862,12 +862,15 @@ function setupCompatibilityHandler() {
 }
 
 app.on('web-contents-created', (event, contents) => {
-    // ── Ocal Extension Signaling Bridge ──────────────────────────
-    contents.on('console-message', (e, level, message) => {
+    // Console logging redirection
+    contents.on('console-message', (e, level, message, line, sourceId) => {
+        const levelNames = ['DEBUG', 'INFO', 'WARN', 'ERROR'];
+        const levelName = levelNames[level] || 'LOG';
+        console.log(`[CONSOLE][${levelName}][${contents.getType()}] ${message} (${path.basename(sourceId || '')}:${line})`);
+        
         if (message.startsWith('SIGNAL_INIT ')) {
             try {
                 const data = JSON.parse(message.replace('SIGNAL_INIT ', ''));
-
             } catch (err) { }
         }
     });
@@ -1122,7 +1125,6 @@ function createSuggestionsView() {
         webPreferences: { preload: path.join(__dirname, 'preload.js'), contextIsolation: true, nodeIntegration: false }
     });
     suggestionsView.webContents.loadFile('suggestions.html');
-    setupInteractionDismissal(suggestionsView.webContents);
 }
 
 function createTabgroupView() {
@@ -1131,7 +1133,6 @@ function createTabgroupView() {
     });
     tabgroupView.webContents.loadFile('tabgroup.html');
     tabgroupView.setBackgroundColor('#00000000');
-    setupInteractionDismissal(tabgroupView.webContents);
 }
 
 function createTabContextView() {
@@ -1140,7 +1141,6 @@ function createTabContextView() {
     });
     tabContextView.webContents.loadFile('tab-context.html');
     tabContextView.setBackgroundColor('#00000000');
-    setupInteractionDismissal(tabContextView.webContents);
 }
 
 function closeOverlays() {
@@ -1200,7 +1200,6 @@ function createBMDropdownView() {
     });
     bmDropdownView.webContents.loadFile('bm-dropdown.html');
     bmDropdownView.setBackgroundColor('#00000000');
-    setupInteractionDismissal(bmDropdownView.webContents);
 
     // Hide on blur (losing focus)
     bmDropdownView.webContents.on('blur', () => {
@@ -1227,7 +1226,12 @@ function createDownloadsView() {
     downloadsView.webContents.loadFile('downloads.html');
     downloadsView.setBackgroundColor('#00000000');
     setupContextMenu(downloadsView.webContents);
-    setupInteractionDismissal(downloadsView.webContents);
+
+    // Hide on blur (losing focus)
+    downloadsView.webContents.on('blur', () => {
+        lastDownloadsBlurTime = Date.now();
+        closeOverlays();
+    });
 }
 
 function hideDownloadsPopup() {
@@ -1293,7 +1297,6 @@ function createShieldPopupView() {
     });
     shieldPopupView.webContents.loadFile('shield-popup.html');
     shieldPopupView.setBackgroundColor('#00000000');
-    setupInteractionDismissal(shieldPopupView.webContents);
 
     // Auto-hide on blur
     shieldPopupView.webContents.on('blur', () => {
@@ -1337,7 +1340,6 @@ function showWelcomeWizard() {
     welcomeView.setBounds({ x: 0, y: 0, width, height });
     welcomeView.webContents.loadFile('welcome.html');
     setupContextMenu(welcomeView.webContents);
-    setupInteractionDismissal(welcomeView.webContents);
 }
 
 function resolveInternalURL(url) {
@@ -1975,7 +1977,6 @@ function showWebApp(url) {
             webPreferences: { preload: path.join(__dirname, 'preload.js'), contextIsolation: true, nodeIntegration: false, devTools: false, sandbox: true }
         });
         setupContextMenu(webAppView.webContents);
-        setupInteractionDismissal(webAppView.webContents);
         webAppView.webContents.setWindowOpenHandler(({ url }) => { createNewTab(url); return { action: 'deny' }; });
     }
 
@@ -2032,6 +2033,7 @@ ipcMain.on('close-tab', async (e, id) => {
                 activeViewId = views.length > 0 ? views[Math.max(0, index - 1)].id : null;
                 if (activeViewId) setActiveTab(activeViewId); else updateViewBounds();
             }
+            cleanupEmptyGroups();
             broadcastTabs();
         }
     }
@@ -3125,7 +3127,22 @@ ipcMain.on('hide-tab-group-popup', () => {
     activePopupGroupId = null;
 });
 
+function cleanupEmptyGroups() {
+    console.log(`[CLEANUP] Start. Total tabGroups in settings:`, userSettings.tabGroups?.length);
+    if (!userSettings.tabGroups) return;
+    const activeGroupIds = new Set(views.map(v => v.groupId).filter(Boolean));
+    console.log(`[CLEANUP] Active group IDs in views:`, Array.from(activeGroupIds));
+    const originalCount = userSettings.tabGroups.length;
+    userSettings.tabGroups = userSettings.tabGroups.filter(g => activeGroupIds.has(g.id));
+    console.log(`[CLEANUP] Retained groups:`, userSettings.tabGroups.map(g => g.id));
+    if (userSettings.tabGroups.length !== originalCount) {
+        console.log(`[CLEANUP] Groups length changed from ${originalCount} to ${userSettings.tabGroups.length}. Saving settings.`);
+        saveSettings(userSettings);
+    }
+}
+
 ipcMain.on('show-tab-context', (e, data) => {
+    cleanupEmptyGroups();
     if (!tabContextView || !mainWindow) return;
 
     const contentBounds = mainWindow.getContentBounds();
@@ -3171,18 +3188,24 @@ ipcMain.on('resize-tab-context', (e, data) => {
 });
 
 ipcMain.on('tab-context-action', (e, data) => {
+    console.log(`[IPC][tab-context-action] Received data:`, data);
     if (tabContextView && mainWindow && mainWindow.getBrowserViews().includes(tabContextView)) {
+        console.log(`[IPC][tab-context-action] Removing tabContextView`);
         mainWindow.removeBrowserView(tabContextView);
     }
     if (mainWindow && !mainWindow.isDestroyed()) {
         if (data.action === 'close-tab') {
-            mainWindow.webContents.send('close-tab-trigger', data.tabId);
+            console.log(`[IPC][tab-context-action] Directly closing tab:`, data.tabId);
+            ipcMain.emit('close-tab', null, data.tabId);
         } else if (data.action === 'create-tab-group') {
-            mainWindow.webContents.send('create-tab-group-trigger', data.tabId);
+            console.log(`[IPC][tab-context-action] Directly creating group for tab:`, data.tabId);
+            ipcMain.emit('create-tab-group', null, { name: 'New Group', color: '#a855f7', tabIds: [data.tabId] });
         } else if (data.action === 'remove-from-group') {
-            mainWindow.webContents.send('remove-from-group-trigger', data.tabId);
+            console.log(`[IPC][tab-context-action] Directly removing tab from group:`, data.tabId);
+            ipcMain.emit('remove-from-group', null, data.tabId);
         } else if (data.action === 'add-to-group') {
-            mainWindow.webContents.send('add-to-group-trigger', { tabId: data.tabId, groupId: data.groupId });
+            console.log(`[IPC][tab-context-action] Directly adding tab to group:`, { tabId: data.tabId, groupId: data.groupId });
+            ipcMain.emit('add-to-group', null, { tabId: data.tabId, groupId: data.groupId });
         }
     }
 });
@@ -3277,10 +3300,12 @@ ipcMain.on('execute-app-quit', () => {
 
 // Tab Grouping IPCs
 ipcMain.on('create-tab-group', (e, { name, color, tabIds }) => {
+    console.log(`[IPC][create-tab-group] Received:`, { name, color, tabIds });
     const groupId = 'group-' + Date.now();
     userSettings.tabGroups.push({ id: groupId, name, color, collapsed: false });
     tabIds.forEach(tid => {
         const v = views.find(v => v.id === tid);
+        console.log(`[IPC][create-tab-group] Mapping view ID ${tid}: found? ${!!v}`);
         if (v) v.groupId = groupId;
     });
     saveSettings(userSettings);
@@ -3288,15 +3313,21 @@ ipcMain.on('create-tab-group', (e, { name, color, tabIds }) => {
 });
 
 ipcMain.on('add-to-group', (e, { tabId, groupId }) => {
+    console.log(`[IPC][add-to-group] Received:`, { tabId, groupId });
     const v = views.find(v => v.id === tabId);
+    console.log(`[IPC][add-to-group] Mapping view ID ${tabId}: found? ${!!v}`);
     if (v) v.groupId = groupId;
+    cleanupEmptyGroups();
     saveSettings(userSettings);
     broadcastTabs();
 });
 
 ipcMain.on('remove-from-group', (e, tabId) => {
+    console.log(`[IPC][remove-from-group] Received tabId:`, tabId);
     const v = views.find(v => v.id === tabId);
+    console.log(`[IPC][remove-from-group] Mapping view ID ${tabId}: found? ${!!v}`);
     if (v) v.groupId = null;
+    cleanupEmptyGroups();
     saveSettings(userSettings);
     broadcastTabs();
 });
@@ -4315,7 +4346,7 @@ ipcMain.on('show-site-info', (e, bounds) => {
         x: Math.round(bounds.x) - 15,
         y: Math.round(bounds.y + bounds.height + 4),
         width: 350,
-        height: 500 // Sufficient height for the content and shadow padding
+        height: 540 // Sufficient height for the content and shadow padding
     });
 
     mainWindow.setTopBrowserView(siteInfoView);

@@ -659,24 +659,131 @@ function renderHistory() {
         lbl.innerHTML = label;
         sbContent.appendChild(lbl);
 
-        group.forEach(h => {
-            const domain = (() => { try { return new URL(h.url).hostname; } catch { return ''; } })();
-            const time = new Date(h.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
-            const iconHtml = getHistoricalIcon(h.url, h.title, h.favicon);
+        // Group the group's items by domain (preserving chronological order)
+        const domainGroups = [];
+        const domainMap = new Map();
 
-            const el = document.createElement('div');
-            el.className = 'hist-item';
-            el.innerHTML = `
-                ${iconHtml}
-                <div class="hist-info">
-                    <div class="hist-title">${esc(h.title || h.url)}</div>
-                    <div class="hist-meta">${esc(domain || 'Local Page')} · ${time}</div>
-                </div>
-                <div class="hist-del" title="Remove"><i class="fas fa-xmark"></i></div>
-            `;
-            el.querySelector('.hist-del').onclick = (e) => { e.stopPropagation(); window.electronAPI.send('delete-history-item', h.timestamp); };
-            el.onclick = () => { window.electronAPI.navigateTo(h.url); closeSidebar(); };
-            sbContent.appendChild(el);
+        group.forEach(h => {
+            let domain = (() => { try { return new URL(h.url).hostname; } catch { return ''; } })();
+            const normDomain = domain.replace(/^www\./i, '') || 'Local Page';
+            
+            if (!domainMap.has(normDomain)) {
+                const groupObj = {
+                    domain: normDomain,
+                    rawDomain: domain,
+                    items: []
+                };
+                domainMap.set(normDomain, groupObj);
+                domainGroups.push(groupObj);
+            }
+            domainMap.get(normDomain).items.push(h);
+        });
+
+        domainGroups.forEach(g => {
+            if (g.items.length === 1) {
+                const h = g.items[0];
+                const domain = g.rawDomain;
+                const time = new Date(h.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+                const iconHtml = getHistoricalIcon(h.url, h.title, h.favicon);
+
+                const el = document.createElement('div');
+                el.className = 'hist-item';
+                el.innerHTML = `
+                    ${iconHtml}
+                    <div class="hist-info">
+                        <div class="hist-title">${esc(h.title || h.url)}</div>
+                        <div class="hist-meta">${esc(domain || 'Local Page')} · ${time}</div>
+                    </div>
+                    <div class="hist-del" title="Remove"><i class="fas fa-xmark"></i></div>
+                `;
+                el.querySelector('.hist-del').onclick = (e) => {
+                    e.stopPropagation();
+                    window.electronAPI.send('delete-history-item', h.timestamp);
+                };
+                el.onclick = () => {
+                    window.electronAPI.navigateTo(h.url);
+                    closeSidebar();
+                };
+                sbContent.appendChild(el);
+            } else {
+                const container = document.createElement('div');
+                container.className = 'hist-group-container';
+
+                const latestItem = g.items[0];
+                const latestTime = new Date(latestItem.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+                const iconHtml = getHistoricalIcon(latestItem.url, latestItem.title, latestItem.favicon);
+
+                const header = document.createElement('div');
+                header.className = 'hist-group-header';
+                header.innerHTML = `
+                    <i class="fas fa-chevron-right toggle-chevron"></i>
+                    ${iconHtml}
+                    <div class="hist-info">
+                        <div class="hist-group-title">${esc(g.domain)}</div>
+                        <div class="hist-meta">${g.items.length} pages visited · latest ${latestTime}</div>
+                    </div>
+                    <div class="hist-del" title="Remove All"><i class="fas fa-trash-can"></i></div>
+                `;
+
+                const childrenContainer = document.createElement('div');
+                childrenContainer.className = 'hist-group-children';
+                childrenContainer.style.display = 'none';
+
+                g.items.forEach(h => {
+                    const time = new Date(h.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+                    const childIconHtml = getHistoricalIcon(h.url, h.title, h.favicon);
+                    
+                    const childEl = document.createElement('div');
+                    childEl.className = 'hist-item';
+                    childEl.innerHTML = `
+                        ${childIconHtml}
+                        <div class="hist-info">
+                            <div class="hist-title">${esc(h.title || h.url)}</div>
+                            <div class="hist-meta">${time}</div>
+                        </div>
+                        <div class="hist-del" title="Remove"><i class="fas fa-xmark"></i></div>
+                    `;
+                    childEl.querySelector('.hist-del').onclick = (e) => {
+                        e.stopPropagation();
+                        window.electronAPI.send('delete-history-item', h.timestamp);
+                        childEl.remove();
+                        if (childrenContainer.children.length === 0) {
+                            container.remove();
+                        } else {
+                            const count = childrenContainer.children.length;
+                            header.querySelector('.hist-meta').innerText = `${count} pages visited · latest ${latestTime}`;
+                        }
+                    };
+                    childEl.onclick = () => {
+                        window.electronAPI.navigateTo(h.url);
+                        closeSidebar();
+                    };
+                    childrenContainer.appendChild(childEl);
+                });
+
+                header.onclick = () => {
+                    const isExpanded = header.classList.toggle('expanded');
+                    childrenContainer.style.display = isExpanded ? 'block' : 'none';
+                };
+
+                header.querySelector('.hist-del').onclick = (e) => {
+                    e.stopPropagation();
+                    showModal({
+                        title: 'Delete Group History',
+                        message: `Are you sure you want to delete all ${g.items.length} history items from ${g.domain}?`,
+                        onConfirm: () => {
+                            g.items.forEach(h => {
+                                window.electronAPI.send('delete-history-item', h.timestamp);
+                            });
+                            container.remove();
+                        }
+                    });
+                };
+
+                container.appendChild(header);
+                container.appendChild(childrenContainer);
+                sbContent.appendChild(container);
+            }
         });
     });
 }

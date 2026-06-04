@@ -777,8 +777,25 @@ window.addEventListener('trigger-media-popup', () => {
 
 // Dismiss overlays/sidebars when clicking inside the page content
 window.addEventListener('mousedown', () => {
-    if (window.location.href.includes('ai-sidebar.html') || window.location.href.includes('sidebars.html')) {
-        return; // Ignore clicks inside the sidebars themselves
+    const href = window.location.href;
+    const isUIOverlay = 
+        href.includes('ai-sidebar.html') || 
+        href.includes('sidebars.html') ||
+        href.includes('tab-context.html') ||
+        href.includes('tabgroup.html') ||
+        href.includes('bm-dropdown.html') ||
+        href.includes('downloads.html') ||
+        href.includes('shield-popup.html') ||
+        href.includes('suggestions.html') ||
+        href.includes('site-info.html') ||
+        href.includes('extensions-popup.html') ||
+        href.includes('media-popup.html') ||
+        href.includes('site-settings.html') ||
+        href.includes('certificate-viewer.html') ||
+        href.includes('welcome.html');
+
+    if (isUIOverlay) {
+        return; // Ignore clicks inside the UI overlays themselves
     }
     // Only send dismiss if click is not on the floating close button
     ipcRenderer.send('hide-popups');

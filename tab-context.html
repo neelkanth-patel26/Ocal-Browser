@@ -7,14 +7,14 @@
         @import url('https://cdn.jsdelivr.net/fontsource/fonts/geist-mono@latest/latin-400-normal.css');
 
         :root {
-            --accent: #e8ff47;
-            --accent-glow: rgba(232, 255, 71, 0.2);
-            --accent-dim: rgba(232, 255, 71, 0.12);
-            --bg-glass: #111111;
-            --glass: #111111;
-            --glass-border: #252525;
+            --accent: #09f0a0;
+            --accent-glow: rgba(9, 240, 160, 0.2);
+            --accent-dim: rgba(9, 240, 160, 0.12);
+            --bg-glass: #1a1a1e;
+            --glass: #1a1a1e;
+            --glass-border: #2d2d30;
             --text-main: #e8e8e8;
-            --text-dim: #666666;
+            --text-dim: #9ca3af;
             --radius: 12px;
         }
 
@@ -29,15 +29,15 @@
 
         .custom-context-menu {
             background: var(--bg-glass);
-            backdrop-filter: blur(25px);
             border: 1px solid var(--glass-border);
             border-radius: var(--radius);
             padding: 6px;
             min-width: 200px;
-            box-shadow: none;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.35);
             animation: menu-entry 0.2s cubic-bezier(0.16, 1, 0.3, 1);
             display: flex;
             flex-direction: column;
+            position: relative;
         }
         @keyframes menu-entry { from { opacity:0; transform:translateY(-8px) scale(0.96); } to { opacity:1; transform:translateY(0) scale(1); } }
 
@@ -59,7 +59,14 @@
             color: var(--accent); 
         }
         .menu-option i { width: 16px; text-align: center; font-size: 14px; opacity: 0.8; transition: all 0.2s; color: var(--text-dim); }
-        .menu-option:hover i { transform: scale(1.1); opacity: 1; color: var(--accent); }
+        .menu-option:hover i:not([style*="color"]) { color: var(--accent); }
+        .menu-option:hover i { transform: scale(1.1); opacity: 1; }
+        
+        .menu-option i.fa-circle {
+            font-size: 10px;
+            margin-right: 4px;
+            filter: drop-shadow(0 0 2px var(--accent-glow));
+        }
 
         .menu-separator {
             height: 1px;
@@ -70,15 +77,15 @@
         .menu-sub {
             display: none;
             position: absolute;
-            left: calc(100% + 4px);
+            left: calc(100% - 4px);
             top: -6px;
             background: var(--bg-glass);
-            backdrop-filter: blur(25px);
             border: 1px solid var(--glass-border);
             border-radius: var(--radius);
             padding: 6px;
             min-width: 160px;
-            box-shadow: none;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.35);
+            animation: menu-entry 0.2s cubic-bezier(0.16, 1, 0.3, 1);
         }
         .menu-sub::before {
             content: '';
@@ -102,18 +109,18 @@
                     document.documentElement.style.setProperty('--accent', accent);
                     const r = parseInt(accent.slice(1,3), 16), g = parseInt(accent.slice(3,5), 16), b = parseInt(accent.slice(5,7), 16);
                     document.documentElement.style.setProperty('--accent-glow', `rgba(${r}, ${g}, ${b}, 0.2)`);
-                    document.documentElement.style.setProperty('--accent-dim', `rgba(${r}, ${g}, ${b}, 0.15)`);
+                    document.documentElement.style.setProperty('--accent-dim', `rgba(${r}, ${g}, ${b}, 0.12)`);
                 }
                 if (s.themeMode === 'light') {
                      document.documentElement.style.setProperty('--bg-glass', '#ffffff');
-                     document.documentElement.style.setProperty('--glass-border', 'rgba(0,0,0,0.1)');
-                     document.documentElement.style.setProperty('--text-main', '#000000');
-                     document.documentElement.style.setProperty('--text-dim', '#555555');
+                     document.documentElement.style.setProperty('--glass-border', '#e2e8f0');
+                     document.documentElement.style.setProperty('--text-main', '#0f172a');
+                     document.documentElement.style.setProperty('--text-dim', '#475569');
                 } else {
-                     document.documentElement.style.setProperty('--bg-glass', '#111111');
-                     document.documentElement.style.setProperty('--glass-border', '#252525');
+                     document.documentElement.style.setProperty('--bg-glass', '#1a1a1e');
+                     document.documentElement.style.setProperty('--glass-border', '#2d2d30');
                      document.documentElement.style.setProperty('--text-main', '#e8e8e8');
-                     document.documentElement.style.setProperty('--text-dim', '#666666');
+                     document.documentElement.style.setProperty('--text-dim', '#9ca3af');
                 }
             } catch(e) {}
         }
@@ -124,18 +131,18 @@
                 document.documentElement.style.setProperty('--accent', accent);
                 const r = parseInt(accent.slice(1,3), 16), g = parseInt(accent.slice(3,5), 16), b = parseInt(accent.slice(5,7), 16);
                 document.documentElement.style.setProperty('--accent-glow', `rgba(${r}, ${g}, ${b}, 0.2)`);
-                document.documentElement.style.setProperty('--accent-dim', `rgba(${r}, ${g}, ${b}, 0.15)`);
+                document.documentElement.style.setProperty('--accent-dim', `rgba(${r}, ${g}, ${b}, 0.12)`);
             }
             if (s.themeMode === 'light') {
                 document.documentElement.style.setProperty('--bg-glass', '#ffffff');
-                document.documentElement.style.setProperty('--glass-border', 'rgba(0,0,0,0.1)');
-                document.documentElement.style.setProperty('--text-main', '#000000');
-                document.documentElement.style.setProperty('--text-dim', '#555555');
+                document.documentElement.style.setProperty('--glass-border', '#e2e8f0');
+                document.documentElement.style.setProperty('--text-main', '#0f172a');
+                document.documentElement.style.setProperty('--text-dim', '#475569');
             } else {
-                document.documentElement.style.setProperty('--bg-glass', '#111111');
-                document.documentElement.style.setProperty('--glass-border', '#252525');
+                document.documentElement.style.setProperty('--bg-glass', '#1a1a1e');
+                document.documentElement.style.setProperty('--glass-border', '#2d2d30');
                 document.documentElement.style.setProperty('--text-main', '#e8e8e8');
-                document.documentElement.style.setProperty('--text-dim', '#666666');
+                document.documentElement.style.setProperty('--text-dim', '#9ca3af');
             }
         });
     </script>
