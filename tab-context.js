@@ -7,7 +7,9 @@ function addMenuOption(parent, label, icon, onClick, color) {
     opt.className = 'menu-option';
     opt.innerHTML = `<i class="fas ${icon}" style="${color ? 'color:'+color : ''}"></i> <span>${label}</span>`;
     opt.onclick = () => {
+        console.log(`[TAB-CONTEXT] Option clicked: "${label}"`);
         onClick();
+        console.log(`[TAB-CONTEXT] Option "${label}" onClick executed, sending hide-tab-context`);
         window.electronAPI.send('hide-tab-context');
     };
     parent.appendChild(opt);

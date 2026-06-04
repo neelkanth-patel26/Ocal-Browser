@@ -63,3 +63,15 @@ window.addEventListener('keydown', (e) => {
 
 // Request initial data
 window.electronAPI.send('request-tab-group-data');
+
+// Sync settings
+window.electronAPI.invoke('get-settings').then(s => {
+    if (s && s.themeMode) {
+        document.body.setAttribute('data-theme', s.themeMode);
+    }
+});
+window.electronAPI.on('settings-changed', (e, s) => {
+    if (s && s.themeMode) {
+        document.body.setAttribute('data-theme', s.themeMode);
+    }
+});

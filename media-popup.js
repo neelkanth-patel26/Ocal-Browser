@@ -3,7 +3,11 @@
  * (C) 2026 Ocal Browser
  */
 
-const { ipcRenderer } = require('electron');
+const ipcRenderer = {
+    on: (channel, cb) => window.electronAPI.on(channel, cb),
+    send: (channel, data) => window.electronAPI.send(channel, data),
+    invoke: (channel, data) => window.electronAPI.invoke(channel, data)
+};
 
 const mediaListEl = document.getElementById('media-list');
 const footerActions = document.getElementById('footer-actions');

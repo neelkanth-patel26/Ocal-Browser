@@ -979,22 +979,26 @@ function hideContextMenu() {
 
 // IPC Triggers from Tab Context View
 window.electronAPI.on('close-tab-trigger', (event, tabId) => {
+    console.log(`[RENDERER] close-tab-trigger received for tabId:`, tabId);
     window.electronAPI.send('close-tab', tabId);
 });
 window.electronAPI.on('create-tab-group-trigger', (event, tabId) => {
+    console.log(`[RENDERER] create-tab-group-trigger received for tabId:`, tabId);
     window.electronAPI.send('create-tab-group', { name: 'New Group', color: '#a855f7', tabIds: [tabId] });
 });
 window.electronAPI.on('remove-from-group-trigger', (event, tabId) => {
+    console.log(`[RENDERER] remove-from-group-trigger received for tabId:`, tabId);
     window.electronAPI.send('remove-from-group', tabId);
 });
 window.electronAPI.on('add-to-group-trigger', (event, data) => {
+    console.log(`[RENDERER] add-to-group-trigger received with data:`, data);
     window.electronAPI.send('add-to-group', { tabId: data.tabId, groupId: data.groupId });
 });
 
 
 
 window.electronAPI.send('request-tabs');
-
+const identityBtn = document.getElementById('identity-btn');
 if (identityBtn) {
     identityBtn.onclick = (e) => {
         e.stopPropagation();

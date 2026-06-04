@@ -263,7 +263,7 @@ html, body {
 .bm-breadcrumb i { font-size: 9px; opacity: 0.5; }
 
 /* ── Section Labels ────────────────────────────────────────── */
-.recom-title, .bm-section-label {
+.recom-title, .bm-section-label, .hist-date-label {
     padding: 14px 20px 6px;
     font-size: 10px;
     font-weight: 800;
@@ -272,11 +272,11 @@ html, body {
     letter-spacing: 0.12em;
     display: flex; align-items: center; gap: 8px;
 }
-.recom-title::after, .bm-section-label::after {
+.recom-title::after, .bm-section-label::after, .hist-date-label::after {
     content: ''; flex: 1; height: 1px;
     background: var(--border);
 }
-.recom-title i, .bm-section-label i { color: var(--accent); font-size: 11px; }
+.recom-title i, .bm-section-label i, .hist-date-label i { color: var(--accent); font-size: 11px; }
 
 /* ── Recommendation Grid ───────────────────────────────────── */
 .hist-recom { padding: 0; border-bottom: 1px solid var(--border); }
@@ -292,18 +292,25 @@ html, body {
 .recom-name { font-size: 10px; color: var(--text-dim); text-align: center; width: 100%; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 
 .hist-clear-row {
-    display: flex; align-items: center; gap: 10px;
-    padding: 9px 14px; margin: 4px 10px 2px;
-    border-radius: var(--radius); cursor: pointer;
-    font-size: 12px; font-weight: 600;
-    color: var(--text-muted);
-    border: 1px solid transparent;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    padding: 10px 14px;
+    margin: 8px 10px 12px;
+    border-radius: 8px;
+    cursor: pointer;
+    font-size: 11.5px;
+    font-weight: 700;
+    color: #ef4444;
+    background: rgba(239, 68, 68, 0.08);
+    border: 1px solid rgba(239, 68, 68, 0.15);
     transition: all 0.2s;
 }
 .hist-clear-row:hover {
-    background: var(--hover);
-    border-color: var(--border);
-    color: var(--text);
+    background: rgba(239, 68, 68, 0.15);
+    border-color: #ef4444;
+    color: #ff5f5f;
 }
 
 .hist-item {
@@ -367,6 +374,78 @@ html, body {
     transform: none;
     box-shadow: none !important;
 }
+
+/* ── Advanced History Grouping Style ── */
+.hist-group-container {
+    margin: 4px 10px;
+    border: 1px solid var(--card-border);
+    background: var(--card-bg);
+    border-radius: 8px;
+    overflow: hidden;
+    transition: all 0.2s;
+}
+.hist-group-container:hover {
+    border-color: var(--card-hover-border);
+}
+.hist-group-header {
+    display: flex; align-items: center; gap: 12px;
+    padding: 10px 12px;
+    cursor: pointer; position: relative;
+    user-select: none;
+    transition: background 0.18s;
+}
+.hist-group-header:hover {
+    background: var(--card-hover-bg);
+}
+.hist-group-header .toggle-chevron {
+    font-size: 10px;
+    color: var(--text-dim);
+    transition: transform 0.2s ease;
+    width: 12px;
+    text-align: center;
+}
+.hist-group-header.expanded .toggle-chevron {
+    transform: rotate(90deg);
+}
+.hist-group-title {
+    font-size: 13px;
+    font-weight: 700;
+    color: var(--text);
+}
+.hist-group-children {
+    border-top: 1px solid var(--border);
+    background: rgba(0, 0, 0, 0.12);
+}
+body[data-theme="light"] .hist-group-children {
+    background: rgba(0, 0, 0, 0.015);
+}
+.hist-group-children .hist-item {
+    margin: 0 !important;
+    border: none !important;
+    border-bottom: 1px solid rgba(255,255,255,0.02) !important;
+    border-radius: 0 !important;
+    padding-left: 36px !important;
+    background: transparent !important;
+}
+body[data-theme="light"] .hist-group-children .hist-item {
+    border-bottom: 1px solid rgba(0,0,0,0.02) !important;
+}
+.hist-group-children .hist-item:last-child {
+    border-bottom: none !important;
+}
+.hist-group-children .hist-item:hover {
+    background: var(--card-hover-bg) !important;
+}
+.hist-group-header .hist-del {
+    opacity: 0; transform: scale(1); transition: all 0.15s;
+    background: var(--bg); color: var(--text-dim);
+    border: 1px solid var(--border);
+    border-radius: 50% !important; flex-shrink: 0;
+    width: 28px; height: 28px; display: flex; align-items: center; justify-content: center;
+    font-size: 10px; cursor: pointer; margin-left: auto;
+}
+.hist-group-header:hover .hist-del { opacity: 1; }
+.hist-group-header .hist-del:hover { background: rgba(239,68,68,0.2) !important; color: #fff !important; }
 
 /* ── Download / Files Specifics 3.0 ── */
 .dl-item {
