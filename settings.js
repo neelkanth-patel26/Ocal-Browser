@@ -1284,7 +1284,8 @@ function renderExtensions(s = null) {
                             <span style="width: 6px; height: 6px; border-radius: 50%; background: ${ext.enabled ? '#4ade80' : 'var(--text-muted)'};"></span>
                             ${ext.enabled ? 'Active' : 'Disabled'}
                         </span>
-                        ${ext.isLocal ? `<button class="btn secondary" style="padding: 4px 10px; font-size: 11px;" onclick="window.electronAPI.removeExtension('${ext.id}').then(() => window.electronAPI.getSettings().then(s => renderExtensions(s)))"><i class="fas fa-trash"></i> Remove</button>` : `<button class="btn secondary" style="padding: 4px 10px; font-size: 11px;" onclick="window.open('https://chromewebstore.google.com/detail/${ext.id}')">View</button>`}
+                        ${!ext.isLocal ? `<button class="btn secondary" style="padding: 4px 10px; font-size: 11px;" onclick="window.open('https://chromewebstore.google.com/detail/${ext.id}')"><i class="fas fa-external-link-alt"></i> View</button>` : ''}
+                        <button class="btn secondary" style="padding: 4px 10px; font-size: 11px;" onclick="window.electronAPI.removeExtension('${ext.id}').then(() => window.electronAPI.getSettings().then(s => renderExtensions(s)))"><i class="fas fa-trash"></i> Remove</button>
                     </div>
                 </div>
             `;

@@ -876,33 +876,7 @@ app.on('web-contents-created', (event, contents) => {
     });
 
     const desktopUA = OCAL_USER_AGENT;
-    const mobileUA = 'Mozilla/5.0 (Linux; Android 14; Pixel 8 Build/UD1A.230805.019) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/122.0.0.0 Mobile Safari/537.36';
-
-    const applyMobileEmulation = async (isPopup = false) => {
-        try {
-            if (!contents.debugger.isAttached()) contents.debugger.attach('1.3');
-            const metrics = isPopup ? { width: 412, height: 915 } : { width: 0, height: 0 };
-            await contents.debugger.sendCommand('Emulation.setDeviceMetricsOverride', {
-                width: metrics.width, height: metrics.height, deviceScaleFactor: 2.6, mobile: true,
-                screenOrientation: { type: 'portraitPrimary', angle: 0 }
-            });
-            await contents.debugger.sendCommand('Network.setUserAgentOverride', { userAgent: mobileUA });
-            await contents.debugger.sendCommand('Emulation.setTouchEmulationEnabled', { enabled: true, configuration: 'mobile' });
-        } catch (e) { }
-    };
-
-    const removeMobileEmulation = async (skipReload = false) => {
-        try {
-            if (contents.debugger.isAttached()) {
-                await contents.debugger.sendCommand('Emulation.clearDeviceMetricsOverride');
-                await contents.debugger.sendCommand('Network.setUserAgentOverride', { userAgent: desktopUA });
-                contents.debugger.detach();
-                if (!skipReload) {
-                    setTimeout(() => { if (!contents.isDestroyed()) contents.reload(); }, 100);
-                }
-            }
-        } catch (e) { }
-    };
+    const googleBypassUA = 'Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:130.0) Gecko/20100101 Firefox/130.0';
 
     contents.setUserAgent(desktopUA);
 
@@ -934,22 +908,19 @@ app.on('web-contents-created', (event, contents) => {
         const isSignFlow = url.includes('ServiceLogin') || url.includes('signin') || url.includes('identifier');
         const isGoogleAccounts = url.includes('accounts.google.com') || url.includes('google.com/accounts');
         const isPostLogin = url.includes('CheckCookie') || url.includes('ServiceLoginAuth');
-        const isCurrentlyMobile = contents.debugger.isAttached();
 
         if (isGoogleAccounts && isSignFlow && !isPostLogin) {
-            if (!isCurrentlyMobile) {
-                applyMobileEmulation(contents.session === session.fromPartition('persist:google_login'));
-            }
-        } else if (isCurrentlyMobile) {
-            removeMobileEmulation(true);
+            contents.setUserAgent(googleBypassUA);
+        } else {
+            contents.setUserAgent(desktopUA);
         }
     });
 
     contents.on('did-stop-navigation', () => {
         const url = contents.getURL();
         const isGoogleAccounts = url.includes('accounts.google.com') || url.includes('google.com/accounts');
-        if (!isGoogleAccounts && contents.debugger.isAttached()) {
-            removeMobileEmulation(true);
+        if (!isGoogleAccounts && contents.getUserAgent() === googleBypassUA) {
+            contents.setUserAgent(desktopUA);
         }
     });
 
@@ -2599,7 +2570,7 @@ ipcMain.handle('ai-agent-execute', async (event, query) => {
 
         if (snippets && snippets.length > 0) {
             notifyAction("Synthesizing search results...", 'fa-wand-magic-sparkles');
-            const synthesisPrompt = `Synthesize these search snippets to answer the query: "${query}"\n\nSearch Snippets:\n${snippets.map((s, idx) => `[${idx + 1}] ${s}`).join('\n')}\n\nProvide a synthesized answer in Markdown.`;
+            const synthesisPrompt = `Synthesize these search snippets to answer the query: "${query}"\n\nSearch Snippets:\n${snippets.map((s, idx) => `[${idx + 1}] (${s.title}): ${s.snippet}`).join('\n')}\n\nProvide a synthesized answer in Markdown.`;
             
             const synthesis = await queryActiveLLM(synthesisPrompt, style);
 
@@ -2612,10 +2583,26 @@ ipcMain.handle('ai-agent-execute', async (event, query) => {
             }
 
             let fallbackSynthesis = `### 🌐 Web Intelligence: ${query}\n\n`;
-            fallbackSynthesis += `Based on real-time web search, here is the most relevant information:\n\n`;
+            
+            // Core Summary
+            const coreSummary = snippets[0].snippet;
+            fallbackSynthesis += `#### 📌 Core Summary\n${coreSummary}\n\n`;
 
+            // References
+            fallbackSynthesis += `#### 🔗 References\n`;
             snippets.forEach((s, i) => {
-                fallbackSynthesis += `- **Source ${i + 1}**: ${s}\n\n`;
+                if (s.url) {
+                    fallbackSynthesis += `${i + 1}. [${s.title}](${s.url})\n`;
+                } else {
+                    fallbackSynthesis += `${i + 1}. ${s.title}\n`;
+                }
+            });
+            fallbackSynthesis += `\n`;
+
+            // Detailed Explanation
+            fallbackSynthesis += `#### 📖 Detailed Explanation\n`;
+            snippets.forEach((s, i) => {
+                fallbackSynthesis += `- **${s.title}**: ${s.snippet}\n\n`;
             });
 
             fallbackSynthesis += `---\n> [!NOTE]\n> This research was compiled locally via web heuristics. To get fully synthesized conversational answers, you can enable a local LLM or cloud model in settings.`;
@@ -2923,12 +2910,30 @@ async function researchWeb(query) {
         if (response.ok) {
             const html = await response.text();
             const snippets = [];
-            const matches = html.matchAll(/<a class="result__snippet"[^>]*>([\s\S]*?)<\/a>/g);
+            const matches = html.matchAll(/<a[^>]*class="result__snippet"[^>]*href="([^"]*)"[^>]*>([\s\S]*?)<\/a>/g);
             for (const match of matches) {
                 if (snippets.length >= 4) break;
-                const text = match[1].replace(/<[^>]*>/g, '').replace(/\s+/g, ' ').trim();
+                let url = match[1];
+                const text = match[2].replace(/<[^>]*>/g, '').replace(/\s+/g, ' ').trim();
+                
+                if (url.includes('uddg=')) {
+                    try {
+                        url = decodeURIComponent(url.split('uddg=')[1].split('&')[0]);
+                    } catch (e) {}
+                }
+                
                 if (text.length > 20) {
-                    snippets.push(decodeHtmlEntities(text));
+                    let title = 'Source';
+                    try {
+                        const parsedUrl = new URL(url);
+                        title = parsedUrl.hostname.replace('www.', '');
+                    } catch(e) {}
+                    
+                    snippets.push({
+                        snippet: decodeHtmlEntities(text),
+                        url: url,
+                        title: title
+                    });
                 }
             }
             if (snippets.length > 0) return snippets;
@@ -2944,23 +2949,34 @@ async function researchWeb(query) {
             headers: { 'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36' }
         });
         const html = await response.text();
-
-        // Extract 3-5 snippets using regex
         const snippets = [];
+
+        // Extract using regex, try to associate with google search URL as fallback link
         const matches = html.matchAll(/<div class="VwiC3b y67Nj fOa9pe[^>]*><span>(.*?)<\/span>/g);
         for (const match of matches) {
             if (snippets.length >= 4) break;
             const text = match[1].replace(/<[^>]*>/g, '').trim();
-            if (text.length > 30) snippets.push(decodeHtmlEntities(text));
+            if (text.length > 30) {
+                snippets.push({
+                    snippet: decodeHtmlEntities(text),
+                    url: `https://www.google.com/search?q=${encodeURIComponent(query)}`,
+                    title: 'Google Search'
+                });
+            }
         }
 
-        // Fallback for different Google result headers or mobile-style layouts
         if (snippets.length === 0) {
             const matches2 = html.matchAll(/<span class="st">(.*?)<\/span>|<div class="kCrYT"><div><div class="BNeawe s3v9rd AP7Wnd">(.*?)<\/div>/g);
             for (const match of matches2) {
                 if (snippets.length >= 4) break;
                 const m = match[1] || match[2];
-                if (m) snippets.push(decodeHtmlEntities(m.replace(/<[^>]*>/g, '').trim()));
+                if (m) {
+                    snippets.push({
+                        snippet: decodeHtmlEntities(m.replace(/<[^>]*>/g, '').trim()),
+                        url: `https://www.google.com/search?q=${encodeURIComponent(query)}`,
+                        title: 'Google Search'
+                    });
+                }
             }
         }
 
@@ -3646,7 +3662,10 @@ function handleShortcuts(event, input) {
     }
 }
 
-ipcMain.handle('get-settings', () => userSettings);
+ipcMain.handle('get-settings', () => {
+    const resolvedExtensions = (userSettings.extensions || []).map(ext => resolveExtensionMetadata({ ...ext }));
+    return { ...userSettings, extensions: resolvedExtensions };
+});
 ipcMain.handle('get-app-version', () => app.getVersion());
 ipcMain.handle('get-downloads', () => downloads);
 function isNewerVersion(latest, current) {
@@ -4602,6 +4621,96 @@ ipcMain.handle('get-certificate-info', async (event, hostname) => {
     });
 });
 
+function getLocalizedExtensionString(str, extensionPath, manifest = {}) {
+    if (typeof str !== 'string' || !str.includes('__MSG_')) return str;
+
+    return str.replace(/__MSG_([a-zA-Z0-9_@]+)__/g, (match, key) => {
+        const keyLower = key.toLowerCase();
+
+        // Standard predefined Chrome messages
+        if (keyLower === 'extension_id') return '';
+        if (keyLower === 'ui_locale') {
+            try { return app.getLocale(); } catch (e) { return 'en'; }
+        }
+        if (keyLower === 'bidi_dir') return 'ltr';
+        if (keyLower === 'bidi_reversed_dir') return 'rtl';
+        if (keyLower === 'bidi_start_edge') return 'left';
+        if (keyLower === 'bidi_end_edge') return 'right';
+
+        // Try to locate the message in locales folder
+        const localesToTry = [];
+        try {
+            const appLocale = app.getLocale();
+            if (appLocale) {
+                localesToTry.push(appLocale);
+                localesToTry.push(appLocale.replace('-', '_'));
+                const lang = appLocale.split(/[-_]/)[0];
+                if (lang) localesToTry.push(lang);
+            }
+        } catch (e) {}
+
+        if (manifest.default_locale) {
+            localesToTry.push(manifest.default_locale);
+            localesToTry.push(manifest.default_locale.replace('-', '_'));
+            const lang = manifest.default_locale.split(/[-_]/)[0];
+            if (lang) localesToTry.push(lang);
+        }
+
+        localesToTry.push('en', 'en_US', 'en-US');
+
+        const uniqueLocales = [...new Set(localesToTry)];
+
+        for (const locale of uniqueLocales) {
+            const possibleFolders = [locale, locale.toLowerCase(), locale.toUpperCase()];
+            if (locale.includes('_')) {
+                const dashed = locale.replace('_', '-');
+                possibleFolders.push(dashed, dashed.toLowerCase());
+            } else if (locale.includes('-')) {
+                const underscored = locale.replace('-', '_');
+                possibleFolders.push(underscored, underscored.toLowerCase());
+            }
+
+            const uniqueFolders = [...new Set(possibleFolders)];
+
+            for (const folderName of uniqueFolders) {
+                const localePath = path.join(extensionPath, '_locales', folderName, 'messages.json');
+                if (fs.existsSync(localePath)) {
+                    try {
+                        const content = fs.readFileSync(localePath, 'utf8');
+                        const messages = JSON.parse(content);
+                        for (const mKey of Object.keys(messages)) {
+                            if (mKey.toLowerCase() === keyLower) {
+                                if (messages[mKey] && typeof messages[mKey].message === 'string') {
+                                    return messages[mKey].message;
+                                }
+                            }
+                        }
+                    } catch (e) {}
+                }
+            }
+        }
+        return match;
+    });
+}
+
+function resolveExtensionMetadata(ext) {
+    if (!ext || !ext.id) return ext;
+    const extPath = ext.isLocal ? ext.localPath : path.join(app.getPath('userData'), 'extensions-data', ext.id);
+    if (fs.existsSync(extPath)) {
+        try {
+            const manifestPath = path.join(extPath, 'manifest.json');
+            if (fs.existsSync(manifestPath)) {
+                const manifest = JSON.parse(fs.readFileSync(manifestPath, 'utf8'));
+                ext.name = getLocalizedExtensionString(manifest.name || ext.name, extPath, manifest);
+                ext.description = getLocalizedExtensionString(manifest.description || ext.description || '', extPath, manifest);
+            }
+        } catch (e) {
+            console.error(`Error resolving metadata for extension ${ext.id}:`, e);
+        }
+    }
+    return ext;
+}
+
 // ── Chrome Extension Management Engine ──────────────────────────────────────
 class ExtensionManager {
     constructor() {
@@ -4706,9 +4815,9 @@ class ExtensionManager {
             const manifest = JSON.parse(fs.readFileSync(path.join(targetPath, 'manifest.json'), 'utf8'));
             const extensionInfo = {
                 id: extensionId,
-                name: manifest.name,
+                name: getLocalizedExtensionString(manifest.name, targetPath, manifest),
                 version: manifest.version,
-                description: manifest.description || '',
+                description: getLocalizedExtensionString(manifest.description || '', targetPath, manifest),
                 enabled: true,
                 icons: manifest.icons || {}
             };
@@ -4803,9 +4912,9 @@ ipcMain.handle('load-unpacked-extension', async (e) => {
 
         const extensionInfo = {
             id: extensionId,
-            name: manifest.name,
+            name: getLocalizedExtensionString(manifest.name, dirPath, manifest),
             version: manifest.version,
-            description: manifest.description || 'Unpacked Extension',
+            description: getLocalizedExtensionString(manifest.description || 'Unpacked Extension', dirPath, manifest),
             enabled: true,
             icons: manifest.icons || {},
             isLocal: true,
@@ -4830,7 +4939,7 @@ ipcMain.handle('load-unpacked-extension', async (e) => {
 });
 
 ipcMain.handle('get-extensions', () => {
-    return userSettings.extensions || [];
+    return (userSettings.extensions || []).map(ext => resolveExtensionMetadata({ ...ext }));
 });
 
 ipcMain.handle('get-all-extensions', () => {
@@ -4842,7 +4951,10 @@ ipcMain.handle('get-all-extensions', () => {
         { id: 'media-master', name: 'Ocal Media Master', desc: 'Professional video and image downloader for all sites.', enabled: userSettings.mediaMasterEnabled, type: 'native', icon: 'fa-download' },
         { id: 'asset-vault', name: 'Asset Vault', desc: 'High-performance local resource caching.', enabled: userSettings.assetVaultEnabled, type: 'native', icon: 'fa-vault' }
     ];
-    const marketplace = (userSettings.extensions || []).map(e => ({ ...e, type: 'marketplace' }));
+    const marketplace = (userSettings.extensions || []).map(e => ({
+        ...resolveExtensionMetadata({ ...e }),
+        type: 'marketplace'
+    }));
     return [...native, ...marketplace];
 });
 
@@ -5080,21 +5192,23 @@ ipcMain.on('edit-profile', (e, { id, name, icon }) => {
 });
 
 function broadcastSettings() {
+    const resolvedExtensions = (userSettings.extensions || []).map(ext => resolveExtensionMetadata({ ...ext }));
+    const settingsToSend = { ...userSettings, extensions: resolvedExtensions };
     if (mainWindow && !mainWindow.isDestroyed()) {
-        mainWindow.webContents.send('settings-changed', userSettings);
+        mainWindow.webContents.send('settings-changed', settingsToSend);
     }
     // Also notify the sidebar
     if (sidebarOverlayView && !sidebarOverlayView.webContents.isDestroyed()) {
-        sidebarOverlayView.webContents.send('settings-changed', userSettings);
+        sidebarOverlayView.webContents.send('settings-changed', settingsToSend);
     }
     // Also notify the AI sidebar
     if (aiSidebarView && !aiSidebarView.webContents.isDestroyed()) {
-        aiSidebarView.webContents.send('settings-changed', userSettings);
+        aiSidebarView.webContents.send('settings-changed', settingsToSend);
     }
     // Notify all active views
     views.forEach(v => {
         if (v.view && !v.view.webContents.isDestroyed()) {
-            v.view.webContents.send('settings-changed', userSettings);
+            v.view.webContents.send('settings-changed', settingsToSend);
         }
     });
 }

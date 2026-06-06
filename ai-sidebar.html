@@ -317,6 +317,16 @@
             display: flex; flex-direction: column; gap: 6px;
         }
         .msg-content li { font-size: 13.5px; color: var(--text-dim); }
+        .msg-content a {
+            color: var(--accent);
+            text-decoration: none;
+            font-weight: 600;
+            transition: opacity 0.2s;
+        }
+        .msg-content a:hover {
+            text-decoration: underline;
+            opacity: 0.8;
+        }
 
         /* Premium Alerts styling */
         .alert {
