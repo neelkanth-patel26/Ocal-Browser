@@ -30,6 +30,16 @@ const scrollToBottom = () => {
     messagesEl.scrollTop = messagesEl.scrollHeight;
 };
 
+const renderMarkdown = (text) => {
+    let html = marked.parse(text);
+    // GFM Alert Parsing (Post-process)
+    html = html.replace(/<blockquote>\s*<p>\[!NOTE\]/gi, '<div class="alert alert-note"><p>')
+               .replace(/<blockquote>\s*<p>\[!TIP\]/gi, '<div class="alert alert-tip"><p>')
+               .replace(/<blockquote>\s*<p>\[!IMPORTANT\]/gi, '<div class="alert alert-important"><p>')
+               .replace(/<\/p>\s*<\/blockquote>/gi, '</p></div>');
+    return html;
+};
+
 // Helper: Typing Animation
 const typeMessage = async (container, text, speed = 15) => {
     let currentText = '';
@@ -38,21 +48,13 @@ const typeMessage = async (container, text, speed = 15) => {
     // Smoothly reveal words for an "intelligent" feel
     for (const word of words) {
         currentText += (currentText === '' ? '' : ' ') + word;
-        container.innerHTML = currentText.replace(/\n/g, '<br>');
+        container.innerHTML = renderMarkdown(currentText);
         scrollToBottom();
         await new Promise(resolve => setTimeout(resolve, speed + Math.random() * 20));
     }
     
     // Final Markdown Render
-    let html = marked.parse(text);
-    
-    // GFM Alert Parsing (Post-process)
-    html = html.replace(/<blockquote>\s*<p>\[!NOTE\]/gi, '<div class="alert alert-note"><p>')
-               .replace(/<blockquote>\s*<p>\[!TIP\]/gi, '<div class="alert alert-tip"><p>')
-               .replace(/<blockquote>\s*<p>\[!IMPORTANT\]/gi, '<div class="alert alert-important"><p>')
-               .replace(/<\/p>\s*<\/blockquote>/gi, '</p></div>');
-    
-    container.innerHTML = html;
+    container.innerHTML = renderMarkdown(text);
     
     container.querySelectorAll('pre code').forEach((block) => {
         hljs.highlightElement(block);
@@ -306,6 +308,17 @@ window.electronAPI.on('sidebar-shown', () => {
                 panel.classList.add('animate-in');
             });
         });
+    }
+});
+
+// Intercept all link clicks inside the messages container to open them in a new browser tab
+messagesEl.addEventListener('click', (e) => {
+    const link = e.target.closest('a');
+    if (link && link.href) {
+        if (link.href.startsWith('http://') || link.href.startsWith('https://')) {
+            e.preventDefault();
+            window.electronAPI.send('open-external', link.href);
+        }
     }
 });
 
