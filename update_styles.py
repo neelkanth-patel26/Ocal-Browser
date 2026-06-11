@@ -9,11 +9,7 @@ def update_pdf_viewer():
     # Update fonts and :root variables
     content = content.replace(
         '<link href="https://fonts.googleapis.com/css2?family=Geist+Mono:wght@400;700&display=swap" rel="stylesheet">',
-        """<style>
-        @import url('https://cdn.jsdelivr.net/fontsource/fonts/geist-sans@latest/latin-400-normal.css');
-        @import url('https://cdn.jsdelivr.net/fontsource/fonts/geist-sans@latest/latin-700-normal.css');
-        @import url('https://cdn.jsdelivr.net/fontsource/fonts/geist-mono@latest/latin-400-normal.css');
-    </style>"""
+        """<link rel="stylesheet" href="assets/fonts/geist-fonts.css">"""
     )
     
     # Replace border-radius 0px

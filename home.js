@@ -446,7 +446,7 @@ if (historyBtn) {
     historyBtn.onclick = () => {
         if (window.electronAPI) {
             window.electronAPI.send('toggle-sidebar', true);
-            window.electronAPI.send('switch-tab-sidebar', 'history');
+            window.electronAPI.send('switch-sidebar-tab', 'history');
         }
     };
 }

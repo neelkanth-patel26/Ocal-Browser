@@ -1,6 +1,4 @@
-@import url('https://cdn.jsdelivr.net/fontsource/fonts/geist-sans@latest/latin-400-normal.css');
-@import url('https://cdn.jsdelivr.net/fontsource/fonts/geist-sans@latest/latin-700-normal.css');
-@import url('https://cdn.jsdelivr.net/fontsource/fonts/geist-mono@latest/latin-400-normal.css');
+@import url('./assets/fonts/geist-fonts.css');
 
 /* ── Variables ─────────────────────────────────────────────────── */
 :root {
@@ -1277,12 +1275,14 @@ body.compact-mode .omnibox { height: 32px; padding: 0 10px; gap: 6px; border-rad
   align-items: center;
 }
 
-.pretty-url .domain { color: #fff; font-weight: 500; }
+.pretty-url .protocol { color: var(--accent) !important; font-weight: 600; opacity: 0.85; }
+body[data-theme="light"] .pretty-url .protocol { color: var(--accent) !important; font-weight: 600; opacity: 1; }
+.pretty-url .domain { color: #fff; font-weight: 600; }
 body[data-theme="light"] .pretty-url .domain { color: #000 !important; }
-.pretty-url .protocol { color: var(--text-muted); opacity: 0.8; }
-body[data-theme="light"] .pretty-url .protocol { color: #666 !important; opacity: 1; }
-.pretty-url .path { color: var(--text-muted); opacity: 0.55; }
-body[data-theme="light"] .pretty-url .path { color: #888 !important; opacity: 1; }
+.pretty-url .slash { color: rgba(255, 255, 255, 0.25); margin: 0 5px; font-weight: 400; }
+body[data-theme="light"] .pretty-url .slash { color: rgba(0, 0, 0, 0.25); }
+.pretty-url .path { color: var(--text-dim); font-weight: 400; opacity: 0.8; }
+body[data-theme="light"] .pretty-url .path { color: #475569 !important; font-weight: 400; opacity: 1; }
 
 
 

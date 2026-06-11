@@ -938,11 +938,37 @@ function setupDownloadHandler() {
 
         let savePath = lastSaveAsPath;
         if (!savePath || userSettings.askSavePath) {
+            const filters = [];
+            const ext = path.extname(fileName).toLowerCase().replace(/^\./, '');
+            if (ext) {
+                let extName = `${ext.toUpperCase()} File`;
+                if (['png', 'jpg', 'jpeg', 'gif', 'webp', 'bmp', 'svg'].includes(ext)) {
+                    extName = 'Image Files';
+                } else if (ext === 'pdf') {
+                    extName = 'PDF Document';
+                } else if (ext === 'html' || ext === 'htm') {
+                    extName = 'HTML Document';
+                } else if (ext === 'txt' || ext === 'log') {
+                    extName = 'Text Files';
+                } else if (ext === 'zip' || ext === 'rar' || ext === '7z') {
+                    extName = 'Archive Files';
+                }
+                
+                let extensions = [ext];
+                if (ext === 'jpg' || ext === 'jpeg') {
+                    extensions = ['jpg', 'jpeg'];
+                } else if (ext === 'html' || ext === 'htm') {
+                    extensions = ['html', 'htm'];
+                }
+                filters.push({ name: extName, extensions: extensions });
+            }
+            filters.push({ name: 'All Files', extensions: ['*'] });
+
             const result = dialog.showSaveDialogSync(mainWindow, {
                 title: 'Save File',
                 defaultPath: path.join(app.getPath('downloads'), fileName),
                 buttonLabel: 'Save',
-                filters: [{ name: 'All Files', extensions: ['*'] }]
+                filters: filters
             });
 
             if (result) {
@@ -1134,6 +1160,21 @@ function closeOverlays() {
     if (shieldPopupView && !shieldPopupView.webContents.isDestroyed() && mainWindow && !mainWindow.isDestroyed()) {
         if (mainWindow.getBrowserViews().includes(shieldPopupView)) {
             mainWindow.removeBrowserView(shieldPopupView);
+        }
+    }
+    if (bmDropdownView && !bmDropdownView.webContents.isDestroyed() && mainWindow && !mainWindow.isDestroyed()) {
+        if (mainWindow.getBrowserViews().includes(bmDropdownView)) {
+            mainWindow.removeBrowserView(bmDropdownView);
+        }
+    }
+    if (extensionDropdownView && !extensionDropdownView.webContents.isDestroyed() && mainWindow && !mainWindow.isDestroyed()) {
+        if (mainWindow.getBrowserViews().includes(extensionDropdownView)) {
+            mainWindow.removeBrowserView(extensionDropdownView);
+        }
+    }
+    if (siteInfoView && !siteInfoView.webContents.isDestroyed() && mainWindow && !mainWindow.isDestroyed()) {
+        if (mainWindow.getBrowserViews().includes(siteInfoView)) {
+            mainWindow.removeBrowserView(siteInfoView);
         }
     }
     activeBMFolderId = null;
@@ -2011,6 +2052,7 @@ ipcMain.on('close-tab', async (e, id) => {
 });
 
 ipcMain.on('navigate-to', (e, url) => {
+    if (!url || typeof url !== 'string') return;
     const activeView = views.find(v => v.id === activeViewId)?.view;
     if (!activeView) return;
 
@@ -2174,11 +2216,185 @@ ipcMain.handle('ai-agent-execute', async (event, query) => {
 
         if (isSimpleGreeting) {
             return {
-                text: "Hello! I'm your Ocal AI Assistant. How can I assist you today?",
+                text: "Hello! I'm your **Ocal AI Assistant**. I can help you navigate, manage tabs, change settings, analyze pages, and more. What can I do for you?",
                 actions: []
             };
         }
 
+        // ─── SETTINGS MODIFICATION COMMANDS ─────────────────────────────
+        // Theme switching
+        if ((q.includes('dark mode') || q.includes('dark theme')) && (q.includes('switch') || q.includes('enable') || q.includes('turn on') || q.includes('set') || q.includes('change') || q.includes('use') || q.includes('activate'))) {
+            userSettings.themeMode = 'dark';
+            saveSettings(userSettings);
+            broadcastSettings();
+            notifyAction('Switching to Dark Mode...', 'fa-moon');
+            return { text: "Done! I've switched Ocal to **Dark Mode**. 🌙", actions: [] };
+        }
+
+        if ((q.includes('light mode') || q.includes('light theme')) && (q.includes('switch') || q.includes('enable') || q.includes('turn on') || q.includes('set') || q.includes('change') || q.includes('use') || q.includes('activate'))) {
+            userSettings.themeMode = 'light';
+            saveSettings(userSettings);
+            broadcastSettings();
+            notifyAction('Switching to Light Mode...', 'fa-sun');
+            return { text: "Done! I've switched Ocal to **Light Mode**. ☀️", actions: [] };
+        }
+
+        if (q.includes('theme') && (q.includes('what') || q.includes('current') || q.includes('which'))) {
+            const current = userSettings.themeMode || 'dark';
+            return { text: `Your current theme is **${current === 'light' ? 'Light Mode ☀️' : 'Dark Mode 🌙'}**.\n\nYou can say *"switch to light mode"* or *"switch to dark mode"* to change it.`, actions: [] };
+        }
+
+        // Accent color change
+        const accentMatch = query.match(/(?:change|set|make|switch)\s+(?:the\s+)?(?:accent|color|theme\s+color)\s+(?:to\s+)?(?:color\s+)?([#a-zA-Z0-9]+)/i);
+        if (accentMatch || (q.includes('accent') && q.includes('change')) || (q.includes('accent') && q.includes('set'))) {
+            const COLOR_MAP = {
+                'red': '#ef4444', 'green': '#09f0a0', 'blue': '#3b82f6', 'purple': '#a855f7',
+                'pink': '#ec4899', 'orange': '#f97316', 'yellow': '#eab308', 'cyan': '#06b6d4',
+                'lime': '#84cc16', 'teal': '#14b8a6', 'indigo': '#6366f1', 'rose': '#f43f5e',
+                'emerald': '#10b981', 'amber': '#f59e0b', 'violet': '#8b5cf6', 'sky': '#0ea5e9',
+                'white': '#ffffff', 'neon': '#09f0a0', 'gold': '#fbbf24', 'mint': '#34d399',
+                'coral': '#fb7185', 'lavender': '#a78bfa', 'peach': '#fbbf24'
+            };
+
+            let newColor = null;
+            if (accentMatch) {
+                const raw = accentMatch[1].toLowerCase();
+                if (raw.startsWith('#') && (raw.length === 4 || raw.length === 7)) {
+                    newColor = raw;
+                } else if (COLOR_MAP[raw]) {
+                    newColor = COLOR_MAP[raw];
+                }
+            }
+            if (!newColor) {
+                // Try to find a color name anywhere in the query
+                for (const [name, hex] of Object.entries(COLOR_MAP)) {
+                    if (q.includes(name)) { newColor = hex; break; }
+                }
+            }
+
+            if (newColor) {
+                userSettings.accentColor = newColor;
+                saveSettings(userSettings);
+                broadcastSettings();
+                notifyAction(`Accent color → ${newColor}`, 'fa-palette');
+                return { text: `Done! I've changed the accent color to **${newColor}** 🎨.\n\nThe change is applied across the entire browser immediately.`, actions: [] };
+            } else {
+                return { text: `I can change the accent color! Just tell me a color name or hex code.\n\n**Available colors:** ${Object.keys(COLOR_MAP).map(c => `\`${c}\``).join(', ')}\n\n**Or use a hex code:** e.g. *"set accent to #ff6600"*`, actions: [] };
+            }
+        }
+
+        // Search engine change
+        if (q.includes('search engine') && (q.includes('change') || q.includes('set') || q.includes('switch') || q.includes('use'))) {
+            const ENGINES = { 'google': 'google', 'bing': 'bing', 'duckduckgo': 'duckduckgo', 'ddg': 'duckduckgo', 'yahoo': 'yahoo', 'brave': 'brave', 'ecosia': 'ecosia' };
+            let newEngine = null;
+            for (const [name, val] of Object.entries(ENGINES)) {
+                if (q.includes(name)) { newEngine = val; break; }
+            }
+            if (newEngine) {
+                userSettings.searchEngine = newEngine;
+                saveSettings(userSettings);
+                broadcastSettings();
+                notifyAction(`Search engine → ${newEngine}`, 'fa-magnifying-glass');
+                return { text: `Done! Your default search engine is now **${newEngine.charAt(0).toUpperCase() + newEngine.slice(1)}** 🔍.`, actions: [] };
+            } else {
+                return { text: `I can change your search engine! Options: **Google**, **Bing**, **DuckDuckGo**, **Yahoo**, **Brave**, **Ecosia**.\n\nJust say *"change search engine to DuckDuckGo"*.`, actions: [] };
+            }
+        }
+
+        // Ad-blocking toggle
+        if (q.includes('ad') && (q.includes('block') || q.includes('shield'))) {
+            if (q.includes('disable') || q.includes('turn off') || q.includes('off')) {
+                userSettings.adBlockEnabled = false;
+                saveSettings(userSettings);
+                broadcastSettings();
+                notifyAction('Ad-blocking disabled', 'fa-shield-halved');
+                return { text: "Ad-blocking has been **disabled**. ⚠️\n\n> [!WARNING]\n> Ads and trackers will no longer be blocked. You can re-enable it anytime by saying *\"turn on ad blocking\"*.", actions: [] };
+            } else if (q.includes('enable') || q.includes('turn on') || q.includes('on')) {
+                userSettings.adBlockEnabled = true;
+                saveSettings(userSettings);
+                broadcastSettings();
+                notifyAction('Ad-blocking enabled', 'fa-shield');
+                return { text: "Ad-blocking has been **enabled**! 🛡️\n\nYour browsing is now protected from ads and trackers.", actions: [] };
+            } else if (q.includes('status') || q.includes('is it') || q.includes('enabled') || q.includes('on')) {
+                return { text: `Ad-blocking is currently **${userSettings.adBlockEnabled ? 'enabled ✅' : 'disabled ❌'}**.`, actions: [] };
+            }
+        }
+
+        // Sidebar mode
+        if (q.includes('sidebar') && (q.includes('hide') || q.includes('show') || q.includes('auto') || q.includes('visible'))) {
+            if (q.includes('hide') || q.includes('hidden')) {
+                userSettings.sidebarMode = 'hidden';
+                saveSettings(userSettings);
+                broadcastSettings();
+                return { text: "Sidebar is now **hidden**. You can bring it back by saying *\"show sidebar\"*.", actions: [] };
+            } else if (q.includes('auto')) {
+                userSettings.sidebarMode = 'autohide';
+                saveSettings(userSettings);
+                broadcastSettings();
+                return { text: "Sidebar is now in **auto-hide** mode. It will appear when you hover near the edge.", actions: [] };
+            } else {
+                userSettings.sidebarMode = 'visible';
+                saveSettings(userSettings);
+                broadcastSettings();
+                return { text: "Sidebar is now **visible** ✅.", actions: [] };
+            }
+        }
+
+        // Bookmark bar mode
+        if (q.includes('bookmark') && q.includes('bar') && (q.includes('show') || q.includes('hide') || q.includes('always') || q.includes('auto'))) {
+            if (q.includes('hide') || q.includes('never') || q.includes('off')) {
+                userSettings.bookmarkBarMode = 'never';
+            } else if (q.includes('always') || q.includes('show') || q.includes('on')) {
+                userSettings.bookmarkBarMode = 'always';
+            } else {
+                userSettings.bookmarkBarMode = 'auto';
+            }
+            saveSettings(userSettings);
+            broadcastSettings();
+            return { text: `Bookmark bar mode set to **${userSettings.bookmarkBarMode}**.`, actions: [] };
+        }
+
+        // HTTPS upgrade toggle
+        if (q.includes('https') && (q.includes('upgrade') || q.includes('force'))) {
+            if (q.includes('disable') || q.includes('off')) {
+                userSettings.httpsUpgradeEnabled = false;
+            } else {
+                userSettings.httpsUpgradeEnabled = true;
+            }
+            saveSettings(userSettings);
+            broadcastSettings();
+            return { text: `HTTPS upgrade is now **${userSettings.httpsUpgradeEnabled ? 'enabled ✅' : 'disabled ❌'}**.`, actions: [] };
+        }
+
+        // CyberStealth toggle
+        if (q.includes('stealth') || q.includes('cyber stealth') || q.includes('cyberstealth')) {
+            if (q.includes('enable') || q.includes('turn on') || q.includes('on') || q.includes('activate')) {
+                userSettings.cyberStealthEnabled = true;
+                saveSettings(userSettings);
+                broadcastSettings();
+                notifyAction('CyberStealth activated', 'fa-user-secret');
+                return { text: "**CyberStealth Mode** has been **enabled**! 🕵️\n\nYour fingerprint is now being guarded and traces are sanitized.", actions: [] };
+            } else if (q.includes('disable') || q.includes('turn off') || q.includes('off') || q.includes('deactivate')) {
+                userSettings.cyberStealthEnabled = false;
+                saveSettings(userSettings);
+                broadcastSettings();
+                return { text: "CyberStealth Mode has been **disabled**.", actions: [] };
+            }
+        }
+
+        // Battery saver toggle
+        if (q.includes('battery') && q.includes('saver')) {
+            if (q.includes('enable') || q.includes('turn on') || q.includes('on')) {
+                userSettings.batterySaver = true;
+            } else {
+                userSettings.batterySaver = false;
+            }
+            saveSettings(userSettings);
+            broadcastSettings();
+            return { text: `Battery saver is now **${userSettings.batterySaver ? 'enabled 🔋' : 'disabled'}**.`, actions: [] };
+        }
+
+        // ─── DEEP BROWSER KNOWLEDGE ─────────────────────────────────
         if (q.includes('who owns') || q.includes('who own') || q.includes('owner of') || q.includes('who is the owner')) {
             if (q.includes('ocal') || q.includes('browser')) {
                 return {
@@ -2188,24 +2404,46 @@ ipcMain.handle('ai-agent-execute', async (event, query) => {
             }
         }
 
-        if (q.includes('settings') && (q.includes('what') || q.includes('how') || q.includes('explain') || q.includes('list'))) {
+        // Browser status / system info
+        if (q.includes('status') || q.includes('system info') || q.includes('browser info') || q.includes('diagnostics') || (q.includes('how') && q.includes('browser') && q.includes('doing'))) {
+            const tabCount = views.length;
+            const memInfo = await process.getProcessMemoryInfo();
+            const memMB = (memInfo.workingSetSize / 1024).toFixed(0);
+            const uptime = Math.floor((Date.now() - sessionStartTime) / 60000);
+            const adsBlocked = userSettings.shieldStats?.global?.ads || 0;
+            const trackersBlocked = userSettings.shieldStats?.global?.trackers || 0;
+            const dataSavedMB = ((userSettings.shieldStats?.global?.dataSaved || 0) / 1024 / 1024).toFixed(1);
+            const bmCount = (userSettings.bookmarks || []).length;
+            const histCount = (userSettings.history || []).length;
+            const extCount = (userSettings.extensions || []).length;
+
             return {
-                text: `### ⚙️ Ocal Settings Guide\n\nOcal Browser settings are divided into the following sections:\n1. **Dashboard**: Live stats on ad-blocking, bandwidth saved, and system memory.\n2. **General**: Startup settings, default browser checks, and download location.\n3. **Search**: Select your search engine (Google, Bing, custom) and toggle suggestions.\n4. **Home Page**: Customize layouts, wallpapers, and tile shortcuts.\n5. **Profiles**: Create and switch browser identities (aliases) to keep data isolated.\n6. **Security & Shields**: Manage ad-blocking shields, proxy servers, HTTPS upgrades, and DoH.\n7. **Extensions**: Load unpacked extensions or install from the Chrome Web Store.\n8. **Shortcuts**: Customize keyboard hotkeys and mouse navigation gestures.\n9. **AI Assistant**: Set up models (Ollama, Gemini, ChatGPT) and configure keys.\n10. **About**: View Ocal version details, copyright, and check for updates.\n\n**How to access settings:**\n- Click the **Easy Setup / Settings** button at the bottom of the left sidebar.\n- Type \`ocal://settings\` in the address bar.\n- Ask me to *"open settings [section]"* (e.g. *"open settings ai"*).`,
-                actions: [
-                    { text: "Open General Settings", icon: "fa-cog", command: "open-settings", section: "general" },
-                    { text: "Open AI Settings", icon: "fa-robot", command: "open-settings", section: "ai" }
-                ]
+                text: `### 📊 Ocal Browser Status\n\n| Metric | Value |\n|--------|-------|\n| **Version** | v6.3.0-beta |\n| **Engine** | Electron + Chromium |\n| **Open Tabs** | ${tabCount} |\n| **Memory Usage** | ${memMB} MB |\n| **Session Uptime** | ${uptime} min |\n| **Bookmarks** | ${bmCount} |\n| **History Entries** | ${histCount} |\n| **Extensions** | ${extCount} |\n\n### 🛡️ Shield Stats (Lifetime)\n| Stat | Count |\n|------|-------|\n| **Ads Blocked** | ${adsBlocked.toLocaleString()} |\n| **Trackers Stopped** | ${trackersBlocked.toLocaleString()} |\n| **Data Saved** | ${dataSavedMB} MB |\n\n### ⚙️ Active Settings\n| Setting | Value |\n|---------|-------|\n| **Theme** | ${userSettings.themeMode || 'dark'} |\n| **Search Engine** | ${userSettings.searchEngine || 'google'} |\n| **Ad-Blocking** | ${userSettings.adBlockEnabled ? '✅ On' : '❌ Off'} |\n| **HTTPS Upgrade** | ${userSettings.httpsUpgradeEnabled ? '✅ On' : '❌ Off'} |\n| **CyberStealth** | ${userSettings.cyberStealthEnabled ? '✅ On' : '❌ Off'} |\n| **AI Engine** | ${userSettings.aiEngine || 'local'} |\n| **Accent Color** | ${userSettings.accentColor || '#09f0a0'} |`,
+                actions: [{ text: "Open Settings Dashboard", icon: "fa-gauge", command: "open-settings", section: "dashboard" }]
             };
         }
 
-        if (q.includes('settings') && (q.includes('open') || q.includes('go to') || q.includes('visit') || q.includes('show'))) {
-            const matchedSection = ['general', 'search', 'homepage', 'profiles', 'security', 'extensions', 'shortcuts', 'ai', 'about', 'dashboard'].find(sec => q.includes(sec));
-            const sectionToOpen = matchedSection || 'general';
-            notifyAction(`Opening settings: ${sectionToOpen}...`, 'fa-gear');
-            createNewTab(`ocal://settings#${sectionToOpen}`);
+        // Current settings query
+        if (q.includes('settings') && (q.includes('what') || q.includes('how') || q.includes('explain') || q.includes('list') || q.includes('show') || q.includes('current') || q.includes('my'))) {
+            // Check if they want to OPEN settings or know ABOUT settings
+            if (q.includes('open') || q.includes('go to') || q.includes('visit')) {
+                const matchedSection = ['general', 'search', 'homepage', 'profiles', 'security', 'extensions', 'shortcuts', 'ai', 'about', 'dashboard'].find(sec => q.includes(sec));
+                const sectionToOpen = matchedSection || 'general';
+                notifyAction(`Opening settings: ${sectionToOpen}...`, 'fa-gear');
+                createNewTab(`ocal://settings#${sectionToOpen}`);
+                return {
+                    text: `I've opened the **${sectionToOpen.toUpperCase()}** settings page for you.`,
+                    actions: [{ text: `Open ${sectionToOpen.toUpperCase()} Settings`, icon: "fa-cog", url: `ocal://settings#${sectionToOpen}` }]
+                };
+            }
+
+            // Otherwise show settings info
             return {
-                text: `I've opened the **${sectionToOpen.toUpperCase()}** settings page for you.`,
-                actions: [{ text: `Open ${sectionToOpen.toUpperCase()} Settings`, icon: "fa-cog", url: `ocal://settings#${sectionToOpen}` }]
+                text: `### ⚙️ Your Current Ocal Settings\n\n| Setting | Value |\n|---------|-------|\n| **Theme** | ${userSettings.themeMode || 'dark'} |\n| **Accent Color** | ${userSettings.accentColor || '#09f0a0'} |\n| **Search Engine** | ${userSettings.searchEngine || 'google'} |\n| **Ad-Blocking** | ${userSettings.adBlockEnabled ? '✅ On' : '❌ Off'} |\n| **HTTPS Upgrade** | ${userSettings.httpsUpgradeEnabled ? '✅ On' : '❌ Off'} |\n| **Safe Browsing** | ${userSettings.safeBrowsingEnabled ? '✅ On' : '❌ Off'} |\n| **CyberStealth** | ${userSettings.cyberStealthEnabled ? '✅ On' : '❌ Off'} |\n| **Sidebar** | ${userSettings.sidebarMode || 'visible'} |\n| **Bookmark Bar** | ${userSettings.bookmarkBarMode || 'auto'} |\n| **Battery Saver** | ${userSettings.batterySaver ? '✅ On' : '❌ Off'} |\n| **AI Engine** | ${userSettings.aiEngine || 'local'} |\n| **Home Layout** | ${userSettings.homeLayout || 'center'} |\n| **Confirm on Exit** | ${userSettings.confirmExit ? 'Yes' : 'No'} |\n\n> [!TIP]\n> You can change any of these by saying things like:\n> - *"Switch to dark mode"*\n> - *"Change accent color to purple"*\n> - *"Set search engine to DuckDuckGo"*\n> - *"Turn off ad-blocking"*\n> - *"Enable CyberStealth"*`,
+                actions: [
+                    { text: "Open Settings Page", icon: "fa-cog", command: "open-settings", section: "general" },
+                    { text: "Open AI Settings", icon: "fa-robot", command: "open-settings", section: "ai" }
+                ]
             };
         }
 
@@ -2229,44 +2467,69 @@ ipcMain.handle('ai-agent-execute', async (event, query) => {
             }
         }
 
-        if (cleanQuery === 'help' || q.includes('what can you do') || q.includes('how to use')) {
+        // List bookmarks
+        if (q.includes('bookmark') && (q.includes('list') || q.includes('show') || q.includes('all') || q.includes('my'))) {
+            const bms = userSettings.bookmarks || [];
+            if (bms.length === 0) {
+                return { text: "You don't have any bookmarks yet. Press **Ctrl+D** to bookmark the current page!", actions: [] };
+            }
+            const list = bms.slice(0, 15).map((b, i) => `${i + 1}. **${b.title || 'Untitled'}** — \`${b.url.substring(0, 50)}${b.url.length > 50 ? '...' : ''}\``).join('\n');
             return {
-                text: `### 🚀 What I Can Do\n\n- **Direct Navigation**: Type "open youtube" or "go to github".\n- **Summarization**: Click the **Summarize** button or ask me to "summarize this page".\n- **Email Workspace**: Click **Compose Email** or ask me to draft/professionalize a message.\n- **Tab Management**: Ask me to "close this tab" or "show all tabs".\n- **Smart Search**: Ask any question to search the web and synthesize results.`,
+                text: `### 🔖 Your Bookmarks (${bms.length} total)\n\n${list}${bms.length > 15 ? `\n\n*...and ${bms.length - 15} more.*` : ''}\n\n> [!TIP]\n> Say *"open bookmark [name]"* to navigate to any bookmark.`,
+                actions: []
+            };
+        }
+
+        // Clear history
+        if (q.includes('clear') && q.includes('history')) {
+            const count = (userSettings.history || []).length;
+            userSettings.history = [];
+            saveSettings(userSettings);
+            broadcastSettings();
+            notifyAction('Clearing browsing history...', 'fa-broom');
+            return { text: `Done! I've cleared **${count}** history entries. 🧹`, actions: [] };
+        }
+
+        if (cleanQuery === 'help' || q.includes('what can you do') || q.includes('how to use') || q.includes('capabilities') || q.includes('features')) {
+            return {
+                text: `### 🚀 What I Can Do\n\n#### 🌐 Navigation\n- *"Open YouTube"* — Quick-launch popular sites\n- *"Open bookmark GitHub"* — Find & open bookmarks\n- *"Go to reddit.com"* — Navigate to any URL\n\n#### 📄 Page Analysis\n- *"Summarize this page"* — AI-powered summary\n- *"Explain this page"* — Detailed analysis\n\n#### ⚙️ Settings Control\n- *"Switch to dark mode"* / *"Switch to light mode"*\n- *"Change accent color to purple"*\n- *"Set search engine to DuckDuckGo"*\n- *"Turn on/off ad-blocking"*\n- *"Enable CyberStealth"*\n- *"Hide sidebar"* / *"Show sidebar"*\n- *"Show bookmark bar"*\n\n#### 📊 Browser Intelligence\n- *"Show browser status"* — Live stats & diagnostics\n- *"Show my settings"* — Current configuration\n- *"List my bookmarks"*\n- *"Clear history"*\n\n#### 📧 Productivity\n- *"Compose email"* — Guided email drafting\n- *"Close this tab"* / *"Show all tabs"*\n\n#### 🔍 Knowledge\n- Ask any question — I'll search the web & synthesize answers\n- *"What is Ocal?"* — Learn about the browser`,
                 actions: []
             };
         }
 
         if (q.includes('how are you') || q.includes('how are you doing') || q.includes('how\'s it going') || q.includes('how is it going') || q.includes('how you doing') || q.includes('how are you today')) {
+            const tabCount = views.length;
+            const adsBlocked = userSettings.shieldStats?.global?.ads || 0;
             return {
-                text: "I'm doing great, thank you! I'm running locally on your device, keeping your browsing experience fast, secure, and smart. How are you doing today? 😊",
+                text: `I'm running great! 🚀\n\nI'm currently managing **${tabCount} tabs**, and I've helped block **${adsBlocked.toLocaleString()} ads** so far. Your browser is healthy and running smoothly on your local system.\n\nHow can I help you today?`,
                 actions: []
             };
         }
 
         if (q.includes('who created you') || q.includes('who made you') || q.includes('who is your creator') || q.includes('who built you')) {
             return {
-                text: "I was created by the Ocal team to serve as an intelligent, high-performance browser assistant integrated directly into your workspace. 🚀",
-                actions: []
+                text: "I was created by **Gaming Network Studio** as the built-in AI assistant for Ocal Browser. I'm designed to help you browse smarter, manage your workspace, and control your browser settings — all while running locally for maximum privacy. 🚀",
+                actions: [{ text: "Visit Gaming Network Studio", icon: "fa-globe", url: "https://gamingnetworkstudio.vercel.app" }]
             };
         }
 
         if (q.includes('what is ocal') || q.includes('what is ocal browser') || q.includes('tell me about ocal')) {
             return {
-                text: "Ocal is a modern, high-performance web browser designed with built-in ad blocking, security shields, a local AI assistant, sidebars, and customizable theme settings.",
-                actions: []
+                text: `### 🌐 About Ocal Browser\n\n**Ocal** is a modern, high-performance web browser built with Electron, designed for speed, privacy, and intelligence.\n\n#### ✨ Key Features\n- **Built-in Ad Blocker** — Blocks ads & trackers automatically\n- **CyberStealth Mode** — Anti-fingerprinting & trace sanitization\n- **AI Assistant** — That's me! Local or cloud-powered intelligence\n- **Shield Stats** — Real-time security dashboard\n- **Custom Themes** — Dark/light modes with customizable accent colors\n- **Tab Groups** — Organize your workspace\n- **Bookmark Manager** — Quick-access bookmark bar\n- **PDF Explorer** — Built-in document viewer\n- **Extension Support** — Load Chrome extensions\n- **HTTPS Upgrade** — Automatic security upgrades\n- **Multi-profile** — Separate browsing identities\n\n**Version:** v6.3.0-beta\n**Developer:** Gaming Network Studio`,
+                actions: [{ text: "Visit Gaming Network Studio", icon: "fa-globe", url: "https://gamingnetworkstudio.vercel.app" }]
             };
         }
 
         if (q.includes('who are you') || q.includes('your name') || q.includes('what are you')) {
             return {
-                text: "I am Ocal AI, your high-performance browser assistant. I run locally on your system or connect to cloud APIs to manage tabs, search the web, and answer questions.",
+                text: `I am **Ocal AI**, the built-in intelligent assistant for Ocal Browser.\n\n#### What I can do:\n- 🌐 Navigate to sites & manage tabs\n- ⚙️ Change browser settings on command\n- 📄 Summarize & analyze web pages\n- 🔍 Search the web & synthesize answers\n- 📊 Show you browser stats & diagnostics\n- 📧 Help compose professional emails\n\nI run ${userSettings.aiEngine === 'local' ? 'locally on your device for maximum privacy' : `via ${userSettings.aiEngine} cloud API`}. Ask me anything!`,
                 actions: []
             };
         }
 
         if (q.includes('thank you') || q.includes('thanks')) {
             return {
-                text: "You're very welcome! Let me know if there's anything else I can do for you.",
+                text: "You're very welcome! Let me know if there's anything else I can do for you. 😊",
                 actions: []
             };
         }
@@ -2483,8 +2746,8 @@ ipcMain.handle('ai-agent-execute', async (event, query) => {
             }
         }
 
-        // Phase 3: Page Analysis (Summarize/Explain)
-        const isPageInsight = q.includes('summarize') || q.includes('explain') || q.includes('what is this') || q.includes('analyze');
+        // Phase 3: Page Analysis (Summarize/Explain) — Deep Scraping + AI Synthesis
+        const isPageInsight = q.includes('summarize') || q.includes('explain') || q.includes('what is this') || q.includes('analyze') || q.includes('summary');
 
         if (isPageInsight) {
             const activeView = views.find(v => v.id === activeViewId)?.view;
@@ -2495,68 +2758,303 @@ ipcMain.handle('ai-agent-execute', async (event, query) => {
                 return { text: "I can't analyze internal or local pages. Try a web article or site!", actions };
             }
 
-            notifyAction("Scanning DOM structure...", 'fa-microchip');
+            notifyAction("Scraping page content...", 'fa-download');
+
+            // ── Deep DOM Scraping ──
             const pageData = await activeView.webContents.executeJavaScript(`
                 (function() {
+                    // Meta extraction
                     const sel = (s) => document.querySelector(s)?.content || document.querySelector(s)?.innerText || '';
-                    const meta = { title: document.title, description: sel('meta[name="description"]') || sel('meta[property="og:description"]'), hostname: window.location.hostname };
-                    
-                    // Intelligent content extraction
-                    const clone = document.body.cloneNode(true);
-                    clone.querySelectorAll('script, style, nav, footer, header, aside, .ad, .cookie-banner').forEach(e => e.remove());
-                    
-                    // Simple sentence ranking (Local Heuristic)
-                    const sentences = clone.innerText.split(/[.!?]+/).map(s => s.trim()).filter(s => s.length > 60);
-                    const keywords = ['feature', 'release', 'update', 'broken', 'fix', 'price', 'cost', 'new', 'latest', 'problem', 'solution'];
-                    const ranked = sentences.map(s => ({
-                        text: s,
-                        score: keywords.reduce((acc, kw) => acc + (s.toLowerCase().includes(kw) ? 2 : 0), 0) + (s.length / 100)
-                    })).sort((a,b) => b.score - a.score).slice(0, 5);
+                    const meta = {
+                        title: document.title || '',
+                        description: sel('meta[name="description"]') || sel('meta[property="og:description"]') || '',
+                        author: sel('meta[name="author"]') || sel('meta[property="article:author"]') || '',
+                        published: sel('meta[property="article:published_time"]') || sel('time[datetime]') || '',
+                        hostname: window.location.hostname,
+                        url: window.location.href,
+                        lang: document.documentElement.lang || 'en'
+                    };
 
-                    return { meta, ranked: ranked.map(r => r.text) };
+                    // Clone and clean the DOM
+                    const clone = document.body.cloneNode(true);
+                    const removeSelectors = [
+                        'script', 'style', 'noscript', 'iframe', 'svg', 'canvas',
+                        'nav', 'footer', 'header:not(article header)',
+                        'aside', '.ad', '.ads', '.advertisement', '.cookie-banner',
+                        '.cookie-consent', '.popup', '.modal', '.overlay',
+                        '.sidebar', '.widget', '.social-share', '.share-buttons',
+                        '.comments', '.comment-section', '#comments',
+                        '.related-posts', '.recommended', '.newsletter',
+                        '[role="banner"]', '[role="navigation"]', '[role="complementary"]',
+                        '.breadcrumb', '.pagination', '.footer', '.nav'
+                    ];
+                    removeSelectors.forEach(s => {
+                        try { clone.querySelectorAll(s).forEach(e => e.remove()); } catch(e) {}
+                    });
+
+                    // Try to find the main content area
+                    const contentSelectors = ['article', '[role="main"]', 'main', '.post-content', '.article-content', '.entry-content', '.content', '#content', '.post-body', '.story-body'];
+                    let mainContent = null;
+                    for (const cs of contentSelectors) {
+                        const el = clone.querySelector(cs);
+                        if (el && el.innerText.trim().length > 200) {
+                            mainContent = el;
+                            break;
+                        }
+                    }
+                    if (!mainContent) mainContent = clone;
+
+                    // Extract headings with hierarchy
+                    const headings = [];
+                    mainContent.querySelectorAll('h1, h2, h3, h4').forEach(h => {
+                        const text = h.innerText.trim();
+                        if (text.length > 2 && text.length < 200) {
+                            headings.push({ level: parseInt(h.tagName[1]), text });
+                        }
+                    });
+
+                    // Extract paragraphs (the core content)
+                    const paragraphs = [];
+                    mainContent.querySelectorAll('p').forEach(p => {
+                        const text = p.innerText.trim();
+                        if (text.length > 40) {
+                            paragraphs.push(text);
+                        }
+                    });
+
+                    // Extract list items
+                    const listItems = [];
+                    mainContent.querySelectorAll('li').forEach(li => {
+                        const text = li.innerText.trim();
+                        if (text.length > 15 && text.length < 300) {
+                            listItems.push(text);
+                        }
+                    });
+
+                    // Full text for word count
+                    const fullText = mainContent.innerText || '';
+                    const wordCount = fullText.split(/\\s+/).filter(w => w.length > 0).length;
+
+                    // Stats
+                    const imgCount = mainContent.querySelectorAll('img').length;
+                    const linkCount = mainContent.querySelectorAll('a[href]').length;
+
+                    // Build structured content string (capped to avoid token overflow)
+                    let structuredContent = '';
+
+                    // Add headings outline
+                    if (headings.length > 0) {
+                        structuredContent += 'HEADINGS OUTLINE:\\n';
+                        headings.slice(0, 20).forEach(h => {
+                            structuredContent += '  '.repeat(h.level - 1) + h.text + '\\n';
+                        });
+                        structuredContent += '\\n';
+                    }
+
+                    // Add paragraphs (main content body)
+                    if (paragraphs.length > 0) {
+                        structuredContent += 'MAIN CONTENT:\\n';
+                        let charBudget = 8000;
+                        for (const p of paragraphs) {
+                            if (charBudget <= 0) break;
+                            structuredContent += p + '\\n\\n';
+                            charBudget -= p.length;
+                        }
+                    }
+
+                    // Add key list items
+                    if (listItems.length > 0) {
+                        structuredContent += 'KEY LIST ITEMS:\\n';
+                        listItems.slice(0, 15).forEach(li => {
+                            structuredContent += '• ' + li + '\\n';
+                        });
+                    }
+
+                    return {
+                        meta,
+                        headings: headings.slice(0, 20),
+                        paragraphCount: paragraphs.length,
+                        wordCount,
+                        imgCount,
+                        linkCount,
+                        listItemCount: listItems.length,
+                        structuredContent: structuredContent.substring(0, 12000)
+                    };
                 })()
             `).catch(() => null);
 
-            if (pageData) {
-                notifyAction("Synthesizing AI Narrative...", 'fa-wand-magic-sparkles');
-                const prompt = `Analyze this page: ${pageData.meta.title}\nKey points: ${pageData.ranked.join('. ')}\n\nProvide a ${style} analysis in Markdown.`;
-                const results = await queryActiveLLM(prompt, style);
-                if (results) {
-                    let providerNote = "";
-                    if (activeEngine === 'local') {
-                        let resolvedModelName = userSettings.localModel || 'auto';
-                        if (resolvedModelName === 'auto') {
-                            const endpoint = userSettings.localEndpoint || 'http://localhost:11434';
-                            try {
-                                const tagsUrl = `${endpoint.replace(/\/$/, '')}/api/tags`;
-                                const tagsRes = await fetch(tagsUrl);
-                                if (tagsRes.ok) {
-                                    const tagsData = await tagsRes.json();
-                                    if (tagsData.models && tagsData.models.length > 0) {
-                                        resolvedModelName = tagsData.models[0].name;
-                                    }
+            if (!pageData || !pageData.structuredContent || pageData.structuredContent.length < 50) {
+                return { text: "I couldn't extract enough content from this page. The page might be dynamically loaded or require login.", actions };
+            }
+
+            notifyAction("Analyzing content structure...", 'fa-microchip');
+
+            // Build a rich AI prompt
+            const isExplain = q.includes('explain');
+            const isAnalyze = q.includes('analyze');
+            const taskVerb = isExplain ? 'explain' : isAnalyze ? 'analyze' : 'summarize';
+
+            const aiPrompt = `You are an expert content analyst. ${taskVerb.charAt(0).toUpperCase() + taskVerb.slice(1)} the following web page content.
+
+PAGE METADATA:
+- Title: ${pageData.meta.title}
+- URL: ${pageData.meta.url}
+- Author: ${pageData.meta.author || 'Unknown'}
+- Description: ${pageData.meta.description || 'None'}
+- Word Count: ~${pageData.wordCount} words
+- Images: ${pageData.imgCount} | Links: ${pageData.linkCount}
+
+${pageData.structuredContent}
+
+INSTRUCTIONS:
+- Do NOT just copy or rephrase the content. Provide a genuinely useful ${taskVerb === 'explain' ? 'explanation' : taskVerb === 'analyze' ? 'analysis' : 'summary'}.
+- Identify the main topic, key arguments, and conclusions.
+- Use clear markdown formatting with headers and bullet points.
+- ${taskVerb === 'summarize' ? 'Keep it concise (3-5 key points max) but insightful.' : ''}
+- ${taskVerb === 'explain' ? 'Break down complex concepts into simple terms. Explain the significance.' : ''}
+- ${taskVerb === 'analyze' ? 'Evaluate the content critically. Note strengths, gaps, and the target audience.' : ''}
+- Start with a one-sentence TL;DR.
+- End with a "Key Takeaways" section.`;
+
+            notifyAction("Generating AI summary...", 'fa-wand-magic-sparkles');
+            const results = await queryActiveLLM(aiPrompt, style);
+
+            if (results) {
+                let providerNote = "";
+                if (activeEngine === 'local') {
+                    let resolvedModelName = userSettings.localModel || 'auto';
+                    if (resolvedModelName === 'auto') {
+                        const endpoint = userSettings.localEndpoint || 'http://localhost:11434';
+                        try {
+                            const tagsUrl = `${endpoint.replace(/\/$/, '')}/api/tags`;
+                            const tagsRes = await fetch(tagsUrl);
+                            if (tagsRes.ok) {
+                                const tagsData = await tagsRes.json();
+                                if (tagsData.models && tagsData.models.length > 0) {
+                                    resolvedModelName = tagsData.models[0].name;
                                 }
-                            } catch (e) {}
-                        }
-                        providerNote = `\n\n> [!NOTE]\n> Analyzed locally using **${resolvedModelName}** for maximum privacy.`;
-                    } else if (activeEngine === 'gemini') {
-                        providerNote = `\n\n> [!NOTE]\n> Analyzed using **Gemini Pro**.`;
-                    } else if (activeEngine === 'openai') {
-                        providerNote = `\n\n> [!NOTE]\n> Analyzed using **ChatGPT**.`;
-                    } else if (activeEngine === 'custom') {
-                        providerNote = `\n\n> [!NOTE]\n> Analyzed using custom model **${userSettings.customModel || 'OpenAI-compatible'}**.`;
+                            }
+                        } catch (e) {}
                     }
-                    return { text: results + providerNote, actions };
+                    providerNote = `\n\n> [!NOTE]\n> Analyzed locally using **${resolvedModelName}** for maximum privacy.`;
+                } else if (activeEngine === 'gemini') {
+                    providerNote = `\n\n> [!NOTE]\n> Analyzed using **Gemini Pro**.`;
+                } else if (activeEngine === 'openai') {
+                    providerNote = `\n\n> [!NOTE]\n> Analyzed using **ChatGPT**.`;
+                } else if (activeEngine === 'custom') {
+                    providerNote = `\n\n> [!NOTE]\n> Analyzed using custom model **${userSettings.customModel || 'OpenAI-compatible'}**.`;
+                }
+                return { text: results + providerNote, actions };
+            }
+
+            // ── Fallback: Intelligent Local Heuristic Summary ──
+            notifyAction("Performing local content analysis...", 'fa-brain');
+
+            // Extract the actual structured content for heuristic analysis
+            const fallbackData = await activeView.webContents.executeJavaScript(`
+                (function() {
+                    const clone = document.body.cloneNode(true);
+                    ['script','style','noscript','iframe','nav','footer','aside','.ad','.cookie-banner','header:not(article header)'].forEach(s => {
+                        try { clone.querySelectorAll(s).forEach(e => e.remove()); } catch(e) {}
+                    });
+
+                    const contentSelectors = ['article','[role="main"]','main','.post-content','.article-content','.entry-content','.content'];
+                    let main = null;
+                    for (const cs of contentSelectors) {
+                        const el = clone.querySelector(cs);
+                        if (el && el.innerText.trim().length > 200) { main = el; break; }
+                    }
+                    if (!main) main = clone;
+
+                    // Get paragraphs for analysis
+                    const paras = [];
+                    main.querySelectorAll('p').forEach(p => {
+                        const t = p.innerText.trim();
+                        if (t.length > 50) paras.push(t);
+                    });
+
+                    // Get headings
+                    const heads = [];
+                    main.querySelectorAll('h1,h2,h3').forEach(h => {
+                        const t = h.innerText.trim();
+                        if (t.length > 2) heads.push(t);
+                    });
+
+                    return { paras, heads, title: document.title };
+                })()
+            `).catch(() => null);
+
+            if (fallbackData && fallbackData.paras.length > 0) {
+                // Score sentences by information density
+                const importantKeywords = [
+                    'important', 'key', 'main', 'significant', 'conclusion', 'result',
+                    'finding', 'shows', 'reveals', 'demonstrates', 'according',
+                    'research', 'study', 'data', 'evidence', 'report', 'announced',
+                    'feature', 'release', 'update', 'new', 'launch', 'introduce',
+                    'because', 'therefore', 'however', 'although', 'moreover',
+                    'first', 'second', 'finally', 'overall', 'summary'
+                ];
+
+                const scored = fallbackData.paras.map(p => {
+                    let score = 0;
+                    const lower = p.toLowerCase();
+                    // Keyword density scoring
+                    importantKeywords.forEach(kw => { if (lower.includes(kw)) score += 3; });
+                    // Position bonus: first paragraphs are usually more important
+                    score += Math.max(0, 5 - fallbackData.paras.indexOf(p));
+                    // Length bonus: not too short, not too long
+                    if (p.length > 80 && p.length < 500) score += 2;
+                    // Penalize very repetitive or boilerplate text
+                    if (lower.includes('cookie') || lower.includes('subscribe') || lower.includes('sign up') || lower.includes('privacy policy')) score -= 10;
+                    return { text: p, score };
+                }).filter(s => s.score > 0).sort((a, b) => b.score - a.score);
+
+                const topPoints = scored.slice(0, 5);
+
+                // Detect the overall topic from headings and top paragraphs
+                const allText = (fallbackData.heads.join(' ') + ' ' + topPoints.map(p => p.text).join(' ')).toLowerCase();
+                let topic = 'General Content';
+                const topicMap = {
+                    'technology': ['software', 'app', 'code', 'developer', 'programming', 'api', 'tech', 'digital', 'computer', 'algorithm'],
+                    'business': ['company', 'market', 'revenue', 'startup', 'investment', 'industry', 'enterprise', 'growth'],
+                    'science': ['research', 'study', 'experiment', 'scientific', 'discovery', 'theory', 'hypothesis'],
+                    'news': ['reported', 'announced', 'breaking', 'update', 'latest', 'today', 'yesterday'],
+                    'tutorial': ['how to', 'step', 'guide', 'tutorial', 'learn', 'beginner', 'instructions'],
+                    'product': ['feature', 'release', 'version', 'launch', 'pricing', 'plan', 'download'],
+                    'opinion': ['think', 'believe', 'opinion', 'perspective', 'argument', 'debate']
+                };
+                for (const [t, keywords] of Object.entries(topicMap)) {
+                    const matches = keywords.filter(kw => allText.includes(kw)).length;
+                    if (matches >= 2) { topic = t.charAt(0).toUpperCase() + t.slice(1); break; }
                 }
 
-                notifyAction("Performing Semantic Heuristics...", 'fa-brain');
-                let localResult = `### 🧬 Native Intelligence Analysis: ${pageData.meta.title}\n\n`;
-                if (pageData.meta.description) localResult += `> ${pageData.meta.description}\n\n`;
-                localResult += `#### Key Takeaways:\n`;
-                pageData.ranked.forEach(p => localResult += `- ${p}.\n`);
-                localResult += `\n> [!NOTE]\n> This analysis was performed locally using native heuristics. To enable smarter analysis, select a model provider in settings.`;
-                return { text: localResult, actions };
+                let result = `### 📄 Page Summary: ${pageData.meta.title}\n\n`;
+                result += `**Source:** ${pageData.meta.hostname} | **Topic:** ${topic} | **~${pageData.wordCount} words**\n\n`;
+
+                if (pageData.meta.description) {
+                    result += `> ${pageData.meta.description}\n\n`;
+                }
+
+                // Content outline from headings
+                if (fallbackData.heads.length > 1) {
+                    result += `#### 📋 Content Outline\n`;
+                    fallbackData.heads.slice(0, 8).forEach(h => { result += `- ${h}\n`; });
+                    result += '\n';
+                }
+
+                // Key insights (not just copied — reframed)
+                result += `#### 💡 Key Insights\n`;
+                topPoints.forEach((p, i) => {
+                    // Truncate long paragraphs and add insight framing
+                    const truncated = p.text.length > 200 ? p.text.substring(0, 200) + '...' : p.text;
+                    result += `${i + 1}. ${truncated}\n\n`;
+                });
+
+                result += `---\n> [!NOTE]\n> This summary was generated using local content analysis heuristics. For AI-powered deep summaries, configure an AI model in Settings → AI Assistant.`;
+                return { text: result, actions };
             }
+
+            return { text: "I couldn't extract meaningful content from this page. It may be too dynamic or require scrolling to load content.", actions };
         }
 
         // Phase 4: General Assistant (Direct Sidebar Answer with Environment Context)
@@ -3980,7 +4478,8 @@ ipcMain.on('show-bm-dropdown', (e, { x, y, bookmarks, folderId }) => {
 });
 
 ipcMain.on('resize-bm-dropdown', (e, { width, height }) => {
-    if (!bmDropdownView || !mainWindow) return;
+    if (!bmDropdownView || !mainWindow || bmDropdownView.webContents.isDestroyed()) return;
+    if (!mainWindow.getBrowserViews().includes(bmDropdownView)) return;
     const bounds = bmDropdownView.getBounds();
     bmDropdownView.setBounds({ x: bounds.x, y: bounds.y, width: Math.round(width) + 30, height: Math.round(height) + 30 });
 });
@@ -4316,7 +4815,8 @@ ipcMain.on('show-suggestions', (e, bounds) => {
 });
 
 ipcMain.on('resize-suggestions', (e, height) => {
-    if (!suggestionsView || !mainWindow || mainWindow.isDestroyed()) return;
+    if (!suggestionsView || !mainWindow || mainWindow.isDestroyed() || suggestionsView.webContents.isDestroyed()) return;
+    if (!mainWindow.getBrowserViews().includes(suggestionsView)) return;
     const bounds = suggestionsView.getBounds();
     const cappedHeight = Math.min(height, 480); // Cap at 480px for standard dropdown size
     suggestionsView.setBounds({ ...bounds, height: cappedHeight });

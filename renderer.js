@@ -251,7 +251,7 @@ function updatePrettyUrl(url) {
     if (url.startsWith('ocal://')) {
         const parts = url.split(' / ');
         if (parts.length > 1) {
-            prettyEl.innerHTML = `<span class="protocol">ocal://</span><span class="domain">${parts[0].replace('ocal://', '')}</span><span class="path"> / ${parts[1]}</span>`;
+            prettyEl.innerHTML = `<span class="protocol">ocal://</span><span class="domain">${parts[0].replace('ocal://', '')}</span><span class="slash">/</span><span class="path">${parts[1]}</span>`;
         } else {
             prettyEl.innerHTML = `<span class="protocol">ocal://</span><span class="domain">${url.replace('ocal://', '')}</span>`;
         }
@@ -596,8 +596,8 @@ document.addEventListener('DOMContentLoaded', () => {
     
     // Wire to new dedicated Downloads Module
     if (dlBtn) dlBtn.onclick = () => { 
-        const rect = dlBtn.getBoundingClientRect();
-        window.electronAPI.send('toggle-downloads-popup', { x: rect.left, y: rect.bottom + 10 }); 
+        window.electronAPI.send('toggle-sidebar', true); 
+        window.electronAPI.send('switch-sidebar-tab', 'downloads'); 
     };
     
     // Auto-reveal the popup when a background download starts
@@ -819,22 +819,6 @@ window.electronAPI.on('proxy-error', (e, data) => {
 });
 
 // ── Bookmark Bar ───────────────────────────────────────────────────────────
-function showFolderDropdown(e, folderId) {
-    e.stopPropagation();
-    const rect = e.currentTarget.getBoundingClientRect();
-    
-    const folderBms = folderId === 'all' 
-        ? currentBookmarks 
-        : currentBookmarks.filter(b => b.folderId === folderId);
-
-    window.electronAPI.send('show-bm-dropdown', {
-        x: rect.left,
-        y: rect.bottom + 5,
-        bookmarks: folderBms,
-        folderId: folderId
-    });
-}
-
 function renderBookmarkBar() {
     if (!bookmarkBar) return;
     bookmarkBar.innerHTML = '';
@@ -843,8 +827,11 @@ function renderBookmarkBar() {
     const webFolder = document.createElement('div');
     webFolder.className = 'web-folder';
     webFolder.id = 'web-folder-btn';
-    webFolder.innerHTML = `<i class="fas fa-folder"></i><span>Saves</span><i class="fas fa-chevron-down" style="font-size:7px;opacity:0.5;margin-left:4px;"></i>`;
-    webFolder.onclick = (e) => showFolderDropdown(e, 'all');
+    webFolder.innerHTML = `<i class="fas fa-folder"></i><span>Saves</span>`;
+    webFolder.onclick = () => {
+        window.electronAPI.send('toggle-sidebar', true);
+        window.electronAPI.send('switch-sidebar-tab', 'bookmarks');
+    };
     bookmarkBar.appendChild(webFolder);
 
     if (currentBookmarks.length > 0 || currentFolders.length > 0) {
@@ -858,8 +845,11 @@ function renderBookmarkBar() {
         if (f.name.toLowerCase() === 'web') return; // Skip if named Web (we use 'Saves' above)
         const el = document.createElement('div');
         el.className = 'bookmark-bar-folder';
-        el.innerHTML = `<i class="fas fa-folder"></i><span>${f.name}</span><i class="fas fa-chevron-down" style="font-size:7px;opacity:0.5;margin-left:4px;"></i>`;
-        el.onclick = (e) => showFolderDropdown(e, f.id);
+        el.innerHTML = `<i class="fas fa-folder"></i><span>${f.name}</span>`;
+        el.onclick = () => {
+            window.electronAPI.send('toggle-sidebar', true);
+            window.electronAPI.send('switch-sidebar-tab', 'bookmarks');
+        };
         bookmarkBar.appendChild(el);
     });
 
