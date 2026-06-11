@@ -189,6 +189,16 @@ closeBtn?.addEventListener('click', () => {
 toolSummarize?.addEventListener('click', () => handleSend("Please summarize the contents of this page."));
 toolEmail?.addEventListener('click', () => handleSend("I'd like to compose an email. Help me draft it."));
 
+const toolStatus = document.getElementById('tool-status');
+const toolSettings = document.getElementById('tool-settings');
+const toolBookmarks = document.getElementById('tool-bookmarks');
+const toolHelp = document.getElementById('tool-help');
+
+toolStatus?.addEventListener('click', () => handleSend("Show browser status"));
+toolSettings?.addEventListener('click', () => handleSend("Show my current settings"));
+toolBookmarks?.addEventListener('click', () => handleSend("List my bookmarks"));
+toolHelp?.addEventListener('click', () => handleSend("What can you do?"));
+
 // Resize Logic
 if (handle) {
     handle.onmousedown = (e) => {

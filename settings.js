@@ -17,7 +17,7 @@ function showSection(id) {
 
     // Update title for browser tab
     const sectionName = id.charAt(0).toUpperCase() + id.slice(1);
-    document.title = `Ocal Settings — ${sectionName}`;
+    document.title = 'Ocal Settings';
     
     // Update hash for URL persistence/aesthetics
     if (window.location.hash !== `#${id}`) {

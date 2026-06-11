@@ -1,0 +1,22 @@
+
+> ocal@6.7.13 package
+> electron-forge package
+
+[33m>[39m Checking your system
+[33m>[39m Checking package manager version
+[32m√[39m Found npm@11.13.0
+[32m√[39m Checking your system
+[?25h[33m>[39m Preparing to package application
+[32m√[39m Preparing to package application
+[33m>[39m Running packaging hooks
+[33m>[39m Running generateAssets hook
+[32m√[39m Running generateAssets hook
+[33m>[39m Running prePackage hook
+[32m√[39m Running prePackage hook
+[32m√[39m Running packaging hooks
+[33m>[39m Packaging application
+› Determining targets...
+[33m>[39m Packaging for x64 on win32
+[33m>[39m Copying files
+[33m>[39m Preparing native dependencies
+[33m>[39m Finalizing package

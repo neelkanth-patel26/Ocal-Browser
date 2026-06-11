@@ -1,6 +1,6 @@
 {
   "name": "ocal",
-  "version": "6.3.0-beta",
+  "version": "6.7.13",
   "description": "Ocal Browser - Fast, Secure, and Agentic.",
   "main": "main.js",
   "author": "Gaming Network Studio Media Group",
@@ -28,6 +28,8 @@
     "electron-builder": "^26.8.1"
   },
   "dependencies": {
+    "@fontsource/geist-mono": "^5.2.8",
+    "@fontsource/geist-sans": "^5.2.5",
     "adm-zip": "^0.5.17",
     "cross-fetch": "^4.1.0",
     "electron-squirrel-startup": "^1.0.1"

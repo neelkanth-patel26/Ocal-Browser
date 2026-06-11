@@ -1,12 +1,12 @@
 [Setup]
 AppName=Ocal Browser
-AppVersion=6.3.0 Beta
+AppVersion=6.7.13
 AppPublisher=Gaming Network Studio Media Group
 AppPublisherURL=https://github.com/neelkanth-patel26/Ocal-Browser
 DefaultDirName={autopf}\Ocal
 DefaultGroupName=Ocal
 OutputDir=dist-inno
-OutputBaseFilename=Ocal-6.3.0-beta-Setup
+OutputBaseFilename=Ocal-6.7.13-Setup
 SetupIconFile=icon.ico
 Compression=lzma
 SolidCompression=yes
@@ -19,8 +19,8 @@ LicenseFile=license.txt
 Name: "desktopicon"; Description: "{cm:CreateDesktopIcon}"; GroupDescription: "{cm:AdditionalIcons}"; Flags: unchecked
 
 [Files]
-Source: "out\ocal-win32-x64\ocal.exe"; DestDir: "{app}"; Flags: ignoreversion
-Source: "out\ocal-win32-x64\*"; DestDir: "{app}"; Flags: ignoreversion recursesubdirs createallsubdirs
+Source: "dist-builder\win-unpacked\Ocal Browser.exe"; DestDir: "{app}"; DestName: "ocal.exe"; Flags: ignoreversion
+Source: "dist-builder\win-unpacked\*"; DestDir: "{app}"; Excludes: "Ocal Browser.exe"; Flags: ignoreversion recursesubdirs createallsubdirs
 Source: "uninstaller\*"; DestDir: "{app}\uninstaller"; Flags: ignoreversion recursesubdirs createallsubdirs
 Source: "pdf-icon.ico"; DestDir: "{app}"; Flags: ignoreversion
 

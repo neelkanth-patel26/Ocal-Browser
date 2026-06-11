@@ -1,6 +1,4 @@
-@import url('https://cdn.jsdelivr.net/fontsource/fonts/geist-sans@latest/latin-400-normal.css');
-@import url('https://cdn.jsdelivr.net/fontsource/fonts/geist-sans@latest/latin-700-normal.css');
-@import url('https://cdn.jsdelivr.net/fontsource/fonts/geist-mono@latest/latin-400-normal.css');
+@import url('./assets/fonts/geist-fonts.css');
 
 html {
   background: transparent !important;
