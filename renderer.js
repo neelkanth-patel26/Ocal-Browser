@@ -828,9 +828,16 @@ function renderBookmarkBar() {
     webFolder.className = 'web-folder';
     webFolder.id = 'web-folder-btn';
     webFolder.innerHTML = `<i class="fas fa-folder"></i><span>Saves</span>`;
-    webFolder.onclick = () => {
-        window.electronAPI.send('toggle-sidebar', true);
-        window.electronAPI.send('switch-sidebar-tab', 'bookmarks');
+    webFolder.onclick = (e) => {
+        e.stopPropagation();
+        const rect = webFolder.getBoundingClientRect();
+        const folderBms = currentBookmarks.filter(b => !b.folderId);
+        window.electronAPI.send('show-bm-dropdown', {
+            x: Math.round(rect.left),
+            y: Math.round(rect.bottom),
+            bookmarks: folderBms,
+            folderId: 'saves'
+        });
     };
     bookmarkBar.appendChild(webFolder);
 
@@ -846,9 +853,16 @@ function renderBookmarkBar() {
         const el = document.createElement('div');
         el.className = 'bookmark-bar-folder';
         el.innerHTML = `<i class="fas fa-folder"></i><span>${f.name}</span>`;
-        el.onclick = () => {
-            window.electronAPI.send('toggle-sidebar', true);
-            window.electronAPI.send('switch-sidebar-tab', 'bookmarks');
+        el.onclick = (e) => {
+            e.stopPropagation();
+            const rect = el.getBoundingClientRect();
+            const folderBms = currentBookmarks.filter(b => b.folderId === f.id);
+            window.electronAPI.send('show-bm-dropdown', {
+                x: Math.round(rect.left),
+                y: Math.round(rect.bottom),
+                bookmarks: folderBms,
+                folderId: f.id
+            });
         };
         bookmarkBar.appendChild(el);
     });
