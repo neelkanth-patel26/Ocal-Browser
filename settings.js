@@ -745,7 +745,7 @@ window.addEventListener('load', () => {
     if (hash && document.getElementById(hash)) {
         showSection(hash);
     } else {
-        showSection('dashboard');
+        showSection('search');
     }
 });
 
@@ -1331,7 +1331,8 @@ document.getElementById('dns-grid').addEventListener('click', (e) => {
 // Dashboard Telemetry Simulation
 function startDashboardTelemetry() {
     setInterval(() => {
-        if (document.getElementById('dashboard').classList.contains('active')) {
+        const dashboardEl = document.getElementById('dashboard');
+        if (dashboardEl && dashboardEl.classList.contains('active')) {
             const mem = (Math.random() * 0.5 + 1.2).toFixed(1);
             const memBar = document.getElementById('memory-bar');
             if (memBar) {
