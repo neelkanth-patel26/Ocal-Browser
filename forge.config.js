@@ -4,7 +4,7 @@ const { FuseV1Options, FuseVersion } = require('@electron/fuses');
 module.exports = {
   packagerConfig: {
     asar: true,
-    icon: './icon.png',
+    icon: './icon.ico',
     ignore: [
       /^\/out($|\/)/,
       /^\/dist-inno($|\/)/,
