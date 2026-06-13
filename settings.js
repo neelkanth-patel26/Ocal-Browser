@@ -150,13 +150,31 @@ dots.forEach(dot => {
         applyAccent(c);
     };
 });
+function getContrastColor(hex) {
+    if (!hex || hex.length < 7) return '#000000';
+    const r = parseInt(hex.substring(1, 3), 16);
+    const g = parseInt(hex.substring(3, 5), 16);
+    const b = parseInt(hex.substring(5, 7), 16);
+    const luma = 0.2126 * r + 0.7152 * g + 0.0722 * b;
+    return luma > 128 ? '#000000' : '#ffffff';
+}
+
 function applyAccent(color) {
+    const contrastColor = getContrastColor(color);
+    
     document.documentElement.style.setProperty('--accent', color);
     document.documentElement.style.setProperty('--accent-glow', `color-mix(in srgb, ${color} 30%, transparent)`);
     document.documentElement.style.setProperty('--accent-dim', `color-mix(in srgb, ${color} 12%, transparent)`);
     document.documentElement.style.setProperty('--accent-border', color);
-    localStorage.setItem('ocal-settings-accent', color);
+    document.documentElement.style.setProperty('--accent-text', contrastColor);
+
+    document.body.style.setProperty('--accent', color);
+    document.body.style.setProperty('--accent-glow', `color-mix(in srgb, ${color} 30%, transparent)`);
+    document.body.style.setProperty('--accent-dim', `color-mix(in srgb, ${color} 12%, transparent)`);
+    document.body.style.setProperty('--accent-border', color);
+    document.body.style.setProperty('--accent-text', contrastColor);
     
+    localStorage.setItem('ocal-settings-accent', color);
     dots.forEach(d => d.classList.toggle('active', d.dataset.color === color));
 }
 
@@ -168,7 +186,7 @@ function applyTheme(theme) {
 
 // Home Page Controls
 window.updateHomeLayout = function(layout, skipUpdate = false) {
-    document.querySelectorAll('#homepage .choice-item').forEach(c => {
+    document.querySelectorAll('.layout-preview-card').forEach(c => {
         c.classList.toggle('active', c.id === `layout-${layout}`);
     });
     if (!skipUpdate) window.electronAPI.updateSetting('homeLayout', layout);
@@ -869,6 +887,18 @@ window.electronAPI.getSettings().then(s => {
     initToggle('auto-update-toggle', 'autoCheckUpdates', s.autoCheckUpdates);
     initToggle('confirm-exit-toggle', 'confirmExit', s.confirmExit !== false);
     initToggle('battery-saver-toggle', 'batterySaver', s.batterySaver);
+
+    const themeToggle = document.getElementById('theme-mode-toggle');
+    if (themeToggle) {
+        themeToggle.classList.toggle('on', s.themeMode !== 'light');
+        themeToggle.onclick = () => {
+            const isDark = !themeToggle.classList.contains('on');
+            themeToggle.classList.toggle('on', isDark);
+            const newTheme = isDark ? 'dark' : 'light';
+            window.electronAPI.updateSetting('themeMode', newTheme);
+            applyTheme(newTheme);
+        };
+    }
     
     // Security Hub Toggles
     initToggle('safe-browsing-toggle', 'safeBrowsingEnabled', s.safeBrowsingEnabled);
@@ -904,6 +934,9 @@ window.electronAPI.getSettings().then(s => {
             if (radio) {
                 radio.checked = true;
                 window.electronAPI.updateSetting('searchEngine', engine);
+                
+                // Toggle active class on cards
+                searchEngineRows.forEach(r => r.classList.toggle('active', r === row));
                 
                 // Show/hide custom search container
                 const customContainer = document.getElementById('custom-search-container');
@@ -1001,22 +1034,39 @@ window.electronAPI.getSettings().then(s => {
             if (res.ok) {
                 const data = await res.json();
                 if (data.models && Array.isArray(data.models)) {
+                    let hasGemma4 = false;
                     data.models.forEach(model => {
                         const opt = document.createElement('option');
                         opt.value = model.name;
                         opt.textContent = model.name;
                         localModelSelect.appendChild(opt);
+                        if (model.name === 'gemma-4' || model.name.startsWith('gemma-4:')) {
+                            hasGemma4 = true;
+                        }
                     });
-                    localModelSelect.value = s.localModel || 'auto';
+                    // Always ensure gemma-4 is in the options list
+                    if (!hasGemma4) {
+                        const opt = document.createElement('option');
+                        opt.value = 'gemma-4';
+                        opt.textContent = 'gemma-4';
+                        localModelSelect.appendChild(opt);
+                    }
+                    localModelSelect.value = s.localModel || 'gemma-4';
                 }
             }
         } catch (e) {
             console.warn('Ollama not running or inaccessible:', e.message);
+            // Add gemma-4 as a selectable option even if Ollama is offline
+            const opt = document.createElement('option');
+            opt.value = 'gemma-4';
+            opt.textContent = 'gemma-4';
+            localModelSelect.appendChild(opt);
+            localModelSelect.value = s.localModel || 'gemma-4';
         }
     }
 
     if (localModelSelect) {
-        localModelSelect.value = s.localModel || 'auto';
+        localModelSelect.value = s.localModel || 'gemma-4';
         localModelSelect.onchange = () => window.electronAPI.updateSetting('localModel', localModelSelect.value);
     }
     if (localEndpointInp) {
@@ -1032,8 +1082,26 @@ window.electronAPI.getSettings().then(s => {
     initToggle('ai-show-reasoning-toggle', 'aiShowReasoning', s.aiShowReasoning !== false);
     initToggle('ai-agency-toggle', 'aiAgencyEnabled', s.aiAgencyEnabled !== false);
     initToggle('ai-heuristic-toggle', 'aiHeuristicEnabled', s.aiHeuristicEnabled !== false);
-    setGridValue('ai-style-grid', s.aiResponseStyle || 'concise');
+    setGridValue('ai-style-grid', s.aiResponseStyle || 'detailed');
     initGridSelector('ai-style-grid', 'aiResponseStyle');
+
+    // Initialize Temperature Slider
+    const tempSlider = document.getElementById('aiTemperature');
+    const tempVal = s.aiTemperature !== undefined ? s.aiTemperature : 0.7;
+    if (tempSlider) {
+        tempSlider.value = tempVal;
+        const tempLabel = document.getElementById('label-ai-temp');
+        if (tempLabel) tempLabel.innerText = parseFloat(tempVal).toFixed(1);
+    }
+
+    // Initialize Max Tokens Slider
+    const tokensSlider = document.getElementById('aiMaxTokens');
+    const tokensVal = s.aiMaxTokens !== undefined ? s.aiMaxTokens : 2048;
+    if (tokensSlider) {
+        tokensSlider.value = tokensVal;
+        const tokensLabel = document.getElementById('label-ai-tokens');
+        if (tokensLabel) tokensLabel.innerText = tokensVal;
+    }
 
     updateShieldDashboard(s.shieldStats || { ads: 0, trackers: 0 });
 
@@ -1044,6 +1112,19 @@ window.electronAPI.getSettings().then(s => {
     }
 });
 
+window.updateAISetting = function(key, val) {
+    const value = parseFloat(val);
+    if (key === 'aiTemperature') {
+        const lbl = document.getElementById('label-ai-temp');
+        if (lbl) lbl.innerText = value.toFixed(1);
+        window.electronAPI.updateSetting('aiTemperature', value);
+    }
+    if (key === 'aiMaxTokens') {
+        const lbl = document.getElementById('label-ai-tokens');
+        if (lbl) lbl.innerText = Math.round(value);
+        window.electronAPI.updateSetting('aiMaxTokens', Math.round(value));
+    }
+};
 
 function updateShieldDashboard(stats) {
     if (!stats) return;
@@ -1254,18 +1335,20 @@ function renderExtensions(s = null) {
             const el = document.createElement('div');
             el.className = 'card ext-card-row dynamic-ext' + (ext.enabled ? ' is-active' : '');
             el.dataset.extname = (ext.name || '').toLowerCase();
-            el.style.display = 'flex';
-            el.style.flexDirection = 'column';
-            el.style.padding = '20px';
+            
+            const statusIndicatorClass = ext.enabled ? 'on' : 'off';
+            const statusText = ext.enabled ? 'Active' : 'Disabled';
+            const tagText = ext.isLocal ? 'LOCAL' : 'INSTALLED';
+
             el.innerHTML = `
-                <div style="display: flex; align-items: flex-start; justify-content: space-between; margin-bottom: 12px;">
-                    <div style="display: flex; align-items: center; gap: 12px;">
-                        <div style="width: 40px; height: 40px; background: rgba(251,146,60,0.1); border-radius: 50%; display: flex; align-items: center; justify-content: center; color: #fb923c; font-size: 18px; flex-shrink: 0;">
+                <div class="ext-card-header">
+                    <div class="ext-card-header-left">
+                        <div class="ext-card-icon dynamic-icon">
                             <i class="fas fa-puzzle-piece"></i>
                         </div>
-                        <div>
-                            <h4 style="font-size: 15px; font-weight: 700; color: var(--text); margin: 0 0 4px 0;">${ext.name}</h4>
-                            <div style="font-size: 11px; color: var(--text-muted);">Version ${ext.version || '?'} &middot; ID: ${ext.id}</div>
+                        <div class="ext-card-identity">
+                            <h4 class="ext-card-name">${ext.name}</h4>
+                            <div class="ext-card-version">Version ${ext.version || '?'} &middot; ID: ${ext.id}</div>
                         </div>
                     </div>
                     <label class="ext-toggle-wrap">
@@ -1274,18 +1357,17 @@ function renderExtensions(s = null) {
                         <span class="ext-slider"></span>
                     </label>
                 </div>
-                <div style="font-size: 13px; color: var(--text-dim); line-height: 1.5; flex: 1;">
+                <div class="ext-card-desc">
                     ${ext.description || 'No description provided.'}
                 </div>
-                <div style="display: flex; align-items: center; justify-content: space-between; margin-top: 16px; padding-top: 16px; border-top: 1px solid var(--glass-border);">
-                    <span style="background: rgba(255,255,255,0.05); padding: 4px 8px; border-radius: 6px; font-size: 10px; font-weight: 800; color: var(--text-muted); letter-spacing: 0.5px;">${ext.isLocal ? 'LOCAL' : 'INSTALLED'}</span>
+                <div class="ext-card-footer">
+                    <span class="ext-card-tag installed">${tagText}</span>
                     <div style="display: flex; align-items: center; gap: 12px;">
-                        <span style="display: flex; align-items: center; gap: 6px; font-size: 11px; font-weight: 600; color: ${ext.enabled ? '#4ade80' : 'var(--text-muted)'};">
-                            <span style="width: 6px; height: 6px; border-radius: 50%; background: ${ext.enabled ? '#4ade80' : 'var(--text-muted)'};"></span>
-                            ${ext.enabled ? 'Active' : 'Disabled'}
+                        <span class="ext-status-indicator ${statusIndicatorClass}">
+                            <span class="status-dot"></span><span>${statusText}</span>
                         </span>
-                        ${!ext.isLocal ? `<button class="btn secondary" style="padding: 4px 10px; font-size: 11px;" onclick="window.open('https://chromewebstore.google.com/detail/${ext.id}')"><i class="fas fa-external-link-alt"></i> View</button>` : ''}
-                        <button class="btn secondary" style="padding: 4px 10px; font-size: 11px;" onclick="window.electronAPI.removeExtension('${ext.id}').then(() => window.electronAPI.getSettings().then(s => renderExtensions(s)))"><i class="fas fa-trash"></i> Remove</button>
+                        ${!ext.isLocal ? `<button class="btn secondary" onclick="window.open('https://chromewebstore.google.com/detail/${ext.id}')"><i class="fas fa-external-link-alt"></i> View</button>` : ''}
+                        <button class="btn secondary" onclick="window.electronAPI.removeExtension('${ext.id}').then(() => window.electronAPI.getSettings().then(s => renderExtensions(s)))"><i class="fas fa-trash"></i> Remove</button>
                     </div>
                 </div>
             `;
@@ -1388,6 +1470,11 @@ window.checkForUpdates = () => {
 window.electronAPI.onSettingsChanged(s => {
     window.currentSettings = s;
     if (s.accentColor) applyAccent(s.accentColor);
+    if (s.themeMode) {
+        applyTheme(s.themeMode);
+        const themeToggle = document.getElementById('theme-mode-toggle');
+        if (themeToggle) themeToggle.classList.toggle('on', s.themeMode !== 'light');
+    }
     updateProtectionLevel(s);
     renderExtensions(s);
     renderProfiles(s);

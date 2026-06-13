@@ -218,15 +218,15 @@ let userSettings = loadSettings() || {
     aiEngine: 'local', // 'local' or 'gemini'
     aiDeepScrape: true,
     aiShowReasoning: true,
-    aiResponseStyle: 'concise',
+    aiResponseStyle: 'detailed',
     customSearchUrl: 'https://www.google.com/search?q=%s',
     askSavePath: false,
     downloads: [],
     shieldStats: { ads: 0, trackers: 0, dataSaved: 0, history: [] },
     pdfViewerEnabled: true,
     batterySaver: false,
-    localModel: 'auto',
-    localEndpoint: 'http://localhost:11434',
+    localModel: 'gemma-4',
+    localEndpoint: 'http://127.0.0.1:11434',
     openaiApiKey: '',
     customEndpoint: '',
     customModel: '',
@@ -234,8 +234,8 @@ let userSettings = loadSettings() || {
 };
 
 if (!userSettings.bookmarks) userSettings.bookmarks = [];
-if (!userSettings.localModel) userSettings.localModel = 'auto';
-if (!userSettings.localEndpoint) userSettings.localEndpoint = 'http://localhost:11434';
+if (!userSettings.localModel) userSettings.localModel = 'gemma-4';
+if (!userSettings.localEndpoint) userSettings.localEndpoint = 'http://127.0.0.1:11434';
 if (!userSettings.openaiApiKey) userSettings.openaiApiKey = '';
 if (!userSettings.customEndpoint) userSettings.customEndpoint = '';
 if (!userSettings.customModel) userSettings.customModel = '';
@@ -259,6 +259,14 @@ if (!userSettings.customSearchUrl) userSettings.customSearchUrl = 'https://www.g
 if (userSettings.askSavePath === undefined) userSettings.askSavePath = false;
 if (!userSettings.downloads) userSettings.downloads = [];
 if (userSettings.adBlockEnabled === undefined) userSettings.adBlockEnabled = true;
+
+if (userSettings.bookmarks) {
+    userSettings.bookmarks.forEach(bm => {
+        if (bm.title === 'YouTube' && bm.url === 'https://downloaderto.com/enA5/') {
+            bm.url = 'https://www.youtube.com/';
+        }
+    });
+}
 
 if (userSettings.proxyUrl === undefined) userSettings.proxyUrl = 'socks5://127.0.0.1:9050'; // Default Tor-style or generic
 
@@ -1037,7 +1045,7 @@ function createAiSidebar() {
     aiSidebarView = new BrowserView({
         webPreferences: { preload: path.join(__dirname, 'preload.js'), contextIsolation: true, nodeIntegration: false, devTools: false, webviewTag: true },
     });
-    aiSidebarView.webContents.loadFile('ai-sidebar.html');
+    aiSidebarView.webContents.loadURL('ocal://ai-sidebar/');
     aiSidebarView.setBackgroundColor('#00000000');
     setupContextMenu(aiSidebarView.webContents);
 
@@ -1371,6 +1379,7 @@ function resolveInternalURL(url) {
     if (cleanBase === 'ocal://tetris') return 'file://' + path.join(__dirname, 'tetris.html');
     if (cleanBase === 'ocal://game' || cleanBase === 'ocal://snake') return 'file://' + path.join(__dirname, 'snake.html');
     if (cleanBase === 'ocal://pulse' || cleanBase === 'ocal://runner') return 'file://' + path.join(__dirname, 'game.html');
+    if (cleanBase === 'ocal://ai-sidebar' || cleanBase === 'ocal://ai-sidebar/ai-sidebar.html') return 'file://' + path.join(__dirname, 'ai-sidebar.html');
 
     if (cleanBase === 'ocal://site-settings') {
         const qIdx = url.indexOf('?');
@@ -2180,14 +2189,23 @@ const AI_SITE_MAP = {
 };
 
 ipcMain.handle('ai-agent-execute', async (event, query) => {
-    if (!query || !query.trim()) return { text: "Hello! I'm your Ocal AI. How can I assist you today?", actions: [] };
+    let prompt = '';
+    let fileObj = null;
+    if (query && typeof query === 'object') {
+        prompt = query.query || 'Analyze this file';
+        fileObj = query.file;
+    } else {
+        prompt = query || '';
+    }
 
-    const q = query.toLowerCase();
+    if (!prompt.trim()) return { text: "Hello! I'm your Ocal AI. How can I assist you today?", actions: [] };
+
+    const q = prompt.toLowerCase();
     const actions = [];
 
     const activeEngine = userSettings.aiEngine || 'local';
     const showReasoning = userSettings.aiShowReasoning !== false;
-    const style = userSettings.aiResponseStyle || 'concise';
+    const style = userSettings.aiResponseStyle || 'detailed';
 
     const notifyAction = (text, icon = 'fa-spinner fa-spin') => {
         if (showReasoning && aiSidebarView) {
@@ -2196,15 +2214,15 @@ ipcMain.handle('ai-agent-execute', async (event, query) => {
         actions.push({ text, icon });
     };
 
-    const queryActiveLLM = async (prompt, customStyle = style) => {
+    const queryActiveLLM = async (promptText, customStyle = style) => {
         if (activeEngine === 'gemini') {
-            return await tryGemini(prompt, userSettings.aiApiKey, customStyle);
+            return await tryGemini(promptText, userSettings.aiApiKey, customStyle, fileObj);
         } else if (activeEngine === 'openai') {
-            return await tryOpenAI(prompt, customStyle);
+            return await tryOpenAI(promptText, customStyle, fileObj);
         } else if (activeEngine === 'custom') {
-            return await tryCustomProvider(prompt, customStyle);
+            return await tryCustomProvider(promptText, customStyle, fileObj);
         } else {
-            return await queryLocalLLM(prompt, customStyle);
+            return await queryLocalLLM(promptText, customStyle, fileObj);
         }
     };
 
@@ -2217,6 +2235,28 @@ ipcMain.handle('ai-agent-execute', async (event, query) => {
         if (isSimpleGreeting) {
             return {
                 text: "Hello! I'm your **Ocal AI Assistant**. I can help you navigate, manage tabs, change settings, analyze pages, and more. What can I do for you?",
+                actions: []
+            };
+        }
+
+        // --- Image Generation Intercept ---
+        const isImageGen = 
+            /\b(?:gen|generate|create|make|draw|paint)\b.*\b(?:image|picture|drawing|painting|photo|portrait|scene|canvas)\b/i.test(q) ||
+            /\b(?:image|picture|drawing|painting|photo|portrait|scene|canvas)\b.*\b(?:gen|generate|create|make|draw|paint)\b/i.test(q);
+
+        if (isImageGen) {
+            notifyAction('Generating image using Stable Diffusion...', 'fa-image');
+            
+            // Extract prompt description and strip common verbs/nouns
+            let imgPrompt = prompt.replace(/\b(generate|gen|create|make|draw|paint)\s+(?:me\s+|us\s+|for\s+me\s+|for\s+us\s+)?(?:an?\s+|the\s+)?(?:image|picture|drawing|painting|photo|portrait|scene|canvas)?(?:\s+of)?/i, '').trim();
+            imgPrompt = imgPrompt.replace(/^(a|an|the)\s+/i, '');
+
+            if (!imgPrompt) imgPrompt = 'a beautiful scenery';
+
+            const imageUrl = `sd://${encodeURIComponent(imgPrompt)}`;
+
+            return {
+                text: `Here is the image generated for **"${imgPrompt}"**:\n\n![Generated Image](${imageUrl})\n\n*(Powered by Stable Diffusion synthesis)*`,
                 actions: []
             };
         }
@@ -2245,7 +2285,7 @@ ipcMain.handle('ai-agent-execute', async (event, query) => {
         }
 
         // Accent color change
-        const accentMatch = query.match(/(?:change|set|make|switch)\s+(?:the\s+)?(?:accent|color|theme\s+color)\s+(?:to\s+)?(?:color\s+)?([#a-zA-Z0-9]+)/i);
+        const accentMatch = prompt.match(/(?:change|set|make|switch)\s+(?:the\s+)?(?:accent|color|theme\s+color)\s+(?:to\s+)?(?:color\s+)?([#a-zA-Z0-9]+)/i);
         if (accentMatch || (q.includes('accent') && q.includes('change')) || (q.includes('accent') && q.includes('set'))) {
             const COLOR_MAP = {
                 'red': '#ef4444', 'green': '#09f0a0', 'blue': '#3b82f6', 'purple': '#a855f7',
@@ -2542,7 +2582,7 @@ ipcMain.handle('ai-agent-execute', async (event, query) => {
         }
         // --- Multi-Task Sequencing ---
         // Split by " and then ", " then ", " and " (if followed by a command)
-        const subTasks = query.split(/\s+and\s+then\s+|\s+then\s+|\s+and\s+followed\s+by\s+|\s+;\s+/gi).map(t => t.trim()).filter(Boolean);
+        const subTasks = prompt.split(/\s+and\s+then\s+|\s+then\s+|\s+and\s+followed\s+by\s+|\s+;\s+/gi).map(t => t.trim()).filter(Boolean);
 
         if (subTasks.length > 1) {
             notifyAction(`Sequencing ${subTasks.length} tasks...`, 'fa-list-check');
@@ -2749,7 +2789,7 @@ ipcMain.handle('ai-agent-execute', async (event, query) => {
         // Phase 3: Page Analysis (Summarize/Explain) — Deep Scraping + AI Synthesis
         const isPageInsight = q.includes('summarize') || q.includes('explain') || q.includes('what is this') || q.includes('analyze') || q.includes('summary');
 
-        if (isPageInsight) {
+        if (isPageInsight && !fileObj) {
             const activeView = views.find(v => v.id === activeViewId)?.view;
             if (!activeView) return { text: "Please select a tab first so I can analyze it.", actions };
 
@@ -2922,19 +2962,28 @@ INSTRUCTIONS:
             if (results) {
                 let providerNote = "";
                 if (activeEngine === 'local') {
-                    let resolvedModelName = userSettings.localModel || 'auto';
+                    let resolvedModelName = userSettings.localModel || 'gemma-4';
                     if (resolvedModelName === 'auto') {
-                        const endpoint = userSettings.localEndpoint || 'http://localhost:11434';
+                        let endpoint = userSettings.localEndpoint || 'http://127.0.0.1:11434';
+                        if (endpoint.includes('localhost')) {
+                            endpoint = endpoint.replace('localhost', '127.0.0.1');
+                        }
                         try {
                             const tagsUrl = `${endpoint.replace(/\/$/, '')}/api/tags`;
-                            const tagsRes = await fetch(tagsUrl);
+                            const tagsRes = await fetch(tagsUrl, { signal: AbortSignal.timeout(1500) });
                             if (tagsRes.ok) {
                                 const tagsData = await tagsRes.json();
                                 if (tagsData.models && tagsData.models.length > 0) {
                                     resolvedModelName = tagsData.models[0].name;
+                                } else {
+                                    resolvedModelName = 'gemma-4';
                                 }
+                            } else {
+                                resolvedModelName = 'gemma-4';
                             }
-                        } catch (e) {}
+                        } catch (e) {
+                            resolvedModelName = 'gemma-4';
+                        }
                     }
                     providerNote = `\n\n> [!NOTE]\n> Analyzed locally using **${resolvedModelName}** for maximum privacy.`;
                 } else if (activeEngine === 'gemini') {
@@ -3059,53 +3108,88 @@ INSTRUCTIONS:
 
         // Phase 4: General Assistant (Direct Sidebar Answer with Environment Context)
         const tabContext = `[Environment Context] Open Tabs: ${views.length} (${views.map(v => v.view.webContents.getTitle()).join(', ')}).`;
-        const directAnswer = await queryActiveLLM(`${tabContext}\n\nQuery: ${query}`, style);
+
+        let finalPrompt = prompt;
+        if (fileObj && fileObj.type === 'text') {
+            const isPdf = fileObj.name.toLowerCase().endsWith('.pdf');
+            if (isPdf) {
+                finalPrompt = `[User attached a PDF Document named "${fileObj.name}"].
+Here is the extracted text content from the PDF:
+=========================================
+${fileObj.data}
+=========================================
+
+User query regarding this PDF: ${prompt}`;
+            } else {
+                finalPrompt = `[User attached a text file named "${fileObj.name}"]:
+\`\`\`
+${fileObj.data}
+\`\`\`
+
+User query regarding this file: ${prompt}`;
+            }
+        }
+
+        const directAnswer = await queryActiveLLM(`${tabContext}\n\nQuery: ${finalPrompt}`, style);
         if (directAnswer) return { text: directAnswer, actions };
 
         // Final Fallback: Live Web Intelligence (RAG-lite)
         notifyAction("Researching live web data...", 'fa-earth-americas');
-        const snippets = await researchWeb(query);
+        const snippets = await researchWeb(prompt);
 
         if (snippets && snippets.length > 0) {
             notifyAction("Synthesizing search results...", 'fa-wand-magic-sparkles');
-            const synthesisPrompt = `Synthesize these search snippets to answer the query: "${query}"\n\nSearch Snippets:\n${snippets.map((s, idx) => `[${idx + 1}] (${s.title}): ${s.snippet}`).join('\n')}\n\nProvide a synthesized answer in Markdown.`;
+            const synthesisPrompt = `You are Ocal AI, a high-performance browser assistant. Synthesize these search snippets to answer the user query: "${prompt}".
+Provide a highly detailed, comprehensive, structured, and thoroughly explained answer. Break down complex points, explain their significance, and present the information clearly with Markdown headings and bullet points.
+
+Search Snippets:
+${snippets.map((s, idx) => `[${idx + 1}] (${s.title}): ${s.snippet}`).join('\n')}
+
+Synthesized detailed answer:`;
             
             const synthesis = await queryActiveLLM(synthesisPrompt, style);
 
+            // Construct reference pills HTML
+            let referencePillsHtml = `\n\n#### 🔗 References\n<div class="ref-pills-container" style="display: flex; flex-wrap: wrap; gap: 6px; margin-top: 8px; border-radius: 0 !important;">`;
+            snippets.forEach(s => {
+                let domain = s.title || 'Source';
+                let faviconUrl = `https://www.google.com/s2/favicons?sz=32&domain=${domain}`;
+                if (s.url) {
+                    referencePillsHtml += `<a href="${s.url}" class="msg-ref-pill" style="border-radius: 100px !important;"><img src="${faviconUrl}" style="width: 12px; height: 12px; border-radius: 2px; vertical-align: middle; margin-right: 4px; pointer-events: none;" /> ${domain}</a>`;
+                } else {
+                    referencePillsHtml += `<span class="msg-ref-pill" style="border-radius: 100px !important;"><img src="${faviconUrl}" style="width: 12px; height: 12px; border-radius: 2px; vertical-align: middle; margin-right: 4px;" /> ${domain}</span>`;
+                }
+            });
+            referencePillsHtml += `</div>\n`;
+
             if (synthesis) {
-                const searchUrl = `https://www.google.com/search?q=${encodeURIComponent(query)}`;
+                const searchUrl = `https://www.google.com/search?q=${encodeURIComponent(prompt)}`;
                 return {
-                    text: `### 🌐 Web Intelligence: ${query}\n\n${synthesis}\n\n> [!TIP]\n> You can view the full results or dive deeper into these sources by opening the search page below.`,
+                    text: `### 🌐 Web Intelligence: ${prompt}\n\n${synthesis}${referencePillsHtml}\n\n> [!TIP]\n> You can view the full results or dive deeper into these sources by opening the search page below.`,
                     actions: [...actions, { text: "Open Search Results", icon: "fa-external-link-alt", url: searchUrl }]
                 };
             }
 
-            let fallbackSynthesis = `### 🌐 Web Intelligence: ${query}\n\n`;
+            let fallbackSynthesis = `### 🌐 Web Intelligence: ${prompt}\n\n`;
             
             // Core Summary
             const coreSummary = snippets[0].snippet;
             fallbackSynthesis += `#### 📌 Core Summary\n${coreSummary}\n\n`;
 
-            // References
-            fallbackSynthesis += `#### 🔗 References\n`;
+            // Detailed Explanation (Moved detailed explanation before references and formatted cleanly with site favicons)
+            fallbackSynthesis += `#### 📖 Detailed Explanation\n\n`;
             snippets.forEach((s, i) => {
-                if (s.url) {
-                    fallbackSynthesis += `${i + 1}. [${s.title}](${s.url})\n`;
-                } else {
-                    fallbackSynthesis += `${i + 1}. ${s.title}\n`;
-                }
-            });
-            fallbackSynthesis += `\n`;
-
-            // Detailed Explanation
-            fallbackSynthesis += `#### 📖 Detailed Explanation\n`;
-            snippets.forEach((s, i) => {
-                fallbackSynthesis += `- **${s.title}**: ${s.snippet}\n\n`;
+                let domain = s.title || 'Source';
+                let faviconUrl = `https://www.google.com/s2/favicons?sz=32&domain=${domain}`;
+                fallbackSynthesis += `##### <img src="${faviconUrl}" style="width: 16px; height: 16px; border-radius: 3px; vertical-align: middle; margin-right: 6px; display: inline-block;" /> ${domain}\n${s.snippet}\n\n`;
             });
 
-            fallbackSynthesis += `---\n> [!NOTE]\n> This research was compiled locally via web heuristics. To get fully synthesized conversational answers, you can enable a local LLM or cloud model in settings.`;
+            // References at the very bottom
+            fallbackSynthesis += referencePillsHtml;
 
-            const searchUrl = `https://www.google.com/search?q=${encodeURIComponent(query)}`;
+            fallbackSynthesis += `\n\n---\n\n> [!NOTE]\n> This research was compiled locally via web heuristics. To get fully synthesized conversational answers, you can enable a local LLM or cloud model in settings.`;
+
+            const searchUrl = `https://www.google.com/search?q=${encodeURIComponent(prompt)}`;
             return {
                 text: fallbackSynthesis,
                 actions: [...actions, { text: "Open Search Results", icon: "fa-external-link-alt", url: searchUrl }]
@@ -3113,9 +3197,9 @@ INSTRUCTIONS:
         }
 
         // Search Fallback if no snippets found
-        const searchUrl = `https://www.google.com/search?q=${encodeURIComponent(query)}`;
+        const searchUrl = `https://www.google.com/search?q=${encodeURIComponent(prompt)}`;
         return { 
-            text: `I couldn't reach any AI models and was unable to fetch web snippets for **"${query}"**.\n\nWould you like to search the web in a new tab?`, 
+            text: `I couldn't reach any AI models and was unable to fetch web snippets for **"${prompt}"**.\n\nWould you like to search the web in a new tab?`, 
             actions: [...actions, { text: "Search in New Tab", icon: "fa-search", url: searchUrl }] 
         };
 
@@ -3202,13 +3286,42 @@ async function professionalizeEmail(notes, subject, apiKey, context = {}) {
 }
 
 /**
+/**
  * Helper: Query OpenAI (ChatGPT)
  */
-async function tryOpenAI(prompt, style = 'concise') {
+async function tryOpenAI(prompt, style = 'detailed', fileObj = null) {
     const apiKey = userSettings.openaiApiKey;
     if (!apiKey) return null;
 
     try {
+        let stylePrompt = "Keep responses brief and relevant.";
+        if (style === 'detailed') {
+            stylePrompt = "Provide highly detailed, comprehensive, structured, and thoroughly explained answers. Do not keep them brief.";
+        } else if (style === 'creative') {
+            stylePrompt = "Provide creative, engaging, and rich answers.";
+        }
+
+        const messages = [
+            { role: 'system', content: `You are Ocal AI, a helpful browser assistant. Style: ${style}. Format: Markdown. ${stylePrompt}` }
+        ];
+
+        if (fileObj && fileObj.type === 'image') {
+            messages.push({
+                role: 'user',
+                content: [
+                    { type: 'text', text: prompt },
+                    {
+                        type: 'image_url',
+                        image_url: {
+                            url: `data:${fileObj.mimeType};base64,${fileObj.data}`
+                        }
+                    }
+                ]
+            });
+        } else {
+            messages.push({ role: 'user', content: prompt });
+        }
+
         const response = await fetch('https://api.openai.com/v1/chat/completions', {
             method: 'POST',
             headers: {
@@ -3217,10 +3330,7 @@ async function tryOpenAI(prompt, style = 'concise') {
             },
             body: JSON.stringify({
                 model: 'gpt-4o-mini',
-                messages: [
-                    { role: 'system', content: `You are Ocal AI, a helpful browser assistant. Style: ${style}. Format: Markdown.` },
-                    { role: 'user', content: prompt }
-                ],
+                messages: messages,
                 temperature: 0.7
             })
         });
@@ -3240,7 +3350,7 @@ async function tryOpenAI(prompt, style = 'concise') {
 /**
  * Helper: Query Custom OpenAI-Compatible Provider
  */
-async function tryCustomProvider(prompt, style = 'concise') {
+async function tryCustomProvider(prompt, style = 'detailed', fileObj = null) {
     const endpoint = userSettings.customEndpoint;
     const model = userSettings.customModel || 'deepseek-chat';
     const apiKey = userSettings.customApiKey;
@@ -3255,15 +3365,40 @@ async function tryCustomProvider(prompt, style = 'concise') {
             headers['Authorization'] = `Bearer ${apiKey}`;
         }
 
+        let stylePrompt = "Keep responses brief and relevant.";
+        if (style === 'detailed') {
+            stylePrompt = "Provide highly detailed, comprehensive, structured, and thoroughly explained answers. Do not keep them brief.";
+        } else if (style === 'creative') {
+            stylePrompt = "Provide creative, engaging, and rich answers.";
+        }
+
+        const messages = [
+            { role: 'system', content: `You are Ocal AI, a helpful browser assistant. Style: ${style}. Format: Markdown. ${stylePrompt}` }
+        ];
+
+        if (fileObj && fileObj.type === 'image') {
+            messages.push({
+                role: 'user',
+                content: [
+                    { type: 'text', text: prompt },
+                    {
+                        type: 'image_url',
+                        image_url: {
+                            url: `data:${fileObj.mimeType};base64,${fileObj.data}`
+                        }
+                    }
+                ]
+            });
+        } else {
+            messages.push({ role: 'user', content: prompt });
+        }
+
         const response = await fetch(url, {
             method: 'POST',
             headers: headers,
             body: JSON.stringify({
                 model: model,
-                messages: [
-                    { role: 'system', content: `You are Ocal AI, a helpful browser assistant. Style: ${style}. Format: Markdown.` },
-                    { role: 'user', content: prompt }
-                ],
+                messages: messages,
                 temperature: 0.7
             })
         });
@@ -3283,31 +3418,51 @@ async function tryCustomProvider(prompt, style = 'concise') {
 /**
  * Helper: Query local LLM (Ollama) if running on the device.
  */
-async function queryLocalLLM(prompt, style = 'concise') {
-    const endpoint = userSettings.localEndpoint || 'http://localhost:11434';
-    let model = userSettings.localModel || 'auto';
+async function queryLocalLLM(prompt, style = 'detailed', fileObj = null) {
+    let endpoint = userSettings.localEndpoint || 'http://127.0.0.1:11434';
+    if (endpoint.includes('localhost')) {
+        endpoint = endpoint.replace('localhost', '127.0.0.1');
+    }
+    let model = userSettings.localModel || 'gemma-4';
 
     try {
         // 1. Auto-discover the first available model from Ollama if set to auto
         if (model === 'auto') {
             const tagsUrl = `${endpoint.replace(/\/$/, '')}/api/tags`;
-            const tagsRes = await fetch(tagsUrl);
+            const tagsRes = await fetch(tagsUrl, { signal: AbortSignal.timeout(1500) });
             if (tagsRes.ok) {
                 const tagsData = await tagsRes.json();
                 if (tagsData.models && tagsData.models.length > 0) {
                     model = tagsData.models[0].name;
+                } else {
+                    model = 'gemma-4';
                 }
+            } else {
+                model = 'gemma-4';
             }
         }
 
         if (model === 'auto') {
-            return null; // Gracefully degrade if no model was found/Ollama is not running
+            model = 'gemma-4';
         }
 
         // 2. Post chat query request to Ollama
         const chatUrl = `${endpoint.replace(/\/$/, '')}/api/chat`;
+        
+        let stylePrompt = "Keep responses brief and relevant.";
+        if (style === 'detailed') {
+            stylePrompt = "Provide highly detailed, comprehensive, structured, and thoroughly explained answers. Do not keep them brief.";
+        } else if (style === 'creative') {
+            stylePrompt = "Provide creative, engaging, and rich answers.";
+        }
+
         const sysPrompt = `You are Ocal AI, a high-performance local browser assistant.
-        Style: ${style}. Format: Markdown. Keep responses brief and relevant.`;
+        Style: ${style}. Format: Markdown. ${stylePrompt}`;
+
+        const userMessage = { role: 'user', content: prompt };
+        if (fileObj && fileObj.type === 'image') {
+            userMessage.images = [fileObj.data]; // Array of base64 strings
+        }
 
         const response = await fetch(chatUrl, {
             method: 'POST',
@@ -3315,11 +3470,12 @@ async function queryLocalLLM(prompt, style = 'concise') {
                 model: model,
                 messages: [
                     { role: 'system', content: sysPrompt },
-                    { role: 'user', content: prompt }
+                    userMessage
                 ],
                 stream: false
             }),
-            headers: { 'Content-Type': 'application/json' }
+            headers: { 'Content-Type': 'application/json' },
+            signal: AbortSignal.timeout(8000)
         });
 
         if (response.ok) {
@@ -3336,20 +3492,39 @@ async function queryLocalLLM(prompt, style = 'concise') {
 /**
  * Helper: Refined Gemini fetch logic with model fallback loop.
  */
-async function tryGemini(prompt, apiKey, style = 'concise') {
+async function tryGemini(prompt, apiKey, style = 'detailed', fileObj = null) {
     const modelsToTry = ['gemini-1.5-flash', 'gemini-1.5-pro', 'gemini-pro', 'gemini-flash-latest'];
     for (const model of modelsToTry) {
         try {
             const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${apiKey}`;
+            
+            let stylePrompt = "Keep responses brief and relevant.";
+            if (style === 'detailed') {
+                stylePrompt = "Provide highly detailed, comprehensive, structured, and thoroughly explained answers. Do not keep them brief.";
+            } else if (style === 'creative') {
+                stylePrompt = "Provide creative, engaging, and rich answers.";
+            }
+
             const sysPrompt = `You are Ocal AI, a high-performance browser assistant. 
             Context: You have access to the user's tabs and browser environment.
             Capabilities: You can summarize pages, navigate to sites, and handle MULTI-TASK requests.
             Style: ${style}. Format: Markdown. Use "> [!TIP]" for insights and "> [!NOTE]" for technical details.
-            If a user asks for multiple things, address them sequentially in your response.`;
+            If a user asks for multiple things, address them sequentially in your response. ${stylePrompt}`;
+
+            const contents = { parts: [] };
+            if (fileObj && fileObj.type === 'image') {
+                contents.parts.push({
+                    inlineData: {
+                        mimeType: fileObj.mimeType,
+                        data: fileObj.data
+                    }
+                });
+            }
+            contents.parts.push({ text: `${sysPrompt}\n\nQuery: ${prompt}` });
 
             const response = await fetch(apiUrl, {
                 method: 'POST',
-                body: JSON.stringify({ contents: [{ parts: [{ text: `${sysPrompt}\n\nQuery: ${prompt}` }] }] }),
+                body: JSON.stringify({ contents: [contents] }),
                 headers: { 'Content-Type': 'application/json' }
             });
 
@@ -3660,11 +3835,19 @@ ipcMain.on('show-tab-context', (e, data) => {
     if (!tabContextView || !mainWindow) return;
 
     const contentBounds = mainWindow.getContentBounds();
+    const initialWidth = 260;
+    const initialHeight = 200;
+    
+    let initialX = data.x;
+    let initialY = data.y;
+    if (initialX + initialWidth > contentBounds.width) initialX = contentBounds.width - initialWidth - 5;
+    if (initialY + initialHeight > contentBounds.height) initialY = contentBounds.height - initialHeight - 5;
+
     tabContextView.setBounds({
-        x: 0,
-        y: 0,
-        width: contentBounds.width,
-        height: contentBounds.height
+        x: Math.round(initialX),
+        y: Math.round(initialY),
+        width: initialWidth,
+        height: initialHeight
     });
 
     if (!mainWindow.getBrowserViews().includes(tabContextView)) {
