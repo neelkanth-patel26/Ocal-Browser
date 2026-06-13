@@ -13,9 +13,9 @@ if (Test-Path "out") { Remove-Item -Recurse -Force "out" }
 New-Item -ItemType Directory -Path "dist-inno" -Force | Out-Null
 
 # 2. Electron Packaging
-Write-Host "[2/4] Packaging Electron application..." -ForegroundColor Yellow
-npm run package
-if ($LASTEXITCODE -ne 0) { throw "Electron packaging failed." }
+Write-Host "[2/4] Packaging Electron application (Skipped: using existing win-unpacked)..." -ForegroundColor Yellow
+# npm run package
+# if ($LASTEXITCODE -ne 0) { throw "Electron packaging failed." }
 
 # 3. Inno Setup Compilation
 Write-Host "[3/4] Compiling Inno Setup installer..." -ForegroundColor Magenta
