@@ -64,8 +64,18 @@ function addSuggestionItem(s, isBest = false) {
     const iconClass = s.type === 'history' ? 'fa-clock-rotate-left' : 
                      s.type === 'bookmark' ? 'fa-bookmark' : 'fa-magnifying-glass';
     
+    let iconHtml = `<i class="fas ${iconClass}"></i>`;
+    if ((s.type === 'history' || s.type === 'bookmark') && s.url) {
+        try {
+            const domain = new URL(s.url.startsWith('http') ? s.url : 'https://' + s.url).hostname;
+            if (domain && domain.includes('.')) {
+                iconHtml = `<img src="https://www.google.com/s2/favicons?domain=${domain}&sz=32" class="suggestion-favicon" onerror="this.outerHTML='<i class=&quot;fas ${iconClass}&quot;></i>'">`;
+            }
+        } catch (e) {}
+    }
+    
     item.innerHTML = `
-        <div class="icon"><i class="fas ${iconClass}"></i></div>
+        <div class="icon">${iconHtml}</div>
         <div class="text">${s.text}</div>
         <div class="type">${s.type || 'search'}</div>
     `;

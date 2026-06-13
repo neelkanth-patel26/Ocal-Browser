@@ -52,7 +52,7 @@ body[data-theme="light"] {
     --tab-strip-bg: rgba(0, 0, 0, 0.02);
     --text: #0f172a;
     --text-dim: #475569;
-    --text-muted: #94a3b8;
+    --text-muted: #64748b;
 }
 
 html, body {
@@ -184,7 +184,7 @@ html, body {
     transition: all 0.2s;
 }
 .bm-tool-btn:hover {
-    border-color: var(--card-hover-border); color: #fff;
+    border-color: var(--card-hover-border); color: var(--text);
     background: var(--card-hover-bg);
     transform: none;
     box-shadow: none !important;
@@ -225,7 +225,7 @@ html, body {
 
 .bm-favicon, .hist-favicon { width: 16px; height: 16px; border-radius: 4px; flex-shrink: 0; background: rgba(255,255,255,0.05); }
 .bm-info, .hist-info { flex: 1; min-width: 0; }
-.bm-title, .hist-title { font-size: 13px; font-weight: 500; color: #fff; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; outline: none; }
+.bm-title, .hist-title { font-size: 13px; font-weight: 500; color: var(--text); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; outline: none; }
 .bm-url, .hist-meta { font-size: 10.5px; color: var(--text-muted); margin-top: 1px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 
 .bm-drag-handle { font-size: 11px; color: var(--text-muted); cursor: grab; opacity: 0; transition: 0.2s; }
@@ -340,7 +340,7 @@ html, body {
     flex-shrink: 0; background: rgba(255,255,255,0.05); object-fit: contain;
 }
 .hist-info { flex: 1; min-width: 0; }
-.hist-title { font-size: 13px; font-weight: 600; color: #fff; margin-bottom: 3px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.hist-title { font-size: 13px; font-weight: 600; color: var(--text); margin-bottom: 3px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .hist-meta { font-size: 11px; font-weight: 500; color: var(--text-muted); display: flex; align-items: center; gap: 6px; }
 
 .hist-item .hist-del { 
@@ -681,6 +681,14 @@ body[data-theme="light"] #modal-cancel:hover {
 .ss-option:hover { background: rgba(255,255,255,0.06); }
 .ss-option i { font-size: 16px; color: var(--accent); }
 .ss-option span { font-size: 11px; font-weight: 600; color: var(--text-dim); }
+
+/* Light Theme Hover Overrides */
+body[data-theme="light"] .panel-close:hover,
+body[data-theme="light"] .icon-btn:hover,
+body[data-theme="light"] .dl-action-btn:hover {
+    background: rgba(0, 0, 0, 0.06) !important;
+    color: var(--text) !important;
+}
 </style>
 </head>
 <body>

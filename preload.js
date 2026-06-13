@@ -780,6 +780,7 @@ window.addEventListener('mousedown', () => {
     const href = window.location.href;
     const isUIOverlay = 
         href.includes('ai-sidebar.html') || 
+        href.includes('ocal://ai-sidebar') || 
         href.includes('sidebars.html') ||
         href.includes('tab-context.html') ||
         href.includes('tabgroup.html') ||

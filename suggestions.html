@@ -123,6 +123,19 @@
             flex-shrink: 0;
         }
 
+        .suggestion-favicon {
+            width: 14px;
+            height: 14px;
+            object-fit: contain;
+            border-radius: 3px;
+            transition: transform 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+
+        .suggestion-item:hover .suggestion-favicon,
+        .suggestion-item.selected .suggestion-favicon {
+            transform: scale(1.1);
+        }
+
         body[data-theme="light"] .icon {
             background: rgba(0, 0, 0, 0.02);
             border-color: rgba(0, 0, 0, 0.04);

@@ -486,6 +486,13 @@ body[data-theme="light"] .capsule-btn:hover {
 .tile-label { font-size: 9px; font-weight: 900; color: var(--text-muted); transition: 0.3s; letter-spacing: 1px; text-transform: uppercase; }
 .tile-item:hover .tile-label { color: #fff; transform: translateY(2px); }
 
+.tile-favicon {
+    transition: transform 0.35s cubic-bezier(0.16, 1, 0.3, 1);
+}
+.tile-item:hover .tile-favicon {
+    transform: scale(1.15);
+}
+
 /* ── Focus Timer Refinement ── */
 .timer-container { 
     position: relative; width: 140px; height: 140px; margin: 20px auto; 

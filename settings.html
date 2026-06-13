@@ -9,7 +9,7 @@
     <title>Ocal Settings</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&family=Inter:wght@300;400;500;600;700&display=swap"
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@300;400;500&family=Outfit:wght@300;400;500;600;700;800&family=Inter:wght@300;400;500;600;700&display=swap"
         rel="stylesheet">
     <link rel="stylesheet" href="assets/fontawesome/css/all.min.css">
     <script>
@@ -124,795 +124,745 @@
 
 
         <!-- ── SEARCH ── -->
-        <section id="search" class="section">
+        <section id="search" class="section active">
             <div class="page-header">
                 <div class="page-eyebrow">Web Discovery</div>
                 <div class="page-title">Search Engine</div>
                 <div class="page-desc">Choose your default search provider and configure search behavior.</div>
             </div>
             <div class="page-body">
-                <div class="studio-prefs-grid">
+                <!-- Reworked Search Engine Selector Grid -->
+                <div class="search-engine-section-title">
+                    <h4 class="mono-label" style="font-size: 12px; color: var(--accent); margin-bottom: 4px;"><i class="fas fa-magnifying-glass"></i> Default Provider</h4>
+                    <p class="mono-label-small" style="font-size: 13px; color: var(--text-dim); margin-bottom: 16px;">Select the search engine used when typing in the address bar.</p>
+                </div>
 
-                    <!-- Search Engine Selector -->
-                    <div class="studio-card full-span">
-                        <div class="studio-card-header">
-                            <div class="studio-card-icon"><i class="fas fa-magnifying-glass"></i></div>
-                            <div class="studio-card-title">
-                                <h3>Default Provider</h3>
-                                <p>Select the search engine used when typing in the address bar.</p>
-                            </div>
+                <div id="search-engine-grid" class="search-engine-grid">
+                    <div class="choice-item search-engine-card active" data-search-engine="google" data-value="google">
+                        <div class="engine-logo google-logo">
+                            <i class="fab fa-google"></i>
                         </div>
-                        <div class="studio-card-body">
-                            <div class="studio-row" style="cursor: pointer;" data-search-engine="google">
-                                <div style="display: flex; align-items: center; gap: 14px; flex: 1;">
-                                    <div style="width: 36px; height: 36px; background: rgba(66, 133, 244, 0.08); border-radius: 10px; display: flex; align-items: center; justify-content: center; color: #4285F4; font-size: 15px; flex-shrink: 0; border: 1px solid rgba(66, 133, 244, 0.15);">
-                                        <i class="fab fa-google"></i>
-                                    </div>
-                                    <div class="studio-row-info">
-                                        <div class="studio-row-label">Google</div>
-                                        <div class="studio-row-desc">The world's most popular search engine</div>
-                                    </div>
-                                </div>
-                                <input type="radio" name="search-engine" value="google" checked style="width: 18px; height: 18px; cursor: pointer; accent-color: var(--accent);">
-                            </div>
-                            <div class="studio-row" style="cursor: pointer;" data-search-engine="bing">
-                                <div style="display: flex; align-items: center; gap: 14px; flex: 1;">
-                                    <div style="width: 36px; height: 36px; background: rgba(0, 120, 212, 0.08); border-radius: 10px; display: flex; align-items: center; justify-content: center; color: #0078d4; font-size: 15px; flex-shrink: 0; border: 1px solid rgba(0, 120, 212, 0.15);">
-                                        <i class="fas fa-b" style="font-weight: 900; font-family: sans-serif;"></i>
-                                    </div>
-                                    <div class="studio-row-info">
-                                        <div class="studio-row-label">Bing</div>
-                                        <div class="studio-row-desc">Microsoft's AI-powered search</div>
-                                    </div>
-                                </div>
-                                <input type="radio" name="search-engine" value="bing" style="width: 18px; height: 18px; cursor: pointer; accent-color: var(--accent);">
-                            </div>
-                            <div class="studio-row" style="cursor: pointer;" data-search-engine="duckduckgo">
-                                <div style="display: flex; align-items: center; gap: 14px; flex: 1;">
-                                    <div style="width: 36px; height: 36px; background: rgba(222, 88, 51, 0.08); border-radius: 10px; display: flex; align-items: center; justify-content: center; color: #de5833; font-size: 15px; flex-shrink: 0; border: 1px solid rgba(222, 88, 51, 0.15);">
-                                        <i class="fas fa-shield-cat"></i>
-                                    </div>
-                                    <div class="studio-row-info">
-                                        <div class="studio-row-label">DuckDuckGo</div>
-                                        <div class="studio-row-desc">Privacy-focused, no tracking</div>
-                                    </div>
-                                </div>
-                                <input type="radio" name="search-engine" value="duckduckgo" style="width: 18px; height: 18px; cursor: pointer; accent-color: var(--accent);">
-                            </div>
-                            <div class="studio-row" style="cursor: pointer;" data-search-engine="brave">
-                                <div style="display: flex; align-items: center; gap: 14px; flex: 1;">
-                                    <div style="width: 36px; height: 36px; background: rgba(251, 84, 43, 0.08); border-radius: 10px; display: flex; align-items: center; justify-content: center; color: #fb542b; font-size: 15px; flex-shrink: 0; border: 1px solid rgba(251, 84, 43, 0.15);">
-                                        <i class="fa-brands fa-brave"></i>
-                                    </div>
-                                    <div class="studio-row-info">
-                                        <div class="studio-row-label">Brave</div>
-                                        <div class="studio-row-desc">Independent index, ad-free results</div>
-                                    </div>
-                                </div>
-                                <input type="radio" name="search-engine" value="brave" style="width: 18px; height: 18px; cursor: pointer; accent-color: var(--accent);">
-                            </div>
-                            <div class="studio-row" style="cursor: pointer;" data-search-engine="yahoo">
-                                <div style="display: flex; align-items: center; gap: 14px; flex: 1;">
-                                    <div style="width: 36px; height: 36px; background: rgba(96, 1, 210, 0.08); border-radius: 10px; display: flex; align-items: center; justify-content: center; color: #6001d2; font-size: 15px; flex-shrink: 0; border: 1px solid rgba(96, 1, 210, 0.15);">
-                                        <i class="fa-brands fa-yahoo"></i>
-                                    </div>
-                                    <div class="studio-row-info">
-                                        <div class="studio-row-label">Yahoo</div>
-                                        <div class="studio-row-desc">Classic web search portal</div>
-                                    </div>
-                                </div>
-                                <input type="radio" name="search-engine" value="yahoo" style="width: 18px; height: 18px; cursor: pointer; accent-color: var(--accent);">
-                            </div>
-                            <div class="studio-row" style="cursor: pointer;" data-search-engine="custom">
-                                <div style="display: flex; align-items: center; gap: 14px; flex: 1;">
-                                    <div style="width: 36px; height: 36px; background: var(--accent-dim); border-radius: 10px; display: flex; align-items: center; justify-content: center; color: var(--accent); font-size: 15px; flex-shrink: 0; border: 1px solid var(--accent-border);">
-                                        <i class="fas fa-terminal"></i>
-                                    </div>
-                                    <div class="studio-row-info">
-                                        <div class="studio-row-label">Custom</div>
-                                        <div class="studio-row-desc">Use your own search engine URL</div>
-                                    </div>
-                                </div>
-                                <input type="radio" name="search-engine" value="custom" style="width: 18px; height: 18px; cursor: pointer; accent-color: var(--accent);">
-                            </div>
+                        <div class="engine-details">
+                            <div class="engine-name">Google</div>
+                            <div class="engine-desc">The world's standard search engine</div>
+                        </div>
+                        <div class="engine-select-badge">
+                            <input type="radio" name="search-engine" value="google" checked style="cursor: pointer; accent-color: var(--accent);">
                         </div>
                     </div>
-
-                    <!-- Custom Search URL (Hidden by default) -->
-                    <div id="custom-search-container" class="studio-card full-span" style="display: none;">
-                        <div class="studio-card-header">
-                            <div class="studio-card-icon" style="color: #f59e0b; background: rgba(245, 158, 11, 0.1); border-color: rgba(245, 158, 11, 0.2);"><i class="fas fa-link"></i></div>
-                            <div class="studio-card-title">
-                                <h3>Custom Search URL</h3>
-                                <p>Use <code style="background: rgba(255,255,255,0.06); padding: 2px 6px; border-radius: 4px; font-size: 11px;">%s</code> as the query placeholder.</p>
-                            </div>
+                    <div class="choice-item search-engine-card" data-search-engine="bing" data-value="bing">
+                        <div class="engine-logo bing-logo">
+                            <i class="fas fa-b" style="font-weight: 900; font-family: sans-serif;"></i>
                         </div>
-                        <div class="studio-card-body">
-                            <div class="studio-row">
-                                <div class="studio-row-info" style="flex: 1;">
-                                    <div class="studio-row-label">Search URL</div>
-                                </div>
-                                <input type="text" id="custom-search-input" placeholder="https://example.com/search?q=%s" style="flex: 1; max-width: 400px; background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.08); border-radius: 8px; padding: 10px 14px; color: var(--text); font-family: 'Inter', sans-serif; font-size: 12px; outline: none;">
-                            </div>
+                        <div class="engine-details">
+                            <div class="engine-name">Bing</div>
+                            <div class="engine-desc">Microsoft's AI-powered search</div>
+                        </div>
+                        <div class="engine-select-badge">
+                            <input type="radio" name="search-engine" value="bing" style="cursor: pointer; accent-color: var(--accent);">
                         </div>
                     </div>
+                    <div class="choice-item search-engine-card" data-search-engine="duckduckgo" data-value="duckduckgo">
+                        <div class="engine-logo ddg-logo">
+                            <i class="fas fa-shield-cat"></i>
+                        </div>
+                        <div class="engine-details">
+                            <div class="engine-name">DuckDuckGo</div>
+                            <div class="engine-desc">Privacy-focused, no tracking</div>
+                        </div>
+                        <div class="engine-select-badge">
+                            <input type="radio" name="search-engine" value="duckduckgo" style="cursor: pointer; accent-color: var(--accent);">
+                        </div>
+                    </div>
+                    <div class="choice-item search-engine-card" data-search-engine="brave" data-value="brave">
+                        <div class="engine-logo brave-logo">
+                            <i class="fa-brands fa-brave"></i>
+                        </div>
+                        <div class="engine-details">
+                            <div class="engine-name">Brave</div>
+                            <div class="engine-desc">Independent index, ad-free results</div>
+                        </div>
+                        <div class="engine-select-badge">
+                            <input type="radio" name="search-engine" value="brave" style="cursor: pointer; accent-color: var(--accent);">
+                        </div>
+                    </div>
+                    <div class="choice-item search-engine-card" data-search-engine="yahoo" data-value="yahoo">
+                        <div class="engine-logo yahoo-logo">
+                            <i class="fa-brands fa-yahoo"></i>
+                        </div>
+                        <div class="engine-details">
+                            <div class="engine-name">Yahoo</div>
+                            <div class="engine-desc">Classic web search portal</div>
+                        </div>
+                        <div class="engine-select-badge">
+                            <input type="radio" name="search-engine" value="yahoo" style="cursor: pointer; accent-color: var(--accent);">
+                        </div>
+                    </div>
+                    <div class="choice-item search-engine-card" data-search-engine="custom" data-value="custom">
+                        <div class="engine-logo custom-logo">
+                            <i class="fas fa-terminal"></i>
+                        </div>
+                        <div class="engine-details">
+                            <div class="engine-name">Custom</div>
+                            <div class="engine-desc">Use your own search engine URL</div>
+                        </div>
+                        <div class="engine-select-badge">
+                            <input type="radio" name="search-engine" value="custom" style="cursor: pointer; accent-color: var(--accent);">
+                        </div>
+                    </div>
+                </div>
 
+                <!-- Custom Search URL (Hidden by default) -->
+                <div id="custom-search-container" class="card custom-search-container" style="display: none;">
+                    <div class="card-header-styled">
+                        <i class="fas fa-link" style="color: #f59e0b;"></i>
+                        <span>Custom Search URL Configuration</span>
+                    </div>
+                    <div class="card-row" style="flex-direction: column; align-items: stretch; gap: 12px;">
+                        <div class="card-info">
+                            <p style="font-size: 13px;">Use <code style="background: rgba(255,255,255,0.06); padding: 2px 6px; border-radius: 4px; font-family: var(--font-mono); font-size: 11px;">%s</code> as the query placeholder.</p>
+                        </div>
+                        <div style="display: flex; align-items: center; gap: 12px; width: 100%;">
+                            <input type="text" id="custom-search-input" placeholder="https://example.com/search?q=%s" style="flex: 1;">
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Reworked Accessories Toggles -->
+                <div class="search-accessories-grid">
                     <!-- Suggestions -->
-                    <div class="studio-card">
-                        <div class="studio-card-header">
-                            <div class="studio-card-icon" style="color: #4ade80; background: rgba(74, 222, 128, 0.1); border-color: rgba(74, 222, 128, 0.2);"><i class="fas fa-wand-magic-sparkles"></i></div>
-                            <div class="studio-card-title">
-                                <h3>Suggestions</h3>
-                                <p>Autocomplete and prediction behavior.</p>
-                            </div>
+                    <div class="accessory-card">
+                        <div class="accessory-icon-box suggestions-icon">
+                            <i class="fas fa-wand-magic-sparkles"></i>
                         </div>
-                        <div class="studio-card-body">
-                            <div class="studio-row">
-                                <div class="studio-row-info">
-                                    <div class="studio-row-label">Search Suggestions</div>
-                                    <div class="studio-row-desc">Show suggestions as you type in the address bar</div>
-                                </div>
-                                <div class="toggle on" id="instant-search-toggle" onclick="toggleSearchFeature('instantSearchEnabled', this)"></div>
-                            </div>
+                        <div class="accessory-info">
+                            <h4 class="accessory-title">Autocomplete Suggestions</h4>
+                            <p class="accessory-desc">Show predictions as you type in the address bar</p>
                         </div>
+                        <div class="toggle on" id="instant-search-toggle" onclick="toggleSearchFeature('instantSearchEnabled', this)"></div>
                     </div>
 
                     <!-- Safe Search -->
-                    <div class="studio-card">
-                        <div class="studio-card-header">
-                            <div class="studio-card-icon" style="color: #f87171; background: rgba(248, 113, 113, 0.1); border-color: rgba(248, 113, 113, 0.2);"><i class="fas fa-shield-halved"></i></div>
-                            <div class="studio-card-title">
-                                <h3>Safe Search</h3>
-                                <p>Content filtering and restrictions.</p>
-                            </div>
+                    <div class="accessory-card">
+                        <div class="accessory-icon-box safesearch-icon">
+                            <i class="fas fa-shield-halved"></i>
                         </div>
-                        <div class="studio-card-body">
-                            <div class="studio-row">
-                                <div class="studio-row-info">
-                                    <div class="studio-row-label">Filter Explicit Results</div>
-                                    <div class="studio-row-desc">Block inappropriate content from search results</div>
-                                </div>
-                                <div class="toggle" id="safe-search-toggle" onclick="toggleSearchFeature('safeSearchEnabled', this)"></div>
-                            </div>
+                        <div class="accessory-info">
+                            <h4 class="accessory-title">SafeSearch Filtering</h4>
+                            <p class="accessory-desc">Filter explicit contents from suggestions list</p>
                         </div>
+                        <div class="toggle" id="safe-search-toggle" onclick="toggleSearchFeature('safeSearchEnabled', this)"></div>
                     </div>
-
                 </div>
+
             </div>
         </section>
 
 
         <!-- ── HOME PAGE ── -->
-
         <section id="homepage" class="section">
             <div class="page-header">
                 <div class="page-title">Home Page</div>
                 <div class="page-desc">Customize your new tab page layout and appearance.</div>
             </div>
             <div class="page-body">
-                <!-- Theme Card -->
-                <div class="group" style="margin-bottom: 0;">
-                    <div class="card">
-                        <div class="card-header-styled">
-                            <i class="fas fa-palette"></i>
-                            <span>Theme & Accents</span>
-                        </div>
-                        <div class="card-row">
-                            <div class="card-info">
-                                <h4>Dark Mode</h4>
-                                <p>Choose between light and dark visual modes</p>
+                <!-- Top Section: Page Layout Configuration as a Unified Full-Width Card -->
+                <div class="card homepage-top-card" style="margin-bottom: 24px;">
+                    <div class="card-header-styled">
+                        <i class="fas fa-table-cells-large"></i>
+                        <span>Page Layout Configuration</span>
+                    </div>
+                    <div class="card-row" style="flex-direction: column; align-items: stretch; gap: 16px; padding: 20px;">
+                        <p class="mono-label-small" style="font-size: 13px; color: var(--text-dim); margin: 0 0 4px 0;">Choose how search elements and shortcuts are positioned on your dashboard.</p>
+                        <div class="layout-selection-board choice-grid" id="layout-choice-grid">
+                            <div class="choice-item layout-preview-card" id="layout-top" onclick="updateHomeLayout('top')">
+                                <div class="mini-layout-preview top-preview">
+                                    <div class="preview-address-bar"></div>
+                                    <div class="preview-tiles-grid">
+                                        <span class="preview-tile"></span>
+                                        <span class="preview-tile"></span>
+                                        <span class="preview-tile"></span>
+                                        <span class="preview-tile"></span>
+                                    </div>
+                                </div>
+                                <span class="layout-title-label">Top Align</span>
                             </div>
-                            <div class="toggle on" id="theme-mode-toggle"></div>
-                        </div>
-                        <div class="card-row" style="flex-direction: column; align-items: stretch; gap: 12px;">
-                            <div class="card-info">
-                                <h4>Accent color</h4>
-                                <p>Customize the primary focus highlights</p>
+                            
+                            <div class="choice-item layout-preview-card active" id="layout-center" onclick="updateHomeLayout('center')">
+                                <div class="mini-layout-preview center-preview">
+                                    <div class="preview-address-bar"></div>
+                                </div>
+                                <span class="layout-title-label">Centered Focus</span>
                             </div>
-                            <div class="color-row">
-                                <div class="color-dot active" data-color="#09f0a0" style="background:#09f0a0"></div>
-                                <div class="color-dot" data-color="#ffffff" style="background:#ffffff"></div>
-                                <div class="color-dot" data-color="#a855f7" style="background:#a855f7"></div>
-                                <div class="color-dot" data-color="#3b82f6" style="background:#3b82f6"></div>
-                                <div class="color-dot" data-color="#ef4444" style="background:#ef4444"></div>
-                                <div class="color-dot" data-color="#e8ff47" style="background:#e8ff47"></div>
+                            
+                            <div class="choice-item layout-preview-card" id="layout-bottom" onclick="updateHomeLayout('bottom')">
+                                <div class="mini-layout-preview bottom-preview">
+                                    <div class="preview-tiles-grid">
+                                        <span class="preview-tile"></span>
+                                        <span class="preview-tile"></span>
+                                        <span class="preview-tile"></span>
+                                        <span class="preview-tile"></span>
+                                    </div>
+                                    <div class="preview-address-bar"></div>
+                                </div>
+                                <span class="layout-title-label">Bottom Align</span>
                             </div>
                         </div>
                     </div>
                 </div>
 
-                <!-- Layout Card -->
-                <div class="group" style="margin-bottom: 0;">
-                    <div class="card">
-                        <div class="card-header-styled">
-                            <i class="fas fa-table-cells-large"></i>
-                            <span>Interface Layout</span>
-                        </div>
-                        <div class="card-row">
-                            <div class="card-info">
-                                <h4>Compact mode</h4>
-                                <p>Reduce padding and margins across UI</p>
-                            </div>
-                            <div class="toggle" id="compact-toggle"></div>
-                        </div>
-                        <div class="card-row">
-                            <div class="card-info">
-                                <h4>Show bookmarks bar</h4>
-                                <p>Maintain persistent bookmarks accessibility</p>
-                            </div>
-                            <div class="toggle on" id="bookmarks-bar-toggle"></div>
-                        </div>
-                        <div class="card-row" style="flex-direction: column; align-items: stretch; gap: 12px;">
-                            <div class="card-info">
-                                <h4>Sidebar behavior</h4>
-                                <p>Choose visibility guidelines for left sidebar</p>
-                            </div>
-                            <div class="choice-grid" id="sidebar-mode-grid" style="grid-template-columns: repeat(2, 1fr); gap: 10px; width: 100%;">
-                                <div class="choice-item active" data-value="visible">
+                <!-- Two-Column Layout Grid for rest of preferences -->
+                <div class="homepage-layout-container">
+                    
+                    <!-- Left Column: Navigation & Sizing Controls -->
+                    <div class="homepage-left-pane">
+                        <!-- Compact & Bookmarks Bar Toggles -->
+                        <div class="layout-toggles-dock">
+                            <div class="accessory-card">
+                                <div class="accessory-icon-box" style="color: var(--accent); background: var(--accent-dim); border: 1px solid var(--accent-border);">
                                     <i class="fas fa-eye"></i>
-                                    <span>Visible</span>
                                 </div>
-                                <div class="choice-item" data-value="hidden">
-                                    <i class="fas fa-eye-slash"></i>
-                                    <span>Hide</span>
+                                <div class="accessory-info">
+                                    <h4 class="accessory-title">Compact Workspace</h4>
+                                    <p class="accessory-desc">Reduce screen padding for condensed information</p>
                                 </div>
+                                <div class="toggle" id="compact-toggle"></div>
+                            </div>
+
+                            <div class="accessory-card">
+                                <div class="accessory-icon-box" style="color: var(--accent); background: var(--accent-dim); border: 1px solid var(--accent-border);">
+                                    <i class="fas fa-bookmark"></i>
+                                </div>
+                                <div class="accessory-info">
+                                    <h4 class="accessory-title">Bookmarks Bar</h4>
+                                    <p class="accessory-desc">Display active bookmark list persistently in top layout</p>
+                                </div>
+                                <div class="toggle on" id="bookmarks-bar-toggle"></div>
                             </div>
                         </div>
-                    </div>
-                </div>
 
-                    <!-- Layout Card -->
-                    <div class="group" style="margin-bottom: 0; grid-column: span 2;">
-                        <div class="group-label" style="margin-bottom: 12px;">Layout</div>
-                        <div class="card">
-                            <div class="card-row" style="padding: 20px;">
-                                <div class="card-info">
-                                    <h4>Page layout</h4>
-                                    <p>Choose how content is positioned on your new tab page</p>
-                                </div>
+                        <!-- Sidebar Mode Choice Grid -->
+                        <div class="card sidebar-behavior-card">
+                            <div class="card-header-styled">
+                                <i class="fas fa-sliders"></i>
+                                <span>Sidebar Visibility Behavior</span>
                             </div>
-                            <div class="card-row" style="padding: 20px; border-top: 1px solid rgba(255, 255, 255, 0.06);">
-                                <div class="choice-grid" style="grid-template-columns: repeat(3, 1fr); gap: 12px; width: 100%;">
-                                    <div class="choice-item" id="layout-top" onclick="updateHomeLayout('top')" style="padding: 20px 14px; gap: 10px;">
-                                        <div class="mini-layout">
-                                            <div class="mini-search"></div>
-                                            <div class="mini-grid">
-                                                <div class="mini-tile"></div>
-                                                <div class="mini-tile"></div>
-                                                <div class="mini-tile"></div>
-                                                <div class="mini-tile"></div>
-                                            </div>
-                                        </div>
-                                        <span style="font-size: 13px; font-weight: 600;">Top</span>
+                            <div class="card-row" style="flex-direction: column; align-items: stretch; gap: 12px;">
+                                <div class="choice-grid" id="sidebar-mode-grid" style="grid-template-columns: repeat(2, 1fr); gap: 12px; width: 100%;">
+                                    <div class="choice-item active" data-value="visible">
+                                        <i class="fas fa-eye"></i>
+                                        <span>Show Sidebar</span>
                                     </div>
-                                    <div class="choice-item active" id="layout-center" onclick="updateHomeLayout('center')" style="padding: 20px 14px; gap: 10px;">
-                                        <div class="mini-layout" style="justify-content:center;">
-                                            <div class="mini-search"></div>
-                                        </div>
-                                        <span style="font-size: 13px; font-weight: 600;">Center</span>
-                                    </div>
-                                    <div class="choice-item" id="layout-bottom" onclick="updateHomeLayout('bottom')" style="padding: 20px 14px; gap: 10px;">
-                                        <div class="mini-layout" style="justify-content:flex-end;">
-                                            <div class="mini-grid">
-                                                <div class="mini-tile"></div>
-                                                <div class="mini-tile"></div>
-                                                <div class="mini-tile"></div>
-                                                <div class="mini-tile"></div>
-                                            </div>
-                                            <div class="mini-search"></div>
-                                        </div>
-                                        <span style="font-size: 13px; font-weight: 600;">Bottom</span>
+                                    <div class="choice-item" data-value="hidden">
+                                        <i class="fas fa-eye-slash"></i>
+                                        <span>Hide Sidebar</span>
                                     </div>
                                 </div>
                             </div>
                         </div>
-                    </div>
 
-                    <!-- Tile Appearance Card -->
-                    <div class="group" style="margin-bottom: 0;">
-                        <div class="group-label" style="margin-bottom: 12px;">Tile appearance</div>
-                        <div class="card">
+                        <!-- Tile Customization -->
+                        <div class="card tile-config-card">
+                            <div class="card-header-styled">
+                                <i class="fas fa-cubes"></i>
+                                <span>Speed Dial Tile Geometry</span>
+                            </div>
                             <div class="card-row" style="flex-direction: column; align-items: stretch; gap: 12px;">
                                 <div style="display: flex; justify-content: space-between; align-items: center;">
                                     <div class="card-info">
-                                        <h4>Tile size</h4>
-                                        <p>Adjust the size of shortcut tiles</p>
+                                        <h4>Tile Dimensions</h4>
                                     </div>
-                                    <div id="label-tile-size" style="background: var(--accent-dim); color: var(--accent); padding: 4px 10px; border-radius: 6px; font-weight: 700; font-size: 11px;">120px</div>
+                                    <div id="label-tile-size" class="diagnostic-badge">120px</div>
                                 </div>
                                 <input type="range" min="80" max="160" value="120" id="homeTileSize" oninput="updateHomeSetting('homeTileSize', this.value)">
                             </div>
-                            <div class="card-row" style="flex-direction: column; align-items: stretch; gap: 12px;">
+                            <div class="card-row" style="flex-direction: column; align-items: stretch; gap: 12px; border-top: 1px solid var(--chrome-border);">
                                 <div style="display: flex; justify-content: space-between; align-items: center;">
                                     <div class="card-info">
-                                        <h4>Tile spacing</h4>
-                                        <p>Adjust spacing between tiles</p>
+                                        <h4>Tile Gap Spacing</h4>
                                     </div>
-                                    <div id="label-tile-spacing" style="background: var(--accent-dim); color: var(--accent); padding: 4px 10px; border-radius: 6px; font-weight: 700; font-size: 11px;">20px</div>
+                                    <div id="label-tile-spacing" class="diagnostic-badge">20px</div>
                                 </div>
                                 <input type="range" min="10" max="40" value="20" id="homeTileSpacing" oninput="updateHomeSetting('homeTileSpacing', this.value)">
                             </div>
                         </div>
                     </div>
-
-                    <!-- Tile Style Card -->
-                    <div class="group" style="margin-bottom: 0;">
-                        <div class="group-label" style="margin-bottom: 12px;">Tile style</div>
-                        <div class="card">
-                            <div class="card-row" style="cursor: pointer;" onclick="if (event.target !== this.querySelector('input')) this.querySelector('input').click();">
-                                <div style="display: flex; align-items: center; gap: 16px; flex: 1;">
-                                    <div style="width:32px;height:32px;background:rgba(255,255,255,0.06);border:1px solid rgba(255,255,255,0.12);border-radius:8px;backdrop-filter:blur(8px);box-shadow: 0 4px 12px rgba(0,0,0,0.2); flex-shrink: 0;"></div>
-                                    <div class="card-info">
-                                        <h4>Glassmorphic</h4>
-                                        <p>Frosted glass transparency effect</p>
-                                    </div>
-                                </div>
-                                <input type="radio" name="tile-style" id="tile-style-glass" data-value="glass-array" checked style="width: 20px; height: 20px; cursor: pointer;">
-                            </div>
-                            <div class="card-row" style="cursor: pointer;" onclick="if (event.target !== this.querySelector('input')) this.querySelector('input').click();">
-                                <div style="display: flex; align-items: center; gap: 16px; flex: 1;">
-                                    <div style="width:32px;height:32px;background:rgba(255,255,255,0.15);border-radius:4px; flex-shrink: 0;"></div>
-                                    <div class="card-info">
-                                        <h4>Solid</h4>
-                                        <p>Minimalist opaque tiles</p>
-                                    </div>
-                                </div>
-                                <input type="radio" name="tile-style" id="tile-style-solid" data-value="solid-matte" style="width: 20px; height: 20px; cursor: pointer;">
-                            </div>
-                            <div class="card-row" style="cursor: pointer;" onclick="if (event.target !== this.querySelector('input')) this.querySelector('input').click();">
-                                <div style="display: flex; align-items: center; gap: 16px; flex: 1;">
-                                    <div style="width:32px;height:32px;border:2px solid var(--accent);border-radius:50%;box-shadow:0 0 10px var(--accent-glow); flex-shrink: 0;"></div>
-                                    <div class="card-info">
-                                        <h4>Neon</h4>
-                                        <p>Vibrant glowing borders</p>
-                                    </div>
-                                </div>
-                                <input type="radio" name="tile-style" id="tile-style-neon" data-value="neon-orbit" style="width: 20px; height: 20px; cursor: pointer;">
-                            </div>
-                        </div>
-                    </div>
-
-                    <!-- Widgets Card -->
-                    <div class="group" style="margin-bottom: 0; grid-column: span 2;">
-                        <div class="group-label" style="margin-bottom: 12px;">Widgets</div>
-                        <div class="card">
+                    
+                    <!-- Right Column: Styling, Presets & Widgets -->
+                    <div class="homepage-right-pane">
+                        <!-- Theme Selector & Accents -->
+                        <div class="card theme-customizer-card">
                             <div class="card-row">
                                 <div class="card-info">
-                                    <h4>To-do list</h4>
-                                    <p>Show task list on new tab page</p>
+                                    <h4>Dark System Theme</h4>
+                                    <p>Toggle light/dark visual settings</p>
+                                </div>
+                                <div class="toggle on" id="theme-mode-toggle"></div>
+                            </div>
+                            <div class="card-row" style="flex-direction: column; align-items: stretch; gap: 12px; border-top: 1px solid var(--chrome-border);">
+                                <div class="card-info">
+                                    <h4>Accent Highlight</h4>
+                                    <p>Select primary focal color highlight</p>
+                                </div>
+                                <div class="color-row">
+                                    <div class="color-dot active" data-color="#09f0a0" style="background:#09f0a0"></div>
+                                    <div class="color-dot" data-color="#ffffff" style="background:#ffffff"></div>
+                                    <div class="color-dot" data-color="#a855f7" style="background:#a855f7"></div>
+                                    <div class="color-dot" data-color="#3b82f6" style="background:#3b82f6"></div>
+                                    <div class="color-dot" data-color="#ef4444" style="background:#ef4444"></div>
+                                    <div class="color-dot" data-color="#e8ff47" style="background:#e8ff47"></div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Tile style selection -->
+                        <div class="card tile-styles-card">
+                            <div class="card-header-styled">
+                                <i class="fas fa-wand-magic-sparkles"></i>
+                                <span>Tile Preset Material</span>
+                            </div>
+                            <div class="card-row" style="flex-direction: column; align-items: stretch; gap: 10px;">
+                                <div class="choice-item tile-style-row" onclick="if (event.target !== this.querySelector('input')) this.querySelector('input').click();" style="display: flex; align-items: center; gap: 16px;">
+                                    <div class="tile-icon-bubble glass-bubble" style="width:24px; height:24px; border-radius:50%; background:rgba(255,255,255,0.1); border:1px solid rgba(255,255,255,0.2);"></div>
+                                    <div class="card-info" style="flex:1;">
+                                        <h4>Glassmorphic</h4>
+                                        <p>Frosted glass blur filters</p>
+                                    </div>
+                                    <input type="radio" name="tile-style" id="tile-style-glass" data-value="glass-array" checked style="width:18px; height:18px;">
+                                </div>
+                                <div class="choice-item tile-style-row" onclick="if (event.target !== this.querySelector('input')) this.querySelector('input').click();" style="display: flex; align-items: center; gap: 16px; border-top: 1px solid var(--chrome-border);">
+                                    <div class="tile-icon-bubble solid-bubble" style="width:24px; height:24px; border-radius:50%; background:#888;"></div>
+                                    <div class="card-info" style="flex:1;">
+                                        <h4>Solid Matte</h4>
+                                        <p>Flat, clean opaque blocks</p>
+                                    </div>
+                                    <input type="radio" name="tile-style" id="tile-style-solid" data-value="solid-matte" style="width:18px; height:18px;">
+                                </div>
+                                <div class="choice-item tile-style-row" onclick="if (event.target !== this.querySelector('input')) this.querySelector('input').click();" style="display: flex; align-items: center; gap: 16px; border-top: 1px solid var(--chrome-border);">
+                                    <div class="tile-icon-bubble neon-bubble" style="width:24px; height:24px; border-radius:50%; border:2px solid var(--accent); box-shadow: 0 0 8px var(--accent-glow);"></div>
+                                    <div class="card-info" style="flex:1;">
+                                        <h4>Neon Glow</h4>
+                                        <p>Vibrant illuminated active borders</p>
+                                    </div>
+                                    <input type="radio" name="tile-style" id="tile-style-neon" data-value="neon-orbit" style="width:18px; height:18px;">
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Widgets Accessory Panel -->
+                        <div class="card widgets-panel-card">
+                            <div class="card-header-styled">
+                                <i class="fas fa-puzzle-piece"></i>
+                                <span>Dashboard Widget Deck</span>
+                            </div>
+                            <div class="card-row">
+                                <div class="card-info">
+                                    <h4>Productivity Daily Focus</h4>
+                                    <p>Interactive task and checkmark lists</p>
                                 </div>
                                 <div class="toggle on" id="show-todo-toggle"></div>
                             </div>
-                            <div class="card-row">
+                            <div class="card-row" style="border-top: 1px solid var(--chrome-border);">
                                 <div class="card-info">
-                                    <h4>Focus timer</h4>
-                                    <p>Show Pomodoro timer widget</p>
+                                    <h4>Pomodoro Focus Timer</h4>
+                                    <p>Integrated work/rest session counters</p>
                                 </div>
                                 <div class="toggle on" id="show-timer-toggle"></div>
                             </div>
-                            <div class="card-row">
+                            <div class="card-row" style="border-top: 1px solid var(--chrome-border);">
                                 <div class="card-info">
-                                    <h4>Weather</h4>
-                                    <p>Show local weather conditions</p>
+                                    <h4>Localized Weather Forecast</h4>
+                                    <p>Dynamic meteorological radar report</p>
                                 </div>
                                 <div class="toggle on" id="show-weather-toggle"></div>
                             </div>
                         </div>
                     </div>
-
+                </div>
             </div>
         </section>
 
-        <!-- ── PROFILES ── -->
+              <!-- ── PROFILES ── -->
         <section id="profiles" class="section">
             <div class="page-header">
-                <div class="page-title">Profiles</div>
-                <div class="page-desc">Manage separate browsing identities with isolated history, cookies, and settings.</div>
+                <div class="page-eyebrow">Developer Identity Registry</div>
+                <div class="page-title">Profiles Hub</div>
+                <div class="page-desc">Manage sandboxed user sessions, isolated caches, and credentials.</div>
             </div>
             <div class="page-body">
-
-                    <!-- Active Profiles Card -->
-                    <div class="group" style="margin-bottom: 0; grid-column: span 2;">
-                        <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 12px;">
-                            <div class="group-label">Your profiles</div>
-                            <button class="btn primary" onclick="createProfilePrompt()" style="padding: 8px 16px; font-size: 13px;">
-                                <i class="fas fa-plus"></i> New profile
+                <div class="profiles-hub-container">
+                    
+                    <!-- Left Column: Active Nodes/Profiles -->
+                    <div class="profiles-main-pane">
+                        <div class="section-card-header" style="margin-bottom: 16px; display: flex; justify-content: space-between; align-items: center;">
+                            <div>
+                                <h4 class="mono-label" style="font-size: 12px; color: var(--accent); margin-bottom: 4px;"><i class="fas fa-network-wired"></i> Session Registry</h4>
+                                <p class="mono-label-small" style="font-size: 13px; color: var(--text-dim);">Select an identity profile to switch workspaces.</p>
+                            </div>
+                            <button class="btn primary" onclick="createProfilePrompt()" style="padding: 8px 16px; font-size: 12.5px; border-radius: 8px;">
+                                <i class="fas fa-plus"></i> New Profile
                             </button>
                         </div>
-                        <div id="profile-grid" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 16px; width: 100%;">
-                            <!-- Dynamically Rendered by settings.js -->
+                        
+                        <div id="profile-grid" class="profiles-grid-layout">
+                            <!-- Rendered dynamically by settings.js -->
                         </div>
                     </div>
-
-                    <!-- Data Isolation Card -->
-                    <div class="group" style="margin-bottom: 0;">
-                        <div class="group-label" style="margin-bottom: 12px;">Data isolation</div>
-                        <div class="card">
-                            <div class="card-row" style="padding: 24px 20px;">
-                                <div style="display: flex; align-items: center; gap: 16px; flex: 1;">
-                                    <div style="width: 48px; height: 48px; background: rgba(74, 222, 128, 0.1); border-radius: 50%; display: flex; align-items: center; justify-content: center; color: #4ade80; font-size: 20px; flex-shrink: 0;">
-                                        <i class="fas fa-shield-halved"></i>
-                                    </div>
-                                    <div class="card-info">
-                                        <h4 style="font-size: 15px; margin-bottom: 4px;">Sandboxed data</h4>
-                                        <p style="font-size: 13px;">Each profile has its own cookies, history, and cache</p>
-                                    </div>
-                                </div>
-                            </div>
-                            <div class="card-row">
-                                <div class="card-info">
-                                    <h4>Isolated cookies</h4>
-                                    <p>Login sessions don't leak between profiles</p>
-                                </div>
-                            </div>
-                            <div class="card-row">
-                                <div class="card-info">
-                                    <h4>Separate history</h4>
-                                    <p>Browsing records are kept independent</p>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-
-                    <!-- Profile Features Card -->
-                    <div class="group" style="margin-bottom: 0;">
-                        <div class="group-label" style="margin-bottom: 12px;">Profile features</div>
-                        <div class="card">
-                            <div class="card-row" style="padding: 24px 20px;">
-                                <div style="display: flex; align-items: center; gap: 16px; flex: 1;">
-                                    <div style="width: 48px; height: 48px; background: rgba(168, 85, 247, 0.1); border-radius: 50%; display: flex; align-items: center; justify-content: center; color: #a855f7; font-size: 20px; flex-shrink: 0;">
-                                        <i class="fas fa-user-shield"></i>
-                                    </div>
-                                    <div class="card-info">
-                                        <h4 style="font-size: 15px; margin-bottom: 4px;">Multiple identities</h4>
-                                        <p style="font-size: 13px;">Switch between work, personal, and guest profiles</p>
-                                    </div>
-                                </div>
-                            </div>
-                            <div class="card-row">
-                                <div class="card-info">
-                                    <h4>Custom icons</h4>
-                                    <p>Personalize each profile with unique icons</p>
-                                </div>
-                            </div>
-                            <div class="card-row">
-                                <div class="card-info">
-                                    <h4>Quick switching</h4>
-                                    <p>Instantly switch between profiles without restarting</p>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-
-                    <!-- Import Data Card -->
-                    <div class="group" style="margin-bottom: 0;">
-                        <div class="card">
+                    
+                    <!-- Right Column: Security Isolation Details & Data Import -->
+                    <div class="profiles-side-pane">
+                        
+                        <!-- Import Card -->
+                        <div class="card import-registry-card">
                             <div class="card-header-styled">
                                 <i class="fas fa-file-import"></i>
-                                <span>Import Profile Assets</span>
+                                <span>External Identity Import</span>
                             </div>
-                            <div class="card-row" style="cursor: pointer; padding: 12px 20px;" id="import-chrome-btn">
-                                <div style="display: flex; align-items: center; gap: 16px; flex: 1;">
-                                    <div class="import-source-icon" style="color: #4285F4; background: rgba(66, 133, 244, 0.1);"><i class="fab fa-chrome"></i></div>
-                                    <div class="card-info">
-                                        <h4>Import from Google Chrome</h4>
-                                        <p>Bookmarks, settings, and profile links</p>
+                            <div class="import-rows-list">
+                                <div class="import-row-item" id="import-chrome-btn">
+                                    <div class="import-left">
+                                        <div class="import-source-badge chrome-badge">
+                                            <i class="fab fa-chrome"></i>
+                                        </div>
+                                        <div class="import-details">
+                                            <h4>Google Chrome</h4>
+                                            <p>Bookmarks, settings, history</p>
+                                        </div>
+                                    </div>
+                                    <i class="fas fa-chevron-right import-arrow"></i>
+                                </div>
+                                <div class="import-row-item" id="import-edge-btn">
+                                    <div class="import-left">
+                                        <div class="import-source-badge edge-badge">
+                                            <i class="fab fa-edge"></i>
+                                        </div>
+                                        <div class="import-details">
+                                            <h4>Microsoft Edge</h4>
+                                            <p>Bookmarks, settings, cache</p>
+                                        </div>
+                                    </div>
+                                    <i class="fas fa-chevron-right import-arrow"></i>
+                                </div>
+                                <div class="import-row-item" id="import-file-btn">
+                                    <div class="import-left">
+                                        <div class="import-source-badge file-badge">
+                                            <i class="fas fa-file-code"></i>
+                                        </div>
+                                        <div class="import-details">
+                                            <h4>HTML Document</h4>
+                                            <p>Manual bookmarks import</p>
+                                        </div>
+                                    </div>
+                                    <i class="fas fa-chevron-right import-arrow"></i>
+                                </div>
+                            </div>
+                            <div id="import-status" class="import-status-notification" style="display: none;"></div>
+                        </div>
+
+                        <!-- Data Isolation card -->
+                        <div class="card data-isolation-info-card">
+                            <div class="card-header-styled" style="border-bottom: none; padding-bottom: 4px;">
+                                <i class="fas fa-shield-halved" style="color: var(--success);"></i>
+                                <span>Security Sandboxing</span>
+                            </div>
+                            <div class="sandbox-features-list">
+                                <div class="sandbox-feature-item">
+                                    <div class="feature-icon"><i class="fas fa-cookie-bite"></i></div>
+                                    <div class="feature-info">
+                                        <h4>Isolated Cookies</h4>
+                                        <p>Sessions, login tokens, and cache do not leak across nodes.</p>
                                     </div>
                                 </div>
-                                <i class="fas fa-chevron-right" style="color: var(--text-dim); font-size: 13px;"></i>
-                            </div>
-                            <div class="card-row" style="cursor: pointer; padding: 12px 20px;" id="import-edge-btn">
-                                <div style="display: flex; align-items: center; gap: 16px; flex: 1;">
-                                    <div class="import-source-icon" style="color: #0078d4; background: rgba(0, 120, 212, 0.1);"><i class="fab fa-edge"></i></div>
-                                    <div class="card-info">
-                                        <h4>Import from Microsoft Edge</h4>
-                                        <p>Bookmarks, settings, and active data</p>
+                                <div class="sandbox-feature-item">
+                                    <div class="feature-icon"><i class="fas fa-clock-rotate-left"></i></div>
+                                    <div class="feature-info">
+                                        <h4>Separate History</h4>
+                                        <p>Browsing and search history databases are kept fully independent.</p>
                                     </div>
                                 </div>
-                                <i class="fas fa-chevron-right" style="color: var(--text-dim); font-size: 13px;"></i>
-                            </div>
-                            <div class="card-row" style="cursor: pointer; padding: 12px 20px;" id="import-file-btn">
-                                <div style="display: flex; align-items: center; gap: 16px; flex: 1;">
-                                    <div class="import-source-icon" style="color: var(--accent); background: var(--accent-dim);"><i class="fas fa-file-import"></i></div>
-                                    <div class="card-info">
-                                        <h4>Import from HTML Document</h4>
-                                        <p>Select bookmarks HTML file manually</p>
+                                <div class="sandbox-feature-item">
+                                    <div class="feature-icon"><i class="fas fa-user-lock"></i></div>
+                                    <div class="feature-info">
+                                        <h4>Multi-identity Vault</h4>
+                                        <p>Each profile operates with separate localStorage and credentials storage.</p>
                                     </div>
                                 </div>
-                                <i class="fas fa-chevron-right" style="color: var(--text-dim); font-size: 13px;"></i>
                             </div>
                         </div>
-                        <div id="import-status" style="margin-top: 12px; font-size: 13px; color: #4ade80; display:none; background: rgba(74,222,128,0.1); padding: 12px 16px; border-radius: 8px; border: 1px solid rgba(74,222,128,0.2);"></div>
-                    </div>
 
+                    </div>
+                </div>
             </div>
         </section>
 
         <!-- ── SYSTEM ── -->
         <section id="system" class="section">
             <div class="page-header">
-                <div class="page-title">System</div>
-                <div class="page-desc">Configure browser system settings and download locations.</div>
+                <div class="page-eyebrow">Hardware & Environment</div>
+                <div class="page-title">System Configuration</div>
+                <div class="page-desc">Configure browser shell operation limits, download terminals, and diagnostic behaviors.</div>
             </div>
             <div class="page-body">
-                <!-- System Card -->
-                <div class="group" style="margin-bottom: 0;">
-                    <div class="card">
+                <div class="system-bento-grid">
+                    
+                    <!-- Core Diagnostics Card -->
+                    <div class="card system-bento-card status-card">
                         <div class="card-header-styled">
-                            <i class="fas fa-laptop"></i>
-                            <span>System Operations</span>
+                            <i class="fas fa-desktop"></i>
+                            <span>Environment Status</span>
                         </div>
-                        <div class="card-row">
-                            <div class="card-info">
-                                <h4>Default browser status</h4>
-                                <p id="default-browser-status">Checking status...</p>
+                        <div class="diagnostics-panel">
+                            <div class="diagnostic-row-item">
+                                <div class="diag-label">Host Shell Status</div>
+                                <div id="default-browser-status" class="diag-value status-checking">Checking status...</div>
                             </div>
-                            <button class="btn secondary" id="set-default-btn" style="border-radius: 8px; padding: 6px 14px; font-size: 12.5px;">Make Default</button>
+                            <div class="diagnostic-row-item">
+                                <div class="diag-label">Process Sandbox</div>
+                                <div class="diag-value status-active">Active (V8 Level)</div>
+                            </div>
                         </div>
-                        <div class="card-row">
-                            <div class="card-info">
-                                <h4>Confirm session close</h4>
-                                <p>Request exit confirmation when closing window</p>
-                            </div>
-                            <div class="toggle on" id="confirm-exit-toggle"></div>
-                        </div>
-                        <div class="card-row">
-                            <div class="card-info">
-                                <h4>Power saving features</h4>
-                                <p>Minimize animations and limit background operations</p>
-                            </div>
-                            <div class="toggle" id="battery-saver-toggle"></div>
+                        <div style="padding: 16px 20px; display: flex; justify-content: flex-end; border-top: 1px solid var(--chrome-border);">
+                            <button class="btn secondary" id="set-default-btn" style="padding: 8px 18px; font-size: 12.5px; border-radius: var(--radius-sm);">
+                                <i class="fas fa-link"></i> Make Default Shell
+                            </button>
                         </div>
                     </div>
-                </div>
 
-                <!-- Downloads Card -->
-                <div class="group" style="margin-bottom: 0;">
-                    <div class="card">
+                    <!-- Operations Card -->
+                    <div class="card system-bento-card operations-card">
                         <div class="card-header-styled">
-                            <i class="fas fa-download"></i>
-                            <span>Downloads Preferences</span>
+                            <i class="fas fa-sliders"></i>
+                            <span>Operations Control</span>
                         </div>
-                        <div class="card-row">
-                            <div class="card-info">
-                                <h4>Confirm target directory</h4>
-                                <p>Ask where to save each file before downloading</p>
+                        <div class="system-controls-list">
+                            <div class="system-control-row">
+                                <div class="control-info">
+                                    <h4>Confirm Session Close</h4>
+                                    <p>Request exit confirmation dialog when closing browser windows.</p>
+                                </div>
+                                <div class="toggle on" id="confirm-exit-toggle"></div>
                             </div>
-                            <div class="toggle" id="ask-save-toggle"></div>
-                        </div>
-                        <div class="card-row">
-                            <div class="card-info">
-                                <h4>Internal PDF support</h4>
-                                <p>Open PDF documents inside Ocal Sandboxed Viewer</p>
+                            <div class="system-control-row">
+                                <div class="control-info">
+                                    <h4>Power Optimization</h4>
+                                    <p>Minimize rendering animations and throttle inactive tabs for battery saving.</p>
+                                </div>
+                                <div class="toggle" id="battery-saver-toggle"></div>
                             </div>
-                            <div class="toggle on" id="pdf-viewer-toggle"></div>
                         </div>
                     </div>
+
+                    <!-- Downloads Console Card -->
+                    <div class="card system-bento-card downloads-card full-span">
+                        <div class="card-header-styled">
+                            <i class="fas fa-terminal"></i>
+                            <span>Downloads Console Terminal</span>
+                        </div>
+                        <div class="downloads-console-body">
+                            <div class="downloads-console-display">
+                                <div class="console-prompt">
+                                    <span class="prompt-symbol">&gt;</span> echo $OCAL_DOWNLOAD_PATH
+                                </div>
+                                <div class="console-output">
+                                    <span class="path-text">C:\Users\<span class="accent-text">neelk</span>\Downloads</span>
+                                    <span class="console-tag">SYSTEM DEFAULT</span>
+                                </div>
+                            </div>
+                            
+                            <div class="downloads-toggles-grid">
+                                <div class="accessory-card">
+                                    <div class="accessory-icon-box" style="color: var(--accent); background: var(--accent-dim); border: 1px solid var(--accent-border);">
+                                        <i class="fas fa-question-circle"></i>
+                                    </div>
+                                    <div class="accessory-info">
+                                        <h4 class="accessory-title">Confirm Save Path</h4>
+                                        <p class="accessory-desc">Prompt where to store each incoming download stream.</p>
+                                    </div>
+                                    <div class="toggle" id="ask-save-toggle"></div>
+                                </div>
+                                <div class="accessory-card">
+                                    <div class="accessory-icon-box" style="color: var(--accent); background: var(--accent-dim); border: 1px solid var(--accent-border);">
+                                        <i class="fas fa-file-pdf"></i>
+                                    </div>
+                                    <div class="accessory-info">
+                                        <h4 class="accessory-title">Sandboxed PDF Viewer</h4>
+                                        <p class="accessory-desc">Open PDF files inside our isolated, secure local PDF engine.</p>
+                                    </div>
+                                    <div class="toggle on" id="pdf-viewer-toggle"></div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
                 </div>
             </div>
         </section>
-
-        <!-- ── SECURITY ── -->
+                  <!-- ── SECURITY ── -->
         <section id="security" class="section">
             <div class="page-header">
                 <div class="page-eyebrow">Privacy Command Center</div>
                 <div class="page-title">Native Shield</div>
-                <div class="page-desc">The Ocal Security Hub monitors every packet, ensuring your safety in real-time.
-                </div>
+                <div class="page-desc">The Ocal Security Hub monitors every packet, ensuring your safety in real-time.</div>
             </div>
             <div class="page-body">
-
-                <div class="studio-prefs-grid">
+                <div class="security-prefs-grid">
 
                     <!-- Core Diagnostics Hero -->
-                    <div class="studio-card full-span">
-                        <div class="studio-card-body"
-                            style="display: flex; align-items: center; gap: 40px; padding: 40px 48px;">
-                            <div class="shield-diag-container"
-                                style="position: relative; width: 140px; height: 140px; display: flex; align-items: center; justify-content: center;">
-                                <svg width="140" height="140" viewBox="0 0 140 140"
-                                    style="position: absolute; transform: rotate(-90deg); overflow: visible;">
-                                    <circle cx="70" cy="70" r="66" fill="none" stroke="rgba(74, 222, 128, 0.1)"
-                                        stroke-width="8" />
-                                    <circle cx="70" cy="70" r="66" fill="none" stroke="var(--success)" stroke-width="8"
-                                        stroke-dasharray="415" stroke-dashoffset="0" stroke-linecap="round"
-                                        style="filter: drop-shadow(0 0 8px var(--success-glow));" />
+                    <div class="card security-hero-card">
+                        <div class="security-hero-body">
+                            <div class="shield-radar-container">
+                                <svg width="120" height="120" viewBox="0 0 120 120" class="radar-svg">
+                                    <circle cx="60" cy="60" r="54" class="radar-bg-circle" />
+                                    <circle cx="60" cy="60" r="54" class="radar-fill-circle" />
                                 </svg>
-                                <div
-                                    style="font-size: 42px; color: var(--success); filter: drop-shadow(0 0 12px var(--success-glow));">
-                                    <i class="fas fa-shield-halved"></i></div>
-                                <div
-                                    style="position: absolute; inset: -10px; border-radius: 50%; border: 2px solid rgba(74, 222, 128, 0.2); animation: pulse-ring 3s infinite;">
+                                <div class="radar-shield-icon">
+                                    <i class="fas fa-shield-halved"></i>
                                 </div>
+                                <div class="radar-pulse-ring"></div>
                             </div>
-                            <div style="flex: 1; display: flex; flex-direction: column; gap: 12px;">
-                                <div class="shield-status-badge ok" id="protection-badge" style="width: fit-content;">
+                            <div class="security-hero-text">
+                                <div class="shield-status-badge ok" id="protection-badge">
                                     <i class="fas fa-circle-check"></i>
-                                    Maximum Protection active
+                                    Maximum Protection Active
                                 </div>
-                                <h3
-                                    style="font-size: 28px; font-weight: 800; color: var(--text); margin: 0; letter-spacing: -0.5px;">
-                                    Ocal Core Security</h3>
-                                <p
-                                    style="font-size: 14px; color: var(--text-dim); margin: 0; max-width: 500px; line-height: 1.6;">
-                                    Native interception layers are fully operational. Deep packet inspection and tracker
-                                    neutralizing engines are active and telemetry is sanitized.</p>
+                                <h3 class="security-hero-title">Ocal Core Security</h3>
+                                <p class="security-hero-desc">Native packet interception layers are fully operational. Deep sandboxing, tracker neutralizing engines, and telemetry sanitization are active.</p>
                             </div>
                         </div>
                     </div>
 
                     <!-- DNS Architecture -->
-                    <div class="studio-card">
-                        <div class="studio-card-header">
-                            <div class="studio-card-icon"><i class="fas fa-network-wired"></i></div>
-                            <div class="studio-card-title">
-                                <h3>DNS Routing</h3>
-                                <p>Mandate encrypted resolution pathways.</p>
-                            </div>
+                    <div class="card dns-routing-card">
+                        <div class="card-header-styled">
+                            <i class="fas fa-network-wired"></i>
+                            <span>DNS Encryption Pathway</span>
                         </div>
-                        <div class="studio-card-body" style="padding: 16px 0 24px;">
-                            <div class="choice-grid" id="dns-grid"
-                                style="grid-template-columns: 1fr; gap: 10px; padding: 0 24px;">
-                                <div class="choice-item active" data-value="auto"
-                                    style="display: flex; flex-direction: row; justify-content: flex-start; gap: 20px; padding: 16px 24px;">
-                                    <i class="fas fa-bolt"
-                                        style="font-size: 18px; color: var(--accent); width: 24px; text-align: center;"></i>
-                                    <div style="display: flex; flex-direction: column; gap: 2px;">
-                                        <span style="font-size: 14px; font-weight: 800; color: var(--text);">System
-                                            Default</span>
-                                        <span style="font-size: 11px; color: var(--text-dim); font-weight: 500;">Native
-                                            network configuration.</span>
-                                    </div>
+                        <div class="choice-grid dns-choice-grid" id="dns-grid">
+                            <div class="choice-item active" data-value="auto">
+                                <div class="choice-icon-wrap"><i class="fas fa-bolt" style="color: var(--accent);"></i></div>
+                                <div class="choice-details">
+                                    <span class="choice-title">System Default</span>
+                                    <span class="choice-desc">Use default network gateway settings</span>
                                 </div>
-                                <div class="choice-item" data-value="cloudflare"
-                                    style="display: flex; flex-direction: row; justify-content: flex-start; gap: 20px; padding: 16px 24px;">
-                                    <i class="fas fa-cloud"
-                                        style="font-size: 18px; color: #f38020; width: 24px; text-align: center;"></i>
-                                    <div style="display: flex; flex-direction: column; gap: 2px;">
-                                        <span style="font-size: 14px; font-weight: 800; color: var(--text);">Cloudflare
-                                            (1.1.1.1)</span>
-                                        <span
-                                            style="font-size: 11px; color: var(--text-dim); font-weight: 500;">High-performance
-                                            privacy DNS.</span>
-                                    </div>
+                            </div>
+                            <div class="choice-item" data-value="cloudflare">
+                                <div class="choice-icon-wrap"><i class="fas fa-cloud" style="color: #f38020;"></i></div>
+                                <div class="choice-details">
+                                    <span class="choice-title">Cloudflare DNS</span>
+                                    <span class="choice-desc">Secure resolution via 1.1.1.1</span>
                                 </div>
-                                <div class="choice-item" data-value="google"
-                                    style="display: flex; flex-direction: row; justify-content: flex-start; gap: 20px; padding: 16px 24px;">
-                                    <i class="fab fa-google"
-                                        style="font-size: 18px; color: #4285f4; width: 24px; text-align: center;"></i>
-                                    <div style="display: flex; flex-direction: column; gap: 2px;">
-                                        <span style="font-size: 14px; font-weight: 800; color: var(--text);">Google
-                                            Public DNS</span>
-                                        <span style="font-size: 11px; color: var(--text-dim); font-weight: 500;">Global
-                                            reliability and speed.</span>
-                                    </div>
+                            </div>
+                            <div class="choice-item" data-value="google">
+                                <div class="choice-icon-wrap"><i class="fab fa-google" style="color: #4285f4;"></i></div>
+                                <div class="choice-details">
+                                    <span class="choice-title">Google Public DNS</span>
+                                    <span class="choice-desc">Secure resolution via 8.8.8.8</span>
                                 </div>
                             </div>
                         </div>
                     </div>
 
-                    <!-- Perimeter safeguards -->
-                    <div class="studio-card">
-                        <div class="studio-card-header">
-                            <div class="studio-card-icon"
-                                style="color: #6366f1; background: rgba(99, 102, 241, 0.1); border-color: rgba(99, 102, 241, 0.2);">
-                                <i class="fas fa-lock"></i></div>
-                            <div class="studio-card-title">
-                                <h3>Perimeter Defense</h3>
-                                <p>Active heuristic tracking prevention.</p>
-                            </div>
+                    <!-- Perimeter Safeguards -->
+                    <div class="card perimeter-defense-card">
+                        <div class="card-header-styled">
+                            <i class="fas fa-lock"></i>
+                            <span>Perimeter Safeguards</span>
                         </div>
-                        <div class="studio-card-body" style="padding: 8px 0;">
-                            <div class="studio-row">
-                                <div class="studio-row-info">
-                                    <div class="studio-row-label">Safe Browsing</div>
-                                    <div class="studio-row-desc">Real-time malware host defense.</div>
+                        <div class="security-toggles-list">
+                            <div class="security-toggle-row">
+                                <div class="row-info">
+                                    <h4>Safe Browsing Protection</h4>
+                                    <p>Blocks phishing hosts and malicious downloads dynamically.</p>
                                 </div>
-                                <div class="toggle on" id="safe-browsing-toggle"
-                                    onclick="toggleSecurityFeature('safeBrowsingEnabled', this)"></div>
+                                <div class="toggle on" id="safe-browsing-toggle" onclick="toggleSecurityFeature('safeBrowsingEnabled', this)"></div>
                             </div>
-                            <div class="studio-row">
-                                <div class="studio-row-info">
-                                    <div class="studio-row-label">Strict Tracking</div>
-                                    <div class="studio-row-desc">Block third-party fingerprint vectors.</div>
+                            <div class="security-toggle-row">
+                                <div class="row-info">
+                                    <h4>Strict Fingerprint Protection</h4>
+                                    <p>Blocks browser details harvesting vectors and canvas APIs.</p>
                                 </div>
-                                <div class="toggle on" id="tracking-toggle-security"
-                                    onclick="toggleSecurityFeature('trackingProtection', this)"></div>
+                                <div class="toggle on" id="tracking-toggle-security" onclick="toggleSecurityFeature('trackingProtection', this)"></div>
                             </div>
-                            <div class="studio-row">
-                                <div class="studio-row-info">
-                                    <div class="studio-row-label">Enforce HTTPS</div>
-                                    <div class="studio-row-desc">Reject unencrypted transport layers.</div>
+                            <div class="security-toggle-row">
+                                <div class="row-info">
+                                    <h4>Enforce Secure HTTPS Connection</h4>
+                                    <p>Force upgrade HTTP connections and reject insecure sites.</p>
                                 </div>
-                                <div class="toggle on" id="https-toggle"
-                                    onclick="toggleSecurityFeature('httpsUpgradeEnabled', this)"></div>
+                                <div class="toggle on" id="https-toggle" onclick="toggleSecurityFeature('httpsUpgradeEnabled', this)"></div>
                             </div>
                         </div>
                     </div>
 
-                    <!-- Utility Module -->
-                    <div class="studio-card full-span">
-                        <div class="studio-card-header">
-                            <div class="studio-card-icon"
-                                style="color: #4ade80; background: rgba(74, 222, 128, 0.1); border-color: rgba(74, 222, 128, 0.2);">
-                                <i class="fas fa-screwdriver-wrench"></i></div>
-                            <div class="studio-card-title">
-                                <h3>Integrated Power-Ups</h3>
-                                <p>Professional-grade utility modifications and media detection modules.</p>
-                            </div>
+                    <!-- Built-in Modifiers -->
+                    <div class="card powerups-card full-span">
+                        <div class="card-header-styled">
+                            <i class="fas fa-screwdriver-wrench"></i>
+                            <span>Integrated Core Modifications</span>
                         </div>
-                        <div class="studio-card-body"
-                            style="display: grid; grid-template-columns: 1fr 1fr; padding: 0;">
-                            <div class="studio-row" id="youtube-dislike-row" style="padding: 22px 28px;">
-                                <div class="studio-row-info">
-                                    <div class="studio-row-label">YouTube Dislikes</div>
-                                    <div class="studio-row-desc">Restore community voting metrics.</div>
+                        <div class="powerups-split-grid">
+                            <div class="powerup-toggle-row" id="youtube-dislike-row">
+                                <div class="row-info">
+                                    <h4>YouTube Dislike Restorer</h4>
+                                    <p>Access aggregate community feedback statistics dynamically.</p>
                                 </div>
-                                <div class="toggle on" id="dislike-toggle-security"
-                                    onclick="toggleSecurityFeature('youtubeDislikeEnabled', this)"></div>
+                                <div class="toggle on" id="dislike-toggle-security" onclick="toggleSecurityFeature('youtubeDislikeEnabled', this)"></div>
                             </div>
-                            <div class="studio-row" id="media-master-row"
-                                style="padding: 22px 28px; border-left: 1px solid rgba(255,255,255,0.05); border-top: none;">
-                                <div class="studio-row-info">
-                                    <div class="studio-row-label">Extraction Engine</div>
-                                    <div class="studio-row-desc">Professional media detection.</div>
+                            <div class="powerup-toggle-row" id="media-master-row">
+                                <div class="row-info">
+                                    <h4>Media Sniffer Engine</h4>
+                                    <p>Native inspection engine for streaming download streams.</p>
                                 </div>
-                                <div class="toggle on" id="media-master-toggle-security"
-                                    onclick="toggleSecurityFeature('mediaMasterEnabled', this)"></div>
+                                <div class="toggle on" id="media-master-toggle-security" onclick="toggleSecurityFeature('mediaMasterEnabled', this)"></div>
                             </div>
                         </div>
                     </div>
 
-                    <!-- Neural Labs card -->
-                    <div class="studio-card full-span"
-                        style="background: linear-gradient(135deg, rgba(239, 68, 68, 0.05) 0%, rgba(0,0,0,0) 100%); border-color: rgba(239, 68, 68, 0.1);">
-                        <div class="studio-card-header">
-                            <div class="studio-card-icon"
-                                style="color: #ef4444; background: rgba(239, 68, 68, 0.1); border-color: rgba(239, 68, 68, 0.2);">
-                                <i class="fas fa-flask"></i></div>
-                            <div class="studio-card-title">
-                                <h3 style="color: #ef4444;">Neural Labs (Experimental)</h3>
-                                <p>Heuristic, next-generation protection capabilities. Extreme isolation mode.</p>
-                            </div>
+                    <!-- Neural Labs Card -->
+                    <div class="card neural-labs-card full-span">
+                        <div class="card-header-styled">
+                            <i class="fas fa-flask"></i>
+                            <span>Neural Labs (Experimental Isolation)</span>
                         </div>
-                        <div class="studio-card-body">
-                            <div class="studio-row" style="border-top: none; pointer-events: none; opacity: 0.6;">
-                                <div class="studio-row-info">
-                                    <div class="studio-row-label">Strict V8 Sandboxing</div>
-                                    <div class="studio-row-desc">Run JS environment inside an isolated hardware
-                                        container to prevent memory scraping.</div>
+                        <div class="neural-labs-body">
+                            <div class="security-toggle-row disabled-row">
+                                <div class="row-info">
+                                    <h4>Strict V8 Memory Sandboxing</h4>
+                                    <p>Throttles DOM scraping by running scripts in hardware isolation envelopes.</p>
                                 </div>
                                 <div class="toggle" id="sandbox-toggle"></div>
                             </div>
                         </div>
                     </div>
 
-                    <!-- Privacy & Data Card -->
-                    <div class="group" style="margin-bottom: 0;">
-                        <div class="card">
-                            <div class="card-header-styled">
-                                <i class="fas fa-shield-halved"></i>
-                                <span>Privacy & Session Data</span>
-                            </div>
-                            <div class="card-row">
-                                <div class="card-info">
-                                    <h4>Clear browsing cache</h4>
-                                    <p>Wipe cache, history entries, and cookies</p>
+                    <!-- Session Cache Sanitizer -->
+                    <div class="card cache-sanitizer-card full-span">
+                        <div class="card-header-styled">
+                            <i class="fas fa-trash-can"></i>
+                            <span>Privacy & Session Data Sanitizer</span>
+                        </div>
+                        <div class="sanitizer-actions-row">
+                            <div class="sanitizer-action-item">
+                                <div class="row-info">
+                                    <h4>Browsing Session Data Cache</h4>
+                                    <p>Sanitize cookies, cached image files, and history databases.</p>
                                 </div>
-                                <button class="btn secondary" id="clear-data-btn" style="border-radius: 8px; padding: 6px 14px; font-size: 12.5px;"><i class="fas fa-trash-can"></i> Clear History</button>
+                                <button class="btn secondary" id="clear-data-btn">
+                                    <i class="fas fa-trash-can"></i> Clear History
+                                </button>
                             </div>
-                            <div class="card-row">
-                                <div class="card-info">
-                                    <h4>Clear bookmarked items</h4>
-                                    <p>Wipe all stored bookmark addresses</p>
+                            <div class="sanitizer-action-item">
+                                <div class="row-info">
+                                    <h4>Stored Bookmark Registry</h4>
+                                    <p>Wipe all bookmark items and folders permanently.</p>
                                 </div>
-                                <button class="btn danger" id="clear-bookmarks-btn" style="border-radius: 8px; padding: 6px 14px; font-size: 12.5px;"><i class="fas fa-bookmark"></i> Clear Bookmarks</button>
+                                <button class="btn danger" id="clear-bookmarks-btn">
+                                    <i class="fas fa-bookmark"></i> Clear Bookmarks
+                                </button>
                             </div>
                         </div>
                     </div>
 
                 </div>
-
             </div>
         </section>
 
@@ -927,42 +877,53 @@
 
         <section id="extensions" class="section">
             <div class="page-header">
-                <div class="page-title">Extensions</div>
-                <div class="page-desc">Manage installed Chrome extensions and built-in Ocal modules.</div>
+                <div class="page-eyebrow">Workspace Addons</div>
+                <div class="page-title">Extensions Manager</div>
+                <div class="page-desc">Manage installed Chrome extensions and built-in secure Ocal modules.</div>
             </div>
 
             <div class="page-body">
 
-                <!-- Install from Chrome Web Store -->
-                <div class="ext-install-bar">
-                    <i class="fab fa-chrome"></i>
-                    <input type="text" id="ext-cws-input" placeholder="Enter Chrome Web Store URL or Extension ID (e.g. cjpalhdlnbpafiamejdnhcphjbkeiagm)">
-                    <button class="btn primary" onclick="installExtFromSettings()">
-                        <i class="fas fa-plus"></i> Install
-                    </button>
-                    <button class="btn secondary" onclick="loadUnpackedExtension()">
-                        <i class="fas fa-folder-open"></i> Load Unpacked
-                    </button>
+                <!-- Clean Action Bar Controls -->
+                <div class="extensions-action-bar">
+                    <div class="search-input-wrapper">
+                        <i class="fas fa-magnifying-glass search-icon"></i>
+                        <input type="text" id="ext-search-input" placeholder="Search extensions..." oninput="filterExtSettings()">
+                    </div>
+                    <div class="action-buttons-group">
+                        <button class="btn secondary" onclick="loadUnpackedExtension()">
+                            <i class="fas fa-folder-open"></i> Load Unpacked
+                        </button>
+                        <button class="btn primary" onclick="const dr = document.getElementById('ext-install-drawer'); dr.style.display = dr.style.display === 'none' ? 'block' : 'none';">
+                            <i class="fab fa-chrome"></i> Install from Store
+                        </button>
+                    </div>
                 </div>
 
-                <!-- Search bar -->
-                <div class="shortcut-search-bar" style="margin-bottom:24px;">
-                    <i class="fas fa-magnifying-glass"></i>
-                    <input type="text" id="ext-search-input" placeholder="Search extensions..." oninput="filterExtSettings()">
+                <!-- Web Store Installer Drawer (Hidden by default) -->
+                <div class="card ext-install-drawer" id="ext-install-drawer" style="display: none;">
+                    <div class="drawer-content">
+                        <h4 class="drawer-title">Install Extension from Chrome Web Store</h4>
+                        <p class="drawer-desc">Enter a Chrome Web Store extension ID or the full URL (e.g., cjpalhdlnbpafiamejdnhcphjbkeiagm) to deploy it directly.</p>
+                        <div class="drawer-input-row">
+                            <input type="text" id="ext-cws-input" placeholder="Paste extension ID or web store URL...">
+                            <button class="btn primary" onclick="installExtFromSettings()">Install Extension</button>
+                        </div>
+                    </div>
                 </div>
 
-                <!-- All Extensions (built-in + installed) -->
-                <div id="ext-settings-grid">
+                <!-- All Extensions Dashboard Grid -->
+                <div id="ext-settings-grid" class="extensions-dashboard-grid">
 
                     <!-- uBlock Origin -->
-                    <div class="card ext-card-row" data-extname="ublock origin ad blocker" id="ext-adblock" style="display: flex; flex-direction: column; padding: 20px;">
-                        <div style="display: flex; align-items: flex-start; justify-content: space-between; margin-bottom: 12px;">
-                            <div style="display: flex; align-items: center; gap: 12px;">
-                                <div class="ext-card-icon" style="background: rgba(74,222,128,0.1); color: #4ade80;">
+                    <div class="card ext-card-row" data-extname="ublock origin ad blocker" id="ext-adblock">
+                        <div class="ext-card-header">
+                            <div class="ext-card-header-left">
+                                <div class="ext-card-icon adblock-icon">
                                     <i class="fas fa-shield-cat"></i>
                                 </div>
-                                <div>
-                                    <h4 class="ext-card-name" style="margin: 0 0 4px 0;">uBlock Origin</h4>
+                                <div class="ext-card-identity">
+                                    <h4 class="ext-card-name">uBlock Origin</h4>
                                     <div class="ext-card-version">Built-in &middot; Core Module</div>
                                 </div>
                             </div>
@@ -976,21 +937,19 @@
                         </div>
                         <div class="ext-card-footer">
                             <span class="ext-card-tag core">CORE</span>
-                            <div style="display: flex; align-items: center; gap: 12px;">
-                                <span class="ext-status-indicator" id="status-adblock"><span class="status-dot"></span><span>Active</span></span>
-                            </div>
+                            <span class="ext-status-indicator" id="status-adblock"><span class="status-dot"></span><span>Active</span></span>
                         </div>
                     </div>
 
                     <!-- Asset Vault -->
-                    <div class="card ext-card-row" data-extname="asset vault password manager" id="ext-vault" style="display: flex; flex-direction: column; padding: 20px;">
-                        <div style="display: flex; align-items: flex-start; justify-content: space-between; margin-bottom: 12px;">
-                            <div style="display: flex; align-items: center; gap: 12px;">
-                                <div class="ext-card-icon" style="background: rgba(59,130,246,0.1); color: #3b82f6;">
+                    <div class="card ext-card-row" data-extname="asset vault password manager" id="ext-vault">
+                        <div class="ext-card-header">
+                            <div class="ext-card-header-left">
+                                <div class="ext-card-icon vault-icon">
                                     <i class="fas fa-vault"></i>
                                 </div>
-                                <div>
-                                    <h4 class="ext-card-name" style="margin: 0 0 4px 0;">Asset Vault</h4>
+                                <div class="ext-card-identity">
+                                    <h4 class="ext-card-name">Asset Vault</h4>
                                     <div class="ext-card-version">Built-in &middot; Core Module</div>
                                 </div>
                             </div>
@@ -1004,21 +963,19 @@
                         </div>
                         <div class="ext-card-footer">
                             <span class="ext-card-tag core">CORE</span>
-                            <div style="display: flex; align-items: center; gap: 12px;">
-                                <span class="ext-status-indicator" id="status-vault"><span class="status-dot"></span><span>Idle</span></span>
-                            </div>
+                            <span class="ext-status-indicator" id="status-vault"><span class="status-dot"></span><span>Idle</span></span>
                         </div>
                     </div>
 
                     <!-- Ocal AI Assistant -->
-                    <div class="card ext-card-row" data-extname="ocal ai assistant pro" id="ext-ai" style="display: flex; flex-direction: column; padding: 20px;">
-                        <div style="display: flex; align-items: flex-start; justify-content: space-between; margin-bottom: 12px;">
-                            <div style="display: flex; align-items: center; gap: 12px;">
-                                <div class="ext-card-icon" style="background: rgba(168,85,247,0.1); color: #a855f7;">
+                    <div class="card ext-card-row" data-extname="ocal ai assistant pro" id="ext-ai">
+                        <div class="ext-card-header">
+                            <div class="ext-card-header-left">
+                                <div class="ext-card-icon ai-icon">
                                     <i class="fas fa-wand-magic-sparkles"></i>
                                 </div>
-                                <div>
-                                    <h4 class="ext-card-name" style="margin: 0 0 4px 0;">Ocal AI Assistant</h4>
+                                <div class="ext-card-identity">
+                                    <h4 class="ext-card-name">Ocal AI Assistant</h4>
                                     <div class="ext-card-version">Built-in &middot; AI Module</div>
                                 </div>
                             </div>
@@ -1032,21 +989,19 @@
                         </div>
                         <div class="ext-card-footer">
                             <span class="ext-card-tag ai">AI</span>
-                            <div style="display: flex; align-items: center; gap: 12px;">
-                                <span class="ext-status-indicator" id="status-ai"><span class="status-dot"></span><span>Idle</span></span>
-                            </div>
+                            <span class="ext-status-indicator" id="status-ai"><span class="status-dot"></span><span>Idle</span></span>
                         </div>
                     </div>
 
                     <!-- Cyber Stealth -->
-                    <div class="card ext-card-row" data-extname="cyber stealth fingerprint privacy" id="ext-stealth" style="display: flex; flex-direction: column; padding: 20px;">
-                        <div style="display: flex; align-items: flex-start; justify-content: space-between; margin-bottom: 12px;">
-                            <div style="display: flex; align-items: center; gap: 12px;">
-                                <div class="ext-card-icon" style="background: rgba(239,68,68,0.08); color: #f87171;">
+                    <div class="card ext-card-row" data-extname="cyber stealth fingerprint privacy" id="ext-stealth">
+                        <div class="ext-card-header">
+                            <div class="ext-card-header-left">
+                                <div class="ext-card-icon stealth-icon">
                                     <i class="fas fa-user-secret"></i>
                                 </div>
-                                <div>
-                                    <h4 class="ext-card-name" style="margin: 0 0 4px 0;">Cyber Stealth</h4>
+                                <div class="ext-card-identity">
+                                    <h4 class="ext-card-name">Cyber Stealth</h4>
                                     <div class="ext-card-version">Built-in &middot; Privacy Module</div>
                                 </div>
                             </div>
@@ -1060,21 +1015,19 @@
                         </div>
                         <div class="ext-card-footer">
                             <span class="ext-card-tag privacy">PRIVACY</span>
-                            <div style="display: flex; align-items: center; gap: 12px;">
-                                <span class="ext-status-indicator" id="status-stealth"><span class="status-dot"></span><span>Idle</span></span>
-                            </div>
+                            <span class="ext-status-indicator" id="status-stealth"><span class="status-dot"></span><span>Idle</span></span>
                         </div>
                     </div>
 
                     <!-- Ocal Focus -->
-                    <div class="card ext-card-row" data-extname="ocal focus pomodoro productivity timer" id="ext-focus" style="display: flex; flex-direction: column; padding: 20px;">
-                        <div style="display: flex; align-items: flex-start; justify-content: space-between; margin-bottom: 12px;">
-                            <div style="display: flex; align-items: center; gap: 12px;">
-                                <div class="ext-card-icon" style="background: rgba(168,85,247,0.1); color: #a855f7;">
+                    <div class="card ext-card-row" data-extname="ocal focus pomodoro productivity timer" id="ext-focus">
+                        <div class="ext-card-header">
+                            <div class="ext-card-header-left">
+                                <div class="ext-card-icon focus-icon">
                                     <i class="fas fa-clock"></i>
                                 </div>
-                                <div>
-                                    <h4 class="ext-card-name" style="margin: 0 0 4px 0;">Ocal Focus</h4>
+                                <div class="ext-card-identity">
+                                    <h4 class="ext-card-name">Ocal Focus</h4>
                                     <div class="ext-card-version">Built-in &middot; Utility Module</div>
                                 </div>
                             </div>
@@ -1088,9 +1041,7 @@
                         </div>
                         <div class="ext-card-footer">
                             <span class="ext-card-tag utility">UTILITY</span>
-                            <div style="display: flex; align-items: center; gap: 12px;">
-                                <span class="ext-status-indicator" id="status-focus"><span class="status-dot"></span><span>Idle</span></span>
-                            </div>
+                            <span class="ext-status-indicator" id="status-focus"><span class="status-dot"></span><span>Idle</span></span>
                         </div>
                     </div>
 
@@ -1227,13 +1178,11 @@
                             </div>
                         </div>
                     </div>
-
                 </div>
             </div>
         </section>
 
-
-        <!-- ── AI ASSISTANT ── -->
+                <!-- ── AI ASSISTANT ── -->
         <section id="ai" class="section">
             <div class="page-header">
                 <div class="page-eyebrow">Artificial Intelligence</div>
@@ -1241,425 +1190,399 @@
                 <div class="page-desc">Configure your intelligent browsing companion and research engine.</div>
             </div>
             <div class="page-body">
-
-                <div class="prefs-grid">
+                <div class="ai-hub-grid">
 
                     <!-- Intelligence Core Module -->
-                    <div class="pref-module pref-section-full">
-                        <div class="pref-header">
-                            <div class="pref-icon theme"><i class="fas fa-brain"></i></div>
-                            <div class="pref-title">
-                                <h3>Intelligence Core</h3>
-                                <p>Select the primary LLM backend and provide authentication tokens.</p>
-                            </div>
+                    <div class="card ai-card intelligence-core-card full-span">
+                        <div class="card-header-styled">
+                            <i class="fas fa-brain"></i>
+                            <span>Neural Core Backend</span>
                         </div>
-                        <div class="pref-body">
-                            <div class="pref-row"
-                                style="flex-direction:row; justify-content:space-between; align-items:center;">
-                                <div class="pref-row-info">
-                                    <div class="pref-label">AI Backend Provider</div>
-                                    <div class="pref-desc" style="max-width:auto;">Choose between local analysis, Google, OpenAI, or custom APIs.</div>
+                        <div class="ai-core-body">
+                            <div class="ai-provider-selection">
+                                <div class="provider-label-wrap">
+                                    <h4>AI Backend Provider</h4>
+                                    <p>Select local analysis engine or cloud endpoints.</p>
                                 </div>
-                                <div class="choice-grid" id="ai-engine-grid"
-                                    style="grid-template-columns:repeat(4,120px); gap:8px;">
-                                    <div class="choice-item active" data-value="local"><i
-                                            class="fas fa-microchip"></i><span>Ocal Local</span></div>
-                                    <div class="choice-item" data-value="gemini"><i
-                                            class="fas fa-cloud"></i><span>Gemini Pro</span></div>
-                                    <div class="choice-item" data-value="openai"><i
-                                            class="fas fa-comment-dots"></i><span>ChatGPT</span></div>
-                                    <div class="choice-item" data-value="custom"><i
-                                            class="fas fa-plug"></i><span>Custom API</span></div>
+                                <div class="choice-grid ai-engine-grid" id="ai-engine-grid">
+                                    <div class="choice-item active" data-value="local">
+                                        <i class="fas fa-microchip"></i>
+                                        <span>Ocal Local</span>
+                                    </div>
+                                    <div class="choice-item" data-value="gemini">
+                                        <i class="fas fa-cloud"></i>
+                                        <span>Gemini Pro</span>
+                                    </div>
+                                    <div class="choice-item" data-value="openai">
+                                        <i class="fas fa-comment-dots"></i>
+                                        <span>ChatGPT</span>
+                                    </div>
+                                    <div class="choice-item" data-value="custom">
+                                        <i class="fas fa-plug"></i>
+                                        <span>Custom API</span>
+                                    </div>
                                 </div>
                             </div>
-                            <div class="pref-row" id="gemini-key-row">
-                                <div class="pref-row-info">
-                                    <div class="pref-label">Gemini API Key</div>
-                                    <div class="pref-desc" style="max-width:auto;">Optional token for high-fidelity
-                                        reasoning. <a href="https://aistudio.google.com/app/apikey" target="_blank"
-                                            style="color:var(--accent); text-decoration:none;">Get a free key</a>.</div>
+
+                            <!-- Gemini API Key -->
+                            <div class="secure-input-row" id="gemini-key-row">
+                                <div class="input-details">
+                                    <h4>Gemini API Key</h4>
+                                    <p>Required for cloud reasoning. <a href="https://aistudio.google.com/app/apikey" target="_blank" class="accent-link">Get a free key</a>.</p>
                                 </div>
-                                <input type="password" id="ai-api-key-input" placeholder="Paste your key here..."
-                                    style="background: var(--glass); border:1px solid var(--glass-border); border-radius:8px; padding:10px 14px; color:var(--text); width:300px; font-family:'Inter', sans-serif; font-size:12px; outline:none;">
+                                <div class="secure-input-wrapper">
+                                    <input type="password" id="ai-api-key-input" placeholder="Paste your Gemini key here...">
+                                    <i class="fas fa-eye secure-eye" onclick="toggleAIKeyVisibility('ai-api-key-input', this)"></i>
+                                </div>
                             </div>
-                            <div class="pref-row" id="openai-key-row">
-                                <div class="pref-row-info">
-                                    <div class="pref-label">ChatGPT API Key</div>
-                                    <div class="pref-desc" style="max-width:auto;">Your OpenAI API key. <a href="https://platform.openai.com/api-keys" target="_blank"
-                                            style="color:var(--accent); text-decoration:none;">Get a key</a>.</div>
+
+                            <!-- OpenAI API Key -->
+                            <div class="secure-input-row" id="openai-key-row">
+                                <div class="input-details">
+                                    <h4>ChatGPT API Key</h4>
+                                    <p>Your OpenAI authorization token. <a href="https://platform.openai.com/api-keys" target="_blank" class="accent-link">Get a key</a>.</p>
                                 </div>
-                                <input type="password" id="openai-api-key-input" placeholder="sk-..."
-                                    style="background: var(--glass); border:1px solid var(--glass-border); border-radius:8px; padding:10px 14px; color:var(--text); width:300px; font-family:'Inter', sans-serif; font-size:12px; outline:none;">
+                                <div class="secure-input-wrapper">
+                                    <input type="password" id="openai-api-key-input" placeholder="sk-...">
+                                    <i class="fas fa-eye secure-eye" onclick="toggleAIKeyVisibility('openai-api-key-input', this)"></i>
+                                </div>
                             </div>
-                            <div class="pref-row" id="custom-endpoint-row">
-                                <div class="pref-row-info">
-                                    <div class="pref-label">Custom API Endpoint</div>
-                                    <div class="pref-desc" style="max-width:auto;">OpenAI-compatible URL (e.g. OpenRouter, DeepSeek, local LM Studio).</div>
+
+                            <!-- Custom Endpoint -->
+                            <div class="secure-input-row" id="custom-endpoint-row">
+                                <div class="input-details">
+                                    <h4>Custom API Endpoint</h4>
+                                    <p>OpenAI-compatible endpoint (e.g. LM Studio, DeepSeek).</p>
                                 </div>
-                                <input type="text" id="custom-endpoint-input" placeholder="https://api.deepseek.com/v1"
-                                    style="background: var(--glass); border:1px solid var(--glass-border); border-radius:8px; padding:10px 14px; color:var(--text); width:300px; font-family:'Inter', sans-serif; font-size:12px; outline:none;">
+                                <input type="text" id="custom-endpoint-input" placeholder="https://api.deepseek.com/v1" class="custom-endpoint-text">
                             </div>
-                            <div class="pref-row" id="custom-model-row">
-                                <div class="pref-row-info">
-                                    <div class="pref-label">Custom Model Name</div>
-                                    <div class="pref-desc" style="max-width:auto;">Model identifier (e.g. deepseek-chat, custom).</div>
+
+                            <!-- Custom Model Name -->
+                            <div class="secure-input-row" id="custom-model-row">
+                                <div class="input-details">
+                                    <h4>Custom Model Name</h4>
+                                    <p>Model identifier string.</p>
                                 </div>
-                                <input type="text" id="custom-model-input" placeholder="deepseek-chat"
-                                    style="background: var(--glass); border:1px solid var(--glass-border); border-radius:8px; padding:10px 14px; color:var(--text); width:300px; font-family:'Inter', sans-serif; font-size:12px; outline:none;">
+                                <input type="text" id="custom-model-input" placeholder="deepseek-chat" class="custom-endpoint-text">
                             </div>
-                            <div class="pref-row" id="custom-key-row">
-                                <div class="pref-row-info">
-                                    <div class="pref-label">Custom API Key</div>
-                                    <div class="pref-desc" style="max-width:auto;">API key for the custom provider (e.g., DeepSeek / Groq key).</div>
+
+                            <!-- Custom API Key -->
+                            <div class="secure-input-row" id="custom-key-row">
+                                <div class="input-details">
+                                    <h4>Custom API Key</h4>
+                                    <p>Authorization key for the custom provider endpoint.</p>
                                 </div>
-                                <input type="password" id="custom-key-input" placeholder="Paste custom key here..."
-                                    style="background: var(--glass); border:1px solid var(--glass-border); border-radius:8px; padding:10px 14px; color:var(--text); width:300px; font-family:'Inter', sans-serif; font-size:12px; outline:none;">
+                                <div class="secure-input-wrapper">
+                                    <input type="password" id="custom-key-input" placeholder="Paste custom key here...">
+                                    <i class="fas fa-eye secure-eye" onclick="toggleAIKeyVisibility('custom-key-input', this)"></i>
+                                </div>
                             </div>
-                            <div class="pref-row" id="local-model-row">
-                                <div class="pref-row-info">
-                                    <div class="pref-label">Local LLM Model</div>
-                                    <div class="pref-desc" style="max-width:auto;">Select an Ollama model running on your system (e.g. Llama3, Phi3). Make sure Ollama is running.</div>
+
+                            <!-- Local LLM Model -->
+                            <div class="secure-input-row" id="local-model-row">
+                                <div class="input-details">
+                                    <h4>Local LLM Model</h4>
+                                    <p>Select Ollama model detected on host. Make sure Ollama is active.</p>
                                 </div>
-                                <select id="local-model-select" style="background: var(--glass); border:1px solid var(--glass-border); border-radius:8px; padding:10px 14px; color:var(--text); width:300px; font-family:'Inter', sans-serif; font-size:12px; outline:none; cursor: pointer;">
+                                <select id="local-model-select" class="local-select-dropdown">
                                     <option value="auto">Auto-detect (Heuristics)</option>
                                 </select>
                             </div>
-                            <div class="pref-row" id="local-endpoint-row">
-                                <div class="pref-row-info">
-                                    <div class="pref-label">Local API Endpoint</div>
-                                    <div class="pref-desc" style="max-width:auto;">The URL of your local LLM service (Ollama default: http://localhost:11434).</div>
+
+                            <!-- Local API Endpoint -->
+                            <div class="secure-input-row" id="local-endpoint-row">
+                                <div class="input-details">
+                                    <h4>Local API Endpoint</h4>
+                                    <p>Ollama service port endpoint (default: http://localhost:11434).</p>
                                 </div>
-                                <input type="text" id="local-endpoint-input" placeholder="http://localhost:11434"
-                                    style="background: var(--glass); border:1px solid var(--glass-border); border-radius:8px; padding:10px 14px; color:var(--text); width:300px; font-family:'Inter', sans-serif; font-size:12px; outline:none;">
+                                <input type="text" id="local-endpoint-input" placeholder="http://localhost:11434" class="custom-endpoint-text">
                             </div>
                         </div>
                     </div>
 
-                    <!-- Local Agency Module -->
-                    <div class="pref-module">
-                        <div class="pref-header">
-                            <div class="pref-icon layout"><i class="fas fa-robot"></i></div>
-                            <div class="pref-title">
-                                <h3>Agent Constraints</h3>
-                                <p>Set heuristics limits for the local LLM proxy.</p>
+                    <!-- Left: Constraints & Logic Modules -->
+                    <div class="ai-left-column">
+                        
+                        <!-- Constraints -->
+                        <div class="card ai-card constraints-card">
+                            <div class="card-header-styled">
+                                <i class="fas fa-robot"></i>
+                                <span>Agent System Constraints</span>
+                            </div>
+                            <div class="ai-toggles-list">
+                                <div class="ai-toggle-row">
+                                    <div class="toggle-info">
+                                        <h4>Browser Control</h4>
+                                        <p>Allow agent to manage active tabs and page navigation shell commands.</p>
+                                    </div>
+                                    <div class="toggle on" id="ai-agency-toggle"></div>
+                                </div>
+                                <div class="ai-toggle-row">
+                                    <div class="toggle-info">
+                                        <h4>Heuristic Extraction</h4>
+                                        <p>Utilize semantic ranking to scan and extract page content segments.</p>
+                                    </div>
+                                    <div class="toggle on" id="ai-heuristic-toggle"></div>
+                                </div>
                             </div>
                         </div>
-                        <div class="pref-body" style="gap:10px;">
-                            <div class="pref-row">
-                                <div class="pref-row-info">
-                                    <div class="pref-label">Browser Control</div>
-                                    <div class="pref-desc" style="max-width:none;">Allow agent to silently manage tabs
-                                        and hardware commands.</div>
-                                </div>
-                                <div class="toggle on" id="ai-agency-toggle"></div>
+
+                        <!-- Processing Logic -->
+                        <div class="card ai-card logic-card">
+                            <div class="card-header-styled">
+                                <i class="fas fa-layer-group"></i>
+                                <span>Analytical Reasoning Depth</span>
                             </div>
-                            <div class="pref-row">
-                                <div class="pref-row-info">
-                                    <div class="pref-label">Heuristic Ranking</div>
-                                    <div class="pref-desc" style="max-width:none;">Use semantic scoring for automated
-                                        intelligent web extraction.</div>
+                            <div class="ai-toggles-list">
+                                <div class="ai-toggle-row">
+                                    <div class="toggle-info">
+                                        <h4>Deep DOM Scraping</h4>
+                                        <p>Extract extensive document layout trees for contextual processing.</p>
+                                    </div>
+                                    <div class="toggle on" id="ai-deep-scrape-toggle"></div>
                                 </div>
-                                <div class="toggle on" id="ai-heuristic-toggle"></div>
+                                <div class="ai-toggle-row">
+                                    <div class="toggle-info">
+                                        <h4>Show Thinking Steps</h4>
+                                        <p>Display internal intermediate reasoning and research steps in sidepanel.</p>
+                                    </div>
+                                    <div class="toggle on" id="ai-show-reasoning-toggle"></div>
+                                </div>
                             </div>
                         </div>
+
                     </div>
 
-                    <!-- Analysis Behavior Module -->
-                    <div class="pref-module">
-                        <div class="pref-header">
-                            <div class="pref-icon downloads"><i class="fas fa-layer-group"></i></div>
-                            <div class="pref-title">
-                                <h3>Logic Processing</h3>
-                                <p>Control logic transparency and analytical processing depth.</p>
+                    <!-- Right: Parameters & Output Personality Modules -->
+                    <div class="ai-right-column">
+                        
+                        <!-- Model Parameters -->
+                        <div class="card ai-card parameters-card">
+                            <div class="card-header-styled">
+                                <i class="fas fa-sliders"></i>
+                                <span>Generation Parameters</span>
                             </div>
-                        </div>
-                        <div class="pref-body" style="gap:10px;">
-                            <div class="pref-row">
-                                <div class="pref-row-info">
-                                    <div class="pref-label">Deep Scraping</div>
-                                    <div class="pref-desc" style="max-width:none;">Extract exhaustive DOM data arrays
-                                        for user queries.</div>
+                            <div class="parameters-sliders-body">
+                                <div class="parameter-slider-item">
+                                    <div class="slider-header">
+                                        <div class="slider-label-info">
+                                            <h4>Creativity Temperature</h4>
+                                            <p>Controls generation randomness quotient</p>
+                                        </div>
+                                        <div id="label-ai-temp" class="mono-bubble-label">0.7</div>
+                                    </div>
+                                    <input type="range" min="0" max="1" step="0.1" value="0.7" id="aiTemperature" oninput="updateAISetting('aiTemperature', this.value)">
                                 </div>
-                                <div class="toggle on" id="ai-deep-scrape-toggle"></div>
-                            </div>
-                            <div class="pref-row">
-                                <div class="pref-row-info">
-                                    <div class="pref-label">Reasoning Steps</div>
-                                    <div class="pref-desc" style="max-width:none;">Display internal intermediate
-                                        "thinking" phases in UX.</div>
-                                </div>
-                                <div class="toggle on" id="ai-show-reasoning-toggle"></div>
-                            </div>
-                        </div>
-                    </div>
 
-                    <!-- Output Experience Module -->
-                    <div class="pref-module pref-section-full">
-                        <div class="pref-header">
-                            <div class="pref-icon privacy" style="background: rgba(168, 85, 247, 0.1); color: #a855f7;">
-                                <i class="fas fa-comment-dots"></i></div>
-                            <div class="pref-title">
-                                <h3>Output Personality</h3>
-                                <p>Design entirely how Ocal Assistant structures its conversational responses.</p>
+                                <div class="parameter-slider-item">
+                                    <div class="slider-header">
+                                        <div class="slider-label-info">
+                                            <h4>Max Output Limit</h4>
+                                            <p>Maximum token size response threshold</p>
+                                        </div>
+                                        <div id="label-ai-tokens" class="mono-bubble-label">2048</div>
+                                    </div>
+                                    <input type="range" min="256" max="4096" step="128" value="2048" id="aiMaxTokens" oninput="updateAISetting('aiMaxTokens', this.value)">
+                                </div>
                             </div>
                         </div>
-                        <div class="pref-body">
-                            <div class="pref-row"
-                                style="background:transparent; border:none; padding:20px; width:100%; box-sizing:border-box;">
-                                <div class="choice-grid" id="ai-style-grid"
-                                    style="grid-template-columns:repeat(3, 1fr); gap:16px; width:100%;">
-                                    <div class="choice-item active" data-value="concise" style="padding:16px;">
-                                        <i class="fas fa-bolt" style="font-size:20px; margin-bottom:8px;"></i>
-                                        <span style="font-weight:700;">Concise</span>
+
+                        <!-- Output Personality style grid -->
+                        <div class="card ai-card style-preset-card">
+                            <div class="card-header-styled">
+                                <i class="fas fa-comment-dots"></i>
+                                <span>Output Personality Preset</span>
+                            </div>
+                            <div class="ai-presets-grid-container">
+                                <div class="choice-grid ai-style-grid" id="ai-style-grid">
+                                    <div class="choice-item" data-value="concise">
+                                        <i class="fas fa-bolt"></i>
+                                        <span>Concise</span>
                                     </div>
-                                    <div class="choice-item" data-value="detailed" style="padding:16px;">
-                                        <i class="fas fa-list-check" style="font-size:20px; margin-bottom:8px;"></i>
-                                        <span style="font-weight:700;">Detailed</span>
+                                    <div class="choice-item active" data-value="detailed">
+                                        <i class="fas fa-list-check"></i>
+                                        <span>Detailed</span>
                                     </div>
-                                    <div class="choice-item" data-value="creative" style="padding:16px;">
-                                        <i class="fas fa-wand-magic-sparkles"
-                                            style="font-size:20px; margin-bottom:8px;"></i>
-                                        <span style="font-weight:700;">Creative</span>
+                                    <div class="choice-item" data-value="creative">
+                                        <i class="fas fa-wand-magic-sparkles"></i>
+                                        <span>Creative</span>
                                     </div>
                                 </div>
                             </div>
                         </div>
+
                     </div>
 
                 </div>
-
             </div>
+            
+            <script>
+                function toggleAIKeyVisibility(inputId, element) {
+                    const inp = document.getElementById(inputId);
+                    if (inp) {
+                        const isPassword = inp.type === 'password';
+                        inp.type = isPassword ? 'text' : 'password';
+                        element.classList.toggle('fa-eye', !isPassword);
+                        element.classList.toggle('fa-eye-slash', isPassword);
+                    }
+                }
+            </script>
         </section>
 
         <!-- ── ABOUT ── -->
         <section id="about" class="section">
             <div class="page-header">
-                <div class="page-eyebrow">Product Integrity</div>
-                <div class="page-title">Ocal Browser</div>
-                <div class="page-desc">System diagnostics, build information, and global firmware updates.</div>
+                <div class="page-eyebrow">Settings</div>
+                <div class="page-title">About Ocal</div>
+                <div class="page-desc">Check system specs, source licenses, and keep the browser up-to-date.</div>
             </div>
             <div class="page-body">
-
-                <div class="studio-prefs-grid">
-
-                    <!-- Premium About Hero -->
-                    <div class="about-hero full-span">
-                        <div class="about-hero-body">
-                            <div class="about-logo-wrapper">
-                                <div class="logo-ring-outer"></div>
-                                <div class="logo-ring-inner"></div>
-                                <div class="about-logo-box">O</div>
-                            </div>
-                            <div class="about-info">
-                                <div class="about-badge">
-                                    <i class="fas fa-bolt"></i>
-                                    <span id="current-version-display">Version 6.7.13 · Stable</span>
+                <div class="about-layout">
+                    
+                    <!-- Left Column: Core Info & Updates -->
+                    <div class="about-main-panel">
+                        
+                        <!-- Professional Product Info Card -->
+                        <div class="card about-brand-card">
+                            <div class="brand-header">
+                                <div class="brand-logo-container">
+                                    <svg class="brand-logo-svg" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                        <path d="M12 2C6.48 2 2 6.48 2 12C2 17.52 6.48 22 12 22C17.52 22 22 17.52 22 12C22 9.24 20.88 6.74 19.07 4.93L17.66 6.34C19.11 7.79 20 9.79 20 12C20 16.42 16.42 20 12 20C7.58 20 4 16.42 4 12C4 7.58 7.58 4 12 4C13.1 4 14.15 4.22 15.11 4.62L16.63 3.1C15.22 2.4 13.66 2 12 2Z" fill="var(--accent)"/>
+                                        <path d="M12 7C9.24 7 7 9.24 7 12C7 14.76 9.24 17 12 17C14.76 17 17 14.76 17 12C17 10.9 16.64 9.88 16.03 9.06L14.61 10.48C14.86 10.92 15 11.44 15 12C15 13.66 13.66 15 12 15C10.34 15 9 13.66 9 12C9 10.34 10.34 9 12 9C12.56 9 13.08 9.14 13.52 9.39L14.94 7.97C14.12 7.36 13.1 7 12 7Z" fill="var(--accent)"/>
+                                        <circle cx="12" cy="12" r="2" fill="var(--accent)"/>
+                                    </svg>
                                 </div>
-                                <h3 class="about-title">Ocal Browser</h3>
-                                <p class="about-desc">Precision engineered for speed, high-fidelity browsing, and advanced productivity workflows.</p>
-                                <div id="about-build-line" class="about-meta">Ocal-6.7.13 · Production Build</div>
-                            </div>
-                        </div>
-                    </div>
-
-                    <!-- Neural Specs -->
-                    <div class="studio-card">
-                        <div class="studio-card-header">
-                            <div class="studio-card-icon"><i class="fas fa-microchip"></i></div>
-                            <div class="studio-card-title">
-                                <h3>Neural Core Specs</h3>
-                                <p>System-level build and engine diagnostics.</p>
-                            </div>
-                        </div>
-                        <div class="studio-card-body">
-                            <div class="studio-row">
-                                <div class="studio-row-info">
-                                    <div class="studio-row-label">Core Engine</div>
-                                    <div class="studio-row-desc" id="diag-version">Chromium v122.0.6261.129</div>
-                                </div>
-                            </div>
-                            <div class="studio-row">
-                                <div class="studio-row-info">
-                                    <div class="studio-row-label">Architecture</div>
-                                    <div class="studio-row-desc">Win-x64 Native (High Performance)</div>
-                                </div>
-                            </div>
-                            <div class="studio-row">
-                                <div class="studio-row-info">
-                                    <div class="studio-row-label">JavaScript V8</div>
-                                    <div class="studio-row-desc">Engine v20.10.0-ocal</div>
-                                </div>
-                            </div>
-                            <div class="studio-row">
-                                <div class="studio-row-info">
-                                    <div class="studio-row-label">Electron Build</div>
-                                    <div class="studio-row-desc" id="diag-build">Internal Release 4.0.0</div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-
-                    <!-- Community Links -->
-                    <div class="studio-card">
-                        <div class="studio-card-header">
-                            <div class="studio-card-icon"
-                                style="color: #6366f1; background: rgba(99, 102, 241, 0.1); border-color: rgba(99, 102, 241, 0.2);">
-                                <i class="fas fa-globe"></i></div>
-                            <div class="studio-card-title">
-                                <h3>Connected Realm</h3>
-                                <p>Join the Ocal developer community.</p>
-                            </div>
-                        </div>
-                        <div class="studio-card-body">
-                            <div class="studio-row"
-                                onclick="window.electronAPI && window.electronAPI.send('open-external','https://github.com/neelkanth-patel26/Ocal-Browser')"
-                                style="cursor: pointer;">
-                                <div class="studio-row-info">
-                                    <div class="studio-row-label"><i class="fab fa-github"
-                                            style="margin-right: 10px;"></i> GitHub Repository</div>
-                                    <div class="studio-row-desc">Official source and issue tracking.</div>
-                                </div>
-                                <i class="fas fa-chevron-right" style="font-size: 10px; opacity: 0.3;"></i>
-                            </div>
-                            <div class="studio-row"
-                                onclick="window.electronAPI && window.electronAPI.send('open-external','https://discord.gg/RDxmXsecmc')"
-                                style="cursor: pointer;">
-                                <div class="studio-row-info">
-                                    <div class="studio-row-label" style="color: #5865f2;"><i class="fab fa-discord"
-                                            style="margin-right: 10px;"></i> Developer Discord</div>
-                                    <div class="studio-row-desc">Real-time status and community support.</div>
-                                </div>
-                                <i class="fas fa-chevron-right" style="font-size: 10px; opacity: 0.3;"></i>
-                            </div>
-                            <div class="studio-row"
-                                onclick="window.electronAPI && window.electronAPI.send('open-external','https://gnstudioxrage.wixstudio.com/gamingnetworkstudio')"
-                                style="cursor: pointer;">
-                                <div class="studio-row-info">
-                                    <div class="studio-row-label"><i class="fas fa-display"
-                                            style="margin-right: 10px;"></i> GNS Studio Hub</div>
-                                    <div class="studio-row-desc">Official ecosystem and developer portal.</div>
-                                </div>
-                                <i class="fas fa-chevron-right" style="font-size: 10px; opacity: 0.3;"></i>
-                            </div>
-                        </div>
-                    </div>
-
-                    <!-- Github Style Update Catalog -->
-                    <div class="studio-card full-span">
-                        <div class="studio-card-header" style="justify-content: space-between;">
-                            <div style="display: flex; align-items: center; gap: 18px;">
-                                <div class="studio-card-icon"
-                                    style="color: #4ade80; background: rgba(74, 222, 128, 0.1); border-color: rgba(74, 222, 128, 0.2);">
-                                    <i class="fas fa-cloud-arrow-down"></i></div>
-                                <div class="studio-card-title">
-                                    <h3>Global Release Catalog</h3>
-                                    <p id="update-status-desc">System status: All modules up to date.</p>
-                                </div>
-                            </div>
-                            <button class="btn secondary" id="update-check-btn"
-                                style="padding: 7px 18px; font-size: 11px; font-weight: 800; letter-spacing: 0.5px; border-radius: 100px; box-shadow: 0 0 15px var(--accent-glow); transition: all 0.3s; background: var(--accent-dim); border-color: var(--accent-border);">
-                                <i class="fas fa-arrows-rotate" style="margin-right: 6px; font-size: 10px;"></i> CHECK
-                                FOR UPDATES
-                            </button>
-                        </div>
-                        <div class="studio-card-body" id="update-dashboard" style="padding: 0;">
-
-                            <!-- GitHub Release Manifest -->
-                            <div style="padding: 24px 28px; border-bottom: 1px solid rgba(255,255,255,0.03);">
-                                <div style="display: flex; gap: 24px;">
-                                    <div style="flex: 1;">
-                                        <div
-                                            style="display: flex; align-items: center; gap: 12px; margin-bottom: 14px;">
-                                            <span
-                                                style="font-size: 9px; font-weight: 900; background: rgba(74, 222, 128, 0.08); color: #4ade80; padding: 3px 10px; border-radius: 100px; text-transform: uppercase; letter-spacing: 1px; border: 1px solid rgba(74, 222, 128, 0.2);">Latest
-                                                Channel</span>
-                                            <span
-                                                style="font-size: 11px; color: rgba(255,255,255,0.3); font-family: monospace;"
-                                                id="catalog-ver-tag">v4.0.00-beta</span>
-                                        </div>
-                                        <h4 id="update-status-title"
-                                            style="font-size: 19px; font-weight: 900; color: var(--text); margin: 0 0 16px 0; letter-spacing: -0.2px;">
-                                            The Agentic Orchestrator</h4>
-
-                                        <div class="github-manifest"
-                                            style="background: var(--glass); border: 1px solid var(--glass-border); border-radius: 14px; padding: 20px; max-height: 220px; overflow-y: auto;">
-                                            <div id="update-notes" style="font-size: 12px; color: var(--text-dim);">
-                                                <div
-                                                    style="display: flex; align-items: center; gap: 12px; height: 100px; justify-content: center; opacity: 0.5;">
-                                                    <i class="fas fa-spinner fa-spin"></i>
-                                                    <span>Synchronizing manifest...</span>
-                                                </div>
-                                            </div>
-                                        </div>
+                                <div class="brand-details">
+                                    <h3 class="brand-name">Ocal Browser</h3>
+                                    <div class="brand-version-wrap">
+                                        <span class="brand-version" id="current-version-display">Version 6.7.13</span>
+                                        <span class="brand-build-type">Stable Build (64-bit)</span>
                                     </div>
-                                    <!-- Verified Source Badge -->
-                                    <div class="verified-source-card"
-                                        style="width: 200px; padding: 32px 24px; background: #1a1a1e; border-radius: 16px; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 20px; border: 1px solid #2d2d30; flex-shrink: 0;">
-
-                                        <!-- Clean Verified Icon -->
-                                        <div style="width: 52px; height: 52px; background: rgba(74, 222, 128, 0.08); border-radius: 50%; display: flex; align-items: center; justify-content: center; border: 1px solid rgba(74, 222, 128, 0.15);">
-                                            <i class="fas fa-circle-check" id="update-status-icon"
-                                                style="font-size: 22px; color: #4ade80;"></i>
-                                        </div>
-
-                                        <div style="text-align: center;">
-                                            <div style="font-size: 9px; font-weight: 800; color: var(--text-muted); text-transform: uppercase; letter-spacing: 2px; margin-bottom: 14px;">
-                                                Verified Source</div>
-                                            <div class="github-btn"
-                                                onclick="window.electronAPI && window.electronAPI.send('open-external','https://github.com/neelkanth-patel26/Ocal-Browser/releases')"
-                                                style="background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.08); padding: 8px 16px; border-radius: 10px; display: flex; align-items: center; gap: 8px; cursor: pointer; transition: all 0.2s;"
-                                                onmouseover="this.style.background='rgba(255,255,255,0.08)';this.style.borderColor='rgba(255,255,255,0.15)';"
-                                                onmouseout="this.style.background='rgba(255,255,255,0.04)';this.style.borderColor='rgba(255,255,255,0.08)';">
-                                                <i class="fab fa-github"
-                                                    style="font-size: 14px; color: var(--text);"></i>
-                                                <span
-                                                    style="font-size: 11px; font-weight: 600; color: var(--text); white-space: nowrap;">GitHub Releases</span>
-                                            </div>
-                                        </div>
-                                    </div>
-
+                                    <div id="about-build-line" class="brand-build-line">Production Build</div>
+                                    <p class="brand-tagline">A high-performance, secure web browser powered by an agentic core.</p>
                                 </div>
                             </div>
+                        </div>
 
-                            <!-- Progress & Download -->
-                            <div class="studio-row" id="update-info-expanded"
-                                style="background: rgba(0,0,0,0.1); display: none; padding: 20px 28px;">
-                                <div style="flex: 1; display: flex; flex-direction: column; gap: 12px;">
-                                    <div style="display: flex; justify-content: space-between; align-items: center;">
-                                        <span style="font-size: 12px; font-weight: 700; color: #fff;">Pulling Latest
-                                            Firmware...</span>
-                                        <span
-                                            style="font-size: 11px; color: var(--accent); font-weight: 800; font-family: monospace;">84%</span>
+                        <!-- Professional Clean Update Card -->
+                        <div class="card about-update-card" id="update-dashboard">
+                            <div class="update-header-row">
+                                <div class="update-status-info">
+                                    <div class="update-icon-box" id="update-status-icon-box">
+                                        <i class="fas fa-circle-check" id="update-status-icon"></i>
                                     </div>
-                                    <div class="update-bar"
-                                        style="height: 10px; background: rgba(255,255,255,0.05); border-radius: 100px; overflow: hidden; position: relative;">
-                                        <div class="update-fill" id="update-progress-fill"
-                                            style="width: 84%; height: 100%; background: linear-gradient(90deg, var(--accent) 0%, #6366f1 100%); box-shadow: 0 0 15px var(--accent-glow); position: relative;">
-                                            <div
-                                                style="position: absolute; inset: 0; background: linear-gradient(90deg, transparent, rgba(255,255,255,0.3), transparent); animation: scan-memory 2s infinite;">
-                                            </div>
-                                        </div>
+                                    <div class="update-status-text">
+                                        <h4 id="update-status-title">Browser is up to date</h4>
+                                        <p id="update-status-desc">Checking status...</p>
                                     </div>
-                                    <button class="btn primary" id="download-update-btn"
-                                        style="display: none; width: 100%; justify-content: center;">
-                                        <i class="fas fa-download"></i> Apply & Relaunch
+                                </div>
+                                <button class="btn secondary" id="update-check-btn" style="border-radius: var(--radius-sm); font-size: 12.5px; padding: 8px 18px;">
+                                    <i class="fas fa-arrows-rotate"></i> Check for Updates
+                                </button>
+                            </div>
+
+                            <!-- Progress bar container -->
+                            <div id="update-info-expanded" style="display: none; padding: 16px 20px; border-top: 1px solid var(--chrome-border);">
+                                <div class="update-progress-container">
+                                    <div class="update-progress-label">
+                                        <span>Downloading updates...</span>
+                                        <span id="update-progress-percent" style="font-weight: 600; font-family: var(--font-mono);">0%</span>
+                                    </div>
+                                    <div class="update-progress-bar">
+                                        <div class="update-progress-fill" id="update-progress-fill" style="width: 0%;"></div>
+                                    </div>
+                                    <button class="btn primary" id="download-update-btn" style="display: none; margin-top: 12px; width: 100%; justify-content: center; border-radius: var(--radius-sm);">
+                                        <i class="fas fa-power-off"></i> Restart to Apply Update
                                     </button>
                                 </div>
                             </div>
+
+                            <!-- Release Notes -->
+                            <div class="update-notes-box">
+                                <div class="notes-header">
+                                    <i class="fas fa-file-lines"></i>
+                                    <span>Latest Release Notes</span>
+                                    <span id="catalog-ver-tag" style="display: none;"></span>
+                                </div>
+                                <div class="notes-content" id="update-notes">
+                                    <div class="notes-loading">
+                                        <i class="fas fa-spinner fa-spin"></i>
+                                        <span>Loading notes...</span>
+                                    </div>
+                                </div>
+                            </div>
                         </div>
+
                     </div>
 
-                    <div
-                        style="grid-column: span 2; text-align: center; margin-top: 20px; padding: 24px; border-top: 1px solid var(--glass-border);">
-                        <div style="font-size: 12px; color: var(--text-dim); letter-spacing: 0.5px;">
-                            &copy; 2026 GNS Media Group &middot; The Ocal Project Foundation
-                            <div style="margin-top: 8px; font-size: 10px; opacity: 0.6; color: var(--text-muted);">All
-                                rights reserved. Patented technology.</div>
+                    <!-- Right Column: Specs & Links -->
+                    <div class="about-side-panel">
+                        
+                        <!-- System Specs Card -->
+                        <div class="card specs-card">
+                            <div class="card-header-styled">
+                                <i class="fas fa-microchip"></i>
+                                <span>Technical Specifications</span>
+                            </div>
+                            <div class="specs-list">
+                                <div class="spec-row-item">
+                                    <span class="spec-label">Core Engine</span>
+                                    <span class="spec-value" id="diag-version">Chromium v122.0.6261.129</span>
+                                </div>
+                                <div class="spec-row-item">
+                                    <span class="spec-label">JavaScript V8</span>
+                                    <span class="spec-value">Engine v20.10.0</span>
+                                </div>
+                                <div class="spec-row-item">
+                                    <span class="spec-label">Electron Host</span>
+                                    <span class="spec-value" id="diag-build">Runtime v4.0.0</span>
+                                </div>
+                                <div class="spec-row-item">
+                                    <span class="spec-label">Architecture</span>
+                                    <span class="spec-value">Windows x64 Native</span>
+                                </div>
+                            </div>
                         </div>
-                    </div>
 
+                        <!-- Resource Links Card -->
+                        <div class="card resources-card">
+                            <div class="card-header-styled">
+                                <i class="fas fa-compass"></i>
+                                <span>Official Resources</span>
+                            </div>
+                            <div class="resources-list">
+                                <div class="resource-row-link" onclick="window.electronAPI && window.electronAPI.send('open-external','https://github.com/neelkanth-patel26/Ocal-Browser')">
+                                    <div class="resource-left">
+                                        <i class="fab fa-github"></i>
+                                        <span>GitHub Repository</span>
+                                    </div>
+                                    <i class="fas fa-arrow-up-right-from-square link-arrow"></i>
+                                </div>
+                                <div class="resource-row-link" onclick="window.electronAPI && window.electronAPI.send('open-external','https://discord.gg/RDxmXsecmc')">
+                                    <div class="resource-left">
+                                        <i class="fab fa-discord" style="color: #5865f2;"></i>
+                                        <span>Developer Discord</span>
+                                    </div>
+                                    <i class="fas fa-arrow-up-right-from-square link-arrow"></i>
+                                </div>
+                                <div class="resource-row-link" onclick="window.electronAPI && window.electronAPI.send('open-external','https://gnstudioxrage.wixstudio.com/gamingnetworkstudio')">
+                                    <div class="resource-left">
+                                        <i class="fas fa-display"></i>
+                                        <span>GNS Studio Hub</span>
+                                    </div>
+                                    <i class="fas fa-arrow-up-right-from-square link-arrow"></i>
+                                </div>
+                            </div>
+                        </div>
+
+                    </div>
                 </div>
 
+                <!-- Footer Legal Info -->
+                <div class="about-footer">
+                    <p class="copyright">&copy; 2026 Gaming Network Studio Media Group &middot; The Ocal Project Foundation</p>
+                    <p class="legal-disclaimer">All rights reserved. Ocal is open-source software built on top of the Chromium Project and other open-source contributions. Legal terms and privacy policies apply.</p>
+                </div>
             </div>
         </section>
 

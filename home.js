@@ -18,11 +18,49 @@ const timerToggle = document.getElementById('timer-toggle');
 const timerReset = document.getElementById('timer-reset');
 const dashMain = document.getElementById('dashboard-main');
 
+let currentSearchEngine = 'google';
+
+function updateSearchEngineLogo(engine) {
+    const logoContainer = document.getElementById('search-engine-logo');
+    if (!logoContainer) return;
+
+    if (engine === 'google') {
+        logoContainer.innerHTML = `<svg width="20" height="20" viewBox="0 0 24 24">
+            <path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="#4285F4"/>
+            <path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98 1.06-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853"/>
+            <path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l3.66-2.84z" fill="#FBBC05"/>
+            <path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" fill="#EA4335"/>
+        </svg>`;
+    } else if (engine === 'bing') {
+        logoContainer.innerHTML = '<i class="fas fa-b" style="color: #00a1f1; font-size: 18px;"></i>';
+    } else if (engine === 'duckduckgo') {
+        logoContainer.innerHTML = '<i class="fas fa-shield-cat" style="color: #de5833; font-size: 18px;"></i>';
+    } else if (engine === 'brave') {
+        logoContainer.innerHTML = '<i class="fa-brands fa-brave" style="color: #ff1b2d; font-size: 20px;"></i>';
+    } else if (engine === 'yahoo') {
+        logoContainer.innerHTML = '<i class="fa-brands fa-yahoo" style="color: #6001d2; font-size: 20px;"></i>';
+    } else {
+        logoContainer.innerHTML = '<i class="fas fa-magnifying-glass" style="color: var(--accent); font-size: 18px;"></i>';
+    }
+}
+
 // ── Entry Animation ──
 document.addEventListener('DOMContentLoaded', () => {
     setTimeout(() => {
         document.body.classList.add('loaded');
     }, 100);
+
+    // Dynamically load speed dial favicons using Google S2 service
+    document.querySelectorAll('.tile-item').forEach(tile => {
+        const url = tile.dataset.url;
+        const box = tile.querySelector('.tile-box');
+        if (url && box) {
+            const domain = url;
+            const originalIconHtml = box.innerHTML;
+            const safeIconHtml = originalIconHtml.replace(/"/g, '&quot;').replace(/'/g, '&#39;');
+            box.innerHTML = `<img src="https://www.google.com/s2/favicons?domain=${domain}&sz=64" class="tile-favicon" style="width: 24px; height: 24px; object-fit: contain; border-radius: 4px;" onerror="this.outerHTML='${safeIconHtml}'">`;
+        }
+    });
 });
 
 // ── Tick (Clock & Dynamic Greeting) ──────────────────────────────
@@ -57,7 +95,13 @@ function executeSearch() {
     } else if (/^[\w-]+\.[a-z]{2,}/.test(q) && !q.includes(' ')) {
         window.location.href = 'https://' + q;
     } else {
-        window.location.href = 'https://www.google.com/search?q=' + encodeURIComponent(q);
+        let searchUrl = 'https://www.google.com/search?q=';
+        if (currentSearchEngine === 'bing') searchUrl = 'https://www.bing.com/search?q=';
+        else if (currentSearchEngine === 'duckduckgo') searchUrl = 'https://duckduckgo.com/?q=';
+        else if (currentSearchEngine === 'brave') searchUrl = 'https://search.brave.com/search?q=';
+        else if (currentSearchEngine === 'yahoo') searchUrl = 'https://search.yahoo.com/search?p=';
+        
+        window.location.href = searchUrl + encodeURIComponent(q);
     }
 }
 
@@ -524,6 +568,11 @@ function applySettings(s) {
     if (dashMain) {
         dashMain.classList.toggle('has-left-sidebar', showTodo);
         dashMain.classList.toggle('has-right-sidebar', showTimer || useSidebarWeather);
+    }
+
+    if (s.searchEngine) {
+        currentSearchEngine = s.searchEngine;
+        updateSearchEngineLogo(s.searchEngine);
     }
 
     document.body.classList.toggle('battery-saver', !!s.batterySaver);

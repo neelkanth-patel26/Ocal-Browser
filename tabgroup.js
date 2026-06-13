@@ -2,14 +2,20 @@ let currentGroupId = null;
 const popupPanel = document.getElementById('popup-panel');
 const backdrop = document.getElementById('backdrop');
 
-backdrop.addEventListener('mousedown', () => {
+function hidePopup() {
+    if (popupPanel) popupPanel.style.display = 'none';
     window.electronAPI.send('hide-tab-group-popup');
+}
+
+backdrop.addEventListener('mousedown', () => {
+    hidePopup();
 });
 
 window.electronAPI.on('show-popup', (e, pos) => {
     if (popupPanel) {
         popupPanel.style.left = Math.round(pos.x) + 'px';
         popupPanel.style.top = Math.round(pos.y) + 'px';
+        popupPanel.style.display = 'flex';
     }
 });
 
@@ -49,16 +55,16 @@ document.querySelectorAll('.color-dot').forEach(dot => {
 document.getElementById('ungroup-btn').onclick = () => {
     if (!currentGroupId) return;
     window.electronAPI.send('ungroup', currentGroupId);
-    window.electronAPI.send('hide-tab-group-popup');
+    hidePopup();
 };
 
 document.getElementById('close-btn').onclick = () => {
-    window.electronAPI.send('hide-tab-group-popup');
+    hidePopup();
 };
 
 // Close on escape
 window.addEventListener('keydown', (e) => {
-    if (e.key === 'Escape') window.electronAPI.send('hide-tab-group-popup');
+    if (e.key === 'Escape') hidePopup();
 });
 
 // Request initial data

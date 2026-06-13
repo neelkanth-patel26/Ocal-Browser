@@ -8,6 +8,7 @@
   --accent-glow: rgba(9, 240, 160, 0.2);
   --accent-dim: rgba(9, 240, 160, 0.12);
   --accent-border: #09f0a0;
+  --accent-text: #000000;
   --chrome: #0d0d0f;
   --chrome-lighter: #161619;
   --chrome-border: #1a1a1c;
@@ -33,6 +34,7 @@ body[data-theme="light"] {
   --background: oklch(1 0 0);
   --foreground: oklch(0.145 0 0);
   --accent: oklch(0.205 0 0);
+  --accent-text: #ffffff;
   --chrome: oklch(1 0 0);
   --chrome-lighter: oklch(1 0 0);
   --chrome-border: oklch(0 0 0 / 15%);
@@ -264,6 +266,10 @@ body[data-theme="light"] .sidebar-item {
   border-color: transparent;
 }
 
+body[data-theme="light"] .sidebar-item:hover {
+  color: #000000;
+}
+
 .sidebar-item:hover {
   color: #ffffff;
   transform: none !important;
@@ -323,7 +329,7 @@ body[data-theme="light"] .sidebar-item {
 .sidebar-item.active {
   background: var(--accent, #09f0a0) !important;
   border-color: var(--accent, #09f0a0) !important;
-  color: #000000 !important;
+  color: var(--accent-text, #000000) !important;
   box-shadow: none !important;
 }
 
@@ -373,7 +379,7 @@ body[data-theme="light"] .sidebar-item {
 .sidebar-item#sb-book-btn:hover {
   background: var(--accent, #09f0a0) !important;
   border-color: var(--accent, #09f0a0) !important;
-  color: #000000 !important;
+  color: var(--accent-text, #000000) !important;
   box-shadow: none !important;
 }
 
@@ -557,6 +563,10 @@ body[data-theme="light"] .tab-item.grouped.active {
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08) !important;
 }
 
+body[data-theme="light"] .tab-item.grouped.active .tab-title {
+  color: #000 !important;
+}
+
 body[data-theme="light"] .sidebar-nav-btn {
   color: #000 !important;
 }
@@ -737,9 +747,17 @@ body.compact-mode .tab-item { height: 28px; padding: 0 10px; border-radius: 8px;
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.35), inset 0 1px 0 rgba(255, 255, 255, 0.05);
 }
 
-/* Premium dashboard accent on active tab - matching Home page accents */
-.tab-item.active::after {
-  display: none;
+/* Premium top accent line on active tab */
+.tab-item.active::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 3px;
+  background: var(--accent);
+  border-radius: 8px 8px 0 0;
+  z-index: 5;
 }
 .tab-item.dragging { opacity: 0.35; transform: scale(0.94); }
 .tab-item.drag-over { border-color: var(--accent-border); background: rgba(255,255,255,0.03); }
@@ -1242,6 +1260,18 @@ body.compact-mode .omnibox { height: 32px; padding: 0 10px; gap: 6px; border-rad
 
 .omnibox-icon i { font-size: 13px; opacity: 0.8; }
 .omnibox-icon img, .omnibox-icon svg { width: 14px; height: 14px; object-fit: contain; }
+
+.omnibox-favicon {
+  width: 14px !important;
+  height: 14px !important;
+  border-radius: 3px;
+  background: rgba(255, 255, 255, 0.03);
+  transition: transform 0.22s cubic-bezier(0.16, 1, 0.3, 1);
+}
+.omnibox-icon:hover .omnibox-favicon {
+  transform: scale(1.12);
+  background: rgba(255, 255, 255, 0.08);
+}
 
 .omnibox-input {
   position: absolute;
@@ -2147,5 +2177,82 @@ body[data-theme="light"] .web-content-container {
   }
 }
 
+/* ── Sidebar App Native Header ── */
+.sidebar-app-header {
+  position: absolute;
+  left: var(--sidebar-w, 44px);
+  top: calc(var(--tab-h) + var(--nav-h) + var(--bm-h));
+  width: 450px;
+  height: 38px;
+  background: var(--background);
+  border-right: 1px solid var(--chrome-border);
+  border-bottom: 1px solid var(--chrome-border);
+  display: none;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 14px;
+  z-index: 101;
+  font-family: var(--font-title);
+  font-size: 13px;
+  font-weight: 500;
+  box-shadow: none !important;
+}
 
+body[data-theme="light"] .sidebar-app-header {
+  background: #ffffff;
+  border-right: 1px solid var(--chrome-border);
+  border-bottom: 1px solid var(--chrome-border);
+}
 
+.sidebar-app-title-group {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  color: var(--foreground);
+}
+
+.sidebar-app-title-group i {
+  color: var(--accent);
+  font-size: 13px;
+}
+
+.sidebar-app-actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.sidebar-app-action-btn {
+  width: 24px;
+  height: 24px;
+  border-radius: 4px !important;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #a0a0a5;
+  font-size: 11px;
+  transition: background-color 0.15s, color 0.15s;
+  background: transparent;
+  border: none;
+  cursor: pointer;
+}
+
+.sidebar-app-action-btn:hover {
+  background: rgba(255, 255, 255, 0.06);
+  color: #ffffff;
+}
+
+body[data-theme="light"] .sidebar-app-action-btn:hover {
+  background: rgba(0, 0, 0, 0.05);
+  color: #000000;
+}
+
+#sidebar-app-close-btn:hover {
+  background: rgba(239, 68, 68, 0.2);
+  color: #ef4444;
+}
+
+body[data-theme="light"] #sidebar-app-close-btn:hover {
+  background: rgba(239, 68, 68, 0.1);
+  color: #ef4444;
+}
