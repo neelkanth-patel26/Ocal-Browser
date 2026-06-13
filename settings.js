@@ -950,7 +950,6 @@ window.electronAPI.getSettings().then(s => {
     if (s.customSearchUrl) {
         const customInput = document.getElementById('custom-search-input');
         if (customInput) customInput.value = s.customSearchUrl;
-        if (s.searchEngine === 'custom') document.getElementById('custom-search-container').style.display = 'block';
     }
 
     initToggle('instant-search-toggle', 'instantSearchEnabled', s.instantSearchEnabled);
@@ -1475,9 +1474,23 @@ window.electronAPI.onSettingsChanged(s => {
         const themeToggle = document.getElementById('theme-mode-toggle');
         if (themeToggle) themeToggle.classList.toggle('on', s.themeMode !== 'light');
     }
+    if (s.searchEngine !== undefined) {
+        setGridValue('search-engine-grid', s.searchEngine);
+        const customContainer = document.getElementById('custom-search-container');
+        if (customContainer) {
+            customContainer.style.display = (s.searchEngine === 'custom') ? 'block' : 'none';
+        }
+        const searchEngineRadios = document.querySelectorAll('input[name="search-engine"]');
+        searchEngineRadios.forEach(radio => {
+            radio.checked = (radio.value === s.searchEngine);
+        });
+    }
     updateProtectionLevel(s);
     renderExtensions(s);
     renderProfiles(s);
+    if (s.shieldStats) {
+        updateShieldDashboard(s.shieldStats);
+    }
 });
 
 // Browser Migration

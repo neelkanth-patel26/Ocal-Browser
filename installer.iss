@@ -23,10 +23,11 @@ Source: "dist-builder\win-unpacked\Ocal Browser.exe"; DestDir: "{app}"; DestName
 Source: "dist-builder\win-unpacked\*"; DestDir: "{app}"; Excludes: "Ocal Browser.exe"; Flags: ignoreversion recursesubdirs createallsubdirs
 Source: "uninstaller\*"; DestDir: "{app}\uninstaller"; Flags: ignoreversion recursesubdirs createallsubdirs
 Source: "pdf-icon.ico"; DestDir: "{app}"; Flags: ignoreversion
+Source: "icon.ico"; DestDir: "{app}"; Flags: ignoreversion
 
 [Icons]
-Name: "{group}\Ocal Browser"; Filename: "{app}\ocal.exe"
-Name: "{autodesktop}\Ocal Browser"; Filename: "{app}\ocal.exe"; Tasks: desktopicon
+Name: "{group}\Ocal Browser"; Filename: "{app}\ocal.exe"; IconFilename: "{app}\icon.ico"
+Name: "{autodesktop}\Ocal Browser"; Filename: "{app}\ocal.exe"; Tasks: desktopicon; IconFilename: "{app}\icon.ico"
 
 [Registry]
 Root: HKCR; Subkey: ".pdf"; ValueType: string; ValueName: ""; ValueData: "Ocal.PDF"; Flags: uninsdeletevalue
