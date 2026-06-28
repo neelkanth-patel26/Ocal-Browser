@@ -439,13 +439,12 @@ const createPipOverlay = () => {
     btn.innerHTML = `
         <style>
             .pip-btn {
-                background: rgba(15, 15, 20, 0.65);
-                backdrop-filter: blur(16px) saturate(180%);
-                color: rgba(255, 255, 255, 0.9);
-                border: 1px solid rgba(255, 255, 255, 0.15);
+                background: #111111;
+                color: #e8e8e8;
+                border: 1px solid #252525;
                 border-radius: 999px;
                 padding: 10px 20px;
-                font-family: 'Outfit', 'Inter', -apple-system, sans-serif;
+                font-family: 'Geist Sans', -apple-system, sans-serif;
                 font-size: 13px;
                 font-weight: 500;
                 cursor: pointer;
@@ -453,24 +452,24 @@ const createPipOverlay = () => {
                 align-items: center;
                 gap: 8px;
                 pointer-events: auto;
-                box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3), inset 0 1px 1px rgba(255, 255, 255, 0.1);
-                transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
-                transform: translateY(12px) scale(0.95);
+                box-shadow: none;
+                transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+                transform: translateY(12px);
                 opacity: 0;
             }
             .pip-btn:hover {
-                background: rgba(168, 85, 247, 0.85); /* Premium Purple Glow on Hover */
-                border-color: rgba(168, 85, 247, 0.5);
+                background: #1e1e1e;
+                border-color: var(--accent, #09f0a0);
                 color: #fff;
-                transform: translateY(-2px) scale(1.02);
-                box-shadow: 0 12px 40px rgba(168, 85, 247, 0.4), inset 0 1px 1px rgba(255, 255, 255, 0.3);
+                transform: none;
+                box-shadow: none;
             }
             .pip-btn.visible {
-                transform: translateY(0) scale(1);
+                transform: translateY(0);
                 opacity: 1;
             }
-            svg { transition: transform 0.3s ease; }
-            .pip-btn:hover svg { transform: scale(1.1) translate(1px, -1px); }
+            svg { transition: none; }
+            .pip-btn:hover svg { transform: none; }
         </style>
         <div class="pip-btn">
             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
@@ -735,32 +734,69 @@ window.addEventListener('DOMContentLoaded', () => {
     // Only inject if there isn't one already (to prevent duplicates on multi-loads)
     if (document.getElementById('ocal-custom-scrollbar')) return;
 
-    const style = document.createElement('style');
-    style.id = 'ocal-custom-scrollbar';
-    style.textContent = `
-        ::-webkit-scrollbar {
-            width: 6px !important;
-            height: 6px !important;
-            background: transparent !important;
-        }
-        ::-webkit-scrollbar-track {
-            background: transparent !important;
-        }
-        ::-webkit-scrollbar-thumb {
-            background: rgba(128, 128, 128, 0.25) !important;
-            border-radius: 10px !important;
-            transition: background 0.15s ease-in-out !important;
-        }
-        ::-webkit-scrollbar-thumb:hover {
-            background: rgba(128, 128, 128, 0.55) !important;
-        }
-        ::-webkit-scrollbar-corner {
-            background: transparent !important;
-        }
-    `;
+    const { webFrame } = require('electron');
+    if (webFrame) {
+        webFrame.insertCSS(`
+            html {
+                scroll-behavior: smooth !important;
+            }
+            *, html, body {
+                scrollbar-color: initial !important;
+                scrollbar-width: initial !important;
+            }
+            *::-webkit-scrollbar, html::-webkit-scrollbar, body::-webkit-scrollbar {
+                width: 6px !important;
+                height: 6px !important;
+                background: transparent !important;
+            }
+            *::-webkit-scrollbar-track, html::-webkit-scrollbar-track, body::-webkit-scrollbar-track {
+                background: transparent !important;
+            }
+            *::-webkit-scrollbar-thumb, html::-webkit-scrollbar-thumb, body::-webkit-scrollbar-thumb {
+                background: rgba(128, 128, 128, 0.25) !important;
+                border-radius: 10px !important;
+            }
+            *::-webkit-scrollbar-thumb:hover, html::-webkit-scrollbar-thumb:hover, body::-webkit-scrollbar-thumb:hover {
+                background: rgba(128, 128, 128, 0.55) !important;
+            }
+
+            /* ── YouTube Ad Slot DOM Removal ── */
+            ytd-ad-slot-renderer,
+            #masthead-ad,
+            ytd-rich-item-renderer:has(ytd-ad-slot-renderer),
+            ytd-rich-item-renderer:has(ytd-in-feed-ad-layout-renderer),
+            ytd-rich-section-renderer:has(ytd-ad-slot-renderer),
+            ytd-in-feed-ad-layout-renderer,
+            ytd-promoted-sparkles-web-renderer,
+            ytd-promoted-video-renderer,
+            ytd-banner-promoted-video-renderer,
+            ytd-player-legacy-desktop-watch-ads-renderer,
+            ytd-action-companion-ad-renderer {
+                display: none !important;
+                width: 0 !important;
+                height: 0 !important;
+                margin: 0 !important;
+                padding: 0 !important;
+                visibility: hidden !important;
+            }
+        `);
+    }
     
-    // Some sites overwrite document.body early, so inserting into documentElement is safer
-    document.documentElement.appendChild(style);
+    // Global internal page theme synchronization
+    if (window.location.protocol === 'file:') {
+        function applyGlobalTheme(s) {
+            if (!s) return;
+            if (s.themeMode) document.body.setAttribute('data-theme', s.themeMode);
+            if (s.accentColor) {
+                document.documentElement.style.setProperty('--accent', s.accentColor);
+                document.documentElement.style.setProperty('--accent-glow', `color-mix(in srgb, ${s.accentColor} 30%, transparent)`);
+                document.documentElement.style.setProperty('--accent-dim', `color-mix(in srgb, ${s.accentColor} 12%, transparent)`);
+                document.documentElement.style.setProperty('--accent-border', s.accentColor);
+            }
+        }
+        ipcRenderer.invoke('get-settings').then(applyGlobalTheme);
+        ipcRenderer.on('settings-changed', (e, s) => applyGlobalTheme(s));
+    }
 });
 
 // Ocal Media Master Bridge
@@ -804,14 +840,7 @@ window.addEventListener('mousedown', () => {
 
 // Inject Floating Close Button for Sidebar Apps
 (function() {
-    const isSidebarApp = 
-        window.location.href.includes('sidebar-loading.html') ||
-        window.location.hostname.includes('whatsapp.com') ||
-        window.location.hostname.includes('instagram.com') ||
-        window.location.hostname.includes('x.com') ||
-        window.location.hostname.includes('twitter.com') ||
-        window.location.hostname.includes('discord.com') ||
-        window.location.hostname.includes('spotify.com');
+    const isSidebarApp = process.argv.includes('--is-sidebar-app');
 
     if (!isSidebarApp) return;
 
@@ -888,3 +917,141 @@ window.addEventListener('mousedown', () => {
         injectButton();
     }
 })();
+
+// ── Safari-like Inertial Scroll for Mouse Wheels (Windows/Linux) ──────────────────
+(function() {
+    if (typeof window === 'undefined' || !window.document || !window.document.documentElement) return;
+    
+    // macOS already has native momentum scrolling
+    const isMac = navigator.platform.toUpperCase().indexOf('MAC') >= 0;
+    if (isMac) return;
+
+    let isMoving = false;
+    const ease = 0.12; // Lower = smoother / slower deceleration
+
+    function getScrollParent(element, direction) {
+        let parent = element;
+        while (parent && parent !== document.body && parent !== document.documentElement) {
+            const style = window.getComputedStyle(parent);
+            const overflow = direction === 'y' ? style.overflowY : style.overflowX;
+            const hasScrollbar = direction === 'y' 
+                ? parent.scrollHeight > parent.clientHeight 
+                : parent.scrollWidth > parent.clientWidth;
+            if (hasScrollbar && (overflow === 'auto' || overflow === 'scroll')) {
+                return parent;
+            }
+            parent = parent.parentElement;
+        }
+        return document.scrollingElement || document.documentElement;
+    }
+
+    let activeElement = null;
+    let activeTargetX = 0;
+    let activeTargetY = 0;
+
+    window.addEventListener('wheel', (e) => {
+        if (e.ctrlKey || e.metaKey) return; // Ignore pinch-to-zoom
+
+        // Detect trackpad scrolling (fractional values or small steps)
+        const isTrackpad = (Math.abs(e.deltaY) < 20 && e.deltaY !== 0) || (e.deltaY % 1 !== 0) || (e.deltaX % 1 !== 0);
+        if (isTrackpad) return;
+
+        const target = e.target;
+        const scrollContainer = getScrollParent(target, Math.abs(e.deltaY) > Math.abs(e.deltaX) ? 'y' : 'x');
+        if (!scrollContainer) return;
+
+        const isWindow = scrollContainer === document.documentElement || scrollContainer === document.body;
+        const currentScrollX = isWindow ? window.scrollX : scrollContainer.scrollLeft;
+        const currentScrollY = isWindow ? window.scrollY : scrollContainer.scrollTop;
+
+        // Check boundaries to enable scroll chaining
+        const isScrollingDown = e.deltaY > 0;
+        const isScrollingUp = e.deltaY < 0;
+        const isScrollingRight = e.deltaX > 0;
+        const isScrollingLeft = e.deltaX < 0;
+
+        let canScroll = false;
+        if (Math.abs(e.deltaY) > 0) {
+            const maxScrollY = isWindow 
+                ? (document.documentElement.scrollHeight - window.innerHeight) 
+                : (scrollContainer.scrollHeight - scrollContainer.clientHeight);
+            if ((isScrollingDown && currentScrollY < maxScrollY - 1) || (isScrollingUp && currentScrollY > 1)) {
+                canScroll = true;
+            }
+        }
+        if (Math.abs(e.deltaX) > 0) {
+            const maxScrollX = isWindow 
+                ? (document.documentElement.scrollWidth - window.innerWidth) 
+                : (scrollContainer.scrollWidth - scrollContainer.clientWidth);
+            if ((isScrollingRight && currentScrollX < maxScrollX - 1) || (isScrollingLeft && currentScrollX > 1)) {
+                canScroll = true;
+            }
+        }
+
+        if (!canScroll) return;
+
+        e.preventDefault();
+
+        if (activeElement !== scrollContainer) {
+            activeElement = scrollContainer;
+            activeTargetX = isWindow ? window.scrollX : scrollContainer.scrollLeft;
+            activeTargetY = isWindow ? window.scrollY : scrollContainer.scrollTop;
+        }
+
+        activeTargetX += e.deltaX;
+        activeTargetY += e.deltaY;
+
+        const limitY = isWindow 
+            ? (document.documentElement.scrollHeight - window.innerHeight) 
+            : (scrollContainer.scrollHeight - scrollContainer.clientHeight);
+        const limitX = isWindow 
+            ? (document.documentElement.scrollWidth - window.innerWidth) 
+            : (scrollContainer.scrollWidth - scrollContainer.clientWidth);
+
+        activeTargetX = Math.max(0, Math.min(activeTargetX, limitX));
+        activeTargetY = Math.max(0, Math.min(activeTargetY, limitY));
+
+        if (!isMoving) {
+            isMoving = true;
+            requestAnimationFrame(updateScroll);
+        }
+    }, { passive: false });
+
+    function updateScroll() {
+        if (!activeElement) {
+            isMoving = false;
+            return;
+        }
+
+        const isWindow = activeElement === document.documentElement || activeElement === document.body;
+        const currentScrollX = isWindow ? window.scrollX : activeElement.scrollLeft;
+        const currentScrollY = isWindow ? window.scrollY : activeElement.scrollTop;
+
+        const diffX = activeTargetX - currentScrollX;
+        const diffY = activeTargetY - currentScrollY;
+
+        if (Math.abs(diffX) < 0.5 && Math.abs(diffY) < 0.5) {
+            if (isWindow) {
+                window.scrollTo(activeTargetX, activeTargetY);
+            } else {
+                activeElement.scrollLeft = activeTargetX;
+                activeElement.scrollTop = activeTargetY;
+            }
+            isMoving = false;
+            return;
+        }
+
+        const stepX = currentScrollX + diffX * ease;
+        const stepY = currentScrollY + diffY * ease;
+
+        if (isWindow) {
+            window.scrollTo(stepX, stepY);
+        } else {
+            activeElement.scrollLeft = stepX;
+            activeElement.scrollTop = stepY;
+        }
+
+        requestAnimationFrame(updateScroll);
+    }
+})();
+

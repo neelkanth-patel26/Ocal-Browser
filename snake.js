@@ -15,7 +15,7 @@ const finalScoreEl = document.getElementById('finalScore');
 const GRID_SIZE = 20;
 const TILE_COUNT = 20;
 const CANVAS_SIZE = 400;
-let ACCENT = '#09f0a0';
+let ACCENT = '#e8ff47';
 
 canvas.width = CANVAS_SIZE;
 canvas.height = CANVAS_SIZE;
@@ -43,16 +43,6 @@ function updateColors() {
 }
 updateColors();
 
-// Listen for updates from settings
-if (window.electronAPI) {
-    window.electronAPI.getSettings().then(s => {
-        if (s.accentColor) updateColors();
-    });
-    window.electronAPI.onSettingsChanged((s) => {
-        if (s.accentColor) setTimeout(updateColors, 50);
-    });
-}
-
 // ── Particle System ───────────────────────────────────────────
 class Particle {
     constructor(x, y, color) {
@@ -74,8 +64,6 @@ class Particle {
         ctx.save();
         ctx.globalAlpha = this.alpha;
         ctx.fillStyle = this.color;
-        ctx.shadowBlur = 10;
-        ctx.shadowColor = this.color;
         ctx.fillRect(this.x, this.y, this.size, this.size);
         ctx.restore();
     }
@@ -84,48 +72,42 @@ const particles = [];
 
 // ── Graphics ──────────────────────────────────────────────────
 function draw() {
-    ctx.fillStyle = '#050508';
+    ctx.fillStyle = '#000000';
     ctx.fillRect(0, 0, CANVAS_SIZE, CANVAS_SIZE);
 
-    // Draw Grid (Subtle)
-    ctx.strokeStyle = 'rgba(255,255,255,0.02)';
-    ctx.lineWidth = 1;
+    // Draw Grid (Subtle flat 0.5px borders)
+    ctx.strokeStyle = '#252525';
+    ctx.lineWidth = 0.5;
     for (let i = 0; i <= TILE_COUNT; i++) {
         ctx.beginPath(); ctx.moveTo(i * GRID_SIZE, 0); ctx.lineTo(i * GRID_SIZE, CANVAS_SIZE); ctx.stroke();
         ctx.beginPath(); ctx.moveTo(0, i * GRID_SIZE); ctx.lineTo(CANVAS_SIZE, i * GRID_SIZE); ctx.stroke();
     }
 
-    // Draw Food
+    // Draw Food (Flat solid white box)
     ctx.save();
-    ctx.fillStyle = '#ff3366';
-    ctx.shadowBlur = 15;
-    ctx.shadowColor = '#ff3366';
+    ctx.fillStyle = '#ffffff';
     ctx.beginPath();
-    ctx.arc(food.x * GRID_SIZE + GRID_SIZE/2, food.y * GRID_SIZE + GRID_SIZE/2, GRID_SIZE/3, 0, Math.PI * 2);
+    ctx.roundRect(food.x * GRID_SIZE + 3, food.y * GRID_SIZE + 3, GRID_SIZE - 6, GRID_SIZE - 6, 2);
     ctx.fill();
     ctx.restore();
 
-    // Draw Snake
+    // Draw Snake (Flat head, outline wireframe tail segments)
     snake.forEach((segment, i) => {
         ctx.save();
-        const opacity = 1 - (i / snake.length) * 0.6;
-        const grad = ctx.createLinearGradient(
-            segment.x * GRID_SIZE, segment.y * GRID_SIZE,
-            (segment.x + 1) * GRID_SIZE, (segment.y + 1) * GRID_SIZE
-        );
-        grad.addColorStop(0, '#ffffff');
-        grad.addColorStop(1, ACCENT);
-        
-        ctx.fillStyle = grad;
-        ctx.globalAlpha = opacity;
-        ctx.shadowBlur = i === 0 ? 20 : 5;
-        ctx.shadowColor = ACCENT;
-        
-        // Rounded segments
-        const r = 6;
+        const r = 2; // Sharp corners matching D:\ocal style
         ctx.beginPath();
-        ctx.roundRect(segment.x * GRID_SIZE + 1, segment.y * GRID_SIZE + 1, GRID_SIZE - 2, GRID_SIZE - 2, r);
-        ctx.fill();
+        ctx.roundRect(segment.x * GRID_SIZE + 2, segment.y * GRID_SIZE + 2, GRID_SIZE - 4, GRID_SIZE - 4, r);
+        if (i === 0) {
+            ctx.fillStyle = ACCENT;
+            ctx.fill();
+        } else {
+            ctx.fillStyle = '#1e1e1e';
+            ctx.strokeStyle = ACCENT;
+            ctx.lineWidth = 1.5;
+            ctx.globalAlpha = 1 - (i / snake.length) * 0.5; // Fade out towards tail
+            ctx.fill();
+            ctx.stroke();
+        }
         ctx.restore();
     });
 
@@ -176,7 +158,7 @@ function moveSnake() {
         score += 10;
         scoreEl.innerText = score;
         spawnFood();
-        spawnParticles(head.x * GRID_SIZE + 10, head.y * GRID_SIZE + 10, '#ff3366', 15);
+        spawnParticles(head.x * GRID_SIZE + 10, head.y * GRID_SIZE + 10, '#ffffff', 15);
         gameSpeed = Math.max(50, 100 - Math.floor(score / 50) * 5);
     } else {
         snake.pop();

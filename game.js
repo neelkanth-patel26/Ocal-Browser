@@ -12,8 +12,8 @@ const finalScoreEl = document.getElementById('final-score');
 const restartBtn = document.getElementById('restartBtn');
 
 // Config
-let ACCENT = '#a855f7';
-let ACCENT_GLOW = 'rgba(168, 85, 247, 0.4)';
+let ACCENT = '#e8ff47';
+let ACCENT_GLOW = 'rgba(232, 255, 71, 0.4)';
 const CANVAS_WIDTH = 800;
 const CANVAS_HEIGHT = 400;
 const GROUND_Y = 320;
@@ -37,7 +37,7 @@ function updateColors() {
         
         const hexToRgba = (hex, alpha) => {
             const result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
-            if (!result) return `rgba(168, 85, 247, ${alpha})`;
+            if (!result) return `rgba(232, 255, 71, ${alpha})`;
             const r = parseInt(result[1], 16);
             const g = parseInt(result[2], 16);
             const b = parseInt(result[3], 16);
@@ -49,19 +49,9 @@ function updateColors() {
 }
 updateColors();
 
-// Listen for updates from settings
-if (window.electronAPI) {
-    window.electronAPI.getSettings().then(s => {
-        if (s.accentColor) updateColors();
-    });
-    window.electronAPI.onSettingsChanged((s) => {
-        if (s.accentColor) setTimeout(updateColors, 50);
-    });
-}
-
 function getRgbValues(hex) {
     const result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
-    if (!result) return '168, 85, 247';
+    if (!result) return '232, 255, 71';
     const r = parseInt(result[1], 16);
     const g = parseInt(result[2], 16);
     const b = parseInt(result[3], 16);
@@ -89,8 +79,6 @@ class Particle {
         ctx.save();
         ctx.globalAlpha = this.alpha;
         ctx.fillStyle = this.color;
-        ctx.shadowBlur = 5;
-        ctx.shadowColor = this.color;
         ctx.fillRect(this.x, this.y, this.size, this.size);
         ctx.restore();
     }
@@ -112,19 +100,12 @@ class Obstacle {
     }
     draw() {
         ctx.save();
-        const grad = ctx.createLinearGradient(this.x, this.y, this.x, this.y + this.h);
-        grad.addColorStop(0, '#ff2d55');
-        grad.addColorStop(1, '#6b0f1a');
-        ctx.fillStyle = grad;
-        ctx.shadowBlur = 15;
-        ctx.shadowColor = 'rgba(255, 45, 85, 0.5)';
+        ctx.fillStyle = '#1e1e1e';
+        ctx.strokeStyle = ACCENT;
+        ctx.lineWidth = 1.5;
+        // Flat sharp block matching D:\ocal corners
         ctx.fillRect(this.x, this.y, this.w, this.h);
-        
-        // Inner detail line
-        ctx.strokeStyle = '#fff';
-        ctx.globalAlpha = 0.3;
-        ctx.lineWidth = 1;
-        ctx.strokeRect(this.x + 4, this.y + 4, this.w - 8, this.h - 8);
+        ctx.strokeRect(this.x, this.y, this.w, this.h);
         ctx.restore();
     }
 }
@@ -164,25 +145,21 @@ const player = {
     },
 
     draw() {
-        // Draw trail
+        // Draw trail as faint outline boxes
         this.trail.forEach((t, i) => {
-            ctx.fillStyle = ACCENT;
-            ctx.globalAlpha = t.alpha;
-            ctx.fillRect(t.x, t.y, this.w, this.h);
+            ctx.save();
+            ctx.strokeStyle = ACCENT;
+            ctx.globalAlpha = t.alpha * 0.3;
+            ctx.lineWidth = 1;
+            ctx.strokeRect(t.x, t.y, this.w, this.h);
+            ctx.restore();
         });
 
-        // Draw Player Body
+        // Draw Player Body (Flat solid with 2px corners)
         ctx.save();
-        ctx.globalAlpha = 1;
-        const grad = ctx.createLinearGradient(this.x, this.y, this.x + this.w, this.y + this.h);
-        grad.addColorStop(0, '#fff');
-        grad.addColorStop(1, ACCENT);
-        ctx.fillStyle = grad;
-        ctx.shadowBlur = 20;
-        ctx.shadowColor = ACCENT_GLOW;
-        // Rounded Player
+        ctx.fillStyle = ACCENT;
         ctx.beginPath();
-        const r = 8;
+        const r = 2; // Sharp corners matching D:\ocal style
         ctx.moveTo(this.x + r, this.y);
         ctx.arcTo(this.x + this.w, this.y, this.x + this.w, this.y + this.h, r);
         ctx.arcTo(this.x + this.w, this.y + this.h, this.x, this.y + this.h, r);
@@ -195,17 +172,17 @@ const player = {
 
 // ── Background Rendering ──────────────────────────────────────
 function drawBackground() {
-    // 1. Grid lines (3D perspective)
-    ctx.strokeStyle = `rgba(${getRgbValues(ACCENT)}, 0.15)`;
-    ctx.lineWidth = 1;
-
-    // Horizon line
+    // Ground line
+    ctx.strokeStyle = '#252525';
+    ctx.lineWidth = 1.5;
     ctx.beginPath();
     ctx.moveTo(0, GROUND_Y);
     ctx.lineTo(CANVAS_WIDTH, GROUND_Y);
     ctx.stroke();
 
-    // Vanishing point lines
+    // Perspective lines (Flat, very thin)
+    ctx.strokeStyle = 'rgba(255, 255, 255, 0.03)';
+    ctx.lineWidth = 1;
     for (let i = -10; i < 20; i++) {
         const spacing = 100;
         ctx.beginPath();
@@ -214,14 +191,14 @@ function drawBackground() {
         ctx.stroke();
     }
 
-    // Horizontal moving lines
+    // Horizontal grid stripes
     const gridSpacing = 50;
     const gridOffset = (frameCount * (gameSpeed * 0.5)) % gridSpacing;
     for (let i = 0; i < 10; i++) {
         const y = GROUND_Y + i * gridSpacing - gridOffset;
         if (y < GROUND_Y) continue;
         const opacity = (y - GROUND_Y) / (CANVAS_HEIGHT - GROUND_Y);
-        ctx.strokeStyle = `rgba(${getRgbValues(ACCENT)}, ${opacity * 0.3})`;
+        ctx.strokeStyle = `rgba(${getRgbValues(ACCENT)}, ${opacity * 0.08})`;
         ctx.beginPath();
         ctx.moveTo(0, y);
         ctx.lineTo(CANVAS_WIDTH, y);
@@ -297,7 +274,7 @@ function triggerGameOver() {
     cancelAnimationFrame(animationId);
     
     // Impact Effect
-    spawnParticles(player.x + 20, player.y + 20, '#ff2d55', 30);
+    spawnParticles(player.x + 20, player.y + 20, ACCENT, 30);
     
     // Handle Scores
     if (score > highScore) {

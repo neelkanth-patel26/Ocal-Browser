@@ -49,18 +49,6 @@ document.addEventListener('DOMContentLoaded', () => {
     setTimeout(() => {
         document.body.classList.add('loaded');
     }, 100);
-
-    // Dynamically load speed dial favicons using Google S2 service
-    document.querySelectorAll('.tile-item').forEach(tile => {
-        const url = tile.dataset.url;
-        const box = tile.querySelector('.tile-box');
-        if (url && box) {
-            const domain = url;
-            const originalIconHtml = box.innerHTML;
-            const safeIconHtml = originalIconHtml.replace(/"/g, '&quot;').replace(/'/g, '&#39;');
-            box.innerHTML = `<img src="https://www.google.com/s2/favicons?domain=${domain}&sz=64" class="tile-favicon" style="width: 24px; height: 24px; object-fit: contain; border-radius: 4px;" onerror="this.outerHTML='${safeIconHtml}'">`;
-        }
-    });
 });
 
 // ── Tick (Clock & Dynamic Greeting) ──────────────────────────────

@@ -1,25 +1,43 @@
 @import url('./assets/fonts/geist-fonts.css');
 
 :root {
-    --background: #09090b;
-    --foreground: #f4f4f5;
+    --background: #0c0c0c;
+    --foreground: #e8e8e8;
     --accent: #09f0a0;
-    --accent-glow: rgba(9, 240, 160, 0.25);
-    --accent-dim: rgba(9, 240, 160, 0.1);
-    --accent-border: rgba(9, 240, 160, 0.3);
-    --bg: #09090b;
-    --sidebar-bg: #121214;
-    --card-bg: #18181b;
-    --card-border: #27272a;
-    --card-hover-bg: #202024;
-    --border-color: #202024;
-    --text-main: #f4f4f5;
-    --text-dim: #a1a1aa;
-    --text-muted: #71717a;
-    --font-title: 'Geist', -apple-system, BlinkMacSystemFont, sans-serif;
-    --font-main: 'Geist', -apple-system, BlinkMacSystemFont, sans-serif;
+    --accent-glow: rgba(9, 240, 160, 0.12);
+    --accent-dim: rgba(9, 240, 160, 0.12);
+    --accent-border: #09f0a0;
+    --bg: #0c0c0c;
+    --sidebar-bg: #111111;
+    --card-bg: #111111;
+    --card-border: #252525;
+    --card-hover-bg: #1e1e1e;
+    --border-color: #252525;
+    --text-main: #e8e8e8;
+    --text-dim: rgba(255, 255, 255, 0.6);
+    --text-muted: rgba(255, 255, 255, 0.38);
+    --font-title: 'Geist', sans-serif;
+    --font-main: 'Geist Mono', monospace;
     --font-mono: 'Geist Mono', monospace;
-    --radius: 8px;
+    --radius: 12px;
+}
+
+body[data-theme="light"] {
+    --background: #f5f5f5;
+    --foreground: #1a1a1a;
+    --accent: #059669;
+    --accent-glow: rgba(5, 150, 105, 0.12);
+    --accent-dim: rgba(5, 150, 105, 0.06);
+    --accent-border: #059669;
+    --bg: #f5f5f5;
+    --sidebar-bg: #fafafa;
+    --card-bg: #ffffff;
+    --card-border: #e0e0e0;
+    --card-hover-bg: #f0f0f0;
+    --border-color: #e0e0e0;
+    --text-main: #1a1a1a;
+    --text-dim: #555555;
+    --text-muted: #999999;
 }
 
 * {
@@ -31,12 +49,13 @@
 
 body {
     font-family: var(--font-main);
-    background: var(--bg);
+    background: transparent;
     color: var(--text-main);
     height: 100vh;
     width: 100vw;
     overflow: hidden;
     -webkit-font-smoothing: antialiased;
+    border-radius: 12px;
 }
 
 .app-container {
@@ -101,7 +120,7 @@ body {
     font-family: var(--font-title);
     font-size: 16px;
     font-weight: 700;
-    color: #fff;
+    color: var(--text-main);
 }
 
 .sidebar-nav {
@@ -155,8 +174,8 @@ body {
 }
 
 .nav-item:hover {
-    background: rgba(255, 255, 255, 0.03);
-    color: #fff;
+    background: var(--card-hover-bg);
+    color: var(--text-main);
 }
 
 .nav-item:hover i {
@@ -166,7 +185,7 @@ body {
 
 .nav-item.active {
     background: var(--accent-dim);
-    color: #fff;
+    color: var(--text-main);
     border: 1px solid var(--accent-border);
 }
 
@@ -178,12 +197,12 @@ body {
 .sidebar-footer {
     padding: 20px;
     border-top: 1px solid var(--border-color);
-    background: rgba(0, 0, 0, 0.1);
+    background: var(--card-bg);
 }
 
 .security-cluster {
     margin-bottom: 16px;
-    background: rgba(255, 255, 255, 0.02);
+    background: transparent;
     border: 1px solid var(--border-color);
     padding: 12px;
     border-radius: var(--radius);
@@ -210,7 +229,7 @@ body {
     height: 40px;
     background: var(--accent);
     border: 1px solid var(--accent);
-    color: #000;
+    color: var(--bg);
     font-family: var(--font-main);
     font-size: 13px;
     font-weight: 600;
@@ -224,9 +243,9 @@ body {
 }
 
 .analyze-btn:hover {
-    background: #fff;
-    color: #000;
-    border-color: #fff;
+    background: var(--text-main);
+    color: var(--bg);
+    border-color: var(--text-main);
 }
 
 .analyze-btn:disabled {
@@ -271,7 +290,7 @@ body {
     font-family: var(--font-title);
     font-size: 20px;
     font-weight: 700;
-    color: #fff;
+    color: var(--text-main);
     margin-bottom: 4px;
 }
 
@@ -305,7 +324,7 @@ body {
 }
 
 .search-box {
-    background: rgba(255, 255, 255, 0.03);
+    background: var(--card-bg);
     border: 1px solid var(--border-color);
     border-radius: var(--radius);
     padding: 0 14px;
@@ -319,8 +338,7 @@ body {
 
 .search-box:focus-within {
     border-color: var(--accent);
-    box-shadow: 0 0 0 2px var(--accent-dim);
-    background: rgba(0, 0, 0, 0.2);
+    background: var(--card-hover-bg);
 }
 
 .search-box i {
@@ -335,7 +353,7 @@ body {
 .search-box input {
     background: transparent;
     border: none;
-    color: #fff;
+    color: var(--text-main);
     font-size: 13px;
     width: 100%;
     font-family: var(--font-main);
@@ -348,7 +366,7 @@ body {
 .view-terminal {
     display: flex;
     padding: 2px;
-    background: rgba(255, 255, 255, 0.02);
+    background: var(--card-bg);
     border-radius: var(--radius);
     border: 1px solid var(--border-color);
     gap: 2px;
@@ -371,12 +389,12 @@ body {
 
 .view-btn.active {
     background: var(--accent);
-    color: #000;
+    color: var(--bg);
 }
 
 .view-btn:hover:not(.active) {
-    background: rgba(255, 255, 255, 0.05);
-    color: #fff;
+    background: var(--card-hover-bg);
+    color: var(--text-main);
 }
 
 /* ── File Explorer Content ── */
@@ -411,14 +429,14 @@ body {
 .file-item:hover {
     background: var(--card-hover-bg);
     border-color: var(--accent-border);
-    transform: translateY(-2px);
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+    transform: none;
+    box-shadow: none;
 }
 
 .file-item.selected {
     background: var(--accent-dim) !important;
     border-color: var(--accent) !important;
-    box-shadow: 0 0 0 1px var(--accent);
+    box-shadow: none;
 }
 
 .file-icon {
@@ -429,11 +447,11 @@ body {
     justify-content: center;
     margin-bottom: 12px;
     color: var(--accent);
-    transition: transform 0.2s ease;
+    transition: none;
 }
 
 .file-item:hover .file-icon {
-    transform: scale(1.05);
+    transform: none;
 }
 
 .file-name {
@@ -547,7 +565,7 @@ body {
     display: flex;
     align-items: center;
     justify-content: space-between;
-    background: rgba(0, 0, 0, 0.15);
+    background: var(--card-bg);
     border-top: 1px solid var(--border-color);
     font-size: 11px;
     font-weight: 500;
@@ -583,12 +601,12 @@ body {
 /* ── Context Menu ── */
 .custom-context-menu {
     position: fixed;
-    background: #1c1c1f;
-    border: 1px solid #2d2d30;
+    background: var(--card-bg);
+    border: 1px solid var(--border-color);
     border-radius: var(--radius);
     min-width: 160px;
     padding: 4px;
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4);
+    box-shadow: none;
     z-index: 10000;
     display: none;
 }
@@ -608,7 +626,7 @@ body {
 
 .menu-item:hover {
     background: var(--accent);
-    color: #000;
+    color: var(--bg);
 }
 
 .menu-item i {
@@ -619,7 +637,7 @@ body {
 
 .menu-divider {
     height: 1px;
-    background: rgba(255, 255, 255, 0.05);
+    background: var(--border-color);
     margin: 4px 0;
 }
 
@@ -639,10 +657,10 @@ body {
 }
 
 ::-webkit-scrollbar-thumb {
-    background: rgba(255, 255, 255, 0.08);
+    background: var(--border-color);
     border-radius: 10px;
 }
 
 ::-webkit-scrollbar-thumb:hover {
-    background: rgba(255, 255, 255, 0.15);
+    background: var(--text-muted);
 }

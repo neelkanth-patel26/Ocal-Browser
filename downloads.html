@@ -10,17 +10,17 @@
     <link rel="stylesheet" href="assets/fontawesome/css/all.min.css">
     <style>
         :root {
-            --panel-bg: #1a1a1e;
-            --border: #2d2d30;
+            --panel-bg: #111111;
+            --border: #252525;
             --accent: #09f0a0;
             --accent-glow: rgba(9, 240, 160, 0.2);
             --accent-dim: rgba(9, 240, 160, 0.12);
-            --card-bg: #1a1a1e;
-            --card-border: #2d2d30;
-            --card-hover-bg: #28282d;
+            --card-bg: #111111;
+            --card-border: #252525;
+            --card-hover-bg: #1e1e1e;
             --card-hover-border: var(--accent);
             --text: #e8e8e8;
-            --text-dim: #9ca3af;
+            --text-dim: #666666;
             --radius: 12px;
         }
 
@@ -73,17 +73,8 @@
             overflow: hidden;
         }
 
-        /* Top-light highlight to match topbar */
         .popup-panel::before {
-            content: ''; position: absolute; inset: 0;
-            background: linear-gradient(180deg, rgba(255,255,255,0.04) 0%, transparent 15%);
-            pointer-events: none;
-            border-radius: inherit;
-            z-index: 3;
-        }
-
-        body[data-theme="light"] .popup-panel::before {
-            background: linear-gradient(180deg, rgba(0,0,0,0.02) 0%, transparent 15%);
+            display: none !important;
         }
 
         .header {
@@ -157,7 +148,7 @@
             transition: all 0.5s;
         }
         .empty-state:hover i {
-            transform: translateY(-5px);
+            transform: none;
             opacity: 0.7;
             color: var(--accent);
         }

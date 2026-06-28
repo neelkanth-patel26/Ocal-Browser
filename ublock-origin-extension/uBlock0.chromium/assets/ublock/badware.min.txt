@@ -1,6 +1,6 @@
 ! Title: uBlock filters – Badware risks
 ! Expires: 5 days
-! Last modified: Tue, 10 Mar 2026 13:34:17 +0000
+! Last modified: Mon, 11 May 2026 12:50:24 +0000
 ! Diff-Path: %diffpath%#ublock-badware
 ! Diff-Expires: 317 minutes
 ! License: https://github.com/uBlockOrigin/uAssets/blob/master/LICENSE
@@ -270,7 +270,6 @@ howtoremove.guide###gray_de
 ||buddygays.com^$all
 ||localsnapsext.com^$all
 .php?key=*cost=$doc,popup
-||djin.site^$all
 ||antivirus.landerhd.com^$all
 /?clck=*&sid=$doc
 ||love7date.info^$all
@@ -307,7 +306,6 @@ howtoremove.guide###gray_de
 /?clickid=*&ptracker=$doc
 ||vehicle-insurance-quote.com^$all
 ^lpkey=*&uclickhash=$doc
-||d135aysof2oufc.cloudfront.net^$all
 /?banner=*&phone=$doc
 ||advidates.com^$all
 ||dvjqvdfujjvvkuyvhjqdvbjcmioljbhjmijq.s3.ap-northeast-1.amazonaws.com^$all
@@ -340,7 +338,6 @@ howtoremove.guide###gray_de
 /?cid=*&dom=$doc
 /?type=*&button=2&clickid=$doc
 ^device_model=*&p1=https$doc
-||5.61.55.143^
 .biz/sw/w1s.js|$script,3p
 /click.php?key=*&cpc=0&$doc
 ||37.1.213.100^
@@ -415,13 +412,11 @@ howtoremove.guide###gray_de
 ||www3secure.com^$all
 ||midnighthookup.today^$all
 ||padsthai.com^$all
-||dirtyflirt9.com^$all
 ||bmtracks.com^$all
 ||bustymeets.com^$all
 ||aht42trk.com^$all
 /mc-test/*/index.php?cid=$doc
 ||attractivecutiewcx.com^$all
-||click-allow.top^
 ||newonlinedates.com^$all
 /?l=*&ymid=$doc
 .com/r2.php?e=$doc
@@ -457,7 +452,6 @@ howtoremove.guide###gray_de
 /utility/adult/*/index.html?$doc
 /1/index.html?c=$doc
 /2/index.html?c=$doc
-||binomasia.com^$all
 /protectme_new1/index.html?$doc
 ||remor.xyz^$all
 ||github.io/health-records-x-ray$doc
@@ -489,9 +483,6 @@ howtoremove.guide###gray_de
 ||malenirt.site^$all
 /post/FileRotator_ID*/download.php?subid=$xhr
 /bonus/com-*.php?c=$doc
-||arousalx.com^$all
-||eroticher.com^$all
-||lovenestx.com^$all
 ||dekarise.site^$all
 ://click-v4.*.com/click?$doc
 ://xml-v4.*.online/click?$doc
@@ -502,7 +493,6 @@ howtoremove.guide###gray_de
 .com/k082rwq?t=$doc
 .com/t6pp7e3?t=$doc
 ||derriar.site^$all
-||b2base252.top^$all
 ||smartgethub.com^$all
 /?utm_source=*&j1=1^$doc
 /video_app/new/adult/*/index.html?$doc
@@ -514,7 +504,6 @@ howtoremove.guide###gray_de
 ||wild-match-network.com^$all
 ||meetandlovenow.com^$all
 ||meetfindlove.com^$all
-||connectifylink.com^$all
 /click.php?key=*&zoneid=$doc
 .co.in/01/?cid=$doc
 .co/?mlk=$doc
@@ -529,6 +518,8 @@ howtoremove.guide###gray_de
 ||cdnservice.ink^$all
 .co.in/a0x1/?cid=$doc
 &ntw=adsterra_int$doc
+/dc?pl=*&click_id=$doc
+||dcrtb-pixel.com^$doc
 ||vaccination.gov.ng^$doc
 ||thebook.digital^$all
 ||pdf-up.com^$all
@@ -584,9 +575,7 @@ howtoremove.guide###gray_de
 ||projecthygieia.com^$all
 ||fusionhacks.cc^$doc
 ||mysoft.rest^$all
-||lunexmods.cc^$doc
-||lunexmods.io^$doc
-||soft-hub.site^$doc
+||iridia.me^$doc
 .systems/signup?ad_domain=$doc,popup
 ! fake software updaters /redirections
 ||atnpx.com^
@@ -639,7 +628,6 @@ howtoremove.guide###gray_de
 ##.buttonautocl
 ||greenadblocker.com^$doc
 ||flash.cn^$all
-||foxmods.xyz^$doc
 ! phishing /malicious
 ||gesas.it^$doc
 ||techinnsrl.com^$doc
@@ -710,11 +698,7 @@ cracksmid.com##div[style=""] > center > center
 ||crackingpatching.com^$doc
 ||patchedfiles.com^$doc
 ||filexstorage.site^$all
-||34y26s47.cfd^$all
-||atof42ap.click^$all
-||kz3wnibp.cfd^$all
 ||worshippers.store^$all
-||decisionsem.live^$all
 ||deliberatelyot.space^$all
 ||ozycode.cfd^$all
 ||readyf1.click^$all
@@ -759,6 +743,7 @@ cracksmid.com##div[style=""] > center > center
 %3C?php%20echo%20substr(md5(microtime()),0,rand(10,30));?%3E&$doc
 /?*&gkss=$doc,to=cfd|click|pro|world|xyz
 ^click_id=*&s1=$doc
+.com/casino?registration=1&cid=$doc
 ||cfd/file?ajk=$doc,popup
 ||cfd/mnllcontent-$popup
 ||theannoyingsite.com^$all
@@ -813,7 +798,6 @@ cracksmid.com##div[style=""] > center > center
 ||blisterlngdate.com^$all
 ||fapello.xyz^$all
 ||bavaria-cup.ru^$all
-||manage-fpw-my-sakura-fpw-jp-fpw.impulsion.mu^$all
 ||honda-law-office.jp/wp-includes/70038/Earthcorejp/|$doc
 ||itsaol.com^$all
 ||qhigh.com^$all
@@ -849,6 +833,8 @@ cracksmid.com##div[style=""] > center > center
 ||ads.twitter.center^$all
 ||divibase.xyz^$all
 ||kensatsu.top^$all
+||lincolnforestlakeproject.com^$all
+||safeageplan.link^$all
 ! scam sites
 ||webuzz.me^$doc
 ||coup-ling.net^$all
@@ -904,7 +890,6 @@ cracksmid.com##div[style=""] > center > center
 ||k-colorful.jp^$doc
 ||k1wa.jp^$doc
 ||kaiun-com.com^$doc
-||keep.secret-ace.com^$doc
 ||koiroom.net^$doc
 ||koiroomnotice.net^$doc
 ||koun-yogen.com^$doc
@@ -947,7 +932,6 @@ cracksmid.com##div[style=""] > center > center
 ||privatelife.jp^$doc
 ||r30address.com^$doc
 ||r30deai.com^$doc
-||reddishpurple.com^$doc
 ||reverita-t.jp^$doc
 ||ripiai.com^$doc
 ||romancetime.jp^$doc
@@ -979,7 +963,6 @@ cracksmid.com##div[style=""] > center > center
 ||asiansgetnaughty.com^$doc
 ||blackstunners.com^$doc
 ||budhump.com^$doc
-||connect-wp.net^$doc
 ||eternal.mobius-loop.net^$doc
 ||fukuinnnokotoba.com^$doc
 ||humpbuds.com^$doc
@@ -1000,10 +983,8 @@ cracksmid.com##div[style=""] > center > center
 ||okai.work^$doc
 ||pdss3a1r.jp^$doc
 ||pfunding-01.com^$doc
-||sall.etchat.jp^$doc
 ||toki-no-irodori.com^$doc
 ||tomodachixoxo.wixsite.com^$doc
-||triangle123.com^$doc
 ||ukokjxfbdqwffmuvsd.jp^$doc
 ||vf5rkgirsir8ska.jpn.com^$doc
 ||vitop7eg5sqwgbk.jpn.com^$doc
@@ -1060,13 +1041,11 @@ cracksmid.com##div[style=""] > center > center
 ||xxa.uji8979erd77.jp^$doc
 ||y-tradie.com^$doc
 ||best-web2020.com^$doc
-||dosudosuo.com^$doc
 ||female-good.work^$doc
 ||foundate-core.net^$doc
 ||li-neeee.net^$doc
 ||make2022.com^$doc
 ||sbfw.work^$doc
-||tim.time-time-zyunizi.com^$doc
 ||xxxmake.com^$doc
 ||1litteno.home-walil1.jp^$doc
 ||1st-mail.jp^$doc
@@ -1081,8 +1060,6 @@ cracksmid.com##div[style=""] > center > center
 ||atchm.net^$doc
 ||bontruth.com^$doc
 ||cosdate.jp^$doc
-||cxbvnmyeruw.com^$doc
-||d-hiyori.com^$doc
 ||daisukimatch.jp^$doc
 ||defendeerrpro.jp^$doc
 ||diamond-line.net^$doc
@@ -1222,7 +1199,6 @@ cracksmid.com##div[style=""] > center > center
 ||mmnav.jp^$doc
 ||moecoco.com^$doc
 ||mymymy.net^$doc
-||natadecoco.net^$doc
 ||naughtydate.com^$doc
 ||newhoney.jp^$doc
 ||nuide.net^$doc
@@ -1275,7 +1251,6 @@ cracksmid.com##div[style=""] > center > center
 ||life-is-luminous.com^$doc
 ||00ebjdbagyqwt.club^$doc
 ||0didjsgheje.club^$doc
-||5050.fm^$doc
 ||after-7.net^$doc
 ||aikatuz.jp^$doc
 ||always-happy-fortune.com^$doc
@@ -1286,7 +1261,6 @@ cracksmid.com##div[style=""] > center > center
 ||charecttorr.jp^$doc
 ||charm-n.com^$doc
 ||chesscheckersvariation.com^$doc
-||circle7-bd.com^$doc
 ||club-house.link^$doc
 ||cocoro-liberty.com^$doc
 ||during-the-holiday.com^$doc
@@ -1332,7 +1306,6 @@ cracksmid.com##div[style=""] > center > center
 ||web.fe-vrier.com^$doc
 ||whpbrmdss.com^$doc
 ||wkdk.jp^$doc
-||6xy-zg.com^$doc
 ||dwoetbarcrooplsloiwh.com^$doc
 ||ytjon-d2s1ah.com^$doc
 ||lets-tip315.com^$doc
@@ -1362,7 +1335,6 @@ cracksmid.com##div[style=""] > center > center
 ||celezma.net^$doc
 ||loveru.jp^$doc
 ||t1amo.jp^$doc
-||fair.alivio-platform.com^$doc
 ||pair-seat.net^$doc
 ||pairseat.net^$doc
 ||sez.jp^$doc
@@ -1443,7 +1415,6 @@ cracksmid.com##div[style=""] > center > center
 ||lightning0707.com^$doc
 ||silversex.com^$doc
 ||flirttime.com^$doc
-||scene7goal3.work^$doc
 ||ma-rry.net^$doc
 ||ma-rry.site^$doc
 ||altdorfer-niklaus.com^$doc
@@ -1515,7 +1486,6 @@ cracksmid.com##div[style=""] > center > center
 ||tsumatsuma.xyz^$doc
 ||olive-ft.jp^$doc
 ||az-l.com^$doc
-||luna-t.net^$doc
 ||sm-bt.net^$doc
 ||sm-heaven.com^$doc
 ||smdotcom.com^$doc
@@ -1583,7 +1553,6 @@ cracksmid.com##div[style=""] > center > center
 ||manpuku-ja.jp^$doc
 ||ms-lounge.net^$doc
 ||sm-sl.net^$doc
-||xanadu-du.com^$doc
 ||enchantedfruit.com^$doc
 ||meltsweetbite.com^$doc
 ||ce0oil1ibu.com^$doc
@@ -1612,7 +1581,6 @@ cracksmid.com##div[style=""] > center > center
 ||xczzfvxknafgoawjtv.com^$doc
 ||lshyodrgehlnyswsjq.com^$doc
 ||yy4rhgzd.com^$doc
-||familymusicman.com^$doc
 ||colorfulromance.com^$doc
 ||gmatch.jp^$doc
 ||blue-uranai.com^$doc
@@ -1647,9 +1615,6 @@ cracksmid.com##div[style=""] > center > center
 ||event-experiment.com^$doc
 ||final-future.com^$doc
 ||ai-referee.com^$doc
-||cgcsarz0opg.jp^$doc
-||sakudon293ssp.jp^$doc
-||impoverishedordealscrutinize.com^$doc
 ||hfykmfd1.com^$doc
 ||lien-lienam.com^$doc
 ||rune-luna-moon.com^$doc
@@ -1710,7 +1675,6 @@ cracksmid.com##div[style=""] > center > center
 ||star789h.fun^$doc
 ||g5chat.com^$doc
 ||matchtap.site^$doc
-||memory-storage.net^$doc
 ||call-chieftain.com^$doc
 ||deep-dealings.com^$doc
 ||easy-elation.com^$doc
@@ -1732,11 +1696,8 @@ cracksmid.com##div[style=""] > center > center
 ||mailtherapyask.com^$doc
 ||xs525890.xsrv.jp^$doc
 ||echi-echi-time.org^$all
-||ten-lp2025.com^$doc
-||signingn.com^$doc
 ||f-fri.com^$doc
 ||f-fri.net^$doc
-||door-donation.jp^$doc
 ||active-achieve.com^$doc
 ||awesome-meeting.jp^$doc
 ||basic-bank.com^$doc
@@ -1767,26 +1728,16 @@ cracksmid.com##div[style=""] > center > center
 ||matchxxx.jp^$doc
 ||getma.tech^$doc
 ||matchzzz.jp^$doc
-||jobb2nd.com^$doc
 ||uly-sses8888.com^$doc
 ||another2020.net^$doc
 ||colorone.jp^$doc
-||ju6yid2e0tuq.com^$doc
-||ty5r6a0atu5r.com^$doc
-||xir6y7ey3ate.com^$doc
 ||elephant-904.com^$doc
-||mmsefdrkcdpsrkdr-meaha.com^$doc
-||nwberjyhruvqxswo-qxwne.com^$doc
-||pcnhdukovmhslmie-vgrbx.com^$doc
-||pdupmdatdenrfojs-wmzds.com^$doc
-||pyhrjedhlepcdkek-zyapg.com^$doc
 ||yoitoki.jp^$doc
 ||play.google.com/store/apps/details?id=com.ola.yoitoki^$doc
 ||tenkeifa.com^$doc
 ||tenkeiya.com^$doc
 ||tenkeiza.com^$doc
 ||datelove.cc^$doc
-||datelove.top^$doc
 ||loto-4x.com^$doc
 ||epicpotec.com^$doc
 ||nxishctcjccry.com^$doc
@@ -1797,7 +1748,6 @@ cracksmid.com##div[style=""] > center > center
 ||reveur-voyance.jp^$doc
 ||aura-and-color.com^$doc
 ||destinyholy.net^$doc
-||try-fortune.com^$doc
 ||fortune-moon.net^$doc
 ||hoshinokouranai.com^$doc
 ||irene-fortuna.com^$doc
@@ -1810,7 +1760,6 @@ cracksmid.com##div[style=""] > center > center
 ||dressedunlessround.com^$doc
 ||roundopportunityunless.com^$doc
 ||coc-gov.com^$doc
-||wjptf.top^$doc
 ||michiakari.com^$doc
 ||michiakagi.com^$doc
 ||michiakaza.com^$doc
@@ -1826,7 +1775,6 @@ cracksmid.com##div[style=""] > center > center
 ||teninorashinban.com^$doc
 ||covert-messaging.com^$doc
 ||discreet-discussions.com^$doc
-||global-ttalk.jp^$doc
 ||silent-messaging.com^$doc
 ||undercover-chats.com^$doc
 ||sub.astroline.today^$doc
@@ -1837,7 +1785,6 @@ cracksmid.com##div[style=""] > center > center
 ||k0ikana.com^$doc
 ||b-withyou.com^$doc
 ||w1thy0u.com^$doc
-||xmx.nineb-ittalk.com^$doc
 ||yuriyuri-yurayura.com^$doc
 ||celestica-premium.com^$doc
 ||egwj-ossi.com^$doc
@@ -2072,7 +2019,6 @@ cracksmid.com##div[style=""] > center > center
 ||7leaf-clover.net^$doc
 ||clover-seven.com^$doc
 ||dragomquesi.com^$doc
-||nfourteenpre.top^$doc
 ||pairry.jp^$doc
 ||qole-oracle.jp^$doc
 ||aurorra-fortune.com^$doc
@@ -2082,6 +2028,124 @@ cracksmid.com##div[style=""] > center > center
 ||juku-ai-club.fun^$doc
 ||juku-ai-club.pics^$doc
 ||jp24tv.live^$all
+||0spot.online^$doc
+||lovespot.online^$doc
+||assetmalnutrition.com^$doc
+||ballet-bandage.com^$doc
+||beloved.noemi-mia.com^$doc
+||boundarynight.com^$doc
+||caller-calculus.com^$doc
+||chatoxygen.com^$doc
+||dangle-daring.com^$doc
+||earnest-economist.com^$doc
+||faintly-fairness.com^$doc
+||habitantvillage.com^$doc
+||ignorezest.net^$doc
+||color10color.com^$doc
+||color10color.jp^$doc
+||elegance-love.net^$doc
+||elegance.spryest.com^$doc
+||sabito.kamadonezuko.com^$doc
+||fortune-gate-open.com^$doc
+||kibou-no-hane.com^$doc
+||z52r-hm7c3-e8qx.com^$doc
+||riundoor.com^$doc
+||supirichua.com^$doc
+||zeroclu6.com^$doc
+||njkgrwk-37hgw.com^$doc
+||esrzqibdfpah-xeb.com^$doc
+||xcvk.connectiamay-naat.com^$doc
+||fanforus.com^$doc
+||nhqueen.com^$doc
+||asiavibe.com^$doc
+||callyourdate.com^$doc
+||japansdates.com^$doc
+||kikon-link.com^$doc
+||air-look-send.com^$doc
+||air-we4.com^$doc
+||care-rtu.com^$doc
+||yus-air.com^$doc
+||anatomicallylaborer.com^$doc
+||anthemlazy.com^$doc
+||approximatelylimitation.com^$doc
+||capricious-chosen.com^$doc
+||cowardprotest.com^$doc
+||externalsuffice.com^$doc
+||fervortactic.com^$doc
+||forever.luna-malina.com^$doc
+||fortunatetransformation.com^$doc
+||fragranttransport.com^$doc
+||hypocrisyyard.com^$doc
+||michibiki-mori.com^$doc
+||rainbow-road.com^$doc
+||ritz-club.net^$doc
+||sakura-fund.com^$doc
+||m.midamarkets.cc^$doc
+||mpy.thesun-messa.com^$doc
+||sukimadate.com^$doc
+||dating4lover.com^$doc
+||datewhirl.com^$doc
+||meetheage.com^$doc
+||miaromance.com^$doc
+||wingtalks.com^$doc
+||shinpisaido.com^$doc
+||suzuri.jp/kinunhado^$doc
+||tokujiro.base.shop^$doc
+||tokujirou.stores.jp^$doc
+||uranai1111.base.shop^$doc
+||youtube.com/@kinun-ryujin^$doc
+||youtube.com/@kinunhadou^$doc
+||youtube.com/@ryujin_miko^$doc
+||youtube.com/@tokujiro7kinun^$doc
+||youtube.com/@%E7%99%BD%E8%9B%87%E5%BC%81%E8%B2%A1%E5%A4%A9%E7%A5%9E%E5%B7%AB^$doc
+||youtube.com/@%E9%87%91%E9%81%8B%E5%BC%81%E8%B2%A1%E5%A4%A9^$doc
+||lvluvlabo.jp^$doc
+||luvlabo.jp^$doc
+||revju.jp^$doc
+||yumemoba.jp^$doc
+||hapiapplp.com^$doc
+||happylapp.com^$doc
+||k-cobain.com^$doc
+||lilac-fortune.com^$doc
+||senshinsu.com^$doc
+||sonshinus.com^$doc
+||etrna.jp^$doc
+||permanan.com^$doc
+||rebetrna.jp^$doc
+||lux-the-destiny.com^$doc
+||misstooth456central.com^$doc
+||whitenoise554popular.com^$doc
+||worldwide012mental.com^$doc
+||plan-smlp.com^$doc
+||fortune-dojo.com^$doc
+||fortunedojo.net^$doc
+||kaiun-dojo.com^$doc
+||ogamiya.info^$doc
+||ogamiya.stores.jp^$doc
+||ballot-vivid.com^$doc
+||build-exert.com^$doc
+||caress-fussy.com^$doc
+||decade-orbit.com^$doc
+||exceed-curio.com^$doc
+||fable-smile.com^$doc
+||glad-uplifting.com^$doc
+||grace-achieve.jp^$doc
+||inborn-awash.com^$doc
+||namely-evoke.com^$doc
+||nimble-synth.com^$doc
+||ethics-whisk.com^$doc
+||please-zebra.com^$doc
+||rating-shave.com^$doc
+||saving-guard.com^$doc
+||thrive-one.jp^$doc
+||viewer-howdy.com^$doc
+||k1nd-talk.com^$doc
+||m1xm1x-real.com^$doc
+||mixmix-real.com^$doc
+||matchingitv.com^$doc
+||ialoop.net^$doc
+||amo.topescort.jp^$doc
+||swlife.jp^$doc
 ||webogram.ru^$all
 ||xn--80affa3aj0al.xn--80asehdb^$all
 ||telegr.am/user_mgt/login$all
@@ -2197,6 +2261,8 @@ cracksmid.com##div[style=""] > center > center
 ^Anph=(0101)-$doc
 /^https:\/\/[a-z]{5,20}-[0-9a-z]{16}\.z03\.azurefd\.net\/[0-9A-Za-z]+0[0-9A-Za-z]+\/index\.html/$doc,match-case,domain=z03.azurefd.net
 ||azurefd.net/?bcda=$doc
+?Kuph=1-$doc
+!://main.d*.amplifyapp.com/?$doc
 ||pages.dev/*/Fm7-alert.wav
 ||pages.dev/*/ai2.mp3
 ||pages.dev/*_Fm7-alert.mp3
@@ -2248,6 +2314,8 @@ cracksmid.com##div[style=""] > center > center
 .online/js/script6.js
 .online/js/script7.js
 .online/media/webs.mp4
+.xyz/js/esc.js
+.xyz/js/noir.js
 ||amplifyapp.com/*/js/esc.js
 ||amplifyapp.com/*/js/flscn.js
 ||core.windows.net/takashi.mp3
@@ -2303,6 +2371,13 @@ cracksmid.com##div[style=""] > center > center
 ||github.io/*/media/beep.mp3
 ||azurefd.net/media/beep.mp3
 ||azurefd.net/fullscreen.js
+||azurefd.net/js/esc.js
+||azurefd.net/js/flscn.js
+||azurefd.net/js/customone.js
+||azurefd.net/js/customtwo.js
+||azurefd.net/media/msc.mp3
+||amazonaws.com/_Fm7-alert.mp3
+||on-forge.com/win*/alert-en.wav
 z13.web.core.windows.net##+js(aeld, DOMContentLoaded, fullscreenEnabled)
 ! ClickFix
 /?js*&f=*&t=$xhr,redirect=noop.txt
@@ -2439,7 +2514,6 @@ www.cambe.pr.gov.br##+js(noeval-if, tigervip2)
 ||web3projects.substack.com^$all
 ||webpublic.substack.com^$all
 ||primeleech.com^$all
-||hostpdf.co^$all
 /cachingjs/settings.js
 /cachingjs/turboturbo.js
 /config?key=6922a2c8-d1e9-43be-b201-749543d28fe1
@@ -2672,7 +2746,6 @@ www.cambe.pr.gov.br##+js(noeval-if, tigervip2)
 ||dev-7614646544.pantheonsite.io^$all
 ||smsmmsernorepls.wixsite.com^$all
 ||orange234.wixsite.com^$all
-||mail.smartnetcom.ro^$all
 ||exbtengineers.com/o/$all
 ||servicemailorange25.wixsite.com^$all
 ||assistancesosh.wixsite.com^$all
@@ -2697,7 +2770,6 @@ www.cambe.pr.gov.br##+js(noeval-if, tigervip2)
 ||orders-processed.com^$all
 ||reviewstudio.com/-/en/gp/mas/your-account/$doc
 ! ebay
-||939l.xyz^$all
 ||51eabay.com^$all
 ||ebaydw.$all,to=ebaydw.cc|ebaydw.com
 ||pages.dev/errors/validateCaptcha^$doc
@@ -2756,7 +2828,6 @@ www.cambe.pr.gov.br##+js(noeval-if, tigervip2)
 ||mygovaus-$doc,to=~my.gov.au
 ||seeproc.com.br^$all
 ! gov.uk
-||liveflo.qxlva.io^$all
 ||student-finance-auth.firebaseapp.com^$all
 ||casadosvidrosmt.com.br/wp-admin/csii/$all
 ||smartaromas.com/income-individual_service_tax-gg-check-hm/$all
@@ -2813,7 +2884,6 @@ www.cambe.pr.gov.br##+js(noeval-if, tigervip2)
 ||nbtbank.architect-cert.fiservapps.com^$all
 ||douroweb.eu^$all
 ||gaoyinjiao.com^$all
-||nyfinance.ru^$all
 ||wester-union-u.vercel.app^$all
 ||vietcombank*.cfd^$all
 /^https:\/\/tpbank\.[-a-z0-9]{5,}\.[a-z]{3}(?:\.vn)?\//$doc,to=~edu|~gov|~gov.vn|~tpb.vn
@@ -2946,12 +3016,11 @@ www.cambe.pr.gov.br##+js(noeval-if, tigervip2)
 ||ads-verification-for-pay.vercel.app^$all
 ||report.case-referency.com^$all
 ||certify-issues-details-case.netlify.app^$all
-||facebock-page-center.com^$all
 ||www-mfacebook.$doc
 ||www-facebooks.$doc
-||www-facebook-$doc
 ||www-facebook.$doc
 ||vww-facebook.$doc
+||www-facebook-$doc,to=~translate.goog
 ||vww-facebook.com.vn^$all
 ||www-facebooks.com.vn^$all
 ||faceb00k.com.vn^$all
@@ -2968,7 +3037,7 @@ www.cambe.pr.gov.br##+js(noeval-if, tigervip2)
 ||appeal-account-copyright-case-review.$doc
 ||community-flagged-$doc
 ||help-for-work-*.pages.dev^$doc
-||http://marketplace-item-details-*.zya.me^$all
+||marketplace-item-details-*.zya.me^$all
 ||info-meta-noreply.com^$all
 /^https:\/\/business\.[a-z]+confii?rm\.com\/meta-community-standard\d{14,15}[^\d]?/$doc,match-case,to=com|~facebook.com
 /^https:\/\/business-component\.[a-z]+(-[a-z]+){2}\.com\//$doc,to=com|~facebook.com
@@ -3000,10 +3069,8 @@ www.cambe.pr.gov.br##+js(noeval-if, tigervip2)
 ||policycenter-auth-check.vercel.app^$all
 ||datasecurity-review-status.vercel.app^$all
 ||live-metasupport.com^$all
-||businesscreatorportal.com^$all
 ||fb-business.com^$all
 ||faecbook.vn^$all
-||counselschambers.co.uk^$doc
 ||online-ops.mypasschange.com^$all
 ||page-suspension.com^$all
 ||feacboolk.com^$all
@@ -3019,7 +3086,7 @@ www.cambe.pr.gov.br##+js(noeval-if, tigervip2)
 ||steamproxy.$all,to=steamproxy.cc|steamproxy.net|steamproxy.vip
 ||steam.zssjsq.com^$all
 ||steamcommunitylog.chez.com^$all
-/^https:\/\/s[cfntz]y?[ace][acemnu][a-z]{1,4}or?[mn][a-z]{4,8}[iy][a-z]?\.com\//$doc,to=com|~steamcommunity.com|~szentkoronaradio.com
+/^https:\/\/s[cfntz]y?[ace][acemnu][a-z]{1,4}or?[mn][a-z]{4,8}[iy][a-z]?\.com\//$doc,to=com|~steamcommunity.com|~stauntonandhenry.com|~szentkoronaradio.com
 /^https:\/\/s[cfntz]y?[ace][acemnu][a-z]{1,4}or?[mn][a-z]{4,8}[iy][a-z]?\.cc\//$doc,to=cc
 /^https:\/\/s[cfntz]y?[ace][acemnu][a-z]{1,4}or?[mn][a-z]{4,8}[iy][a-z]?\.ru\//$doc,to=ru
 /^https:\/\/steam\.(?:community)?workshop-?[a-z]+\.com\//$doc,to=com|~steamcommunity.com
@@ -3028,6 +3095,7 @@ www.cambe.pr.gov.br##+js(noeval-if, tigervip2)
 ||steamcommunity.^$doc,to=~steamcommunity.com
 ||namcards.com^$all
 ||shengsizhanchang.com^$all
+||communitystartgame.shop^$all
 ! mobilelegends
 ||mobilelegendsmycode.com^$all
 ! pubg
@@ -3046,7 +3114,6 @@ www.cambe.pr.gov.br##+js(noeval-if, tigervip2)
 ||exceklcmicrosftprotection.pages.dev^$all
 ||graettingerlaw.com^$all
 ||post.nationalrent.ru^$all
-||gocolonial.local-user.com^$all
 ||officesoftcn.com^$all
 ||athenasbaklava.com^$all
 ||e-outlook-online.com^$all
@@ -3072,7 +3139,6 @@ www.cambe.pr.gov.br##+js(noeval-if, tigervip2)
 ||microsofthotmailsi1.wixsite.com^$all
 ||supplieradvisor.ciamlogin.com^$all
 ||e-messsage.com^$all
-||supp0rt.co.za^$all
 ||vkcs.cloud/owa.html^$doc
 ||ocalam.com:8443/impact^$doc
 ||indylatinawrds.com:8443/impact^$doc
@@ -3229,7 +3295,6 @@ www.cambe.pr.gov.br##+js(noeval-if, tigervip2)
 ! upc
 ||wcomhost.com/ch/upc/$all
 ||crypto-idx.com^$all
-||tokenp0ckht.click^$all
 ||base-dawgz.web.app^$doc
 ||whitelist-memefi.com^$doc
 ||gz-gmy.com^$all
@@ -3260,11 +3325,12 @@ www.cambe.pr.gov.br##+js(noeval-if, tigervip2)
 ||base-swap-frontend-*.vercel.app^$doc
 ||final-claim.pages.dev^$doc
 ||alienxchain*.pages.dev^$doc
-||xcoinspro.com^$doc
 ||tariprotocol.com^$doc
+||safepal.com.co^$all
+||tronlink.com.co^$all
+||exodus.com.ag^$all
 ! swan.com
 /^https?:\/\/(?:www\.)?swan[0-9]\.[ctv][cio]p?\//$doc,to=cc|top|vip
-||bullishapp.cc^$all
 ||cc^$doc,ipaddress=15.207.81.128
 ||top^$doc,ipaddress=15.207.81.128
 ||vip^$doc,ipaddress=15.207.81.128
@@ -3318,7 +3384,6 @@ www.cambe.pr.gov.br##+js(noeval-if, tigervip2)
 ||lameo.buzz^$all
 ||bitenve.cc^$all
 ! imtoken
-||imtoken-bl.click^$all
 app##center#yangchen > iframe#external-frame[src="https://im136.mom/"]:not([class])
 ! pancakeswap
 ||pancakesswap.top^$all
@@ -3374,7 +3439,6 @@ app##center#yangchen > iframe#external-frame[src="https://im136.mom/"]:not([clas
 ||notifyhubss.net^$doc
 ||aolmaiillogin.blogspot.$doc
 ||afflatus.consulting/deutschepost/$all
-||drcolomo.com^$doc
 ||info-espanol-id-configes*.codeanyapp.com^$all
 ||codeanyapp.com/dgte/$doc
 ||lcldetecthumainweb*.firebaseapp.com^$all
@@ -3388,7 +3452,6 @@ app##center#yangchen > iframe#external-frame[src="https://im136.mom/"]:not([clas
 ||shimura-china.com^$all
 ||qufu.com.cn^$all
 ||glitch.me/public/NFCUAccess00.HTML^$doc
-||event-redeem.com^$all
 ||gz-plsl.web.app^$all
 ||vodafonetopup.com^$all
 ||aliique.fr^$all
@@ -3428,7 +3491,7 @@ app##center#yangchen > iframe#external-frame[src="https://im136.mom/"]:not([clas
 ||chamsocthekhachang-$doc
 ||nang-cap-$doc
 ||hdsaison-$doc,to=cc|vip|~hdsaison.com.vn
-||dichvucong.$doc,to=~gov.vn
+||dichvucong.$doc,to=~dcs.vn|~gov.vn
 ||tikimall.$doc,to=tikimall.*|~tiki.vn
 ||taikhoanvps.com.vn^$all
 ||motaikhoanchungkhoanvps.com^$all
@@ -3465,14 +3528,11 @@ app##center#yangchen > iframe#external-frame[src="https://im136.mom/"]:not([clas
 ||khuyenmaidacbiet-$doc
 ||uudaidacbiet-$doc
 /^https?:\/\/amazo[a-z]{2}\d\.com\//$doc,to=com|~amazon.com
-||cucantoanthongtin24h.com^$all
 ||dienlanhmayxanh.com^$all
 ||kythuatdmayxanh.com^$all
 ||khuyenmaithang-$doc
 ||han-muc-the-$doc
 ||hotrodacbiet-$doc
-||shopeesallers.com^$all
-||tkshopvn.vip^$all
 ||newmall*.cc^$doc
 ||chinhphu.*.org^$doc
 ||vienthongviettel.vn^$all
@@ -3544,7 +3604,6 @@ app##center#yangchen > iframe#external-frame[src="https://im136.mom/"]:not([clas
 ||highwaycpmrevenue.social-previews.top^$all
 ||clicksocialimage.top^$all
 ||blue-softs.com^$all
-||softs-download.com^$all
 ||pmequebeclic.com^$all
 ||sirokataldea.com^$all
 ||sites.google.com/view/blue-softs^$all
@@ -3591,7 +3650,6 @@ app##center#yangchen > iframe#external-frame[src="https://im136.mom/"]:not([clas
 ||mymercy.click^$doc
 ||direct2hr.click^$doc
 ||creditcardchase.click^$doc
-||alaskasworld.cfd^$doc
 ||iqpoll.cn^$doc
 ||tempisite.com^$all
 ||sparrowwallet.net^$doc
@@ -3830,14 +3888,14 @@ rapidkil.com.au##+js(aost, XMLHttpRequest, /wp-content)
 ||likeyoumakehappy.xyz^$all
 ||gtrewe.co.in^$all
 ||fiheos.co.in^$all
-||glousism.co.in^$all
-||tryrichleads.top^$all
 ||sentinelbotcore.co.in^$all
 ||kexornero.co.in^$all
 !#if !ext_ubol
 /^https?:\/\/[a-z0-9]{10,}\.[a-z]{9,}\.co\.in\//$all,to=co.in
 !#endif
 ||vironexta.com^$all
+||fusionchainedge.com^$all
+||jartibbinght.com^$all
 ||maxsecurityultimate.com^$all
 ||hotdebrid.com^$doc
 ||maxdebrid.com^$doc
@@ -3845,7 +3903,6 @@ rapidkil.com.au##+js(aost, XMLHttpRequest, /wp-content)
 ||okdebrid.com^$doc
 ||grass-io.$all,to=cc|vip|~getgrass.io
 ||inmotionhosting.com/~myapp/grass_air/$doc
-||pubgrlxvote.top^$all
 ||sites.google.com/view/entteraccess^$all
 ||sites.google.com/view/helpp2k^$all
 ||adsg00gle-v3.vercel.app^$all
@@ -3877,21 +3934,18 @@ rapidkil.com.au##+js(aost, XMLHttpRequest, /wp-content)
 ||deepseekapk.download^$all
 ||deepseekapp.download^$all
 ||paytoll*.top/ezdrivema^$all
-||hhcollect.co^$all
-||pay-hh.com^$all
-||harriscollect.net^$all
 -ez-pass.com^$doc
 ||thetollroads-$doc,to=top|xin|world
 /^https:\/\/help-\d{8}\.[a-z0-9]{6}-\d{2}\.click\//$doc,to=click|~facebook.com
 ||irs.gov.*.com^$doc
 ||govuk.*.top^$doc
 ||e-navy*.weebly.com^$doc
-||informationpolicy.cloud^$all
 ||only-fans.uk^$all
 ||apple-protect.com^$all
 !#if ext_ubol
 /^https:\/\/(?:[a-z]{3,5}|[ej][ac])\.[a-z]{4,10}\.[a-z]{2,6}\/item-(?:[0-9A-Za-z]{10}|\d{8}|[0-9a-f]{32})\.html$/$doc,match-case,to=art|autos|baby|best|boats|buzz|cards|cfd|click|cyou|eu|fit|fun|guru|hair|homes|ink|lat|lol|mom|my|pics|qpon|quest|rest|sale|sbs|skin|today|top|wiki|work|world|xyz
 /^https:\/\/(?:[a-z]{4,5}|[ej][ac])\.[a-z]{4,10}\.[a-z]{2,6}\/item-(?:[0-9A-Za-z]{10}|\d{8}|[0-9a-f]{32})\.html$/$doc,match-case,to=biz|blog|cc|cloud|club|info|life|live|me|one|online|shop|site|space|store
+/^https:\/\/([a-vx-z][a-z]{2,}\.)?[0-9a-z-]{3,}\.(com|net|org)\/index\.php\?main_page=product_info(&stl=\d)?&(cPath|products_id)=/$doc
 !#endif
 ||zoom.us*web.us^$doc
 ||e-zpass.com-$doc
@@ -3899,7 +3953,6 @@ rapidkil.com.au##+js(aost, XMLHttpRequest, /wp-content)
 ||fly.storage.tigris.dev/completing/default-page.html?X-Amz-Algorithm=$doc
 ||fly.storage.tigris.dev/pass-this-security-check.html?X-Amz-Algorithm=$doc
 /amvn_pops/?keyword=$doc
-||lossless-scaling.download-fast.com^$all
 ||tlauncher.org^$doc
 ||tlauncher.ru^$doc
 ||amezpay.com^$doc
@@ -3927,24 +3980,18 @@ rapidkil.com.au##+js(aost, XMLHttpRequest, /wp-content)
 ||kveesh6.il-$doc
 /^https:\/\/[0-9a-z]{6,8}\.[a-z]{2,10}\/[!.+,=?@\[][\/0-9a-z]{20,30}\.[-a-z]{2,7}$/$doc,to=agency|art|asia|auction|bar|beauty|beer|best|biz|bond|business|cam|cards|casa|click|cloud|coupons|courses|cv|digital|diy|fashion|food|forum|gay|guru|hair|info|life|live|living|link|ltd|my|ooo|property|pw|qpon|republican|rocks|run|sale|sbs|services|shop|skin|store|studio|support|surf|tattoo|tech|today|top|uno|watch|work,match-case
 /door/?ad_campaign_id=$doc
-||hansonherbo.com^$all
 ||en-trezor.io^$all
 ||coiincmi.com^$all
 ||swap-ether.site^$all
 ||raydiumx.org^$all
 ||v4-biswap.com^$all
-||kyberswap-v2.xyz^$all
-||soildly.pro^$all
 ||io-swap.net^$all
-||thor-swap.xyz^$all
-||rndex.xyz^$all
 ||finance-superchain.net^$all
 ||helplive-ledger.com^$all
 ||kodiak-finance.org^$all
 ||exc-v3.com^$all
 ||zeddexexchange.live^$all
 ||rabbltx.xyz^$all
-||alpaca-flnance.com^$all
 ||theuni-swap.com^$all
 ||us-ledger.io^$all
 ||en-bitcoin.org^$all
@@ -3999,31 +4046,6 @@ weightlossdiet.top##+js(acs, open, executeCode)
 ||talent-applications.com^$all
 ||talents-application.com^$all
 ||com^$doc,ipaddress=38.114.120.167
-||whale-alerts.org^$all
-||wobblefizz.top^$all
-||zingleflap.top^$all
-||floopdoodle.top^$all
-||wibblywob.top^$all
-||snickerdoodle.top^$all
-||wobbleguff.top^$all
-||sprocketwhirl.top^$all
-||jumblefizz.top^$all
-||quirkleblip.top^$all
-||twizzleflap.top^$all
-||fizzlepopcorn.top^$all
-||glimmerbloop.top^$all
-||noodlequack.top^$all
-||jibberjot.top^$all
-||blurflewhack.top^$all
-||snogglewomp.top^$all
-||flibberwump.top^$all
-||quizzlepuff.top^$all
-||digigtalneo.top^$all
-||digigtalwow.top^$all
-||spaceball.top^$all
-||iochange.top^$all
-||iospace.top^$all
-||zorpleflux.top^$all
 /^https:\/\/[a-z]{3,30}\.[a-z]{2,4}\/socket\.io\/socket\.io\.js$/$header=nel:/report_to":"cf-nel/,script,1p,strict1p,match-case,domain=ci|ge|eu|life
 ||stellar-coin.com^$all
 ||stellar-stb.com^$all
@@ -4037,7 +4059,6 @@ weightlossdiet.top##+js(acs, open, executeCode)
 ||cuocthiianhdepthieunhii2025.weebly.com^$all
 ||carrotsaystopping.com^$all
 ||webnotif.online^$all
-||virusscanner.live^$all
 ||live/click.php?key=$doc
 ||pttavm.*.com.tr^$doc
 ! zlib
@@ -4047,11 +4068,9 @@ weightlossdiet.top##+js(acs, open, executeCode)
 ||z-lib.ink^$doc
 ||z-lib.li^$doc
 ||z-lib.nl^$doc
-||zlib.to^$doc
 ||zlibrary.to^$doc
 ||z-library.cc^$doc
 ||z-lib.io^$doc
-||z-lib.yt^$doc
 ||z-lib.id^$doc
 ||z-lib.ws^$doc
 ||z-lib.lol^$doc
@@ -4135,7 +4154,6 @@ $doc,ipaddress=185.216.143.121
 /^https?:\/\/[a-z]+-gitcoin\.com\//$all,reason="Blatant scammers who are not related to GitHub or Gitcoin whatsoever."
 ||paradlgm.com^$all
 -ledger.live^$doc
-||guarda.dev^$all
 ||guardan.io^$all
 ||en-ledger-install.com^$all
 /^https:\/\/[a-z]{5,10}\.[a-z]{5,10}\.[a-z]{3}\/y1\.html$/$doc,match-case,to=com|top|~weebly.com
@@ -4159,13 +4177,10 @@ $doc,ipaddress=185.216.143.121
 ||htex-panel.at^$all
 ||simpleswap.ac^$all
 ||simpleswap.to^$all
-||simpleswap.at^$all
 ||simpleswap.ltd^$all
 ||simpleswap.online^$all
 ||pddeploy.com^$all
 ||killmalware.click^$all
-.com/SecurityPlugin.zip
-||morganryan.shop^$all
 ||tring-tring.com^$all
 *$doc,ipaddress=54.38.216.75
 ||vero-hr.click^$all
@@ -4179,12 +4194,12 @@ $doc,ipaddress=185.216.143.121
 ||unpkg.com/redirect-*/beamglea.js$script
 .com/article/auth=$doc
 ||stylexlab.ru^$doc
-||marktplaats.ch^$doc
 ||dogado.net/stadlholz/$doc
 pages.dev##html[lang="ja"] > body > .main-container > #landing.auth-container
 pages.dev##html[lang="ja"] > body.flex.items-center.min-h-screen > div.w-full.max-w-md.mx-auto > form#login-form
 pages.dev##html:not([class]) > body.gradient-bg.min-h-screen.flex.items-center.justify-center > div.glass-card.max-w-md.w-full.text-center > form#loginForm.flex.flex-col
 /^https:\/\/blockchecker[0-9]\.pages\.dev\//$doc,to=pages.dev
+/^https:\/\/xblock[0-9]+\.pages\.dev\//$doc,to=pages.dev
 ||xcheckx.pages.dev^$all
 ||gocheck.pages.dev^$all
 ||blocchecker*.pages.dev^$all
@@ -4192,6 +4207,7 @@ pages.dev##html:not([class]) > body.gradient-bg.min-h-screen.flex.items-center.j
 ||xblocklist*.pages.dev^$all
 ||xsuki*.pages.dev^$all
 ||bxchx.pages.dev^$all
+||xblockchecker*.pages.dev^$all
 *$doc,ipaddress=82.27.2.198
 *$doc,ipaddress=31.59.58.163
 ||lastpassrecovery.com^$all
@@ -4204,6 +4220,9 @@ sport.elwatannews.com##+js(aost, Array.prototype.indexOf, isWin)
 ||voting-express-tl.$doc
 ||sportifymore.ct.ws^$all
 ||voting-express-tl.ct.ws^$all
+||spotifyprimeszones-sl.ct.ws^$all
+||spotifyprimeszones-$doc
+||spotify*.ct.ws^$doc
 ||cs2beneluxtour.com^$all
 ||eplproseason25.com^$all
 ||eslpromasters.com^$all
@@ -4255,7 +4274,6 @@ sport.elwatannews.com##+js(aost, Array.prototype.indexOf, isWin)
 ||easybit.club^$doc
 ||easybit.site^$doc
 ||easybits.cc^$doc
-||simpleswap.name^$doc
 ||ff-exchange.vip^$doc
 ||ff-exchange.cloud^$doc
 ||us-aliexpress.com^$doc
@@ -4266,13 +4284,11 @@ sport.elwatannews.com##+js(aost, Array.prototype.indexOf, isWin)
 ||changeenow.at^$doc
 ||simpleswap.at^$doc
 ||charigelly.org^$doc
-||changenovv.net^$doc
 ||ff-exchange.space^$doc
 ||ff-exchange.me^$doc
 ||paynote.my^$doc
 ||fixedfloat.at^$doc
 ||pancake-exchange.org^$doc
-||changenovv.at^$doc
 ||cosmochanger.club^$doc
 ||cosmochanger.com^$doc
 ||simplesvvvap.cyou^$doc
@@ -4365,7 +4381,6 @@ sport.elwatannews.com##+js(aost, Array.prototype.indexOf, isWin)
 ||grabtrust.icu^
 ||uniswap.org.in^$all
 ||kyberswap-kyber-swap.com^$all
-||exodusl.com^$all
 ||nodegoai.com^$all
 ||app-trust.co.com^$all
 ||trastwallet.co.com^$all
@@ -4381,7 +4396,6 @@ sport.elwatannews.com##+js(aost, Array.prototype.indexOf, isWin)
 ||trezorsafety.com^$all
 ||matexvotes.ct.ws^$all
 ||bitboxinsurance.com^$all
-||exodus.net-sys.at^$all
 ||ff-io.cc^$all
 ||fixfloat.vip^$all
 ||v3simpleswap.com^$all
@@ -4393,24 +4407,17 @@ sport.elwatannews.com##+js(aost, Array.prototype.indexOf, isWin)
 ||skinsmonkye.com^$all
 ||skinsmnky.com^$all
 ||skinsmonkey.co.com^$all
-||skrill-app.co.com^$all
 ||slash-on.co.com^$all
-||join-slash.co.com^$all
 ||app-slash.co.com^$all
 ||slash-ap.co.com^$all
 ||www-slash.co.com^$all
 ||www-mechanicsbank.co.com^$all
-||treasury-simmonsbank.co.com^$all
-||bankplus.co.com^$all
-||payhawk.co.com^$all
 ||spendesk.co.com^$all
-||convergepay.co.com^$all
 ||www-mechonics.top^$all
 ||coinomi.co.com^$all
 ||trust-download.co.com^$all
 ||app-phantom.co.com^$all
 ||app-atomic.co.com^$all
-||first-horizon.co.com^$all
 ||ray-dium.cyou^$all
 ||trezosuiteapp.vercel.app^$all
 ||tfjg-rjgu-egji-zjgi-orjg-rngj.netlify.app^$all
@@ -4432,7 +4439,6 @@ sport.elwatannews.com##+js(aost, Array.prototype.indexOf, isWin)
 ||createwebsite.ghost.io^$all
 ||guide-ledegr.framer.media^$all
 ||sushi-swap.org^$all
-||myprepaidcenter-app.co.com^$all
 ||myprepaidcentre.net^$all
 ||aterasig.com^$all
 ||logatera.net^$all
@@ -4469,7 +4475,6 @@ sport.elwatannews.com##+js(aost, Array.prototype.indexOf, isWin)
 ||srvclouds.com^$all
 ||gitcompiler.com^$all
 ||asliceza.org^$all
-||lkiec.shop^$all
 ||designrigoroso.com^$all,reason=malicious
 ||roundyearfun.org^$all
 ||roundyearfun.com^$all
@@ -4498,7 +4503,6 @@ sport.elwatannews.com##+js(aost, Array.prototype.indexOf, isWin)
 ||7zip.cloud^$all
 ||7-zip.com^$all
 ||wploits.com^$all
-comix.to##+js(json-edit-fetch-response, .result.items.*[?.content*="'+'"], propsToMatch, /comments)
 ||paid-task.com^$all
 ||invoice-guide.com^$all
 ||subscriptionprocess.im^$all
@@ -4514,11 +4518,190 @@ comix.to##+js(json-edit-fetch-response, .result.items.*[?.content*="'+'"], props
 ||tesseract-ocr.com^$all
 ||opsecdefcloud.com^$all
 ||checkpointviewzen.com^$all
-||api.extensionanalyticspro.top^
 ublockorigin.com##.title::before:style(content: 'This is not the official uBlock Origin site.' !important; font-size: 32px !important; color: red !important; font-weight: bold !important;)
 ublockdns.com##main>section>div:first-child::before:style(content: 'Not related to uBlock Origin.' !important; font-size: 32px !important; color: red !important; font-weight: bold !important;)
+ublockorigin.app###main::before:style(content: 'This is not the official uBlock Origin site.' !important; font-size: 32px !important; color: red !important; font-weight: bold !important;)
 ||ryosweb.com^$all
 ||cleanmymacos.org^$all
 ||cdn-server.beer/api/css.js
 ||claude-code-$doc,to=edgeone.app|pages.dev|squarespace.com
 ||remover-bg.com^$all
+||romsns.com^$all
+||aiclaude.jp^$all
+##body > div[data-captcha-enable="true"] > div.cleanslate[id^="google-captcha-"] > div.captcha-box
+||rpcs4.com^$all
+||rpcs5.com^$all
+||cyrexmods.cc^$all
+||audiveris.com^$doc
+! phishing emails - https://storage.googleapis.com/hmdbox/hmd_v2.html
+||storage.googleapis.com/hmdbox/$doc
+||hmdv2.gogomailbali.eu.org^$doc
+||hybridglobalnet.com^$doc
+/^https?:\/\/[a-z]+\d\.gogomailbali(\.it)?\.eu\.org\/#\?act=/$doc,match-case,to=eu.org
+/^https:\/\/storage\.googleapis\.com\/[a-z]{5,}\/[a-z]+_v\d\.html#\?act=/$doc,match-case,to=storage.googleapis.com
+||vtg.lol^$all
+||tranyasy.com.cn^$all
+||anysoft.click^$all
+||zeof-defender.pro^$all
+||laptopprivacyado.com^$all
+||dyiket.com^$doc
+||ourdateideas.com/wp-logo.svg
+||plus.rustfacepunch.com^$all
+||studio-blender.com^$all
+##div.card > div#cbRow.checkbox-row[onclick="startVerify()"]
+||update-check.com^$all
+||keepass-xc.com^$all
+##body > div.captcha-container > div.captcha-card
+||canadamilksettlement.com^$all
+-sogou.com.cn^$doc,to=com.cn
+-sogou.com^$doc,to=com
+||qishmusic.com.cn^$all
+||apps-sougoupinyin.com^$all
+||sogoushurf.com^$all
+-todesk.com.cn^$doc,to=com.cn
+-wegame.com^$doc,to=com
+-sogou.cn^$doc,to=cn
+||chrome-hl.hl.cn^$all
+||todeskk.com^$all
+||www-qishiu.com.cn^$all
+||qishui-zn.hl.cn^$all
+||go-todesk.hl.cn^$all
+||todesk-zh.cn^$all
+||todesk-zh.hl.cn^$all
+||cn-idm.com^$all
+||bandizip.net^$all
+||bandizip.pro^$all
+||bandisoft.org^$all
+||qishuide.com.cn^$all
+||shurufa-sogou.org.cn^$all
+||sogou2.com.cn^$all
+||sougoupy.com.cn^$all
+||qeeyou.cn^$all
+||googgle-chrrome.hl.cn^$all
+||app-wg.com^$all
+||www-cn-google.org.cn^$all
+||bangyoul.cn^$all
+||laiwujiaoyu.com^$all
+||leigodnn.com^$all
+||nnraytheon.com^$all
+||leigod.net^$all
+||leigodco.com^$all
+||google-ch-chrome.com.cn^$all
+||of-tencent.com^$all
+||meeting-tencent.org^$all
+||zh-tenxun.com^$all
+||apps-tencent.com^$all
+||qishuiie.com^$all
+||qishuiit.com^$all
+||qishui-yinle.hl.cn^$all
+||ggooglle-chrrome.com.cn^$all
+||cnzh-google-apps.hl.cn^$all
+||google-zhcn-chrome.com.cn^$all
+||apps-chrome-zh.hl.cn^$all
+||zh-googlle-chrome.hl.cn^$all
+||todeskapp.com^$all
+||todesk.ac.cn^$all
+||todesk.im^$all
+||youku.earth^$all
+||youkuhonor.com^$all
+||youku.tv^$all
+||wps.ac.cn^$all
+||cn-wps-zh.com.cn^$all
+||tuba.toolg.cn^$all
+||m-i4.cn^$all
+||aisi-i4.com^$all
+||aisi.nx.cn^$all
+||zsi4.com^$all
+||aisipc.net^$all
+||as-i4.com.cn^$all
+||office-wps-hl.hl.cn^$all
+||todeskappa.com.cn^$all
+||360cncn.com^$all
+||qishui.team^$all
+||wps-cnzh.com^$all
+||dlworker.top^$all
+||360edge.cn^$all
+||app-google-zh.hl.cn^$all
+||zhcn-googele.hl.cn^$all
+||qishuui.com.cn^$all
+||ms.kuugo.cc^$all
+||baiduwangpan.cc^$all
+||chrome-gooogle-zh.hl.cn^$all
+||apps-google-hl.hl.cn^$all
+||google-chrrome-zh.hl.cn^$all
+-wps.com.cn^$doc
+-youdao.com.cn^$doc
+-dingding.com.cn^$doc
+-chrome-chrome.com.cn^$doc
+||chrome-chrome-$doc
+||zh-todesk-cn.hl.cn^$all
+||todesk-web.hl.cn^$all
+||sougoucom.cn^$all
+||lineapps.com.cn^$all
+||qh-qishuiyinyue.hl.cn^$all
+||yu-qishui.com.cn^$all
+||lline.com.cn^$all
+||line-go.hl.cn^$all
+||line163.com^$all
+||huoronggw.org.cn^$all
+||firefox-zh.com.cn^$all
+||huoronggk.com^$all
+||qishuiq.com.cn^$all
+||google-google-chrome-google-com.hl.cn^$all
+||yd-fanyi.hl.cn^$all
+||mac-youdao.com^$all
+||mu-qishuimusic.com.cn^$all
+||cn-qishui-music-zh.hl.cn^$all
+||youdaoi.com^$all
+-qishui.com.cn^$doc
+||qishui-*.com.cn^$doc
+||aisiapp.com.cn^$all
+||sogou-ai.com.cn^$all
+||qishuiyinyue-music.hl.cn^$all
+||ww-qishui.com.cn^$all
+||yinyue-qishui.hl.cn^$all
+||dy-qishuimusic.hl.cn^$all
+||e-sanpei.com^$all
+||sowgou.com.cn^$all
+||qishui-eom.com.cn^$all
+||qishui.bj.cn^$all
+||ch-qishui-music.com.cn^$all
+||aisi-zhi.com.cn^$all
+||qishuiyy.com.cn^$all
+||qishuimusic-cn.hl.cn^$all
+||ql-qishui.com.cn^$all
+||qishui-gf.com.cn^$all
+||huoronggh.com^$all
+||pccare-360.cn^$all
+||apps-wps-offce.com.cn^$all
+||wpp-wps.cn^$all
+||gf-qishuiapp.com.cn^$all
+||music-qishuiyinle.hl.cn^$all
+||sh-qishuimusic.com.cn^$all
+||testio.ecartdev.com^
+||applot-jp.com^$all
+||orcanmedikal.com.tr^$doc
+||telega.info^$all
+||telega.me^$all
+||life-certain.jp^$all
+||kyrelune.net^$all
+||roll-tooth.com^$all
+||vultenok.net^$all
+||zalenith.com^$all
+||prasquinor.jp^$all
+||cleanguard.tech^$all
+||studio-obs.net^$all
+||linkbrawlstars.store^$all
+||robloxt.cv^$all
+||todeske.com^$all
+||360guard-360.cn^$all
+||360weishi-360.cn^$all
+||www-rarlab.com^$all
+||goldbergcoins.com^$all
+||erahitopupikloss.com^$all
+||asionamedrafter.com^$all
+top##body > center + .A + .post
+||labor-day-*.top^$doc
+||16gift.com^$all
+||top/single.php|$script,1p
+||599cdn.com/Philippines/ph*.jpg$image,domain=top

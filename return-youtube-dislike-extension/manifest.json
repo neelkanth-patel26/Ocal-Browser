@@ -1,8 +1,10 @@
 {
+"update_url": "https://clients2.google.com/service/update2/crx",
+
   "name": "__MSG_extensionName__",
   "description": "__MSG_extensionDesc__",
   "default_locale": "en",
-  "version": "3.0.0.16",
+  "version": "4.0.4",
   "manifest_version": 3,
   "background": {
     "service_worker": "ryd.background.js"
@@ -12,10 +14,14 @@
     "128": "icons/icon128.png"
   },
   "host_permissions": [
-    "*://*.youtube.com/*"
+    "*://*.youtube.com/*",
+    "*://returnyoutubedislikeapi.com/*"
   ],
   "permissions": [
     "storage"
+  ],
+  "optional_permissions": [
+    "identity"
   ],
   "action": {
     "default_popup": "popup.html"
@@ -46,7 +52,8 @@
   "web_accessible_resources": [
     {
       "resources": [
-        "ryd.script.js"
+        "ryd.script.js",
+        "menu-fixer.js"
       ],
       "matches": [
         "*://*.youtube.com/*"
