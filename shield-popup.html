@@ -11,14 +11,14 @@
             --accent: #09f0a0;
             --accent-glow: rgba(9, 240, 160, 0.2);
             --accent-dim: rgba(9, 240, 160, 0.12);
-            --bg-glass: #1a1a1e;
-            --border-glass: #2d2d30;
-            --card-bg: #1a1a1e;
-            --card-border: #2d2d30;
-            --card-hover-bg: #28282d;
+            --bg-glass: #0c0c0c;
+            --border-glass: #252525;
+            --card-bg: #111111;
+            --card-border: #252525;
+            --card-hover-bg: #1e1e1e;
             --card-hover-border: var(--accent);
             --text-primary: #e8e8e8;
-            --text-secondary: #9ca3af;
+            --text-secondary: #666666;
             --danger: #ef4444;
             --success: #09f0a0;
             --panel-blur: none;
@@ -87,16 +87,8 @@
             overflow: visible;
         }
 
-        /* Top-light highlight to match topbar */
         .shield-card::before {
-            content: ''; position: absolute; inset: 0;
-            background: linear-gradient(180deg, rgba(255,255,255,0.04) 0%, transparent 15%);
-            pointer-events: none;
-            border-radius: inherit;
-        }
-
-        body[data-theme="light"] .shield-card::before {
-            background: linear-gradient(180deg, rgba(0,0,0,0.02) 0%, transparent 15%);
+            display: none !important;
         }
 
         .shield-card.show {

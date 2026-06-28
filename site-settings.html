@@ -9,19 +9,19 @@
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     <style>
         :root {
-            --bg: #1a1a1e;
-            --border: #2d2d30;
+            --bg: #0c0c0c;
+            --border: #252525;
             --accent: #09f0a0;
             --accent-glow: rgba(9, 240, 160, 0.2);
             --accent-dim: rgba(9, 240, 160, 0.12);
             --accent-border: rgba(9, 240, 160, 0.2);
-            --card-bg: #1a1a1e;
-            --card-border: #2d2d30;
-            --card-hover-bg: #28282d;
+            --card-bg: #111111;
+            --card-border: #252525;
+            --card-hover-bg: #1e1e1e;
             --card-hover-border: var(--accent);
             --text: #e8e8e8;
-            --text-dim: #9ca3af;
-            --text-muted: #4b5563;
+            --text-dim: #666666;
+            --text-muted: #3a3a3a;
             --font: 'Geist Mono', monospace;
             --title-font: 'Geist Mono', monospace;
             --radius-sm: 8px;
@@ -118,10 +118,10 @@
             background: var(--card-hover-bg); 
             border-color: var(--card-hover-border);
             color: var(--text); 
-            transform: scale(1.05); 
+            transform: none; 
         }
         .back-btn:active { 
-            transform: scale(0.95); 
+            transform: none; 
         }
 
         .hostname { 
@@ -190,7 +190,7 @@
         }
         .row:hover .row-icon {
             border-color: var(--accent-border);
-            box-shadow: 0 0 10px var(--accent-glow);
+            box-shadow: none;
         }
 
         .row-content { 
@@ -228,7 +228,7 @@
             color: var(--text); 
         }
         .action-btn:active { 
-            transform: scale(0.97); 
+            transform: none; 
         }
         .action-btn.danger { 
             color: #ef4444; 
@@ -239,7 +239,7 @@
             background: rgba(239, 68, 68, 0.12); 
             border-color: #ef4444; 
             color: #ff6b6b; 
-            box-shadow: 0 4px 12px rgba(239, 68, 68, 0.1); 
+            box-shadow: none; 
         }
 
         select {

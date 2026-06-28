@@ -1,6 +1,6 @@
 ! Title: uBlock filters – Unbreak
 ! Expires: 5 days
-! Last modified: Thu, 05 Mar 2026 03:37:34 +0000
+! Last modified: Sat, 09 May 2026 08:24:49 +0000
 ! Diff-Path: %diffpath%#ublock-unbreak
 ! Diff-Expires: 317 minutes
 ! License: https://github.com/uBlockOrigin/uAssets/blob/master/LICENSE
@@ -2174,7 +2174,7 @@ virginmediatelevision.ie##+js(no-xhr-if, /froloa.js)
 ||imasdk.googleapis.com/js/sdkloader/ima3.js$script,redirect=google-ima.js,domain=3bmeteo.com,important
 3bmeteo.com##+js(nano-sib, adv, *)
 ! [NSFW] https://deepnude.to/ - Missing "userid" and "identifier" cookies from FingerprintJS
-/fingerprint2.min.js$script,3p,redirect=fingerprint2.js,important,domain=~amateuralbum.net
+/fingerprint2.min.js$script,3p,redirect=fingerprint2.js,important,domain=~abqjournal.com|~amateuralbum.net
 /fingerprint2.js$script,3p,redirect=fingerprint2.js,important
 sproutgigs.com##+js(fingerprint2)
 larazon.es##+js(set, gfkS2sExtension, {})
@@ -2242,7 +2242,7 @@ vidaextra.com##+js(set, hasAdblocker, true)
 vidaextra.com##.base-asset-video:remove-class(base-asset-video)
 www.reddit.com,sh.reddit.com##community-highlight-card[subreddit-prefixed-name="r/uBlockOrigin"][src]:remove-attr(src)
 www.reddit.com,sh.reddit.com##in-feed-community-recommendations:is([subreddit-name="uBlockOrigin"],[subreddit-id="t5_37z6i"])
-www.reddit.com,sh.reddit.com##shreddit-title[title$="r/uBlockOrigin"]~[id^="comment-tree-content-anchor-"]+div:has(>[id^="answers-suggested-queries"])
+www.reddit.com,sh.reddit.com##shreddit-title[title$="r/uBlockOrigin"]~:is([id^="comment-tree-content-anchor-"],shreddit-comment-tree)~div:has(>[id^="answers-suggested-queries"])
 www.reddit.com,sh.reddit.com###main-content:has(>shreddit-title[title$="r/uBlockOrigin"])+#right-sidebar-container [data-slug="pdp_right_rail_related"]
 lumens.com##+js(set, _satellite, {})
 lumens.com##+js(set, _satellite.track, noopFunc)
@@ -2762,11 +2762,6 @@ slack.com##+js(aeld, click, window.gtag, elements, button#submit_btn)
 !#endif
 prod.hydra.sophos.com##+js(set, Sentry, {})
 prod.hydra.sophos.com##+js(set, Sentry.addBreadcrumb, noopFunc)
-||camel3.live/lib/sensorsdata.full.min.js$redirect=noopjs,important
-camel3.live##+js(set, sensorsDataAnalytic201505, {})
-camel3.live##+js(set, sensorsDataAnalytic201505.init, noopFunc)
-camel3.live##+js(set, sensorsDataAnalytic201505.track, noopFunc)
-camel3.live##+js(set, sensorsDataAnalytic201505.register, noopFunc)
 ! StevenBlack/hosts issue
 ||live-media-aka.warnermediacdn.com^$badfilter
 @@||live-media-aka.warnermediacdn.com^$xhr,domain=adultswim.com
@@ -2796,4 +2791,29 @@ missav78.top##img[onerror="this.src='/sample/placeholder.jpg'"]:remove-attr(oner
 ||missav78.top/sample/placeholder.jpg$image,redirect=1x1.gif
 temperatur.nu#@#.holidAds:upward(1)
 ||target-video.com^$3p,badfilter
+||imasdk.googleapis.com/js/sdkloader/ima3.js$script,domain=fastcompany.com,redirect=google-ima.js,important
 @@||securepubads.g.doubleclick.net/tag/js/gpt.js$script,3p,redirect-rule,from=webmd.com
+||ruamupr.com^$script,redirect=noopjs,domain=thegatewaypundit.com
+thegatewaypundit.com##+js(rmnt, script, Object.getOwnPropertyDescriptor(Document.prototype)
+thegatewaypundit.com##+js(set, String.prototype.allReplace, 1)
+thegatewaypundit.com##^script[onload][onerror]
+ebc.com.br##+js(set, executaGoogleAnalytics3, noopFunc)
+@@||api.adinplay.com/libs/aiptag/pub/YRG/yorg3.io/tag.min.js$script,domain=yorg3.io
+@@||api.adinplay.com/v*/live/aip/ad-manager.js$script,domain=yorg3.io
+! unbreak winaero .com
+winaero.com#@#.windia:not(.thank-you-adguard)
+||imasdk.googleapis.com/js/sdkloader/ima3.js$script,3p,redirect=google-ima.js,domain=infiny.live
+alltransistors.com#@##reklama
+alltransistors.com###reklama:style(display: block !important;)
+conceptoweb-studio.com##+js(set, initJWPlayerMux, {})
+conceptoweb-studio.com##+js(set, initJWPlayerMux.utils, {})
+conceptoweb-studio.com##+js(set, initJWPlayerMux.utils.now, noopFunc)
+||adman.gr^$media,domain=antenna.gr,redirect=noopmp3-0.1s
+amboss.com##+js(set, ambossAnalytics, {})
+amboss.com##+js(set, ambossAnalytics.getUserAttribution, noopFunc)
+||camel*/lib/sensorsdata.full.min.js$redirect=sensors-analytics.js
+||camel*/lib/exposure.min.js$redirect=noopjs
+@@||omtrdc.net^$3p,xhr,from=vivo.com.br
+@@||albuquerque.newzware.com/newzlib/js/common/fingerprint2.min.js$script,3p,domain=abqjournal.com
+@@||cdn.sophi.io^$3p,script,from=abqjournal.com
+||imasdk.googleapis.com/js/sdkloader/ima3.js$redirect=google-ima.js,domain=mnetplus.world

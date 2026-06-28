@@ -444,12 +444,12 @@ function addFolder() {
     row.style.cssText = 'display:flex;gap:6px;padding:6px 12px 4px;flex-shrink:0';
     row.innerHTML = `
         <input id="new-folder-name" type="text" placeholder="Folder name..."
-            style="flex:1;background:var(--glass-hover);border:1px solid var(--accent-border);
+            style="flex:1;background:var(--hover);border:1px solid var(--border);
                    border-radius:7px;padding:6px 10px;color:var(--text);font-size:12px;
                    font-family:Inter,sans-serif;outline:none">
         <button id="new-folder-confirm"
-            style="padding:6px 12px;border-radius:7px;background:var(--accent-dim);
-                   border:1px solid var(--accent-border);color:var(--text);font-size:11px;
+            style="padding:6px 12px;border-radius:7px;background:var(--accent);
+                   border:none;color:#000;font-weight:600;font-size:11px;
                    font-family:Inter,sans-serif;cursor:pointer">Add</button>
     `;
 
@@ -528,7 +528,7 @@ function getHistoricalIcon(url, title = '', storedIcon = '') {
     // 2. Proactive stored favicon usage
     if (storedIcon) {
         return `<img class="hist-favicon" src="${storedIcon}" 
-                onerror="this.outerHTML='<div class=\'hist-favicon-fallback\'><i class=\'fas fa-globe\'></i></div>'">`;
+                onerror="const d=document.createElement('div'); d.className='hist-favicon-fallback'; d.innerHTML='<i class=\\'fas fa-globe\\'></i>'; this.replaceWith(d);">`;
     }
 
     // 3. Extracted domain for normal websites (Fallback to Google Service)
@@ -544,7 +544,7 @@ function getHistoricalIcon(url, title = '', storedIcon = '') {
     }
 
     return `<img class="hist-favicon" src="https://www.google.com/s2/favicons?domain=${domain}&sz=32" 
-            onerror="this.outerHTML='<div class=\'hist-favicon-fallback\'><i class=\'fas fa-globe\'></i></div>'">`;
+            onerror="const d=document.createElement('div'); d.className='hist-favicon-fallback'; d.innerHTML='<i class=\\'fas fa-globe\\'></i>'; this.replaceWith(d);">`;
 }
 
 // ── History ────────────────────────────────────────────────────────────────
@@ -619,7 +619,7 @@ function renderHistory() {
                 name = isSettings ? 'Settings' : 'Home';
                 iconHtml = `<div style="width:28px;height:28px;display:flex;align-items:center;justify-content:center;background:var(--accent-dim);border-radius:8px;color:var(--accent);font-size:14px;"><i class="fas ${isSettings?'fa-gear':'fa-house'}"></i></div>`;
             } else {
-                iconHtml = `<img src="https://www.google.com/s2/favicons?domain=${dom}&sz=64" onerror="this.outerHTML='<div class=\'hist-favicon-fallback\' style=\'width:28px;height:28px;font-size:14px;\'><i class=\'fas fa-globe\'></i></div>'">`;
+                iconHtml = `<img src="https://www.google.com/s2/favicons?domain=${dom}&sz=64" onerror="const d=document.createElement('div'); d.className='hist-favicon-fallback'; d.style.width='28px'; d.style.height='28px'; d.style.fontSize='14px'; d.innerHTML='<i class=\\'fas fa-globe\\'></i>'; this.replaceWith(d);">`;
             }
 
             item.innerHTML = `${iconHtml}<div class="recom-name">${esc(name)}</div>`;

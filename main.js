@@ -14,6 +14,12 @@ const {
     powerMonitor, Notification
 } = electron;
 
+// Explicitly set application name for OS / Task Manager identification
+app.name = 'Ocal Browser';
+if (process.platform === 'win32') {
+    app.setAppUserModelId('com.ocal.browser');
+}
+
 // Disable deprecation warnings in the console (silences punycode and setPreloads from 3rd-party libs)
 process.noDeprecation = true;
 
@@ -38,6 +44,8 @@ app.commandLine.appendSwitch('disable-blink-features', 'AutomationControlled');
 app.commandLine.appendSwitch('enable-print-browser');
 app.commandLine.appendSwitch('enable-print-preview');
 app.commandLine.appendSwitch('disable-print-preview', 'false');
+// Force native smooth scrolling for mouse wheel (premium feel)
+app.commandLine.appendSwitch('enable-smooth-scrolling');
 
 // Disable the default Electron menu bar on Windows/Linux to prevent UI shifting
 Menu.setApplicationMenu(null);
@@ -1473,7 +1481,7 @@ function createNewTab(url = null) {
 
         // 2. Viewport-level corner masks for remote pages (handles scrolling content & bottom corners)
         if (!isInternal) {
-            const maskColor = userSettings.themeMode === 'light' ? '#ffffff' : '#000000';
+            const maskColor = userSettings.themeMode === 'light' ? '#f5f5f5' : '#0c0c0c';
             const sbColor = userSettings.themeMode === 'light' ? 'rgba(0,0,0,0.16)' : 'rgba(255,255,255,0.16)';
             const sbHover = userSettings.themeMode === 'light' ? 'rgba(0,0,0,0.36)' : 'rgba(255,255,255,0.36)';
 
@@ -1497,19 +1505,29 @@ function createNewTab(url = null) {
                     display: none !important;
                 }
 
+                /* Premium Smooth Scrolling */
+                html {
+                    scroll-behavior: smooth !important;
+                }
+
                 /* Premium Simple & Compact Scrollbars */
-                ::-webkit-scrollbar {
+                *, html, body {
+                    scrollbar-color: initial !important;
+                    scrollbar-width: initial !important;
+                }
+                *::-webkit-scrollbar, html::-webkit-scrollbar, body::-webkit-scrollbar {
                     width: 6px !important;
                     height: 6px !important;
-                }
-                ::-webkit-scrollbar-track {
                     background: transparent !important;
                 }
-                ::-webkit-scrollbar-thumb {
+                *::-webkit-scrollbar-track, html::-webkit-scrollbar-track, body::-webkit-scrollbar-track {
+                    background: transparent !important;
+                }
+                *::-webkit-scrollbar-thumb, html::-webkit-scrollbar-thumb, body::-webkit-scrollbar-thumb {
                     background: ${sbColor} !important;
                     border-radius: 10px !important;
                 }
-                ::-webkit-scrollbar-thumb:hover {
+                *::-webkit-scrollbar-thumb:hover, html::-webkit-scrollbar-thumb:hover, body::-webkit-scrollbar-thumb:hover {
                     background: ${sbHover} !important;
                 }
             `);
@@ -1995,7 +2013,7 @@ function showWebApp(url) {
 
     if (!webAppView) {
         webAppView = new BrowserView({
-            webPreferences: { preload: path.join(__dirname, 'preload.js'), contextIsolation: true, nodeIntegration: false, devTools: false, sandbox: true }
+            webPreferences: { preload: path.join(__dirname, 'preload.js'), contextIsolation: true, nodeIntegration: false, devTools: false, sandbox: true, additionalArguments: ['--is-sidebar-app'] }
         });
         setupContextMenu(webAppView.webContents);
         webAppView.webContents.setWindowOpenHandler(({ url }) => { createNewTab(url); return { action: 'deny' }; });

@@ -6,15 +6,15 @@
     <link rel="stylesheet" href="assets/fontawesome/css/all.min.css">
     <style>
         :root {
-            --panel-bg: #1a1a1e;
-            --border: #2d2d30;
+            --panel-bg: #111111;
+            --border: #252525;
             --accent: #09f0a0;
             --accent-dim: rgba(9, 240, 160, 0.12);
             --text: #e8e8e8;
-            --text-dim: #9ca3af;
-            --card-bg: #1a1a1e;
-            --card-border: #2d2d30;
-            --card-hover-bg: #28282d;
+            --text-dim: #666666;
+            --card-bg: #111111;
+            --card-border: #252525;
+            --card-hover-bg: #1e1e1e;
             --radius: 12px;
         }
 
@@ -52,20 +52,11 @@
             width: 260px;
             display: none; /* Hide by default to prevent positioning flicker */
             flex-direction: column; gap: 4px;
-            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.35);
+            box-shadow: none !important;
         }
 
-        /* Top-light highlight */
         .popup-panel::before {
-            content: ''; position: absolute; inset: 0;
-            background: linear-gradient(180deg, rgba(255,255,255,0.04) 0%, transparent 15%);
-            pointer-events: none;
-            border-radius: inherit;
-            z-index: 3;
-        }
-
-        body[data-theme="light"] .popup-panel::before {
-            background: linear-gradient(180deg, rgba(0,0,0,0.02) 0%, transparent 15%);
+            display: none !important;
         }
 
         body[data-theme="light"] .popup-panel {
@@ -91,7 +82,7 @@
             color: #000;
             font-size: 16px;
             border-radius: 8px;
-            box-shadow: 0 4px 12px var(--accent-dim);
+            box-shadow: none;
             transition: background 0.3s, color 0.3s;
         }
 
@@ -151,12 +142,12 @@
             position: relative;
         }
         
-        .color-dot:hover { transform: scale(1.2); }
+        .color-dot:hover { transform: none; }
         
         .color-dot.active { 
             border-color: var(--text); 
-            transform: scale(1.15);
-            box-shadow: 0 0 10px rgba(0,0,0,0.25);
+            transform: none;
+            box-shadow: none;
         }
 
         .actions {
@@ -191,7 +182,7 @@
             background: var(--card-hover-bg); 
             color: var(--accent); 
             border-color: var(--accent);
-            transform: scale(1.03);
+            transform: none;
         }
         
         .btn-danger { 
@@ -203,7 +194,7 @@
         .btn-danger:hover { 
             background: rgba(239, 68, 68, 0.2); 
             border-color: #ef4444;
-            transform: scale(1.03);
+            transform: none;
         }
     </style>
 </head>

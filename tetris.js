@@ -19,21 +19,21 @@ const finalScoreEl = document.getElementById('finalScore');
 const ROWS = 20;
 const COLS = 10;
 const BLOCK_SIZE = 30;
-const ACCENT = '#00f2ff';
+const ACCENT = '#e8ff47';
 
 canvas.width = COLS * BLOCK_SIZE;
 canvas.height = ROWS * BLOCK_SIZE;
 
-// Colors for pieces (Glass 3.0 theme)
+// Colors for pieces (Minimalist ocal theme)
 const COLORS = [
     null,
-    '#00f2ff', // I
-    '#ff00ff', // T
-    '#00ff00', // S
-    '#ff0000', // Z
-    '#ffff00', // O
-    '#0000ff', // J
-    '#ffaa00'  // L
+    '#e8ff47', // I
+    '#e8ff47', // T
+    '#e8ff47', // S
+    '#e8ff47', // Z
+    '#e8ff47', // O
+    '#e8ff47', // J
+    '#e8ff47'  // L
 ];
 
 // Pieces
@@ -174,12 +174,12 @@ function updateScore() {
 
 // ── Graphics ──────────────────────────────────────────────────
 function draw() {
-    ctx.fillStyle = '#050508';
+    ctx.fillStyle = '#000000';
     ctx.fillRect(0, 0, canvas.width, canvas.height);
 
-    // Grid lines (subtle)
-    ctx.strokeStyle = 'rgba(255,255,255,0.03)';
-    ctx.lineWidth = 1;
+    // Grid lines (subtle flat 0.5px borders)
+    ctx.strokeStyle = '#252525';
+    ctx.lineWidth = 0.5;
     for (let i = 0; i <= COLS; i++) {
         ctx.beginPath(); ctx.moveTo(i * BLOCK_SIZE, 0); ctx.lineTo(i * BLOCK_SIZE, canvas.height); ctx.stroke();
     }
@@ -202,29 +202,25 @@ function drawMatrix(matrix, offset, isGhost = false) {
     matrix.forEach((row, y) => {
         row.forEach((value, x) => {
             if (value !== 0) {
-                const color = COLORS[value];
                 const px = (x + offset.x) * BLOCK_SIZE;
                 const py = (y + offset.y) * BLOCK_SIZE;
 
                 ctx.save();
                 if (isGhost) {
                     ctx.globalAlpha = 0.15;
-                    ctx.strokeStyle = color;
-                    ctx.strokeRect(px + 2, py + 2, BLOCK_SIZE - 4, BLOCK_SIZE - 4);
-                } else {
-                    ctx.fillStyle = color;
-                    ctx.shadowBlur = 10;
-                    ctx.shadowColor = color;
-                    // Draw Rounded Block
+                    ctx.strokeStyle = ACCENT;
+                    ctx.lineWidth = 1;
                     ctx.beginPath();
-                    const r = 4;
-                    ctx.roundRect(px + 2, py + 2, BLOCK_SIZE - 4, BLOCK_SIZE - 4, r);
+                    ctx.roundRect(px + 2, py + 2, BLOCK_SIZE - 4, BLOCK_SIZE - 4, 2);
+                    ctx.stroke();
+                } else {
+                    ctx.fillStyle = '#1e1e1e';
+                    ctx.strokeStyle = ACCENT;
+                    ctx.lineWidth = 1.5;
+                    ctx.beginPath();
+                    ctx.roundRect(px + 2, py + 2, BLOCK_SIZE - 4, BLOCK_SIZE - 4, 2);
                     ctx.fill();
-                    
-                    // Inner Highlight
-                    ctx.globalAlpha = 0.3;
-                    ctx.strokeStyle = '#fff';
-                    ctx.strokeRect(px + 6, py + 6, BLOCK_SIZE - 12, BLOCK_SIZE - 12);
+                    ctx.stroke();
                 }
                 ctx.restore();
             }
@@ -243,13 +239,15 @@ function drawNext() {
     m.forEach((row, y) => {
         row.forEach((value, x) => {
             if (value !== 0) {
-                const color = COLORS[value];
-                nextCtx.fillStyle = color;
-                nextCtx.shadowBlur = 10;
-                nextCtx.shadowColor = color;
+                nextCtx.save();
+                nextCtx.fillStyle = '#1e1e1e';
+                nextCtx.strokeStyle = ACCENT;
+                nextCtx.lineWidth = 1.5;
                 nextCtx.beginPath();
-                nextCtx.roundRect((x + offset.x) * BLOCK_SIZE, (y + offset.y) * BLOCK_SIZE, BLOCK_SIZE - 4, BLOCK_SIZE - 4, 4);
+                nextCtx.roundRect((x + offset.x) * BLOCK_SIZE + 2, (y + offset.y) * BLOCK_SIZE + 2, BLOCK_SIZE - 4, BLOCK_SIZE - 4, 2);
                 nextCtx.fill();
+                nextCtx.stroke();
+                nextCtx.restore();
             }
         });
     });

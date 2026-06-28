@@ -328,7 +328,7 @@ function getTabIconHtml(tab, tintColor) {
         try {
             const domain = new URL(url.startsWith('http') ? url : 'https://' + url).hostname;
             if (domain && domain.includes('.')) {
-                return `<img src="https://www.google.com/s2/favicons?domain=${domain}&sz=32" class="tab-favicon" onerror="this.outerHTML='<i class=\"fas fa-globe tab-favicon\" ${tintColor ? `style=\"color:${tintColor}\"` : ''}></i>'">`;
+                return `<img src="https://www.google.com/s2/favicons?domain=${domain}&sz=32" class="tab-favicon" onerror="const i=document.createElement('i'); i.className='fas fa-globe tab-favicon'; ${tintColor ? `i.style.color='${tintColor}';` : ''} this.replaceWith(i);">`;
             }
         } catch (e) {}
     }
@@ -428,7 +428,7 @@ function updateOmniboxIcon(url) {
     try {
         const domain = new URL(url.startsWith('http') ? url : 'https://' + url).hostname;
         if (domain && domain.includes('.')) {
-            iconContainer.innerHTML = `<img src="https://www.google.com/s2/favicons?domain=${domain}&sz=32" class="omnibox-favicon" style="width: 14px; height: 14px; border-radius: 3px; object-fit: contain;" onerror="this.outerHTML='<i class=\"fas fa-globe\" style=\"color:var(--accent); font-size: 13px;\"></i>'">`;
+            iconContainer.innerHTML = `<img src="https://www.google.com/s2/favicons?domain=${domain}&sz=32" class="omnibox-favicon" style="width: 14px; height: 14px; border-radius: 3px; object-fit: contain;" onerror="const i=document.createElement('i'); i.className='fas fa-globe'; i.style.color='var(--accent)'; i.style.fontSize='13px'; this.replaceWith(i);">`;
             return;
         }
     } catch (e) {}

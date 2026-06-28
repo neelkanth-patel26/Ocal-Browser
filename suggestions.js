@@ -69,7 +69,7 @@ function addSuggestionItem(s, isBest = false) {
         try {
             const domain = new URL(s.url.startsWith('http') ? s.url : 'https://' + s.url).hostname;
             if (domain && domain.includes('.')) {
-                iconHtml = `<img src="https://www.google.com/s2/favicons?domain=${domain}&sz=32" class="suggestion-favicon" onerror="this.outerHTML='<i class=&quot;fas ${iconClass}&quot;></i>'">`;
+                iconHtml = `<img src="https://www.google.com/s2/favicons?domain=${domain}&sz=32" class="suggestion-favicon" onerror="const i=document.createElement('i'); i.className='fas ${iconClass}'; this.replaceWith(i);">`;
             }
         } catch (e) {}
     }
