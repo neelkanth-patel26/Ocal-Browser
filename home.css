@@ -127,21 +127,23 @@ body.loaded .col-side { opacity: 1; transform: translateY(0); }
 .col-center { display: flex; flex-direction: column; align-items: center; gap: 48px; text-align: center; }
 
 /* ── Studio Cards ── */
+/* ── Studio Cards ── */
 .glass-panel {
-    background: transparent !important;
-    border: none !important;
+    background: rgba(18, 18, 18, 0.45) !important;
+    border: 1px solid rgba(255, 255, 255, 0.05) !important;
+    backdrop-filter: blur(20px) !important;
+    -webkit-backdrop-filter: blur(20px) !important;
+    border-radius: 12px !important;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2) !important;
     display: flex; flex-direction: column;
     overflow: hidden;
     position: relative;
-    box-shadow: none !important;
-    backdrop-filter: none !important;
-    -webkit-backdrop-filter: none !important;
-    transition: none !important;
+    transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1) !important;
+    padding: 24px !important;
 }
 .glass-panel:hover { 
-    border-color: transparent !important; 
-    box-shadow: none !important;
-    transform: none !important;
+    border-color: rgba(255, 255, 255, 0.08) !important; 
+    box-shadow: 0 12px 40px rgba(0, 0, 0, 0.3) !important;
 }
 
 /* ── Light Mode Override Specifics ── */
@@ -154,19 +156,19 @@ body[data-theme="light"] .wallpaper-overlay {
 }
 
 body[data-theme="light"] .glass-panel {
-    background: transparent !important;
-    border: none !important;
-    box-shadow: none !important;
-    backdrop-filter: none !important;
-    -webkit-backdrop-filter: none !important;
-    transition: none !important;
+    background: rgba(255, 255, 255, 0.45) !important;
+    border: 1px solid rgba(0, 0, 0, 0.05) !important;
+    backdrop-filter: blur(20px) !important;
+    -webkit-backdrop-filter: blur(20px) !important;
+    border-radius: 12px !important;
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.04) !important;
+    transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1) !important;
+    padding: 24px !important;
 }
 
 body[data-theme="light"] .glass-panel:hover {
-    background: transparent !important;
-    border-color: transparent !important;
-    box-shadow: none !important;
-    transform: none !important;
+    border-color: rgba(0, 0, 0, 0.08) !important;
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.08) !important;
 }
 
 body[data-theme="light"] .time-display {
@@ -219,7 +221,7 @@ body[data-theme="light"] .timer-svg .progress {
 
 
 
-.widget-head { padding: 12px 0 16px; display: flex; align-items: center; justify-content: space-between; }
+.widget-head { padding: 0 0 16px; display: flex; align-items: center; justify-content: space-between; }
 .widget-title { font-size: 9.5px; font-weight: 700; letter-spacing: 2px; text-transform: uppercase; color: var(--text-dim) !important; opacity: 0.6; }
 
 /* ── Central Clock ── */
@@ -323,12 +325,13 @@ body[data-theme="dark"] .time-display {
 .tiles-grid { display: flex; gap: var(--tile-gap); justify-content: center; flex-wrap: wrap; transition: all 0.6s; padding: 10px; }
 .tile-item { display: flex; flex-direction: column; align-items: center; gap: 12px; cursor: pointer; }
 .tile-box { 
-    width: var(--tile-size); height: var(--tile-size);
+    width: calc(var(--tile-size) * 1.5); height: calc(var(--tile-size) * 0.95);
     display: flex; align-items: center; justify-content: center; 
     font-size: calc(var(--tile-size) * 0.4); 
     color: var(--text-dim); transition: all 0.5s cubic-bezier(0.16, 1, 0.3, 1); 
     background: #1a1a1e;
     border: 1px solid #2d2d30;
+    border-radius: 12px;
 }
 
 
@@ -473,28 +476,83 @@ body.focus-active::after {
 ::-webkit-scrollbar-thumb { background: rgba(128, 128, 128, 0.25); border-radius: 10px; }
 ::-webkit-scrollbar-thumb:hover { background: rgba(128, 128, 128, 0.55); }
 
-.tile-box.style-glass, .tile-box.style-matte, .tile-box.style-neon { 
+/* ── Tile Preset Materials (D:\ocal Minimalist Style) ── */
+.tile-box {
     width: calc(var(--tile-size) * 1.5) !important;
     height: calc(var(--tile-size) * 0.95) !important;
-    border-radius: 0px !important;
-    background: transparent !important;
-    backdrop-filter: none !important;
-    -webkit-backdrop-filter: none !important;
-    border: none !important;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 12px !important;
+    transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1) !important;
+}
+
+.tile-box i,
+.tile-box svg {
+    color: var(--text-dim) !important;
+    font-size: 32px !important;
+    transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1) !important;
+}
+body[data-theme="light"] .tile-box i,
+body[data-theme="light"] .tile-box svg {
+    color: var(--text-dim) !important;
+}
+.tile-item:hover .tile-box i,
+.tile-item:hover .tile-box svg {
+    color: var(--accent) !important;
+    transform: scale(1.08) !important;
+}
+
+/* 1. Glassmorphic */
+.tile-box.style-glass {
+    background: rgba(255, 255, 255, 0.02) !important;
+    backdrop-filter: blur(20px) !important;
+    -webkit-backdrop-filter: blur(20px) !important;
+    border: 1px solid rgba(255, 255, 255, 0.05) !important;
     box-shadow: none !important;
 }
-.tile-item:hover .tile-box.style-glass,
-.tile-item:hover .tile-box.style-matte,
-.tile-item:hover .tile-box.style-neon { 
+body[data-theme="light"] .tile-box.style-glass {
+    background: rgba(0, 0, 0, 0.02) !important;
+    border: 1px solid rgba(0, 0, 0, 0.05) !important;
+}
+.tile-item:hover .tile-box.style-glass {
+    background: var(--accent-dim) !important;
+    border-color: var(--accent) !important;
+    transform: translateY(-4px) scale(1.05) !important;
+    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.4) !important;
+}
+body[data-theme="light"] .tile-item:hover .tile-box.style-glass {
+    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.06) !important;
+}
+
+/* 2. Solid Matte */
+.tile-box.style-matte {
+    background: #111111 !important;
+    border: 1px solid #222222 !important;
+    box-shadow: none !important;
+}
+body[data-theme="light"] .tile-box.style-matte {
+    background: #ffffff !important;
+    border: 1px solid #e2e2e2 !important;
+}
+.tile-item:hover .tile-box.style-matte {
+    background: #161616 !important;
+    border-color: var(--accent) !important;
+    transform: translateY(-4px) scale(1.05) !important;
+}
+body[data-theme="light"] .tile-item:hover .tile-box.style-matte {
+    background: #fafafa !important;
+}
+
+/* 3. Neon Glow */
+.tile-box.style-neon {
     background: transparent !important;
-    border-color: transparent !important;
+    border: 1px solid var(--accent) !important;
     box-shadow: none !important;
 }
 .tile-item:hover .tile-box.style-neon {
-    opacity: 1;
-    box-shadow: 0 0 25px var(--accent);
-    color: #fff;
-    transform: rotate(360deg) scale(1.1);
+    transform: translateY(-4px) scale(1.05) !important;
+    box-shadow: 0 0 15px var(--accent-glow) !important;
 }
 
 /* ── Floating Weather (Opera start page style) ── */
@@ -785,42 +843,7 @@ body[data-theme="light"] .search-btn-magnifier {
   display: flex;
   align-items: center;
   justify-content: center;
-  background: transparent !important;
-  border: none !important;
-  box-shadow: none !important;
-  transition: all 0.2s ease !important;
-}
-
-body[data-theme="light"] .tile-box {
-  background: transparent !important;
-  border: none !important;
-  box-shadow: none !important;
-}
-
-.tile-box i,
-.tile-box svg {
-  color: var(--text-dim) !important;
-  font-size: 32px !important;
-  transition: all 0.2s ease !important;
-}
-
-body[data-theme="light"] .tile-box i,
-body[data-theme="light"] .tile-box svg {
-  color: var(--text-dim) !important;
-}
-
-.tile-item:hover .tile-box {
-  background: transparent !important;
-  border: none !important;
-  transform: none !important;
-  box-shadow: none !important;
-}
-
-body[data-theme="light"] .tile-item:hover .tile-box {
-  background: transparent !important;
-  border: none !important;
-  transform: none !important;
-  box-shadow: none !important;
+  transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1) !important;
 }
 
 .tile-item:hover .tile-box i,
