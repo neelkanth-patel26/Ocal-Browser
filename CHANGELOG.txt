@@ -1,6 +1,38 @@
 OCAL BROWSER - UPDATE CATALOG
-Version: 5.0.00
-Release Date: April 21, 2026
+Version: 7.1.00
+Release Date: July 11, 2026
+
+-------------------------------------------------------------------------------
+[AUTOMATIC SCALING & RESIZE: THE DPI ENGINE]
+-------------------------------------------------------------------------------
+* DYNAMIC RESOLUTION MATCHING: Built an intelligent scaling matcher that scales
+  the entire browser UI (menus, tabs, sidebars, overlays) based on screen resolution.
+* MULTI-MONITOR DRAGGING: Detects moves across displays with different DPI scaling
+  or screen sizes in real-time, instantly adjusting the interface size smoothly.
+* LOW-RES OPTIMIZATION: Shrinks chrome boundaries on small displays (<1366px) 
+  to compact 0.85x scale to save vertical space for web rendering.
+* 4K HIGH-DPI UPGRADE: Automatically scales UI components up to 1.25x on massive
+  Ultra HD screens to maintain readability.
+
+-------------------------------------------------------------------------------
+[HOMEPAGE SPEED DIAL & WIDGET LAYOUTS]
+-------------------------------------------------------------------------------
+* ADJUSTABLE TILE PRESETS: Restored and redesigned the Glassmorphic, Solid Matte,
+  and Neon Glow Speed Dial tile materials to match the D:\ocal spec.
+* RECTANGULAR SHORTCUTS: Transformed speed dial tiles into horizontal rounded cards
+  using a smooth 12px border-radius and 1.5x width ratio.
+* WIDGET GLASS FRAMES: Housed the Todo List, Focus Flow, and Weather panels in 
+  beautiful glassmorphic cards with balanced 24px inner padding and sharp spacing.
+
+-------------------------------------------------------------------------------
+[MINIMALIST REDESIGN & TWEAKS]
+-------------------------------------------------------------------------------
+* MONOCHROMATIC SEARCH SETTINGS: Stripped all site-specific colors from the Settings
+  search provider logos, unifying them to a dynamic monochromatic design.
+* YT AD BLOCK SPACING: Fixed a layout issue where blocked YouTube ad slots left large
+  empty blank spots on the page.
+* SMOOTH CHROME: Polished overall scroll physics and window transitions for an
+  ultra-smooth browsing feel.
 
 -------------------------------------------------------------------------------
 [STABILITY CORE: THE v5 MILESTONE]
