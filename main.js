@@ -11,7 +11,7 @@ if (typeof electron === 'string' || !electron.app) {
 const {
     app, BrowserWindow, BrowserView, webContents, ipcMain, dialog,
     shell, session, Menu, MenuItem, clipboard, protocol, net,
-    powerMonitor, Notification
+    powerMonitor, Notification, screen
 } = electron;
 
 // Explicitly set application name for OS / Task Manager identification
@@ -428,6 +428,91 @@ let downloadsSidebarOpen = false;
 let bookmarksSidebarOpen = false;
 let bookmarkBarVisible = true;
 let dropdownOpen = false;
+
+// ── Automatic Sizing & Scaling System (DPI / Resolution / Screen Matcher) ──
+let moveZoomTimeout = null;
+let lastAppliedUiZoom = 1.0;
+const activeUiWebContents = new Set();
+
+function getOptimalZoomFactor() {
+    try {
+        if (!app.isReady()) {
+            return 1.0;
+        }
+        if (!mainWindow || mainWindow.isDestroyed()) {
+            return 1.0;
+        }
+        const winBounds = mainWindow.getBounds();
+        const display = screen.getDisplayMatching(winBounds) || screen.getPrimaryDisplay();
+        const { width, height } = display.size;
+        
+        let optimalZoom = 1.0;
+        
+        // Automatic sizing scale logic based on physical resolution and screen size
+        if (width < 1366) {
+            optimalZoom = 0.85; // Low-res screens (compact layouts, save space)
+        } else if (width <= 1440) {
+            optimalZoom = 0.90; // Small laptops (1280p, 1440p)
+        } else if (width <= 1920) {
+            optimalZoom = 1.0;  // Standard 1080p desktop/laptop
+        } else if (width <= 2560) {
+            optimalZoom = 1.10; // 1440p / 2K displays
+        } else {
+            optimalZoom = 1.25; // 4K displays and above
+        }
+        
+        return optimalZoom;
+    } catch (err) {
+        console.error("Failed to calculate optimal zoom factor:", err);
+        return 1.0;
+    }
+}
+
+function applyZoomToWebContents(wc) {
+    if (!wc || wc.isDestroyed()) return;
+    try {
+        const zoom = getOptimalZoomFactor();
+        wc.setZoomFactor(zoom);
+    } catch (err) {
+        console.error("Error setting zoom factor on webContents:", err);
+    }
+}
+
+function updateAllUiZoomFactors() {
+    const zoom = getOptimalZoomFactor();
+    lastAppliedUiZoom = zoom;
+    for (const wc of activeUiWebContents) {
+        if (!wc.isDestroyed()) {
+            try {
+                wc.setZoomFactor(zoom);
+            } catch (err) {
+                console.error("Error setting zoom on display change:", err);
+            }
+        }
+    }
+}
+
+// Track and hook all newly created internal UI web contents to scale them
+app.on('web-contents-created', (event, contents) => {
+    contents.on('destroyed', () => {
+        activeUiWebContents.delete(contents);
+    });
+    
+    const handleUrl = (url) => {
+        if (url && (url.startsWith('file://') || url.startsWith('ocal://'))) {
+            activeUiWebContents.add(contents);
+            applyZoomToWebContents(contents);
+        } else {
+            activeUiWebContents.delete(contents);
+        }
+    };
+
+    contents.on('did-start-navigation', (e, url) => handleUrl(url));
+    contents.on('did-finish-load', () => handleUrl(contents.getURL()));
+});
+
+// Screen display metrics event listener will be bound inside app.whenReady() to avoid early access errors.
+
 let bmDropdownView = null;
 let extensionDropdownView = null;
 let activeBMFolderId = null;
@@ -761,6 +846,18 @@ function createMainWindow() {
             const { width, height } = mainWindow.getContentBounds();
             welcomeView.setBounds({ x: 0, y: 0, width, height });
         }
+    });
+
+    mainWindow.on('move', () => {
+        if (moveZoomTimeout) clearTimeout(moveZoomTimeout);
+        moveZoomTimeout = setTimeout(() => {
+            const currentZoom = getOptimalZoomFactor();
+            if (currentZoom !== lastAppliedUiZoom) {
+                lastAppliedUiZoom = currentZoom;
+                updateAllUiZoomFactors();
+                updateViewBounds();
+            }
+        }, 300);
     });
 
     // These should be initialized once, not on every reload
@@ -1891,11 +1988,12 @@ function updateViewBounds(forcedUrl = null) {
     const isMaximized = mainWindow.isMaximized();
     const { width, height } = mainWindow.getContentBounds();
     const isFullscreen = !!htmlFullscreenViewId;
+    const zoom = getOptimalZoomFactor();
 
     const winOffset = 0; // Simplified for modern Electron styling
 
-    const hTabs = isFullscreen ? 0 : (userSettings.compactMode ? 36 : 44);
-    const hNav = isFullscreen ? 0 : (userSettings.compactMode ? 40 : 52);
+    const hTabs = isFullscreen ? 0 : Math.round((userSettings.compactMode ? 36 : 44) * zoom);
+    const hNav = isFullscreen ? 0 : Math.round((userSettings.compactMode ? 40 : 52) * zoom);
 
     // Bookmark Bar Logic
     let isBmVisible = bookmarkBarVisible;
@@ -1913,12 +2011,12 @@ function updateViewBounds(forcedUrl = null) {
         mainWindow.webContents.send('sync-bookmark-visibility', isBmVisible);
     }
 
-    const hBm = (isFullscreen || !isBmVisible) ? 0 : (userSettings.compactMode ? 32 : 40);
+    const hBm = (isFullscreen || !isBmVisible) ? 0 : Math.round((userSettings.compactMode ? 32 : 40) * zoom);
     // yPadding accounts for the potential 1px overlap on Windows 10
     const yPadding = (process.platform === 'win32') ? 1 : 0;
     const yOffset = hTabs + hNav + hBm + yPadding;
 
-    let wSidebar = 44;
+    let wSidebar = Math.round(44 * zoom);
     if (isFullscreen || userSettings.sidebarMode === 'hidden' || userSettings.sidebarMode === 'autohide') {
         wSidebar = 0;
     }
@@ -1939,10 +2037,10 @@ function updateViewBounds(forcedUrl = null) {
                 });
             } else {
                 activeViewEntry.view.setBounds({
-                    x: Math.round(wSidebar + 8),
-                    y: Math.round(yOffset + 2),
-                    width: Math.round(width - wSidebar - 16),
-                    height: Math.round(height - yOffset - 10)
+                    x: Math.round(wSidebar + Math.round(8 * zoom)),
+                    y: Math.round(yOffset + Math.round(2 * zoom)),
+                    width: Math.round(width - wSidebar - Math.round(16 * zoom)),
+                    height: Math.round(height - yOffset - Math.round(10 * zoom))
                 });
             }
             mainWindow.setTopBrowserView(activeViewEntry.view);
@@ -1959,10 +2057,11 @@ function updateViewBounds(forcedUrl = null) {
 
     // 1. Stack AI Sidebar (on the right)
     if (aiSidebarView && aiSidebarView.webContents && !aiSidebarView.webContents.isDestroyed() && mainWindow.getBrowserViews().includes(aiSidebarView)) {
+        const scaledAiSidebarWidth = Math.round(aiSidebarWidth * zoom);
         aiSidebarView.setBounds({
-            x: Math.round(width - aiSidebarWidth - winOffset),
+            x: Math.round(width - scaledAiSidebarWidth - winOffset),
             y: Math.round(yOffset + winOffset),
-            width: Math.round(aiSidebarWidth),
+            width: Math.round(scaledAiSidebarWidth),
             height: Math.round(height - yOffset - (winOffset * 2))
         });
         mainWindow.setTopBrowserView(aiSidebarView);
@@ -1981,7 +2080,7 @@ function updateViewBounds(forcedUrl = null) {
 
     // 3. Stack WebApp View (sliding drawer on the left next to Left Sidebar)
     if (webAppOpen && webAppView && webAppView.webContents && !webAppView.webContents.isDestroyed() && mainWindow.getBrowserViews().includes(webAppView)) {
-        const webAppWidth = 960;
+        const webAppWidth = Math.round(960 * zoom);
         webAppView.setBounds({
             x: wSidebar,
             y: Math.round(yOffset),
@@ -3852,9 +3951,10 @@ ipcMain.on('show-tab-context', (e, data) => {
     cleanupEmptyGroups();
     if (!tabContextView || !mainWindow) return;
 
+    const zoom = getOptimalZoomFactor();
     const contentBounds = mainWindow.getContentBounds();
-    const initialWidth = 260;
-    const initialHeight = 200;
+    const initialWidth = Math.round(260 * zoom);
+    const initialHeight = Math.round(200 * zoom);
     
     let initialX = data.x;
     let initialY = data.y;
@@ -3886,18 +3986,21 @@ ipcMain.on('hide-tab-context', () => {
 
 ipcMain.on('resize-tab-context', (e, data) => {
     if (tabContextView && tabContextView._x !== undefined) {
+        const zoom = getOptimalZoomFactor();
         const contentBounds = mainWindow.getContentBounds();
+        const scaledWidth = Math.round(data.width * zoom);
+        const scaledHeight = Math.round(data.height * zoom);
         let finalX = tabContextView._x;
         let finalY = tabContextView._y;
 
-        if (finalX + data.width > contentBounds.width) finalX = contentBounds.width - data.width - 5;
-        if (finalY + data.height > contentBounds.height) finalY = contentBounds.height - data.height - 5;
+        if (finalX + scaledWidth > contentBounds.width) finalX = contentBounds.width - scaledWidth - 5;
+        if (finalY + scaledHeight > contentBounds.height) finalY = contentBounds.height - scaledHeight - 5;
 
         tabContextView.setBounds({
             x: Math.round(finalX),
             y: Math.round(finalY),
-            width: Math.round(data.width),
-            height: Math.round(data.height)
+            width: scaledWidth,
+            height: scaledHeight
         });
     }
 });
@@ -4631,8 +4734,9 @@ ipcMain.on('show-shield-popup', (e, { x, y, width, height, tabId }) => {
     hidePopups();
     mainWindow.addBrowserView(shieldPopupView);
 
-    const popupWidth = 320;
-    const popupHeight = 750;
+    const zoom = getOptimalZoomFactor();
+    const popupWidth = Math.round(320 * zoom);
+    const popupHeight = Math.round(750 * zoom);
     const contentBounds = mainWindow.getContentBounds();
 
     let targetX = x + (width / 2) - (popupWidth / 2);
@@ -4666,13 +4770,14 @@ ipcMain.on('show-bm-dropdown', (e, { x, y, bookmarks, folderId }) => {
     activeBMFolderId = folderId;
     mainWindow.addBrowserView(bmDropdownView);
 
+    const zoom = getOptimalZoomFactor();
     const winOffset = getWinOffset();
     // Initial safe size, will be refined by dropdown-resize IPC
     bmDropdownView.setBounds({
         x: Math.round(x + winOffset) - 15,
         y: Math.round(y + winOffset),
-        width: 360,
-        height: 530
+        width: Math.round(360 * zoom),
+        height: Math.round(530 * zoom)
     });
     bmDropdownView.webContents.send('show-bm-dropdown', { bookmarks });
     mainWindow.setTopBrowserView(bmDropdownView);
@@ -4682,7 +4787,13 @@ ipcMain.on('resize-bm-dropdown', (e, { width, height }) => {
     if (!bmDropdownView || !mainWindow || bmDropdownView.webContents.isDestroyed()) return;
     if (!mainWindow.getBrowserViews().includes(bmDropdownView)) return;
     const bounds = bmDropdownView.getBounds();
-    bmDropdownView.setBounds({ x: bounds.x, y: bounds.y, width: Math.round(width) + 30, height: Math.round(height) + 30 });
+    const zoom = getOptimalZoomFactor();
+    bmDropdownView.setBounds({
+        x: bounds.x,
+        y: bounds.y,
+        width: Math.round(width * zoom) + 30,
+        height: Math.round(height * zoom) + 30
+    });
 });
 
 ipcMain.on('hide-bm-dropdown', () => {
@@ -4720,7 +4831,8 @@ ipcMain.on('show-extensions-dropdown', (e, { x, y, width }) => {
     hidePopups();
     mainWindow.addBrowserView(extensionDropdownView);
     // Align to the right of the button
-    const popupWidth = 320;
+    const zoom = getOptimalZoomFactor();
+    const popupWidth = Math.round(320 * zoom);
     const winOffset = getWinOffset();
     let targetX = x + width - popupWidth;
 
@@ -4728,7 +4840,7 @@ ipcMain.on('show-extensions-dropdown', (e, { x, y, width }) => {
         x: Math.round(targetX + winOffset) - 15,
         y: Math.round(y + 10 + winOffset),
         width: popupWidth + 30,
-        height: 530
+        height: Math.round(530 * zoom)
     });
     mainWindow.setTopBrowserView(extensionDropdownView);
     extensionDropdownView.webContents.send('refresh-extensions');
@@ -4866,6 +4978,12 @@ app.whenReady().then(async () => {
 
 
     createMainWindow();
+
+    // Update zoom factor when screen resolution or DPI metrics change (safe since app is ready)
+    screen.on('display-metrics-changed', () => {
+        updateAllUiZoomFactors();
+        updateViewBounds();
+    });
 });
 app.on('window-all-closed', () => { if (process.platform !== 'darwin') app.quit(); });
 app.on('activate', () => { if (BrowserWindow.getAllWindows().length === 0) createMainWindow(); });
@@ -5005,12 +5123,13 @@ ipcMain.on('show-suggestions', (e, bounds) => {
         mainWindow.addBrowserView(suggestionsView);
     }
     const winOffset = getWinOffset();
+    const zoom = getOptimalZoomFactor();
 
     suggestionsView.setBounds({
         x: Math.round(bounds.x),
         y: Math.round(bounds.y + bounds.height + 6),
         width: Math.round(bounds.width),
-        height: 350
+        height: Math.round(350 * zoom)
     });
     mainWindow.setTopBrowserView(suggestionsView);
 });
@@ -5019,8 +5138,9 @@ ipcMain.on('resize-suggestions', (e, height) => {
     if (!suggestionsView || !mainWindow || mainWindow.isDestroyed() || suggestionsView.webContents.isDestroyed()) return;
     if (!mainWindow.getBrowserViews().includes(suggestionsView)) return;
     const bounds = suggestionsView.getBounds();
+    const zoom = getOptimalZoomFactor();
     const cappedHeight = Math.min(height, 480); // Cap at 480px for standard dropdown size
-    suggestionsView.setBounds({ ...bounds, height: cappedHeight });
+    suggestionsView.setBounds({ ...bounds, height: Math.round(cappedHeight * zoom) });
 });
 
 ipcMain.on('hide-suggestions', () => hideSuggestions());
@@ -5062,11 +5182,12 @@ ipcMain.on('show-site-info', (e, bounds) => {
     mainWindow.addBrowserView(siteInfoView);
 
     // Position below the address bar identity area with shadow margin
+    const zoom = getOptimalZoomFactor();
     siteInfoView.setBounds({
         x: Math.round(bounds.x) - 15,
         y: Math.round(bounds.y + bounds.height + 4),
-        width: 350,
-        height: 540 // Sufficient height for the content and shadow padding
+        width: Math.round(350 * zoom),
+        height: Math.round(540 * zoom) // Sufficient height for the content and shadow padding
     });
 
     mainWindow.setTopBrowserView(siteInfoView);
