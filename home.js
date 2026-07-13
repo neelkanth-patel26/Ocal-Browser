@@ -593,9 +593,8 @@ class StyleCustomizer {
         if (this.btnClose) this.btnClose.onclick = () => this.close();
         if (this.btnReset) this.btnReset.onclick = () => this.resetDefaults();
 
-        // Close drawer clicking outside
         document.addEventListener('click', (e) => {
-            if (this.drawer && this.drawer.classList.contains('open') && !this.drawer.contains(e.target) && e.target !== this.btnOpen) {
+            if (this.drawer && this.drawer.classList.contains('open') && !this.drawer.contains(e.target) && this.btnOpen && !this.btnOpen.contains(e.target)) {
                 this.close();
             }
         });

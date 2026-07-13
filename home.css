@@ -1058,17 +1058,8 @@ body[data-theme="light"] .wallpaper-overlay {
     box-shadow: -15px 0 50px rgba(0, 0, 0, 0.6) !important;
     color: #e8e8e8;
 }
-
-/* Glowing Top Indicator Line */
-.style-drawer::before {
-    content: "";
-    position: absolute;
-    top: 0;
-    left: 0;
-    right: 0;
-    height: 3px;
-    background: linear-gradient(90deg, transparent, var(--accent), transparent);
-    box-shadow: 0 0 10px var(--accent);
+.style-drawer.open {
+    right: 0 !important;
 }
 
 body[data-theme="light"] .style-drawer {
@@ -1223,11 +1214,11 @@ body[data-theme="light"] .style-option.active {
 .accent-dot.active {
     border-color: #ffffff !important;
     transform: scale(1.1);
-    box-shadow: 0 0 0 2px rgba(10, 10, 12, 0.72), 0 0 16px currentColor !important;
+    box-shadow: 0 0 0 2px rgba(10, 10, 12, 0.72) !important;
 }
 body[data-theme="light"] .accent-dot.active {
     border-color: #111111 !important;
-    box-shadow: 0 0 0 2px rgba(244, 244, 247, 0.72), 0 0 12px currentColor !important;
+    box-shadow: 0 0 0 2px rgba(244, 244, 247, 0.72) !important;
 }
 
 /* Sliders */
