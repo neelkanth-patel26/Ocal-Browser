@@ -573,3 +573,194 @@ if (window.electronAPI) {
     window.electronAPI.onSettingsChanged(s => applySettings(s));
     window.electronAPI.getSettings().then(s => applySettings(s));
 }
+
+// ── Style Customizer Logic ──
+class StyleCustomizer {
+    constructor() {
+        this.drawer = document.getElementById('style-drawer');
+        this.btnOpen = document.getElementById('style-customizer-btn');
+        this.btnClose = document.getElementById('style-drawer-close');
+        this.btnReset = document.getElementById('style-reset-btn');
+        this.opacitySlider = document.getElementById('opacity-slider');
+        this.blurSlider = document.getElementById('blur-slider');
+        this.opacityLabel = document.getElementById('opacity-val-label');
+        this.blurLabel = document.getElementById('blur-val-label');
+        this.options = document.querySelectorAll('.style-option');
+        this.accentDots = document.querySelectorAll('.accent-dot');
+        this.wallpaperBg = document.querySelector('.wallpaper-bg');
+
+        if (this.btnOpen) this.btnOpen.onclick = (e) => { e.stopPropagation(); this.open(); };
+        if (this.btnClose) this.btnClose.onclick = () => this.close();
+        if (this.btnReset) this.btnReset.onclick = () => this.resetDefaults();
+
+        // Close drawer clicking outside
+        document.addEventListener('click', (e) => {
+            if (this.drawer && this.drawer.classList.contains('open') && !this.drawer.contains(e.target) && e.target !== this.btnOpen) {
+                this.close();
+            }
+        });
+
+        // Initialize Options
+        this.options.forEach(opt => {
+            opt.onclick = () => {
+                const val = opt.dataset.val;
+                const type = opt.dataset.type;
+                this.setOption(type, val);
+            };
+        });
+
+        // Initialize Accent Dots
+        this.accentDots.forEach(dot => {
+            dot.onclick = () => {
+                const color = dot.dataset.color;
+                this.setAccent(color);
+            };
+        });
+
+        // Sliders
+        if (this.opacitySlider) {
+            this.opacitySlider.oninput = () => {
+                const val = this.opacitySlider.value;
+                this.updateOpacity(val);
+            };
+        }
+        if (this.blurSlider) {
+            this.blurSlider.oninput = () => {
+                const val = this.blurSlider.value;
+                this.updateBlur(val);
+            };
+        }
+
+        // Initial Load
+        this.loadSettings();
+    }
+
+    open() {
+        if (this.drawer) this.drawer.classList.add('open');
+    }
+
+    close() {
+        if (this.drawer) this.drawer.classList.remove('open');
+    }
+
+    setOption(type, val) {
+        // Toggle active visual in drawer
+        document.querySelectorAll(`.style-option[data-type="${type}"]`).forEach(el => {
+            el.classList.toggle('active', el.dataset.val === val);
+        });
+
+        if (type === 'bg') {
+            if (this.wallpaperBg) {
+                // Clear any existing animation classes
+                this.wallpaperBg.classList.remove('animated-aurora', 'animated-cosmic', 'animated-sunset', 'animated-cyber');
+            }
+            localStorage.setItem('ocal-custom-bg', val);
+        } else if (type === 'effect') {
+            document.body.classList.remove('effect-glitch', 'effect-wavy-jelly');
+            if (val !== 'none') {
+                document.body.classList.add(`effect-${val}`);
+            }
+            localStorage.setItem('ocal-custom-effect', val);
+        } else if (type === 'ui') {
+            document.body.setAttribute('data-ui-style', val);
+            localStorage.setItem('ocal-custom-ui', val);
+            // Sync sliders default value for preset
+            if (val === 'frosted-glass') { this.updateOpacity(45, true); this.updateBlur(20, true); }
+            else if (val === 'ultra-glass') { this.updateOpacity(15, true); this.updateBlur(32, true); }
+            else if (val === 'matte-surface') { this.updateOpacity(95, true); this.updateBlur(0, true); }
+            else if (val === 'cyberpunk-glow') { this.updateOpacity(85, true); this.updateBlur(10, true); }
+        } else if (type === 'font') {
+            document.body.setAttribute('data-font-style', val);
+            localStorage.setItem('ocal-custom-font', val);
+        }
+    }
+
+    setAccent(color) {
+        this.accentDots.forEach(dot => {
+            dot.classList.toggle('active', dot.dataset.color.toLowerCase() === color.toLowerCase());
+        });
+        if (window.electronAPI && window.electronAPI.updateSetting) {
+            window.electronAPI.updateSetting('accentColor', color);
+        } else {
+            const root = document.documentElement;
+            root.style.setProperty('--accent', color);
+            root.style.setProperty('--accent-glow', hexToRgba(color, 0.45));
+            root.style.setProperty('--accent-dim', hexToRgba(color, 0.15));
+            root.style.setProperty('--accent-border', hexToRgba(color, 0.4));
+        }
+    }
+
+    updateOpacity(val, syncSlider = false) {
+        document.documentElement.style.setProperty('--card-opacity-val', val / 100);
+        if (this.opacityLabel) this.opacityLabel.textContent = `${val}%`;
+        if (syncSlider && this.opacitySlider) this.opacitySlider.value = val;
+        localStorage.setItem('ocal-custom-opacity', val);
+    }
+
+    updateBlur(val, syncSlider = false) {
+        document.documentElement.style.setProperty('--card-blur-val', `${val}px`);
+        if (this.blurLabel) this.blurLabel.textContent = `${val}px`;
+        if (syncSlider && this.blurSlider) this.blurSlider.value = val;
+        localStorage.setItem('ocal-custom-blur', val);
+    }
+
+    loadSettings() {
+        // Load Background Theme
+        const bgVal = localStorage.getItem('ocal-custom-bg') || 'static';
+        this.setOption('bg', bgVal);
+
+        // Load Visual Effect
+        const effectVal = localStorage.getItem('ocal-custom-effect') || 'none';
+        this.setOption('effect', effectVal);
+
+        // Load UI Card Presets
+        const uiVal = localStorage.getItem('ocal-custom-ui') || 'frosted-glass';
+        this.setOption('ui', uiVal);
+
+        // Load Font Settings
+        const fontVal = localStorage.getItem('ocal-custom-font') || 'mono';
+        this.setOption('font', fontVal);
+
+        // Load Fine Tuning
+        const opacityVal = localStorage.getItem('ocal-custom-opacity');
+        if (opacityVal !== null) {
+            this.updateOpacity(parseInt(opacityVal), true);
+        }
+        const blurVal = localStorage.getItem('ocal-custom-blur');
+        if (blurVal !== null) {
+            this.updateBlur(parseInt(blurVal), true);
+        }
+
+        // Highlight Active Accent Dot (approximate match)
+        if (window.electronAPI) {
+            window.electronAPI.getSettings().then(s => {
+                if (s && s.accentColor) {
+                    this.accentDots.forEach(dot => {
+                        dot.classList.toggle('active', dot.dataset.color.toLowerCase() === s.accentColor.toLowerCase());
+                    });
+                }
+            });
+        }
+    }
+
+    resetDefaults() {
+        localStorage.removeItem('ocal-custom-bg');
+        localStorage.removeItem('ocal-custom-effect');
+        localStorage.removeItem('ocal-custom-ui');
+        localStorage.removeItem('ocal-custom-font');
+        localStorage.removeItem('ocal-custom-opacity');
+        localStorage.removeItem('ocal-custom-blur');
+
+        // Reset elements
+        this.setOption('bg', 'static');
+        this.setOption('effect', 'none');
+        this.setOption('ui', 'frosted-glass');
+        this.setOption('font', 'mono');
+        this.updateOpacity(45, true);
+        this.updateBlur(20, true);
+
+        // Reset default accent
+        this.setAccent('#09f0a0');
+    }
+}
+new StyleCustomizer();

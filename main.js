@@ -1566,6 +1566,7 @@ function createNewTab(url = null) {
                     border-radius: 12px !important;
                     overflow: hidden !important;
                     background: transparent !important;
+                    contain: paint !important;
                 }
                 html:fullscreen, body:fullscreen,
                 html:-webkit-full-screen, body:-webkit-full-screen,
