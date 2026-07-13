@@ -338,43 +338,37 @@ if (shieldCard) {
 function renderProfiles(s) {
     const grid = document.getElementById('profile-grid');
     if (!grid) return;
-    
-    let html = (s.profiles || []).map((p, index) => {
+        let html = (s.profiles || []).map((p, index) => {
         const isActive = (s.currentProfileId || 'default') === p.id;
         return `
         <div class="choice-item profile-card ${isActive ? 'active' : ''}" 
-             onclick="window.electronAPI.switchProfile('${p.id}')"
-             style="display: flex; flex-direction: column; align-items: center; padding: 24px; gap: 14px; position: relative; cursor: pointer; min-height: 184px;">
+             onclick="window.electronAPI.switchProfile('${p.id}')">
             
-            <div style="position: relative;">
-                <div class="profile-avatar-wrap" style="width: 64px; height: 64px; background: ${isActive ? 'var(--accent)' : 'rgba(255, 255, 255, 0.05)'}; border-radius: 50%; display: flex; align-items: center; justify-content: center; color: ${isActive ? '#000' : 'var(--text-dim)'}; font-size: 26px; border: 2px solid ${isActive ? 'var(--accent)' : 'rgba(255, 255, 255, 0.08)'}; transition: none;">
+            <div class="profile-avatar-container">
+                <div class="profile-avatar-wrap ${isActive ? 'active' : ''}">
                     <i class="fas ${p.icon || 'fa-user'}"></i>
                 </div>
-                ${isActive ? '<div style="position: absolute; bottom: -2px; right: -2px; width: 20px; height: 20px; background: #4ade80; border-radius: 50%; border: 2px solid var(--bg); display: flex; align-items: center; justify-content: center;"><i class="fas fa-check" style="font-size: 9px; color: #000;"></i></div>' : ''}
+                ${isActive ? '<div class="profile-active-check"><i class="fas fa-check"></i></div>' : ''}
             </div>
 
-            <div style="text-align: center; width: 100%;">
-                <h4 style="font-size: 15px; margin: 0 0 4px 0; font-weight: 700; color: var(--text); display: flex; align-items: center; justify-content: center; gap: 8px;">
+            <div class="profile-details-wrap">
+                <h4 class="profile-name-title">
                     ${p.name}
-                    ${isActive ? '<span style="font-size: 9px; color: #4ade80; font-weight: 800; background: rgba(74, 222, 128, 0.1); padding: 2px 8px; border-radius: 4px; border: 1px solid rgba(74, 222, 128, 0.2);">ACTIVE</span>' : ''}
+                    ${isActive ? '<span class="profile-active-pill">ACTIVE</span>' : ''}
                 </h4>
-                <p style="font-size: 12px; color: var(--text-dim); line-height: 1.4; margin: 0;">
+                <p class="profile-subtitle">
                     ${isActive ? 'Active node session' : 'Isolated sandboxed node'}
                 </p>
             </div>
 
-            <div style="display: flex; gap: 8px; width: 100%; margin-top: auto; justify-content: center;" onclick="event.stopPropagation();">
-                <button class="btn secondary" onclick="editProfilePrompt('${p.id}')" 
-                        style="flex: 1; max-width: 100px; padding: 6px 12px; font-size: 11px; display: flex; align-items: center; justify-content: center; gap: 6px; font-weight: 600; transition: none;">
-                    <i class="fas fa-pen" style="font-size: 9px;"></i>
+            <div class="profile-actions-row" onclick="event.stopPropagation();">
+                <button class="btn secondary edit-btn" onclick="editProfilePrompt('${p.id}')">
+                    <i class="fas fa-pen"></i>
                     <span>Edit</span>
                 </button>
                 ${p.id !== 'default' ? `
-                <button class="btn secondary" onclick="deleteProfile('${p.id}', '${p.name}')" 
-                        style="flex: 1; max-width: 100px; padding: 6px 12px; font-size: 11px; display: flex; align-items: center; justify-content: center; gap: 6px; font-weight: 600; color: #ef4444; border-color: rgba(239, 68, 68, 0.15); background: rgba(239, 68, 68, 0.04); transition: none;" 
-                        onmouseover="this.style.background='rgba(239, 68, 68, 0.1)'; this.style.color='#ef4444';" 
-                        onmouseout="this.style.background='rgba(239, 68, 68, 0.04)';">
-                    <i class="fas fa-trash" style="font-size: 9px;"></i>
+                <button class="btn secondary delete-btn" onclick="deleteProfile('${p.id}', '${p.name}')">
+                    <i class="fas fa-trash"></i>
                     <span>Delete</span>
                 </button>` : ''}
             </div>
@@ -384,14 +378,13 @@ function renderProfiles(s) {
 
     // Append the dashed "+ Create New Node" card
     html += `
-        <div class="choice-item add-profile-card" onclick="createProfilePrompt()" 
-             style="display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 24px; gap: 14px; cursor: pointer; min-height: 184px; text-align: center;">
-            <div class="add-avatar-circle" style="width: 52px; height: 52px; border-radius: 50%; border: 1px dashed var(--text-muted); display: flex; align-items: center; justify-content: center; color: var(--text-dim); font-size: 20px; background: rgba(255, 255, 255, 0.02); transition: none;">
+        <div class="choice-item add-profile-card" onclick="createProfilePrompt()">
+            <div class="add-avatar-circle">
                 <i class="fas fa-plus"></i>
             </div>
-            <div style="display: flex; flex-direction: column; gap: 2px;">
-                <span style="font-size: 13px; font-weight: 700; color: var(--text-dim);">Create New Node</span>
-                <span style="font-size: 11px; color: var(--text-muted);">Launch isolated workspace</span>
+            <div class="add-profile-details">
+                <span class="add-profile-title">Create New Node</span>
+                <span class="add-profile-desc">Launch isolated workspace</span>
             </div>
         </div>
     `;
