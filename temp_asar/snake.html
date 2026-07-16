@@ -1,0 +1,208 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com https://cdn.jsdelivr.net; font-src 'self' https://fonts.gstatic.com https://cdn.jsdelivr.net; img-src 'self' data:;">
+    <title>Ocal Snake | Neon Slither</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500;700&family=DM+Sans:wght@400;500;700&family=Syne:wght@700;800&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --accent: #e8ff47;
+            --accent-glow: rgba(232, 255, 71, 0.25);
+            --accent-dim: rgba(232, 255, 71, 0.12);
+            --accent-border: rgba(232, 255, 71, 0.35);
+            --bg: #0c0c0c;
+            --radius: 2px;
+            --text-main: #e8e8e8;
+            --text-muted: #666666;
+            --border-flat: #252525;
+            --font-title: 'Syne', sans-serif;
+            --font-main: 'DM Sans', sans-serif;
+            --font-mono: 'DM Mono', monospace;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            background: var(--bg);
+            color: var(--text-main);
+            font-family: var(--font-main);
+            overflow: hidden;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
+            width: 100vw;
+            user-select: none;
+        }
+
+        .game-wrapper {
+            position: relative;
+            background: transparent !important;
+            border: none !important;
+            padding: 0 !important;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            box-shadow: none !important;
+        }
+
+        .hud {
+            width: 100%;
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 24px;
+        }
+
+        .pill {
+            background: transparent !important;
+            border: none !important;
+            border-bottom: 1px solid var(--border-flat) !important;
+            padding: 6px 0 !important;
+            border-radius: 0 !important;
+            display: flex;
+            align-items: baseline;
+            gap: 8px;
+        }
+
+        .label {
+            font-size: 9px;
+            font-weight: 700;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            letter-spacing: 1.5px;
+        }
+
+        .val {
+            font-family: var(--font-title);
+            font-size: 18px;
+            font-weight: 700;
+            color: var(--accent);
+        }
+
+        .canvas-container {
+            position: relative;
+            background: #000000;
+            border: 1px solid var(--border-flat);
+            border-radius: var(--radius);
+            overflow: hidden;
+            box-shadow: none !important;
+        }
+
+        canvas {
+            display: block;
+        }
+
+        /* Overlays */
+        .overlay {
+            position: absolute;
+            inset: 0;
+            background: rgba(12, 12, 12, 0.95);
+            backdrop-filter: none !important;
+            display: none;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            z-index: 100;
+            border-radius: var(--radius);
+        }
+
+        .overlay.active {
+            display: flex;
+        }
+
+        h2 {
+            font-family: var(--font-title);
+            font-size: 28px;
+            font-weight: 800;
+            margin-bottom: 8px;
+            letter-spacing: -1px;
+            text-transform: uppercase;
+        }
+
+        .btn {
+            background: var(--accent);
+            color: #000;
+            border: none;
+            padding: 10px 24px;
+            border-radius: 4px;
+            font-family: var(--font-main);
+            font-size: 13px;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.2s ease-in-out;
+            margin-top: 20px;
+        }
+
+        .btn:hover {
+            transform: scale(1.03);
+            filter: brightness(1.15);
+        }
+
+        .footer-hint {
+            margin-top: 24px;
+            font-size: 10px;
+            color: var(--text-muted);
+            display: flex;
+            align-items: center;
+            gap: 24px;
+        }
+
+        .back-link {
+            color: var(--accent);
+            text-decoration: none;
+            font-weight: 700;
+            letter-spacing: 0.5px;
+            transition: opacity 0.15s ease;
+        }
+
+        .back-link:hover {
+            text-decoration: underline;
+        }
+    </style>
+</head>
+<body>
+    <div class="game-wrapper">
+        <div class="hud">
+            <div class="pill">
+                <span class="label">Score</span>
+                <span class="val" id="score">0</span>
+            </div>
+            <div class="pill">
+                <span class="label">Best</span>
+                <span class="val" id="best">0</span>
+            </div>
+        </div>
+
+        <div class="canvas-container">
+            <canvas id="gameCanvas"></canvas>
+            
+            <div class="overlay active" id="startOverlay">
+                <h2>OCAL SNAKE</h2>
+                <div style="opacity: 0.6; font-size: 13px;">Click below to load game link...</div>
+                <button class="btn" id="startBtn">PLAY GAME</button>
+            </div>
+
+            <div class="overlay" id="gameOverOverlay">
+                <h2 style="color: #ef4444;">GAME OVER</h2>
+                <div id="finalScore" style="font-size: 18px; opacity: 0.7; margin-top: 4px;">Score: 0</div>
+                <button class="btn" id="restartBtn">RETRY GAME</button>
+            </div>
+        </div>
+
+        <div class="footer-hint">
+            <span>ARROWS / WASD to Move</span>
+            <a href="games.html" class="back-link">EXIT TO HUB</a>
+        </div>
+    </div>
+
+    <!-- Locked to local stylesheet design parameters to match D:\ocal style specifications -->
+    <script src="snake.js"></script>
+</body>
+</html>

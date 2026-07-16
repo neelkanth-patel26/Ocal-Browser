@@ -1,0 +1,346 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline' https://cdnjs.cloudflare.com https://unpkg.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com https://cdnjs.cloudflare.com https://cdn.jsdelivr.net; font-src 'self' https://fonts.gstatic.com https://cdnjs.cloudflare.com https://cdn.jsdelivr.net; img-src 'self' data: https:; connect-src 'self' https://suggestqueries.google.com https://api.github.com https://cdnjs.cloudflare.com https://unpkg.com;">
+    <link rel="stylesheet" href="assets/fontawesome/css/all.min.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg: #0c0c0c;
+            --border: #252525;
+            --accent: #09f0a0;
+            --accent-glow: rgba(9, 240, 160, 0.2);
+            --accent-dim: rgba(9, 240, 160, 0.12);
+            --accent-border: rgba(9, 240, 160, 0.2);
+            --card-bg: #111111;
+            --card-border: #252525;
+            --card-hover-bg: #1e1e1e;
+            --card-hover-border: var(--accent);
+            --text: #e8e8e8;
+            --text-dim: #666666;
+            --text-muted: #3a3a3a;
+            --font: 'Geist Mono', monospace;
+            --title-font: 'Geist Mono', monospace;
+            --radius-sm: 8px;
+            --radius-lg: 12px;
+        }
+
+        /* ── Light Mode Overrides ────────────────────────────────── */
+        body[data-theme="light"] {
+            --bg: #ffffff;
+            --border: #e2e8f0;
+            --accent: #058f60;
+            --accent-glow: rgba(5, 143, 96, 0.2);
+            --accent-dim: rgba(5, 143, 96, 0.12);
+            --accent-border: rgba(5, 143, 96, 0.2);
+            --card-bg: #ffffff;
+            --card-border: #e2e8f0;
+            --card-hover-bg: #f1f5f9;
+            --card-hover-border: var(--accent);
+            --text: #0f172a;
+            --text-dim: #475569;
+            --text-muted: #94a3b8;
+        }
+
+        * { 
+            box-sizing: border-box; 
+        }
+
+        .settings-wrapper::-webkit-scrollbar { 
+            width: 8px; 
+            height: 8px; 
+        }
+        .settings-wrapper::-webkit-scrollbar-track { 
+            background: transparent; 
+        }
+        .settings-wrapper::-webkit-scrollbar-thumb { 
+            background: rgba(128, 128, 128, 0.25); 
+            border-radius: 10px; 
+        }
+        .settings-wrapper::-webkit-scrollbar-thumb:hover { 
+            background: var(--accent);
+        }
+
+        html, body {
+            height: 100%;
+            overflow: hidden !important;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: var(--font);
+            background: var(--bg);
+            color: var(--text);
+            -webkit-font-smoothing: antialiased;
+        }
+
+        .settings-wrapper {
+            height: 100vh;
+            overflow-y: auto;
+            overflow-x: hidden;
+            width: 100%;
+        }
+
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 60px 24px;
+            position: relative;
+            z-index: 1;
+        }
+
+        .header {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+            margin-bottom: 48px;
+        }
+
+        .back-btn {
+            width: 40px; 
+            height: 40px; 
+            border-radius: 50%;
+            background: var(--card-bg); 
+            border: 1px solid var(--card-border);
+            color: var(--text-dim); 
+            cursor: pointer;
+            display: flex; 
+            align-items: center; 
+            justify-content: center;
+            font-size: 14px;
+            transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+        .back-btn:hover { 
+            background: var(--card-hover-bg); 
+            border-color: var(--card-hover-border);
+            color: var(--text); 
+            transform: none; 
+        }
+        .back-btn:active { 
+            transform: none; 
+        }
+
+        .hostname { 
+            font-family: var(--title-font);
+            font-size: 28px; 
+            font-weight: 700; 
+            color: var(--text);
+        }
+
+        .section { 
+            margin-bottom: 40px; 
+        }
+        .section-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 16px;
+            padding: 0 4px;
+        }
+        .section-title { 
+            font-size: 11px; 
+            font-weight: 700; 
+            color: var(--text-dim); 
+            text-transform: uppercase; 
+            letter-spacing: 0.15em;
+        }
+
+        .card {
+            background: var(--card-bg);
+            border: 1px solid var(--card-border);
+            border-radius: var(--radius-lg);
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .row {
+            display: flex;
+            align-items: center;
+            padding: 18px 24px;
+            gap: 20px;
+            border-bottom: 1px solid var(--card-border);
+            transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+            background: var(--card-bg);
+        }
+        .row:last-child { 
+            border-bottom: none; 
+        }
+        .row:hover { 
+            background: var(--card-hover-bg); 
+        }
+
+        .row-icon { 
+            width: 36px; 
+            height: 36px; 
+            border-radius: var(--radius-sm);
+            background: var(--card-bg);
+            border: 1px solid var(--card-border);
+            display: flex; 
+            align-items: center; 
+            justify-content: center;
+            font-size: 15px; 
+            color: var(--accent);
+            flex-shrink: 0;
+            transition: all 0.2s ease;
+        }
+        .row:hover .row-icon {
+            border-color: var(--accent-border);
+            box-shadow: none;
+        }
+
+        .row-content { 
+            flex: 1; 
+            min-width: 0; 
+        }
+        .row-title { 
+            font-size: 14px; 
+            font-weight: 600; 
+            color: var(--text); 
+        }
+        .row-desc { 
+            font-size: 11.5px; 
+            color: var(--text-dim); 
+            margin-top: 4px; 
+            line-height: 1.4; 
+        }
+
+        .action-btn {
+            padding: 8px 16px; 
+            border-radius: var(--radius-sm); 
+            font-size: 12px; 
+            font-weight: 600;
+            cursor: pointer; 
+            transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1); 
+            border: 1px solid var(--card-border);
+            background: var(--card-bg); 
+            color: var(--text);
+            font-family: inherit;
+            white-space: nowrap;
+        }
+        .action-btn:hover { 
+            background: var(--card-hover-bg); 
+            border-color: var(--card-hover-border); 
+            color: var(--text); 
+        }
+        .action-btn:active { 
+            transform: none; 
+        }
+        .action-btn.danger { 
+            color: #ef4444; 
+            border-color: rgba(239, 68, 68, 0.15); 
+            background: rgba(239, 68, 68, 0.04); 
+        }
+        .action-btn.danger:hover { 
+            background: rgba(239, 68, 68, 0.12); 
+            border-color: #ef4444; 
+            color: #ff6b6b; 
+            box-shadow: none; 
+        }
+
+        select {
+            background: var(--card-bg);
+            color: var(--text-dim);
+            border: 1px solid var(--card-border);
+            border-radius: var(--radius-sm);
+            padding: 8px 16px;
+            font-size: 13px;
+            font-weight: 500;
+            outline: none;
+            cursor: pointer;
+            min-width: 160px;
+            font-family: inherit;
+            transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+            appearance: none;
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='14' height='14' viewBox='0 0 24 24' fill='none' stroke='rgba(255,255,255,0.6)' stroke-width='2.5' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E");
+            background-repeat: no-repeat;
+            background-position: right 12px center;
+            padding-right: 36px;
+        }
+        body[data-theme="light"] select {
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='14' height='14' viewBox='0 0 24 24' fill='none' stroke='rgba(0,0,0,0.6)' stroke-width='2.5' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E");
+        }
+        select:hover { 
+            background: var(--card-hover-bg); 
+            border-color: var(--card-hover-border); 
+            color: var(--text); 
+        }
+        select:focus { 
+            border-color: var(--accent); 
+            color: var(--text); 
+        }
+        select option { 
+            background: var(--bg); 
+            color: var(--text); 
+        }
+
+        .usage-display { 
+            display: flex; 
+            align-items: center; 
+            justify-content: space-between; 
+            width: 100%; 
+        }
+        .usage-info { 
+            font-size: 18px; 
+            color: var(--text); 
+            font-weight: 700; 
+        }
+        .usage-count { 
+            display: block; 
+            font-size: 12px; 
+            color: var(--text-dim); 
+            font-weight: 400; 
+            margin-top: 4px; 
+        }
+    </style>
+</head>
+<body>
+    <div class="settings-wrapper">
+        <div class="ambient-lighting">
+            <div class="neural-point point-1"></div>
+            <div class="neural-point point-2"></div>
+        </div>
+        <div class="container">
+            <div class="header">
+                <button class="back-btn" onclick="history.back()"><i class="fas fa-arrow-left"></i></button>
+                <div class="hostname" id="site-hostname">Loading site...</div>
+            </div>
+
+            <div class="section">
+                <div class="section-title">Usage</div>
+                <div class="card">
+                    <div class="row">
+                        <div class="usage-display">
+                            <div>
+                                <div class="usage-info" id="site-usage">Calculating...</div>
+                                <div class="usage-count" id="site-cookie-count">Calculating...</div>
+                            </div>
+                            <button class="action-btn danger" id="delete-data-btn">Delete data</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="section">
+                <div class="section-header">
+                    <div class="section-title">Permissions</div>
+                    <button class="action-btn" id="reset-perms-btn">Reset all</button>
+                </div>
+                <div class="card" id="permissions-list">
+                    <!-- Grouped Permissions injected here -->
+                </div>
+            </div>
+
+            <div style="text-align: center; margin-top: 60px; padding-bottom: 40px; opacity: 0.3; font-size: 11.5px; letter-spacing: 0.05em;">
+                <i class="fas fa-shield-halved" style="margin-right: 8px;"></i>
+                Ocal Engine Management
+            </div>
+        </div>
+    </div>
+    <script src="site-settings.js"></script>
+</body>
+</html>

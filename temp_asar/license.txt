@@ -1,0 +1,36 @@
+OCAL BROWSER - END USER LICENSE AGREEMENT (EULA)
+
+Last Updated: March 29, 2026
+
+PLEASE READ THIS AGREEMENT CAREFULLY BEFORE INSTALLING OR USING OCAL BROWSER ("THE SOFTWARE"). BY INSTALLING OR USING THE SOFTWARE, YOU AGREE TO BE BOUND BY THE TERMS OF THIS AGREEMENT.
+
+1. LICENSE GRANT
+Subject to the terms of this Agreement, Ocal ("the Provider") grants you a personal, non-exclusive, non-transferable, limited license to install and use Ocal Browser on your compatible devices.
+
+2. PROPRIETARY RIGHTS
+The Software, including all code, interface designs, "Antigravity" engine components, and AI signatures, are the proprietary property of Ocal and its licensors. You may not:
+- Reverse engineer, decompile, or disassemble the Software.
+- Modify or create derivative works based upon the Software.
+- Remove or obscure any proprietary notices or labels on the Software.
+
+3. PRIVACY AND DATA
+Ocal Browser is designed with a "Privacy First" philosophy.
+- Local Storage: Your history, bookmarks, and passwords remain encrypted on your device and are never transmitted to our servers without your explicit consent via Ocal Sync.
+- AI Interaction: Responses from the AI Copilot are processed securely. Your prompts are context-isolated to ensure your private browsing session remains private.
+
+4. THIRD-PARTY COMPONENTS
+Ocal Browser is built upon the Electron framework and Chromium open-source projects. These components are subject to their respective licenses (MIT, BSD, etc.). By using Ocal, you acknowledge and agree to the terms of such third-party licenses.
+
+5. UPDATES
+The Software may automatically download and install updates. These updates are intended to improve, enhance, and further develop the Software and may take the form of bug fixes, enhanced functions, new software modules, and completely new versions.
+
+6. LIMITATION OF LIABILITY
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND. IN NO EVENT SHALL OCAL BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, OR CONSEQUENTIAL DAMAGES ARISING OUT OF THE USE OR INABILITY TO USE THE SOFTWARE.
+
+7. TERMINATION
+This license is effective until terminated. Your rights under this license will terminate automatically without notice if you fail to comply with any term of this Agreement.
+
+8. GOVERNING LAW
+This Agreement shall be governed by and construed in accordance with the laws of your jurisdiction, without giving effect to any principles of conflicts of law.
+
+BY CLICKING "INSTALL" OR USING THE SOFTWARE, YOU ACKNOWLEDGE THAT YOU HAVE READ THIS AGREEMENT, UNDERSTAND IT, AND AGREE TO BE BOUND BY ITS TERMS.

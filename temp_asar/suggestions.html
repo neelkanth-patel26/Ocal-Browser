@@ -1,0 +1,262 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' https://cdnjs.cloudflare.com https://unpkg.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com https://cdnjs.cloudflare.com https://cdn.jsdelivr.net; font-src 'self' https://fonts.gstatic.com https://cdnjs.cloudflare.com https://cdn.jsdelivr.net; img-src 'self' data: https:; connect-src 'self' https://suggestqueries.google.com https://api.github.com https://cdnjs.cloudflare.com https://unpkg.com;">
+    <link rel="stylesheet" href="assets/fontawesome/css/all.min.css">
+    <style>
+        :root {
+            --background: #0c0c0c;
+            --foreground: #e8e8e8;
+            --accent: #09f0a0;
+            --accent-glow: rgba(9, 240, 160, 0.2);
+            --accent-dim: rgba(9, 240, 160, 0.12);
+            --accent-border: #09f0a0;
+            --chrome: #111111;
+            --text: #e8e8e8;
+            --text-dim: #666666;
+            --text-muted: #3a3a3a;
+            --hover: #1e1e1e;
+            --border: #252525;
+            --radius: 8px;
+        }
+        
+        body[data-theme="light"] {
+            --background: #ffffff;
+            --foreground: #1c1c1f;
+            --chrome: #ffffff;
+            --text: #1c1c1f;
+            --text-dim: #6b7280;
+            --text-muted: #9ca3af;
+            --hover: #f1f5f9;
+            --border: #e2e8f0;
+        }
+
+        body {
+            margin: 0;
+            padding: 0;
+            font-family: 'Geist Mono', monospace;
+            background: transparent;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            user-select: none;
+            -webkit-font-smoothing: antialiased;
+        }
+
+        .container {
+            background: var(--background);
+            border: 1px solid var(--border);
+            overflow-y: auto;
+            overflow-x: hidden;
+            max-height: 100vh;
+            position: relative;
+            border-radius: 12px;
+            box-shadow: none;
+        }
+
+        body[data-theme="light"] .container {
+            box-shadow: none;
+        }
+
+        /* Custom Scrollbar */
+        ::-webkit-scrollbar {
+            width: 5px;
+        }
+        ::-webkit-scrollbar-track {
+            background: transparent;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 4px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: rgba(255, 255, 255, 0.12);
+        }
+        .container:hover ::-webkit-scrollbar-thumb {
+            background: rgba(255, 255, 255, 0.08);
+        }
+
+        .suggestion-list {
+            list-style: none;
+            margin: 0;
+            padding: 8px;
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+            z-index: 2;
+            position: relative;
+        }
+
+        .suggestion-item {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 10px 14px;
+            cursor: pointer;
+            color: var(--foreground);
+            border: 1px solid transparent;
+            border-radius: var(--radius);
+            transition: none !important;
+        }
+
+        .suggestion-item:hover {
+            background: var(--hover);
+        }
+
+        .suggestion-item.selected {
+            background: var(--accent-dim);
+            border-color: var(--accent-border);
+        }
+
+        .icon {
+            width: 28px;
+            height: 28px;
+            background: rgba(255, 255, 255, 0.03);
+            border: 1px solid rgba(255, 255, 255, 0.06);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 13px;
+            color: var(--text-dim);
+            border-radius: 6px;
+            flex-shrink: 0;
+        }
+
+        .suggestion-favicon {
+            width: 14px;
+            height: 14px;
+            object-fit: contain;
+            border-radius: 3px;
+            transition: transform 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+
+        .suggestion-item:hover .suggestion-favicon,
+        .suggestion-item.selected .suggestion-favicon {
+            transform: none;
+        }
+
+        body[data-theme="light"] .icon {
+            background: rgba(0, 0, 0, 0.02);
+            border-color: rgba(0, 0, 0, 0.04);
+            color: var(--text-dim);
+        }
+
+        .suggestion-item:hover .icon,
+        .suggestion-item.selected .icon {
+            color: var(--accent);
+            border-color: var(--accent-border);
+            background: rgba(255, 255, 255, 0.05);
+        }
+
+        body[data-theme="light"] .suggestion-item:hover .icon,
+        body[data-theme="light"] .suggestion-item.selected .icon {
+            background: rgba(0, 0, 0, 0.03);
+        }
+
+        .text {
+            flex: 1;
+            font-size: 13.5px;
+            font-weight: 500;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            color: var(--foreground);
+        }
+
+        .type {
+            font-size: 9px;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.8px;
+            color: var(--text-dim);
+            background: rgba(255, 255, 255, 0.04);
+            border: 1px solid rgba(255, 255, 255, 0.06);
+            padding: 3px 8px;
+            border-radius: 5px;
+            transition: none !important;
+        }
+
+        body[data-theme="light"] .type {
+            background: rgba(0, 0, 0, 0.03);
+            border-color: rgba(0, 0, 0, 0.05);
+            color: var(--text-dim);
+        }
+
+        .suggestion-item:hover .type,
+        .suggestion-item.selected .type {
+            border-color: var(--accent-border);
+            color: var(--accent);
+        }
+
+        /* Category Headers */
+        .category-header {
+            font-size: 9.5px;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.8px;
+            color: var(--text-dim);
+            padding: 12px 14px 6px 14px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .category-header::after {
+            content: '';
+            flex: 1;
+            height: 1px;
+            background: var(--border);
+        }
+
+        /* Refinements Bar */
+        .refinements-bar {
+            display: flex;
+            gap: 8px;
+            padding: 10px 14px;
+            overflow-x: auto;
+            scrollbar-width: none;
+            border-bottom: 1px solid var(--border);
+        }
+        .refinements-bar::-webkit-scrollbar { display: none; }
+
+        .refinement-pill {
+            padding: 5px 12px;
+            background: var(--hover);
+            border: 1px solid var(--border);
+            font-size: 11.5px;
+            color: var(--foreground);
+            white-space: nowrap;
+            cursor: pointer;
+            border-radius: 6px;
+        }
+        .refinement-pill:hover {
+            border-color: var(--accent-border);
+            color: var(--accent);
+        }
+
+        /* Special Best Match styling */
+        .suggestion-item.best-match {
+            background: var(--chrome) !important;
+            border-color: var(--border) !important;
+        }
+
+        body[data-theme="light"] .suggestion-item.best-match {
+            background: var(--chrome) !important;
+        }
+
+        .suggestion-item.best-match.selected {
+            background: var(--accent-dim) !important;
+            border-color: var(--accent-border) !important;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div id="refinements" class="refinements-bar" style="display:none;"></div>
+        <div class="suggestion-list" id="list">
+            <!-- Suggestions injected here -->
+        </div>
+    </div>
+    <script src="suggestions.js"></script>
+</body>
+</html>

@@ -3,10 +3,10 @@ const { FuseV1Options, FuseVersion } = require('@electron/fuses');
 
 module.exports = {
   packagerConfig: {
-    appId: 'com.ocal.browser',
+    appId: 'com.ocal.browser.v2',
     name: 'Ocal Browser',
     asar: true,
-    icon: './build/icon.ico',
+    icon: './icon.ico',
     win32metadata: {
       CompanyName: 'Gaming Network Studio Media Group',
       FileDescription: 'Ocal Browser',

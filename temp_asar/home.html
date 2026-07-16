@@ -1,0 +1,312 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline' https://cdnjs.cloudflare.com https://unpkg.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com https://cdnjs.cloudflare.com https://cdn.jsdelivr.net; font-src 'self' https://fonts.gstatic.com https://cdnjs.cloudflare.com https://cdn.jsdelivr.net; img-src 'self' data: https:; connect-src 'self' https://suggestqueries.google.com https://api.github.com https://cdnjs.cloudflare.com https://unpkg.com https://wttr.in;">
+    <title>Ocal Home</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="stylesheet" href="assets/fonts/geist-fonts.css">
+    <link rel="stylesheet" href="assets/fontawesome/css/all.min.css">
+    <link rel="stylesheet" href="home.css">
+</head>
+<body class="pro-studio">
+    <script>
+        (function () {
+            const t = localStorage.getItem('ocal-settings-theme');
+            if (t) document.body.setAttribute('data-theme', t);
+            const a = localStorage.getItem('ocal-settings-accent');
+            if (a) {
+                document.documentElement.style.setProperty('--accent', a);
+                document.documentElement.style.setProperty('--accent-glow', `color-mix(in srgb, ${a} 30%, transparent)`);
+                document.documentElement.style.setProperty('--accent-dim', `color-mix(in srgb, ${a} 12%, transparent)`);
+                document.documentElement.style.setProperty('--accent-border', a);
+            }
+        })();
+    </script>
+    <!-- Premium Wallpaper Background to enable perfect corner clipping -->
+    <div class="wallpaper-bg"></div>
+
+    <!-- Elegant Floating Weather (Opera style) -->
+    <div class="floating-weather" id="floating-weather">
+        <div class="weather-icon-wrapper">
+            <i class="fas fa-cloud-sun weather-icon" id="floating-weather-icon"></i>
+        </div>
+        <div class="weather-details">
+            <div class="weather-temp-row">
+                <span class="weather-t" id="floating-weather-temp">35 °C</span>
+            </div>
+            <div class="floating-city-wrapper">
+                <span class="weather-c" id="floating-weather-city">Ahmedabad <i class="fa-solid fa-location-dot edit-icon-floating"></i></span>
+                <input type="text" class="floating-location-input" id="floating-location-input" placeholder="CITY...">
+            </div>
+        </div>
+    </div>
+
+    <main class="dashboard layout-center" id="dashboard-main">
+        <!-- Sidebar: Daily Focus (Todo) -->
+        <aside class="col-side" id="left-sidebar">
+            <div class="glass-panel" id="todo-panel">
+                <div class="widget-head">
+                    <span class="widget-title">Todo List</span>
+                    <i class="fas fa-layer-group" style="opacity: 0.2; font-size: 14px;"></i>
+                </div>
+                <div class="todo-stack" id="todo-list">
+                    <!-- Dynamic Component Injection -->
+                </div>
+                <div class="todo-input-wrap">
+                    <input type="text" class="todo-input" id="todo-input" placeholder="Initiate task sequence...">
+                </div>
+            </div>
+        </aside>
+
+        <!-- Center: Clock & Core Interaction -->
+        <section class="col-center">
+            <header class="clock-pillar">
+                <div class="time-display" id="clock">
+                    00<span class="clock-colon">:</span>00
+                </div>
+                <div class="greeting-display">
+                    <span id="greeting-txt">INITIALIZING SESSION</span>
+                    <div class="greeting-dot"></div>
+                    <span id="date-txt" class="date-str">SYSTEM STATUS: OPTIMAL</span>
+                </div>
+            </header>
+
+            <div class="search-container">
+                <div class="search-field">
+                    <!-- Dynamic Search Engine Logo -->
+                    <div class="google-logo" id="search-engine-logo">
+                        <svg width="20" height="20" viewBox="0 0 24 24">
+                            <path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="#4285F4"/>
+                            <path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98 1.06-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853"/>
+                            <path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l3.66-2.84z" fill="#FBBC05"/>
+                            <path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" fill="#EA4335"/>
+                        </svg>
+                    </div>
+                    <input type="text" class="search-input" id="home-search" placeholder="Search the web" autofocus autocomplete="off">
+                    <div class="search-btn-magnifier" id="search-btn">
+                        <i class="fas fa-magnifying-glass"></i>
+                    </div>
+                </div>
+            </div>
+
+            <nav class="tiles-grid">
+                <div class="tile-item" data-url="youtube.com">
+                    <div class="tile-box style-glass"><i class="fab fa-youtube"></i></div>
+                    <span class="tile-label">YouTube</span>
+                </div>
+                <div class="tile-item" data-url="spotify.com">
+                    <div class="tile-box style-glass"><i class="fab fa-spotify"></i></div>
+                    <span class="tile-label">Spotify</span>
+                </div>
+                <div class="tile-item" data-url="amazon.com">
+                    <div class="tile-box style-glass"><i class="fab fa-amazon"></i></div>
+                    <span class="tile-label">Amazon</span>
+                </div>
+                <div class="tile-item" data-url="discord.com">
+                    <div class="tile-box style-glass"><i class="fab fa-discord"></i></div>
+                    <span class="tile-label">Discord</span>
+                </div>
+                <div class="tile-item" data-url="github.com">
+                    <div class="tile-box style-glass"><i class="fab fa-github"></i></div>
+                    <span class="tile-label">GitHub</span>
+                </div>
+            </nav>
+        </section>
+
+        <!-- Sidebar: Focus Flow (Timer) & Environment (Weather) -->
+        <aside class="col-side" id="right-sidebar">
+            <div class="glass-panel" id="timer-panel">
+                <div class="widget-head">
+                    <span class="widget-title">Focus Flow</span>
+                    <div class="ff-mode-toggle">
+                        <span class="ff-mode active" id="ff-mode-timer">TIMER</span>
+                        <span class="ff-mode" id="ff-mode-breathe">BREATHE</span>
+                    </div>
+                </div>
+                <div class="timer-container" id="timer-container">
+                    <svg class="timer-svg" viewBox="0 0 170 170">
+                        <circle cx="85" cy="85" r="75"/>
+                        <circle class="progress" id="timer-progress" cx="85" cy="85" r="75"/>
+                    </svg>
+                    <div class="timer-val" id="timer-display">25:00</div>
+                    <div class="breathe-val" id="breathe-display" style="display: none;">READY</div>
+                </div>
+                <div class="timer-acts">
+                    <button class="timer-btn" id="timer-toggle"><i class="fas fa-play"></i></button>
+                    <button class="timer-btn" id="timer-reset"><i class="fas fa-rotate-left"></i></button>
+                </div>
+            </div>
+
+            <div class="glass-panel weather-panel" id="weather-panel">
+                <div class="weather-top">
+                    <i class="fas fa-cloud-sun weather-icon"></i>
+                    <div class="weather-main-info">
+                        <div class="weather-t" id="weather-temp">--°C</div>
+                        <div class="weather-st" id="weather-condition">LOADING ENVIRONMENT...</div>
+                    </div>
+                </div>
+                <div class="weather-metrics">
+                    <div class="w-metric">
+                        <i class="fa-solid fa-droplet"></i> 
+                        <span id="weather-humidity">--%</span>
+                    </div>
+                    <div class="w-metric">
+                        <i class="fa-solid fa-wind"></i> 
+                        <span id="weather-wind">-- KM/H</span>
+                    </div>
+                    <div class="w-metric">
+                        <i class="fa-solid fa-temperature-three-quarters"></i> 
+                        <span id="weather-feels">--°C</span>
+                    </div>
+                </div>
+                <div class="weather-footer">
+                    <div class="wrapper-city" id="city-trigger">
+                        <span class="weather-c" id="weather-city">DETECTING GEOLOCATION...</span>
+                        <i class="fas fa-location-dot edit-loc-icon"></i>
+                    </div>
+                    <input type="text" class="location-input" id="location-input" placeholder="ENTER SECTOR...">
+                </div>
+            </div>
+        </aside>
+    </main>
+
+    <!-- Global Command Capsule -->
+    <footer class="footer-hub">
+        <div class="footer-capsule">
+            <button class="capsule-btn" id="settings-btn">
+                <i class="fas fa-sliders"></i> SETTINGS
+            </button>
+            <div class="brand-text">OCAL</div>
+            <button class="capsule-btn" id="history-btn">
+                <i class="fas fa-clock-rotate-left"></i> HISTORY
+            </button>
+        </div>
+    </footer>
+
+    <!-- Style Customizer Floating Pill Trigger -->
+    <button class="floating-style-btn" id="style-customizer-btn">
+        <i class="fas fa-sliders"></i> STYLE
+    </button>
+
+    <!-- Style Customizer Drawer -->
+    <div class="style-drawer" id="style-drawer">
+        <div class="style-drawer-header">
+            <span class="style-drawer-title">Style Studio</span>
+            <button class="style-drawer-close" id="style-drawer-close">
+                <i class="fas fa-xmark"></i>
+            </button>
+        </div>
+        <div class="style-drawer-content">
+            <!-- Theme Mode Options -->
+            <div class="style-section">
+                <span class="style-section-title">Theme Mode</span>
+                <div class="style-grid">
+                    <div class="style-option" data-val="dark" data-type="theme">Dark Mode</div>
+                    <div class="style-option" data-val="light" data-type="theme">Light Mode</div>
+                </div>
+            </div>
+
+            <!-- Background Options -->
+            <div class="style-section">
+                <span class="style-section-title">Wallpaper Theme</span>
+                <div class="style-grid">
+                    <div class="style-option active" data-val="static" data-type="bg">Static Background</div>
+                </div>
+            </div>
+
+            <!-- Screen Effects -->
+            <div class="style-section">
+                <span class="style-section-title">Visual Effects</span>
+                <div class="style-grid">
+                    <div class="style-option active" data-val="none" data-type="effect">No Effect</div>
+                    <div class="style-option" data-val="glitch" data-type="effect">Cyber Glitch</div>
+                    <div class="style-option" data-val="wavy-jelly" data-type="effect">Wavy Jelly</div>
+                </div>
+            </div>
+
+            <!-- UI Styles -->
+            <div class="style-section">
+                <span class="style-section-title">UI Card Preset</span>
+                <div class="style-grid">
+                    <div class="style-option active" data-val="frosted-glass" data-type="ui">Frosted</div>
+                    <div class="style-option" data-val="ultra-glass" data-type="ui">Ultra Glass</div>
+                    <div class="style-option" data-val="matte-surface" data-type="ui">Solid Matte</div>
+                    <div class="style-option" data-val="cyberpunk-glow" data-type="ui">Cyberpunk</div>
+                </div>
+            </div>
+
+            <!-- Accent Color Presets -->
+            <div class="style-section">
+                <span class="style-section-title">Accent Preset</span>
+                <div class="accent-preset-row">
+                    <div class="accent-dot active" style="background-color: #09f0a0;" data-color="#09f0a0"></div>
+                    <div class="accent-dot" style="background-color: #ff007f;" data-color="#ff007f"></div>
+                    <div class="accent-dot" style="background-color: #00e5ff;" data-color="#00e5ff"></div>
+                    <div class="accent-dot" style="background-color: #ff9100;" data-color="#ff9100"></div>
+                    <div class="accent-dot" style="background-color: #7b1fa2;" data-color="#7b1fa2"></div>
+                    <div class="accent-dot" style="background-color: #ef5350;" data-color="#ef5350"></div>
+                    <div class="accent-dot" style="background-color: #ffffff;" data-color="#ffffff"></div>
+                </div>
+            </div>
+
+            <!-- Font presets -->
+            <div class="style-section">
+                <span class="style-section-title">Typography</span>
+                <div class="style-grid">
+                    <div class="style-option active" data-val="mono" data-type="font">Geist Mono</div>
+                    <div class="style-option" data-val="sans" data-type="font">Geist Sans</div>
+                    <div class="style-option" data-val="serif" data-type="font">Classic Serif</div>
+                    <div class="style-option" data-val="cyber" data-type="font">Retro Tech</div>
+                </div>
+            </div>
+
+            <!-- Opacity & Blur Sliders -->
+            <div class="style-section">
+                <span class="style-section-title">Fine Tuning</span>
+                <div class="slider-group">
+                    <div class="slider-row">
+                        <span>Card Opacity</span>
+                        <span id="opacity-val-label">45%</span>
+                    </div>
+                    <input type="range" class="style-slider" id="opacity-slider" min="10" max="95" value="45">
+                </div>
+                <div class="slider-group">
+                    <div class="slider-row">
+                        <span>Background Blur</span>
+                        <span id="blur-val-label">20px</span>
+                    </div>
+                    <input type="range" class="style-slider" id="blur-slider" min="0" max="40" value="20">
+                </div>
+            </div>
+        </div>
+
+        <div class="style-drawer-footer">
+            <button class="style-btn" id="style-reset-btn">Reset Defaults</button>
+        </div>
+    </div>
+
+    <!-- Split drop zones (Opera Style) -->
+    <div class="split-drop-zones-overlay" id="split-drop-zones-overlay" style="display: none;">
+        <div class="split-drop-zone left-zone" data-direction="left">
+            <div class="split-zone-content">
+                <i class="fas fa-columns"></i>
+                <h3>Twice upon a time...</h3>
+                <p>Drop tab here to split screen</p>
+            </div>
+        </div>
+        <div class="split-drop-zone right-zone" data-direction="right">
+            <div class="split-zone-content">
+                <i class="fas fa-columns"></i>
+                <h3>Give that tab a buddy</h3>
+                <p>Drop tab here to split screen</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Wallpaper overlay for blending animated gradients -->
+    <div class="wallpaper-overlay"></div>
+
+    <script src="home.js"></script>
+</body>
+</html>

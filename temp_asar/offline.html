@@ -1,0 +1,160 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com https://cdn.jsdelivr.net; font-src 'self' https://fonts.gstatic.com https://cdn.jsdelivr.net; img-src 'self' data:;">
+    <title>No Connection | Ocal Browser</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;700;800&family=Inter:wght@400;600&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --accent: #ffffff;
+            --accent-glow: transparent;
+            --bg: #000000;
+            --glass: #000000;
+            --glass-border: #171717;
+        }
+
+        * { box-sizing: border-box; margin: 0; padding: 0; border-radius: 0px !important; }
+
+        body {
+            background: var(--bg);
+            color: #fff;
+            font-family: 'Geist Mono', monospace;
+            overflow: hidden;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
+            width: 100vw;
+            user-select: none;
+        }
+
+        /* Animated Background Gradients */
+        .ambient-bg { display: none; }
+        .glow-sphere { display: none; }
+
+        .container {
+            text-align: center;
+            width: 100%;
+            max-width: 500px;
+            padding: 40px;
+            animation: fadeIn 0.8s ease-out;
+        }
+
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
+
+        /* Icon with status ring */
+        .icon-container {
+            position: relative;
+            width: 100px; height: 100px;
+            margin: 0 auto 32px;
+            display: flex; align-items: center; justify-content: center;
+        }
+        .icon-container .ring {
+            position: absolute; inset: 0;
+            border: 2px solid var(--accent);
+            border-radius: 50%;
+            opacity: 0.2;
+            animation: ripple 2s infinite ease-out;
+        }
+        @keyframes ripple { from { transform: scale(1); opacity: 0.2; } to { transform: scale(1.8); opacity: 0; } }
+        
+        .icon-container i {
+            font-size: 48px; color: var(--accent);
+            filter: drop-shadow(0 0 15px var(--accent-glow));
+        }
+
+        h1 {
+            font-family: 'Geist Mono', monospace;
+            font-size: 42px; font-weight: 800;
+            margin-bottom: 12px; letter-spacing: -1px;
+        }
+        p {
+            font-size: 16px; color: rgba(255,255,255,0.5);
+            line-height: 1.6; margin-bottom: 48px;
+        }
+
+        .actions {
+            display: flex; flex-direction: column; gap: 16px;
+        }
+
+        .btn {
+            padding: 18px 32px; border-radius: 0px;
+            font-family: 'Geist Mono', monospace; font-size: 18px; font-weight: 700;
+            cursor: pointer; transition: all 0.3s; 
+            display: flex; align-items: center; justify-content: center; gap: 12px;
+            border: 1px solid var(--glass-border);
+        }
+
+        .btn.primary {
+            background: var(--accent); color: #fff;
+            border: none;
+            box-shadow: 0 10px 30px var(--accent-glow);
+        }
+        .btn.primary:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 15px 40px var(--accent-glow);
+            filter: brightness(1.1);
+        }
+
+        .btn.secondary {
+            background: var(--glass);
+            color: rgba(255,255,255,0.8);
+            backdrop-filter: blur(12px);
+        }
+        .btn.secondary:hover {
+            background: rgba(255,255,255,0.06);
+            color: #fff; transform: translateY(-2px);
+        }
+
+        .footer {
+            margin-top: 60px;
+            font-size: 12px; color: rgba(255,255,255,0.2);
+            text-transform: uppercase; letter-spacing: 2px; font-weight: 700;
+        }
+    </style>
+    <!-- No external icons for offline stability; using emojis -->
+</head>
+<body>
+    <div class="ambient-bg"></div>
+    <div class="glow-sphere"></div>
+
+    <div class="container">
+        <div class="icon-container">
+            <div class="ring"></div>
+            <span style="font-size: 58px; filter: drop-shadow(0 0 15px var(--accent-glow));">📡</span>
+        </div>
+
+        <h1>Lost Connection</h1>
+        <p>You appear to be offline. Ocal is standing by—it will automatically attempt to reconnect once a signal is found.</p>
+
+        <div class="actions">
+            <button class="btn primary" onclick="openGames()">
+                <span>🎮</span> Open Games Hub
+            </button>
+            <button class="btn secondary" onclick="retry()">
+                <span>🔄</span> Retry Connection
+            </button>
+        </div>
+
+        <div class="footer">Ocal Rescue Protocol v4.0</div>
+    </div>
+
+    <script>
+        function openGames() {
+            window.location.href = 'games.html';
+        }
+        function retry() {
+            // Send signal to main process to try again or just refresh
+            window.location.reload();
+        }
+
+        // Auto-reconnect listener? 
+        window.addEventListener('online', () => {
+            console.log('Back online! Automatically retrying...');
+            window.location.reload();
+        });
+    </script>
+</body>
+</html>

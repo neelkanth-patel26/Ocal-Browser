@@ -79,9 +79,9 @@ Source: "icon.ico";     DestDir: "{app}"; Flags: ignoreversion; Components: core
 
 ; ── Shortcuts ───────────────────────────────────────────────
 [Icons]
-Name: "{autoprograms}\Ocal Browser";          Filename: "{app}\Ocal Browser.exe"; IconFilename: "{app}\icon.ico"; AppUserModelID: "com.ocal.browser"
+Name: "{autoprograms}\Ocal Browser";          Filename: "{app}\Ocal Browser.exe"; IconFilename: "{app}\icon.ico"; AppUserModelID: "com.ocal.browser.v2"
 Name: "{group}\Uninstall Ocal Browser"; Filename: "{uninstallexe}"
-Name: "{autodesktop}\Ocal Browser";    Filename: "{app}\Ocal Browser.exe"; Tasks: desktopicon; IconFilename: "{app}\icon.ico"; AppUserModelID: "com.ocal.browser"
+Name: "{autodesktop}\Ocal Browser";    Filename: "{app}\Ocal Browser.exe"; Tasks: desktopicon; IconFilename: "{app}\icon.ico"; AppUserModelID: "com.ocal.browser.v2"
 
 ; ── Registry ────────────────────────────────────────────────
 [Registry]
