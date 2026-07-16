@@ -1,0 +1,74 @@
+name: Build & Release
+
+on:
+  push:
+    tags:
+      - 'v*'
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: windows-latest
+    permissions:
+      contents: write
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Install Inno Setup 6
+        run: |
+          choco install innosetup --version=6.3.3 -y
+        shell: pwsh
+
+      - name: Package Electron app
+        run: npx electron-builder --dir
+        env:
+          GH_TOKEN: ${{ secrets.GH_TOKEN }}
+
+      - name: Compile Inno Setup installer
+        run: |
+          $iscc = "C:\Program Files (x86)\Inno Setup 6\ISCC.exe"
+          & $iscc installer.iss
+        shell: pwsh
+
+      - name: Upload installer artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: Ocal-7.7.00-Setup
+          path: dist-inno/Ocal-7.7.00-Setup.exe
+          retention-days: 30
+
+      - name: Create GitHub Release
+        uses: softprops/action-gh-release@v2
+        if: startsWith(github.ref, 'refs/tags/')
+        with:
+          name: Ocal Browser v7.7.00
+          tag_name: v7.7.00
+          draft: false
+          prerelease: false
+          files: dist-inno/Ocal-7.7.00-Setup.exe
+          body: |
+            ## Ocal Browser v7.7.00 — Stable Release
+
+            ### What's New
+            - **Inno Setup 6 Installer** — Full component catalog with Types, PDF viewer association, and custom uninstaller UI
+            - **Stability Core** — Hardened main process teardown, crash resilience on overlay close
+            - **Media Master** — Faster video popup handling and explicit BrowserView cleanup
+            - **Multitasking** — Stabilized split-screen overlay ordering
+            - **Security** — Reinforced custom protocol handling and permission intercepts
+
+            ### Installation
+            Download `Ocal-7.7.00-Setup.exe` and run the installer.
+            Requires Windows 10 (1809) or later, 64-bit.
+        env:
+          GITHUB_TOKEN: ${{ secrets.GH_TOKEN }}
