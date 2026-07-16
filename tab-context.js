@@ -5,7 +5,11 @@ let currentTabId = null;
 function addMenuOption(parent, label, icon, onClick, color) {
     const opt = document.createElement('div');
     opt.className = 'menu-option';
-    opt.innerHTML = `<i class="fas ${icon}" style="${color ? 'color:'+color : ''}"></i> <span>${label}</span>`;
+    const isFontAwesome = icon && icon.startsWith('fa-');
+    const iconHtml = isFontAwesome 
+        ? `<i class="fas ${icon}" style="${color ? 'color:'+color : ''}"></i>` 
+        : `<span style="font-style:normal; margin-right:8px; font-size:14px; width:16px; text-align:center; display:inline-block;">${icon || ''}</span>`;
+    opt.innerHTML = `${iconHtml} <span>${label}</span>`;
     opt.onclick = () => {
         console.log(`[TAB-CONTEXT] Option clicked: "${label}"`);
         onClick();
@@ -55,6 +59,49 @@ window.electronAPI.on('render-tab-context', (event, { tabId, groupId, tabGroups 
             });
         }
     }
+
+    addMenuSeparator(container);
+
+    const emojiSub = addMenuSub(container, 'Tab Emoji', 'fa-face-smile');
+    
+    // Create compact grid element
+    const grid = document.createElement('div');
+    grid.className = 'emoji-grid';
+    
+    const emojis = ['💻', '🏠', '🎮', '🎵', '📚', '✈️', '🍔', '💡', '🔥', '❤️'];
+    emojis.forEach(emoji => {
+        const item = document.createElement('div');
+        item.className = 'emoji-grid-item';
+        
+        let code = '';
+        if (emoji === '💻') code = '1f4bb';
+        else if (emoji === '🏠') code = '1f3e0';
+        else if (emoji === '🎮') code = '1f3ae';
+        else if (emoji === '🎵') code = '1f3b5';
+        else if (emoji === '📚') code = '1f4da';
+        else if (emoji === '✈️') code = '2708';
+        else if (emoji === '🍔') code = '1f354';
+        else if (emoji === '💡') code = '1f4a1';
+        else if (emoji === '🔥') code = '1f525';
+        else if (emoji === '❤️') code = '2764';
+        
+        if (code) {
+            item.innerHTML = `<img src="https://cdnjs.cloudflare.com/ajax/libs/twemoji/14.0.2/svg/${code}.svg" onerror="this.replaceWith('${emoji}')" style="width:16px; height:16px; display:block;">`;
+        } else {
+            item.textContent = emoji;
+        }
+
+        item.onclick = () => {
+            window.electronAPI.send('tab-context-action', { action: 'set-tab-emoji', tabId, emoji });
+        };
+        grid.appendChild(item);
+    });
+    emojiSub.appendChild(grid);
+    
+    addMenuSeparator(emojiSub);
+    addMenuOption(emojiSub, 'Clear Emoji', 'fa-trash-can', () => {
+        window.electronAPI.send('tab-context-action', { action: 'set-tab-emoji', tabId, emoji: null });
+    });
 
     addMenuSeparator(container);
     addMenuOption(container, 'Close Tab', 'fa-xmark', () => {

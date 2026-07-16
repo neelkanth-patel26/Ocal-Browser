@@ -108,7 +108,7 @@ const { contextBridge, ipcRenderer } = require('electron');
 
 contextBridge.exposeInMainWorld('electronAPI', {
   // Navigation
-  newTab:       ()        => ipcRenderer.send('new-tab'),
+  newTab:       (url)     => ipcRenderer.send('new-tab', url),
   switchTab:    (id)      => ipcRenderer.send('switch-tab', id),
   closeTab:     (id)      => ipcRenderer.send('close-tab', id),
   navigateTo:   (url)     => ipcRenderer.send('navigate-to', url),

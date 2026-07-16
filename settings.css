@@ -73,6 +73,14 @@ body[data-theme="light"] {
     padding: 0;
 }
 
+input::selection, textarea::selection, ::selection {
+    background: var(--accent) !important;
+    color: #000000 !important;
+}
+body[data-theme="light"] input::selection, body[data-theme="light"] textarea::selection, body[data-theme="light"] ::selection {
+    color: #ffffff !important;
+}
+
 html {
     background: transparent !important;
     border-radius: 12px;
@@ -1772,10 +1780,22 @@ body[data-theme="light"] select option {
 
 .search-engine-grid {
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-    gap: 12px;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 16px;
     width: 100%;
     margin-bottom: 24px;
+}
+
+@media (max-width: 1000px) {
+    .search-engine-grid {
+        grid-template-columns: repeat(2, 1fr);
+    }
+}
+
+@media (max-width: 650px) {
+    .search-engine-grid {
+        grid-template-columns: 1fr;
+    }
 }
 
 .search-engine-card {
@@ -1787,10 +1807,10 @@ body[data-theme="light"] select option {
     backdrop-filter: none;
     -webkit-backdrop-filter: none;
     border: 1px solid var(--chrome-border) !important;
-    border-radius: 4px !important;
+    border-radius: var(--radius) !important;
     cursor: pointer;
     box-shadow: none !important;
-    transition: all 0.2s ease !important;
+    transition: border-color 0.25s, background-color 0.25s, box-shadow 0.25s !important;
     position: relative;
     gap: 16px;
 }
@@ -1799,6 +1819,7 @@ body[data-theme="light"] select option {
     transform: none !important;
     box-shadow: none !important;
     border-color: var(--accent) !important;
+    background: var(--card-bg) !important;
 }
 
 .search-engine-card:hover .engine-logo {
@@ -1807,20 +1828,21 @@ body[data-theme="light"] select option {
 
 .search-engine-card.active {
     border-color: var(--accent) !important;
-    background: var(--nav-active-bg) !important;
-    box-shadow: none !important;
+    background: var(--card-bg) !important;
+    box-shadow: 0 0 14px var(--accent-glow) !important;
 }
 
 .search-engine-card.active:hover {
     border-color: var(--accent) !important;
-    box-shadow: none !important;
+    background: var(--card-bg) !important;
+    box-shadow: 0 0 14px var(--accent-glow) !important;
     transform: none !important;
 }
 
 .engine-logo {
     width: 40px;
     height: 40px;
-    border-radius: 4px !important;
+    border-radius: var(--radius-sm) !important;
     display: flex;
     align-items: center;
     justify-content: center;
@@ -1956,7 +1978,7 @@ body[data-theme="light"] .search-engine-card.active .custom-radio-circle {
     padding: 20px;
     background: var(--card-bg) !important;
     border: 1px solid var(--chrome-border) !important;
-    border-radius: 4px !important;
+    border-radius: var(--radius) !important;
     box-shadow: none !important;
     gap: 16px;
     backdrop-filter: none;
@@ -1973,7 +1995,7 @@ body[data-theme="light"] .search-engine-card.active .custom-radio-circle {
 .accessory-icon-box {
     width: 44px;
     height: 44px;
-    border-radius: 4px !important;
+    border-radius: var(--radius-sm) !important;
     display: flex;
     align-items: center;
     justify-content: center;
@@ -2286,9 +2308,15 @@ body[data-theme="light"] .glass-bubble {
 
 .profiles-grid-layout {
     display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+    grid-template-columns: repeat(2, 1fr);
     gap: 16px;
     width: 100%;
+}
+
+@media (max-width: 600px) {
+    .profiles-grid-layout {
+        grid-template-columns: 1fr;
+    }
 }
 
 /* Profiles Registry cards dynamic styling override */
@@ -2313,8 +2341,8 @@ body[data-theme="light"] .glass-bubble {
 
 .profiles-grid-layout .profile-card.active {
     border-color: var(--accent) !important;
-    background: var(--nav-active-bg) !important;
-    box-shadow: var(--shadow-md), 0 0 16px var(--accent-glow) !important;
+    background: var(--card-bg) !important;
+    box-shadow: 0 0 16px var(--accent-glow) !important;
 }
 
 .profile-avatar-wrap {
@@ -5163,7 +5191,7 @@ input[type="range"]::-webkit-slider-thumb:hover {
     border: 1px solid rgba(9, 240, 160, 0.15);
     border-radius: 18px;
     flex-shrink: 0;
-    box-shadow: 0 4px 20px rgba(9, 240, 160, 0.15);
+    box-shadow: none !important;
 }
 .brand-logo-svg {
     width: 40px;
@@ -5204,6 +5232,7 @@ input[type="range"]::-webkit-slider-thumb:hover {
     padding: 1px 6px;
     border-radius: 4px;
     display: inline-block;
+    align-self: flex-start;
     margin-bottom: 8px;
     letter-spacing: 0.5px;
 }
@@ -5435,6 +5464,77 @@ input[type="range"]::-webkit-slider-thumb:hover {
 #update-dashboard.update-available #update-status-icon-box {
     background: rgba(59, 130, 246, 0.12) !important;
     color: #3b82f6 !important;
+}
+
+/* ── What's New Full-Viewport Overlay ── */
+#whatsnew.section.active {
+    display: block;
+    height: calc(100vh - 64px);
+    margin: -40px -24px -80px;
+    overflow: hidden;
+}
+.whatsnew-iframe {
+    width: 100%;
+    height: 100%;
+    border: none;
+    background: transparent;
+}
+
+/* ── Redesigned Bento About Page Styles ── */
+.about-hero-card {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 24px !important;
+    gap: 32px;
+    margin-bottom: 20px;
+    background: var(--card-bg) !important;
+}
+.hero-left {
+    display: flex;
+    align-items: center;
+    gap: 20px;
+}
+.hero-right {
+    display: flex;
+    align-items: center;
+    gap: 24px;
+    background: rgba(255, 255, 255, 0.015);
+    border: 1px solid var(--chrome-border);
+    border-radius: var(--radius);
+    padding: 12px 20px;
+}
+.about-grid {
+    display: grid;
+    grid-template-columns: 1.3fr 1fr;
+    gap: 20px;
+}
+.notes-card {
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+}
+.notes-content {
+    flex-grow: 1;
+    min-height: 280px;
+    background: #09090b !important; /* solid deep dark */
+    margin: 16px 20px 20px !important;
+    border: 1px solid var(--chrome-border) !important;
+    box-shadow: none !important;
+}
+.notes-content::-webkit-scrollbar {
+    width: 6px;
+    height: 6px;
+}
+.notes-content::-webkit-scrollbar-track {
+    background: transparent;
+}
+.notes-content::-webkit-scrollbar-thumb {
+    background: rgba(255, 255, 255, 0.1);
+    border-radius: 4px;
+}
+.notes-content::-webkit-scrollbar-thumb:hover {
+    background: var(--accent);
 }
 
 

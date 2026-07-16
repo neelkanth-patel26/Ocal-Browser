@@ -5,7 +5,7 @@
   --background: #0c0c0c;
   --foreground: #e8e8e8;
   --accent: #09f0a0;
-  --accent-glow: rgba(9, 240, 160, 0.2);
+  --accent-glow: transparent;
   --accent-dim: rgba(9, 240, 160, 0.12);
   --accent-border: #09f0a0;
   --accent-text: #000000;
@@ -34,7 +34,7 @@ body[data-theme="light"] {
   --background: #f5f5f5;
   --foreground: #1a1a1a;
   --accent: #059669;
-  --accent-glow: rgba(5, 150, 105, 0.12);
+  --accent-glow: transparent;
   --accent-dim: rgba(5, 150, 105, 0.06);
   --accent-border: #059669;
   --accent-text: #ffffff;
@@ -70,6 +70,16 @@ body.hide-bookmarks {
   -ms-overflow-style: none;
 }
 *::-webkit-scrollbar { display: none; }
+
+/* Custom Selection Color for Polished Selection Text */
+::selection {
+  background: var(--accent) !important;
+  color: var(--accent-text) !important;
+}
+input::selection, textarea::selection {
+  background: var(--accent) !important;
+  color: var(--accent-text) !important;
+}
 
 button { background: none; border: none; cursor: pointer; font-family: inherit; }
 
@@ -811,6 +821,22 @@ body.compact-mode .tab-group-header { height: 28px; padding: 0 10px 0 6px; borde
   border-color: var(--accent); 
   background: var(--accent-dim); 
 }
+.tab-group-header.no-name {
+  width: 24px;
+  height: calc(100% - 12px);
+  border-radius: 100px !important;
+  padding: 0 !important;
+  justify-content: center;
+  gap: 0 !important;
+}
+.tab-group-header.no-name .tab-group-name {
+  display: none !important;
+}
+.tab-group-header.no-name .tab-group-dot {
+  width: 4px;
+  height: 18px;
+  border-radius: 100px;
+}
 
 .tab-group-dot {
   width: 3px;
@@ -1399,6 +1425,39 @@ body.compact-mode .tool-btn { width: 28px; height: 28px; border-radius: 7px; }
   background: var(--accent-dim);
   color: var(--accent);
   border: 1px solid var(--accent-border);
+}
+#split-screen-btn:hover i {
+  text-shadow: none !important;
+}
+
+.tab-item {
+  position: relative;
+}
+.tab-item .tab-split-zone {
+  position: absolute;
+  bottom: 0px;
+  left: 20%;
+  right: 20%;
+  height: 10px;
+  background: rgba(9, 240, 160, 0.15);
+  border: 1px dashed var(--accent);
+  border-radius: 4px;
+  display: none;
+  align-items: center;
+  justify-content: center;
+  font-size: 7px;
+  color: var(--accent);
+  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+  z-index: 10;
+}
+.tab-item .tab-split-zone.drag-over {
+  background: var(--accent);
+  color: #000;
+  transform: scaleY(1.3);
+  box-shadow: none !important;
+}
+#tab-list.dragging-active .tab-split-zone {
+  display: flex;
 }
 
 /* ── Bookmark Bar ──────────────────────────────────────────────── */
@@ -2224,4 +2283,253 @@ body[data-theme="light"] .sidebar-app-action-btn:hover {
 body[data-theme="light"] #sidebar-app-close-btn:hover {
   background: rgba(239, 68, 68, 0.1);
   color: #ef4444;
+}
+
+/* ── Split Tab styling (Opera Style) ───────────────────────── */
+.tab-item.split-tab {
+  display: flex !important;
+  flex-direction: row !important;
+  align-items: stretch !important;
+  padding: 0 !important;
+  gap: 0 !important;
+  min-width: 200px !important;
+  max-width: 280px !important;
+  background: var(--chrome-bg);
+}
+.tab-item.split-tab.active {
+  background: var(--chrome-lighter);
+}
+
+.tab-item.split-tab .sub-tab-half {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 0 10px;
+  height: 100%;
+  border-radius: 8px;
+  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+  color: var(--text-dim);
+  position: relative;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.tab-item.split-tab .sub-tab-half:hover {
+  background: rgba(255, 255, 255, 0.04);
+  color: #fff;
+}
+
+.tab-item.split-tab .sub-tab-half.active {
+  background: var(--accent-dim) !important;
+  color: var(--accent) !important;
+  box-shadow: inset 0 0 0 1px var(--accent-border);
+}
+
+.tab-item.split-tab .sub-tab-half .tab-favicon {
+  width: 14px;
+  height: 14px;
+  flex-shrink: 0;
+}
+
+.tab-item.split-tab .sub-tab-half .sub-title {
+  font-size: 11px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.tab-item.split-tab .sub-tab-divider {
+  width: 1px;
+  background: rgba(255, 255, 255, 0.08);
+  margin: 6px 0;
+  flex-shrink: 0;
+}
+
+.tab-item.split-tab .tab-close {
+  margin-right: 8px;
+  opacity: 0.6;
+  font-size: 11px;
+  align-self: center;
+}
+.tab-item.split-tab .tab-close:hover {
+  opacity: 1;
+  color: #ef5350;
+}
+
+/* Tab Emoji Inline Styling & Spring Hover Animation */
+.tab-favicon.tab-emoji-img,
+.tab-favicon.tab-emoji {
+  background: transparent !important;
+  border: none !important;
+  box-shadow: none !important;
+  transition: transform 0.25s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+.tab-item:hover .tab-favicon.tab-emoji-img,
+.tab-item:hover .tab-favicon.tab-emoji {
+  transform: scale(1.25) rotate(5deg); /* Bounce zoom and subtle rotation for high visual feedback */
+}
+
+/* ── Split Screen Close Confirmation Modal ── */
+.split-confirm-modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  background: rgba(0, 0, 0, 0.6);
+  backdrop-filter: blur(12px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 10000;
+  animation: fadeIn 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.split-confirm-modal {
+  background: #111111;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 16px;
+  padding: 32px;
+  width: 360px;
+  text-align: center;
+  box-shadow: 0 16px 40px rgba(0, 0, 0, 0.5);
+  animation: modalScaleIn 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+.split-confirm-icon {
+  width: 56px;
+  height: 56px;
+  background: rgba(9, 240, 160, 0.1);
+  border: 1.5px solid var(--accent);
+  color: var(--accent);
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 20px;
+  margin: 0 auto 20px auto;
+}
+
+.split-confirm-modal h3 {
+  font-family: var(--font-title);
+  color: #fff;
+  font-size: 18px;
+  font-weight: 600;
+  margin: 0 0 10px 0;
+}
+
+.split-confirm-modal p {
+  color: var(--text-dim);
+  font-size: 13px;
+  line-height: 1.5;
+  margin: 0 0 24px 0;
+}
+
+.split-confirm-actions {
+  display: flex;
+  flex-direction: row;
+  justify-content: center;
+  gap: 14px;
+}
+
+.split-confirm-btn {
+  padding: 10px 24px;
+  border-radius: 24px;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  font-family: var(--font-title);
+  flex: 1;
+}
+
+.split-confirm-btn.confirm-btn {
+  background: var(--accent);
+  border: none;
+  color: #0d0d12;
+}
+
+.split-confirm-btn.confirm-btn:hover {
+  background: color-mix(in srgb, var(--accent) 80%, #000000);
+}
+
+.split-confirm-btn.cancel-btn {
+  background: transparent;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  color: var(--text-dim);
+}
+
+.split-confirm-btn.cancel-btn:hover {
+  background: rgba(255, 255, 255, 0.05);
+  color: #fff;
+  border-color: rgba(255, 255, 255, 0.25);
+}
+
+/* ── Split Screen Undo Toast ── */
+.split-undo-toast {
+  position: fixed;
+  top: 6px;
+  left: 50%;
+  transform: translateX(-50%) translateY(-50px);
+  background: #111111;
+  border: 1px solid var(--accent-border);
+  border-radius: 20px;
+  padding: 4px 16px;
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.5);
+  z-index: 999999;
+  transition: transform 0.4s cubic-bezier(0.16, 1, 0.3, 1), opacity 0.3s ease;
+  opacity: 0;
+  height: 28px;
+  -webkit-app-region: no-drag !important;
+}
+
+.split-undo-toast.show {
+  transform: translateX(-50%) translateY(0);
+  opacity: 1;
+}
+
+.split-undo-content {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  color: #fff;
+  font-size: 11px;
+}
+
+.split-undo-content i {
+  color: var(--accent);
+}
+
+.split-undo-btn {
+  background: rgba(9, 240, 160, 0.1);
+  border: 1px solid var(--accent-border);
+  color: var(--accent);
+  padding: 2px 10px;
+  border-radius: 12px;
+  font-size: 10.5px;
+  font-weight: 600;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  transition: all 0.2s ease;
+}
+
+.split-undo-btn:hover {
+  background: rgba(9, 240, 160, 0.2);
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes modalScaleIn {
+  from { opacity: 0; transform: scale(0.9); }
+  to { opacity: 1; transform: scale(1); }
 }

@@ -47,6 +47,22 @@ app.commandLine.appendSwitch('disable-print-preview', 'false');
 // Force native smooth scrolling for mouse wheel (premium feel)
 app.commandLine.appendSwitch('enable-smooth-scrolling');
 
+// ── Web Loading & Rendering Speed Optimizations ──
+// Enable GPU Rasterization (speeds up page painting/scrolling)
+app.commandLine.appendSwitch('enable-gpu-rasterization');
+// Enable Zero Copy for GPU memory rasterization
+app.commandLine.appendSwitch('enable-zero-copy');
+// Enable Parallel Downloading (faster file/media loading)
+app.commandLine.appendSwitch('enable-parallel-downloading');
+// Optimize JavaScript engine heap memory limit for heavy web apps
+app.commandLine.appendSwitch('js-flags', '--max-old-space-size=4096 --expose-gc');
+// Enable fast unload of pages/tabs
+app.commandLine.appendSwitch('enable-fast-unload');
+// Prevent background timer throttling (faster background tabs loading)
+app.commandLine.appendSwitch('disable-background-timer-throttling');
+// Prevent backgrounding of renderers
+app.commandLine.appendSwitch('disable-renderer-backgrounding');
+
 // Disable the default Electron menu bar on Windows/Linux to prevent UI shifting
 Menu.setApplicationMenu(null);
 
@@ -413,7 +429,9 @@ let isAlwaysOnTop = false;
 
 let downloadsView = null;
 var mediaMasterView = null;
+let isAnimatingBounds = false;
 var views = [];
+let splitOverlayView = null;
 var downloads = userSettings.downloads || [];
 function saveDownloadsToSettings() {
     userSettings.downloads = downloads;
@@ -533,28 +551,28 @@ function applyShieldSettings() {
         const ses = session.defaultSession;
         const sesGoogle = session.fromPartition('persist:google_login');
 
+        // Precompile regexes for high-performance network intercepting
+        const PRECOMPILED_AD_PATTERNS = [
+            'doubleclick.net', 'googleadservices.com', 'partner.googleadservices.com',
+            'googlesyndication.com', 'adservice.google.com', 'pagead2.googlesyndication.com',
+            'youtube.com/pagead', 'youtube.com/ptracking', 'youtube.com/api/stats/ads',
+            'youtube.com/api/stats/qoe?adformat=', 'youtube.com/get_midroll_info',
+            /googlevideo\.com\/videoplayback\?.*ad_v2/,
+            /googlevideo\.com\/videoplayback\?.*ctier=a/,
+            /googlevideo\.com\/videoplayback\?.*adfilter/,
+            /googlevideo\.com\/videoplayback\?.*oad=/,
+            /googlevideo\.com\/initplayback\?.*oad=/,
+            /youtube\.com\/get_video_info\?.*ad_v2/,
+            'youtube.com/api/stats/ads'
+        ];
+
         const masterOnBeforeRequest = (details, callback) => {
             if (!details.url) { callback({}); return; }
             const url = details.url.toLowerCase();
             const wcId = details.webContentsId;
 
-            // 1. NEURAL SHIELD V9: Network-Level Ad-Blocklist (Pre-Empting uBlock)
-            const adPatterns = [
-                'doubleclick.net', 'googleadservices.com', 'partner.googleadservices.com',
-                'googlesyndication.com', 'adservice.google.com', 'pagead2.googlesyndication.com',
-                'youtube.com/pagead', 'youtube.com/ptracking', 'youtube.com/api/stats/ads',
-                'youtube.com/api/stats/qoe?adformat=', 'youtube.com/get_midroll_info',
-                'googlevideo.com/videoplayback?.*ad_v2',
-                'googlevideo.com/videoplayback?.*ctier=a',
-                'googlevideo.com/videoplayback?.*adfilter',
-                'googlevideo.com/videoplayback?.*oad=',
-                'googlevideo.com/initplayback?.*oad=',
-                'youtube.com/get_video_info?.*ad_v2',
-                'youtube.com/api/stats/ads'
-            ];
-
-            const isNeuralAd = adPatterns.some(p => {
-                if (p.includes('.*')) return new RegExp(p).test(url);
+            const isNeuralAd = PRECOMPILED_AD_PATTERNS.some(p => {
+                if (p instanceof RegExp) return p.test(url);
                 return url.includes(p);
             });
 
@@ -831,6 +849,18 @@ function createMainWindow() {
 
     mainWindow.loadFile('index.html');
 
+    splitOverlayView = new BrowserView({
+        webPreferences: {
+            preload: path.join(__dirname, 'preload.js'),
+            contextIsolation: true,
+            nodeIntegration: false,
+            sandbox: false,
+            devTools: false
+        }
+    });
+    splitOverlayView.setBackgroundColor('#00000000');
+    splitOverlayView.webContents.loadURL('file:///' + path.join(__dirname, 'home.html#drag-overlay').replace(/\\/g, '/'));
+
     if (!userSettings.setupComplete && fs.existsSync(path.join(__dirname, 'welcome.html'))) {
         importChromiumBookmarks();
         showWelcomeWizard();
@@ -883,7 +913,16 @@ function createMainWindow() {
         // Always open a tab on startup
         if (views.length === 0) {
             const startupUrl = getArgumentURL(process.argv);
-            createNewTab(startupUrl);
+            if (userSettings.lastVersion !== '7.1.00') {
+                userSettings.lastVersion = '7.1.00';
+                saveSettings(userSettings);
+                createNewTab('ocal://whats-new');
+                if (startupUrl) {
+                    createNewTab(startupUrl);
+                }
+            } else {
+                createNewTab(startupUrl);
+            }
         }
 
         // Proactive background update check
@@ -1480,6 +1519,8 @@ function resolveInternalURL(url) {
     if (url.startsWith('ocal://settings#')) return 'file://' + path.join(__dirname, 'settings.html') + url.substring(15);
     if (cleanBase === 'file-manager' || cleanBase === 'ocal://file-manager') return 'file://' + path.join(__dirname, 'file-manager.html');
     if (cleanBase === 'ocal://offline') return 'file://' + path.join(__dirname, 'offline.html');
+    if (cleanBase === 'ocal://suspended') return 'file://' + path.join(__dirname, 'suspended.html') + (url.indexOf('?') !== -1 ? url.substring(url.indexOf('?')) : '');
+    if (cleanBase === 'ocal://whats-new' || cleanBase === 'whats-new') return 'file://' + path.join(__dirname, 'whats-new.html');
     if (cleanBase === 'ocal://games') return 'file://' + path.join(__dirname, 'games.html');
     if (cleanBase === 'ocal://tetris') return 'file://' + path.join(__dirname, 'tetris.html');
     if (cleanBase === 'ocal://game' || cleanBase === 'ocal://snake') return 'file://' + path.join(__dirname, 'snake.html');
@@ -1541,49 +1582,127 @@ function createNewTab(url = null) {
         },
     });
     view.setBackgroundColor('#00000000');
+    view.webContents.setUserAgent(OCAL_USER_AGENT);
+    setupViewEvents(id, view, 'left');
+
+    views.push({ id, view, isSplit: false, splitDirection: 'horizontal', focusedSide: 'left', lastActiveTime: Date.now() });
+
+    // Initial Load Resolution
+    let finalUrl = url;
+    if (url && !url.startsWith('ocal://')) {
+        const isPdf = /\.pdf($|\?)/i.test(url);
+        if (isPdf && userSettings.pdfViewerEnabled !== false) {
+            try {
+                const cleanUrl = decodeURI(url);
+                finalUrl = `ocal://pdf-viewer/?file=${encodeURIComponent(cleanUrl)}`;
+            } catch (e) {
+                finalUrl = `ocal://pdf-viewer/?file=${encodeURIComponent(url)}`;
+            }
+        }
+    }
+
+    // Load the ocal:// URL directly so the address bar stays clean
+    if (finalUrl) {
+        view.webContents.loadURL(resolveInternalURL(finalUrl));
+    } else {
+        view.webContents.loadFile('home.html');
+    }
+
+    setActiveTab(id);
+
+    // HTML fullscreen events — hide/show chrome
+    view.webContents.on('enter-html-full-screen', () => setHtmlFullscreen(id, true));
+    view.webContents.on('leave-html-full-screen', () => setHtmlFullscreen(id, false));
+
+    broadcastTabs();
+}
+
+function setActiveSplitSide(tabId, side) {
+    const entry = views.find(v => v.id === tabId);
+    if (entry && entry.isSplit && entry.focusedSide !== side) {
+        entry.focusedSide = side;
+        const activeWc = side === 'left' ? entry.view.webContents : entry.view2.webContents;
+        if (activeWc && !activeWc.isDestroyed() && mainWindow && !mainWindow.isDestroyed()) {
+            const url = activeWc.getURL();
+            const title = activeWc.getTitle();
+            mainWindow.webContents.send('url-updated', {
+                id: tabId,
+                url: url.includes('home.html') ? '' : url,
+                title: url.includes('home.html') ? 'Ocal Home' : title,
+                favicon: entry.favicon || null
+            });
+            mainWindow.webContents.send('split-side-focused', { tabId, side });
+        }
+    }
+}
+
+function setupViewEvents(tabId, view, side = 'left') {
+    const webContents = view.webContents;
 
     // Clear media on navigation
-    view.webContents.on('did-start-navigation', (e, url, isInPlace) => {
+    webContents.on('did-start-navigation', (e, url, isInPlace) => {
         if (!isInPlace) {
-            tabMedia[id] = [];
+            tabMedia[tabId] = [];
             if (mainWindow && !mainWindow.isDestroyed()) {
-                mainWindow.webContents.send('media-master-updated', { tabId: id, mediaList: [] });
+                mainWindow.webContents.send('media-master-updated', { tabId, mediaList: [] });
             }
         }
     });
 
-    view.webContents.setUserAgent(OCAL_USER_AGENT);
-
-    // Inject Rounded Corners inside Web Pages (bypasses Electron native child window restrictions)
-    view.webContents.on('dom-ready', () => {
-        const url = view.webContents.getURL();
+    // Inject Rounded Corners inside Web Pages
+    webContents.on('dom-ready', () => {
+        const url = webContents.getURL();
         const isInternal = url.startsWith('ocal://') || url.startsWith('file://') || url.includes('home.html');
 
-        // 1. Root rounding for internal pages, and transparent backgrounds for remote pages (prevents scroll-blocking)
         if (isInternal) {
-            view.webContents.insertCSS(`
-                html, body {
-                    border-radius: 12px !important;
-                    overflow: hidden !important;
-                    background: transparent !important;
-                    contain: paint !important;
-                }
-                html:fullscreen, body:fullscreen,
-                html:-webkit-full-screen, body:-webkit-full-screen,
-                html:fullscreen *, body:fullscreen *,
-                html:-webkit-full-screen *, body:-webkit-full-screen * {
-                    border-radius: 0px !important;
-                }
-            `);
+            // Pages that need scrolling get a different treatment
+            const needsScroll = url.includes('whats-new.html') || url.includes('settings.html') || url.includes('site-settings.html') || url.includes('games.html');
+            if (needsScroll) {
+                webContents.insertCSS(`
+                    html {
+                        border-radius: 12px !important;
+                        overflow: hidden !important;
+                        background: transparent !important;
+                        contain: paint !important;
+                    }
+                    body {
+                        border-radius: 12px !important;
+                        overflow-y: auto !important;
+                        overflow-x: hidden !important;
+                        background: transparent !important;
+                        height: 100vh !important;
+                    }
+                    html:fullscreen, body:fullscreen,
+                    html:-webkit-full-screen, body:-webkit-full-screen,
+                    html:fullscreen *, body:fullscreen *,
+                    html:-webkit-full-screen *, body:-webkit-full-screen * {
+                        border-radius: 0px !important;
+                    }
+                `);
+            } else {
+                webContents.insertCSS(`
+                    html, body {
+                        border-radius: 12px !important;
+                        overflow: hidden !important;
+                        background: transparent !important;
+                        contain: paint !important;
+                    }
+                    html:fullscreen, body:fullscreen,
+                    html:-webkit-full-screen, body:-webkit-full-screen,
+                    html:fullscreen *, body:fullscreen *,
+                    html:-webkit-full-screen *, body:-webkit-full-screen * {
+                        border-radius: 0px !important;
+                    }
+                `);
+            }
         }
 
-        // 2. Viewport-level corner masks for remote pages (handles scrolling content & bottom corners)
         if (!isInternal) {
             const maskColor = userSettings.themeMode === 'light' ? '#f5f5f5' : '#0c0c0c';
             const sbColor = userSettings.themeMode === 'light' ? 'rgba(0,0,0,0.16)' : 'rgba(255,255,255,0.16)';
             const sbHover = userSettings.themeMode === 'light' ? 'rgba(0,0,0,0.36)' : 'rgba(255,255,255,0.36)';
 
-            view.webContents.insertCSS(`
+            webContents.insertCSS(`
                 .ocal-corner-mask {
                     position: fixed !important;
                     width: 12px !important;
@@ -1597,18 +1716,15 @@ function createNewTab(url = null) {
                 .ocal-corner-mask-bl { bottom: 0 !important; left: 0 !important; background: radial-gradient(circle at 100% 0%, transparent 12px, var(--mask-bg) 12.5px) !important; }
                 .ocal-corner-mask-br { bottom: 0 !important; right: 0 !important; background: radial-gradient(circle at 0% 0%, transparent 12px, var(--mask-bg) 12.5px) !important; }
                 
-                /* Hide corner masks in fullscreen */
                 html:fullscreen .ocal-corner-mask,
                 html:-webkit-full-screen .ocal-corner-mask {
                     display: none !important;
                 }
 
-                /* Premium Smooth Scrolling */
                 html {
                     scroll-behavior: smooth !important;
                 }
 
-                /* Premium Simple & Compact Scrollbars */
                 *, html, body {
                     scrollbar-color: initial !important;
                     scrollbar-width: initial !important;
@@ -1657,136 +1773,101 @@ function createNewTab(url = null) {
                     }
                 })();
             `;
-            view.webContents.executeJavaScript(injectScript).catch(() => {});
+            webContents.executeJavaScript(injectScript).catch(() => {});
         }
     });
 
     // Inject Robust YouTube AdShield fallback & Battery Saver
-    view.webContents.on('did-finish-load', () => {
-        const url = view.webContents.getURL();
+    webContents.on('did-finish-load', () => {
+        const url = webContents.getURL();
 
-        // Battery Saver Logic
         if (userSettings.batterySaver) {
-            view.webContents.insertCSS(`
-            * { 
-                animation: none !important; 
-                transition: none !important; 
-                scroll-behavior: auto !important;
-            }
-            img { image-rendering: -webkit-optimize-contrast !important; }
-        `);
-            // Limit frame rate if possible (not directly via API easily, but animation removal helps)
+            webContents.insertCSS(`
+                * { 
+                    animation: none !important; 
+                    transition: none !important; 
+                    scroll-behavior: auto !important;
+                }
+                img { image-rendering: -webkit-optimize-contrast !important; }
+            `);
         }
 
         if (url.includes('youtube.com') && userSettings.adBlockEnabled !== false) {
             const adShieldPath = path.join(__dirname, 'youtube-ad-remover.js');
             if (fs.existsSync(adShieldPath)) {
                 const script = fs.readFileSync(adShieldPath, 'utf8');
-                view.webContents.executeJavaScript(script).catch(() => { });
+                webContents.executeJavaScript(script).catch(() => { });
                 console.log(`[YouTube Enhancer] DOM Injected into ${url} (Ad-Shield + Dislike Recovery)`);
             }
+        }
+
+        if (userSettings.cyberStealthEnabled) {
+            applyCyberStealth(webContents);
         }
     });
 
     // Intercept PDF view navigation and internal ocal:// links
-    setupInteractionDismissal(view.webContents);
-    view.webContents.on('will-navigate', (event, targetUrl) => {
-        // 1. If it's already an internal URL, just resolve and load (prevents loops)
+    setupInteractionDismissal(webContents);
+    webContents.on('will-navigate', (event, targetUrl) => {
         if (targetUrl.startsWith('ocal://')) {
             event.preventDefault();
-            view.webContents.loadURL(targetUrl);
+            webContents.loadURL(targetUrl);
             return;
         }
 
-        // 2. Intercept remote PDFs
         const isPdf = /\.pdf($|\?)/i.test(targetUrl);
         if (isPdf && !targetUrl.includes('ocal://pdf-viewer') && !targetUrl.includes('pdf-viewer.html')) {
             event.preventDefault();
             const cleanUrl = normalizeDocumentUrl(targetUrl);
             if (userSettings.pdfViewerEnabled !== false) {
-                view.webContents.loadURL(`ocal://pdf-viewer/?file=${encodeURIComponent(cleanUrl)}`);
+                webContents.loadURL(`ocal://pdf-viewer/?file=${encodeURIComponent(cleanUrl)}`);
             } else {
-                view.webContents.downloadURL(cleanUrl);
+                webContents.downloadURL(cleanUrl);
             }
             return;
         }
     });
 
-    view.webContents.setWindowOpenHandler(({ url }) => {
+    webContents.setWindowOpenHandler(({ url }) => {
         if (url.startsWith('ocal://')) {
             createNewTab(url);
             return { action: 'deny' };
         }
-        // Intercept PDFs in window popups too
         if (/\.pdf($|\?)/i.test(url) && !url.includes('ocal://pdf-viewer') && !url.includes('pdf-viewer.html')) {
             const cleanUrl = normalizeDocumentUrl(url);
             if (userSettings.pdfViewerEnabled !== false) {
                 createNewTab(`ocal://pdf-viewer?file=${encodeURIComponent(cleanUrl)}`);
             } else {
-                view.webContents.downloadURL(cleanUrl);
+                webContents.downloadURL(cleanUrl);
             }
             return { action: 'deny' };
         }
         return { action: 'allow' };
     });
 
-    views.push({ id, view });
-
-    // Clear media on navigation
-    view.webContents.on('did-start-navigation', (e, url, isInPlace) => {
-        if (!isInPlace) {
-            tabMedia[id] = [];
-            mainWindow.webContents.send('media-master-updated', { tabId: id, mediaList: [] });
-        }
-    });
-
-    // Initial Load Resolution
-    let finalUrl = url;
-    if (url && !url.startsWith('ocal://')) {
-        const isPdf = /\.pdf($|\?)/i.test(url);
-        if (isPdf && userSettings.pdfViewerEnabled !== false) {
-            // Normalize before encoding to prevent %2520
-            // Use trailing slash to fix CSP relative path issues
-            try {
-                const cleanUrl = decodeURI(url);
-                finalUrl = `ocal://pdf-viewer/?file=${encodeURIComponent(cleanUrl)}`;
-            } catch (e) {
-                finalUrl = `ocal://pdf-viewer/?file=${encodeURIComponent(url)}`;
-            }
-        }
-    }
-
-    // Load the ocal:// URL directly so the address bar stays clean
-    // The protocol handler will resolve it internally.
-    if (finalUrl) {
-        view.webContents.loadURL(resolveInternalURL(finalUrl));
-    } else {
-        view.webContents.loadFile('home.html');
-    }
-
-    setActiveTab(id);
-
-    // HTML fullscreen events — hide/show chrome
-    view.webContents.on('enter-html-full-screen', () => setHtmlFullscreen(id, true));
-    view.webContents.on('leave-html-full-screen', () => setHtmlFullscreen(id, false));
-
-    // Auto-hide overlays on click in the content
-    view.webContents.on('before-input-event', (event, input) => {
+    // Auto-hide overlays & split screen side focus
+    webContents.on('before-input-event', (event, input) => {
         if (input.type === 'mouseDown') closeOverlays();
+        if (input.type === 'mouseDown' || input.type === 'keyDown') {
+            setActiveSplitSide(tabId, side);
+        }
         handleShortcuts(event, input);
     });
 
-    view.webContents.on('page-favicon-updated', (event, favicons) => {
+    webContents.on('page-favicon-updated', (event, favicons) => {
         if (favicons && favicons.length > 0) {
-            const entry = views.find(v => v.id === id);
+            const entry = views.find(v => v.id === tabId);
             if (entry) {
                 const icon = favicons[0];
-                entry.favicon = icon;
-                mainWindow.webContents.send('favicon-updated', { id, favicon: icon });
+                if (side === 'left') {
+                    entry.favicon = icon;
+                    mainWindow.webContents.send('favicon-updated', { id: tabId, favicon: icon });
+                } else {
+                    entry.favicon2 = icon;
+                    mainWindow.webContents.send('favicon-updated', { id: tabId, favicon2: icon });
+                }
 
-                // Persist to history if URL matches
-                const url = view.webContents.getURL();
-                // Safety check for history existence
+                const url = webContents.getURL();
                 if (userSettings.history) {
                     const histIndex = userSettings.history.findIndex(h => h.url === url);
                     if (histIndex > -1) {
@@ -1799,105 +1880,110 @@ function createNewTab(url = null) {
         }
     });
 
-    view.webContents.on('did-start-navigation', (event, url, isInPlace, isMainFrame) => {
+    webContents.on('did-start-navigation', (event, url, isInPlace, isMainFrame) => {
         if (isMainFrame) {
             hideSuggestions();
-            // Proactively tell renderer to hide BM bar if navigating away from home
-            const tabEntry = views.find(v => v.id === id);
+            const tabEntry = views.find(v => v.id === tabId);
             if (tabEntry) {
-                tabEntry.url = url;
+                if (side === 'left') {
+                    tabEntry.url = url;
+                }
                 broadcastTabs();
                 updateViewBounds(url);
             }
         }
     });
 
-    view.webContents.on('did-finish-load', () => {
-        if (userSettings.cyberStealthEnabled) {
-            applyCyberStealth(view.webContents);
-        }
-    });
-
-    view.webContents.on('did-navigate', (event, url) => {
+    webContents.on('did-navigate', (event, url) => {
         updateHistory(view, url);
-        const tabEntry = views.find(v => v.id === id);
-        if (tabEntry) tabEntry.url = url;
+        const tabEntry = views.find(v => v.id === tabId);
+        if (tabEntry) {
+            if (side === 'left') tabEntry.url = url;
+        }
 
-        // Reset page-specific shield stats on navigation
-        if (tabShieldStats.has(view.webContents.id)) {
-            tabShieldStats.delete(view.webContents.id);
-            broadcastShieldStats(view.webContents.id);
+        if (tabShieldStats.has(webContents.id)) {
+            tabShieldStats.delete(webContents.id);
+            broadcastShieldStats(webContents.id);
         }
 
         broadcastTabs();
         updateViewBounds(url);
+
+        const currentActive = views.find(v => v.id === activeViewId);
+        if (currentActive && currentActive.id === tabId && currentActive.focusedSide === side) {
+            mainWindow.webContents.send('url-updated', {
+                id: tabId,
+                url: url.includes('home.html') ? '' : url,
+                title: url.includes('home.html') ? 'Ocal Home' : webContents.getTitle(),
+                favicon: currentActive.favicon || null
+            });
+        }
     });
 
-    setupContextMenu(view.webContents);
+    setupContextMenu(webContents);
 
-    // Intercept window.open; load in the same view per user request
-    view.webContents.setWindowOpenHandler(({ url }) => {
-        view.webContents.loadURL(url);
-        return { action: 'deny' };
-    });
-
-    view.webContents.on('did-navigate-in-page', (event, url) => {
+    webContents.on('did-navigate-in-page', (event, url) => {
         updateHistory(view, url);
-        const tabEntry = views.find(v => v.id === id);
-        if (tabEntry) tabEntry.url = url;
+        const tabEntry = views.find(v => v.id === tabId);
+        if (tabEntry) {
+            if (side === 'left') tabEntry.url = url;
+        }
         broadcastTabs();
         updateViewBounds(url);
-    });
 
-    view.webContents.on('page-title-updated', (event, title) => {
-        const url = view.webContents.getURL();
-        mainWindow.webContents.send('title-updated', { id, title: url.includes('home.html') ? 'Ocal Home' : title });
-    });
-
-    view.webContents.on('did-start-loading', () => {
-        if (mainWindow && !mainWindow.isDestroyed()) {
-            mainWindow.webContents.send('load-progress', { id, progress: 15 });
+        const currentActive = views.find(v => v.id === activeViewId);
+        if (currentActive && currentActive.id === tabId && currentActive.focusedSide === side) {
+            mainWindow.webContents.send('url-updated', {
+                id: tabId,
+                url: url.includes('home.html') ? '' : url,
+                title: url.includes('home.html') ? 'Ocal Home' : webContents.getTitle(),
+                favicon: currentActive.favicon || null
+            });
         }
     });
 
-    view.webContents.on('dom-ready', () => {
-        if (mainWindow && !mainWindow.isDestroyed()) {
-            mainWindow.webContents.send('load-progress', { id, progress: 75 });
+    webContents.on('page-title-updated', (event, title) => {
+        const url = webContents.getURL();
+        const currentActive = views.find(v => v.id === activeViewId);
+        if (currentActive && currentActive.id === tabId && currentActive.focusedSide === side) {
+            mainWindow.webContents.send('title-updated', { id: tabId, title: url.includes('home.html') ? 'Ocal Home' : title });
         }
     });
 
-    view.webContents.on('did-stop-loading', () => {
+    webContents.on('did-start-loading', () => {
         if (mainWindow && !mainWindow.isDestroyed()) {
-            mainWindow.webContents.send('load-progress', { id, progress: 100 });
+            mainWindow.webContents.send('load-progress', { id: tabId, progress: 15 });
         }
     });
 
-    view.webContents.on('did-fail-load', (event, errorCode, errorDescription, validatedURL, isMainFrame) => {
+    webContents.on('dom-ready', () => {
+        if (mainWindow && !mainWindow.isDestroyed()) {
+            mainWindow.webContents.send('load-progress', { id: tabId, progress: 75 });
+        }
+    });
+
+    webContents.on('did-stop-loading', () => {
+        if (mainWindow && !mainWindow.isDestroyed()) {
+            mainWindow.webContents.send('load-progress', { id: tabId, progress: 100 });
+        }
+    });
+
+    webContents.on('did-fail-load', (event, errorCode, errorDescription, validatedURL, isMainFrame) => {
         if (isMainFrame) {
-
-
-            // Connectivity Rescue Logic
             const connectivityErrors = [
-                -106, // ERR_INTERNET_DISCONNECTED
-                -105, // ERR_NAME_NOT_RESOLVED
-                -118, // ERR_CONNECTION_TIMED_OUT
-                -100, // ERR_CONNECTION_CLOSED
-                -102, // ERR_CONNECTION_REFUSED
-                -101  // ERR_CONNECTION_RESET
+                -106, -105, -118, -100, -102, -101
             ];
 
             if (connectivityErrors.includes(errorCode) && !validatedURL.startsWith('ocal://') && !validatedURL.startsWith('file://')) {
                 console.log(`[Rescue] Connectivity Error ${errorCode} on ${validatedURL}. Redirecting to Offline Page.`);
-                view.webContents.loadURL('ocal://offline');
+                webContents.loadURL('ocal://offline');
             }
         }
 
         if (mainWindow && !mainWindow.isDestroyed()) {
-            mainWindow.webContents.send('load-progress', { id, progress: 0 });
+            mainWindow.webContents.send('load-progress', { id: tabId, progress: 0 });
         }
     });
-
-    broadcastTabs();
 }
 
 function broadcastTabs() {
@@ -1908,7 +1994,15 @@ function broadcastTabs() {
         url: v.view.webContents.isDestroyed() ? '' : v.view.webContents.getURL(),
         favicon: v.favicon || null,
         groupId: v.groupId || null,
-        audible: v.view.webContents.isDestroyed() ? false : v.view.webContents.isCurrentlyAudible()
+        audible: v.view.webContents.isDestroyed() ? false : v.view.webContents.isCurrentlyAudible(),
+        isSplit: !!v.isSplit,
+        splitDirection: v.splitDirection || 'horizontal',
+        focusedSide: v.focusedSide || 'left',
+        title2: (v.isSplit && v.view2 && !v.view2.webContents.isDestroyed()) ? (v.view2.webContents.getTitle() || 'Ocal Home') : '',
+        url2: (v.isSplit && v.view2 && !v.view2.webContents.isDestroyed()) ? v.view2.webContents.getURL() : '',
+        emoji: v.emoji || null,
+        emoji2: v.emoji2 || null,
+        favicon2: (v.isSplit && v.view2) ? (v.favicon2 || null) : null
     }));
     mainWindow.webContents.send('tabs-changed', {
         tabs: tabData,
@@ -1937,12 +2031,34 @@ function setActiveTab(id) {
         if (mainWindow.getBrowserViews().includes(oldViewEntry.view)) {
             mainWindow.removeBrowserView(oldViewEntry.view);
         }
+        if (oldViewEntry.isSplit && oldViewEntry.view2 && !oldViewEntry.view2.webContents.isDestroyed()) {
+            if (mainWindow.getBrowserViews().includes(oldViewEntry.view2)) {
+                mainWindow.removeBrowserView(oldViewEntry.view2);
+            }
+        }
     }
     activeViewId = id;
     const newViewEntry = views.find(v => v.id === id);
 
+    if (newViewEntry) {
+        newViewEntry.lastActiveTime = Date.now();
+        if (newViewEntry.suspended) {
+            newViewEntry.suspended = false;
+            if (newViewEntry.suspendedUrl && newViewEntry.view && !newViewEntry.view.webContents.isDestroyed()) {
+                newViewEntry.view.webContents.loadURL(newViewEntry.suspendedUrl);
+                newViewEntry.suspendedUrl = null;
+            }
+            if (newViewEntry.suspendedUrl2 && newViewEntry.view2 && !newViewEntry.view2.webContents.isDestroyed()) {
+                newViewEntry.view2.webContents.loadURL(newViewEntry.suspendedUrl2);
+                newViewEntry.suspendedUrl2 = null;
+            }
+            console.log(`[Memory Saver] Auto-restored suspended tab: ${id}`);
+        }
+    }
+
     if (newViewEntry && newViewEntry.view && newViewEntry.view.webContents && !newViewEntry.view.webContents.isDestroyed() && !mainWindow.isDestroyed()) {
-        const newWc = newViewEntry.view.webContents;
+        const activeViewToUse = (newViewEntry.isSplit && newViewEntry.focusedSide === 'right' && newViewEntry.view2) ? newViewEntry.view2 : newViewEntry.view;
+        const newWc = activeViewToUse.webContents;
 
         // If the new tab is the one currently in PiP, close the PiP window
         if (pipWindow && !pipWindow.isDestroyed() && pipSourceContents && !pipSourceContents.isDestroyed() && pipSourceContents.id === newWc.id) {
@@ -1951,6 +2067,11 @@ function setActiveTab(id) {
 
         if (!mainWindow.getBrowserViews().includes(newViewEntry.view)) {
             mainWindow.addBrowserView(newViewEntry.view);
+        }
+        if (newViewEntry.isSplit && newViewEntry.view2 && !newViewEntry.view2.webContents.isDestroyed()) {
+            if (!mainWindow.getBrowserViews().includes(newViewEntry.view2)) {
+                mainWindow.addBrowserView(newViewEntry.view2);
+            }
         }
         updateViewBounds();
 
@@ -1985,6 +2106,7 @@ function isHomeURL(url) {
 }
 
 function updateViewBounds(forcedUrl = null) {
+    if (typeof isAnimatingBounds !== 'undefined' && isAnimatingBounds) return;
     if (!mainWindow || mainWindow.isDestroyed()) return;
     const isMaximized = mainWindow.isMaximized();
     const { width, height } = mainWindow.getContentBounds();
@@ -2026,9 +2148,12 @@ function updateViewBounds(forcedUrl = null) {
     lastWSidebar = wSidebar;
 
     if (activeViewEntry && activeViewEntry.view) {
-        // Only update bounds and stack order if the view is currently attached to mainWindow
-        // (Prevents crashes when the view is detached in a Portal PiP window)
         if (activeViewEntry.view.webContents && !activeViewEntry.view.webContents.isDestroyed() && mainWindow.getBrowserViews().includes(activeViewEntry.view)) {
+            const xBase = Math.round(wSidebar + Math.round(8 * zoom));
+            const yBase = Math.round(yOffset + Math.round(2 * zoom));
+            const totalWidth = Math.round(width - wSidebar - Math.round(16 * zoom));
+            const totalHeight = Math.round(height - yOffset - Math.round(10 * zoom));
+
             if (isFullscreen) {
                 activeViewEntry.view.setBounds({
                     x: 0,
@@ -2036,23 +2161,76 @@ function updateViewBounds(forcedUrl = null) {
                     width: width,
                     height: height
                 });
+            } else if (activeViewEntry.isSplit && activeViewEntry.view2 && !activeViewEntry.view2.webContents.isDestroyed()) {
+                const gap = Math.round(4 * zoom);
+                if (activeViewEntry.splitDirection === 'vertical') {
+                    const halfHeight = Math.floor((totalHeight - gap) / 2);
+                    activeViewEntry.view.setBounds({
+                        x: xBase,
+                        y: yBase,
+                        width: totalWidth,
+                        height: halfHeight
+                    });
+                    if (mainWindow.getBrowserViews().includes(activeViewEntry.view2)) {
+                        activeViewEntry.view2.setBounds({
+                            x: xBase,
+                            y: yBase + halfHeight + gap,
+                            width: totalWidth,
+                            height: totalHeight - halfHeight - gap
+                        });
+                    }
+                } else {
+                    const halfWidth = Math.floor((totalWidth - gap) / 2);
+                    activeViewEntry.view.setBounds({
+                        x: xBase,
+                        y: yBase,
+                        width: halfWidth,
+                        height: totalHeight
+                    });
+                    if (mainWindow.getBrowserViews().includes(activeViewEntry.view2)) {
+                        activeViewEntry.view2.setBounds({
+                            x: xBase + halfWidth + gap,
+                            y: yBase,
+                            width: totalWidth - halfWidth - gap,
+                            height: totalHeight
+                        });
+                    }
+                }
             } else {
                 activeViewEntry.view.setBounds({
-                    x: Math.round(wSidebar + Math.round(8 * zoom)),
-                    y: Math.round(yOffset + Math.round(2 * zoom)),
-                    width: Math.round(width - wSidebar - Math.round(16 * zoom)),
-                    height: Math.round(height - yOffset - Math.round(10 * zoom))
+                    x: xBase,
+                    y: yBase,
+                    width: totalWidth,
+                    height: totalHeight
                 });
             }
             mainWindow.setTopBrowserView(activeViewEntry.view);
+            if (activeViewEntry.isSplit && activeViewEntry.view2 && !activeViewEntry.view2.webContents.isDestroyed() && mainWindow.getBrowserViews().includes(activeViewEntry.view2)) {
+                mainWindow.setTopBrowserView(activeViewEntry.view2);
+            }
+            if (activeViewEntry.view && !activeViewEntry.view.webContents.isDestroyed()) {
+                activeViewEntry.view.webContents.send('set-split-mode', !!activeViewEntry.isSplit);
+            }
+            if (activeViewEntry.isSplit && activeViewEntry.view2 && !activeViewEntry.view2.webContents.isDestroyed()) {
+                activeViewEntry.view2.webContents.send('set-split-mode', true);
+            }
         }
     }
 
     // Hide any views that are in collapsed groups to prevent them from staying on top
     views.forEach(v => {
         const group = userSettings.tabGroups.find(g => g.id === v.groupId);
-        if (v.id !== activeViewId && group && group.collapsed && v.view && v.view.webContents && !v.view.webContents.isDestroyed()) {
-            mainWindow.removeBrowserView(v.view);
+        if (v.id !== activeViewId && group && group.collapsed) {
+            if (v.view && v.view.webContents && !v.view.webContents.isDestroyed()) {
+                if (mainWindow.getBrowserViews().includes(v.view)) {
+                    mainWindow.removeBrowserView(v.view);
+                }
+            }
+            if (v.isSplit && v.view2 && v.view2.webContents && !v.view2.webContents.isDestroyed()) {
+                if (mainWindow.getBrowserViews().includes(v.view2)) {
+                    mainWindow.removeBrowserView(v.view2);
+                }
+            }
         }
     });
 
@@ -2146,7 +2324,7 @@ function showWebApp(url) {
 
 
 // IPC Handlers
-ipcMain.on('new-tab', () => createNewTab());
+ipcMain.on('new-tab', (e, url) => createNewTab(url));
 ipcMain.on('switch-tab', (e, id) => setActiveTab(id));
 ipcMain.on('request-tabs', () => broadcastTabs());
 ipcMain.on('open-external', (e, url) => createNewTab(url));
@@ -2158,32 +2336,590 @@ ipcMain.on('hide-popups', (e) => {
     }
     hidePopups();
 });
-ipcMain.on('close-tab', async (e, id) => {
-    if (views.length === 1) {
-        mainWindow.close();
-    } else {
+let lastClosedSplitTab = null;
+
+function handleCloseTabRequest(id) {
+    try {
+        const entry = views.find(v => v.id === id);
+        if (entry && entry.isSplit) {
+            if (mainWindow && !mainWindow.isDestroyed()) {
+                const activeEntry = views.find(v => v.id === activeViewId);
+                if (activeEntry) {
+                    if (activeEntry.view && !activeEntry.view.webContents.isDestroyed() && mainWindow.getBrowserViews().includes(activeEntry.view)) {
+                        mainWindow.removeBrowserView(activeEntry.view);
+                    }
+                    if (activeEntry.view2 && !activeEntry.view2.webContents.isDestroyed() && mainWindow.getBrowserViews().includes(activeEntry.view2)) {
+                        mainWindow.removeBrowserView(activeEntry.view2);
+                    }
+                }
+                mainWindow.webContents.send('confirm-close-split-tab', id);
+            }
+        } else {
+            executeCloseTab(id);
+        }
+    } catch (err) {
+        console.error('Error in handleCloseTabRequest:', err);
+    }
+}
+
+function executeCloseTab(id) {
+    try {
+        if (views.length === 1) {
+            if (mainWindow && !mainWindow.isDestroyed()) {
+                mainWindow.close();
+            }
+            return;
+        }
         const index = views.findIndex(v => v.id === id);
         if (index !== -1) {
             const [removed] = views.splice(index, 1);
-            mainWindow.removeBrowserView(removed.view);
-            removed.view.webContents.destroy();
-            delete tabMedia[id]; // Cleanup media storage
-            if (activeViewId === id) {
-                activeViewId = views.length > 0 ? views[Math.max(0, index - 1)].id : null;
-                if (activeViewId) setActiveTab(activeViewId); else updateViewBounds();
+            if (removed.view) {
+                if (mainWindow && !mainWindow.isDestroyed() && mainWindow.getBrowserViews().includes(removed.view)) {
+                    mainWindow.removeBrowserView(removed.view);
+                }
+                if (!removed.view.webContents.isDestroyed()) {
+                    removed.view.webContents.destroy();
+                }
             }
-            cleanupEmptyGroups();
-            broadcastTabs();
+
+            if (removed.isSplit) {
+                lastClosedSplitTab = {
+                    url: removed.url || 'ocal://home',
+                    url2: removed.url2 || 'ocal://home',
+                    title: removed.title || 'New Tab',
+                    title2: removed.title2 || 'Ocal Home',
+                    favicon: removed.favicon || null,
+                    favicon2: removed.favicon2 || null,
+                    focusedSide: removed.focusedSide || 'left',
+                    groupId: removed.groupId || null
+                };
+                if (mainWindow && !mainWindow.isDestroyed()) {
+                    mainWindow.webContents.send('show-undo-split-toast');
+                }
+                if (removed.view2) {
+                    if (mainWindow && !mainWindow.isDestroyed() && mainWindow.getBrowserViews().includes(removed.view2)) {
+                        mainWindow.removeBrowserView(removed.view2);
+                    }
+                    if (!removed.view2.webContents.isDestroyed()) {
+                        removed.view2.webContents.destroy();
+                    }
+                }
+            }
+
+        delete tabMedia[id]; // Cleanup media storage
+        if (activeViewId === id) {
+            activeViewId = views.length > 0 ? views[Math.max(0, index - 1)].id : null;
         }
+        if (activeViewId) {
+            setActiveTab(activeViewId);
+        } else {
+            updateViewBounds();
+        }
+        cleanupEmptyGroups();
+        broadcastTabs();
+    }
+    } catch (err) {
+        console.error('Error in executeCloseTab:', err);
+    }
+}
+
+ipcMain.on('close-tab', async (e, id) => {
+    handleCloseTabRequest(id);
+});
+
+ipcMain.on('close-tab-confirmed', (e, id) => {
+    executeCloseTab(id);
+});
+
+ipcMain.on('close-tab-cancelled', (e, id) => {
+    setActiveTab(activeViewId);
+});
+
+ipcMain.on('restore-last-closed-split-tab', () => {
+    if (!lastClosedSplitTab) return;
+
+    const id = Date.now().toString() + Math.random().toString(36).substring(2, 9);
+    
+    const view = new BrowserView({
+        webPreferences: {
+            preload: path.join(__dirname, 'preload.js'),
+            contextIsolation: true,
+            nodeIntegration: false,
+            sandbox: false,
+            devTools: true
+        }
+    });
+
+    const view2 = new BrowserView({
+        webPreferences: {
+            preload: path.join(__dirname, 'preload.js'),
+            contextIsolation: true,
+            nodeIntegration: false,
+            sandbox: false,
+            devTools: true
+        }
+    });
+
+    view.setBackgroundColor('#00000000');
+    view2.setBackgroundColor('#00000000');
+    view.webContents.setUserAgent(OCAL_USER_AGENT);
+    view2.webContents.setUserAgent(OCAL_USER_AGENT);
+
+    setupViewEvents(id, view, 'left');
+    setupViewEvents(id, view2, 'right');
+
+    const entry = {
+        id,
+        view,
+        view2,
+        isSplit: true,
+        splitDirection: 'horizontal',
+        focusedSide: lastClosedSplitTab.focusedSide,
+        url: lastClosedSplitTab.url,
+        url2: lastClosedSplitTab.url2,
+        title: lastClosedSplitTab.title,
+        title2: lastClosedSplitTab.title2,
+        favicon: lastClosedSplitTab.favicon,
+        favicon2: lastClosedSplitTab.favicon2,
+        groupId: lastClosedSplitTab.groupId
+    };
+
+    views.push(entry);
+
+    view.webContents.loadURL(lastClosedSplitTab.url);
+    view2.webContents.loadURL(lastClosedSplitTab.url2);
+
+    activeViewId = id;
+    setActiveTab(id);
+    broadcastTabs();
+
+    lastClosedSplitTab = null;
+});
+
+function getActiveViewForNavigation() {
+    const entry = views.find(v => v.id === activeViewId);
+    if (!entry) return null;
+    if (entry.isSplit && entry.focusedSide === 'right' && entry.view2) {
+        return entry.view2;
+    }
+    return entry.view;
+}
+
+function cleanupView2(entry) {
+    if (entry.view2) {
+        if (!entry.view2.webContents.isDestroyed()) {
+            if (mainWindow.getBrowserViews().includes(entry.view2)) {
+                mainWindow.removeBrowserView(entry.view2);
+            }
+            entry.view2.webContents.destroy();
+        }
+        entry.view2 = null;
+    }
+}
+
+function animateSplitBounds(tabId, startSplit, onComplete = null) {
+    const entry = views.find(v => v.id === tabId);
+    if (!entry) {
+        if (onComplete) onComplete();
+        return;
+    }
+
+    const zoom = getOptimalZoomFactor();
+    const { width, height } = mainWindow.getContentBounds();
+    const isFullscreen = !!htmlFullscreenViewId;
+    if (isFullscreen) {
+        if (onComplete) onComplete();
+        return;
+    }
+
+    const hTabs = Math.round((userSettings.compactMode ? 36 : 44) * zoom);
+    const hNav = Math.round((userSettings.compactMode ? 40 : 52) * zoom);
+    let isBmVisible = bookmarkBarVisible;
+    const url = entry.view.webContents.isDestroyed() ? '' : entry.view.webContents.getURL();
+    const isHome = isHomeURL(url);
+    if (userSettings.bookmarkBarMode === 'always') isBmVisible = true;
+    else if (userSettings.bookmarkBarMode === 'never') isBmVisible = false;
+    else if (userSettings.bookmarkBarMode === 'auto') isBmVisible = isHome;
+    
+    const hBm = !isBmVisible ? 0 : Math.round((userSettings.compactMode ? 32 : 40) * zoom);
+    const yPadding = (process.platform === 'win32') ? 1 : 0;
+    const yOffset = hTabs + hNav + hBm + yPadding;
+    
+    let wSidebar = Math.round(44 * zoom);
+    if (userSettings.sidebarMode === 'hidden' || userSettings.sidebarMode === 'autohide') {
+        wSidebar = 0;
+    }
+
+    const xBase = Math.round(wSidebar + Math.round(8 * zoom));
+    const yBase = Math.round(yOffset + Math.round(2 * zoom));
+    const totalWidth = Math.round(width - wSidebar - Math.round(16 * zoom));
+    const totalHeight = Math.round(height - yOffset - Math.round(10 * zoom));
+
+    const duration = 250;
+    const fps = 60;
+    const totalFrames = Math.round(duration / (1000 / fps));
+    let currentFrame = 0;
+
+    isAnimatingBounds = true;
+
+    const interval = setInterval(() => {
+        if (!mainWindow || mainWindow.isDestroyed() || !entry.view || entry.view.webContents.isDestroyed()) {
+            clearInterval(interval);
+            isAnimatingBounds = false;
+            if (onComplete) onComplete();
+            return;
+        }
+
+        currentFrame++;
+        const progress = currentFrame / totalFrames;
+        const eased = 1 - Math.pow(1 - progress, 3);
+
+        const gap = Math.round(4 * zoom);
+
+        if (entry.splitDirection === 'vertical') {
+            const targetHalf = Math.floor((totalHeight - gap) / 2);
+            if (startSplit) {
+                const currentTopHeight = Math.round(totalHeight - (totalHeight - targetHalf) * eased);
+                entry.view.setBounds({
+                    x: xBase,
+                    y: yBase,
+                    width: totalWidth,
+                    height: currentTopHeight
+                });
+
+                if (entry.view2 && !entry.view2.webContents.isDestroyed()) {
+                    const bottomHeight = Math.round((totalHeight - targetHalf - gap) * eased);
+                    entry.view2.setBounds({
+                        x: xBase,
+                        y: yBase + currentTopHeight + gap,
+                        width: totalWidth,
+                        height: bottomHeight
+                    });
+                }
+            } else {
+                const currentTopHeight = Math.round(targetHalf + (totalHeight - targetHalf) * eased);
+                entry.view.setBounds({
+                    x: xBase,
+                    y: yBase,
+                    width: totalWidth,
+                    height: currentTopHeight
+                });
+
+                if (entry.view2 && !entry.view2.webContents.isDestroyed()) {
+                    const bottomHeight = Math.round((totalHeight - targetHalf - gap) * (1 - eased));
+                    entry.view2.setBounds({
+                        x: xBase,
+                        y: yBase + currentTopHeight + gap,
+                        width: totalWidth,
+                        height: Math.max(0, bottomHeight)
+                    });
+                }
+            }
+        } else {
+            const targetHalf = Math.floor((totalWidth - gap) / 2);
+            if (startSplit) {
+                const currentLeftWidth = Math.round(totalWidth - (totalWidth - targetHalf) * eased);
+                entry.view.setBounds({
+                    x: xBase,
+                    y: yBase,
+                    width: currentLeftWidth,
+                    height: totalHeight
+                });
+
+                if (entry.view2 && !entry.view2.webContents.isDestroyed()) {
+                    const rightWidth = Math.round((totalWidth - targetHalf - gap) * eased);
+                    entry.view2.setBounds({
+                        x: xBase + currentLeftWidth + gap,
+                        y: yBase,
+                        width: rightWidth,
+                        height: totalHeight
+                    });
+                }
+            } else {
+                const currentLeftWidth = Math.round(targetHalf + (totalWidth - targetHalf) * eased);
+                entry.view.setBounds({
+                    x: xBase,
+                    y: yBase,
+                    width: currentLeftWidth,
+                    height: totalHeight
+                });
+
+                if (entry.view2 && !entry.view2.webContents.isDestroyed()) {
+                    const rightWidth = Math.round((totalWidth - targetHalf - gap) * (1 - eased));
+                    entry.view2.setBounds({
+                        x: xBase + currentLeftWidth + gap,
+                        y: yBase,
+                        width: Math.max(0, rightWidth),
+                        height: totalHeight
+                    });
+                }
+            }
+        }
+
+        if (currentFrame >= totalFrames) {
+            clearInterval(interval);
+            isAnimatingBounds = false;
+            if (onComplete) onComplete();
+            updateViewBounds();
+        }
+    }, 1000 / fps);
+}
+
+ipcMain.on('toggle-split-screen', () => {
+    if (!activeViewId) return;
+    const entry = views.find(v => v.id === activeViewId);
+    if (!entry) return;
+
+    if (entry.isSplit) {
+        entry.isSplit = false;
+        entry.focusedSide = 'left';
+        broadcastTabs();
+        
+        animateSplitBounds(activeViewId, false, () => {
+            cleanupView2(entry);
+        });
+    } else {
+        if (views.length <= 1) {
+            if (mainWindow && !mainWindow.isDestroyed()) {
+                mainWindow.webContents.send('show-toast', 'Open another tab to enable split screen multitasking.');
+            }
+            return;
+        }
+        const id = activeViewId;
+        const view2 = new BrowserView({
+            webPreferences: {
+                preload: path.join(__dirname, 'preload.js'),
+                contextIsolation: true,
+                nodeIntegration: false,
+                sandbox: false,
+                devTools: true
+            },
+        });
+        view2.setBackgroundColor('#00000000');
+        view2.webContents.setUserAgent(OCAL_USER_AGENT);
+        
+        setupViewEvents(id, view2, 'right');
+        view2.webContents.loadFile('home.html');
+
+        entry.view2 = view2;
+        entry.isSplit = true;
+        entry.splitDirection = 'horizontal';
+        entry.focusedSide = 'right';
+
+        if (!mainWindow.getBrowserViews().includes(view2)) {
+            mainWindow.addBrowserView(view2);
+        }
+        
+        broadcastTabs();
+        
+        animateSplitBounds(activeViewId, true);
+    }
+    
+    const focusedWc = (entry.isSplit && entry.focusedSide === 'right' && entry.view2) ? entry.view2.webContents : entry.view.webContents;
+    if (focusedWc && !focusedWc.isDestroyed()) {
+        const url = focusedWc.getURL();
+        const title = focusedWc.getTitle();
+        mainWindow.webContents.send('url-updated', {
+            id: activeViewId,
+            url: url.includes('home.html') ? '' : url,
+            title: url.includes('home.html') ? 'Ocal Home' : title,
+            favicon: entry.favicon || null
+        });
+    }
+});
+
+ipcMain.on('focus-split-side', (e, { tabId, side }) => {
+    setActiveSplitSide(tabId, side);
+});
+
+let currentDraggedTabId = null;
+
+ipcMain.on('tab-drag-start', (e, tabId) => {
+    currentDraggedTabId = tabId;
+    const entry = views.find(v => v.id === activeViewId);
+    if (entry && !entry.isSplit) {
+        if (splitOverlayView && mainWindow && !mainWindow.isDestroyed()) {
+            if (!mainWindow.getBrowserViews().includes(splitOverlayView)) {
+                mainWindow.addBrowserView(splitOverlayView);
+            }
+            
+            const { width, height } = mainWindow.getContentBounds();
+            const zoom = getOptimalZoomFactor();
+            
+            const hTabs = Math.round((userSettings.compactMode ? 36 : 44) * zoom);
+            const hNav = Math.round((userSettings.compactMode ? 40 : 52) * zoom);
+            
+            let isBmVisible = bookmarkBarVisible;
+            if (userSettings.bookmarkBarMode === 'always') isBmVisible = true;
+            else if (userSettings.bookmarkBarMode === 'never') isBmVisible = false;
+            else if (userSettings.bookmarkBarMode === 'auto') {
+                const activeView = entry.view;
+                const url = activeView && !activeView.webContents.isDestroyed() ? activeView.webContents.getURL() : '';
+                isBmVisible = isHomeURL(url);
+            }
+            
+            const hBm = !isBmVisible ? 0 : Math.round((userSettings.compactMode ? 32 : 40) * zoom);
+            const yPadding = (process.platform === 'win32') ? 1 : 0;
+            const yOffset = hTabs + hNav + hBm + yPadding;
+            
+            let wSidebar = Math.round(44 * zoom);
+            if (userSettings.sidebarMode === 'hidden' || userSettings.sidebarMode === 'autohide') {
+                wSidebar = 0;
+            }
+            
+            const xBase = Math.round(wSidebar + Math.round(8 * zoom));
+            const yBase = Math.round(yOffset + Math.round(2 * zoom));
+            const totalWidth = Math.round(width - wSidebar - Math.round(16 * zoom));
+            const totalHeight = Math.round(height - yOffset - Math.round(10 * zoom));
+            
+            splitOverlayView.setBounds({
+                x: xBase,
+                y: yBase,
+                width: totalWidth,
+                height: totalHeight
+            });
+            
+            mainWindow.setTopBrowserView(splitOverlayView);
+            
+            if (!splitOverlayView.webContents.isDestroyed()) {
+                splitOverlayView.webContents.send('tab-drag-start');
+            }
+        }
+    }
+});
+
+ipcMain.on('tab-drag-end', (e) => {
+    currentDraggedTabId = null;
+    if (splitOverlayView && mainWindow && !mainWindow.isDestroyed()) {
+        if (mainWindow.getBrowserViews().includes(splitOverlayView)) {
+            mainWindow.removeBrowserView(splitOverlayView);
+        }
+        if (!splitOverlayView.webContents.isDestroyed()) {
+            splitOverlayView.webContents.send('tab-drag-end');
+        }
+    }
+});
+
+ipcMain.on('drop-tab-to-split', (e, direction) => {
+    if (!currentDraggedTabId || !activeViewId) return;
+
+    let sourceId = currentDraggedTabId;
+    let targetId = activeViewId;
+
+    if (sourceId === targetId) {
+        const otherEntry = views.find(v => v.id !== targetId);
+        if (!otherEntry) return;
+        sourceId = otherEntry.id;
+    }
+
+    const sourceEntry = views.find(v => v.id === sourceId);
+    const targetEntry = views.find(v => v.id === targetId);
+    if (!sourceEntry || !targetEntry) return;
+
+    const sourceUrl = sourceEntry.view.webContents.getURL();
+
+    ipcMain.emit('close-tab', null, sourceId);
+
+    if (!targetEntry.isSplit) {
+        const id = activeViewId;
+        const view2 = new BrowserView({
+            webPreferences: {
+                preload: path.join(__dirname, 'preload.js'),
+                contextIsolation: true,
+                nodeIntegration: false,
+                sandbox: false,
+                devTools: true
+            },
+        });
+        view2.setBackgroundColor('#00000000');
+        view2.webContents.setUserAgent(OCAL_USER_AGENT);
+        setupViewEvents(id, view2, 'right');
+
+        targetEntry.view2 = view2;
+        targetEntry.isSplit = true;
+        targetEntry.splitDirection = (direction === 'top' || direction === 'bottom') ? 'vertical' : 'horizontal';
+
+        if (direction === 'left' || direction === 'top') {
+            const currentUrl = targetEntry.view.webContents.getURL();
+            view2.webContents.loadURL(currentUrl);
+            targetEntry.view.webContents.loadURL(sourceUrl);
+            targetEntry.focusedSide = 'left';
+        } else {
+            view2.webContents.loadURL(sourceUrl);
+            targetEntry.focusedSide = 'right';
+        }
+
+        if (!mainWindow.getBrowserViews().includes(view2)) {
+            mainWindow.addBrowserView(view2);
+        }
+
+        broadcastTabs();
+        animateSplitBounds(activeViewId, true);
+    } else {
+        const targetView = (direction === 'left' || direction === 'top') ? targetEntry.view : targetEntry.view2;
+        if (targetView && !targetView.webContents.isDestroyed()) {
+            targetView.webContents.loadURL(sourceUrl);
+        }
+    }
+    
+    currentDraggedTabId = null;
+});
+
+ipcMain.on('merge-tabs-to-split', (e, { sourceTabId, targetTabId }) => {
+    if (!sourceTabId || !targetTabId || sourceTabId === targetTabId) return;
+
+    const sourceEntry = views.find(v => v.id === sourceTabId);
+    const targetEntry = views.find(v => v.id === targetTabId);
+    if (!sourceEntry || !targetEntry) return;
+
+    const sourceUrl = sourceEntry.view.webContents.getURL();
+
+    ipcMain.emit('close-tab', null, sourceTabId);
+
+    if (!targetEntry.isSplit) {
+        const id = targetTabId;
+        const view2 = new BrowserView({
+            webPreferences: {
+                preload: path.join(__dirname, 'preload.js'),
+                contextIsolation: true,
+                nodeIntegration: false,
+                sandbox: false,
+                devTools: true
+            },
+        });
+        view2.setBackgroundColor('#00000000');
+        view2.webContents.setUserAgent(OCAL_USER_AGENT);
+        setupViewEvents(id, view2, 'right');
+
+        view2.webContents.loadURL(sourceUrl);
+
+        targetEntry.view2 = view2;
+        targetEntry.isSplit = true;
+        targetEntry.splitDirection = 'horizontal';
+        targetEntry.focusedSide = 'right';
+
+        if (activeViewId === targetTabId) {
+            if (!mainWindow.getBrowserViews().includes(view2)) {
+                mainWindow.addBrowserView(view2);
+            }
+            broadcastTabs();
+            animateSplitBounds(targetTabId, true);
+        } else {
+            setActiveTab(targetTabId);
+        }
+    } else {
+        if (targetEntry.view2 && !targetEntry.view2.webContents.isDestroyed()) {
+            targetEntry.view2.webContents.loadURL(sourceUrl);
+        }
+        setActiveTab(targetTabId);
     }
 });
 
 ipcMain.on('navigate-to', (e, url) => {
     if (!url || typeof url !== 'string') return;
-    const activeView = views.find(v => v.id === activeViewId)?.view;
+    const activeView = getActiveViewForNavigation();
     if (!activeView) return;
 
-    // Clean the input (strip whitespace and common quotes from copy-pasting)
     let cleanUrl = url.trim();
     if ((cleanUrl.startsWith('"') && cleanUrl.endsWith('"')) || (cleanUrl.startsWith("'") && cleanUrl.endsWith("'"))) {
         cleanUrl = cleanUrl.substring(1, cleanUrl.length - 1);
@@ -2191,14 +2927,12 @@ ipcMain.on('navigate-to', (e, url) => {
 
     let targetUrl = cleanUrl;
 
-    // 1. Detect Local Drive Paths (e.g., C:/...)
     const isLocalDrive = /^[a-zA-Z]:[/\\]/.test(cleanUrl);
     const isAbsPath = cleanUrl.startsWith('/') || cleanUrl.startsWith('\\\\');
     if ((isLocalDrive || isAbsPath) && !cleanUrl.startsWith('file://')) {
         targetUrl = 'file:///' + cleanUrl.replace(/\\/g, '/');
     }
 
-    // 2. Protocol Resolution
     if (!targetUrl.startsWith('http://') && !targetUrl.startsWith('https://') && !targetUrl.startsWith('file://') && !targetUrl.startsWith('ocal://')) {
         if (cleanUrl === 'settings' || cleanUrl === 'ocal://settings') targetUrl = 'file://' + path.join(__dirname, 'settings.html');
         else if (cleanUrl.startsWith('ocal://settings#')) targetUrl = 'file://' + path.join(__dirname, 'settings.html') + cleanUrl.substring(15);
@@ -2219,7 +2953,6 @@ ipcMain.on('navigate-to', (e, url) => {
         }
     }
 
-    // 3. Final PDF Interception (More robust detection for history clicks)
     const lowerUrl = targetUrl.toLowerCase();
     const isPdf = lowerUrl.endsWith('.pdf') || lowerUrl.includes('.pdf?') || lowerUrl.includes('.pdf#');
 
@@ -2232,9 +2965,9 @@ ipcMain.on('navigate-to', (e, url) => {
     activeView.webContents.loadURL(resolveInternalURL(targetUrl));
 });
 
-ipcMain.on('nav-back', () => { const v = views.find(v => v.id === activeViewId)?.view; if (v?.webContents.navigationHistory.canGoBack()) v.webContents.navigationHistory.goBack(); });
-ipcMain.on('nav-forward', () => { const v = views.find(v => v.id === activeViewId)?.view; if (v?.webContents.navigationHistory.canGoForward()) v.webContents.navigationHistory.goForward(); });
-ipcMain.on('nav-reload', () => (views.find(v => v.id === activeViewId)?.view)?.webContents.reload());
+ipcMain.on('nav-back', () => { const v = getActiveViewForNavigation(); if (v?.webContents.navigationHistory.canGoBack()) v.webContents.navigationHistory.goBack(); });
+ipcMain.on('nav-forward', () => { const v = getActiveViewForNavigation(); if (v?.webContents.navigationHistory.canGoForward()) v.webContents.navigationHistory.goForward(); });
+ipcMain.on('nav-reload', () => { const v = getActiveViewForNavigation(); if (v) v.webContents.reload(); });
 ipcMain.on('window-minimize', () => mainWindow.minimize());
 ipcMain.on('window-maximize', () => { if (mainWindow.isMaximized()) mainWindow.unmaximize(); else mainWindow.maximize(); });
 ipcMain.on('window-close', () => mainWindow.close());
@@ -4018,13 +4751,27 @@ ipcMain.on('tab-context-action', (e, data) => {
             ipcMain.emit('close-tab', null, data.tabId);
         } else if (data.action === 'create-tab-group') {
             console.log(`[IPC][tab-context-action] Directly creating group for tab:`, data.tabId);
-            ipcMain.emit('create-tab-group', null, { name: 'New Group', color: '#a855f7', tabIds: [data.tabId] });
+            ipcMain.emit('create-tab-group', null, { name: '', color: '#a855f7', tabIds: [data.tabId] });
         } else if (data.action === 'remove-from-group') {
             console.log(`[IPC][tab-context-action] Directly removing tab from group:`, data.tabId);
             ipcMain.emit('remove-from-group', null, data.tabId);
         } else if (data.action === 'add-to-group') {
             console.log(`[IPC][tab-context-action] Directly adding tab to group:`, { tabId: data.tabId, groupId: data.groupId });
             ipcMain.emit('add-to-group', null, { tabId: data.tabId, groupId: data.groupId });
+        } else if (data.action === 'set-tab-emoji') {
+            const entry = views.find(v => v.id === data.tabId);
+            if (entry) {
+                if (entry.isSplit) {
+                    if (entry.focusedSide === 'right') {
+                        entry.emoji2 = data.emoji;
+                    } else {
+                        entry.emoji = data.emoji;
+                    }
+                } else {
+                    entry.emoji = data.emoji;
+                }
+                broadcastTabs();
+            }
         }
     }
 });
@@ -4393,7 +5140,7 @@ function handleShortcuts(event, input) {
     // Ctrl + W: Close Tab
     else if (cmdOrCtrl && input.key.toLowerCase() === 'w') {
         event.preventDefault();
-        if (activeViewId) ipcMain.emit('close-tab', null, activeViewId);
+        if (activeViewId) handleCloseTabRequest(activeViewId);
     }
     // Ctrl + R: Reload
     else if (cmdOrCtrl && input.key.toLowerCase() === 'r') {
@@ -4804,6 +5551,157 @@ ipcMain.on('hide-bm-dropdown', () => {
 ipcMain.on('add-folder', (e, f) => { f.id = Date.now().toString(); userSettings.folders.push(f); saveSettings(userSettings); broadcastBookmarks(); });
 ipcMain.on('remove-folder', (e, id) => { userSettings.folders = userSettings.folders.filter(f => f.id !== id); userSettings.bookmarks.forEach(b => { if (b.folderId === id) delete b.folderId; }); saveSettings(userSettings); broadcastBookmarks(); });
 ipcMain.on('edit-folder', (e, data) => { const f = userSettings.folders.find(x => x.id === data.id); if (f) Object.assign(f, data); saveSettings(userSettings); broadcastBookmarks(); });
+
+ipcMain.handle('ai-classify-bookmarks', async () => {
+    const bms = userSettings.bookmarks || [];
+    if (bms.length === 0) {
+        return { success: false, error: 'No bookmarks to classify.' };
+    }
+
+    const categories = [
+        { id: 'folder_ai', name: 'AI', icon: 'fas fa-wand-magic-sparkles' },
+        { id: 'folder_research', name: 'Research', icon: 'fas fa-graduation-cap' },
+        { id: 'folder_productivity', name: 'Productivity', icon: 'fas fa-briefcase' },
+        { id: 'folder_games', name: 'Games', icon: 'fas fa-gamepad' },
+        { id: 'folder_dev', name: 'Dev', icon: 'fas fa-code' },
+        { id: 'folder_media', name: 'Media', icon: 'fas fa-tv' },
+        { id: 'folder_social', name: 'Social', icon: 'fas fa-comments' },
+        { id: 'folder_shopping', name: 'Shopping', icon: 'fas fa-cart-shopping' },
+        { id: 'folder_news', name: 'News', icon: 'fas fa-newspaper' }
+    ];
+
+    let llmResult = '';
+    const activeEngine = userSettings.aiEngine || 'local';
+    let hasApiKey = false;
+    if (activeEngine === 'gemini' && userSettings.aiApiKey) hasApiKey = true;
+    if (activeEngine === 'openai' && userSettings.openaiApiKey) hasApiKey = true;
+
+    if (hasApiKey) {
+        const prompt = `You are an AI bookmark manager. Group these bookmarks into folders.
+The folders can be any of these predefined categories or custom ones:
+"AI" (icon: "fas fa-wand-magic-sparkles"),
+"Research" (icon: "fas fa-graduation-cap"),
+"Productivity" (icon: "fas fa-briefcase"),
+"Games" (icon: "fas fa-gamepad"),
+"Dev" (icon: "fas fa-code"),
+"Media" (icon: "fas fa-tv"),
+"Social" (icon: "fas fa-comments"),
+"Shopping" (icon: "fas fa-cart-shopping"),
+"News" (icon: "fas fa-newspaper").
+
+Here are the bookmarks to classify:
+${bms.map(b => `- ID: "${b.id}", Title: "${b.title}", URL: "${b.url}"`).join('\n')}
+
+Output JSON format strictly:
+{
+  "folders": [
+     { "id": "predefined_or_new_id", "name": "Folder Name", "icon": "font-awesome-icon-class-like-fas-fa-code" }
+  ],
+  "mappings": [
+     { "bookmarkId": "bookmark_id", "folderId": "folder_id" }
+  ]
+}
+Return ONLY valid raw JSON without any markdown formatting wrappers or explanations.`;
+
+        try {
+            if (activeEngine === 'gemini') {
+                llmResult = await tryGemini(prompt, userSettings.aiApiKey, 'formal');
+            } else if (activeEngine === 'openai') {
+                llmResult = await tryOpenAI(prompt, 'formal');
+            }
+        } catch (e) {
+            console.error('[AI Classify LLM Error]', e);
+        }
+    }
+
+    let classification = null;
+    if (llmResult) {
+        try {
+            let cleanJson = llmResult.trim();
+            if (cleanJson.startsWith('```json')) {
+                cleanJson = cleanJson.substring(7);
+            }
+            if (cleanJson.startsWith('```')) {
+                cleanJson = cleanJson.substring(3);
+            }
+            if (cleanJson.endsWith('```')) {
+                cleanJson = cleanJson.substring(0, cleanJson.length - 3);
+            }
+            classification = JSON.parse(cleanJson.trim());
+        } catch (e) {
+            console.error('[AI Classify JSON Parse Error]', e, llmResult);
+        }
+    }
+
+    if (!classification || !classification.mappings || classification.mappings.length === 0) {
+        const mappings = [];
+        const keywordMap = [
+            { id: 'folder_ai', keywords: ['ai', 'gpt', 'llm', 'claude', 'gemini', 'openai', 'midjourney', 'stable diffusion', 'copilot', 'neural', 'huggingface'] },
+            { id: 'folder_research', keywords: ['scholar', 'research', 'wiki', 'science', 'nature', 'arxiv', 'pubmed', 'journal', 'nasa', 'academic', 'thesis'] },
+            { id: 'folder_productivity', keywords: ['figma', 'notion', 'docs', 'sheet', 'drive', 'trello', 'asana', 'slack', 'zoom', 'meet', 'calendar', 'office', 'teams', 'canva', 'clickup', 'jira'] },
+            { id: 'folder_games', keywords: ['game', 'steam', 'roblox', 'epicgames', 'nintendo', 'twitch', 'discord', 'minecraft', 'playstation', 'xbox', 'arcade', 'chess', 'ign'] },
+            { id: 'folder_dev', keywords: ['github', 'gitlab', 'npm', 'stackoverflow', 'codepen', 'jsfiddle', 'mdn', 'w3schools', 'typescript', 'python', 'vercel', 'netlify', 'aws', 'docker', 'api', 'console'] },
+            { id: 'folder_media', keywords: ['youtube', 'netflix', 'spotify', 'twitch', 'disney', 'anime', 'music', 'soundcloud', 'video', 'movie', 'tv', 'hulu', 'hbo'] },
+            { id: 'folder_social', keywords: ['facebook', 'instagram', 'twitter', 'linkedin', 'reddit', 'whatsapp', 'telegram', 'messenger', 'pinterest', 'tiktok'] },
+            { id: 'folder_shopping', keywords: ['amazon', 'ebay', 'aliexpress', 'shopify', 'etsy', 'store', 'shop', 'walmart', 'target'] },
+            { id: 'folder_news', keywords: ['news', 'bbc', 'cnn', 'nytimes', 'reuters', 'guardian', 'bloomberg', 'medium', 'blog'] }
+        ];
+
+        bms.forEach(b => {
+            const titleLower = b.title.toLowerCase();
+            const urlLower = b.url.toLowerCase();
+            let matchedFolderId = null;
+            for (const map of keywordMap) {
+                if (map.keywords.some(kw => titleLower.includes(kw) || urlLower.includes(kw))) {
+                    matchedFolderId = map.id;
+                    break;
+                }
+            }
+            if (matchedFolderId) {
+                mappings.push({ bookmarkId: b.id, folderId: matchedFolderId });
+            }
+        });
+
+        classification = {
+            folders: categories,
+            mappings
+        };
+    }
+
+    if (!userSettings.folders) userSettings.folders = [];
+
+    const folderIdMap = {};
+    classification.folders.forEach(cf => {
+        let existingFolder = userSettings.folders.find(f => f.name.toLowerCase() === cf.name.toLowerCase());
+        if (!existingFolder) {
+            const newId = Date.now().toString() + Math.random().toString(36).substring(2, 5);
+            existingFolder = {
+                id: newId,
+                name: cf.name,
+                icon: cf.icon || 'fas fa-folder'
+            };
+            userSettings.folders.push(existingFolder);
+        }
+        folderIdMap[cf.id] = existingFolder.id;
+    });
+
+    let count = 0;
+    classification.mappings.forEach(m => {
+        const b = userSettings.bookmarks.find(x => x.id === m.bookmarkId);
+        if (b) {
+            const realFolderId = folderIdMap[m.folderId] || m.folderId;
+            if (userSettings.folders.some(f => f.id === realFolderId)) {
+                b.folderId = realFolderId;
+                count++;
+            }
+        }
+    });
+
+    saveSettings(userSettings);
+    broadcastBookmarks();
+
+    return { success: true, count };
+});
 
 function broadcastBookmarks() {
     const data = { bookmarks: userSettings.bookmarks, folders: userSettings.folders };
@@ -6160,3 +7058,55 @@ powerMonitor.on('on-battery', () => {
 powerMonitor.on('on-ac', () => {
     // Optional: maybe auto-disable? User probably wants choice.
 });
+
+// ── Ocal Memory Saver / Tab Suspension Algorithm ──
+setInterval(() => {
+    try {
+        if (userSettings.memorySaverEnabled === false && !userSettings.batterySaver) return;
+        
+        // Inactivity threshold: 5 minutes on battery, 10 minutes on AC/default
+        const thresholdMs = (userSettings.batterySaver) ? 5 * 60 * 1000 : 10 * 60 * 1000;
+        const now = Date.now();
+
+        views.forEach(v => {
+            if (v.id === activeViewId) return; // Skip active tab
+            if (v.suspended) return; // Skip already suspended tabs
+            
+            const inactiveDuration = now - (v.lastActiveTime || now);
+            if (inactiveDuration < thresholdMs) return;
+
+            // Do not suspend if playing media
+            let isPlaying = false;
+            try {
+                if (v.view && v.view.webContents && !v.view.webContents.isDestroyed()) {
+                    if (v.view.webContents.isPlayingMedia()) isPlaying = true;
+                }
+                if (v.view2 && v.view2.webContents && !v.view2.webContents.isDestroyed()) {
+                    if (v.view2.webContents.isPlayingMedia()) isPlaying = true;
+                }
+            } catch (e) {}
+
+            if (isPlaying) return;
+
+            // Suspend the tab
+            v.suspended = true;
+            if (v.view && v.view.webContents && !v.view.webContents.isDestroyed()) {
+                const u = v.view.webContents.getURL();
+                if (u && !isHomeURL(u) && !u.startsWith('ocal://suspended')) {
+                    v.suspendedUrl = u;
+                    v.view.webContents.loadURL(`ocal://suspended?url=${encodeURIComponent(u)}`);
+                }
+            }
+            if (v.view2 && v.view2.webContents && !v.view2.webContents.isDestroyed()) {
+                const u = v.view2.webContents.getURL();
+                if (u && !isHomeURL(u) && !u.startsWith('ocal://suspended')) {
+                    v.suspendedUrl2 = u;
+                    v.view2.webContents.loadURL(`ocal://suspended?url=${encodeURIComponent(u)}`);
+                }
+            }
+            console.log(`[Memory Saver] Suspended idle tab ${v.id} (inactive for ${Math.round(inactiveDuration / 60000)} min)`);
+        });
+    } catch (e) {
+        console.error('[Memory Saver Error]', e);
+    }
+}, 30000);

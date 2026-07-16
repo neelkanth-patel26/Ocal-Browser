@@ -30,6 +30,7 @@ function showSection(id) {
         let displayName = sectionName;
         if (id === 'homepage') displayName = 'Home Page';
         else if (id === 'ai') displayName = 'AI Assistant';
+        else if (id === 'whatsnew') displayName = "What's New";
         pathSpan.textContent = `settings / ${displayName}`;
     }
 

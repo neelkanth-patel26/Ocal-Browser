@@ -6,32 +6,63 @@
     <title>Ocal Games Hub</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="stylesheet" href="assets/fonts/geist-fonts.css">
+    <link rel="stylesheet" href="assets/fontawesome/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
     <style>
         :root {
-            --accent: #09f0a0;
-            --accent-glow: rgba(9, 240, 160, 0.25);
-            --accent-dim: rgba(9, 240, 160, 0.12);
-            --accent-border: rgba(9, 240, 160, 0.35);
             --bg: #0c0c0c;
-            --radius: 12px;
-            --text-main: #e8e8e8;
-            --text-muted: rgba(255, 255, 255, 0.4);
-            --text-dim: rgba(255, 255, 255, 0.6);
-            --border-flat: rgba(255, 255, 255, 0.05);
-            --font-title: 'Geist', -apple-system, BlinkMacSystemFont, sans-serif;
-            --font-main: 'Geist Mono', monospace;
+            --surface: #111111;
+            --surface-hover: #1e1e1e;
+            --border: #252525;
+            --text-primary: #e8e8e8;
+            --text-secondary: rgba(255, 255, 255, 0.6);
+            --text-muted: rgba(255, 255, 255, 0.38);
+            --accent: #09f0a0;
+            --accent-glow: transparent;
+            --accent-dim: rgba(9, 240, 160, 0.12);
+            --accent-border: #09f0a0;
+            
+            --card-opacity-val: 0.45;
+            --card-blur-val: 20px;
+            --glass-panel-bg: rgba(18, 18, 18, var(--card-opacity-val));
+            --glass-panel-border-val: 1px solid rgba(255, 255, 255, 0.05);
+            --glass-panel-blur-val: blur(var(--card-blur-val));
+            --glass-panel-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
+            --font: 'Outfit', -apple-system, BlinkMacSystemFont, sans-serif;
+        }
+
+        body[data-theme="light"] {
+            --bg: #f5f5f5;
+            --surface: #ffffff;
+            --surface-hover: #f0f0f0;
+            --border: #e0e0e0;
+            --text-primary: #1a1a1a;
+            --text-secondary: #555555;
+            --text-muted: #999999;
+            --accent: #059669;
+            --accent-glow: transparent;
+            --accent-dim: rgba(5, 150, 105, 0.06);
+            --accent-border: var(--accent);
+            
+            --glass-panel-bg: rgba(255, 255, 255, var(--card-opacity-val));
+            --glass-panel-border-val: 1px solid rgba(0, 0, 0, 0.05);
+            --glass-panel-blur-val: blur(var(--card-blur-val));
+            --glass-panel-shadow: 0 4px 16px rgba(0, 0, 0, 0.04);
         }
 
         * {
             box-sizing: border-box;
             margin: 0;
             padding: 0;
+            user-select: none;
+            -webkit-font-smoothing: antialiased;
         }
 
         body {
-            background: var(--bg);
-            color: var(--text-main);
-            font-family: var(--font-main);
+            background: transparent !important;
+            color: var(--text-primary);
+            font-family: var(--font);
+            overflow-x: hidden;
             overflow-y: auto;
             min-height: 100vh;
             display: flex;
@@ -40,200 +71,275 @@
             padding: 80px 20px 60px;
         }
 
+        /* ── Wallpaper Background (matches homepage) ── */
+        .wallpaper-bg {
+            position: fixed;
+            inset: 0;
+            z-index: -2;
+            background: var(--bg) !important;
+            border-radius: 12px;
+        }
+
+        @keyframes gradientBG {
+            0% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+            100% { background-position: 0% 50%; }
+        }
+
+        .wallpaper-bg.animated-aurora {
+            background: linear-gradient(-45deg, #011c18, #033c39, #081e4b, #050410) !important;
+            background-size: 400% 400% !important;
+            animation: gradientBG 15s ease infinite !important;
+        }
+
+        .wallpaper-bg.animated-cosmic {
+            background: linear-gradient(-45deg, #090013, #20003e, #360862, #0d0024) !important;
+            background-size: 400% 400% !important;
+            animation: gradientBG 18s ease infinite !important;
+        }
+
+        .wallpaper-bg.animated-sunset {
+            background: linear-gradient(-45deg, #180902, #36110a, #400d28, #110b1d) !important;
+            background-size: 400% 400% !important;
+            animation: gradientBG 16s ease infinite !important;
+        }
+
+        .wallpaper-bg.animated-cyber {
+            background: linear-gradient(-45deg, #031215, #05272a, #230132, #030814) !important;
+            background-size: 400% 400% !important;
+            animation: gradientBG 12s ease infinite !important;
+        }
+
+        /* Light mode animated gradients */
+        body[data-theme="light"] .wallpaper-bg.animated-aurora {
+            background: linear-gradient(-45deg, #e0f2f1, #b2dfdb, #e8f5e9, #e0f7fa) !important;
+            background-size: 400% 400% !important;
+            animation: gradientBG 15s ease infinite !important;
+        }
+
+        body[data-theme="light"] .wallpaper-bg.animated-cosmic {
+            background: linear-gradient(-45deg, #f3e5f5, #e1bee7, #ede7f6, #f3e5f5) !important;
+            background-size: 400% 400% !important;
+            animation: gradientBG 18s ease infinite !important;
+        }
+
+        body[data-theme="light"] .wallpaper-bg.animated-sunset {
+            background: linear-gradient(-45deg, #fff3e0, #ffe0b2, #fce4ec, #fff8e1) !important;
+            background-size: 400% 400% !important;
+            animation: gradientBG 16s ease infinite !important;
+        }
+
+        body[data-theme="light"] .wallpaper-bg.animated-cyber {
+            background: linear-gradient(-45deg, #e0f7fa, #e1f5fe, #f3e5f5, #e8eaf6) !important;
+            background-size: 400% 400% !important;
+            animation: gradientBG 12s ease infinite !important;
+        }
+
+        /* ── Header ── */
         header {
             text-align: center;
             margin-bottom: 56px;
+            z-index: 10;
+        }
+
+        .brand-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            padding: 6px 16px;
+            border-radius: 100px;
+            background: var(--glass-panel-bg);
+            backdrop-filter: var(--glass-panel-blur-val);
+            -webkit-backdrop-filter: var(--glass-panel-blur-val);
+            border: var(--glass-panel-border-val);
+            box-shadow: var(--glass-panel-shadow);
+            color: var(--accent);
+            font-size: 11px;
+            font-weight: 700;
+            letter-spacing: 2px;
+            text-transform: uppercase;
+            margin-bottom: 16px;
         }
 
         h1 {
-            font-family: var(--font-title);
-            font-size: 36px;
-            font-weight: 800;
-            margin-bottom: 8px;
-            letter-spacing: -1.5px;
-            text-transform: uppercase;
+            font-size: 42px;
+            font-weight: 900;
+            letter-spacing: -0.03em;
+            color: var(--text-primary);
+            line-height: 1.1;
         }
 
-        .accent-text {
+        h1 span {
             color: var(--accent);
         }
 
-        p.subtitle {
-            font-size: 9px;
-            color: var(--text-muted);
-            letter-spacing: 4px;
-            font-weight: 700;
-            text-transform: uppercase;
+        .subtitle {
+            font-size: 14px;
+            color: var(--text-secondary);
+            margin-top: 10px;
         }
 
+        /* ── Games Container ── */
         .games-container {
             width: 100%;
-            max-width: 900px;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
+            max-width: 960px;
+            z-index: 10;
         }
 
         .games-grid {
-            width: 100%;
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-            gap: 40px;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 28px;
+            width: 100%;
+        }
+
+        @media (max-width: 900px) {
+            .games-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+        }
+
+        @media (max-width: 600px) {
+            .games-grid {
+                grid-template-columns: 1fr;
+            }
         }
 
         .game-card {
-            background: transparent !important;
-            border: none !important;
-            border-bottom: 1px solid var(--border-flat) !important;
-            padding: 0 0 24px !important;
+            background: var(--glass-panel-bg) !important;
+            backdrop-filter: var(--glass-panel-blur-val);
+            -webkit-backdrop-filter: var(--glass-panel-blur-val);
+            border: var(--glass-panel-border-val) !important;
+            border-radius: 16px;
+            padding: 32px 24px;
             cursor: pointer;
-            transition: all 0.25s ease-in-out;
+            transition: border-color 0.25s, transform 0.25s, box-shadow 0.25s;
             text-decoration: none;
             color: inherit;
-            position: relative;
-            overflow: hidden;
-            display: flex;
-            flex-direction: column;
-        }
-
-        .game-card:hover {
-            border-bottom-color: var(--accent) !important;
-        }
-
-        .card-inner {
-            background: transparent !important;
-            padding: 0;
-            height: 100%;
             display: flex;
             flex-direction: column;
             align-items: center;
             text-align: center;
-            position: relative;
-            z-index: 2;
-            flex: 1;
-            justify-content: space-between;
+            box-shadow: var(--glass-panel-shadow);
+        }
+
+        .game-card:hover {
+            border-color: var(--accent) !important;
+            transform: translateY(-4px);
         }
 
         .icon-container {
-            width: auto;
-            height: auto;
-            background: transparent !important;
-            border: none !important;
+            width: 72px;
+            height: 72px;
+            border-radius: 18px;
+            background: rgba(0, 0, 0, 0.15);
+            border: var(--glass-panel-border-val);
             display: flex;
             align-items: center;
             justify-content: center;
-            margin-bottom: 16px;
-            font-size: 40px;
+            margin-bottom: 24px;
+            font-size: 32px;
             color: var(--accent);
-            transition: all 0.2s ease-in-out;
+            transition: transform 0.3s;
         }
 
         .game-card:hover .icon-container {
-            transform: scale(1.1);
+            transform: scale(1.1) rotate(-5deg);
         }
 
         h2 {
-            font-family: var(--font-title);
-            font-size: 18px;
-            font-weight: 700;
-            margin-bottom: 12px;
-            color: #fff;
+            font-size: 20px;
+            font-weight: 800;
+            margin-bottom: 10px;
+            color: var(--text-primary);
+            letter-spacing: -0.01em;
         }
 
         .desc {
-            font-family: var(--font-title);
-            font-size: 13px;
-            color: var(--text-muted);
-            line-height: 1.5;
-            margin-bottom: 20px;
-            max-width: 220px;
+            font-size: 13.5px;
+            color: var(--text-secondary);
+            line-height: 1.6;
+            margin-bottom: 24px;
             flex: 1;
         }
 
-        .stats {
-            display: flex;
-            gap: 12px;
-            padding: 4px 12px;
-            background: transparent !important;
-            border: none !important;
-            font-size: 10px;
+        .stats-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            padding: 6px 14px;
+            border-radius: 20px;
+            background: rgba(0, 0, 0, 0.15);
+            border: var(--glass-panel-border-val);
+            font-size: 11px;
             font-weight: 700;
             color: var(--accent);
-            font-family: var(--font-main);
-            letter-spacing: 1px;
+            letter-spacing: 0.5px;
         }
 
-        .stats span b {
-            color: var(--text-muted);
-            margin-right: 6px;
-            font-weight: 500;
-        }
-
-        .glow {
-            display: none !important;
+        .stats-badge i {
+            font-size: 10px;
         }
 
         .footer {
             margin-top: 80px;
-            font-size: 8px;
-            font-weight: 700;
+            font-size: 11px;
+            font-weight: 600;
             color: var(--text-muted);
+            letter-spacing: 1px;
             text-transform: uppercase;
-            letter-spacing: 2px;
-            opacity: 0.5;
+            z-index: 10;
         }
     </style>
 </head>
-<body>
+<body data-theme="dark"> <!-- Updated dynamically by JS -->
+
+    <!-- Premium Wallpaper Background to enable perfect corner clipping -->
+    <div class="wallpaper-bg"></div>
+
     <header>
-        <h1>Ocal <span class="accent-text">Games</span></h1>
-        <p class="subtitle">Premium Offline Arcade</p>
+        <div class="brand-badge">
+            <i class="fas fa-gamepad"></i> Arcade
+        </div>
+        <h1>Ocal <span>Games</span></h1>
+        <p class="subtitle">Premium offline retro arcade experiences</p>
     </header>
 
     <div class="games-container">
         <div class="games-grid">
             <!-- Ocal Pulse -->
             <a href="game.html" class="game-card">
-                <div class="glow"></div>
-                <div class="card-inner">
-                    <div class="icon-container">
-                        <span>⚡</span>
-                    </div>
-                    <h2>Ocal Pulse</h2>
-                    <p class="desc">A high-speed neon runner through the synthwave grid.</p>
-                    <div class="stats">
-                        <span id="pulse-score"><b>BEST</b> ---</span>
-                    </div>
+                <div class="icon-container">
+                    <i class="fas fa-bolt"></i>
+                </div>
+                <h2>Ocal Pulse</h2>
+                <p class="desc">A high-speed neon runner through the synthwave grid.</p>
+                <div class="stats-badge" id="pulse-score">
+                    <i class="fas fa-trophy"></i> BEST: ---
                 </div>
             </a>
 
             <!-- Ocal Grid -->
             <a href="tetris.html" class="game-card">
-                <div class="glow" style="background: radial-gradient(circle at center, var(--accent) 0%, transparent 70%);"></div>
-                <div class="card-inner">
-                    <div class="icon-container">
-                        <span>🧱</span>
-                    </div>
-                    <h2>Ocal Grid</h2>
-                    <p class="desc">Master the blocks in this high-fidelity glass Tetris experience.</p>
-                    <div class="stats">
-                        <span id="grid-score"><b>BEST</b> ---</span>
-                    </div>
+                <div class="icon-container">
+                    <i class="fas fa-cubes"></i>
+                </div>
+                <h2>Ocal Grid</h2>
+                <p class="desc">Master the blocks in this high-fidelity glass Tetris experience.</p>
+                <div class="stats-badge" id="grid-score">
+                    <i class="fas fa-trophy"></i> BEST: ---
                 </div>
             </a>
 
             <!-- Ocal Snake -->
             <a href="snake.html" class="game-card">
-                <div class="glow" style="background: radial-gradient(circle at center, var(--accent) 0%, transparent 70%);"></div>
-                <div class="card-inner">
-                    <div class="icon-container">
-                        <span>🐍</span>
-                    </div>
-                    <h2>Ocal Snake</h2>
-                    <p class="desc">Slither through the grid in this neon-infused data-bit hunter.</p>
-                    <div class="stats">
-                        <span id="snake-score"><b>BEST</b> ---</span>
-                    </div>
+                <div class="icon-container">
+                    <i class="fas fa-ring"></i>
+                </div>
+                <h2>Ocal Snake</h2>
+                <p class="desc">Slither through the grid in this neon-infused data-bit hunter.</p>
+                <div class="stats-badge" id="snake-score">
+                    <i class="fas fa-trophy"></i> BEST: ---
                 </div>
             </a>
         </div>
@@ -242,40 +348,56 @@
     <div class="footer">Ocal Entertainment Protocol v1.2</div>
 
     <script>
+        // ── Dynamic Theme & Wallpaper Integration from localStorage ──
+        (function () {
+            const t = localStorage.getItem('ocal-settings-theme');
+            if (t) document.body.setAttribute('data-theme', t);
+            
+            const a = localStorage.getItem('ocal-settings-accent');
+            if (a) {
+                document.documentElement.style.setProperty('--accent', a);
+                document.documentElement.style.setProperty('--accent-glow', `color-mix(in srgb, ${a} 30%, transparent)`);
+                document.documentElement.style.setProperty('--accent-dim', `color-mix(in srgb, ${a} 12%, transparent)`);
+                document.documentElement.style.setProperty('--accent-border', a);
+            }
+
+            const op = localStorage.getItem('ocal-custom-opacity');
+            if (op !== null) {
+                document.documentElement.style.setProperty('--card-opacity-val', op / 100);
+            }
+
+            const bl = localStorage.getItem('ocal-custom-blur');
+            if (bl !== null) {
+                document.documentElement.style.setProperty('--card-blur-val', bl + 'px');
+            }
+
+            const bgVal = localStorage.getItem('ocal-custom-bg') || 'static';
+            const wallpaperBg = document.querySelector('.wallpaper-bg');
+            if (wallpaperBg && bgVal !== 'static') {
+                wallpaperBg.classList.add('animated-' + bgVal);
+            }
+        })();
+
         // Load high scores from localStorage
         const pulseBest = localStorage.getItem('ocalPulseHighScore');
         const gridBest = localStorage.getItem('ocalGridHighScore');
         const snakeBest = localStorage.getItem('ocalSnakeHighScore');
 
-        if (pulseBest) document.getElementById('pulse-score').innerHTML = `<b>BEST</b> ${pulseBest}`;
-        if (gridBest) document.getElementById('grid-score').innerHTML = `<b>BEST</b> ${gridBest}`;
-        if (snakeBest) document.getElementById('snake-score').innerHTML = `<b>BEST</b> ${snakeBest}`;
+        if (pulseBest) document.getElementById('pulse-score').innerHTML = `<i class="fas fa-trophy"></i> BEST: ${pulseBest}`;
+        if (gridBest) document.getElementById('grid-score').innerHTML = `<i class="fas fa-trophy"></i> BEST: ${gridBest}`;
+        if (snakeBest) document.getElementById('snake-score').innerHTML = `<i class="fas fa-trophy"></i> BEST: ${snakeBest}`;
 
-        // Apply dynamic accent color
-        function applyAccent(color) {
-            if (!color) return;
-            document.documentElement.style.setProperty('--accent', color);
-            
-            const hexToRgba = (hex, alpha) => {
-                const result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
-                if (!result) return `rgba(9, 240, 160, ${alpha})`;
-                const r = parseInt(result[1], 16);
-                const g = parseInt(result[2], 16);
-                const b = parseInt(result[3], 16);
-                return `rgba(${r}, ${g}, ${b}, ${alpha})`;
-            };
-            
-            document.documentElement.style.setProperty('--accent-glow', hexToRgba(color, 0.25));
-            document.documentElement.style.setProperty('--accent-dim', hexToRgba(color, 0.15));
-            document.documentElement.style.setProperty('--accent-border', hexToRgba(color, 0.35));
-        }
-
+        // Sync settings dynamically from Electron API
         if (window.electronAPI) {
             window.electronAPI.getSettings().then(s => {
-                if (s.accentColor) applyAccent(s.accentColor);
+                if (s.accentColor) {
+                    document.documentElement.style.setProperty('--accent', s.accentColor);
+                }
             });
             window.electronAPI.onSettingsChanged((s) => {
-                if (s.accentColor) applyAccent(s.accentColor);
+                if (s.accentColor) {
+                    document.documentElement.style.setProperty('--accent', s.accentColor);
+                }
             });
         }
     </script>

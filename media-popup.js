@@ -67,11 +67,15 @@ function renderMediaUI(list) {
     mediaListEl.innerHTML = list.map((item, index) => {
         const icon = item.type === 'video' ? 'fa-video' : (item.type === 'stream' ? 'fa-bolt' : 'fa-image');
         const meta = item.type === 'stream' ? 'READY TO STREAM' : (item.type === 'image' ? (item.size || 'Web Image') : (item.quality || 'Standard Quality'));
-        const btnIcon = item.type === 'stream' ? 'fa-play' : 'fa-arrow-down';
+        const btnIcon = item.type === 'stream' ? 'fa-arrow-down' : 'fa-arrow-down';
         
+        const mediaIconContent = item.type === 'image'
+            ? `<img src="${item.url}" style="width: 100%; height: 100%; object-fit: cover; border-radius: 4px;" onerror="this.outerHTML='<i class=\\'fas fa-image\\'></i>'" />`
+            : `<i class="fas ${icon}"></i>`;
+            
         return `
             <div class="media-item" style="${item.type === 'stream' ? 'border-left: 3px solid var(--accent);' : ''}">
-                <div class="media-icon"><i class="fas ${icon}"></i></div>
+                <div class="media-icon">${mediaIconContent}</div>
                 <div class="media-info">
                     <div class="media-title">${item.title}</div>
                     <div class="media-meta">${item.origin} • ${meta}</div>
@@ -85,7 +89,12 @@ function renderMediaUI(list) {
 }
 
 window.downloadItem = (url) => {
-    ipcRenderer.send('download-media', { url });
+    if (url.includes('youtube.com/') || url.includes('youtu.be/')) {
+        const dlUrl = url.replace('youtube.com', 'ssyoutube.com').replace('youtu.be', 'ssyoutube.com');
+        ipcRenderer.send('open-external', dlUrl);
+    } else {
+        ipcRenderer.send('download-media', { url });
+    }
 };
 
 downloadAllBtn.onclick = () => {
