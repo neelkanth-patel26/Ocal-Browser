@@ -925,8 +925,8 @@ function createMainWindow() {
             if (startupUrl) {
                 createNewTab(startupUrl);
             } else {
-                if (userSettings.lastVersion !== '7.7.02') {
-                    userSettings.lastVersion = '7.7.02';
+                if (userSettings.lastVersion !== '7.7.03') {
+                    userSettings.lastVersion = '7.7.03';
                     saveSettings(userSettings);
                     createNewTab('ocal://whats-new');
                 } else {
