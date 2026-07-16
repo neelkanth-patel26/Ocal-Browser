@@ -71,7 +71,7 @@ app.userAgentFallback = OCAL_USER_AGENT;
 
 // Single Instance Lock
 const gotTheLock = app.requestSingleInstanceLock();
-const isUninstallSurvey = process.argv.includes('--uninstall-survey');
+
 
 function setupInteractionDismissal(contents) {
     if (!contents) return;
@@ -101,10 +101,7 @@ function getArgumentURL(argv) {
     return candidate;
 }
 
-if (process.argv.includes('--install') || process.argv.includes('--squirrel-install')) {
-    require('./installer-main.js');
-    return;
-}
+
 
 if (!gotTheLock) {
     app.quit();
@@ -828,10 +825,7 @@ function getAppIconPath() {
 }
 
 function createMainWindow() {
-    if (isUninstallSurvey) {
-        createSurveyWindow();
-        return;
-    }
+
 
     mainWindow = new BrowserWindow({
         width: 1350,
@@ -925,8 +919,8 @@ function createMainWindow() {
             if (startupUrl) {
                 createNewTab(startupUrl);
             } else {
-                if (userSettings.lastVersion !== '7.7.03') {
-                    userSettings.lastVersion = '7.7.03';
+                if (userSettings.lastVersion !== '7.7.04') {
+                    userSettings.lastVersion = '7.7.04';
                     saveSettings(userSettings);
                     createNewTab('ocal://whats-new');
                 } else {
@@ -964,38 +958,7 @@ function createMainWindow() {
     });
 }
 
-function createSurveyWindow() {
-    const surveyWindow = new BrowserWindow({
-        width: 600,
-        height: 600,
-        frame: false,
-        resizable: false,
-        backgroundColor: '#0c0c0e',
-        backgroundMaterial: 'mica',
-        webPreferences: {
-            preload: path.join(__dirname, 'preload.js'),
-            contextIsolation: true,
-            nodeIntegration: false,
-            devTools: false
-        },
-    });
 
-    surveyWindow.loadFile(path.join(__dirname, 'uninstaller', 'index.html'));
-
-    ipcMain.once('uninstall-survey-complete', (e, mailtoLink) => {
-        shell.openExternal(mailtoLink);
-        setTimeout(() => {
-            app.quit();
-            // Safety thermal exit if Chromium/Electron doesn't shut down in time
-            setTimeout(() => process.exit(0), 2000);
-        }, 500);
-    });
-
-    ipcMain.once('uninstall-survey-close', () => {
-        app.quit();
-        setTimeout(() => process.exit(0), 1000);
-    });
-}
 
 app.on('certificate-error', (event, webContents, url, error, certificate, callback) => {
     event.preventDefault();
@@ -5821,7 +5784,7 @@ function updateHistory(view, url) {
             (url.startsWith('file://') && url.endsWith('.html')) ||
             [
                 'settings.html', 'site-settings.html', 'downloads.html', 'extensions.html',
-                'game.html', 'games.html', 'home.html', 'offline.html', 'uninstaller',
+                'game.html', 'games.html', 'home.html', 'offline.html',
                 'pip.html', 'sidebars.html', 'sidepanel.html', 'suggestions.html',
                 'tab-context.html', 'tabgroup.html', 'shield-popup.html', 'site-info.html',
                 'media-popup.html', 'ai-sidebar.html', 'certificate-viewer.html',
@@ -5871,10 +5834,7 @@ function setupGoogleLoginPartition() {
 }
 
 app.whenReady().then(async () => {
-    if (isUninstallSurvey) {
-        createSurveyWindow();
-        return;
-    }
+
 
     // 1. Core Extension Loading (Highest Priority)
     await extensionManager.loadAll();
