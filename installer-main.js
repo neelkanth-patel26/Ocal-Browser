@@ -34,7 +34,7 @@ function createInstallerWindow() {
     installerWindow.webContents.on('did-finish-load', () => {
         // Detect Update State
         const installDir = path.join(process.env.LOCALAPPDATA, 'Ocal');
-        const isUpdate = fs.existsSync(path.join(installDir, 'ocal.exe'));
+        const isUpdate = fs.existsSync(path.join(installDir, 'Ocal Browser.exe'));
         installerWindow.webContents.send('installer-state', { isUpdate });
     });
 
