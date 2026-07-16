@@ -56,7 +56,7 @@ $setupFile = Get-ChildItem "dist-inno\Ocal-*-Setup.exe" -ErrorAction SilentlyCon
 if ($setupFile) {
     Write-Host "Setup Executable: $($setupFile.FullName)" -ForegroundColor White
 } else {
-    Write-Host "Binaries location: .\out\ocal-win32-x64\ocal.exe" -ForegroundColor White
+    Write-Host "Binaries location: .\dist-builder\win-unpacked\Ocal Browser.exe" -ForegroundColor White
 }
 
 Write-Host "The new 'Antigravity' installer UI will launch automatically when this setup finishes." -ForegroundColor Cyan

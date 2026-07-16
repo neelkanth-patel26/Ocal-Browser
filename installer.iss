@@ -1,14 +1,14 @@
 ; ============================================================
 ;  Ocal Browser - Inno Setup 6 Installer
-;  Version  : 7.7.01  (Stable)
+;  Version  : 7.7.02  (Stable)
 ;  Builder  : Gaming Network Studio Media Group
 ;  Compiler : Inno Setup 6
 ; ============================================================
 
 [Setup]
 AppName=Ocal Browser
-AppVersion=7.7.01
-AppVerName=Ocal Browser 7.7.01
+AppVersion=7.7.02
+AppVerName=Ocal Browser 7.7.02
 AppPublisher=Gaming Network Studio Media Group
 AppPublisherURL=https://github.com/neelkanth-patel26/Ocal-Browser
 AppSupportURL=https://github.com/neelkanth-patel26/Ocal-Browser/issues
@@ -17,7 +17,7 @@ AppCopyright=Copyright (C) 2026 Gaming Network Studio Media Group
 DefaultDirName={autopf}\Ocal
 DefaultGroupName=Ocal
 OutputDir=dist-inno
-OutputBaseFilename=Ocal-7.7.01-Setup
+OutputBaseFilename=Ocal-7.7.02-Setup
 SetupIconFile=icon.ico
 Compression=lzma2/ultra64
 SolidCompression=yes
@@ -28,17 +28,17 @@ ArchitecturesInstallIn64BitMode=x64
 LicenseFile=license.txt
 MinVersion=10.0.17763
 UninstallDisplayIcon={app}\icon.ico
-UninstallDisplayName=Ocal Browser 7.7.01
-VersionInfoVersion=7.7.0.1
+UninstallDisplayName=Ocal Browser 7.7.02
+VersionInfoVersion=7.7.0.2
 VersionInfoCompany=Gaming Network Studio Media Group
 VersionInfoDescription=Ocal Browser Installer
 VersionInfoProductName=Ocal Browser
-VersionInfoProductVersion=7.7.01
+VersionInfoProductVersion=7.7.02
 WizardStyle=modern
 WizardResizable=no
 ShowLanguageDialog=no
 CloseApplications=yes
-CloseApplicationsFilter=ocal.exe
+CloseApplicationsFilter=Ocal Browser.exe
 
 ; ── Catalog / Component Selection ──────────────────────────
 [Types]
@@ -61,12 +61,15 @@ InstallingCore=Installing Ocal Browser core files...
 InstallingPDF=Registering PDF viewer association...
 InstallingUninstUI=Copying custom uninstaller UI...
 LaunchAfterInstall=Launch Ocal Browser now
-ReleaseNotes=View release notes for v7.7.01
+ReleaseNotes=View release notes for v7.7.02
 
 ; ── File Catalog ────────────────────────────────────────────
+[InstallDelete]
+Type: files; Name: "{app}\ocal.exe"
+
 [Files]
 ; Core executable
-Source: "dist-builder\win-unpacked\Ocal Browser.exe"; DestDir: "{app}"; DestName: "ocal.exe"; Flags: ignoreversion; Components: core
+Source: "dist-builder\win-unpacked\Ocal Browser.exe"; DestDir: "{app}"; Flags: ignoreversion; Components: core
 ; All supporting Electron runtime files
 Source: "dist-builder\win-unpacked\*"; DestDir: "{app}"; Excludes: "Ocal Browser.exe"; Flags: ignoreversion recursesubdirs createallsubdirs; Components: core
 ; Custom uninstaller UI
@@ -77,9 +80,9 @@ Source: "icon.ico";     DestDir: "{app}"; Flags: ignoreversion; Components: core
 
 ; ── Shortcuts ───────────────────────────────────────────────
 [Icons]
-Name: "{group}\Ocal Browser";          Filename: "{app}\ocal.exe"; IconFilename: "{app}\icon.ico"; AppUserModelID: "com.ocal.browser"
+Name: "{autoprograms}\Ocal Browser";          Filename: "{app}\Ocal Browser.exe"; IconFilename: "{app}\icon.ico"; AppUserModelID: "com.ocal.browser"
 Name: "{group}\Uninstall Ocal Browser"; Filename: "{uninstallexe}"
-Name: "{autodesktop}\Ocal Browser";    Filename: "{app}\ocal.exe"; Tasks: desktopicon; IconFilename: "{app}\icon.ico"; AppUserModelID: "com.ocal.browser"
+Name: "{autodesktop}\Ocal Browser";    Filename: "{app}\Ocal Browser.exe"; Tasks: desktopicon; IconFilename: "{app}\icon.ico"; AppUserModelID: "com.ocal.browser"
 
 ; ── Registry ────────────────────────────────────────────────
 [Registry]
@@ -87,16 +90,16 @@ Name: "{autodesktop}\Ocal Browser";    Filename: "{app}\ocal.exe"; Tasks: deskto
 Root: HKCR; Subkey: ".pdf";                          ValueType: string; ValueName: "";                ValueData: "Ocal.PDF";                                    Flags: uninsdeletevalue;  Components: pdfviewer
 Root: HKCR; Subkey: "Ocal.PDF";                      ValueType: string; ValueName: "";                ValueData: "Ocal PDF Document";                           Flags: uninsdeletekey;    Components: pdfviewer
 Root: HKCR; Subkey: "Ocal.PDF\DefaultIcon";          ValueType: string; ValueName: "";                ValueData: "{app}\pdf-icon.ico,0";                        Flags: uninsdeletekey;    Components: pdfviewer
-Root: HKCR; Subkey: "Ocal.PDF\shell\open\command";   ValueType: string; ValueName: "";                ValueData: """{app}\ocal.exe"" ""%1""";                   Flags: uninsdeletekey;    Components: pdfviewer
+Root: HKCR; Subkey: "Ocal.PDF\shell\open\command";   ValueType: string; ValueName: "";                ValueData: """{app}\Ocal Browser.exe"" ""%1""";                   Flags: uninsdeletekey;    Components: pdfviewer
 Root: HKCR; Subkey: "Ocal.PDF\shell\open";           ValueType: string; ValueName: "FriendlyAppName"; ValueData: "Ocal Browser";                                Flags: uninsdeletekey;    Components: pdfviewer
 ; App registration for Add/Remove Programs detail
-Root: HKLM; Subkey: "Software\OcalBrowser"; ValueType: string; ValueName: "Version";      ValueData: "7.7.01";                                              Flags: uninsdeletekey
+Root: HKLM; Subkey: "Software\OcalBrowser"; ValueType: string; ValueName: "Version";      ValueData: "7.7.02";                                              Flags: uninsdeletekey
 Root: HKLM; Subkey: "Software\OcalBrowser"; ValueType: string; ValueName: "InstallPath"; ValueData: "{app}";                                                  Flags: uninsdeletekey
 
 ; ── Post-Install Run ────────────────────────────────────────
 [Run]
-Filename: "{app}\ocal.exe"; Parameters: "--install";      Description: "{cm:LaunchAfterInstall}";  Flags: nowait postinstall skipifsilent
-Filename: "https://github.com/neelkanth-patel26/Ocal-Browser/releases/tag/v7.7.01"; Description: "{cm:ReleaseNotes}"; Flags: shellexec postinstall skipifsilent unchecked
+Filename: "{app}\Ocal Browser.exe"; Parameters: "--install";      Description: "{cm:LaunchAfterInstall}";  Flags: nowait postinstall skipifsilent
+Filename: "https://github.com/neelkanth-patel26/Ocal-Browser/releases/tag/v7.7.02"; Description: "{cm:ReleaseNotes}"; Flags: shellexec postinstall skipifsilent unchecked
 
 [UninstallRun]
-Filename: "{app}\ocal.exe"; Parameters: "--uninstall-survey"; Flags: runascurrentuser waituntilterminated
+Filename: "{app}\Ocal Browser.exe"; Parameters: "--uninstall-survey"; Flags: runascurrentuser waituntilterminated
