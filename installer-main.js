@@ -2,6 +2,14 @@ const { app, BrowserWindow, ipcMain, dialog, shell } = require('electron');
 const path = require('path');
 const fs = require('fs');
 
+function getAppIconPath() {
+    const customPath = path.join(process.resourcesPath, '..', 'icon.ico');
+    if (fs.existsSync(customPath)) {
+        return customPath;
+    }
+    return path.join(__dirname, 'icon.ico');
+}
+
 let installerWindow;
 
 function createInstallerWindow() {
@@ -9,7 +17,7 @@ function createInstallerWindow() {
         width: 800,
         height: 520,
         frame: false,
-        icon: path.join(__dirname, 'icon.ico'),
+        icon: getAppIconPath(),
         transparent: true,
         resizable: false,
         backgroundColor: '#00000000',
