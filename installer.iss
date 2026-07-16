@@ -1,12 +1,12 @@
 [Setup]
 AppName=Ocal Browser
-AppVersion=7.6.12
+AppVersion=7.6.13
 AppPublisher=Gaming Network Studio Media Group
 AppPublisherURL=https://github.com/neelkanth-patel26/Ocal-Browser
 DefaultDirName={autopf}\Ocal
 DefaultGroupName=Ocal
 OutputDir=dist-inno
-OutputBaseFilename=Ocal-7.6.12-Setup
+OutputBaseFilename=Ocal-7.6.13-Setup
 SetupIconFile=icon.ico
 Compression=lzma
 SolidCompression=yes
