@@ -108,6 +108,7 @@ if (process.argv.includes('--install') || process.argv.includes('--squirrel-inst
 
 if (!gotTheLock) {
     app.quit();
+    process.exit(0);
 } else {
     app.on('second-instance', (event, commandLine, workingDirectory) => {
         if (mainWindow) {
@@ -829,7 +830,7 @@ function createMainWindow() {
         height: 900,
         minWidth: 1000,
         minHeight: 700,
-        title: 'Ocal',
+        title: 'Ocal Browser',
         icon: path.join(__dirname, 'icon.ico'),
         frame: false,
         transparent: false,
@@ -913,10 +914,8 @@ function createMainWindow() {
         // Always open a tab on startup
         if (views.length === 0) {
             const startupUrl = getArgumentURL(process.argv);
-            if (userSettings.lastVersion !== '7.1.00') {
-                userSettings.lastVersion = '7.1.00';
-                saveSettings(userSettings);
-                createNewTab('ocal://whats-new');
+                if (userSettings.lastVersion !== '7.7.00') {
+                    userSettings.lastVersion = '7.7.00';
                 if (startupUrl) {
                     createNewTab(startupUrl);
                 }
@@ -2278,9 +2277,17 @@ function hideWebApp() {
     }
     webAppOpen = false;
     currentWebAppUrl = null;
-    if (webAppView && mainWindow) mainWindow.removeBrowserView(webAppView);
-    mainWindow.webContents.send('web-app-closed');
-    updateViewBounds();
+    if (webAppView && mainWindow && !mainWindow.isDestroyed()) {
+        if (mainWindow.getBrowserViews().includes(webAppView)) {
+            mainWindow.removeBrowserView(webAppView);
+        }
+    }
+    if (mainWindow && !mainWindow.isDestroyed() && mainWindow.webContents && !mainWindow.webContents.isDestroyed()) {
+        mainWindow.webContents.send('web-app-closed');
+    }
+    if (mainWindow && !mainWindow.isDestroyed()) {
+        updateViewBounds();
+    }
 }
 
 function showWebApp(url) {

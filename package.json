@@ -1,6 +1,6 @@
 {
   "name": "ocal",
-  "version": "7.6.13",
+  "version": "7.7.00",
   "description": "Ocal Browser - Fast, Secure, and Agentic.",
   "main": "main.js",
   "author": "Gaming Network Studio Media Group",
@@ -10,7 +10,8 @@
     "make": "electron-forge make",
     "publish": "electron-forge publish",
     "build-exe": "electron-builder --win portable",
-    "build-premium": "electron-builder --win nsis"
+    "build-premium": "electron-builder --win nsis",
+    "build-inno": "powershell -ExecutionPolicy Bypass -File build-dist.ps1"
   },
   "keywords": [],
   "license": "ISC",

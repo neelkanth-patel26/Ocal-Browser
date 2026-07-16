@@ -37,6 +37,8 @@ VersionInfoProductVersion=7.7.00
 WizardStyle=modern
 WizardResizable=no
 ShowLanguageDialog=no
+CloseApplications=yes
+CloseApplicationsFilter=ocal.exe
 
 ; ── Catalog / Component Selection ──────────────────────────
 [Types]
