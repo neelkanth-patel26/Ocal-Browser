@@ -1,12 +1,12 @@
 [Setup]
 AppName=Ocal Browser
-AppVersion=7.5.00
+AppVersion=7.6.12
 AppPublisher=Gaming Network Studio Media Group
 AppPublisherURL=https://github.com/neelkanth-patel26/Ocal-Browser
 DefaultDirName={autopf}\Ocal
 DefaultGroupName=Ocal
 OutputDir=dist-inno
-OutputBaseFilename=Ocal-7.5.00-Setup
+OutputBaseFilename=Ocal-7.6.12-Setup
 SetupIconFile=icon.ico
 Compression=lzma
 SolidCompression=yes
@@ -26,8 +26,8 @@ Source: "pdf-icon.ico"; DestDir: "{app}"; Flags: ignoreversion
 Source: "icon.ico"; DestDir: "{app}"; Flags: ignoreversion
 
 [Icons]
-Name: "{group}\Ocal Browser"; Filename: "{app}\ocal.exe"; IconFilename: "{app}\icon.ico"
-Name: "{autodesktop}\Ocal Browser"; Filename: "{app}\ocal.exe"; Tasks: desktopicon; IconFilename: "{app}\icon.ico"
+Name: "{group}\Ocal Browser"; Filename: "{app}\ocal.exe"; IconFilename: "{app}\icon.ico"; AppUserModelID: "com.ocal.browser"
+Name: "{autodesktop}\Ocal Browser"; Filename: "{app}\ocal.exe"; Tasks: desktopicon; IconFilename: "{app}\icon.ico"; AppUserModelID: "com.ocal.browser"
 
 [Registry]
 Root: HKCR; Subkey: ".pdf"; ValueType: string; ValueName: ""; ValueData: "Ocal.PDF"; Flags: uninsdeletevalue
