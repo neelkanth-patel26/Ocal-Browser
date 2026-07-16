@@ -1,0 +1,16 @@
+{
+  "name": "ocal",
+  "productName": "Ocal Browser",
+  "version": "7.7.04",
+  "description": "Ocal Browser - Fast, Secure, and Agentic.",
+  "main": "main.js",
+  "author": "Gaming Network Studio Media Group",
+  "license": "ISC",
+  "dependencies": {
+    "@fontsource/geist-mono": "^5.2.8",
+    "@fontsource/geist-sans": "^5.2.5",
+    "adm-zip": "^0.6.0",
+    "cross-fetch": "^4.1.0",
+    "electron-squirrel-startup": "^1.0.1"
+  }
+}

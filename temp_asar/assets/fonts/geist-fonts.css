@@ -1,0 +1,26 @@
+/* Geist Sans - Latin 400 (Regular) */
+@font-face {
+  font-family: 'Geist Sans';
+  font-style: normal;
+  font-display: swap;
+  font-weight: 400;
+  src: url(./geist-sans/geist-sans-latin-400-normal.woff2) format('woff2'), url(./geist-sans/geist-sans-latin-400-normal.woff) format('woff');
+}
+
+/* Geist Sans - Latin 700 (Bold) */
+@font-face {
+  font-family: 'Geist Sans';
+  font-style: normal;
+  font-display: swap;
+  font-weight: 700;
+  src: url(./geist-sans/geist-sans-latin-700-normal.woff2) format('woff2'), url(./geist-sans/geist-sans-latin-700-normal.woff) format('woff');
+}
+
+/* Geist Mono - Latin 400 (Regular) */
+@font-face {
+  font-family: 'Geist Mono';
+  font-style: normal;
+  font-display: swap;
+  font-weight: 400;
+  src: url(./geist-mono/geist-mono-latin-400-normal.woff2) format('woff2'), url(./geist-mono/geist-mono-latin-400-normal.woff) format('woff');
+}

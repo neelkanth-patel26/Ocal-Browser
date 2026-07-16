@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>File Manager | Ocal Browser</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Geist+Mono:wght@100..900&family=Geist:wght@100..900&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="assets/fontawesome/css/all.min.css">
+    <link rel="stylesheet" href="file-manager.css">
+</head>
+<body class="pro-studio">
+    <div class="app-container">
+        <!-- Sidebar Navigation -->
+        <aside class="sidebar">
+            <div class="sidebar-header">
+                <div class="brand-cluster">
+                    <div class="brand-shell">
+                        <i class="fas fa-folder-open brand-icon"></i>
+                    </div>
+                    <div class="brand-text">
+                        <span class="brand-eyebrow">FILE SYSTEM</span>
+                        <span class="brand-name">File Manager</span>
+                    </div>
+                </div>
+            </div>
+            
+            <nav class="sidebar-nav">
+                <div class="nav-section">
+                    <div class="section-title">Quick Access</div>
+                    <button class="nav-item active" data-folder="home">
+                        <i class="fas fa-house"></i> <span>Home</span>
+                    </button>
+                    <button class="nav-item" data-folder="downloads">
+                        <i class="fas fa-download"></i> <span>Downloads</span>
+                    </button>
+                    <button class="nav-item" data-folder="documents">
+                        <i class="fas fa-file-lines"></i> <span>Documents</span>
+                    </button>
+                    <button class="nav-item" data-folder="desktop">
+                        <i class="fas fa-desktop"></i> <span>Desktop</span>
+                    </button>
+                </div>
+                
+                <div class="nav-section">
+                    <div class="section-title">Media</div>
+                    <button class="nav-item" data-folder="pictures"><i class="fas fa-image"></i> <span>Pictures</span></button>
+                    <button class="nav-item" data-folder="videos"><i class="fas fa-video"></i> <span>Videos</span></button>
+                    <button class="nav-item" data-folder="music"><i class="fas fa-music"></i> <span>Music</span></button>
+                </div>
+            </nav>
+
+            <div class="sidebar-footer">
+                <div class="security-cluster">
+                    <div class="security-badge">
+                        <i class="fas fa-shield-halved"></i>
+                        <span>Secure Local Storage</span>
+                    </div>
+                    <p>All file indexing and processing happens locally on your computer.</p>
+                </div>
+                <button id="analyze-btn" class="analyze-btn">
+                    <div class="btn-glow"></div>
+                    <i class="fas fa-magnifying-glass-folder"></i>
+                    <span>Find all PDFs</span>
+                </button>
+            </div>
+        </aside>
+
+        <!-- Dynamic Content Terminal -->
+        <main class="main-content">
+            <header class="content-header">
+                <div class="header-main-info">
+                    <div class="page-eyebrow">Local Files</div>
+                    <h1 class="page-title">PDF Explorer</h1>
+                    <div class="breadcrumbs" id="breadcrumbs">
+                        <span>This PC</span>
+                    </div>
+                </div>
+                
+                <div class="header-actions">
+                    <div class="search-box">
+                        <i class="fas fa-magnifying-glass"></i>
+                        <input type="text" id="file-search" placeholder="Search PDF files...">
+                        <div class="search-accent"></div>
+                    </div>
+                    <div class="view-terminal" id="view-toggles">
+                        <button class="view-btn active" id="view-grid" title="Grid View"><i class="fas fa-grip"></i></button>
+                        <button class="view-btn" id="view-list" title="List View"><i class="fas fa-list"></i></button>
+                    </div>
+                </div>
+            </header>
+
+            <div class="explorer-body">
+                <div id="file-grid" class="file-grid">
+                    <div class="loading-state">
+                        <i class="fas fa-circle-notch fa-spin"></i>
+                        <span>Searching files...</span>
+                    </div>
+                </div>
+            </div>
+            
+            <footer class="content-footer" id="status-bar">
+                <div class="status-left">
+                    <i class="fas fa-file-pdf"></i>
+                    <span id="item-count">0 files found</span>
+                </div>
+                <div class="status-right">
+                    <span class="path-label">Path:</span>
+                    <span class="path-display" id="current-path">This PC</span>
+                </div>
+            </footer>
+        </main>
+    </div>
+
+    <!-- Interface Context Terminal -->
+    <div id="context-menu" class="custom-context-menu"></div>
+
+    <script src="file-manager.js"></script>
+</body>
+</html>

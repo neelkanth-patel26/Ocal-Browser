@@ -17,7 +17,7 @@ const {
 // Explicitly set application name for OS / Task Manager identification
 app.name = 'Ocal Browser';
 if (process.platform === 'win32') {
-    app.setAppUserModelId('com.ocal.browser');
+    app.setAppUserModelId('com.ocal.browser.v2');
 }
 
 // Disable deprecation warnings in the console (silences punycode and setPreloads from 3rd-party libs)
