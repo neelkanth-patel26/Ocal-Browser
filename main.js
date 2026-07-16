@@ -819,6 +819,14 @@ function setupSecurityHandlers() {
     });
 }
 
+function getAppIconPath() {
+    const customPath = path.join(process.resourcesPath, '..', 'icon.ico');
+    if (fs.existsSync(customPath)) {
+        return customPath;
+    }
+    return path.join(__dirname, 'icon.ico');
+}
+
 function createMainWindow() {
     if (isUninstallSurvey) {
         createSurveyWindow();
@@ -831,7 +839,7 @@ function createMainWindow() {
         minWidth: 1000,
         minHeight: 700,
         title: 'Ocal Browser',
-        icon: path.join(__dirname, 'icon.ico'),
+        icon: getAppIconPath(),
         frame: false,
         transparent: false,
         backgroundColor: userSettings.themeMode === 'light' ? '#ffffff' : '#0c0c0e', // Dynamic background to match theme and prevent flashbang
@@ -914,13 +922,16 @@ function createMainWindow() {
         // Always open a tab on startup
         if (views.length === 0) {
             const startupUrl = getArgumentURL(process.argv);
-                if (userSettings.lastVersion !== '7.7.00') {
-                    userSettings.lastVersion = '7.7.00';
-                if (startupUrl) {
-                    createNewTab(startupUrl);
-                }
-            } else {
+            if (startupUrl) {
                 createNewTab(startupUrl);
+            } else {
+                if (userSettings.lastVersion !== '7.7.01') {
+                    userSettings.lastVersion = '7.7.01';
+                    saveSettings(userSettings);
+                    createNewTab('ocal://whats-new');
+                } else {
+                    createNewTab();
+                }
             }
         }
 
