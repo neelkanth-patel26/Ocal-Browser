@@ -1,0 +1,1208 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="Content-Security-Policy"
+        content="default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com https://cdn.jsdelivr.net; font-src 'self' https://fonts.gstatic.com https://cdn.jsdelivr.net; img-src 'self' data:;">
+    <title>What's New | Ocal Browser</title>
+    <link rel="stylesheet" href="assets/fontawesome/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800;900&display=swap"
+        rel="stylesheet">
+    <style>
+        :root {
+            --bg: #0c0c0c;
+            --surface: #111111;
+            --surface-hover: #1e1e1e;
+            --border: #252525;
+            --text-primary: #e8e8e8;
+            --text-secondary: rgba(255, 255, 255, 0.6);
+            --text-muted: rgba(255, 255, 255, 0.38);
+            --accent: #09f0a0;
+            --accent-glow: transparent;
+            --accent-dim: rgba(9, 240, 160, 0.12);
+            --accent-border: #09f0a0;
+
+            --card-opacity-val: 0.45;
+            --card-blur-val: 20px;
+            --glass-panel-bg: rgba(18, 18, 18, var(--card-opacity-val));
+            --glass-panel-border-val: 1px solid rgba(255, 255, 255, 0.05);
+            --glass-panel-blur-val: blur(var(--card-blur-val));
+            --glass-panel-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
+            --font: 'Outfit', -apple-system, BlinkMacSystemFont, sans-serif;
+        }
+
+        body[data-theme="light"] {
+            --bg: #f5f5f5;
+            --surface: #ffffff;
+            --surface-hover: #f0f0f0;
+            --border: #e0e0e0;
+            --text-primary: #1a1a1a;
+            --text-secondary: #555555;
+            --text-muted: #999999;
+            --accent: #059669;
+            --accent-glow: transparent;
+            --accent-dim: rgba(5, 150, 105, 0.06);
+            --accent-border: var(--accent);
+
+            --glass-panel-bg: rgba(255, 255, 255, var(--card-opacity-val));
+            --glass-panel-border-val: 1px solid rgba(0, 0, 0, 0.05);
+            --glass-panel-blur-val: blur(var(--card-blur-val));
+            --glass-panel-shadow: 0 4px 16px rgba(0, 0, 0, 0.04);
+        }
+
+        ::selection {
+            background: var(--accent) !important;
+            color: #000000 !important;
+        }
+
+        body[data-theme="light"] ::selection {
+            color: #ffffff !important;
+        }
+
+        input::selection,
+        textarea::selection {
+            background: var(--accent) !important;
+            color: #000000 !important;
+        }
+
+        body[data-theme="light"] input::selection,
+        body[data-theme="light"] textarea::selection {
+            color: #ffffff !important;
+        }
+
+        /* ── Custom Compact Scrollbar ── */
+        body::-webkit-scrollbar {
+            width: 8px;
+            height: 8px;
+        }
+
+        body::-webkit-scrollbar-track {
+            background: transparent;
+        }
+
+        body::-webkit-scrollbar-thumb {
+            background: var(--border);
+            border-radius: 10px;
+            border: 2px solid transparent;
+            background-clip: padding-box;
+        }
+
+        body::-webkit-scrollbar-thumb:hover {
+            background: var(--accent);
+            border: 2px solid transparent;
+            background-clip: padding-box;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            user-select: none;
+            -webkit-font-smoothing: antialiased;
+        }
+
+        body {
+            background: transparent !important;
+            color: var(--text-primary);
+            font-family: var(--font);
+            overflow-x: hidden;
+            overflow-y: scroll;
+            /* Allow scrolling */
+            min-height: 100vh;
+        }
+
+        /* ── Wallpaper Background to match home page ── */
+        .wallpaper-bg {
+            position: fixed;
+            inset: 0;
+            z-index: -2;
+            background: var(--bg) !important;
+            border-radius: 12px;
+        }
+
+        @keyframes gradientBG {
+            0% {
+                background-position: 0% 50%;
+            }
+
+            50% {
+                background-position: 100% 50%;
+            }
+
+            100% {
+                background-position: 0% 50%;
+            }
+        }
+
+        .wallpaper-bg.animated-aurora {
+            background: linear-gradient(-45deg, #011c18, #033c39, #081e4b, #050410) !important;
+            background-size: 400% 400% !important;
+            animation: gradientBG 15s ease infinite !important;
+        }
+
+        .wallpaper-bg.animated-cosmic {
+            background: linear-gradient(-45deg, #090013, #20003e, #360862, #0d0024) !important;
+            background-size: 400% 400% !important;
+            animation: gradientBG 18s ease infinite !important;
+        }
+
+        .wallpaper-bg.animated-sunset {
+            background: linear-gradient(-45deg, #180902, #36110a, #400d28, #110b1d) !important;
+            background-size: 400% 400% !important;
+            animation: gradientBG 16s ease infinite !important;
+        }
+
+        .wallpaper-bg.animated-cyber {
+            background: linear-gradient(-45deg, #031215, #05272a, #230132, #030814) !important;
+            background-size: 400% 400% !important;
+            animation: gradientBG 12s ease infinite !important;
+        }
+
+        /* Light mode animated gradients */
+        body[data-theme="light"] .wallpaper-bg.animated-aurora {
+            background: linear-gradient(-45deg, #e0f2f1, #b2dfdb, #e8f5e9, #e0f7fa) !important;
+            background-size: 400% 400% !important;
+            animation: gradientBG 15s ease infinite !important;
+        }
+
+        body[data-theme="light"] .wallpaper-bg.animated-cosmic {
+            background: linear-gradient(-45deg, #f3e5f5, #e1bee7, #ede7f6, #f3e5f5) !important;
+            background-size: 400% 400% !important;
+            animation: gradientBG 18s ease infinite !important;
+        }
+
+        body[data-theme="light"] .wallpaper-bg.animated-sunset {
+            background: linear-gradient(-45deg, #fff3e0, #ffe0b2, #fce4ec, #fff8e1) !important;
+            background-size: 400% 400% !important;
+            animation: gradientBG 16s ease infinite !important;
+        }
+
+        body[data-theme="light"] .wallpaper-bg.animated-cyber {
+            background: linear-gradient(-45deg, #e0f7fa, #e1f5fe, #f3e5f5, #e8eaf6) !important;
+            background-size: 400% 400% !important;
+            animation: gradientBG 12s ease infinite !important;
+        }
+
+        /* ── Header / Hero Section ── */
+        .hero {
+            padding: 80px 24px 60px;
+            text-align: center;
+            position: relative;
+        }
+
+        .version-pill {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            padding: 6px 16px;
+            border-radius: 100px;
+            background: var(--glass-panel-bg);
+            backdrop-filter: var(--glass-panel-blur-val);
+            -webkit-backdrop-filter: var(--glass-panel-blur-val);
+            border: var(--glass-panel-border-val);
+            box-shadow: var(--glass-panel-shadow);
+            color: var(--accent);
+            font-size: 11px;
+            font-weight: 700;
+            letter-spacing: 1.5px;
+            text-transform: uppercase;
+            margin-bottom: 24px;
+        }
+
+        .version-pill .pulse {
+            width: 6px;
+            height: 6px;
+            border-radius: 50%;
+            background: var(--accent);
+            animation: pulse 2s ease-in-out infinite;
+        }
+
+        @keyframes pulse {
+
+            0%,
+            100% {
+                opacity: 1;
+            }
+
+            50% {
+                opacity: 0.3;
+            }
+        }
+
+        .hero-title {
+            font-size: 46px;
+            font-weight: 800;
+            letter-spacing: -0.03em;
+            color: var(--text-primary);
+            margin-bottom: 16px;
+            line-height: 1.15;
+        }
+
+        .hero-desc {
+            font-size: 16px;
+            color: var(--text-secondary);
+            max-width: 580px;
+            margin: 0 auto 32px;
+            line-height: 1.6;
+        }
+
+        .btn-start {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            padding: 14px 36px;
+            border-radius: 30px;
+            background: var(--accent);
+            color: #000;
+            font-size: 14px;
+            font-weight: 700;
+            border: none;
+            cursor: pointer;
+            transition: transform 0.2s, opacity 0.2s;
+        }
+
+        .btn-start:hover {
+            transform: translateY(-2px);
+            opacity: 0.9;
+        }
+
+        /* ── CSS Web Mockup ── */
+        .mockup-container {
+            max-width: 800px;
+            margin: 40px auto 0;
+            padding: 0 16px;
+            perspective: 1000px;
+        }
+
+        .browser-mockup {
+            background: var(--glass-panel-bg);
+            backdrop-filter: var(--glass-panel-blur-val);
+            -webkit-backdrop-filter: var(--glass-panel-blur-val);
+            border: var(--glass-panel-border-val);
+            border-radius: 12px;
+            box-shadow: var(--glass-panel-shadow);
+            overflow: hidden;
+            transform: rotateX(5deg);
+            transition: transform 0.5s;
+        }
+
+        .browser-mockup:hover {
+            transform: rotateX(0deg) translateY(-5px);
+        }
+
+        .mockup-toolbar {
+            height: 36px;
+            background: rgba(0, 0, 0, 0.1);
+            border-bottom: var(--glass-panel-border-val);
+            display: flex;
+            align-items: center;
+            padding: 0 16px;
+            gap: 8px;
+        }
+
+        .mockup-dot {
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            background: var(--border);
+        }
+
+        .mockup-address {
+            flex: 1;
+            height: 20px;
+            background: rgba(0, 0, 0, 0.1);
+            border: var(--glass-panel-border-val);
+            border-radius: 10px;
+            margin: 0 40px;
+            font-size: 10px;
+            color: var(--text-muted);
+            display: flex;
+            align-items: center;
+            padding: 0 12px;
+        }
+
+        .mockup-content {
+            height: 380px;
+            display: flex;
+            gap: 12px;
+            padding: 16px;
+        }
+
+        .mockup-pane {
+            flex: 1;
+            border: var(--glass-panel-border-val);
+            border-radius: 8px;
+            background: rgba(0, 0, 0, 0.05);
+            display: flex;
+            flex-direction: column;
+            padding: 16px;
+            gap: 12px;
+        }
+
+        .mockup-line {
+            height: 12px;
+            background: var(--border);
+            border-radius: 4px;
+            width: 80%;
+        }
+
+        .mockup-line.short {
+            width: 40%;
+        }
+
+        .mockup-block {
+            flex: 1;
+            background: var(--border);
+            border-radius: 6px;
+            opacity: 0.3;
+        }
+
+        /* ── Categories Bar ── */
+        .categories-container {
+            position: sticky;
+            top: 0;
+            background: transparent;
+            z-index: 100;
+            padding: 0 24px;
+        }
+
+        .categories-bar-wrapper {
+            max-width: 960px;
+            margin: 0 auto;
+            border-radius: 30px;
+            padding: 2px 24px;
+            background: var(--glass-panel-bg);
+            backdrop-filter: var(--glass-panel-blur-val);
+            -webkit-backdrop-filter: var(--glass-panel-blur-val);
+            border: var(--glass-panel-border-val);
+            box-shadow: var(--glass-panel-shadow);
+        }
+
+        .categories-bar {
+            display: flex;
+            gap: 24px;
+            overflow-x: auto;
+            scrollbar-width: none;
+        }
+
+        .categories-bar::-webkit-scrollbar {
+            display: none;
+        }
+
+        .category-tab {
+            padding: 14px 4px;
+            font-size: 14px;
+            font-weight: 600;
+            color: var(--text-secondary);
+            background: none;
+            border: none;
+            cursor: pointer;
+            position: relative;
+            white-space: nowrap;
+            transition: color 0.2s;
+        }
+
+        .category-tab:hover {
+            color: var(--text-primary);
+        }
+
+        .category-tab.active {
+            color: var(--text-primary);
+            font-weight: 700;
+        }
+
+        .category-tab.active::after {
+            content: '';
+            position: absolute;
+            bottom: 4px;
+            left: 0;
+            right: 0;
+            height: 2px;
+            background: var(--accent);
+            border-radius: 2px;
+        }
+
+        /* ── Feature Directory Grid ── */
+        .directory-section {
+            max-width: 1000px;
+            margin: 0 auto;
+            padding: 60px 24px 80px;
+        }
+
+        .section-header {
+            margin-bottom: 32px;
+            text-align: center;
+        }
+
+        .section-title {
+            font-size: 24px;
+            font-weight: 800;
+            letter-spacing: -0.02em;
+            margin-bottom: 8px;
+        }
+
+        .section-subtitle {
+            font-size: 14px;
+            color: var(--text-muted);
+        }
+
+        .grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 24px;
+        }
+
+        @media (max-width: 900px) {
+            .grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+        }
+
+        @media (max-width: 600px) {
+            .grid {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        .card {
+            background: var(--glass-panel-bg);
+            backdrop-filter: var(--glass-panel-blur-val);
+            -webkit-backdrop-filter: var(--glass-panel-blur-val);
+            border: var(--glass-panel-border-val);
+            border-radius: 12px;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            transition: border-color 0.2s, transform 0.2s, box-shadow 0.2s;
+            cursor: pointer;
+            box-shadow: var(--glass-panel-shadow);
+        }
+
+        .card:hover {
+            border-color: var(--accent);
+            transform: translateY(-2px);
+        }
+
+        .card-header-visual {
+            height: 140px;
+            background: rgba(0, 0, 0, 0.1);
+            border-bottom: var(--glass-panel-border-val);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .visual-split {
+            display: flex;
+            width: 70%;
+            height: 60%;
+            border: 1px dashed var(--border);
+            border-radius: 6px;
+            overflow: hidden;
+            gap: 4px;
+            padding: 4px;
+        }
+
+        .visual-split-pane {
+            flex: 1;
+            background: var(--surface-hover);
+            border-radius: 4px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: var(--text-muted);
+            font-size: 12px;
+        }
+
+        .visual-suspend {
+            width: 80px;
+            height: 48px;
+            border: 1px solid var(--border);
+            border-radius: 6px;
+            background: var(--surface);
+            position: relative;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            padding: 6px;
+        }
+
+        .visual-suspend .leaf {
+            font-size: 14px;
+            color: var(--accent);
+            align-self: center;
+        }
+
+        .visual-adblock {
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            background: #ff4d4f;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 20px;
+        }
+
+        .visual-gpu {
+            display: flex;
+            align-items: flex-end;
+            gap: 4px;
+            height: 40px;
+        }
+
+        .gpu-bar {
+            width: 8px;
+            background: var(--accent);
+            border-radius: 2px;
+        }
+
+        .visual-media {
+            width: 70%;
+            height: 60%;
+            border: 1px solid var(--border);
+            border-radius: 6px;
+            background: var(--surface);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+        }
+
+        .visual-media .play-btn {
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            background: var(--text-primary);
+            color: var(--bg);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 10px;
+            padding-left: 2px;
+        }
+
+        .visual-wallpaper {
+            width: 70%;
+            height: 60%;
+            border-radius: 6px;
+            border: 1px solid var(--border);
+            background: radial-gradient(circle, var(--accent-dim) 10%, transparent 80%);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .visual-ai {
+            display: flex;
+            gap: 6px;
+        }
+
+        .ai-folder {
+            width: 32px;
+            height: 24px;
+            border-radius: 4px;
+            background: var(--surface-hover);
+            border: 1px solid var(--border);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 10px;
+            color: var(--text-muted);
+        }
+
+        .card-body {
+            padding: 20px;
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .card-category-label {
+            font-size: 10px;
+            font-weight: 700;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-bottom: 8px;
+        }
+
+        .card-title {
+            font-size: 17px;
+            font-weight: 700;
+            color: var(--text-primary);
+            margin-bottom: 8px;
+            letter-spacing: -0.01em;
+        }
+
+        .card-desc {
+            font-size: 13px;
+            color: var(--text-secondary);
+            line-height: 1.6;
+            margin-bottom: 20px;
+            flex: 1;
+        }
+
+        .card-footer {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            font-size: 12px;
+            font-weight: 600;
+            color: var(--text-primary);
+            border-top: var(--glass-panel-border-val);
+            padding-top: 14px;
+            margin-top: auto;
+        }
+
+        .card-footer i {
+            transition: transform 0.2s;
+        }
+
+        .card:hover .card-footer i {
+            transform: translateX(4px);
+        }
+
+        /* ── Contributor Card Style ── */
+        .contributor-visual {
+            width: 48px;
+            height: 48px;
+            border-radius: 50%;
+            background: rgba(0, 0, 0, 0.1);
+            border: var(--glass-panel-border-val);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 15px;
+            font-weight: 800;
+            color: var(--text-primary);
+        }
+
+        .badge-role {
+            padding: 3px 8px;
+            border-radius: 4px;
+            font-size: 10px;
+            font-weight: 700;
+            background: var(--surface-hover);
+            color: var(--text-secondary);
+            border: 1px solid var(--border);
+        }
+
+        /* ── Bottom Banner ── */
+        .bottom-banner {
+            background: var(--glass-panel-bg);
+            backdrop-filter: var(--glass-panel-blur-val);
+            -webkit-backdrop-filter: var(--glass-panel-blur-val);
+            border-top: var(--glass-panel-border-val);
+            padding: 80px 24px;
+            text-align: center;
+        }
+
+        .banner-title {
+            font-size: 28px;
+            font-weight: 800;
+            letter-spacing: -0.02em;
+            margin-bottom: 12px;
+        }
+
+        .banner-desc {
+            font-size: 14px;
+            color: var(--text-secondary);
+            margin-bottom: 28px;
+        }
+
+        /* ── Footer Link Grid ── */
+        .footer-grid {
+            max-width: 960px;
+            margin: 0 auto;
+            border-top: var(--glass-panel-border-val);
+            padding: 48px 24px;
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 32px;
+        }
+
+        @media (max-width: 700px) {
+            .footer-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+        }
+
+        .footer-col-title {
+            font-size: 12px;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-bottom: 16px;
+            color: var(--text-primary);
+        }
+
+        .footer-col-links {
+            list-style: none;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .footer-col-links a {
+            font-size: 13px;
+            color: var(--text-secondary);
+            text-decoration: none;
+            transition: color 0.2s;
+        }
+
+        .footer-col-links a:hover {
+            color: var(--text-primary);
+        }
+
+        .footer-copy {
+            text-align: center;
+            font-size: 12px;
+            color: var(--text-muted);
+            padding-bottom: 40px;
+        }
+    </style>
+</head>
+
+<body data-theme="dark"> <!-- Overwritten dynamically by JS -->
+
+    <!-- Premium Wallpaper Background to enable perfect corner clipping -->
+    <div class="wallpaper-bg"></div>
+
+    <!-- ═══ HERO ═══ -->
+    <section class="hero">
+        <div class="version-pill">
+            <span class="pulse"></span> Version 7.5.00
+        </div>
+        <h1 class="hero-title">Get to know Ocal's features</h1>
+        <p class="hero-desc">
+            Explore the powerful new capabilities, layout improvements, performance modifications,
+            and meet the team members who made this update possible.
+        </p>
+        <button class="btn-start" id="btn-hero-start">
+            Start Browsing <i class="fas fa-arrow-right"></i>
+        </button>
+
+        <!-- Browser Mockup -->
+        <div class="mockup-container">
+            <div class="browser-mockup">
+                <div class="mockup-toolbar">
+                    <div class="mockup-dot"></div>
+                    <div class="mockup-dot"></div>
+                    <div class="mockup-dot"></div>
+                    <div class="mockup-address">ocal://whats-new</div>
+                </div>
+                <div class="mockup-content">
+                    <div class="mockup-pane">
+                        <div class="mockup-line"></div>
+                        <div class="mockup-line short"></div>
+                        <div class="mockup-block"></div>
+                    </div>
+                    <div class="mockup-pane">
+                        <div class="mockup-line"></div>
+                        <div class="mockup-line short"></div>
+                        <div class="mockup-block"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- ═══ CATEGORIES TAB BAR ═══ -->
+    <div class="categories-container">
+        <div class="categories-bar-wrapper">
+            <div class="categories-bar">
+                <button class="category-tab active" onclick="filterCategory('all', this)">All Features</button>
+                <button class="category-tab" onclick="filterCategory('multitasking', this)">Multitasking</button>
+                <button class="category-tab" onclick="filterCategory('performance', this)">Performance</button>
+                <button class="category-tab" onclick="filterCategory('media', this)">Media & UI</button>
+                <button class="category-tab" onclick="filterCategory('contributors', this)">Contributors</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- ═══ GRID SECTION ═══ -->
+    <section class="directory-section">
+        <div class="section-header">
+            <h2 class="section-title" id="dir-title">All Features</h2>
+            <p class="section-subtitle" id="dir-subtitle">Showing all recent improvements and team contributions in
+                v7.1.00.</p>
+        </div>
+
+        <div class="grid" id="directory-grid">
+            <!-- Items populated dynamically by JS -->
+        </div>
+    </section>
+
+    <!-- ═══ BOTTOM HERO BANNER ═══ -->
+    <section class="bottom-banner">
+        <h2 class="banner-title">You deserve a better browser</h2>
+        <p class="banner-desc">Experience speed, flexibility, and customizable spaces built for power users.</p>
+        <button class="btn-start" id="btn-banner-start">
+            Start Browsing <i class="fas fa-arrow-right"></i>
+        </button>
+    </section>
+
+    <!-- ═══ FOOTER GRID ═══ -->
+    <footer class="footer-grid">
+        <div>
+            <h3 class="footer-col-title">Ocal Browser</h3>
+            <ul class="footer-col-links">
+                <li><a href="#" onclick="navigate('ocal://home')">Home Startpage</a></li>
+                <li><a href="#" onclick="navigate('ocal://settings')">Settings</a></li>
+                <li><a href="#" onclick="navigate('ocal://games')">Games Hub</a></li>
+            </ul>
+        </div>
+        <div>
+            <h3 class="footer-col-title">Features</h3>
+            <ul class="footer-col-links">
+                <li><a href="#" onclick="filterCategory('multitasking')">Splitscreen</a></li>
+                <li><a href="#" onclick="filterCategory('performance')">Memory Saver</a></li>
+                <li><a href="#" onclick="filterCategory('media')">Media Master</a></li>
+            </ul>
+        </div>
+        <div>
+            <h3 class="footer-col-title">Built-In Games</h3>
+            <ul class="footer-col-links">
+                <li><a href="#" onclick="navigate('ocal://tetris')">Tetris</a></li>
+                <li><a href="#" onclick="navigate('ocal://snake')">Snake Game</a></li>
+                <li><a href="#" onclick="navigate('ocal://runner')">Space Runner</a></li>
+            </ul>
+        </div>
+        <div>
+            <h3 class="footer-col-title">Security</h3>
+            <ul class="footer-col-links">
+                <li><a href="#" onclick="navigate('ocal://site-settings')">Ocal Shield</a></li>
+                <li><a href="#">Privacy Pledge</a></li>
+            </ul>
+        </div>
+    </footer>
+
+    <div class="footer-copy">
+        &copy; 2026 Ocal Browser. All rights reserved. Made by Neelkanth Patel & Team.
+    </div>
+
+    <!-- ═══ CONTROLLER SCRIPT ═══ -->
+    <script>
+        // ── Dynamic Theme & Wallpaper Integration from localStorage (matching home page) ──
+        (function () {
+            const t = localStorage.getItem('ocal-settings-theme');
+            if (t) document.body.setAttribute('data-theme', t);
+
+            const a = localStorage.getItem('ocal-settings-accent');
+            if (a) {
+                document.documentElement.style.setProperty('--accent', a);
+                document.documentElement.style.setProperty('--accent-glow', `color-mix(in srgb, ${a} 30%, transparent)`);
+                document.documentElement.style.setProperty('--accent-dim', `color-mix(in srgb, ${a} 12%, transparent)`);
+                document.documentElement.style.setProperty('--accent-border', a);
+            }
+
+            const op = localStorage.getItem('ocal-custom-opacity');
+            if (op !== null) {
+                document.documentElement.style.setProperty('--card-opacity-val', op / 100);
+            }
+
+            const bl = localStorage.getItem('ocal-custom-blur');
+            if (bl !== null) {
+                document.documentElement.style.setProperty('--card-blur-val', bl + 'px');
+            }
+
+            const bgVal = localStorage.getItem('ocal-custom-bg') || 'static';
+            const wallpaperBg = document.querySelector('.wallpaper-bg');
+            if (wallpaperBg && bgVal !== 'static') {
+                wallpaperBg.classList.add('animated-' + bgVal);
+            }
+        })();
+
+        // Navigation helpers
+        function navigate(url) {
+            try {
+                if (window.electronAPI && window.electronAPI.navigateTo) {
+                    window.electronAPI.navigateTo(url);
+                }
+            } catch (e) { }
+        }
+
+        const items = [
+            // --- FEATURES ---
+            {
+                type: 'feature',
+                category: 'multitasking',
+                title: 'Splitscreen Mode',
+                desc: 'Browse two websites in parallel. Drag tabs to the full-height side dropzones with live animated overlays and layout ratio customizers.',
+                actionText: 'Learn More',
+                visualHtml: `
+                    <div class="visual-split">
+                        <div class="visual-split-pane"><i class="fas fa-globe"></i></div>
+                        <div class="visual-split-pane"><i class="fas fa-globe"></i></div>
+                    </div>
+                `
+            },
+            {
+                type: 'feature',
+                category: 'multitasking',
+                title: 'Tab Emojis',
+                desc: 'Personalize your tabs and express yourself with Tab Emojis.',
+                actionText: 'Learn More',
+                visualHtml: `
+                    <div class="visual-emoji" style="display: flex; gap: 12px; font-size: 24px; justify-content: center; align-items: center; height: 100%;">
+                        <span>🦊</span>
+                        <span>🚀</span>
+                        <span>🎮</span>
+                    </div>
+                `
+            },
+            {
+                type: 'feature',
+                category: 'performance',
+                title: 'Memory Saver Daemon',
+                desc: 'Intelligent tab suspension kicks in after 10 minutes of inactivity to keep your computer cold and memory overhead minimal.',
+                actionText: 'Manage Settings',
+                visualHtml: `
+                    <div class="visual-suspend">
+                        <div class="mockup-line" style="width: 100%"></div>
+                        <i class="fas fa-leaf leaf"></i>
+                        <div class="mockup-line" style="width: 60%"></div>
+                    </div>
+                `
+            },
+            {
+                type: 'feature',
+                category: 'performance',
+                title: 'Pre-Compiled Ad Blocker',
+                desc: 'Block lists are compiled once at initialization to bypass regex parse queues on individual requests, making rendering up to 40% faster.',
+                actionText: 'Ocal Shield Settings',
+                visualHtml: `
+                    <div class="visual-adblock">
+                        <i class="fas fa-shield-halved"></i>
+                    </div>
+                `
+            },
+            {
+                type: 'feature',
+                category: 'performance',
+                title: 'GPU Accelerated Raster',
+                desc: 'Forced zero-copy layouts and multi-threaded rendering pipelines bypass cpu bottling to maintain high FPS scroll rates on visual sites.',
+                actionText: 'View Metrics',
+                visualHtml: `
+                    <div class="visual-gpu">
+                        <div class="gpu-bar" style="height: 10px;"></div>
+                        <div class="gpu-bar" style="height: 20px;"></div>
+                        <div class="gpu-bar" style="height: 35px;"></div>
+                        <div class="gpu-bar" style="height: 28px;"></div>
+                    </div>
+                `
+            },
+            {
+                type: 'feature',
+                category: 'media',
+                title: 'Ocal Media Master',
+                desc: 'A unified video and image popup with live thumbnail previews, exact filepath decoded outputs, and YouTube download options.',
+                actionText: 'Try it Out',
+                visualHtml: `
+                    <div class="visual-media">
+                        <div class="play-btn"><i class="fas fa-play"></i></div>
+                    </div>
+                `
+            },
+            {
+                type: 'feature',
+                category: 'media',
+                title: 'Wallpaper Customizer',
+                desc: 'Refine your setup with customizable opacity sliders, solid dark/light system cards, and native local image wallpaper uploads.',
+                actionText: 'Customize Layout',
+                visualHtml: `
+                    <div class="visual-wallpaper">
+                        <i class="fas fa-image" style="font-size: 24px; color: var(--text-primary)"></i>
+                    </div>
+                `
+            },
+            {
+                type: 'feature',
+                category: 'media',
+                title: 'AI Smart Bookmarks',
+                desc: 'Press "AI Group" in the bookmark manager to instantly classify your links into simple category folders (Social, Development, Games).',
+                actionText: 'Open Bookmarks',
+                visualHtml: `
+                    <div class="visual-ai">
+                        <div class="ai-folder"><i class="fas fa-folder"></i></div>
+                        <div class="ai-folder"><i class="fas fa-magic"></i></div>
+                    </div>
+                `
+            },
+            {
+                type: 'feature',
+                category: 'media',
+                title: 'Volume Booster',
+                desc: 'Increase browser volume by up to 5x natively.',
+                actionText: 'Learn More',
+                visualHtml: `
+                    <div class="visual-volume" style="display: flex; flex-direction: column; align-items: center; gap: 8px; width: 60%; justify-content: center; height: 100%;">
+                        <i class="fas fa-volume-high" style="font-size: 24px; color: var(--accent);"></i>
+                        <div style="width: 100%; height: 6px; background: var(--border); border-radius: 3px; overflow: hidden; position: relative;">
+                            <div style="width: 80%; height: 100%; background: var(--accent); border-radius: 3px;"></div>
+                        </div>
+                        <span style="font-size: 10px; font-weight: 700; color: var(--accent);">500% BOOST</span>
+                    </div>
+                `
+            },
+
+            // --- CONTRIBUTORS ---
+            {
+                type: 'contributor',
+                category: 'contributors',
+                title: 'Neelkanth Patel',
+                desc: 'Project founder and lead browser architect. Wrote the Electron main wrapper, tab manager daemon, and multi-process architecture.',
+                role: 'Founder & Lead Dev',
+                visualHtml: '<div class="contributor-visual">NP</div>'
+            },
+            {
+                type: 'contributor',
+                category: 'contributors',
+                title: 'Jay Shah',
+                desc: 'Worked on tab lifecycle algorithms, implementing the background Memory Saver suspensions and auto-wake event bindings.',
+                role: 'Software Engineer',
+                visualHtml: '<div class="contributor-visual">JS</div>'
+            },
+            {
+                type: 'contributor',
+                category: 'contributors',
+                title: 'Jiya Thakkar',
+                desc: 'Lead UX designer behind Ocal Shield card alignments, Settings tab overlays, and light/dark styling guidelines.',
+                role: 'Lead Designer',
+                visualHtml: '<div class="contributor-visual">JT</div>'
+            },
+            {
+                type: 'contributor',
+                category: 'contributors',
+                title: 'Reese Whiteman',
+                desc: 'Engineered the AI Bookmarking heuristics, custom tag mappings, and classification keyword parsing scripts.',
+                role: 'AI & Research Lead',
+                visualHtml: '<div class="contributor-visual">RW</div>'
+            },
+            {
+                type: 'contributor',
+                category: 'contributors',
+                title: 'Samantha Chen',
+                desc: 'Optimized network security structures, precompiling ad-block lists and adding CSP parameters.',
+                role: 'Security Engineer',
+                visualHtml: '<div class="contributor-visual">SC</div>'
+            },
+            {
+                type: 'contributor',
+                category: 'contributors',
+                title: 'Oscar Nilsson',
+                desc: 'Configured Chromium V8 optimization variables, multi-threaded downloads, and GPU rasterization flags.',
+                role: 'Performance Engineer',
+                visualHtml: '<div class="contributor-visual">ON</div>'
+            }
+        ];
+
+        // Filter and Render grid items
+        function renderGrid(category = 'all') {
+            const grid = document.getElementById('directory-grid');
+            grid.innerHTML = '';
+
+            const filtered = items.filter(item => {
+                if (category === 'all') {
+                    // Don't show contributors in "All Features" page to keep focus strictly on product upgrades
+                    return item.type === 'feature';
+                }
+                return item.category === category;
+            });
+
+            filtered.forEach(item => {
+                const card = document.createElement('div');
+                card.className = 'card';
+                card.onclick = () => {
+                    if (item.type === 'feature') {
+                        if (item.category === 'multitasking') navigate('ocal://home');
+                        else if (item.category === 'performance') navigate('ocal://settings#performance');
+                        else if (item.category === 'media') navigate('ocal://settings#appearance');
+                    }
+                };
+
+                const categoryLabel = item.type === 'contributor' ? 'Contributor' : item.category;
+
+                card.innerHTML = `
+                    <div class="card-header-visual">
+                        ${item.visualHtml}
+                    </div>
+                    <div class="card-body">
+                        <div class="card-category-label">${categoryLabel}</div>
+                        <div class="card-title">${item.title}</div>
+                        <div class="card-desc">${item.desc}</div>
+                        <div class="card-footer">
+                            <span>${item.type === 'contributor' ? `<span class="badge-role">${item.role}</span>` : item.actionText}</span>
+                            <i class="fas fa-arrow-right"></i>
+                        </div>
+                    </div>
+                `;
+
+                grid.appendChild(card);
+            });
+        }
+
+        // Toggle category tabs
+        function filterCategory(category, buttonEl) {
+            // Update active state in CSS tabs
+            const tabs = document.querySelectorAll('.category-tab');
+            tabs.forEach(tab => tab.classList.remove('active'));
+
+            if (buttonEl) {
+                buttonEl.classList.add('active');
+            } else {
+                // Find matching button dynamically if clicked via footer links
+                const matchingTab = Array.from(tabs).find(t => t.textContent.toLowerCase().includes(category));
+                if (matchingTab) matchingTab.classList.add('active');
+            }
+
+            // Update section title & descriptions
+            const titleEl = document.getElementById('dir-title');
+            const subtitleEl = document.getElementById('dir-subtitle');
+
+            if (category === 'all') {
+                titleEl.textContent = 'All Features';
+                subtitleEl.textContent = 'Showing all recent improvements and layouts in v7.5.00.';
+            } else if (category === 'multitasking') {
+                titleEl.textContent = 'Multitasking Features';
+                subtitleEl.textContent = 'Browse side-by-side workspace screens natively.';
+            } else if (category === 'performance') {
+                titleEl.textContent = 'Performance Optimizations';
+                subtitleEl.textContent = 'Faster loading, low CPU cycles, and custom memory savers.';
+            } else if (category === 'media') {
+                titleEl.textContent = 'Media & UI Refinements';
+                subtitleEl.textContent = 'Aesthetic styles matching Ocal Shield card patterns.';
+            } else if (category === 'contributors') {
+                titleEl.textContent = 'Key Contributors';
+                subtitleEl.textContent = 'Meet the engineers and designers who built Ocal Browser v7.5.00.';
+            }
+
+            renderGrid(category);
+        }
+
+        // Initial Render
+        renderGrid('all');
+
+        // Check if running inside iframe and adjust backgrounds
+        if (window.self !== window.top) {
+            const bg = document.querySelector('.wallpaper-bg');
+            if (bg) bg.style.display = 'none';
+            document.body.style.background = 'transparent';
+        }
+
+        // Button events
+        const heroBtn = document.getElementById('btn-hero-start');
+        const bannerBtn = document.getElementById('btn-banner-start');
+        const clickHandler = () => navigate('ocal://home');
+
+        if (heroBtn) heroBtn.addEventListener('click', clickHandler);
+        if (bannerBtn) bannerBtn.addEventListener('click', clickHandler);
+    </script>
+</body>
+
+</html>

@@ -877,6 +877,33 @@ function esc(str) {
 }
 
 
+// ── AI Smart Bookmark Classifier ──────────────────────────────────────────
+async function handleAiClassify() {
+    const btn = document.getElementById('ai-classify-btn');
+    if (!btn) return;
+    const orig = btn.innerHTML;
+    btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Grouping...';
+    btn.disabled = true;
+    try {
+        const res = await window.electronAPI.invoke('ai-classify-bookmarks');
+        if (res.success) {
+            btn.innerHTML = `<i class="fas fa-check"></i> Grouped ${res.count}!`;
+            setTimeout(() => {
+                btn.innerHTML = orig;
+                btn.disabled = false;
+            }, 2500);
+        } else {
+            alert(res.error || 'No bookmarks found.');
+            btn.innerHTML = orig;
+            btn.disabled = false;
+        }
+    } catch (e) {
+        console.error(e);
+        btn.innerHTML = orig;
+        btn.disabled = false;
+    }
+}
+
 // ── Final Event Listener Assignment ──────────────────────────────────────
 if (backdrop) backdrop.addEventListener('click', closeSidebar);
 const sbCloseBtn = document.getElementById('sb-close-btn');
@@ -887,6 +914,9 @@ if (addFolderBtn) addFolderBtn.addEventListener('click', addFolder);
 
 const sortBmsBtn = document.getElementById('sort-bms-btn');
 if (sortBmsBtn) sortBmsBtn.addEventListener('click', sortBookmarks);
+
+const aiClassifyBtn = document.getElementById('ai-classify-btn');
+if (aiClassifyBtn) aiClassifyBtn.addEventListener('click', handleAiClassify);
 
 const ssVisible = document.getElementById('ss-visible');
 if (ssVisible) ssVisible.addEventListener('click', () => handleSS('visible'));

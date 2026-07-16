@@ -12,7 +12,7 @@ html {
     --background: #0c0c0c;
     --foreground: #e8e8e8;
     --accent: #09f0a0;
-    --accent-glow: rgba(9, 240, 160, 0.2);
+    --accent-glow: transparent;
     --accent-dim: rgba(9, 240, 160, 0.12);
     --accent-border: #09f0a0;
     --bg: #0c0c0c;
@@ -90,6 +90,14 @@ body {
 input, textarea, [contenteditable="true"] {
     user-select: text;
     -webkit-user-select: text;
+}
+
+input::selection, textarea::selection, ::selection {
+    background: var(--accent) !important;
+    color: #000000 !important;
+}
+body[data-theme="light"] input::selection, body[data-theme="light"] textarea::selection, body[data-theme="light"] ::selection {
+    color: #ffffff !important;
 }
 
 .wallpaper-bg {
@@ -301,7 +309,7 @@ body[data-theme="dark"] .time-display {
     height: 4px; 
     border-radius: 50%; 
     background: var(--accent); 
-    box-shadow: 0 0 10px var(--accent); 
+    box-shadow: none; 
 }
 .date-str { 
     color: var(--text-dim); 
@@ -465,6 +473,24 @@ body[data-theme="light"] .timer-btn:hover { background: rgba(0, 0, 0, 0.05) !imp
     cursor: default;
 }
 .brand-text:hover { opacity: 0.9; color: var(--accent) !important; }
+
+/* Light Theme overrides for Footer Capsule */
+body[data-theme="light"] .footer-capsule {
+    background: #ffffff !important;
+    border: 1px solid rgba(0, 0, 0, 0.08) !important;
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.06) !important;
+    backdrop-filter: none !important;
+    -webkit-backdrop-filter: none !important;
+}
+body[data-theme="light"] .capsule-btn {
+    color: var(--text-dim) !important;
+}
+body[data-theme="light"] .capsule-btn:hover {
+    color: var(--accent) !important;
+}
+body[data-theme="light"] .brand-text {
+    color: var(--text-muted) !important;
+}
 
 @keyframes capsule-slide-up {
     from { transform: translateY(50px); opacity: 0; }
@@ -1046,10 +1072,10 @@ body[data-theme="light"] .wallpaper-overlay {
     right: -360px;
     width: 340px;
     height: 100vh;
-    background: rgba(10, 10, 12, 0.72) !important;
+    background: #0f0f11 !important;
     border-left: 1px solid rgba(255, 255, 255, 0.08) !important;
-    backdrop-filter: blur(40px) saturate(180%) !important;
-    -webkit-backdrop-filter: blur(40px) saturate(180%) !important;
+    backdrop-filter: none !important;
+    -webkit-backdrop-filter: none !important;
     z-index: 10000;
     transition: right 0.4s cubic-bezier(0.16, 1, 0.3, 1);
     display: flex;
@@ -1063,7 +1089,7 @@ body[data-theme="light"] .wallpaper-overlay {
 }
 
 body[data-theme="light"] .style-drawer {
-    background: rgba(244, 244, 247, 0.72) !important;
+    background: #f4f4f7 !important;
     border-left: 1px solid rgba(0, 0, 0, 0.08) !important;
     color: #1a1a1a;
     box-shadow: -10px 0 40px rgba(0, 0, 0, 0.08) !important;
@@ -1497,3 +1523,207 @@ body.effect-wavy-jelly .tile-box:hover {
 body.effect-wavy-jelly .capsule-btn:hover {
     transform: scale(1.08) translateY(-1px) !important;
 }
+
+/* ── Split Drop Zones Overlay (Opera Style) ────────────────────────── */
+.split-drop-zones-overlay {
+    position: fixed;
+    inset: 0;
+    z-index: 99999;
+    display: grid;
+    grid-template-columns: 1fr 1.5fr 1fr;
+    grid-template-areas:
+        "left . right";
+    pointer-events: none;
+    background: rgba(0, 0, 0, 0.2);
+    backdrop-filter: blur(4px);
+    transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+    opacity: 0;
+}
+.split-drop-zones-overlay.active {
+    opacity: 1;
+}
+
+.split-drop-zone {
+    pointer-events: auto;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: rgba(15, 15, 15, 0.45);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    backdrop-filter: blur(12px);
+    color: var(--text-dim);
+    transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+    margin: 16px;
+    border-radius: 16px;
+    cursor: copy;
+}
+
+.split-drop-zone.left-zone {
+    grid-area: left;
+    transform: translateX(-20px);
+}
+.split-drop-zone.right-zone {
+    grid-area: right;
+    transform: translateX(20px);
+}
+
+.split-drop-zones-overlay.active .split-drop-zone {
+    transform: translate(0, 0);
+}
+
+.split-zone-content {
+    text-align: center;
+    pointer-events: none;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 8px;
+}
+.split-zone-content i {
+    font-size: 24px;
+    color: var(--text-dim);
+    transition: transform 0.3s;
+}
+.split-zone-content h3 {
+    margin: 0;
+    font-size: 14px;
+    font-weight: 500;
+    color: #fff;
+}
+.split-zone-content p {
+    margin: 0;
+    font-size: 11px;
+    color: var(--text-dim);
+}
+
+.split-drop-zone.drag-over {
+    background: color-mix(in srgb, var(--accent) 15%, transparent);
+    border-color: var(--accent);
+    box-shadow: none !important;
+    color: var(--accent);
+}
+.split-drop-zone.drag-over i {
+    transform: scale(1.2);
+    color: var(--accent);
+}
+
+/* ── Split-Screen Responsive Layout Optimization ────────────────── */
+@media (max-width: 1200px), (max-height: 600px) {
+  .col-side {
+    display: none !important;
+  }
+  .dashboard.has-left-sidebar.has-right-sidebar,
+  .dashboard.has-left-sidebar,
+  .dashboard.has-right-sidebar,
+  .dashboard {
+    grid-template-columns: 1fr !important;
+    padding: 16px !important;
+    height: 100vh !important;
+    overflow-y: auto !important;
+  }
+  .col-center {
+    width: 100% !important;
+    max-width: 480px !important;
+    justify-self: center !important;
+    margin: 0 auto !important;
+    display: flex !important;
+    flex-direction: column !important;
+    justify-content: center !important;
+    align-items: center !important;
+    min-height: calc(100vh - 32px) !important;
+  }
+  .tiles-grid {
+    grid-template-columns: repeat(3, 1fr) !important;
+    gap: 14px !important;
+    width: 100% !important;
+  }
+  .footer-hub {
+    display: none !important;
+  }
+  #style-customizer-btn {
+    display: none !important;
+  }
+  .clock-pillar {
+    margin-bottom: 20px !important;
+    display: flex !important;
+    flex-direction: column !important;
+    align-items: center !important;
+  }
+  .time-display {
+    font-size: 56px !important;
+  }
+  .greeting-display {
+    font-size: 10px !important;
+  }
+}
+
+/* Explicit Split Mode Trigger */
+body.split-mode .col-side {
+  display: none !important;
+}
+body.split-mode .dashboard.has-left-sidebar.has-right-sidebar,
+body.split-mode .dashboard.has-left-sidebar,
+body.split-mode .dashboard.has-right-sidebar,
+body.split-mode .dashboard {
+  grid-template-columns: 1fr !important;
+  padding: 16px !important;
+  height: 100vh !important;
+  overflow-y: auto !important;
+}
+body.split-mode .col-center {
+  width: 100% !important;
+  max-width: 480px !important;
+  justify-self: center !important;
+  margin: 0 auto !important;
+  display: flex !important;
+  flex-direction: column !important;
+  justify-content: center !important;
+  align-items: center !important;
+  min-height: calc(100vh - 32px) !important;
+}
+body.split-mode .tiles-grid {
+  grid-template-columns: repeat(3, 1fr) !important;
+  gap: 14px !important;
+  width: 100% !important;
+}
+body.split-mode .footer-hub {
+  display: none !important;
+}
+body.split-mode #style-customizer-btn {
+  display: none !important;
+}
+body.split-mode .clock-pillar {
+  margin-bottom: 20px !important;
+  display: flex !important;
+  flex-direction: column !important;
+  align-items: center !important;
+}
+body.split-mode .time-display {
+  font-size: 56px !important;
+}
+body.split-mode .greeting-display {
+  font-size: 10px !important;
+}
+
+/* ── Drag Overlay Mode (Transparent overlay view) ── */
+html.drag-overlay-mode,
+body.drag-overlay-mode {
+  background: transparent !important;
+  background-color: transparent !important;
+  backdrop-filter: none !important;
+}
+
+body.drag-overlay-mode #dashboard-main,
+body.drag-overlay-mode #floating-weather,
+body.drag-overlay-mode #style-customizer-btn,
+body.drag-overlay-mode .floating-style-btn,
+body.drag-overlay-mode .wallpaper-bg,
+body.drag-overlay-mode .style-drawer {
+  display: none !important;
+}
+
+body.drag-overlay-mode .split-drop-zones-overlay {
+  background: rgba(0, 0, 0, 0.25) !important;
+  backdrop-filter: blur(6px) !important;
+}
+

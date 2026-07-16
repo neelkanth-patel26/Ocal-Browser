@@ -43,7 +43,7 @@ function renderTabs() {
             const group = tabGroups.find(g => g.id === tab.groupId);
             if (group) {
                 const header = document.createElement('div');
-                header.className = 'tab-group-header';
+                header.className = 'tab-group-header' + (!group.name ? ' no-name' : '');
                 header.style.setProperty('--group-color', group.color);
                 header.innerHTML = `
                     <div class="tab-group-dot" style="background: ${group.color}; color: ${group.color}"></div>
@@ -88,18 +88,19 @@ function renderTabs() {
         if (tab.groupId && group) {
             el.style.setProperty('--group-color', group.color);
         }
-        el.draggable = true;
+        el.draggable = tabs.length > 1;
 
         el.ondragstart = (e) => {
             e.dataTransfer.setData('tab-index', index);
             el.classList.add('dragging');
+            window.electronAPI.send('tab-drag-start', tab.id);
+            tabList.classList.add('dragging-active');
         };
 
         el.ondragover = (e) => {
             e.preventDefault();
             const rect = el.getBoundingClientRect();
             const x = e.clientX - rect.left;
-            // Center 50% is the 'group' zone
             const isCenter = x > rect.width * 0.25 && x < rect.width * 0.75;
             
             if (isCenter) {
@@ -131,7 +132,7 @@ function renderTabs() {
                         window.electronAPI.send('add-to-group', { tabId: sourceTab.id, groupId: targetTab.groupId });
                     } else {
                         window.electronAPI.send('create-tab-group', { 
-                            name: 'New Group', 
+                            name: '', 
                             color: '#a855f7', 
                             tabIds: [sourceTab.id, targetTab.id] 
                         });
@@ -142,22 +143,97 @@ function renderTabs() {
             }
         };
 
-        el.ondragend = () => el.classList.remove('dragging', 'drag-over', 'group-target');
+        el.ondragend = () => {
+            el.classList.remove('dragging', 'drag-over', 'group-target');
+            window.electronAPI.send('tab-drag-end');
+            tabList.classList.remove('dragging-active');
+        };
+
         el.oncontextmenu = (e) => {
             e.preventDefault();
             showTabContextMenu(e, tab.id);
         };
         
-        const iconHtml = getTabIconHtml(tab, group ? group.color : null);
-        
-        el.innerHTML = `
-            ${iconHtml}
-            <span class="tab-title" style="${group ? `color: ${group.color}; opacity: 0.9;` : ''}">${tab.title || 'New Tab'}</span>
-            ${tab.audible ? '<i class="fas fa-volume-high tab-audio-icon"></i>' : ''}
-            <i class="fas fa-times tab-close" data-id="${tab.id}"></i>
-        `;
+        if (tab.isSplit) {
+            el.classList.add('split-tab');
+                        const active1 = (tab.id === activeTabId && tab.focusedSide === 'left') ? 'active' : '';
+            const active2 = (tab.id === activeTabId && tab.focusedSide === 'right') ? 'active' : '';
+            
+            const fakeTab1 = { url: tab.url, favicon: tab.favicon, emoji: tab.emoji };
+            const fakeTab2 = { url: tab.url2, favicon: tab.favicon2, emoji: tab.emoji2 };
+            const iconHtml1 = getTabIconHtml(fakeTab1, group ? group.color : null);
+            const iconHtml2 = getTabIconHtml(fakeTab2, group ? group.color : null);
+            
+            const title1 = getSimplifiedTitle(tab.title, tab.url);
+            const title2 = getSimplifiedTitle(tab.title2, tab.url2);
+
+            el.innerHTML = `
+                <div class="sub-tab-half ${active1}" data-side="left">
+                    ${iconHtml1}
+                    <span class="sub-title">${title1}</span>
+                </div>
+                <div class="sub-tab-divider"></div>
+                <div class="sub-tab-half ${active2}" data-side="right">
+                    ${iconHtml2}
+                    <span class="sub-title">${title2}</span>
+                </div>
+
+                <i class="fas fa-times tab-close" data-id="${tab.id}"></i>
+            `;
+
+            el.querySelectorAll('.sub-tab-half').forEach(half => {
+                half.onclick = (e) => {
+                    e.stopPropagation();
+                    const side = half.getAttribute('data-side');
+                    window.electronAPI.send('focus-split-side', { tabId: tab.id, side });
+                    if (activeTabId !== tab.id) {
+                        activeTabId = tab.id;
+                        window.electronAPI.switchTab(tab.id);
+                    }
+                    renderTabs();
+                };
+            });
+        } else {
+            el.classList.remove('split-tab');
+            const iconHtml = getTabIconHtml(tab, group ? group.color : null);
+            el.innerHTML = `
+                ${iconHtml}
+                <span class="tab-title" style="${group ? `color: ${group.color}; opacity: 0.9;` : ''}">${tab.title || 'New Tab'}</span>
+                ${tab.audible ? '<i class="fas fa-volume-high tab-audio-icon"></i>' : ''}
+                <div class="tab-split-zone" data-target-id="${tab.id}" title="Drop here to split tab">
+                    <i class="fas fa-columns"></i>
+                </div>
+                <i class="fas fa-times tab-close" data-id="${tab.id}"></i>
+            `;
+        }
+
+        const splitZone = el.querySelector('.tab-split-zone');
+        if (splitZone) {
+            splitZone.ondragover = (e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                splitZone.classList.add('drag-over');
+            };
+            splitZone.ondragleave = () => splitZone.classList.remove('drag-over');
+            splitZone.ondrop = (e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                splitZone.classList.remove('drag-over');
+                const fromIndex = parseInt(e.dataTransfer.getData('tab-index'));
+                const draggedTab = tabs[fromIndex];
+                const targetTabId = splitZone.getAttribute('data-target-id');
+                if (draggedTab && draggedTab.id !== targetTabId) {
+                    window.electronAPI.send('merge-tabs-to-split', {
+                        sourceTabId: draggedTab.id,
+                        targetTabId: targetTabId
+                    });
+                }
+            };
+        }
+
         el.onclick = (e) => {
             if (e.target.classList.contains('tab-close')) return;
+            if (tab.isSplit) return;
             activeTabId = tab.id;
             window.electronAPI.switchTab(tab.id);
             renderTabs();
@@ -180,6 +256,10 @@ window.electronAPI.onTabsChanged((data) => {
     activeTabId = data.activeTabId;
     tabGroups = data.groups || [];
     const active = tabs.find(t => t.id === activeTabId);
+    const splitBtn = document.getElementById('split-screen-btn');
+    if (splitBtn) {
+        splitBtn.classList.toggle('active', active ? !!active.isSplit : false);
+    }
     if (active && addressInput) {
         syncOmnibox(active.url);
         updatePageTimeChip(active.id);
@@ -296,10 +376,33 @@ function formatDisplayUrl(url) {
     if (url.includes('snake.html')) return 'ocal://snake';
     if (url.includes('tetris.html')) return 'ocal://tetris';
     if (url.includes('game.html')) return 'ocal://runner';
+    if (url.includes('whats-new.html')) return 'ocal://whats-new';
+    if (url.includes('suspended.html')) return 'ocal://suspended';
     return url;
 }
 
+function getSimplifiedTitle(title, url) {
+    if (!title) return 'New Tab';
+    if (!url || url.includes('home.html') || url.startsWith('ocal://home')) return 'Home';
+    if (url.includes('settings.html') || url.startsWith('ocal://settings')) return 'Settings';
+    if (url.includes('games.html') || url.startsWith('ocal://games')) return 'Games';
+    if (url.includes('whats-new.html') || url.startsWith('ocal://whats-new')) return "What's New";
+    
+    let t = title.split(' - ')[0].split(' | ')[0].split(' – ')[0].trim();
+    if (t.length > 10) {
+        t = t.substring(0, 8) + '..';
+    }
+    return t;
+}
+
 function getTabIconHtml(tab, tintColor) {
+    if (tab.emoji) {
+        const url = getEmojiSvgUrl(tab.emoji);
+        if (url) {
+            return `<img src="${url}" class="tab-favicon tab-emoji-img" onerror="this.replaceWith('${tab.emoji}')" style="background: transparent; border: none; box-shadow: none;">`;
+        }
+        return `<span class="tab-favicon tab-emoji" style="font-style: normal; display: inline-flex; align-items: center; justify-content: center; font-size: 14px; width: 14px; height: 14px; line-height: 1; background: transparent;">${tab.emoji}</span>`;
+    }
     if (tab.loading) {
         return `<i class="fas fa-circle-notch tab-favicon spinner" style="color:${tintColor || 'var(--accent)'}"></i>`;
     }
@@ -577,6 +680,9 @@ document.addEventListener('DOMContentLoaded', () => {
     if (fmBtn) fmBtn.onclick = () => window.electronAPI.navigateTo('ocal://file-manager');
     if (mnBtn) mnBtn.onclick = () => window.electronAPI.send('toggle-sidebar', true);
     
+    const splitBtn = document.getElementById('split-screen-btn');
+    if (splitBtn) splitBtn.onclick = () => window.electronAPI.send('toggle-split-screen');
+    
     // ── Left Sidebar Event Listeners ─────────────────────────────
     const sbSavesBtn = document.getElementById('sb-saves-btn');
     const sbHistoryBtn = document.getElementById('sb-history-btn');
@@ -766,13 +872,13 @@ function applyGlobalSettings(s) {
     if (s.accentColor) {
         const contrastColor = getContrastColor(s.accentColor);
         document.documentElement.style.setProperty('--accent', s.accentColor);
-        document.documentElement.style.setProperty('--accent-glow', hexToRgba(s.accentColor, 0.45));
+        document.documentElement.style.setProperty('--accent-glow', 'transparent');
         document.documentElement.style.setProperty('--accent-dim', hexToRgba(s.accentColor, 0.15));
         document.documentElement.style.setProperty('--accent-border', hexToRgba(s.accentColor, 0.4));
         document.documentElement.style.setProperty('--accent-text', contrastColor);
 
         document.body.style.setProperty('--accent', s.accentColor);
-        document.body.style.setProperty('--accent-glow', hexToRgba(s.accentColor, 0.45));
+        document.body.style.setProperty('--accent-glow', 'transparent');
         document.body.style.setProperty('--accent-dim', hexToRgba(s.accentColor, 0.15));
         document.body.style.setProperty('--accent-border', hexToRgba(s.accentColor, 0.4));
         document.body.style.setProperty('--accent-text', contrastColor);
@@ -1069,7 +1175,7 @@ window.electronAPI.on('close-tab-trigger', (event, tabId) => {
 });
 window.electronAPI.on('create-tab-group-trigger', (event, tabId) => {
     console.log(`[RENDERER] create-tab-group-trigger received for tabId:`, tabId);
-    window.electronAPI.send('create-tab-group', { name: 'New Group', color: '#a855f7', tabIds: [tabId] });
+    window.electronAPI.send('create-tab-group', { name: '', color: '#a855f7', tabIds: [tabId] });
 });
 window.electronAPI.on('remove-from-group-trigger', (event, tabId) => {
     console.log(`[RENDERER] remove-from-group-trigger received for tabId:`, tabId);
@@ -1080,7 +1186,9 @@ window.electronAPI.on('add-to-group-trigger', (event, data) => {
     window.electronAPI.send('add-to-group', { tabId: data.tabId, groupId: data.groupId });
 });
 
-
+window.electronAPI.on('show-toast', (e, msg) => {
+    showToast(msg, 'fa-circle-info');
+});
 
 window.electronAPI.send('request-tabs');
 const identityBtn = document.getElementById('identity-btn');
@@ -1116,3 +1224,99 @@ function updateSidebarActiveStates(url) {
         if (sbGamesBtn) sbGamesBtn.classList.add('active');
     }
 }
+
+// ── Split Screen Close Confirmation and Undo Toast Integration ──
+let tabIdToClose = null;
+const confirmModal = document.getElementById('split-confirm-modal');
+const confirmCloseBtn = document.getElementById('split-confirm-close-btn');
+const confirmCancelBtn = document.getElementById('split-confirm-cancel-btn');
+
+const undoToast = document.getElementById('split-undo-toast');
+const undoBtn = document.getElementById('split-undo-btn');
+let undoTimeout = null;
+
+window.electronAPI.on('confirm-close-split-tab', (e, tabId) => {
+    tabIdToClose = tabId;
+    if (confirmModal) {
+        confirmModal.style.display = 'flex';
+    }
+});
+
+if (confirmCloseBtn) {
+    confirmCloseBtn.onclick = () => {
+        if (confirmModal) confirmModal.style.display = 'none';
+        if (tabIdToClose) {
+            window.electronAPI.send('close-tab-confirmed', tabIdToClose);
+            tabIdToClose = null;
+        }
+    };
+}
+
+if (confirmCancelBtn) {
+    confirmCancelBtn.onclick = () => {
+        if (confirmModal) confirmModal.style.display = 'none';
+        if (tabIdToClose) {
+            window.electronAPI.send('close-tab-cancelled', tabIdToClose);
+            tabIdToClose = null;
+        }
+    };
+}
+
+if (confirmModal) {
+    confirmModal.onclick = (e) => {
+        if (e.target === confirmModal) {
+            confirmModal.style.display = 'none';
+            if (tabIdToClose) {
+                window.electronAPI.send('close-tab-cancelled', tabIdToClose);
+                tabIdToClose = null;
+            }
+        }
+    };
+}
+
+window.electronAPI.on('show-undo-split-toast', () => {
+    if (undoToast) {
+        undoToast.classList.add('show');
+        clearTimeout(undoTimeout);
+        undoTimeout = setTimeout(() => {
+            undoToast.classList.remove('show');
+        }, 7000);
+    }
+});
+
+if (undoBtn) {
+    undoBtn.onclick = () => {
+        if (undoToast) undoToast.classList.remove('show');
+        clearTimeout(undoTimeout);
+        window.electronAPI.send('restore-last-closed-split-tab');
+    };
+}
+
+function getEmojiSvgHtml(emoji) {
+    if (!emoji) return '';
+    const url = getEmojiSvgUrl(emoji);
+    if (url) {
+        return `<img src="${url}" class="tab-emoji-img" onerror="this.replaceWith('${emoji}')">`;
+    }
+    return `<span style="font-size:11px; line-height:1; font-style:normal;">${emoji}</span>`;
+}
+
+function getEmojiSvgUrl(emoji) {
+    let code = '';
+    if (emoji === '💻') code = '1f4bb';
+    else if (emoji === '🏠') code = '1f3e0';
+    else if (emoji === '🎮') code = '1f3ae';
+    else if (emoji === '🎵') code = '1f3b5';
+    else if (emoji === '📚') code = '1f4da';
+    else if (emoji === '✈️') code = '2708';
+    else if (emoji === '🍔') code = '1f354';
+    else if (emoji === '💡') code = '1f4a1';
+    else if (emoji === '🔥') code = '1f525';
+    else if (emoji === '❤️') code = '2764';
+    
+    if (code) {
+        return `https://cdnjs.cloudflare.com/ajax/libs/twemoji/14.0.2/svg/${code}.svg`;
+    }
+    return null;
+}
+

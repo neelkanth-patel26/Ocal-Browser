@@ -2,6 +2,17 @@
  * Ocal Browser Home Logic - Premium Polish & Entry
  */
 
+if (window.location.hash === '#drag-overlay') {
+    document.documentElement.classList.add('drag-overlay-mode');
+    if (document.body) {
+        document.body.classList.add('drag-overlay-mode');
+    } else {
+        document.addEventListener('DOMContentLoaded', () => {
+            document.body.classList.add('drag-overlay-mode');
+        });
+    }
+}
+
 const days = ['SUNDAY', 'MONDAY', 'TUESDAY', 'WEDNESDAY', 'THURSDAY', 'FRIDAY', 'SATURDAY'];
 const months = ['JANUARY', 'FEBRUARY', 'MARCH', 'APRIL', 'MAY', 'JUNE', 'JULY', 'AUGUST', 'SEPTEMBER', 'OCTOBER', 'NOVEMBER', 'DECEMBER'];
 
@@ -503,7 +514,7 @@ function applySettings(s) {
     const root = document.documentElement;
     if (s.accentColor) {
         root.style.setProperty('--accent', s.accentColor);
-        root.style.setProperty('--accent-glow', hexToRgba(s.accentColor, 0.45));
+        root.style.setProperty('--accent-glow', 'transparent');
         root.style.setProperty('--accent-dim', hexToRgba(s.accentColor, 0.15));
         root.style.setProperty('--accent-border', hexToRgba(s.accentColor, 0.4));
     }
@@ -671,6 +682,13 @@ class StyleCustomizer {
         } else if (type === 'font') {
             document.body.setAttribute('data-font-style', val);
             localStorage.setItem('ocal-custom-font', val);
+        } else if (type === 'theme') {
+            document.body.setAttribute('data-theme', val);
+            if (window.electronAPI && window.electronAPI.updateSetting) {
+                window.electronAPI.updateSetting('themeMode', val);
+            } else {
+                localStorage.setItem('ocal-custom-theme', val);
+            }
         }
     }
 
@@ -683,7 +701,7 @@ class StyleCustomizer {
         } else {
             const root = document.documentElement;
             root.style.setProperty('--accent', color);
-            root.style.setProperty('--accent-glow', hexToRgba(color, 0.45));
+            root.style.setProperty('--accent-glow', 'transparent');
             root.style.setProperty('--accent-dim', hexToRgba(color, 0.15));
             root.style.setProperty('--accent-border', hexToRgba(color, 0.4));
         }
@@ -707,6 +725,17 @@ class StyleCustomizer {
         // Load Background Theme
         const bgVal = localStorage.getItem('ocal-custom-bg') || 'static';
         this.setOption('bg', bgVal);
+
+        // Load Theme Mode (Dark/Light)
+        if (window.electronAPI) {
+            window.electronAPI.getSettings().then(s => {
+                const themeVal = (s && s.themeMode) || 'dark';
+                this.setOption('theme', themeVal);
+            });
+        } else {
+            const themeVal = localStorage.getItem('ocal-custom-theme') || 'dark';
+            this.setOption('theme', themeVal);
+        }
 
         // Load Visual Effect
         const effectVal = localStorage.getItem('ocal-custom-effect') || 'none';
@@ -752,6 +781,7 @@ class StyleCustomizer {
 
         // Reset elements
         this.setOption('bg', 'static');
+        this.setOption('theme', 'dark');
         this.setOption('effect', 'none');
         this.setOption('ui', 'frosted-glass');
         this.setOption('font', 'mono');
@@ -763,3 +793,51 @@ class StyleCustomizer {
     }
 }
 new StyleCustomizer();
+
+// Tab drag multitasking overlay (Opera Style)
+if (window.electronAPI) {
+    const splitOverlay = document.getElementById('split-drop-zones-overlay');
+    if (splitOverlay) {
+        window.electronAPI.on('tab-drag-start', () => {
+            splitOverlay.style.display = 'grid';
+            splitOverlay.offsetHeight; 
+            splitOverlay.classList.add('active');
+        });
+
+        window.electronAPI.on('tab-drag-end', () => {
+            splitOverlay.classList.remove('active');
+            setTimeout(() => {
+                if (!splitOverlay.classList.contains('active')) {
+                    splitOverlay.style.display = 'none';
+                }
+            }, 300);
+        });
+
+        window.electronAPI.on('set-split-mode', (e, isSplit) => {
+            if (isSplit) {
+                document.body.classList.add('split-mode');
+            } else {
+                document.body.classList.remove('split-mode');
+            }
+        });
+
+        const zones = document.querySelectorAll('.split-drop-zone');
+        zones.forEach(zone => {
+            zone.addEventListener('dragover', (e) => {
+                e.preventDefault();
+                zone.classList.add('drag-over');
+            });
+
+            zone.addEventListener('dragleave', () => {
+                zone.classList.remove('drag-over');
+            });
+
+            zone.addEventListener('drop', (e) => {
+                e.preventDefault();
+                zone.classList.remove('drag-over');
+                const direction = zone.getAttribute('data-direction');
+                window.electronAPI.send('drop-tab-to-split', direction);
+            });
+        });
+    }
+}

@@ -152,6 +152,7 @@
                 <i class="fas fa-layer-group"></i>
                 <span id="media-count-chip">0</span>
             </button>
+            <button class="tool-btn" id="split-screen-btn" title="Split Screen"><i class="fas fa-columns"></i></button>
             <button class="tool-btn" id="extensions-toolbar-btn" title="Extensions"><i class="fas fa-puzzle-piece"></i></button>
             <button class="ai-pill" id="ai-toolbar-btn">
                 <i class="fas fa-wand-magic-sparkles"></i>
@@ -187,6 +188,32 @@
 
     <!-- Toast -->
     <div class="bm-toast" id="bm-toast"></div>
+
+    <!-- Split Close Confirmation Modal -->
+    <div class="split-confirm-modal-overlay" id="split-confirm-modal" style="display: none;">
+        <div class="split-confirm-modal">
+            <div class="split-confirm-icon">
+                <i class="fas fa-triangle-exclamation"></i>
+            </div>
+            <h3>Close Split Workspace?</h3>
+            <p>Are you sure you want to close this split screen workspace? All active pages inside it will be closed.</p>
+            <div class="split-confirm-actions">
+                <button class="split-confirm-btn cancel-btn" id="split-confirm-cancel-btn">Cancel</button>
+                <button class="split-confirm-btn confirm-btn" id="split-confirm-close-btn">Confirm</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Undo Split Tab Toast -->
+    <div class="split-undo-toast" id="split-undo-toast">
+        <div class="split-undo-content">
+            <i class="fas fa-columns"></i>
+            <span>Split workspace closed</span>
+        </div>
+        <button class="split-undo-btn" id="split-undo-btn">
+            <i class="fas fa-rotate-left"></i> Undo
+        </button>
+    </div>
 
     <script src="renderer.js"></script>
 </body>

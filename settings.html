@@ -99,6 +99,10 @@
                 <div class="nav-item-icon"><i class="fas fa-brain"></i></div>
                 <span>AI Assistant</span>
             </div>
+            <div class="nav-item" data-section="whatsnew">
+                <div class="nav-item-icon"><i class="fas fa-gift"></i></div>
+                <span>What's New</span>
+            </div>
             <div class="nav-item" data-section="about">
                 <div class="nav-item-icon"><i class="fas fa-circle-info"></i></div>
                 <span>About</span>
@@ -514,14 +518,9 @@
                     
                     <!-- Left Column: Active Nodes/Profiles -->
                     <div class="profiles-main-pane">
-                        <div class="section-card-header" style="margin-bottom: 16px; display: flex; justify-content: space-between; align-items: center;">
-                            <div>
-                                <h4 class="mono-label" style="font-size: 12px; color: var(--accent); margin-bottom: 4px;"><i class="fas fa-network-wired"></i> Session Registry</h4>
-                                <p class="mono-label-small" style="font-size: 13px; color: var(--text-dim);">Select an identity profile to switch workspaces.</p>
-                            </div>
-                            <button class="btn primary" onclick="createProfilePrompt()" style="padding: 8px 16px; font-size: 12.5px; border-radius: 8px;">
-                                <i class="fas fa-plus"></i> New Profile
-                            </button>
+                        <div class="section-card-header" style="margin-bottom: 16px;">
+                            <h4 class="mono-label" style="font-size: 12px; color: var(--accent); margin-bottom: 4px;"><i class="fas fa-network-wired"></i> Session Registry</h4>
+                            <p class="mono-label-small" style="font-size: 13px; color: var(--text-dim);">Select an identity profile to switch workspaces.</p>
                         </div>
                         
                         <div id="profile-grid" class="profiles-grid-layout">
@@ -1482,6 +1481,11 @@
             </script>
         </section>
 
+        <!-- ── WHAT'S NEW ── -->
+        <section id="whatsnew" class="section">
+            <iframe src="whats-new.html" class="whatsnew-iframe" style="width: 100%; height: 100%; border: none; background: transparent;"></iframe>
+        </section>
+
         <!-- ── ABOUT ── -->
         <section id="about" class="section">
             <div class="page-header">
@@ -1490,88 +1494,76 @@
                 <div class="page-desc">Check system specs, source licenses, and keep the browser up-to-date.</div>
             </div>
             <div class="page-body">
-                <div class="about-layout">
+                <div class="about-hero-card card" id="update-dashboard">
+                    <div class="hero-left">
+                        <div class="brand-logo-container">
+                            <svg class="brand-logo-svg" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                <path d="M12 2C6.48 2 2 6.48 2 12C2 17.52 6.48 22 12 22C17.52 22 22 17.52 22 12C22 9.24 20.88 6.74 19.07 4.93L17.66 6.34C19.11 7.79 20 9.79 20 12C20 16.42 16.42 20 12 20C7.58 20 4 16.42 4 12C4 7.58 7.58 4 12 4C13.1 4 14.15 4.22 15.11 4.62L16.63 3.1C15.22 2.4 13.66 2 12 2Z" fill="var(--accent)"/>
+                                <path d="M12 7C9.24 7 7 9.24 7 12C7 14.76 9.24 17 12 17C14.76 17 17 14.76 17 12C17 10.9 16.64 9.88 16.03 9.06L14.61 10.48C14.86 10.92 15 11.44 15 12C15 13.66 13.66 15 12 15C10.34 15 9 13.66 9 12C9 10.34 10.34 9 12 9C12.56 9 13.08 9.14 13.52 9.39L14.94 7.97C14.12 7.36 13.1 7 12 7Z" fill="var(--accent)"/>
+                                <circle cx="12" cy="12" r="2" fill="var(--accent)"/>
+                            </svg>
+                        </div>
+                        <div class="brand-details">
+                            <h3 class="brand-name">Ocal Browser</h3>
+                            <div class="brand-version-wrap">
+                                <span class="brand-version" id="current-version-display">Version 7.1.00</span>
+                                <span class="brand-build-type">Stable Build (64-bit)</span>
+                                <span id="about-build-line" class="brand-build-line">Production Build</span>
+                            </div>
+                            <p class="brand-tagline">A high-performance, secure web browser powered by an agentic core.</p>
+                        </div>
+                    </div>
                     
-                    <!-- Left Column: Core Info & Updates -->
-                    <div class="about-main-panel">
-                        
-                        <!-- Professional Product Info Card -->
-                        <div class="card about-brand-card">
-                            <div class="brand-header">
-                                <div class="brand-logo-container">
-                                    <svg class="brand-logo-svg" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                                        <path d="M12 2C6.48 2 2 6.48 2 12C2 17.52 6.48 22 12 22C17.52 22 22 17.52 22 12C22 9.24 20.88 6.74 19.07 4.93L17.66 6.34C19.11 7.79 20 9.79 20 12C20 16.42 16.42 20 12 20C7.58 20 4 16.42 4 12C4 7.58 7.58 4 12 4C13.1 4 14.15 4.22 15.11 4.62L16.63 3.1C15.22 2.4 13.66 2 12 2Z" fill="var(--accent)"/>
-                                        <path d="M12 7C9.24 7 7 9.24 7 12C7 14.76 9.24 17 12 17C14.76 17 17 14.76 17 12C17 10.9 16.64 9.88 16.03 9.06L14.61 10.48C14.86 10.92 15 11.44 15 12C15 13.66 13.66 15 12 15C10.34 15 9 13.66 9 12C9 10.34 10.34 9 12 9C12.56 9 13.08 9.14 13.52 9.39L14.94 7.97C14.12 7.36 13.1 7 12 7Z" fill="var(--accent)"/>
-                                        <circle cx="12" cy="12" r="2" fill="var(--accent)"/>
-                                    </svg>
-                                </div>
-                                <div class="brand-details">
-                                    <h3 class="brand-name">Ocal Browser</h3>
-                                    <div class="brand-version-wrap">
-                                        <span class="brand-version" id="current-version-display">Version 7.0.00</span>
-                                        <span class="brand-build-type">Stable Build (64-bit)</span>
-                                    </div>
-                                    <div id="about-build-line" class="brand-build-line">Production Build</div>
-                                    <p class="brand-tagline">A high-performance, secure web browser powered by an agentic core.</p>
-                                </div>
+                    <div class="hero-right">
+                        <div class="update-status-info">
+                            <div class="update-icon-box" id="update-status-icon-box">
+                                <i class="fas fa-circle-check" id="update-status-icon"></i>
+                            </div>
+                            <div class="update-status-text">
+                                <h4 id="update-status-title">Browser is up to date</h4>
+                                <p id="update-status-desc">Checking status...</p>
                             </div>
                         </div>
+                        <button class="btn secondary" id="update-check-btn">
+                            <i class="fas fa-arrows-rotate"></i> Check for Updates
+                        </button>
+                    </div>
+                </div>
 
-                        <!-- Professional Clean Update Card -->
-                        <div class="card about-update-card" id="update-dashboard">
-                            <div class="update-header-row">
-                                <div class="update-status-info">
-                                    <div class="update-icon-box" id="update-status-icon-box">
-                                        <i class="fas fa-circle-check" id="update-status-icon"></i>
-                                    </div>
-                                    <div class="update-status-text">
-                                        <h4 id="update-status-title">Browser is up to date</h4>
-                                        <p id="update-status-desc">Checking status...</p>
-                                    </div>
-                                </div>
-                                <button class="btn secondary" id="update-check-btn" style="border-radius: var(--radius-sm); font-size: 12.5px; padding: 8px 18px;">
-                                    <i class="fas fa-arrows-rotate"></i> Check for Updates
-                                </button>
-                            </div>
+                <!-- Progress bar container -->
+                <div id="update-info-expanded" class="card" style="display: none; padding: 16px 20px; margin-top: -10px; margin-bottom: 20px; border-top: none;">
+                    <div class="update-progress-container">
+                        <div class="update-progress-label">
+                            <span>Downloading updates...</span>
+                            <span id="update-progress-percent" style="font-weight: 600; font-family: var(--font-mono);">0%</span>
+                        </div>
+                        <div class="update-progress-bar">
+                            <div class="update-progress-fill" id="update-progress-fill" style="width: 0%;"></div>
+                        </div>
+                        <button class="btn primary" id="download-update-btn" style="display: none; margin-top: 12px; width: 100%; justify-content: center;">
+                            <i class="fas fa-power-off"></i> Restart to Apply Update
+                        </button>
+                    </div>
+                </div>
 
-                            <!-- Progress bar container -->
-                            <div id="update-info-expanded" style="display: none; padding: 16px 20px; border-top: 1px solid var(--chrome-border);">
-                                <div class="update-progress-container">
-                                    <div class="update-progress-label">
-                                        <span>Downloading updates...</span>
-                                        <span id="update-progress-percent" style="font-weight: 600; font-family: var(--font-mono);">0%</span>
-                                    </div>
-                                    <div class="update-progress-bar">
-                                        <div class="update-progress-fill" id="update-progress-fill" style="width: 0%;"></div>
-                                    </div>
-                                    <button class="btn primary" id="download-update-btn" style="display: none; margin-top: 12px; width: 100%; justify-content: center; border-radius: var(--radius-sm);">
-                                        <i class="fas fa-power-off"></i> Restart to Apply Update
-                                    </button>
-                                </div>
-                            </div>
-
-                            <!-- Release Notes -->
-                            <div class="update-notes-box">
-                                <div class="notes-header">
-                                    <i class="fas fa-file-lines"></i>
-                                    <span>Latest Release Notes</span>
-                                    <span id="catalog-ver-tag" style="display: none;"></span>
-                                </div>
-                                <div class="notes-content" id="update-notes">
-                                    <div class="notes-loading">
-                                        <i class="fas fa-spinner fa-spin"></i>
-                                        <span>Loading notes...</span>
-                                    </div>
-                                </div>
+                <div class="about-grid">
+                    <!-- Release Notes Card (Left Column) -->
+                    <div class="card notes-card">
+                        <div class="card-header-styled">
+                            <i class="fas fa-file-lines"></i>
+                            <span>Latest Release Notes</span>
+                        </div>
+                        <div class="notes-content" id="update-notes">
+                            <div class="notes-loading">
+                                <i class="fas fa-spinner fa-spin"></i>
+                                <span>Loading notes...</span>
                             </div>
                         </div>
-
                     </div>
 
                     <!-- Right Column: Specs & Links -->
                     <div class="about-side-panel">
-                        
-                        <!-- System Specs Card -->
+                        <!-- Specs -->
                         <div class="card specs-card">
                             <div class="card-header-styled">
                                 <i class="fas fa-microchip"></i>
@@ -1597,7 +1589,7 @@
                             </div>
                         </div>
 
-                        <!-- Resource Links Card -->
+                        <!-- Links -->
                         <div class="card resources-card">
                             <div class="card-header-styled">
                                 <i class="fas fa-compass"></i>
@@ -1626,8 +1618,6 @@
                                     <i class="fas fa-arrow-up-right-from-square link-arrow"></i>
                                 </div>
                             </div>
-                        </div>
-
                     </div>
                 </div>
 

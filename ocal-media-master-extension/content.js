@@ -59,13 +59,25 @@ function extractMedia() {
         });
     }
 
+    function getCleanFilename(url, alt) {
+        if (alt && alt.trim() && alt.trim().length > 2) return alt;
+        try {
+            const pathname = new URL(url).pathname;
+            const filename = pathname.substring(pathname.lastIndexOf('/') + 1);
+            if (filename && filename.includes('.') && filename.length > 3) {
+                return decodeURIComponent(filename);
+            }
+        } catch (e) {}
+        return 'Web Image';
+    }
+
     // 4. Global Images (Large Assets Only)
     document.querySelectorAll('img').forEach(img => {
         if ((img.naturalWidth > 300 || img.width > 300) && img.src && img.src.startsWith('http') && !detectedMedia.has(img.src)) {
             list.push({
                 type: 'image',
                 url: img.src,
-                title: img.alt || 'Web Image',
+                title: getCleanFilename(img.src, img.alt),
                 size: `${img.naturalWidth}x${img.naturalHeight}`,
                 origin: window.location.hostname
             });
@@ -241,7 +253,8 @@ const mainMutationHandler = () => {
 };
 
 const observer = new MutationObserver(mainMutationHandler);
-observer.observe(document.body, { childList: true, subtree: true });
+const targetNode = document.body || document.documentElement;
+observer.observe(targetNode, { childList: true, subtree: true });
 
 // Initial scan and setup
 if (document.readyState === 'loading') {
