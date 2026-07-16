@@ -18,6 +18,34 @@ Write-Host "[2/4] Packaging Electron application..." -ForegroundColor Yellow
 cmd.exe /c npx electron-builder --dir
 if ($LASTEXITCODE -ne 0) { throw "Electron packaging failed." }
 
+# 2b. Stamp Custom Icon into Executable
+Write-Host "[2b/4] Stamping custom icon into executable..." -ForegroundColor Yellow
+$exePath = "dist-builder\win-unpacked\Ocal Browser.exe"
+$iconPath = "icon.ico"
+
+if (Test-Path $exePath) {
+    # Find rcedit from electron-builder cache
+    $rceditPaths = Get-ChildItem -Path "$env:LOCALAPPDATA\electron-builder\Cache\winCodeSign" -Recurse -Filter "rcedit-x64.exe" -ErrorAction SilentlyContinue | Sort-Object LastWriteTime -Descending
+    $rceditPath = $null
+    if ($rceditPaths.Count -gt 0) {
+        $rceditPath = $rceditPaths[0].FullName
+    }
+
+    if ($rceditPath -and (Test-Path $rceditPath)) {
+        Write-Host "Using rcedit at: $rceditPath" -ForegroundColor Gray
+        & $rceditPath $exePath --set-icon $iconPath
+        if ($LASTEXITCODE -eq 0) {
+            Write-Host "Custom icon stamped successfully." -ForegroundColor Green
+        } else {
+            Write-Host "WARNING: rcedit icon stamp failed (exit code $LASTEXITCODE)." -ForegroundColor Red
+        }
+    } else {
+        Write-Host "WARNING: rcedit-x64.exe not found in electron-builder cache. Icon may show Electron default." -ForegroundColor Red
+    }
+} else {
+    Write-Host "WARNING: Executable not found at $exePath. Skipping icon stamp." -ForegroundColor Red
+}
+
 # 3. Inno Setup Compilation
 Write-Host "[3/4] Compiling Inno Setup installer..." -ForegroundColor Magenta
 
