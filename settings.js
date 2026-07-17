@@ -44,6 +44,10 @@ function showSection(id) {
 
 navItems.forEach(item => {
     item.onclick = async () => {
+        if (item.dataset.section === 'whatsnew') {
+            window.electronAPI.newTab('ocal://whats-new');
+            return;
+        }
         if (item.classList.contains('active')) return;
         
         const current = document.querySelector('.section.active');
@@ -106,11 +110,6 @@ function initGridSelector(gridId, settingsKey) {
             item.classList.add('active');
             window.electronAPI.updateSetting(settingsKey, val);
             
-            // Special case for custom search visibility
-            if (gridId === 'search-grid') {
-                const customContainer = document.getElementById('custom-search-container');
-                if (customContainer) customContainer.style.display = (val === 'custom') ? 'block' : 'none';
-            }
 
             // Real-time theme application
             if (gridId === 'theme-mode-grid') {
@@ -160,19 +159,53 @@ function getContrastColor(hex) {
     return luma > 128 ? '#000000' : '#ffffff';
 }
 
-function applyAccent(color) {
-    const contrastColor = getContrastColor(color);
+let lastColor = null;
+
+function getModeAccent(color, isLight) {
+    if (!color) return isLight ? '#058f60' : '#09f0a0';
+    if (!isLight) return color;
+    const hex = color.toLowerCase();
+    if (hex === '#09f0a0' || hex === '#00ffaa' || hex.includes('f0a0')) return '#058f60';
+    if (hex === '#ff007f' || hex === '#ff00aa' || hex.includes('ff007') || hex.includes('ff00a')) return '#d81b60';
+    if (hex === '#00e5ff' || hex === '#00ffff' || hex === '#3b82f6' || hex.includes('00e5') || hex.includes('00f0') || hex.includes('3b82')) return '#0288d1';
+    if (hex === '#ff9100' || hex === '#ffaa00' || hex === '#e8ff47' || hex.includes('ff91') || hex.includes('ffaa') || hex.includes('e8ff')) return '#d97706';
+    if (hex === '#8b5cf6' || hex === '#a855f7' || hex === '#9333ea' || hex === '#7b1fa2' || hex.includes('8b5c') || hex.includes('a855') || hex.includes('7b1f')) return '#6d28d9';
+    if (hex === '#ff4d4d' || hex === '#ff3333' || hex === '#ef4444' || hex === '#ef5350' || hex.includes('ff4d') || hex.includes('ff33') || hex.includes('ef44') || hex.includes('ef53')) return '#dc2626';
+    if (hex === '#ffffff' || hex === '#f4f4f5' || hex === '#e8e8e8' || hex.includes('fff')) return '#0f172a';
+    return color;
+}
+
+function updateColorDots(themeMode) {
+    const isLight = themeMode === 'light';
+    const darkColors = ['#09f0a0', '#ffffff', '#a855f7', '#3b82f6', '#ef4444', '#e8ff47'];
+    const lightColors = ['#058f60', '#0f172a', '#6d28d9', '#0288d1', '#dc2626', '#d97706'];
     
-    document.documentElement.style.setProperty('--accent', color);
-    document.documentElement.style.setProperty('--accent-glow', `color-mix(in srgb, ${color} 30%, transparent)`);
-    document.documentElement.style.setProperty('--accent-dim', `color-mix(in srgb, ${color} 12%, transparent)`);
-    document.documentElement.style.setProperty('--accent-border', color);
+    dots.forEach((dot, index) => {
+        const color = isLight ? lightColors[index] : darkColors[index];
+        if (color) {
+            dot.style.background = color;
+            dot.dataset.color = color;
+        }
+    });
+}
+
+function applyAccent(color) {
+    if (!color) return;
+    lastColor = color;
+    const isLight = document.body.getAttribute('data-theme') === 'light';
+    const activeAccent = getModeAccent(color, isLight);
+    const contrastColor = getContrastColor(activeAccent);
+    
+    document.documentElement.style.setProperty('--accent', activeAccent);
+    document.documentElement.style.setProperty('--accent-glow', `color-mix(in srgb, ${activeAccent} 30%, transparent)`);
+    document.documentElement.style.setProperty('--accent-dim', `color-mix(in srgb, ${activeAccent} 12%, transparent)`);
+    document.documentElement.style.setProperty('--accent-border', activeAccent);
     document.documentElement.style.setProperty('--accent-text', contrastColor);
 
-    document.body.style.setProperty('--accent', color);
-    document.body.style.setProperty('--accent-glow', `color-mix(in srgb, ${color} 30%, transparent)`);
-    document.body.style.setProperty('--accent-dim', `color-mix(in srgb, ${color} 12%, transparent)`);
-    document.body.style.setProperty('--accent-border', color);
+    document.body.style.setProperty('--accent', activeAccent);
+    document.body.style.setProperty('--accent-glow', `color-mix(in srgb, ${activeAccent} 30%, transparent)`);
+    document.body.style.setProperty('--accent-dim', `color-mix(in srgb, ${activeAccent} 12%, transparent)`);
+    document.body.style.setProperty('--accent-border', activeAccent);
     document.body.style.setProperty('--accent-text', contrastColor);
     
     localStorage.setItem('ocal-settings-accent', color);
@@ -182,6 +215,8 @@ function applyAccent(color) {
 function applyTheme(theme) {
     document.body.setAttribute('data-theme', theme);
     localStorage.setItem('ocal-settings-theme', theme);
+    updateColorDots(theme);
+    if (lastColor) applyAccent(lastColor);
 }
 
 
@@ -754,6 +789,11 @@ function isNewerVersion(latest, current) {
 // Initialize from Hash
 window.addEventListener('load', () => {
     const hash = window.location.hash.replace('#', '');
+    if (hash === 'whatsnew') {
+        window.electronAPI.newTab('ocal://whats-new');
+        showSection('search');
+        return;
+    }
     if (hash && document.getElementById(hash)) {
         showSection(hash);
     } else {
@@ -768,7 +808,7 @@ function showUpdateInfo(latest) {
     updateStatusI.style.color = "var(--accent)";
     updateStatusI.style.opacity = "1";
 
-    updateExpanded.style.display = 'block';
+    updateExpanded.style.setProperty('display', 'block', 'important');
     
     // Build update catalog notes
     const formattedNotes = `
@@ -786,8 +826,18 @@ function showUpdateInfo(latest) {
     downloadBtn.onclick = async () => {
         downloadBtn.disabled = true;
         downloadBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> PREPARING...';
+        
+        const progWrapper = document.getElementById('update-progress-wrapper');
+        if (progWrapper) progWrapper.style.display = 'block';
+        
         try {
             const path = await window.electronAPI.downloadUpdate();
+            
+            const fill = document.getElementById('update-progress-fill');
+            const pText = document.getElementById('update-progress-percent');
+            if (fill) fill.style.width = '100%';
+            if (pText) pText.innerText = '100%';
+            
             downloadBtn.innerHTML = 'RESTART & DEPLOY <i class="fas fa-power-off"></i>';
             downloadBtn.style.background = '#10b981';
             downloadBtn.disabled = false;
@@ -800,12 +850,19 @@ function showUpdateInfo(latest) {
 
 window.electronAPI.onUpdateProgress(data => {
     const fill = document.getElementById('update-progress-fill');
-    if (fill) fill.style.width = data.percent + '%';
-    if (downloadBtn) downloadBtn.innerHTML = `<i class="fas fa-download"></i> Downloading... ${data.percent}%`;
+    const pText = document.getElementById('update-progress-percent');
+    const p = Math.round(data.percent || 0);
+    
+    if (fill) fill.style.width = p + '%';
+    if (pText) pText.innerText = p + '%';
+    if (downloadBtn) downloadBtn.innerHTML = `<i class="fas fa-download"></i> Downloading... ${p}%`;
 });
 
 // Initialize Settings
 window.electronAPI.getSettings().then(s => {
+    if (s.themeMode) applyTheme(s.themeMode);
+    else localStorage.setItem('ocal-settings-theme', 'dark'); // Default fallback
+    
     if (s.accentColor) applyAccent(s.accentColor);
     setGridValue('search-grid', s.searchEngine || 'google');
     setGridValue('dns-grid', s.dns || 'default');
@@ -829,22 +886,9 @@ window.electronAPI.getSettings().then(s => {
     initGridSelector('tile-style-grid', 'homeTileStyle');
     initGridSelector('theme-mode-grid', 'themeMode');
     
-    if (s.themeMode) applyTheme(s.themeMode);
-    else localStorage.setItem('ocal-settings-theme', 'dark'); // Default fallback
+    // themeMode has already been applied at the start of getSettings callback
     setGridValue('theme-mode-grid', s.themeMode || 'dark');
     
-    // Custom Search URL Specific Logic
-    const customInp = document.getElementById('custom-search-input');
-    if (customInp) {
-        customInp.value = s.customSearchUrl || '';
-        customInp.onchange = () => {
-            window.electronAPI.updateSetting('customSearchUrl', customInp.value);
-        };
-    }
-    const customContainer = document.getElementById('custom-search-container');
-    if (customContainer) {
-        customContainer.style.display = (s.searchEngine === 'custom') ? 'block' : 'none';
-    }
 
     if (s.homeLayout) window.updateHomeLayout(s.homeLayout, true);
     if (s.homeTileStyle) setGridValue('tile-style-grid', s.homeTileStyle);
@@ -931,20 +975,11 @@ window.electronAPI.getSettings().then(s => {
                 
                 // Toggle active class on cards
                 searchEngineRows.forEach(r => r.classList.toggle('active', r === row));
-                
-                // Show/hide custom search container
-                const customContainer = document.getElementById('custom-search-container');
-                if (customContainer) {
-                    customContainer.style.display = (engine === 'custom') ? 'block' : 'none';
-                }
+
             }
         });
     });
     
-    if (s.customSearchUrl) {
-        const customInput = document.getElementById('custom-search-input');
-        if (customInput) customInput.value = s.customSearchUrl;
-    }
 
     initToggle('instant-search-toggle', 'instantSearchEnabled', s.instantSearchEnabled);
     initToggle('safe-search-toggle', 'safeSearchEnabled', s.safeSearchEnabled);
@@ -1100,7 +1135,10 @@ window.electronAPI.getSettings().then(s => {
 
     // Initial section based on hash
     const hash = window.location.hash.replace('#', '');
-    if (hash && Array.from(sections).some(sec => sec.id === hash)) {
+    if (hash === 'whatsnew') {
+        window.electronAPI.newTab('ocal://whats-new');
+        showSection('search');
+    } else if (hash && Array.from(sections).some(sec => sec.id === hash)) {
         showSection(hash);
     }
 });

@@ -15,23 +15,42 @@ function hexToRgba(hex, alpha) {
     return `rgba(${r}, ${g}, ${b}, ${alpha})`;
 }
 
+let lastColor = null;
+
+function getModeAccent(color, isLight) {
+    if (!color) return isLight ? '#058f60' : '#09f0a0';
+    if (!isLight) return color;
+    const hex = color.toLowerCase();
+    if (hex === '#09f0a0' || hex === '#00ffaa' || hex.includes('f0a0')) return '#058f60';
+    if (hex === '#ff007f' || hex === '#ff00aa' || hex.includes('ff007') || hex.includes('ff00a')) return '#d81b60';
+    if (hex === '#00e5ff' || hex === '#00ffff' || hex.includes('00e5') || hex.includes('00f0')) return '#0288d1';
+    if (hex === '#ff9100' || hex === '#ffaa00' || hex.includes('ff91') || hex.includes('ffaa')) return '#d97706';
+    if (hex === '#8b5cf6' || hex === '#a855f7' || hex === '#9333ea' || hex.includes('8b5c') || hex.includes('a855')) return '#6d28d9';
+    if (hex === '#ff4d4d' || hex === '#ff3333' || hex.includes('ff4d') || hex.includes('ff33')) return '#dc2626';
+    if (hex === '#ffffff' || hex === '#f4f4f5' || hex === '#e8e8e8' || hex.includes('fff')) return '#0f172a';
+    return color;
+}
+
 function applyAccent(color) {
     if (!color) return;
-    document.documentElement.style.setProperty('--accent', color);
-    document.documentElement.style.setProperty('--accent-glow', hexToRgba(color, 0.4));
-    document.documentElement.style.setProperty('--accent-dim', hexToRgba(color, 0.1));
+    lastColor = color;
+    const isLight = document.body.getAttribute('data-theme') === 'light';
+    const activeAccent = getModeAccent(color, isLight);
+    document.body.style.setProperty('--accent', activeAccent);
+    document.body.style.setProperty('--accent-glow', hexToRgba(activeAccent, 0.4));
+    document.body.style.setProperty('--accent-dim', hexToRgba(activeAccent, 0.1));
 }
 
 // Global Settings Sync
 ipcRenderer.on('settings-changed', (e, s) => {
-    if (s && s.accentColor) applyAccent(s.accentColor);
     if (s && s.themeMode) document.body.setAttribute('data-theme', s.themeMode);
+    if (s && s.accentColor) applyAccent(s.accentColor);
 });
 
 // Load Initial State
 ipcRenderer.invoke('get-settings').then(settings => {
-    applyAccent(settings.accentColor);
     if (settings.themeMode) document.body.setAttribute('data-theme', settings.themeMode);
+    applyAccent(settings.accentColor);
 
     adBlockToggle.checked = settings.adBlockEnabled !== false;
     privacyToggle.checked = settings.trackingProtection !== false;

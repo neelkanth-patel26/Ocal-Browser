@@ -44,10 +44,10 @@
 
         <!-- Top Shortcuts: Bookmarks & Games -->
         <div class="sidebar-top-shortcuts">
-            <button class="sidebar-item" id="sb-book-btn" data-title="Bookmarks (Start Page)">
+            <button class="sidebar-item" id="sb-book-btn" title="Bookmarks (Start Page)">
                 <i class="fas fa-book-open"></i>
             </button>
-            <button class="sidebar-item" id="sb-games-btn" data-title="Games Hub">
+            <button class="sidebar-item" id="sb-games-btn" title="Games Hub">
                 <i class="fas fa-gamepad"></i>
             </button>
         </div>
@@ -56,32 +56,32 @@
 
         <!-- Middle: Social Shortcuts / Web Apps & AI -->
         <div class="sidebar-shortcuts">
-            <button class="sidebar-item social-btn" id="sb-wa-btn" data-url="https://web.whatsapp.com" data-title="WhatsApp">
+            <button class="sidebar-item social-btn" id="sb-wa-btn" data-url="https://web.whatsapp.com" title="WhatsApp">
                 <i class="fab fa-whatsapp"></i>
             </button>
-            <button class="sidebar-item social-btn" id="sb-ig-btn" data-url="https://www.instagram.com" data-title="Instagram">
+            <button class="sidebar-item social-btn" id="sb-ig-btn" data-url="https://www.instagram.com" title="Instagram">
                 <i class="fab fa-instagram"></i>
             </button>
-            <button class="sidebar-item social-btn" id="sb-tw-btn" data-url="https://x.com" data-title="Twitter/X">
+            <button class="sidebar-item social-btn" id="sb-tw-btn" data-url="https://x.com" title="Twitter/X">
                 <i class="fab fa-x-twitter"></i>
             </button>
-            <button class="sidebar-item social-btn" id="sb-dc-btn" data-url="https://discord.com/app" data-title="Discord">
+            <button class="sidebar-item social-btn" id="sb-dc-btn" data-url="https://discord.com/app" title="Discord">
                 <i class="fab fa-discord"></i>
             </button>
-            <button class="sidebar-item social-btn" id="sb-sp-btn" data-url="https://open.spotify.com" data-title="Spotify">
+            <button class="sidebar-item social-btn" id="sb-sp-btn" data-url="https://open.spotify.com" title="Spotify">
                 <i class="fab fa-spotify"></i>
             </button>
         </div>
 
         <!-- Bottom: Bookmarks, History, Settings -->
         <div class="sidebar-bottom">
-            <button class="sidebar-item" id="sb-saves-btn" data-title="Saved Bookmarks">
+            <button class="sidebar-item" id="sb-saves-btn" title="Saved Bookmarks">
                 <i class="far fa-heart"></i>
             </button>
-            <button class="sidebar-item" id="sb-history-btn" data-title="History">
+            <button class="sidebar-item" id="sb-history-btn" title="History">
                 <i class="fas fa-clock-rotate-left"></i>
             </button>
-            <button class="sidebar-item" id="sb-settings-btn" data-title="Easy Setup / Settings">
+            <button class="sidebar-item" id="sb-settings-btn" title="Easy Setup / Settings">
                 <i class="fas fa-sliders"></i>
             </button>
         </div>
@@ -152,6 +152,7 @@
                 <i class="fas fa-layer-group"></i>
                 <span id="media-count-chip">0</span>
             </button>
+            <button class="tool-btn" id="volume-boost-btn" title="Volume Booster"><i class="fas fa-volume-high"></i></button>
             <button class="tool-btn" id="split-screen-btn" title="Split Screen"><i class="fas fa-columns"></i></button>
             <button class="tool-btn" id="extensions-toolbar-btn" title="Extensions"><i class="fas fa-puzzle-piece"></i></button>
             <button class="ai-pill" id="ai-toolbar-btn">
@@ -182,6 +183,11 @@
             <button class="sidebar-app-action-btn" id="sidebar-app-close-btn" title="Close"><i class="fas fa-xmark"></i></button>
         </div>
     </div>
+    
+    <!-- Floating WebApp Close Button (Outside the panel) -->
+    <button id="floating-webapp-close-btn" class="floating-webapp-close-btn" title="Close Panel">
+        <i class="fas fa-xmark"></i>
+    </button>
 
     <!-- ── Row 4: Floating Web Content Frame ──────────────────────── -->
     <div class="web-content-container" id="web-content-container"></div>
@@ -210,9 +216,6 @@
             <i class="fas fa-columns"></i>
             <span>Split workspace closed</span>
         </div>
-        <button class="split-undo-btn" id="split-undo-btn">
-            <i class="fas fa-rotate-left"></i> Undo
-        </button>
     </div>
 
     <script src="renderer.js"></script>

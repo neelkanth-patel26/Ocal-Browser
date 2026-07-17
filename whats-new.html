@@ -7,21 +7,35 @@
         content="default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com https://cdn.jsdelivr.net; font-src 'self' https://fonts.gstatic.com https://cdn.jsdelivr.net; img-src 'self' data:;">
     <title>What's New | Ocal Browser</title>
     <link rel="stylesheet" href="assets/fontawesome/css/all.min.css">
-    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800;900&display=swap"
-        rel="stylesheet">
+    <link rel="stylesheet" href="assets/fonts/geist-fonts.css">
     <style>
+        @import url('./assets/fonts/geist-fonts.css');
+
+        html {
+            background: transparent !important;
+            border-radius: 12px;
+            overflow: hidden;
+            height: 100%;
+            width: 100%;
+        }
+
         :root {
-            --bg: #0c0c0c;
-            --surface: #111111;
-            --surface-hover: #1e1e1e;
-            --border: #252525;
-            --text-primary: #e8e8e8;
-            --text-secondary: rgba(255, 255, 255, 0.6);
-            --text-muted: rgba(255, 255, 255, 0.38);
+            --background: #0c0c0c;
+            --foreground: #e8e8e8;
             --accent: #09f0a0;
             --accent-glow: transparent;
             --accent-dim: rgba(9, 240, 160, 0.12);
             --accent-border: #09f0a0;
+            --bg: #0c0c0c;
+            --glass: #111111;
+            --glass-border: #252525;
+            --text-main: #e8e8e8;
+            --text-dim: rgba(255, 255, 255, 0.6);
+            --text-muted: rgba(255, 255, 255, 0.38);
+            --font-title: 'Geist', sans-serif;
+            --font-main: 'Geist Mono', monospace;
+            --radius: 16px;
+            --border-flat: rgba(255, 255, 255, 0.05);
 
             --card-opacity-val: 0.45;
             --card-blur-val: 20px;
@@ -29,21 +43,20 @@
             --glass-panel-border-val: 1px solid rgba(255, 255, 255, 0.05);
             --glass-panel-blur-val: blur(var(--card-blur-val));
             --glass-panel-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
-            --font: 'Outfit', -apple-system, BlinkMacSystemFont, sans-serif;
         }
 
         body[data-theme="light"] {
             --bg: #f5f5f5;
-            --surface: #ffffff;
-            --surface-hover: #f0f0f0;
-            --border: #e0e0e0;
-            --text-primary: #1a1a1a;
-            --text-secondary: #555555;
+            --glass: #ffffff;
+            --glass-border: #e0e0e0;
+            --text-main: #1a1a1a;
+            --text-dim: #555555;
             --text-muted: #999999;
-            --accent: #059669;
-            --accent-glow: transparent;
-            --accent-dim: rgba(5, 150, 105, 0.06);
-            --accent-border: var(--accent);
+            --border-flat: rgba(0, 0, 0, 0.08);
+            --accent: #0d9488;
+            --accent-glow: rgba(13, 148, 136, 0.15);
+            --accent-dim: rgba(13, 148, 136, 0.08);
+            --accent-border: rgba(13, 148, 136, 0.25);
 
             --glass-panel-bg: rgba(255, 255, 255, var(--card-opacity-val));
             --glass-panel-border-val: 1px solid rgba(0, 0, 0, 0.05);
@@ -51,694 +64,1211 @@
             --glass-panel-shadow: 0 4px 16px rgba(0, 0, 0, 0.04);
         }
 
+        *, *::before, *::after {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            outline: none;
+        }
+
+        body {
+            font-family: var(--font-main);
+            background: transparent !important;
+            color: var(--text-main);
+            min-height: 100vh;
+            overflow-x: hidden;
+            position: relative;
+            -webkit-font-smoothing: antialiased;
+            user-select: none;
+            -webkit-user-select: none;
+            padding-bottom: 60px;
+            opacity: 0;
+            transition: opacity 0.8s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+
+        body.loaded { opacity: 1; }
+
+        input, textarea, [contenteditable="true"] {
+            user-select: text;
+            -webkit-user-select: text;
+        }
+
         ::selection {
             background: var(--accent) !important;
             color: #000000 !important;
         }
-
         body[data-theme="light"] ::selection {
             color: #ffffff !important;
         }
 
-        input::selection,
-        textarea::selection {
-            background: var(--accent) !important;
-            color: #000000 !important;
-        }
+        /* ── Scrollbar ── */
+        body::-webkit-scrollbar { width: 6px; }
+        body::-webkit-scrollbar-track { background: transparent; }
+        body::-webkit-scrollbar-thumb { background: var(--border-flat); border-radius: 10px; }
+        body::-webkit-scrollbar-thumb:hover { background: var(--accent); }
 
-        body[data-theme="light"] input::selection,
-        body[data-theme="light"] textarea::selection {
-            color: #ffffff !important;
-        }
-
-        /* ── Custom Compact Scrollbar ── */
-        body::-webkit-scrollbar {
-            width: 8px;
-            height: 8px;
-        }
-
-        body::-webkit-scrollbar-track {
-            background: transparent;
-        }
-
-        body::-webkit-scrollbar-thumb {
-            background: var(--border);
-            border-radius: 10px;
-            border: 2px solid transparent;
-            background-clip: padding-box;
-        }
-
-        body::-webkit-scrollbar-thumb:hover {
+        /* ── Scroll Progress Bar ── */
+        .scroll-progress {
+            position: fixed;
+            top: 0;
+            left: 0;
+            height: 2px;
+            width: 0%;
             background: var(--accent);
-            border: 2px solid transparent;
-            background-clip: padding-box;
+            z-index: 9999;
+            transition: width 0.1s linear;
+            box-shadow: 0 0 8px color-mix(in srgb, var(--accent) 40%, transparent);
         }
 
-        * {
-            box-sizing: border-box;
-            margin: 0;
-            padding: 0;
-            user-select: none;
-            -webkit-font-smoothing: antialiased;
-        }
-
-        body {
-            background: transparent !important;
-            color: var(--text-primary);
-            font-family: var(--font);
-            overflow-x: hidden;
-            overflow-y: scroll;
-            /* Allow scrolling */
-            min-height: 100vh;
-        }
-
-        /* ── Wallpaper Background to match home page ── */
+        /* ── Background ── */
         .wallpaper-bg {
             position: fixed;
             inset: 0;
             z-index: -2;
             background: var(--bg) !important;
             border-radius: 12px;
+            overflow: hidden;
+            transition: background 0.5s ease;
         }
 
         @keyframes gradientBG {
-            0% {
-                background-position: 0% 50%;
-            }
-
-            50% {
-                background-position: 100% 50%;
-            }
-
-            100% {
-                background-position: 0% 50%;
-            }
+            0% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+            100% { background-position: 0% 50%; }
         }
 
-        .wallpaper-bg.animated-aurora {
-            background: linear-gradient(-45deg, #011c18, #033c39, #081e4b, #050410) !important;
-            background-size: 400% 400% !important;
-            animation: gradientBG 15s ease infinite !important;
+        .wallpaper-bg.animated-aurora { background: linear-gradient(-45deg, #021a14, #042e2b, #041235, #08031a) !important; background-size: 400% 400% !important; animation: gradientBG 15s ease infinite !important; }
+        .wallpaper-bg.animated-cosmic { background: linear-gradient(-45deg, #090013, #1e0238, #2a034d, #0d0024) !important; background-size: 400% 400% !important; animation: gradientBG 18s ease infinite !important; }
+        .wallpaper-bg.animated-sunset { background: linear-gradient(-45deg, #180902, #300e08, #35081f, #0c0814) !important; background-size: 400% 400% !important; animation: gradientBG 16s ease infinite !important; }
+        .wallpaper-bg.animated-cyber { background: linear-gradient(-45deg, #031215, #042022, #1c0228, #030610) !important; background-size: 400% 400% !important; animation: gradientBG 12s ease infinite !important; }
+
+        body[data-theme="light"] .wallpaper-bg { background: var(--bg) !important; }
+        body[data-theme="light"] .wallpaper-bg.animated-aurora { background: linear-gradient(-45deg, #e6f7f4, #d1f0ec, #eafaf1, #e6f6f8) !important; background-size: 400% 400% !important; animation: gradientBG 15s ease infinite !important; }
+        body[data-theme="light"] .wallpaper-bg.animated-cosmic { background: linear-gradient(-45deg, #fbf1ff, #f2e1fa, #f4effd, #fbf1ff) !important; background-size: 400% 400% !important; animation: gradientBG 18s ease infinite !important; }
+        body[data-theme="light"] .wallpaper-bg.animated-sunset { background: linear-gradient(-45deg, #fff7ed, #ffedd5, #fdf2f8, #fefafd) !important; background-size: 400% 400% !important; animation: gradientBG 16s ease infinite !important; }
+        body[data-theme="light"] .wallpaper-bg.animated-cyber { background: linear-gradient(-45deg, #ecfeff, #f0fdfa, #fae8ff, #eef2ff) !important; background-size: 400% 400% !important; animation: gradientBG 12s ease infinite !important; }
+
+        /* ── Ambient Particles ── */
+        .particles-canvas {
+            position: fixed;
+            inset: 0;
+            z-index: -1;
+            pointer-events: none;
+            opacity: 0.3;
         }
 
-        .wallpaper-bg.animated-cosmic {
-            background: linear-gradient(-45deg, #090013, #20003e, #360862, #0d0024) !important;
-            background-size: 400% 400% !important;
-            animation: gradientBG 18s ease infinite !important;
+        /* ── Page Layout ── */
+        .page-container {
+            max-width: 1060px;
+            margin: 0 auto;
+            padding: 60px 24px 20px;
         }
 
-        .wallpaper-bg.animated-sunset {
-            background: linear-gradient(-45deg, #180902, #36110a, #400d28, #110b1d) !important;
-            background-size: 400% 400% !important;
-            animation: gradientBG 16s ease infinite !important;
+        /* ── Reveal Animations ── */
+        .reveal {
+            opacity: 0;
+            transform: translateY(20px);
+            transition: opacity 0.7s cubic-bezier(0.16, 1, 0.3, 1), transform 0.7s cubic-bezier(0.16, 1, 0.3, 1);
         }
 
-        .wallpaper-bg.animated-cyber {
-            background: linear-gradient(-45deg, #031215, #05272a, #230132, #030814) !important;
-            background-size: 400% 400% !important;
-            animation: gradientBG 12s ease infinite !important;
+        .reveal.visible {
+            opacity: 1;
+            transform: translateY(0);
         }
 
-        /* Light mode animated gradients */
-        body[data-theme="light"] .wallpaper-bg.animated-aurora {
-            background: linear-gradient(-45deg, #e0f2f1, #b2dfdb, #e8f5e9, #e0f7fa) !important;
-            background-size: 400% 400% !important;
-            animation: gradientBG 15s ease infinite !important;
-        }
-
-        body[data-theme="light"] .wallpaper-bg.animated-cosmic {
-            background: linear-gradient(-45deg, #f3e5f5, #e1bee7, #ede7f6, #f3e5f5) !important;
-            background-size: 400% 400% !important;
-            animation: gradientBG 18s ease infinite !important;
-        }
-
-        body[data-theme="light"] .wallpaper-bg.animated-sunset {
-            background: linear-gradient(-45deg, #fff3e0, #ffe0b2, #fce4ec, #fff8e1) !important;
-            background-size: 400% 400% !important;
-            animation: gradientBG 16s ease infinite !important;
-        }
-
-        body[data-theme="light"] .wallpaper-bg.animated-cyber {
-            background: linear-gradient(-45deg, #e0f7fa, #e1f5fe, #f3e5f5, #e8eaf6) !important;
-            background-size: 400% 400% !important;
-            animation: gradientBG 12s ease infinite !important;
-        }
-
-        /* ── Header / Hero Section ── */
+        /* ── Hero ── */
         .hero {
-            padding: 80px 24px 60px;
             text-align: center;
+            margin-bottom: 48px;
             position: relative;
+            padding: 50px 0 20px;
+        }
+
+        .hero::before {
+            content: '';
+            position: absolute;
+            top: 50%; left: 50%;
+            transform: translate(-50%, -50%);
+            width: 320px; height: 160px;
+            background: radial-gradient(circle, var(--accent-dim) 0%, transparent 70%);
+            opacity: 0.55;
+            filter: blur(40px);
+            z-index: -1;
+            pointer-events: none;
+            animation: heroGlow 4s ease-in-out infinite alternate;
+        }
+
+        @keyframes heroGlow {
+            0% { opacity: 0.35; transform: translate(-50%, -50%) scale(0.95); }
+            100% { opacity: 0.65; transform: translate(-50%, -50%) scale(1.05); }
         }
 
         .version-pill {
             display: inline-flex;
             align-items: center;
             gap: 8px;
-            padding: 6px 16px;
-            border-radius: 100px;
-            background: var(--glass-panel-bg);
-            backdrop-filter: var(--glass-panel-blur-val);
-            -webkit-backdrop-filter: var(--glass-panel-blur-val);
-            border: var(--glass-panel-border-val);
-            box-shadow: var(--glass-panel-shadow);
-            color: var(--accent);
-            font-size: 11px;
-            font-weight: 700;
-            letter-spacing: 1.5px;
+            padding: 5px 14px;
+            border-radius: 6px;
+            background: rgba(255, 255, 255, 0.02);
+            border: 1px solid var(--border-flat);
+            color: var(--text-muted);
+            font-size: 9px;
+            font-weight: 800;
+            letter-spacing: 2.5px;
             text-transform: uppercase;
-            margin-bottom: 24px;
+            margin-bottom: 20px;
+            font-family: var(--font-main);
+            opacity: 0;
+            animation: fadeSlideUp 0.6s 0.2s forwards;
         }
 
         .version-pill .pulse {
-            width: 6px;
-            height: 6px;
+            width: 5px;
+            height: 5px;
             border-radius: 50%;
             background: var(--accent);
             animation: pulse 2s ease-in-out infinite;
         }
 
         @keyframes pulse {
+            0%, 100% { opacity: 1; transform: scale(1); }
+            50% { opacity: 0.4; transform: scale(1.15); }
+        }
 
-            0%,
-            100% {
-                opacity: 1;
-            }
-
-            50% {
-                opacity: 0.3;
-            }
+        @keyframes fadeSlideUp {
+            from { opacity: 0; transform: translateY(12px); }
+            to { opacity: 1; transform: translateY(0); }
         }
 
         .hero-title {
-            font-size: 46px;
-            font-weight: 800;
-            letter-spacing: -0.03em;
-            color: var(--text-primary);
-            margin-bottom: 16px;
-            line-height: 1.15;
+            font-family: var(--font-title);
+            font-size: clamp(42px, 5vw, 72px);
+            font-weight: 100;
+            letter-spacing: -2px;
+            color: var(--text-main);
+            margin-bottom: 14px;
+            line-height: 1.05;
+            opacity: 0;
+            animation: fadeSlideUp 0.7s 0.35s forwards;
+        }
+
+        .hero-title span {
+            color: var(--accent);
+            filter: drop-shadow(0 0 20px var(--accent-dim));
+            position: relative;
         }
 
         .hero-desc {
-            font-size: 16px;
-            color: var(--text-secondary);
-            max-width: 580px;
-            margin: 0 auto 32px;
-            line-height: 1.6;
+            font-size: clamp(11px, 1.1vw, 13px);
+            color: var(--text-dim);
+            max-width: 520px;
+            margin: 0 auto 28px;
+            line-height: 1.7;
+            font-weight: 400;
+            opacity: 0;
+            animation: fadeSlideUp 0.7s 0.5s forwards;
+        }
+
+        .hero-desc .typing-cursor {
+            display: inline-block;
+            width: 1px;
+            height: 1em;
+            background: var(--accent);
+            animation: cursorBlink 1s step-end infinite;
+            margin-left: 2px;
+            vertical-align: text-bottom;
+        }
+
+        @keyframes cursorBlink {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0; }
+        }
+
+        .hero-actions {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 12px;
+            opacity: 0;
+            animation: fadeSlideUp 0.7s 0.65s forwards;
         }
 
         .btn-start {
             display: inline-flex;
             align-items: center;
-            gap: 8px;
-            padding: 14px 36px;
-            border-radius: 30px;
-            background: var(--accent);
-            color: #000;
-            font-size: 14px;
+            gap: 10px;
+            padding: 10px 28px;
+            border-radius: 8px;
+            background: rgba(255, 255, 255, 0.02);
+            border: 1px solid var(--border-flat);
+            color: var(--text-main);
+            font-size: 10px;
             font-weight: 700;
-            border: none;
+            letter-spacing: 2px;
+            text-transform: uppercase;
             cursor: pointer;
-            transition: transform 0.2s, opacity 0.2s;
+            transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+            font-family: var(--font-main);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .btn-start::after {
+            content: '';
+            position: absolute;
+            inset: 0;
+            background: var(--accent);
+            opacity: 0;
+            transition: opacity 0.3s ease;
         }
 
         .btn-start:hover {
-            transform: translateY(-2px);
-            opacity: 0.9;
+            border-color: var(--accent);
+            color: var(--accent);
+            background: var(--accent-dim);
+            transform: translateY(-1px);
         }
 
-        /* ── CSS Web Mockup ── */
-        .mockup-container {
-            max-width: 800px;
-            margin: 40px auto 0;
-            padding: 0 16px;
-            perspective: 1000px;
+        .btn-start i {
+            font-size: 9px;
+            transition: transform 0.2s ease;
         }
 
-        .browser-mockup {
+        .btn-start:hover i {
+            transform: translateX(3px);
+        }
+
+        .btn-primary {
+            background: var(--accent-dim);
+            border-color: color-mix(in srgb, var(--accent) 25%, transparent);
+            color: var(--accent);
+        }
+
+        .btn-primary:hover {
+            background: var(--accent);
+            color: #000;
+            border-color: var(--accent);
+        }
+
+        body[data-theme="light"] .btn-primary:hover {
+            color: #fff;
+        }
+
+        /* ── Stats Row ── */
+        .stats-row {
+            display: flex;
+            justify-content: center;
+            gap: 32px;
+            margin-bottom: 48px;
+            flex-wrap: wrap;
+        }
+
+        .stat-item {
             background: var(--glass-panel-bg);
+            border: var(--glass-panel-border-val);
             backdrop-filter: var(--glass-panel-blur-val);
             -webkit-backdrop-filter: var(--glass-panel-blur-val);
-            border: var(--glass-panel-border-val);
-            border-radius: 12px;
+            border-radius: var(--radius);
             box-shadow: var(--glass-panel-shadow);
-            overflow: hidden;
-            transform: rotateX(5deg);
-            transition: transform 0.5s;
+            padding: 20px 28px;
+            text-align: center;
+            min-width: 140px;
+            transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+            cursor: default;
         }
 
-        .browser-mockup:hover {
-            transform: rotateX(0deg) translateY(-5px);
+        .stat-item:hover {
+            border-color: color-mix(in srgb, var(--accent) 15%, var(--glass-border));
+            transform: translateY(-2px);
         }
 
-        .mockup-toolbar {
-            height: 36px;
-            background: rgba(0, 0, 0, 0.1);
-            border-bottom: var(--glass-panel-border-val);
-            display: flex;
-            align-items: center;
-            padding: 0 16px;
-            gap: 8px;
+        .stat-value {
+            font-family: var(--font-title);
+            font-size: clamp(26px, 3vw, 36px);
+            font-weight: 200;
+            color: var(--text-main);
+            letter-spacing: -1px;
+            line-height: 1;
+            margin-bottom: 6px;
         }
 
-        .mockup-dot {
-            width: 10px;
-            height: 10px;
-            border-radius: 50%;
-            background: var(--border);
+        .stat-value .counter-suffix {
+            font-size: 0.5em;
+            color: var(--accent);
+            font-weight: 500;
         }
 
-        .mockup-address {
-            flex: 1;
-            height: 20px;
-            background: rgba(0, 0, 0, 0.1);
-            border: var(--glass-panel-border-val);
-            border-radius: 10px;
-            margin: 0 40px;
-            font-size: 10px;
+        .stat-label {
+            font-size: 8px;
+            font-weight: 800;
+            letter-spacing: 2.5px;
+            text-transform: uppercase;
             color: var(--text-muted);
+            opacity: 0.5;
+        }
+
+        /* ── Category Filter Bar ── */
+        .filter-bar-container {
+            margin-bottom: 36px;
             display: flex;
+            justify-content: center;
             align-items: center;
-            padding: 0 12px;
-        }
-
-        .mockup-content {
-            height: 380px;
-            display: flex;
             gap: 12px;
-            padding: 16px;
-        }
-
-        .mockup-pane {
-            flex: 1;
-            border: var(--glass-panel-border-val);
-            border-radius: 8px;
-            background: rgba(0, 0, 0, 0.05);
-            display: flex;
-            flex-direction: column;
-            padding: 16px;
-            gap: 12px;
-        }
-
-        .mockup-line {
-            height: 12px;
-            background: var(--border);
-            border-radius: 4px;
-            width: 80%;
-        }
-
-        .mockup-line.short {
-            width: 40%;
-        }
-
-        .mockup-block {
-            flex: 1;
-            background: var(--border);
-            border-radius: 6px;
-            opacity: 0.3;
-        }
-
-        /* ── Categories Bar ── */
-        .categories-container {
-            position: sticky;
-            top: 0;
-            background: transparent;
-            z-index: 100;
-            padding: 0 24px;
+            flex-wrap: wrap;
         }
 
         .categories-bar-wrapper {
-            max-width: 960px;
-            margin: 0 auto;
-            border-radius: 30px;
-            padding: 2px 24px;
             background: var(--glass-panel-bg);
+            border: var(--glass-panel-border-val);
             backdrop-filter: var(--glass-panel-blur-val);
             -webkit-backdrop-filter: var(--glass-panel-blur-val);
-            border: var(--glass-panel-border-val);
+            border-radius: var(--radius);
             box-shadow: var(--glass-panel-shadow);
+            padding: 4px;
+            display: inline-flex;
         }
 
         .categories-bar {
             display: flex;
-            gap: 24px;
-            overflow-x: auto;
-            scrollbar-width: none;
-        }
-
-        .categories-bar::-webkit-scrollbar {
-            display: none;
+            gap: 2px;
         }
 
         .category-tab {
-            padding: 14px 4px;
-            font-size: 14px;
-            font-weight: 600;
-            color: var(--text-secondary);
-            background: none;
-            border: none;
+            padding: 8px 18px;
+            font-size: 9px;
+            font-weight: 800;
+            letter-spacing: 2px;
+            text-transform: uppercase;
+            color: var(--text-muted);
+            background: transparent;
+            border: 1px solid transparent;
+            border-radius: 12px;
             cursor: pointer;
+            transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+            font-family: var(--font-main);
             position: relative;
-            white-space: nowrap;
-            transition: color 0.2s;
         }
 
         .category-tab:hover {
-            color: var(--text-primary);
+            color: var(--text-dim);
+            background: rgba(255, 255, 255, 0.02);
         }
 
         .category-tab.active {
-            color: var(--text-primary);
-            font-weight: 700;
+            color: var(--accent) !important;
+            background: var(--accent-dim) !important;
+            border-color: color-mix(in srgb, var(--accent) 20%, transparent) !important;
         }
 
-        .category-tab.active::after {
-            content: '';
+        .category-tab .tab-count {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: 16px;
+            height: 16px;
+            border-radius: 4px;
+            background: rgba(255, 255, 255, 0.03);
+            border: 1px solid var(--border-flat);
+            font-size: 8px;
+            font-weight: 800;
+            margin-left: 6px;
+            transition: all 0.25s ease;
+        }
+
+        .category-tab.active .tab-count {
+            background: color-mix(in srgb, var(--accent) 15%, transparent);
+            border-color: color-mix(in srgb, var(--accent) 25%, transparent);
+            color: var(--accent);
+        }
+
+        /* ── Search ── */
+        .search-wrap {
+            position: relative;
+        }
+
+        .search-input-sm {
+            width: 160px;
+            height: 34px;
+            padding: 0 12px 0 30px;
+            border-radius: 10px;
+            background: var(--glass-panel-bg);
+            border: var(--glass-panel-border-val);
+            backdrop-filter: var(--glass-panel-blur-val);
+            -webkit-backdrop-filter: var(--glass-panel-blur-val);
+            color: var(--text-main);
+            font-size: 10px;
+            font-weight: 600;
+            letter-spacing: 0.5px;
+            font-family: var(--font-main);
+            transition: all 0.3s ease;
+        }
+
+        .search-input-sm::placeholder {
+            color: var(--text-muted);
+            opacity: 0.5;
+            text-transform: uppercase;
+            font-size: 9px;
+            letter-spacing: 1.5px;
+        }
+
+        .search-input-sm:focus {
+            width: 220px;
+            border-color: var(--accent);
+            background: color-mix(in srgb, var(--accent) 3%, var(--glass-panel-bg));
+        }
+
+        .search-icon-sm {
             position: absolute;
-            bottom: 4px;
-            left: 0;
-            right: 0;
-            height: 2px;
-            background: var(--accent);
-            border-radius: 2px;
+            left: 10px;
+            top: 50%;
+            transform: translateY(-50%);
+            font-size: 10px;
+            color: var(--text-muted);
+            opacity: 0.4;
+            pointer-events: none;
+            transition: color 0.2s;
         }
 
-        /* ── Feature Directory Grid ── */
+        .search-wrap:focus-within .search-icon-sm {
+            color: var(--accent);
+            opacity: 0.8;
+        }
+
+        /* ── Section Header ── */
         .directory-section {
-            max-width: 1000px;
-            margin: 0 auto;
-            padding: 60px 24px 80px;
+            margin-bottom: 60px;
         }
 
         .section-header {
-            margin-bottom: 32px;
+            margin-bottom: 28px;
             text-align: center;
         }
 
         .section-title {
-            font-size: 24px;
-            font-weight: 800;
-            letter-spacing: -0.02em;
-            margin-bottom: 8px;
+            font-family: var(--font-title);
+            font-size: clamp(18px, 2vw, 24px);
+            font-weight: 300;
+            letter-spacing: -0.5px;
+            color: var(--text-main);
+            margin-bottom: 6px;
         }
 
         .section-subtitle {
-            font-size: 14px;
+            font-size: 10px;
+            font-weight: 600;
+            letter-spacing: 1.5px;
+            text-transform: uppercase;
             color: var(--text-muted);
+            opacity: 0.6;
         }
 
+        .results-count {
+            display: inline-block;
+            padding: 2px 8px;
+            border-radius: 4px;
+            background: var(--accent-dim);
+            color: var(--accent);
+            font-size: 9px;
+            font-weight: 800;
+            letter-spacing: 1px;
+            margin-left: 8px;
+        }
+
+        /* ── Grid ── */
         .grid {
             display: grid;
             grid-template-columns: repeat(3, 1fr);
-            gap: 24px;
+            gap: 16px;
         }
 
-        @media (max-width: 900px) {
-            .grid {
-                grid-template-columns: repeat(2, 1fr);
-            }
-        }
+        @media (max-width: 960px) { .grid { grid-template-columns: repeat(2, 1fr); } }
+        @media (max-width: 640px) { .grid { grid-template-columns: 1fr; } }
 
-        @media (max-width: 600px) {
-            .grid {
-                grid-template-columns: 1fr;
-            }
-        }
-
+        /* ── Cards ── */
         .card {
-            background: var(--glass-panel-bg);
-            backdrop-filter: var(--glass-panel-blur-val);
-            -webkit-backdrop-filter: var(--glass-panel-blur-val);
-            border: var(--glass-panel-border-val);
-            border-radius: 12px;
+            background: var(--glass-panel-bg) !important;
+            border: var(--glass-panel-border-val) !important;
+            backdrop-filter: var(--glass-panel-blur-val) !important;
+            -webkit-backdrop-filter: var(--glass-panel-blur-val) !important;
+            border-radius: var(--radius) !important;
+            box-shadow: var(--glass-panel-shadow) !important;
             overflow: hidden;
             display: flex;
             flex-direction: column;
-            transition: border-color 0.2s, transform 0.2s, box-shadow 0.2s;
+            transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1) !important;
             cursor: pointer;
-            box-shadow: var(--glass-panel-shadow);
+            height: 100%;
+            opacity: 0;
+            transform: translateY(16px);
+        }
+
+        .card.card-visible {
+            opacity: 1;
+            transform: translateY(0);
         }
 
         .card:hover {
-            border-color: var(--accent);
-            transform: translateY(-2px);
+            border-color: color-mix(in srgb, var(--accent) 15%, var(--glass-border)) !important;
+            box-shadow: 0 12px 40px rgba(0, 0, 0, 0.3) !important;
+            transform: translateY(-3px) !important;
+        }
+
+        body[data-theme="light"] .card:hover {
+            border-color: rgba(0, 0, 0, 0.08) !important;
+            box-shadow: 0 8px 24px rgba(0, 0, 0, 0.08) !important;
+        }
+
+        /* ── Ripple Effect ── */
+        .ripple {
+            position: absolute;
+            border-radius: 50%;
+            background: color-mix(in srgb, var(--accent) 15%, transparent);
+            pointer-events: none;
+            transform: scale(0);
+            animation: rippleAnim 0.6s ease-out forwards;
+        }
+
+        @keyframes rippleAnim {
+            to { transform: scale(4); opacity: 0; }
         }
 
         .card-header-visual {
-            height: 140px;
-            background: rgba(0, 0, 0, 0.1);
-            border-bottom: var(--glass-panel-border-val);
+            height: 120px;
+            background: rgba(255, 255, 255, 0.01);
+            border-bottom: 1px solid var(--border-flat);
             display: flex;
             align-items: center;
             justify-content: center;
             position: relative;
             overflow: hidden;
+            transition: background 0.3s;
         }
 
+        .card:hover .card-header-visual {
+            background: var(--accent-dim);
+        }
+
+        body[data-theme="light"] .card-header-visual { background: rgba(0, 0, 0, 0.01); }
+        body[data-theme="light"] .card:hover .card-header-visual { background: var(--accent-dim); }
+
+        /* ── Card Visuals (interactive animations) ── */
         .visual-split {
             display: flex;
-            width: 70%;
-            height: 60%;
-            border: 1px dashed var(--border);
-            border-radius: 6px;
+            width: 65%;
+            height: 55%;
+            border: 1px solid var(--border-flat);
+            border-radius: 8px;
             overflow: hidden;
             gap: 4px;
             padding: 4px;
+            background: rgba(0, 0, 0, 0.15);
+            transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
         }
+
+        .card:hover .visual-split { border-color: color-mix(in srgb, var(--accent) 30%, transparent); transform: scale(1.03); }
 
         .visual-split-pane {
             flex: 1;
-            background: var(--surface-hover);
+            background: rgba(255, 255, 255, 0.02);
             border-radius: 4px;
             display: flex;
             align-items: center;
             justify-content: center;
-            color: var(--text-muted);
+            color: var(--accent);
             font-size: 12px;
+            opacity: 0.5;
+            transition: all 0.3s ease;
+        }
+
+        .card:hover .visual-split-pane { opacity: 1; }
+        .card:hover .visual-split-pane:first-child { transform: translateX(-2px); }
+        .card:hover .visual-split-pane:last-child { transform: translateX(2px); }
+
+        .visual-emoji {
+            display: flex;
+            gap: 10px;
+            font-size: 22px;
+            justify-content: center;
+            align-items: center;
+            transition: all 0.4s ease;
+            opacity: 0.7;
+        }
+
+        .card:hover .visual-emoji { opacity: 1; }
+        .card:hover .visual-emoji span:nth-child(1) { animation: emojiFloat 0.6s ease; }
+        .card:hover .visual-emoji span:nth-child(2) { animation: emojiFloat 0.6s 0.1s ease; }
+        .card:hover .visual-emoji span:nth-child(3) { animation: emojiFloat 0.6s 0.2s ease; }
+
+        @keyframes emojiFloat {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-6px); }
         }
 
         .visual-suspend {
-            width: 80px;
-            height: 48px;
-            border: 1px solid var(--border);
-            border-radius: 6px;
-            background: var(--surface);
-            position: relative;
+            width: 80px; height: 48px;
+            border: 1px solid var(--border-flat);
+            border-radius: 8px;
+            background: rgba(0, 0, 0, 0.1);
             display: flex;
             flex-direction: column;
             justify-content: space-between;
-            padding: 6px;
+            padding: 8px;
+            transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
         }
 
-        .visual-suspend .leaf {
-            font-size: 14px;
-            color: var(--accent);
-            align-self: center;
+        .card:hover .visual-suspend { border-color: color-mix(in srgb, var(--accent) 30%, transparent); transform: scale(1.03); }
+
+        .visual-suspend .leaf { font-size: 14px; color: var(--accent); align-self: center; opacity: 0.6; transition: all 0.3s ease; }
+        .card:hover .visual-suspend .leaf { opacity: 1; animation: leafSway 1s ease-in-out infinite; }
+        @keyframes leafSway {
+            0%, 100% { transform: rotate(0deg); }
+            25% { transform: rotate(8deg); }
+            75% { transform: rotate(-8deg); }
         }
+        .visual-suspend .mockup-line { height: 3px; background: var(--border-flat); border-radius: 2px; transition: all 0.5s ease; }
+        .card:hover .visual-suspend .mockup-line { background: color-mix(in srgb, var(--accent) 30%, transparent); }
 
         .visual-adblock {
-            width: 50px;
-            height: 50px;
+            width: 44px; height: 44px;
             border-radius: 50%;
-            background: #ff4d4f;
+            background: rgba(255, 255, 255, 0.02);
+            border: 1px solid var(--border-flat);
             display: flex;
             align-items: center;
             justify-content: center;
-            color: white;
-            font-size: 20px;
+            color: var(--accent);
+            font-size: 18px;
+            opacity: 0.6;
+            transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+            position: relative;
         }
+
+        .visual-adblock::before {
+            content: '';
+            position: absolute;
+            inset: -6px;
+            border-radius: 50%;
+            border: 1px solid transparent;
+            transition: all 0.4s ease;
+        }
+
+        .card:hover .visual-adblock { opacity: 1; border-color: color-mix(in srgb, var(--accent) 30%, transparent); background: var(--accent-dim); transform: rotate(15deg); }
+        .card:hover .visual-adblock::before { border-color: color-mix(in srgb, var(--accent) 15%, transparent); }
 
         .visual-gpu {
             display: flex;
             align-items: flex-end;
-            gap: 4px;
-            height: 40px;
+            gap: 5px;
+            height: 38px;
         }
 
         .gpu-bar {
             width: 8px;
-            background: var(--accent);
-            border-radius: 2px;
+            background: var(--border-flat);
+            border-radius: 3px;
+            transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+            transform-origin: bottom;
+        }
+
+        .card:hover .gpu-bar { background: var(--accent); opacity: 0.7; }
+        .card:hover .gpu-bar:nth-child(1) { animation: barPulse 0.8s 0s ease infinite; }
+        .card:hover .gpu-bar:nth-child(2) { animation: barPulse 0.8s 0.1s ease infinite; }
+        .card:hover .gpu-bar:nth-child(3) { animation: barPulse 0.8s 0.2s ease infinite; }
+        .card:hover .gpu-bar:nth-child(4) { animation: barPulse 0.8s 0.3s ease infinite; }
+
+        @keyframes barPulse {
+            0%, 100% { transform: scaleY(1); }
+            50% { transform: scaleY(1.2); }
         }
 
         .visual-media {
-            width: 70%;
-            height: 60%;
-            border: 1px solid var(--border);
-            border-radius: 6px;
-            background: var(--surface);
+            width: 65%; height: 55%;
+            border: 1px solid var(--border-flat);
+            border-radius: 8px;
+            background: rgba(0, 0, 0, 0.1);
             display: flex;
             align-items: center;
             justify-content: center;
-            position: relative;
+            transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
         }
+
+        .card:hover .visual-media { border-color: color-mix(in srgb, var(--accent) 30%, transparent); transform: scale(1.03); }
 
         .visual-media .play-btn {
-            width: 32px;
-            height: 32px;
+            width: 30px; height: 30px;
             border-radius: 50%;
-            background: var(--text-primary);
-            color: var(--bg);
+            background: var(--accent-dim);
+            border: 1px solid color-mix(in srgb, var(--accent) 20%, transparent);
+            color: var(--accent);
             display: flex;
             align-items: center;
             justify-content: center;
-            font-size: 10px;
+            font-size: 9px;
             padding-left: 2px;
+            transition: all 0.3s ease;
         }
 
+        .card:hover .visual-media .play-btn { background: var(--accent); color: #000; border-color: var(--accent); transform: scale(1.15); }
+
         .visual-wallpaper {
-            width: 70%;
-            height: 60%;
-            border-radius: 6px;
-            border: 1px solid var(--border);
-            background: radial-gradient(circle, var(--accent-dim) 10%, transparent 80%);
+            width: 65%; height: 55%;
+            border-radius: 8px;
+            border: 1px solid var(--border-flat);
+            background: rgba(0, 0, 0, 0.05);
             display: flex;
             align-items: center;
             justify-content: center;
+            transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+            position: relative;
+            overflow: hidden;
         }
+
+        .visual-wallpaper::before {
+            content: '';
+            position: absolute;
+            inset: 0;
+            background: conic-gradient(from 0deg, transparent, var(--accent-dim), transparent);
+            opacity: 0;
+            transition: opacity 0.5s ease;
+        }
+
+        .card:hover .visual-wallpaper { border-color: color-mix(in srgb, var(--accent) 30%, transparent); transform: scale(1.03); }
+        .card:hover .visual-wallpaper::before { opacity: 1; animation: wallpaperSpin 3s linear infinite; }
+
+        @keyframes wallpaperSpin {
+            to { transform: rotate(360deg); }
+        }
+
+        .visual-wallpaper i { color: var(--accent); opacity: 0.4; font-size: 20px; position: relative; z-index: 1; transition: all 0.3s ease; }
+        .card:hover .visual-wallpaper i { opacity: 1; }
 
         .visual-ai {
             display: flex;
-            gap: 6px;
+            gap: 8px;
+            transition: all 0.3s ease;
         }
 
+        .card:hover .visual-ai { transform: scale(1.05); }
+
         .ai-folder {
-            width: 32px;
-            height: 24px;
-            border-radius: 4px;
-            background: var(--surface-hover);
-            border: 1px solid var(--border);
+            width: 32px; height: 26px;
+            border-radius: 6px;
+            background: rgba(255, 255, 255, 0.02);
+            border: 1px solid var(--border-flat);
             display: flex;
             align-items: center;
             justify-content: center;
-            font-size: 10px;
-            color: var(--text-muted);
+            font-size: 11px;
+            color: var(--accent);
+            opacity: 0.5;
+            transition: all 0.3s ease;
         }
 
+        .card:hover .ai-folder { opacity: 1; border-color: color-mix(in srgb, var(--accent) 30%, transparent); }
+        .card:hover .ai-folder:last-child { animation: sparkle 0.8s ease infinite; }
+
+        @keyframes sparkle {
+            0%, 100% { filter: brightness(1); }
+            50% { filter: brightness(1.3); }
+        }
+
+        .visual-volume {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 6px;
+            width: 55%;
+            justify-content: center;
+            height: 100%;
+            transition: all 0.3s ease;
+        }
+
+        .card:hover .visual-volume { transform: scale(1.03); }
+
+        .volume-bar-track {
+            width: 100%;
+            height: 4px;
+            background: var(--border-flat);
+            border-radius: 100px;
+            overflow: hidden;
+            position: relative;
+        }
+
+        .volume-bar-fill {
+            width: 0%;
+            height: 100%;
+            background: var(--accent);
+            border-radius: 100px;
+            opacity: 0.6;
+            transition: width 1.2s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+
+        .volume-bar-fill.animated { width: 80%; }
+
+        .contributor-visual {
+            width: 44px; height: 44px;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.02);
+            border: 1px solid var(--border-flat);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 13px;
+            font-weight: 800;
+            color: var(--text-muted);
+            transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+            font-family: var(--font-main);
+        }
+
+        .card:hover .contributor-visual {
+            border-color: var(--accent);
+            color: var(--accent);
+            background: var(--accent-dim);
+            transform: scale(1.1) rotate(-5deg);
+        }
+
+        /* ── Card Body ── */
         .card-body {
-            padding: 20px;
+            padding: 16px;
             flex: 1;
             display: flex;
             flex-direction: column;
         }
 
         .card-category-label {
-            font-size: 10px;
-            font-weight: 700;
+            font-size: 8px;
+            font-weight: 800;
             color: var(--text-muted);
             text-transform: uppercase;
-            letter-spacing: 1px;
+            letter-spacing: 2.5px;
             margin-bottom: 8px;
+            opacity: 0.5;
+            font-family: var(--font-main);
+            transition: all 0.3s ease;
+        }
+
+        .card:hover .card-category-label {
+            color: var(--accent);
+            opacity: 0.8;
         }
 
         .card-title {
-            font-size: 17px;
-            font-weight: 700;
-            color: var(--text-primary);
-            margin-bottom: 8px;
-            letter-spacing: -0.01em;
+            font-family: var(--font-title);
+            font-size: 15px;
+            font-weight: 500;
+            color: var(--text-main);
+            margin-bottom: 6px;
+            letter-spacing: -0.2px;
         }
 
         .card-desc {
-            font-size: 13px;
-            color: var(--text-secondary);
+            font-size: 11px;
+            color: var(--text-dim);
             line-height: 1.6;
-            margin-bottom: 20px;
+            margin-bottom: 16px;
             flex: 1;
+            opacity: 0.6;
+            font-weight: 400;
         }
 
         .card-footer {
             display: flex;
             align-items: center;
             justify-content: space-between;
-            font-size: 12px;
-            font-weight: 600;
-            color: var(--text-primary);
-            border-top: var(--glass-panel-border-val);
-            padding-top: 14px;
+            font-size: 9px;
+            font-weight: 700;
+            letter-spacing: 1.5px;
+            text-transform: uppercase;
+            color: var(--text-muted);
+            border-top: 1px solid var(--border-flat);
+            padding-top: 12px;
             margin-top: auto;
+            font-family: var(--font-main);
+            transition: color 0.3s ease;
         }
 
+        .card:hover .card-footer { color: var(--accent); }
+
         .card-footer i {
-            transition: transform 0.2s;
+            transition: transform 0.25s cubic-bezier(0.16, 1, 0.3, 1), color 0.3s ease;
+            color: var(--text-muted);
+            font-size: 9px;
         }
 
         .card:hover .card-footer i {
             transform: translateX(4px);
-        }
-
-        /* ── Contributor Card Style ── */
-        .contributor-visual {
-            width: 48px;
-            height: 48px;
-            border-radius: 50%;
-            background: rgba(0, 0, 0, 0.1);
-            border: var(--glass-panel-border-val);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 15px;
-            font-weight: 800;
-            color: var(--text-primary);
+            color: var(--accent);
         }
 
         .badge-role {
             padding: 3px 8px;
             border-radius: 4px;
-            font-size: 10px;
-            font-weight: 700;
-            background: var(--surface-hover);
-            color: var(--text-secondary);
-            border: 1px solid var(--border);
+            font-size: 8px;
+            font-weight: 800;
+            background: rgba(255, 255, 255, 0.02);
+            color: var(--text-muted);
+            border: 1px solid var(--border-flat);
+            text-transform: uppercase;
+            letter-spacing: 1.5px;
+            font-family: var(--font-main);
+            transition: all 0.3s ease;
+        }
+
+        .card:hover .badge-role {
+            color: var(--accent);
+            border-color: color-mix(in srgb, var(--accent) 20%, transparent);
+            background: var(--accent-dim);
+        }
+
+        /* ── No Results ── */
+        .no-results {
+            text-align: center;
+            padding: 60px 20px;
+            grid-column: 1 / -1;
+        }
+
+        .no-results i {
+            font-size: 28px;
+            color: var(--text-muted);
+            opacity: 0.3;
+            margin-bottom: 16px;
+            display: block;
+        }
+
+        .no-results p {
+            font-size: 11px;
+            color: var(--text-muted);
+            opacity: 0.5;
+            letter-spacing: 1px;
+        }
+
+        /* ── Changelog Timeline ── */
+        .changelog-section {
+            margin-bottom: 60px;
+        }
+
+        .timeline {
+            position: relative;
+            padding-left: 32px;
+        }
+
+        .timeline::before {
+            content: '';
+            position: absolute;
+            left: 7px;
+            top: 0;
+            bottom: 0;
+            width: 1px;
+            background: var(--border-flat);
+        }
+
+        .timeline-item {
+            position: relative;
+            margin-bottom: 24px;
+            padding: 16px 20px;
+            background: var(--glass-panel-bg);
+            border: var(--glass-panel-border-val);
+            backdrop-filter: var(--glass-panel-blur-val);
+            -webkit-backdrop-filter: var(--glass-panel-blur-val);
+            border-radius: 12px;
+            box-shadow: var(--glass-panel-shadow);
+            transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+            cursor: pointer;
+        }
+
+        .timeline-item:hover {
+            border-color: color-mix(in srgb, var(--accent) 15%, var(--glass-border));
+            transform: translateX(4px);
+        }
+
+        .timeline-item::before {
+            content: '';
+            position: absolute;
+            left: -29px;
+            top: 22px;
+            width: 9px;
+            height: 9px;
+            border-radius: 50%;
+            background: var(--border-flat);
+            border: 2px solid var(--bg);
+            transition: all 0.3s ease;
+            z-index: 1;
+        }
+
+        .timeline-item:hover::before {
+            background: var(--accent);
+            box-shadow: 0 0 8px var(--accent-dim);
+        }
+
+        .timeline-date {
+            font-size: 8px;
+            font-weight: 800;
+            letter-spacing: 2px;
+            text-transform: uppercase;
+            color: var(--text-muted);
+            opacity: 0.5;
+            margin-bottom: 6px;
+            font-family: var(--font-main);
+        }
+
+        .timeline-title {
+            font-family: var(--font-title);
+            font-size: 14px;
+            font-weight: 500;
+            color: var(--text-main);
+            margin-bottom: 4px;
+        }
+
+        .timeline-desc {
+            font-size: 11px;
+            color: var(--text-dim);
+            opacity: 0.6;
+            line-height: 1.5;
+        }
+
+        .timeline-tags {
+            display: flex;
+            gap: 6px;
+            margin-top: 10px;
+            flex-wrap: wrap;
+        }
+
+        .timeline-tag {
+            padding: 2px 8px;
+            border-radius: 4px;
+            font-size: 8px;
+            font-weight: 800;
+            letter-spacing: 1px;
+            text-transform: uppercase;
+            background: rgba(255, 255, 255, 0.02);
+            border: 1px solid var(--border-flat);
+            color: var(--text-muted);
+            font-family: var(--font-main);
+            transition: all 0.3s ease;
+        }
+
+        .timeline-item:hover .timeline-tag {
+            border-color: color-mix(in srgb, var(--accent) 15%, transparent);
+            color: var(--text-dim);
         }
 
         /* ── Bottom Banner ── */
         .bottom-banner {
-            background: var(--glass-panel-bg);
-            backdrop-filter: var(--glass-panel-blur-val);
-            -webkit-backdrop-filter: var(--glass-panel-blur-val);
-            border-top: var(--glass-panel-border-val);
-            padding: 80px 24px;
+            max-width: 900px;
+            margin: 40px auto 32px;
+            background: var(--glass-panel-bg) !important;
+            backdrop-filter: var(--glass-panel-blur-val) !important;
+            -webkit-backdrop-filter: var(--glass-panel-blur-val) !important;
+            border: var(--glass-panel-border-val) !important;
+            padding: 48px 32px;
+            border-radius: var(--radius) !important;
             text-align: center;
+            box-shadow: var(--glass-panel-shadow) !important;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .bottom-banner::before {
+            content: '';
+            position: absolute;
+            top: 50%; left: 50%;
+            transform: translate(-50%, -50%);
+            width: 200px; height: 100px;
+            background: radial-gradient(circle, var(--accent-dim) 0%, transparent 70%);
+            opacity: 0.4;
+            filter: blur(30px);
+            z-index: 0;
+            pointer-events: none;
         }
 
         .banner-title {
-            font-size: 28px;
-            font-weight: 800;
-            letter-spacing: -0.02em;
-            margin-bottom: 12px;
+            font-family: var(--font-title);
+            font-size: clamp(20px, 2.5vw, 28px);
+            font-weight: 300;
+            letter-spacing: -0.5px;
+            margin-bottom: 10px;
+            color: var(--text-main);
+            position: relative;
+            z-index: 1;
         }
 
         .banner-desc {
-            font-size: 14px;
-            color: var(--text-secondary);
-            margin-bottom: 28px;
+            font-size: 11px;
+            color: var(--text-dim);
+            margin-bottom: 24px;
+            max-width: 440px;
+            margin-left: auto;
+            margin-right: auto;
+            opacity: 0.6;
+            line-height: 1.7;
+            position: relative;
+            z-index: 1;
         }
 
-        /* ── Footer Link Grid ── */
+        .bottom-banner .btn-start { position: relative; z-index: 1; }
+
+        /* ── Keyboard Hint ── */
+        .keyboard-hint {
+            position: fixed;
+            bottom: 16px;
+            right: 16px;
+            display: flex;
+            gap: 6px;
+            align-items: center;
+            opacity: 0.25;
+            transition: opacity 0.3s ease;
+            z-index: 100;
+        }
+
+        .keyboard-hint:hover { opacity: 0.6; }
+
+        .kbd {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            min-width: 20px;
+            height: 20px;
+            padding: 0 5px;
+            border-radius: 4px;
+            background: rgba(255, 255, 255, 0.03);
+            border: 1px solid var(--border-flat);
+            font-size: 9px;
+            font-weight: 700;
+            color: var(--text-muted);
+            font-family: var(--font-main);
+        }
+
+        .kbd-label {
+            font-size: 8px;
+            font-weight: 700;
+            letter-spacing: 1px;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            font-family: var(--font-main);
+        }
+
+        /* ── Footer ── */
         .footer-grid {
-            max-width: 960px;
+            max-width: 900px;
             margin: 0 auto;
-            border-top: var(--glass-panel-border-val);
-            padding: 48px 24px;
+            border-top: 1px solid var(--border-flat);
+            padding: 40px 24px;
             display: grid;
             grid-template-columns: repeat(4, 1fr);
-            gap: 32px;
+            gap: 28px;
         }
 
-        @media (max-width: 700px) {
-            .footer-grid {
-                grid-template-columns: repeat(2, 1fr);
-            }
-        }
+        @media (max-width: 768px) { .footer-grid { grid-template-columns: repeat(2, 1fr); } }
 
         .footer-col-title {
-            font-size: 12px;
-            font-weight: 700;
+            font-size: 9px;
+            font-weight: 800;
             text-transform: uppercase;
-            letter-spacing: 1px;
+            letter-spacing: 2.5px;
             margin-bottom: 16px;
-            color: var(--text-primary);
+            color: var(--text-muted);
+            opacity: 0.5;
+            font-family: var(--font-main);
         }
 
         .footer-col-links {
@@ -749,146 +1279,223 @@
         }
 
         .footer-col-links a {
-            font-size: 13px;
-            color: var(--text-secondary);
+            font-size: 12px;
+            color: var(--text-dim);
             text-decoration: none;
             transition: color 0.2s;
+            font-weight: 400;
+            opacity: 0.7;
         }
 
-        .footer-col-links a:hover {
-            color: var(--text-primary);
-        }
+        .footer-col-links a:hover { color: var(--accent); opacity: 1; }
 
         .footer-copy {
             text-align: center;
-            font-size: 12px;
+            font-size: 10px;
+            font-weight: 600;
+            letter-spacing: 1.5px;
+            text-transform: uppercase;
             color: var(--text-muted);
-            padding-bottom: 40px;
+            padding-bottom: 32px;
+            border-top: 1px solid var(--border-flat);
+            max-width: 900px;
+            margin: 0 auto;
+            padding-top: 28px;
+            opacity: 0.4;
+        }
+
+        /* ── Back to Top ── */
+        .back-to-top {
+            position: fixed;
+            bottom: 16px;
+            left: 16px;
+            width: 32px;
+            height: 32px;
+            border-radius: 8px;
+            background: var(--glass-panel-bg);
+            border: var(--glass-panel-border-val);
+            backdrop-filter: var(--glass-panel-blur-val);
+            color: var(--text-muted);
+            font-size: 11px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            opacity: 0;
+            pointer-events: none;
+            transition: all 0.3s ease;
+            z-index: 100;
+        }
+
+        .back-to-top.visible {
+            opacity: 0.5;
+            pointer-events: auto;
+        }
+
+        .back-to-top:hover {
+            opacity: 1;
+            color: var(--accent);
+            border-color: var(--accent);
+            transform: translateY(-2px);
         }
     </style>
 </head>
 
-<body data-theme="dark"> <!-- Overwritten dynamically by JS -->
+<body>
+    <script>
+        (function () {
+            const t = localStorage.getItem('ocal-settings-theme');
+            if (t) document.body.setAttribute('data-theme', t);
+            const a = localStorage.getItem('ocal-settings-accent');
+            if (a) {
+                document.documentElement.style.setProperty('--accent', a);
+                document.documentElement.style.setProperty('--accent-glow', `color-mix(in srgb, ${a} 30%, transparent)`);
+                document.documentElement.style.setProperty('--accent-dim', `color-mix(in srgb, ${a} 12%, transparent)`);
+                document.documentElement.style.setProperty('--accent-border', a);
+            }
+        })();
+    </script>
 
-    <!-- Premium Wallpaper Background to enable perfect corner clipping -->
+    <div class="scroll-progress" id="scroll-progress"></div>
     <div class="wallpaper-bg"></div>
+    <canvas class="particles-canvas" id="particles-canvas"></canvas>
 
-    <!-- ═══ HERO ═══ -->
-    <section class="hero">
-        <div class="version-pill">
-            <span class="pulse"></span> Version 7.7.04
-        </div>
-        <h1 class="hero-title">Get to know Ocal's features</h1>
-        <p class="hero-desc">
-            Explore the powerful new capabilities, layout improvements, performance modifications,
-            and meet the team members who made this update possible.
-        </p>
-        <button class="btn-start" id="btn-hero-start">
-            Start Browsing <i class="fas fa-arrow-right"></i>
-        </button>
+    <button class="back-to-top" id="back-to-top"><i class="fas fa-chevron-up"></i></button>
 
-        <!-- Browser Mockup -->
-        <div class="mockup-container">
-            <div class="browser-mockup">
-                <div class="mockup-toolbar">
-                    <div class="mockup-dot"></div>
-                    <div class="mockup-dot"></div>
-                    <div class="mockup-dot"></div>
-                    <div class="mockup-address">ocal://whats-new</div>
-                </div>
-                <div class="mockup-content">
-                    <div class="mockup-pane">
-                        <div class="mockup-line"></div>
-                        <div class="mockup-line short"></div>
-                        <div class="mockup-block"></div>
-                    </div>
-                    <div class="mockup-pane">
-                        <div class="mockup-line"></div>
-                        <div class="mockup-line short"></div>
-                        <div class="mockup-block"></div>
-                    </div>
-                </div>
+    <div class="page-container">
+        <!-- ═══ HERO ═══ -->
+        <section class="hero">
+            <div class="version-pill">
+                <span class="pulse"></span> V7.7.04 — STABLE
+            </div>
+            <h1 class="hero-title">What's New in <span>Ocal</span></h1>
+            <p class="hero-desc" id="hero-desc"></p>
+            <div class="hero-actions">
+                <button class="btn-start btn-primary" id="btn-hero-start">
+                    LAUNCH WORKSPACE <i class="fas fa-arrow-right"></i>
+                </button>
+                <button class="btn-start" id="btn-changelog">
+                    CHANGELOG <i class="fas fa-clock-rotate-left"></i>
+                </button>
+            </div>
+        </section>
+
+        <!-- ═══ STATS ROW ═══ -->
+        <div class="stats-row reveal" id="stats-row">
+            <div class="stat-item">
+                <div class="stat-value"><span class="counter" data-target="40">0</span><span class="counter-suffix">%</span></div>
+                <div class="stat-label">FASTER RENDERS</div>
+            </div>
+            <div class="stat-item">
+                <div class="stat-value"><span class="counter" data-target="500">0</span><span class="counter-suffix">%</span></div>
+                <div class="stat-label">VOLUME BOOST</div>
+            </div>
+            <div class="stat-item">
+                <div class="stat-value"><span class="counter" data-target="9">0</span><span class="counter-suffix">+</span></div>
+                <div class="stat-label">NEW FEATURES</div>
+            </div>
+            <div class="stat-item">
+                <div class="stat-value"><span class="counter" data-target="6">0</span></div>
+                <div class="stat-label">CONTRIBUTORS</div>
             </div>
         </div>
-    </section>
 
-    <!-- ═══ CATEGORIES TAB BAR ═══ -->
-    <div class="categories-container">
-        <div class="categories-bar-wrapper">
-            <div class="categories-bar">
-                <button class="category-tab active" onclick="filterCategory('all', this)">All Features</button>
-                <button class="category-tab" onclick="filterCategory('multitasking', this)">Multitasking</button>
-                <button class="category-tab" onclick="filterCategory('performance', this)">Performance</button>
-                <button class="category-tab" onclick="filterCategory('media', this)">Media & UI</button>
-                <button class="category-tab" onclick="filterCategory('contributors', this)">Contributors</button>
+        <!-- ═══ FILTER BAR ═══ -->
+        <div class="filter-bar-container reveal">
+            <div class="categories-bar-wrapper">
+                <div class="categories-bar" id="categories-bar">
+                    <button class="category-tab active" data-category="all">ALL <span class="tab-count" id="count-all">9</span></button>
+                    <button class="category-tab" data-category="multitasking">MULTITASKING <span class="tab-count" id="count-multi">2</span></button>
+                    <button class="category-tab" data-category="performance">PERFORMANCE <span class="tab-count" id="count-perf">3</span></button>
+                    <button class="category-tab" data-category="media">MEDIA <span class="tab-count" id="count-media">4</span></button>
+                    <button class="category-tab" data-category="contributors">TEAM <span class="tab-count" id="count-team">6</span></button>
+                </div>
             </div>
+            <div class="search-wrap">
+                <i class="fas fa-search search-icon-sm"></i>
+                <input type="text" class="search-input-sm" id="feature-search" placeholder="SEARCH..." autocomplete="off">
+            </div>
+        </div>
+
+        <!-- ═══ DIRECTORY SECTION ═══ -->
+        <section class="directory-section">
+            <div class="section-header">
+                <h2 class="section-title" id="dir-title">All Features</h2>
+                <p class="section-subtitle" id="dir-subtitle">SHOWING ALL RECENT IMPROVEMENTS IN V7.7.04</p>
+            </div>
+
+            <div class="grid" id="directory-grid"></div>
+        </section>
+
+        <!-- ═══ CHANGELOG TIMELINE ═══ -->
+        <section class="changelog-section reveal" id="changelog-section">
+            <div class="section-header">
+                <h2 class="section-title">Recent Changelog</h2>
+                <p class="section-subtitle">VERSION HISTORY & PATCH NOTES</p>
+            </div>
+            <div class="timeline" id="timeline"></div>
+        </section>
+
+        <!-- ═══ BOTTOM BANNER ═══ -->
+        <section class="bottom-banner reveal">
+            <h2 class="banner-title">Built for the future web</h2>
+            <p class="banner-desc">Experience speed, flexibility, and customizable workspaces built for developers and visual creators.</p>
+            <button class="btn-start btn-primary" id="btn-banner-start">
+                GET STARTED <i class="fas fa-arrow-right"></i>
+            </button>
+        </section>
+
+        <!-- ═══ FOOTER ═══ -->
+        <footer class="footer-grid reveal">
+            <div>
+                <h3 class="footer-col-title">Ocal Browser</h3>
+                <ul class="footer-col-links">
+                    <li><a href="#" onclick="navigate('ocal://home')">Home Dashboard</a></li>
+                    <li><a href="#" onclick="navigate('ocal://settings')">Settings Control</a></li>
+                    <li><a href="#" onclick="navigate('ocal://games')">Games Hub</a></li>
+                </ul>
+            </div>
+            <div>
+                <h3 class="footer-col-title">Features</h3>
+                <ul class="footer-col-links">
+                    <li><a href="#" onclick="setCategory('multitasking')">Split Screen</a></li>
+                    <li><a href="#" onclick="setCategory('performance')">Memory Daemon</a></li>
+                    <li><a href="#" onclick="setCategory('media')">Customizer</a></li>
+                </ul>
+            </div>
+            <div>
+                <h3 class="footer-col-title">Built-In Games</h3>
+                <ul class="footer-col-links">
+                    <li><a href="#" onclick="navigate('ocal://tetris')">Tetris Mode</a></li>
+                    <li><a href="#" onclick="navigate('ocal://snake')">Snake Arena</a></li>
+                    <li><a href="#" onclick="navigate('ocal://runner')">Space Runner</a></li>
+                </ul>
+            </div>
+            <div>
+                <h3 class="footer-col-title">Security</h3>
+                <ul class="footer-col-links">
+                    <li><a href="#" onclick="navigate('ocal://site-settings')">Security Shield</a></li>
+                    <li><a href="#">Privacy Core</a></li>
+                </ul>
+            </div>
+        </footer>
+
+        <div class="footer-copy">
+            &copy; 2026 Ocal Browser &mdash; Designed &amp; Engineered by Neelkanth Patel &amp; Team
         </div>
     </div>
 
-    <!-- ═══ GRID SECTION ═══ -->
-    <section class="directory-section">
-        <div class="section-header">
-            <h2 class="section-title" id="dir-title">All Features</h2>
-            <p class="section-subtitle" id="dir-subtitle">Showing all recent improvements and team contributions in
-                v7.7.00.</p>
-        </div>
-
-        <div class="grid" id="directory-grid">
-            <!-- Items populated dynamically by JS -->
-        </div>
-    </section>
-
-    <!-- ═══ BOTTOM HERO BANNER ═══ -->
-    <section class="bottom-banner">
-        <h2 class="banner-title">You deserve a better browser</h2>
-        <p class="banner-desc">Experience speed, flexibility, and customizable spaces built for power users.</p>
-        <button class="btn-start" id="btn-banner-start">
-            Start Browsing <i class="fas fa-arrow-right"></i>
-        </button>
-    </section>
-
-    <!-- ═══ FOOTER GRID ═══ -->
-    <footer class="footer-grid">
-        <div>
-            <h3 class="footer-col-title">Ocal Browser</h3>
-            <ul class="footer-col-links">
-                <li><a href="#" onclick="navigate('ocal://home')">Home Startpage</a></li>
-                <li><a href="#" onclick="navigate('ocal://settings')">Settings</a></li>
-                <li><a href="#" onclick="navigate('ocal://games')">Games Hub</a></li>
-            </ul>
-        </div>
-        <div>
-            <h3 class="footer-col-title">Features</h3>
-            <ul class="footer-col-links">
-                <li><a href="#" onclick="filterCategory('multitasking')">Splitscreen</a></li>
-                <li><a href="#" onclick="filterCategory('performance')">Memory Saver</a></li>
-                <li><a href="#" onclick="filterCategory('media')">Media Master</a></li>
-            </ul>
-        </div>
-        <div>
-            <h3 class="footer-col-title">Built-In Games</h3>
-            <ul class="footer-col-links">
-                <li><a href="#" onclick="navigate('ocal://tetris')">Tetris</a></li>
-                <li><a href="#" onclick="navigate('ocal://snake')">Snake Game</a></li>
-                <li><a href="#" onclick="navigate('ocal://runner')">Space Runner</a></li>
-            </ul>
-        </div>
-        <div>
-            <h3 class="footer-col-title">Security</h3>
-            <ul class="footer-col-links">
-                <li><a href="#" onclick="navigate('ocal://site-settings')">Ocal Shield</a></li>
-                <li><a href="#">Privacy Pledge</a></li>
-            </ul>
-        </div>
-    </footer>
-
-    <div class="footer-copy">
-        &copy; 2026 Ocal Browser. All rights reserved. Made by Neelkanth Patel & Team.
+    <!-- ═══ KEYBOARD HINT ═══ -->
+    <div class="keyboard-hint">
+        <span class="kbd">/</span>
+        <span class="kbd-label">Search</span>
+        <span class="kbd">←→</span>
+        <span class="kbd-label">Categories</span>
     </div>
 
     <!-- ═══ CONTROLLER SCRIPT ═══ -->
     <script>
-        // ── Dynamic Theme & Wallpaper Integration from localStorage (matching home page) ──
+        // ── Theme & Wallpaper ──
         (function () {
             const t = localStorage.getItem('ocal-settings-theme');
             if (t) document.body.setAttribute('data-theme', t);
@@ -902,229 +1509,233 @@
             }
 
             const op = localStorage.getItem('ocal-custom-opacity');
-            if (op !== null) {
-                document.documentElement.style.setProperty('--card-opacity-val', op / 100);
-            }
+            if (op !== null) document.documentElement.style.setProperty('--card-opacity-val', op / 100);
 
             const bl = localStorage.getItem('ocal-custom-blur');
-            if (bl !== null) {
-                document.documentElement.style.setProperty('--card-blur-val', bl + 'px');
-            }
+            if (bl !== null) document.documentElement.style.setProperty('--card-blur-val', bl + 'px');
 
             const bgVal = localStorage.getItem('ocal-custom-bg') || 'static';
             const wallpaperBg = document.querySelector('.wallpaper-bg');
-            if (wallpaperBg && bgVal !== 'static') {
-                wallpaperBg.classList.add('animated-' + bgVal);
-            }
+            if (wallpaperBg && bgVal !== 'static') wallpaperBg.classList.add('animated-' + bgVal);
         })();
 
-        // Navigation helpers
+        // ── Body loaded fade-in ──
+        requestAnimationFrame(() => { document.body.classList.add('loaded'); });
+
+        // ── Navigation ──
         function navigate(url) {
-            try {
-                if (window.electronAPI && window.electronAPI.navigateTo) {
-                    window.electronAPI.navigateTo(url);
-                }
-            } catch (e) { }
+            try { if (window.electronAPI && window.electronAPI.navigateTo) window.electronAPI.navigateTo(url); } catch (e) { }
         }
 
-        const items = [
-            // --- FEATURES ---
-            {
-                type: 'feature',
-                category: 'multitasking',
-                title: 'Splitscreen Mode',
-                desc: 'Browse two websites in parallel. Drag tabs to the full-height side dropzones with live animated overlays and layout ratio customizers.',
-                actionText: 'Learn More',
-                visualHtml: `
-                    <div class="visual-split">
-                        <div class="visual-split-pane"><i class="fas fa-globe"></i></div>
-                        <div class="visual-split-pane"><i class="fas fa-globe"></i></div>
-                    </div>
-                `
-            },
-            {
-                type: 'feature',
-                category: 'multitasking',
-                title: 'Tab Emojis',
-                desc: 'Personalize your tabs and express yourself with Tab Emojis.',
-                actionText: 'Learn More',
-                visualHtml: `
-                    <div class="visual-emoji" style="display: flex; gap: 12px; font-size: 24px; justify-content: center; align-items: center; height: 100%;">
-                        <span>🦊</span>
-                        <span>🚀</span>
-                        <span>🎮</span>
-                    </div>
-                `
-            },
-            {
-                type: 'feature',
-                category: 'performance',
-                title: 'Memory Saver Daemon',
-                desc: 'Intelligent tab suspension kicks in after 10 minutes of inactivity to keep your computer cold and memory overhead minimal.',
-                actionText: 'Manage Settings',
-                visualHtml: `
-                    <div class="visual-suspend">
-                        <div class="mockup-line" style="width: 100%"></div>
-                        <i class="fas fa-leaf leaf"></i>
-                        <div class="mockup-line" style="width: 60%"></div>
-                    </div>
-                `
-            },
-            {
-                type: 'feature',
-                category: 'performance',
-                title: 'Pre-Compiled Ad Blocker',
-                desc: 'Block lists are compiled once at initialization to bypass regex parse queues on individual requests, making rendering up to 40% faster.',
-                actionText: 'Ocal Shield Settings',
-                visualHtml: `
-                    <div class="visual-adblock">
-                        <i class="fas fa-shield-halved"></i>
-                    </div>
-                `
-            },
-            {
-                type: 'feature',
-                category: 'performance',
-                title: 'GPU Accelerated Raster',
-                desc: 'Forced zero-copy layouts and multi-threaded rendering pipelines bypass cpu bottling to maintain high FPS scroll rates on visual sites.',
-                actionText: 'View Metrics',
-                visualHtml: `
-                    <div class="visual-gpu">
-                        <div class="gpu-bar" style="height: 10px;"></div>
-                        <div class="gpu-bar" style="height: 20px;"></div>
-                        <div class="gpu-bar" style="height: 35px;"></div>
-                        <div class="gpu-bar" style="height: 28px;"></div>
-                    </div>
-                `
-            },
-            {
-                type: 'feature',
-                category: 'media',
-                title: 'Ocal Media Master',
-                desc: 'A unified video and image popup with live thumbnail previews, exact filepath decoded outputs, and YouTube download options.',
-                actionText: 'Try it Out',
-                visualHtml: `
-                    <div class="visual-media">
-                        <div class="play-btn"><i class="fas fa-play"></i></div>
-                    </div>
-                `
-            },
-            {
-                type: 'feature',
-                category: 'media',
-                title: 'Wallpaper Customizer',
-                desc: 'Refine your setup with customizable opacity sliders, solid dark/light system cards, and native local image wallpaper uploads.',
-                actionText: 'Customize Layout',
-                visualHtml: `
-                    <div class="visual-wallpaper">
-                        <i class="fas fa-image" style="font-size: 24px; color: var(--text-primary)"></i>
-                    </div>
-                `
-            },
-            {
-                type: 'feature',
-                category: 'media',
-                title: 'AI Smart Bookmarks',
-                desc: 'Press "AI Group" in the bookmark manager to instantly classify your links into simple category folders (Social, Development, Games).',
-                actionText: 'Open Bookmarks',
-                visualHtml: `
-                    <div class="visual-ai">
-                        <div class="ai-folder"><i class="fas fa-folder"></i></div>
-                        <div class="ai-folder"><i class="fas fa-magic"></i></div>
-                    </div>
-                `
-            },
-            {
-                type: 'feature',
-                category: 'media',
-                title: 'Volume Booster',
-                desc: 'Increase browser volume by up to 5x natively.',
-                actionText: 'Learn More',
-                visualHtml: `
-                    <div class="visual-volume" style="display: flex; flex-direction: column; align-items: center; gap: 8px; width: 60%; justify-content: center; height: 100%;">
-                        <i class="fas fa-volume-high" style="font-size: 24px; color: var(--accent);"></i>
-                        <div style="width: 100%; height: 6px; background: var(--border); border-radius: 3px; overflow: hidden; position: relative;">
-                            <div style="width: 80%; height: 100%; background: var(--accent); border-radius: 3px;"></div>
-                        </div>
-                        <span style="font-size: 10px; font-weight: 700; color: var(--accent);">500% BOOST</span>
-                    </div>
-                `
-            },
+        // ── Typing Animation for hero desc ──
+        const heroText = "Uncompromising speed, highly customizable sidebar widgets, dynamic layout engines, and isolated security shields built exclusively for power users.";
+        const heroDesc = document.getElementById('hero-desc');
+        let charIndex = 0;
 
-            // --- CONTRIBUTORS ---
-            {
-                type: 'contributor',
-                category: 'contributors',
-                title: 'Neelkanth Patel',
-                desc: 'Project founder and lead browser architect. Wrote the Electron main wrapper, tab manager daemon, and multi-process architecture.',
-                role: 'Founder & Lead Dev',
-                visualHtml: '<div class="contributor-visual">NP</div>'
-            },
-            {
-                type: 'contributor',
-                category: 'contributors',
-                title: 'Jay Shah',
-                desc: 'Worked on tab lifecycle algorithms, implementing the background Memory Saver suspensions and auto-wake event bindings.',
-                role: 'Software Engineer',
-                visualHtml: '<div class="contributor-visual">JS</div>'
-            },
-            {
-                type: 'contributor',
-                category: 'contributors',
-                title: 'Jiya Thakkar',
-                desc: 'Lead UX designer behind Ocal Shield card alignments, Settings tab overlays, and light/dark styling guidelines.',
-                role: 'Lead Designer',
-                visualHtml: '<div class="contributor-visual">JT</div>'
-            },
-            {
-                type: 'contributor',
-                category: 'contributors',
-                title: 'Reese Whiteman',
-                desc: 'Engineered the AI Bookmarking heuristics, custom tag mappings, and classification keyword parsing scripts.',
-                role: 'AI & Research Lead',
-                visualHtml: '<div class="contributor-visual">RW</div>'
-            },
-            {
-                type: 'contributor',
-                category: 'contributors',
-                title: 'Samantha Chen',
-                desc: 'Optimized network security structures, precompiling ad-block lists and adding CSP parameters.',
-                role: 'Security Engineer',
-                visualHtml: '<div class="contributor-visual">SC</div>'
-            },
-            {
-                type: 'contributor',
-                category: 'contributors',
-                title: 'Oscar Nilsson',
-                desc: 'Configured Chromium V8 optimization variables, multi-threaded downloads, and GPU rasterization flags.',
-                role: 'Performance Engineer',
-                visualHtml: '<div class="contributor-visual">ON</div>'
+        function typeHero() {
+            if (charIndex < heroText.length) {
+                heroDesc.textContent = heroText.slice(0, charIndex + 1);
+                charIndex++;
+                setTimeout(typeHero, 18 + Math.random() * 12);
+            } else {
+                // Add blinking cursor at end
+                const cursor = document.createElement('span');
+                cursor.className = 'typing-cursor';
+                heroDesc.appendChild(cursor);
+                // Remove cursor after 3 seconds
+                setTimeout(() => cursor.remove(), 3000);
             }
+        }
+        setTimeout(typeHero, 700);
+
+        // ── Scroll Progress Bar ──
+        const scrollProgress = document.getElementById('scroll-progress');
+        window.addEventListener('scroll', () => {
+            const scrollTop = document.documentElement.scrollTop;
+            const scrollHeight = document.documentElement.scrollHeight - document.documentElement.clientHeight;
+            const progress = scrollHeight > 0 ? (scrollTop / scrollHeight) * 100 : 0;
+            scrollProgress.style.width = progress + '%';
+
+            // Back to top button
+            const btt = document.getElementById('back-to-top');
+            if (scrollTop > 300) btt.classList.add('visible');
+            else btt.classList.remove('visible');
+        });
+
+        document.getElementById('back-to-top').addEventListener('click', () => {
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        });
+
+        // ── Intersection Observer for reveal animations ──
+        const revealObserver = new IntersectionObserver((entries) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    entry.target.classList.add('visible');
+                    revealObserver.unobserve(entry.target);
+                }
+            });
+        }, { threshold: 0.1 });
+
+        document.querySelectorAll('.reveal').forEach(el => revealObserver.observe(el));
+
+        // ── Animated Counters ──
+        const counterObserver = new IntersectionObserver((entries) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    const counters = entry.target.querySelectorAll('.counter');
+                    counters.forEach(counter => {
+                        const target = parseInt(counter.getAttribute('data-target'));
+                        const duration = 1200;
+                        const start = performance.now();
+
+                        function updateCounter(now) {
+                            const elapsed = now - start;
+                            const progress = Math.min(elapsed / duration, 1);
+                            const eased = 1 - Math.pow(1 - progress, 3); // ease-out cubic
+                            counter.textContent = Math.round(target * eased);
+                            if (progress < 1) requestAnimationFrame(updateCounter);
+                        }
+                        requestAnimationFrame(updateCounter);
+                    });
+                    counterObserver.unobserve(entry.target);
+                }
+            });
+        }, { threshold: 0.3 });
+
+        counterObserver.observe(document.getElementById('stats-row'));
+
+        // ── Particles Canvas ──
+        (function () {
+            const canvas = document.getElementById('particles-canvas');
+            const ctx = canvas.getContext('2d');
+            let particles = [];
+            let animId;
+
+            function resize() {
+                canvas.width = window.innerWidth;
+                canvas.height = window.innerHeight;
+            }
+            resize();
+            window.addEventListener('resize', resize);
+
+            function createParticles() {
+                particles = [];
+                const count = Math.floor(window.innerWidth / 30);
+                for (let i = 0; i < count; i++) {
+                    particles.push({
+                        x: Math.random() * canvas.width,
+                        y: Math.random() * canvas.height,
+                        size: Math.random() * 1.5 + 0.3,
+                        speedY: -(Math.random() * 0.15 + 0.05),
+                        speedX: (Math.random() - 0.5) * 0.1,
+                        opacity: Math.random() * 0.3 + 0.1
+                    });
+                }
+            }
+            createParticles();
+
+            function animateParticles() {
+                ctx.clearRect(0, 0, canvas.width, canvas.height);
+                const accentColor = getComputedStyle(document.documentElement).getPropertyValue('--accent').trim() || '#09f0a0';
+
+                particles.forEach(p => {
+                    p.x += p.speedX;
+                    p.y += p.speedY;
+                    if (p.y < -10) { p.y = canvas.height + 10; p.x = Math.random() * canvas.width; }
+                    if (p.x < -10) p.x = canvas.width + 10;
+                    if (p.x > canvas.width + 10) p.x = -10;
+
+                    ctx.beginPath();
+                    ctx.arc(p.x, p.y, p.size, 0, Math.PI * 2);
+                    ctx.fillStyle = accentColor;
+                    ctx.globalAlpha = p.opacity;
+                    ctx.fill();
+                });
+                ctx.globalAlpha = 1;
+                animId = requestAnimationFrame(animateParticles);
+            }
+            animateParticles();
+        })();
+
+        // ── Feature Data ──
+        const items = [
+            { type: 'feature', category: 'multitasking', title: 'Splitscreen Mode', desc: 'Browse two websites in parallel. Drag tabs to the full-height side dropzones with live animated overlays and layout ratio customizers.', actionText: 'Learn More', visualHtml: `<div class="visual-split"><div class="visual-split-pane"><i class="fas fa-globe"></i></div><div class="visual-split-pane"><i class="fas fa-globe"></i></div></div>` },
+            { type: 'feature', category: 'multitasking', title: 'Tab Emojis', desc: 'Personalize your workspace tabs and express yourself with expressive Tab Emojis.', actionText: 'Learn More', visualHtml: `<div class="visual-emoji"><span>🦊</span><span>🚀</span><span>🎮</span></div>` },
+            { type: 'feature', category: 'performance', title: 'Memory Saver Daemon', desc: 'Intelligent tab suspension kicks in after 10 minutes of inactivity to keep your computer cold and memory overhead minimal.', actionText: 'Settings', visualHtml: `<div class="visual-suspend"><div class="mockup-line" style="width: 100%"></div><i class="fas fa-leaf leaf"></i><div class="mockup-line" style="width: 60%"></div></div>` },
+            { type: 'feature', category: 'performance', title: 'Pre-Compiled Ad Blocker', desc: 'Block lists are compiled once at initialization to bypass regex parse queues on individual requests, making rendering up to 40% faster.', actionText: 'Shield', visualHtml: `<div class="visual-adblock"><i class="fas fa-shield-halved"></i></div>` },
+            { type: 'feature', category: 'performance', title: 'GPU Accelerated Raster', desc: 'Forced zero-copy layouts and multi-threaded rendering pipelines bypass cpu bottling to maintain high FPS scroll rates on visual sites.', actionText: 'Metrics', visualHtml: `<div class="visual-gpu"><div class="gpu-bar" style="height: 14px;"></div><div class="gpu-bar" style="height: 26px;"></div><div class="gpu-bar" style="height: 42px;"></div><div class="gpu-bar" style="height: 32px;"></div></div>` },
+            { type: 'feature', category: 'media', title: 'Ocal Media Master', desc: 'A unified video and image popup with live thumbnail previews, exact filepath decoded outputs, and YouTube download options.', actionText: 'Try It', visualHtml: `<div class="visual-media"><div class="play-btn"><i class="fas fa-play"></i></div></div>` },
+            { type: 'feature', category: 'media', title: 'Wallpaper Customizer', desc: 'Refine your setup with customizable opacity sliders, solid dark/light system cards, and native local image wallpaper uploads.', actionText: 'Customize', visualHtml: `<div class="visual-wallpaper"><i class="fas fa-image"></i></div>` },
+            { type: 'feature', category: 'media', title: 'AI Smart Bookmarks', desc: 'Press "AI Group" in the bookmark manager to instantly classify your links into simple category folders.', actionText: 'Bookmarks', visualHtml: `<div class="visual-ai"><div class="ai-folder"><i class="fas fa-folder"></i></div><div class="ai-folder"><i class="fas fa-wand-magic-sparkles"></i></div></div>` },
+            { type: 'feature', category: 'media', title: 'Volume Booster', desc: 'Increase browser volume outputs by up to 500% natively using high-gain audio synthesis pipelines.', actionText: 'Learn More', visualHtml: `<div class="visual-volume"><i class="fas fa-volume-high" style="font-size: 20px; color: var(--accent); opacity: 0.5;"></i><div class="volume-bar-track"><div class="volume-bar-fill"></div></div><span style="font-size: 8px; font-weight: 800; color: var(--text-muted); letter-spacing: 2px;">500% BOOST</span></div>` },
+            { type: 'contributor', category: 'contributors', title: 'Neelkanth Patel', desc: 'Project founder and lead browser architect. Wrote the Electron main wrapper, tab manager daemon, and multi-process architecture.', role: 'Founder & Lead Dev', visualHtml: '<div class="contributor-visual">NP</div>' },
+            { type: 'contributor', category: 'contributors', title: 'Jay Shah', desc: 'Worked on tab lifecycle algorithms, implementing the background Memory Saver suspensions and auto-wake event bindings.', role: 'Software Engineer', visualHtml: '<div class="contributor-visual">JS</div>' },
+            { type: 'contributor', category: 'contributors', title: 'Jiya Thakkar', desc: 'Lead UX designer behind Ocal Shield card alignments, Settings tab overlays, and light/dark styling guidelines.', role: 'Lead Designer', visualHtml: '<div class="contributor-visual">JT</div>' },
+            { type: 'contributor', category: 'contributors', title: 'Reese Whiteman', desc: 'Engineered the AI Bookmarking heuristics, custom tag mappings, and classification keyword parsing scripts.', role: 'AI & Research Lead', visualHtml: '<div class="contributor-visual">RW</div>' },
+            { type: 'contributor', category: 'contributors', title: 'Samantha Chen', desc: 'Optimized network security structures, precompiling ad-block lists and adding CSP parameters.', role: 'Security Engineer', visualHtml: '<div class="contributor-visual">SC</div>' },
+            { type: 'contributor', category: 'contributors', title: 'Oscar Nilsson', desc: 'Configured Chromium V8 optimization variables, multi-threaded downloads, and GPU rasterization flags.', role: 'Performance Engineer', visualHtml: '<div class="contributor-visual">ON</div>' }
         ];
 
-        // Filter and Render grid items
-        function renderGrid(category = 'all') {
+        // ── Changelog Data ──
+        const changelog = [
+            { date: 'July 2026', title: 'v7.7.04 — Stable Release', desc: 'Added splitscreen dropzones, wallpaper customizer fine-tuning, and GPU raster acceleration flags.', tags: ['Performance', 'UI'] },
+            { date: 'June 2026', title: 'v7.6.12 — Memory Optimizations', desc: 'Introduced intelligent tab suspension daemon with 10-minute idle threshold and auto-wake bindings.', tags: ['System', 'Memory'] },
+            { date: 'May 2026', title: 'v7.5.08 — AI Bookmarks Beta', desc: 'Launched AI-powered bookmark classification with category folder auto-grouping.', tags: ['AI', 'Bookmarks'] },
+            { date: 'April 2026', title: 'v7.4.02 — Security Hardening', desc: 'Pre-compiled ad-block filter lists, enhanced CSP headers, and certificate transparency checks.', tags: ['Security', 'Shield'] },
+        ];
+
+        let currentCategory = 'all';
+        let searchQuery = '';
+
+        // ── Render Grid ──
+        function renderGrid() {
             const grid = document.getElementById('directory-grid');
             grid.innerHTML = '';
 
-            const filtered = items.filter(item => {
-                if (category === 'all') {
-                    // Don't show contributors in "All Features" page to keep focus strictly on product upgrades
-                    return item.type === 'feature';
-                }
-                return item.category === category;
+            let filtered = items.filter(item => {
+                if (currentCategory === 'all') return item.type === 'feature';
+                return item.category === currentCategory;
             });
 
-            filtered.forEach(item => {
+            if (searchQuery) {
+                const q = searchQuery.toLowerCase();
+                filtered = filtered.filter(item =>
+                    item.title.toLowerCase().includes(q) ||
+                    item.desc.toLowerCase().includes(q) ||
+                    item.category.toLowerCase().includes(q)
+                );
+            }
+
+            if (filtered.length === 0) {
+                grid.innerHTML = `<div class="no-results"><i class="fas fa-search"></i><p>NO MATCHING FEATURES FOUND</p></div>`;
+                return;
+            }
+
+            filtered.forEach((item, index) => {
                 const card = document.createElement('div');
                 card.className = 'card';
-                card.onclick = () => {
-                    if (item.type === 'feature') {
-                        if (item.category === 'multitasking') navigate('ocal://home');
-                        else if (item.category === 'performance') navigate('ocal://settings#performance');
-                        else if (item.category === 'media') navigate('ocal://settings#appearance');
-                    }
-                };
+                card.style.transitionDelay = `${index * 0.06}s`;
+
+                // Ripple effect on click
+                card.addEventListener('click', (e) => {
+                    const rect = card.getBoundingClientRect();
+                    const ripple = document.createElement('div');
+                    ripple.className = 'ripple';
+                    ripple.style.left = (e.clientX - rect.left - 25) + 'px';
+                    ripple.style.top = (e.clientY - rect.top - 25) + 'px';
+                    ripple.style.width = ripple.style.height = '50px';
+                    card.querySelector('.card-header-visual').appendChild(ripple);
+                    setTimeout(() => ripple.remove(), 600);
+
+                    // Navigate after ripple
+                    setTimeout(() => {
+                        if (item.type === 'feature') {
+                            if (item.category === 'multitasking') navigate('ocal://home');
+                            else if (item.category === 'performance') navigate('ocal://settings#system');
+                            else if (item.category === 'media') navigate('ocal://settings#homepage');
+                        }
+                    }, 200);
+                });
 
                 const categoryLabel = item.type === 'contributor' ? 'Contributor' : item.category;
 
@@ -1144,64 +1755,132 @@
                 `;
 
                 grid.appendChild(card);
+
+                // Staggered entrance animation
+                requestAnimationFrame(() => {
+                    setTimeout(() => card.classList.add('card-visible'), 50 + index * 60);
+                });
+            });
+
+            // Animate volume bars when they appear
+            setTimeout(() => {
+                document.querySelectorAll('.volume-bar-fill').forEach(bar => bar.classList.add('animated'));
+            }, 400);
+        }
+
+        // ── Render Timeline ──
+        function renderTimeline() {
+            const timeline = document.getElementById('timeline');
+            timeline.innerHTML = '';
+            changelog.forEach((entry, i) => {
+                const item = document.createElement('div');
+                item.className = 'timeline-item reveal';
+                item.innerHTML = `
+                    <div class="timeline-date">${entry.date}</div>
+                    <div class="timeline-title">${entry.title}</div>
+                    <div class="timeline-desc">${entry.desc}</div>
+                    <div class="timeline-tags">${entry.tags.map(t => `<span class="timeline-tag">${t}</span>`).join('')}</div>
+                `;
+                timeline.appendChild(item);
+                revealObserver.observe(item);
             });
         }
+        renderTimeline();
 
-        // Toggle category tabs
-        function filterCategory(category, buttonEl) {
-            // Update active state in CSS tabs
+        // ── Category Tabs ──
+        function setCategory(cat) {
+            currentCategory = cat;
             const tabs = document.querySelectorAll('.category-tab');
-            tabs.forEach(tab => tab.classList.remove('active'));
-
-            if (buttonEl) {
-                buttonEl.classList.add('active');
-            } else {
-                // Find matching button dynamically if clicked via footer links
-                const matchingTab = Array.from(tabs).find(t => t.textContent.toLowerCase().includes(category));
-                if (matchingTab) matchingTab.classList.add('active');
-            }
-
-            // Update section title & descriptions
-            const titleEl = document.getElementById('dir-title');
-            const subtitleEl = document.getElementById('dir-subtitle');
-
-            if (category === 'all') {
-                titleEl.textContent = 'All Features';
-                subtitleEl.textContent = 'Showing all recent improvements and layouts in v7.7.04.';
-            } else if (category === 'multitasking') {
-                titleEl.textContent = 'Multitasking Features';
-                subtitleEl.textContent = 'Browse side-by-side workspace screens natively.';
-            } else if (category === 'performance') {
-                titleEl.textContent = 'Performance Optimizations';
-                subtitleEl.textContent = 'Faster loading, low CPU cycles, and custom memory savers.';
-            } else if (category === 'media') {
-                titleEl.textContent = 'Media & UI Refinements';
-                subtitleEl.textContent = 'Aesthetic styles matching Ocal Shield card patterns.';
-            } else if (category === 'contributors') {
-                titleEl.textContent = 'Key Contributors';
-                subtitleEl.textContent = 'Meet the engineers and designers who built Ocal Browser v7.7.04.';
-            }
-
-            renderGrid(category);
+            tabs.forEach(tab => {
+                tab.classList.toggle('active', tab.getAttribute('data-category') === cat);
+            });
+            updateSectionHeader();
+            renderGrid();
+            // Scroll to grid
+            document.querySelector('.directory-section').scrollIntoView({ behavior: 'smooth', block: 'start' });
         }
 
-        // Initial Render
-        renderGrid('all');
+        document.querySelectorAll('.category-tab').forEach(tab => {
+            tab.addEventListener('click', () => setCategory(tab.getAttribute('data-category')));
+        });
 
-        // Check if running inside iframe and adjust backgrounds
+        function updateSectionHeader() {
+            const titleEl = document.getElementById('dir-title');
+            const subtitleEl = document.getElementById('dir-subtitle');
+            const map = {
+                all: ['All Features', 'SHOWING ALL RECENT IMPROVEMENTS IN V7.7.04'],
+                multitasking: ['Multitasking', 'BROWSE SIDE-BY-SIDE WORKSPACE SCREENS'],
+                performance: ['Performance', 'FASTER LOADING, LOW CPU CYCLES, MEMORY SAVERS'],
+                media: ['Media & UI', 'AESTHETIC STYLES AND CUSTOMIZATION OPTIONS'],
+                contributors: ['Team', 'THE ENGINEERS & DESIGNERS BEHIND OCAL V7.7.04'],
+            };
+            const [title, subtitle] = map[currentCategory] || map.all;
+            titleEl.textContent = title;
+            subtitleEl.textContent = subtitle;
+        }
+
+        // ── Search ──
+        const searchInput = document.getElementById('feature-search');
+        let searchTimeout;
+        searchInput.addEventListener('input', (e) => {
+            clearTimeout(searchTimeout);
+            searchTimeout = setTimeout(() => {
+                searchQuery = e.target.value.trim();
+                renderGrid();
+            }, 150);
+        });
+
+        // ── Keyboard Shortcuts ──
+        document.addEventListener('keydown', (e) => {
+            // / to focus search
+            if (e.key === '/' && document.activeElement !== searchInput) {
+                e.preventDefault();
+                searchInput.focus();
+                return;
+            }
+
+            // Escape to blur search
+            if (e.key === 'Escape') {
+                searchInput.blur();
+                searchInput.value = '';
+                searchQuery = '';
+                renderGrid();
+                return;
+            }
+
+            // Arrow keys to switch categories
+            if (document.activeElement === searchInput) return;
+            const cats = ['all', 'multitasking', 'performance', 'media', 'contributors'];
+            const currentIdx = cats.indexOf(currentCategory);
+
+            if (e.key === 'ArrowRight' && currentIdx < cats.length - 1) {
+                e.preventDefault();
+                setCategory(cats[currentIdx + 1]);
+            } else if (e.key === 'ArrowLeft' && currentIdx > 0) {
+                e.preventDefault();
+                setCategory(cats[currentIdx - 1]);
+            }
+        });
+
+        // ── Changelog button scroll ──
+        document.getElementById('btn-changelog').addEventListener('click', () => {
+            document.getElementById('changelog-section').scrollIntoView({ behavior: 'smooth' });
+        });
+
+        // Initial render
+        renderGrid();
+
+        // ── Button events ──
+        document.getElementById('btn-hero-start').addEventListener('click', () => navigate('ocal://home'));
+        document.getElementById('btn-banner-start').addEventListener('click', () => navigate('ocal://home'));
+
+        // ── Iframe check ──
         if (window.self !== window.top) {
             const bg = document.querySelector('.wallpaper-bg');
             if (bg) bg.style.display = 'none';
             document.body.style.background = 'transparent';
+            document.querySelector('.particles-canvas').style.display = 'none';
         }
-
-        // Button events
-        const heroBtn = document.getElementById('btn-hero-start');
-        const bannerBtn = document.getElementById('btn-banner-start');
-        const clickHandler = () => navigate('ocal://home');
-
-        if (heroBtn) heroBtn.addEventListener('click', clickHandler);
-        if (bannerBtn) bannerBtn.addEventListener('click', clickHandler);
     </script>
 </body>
 
