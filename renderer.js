@@ -371,6 +371,13 @@ function formatDisplayUrl(url) {
         } catch(e) {}
         return 'ocal://settings';
     }
+    if (url.includes('certificate-viewer.html')) {
+        try {
+            const host = new URL(url).searchParams.get('host');
+            return `ocal://certificate-viewer?host=${host}`;
+        } catch(e) {}
+        return 'ocal://certificate-viewer';
+    }
     if (url.includes('file-manager.html')) return 'ocal://file-manager';
     if (url.includes('games.html')) return 'ocal://games';
     if (url.includes('snake.html')) return 'ocal://snake';
@@ -387,6 +394,7 @@ function getSimplifiedTitle(title, url) {
     if (url.includes('settings.html') || url.startsWith('ocal://settings')) return 'Settings';
     if (url.includes('games.html') || url.startsWith('ocal://games')) return 'Games';
     if (url.includes('whats-new.html') || url.startsWith('ocal://whats-new')) return "What's New";
+    if (url.includes('certificate-viewer.html') || url.startsWith('ocal://certificate-viewer')) return "Certificate Viewer";
     
     let t = title.split(' - ')[0].split(' | ')[0].split(' – ')[0].trim();
     if (t.length > 10) {
@@ -715,6 +723,13 @@ document.addEventListener('DOMContentLoaded', () => {
         };
     });
 
+    const floatingWebAppCloseBtn = document.getElementById('floating-webapp-close-btn');
+    if (floatingWebAppCloseBtn) {
+        floatingWebAppCloseBtn.onclick = () => {
+            window.electronAPI.send('close-all-sidebars');
+        };
+    }
+
     // Dismiss overlays/sidebars when clicking outside the sidebar
     document.addEventListener('mousedown', (e) => {
         const leftSidebar = document.getElementById('left-sidebar');
@@ -725,7 +740,16 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     });
 
-    window.electronAPI.on('web-app-opened', (e, openedUrl) => {
+    window.electronAPI.on('web-app-opened', (e, data) => {
+        const openedUrl = (data && data.url) ? data.url : data;
+        const width = (data && data.width) ? data.width : 960;
+        
+        const floatingCloseBtn = document.getElementById('floating-webapp-close-btn');
+        if (floatingCloseBtn) {
+            floatingCloseBtn.style.display = 'flex';
+            floatingCloseBtn.style.left = `calc(var(--sidebar-w, 44px) + ${width}px + 12px)`;
+        }
+
         document.querySelectorAll('.left-sidebar .social-btn').forEach(btn => {
             const btnUrl = btn.getAttribute('data-url');
             if (btnUrl === openedUrl) {
@@ -741,6 +765,11 @@ document.addEventListener('DOMContentLoaded', () => {
     });
 
     window.electronAPI.on('web-app-closed', () => {
+        const floatingCloseBtn = document.getElementById('floating-webapp-close-btn');
+        if (floatingCloseBtn) {
+            floatingCloseBtn.style.display = 'none';
+        }
+
         document.querySelectorAll('.left-sidebar .social-btn').forEach(btn => {
             btn.classList.remove('active');
         });
@@ -866,28 +895,43 @@ function getContrastColor(hex) {
     return luma > 128 ? '#000000' : '#ffffff';
 }
 
+function getModeAccent(color, isLight) {
+    if (!color) return isLight ? '#058f60' : '#09f0a0';
+    if (!isLight) return color;
+    const hex = color.toLowerCase();
+    if (hex === '#09f0a0' || hex === '#00ffaa' || hex.includes('f0a0')) return '#058f60';
+    if (hex === '#ff007f' || hex === '#ff00aa' || hex.includes('ff007') || hex.includes('ff00a')) return '#d81b60';
+    if (hex === '#00e5ff' || hex === '#00ffff' || hex.includes('00e5') || hex.includes('00f0')) return '#0288d1';
+    if (hex === '#ff9100' || hex === '#ffaa00' || hex.includes('ff91') || hex.includes('ffaa')) return '#d97706';
+    if (hex === '#8b5cf6' || hex === '#a855f7' || hex === '#9333ea' || hex.includes('8b5c') || hex.includes('a855')) return '#6d28d9';
+    if (hex === '#ff4d4d' || hex === '#ff3333' || hex.includes('ff4d') || hex.includes('ff33')) return '#dc2626';
+    if (hex === '#ffffff' || hex === '#f4f4f5' || hex === '#e8e8e8' || hex.includes('fff')) return '#0f172a';
+    return color;
+}
+
 // ── Settings ───────────────────────────────────────────────────────────────
 function applyGlobalSettings(s) {
     lastSettings = s;
+    const isLight = s.themeMode === 'light';
     if (s.accentColor) {
-        const contrastColor = getContrastColor(s.accentColor);
-        document.documentElement.style.setProperty('--accent', s.accentColor);
+        const activeAccent = getModeAccent(s.accentColor, isLight);
+        const contrastColor = getContrastColor(activeAccent);
+        document.documentElement.style.setProperty('--accent', activeAccent);
         document.documentElement.style.setProperty('--accent-glow', 'transparent');
-        document.documentElement.style.setProperty('--accent-dim', hexToRgba(s.accentColor, 0.15));
-        document.documentElement.style.setProperty('--accent-border', hexToRgba(s.accentColor, 0.4));
+        document.documentElement.style.setProperty('--accent-dim', hexToRgba(activeAccent, 0.15));
+        document.documentElement.style.setProperty('--accent-border', hexToRgba(activeAccent, 0.4));
         document.documentElement.style.setProperty('--accent-text', contrastColor);
 
-        document.body.style.setProperty('--accent', s.accentColor);
+        document.body.style.setProperty('--accent', activeAccent);
         document.body.style.setProperty('--accent-glow', 'transparent');
-        document.body.style.setProperty('--accent-dim', hexToRgba(s.accentColor, 0.15));
-        document.body.style.setProperty('--accent-border', hexToRgba(s.accentColor, 0.4));
+        document.body.style.setProperty('--accent-dim', hexToRgba(activeAccent, 0.15));
+        document.body.style.setProperty('--accent-border', hexToRgba(activeAccent, 0.4));
         document.body.style.setProperty('--accent-text', contrastColor);
     } else {
-        document.body.style.removeProperty('--accent');
-        document.body.style.removeProperty('--accent-glow');
-        document.body.style.removeProperty('--accent-dim');
-        document.body.style.removeProperty('--accent-border');
-        document.body.style.removeProperty('--accent-text');
+        const defaultAccent = getModeAccent(null, isLight);
+        document.body.style.setProperty('--accent', defaultAccent);
+        document.body.style.setProperty('--accent-dim', hexToRgba(defaultAccent, 0.15));
+        document.body.style.setProperty('--accent-border', hexToRgba(defaultAccent, 0.4));
     }
     document.body.classList.toggle('compact-mode', !!s.compactMode);
     document.body.classList.toggle('battery-saver', !!s.batterySaver);
@@ -1320,3 +1364,48 @@ function getEmojiSvgUrl(emoji) {
     return null;
 }
 
+(function initVolumeBooster() {
+    const vbBtn = document.getElementById('volume-boost-btn');
+    if (!vbBtn) return;
+
+    // Toggle popup view in main process by sending button bounds
+    vbBtn.addEventListener('click', (e) => {
+        e.stopPropagation();
+        const rect = vbBtn.getBoundingClientRect();
+        window.electronAPI.send('toggle-volume-boost-popup', {
+            x: rect.left,
+            y: rect.top,
+            width: rect.width,
+            height: rect.height
+        });
+    });
+
+    // Listen for volume boost changes to toggle the boost active indicator dot
+    window.electronAPI.on('volume-boost-changed', (e, { tabId, gain }) => {
+        if (gain > 1.0) {
+            vbBtn.classList.add('boost-active');
+        } else {
+            vbBtn.classList.remove('boost-active');
+        }
+    });
+
+    // Sync state on tab change
+    window.electronAPI.onTabsChanged((data) => {
+        window.electronAPI.invoke('get-volume-boost').then(gain => {
+            if (gain > 1.0) {
+                vbBtn.classList.add('boost-active');
+            } else {
+                vbBtn.classList.remove('boost-active');
+            }
+        });
+    });
+
+    // Initial check
+    window.electronAPI.invoke('get-volume-boost').then(gain => {
+        if (gain > 1.0) {
+            vbBtn.classList.add('boost-active');
+        } else {
+            vbBtn.classList.remove('boost-active');
+        }
+    });
+})();

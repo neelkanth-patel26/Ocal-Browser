@@ -19,6 +19,7 @@ const sbContent = document.getElementById('sb-content');
 const sbSearch  = document.getElementById('sb-search');
 const bmToolbar = document.getElementById('bm-toolbar');
 const tabBtns   = document.querySelectorAll('.tab-pill');
+const clearHistoryBtn = document.getElementById('clear-history-btn');
 
 // ── Sidebar open/close ─────────────────────────────────────────────────────
 function openSidebar() {
@@ -34,12 +35,25 @@ function closeSidebar() {
 // ── Tab switching ──────────────────────────────────────────────────────────
 tabBtns.forEach(btn => btn.addEventListener('click', () => switchTab(btn.dataset.tab)));
 
+if (clearHistoryBtn) {
+    clearHistoryBtn.addEventListener('click', () => {
+        showModal({
+            title: 'Clear History',
+            message: 'Are you sure you want to permanently clear all browsing history?',
+            onConfirm: () => window.electronAPI.send('clear-history')
+        });
+    });
+}
+
 function switchTab(id) {
     currentTab = id;
     tabBtns.forEach(b => b.classList.toggle('active', b.dataset.tab === id));
     const titles = { bookmarks: 'Saves', history: 'History', downloads: 'Files' };
     sbTitle.textContent = titles[id] || id;
     bmToolbar.style.display = id === 'bookmarks' ? 'flex' : 'none';
+    if (clearHistoryBtn) {
+        clearHistoryBtn.style.display = (id === 'history' && historyItems.length > 0) ? 'flex' : 'none';
+    }
     sbSearch.placeholder = `Search ${titles[id] || id}...`;
     render();
 }
@@ -105,6 +119,20 @@ function showModal({ title, message, onConfirm, onCancel }) {
 }
 
 // ── IPC Listeners ────────────────────────────────────────────────
+function getModeAccent(color, isLight) {
+    if (!color) return isLight ? '#058f60' : '#09f0a0';
+    if (!isLight) return color;
+    const hex = color.toLowerCase();
+    if (hex === '#09f0a0' || hex === '#00ffaa' || hex.includes('f0a0')) return '#058f60';
+    if (hex === '#ff007f' || hex === '#ff00aa' || hex.includes('ff007') || hex.includes('ff00a')) return '#d81b60';
+    if (hex === '#00e5ff' || hex === '#00ffff' || hex.includes('00e5') || hex.includes('00f0')) return '#0288d1';
+    if (hex === '#ff9100' || hex === '#ffaa00' || hex.includes('ff91') || hex.includes('ffaa')) return '#d97706';
+    if (hex === '#8b5cf6' || hex === '#a855f7' || hex === '#9333ea' || hex.includes('8b5c') || hex.includes('a855')) return '#6d28d9';
+    if (hex === '#ff4d4d' || hex === '#ff3333' || hex.includes('ff4d') || hex.includes('ff33')) return '#dc2626';
+    if (hex === '#ffffff' || hex === '#f4f4f5' || hex === '#e8e8e8' || hex.includes('fff')) return '#0f172a';
+    return color;
+}
+
 window.electronAPI.onShowModal((data) => showModal(data));
 
 function hexToRgba(hex, alpha) {
@@ -124,13 +152,15 @@ function hexToRgba(hex, alpha) {
 window.electronAPI.onSettingsChanged((s) => {
     currentSettings = s;
     historyItems = s.history || [];
-    if (s.accentColor) {
-        document.documentElement.style.setProperty('--accent', s.accentColor);
-        document.documentElement.style.setProperty('--accent-glow', hexToRgba(s.accentColor, 0.35));
-        document.documentElement.style.setProperty('--accent-dim', hexToRgba(s.accentColor, 0.12));
-        document.documentElement.style.setProperty('--accent-border', hexToRgba(s.accentColor, 0.28));
-    }
+    const isLight = s.themeMode === 'light';
     document.body.setAttribute('data-theme', s.themeMode || 'dark');
+    if (s.accentColor) {
+        const activeAccent = getModeAccent(s.accentColor, isLight);
+        document.documentElement.style.setProperty('--accent', activeAccent);
+        document.documentElement.style.setProperty('--accent-glow', hexToRgba(activeAccent, 0.35));
+        document.documentElement.style.setProperty('--accent-dim', hexToRgba(activeAccent, 0.12));
+        document.documentElement.style.setProperty('--accent-border', hexToRgba(activeAccent, 0.28));
+    }
     if (currentTab === 'history') render();
 });
 
@@ -196,13 +226,15 @@ window.electronAPI.getSettings().then(s => {
     historyItems = s.history || [];
     bookmarks    = s.bookmarks || [];
     folders      = s.folders   || [];
-    if (s.accentColor) {
-        document.documentElement.style.setProperty('--accent', s.accentColor);
-        document.documentElement.style.setProperty('--accent-glow', hexToRgba(s.accentColor, 0.35));
-        document.documentElement.style.setProperty('--accent-dim', hexToRgba(s.accentColor, 0.12));
-        document.documentElement.style.setProperty('--accent-border', hexToRgba(s.accentColor, 0.28));
-    }
+    const isLight = s.themeMode === 'light';
     document.body.setAttribute('data-theme', s.themeMode || 'dark');
+    if (s.accentColor) {
+        const activeAccent = getModeAccent(s.accentColor, isLight);
+        document.documentElement.style.setProperty('--accent', activeAccent);
+        document.documentElement.style.setProperty('--accent-glow', hexToRgba(activeAccent, 0.35));
+        document.documentElement.style.setProperty('--accent-dim', hexToRgba(activeAccent, 0.12));
+        document.documentElement.style.setProperty('--accent-border', hexToRgba(activeAccent, 0.28));
+    }
     
     // Fetch downloads too
     window.electronAPI.getDownloads().then(dl => {
@@ -550,9 +582,16 @@ function getHistoricalIcon(url, title = '', storedIcon = '') {
 // ── History ────────────────────────────────────────────────────────────────
 function renderHistory() {
     const q = searchFilter;
-    const items = q
-        ? historyItems.filter(h => h.title?.toLowerCase().includes(q) || h.url?.toLowerCase().includes(q))
-        : historyItems;
+    const items = historyItems.filter(h => {
+        const u = String(h.url || '').toLowerCase();
+        if (u.endsWith('.pdf') || u.includes('.pdf?') || u.includes('pdf-viewer.html') || u.includes('ocal://pdf-viewer')) {
+            return false;
+        }
+        if (q) {
+            return h.title?.toLowerCase().includes(q) || h.url?.toLowerCase().includes(q);
+        }
+        return true;
+    });
 
     // 1. Open Tabs Section
     if (!q && activeTabs.length > 0) {
@@ -590,13 +629,13 @@ function renderHistory() {
         const counts = {};
         historyItems.forEach(h => {
             try {
+                // Skip internal browser files/pages
+                if (h.url.startsWith('ocal://') || h.url.startsWith('file://')) return;
+                
                 const u = new URL(h.url);
-                let dom = u.hostname;
-                if (!dom && u.protocol === 'file:') {
-                    if (u.pathname.includes('settings.html')) dom = 'ocal:settings';
-                    else if (u.pathname.includes('home.html')) dom = 'ocal:home';
-                    else dom = 'ocal:local';
-                }
+                if (u.protocol === 'file:' || u.protocol === 'ocal:') return;
+                
+                const dom = u.hostname;
                 if (dom) counts[dom] = (counts[dom] || 0) + 1;
             } catch {}
         });
@@ -617,9 +656,9 @@ function renderHistory() {
             if (dom.startsWith('ocal:')) {
                 const isSettings = dom === 'ocal:settings';
                 name = isSettings ? 'Settings' : 'Home';
-                iconHtml = `<div style="width:28px;height:28px;display:flex;align-items:center;justify-content:center;background:var(--accent-dim);border-radius:8px;color:var(--accent);font-size:14px;"><i class="fas ${isSettings?'fa-gear':'fa-house'}"></i></div>`;
+                iconHtml = `<div class="icon-wrapper" style="display:flex;align-items:center;justify-content:center;background:var(--accent-dim);color:var(--accent);font-size:10px;"><i class="fas ${isSettings?'fa-gear':'fa-house'}"></i></div>`;
             } else {
-                iconHtml = `<img src="https://www.google.com/s2/favicons?domain=${dom}&sz=64" onerror="const d=document.createElement('div'); d.className='hist-favicon-fallback'; d.style.width='28px'; d.style.height='28px'; d.style.fontSize='14px'; d.innerHTML='<i class=\\'fas fa-globe\\'></i>'; this.replaceWith(d);">`;
+                iconHtml = `<img src="https://www.google.com/s2/favicons?domain=${dom}&sz=64" onerror="const d=document.createElement('div'); d.className='hist-favicon-fallback'; d.innerHTML='<i class=\\'fas fa-globe\\'></i>'; this.replaceWith(d);">`;
             }
 
             item.innerHTML = `${iconHtml}<div class="recom-name">${esc(name)}</div>`;
@@ -629,19 +668,9 @@ function renderHistory() {
         sbContent.appendChild(recomWrap);
     }
 
-    // 3. Clear History
-    if (items.length) {
-        const clearBtn = document.createElement('div');
-        clearBtn.className = 'hist-clear-row';
-        clearBtn.innerHTML = '<i class="fas fa-trash-can"></i>Clear History';
-        clearBtn.onclick = () => {
-            showModal({
-                title: 'Clear History',
-                message: 'Are you sure you want to permanently clear all browsing history?',
-                onConfirm: () => window.electronAPI.send('clear-history')
-            });
-        };
-        sbContent.appendChild(clearBtn);
+    // 3. Toggle Header Clear History Button
+    if (clearHistoryBtn) {
+        clearHistoryBtn.style.display = items.length ? 'flex' : 'none';
     }
 
     // 4. History List Grouped by Date
@@ -808,8 +837,17 @@ function renderDownloads() {
             ? `${(dl.received / (1024*1024)).toFixed(1)} / ${(dl.total / (1024*1024)).toFixed(1)} MB`
             : `${(dl.received / (1024*1024)).toFixed(1)} MB`;
 
+        const hasPreview = type === 'img' && dl.state === 'completed' && dl.path;
+        const fileUrl = hasPreview ? 'file:///' + dl.path.replace(/\\/g, '/') : '';
+
         el.innerHTML = `
-            <div class="dl-icon"><i class="fas ${icon}"></i></div>
+            <div class="dl-icon">
+                ${hasPreview 
+                    ? `<img class="dl-preview" src="${fileUrl}" onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">
+                       <i class="fas ${icon}" style="display:none; align-items:center; justify-content:center;"></i>`
+                    : `<i class="fas ${icon}"></i>`
+                }
+            </div>
             <div class="dl-info">
                 <div class="dl-name" title="${esc(dl.name)}">${esc(dl.name)}</div>
                 <div class="dl-status">
@@ -853,6 +891,8 @@ function getFileIcon(filename) {
         png: 'fa-file-image',
         svg: 'fa-file-image',
         gif: 'fa-file-image',
+        avif: 'fa-file-image',
+        webp: 'fa-file-image',
         mp4: 'fa-file-video',
         mov: 'fa-file-video',
         mp3: 'fa-file-audio',
@@ -864,7 +904,7 @@ function getFileIcon(filename) {
 function getFileType(filename) {
     const ext = filename.split('.').pop().toLowerCase();
     if (ext === 'pdf') return 'pdf';
-    if (['jpg', 'jpeg', 'png', 'gif', 'svg'].includes(ext)) return 'img';
+    if (['jpg', 'jpeg', 'png', 'gif', 'svg', 'avif', 'webp'].includes(ext)) return 'img';
     if (['mp4', 'mov', 'mp3', 'wav', 'm4a'].includes(ext)) return 'media';
     if (['js', 'html', 'css', 'json', 'py', 'cpp', 'rs', 'go'].includes(ext)) return 'code';
     return 'other';

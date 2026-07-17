@@ -414,13 +414,14 @@ body[data-theme="light"] .version-status-card {
     backdrop-filter: none;
     -webkit-backdrop-filter: none;
     box-shadow: none !important;
-    transition: border-color 0.3s ease !important;
+    transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1) !important;
 }
 
 .card:hover, .studio-card:hover, .pref-module:hover, .ext-card-row:hover, .profile-card:hover, .add-profile-card:hover, .verified-source-card:hover {
-    transform: none !important;
-    box-shadow: none !important;
-    border-color: var(--accent) !important;
+    transform: translateY(-3px) !important;
+    box-shadow: 0 12px 36px color-mix(in srgb, var(--accent) 10%, transparent) !important;
+    border-color: color-mix(in srgb, var(--accent) 30%, transparent) !important;
+    background: color-mix(in srgb, var(--accent) 3%, var(--card-bg)) !important;
 }
 
 /* Clean groups to structure sections */
@@ -703,19 +704,20 @@ body[data-theme="light"] .toggle.on::after {
     -webkit-backdrop-filter: none;
     cursor: pointer;
     box-shadow: none !important;
-    transition: border-color 0.25s, background-color 0.25s !important;
+    transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1) !important;
 }
 
 .choice-item:hover {
-    background: var(--nav-hover-bg) !important;
-    transform: none !important;
-    box-shadow: none !important;
+    background: color-mix(in srgb, var(--accent) 5%, var(--card-bg)) !important;
+    border-color: color-mix(in srgb, var(--accent) 25%, transparent) !important;
+    transform: translateY(-2px) !important;
+    box-shadow: 0 8px 24px color-mix(in srgb, var(--accent) 8%, transparent) !important;
 }
 
 .choice-item.active {
     border-color: var(--accent) !important;
-    background: var(--nav-active-bg) !important;
-    box-shadow: none !important;
+    background: color-mix(in srgb, var(--accent) 12%, var(--card-bg)) !important;
+    box-shadow: 0 8px 24px color-mix(in srgb, var(--accent) 10%, transparent) !important;
 }
 
 /* ── Inputs and Selects ──────────────────────────────────── */
@@ -1816,27 +1818,25 @@ body[data-theme="light"] select option {
 }
 
 .search-engine-card:hover {
-    transform: none !important;
-    box-shadow: none !important;
-    border-color: var(--accent) !important;
-    background: var(--card-bg) !important;
+    transform: translateY(-2px) !important;
+    background: color-mix(in srgb, var(--accent) 5%, transparent) !important;
+    border-color: color-mix(in srgb, var(--accent) 20%, transparent) !important;
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.1) !important;
 }
 
 .search-engine-card:hover .engine-logo {
-    transform: none;
+    transform: scale(1.05);
 }
 
 .search-engine-card.active {
     border-color: var(--accent) !important;
-    background: var(--card-bg) !important;
-    box-shadow: 0 0 14px var(--accent-glow) !important;
+    background: color-mix(in srgb, var(--accent) 12%, transparent) !important;
+    box-shadow: 0 8px 32px color-mix(in srgb, var(--accent) 20%, transparent) !important;
 }
 
 .search-engine-card.active:hover {
-    border-color: var(--accent) !important;
-    background: var(--card-bg) !important;
-    box-shadow: 0 0 14px var(--accent-glow) !important;
-    transform: none !important;
+    transform: translateY(-2px) !important;
+    box-shadow: 0 12px 40px color-mix(in srgb, var(--accent) 25%, transparent) !important;
 }
 
 .engine-logo {
@@ -1850,20 +1850,22 @@ body[data-theme="light"] select option {
     box-shadow: none;
     flex-shrink: 0;
     transition: all 0.2s ease;
-    background: rgba(255, 255, 255, 0.03) !important;
-    color: rgba(255, 255, 255, 0.6) !important;
-    border: 1px solid rgba(255, 255, 255, 0.06) !important;
+    background: color-mix(in srgb, var(--text) 3%, transparent) !important;
+    color: color-mix(in srgb, var(--text) 60%, transparent) !important;
+    border: 1px solid color-mix(in srgb, var(--text) 10%, transparent) !important;
 }
 
 .search-engine-card:hover .engine-logo {
     color: var(--accent) !important;
-    border-color: var(--accent-border) !important;
+    border-color: var(--accent) !important;
+    background: color-mix(in srgb, var(--accent) 10%, transparent) !important;
 }
 
 .search-engine-card.active .engine-logo {
-    background: var(--accent-dim) !important;
-    color: var(--accent) !important;
+    background: var(--accent) !important;
+    color: var(--accent-text) !important;
     border-color: var(--accent) !important;
+    box-shadow: 0 4px 12px color-mix(in srgb, var(--accent) 30%, transparent) !important;
 }
 
 .engine-details {
@@ -2075,12 +2077,6 @@ body[data-theme="light"] .search-engine-card.active .custom-radio-circle {
     box-shadow: none;
     gap: 12px;
     transition: border-color 0.25s ease;
-}
-
-.layout-preview-card:hover {
-    transform: none;
-    box-shadow: none;
-    border-color: var(--accent-border);
 }
 
 .layout-preview-card.active {
@@ -2335,14 +2331,15 @@ body[data-theme="light"] .glass-bubble {
 .profiles-grid-layout .profile-card:hover,
 .profiles-grid-layout .add-profile-card:hover {
     transform: none !important;
-    box-shadow: none !important;
-    border-color: var(--accent) !important;
+    background: color-mix(in srgb, var(--accent) 5%, transparent) !important;
+    border-color: color-mix(in srgb, var(--accent) 30%, transparent) !important;
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.1) !important;
 }
 
 .profiles-grid-layout .profile-card.active {
-    border-color: var(--accent) !important;
-    background: var(--card-bg) !important;
-    box-shadow: 0 0 16px var(--accent-glow) !important;
+    border-color: color-mix(in srgb, var(--accent) 60%, transparent) !important;
+    background: color-mix(in srgb, var(--accent) 12%, transparent) !important;
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.1) !important;
 }
 
 .profile-avatar-wrap {
@@ -2351,7 +2348,7 @@ body[data-theme="light"] .glass-bubble {
 
 .profile-card:hover .profile-avatar-wrap {
     transform: scale(1.05);
-    box-shadow: 0 0 12px var(--accent-glow);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
 }
 
 /* Import Registry Details styling */
@@ -2446,20 +2443,37 @@ body[data-theme="light"] .glass-bubble {
     display: flex;
     align-items: flex-start;
     gap: 14px;
+    padding: 10px 12px;
+    border-radius: 10px;
+    background: color-mix(in srgb, var(--text) 2%, transparent);
+    border: 1px solid transparent;
+    transition: all 0.2s ease;
+    cursor: default;
 }
 
 .sandbox-feature-item .feature-icon {
     width: 32px;
     height: 32px;
-    border-radius: 6px;
+    border-radius: 8px;
     display: flex;
     align-items: center;
     justify-content: center;
     font-size: 14px;
     color: var(--accent);
-    background: var(--accent-dim);
-    border: 1px solid var(--accent-border);
+    background: color-mix(in srgb, var(--accent) 15%, transparent);
+    border: 1px solid color-mix(in srgb, var(--accent) 30%, transparent);
     flex-shrink: 0;
+    transition: all 0.2s ease;
+}
+.sandbox-feature-item:hover {
+    background: color-mix(in srgb, var(--accent) 5%, transparent);
+    border-color: color-mix(in srgb, var(--accent) 20%, transparent);
+    transform: translateX(2px);
+}
+.sandbox-feature-item:hover .feature-icon {
+    background: var(--accent);
+    color: var(--accent-text);
+    box-shadow: 0 4px 12px color-mix(in srgb, var(--accent) 30%, transparent);
 }
 
 .sandbox-feature-item .feature-info h4 {
@@ -3087,20 +3101,7 @@ body[data-theme="light"] .choice-icon-wrap {
     border-radius: var(--radius-lg) !important;
     background: var(--card-bg) !important;
     border: 1px solid var(--chrome-border) !important;
-    box-shadow: none !important;
     min-height: 200px !important;
-    transition: border-color 0.25s ease, background-color 0.2s !important;
-}
-
-.ext-card-row:hover {
-    transform: none !important;
-    box-shadow: none !important;
-    border-color: var(--accent-border) !important;
-}
-
-.ext-card-row.is-active {
-    border-color: var(--chrome-border) !important;
-    background: var(--card-bg) !important;
 }
 
 .ext-card-header {
@@ -3839,23 +3840,7 @@ body[data-theme="light"] .choice-item.active {
     padding: 16px !important;
     text-align: left !important;
 }
-.engine-logo {
-    width: 48px;
-    height: 48px;
-    border-radius: 12px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 20px;
-    background: rgba(255, 255, 255, 0.04);
-    border: 1px solid rgba(255, 255, 255, 0.06);
-    flex-shrink: 0;
-}
-.search-engine-card.active .engine-logo {
-    background: rgba(255, 255, 255, 0.1);
-    border-color: var(--accent);
-    color: var(--accent);
-}
+/* Redundant engine-logo classes removed */
 .engine-details {
     flex: 1;
     min-width: 0;
@@ -3880,23 +3865,7 @@ body[data-theme="light"] .choice-item.active {
     opacity: 0;
     cursor: pointer;
 }
-.custom-radio-circle {
-    width: 20px;
-    height: 20px;
-    border-radius: 50%;
-    border: 1px solid rgba(255, 255, 255, 0.15);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    color: transparent;
-    font-size: 9px;
-    transition: all 0.2s ease;
-}
-.search-engine-card.active .custom-radio-circle {
-    background: var(--accent);
-    border-color: var(--accent);
-    color: #000000;
-}
+/* Redundant custom-radio-circle classes removed */
 
 .search-accessories-grid {
     display: grid;
@@ -3914,10 +3883,7 @@ body[data-theme="light"] .choice-item.active {
     gap: 16px;
     transition: all 0.25s ease;
 }
-.accessory-card:hover {
-    border-color: rgba(255, 255, 255, 0.12);
-    transform: translateY(-2px);
-}
+/* Redundant accessory-card:hover removed */
 .accessory-icon-box {
     width: 44px;
     height: 44px;
@@ -4086,25 +4052,21 @@ body[data-theme="light"] .choice-item.active {
     align-items: center;
     justify-content: center;
     font-size: 22px;
-    color: #fff;
-    background: linear-gradient(135deg, rgba(255,255,255,0.06), rgba(255,255,255,0.02));
-    border: 1px solid rgba(255, 255, 255, 0.08);
+    color: var(--accent);
+    background: color-mix(in srgb, var(--accent) 15%, transparent);
+    border: 1px solid color-mix(in srgb, var(--accent) 30%, transparent);
     transition: all 0.3s ease;
 }
 .profile-card:hover .profile-avatar-wrap {
     transform: scale(1.05);
-    box-shadow: 0 0 15px rgba(255,255,255,0.08);
+    box-shadow: 0 4px 12px rgba(0,0,0,0.15);
 }
 
-/* Neon Gradient Avatar presets based on profile item index */
-.profile-card:nth-child(4n+1) .profile-avatar-wrap { background: linear-gradient(135deg, #09f0a0, #026b48); }
-.profile-card:nth-child(4n+2) .profile-avatar-wrap { background: linear-gradient(135deg, #a855f7, #5c18a2); }
-.profile-card:nth-child(4n+3) .profile-avatar-wrap { background: linear-gradient(135deg, #3b82f6, #0f52ba); }
-.profile-card:nth-child(4n+4) .profile-avatar-wrap { background: linear-gradient(135deg, #ec4899, #9d1558); }
-
 .profile-avatar-wrap.active {
+    background: var(--accent) !important;
+    color: var(--accent-text) !important;
     border-color: var(--accent) !important;
-    box-shadow: 0 0 16px var(--accent-glow) !important;
+    box-shadow: 0 4px 12px color-mix(in srgb, var(--accent) 40%, transparent) !important;
 }
 .profile-active-check {
     position: absolute;
@@ -4112,13 +4074,13 @@ body[data-theme="light"] .choice-item.active {
     right: -2px;
     width: 20px;
     height: 20px;
-    background: #4ade80;
+    background: var(--accent);
     border-radius: 50%;
-    border: 2px solid #111;
+    border: 2px solid var(--card-bg);
     display: flex;
     align-items: center;
     justify-content: center;
-    color: #000;
+    color: var(--accent-text);
     font-size: 8px;
     font-weight: 900;
 }
@@ -4221,13 +4183,13 @@ body[data-theme="light"] .profile-active-check {
     align-items: center;
     justify-content: space-between;
     cursor: pointer;
-    background: rgba(255, 255, 255, 0.01);
+    background: color-mix(in srgb, var(--text) 2%, transparent);
     border: 1px solid transparent;
     transition: all 0.2s ease;
 }
 .import-row-item:hover {
-    background: rgba(255, 255, 255, 0.04);
-    border-color: rgba(255,255,255,0.04);
+    background: color-mix(in srgb, var(--accent) 5%, transparent);
+    border-color: color-mix(in srgb, var(--accent) 20%, transparent);
     transform: translateX(2px);
 }
 .import-left {
@@ -4243,10 +4205,15 @@ body[data-theme="light"] .profile-active-check {
     align-items: center;
     justify-content: center;
     font-size: 15px;
+    background: color-mix(in srgb, var(--accent) 15%, transparent);
+    color: var(--accent);
+    transition: all 0.2s ease;
 }
-.chrome-badge { background: rgba(234, 67, 53, 0.12); color: #ea4335; }
-.edge-badge { background: rgba(30, 142, 62, 0.12); color: #1e8e3e; }
-.file-badge { background: rgba(168, 85, 247, 0.12); color: #a855f7; }
+.import-row-item:hover .import-source-badge {
+    background: var(--accent);
+    color: var(--accent-text);
+    box-shadow: 0 4px 12px color-mix(in srgb, var(--accent) 30%, transparent);
+}
 
 .import-details h4 {
     font-size: 12.5px;
@@ -4268,24 +4235,8 @@ body[data-theme="light"] .profile-active-check {
     gap: 14px;
     padding: 12px 6px;
 }
-.sandbox-feature-item {
-    display: flex;
-    gap: 14px;
-    align-items: flex-start;
-}
-.feature-icon {
-    width: 30px;
-    height: 30px;
-    border-radius: 8px;
-    background: rgba(255,255,255,0.03);
-    border: 1px solid rgba(255,255,255,0.05);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 12px;
-    color: var(--accent);
-    flex-shrink: 0;
-}
+/* Deprecated redundant sandbox-feature-item class removed */
+/* Deprecated redundant feature-icon class removed */
 .feature-info h4 {
     font-size: 12.5px;
     font-weight: 650;
@@ -5187,11 +5138,11 @@ input[type="range"]::-webkit-slider-thumb:hover {
     display: flex;
     align-items: center;
     justify-content: center;
-    background: rgba(9, 240, 160, 0.08);
-    border: 1px solid rgba(9, 240, 160, 0.15);
+    background: color-mix(in srgb, var(--accent) 8%, transparent);
+    border: 1px solid color-mix(in srgb, var(--accent) 15%, transparent);
     border-radius: 18px;
     flex-shrink: 0;
-    box-shadow: none !important;
+    box-shadow: 0 8px 24px color-mix(in srgb, var(--accent) 15%, transparent) !important;
 }
 .brand-logo-svg {
     width: 40px;
@@ -5217,24 +5168,28 @@ input[type="range"]::-webkit-slider-thumb:hover {
     font-family: var(--font-mono);
     font-size: 11px;
     font-weight: 700;
-    color: var(--accent);
+    color: var(--text);
+    background: color-mix(in srgb, var(--text) 5%, transparent);
+    border: 1px solid color-mix(in srgb, var(--text) 15%, transparent);
+    padding: 4px 8px;
+    border-radius: 6px;
 }
 .brand-build-type {
-    font-size: 10px;
+    font-size: 11px;
     font-weight: 600;
     color: var(--text-dim);
 }
 .brand-build-line {
-    font-size: 9px;
+    font-size: 10px;
     font-weight: 800;
-    color: var(--success);
-    background: var(--success-glow);
-    padding: 1px 6px;
-    border-radius: 4px;
+    color: var(--accent-text);
+    background: var(--accent);
+    padding: 4px 8px;
+    border-radius: 6px;
     display: inline-block;
     align-self: flex-start;
-    margin-bottom: 8px;
     letter-spacing: 0.5px;
+    box-shadow: 0 4px 12px color-mix(in srgb, var(--accent) 30%, transparent);
 }
 .brand-tagline {
     font-size: 12.5px;
@@ -5244,6 +5199,10 @@ input[type="range"]::-webkit-slider-thumb:hover {
 
 .about-update-card {
     padding: 0 !important;
+}
+
+#update-info-expanded {
+    display: none !important;
 }
 .update-header-row {
     padding: 20px 24px;
@@ -5267,9 +5226,9 @@ input[type="range"]::-webkit-slider-thumb:hover {
     font-size: 18px;
     flex-shrink: 0;
 }
-#update-status-icon-box.up-to-date { background: rgba(74, 222, 128, 0.12); color: #4ade80; }
+#update-status-icon-box.up-to-date { background: color-mix(in srgb, var(--accent) 15%, transparent); color: var(--accent); }
 #update-status-icon-box.checking { background: rgba(245, 158, 11, 0.12); color: #f59e0b; }
-#update-status-icon-box.update-available { background: rgba(59, 130, 246, 0.12); color: #3b82f6; }
+#update-status-icon-box.update-available { background: color-mix(in srgb, var(--accent) 15%, transparent); color: var(--accent); }
 
 .update-status-text h4 {
     font-size: 13.5px;
@@ -5467,11 +5426,20 @@ input[type="range"]::-webkit-slider-thumb:hover {
 }
 
 /* ── What's New Full-Viewport Overlay ── */
+.content:has(#whatsnew.active) {
+    overflow: hidden !important;
+}
+
 #whatsnew.section.active {
     display: block;
-    height: calc(100vh - 64px);
-    margin: -40px -24px -80px;
-    overflow: hidden;
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    margin: 0;
+    height: 100%;
+    z-index: 10;
 }
 .whatsnew-iframe {
     width: 100%;
@@ -5517,10 +5485,12 @@ input[type="range"]::-webkit-slider-thumb:hover {
 .notes-content {
     flex-grow: 1;
     min-height: 280px;
-    background: #09090b !important; /* solid deep dark */
+    background: #09090b !important;
     margin: 16px 20px 20px !important;
     border: 1px solid var(--chrome-border) !important;
-    box-shadow: none !important;
+    border-radius: 12px !important;
+    padding: 20px !important;
+    box-shadow: inset 0 2px 10px rgba(0,0,0,0.3) !important;
 }
 .notes-content::-webkit-scrollbar {
     width: 6px;
@@ -5535,6 +5505,102 @@ input[type="range"]::-webkit-slider-thumb:hover {
 }
 .notes-content::-webkit-scrollbar-thumb:hover {
     background: var(--accent);
+}
+
+/* ── Premium Light Mode & Layout Theme Synced Adaptations ── */
+body[data-theme="light"] .card, 
+body[data-theme="light"] .studio-card, 
+body[data-theme="light"] .ext-card-row, 
+body[data-theme="light"] .profile-card, 
+body[data-theme="light"] .add-profile-card {
+    background: #ffffff !important;
+    border-color: #cbd5e1 !important;
+}
+
+body[data-theme="light"] .choice-item {
+    background: #ffffff !important;
+    border-color: #cbd5e1 !important;
+}
+
+body[data-theme="light"] .choice-item.active {
+    border-color: var(--accent) !important;
+    background: color-mix(in srgb, var(--accent) 8%, #ffffff) !important;
+}
+
+body[data-theme="light"] .choice-item:hover {
+    border-color: color-mix(in srgb, var(--accent) 30%, transparent) !important;
+    background: color-mix(in srgb, var(--accent) 4%, #ffffff) !important;
+}
+
+/* Inputs & dropdown overrides */
+body[data-theme="light"] .secure-input-wrapper input,
+body[data-theme="light"] .custom-endpoint-text,
+body[data-theme="light"] .local-select-dropdown,
+body[data-theme="light"] select {
+    background: #f8fafc !important;
+    border-color: #cbd5e1 !important;
+    color: #0f172a !important;
+}
+
+body[data-theme="light"] .secure-input-wrapper input:focus,
+body[data-theme="light"] .custom-endpoint-text:focus,
+body[data-theme="light"] .local-select-dropdown:focus {
+    border-color: var(--accent) !important;
+    background: #ffffff !important;
+}
+
+/* Keyboard shortcuts adjustments for Light Mode */
+body[data-theme="light"] .studio-row {
+    border-color: #f1f5f9 !important;
+}
+
+body[data-theme="light"] .studio-row:hover {
+    background: color-mix(in srgb, var(--accent) 3%, #f8fafc) !important;
+}
+
+/* Security Hero Light Mode */
+body[data-theme="light"] .security-hero-card {
+    background: linear-gradient(135deg, color-mix(in srgb, var(--accent) 8%, transparent), color-mix(in srgb, var(--accent) 2%, transparent)) !important;
+    border-color: color-mix(in srgb, var(--accent) 15%, #cbd5e1) !important;
+}
+
+body[data-theme="light"] .radar-bg-circle {
+    stroke: rgba(0, 0, 0, 0.05);
+}
+
+/* System Page Bento Terminal Adjustments */
+body[data-theme="light"] .downloads-console-display {
+    background: #0f172a !important; /* Keep it dark for standard shell contrast */
+    border-color: #334155 !important;
+    box-shadow: inset 0 2px 8px rgba(0, 0, 0, 0.5) !important;
+}
+
+/* Extensions Page Action Bar */
+.extensions-action-bar .search-input-wrapper input {
+    transition: all 0.25s ease;
+}
+
+body[data-theme="light"] .extensions-action-bar .search-input-wrapper input {
+    background: #f8fafc !important;
+    border-color: #cbd5e1 !important;
+    color: #0f172a !important;
+}
+
+body[data-theme="light"] .extensions-action-bar .search-input-wrapper input:focus {
+    background: #ffffff !important;
+    border-color: var(--accent) !important;
+}
+
+/* Ext installer drawer */
+body[data-theme="light"] .ext-install-drawer {
+    background: #ffffff !important;
+    border-color: #cbd5e1 !important;
+}
+
+body[data-theme="light"] .ext-install-drawer input {
+    background: #f8fafc !important;
+    border-color: #cbd5e1 !important;
+    color: #0f172a !important;
 }
 
 

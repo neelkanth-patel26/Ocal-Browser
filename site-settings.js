@@ -135,22 +135,37 @@ if (resetPermsBtn) {
     };
 }
 
+function getModeAccent(color, isLight) {
+    if (!color) return isLight ? '#058f60' : '#09f0a0';
+    if (!isLight) return color;
+    const hex = color.toLowerCase();
+    if (hex === '#09f0a0' || hex === '#00ffaa' || hex.includes('f0a0')) return '#058f60';
+    if (hex === '#ff007f' || hex === '#ff00aa' || hex.includes('ff007') || hex.includes('ff00a')) return '#d81b60';
+    if (hex === '#00e5ff' || hex === '#00ffff' || hex.includes('00e5') || hex.includes('00f0')) return '#0288d1';
+    if (hex === '#ff9100' || hex === '#ffaa00' || hex.includes('ff91') || hex.includes('ffaa')) return '#d97706';
+    if (hex === '#8b5cf6' || hex === '#a855f7' || hex === '#9333ea' || hex.includes('8b5c') || hex.includes('a855')) return '#6d28d9';
+    if (hex === '#ff4d4d' || hex === '#ff3333' || hex.includes('ff4d') || hex.includes('ff33')) return '#dc2626';
+    if (hex === '#ffffff' || hex === '#f4f4f5' || hex === '#e8e8e8' || hex.includes('fff')) return '#0f172a';
+    return color;
+}
+
 // Theme & Accent Color Synchronization
 async function applyTheme() {
     try {
         const s = await window.electronAPI.invoke('get-settings');
+        if (s.themeMode === 'light') {
+            document.body.setAttribute('data-theme', 'light');
+        } else {
+            document.body.removeAttribute('data-theme');
+        }
         if (s.accentColor) {
-            const accent = s.accentColor;
+            const isLight = s.themeMode === 'light';
+            const accent = getModeAccent(s.accentColor, isLight);
             document.documentElement.style.setProperty('--accent', accent);
             const r = parseInt(accent.slice(1,3), 16), g = parseInt(accent.slice(3,5), 16), b = parseInt(accent.slice(5,7), 16);
             document.documentElement.style.setProperty('--accent-glow', `rgba(${r}, ${g}, ${b}, 0.2)`);
             document.documentElement.style.setProperty('--accent-dim', `rgba(${r}, ${g}, ${b}, 0.12)`);
             document.documentElement.style.setProperty('--accent-border', `rgba(${r}, ${g}, ${b}, 0.2)`);
-        }
-        if (s.themeMode === 'light') {
-            document.body.setAttribute('data-theme', 'light');
-        } else {
-            document.body.removeAttribute('data-theme');
         }
     } catch(e) {
         console.error("Failed to apply theme in site settings:", e);
@@ -161,17 +176,18 @@ applyTheme();
 init();
 
 window.electronAPI.on('settings-changed', (s) => {
+    if (s.themeMode === 'light') {
+        document.body.setAttribute('data-theme', 'light');
+    } else {
+        document.body.removeAttribute('data-theme');
+    }
     if (s.accentColor) {
-        const accent = s.accentColor;
+        const isLight = s.themeMode === 'light';
+        const accent = getModeAccent(s.accentColor, isLight);
         document.documentElement.style.setProperty('--accent', accent);
         const r = parseInt(accent.slice(1,3), 16), g = parseInt(accent.slice(3,5), 16), b = parseInt(accent.slice(5,7), 16);
         document.documentElement.style.setProperty('--accent-glow', `rgba(${r}, ${g}, ${b}, 0.2)`);
         document.documentElement.style.setProperty('--accent-dim', `rgba(${r}, ${g}, ${b}, 0.12)`);
         document.documentElement.style.setProperty('--accent-border', `rgba(${r}, ${g}, ${b}, 0.2)`);
-    }
-    if (s.themeMode === 'light') {
-        document.body.setAttribute('data-theme', 'light');
-    } else {
-        document.body.removeAttribute('data-theme');
     }
 });

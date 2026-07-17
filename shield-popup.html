@@ -5,40 +5,36 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Ocal Shield</title>
     <link rel="stylesheet" href="assets/fontawesome/css/all.min.css">
-    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="assets/fonts/geist-fonts.css">
     <style>
+        @import url('./assets/fonts/geist-fonts.css');
+
         :root {
             --accent: #09f0a0;
-            --accent-glow: rgba(9, 240, 160, 0.2);
+            --accent-glow: rgba(9, 240, 160, 0.25);
             --accent-dim: rgba(9, 240, 160, 0.12);
-            --bg-glass: #0c0c0c;
-            --border-glass: #252525;
-            --card-bg: #111111;
-            --card-border: #252525;
-            --card-hover-bg: #1e1e1e;
+            --bg-glass: rgba(12, 12, 12, 0.95);
+            --border-glass: rgba(255, 255, 255, 0.08);
+            --card-bg: rgba(255, 255, 255, 0.02);
+            --card-border: rgba(255, 255, 255, 0.04);
+            --card-hover-bg: rgba(255, 255, 255, 0.04);
             --card-hover-border: var(--accent);
-            --text-primary: #e8e8e8;
-            --text-secondary: #666666;
-            --danger: #ef4444;
-            --success: #09f0a0;
-            --panel-blur: none;
+            --text-primary: #f4f4f5;
+            --text-secondary: #a1a1aa;
             --radius: 12px;
+            --font-main: 'Geist Mono', monospace;
+            --font-title: 'Geist', sans-serif;
         }
 
-        /* ── Light Theme (Flashbang Mode) ─────────────────────────── */
         body[data-theme="light"] {
-            --accent: #058f60;
-            --accent-glow: rgba(5, 143, 96, 0.2);
-            --accent-dim: rgba(5, 143, 96, 0.12);
-            --bg-glass: #ffffff;
-            --border-glass: #e2e8f0;
-            --card-bg: #ffffff;
-            --card-border: #e2e8f0;
-            --card-hover-bg: #f1f5f9;
+            --bg-glass: rgba(255, 255, 255, 0.95);
+            --border-glass: rgba(0, 0, 0, 0.08);
+            --card-bg: rgba(0, 0, 0, 0.02);
+            --card-border: rgba(0, 0, 0, 0.04);
+            --card-hover-bg: rgba(0, 0, 0, 0.03);
             --card-hover-border: var(--accent);
             --text-primary: #0f172a;
-            --text-secondary: #475569;
-            --success: #058f60;
+            --text-secondary: #64748b;
         }
 
         * {
@@ -50,7 +46,7 @@
         }
 
         body {
-            font-family: 'Geist Mono', monospace;
+            font-family: var(--font-main);
             background: transparent;
             overflow: hidden;
             width: 100vw;
@@ -59,7 +55,7 @@
             display: flex;
             align-items: flex-start;
             justify-content: flex-start;
-            padding: 15px;
+            padding: 10px;
         }
 
         .popup-overlay {
@@ -73,22 +69,24 @@
             position: relative;
             background: var(--bg-glass);
             border: 1px solid var(--border-glass);
-            padding: 20px;
-            padding-bottom: 24px;
+            padding: 14px;
             display: flex;
             flex-direction: column;
-            gap: 16px;
-            width: 320px;
+            gap: 12px;
+            width: 270px; /* Thinner, more compact layout */
             z-index: 2;
             opacity: 0;
-            transform: translateY(-12px) scale(0.98);
-            transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+            transform: translateY(-8px) scale(0.98);
+            transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
             pointer-events: none;
-            overflow: visible;
+            box-shadow: none !important;
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
         }
 
-        .shield-card::before {
-            display: none !important;
+        body[data-theme="light"] .shield-card {
+            box-shadow: none !important;
+            border: 1px solid rgba(0, 0, 0, 0.1);
         }
 
         .shield-card.show {
@@ -100,106 +98,108 @@
         .header {
             display: flex;
             align-items: center;
-            gap: 12px;
-            border-bottom: 1px solid var(--card-border);
-            padding-bottom: 16px;
-            margin-bottom: 4px;
+            gap: 8px;
+            border-bottom: 1px solid var(--border-glass);
+            padding-bottom: 8px;
+            border-radius: 0;
         }
 
         .header i {
-            font-size: 18px;
+            font-size: 11px;
             color: var(--accent);
         }
 
         .header h2 {
-            font-size: 15px;
-            font-weight: 700;
-            letter-spacing: -0.01em;
+            font-family: var(--font-title);
+            font-size: 12px;
+            font-weight: 600;
+            letter-spacing: -0.2px;
             color: var(--text-primary);
+            border-radius: 0;
         }
 
-        .impact-card {
-            background: var(--card-bg);
-            border: 1px solid var(--card-border);
-            padding: 14px;
-            margin-bottom: 4px;
-            position: relative;
-            overflow: hidden;
-        }
-
-        .impact-header {
-            font-size: 10px;
-            font-weight: 800;
-            text-transform: uppercase;
-            letter-spacing: 0.8px;
-            color: var(--accent);
+        /* Highly Compact Dashboard Stats */
+        .stats-dashboard {
+            background: rgba(255, 255, 255, 0.02);
+            border: 1px solid var(--border-glass);
+            padding: 8px 10px;
             display: flex;
-            align-items: center;
-            gap: 7px;
-            margin-bottom: 12px;
-            opacity: 0.9;
+            flex-direction: column;
+            gap: 6px;
         }
 
-        .impact-stats {
+        body[data-theme="light"] .stats-dashboard {
+            background: rgba(0, 0, 0, 0.01);
+        }
+
+        .section-label {
+            font-size: 7px;
+            font-weight: 800;
+            letter-spacing: 1px;
+            color: var(--text-secondary);
+            text-transform: uppercase;
+            opacity: 0.5;
+            border-radius: 0;
+        }
+
+        .stats-row {
             display: flex;
             justify-content: space-between;
             align-items: center;
+            border-radius: 0;
         }
 
-        .impact-value {
-            font-size: 24px;
-            font-weight: 800;
-            color: var(--text-primary);
-            line-height: 1;
-            margin-bottom: 4px;
-        }
-
-        .impact-label {
-            font-size: 10px;
-            font-weight: 500;
-            color: var(--text-secondary);
-        }
-
-        .stat-grid {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 10px;
-        }
-
-        .stat-item {
-            background: var(--card-bg);
-            border-radius: 8px;
-            padding: 14px 10px;
-            text-align: center;
-            border: 1px solid var(--card-border);
-            transition: all 0.2s;
-        }
-
-        .stat-item:hover {
-            background: var(--card-hover-bg);
-            border-color: var(--card-hover-border);
-        }
-
-        .stat-value {
-            font-size: 22px;
-            font-weight: 800;
-            color: var(--accent);
-            display: block;
-            margin-bottom: 4px;
-        }
-
-        .stat-label {
-            font-size: 9.5px;
-            font-weight: 700;
-            color: var(--text-secondary);
-            text-transform: uppercase;
-            letter-spacing: 0.6px;
-        }
-
-        .section {
+        .stat-group {
             display: flex;
             flex-direction: column;
-            gap: 8px;
+            border-radius: 0;
+        }
+
+        .stat-value-big {
+            font-family: var(--font-title);
+            font-size: 20px;
+            font-weight: 300;
+            color: var(--accent);
+            line-height: 1;
+        }
+
+        .stat-label-sub {
+            font-size: 8px;
+            color: var(--text-secondary);
+            margin-top: 2px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .stat-divider {
+            width: 1px;
+            height: 24px;
+            background: var(--border-glass);
+            border-radius: 0;
+        }
+
+        .stat-row-mini {
+            display: flex;
+            justify-content: space-between;
+            font-size: 9px;
+            color: var(--text-secondary);
+            border-top: 1px solid var(--border-glass);
+            padding-top: 4px;
+            margin-top: 2px;
+            border-radius: 0;
+        }
+
+        .stat-row-mini span:last-child {
+            color: var(--text-primary);
+            font-weight: 600;
+        }
+
+        /* Toggle items list */
+        .toggle-section {
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+            border-radius: 0;
         }
 
         .toggle-item {
@@ -207,10 +207,10 @@
             align-items: center;
             justify-content: space-between;
             background: var(--card-bg);
-            padding: 12px 14px;
+            padding: 8px 10px;
             border-radius: 8px;
             border: 1px solid var(--card-border);
-            transition: all 0.2s;
+            transition: all 0.2s ease;
         }
 
         .toggle-item:hover {
@@ -218,25 +218,36 @@
             border-color: var(--card-hover-border);
         }
 
+        .toggle-info {
+            border-radius: 0;
+            min-width: 0;
+        }
+
         .toggle-title {
-            font-size: 11px;
-            font-weight: 800;
+            display: block;
+            font-size: 10px;
+            font-weight: 700;
             color: var(--text-primary);
             text-transform: uppercase;
-            letter-spacing: 0.8px;
+            letter-spacing: 0.5px;
+            border-radius: 0;
         }
 
         .toggle-desc {
-            font-size: 11px;
+            display: block;
+            font-size: 8px;
             color: var(--text-secondary);
             margin-top: 1px;
+            border-radius: 0;
+            opacity: 0.7;
         }
 
+        /* Compact Switches */
         .switch {
             position: relative;
             display: inline-block;
-            width: 40px;
-            height: 20px;
+            width: 30px;
+            height: 16px;
             flex-shrink: 0;
         }
 
@@ -246,18 +257,18 @@
             position: absolute;
             cursor: pointer;
             inset: 0;
-            background: var(--card-border);
-            transition: 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+            background: var(--border-glass);
+            transition: 0.25s cubic-bezier(0.16, 1, 0.3, 1);
             border-radius: 100px;
         }
 
         .slider:before {
             position: absolute;
             content: "";
-            height: 12px;
-            width: 12px;
-            left: 4px;
-            bottom: 4px;
+            height: 10px;
+            width: 10px;
+            left: 3px;
+            bottom: 3px;
             background: var(--text-primary);
             transition: 0.2s cubic-bezier(0.16, 1, 0.3, 1);
             border-radius: 50%;
@@ -266,146 +277,12 @@
         input:checked + .slider {
             background: var(--accent) !important;
             border-radius: 100px !important;
-            box-shadow: none;
         }
 
         input:checked + .slider:before {
-            transform: translateX(20px);
+            transform: translateX(14px);
             background: var(--bg-glass) !important;
-            box-shadow: none;
         }
-
-        .vpn-section {
-            border-top: 1px solid var(--card-border);
-            padding-top: 16px;
-            margin-top: 4px;
-        }
-
-        .status-pill {
-            font-size: 9px;
-            padding: 3px 8px;
-            border-radius: 100px;
-            background: var(--card-bg);
-            color: var(--text-secondary);
-            font-weight: 800;
-            text-transform: uppercase;
-            letter-spacing: 0.6px;
-            display: flex;
-            align-items: center;
-            gap: 6px;
-            border: 1px solid var(--card-border);
-        }
-
-        .status-dot {
-            width: 8px;
-            height: 8px;
-            border-radius: 50%;
-            background: var(--text-secondary);
-        }
-
-        .status-dot.active {
-            background: var(--success);
-            box-shadow: none;
-        }
-
-        .status-dot.connecting {
-            background: var(--accent);
-            animation: status-pulse 1.5s infinite;
-        }
-
-        .note {
-            font-size: 10px;
-            color: var(--text-secondary);
-            margin-top: 12px;
-            line-height: 1.5;
-            padding: 0 4px;
-        }
-
-        @keyframes status-pulse {
-            0% { opacity: 1; transform: scale(1); }
-            50% { opacity: 0.4; transform: scale(0.85); }
-            100% { opacity: 1; transform: scale(1); }
-        }
-
-        /* Custom Select Styling - Modernized */
-        .custom-select {
-            position: relative;
-            width: 100%;
-            margin-top: 14px;
-        }
-
-        .select-trigger {
-            background: var(--card-bg);
-            border: 1px solid var(--card-border);
-            padding: 12px 16px;
-            border-radius: 8px;
-            cursor: pointer;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
-            font-size: 13px;
-            font-weight: 500;
-            color: var(--text-primary);
-        }
-
-        .select-trigger:hover {
-            background: var(--card-hover-bg);
-            border-color: var(--card-hover-border);
-            transform: none;
-        }
-
-        .select-options {
-            position: absolute;
-            bottom: calc(100% + 8px);
-            left: 0;
-            right: 0;
-            background: var(--bg-glass);
-            border: 1px solid var(--border-glass);
-            border-radius: 8px;
-            display: none;
-            flex-direction: column;
-            overflow-y: auto;
-            max-height: 180px;
-            z-index: 100;
-            padding: 6px;
-            animation: slideUp 0.3s cubic-bezier(0.16, 1, 0.3, 1);
-        }
-
-        @keyframes slideUp {
-            from { opacity: 0; transform: translateY(10px); }
-            to { opacity: 1; transform: translateY(0); }
-        }
-
-        .select-options.open {
-            display: flex;
-        }
-
-        .option {
-            padding: 10px 14px;
-            cursor: pointer;
-            transition: all 0.2s;
-            color: var(--text-secondary);
-            border-radius: 4px;
-            font-size: 12.5px;
-            font-weight: 500;
-        }
-
-        .option:hover {
-            background: var(--card-hover-bg);
-            color: var(--text-primary);
-        }
-
-        .option.active {
-            background: var(--accent-dim);
-            color: var(--accent);
-            font-weight: 600;
-        }
-
-        /* Custom Scrollbar for Select Options */
-        .select-options::-webkit-scrollbar { width: 5px; }
-        .select-options::-webkit-scrollbar-track { background: transparent; }
-        .select-options::-webkit-scrollbar-thumb { background: var(--card-border); border-radius: 0px; }
     </style>
 </head>
 <body>
@@ -416,38 +293,36 @@
             <h2>Ocal Shield</h2>
         </div>
 
-        <div class="impact-card" id="page-impact-card">
-            <div class="impact-header">
-                <i class="fas fa-bolt"></i> IMPACT ON THIS PAGE
+        <!-- Unified Compact Stats Panel -->
+        <div class="stats-dashboard">
+            <span class="section-label">Impact on this Page</span>
+            <div class="stats-row">
+                <div class="stat-group">
+                    <span class="stat-value-big" id="page-ads">0</span>
+                    <span class="stat-label-sub">Ads Blocked</span>
+                </div>
+                <div class="stat-divider"></div>
+                <div class="stat-group" style="align-items: flex-end;">
+                    <span class="stat-value-big" id="page-time">0s</span>
+                    <span class="stat-label-sub">Time Saved</span>
+                </div>
             </div>
-            <div class="impact-stats">
-                <div>
-                    <div class="impact-value" id="page-ads">0</div>
-                    <div class="impact-label">Ads Blocked</div>
-                </div>
-                <div style="text-align: right;">
-                    <div class="impact-value" id="page-time">0s</div>
-                    <div class="impact-label">Time Saved</div>
-                </div>
+            
+            <div class="stat-row-mini">
+                <span>Lifetime Blocked:</span>
+                <span id="ads-blocked">0</span>
+            </div>
+            <div class="stat-row-mini" style="border-top: none; padding-top: 0; margin-top: 0;">
+                <span>Total Trackers:</span>
+                <span id="trackers-blocked">0</span>
             </div>
         </div>
 
-        <div class="stat-grid">
-            <div class="stat-item">
-                <span class="stat-value" id="ads-blocked">0</span>
-                <span class="stat-label">Ads Blocked</span>
-            </div>
-            <div class="stat-item">
-                <span class="stat-value" id="trackers-blocked">0</span>
-                <span class="stat-label">Trackers</span>
-            </div>
-        </div>
-
-        <div class="section">
+        <div class="toggle-section">
             <div class="toggle-item">
                 <div class="toggle-info">
-                    <span class="toggle-title">Ad Block</span>
-                    <span class="toggle-desc">Remove intrusive ads</span>
+                    <div class="toggle-title">Ad Block</div>
+                    <div class="toggle-desc">Remove intrusive ads</div>
                 </div>
                 <label class="switch">
                     <input type="checkbox" id="adblock-toggle" checked>
@@ -457,8 +332,8 @@
 
             <div class="toggle-item">
                 <div class="toggle-info">
-                    <span class="toggle-title">Strict Privacy</span>
-                    <span class="toggle-desc">Block cross-site tracking</span>
+                    <div class="toggle-title">Strict Privacy</div>
+                    <div class="toggle-desc">Block cross-site tracking</div>
                 </div>
                 <label class="switch">
                     <input type="checkbox" id="privacy-toggle" checked>
@@ -468,8 +343,8 @@
 
             <div class="toggle-item">
                 <div class="toggle-info">
-                    <span class="toggle-title">YouTube Dislikes</span>
-                    <span class="toggle-desc">Restore dislike counts</span>
+                    <div class="toggle-title">YouTube Dislikes</div>
+                    <div class="toggle-desc">Restore dislike counts</div>
                 </div>
                 <label class="switch">
                     <input type="checkbox" id="dislike-toggle" checked>
@@ -477,8 +352,6 @@
                 </label>
             </div>
         </div>
-
-
     </div>
 
     <script src="shield-popup.js"></script>

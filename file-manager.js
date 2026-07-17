@@ -217,6 +217,10 @@ function renderFiles(items) {
         el.ondblclick = () => {
             if (item.isDirectory) {
                 navigateTo(item.path);
+            } else if (item.name.toLowerCase().endsWith('.pdf')) {
+                const fileUrl = 'file:///' + item.path.replace(/\\/g, '/');
+                const targetUrl = `ocal://pdf-viewer?file=${encodeURIComponent(fileUrl)}`;
+                window.electronAPI.newTab(targetUrl);
             } else {
                 window.electronAPI.invoke('open-system-item', item.path);
             }
@@ -317,8 +321,15 @@ function showContextMenu(e, item) {
 }
 
 window.handleOpen = (path, isDir) => {
-    if (isDir) navigateTo(path);
-    else window.electronAPI.invoke('open-system-item', path);
+    if (isDir) {
+        navigateTo(path);
+    } else if (path.toLowerCase().endsWith('.pdf')) {
+        const fileUrl = 'file:///' + path.replace(/\\/g, '/');
+        const targetUrl = `ocal://pdf-viewer?file=${encodeURIComponent(fileUrl)}`;
+        window.electronAPI.newTab(targetUrl);
+    } else {
+        window.electronAPI.invoke('open-system-item', path);
+    }
 };
 
 window.handleCopyPath = (path) => {

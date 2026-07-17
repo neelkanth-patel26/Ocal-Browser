@@ -15,6 +15,8 @@ const {
 } = electron;
 
 // Explicitly set application name for OS / Task Manager identification
+// Must be set before app.ready so print dialog & taskbar show "Ocal Browser" not "Electron"
+app.setName('Ocal Browser');
 app.name = 'Ocal Browser';
 if (process.platform === 'win32') {
     app.setAppUserModelId('com.ocal.browser.v2');
@@ -37,13 +39,12 @@ app.commandLine.appendSwitch('disable-quic');
 // Enable High-DPI support for sharp rendering on Windows
 app.commandLine.appendSwitch('high-dpi-support', '1');
 // Enable modern TLS features and Print Preview
-app.commandLine.appendSwitch('enable-features', 'Tls13EarlyData,PrintPreview');
+app.commandLine.appendSwitch('enable-features', 'Tls13EarlyData,PrintPreview,PrintWithReducedRasterization');
 // Hide the fact that we are an automated/embedded browser
 app.commandLine.appendSwitch('disable-blink-features', 'AutomationControlled');
-// Enable Chrome-style Print Preview
+// Enable Chrome-style Print Preview (remove disable-print-preview — it was counteracting the enable flags)
 app.commandLine.appendSwitch('enable-print-browser');
 app.commandLine.appendSwitch('enable-print-preview');
-app.commandLine.appendSwitch('disable-print-preview', 'false');
 // Force native smooth scrolling for mouse wheel (premium feel)
 app.commandLine.appendSwitch('enable-smooth-scrolling');
 
@@ -297,6 +298,23 @@ if (userSettings.httpsUpgradeEnabled === undefined) userSettings.httpsUpgradeEna
 if (userSettings.safeBrowsingEnabled === undefined) userSettings.safeBrowsingEnabled = true;
 if (userSettings.dnsProvider === undefined) userSettings.dnsProvider = 'auto';
 
+// Separate Accent Color Defaults for Light and Dark Modes
+if (userSettings.themeMode === undefined) userSettings.themeMode = 'dark';
+if (userSettings.accentColorDark === undefined) userSettings.accentColorDark = '#09f0a0';
+if (userSettings.accentColorLight === undefined) {
+    // Attempt to map existing custom neon accentColor if it exists
+    const hex = (userSettings.accentColor || '#09f0a0').toLowerCase();
+    if (hex === '#09f0a0' || hex === '#00ffaa' || hex.includes('f0a0')) userSettings.accentColorLight = '#058f60';
+    else if (hex === '#ff007f' || hex === '#ff00aa' || hex.includes('ff007') || hex.includes('ff00a')) userSettings.accentColorLight = '#d81b60';
+    else if (hex === '#00e5ff' || hex === '#00ffff' || hex.includes('00e5') || hex.includes('00f0')) userSettings.accentColorLight = '#0288d1';
+    else if (hex === '#ff9100' || hex === '#ffaa00' || hex.includes('ff91') || hex.includes('ffaa')) userSettings.accentColorLight = '#d97706';
+    else if (hex === '#8b5cf6' || hex === '#a855f7' || hex === '#9333ea' || hex.includes('8b5c') || hex.includes('a855')) userSettings.accentColorLight = '#6d28d9';
+    else if (hex === '#ff4d4d' || hex === '#ff3333' || hex.includes('ff4d') || hex.includes('ff33')) userSettings.accentColorLight = '#dc2626';
+    else if (hex === '#ffffff' || hex === '#f4f4f5' || hex === '#e8e8e8' || hex.includes('fff')) userSettings.accentColorLight = '#0f172a';
+    else userSettings.accentColorLight = '#058f60';
+}
+userSettings.accentColor = userSettings.themeMode === 'light' ? userSettings.accentColorLight : userSettings.accentColorDark;
+
 // Native Extensions Defaults
 if (userSettings.cyberStealthEnabled === undefined) userSettings.cyberStealthEnabled = false;
 if (userSettings.aiAssistantEnabled === undefined) userSettings.aiAssistantEnabled = true;
@@ -426,6 +444,7 @@ var tabContextView = null;
 let isAlwaysOnTop = false;
 
 let downloadsView = null;
+let volumeBoostView = null;
 var mediaMasterView = null;
 let isAnimatingBounds = false;
 var views = [];
@@ -701,10 +720,20 @@ const PROXY_BYPASS_LIST = [
 const INTERNAL_RESCUE_DASHBOARD = 'ocal://home';
 
 ipcMain.on('print-document', (event) => {
-    const wc = event.sender;
-    if (wc && !wc.isDestroyed()) {
-        wc.print({ silent: false, printBackground: true });
+    // Get the active tab's webContents (not event.sender which is the main window shell)
+    let wc = null;
+    if (activeViewId) {
+        const activeEntry = views.find(v => v.id === activeViewId);
+        if (activeEntry && activeEntry.view && activeEntry.view.webContents && !activeEntry.view.webContents.isDestroyed()) {
+            wc = activeEntry.view.webContents;
+        }
     }
+    if (!wc) wc = event.sender;
+    if (!wc || wc.isDestroyed()) return;
+
+    // Print directly from the active tab — opens the OS native print dialog inside Ocal Browser.
+    // Chromium rasterizes canvas elements (PDF viewer pages) as bitmap images when printing.
+    wc.executeJavaScript('window.print()').catch(e => console.warn('[Print] Failed:', e));
 });
 
 function applyCyberStealth(webContents) {
@@ -830,8 +859,8 @@ function createMainWindow() {
     mainWindow = new BrowserWindow({
         width: 1350,
         height: 900,
-        minWidth: 1000,
-        minHeight: 700,
+        minWidth: 450,
+        minHeight: 500,
         title: 'Ocal Browser',
         icon: getAppIconPath(),
         frame: false,
@@ -934,11 +963,9 @@ function createMainWindow() {
     });
 
     mainWindow.on('maximize', () => {
-        mainWindow.setResizable(false);
         mainWindow.webContents.send('window-is-maximized', true);
     });
     mainWindow.on('unmaximize', () => {
-        mainWindow.setResizable(true);
         mainWindow.webContents.send('window-is-maximized', false);
     });
 
@@ -1302,6 +1329,11 @@ function closeOverlays() {
             mainWindow.removeBrowserView(siteInfoView);
         }
     }
+    if (volumeBoostView && !volumeBoostView.webContents.isDestroyed() && mainWindow && !mainWindow.isDestroyed()) {
+        if (mainWindow.getBrowserViews().includes(volumeBoostView)) {
+            mainWindow.removeBrowserView(volumeBoostView);
+        }
+    }
     activeBMFolderId = null;
     hideDownloadsPopup();
     hideWebApp();
@@ -1326,6 +1358,9 @@ function hidePopups() {
     }
     if (siteInfoView && mainWindow && mainWindow.getBrowserViews().includes(siteInfoView)) {
         mainWindow.removeBrowserView(siteInfoView);
+    }
+    if (volumeBoostView && mainWindow && mainWindow.getBrowserViews().includes(volumeBoostView)) {
+        mainWindow.removeBrowserView(volumeBoostView);
     }
     activeBMFolderId = null;
 }
@@ -1815,7 +1850,8 @@ function setupViewEvents(tabId, view, side = 'left') {
             }
             return { action: 'deny' };
         }
-        return { action: 'allow' };
+        createNewTab(url);
+        return { action: 'deny' };
     });
 
     // Auto-hide overlays & split screen side focus
@@ -2279,7 +2315,7 @@ function showWebApp(url) {
     }
 
     // Always load the loading animation first
-    const loadingUrl = 'file:///' + path.join(__dirname, 'sidebar-loading.html').replace(/\\/g, '/') + '?url=' + encodeURIComponent(url);
+    const loadingUrl = 'file:///' + path.join(__dirname, 'sidebar-loading.html').replace(/\\/g, '/') + '?url=' + encodeURIComponent(url) + '&theme=' + (userSettings.themeMode || 'dark');
     webAppView.webContents.loadURL(loadingUrl);
     currentWebAppUrl = url;
 
@@ -2288,8 +2324,10 @@ function showWebApp(url) {
     webAppOpen = true;
     updateViewBounds();
 
+    const zoom = getOptimalZoomFactor();
+    const webAppWidth = Math.round(960 * zoom);
     if (mainWindow && !mainWindow.webContents.isDestroyed()) {
-        mainWindow.webContents.send('web-app-opened', url);
+        mainWindow.webContents.send('web-app-opened', { url, width: webAppWidth });
     }
 
     // Delay actual load by 2 seconds to simulate loading
@@ -4918,6 +4956,23 @@ ipcMain.on('ungroup', (e, groupId) => {
 
 ipcMain.on('update-setting', (e, key, val) => {
     userSettings[key] = val;
+
+    if (key === 'accentColor') {
+        if (userSettings.themeMode === 'light') {
+            userSettings.accentColorLight = val;
+        } else {
+            userSettings.accentColorDark = val;
+        }
+    }
+
+    if (key === 'themeMode') {
+        if (val === 'light') {
+            userSettings.accentColor = userSettings.accentColorLight || '#058f60';
+        } else {
+            userSettings.accentColor = userSettings.accentColorDark || '#09f0a0';
+        }
+    }
+
     saveSettings(userSettings);
 
     // Broadcast to all relevant views
@@ -5464,8 +5519,8 @@ ipcMain.on('show-shield-popup', (e, { x, y, width, height, tabId }) => {
     mainWindow.addBrowserView(shieldPopupView);
 
     const zoom = getOptimalZoomFactor();
-    const popupWidth = Math.round(320 * zoom);
-    const popupHeight = Math.round(750 * zoom);
+    const popupWidth = Math.round(290 * zoom);
+    const popupHeight = Math.round(340 * zoom);
     const contentBounds = mainWindow.getContentBounds();
 
     let targetX = x + (width / 2) - (popupWidth / 2);
@@ -5712,7 +5767,7 @@ ipcMain.on('show-extensions-dropdown', (e, { x, y, width }) => {
     mainWindow.addBrowserView(extensionDropdownView);
     // Align to the right of the button
     const zoom = getOptimalZoomFactor();
-    const popupWidth = Math.round(320 * zoom);
+    const popupWidth = Math.round(300 * zoom);
     const winOffset = getWinOffset();
     let targetX = x + width - popupWidth;
 
@@ -5720,7 +5775,7 @@ ipcMain.on('show-extensions-dropdown', (e, { x, y, width }) => {
         x: Math.round(targetX + winOffset) - 15,
         y: Math.round(y + 10 + winOffset),
         width: popupWidth + 30,
-        height: Math.round(530 * zoom)
+        height: Math.round(410 * zoom)
     });
     mainWindow.setTopBrowserView(extensionDropdownView);
     extensionDropdownView.webContents.send('refresh-extensions');
@@ -6063,8 +6118,8 @@ ipcMain.on('show-site-info', (e, bounds) => {
     siteInfoView.setBounds({
         x: Math.round(bounds.x) - 15,
         y: Math.round(bounds.y + bounds.height + 4),
-        width: Math.round(350 * zoom),
-        height: Math.round(540 * zoom) // Sufficient height for the content and shadow padding
+        width: Math.round(300 * zoom),
+        height: Math.round(370 * zoom) // Sufficient height for the content and padding
     });
 
     mainWindow.setTopBrowserView(siteInfoView);
@@ -6890,6 +6945,185 @@ ipcMain.on('edit-profile', (e, { id, name, icon }) => {
     }
 });
 
+// ── Volume Booster IPC ──────────────────────────────────────────────────
+// Stores per-tab volume boost level (1.0 = 100%, 5.0 = 500%)
+const tabVolumeBoost = {};
+
+ipcMain.on('set-volume-boost', (e, { gain }) => {
+    const entry = views.find(v => v.id === activeViewId);
+    if (!entry) return;
+
+    const clampedGain = Math.max(1, Math.min(5, gain));
+    tabVolumeBoost[activeViewId] = clampedGain;
+
+    // The Web Audio API GainNode injection script
+    const boostScript = `
+        (function() {
+            // Prevent double-init
+            if (window.__ocalVolumeBoostCtx) {
+                // Just update the gain
+                window.__ocalVolumeBoostGain.gain.value = ${clampedGain};
+                // Also update any new media elements
+                window.__ocalBoostNewMedia && window.__ocalBoostNewMedia();
+                return;
+            }
+
+            const AudioContext = window.AudioContext || window.webkitAudioContext;
+            if (!AudioContext) return;
+
+            const ctx = new AudioContext();
+            const gainNode = ctx.createGain();
+            gainNode.gain.value = ${clampedGain};
+            gainNode.connect(ctx.destination);
+
+            window.__ocalVolumeBoostCtx = ctx;
+            window.__ocalVolumeBoostGain = gainNode;
+            window.__ocalBoostedElements = new WeakSet();
+
+            function boostElement(el) {
+                if (window.__ocalBoostedElements.has(el)) return;
+                try {
+                    if (ctx.state === 'suspended') ctx.resume();
+                    const source = ctx.createMediaElementSource(el);
+                    source.connect(gainNode);
+                    window.__ocalBoostedElements.add(el);
+                } catch (e) {
+                    // Element might already have a source in another context
+                }
+            }
+
+            // Boost all existing audio/video elements
+            function boostAll() {
+                document.querySelectorAll('audio, video').forEach(boostElement);
+            }
+            boostAll();
+
+            // Watch for dynamically added elements
+            const observer = new MutationObserver((mutations) => {
+                for (const mutation of mutations) {
+                    for (const node of mutation.addedNodes) {
+                        if (node.nodeType !== 1) continue;
+                        if (node.tagName === 'AUDIO' || node.tagName === 'VIDEO') {
+                            boostElement(node);
+                        }
+                        // Check children too
+                        if (node.querySelectorAll) {
+                            node.querySelectorAll('audio, video').forEach(boostElement);
+                        }
+                    }
+                }
+            });
+            observer.observe(document.documentElement, { childList: true, subtree: true });
+
+            window.__ocalBoostNewMedia = boostAll;
+            window.__ocalVolumeBoostObserver = observer;
+        })();
+    `;
+
+    // Inject into the active view's webContents
+    const wc = entry.view.webContents;
+    if (wc && !wc.isDestroyed()) {
+        wc.executeJavaScript(boostScript).catch(() => {});
+    }
+
+    // Also boost split view if present
+    if (entry.isSplit && entry.view2 && !entry.view2.webContents.isDestroyed()) {
+        entry.view2.webContents.executeJavaScript(boostScript).catch(() => {});
+    }
+
+    // Notify renderer of the current boost level
+    if (mainWindow && !mainWindow.isDestroyed()) {
+        mainWindow.webContents.send('volume-boost-changed', { tabId: activeViewId, gain: clampedGain });
+    }
+});
+
+ipcMain.handle('get-volume-boost', () => {
+    return tabVolumeBoost[activeViewId] || 1.0;
+});
+
+// Reset volume boost script (called when gain returns to 1.0)
+ipcMain.on('reset-volume-boost', () => {
+    const entry = views.find(v => v.id === activeViewId);
+    if (!entry) return;
+
+    tabVolumeBoost[activeViewId] = 1.0;
+
+    const resetScript = `
+        (function() {
+            if (window.__ocalVolumeBoostGain) {
+                window.__ocalVolumeBoostGain.gain.value = 1.0;
+            }
+        })();
+    `;
+
+    const wc = entry.view.webContents;
+    if (wc && !wc.isDestroyed()) {
+        wc.executeJavaScript(resetScript).catch(() => {});
+    }
+    if (entry.isSplit && entry.view2 && !entry.view2.webContents.isDestroyed()) {
+        entry.view2.webContents.executeJavaScript(resetScript).catch(() => {});
+    }
+
+    if (mainWindow && !mainWindow.isDestroyed()) {
+        mainWindow.webContents.send('volume-boost-changed', { tabId: activeViewId, gain: 1.0 });
+    }
+});
+
+function createVolumeBoostView() {
+    volumeBoostView = new BrowserView({
+        webPreferences: { preload: path.join(__dirname, 'preload.js'), contextIsolation: false, nodeIntegration: true }
+    });
+    volumeBoostView.webContents.loadFile('volume-booster.html');
+    volumeBoostView.setBackgroundColor('#00000000');
+
+    // Auto-hide on blur
+    volumeBoostView.webContents.on('blur', () => {
+        if (volumeBoostView && mainWindow && mainWindow.getBrowserViews().includes(volumeBoostView)) {
+            mainWindow.removeBrowserView(volumeBoostView);
+        }
+    });
+}
+
+ipcMain.on('toggle-volume-boost-popup', (e, bounds) => {
+    if (!mainWindow) return;
+    if (!volumeBoostView) createVolumeBoostView();
+
+    if (mainWindow.getBrowserViews().includes(volumeBoostView)) {
+        mainWindow.removeBrowserView(volumeBoostView);
+        return;
+    }
+
+    hidePopups();
+    mainWindow.addBrowserView(volumeBoostView);
+
+    const zoom = getOptimalZoomFactor();
+    const popupWidth = Math.round(310 * zoom);
+    const popupHeight = Math.round(280 * zoom);
+
+    let targetX = bounds.x + (bounds.width / 2) - (popupWidth / 2);
+    const contentBounds = mainWindow.getContentBounds();
+    if (targetX + popupWidth > contentBounds.width - 10) targetX = contentBounds.width - popupWidth - 10;
+    if (targetX < 10) targetX = 10;
+
+    const winOffset = getWinOffset();
+    volumeBoostView.setBounds({
+        x: Math.round(targetX + winOffset) - 15,
+        y: Math.round(bounds.y + bounds.height + 6 + winOffset),
+        width: Math.round(popupWidth) + 30,
+        height: Math.round(popupHeight) + 30
+    });
+
+    mainWindow.setTopBrowserView(volumeBoostView);
+    volumeBoostView.webContents.send('show-popup', { tabId: activeViewId });
+    volumeBoostView.webContents.focus();
+});
+
+ipcMain.on('hide-volume-boost-popup', () => {
+    if (volumeBoostView && mainWindow && mainWindow.getBrowserViews().includes(volumeBoostView)) {
+        mainWindow.removeBrowserView(volumeBoostView);
+    }
+});
+
 function broadcastSettings() {
     const resolvedExtensions = (userSettings.extensions || []).map(ext => resolveExtensionMetadata({ ...ext }));
     const settingsToSend = { ...userSettings, extensions: resolvedExtensions };
@@ -6908,6 +7142,23 @@ function broadcastSettings() {
     views.forEach(v => {
         if (v.view && !v.view.webContents.isDestroyed()) {
             v.view.webContents.send('settings-changed', settingsToSend);
+        }
+    });
+    // Notify all popups and dropdown panels
+    const overlayViews = [
+        shieldPopupView,
+        extensionDropdownView,
+        siteInfoView,
+        volumeBoostView,
+        suggestionsView,
+        tabgroupView,
+        tabContextView,
+        bmDropdownView,
+        downloadsView
+    ];
+    overlayViews.forEach(v => {
+        if (v && !v.webContents.isDestroyed()) {
+            v.webContents.send('settings-changed', settingsToSend);
         }
     });
 }

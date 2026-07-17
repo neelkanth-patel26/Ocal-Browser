@@ -4,130 +4,357 @@
     <meta charset="UTF-8">
     <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' https://cdnjs.cloudflare.com https://unpkg.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com https://cdnjs.cloudflare.com https://cdn.jsdelivr.net; font-src 'self' https://fonts.gstatic.com https://cdnjs.cloudflare.com https://cdn.jsdelivr.net; img-src 'self' data: https:; connect-src 'self' https://suggestqueries.google.com https://api.github.com https://cdnjs.cloudflare.com https://unpkg.com;">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Certificate Viewer</title>
+    <title>Certificate Explorer</title>
     <link rel="stylesheet" href="assets/fontawesome/css/all.min.css">
-    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="assets/fonts/geist-fonts.css">
     <style>
+        @import url('./assets/fonts/geist-fonts.css');
+
         :root {
-            --bg: #000000;
-            --surface: #000000;
-            --accent: #ffffff;
-            --text: #ffffff;
-            --text-dim: #a3a3a3;
-            --text-muted: #404040;
-            --border: #171717;
-            --hover: #0a0a0a;
+            --bg: #0c0c0c;
+            --surface: rgba(18, 18, 18, 0.45);
+            --accent: #09f0a0;
+            --accent-glow: rgba(9, 240, 160, 0.25);
+            --accent-dim: rgba(9, 240, 160, 0.12);
+            --text-primary: #e8e8e8;
+            --text-secondary: rgba(255, 255, 255, 0.6);
+            --text-muted: rgba(255, 255, 255, 0.35);
+            --border: rgba(255, 255, 255, 0.05);
+            --card-border-val: 1px solid rgba(255, 255, 255, 0.05);
+            --font-main: 'Geist Mono', monospace;
+            --font-title: 'Geist', sans-serif;
+            --radius: 12px;
+            --blur: blur(20px);
         }
 
-        * { box-sizing: border-box; margin: 0; padding: 0; border-radius: 0px !important; }
+        body[data-theme="light"] {
+            --bg: #f5f5f5;
+            --surface: rgba(255, 255, 255, 0.5);
+            --text-primary: #0f172a;
+            --text-secondary: #475569;
+            --text-muted: #94a3b8;
+            --border: rgba(0, 0, 0, 0.08);
+            --card-border-val: 1px solid rgba(0, 0, 0, 0.05);
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            border-radius: var(--radius);
+        }
+
         body { 
-            font-family: 'Geist Mono', monospace; 
-            background: var(--bg); 
-            color: var(--text);
-            height: 100vh; overflow: hidden;
-            display: flex; flex-direction: column;
+            font-family: var(--font-main); 
+            background: var(--bg) !important; 
+            color: var(--text-primary);
+            height: 100vh;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            padding: 24px;
+            transition: background 0.4s ease;
+        }
+
+        /* Ambient background glow */
+        .ambient-glow {
+            position: fixed;
+            top: -10%;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 500px;
+            height: 250px;
+            background: radial-gradient(circle, var(--accent-dim) 0%, transparent 70%);
+            pointer-events: none;
+            z-index: -1;
+            opacity: 0.6;
         }
 
         .header {
-            padding: 30px 40px 20px;
-            background: #000000;
-            border-bottom: 1px solid var(--border);
+            padding: 16px 20px;
+            background: var(--surface);
+            border: var(--card-border-val);
+            backdrop-filter: var(--blur);
+            -webkit-backdrop-filter: var(--blur);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 16px;
+            flex-shrink: 0;
         }
 
-        .title-row { display: flex; align-items: center; gap: 15px; margin-bottom: 20px; }
-        .cert-icon { font-size: 24px; color: var(--accent); }
-        h1 { font-family: 'Geist Mono', monospace; font-size: 22px; font-weight: 700; }
+        .title-group {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            border-radius: 0;
+        }
 
-        .tabs { display: flex; gap: 30px; }
+        .cert-icon {
+            font-size: 16px;
+            color: var(--accent);
+            animation: pulse 2s ease-in-out infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 0.6; transform: scale(0.95); }
+            50% { opacity: 1; transform: scale(1.05); }
+        }
+
+        h1 {
+            font-family: var(--font-title);
+            font-size: 15px;
+            font-weight: 500;
+            letter-spacing: -0.3px;
+        }
+
+        .tabs {
+            display: flex;
+            gap: 6px;
+            background: rgba(0, 0, 0, 0.15);
+            border: 1px solid var(--border);
+            padding: 3px;
+            border-radius: 8px;
+        }
+
+        body[data-theme="light"] .tabs {
+            background: rgba(0, 0, 0, 0.03);
+        }
+
         .tab { 
-            padding-bottom: 12px; font-size: 14px; font-weight: 600; 
-            color: var(--text-dim); cursor: pointer; transition: all 0.2s;
-            border-bottom: 2px solid transparent;
+            padding: 6px 16px;
+            font-size: 10px;
+            font-weight: 800; 
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            color: var(--text-muted);
+            cursor: pointer;
+            transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+            border-radius: 6px;
         }
-        .tab:hover { color: #fff; }
-        .tab.active { color: var(--accent); border-bottom-color: var(--accent); }
+        .tab:hover { color: var(--text-primary); }
+        .tab.active {
+            color: var(--accent);
+            background: var(--accent-dim);
+            border: 1px solid color-mix(in srgb, var(--accent) 15%, transparent);
+        }
 
         .content-scroll {
-            flex: 1; overflow-y: auto; padding: 40px;
-            scrollbar-width: thin; scrollbar-color: var(--border) transparent;
+            flex: 1;
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
+            padding-right: 4px;
         }
-        .content-scroll::-webkit-scrollbar { width: 8px; }
-        .content-scroll::-webkit-scrollbar-thumb { background: var(--border); border-radius: 4px; }
 
-        .screen { display: none; }
-        .screen.active { display: block; animation: fadeIn 0.3s ease; }
-        @keyframes fadeIn { from { opacity: 0; transform: translateY(5px); } to { opacity: 1; transform: translateY(0); } }
+        .content-scroll::-webkit-scrollbar { width: 6px; }
+        .content-scroll::-webkit-scrollbar-thumb { background: var(--border); border-radius: 10px; }
+        .content-scroll::-webkit-scrollbar-thumb:hover { background: var(--accent); }
 
-        /* General Tab Styling */
-        .section { margin-bottom: 35px; }
+        .screen { display: none; border-radius: 0; }
+        .screen.active { display: flex; flex-direction: column; gap: 16px; animation: fadeIn 0.25s cubic-bezier(0.16, 1, 0.3, 1); }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(4px); } to { opacity: 1; transform: translateY(0); } }
+
+        /* Compact Layout grid styling */
+        .section {
+            border-radius: 0;
+        }
+
         .section-label { 
-            font-family: 'Outfit', sans-serif; font-size: 11px; font-weight: 800; 
-            text-transform: uppercase; letter-spacing: 1.5px; color: var(--text-muted);
-            margin-bottom: 15px;
+            font-family: var(--font-title);
+            font-size: 9px;
+            font-weight: 800; 
+            text-transform: uppercase;
+            letter-spacing: 1.5px;
+            color: var(--text-muted);
+            margin-bottom: 8px;
+            padding-left: 4px;
         }
+
         .info-grid { 
-            background: var(--surface); border: 1px solid var(--border); border-radius: 12px;
-            padding: 20px 25px; display: grid; grid-template-columns: 180px 1fr; gap: 12px 20px;
+            background: var(--surface);
+            border: var(--card-border-val);
+            backdrop-filter: var(--blur);
+            -webkit-backdrop-filter: var(--blur);
+            padding: 12px 16px;
+            display: grid;
+            grid-template-columns: 180px 1fr;
+            gap: 8px 16px;
         }
-        .label { font-size: 13px; color: var(--text-dim); }
-        .value { font-size: 13px; color: #fff; font-weight: 500; word-break: break-all; }
 
-        /* Details Tab Styling */
+        @media (max-width: 600px) {
+            .info-grid { grid-template-columns: 1fr; gap: 4px; }
+        }
+
+        .label {
+            font-size: 11px;
+            color: var(--text-secondary);
+            font-weight: 500;
+            display: flex;
+            align-items: center;
+            border-radius: 0;
+        }
+
+        .value {
+            font-size: 11px;
+            color: var(--text-primary);
+            word-break: break-all;
+            font-family: var(--font-main);
+            border-radius: 0;
+        }
+
+        /* Hierarchy card style */
         .hierarchy { 
-            background: var(--surface); border: 1px solid var(--border); border-radius: 12px;
-            padding: 20px; margin-bottom: 25px;
+            background: var(--surface);
+            border: var(--card-border-val);
+            padding: 14px 16px;
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
         }
-        .hier-item { display: flex; align-items: center; gap: 10px; font-size: 13px; padding: 4px 0; }
-        .hier-item.child { margin-left: 24px; color: var(--accent); font-weight: 600; }
-        .hier-item i { font-size: 12px; opacity: 0.6; }
 
+        .hier-item {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 12px;
+            border-radius: 0;
+        }
+
+        .hier-item.child {
+            margin-left: 24px;
+            color: var(--accent);
+            font-weight: 600;
+            position: relative;
+        }
+
+        .hier-item.child::before {
+            content: '';
+            position: absolute;
+            left: -14px;
+            top: -6px;
+            width: 8px;
+            height: 14px;
+            border-left: 1px solid var(--border);
+            border-bottom: 1px solid var(--border);
+            border-bottom-left-radius: 4px;
+        }
+
+        .hier-item i {
+            font-size: 10px;
+            opacity: 0.6;
+        }
+
+        /* Detail table fields styling */
         .fields-list { 
-            background: var(--surface); border: 1px solid var(--border); border-radius: 12px;
+            background: var(--surface);
+            border: var(--card-border-val);
             overflow: hidden;
+            display: flex;
+            flex-direction: column;
         }
+
         .field-row { 
-            display: flex; border-bottom: 1px solid var(--border); 
-            cursor: pointer; transition: background 0.2s;
+            display: flex;
+            border-bottom: 1px solid var(--border); 
+            cursor: pointer;
+            transition: all 0.15s ease;
+            border-radius: 0;
         }
+
         .field-row:last-child { border-bottom: none; }
-        .field-row:hover { background: var(--hover); }
-        .field-name { width: 220px; padding: 12px 20px; font-size: 12.5px; color: var(--text-dim); border-right: 1px solid var(--border); }
-        .field-summary { flex: 1; padding: 12px 20px; font-size: 12.5px; color: #fff; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        .field-row:hover { background: rgba(255, 255, 255, 0.02); }
+        body[data-theme="light"] .field-row:hover { background: rgba(0, 0, 0, 0.02); }
+
+        .field-row.selected {
+            background: var(--accent-dim);
+        }
+
+        .field-name {
+            width: 200px;
+            padding: 10px 16px;
+            font-size: 11.5px;
+            color: var(--text-secondary);
+            border-right: 1px solid var(--border);
+            font-weight: 600;
+            border-radius: 0;
+        }
+
+        .field-summary {
+            flex: 1;
+            padding: 10px 16px;
+            font-size: 11px;
+            color: var(--text-primary);
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            border-radius: 0;
+        }
 
         .field-value-box {
-            margin-top: 20px; background: rgba(0,0,0,0.2); border: 1px solid var(--border);
-            border-radius: 8px; padding: 15px; font-family: monospace; font-size: 12px;
-            color: var(--text-dim); min-height: 100px; max-height: 200px; overflow-y: auto;
+            background: rgba(0, 0, 0, 0.2);
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            padding: 12px;
+            font-family: var(--font-main);
+            font-size: 11px;
+            color: var(--text-secondary);
+            min-height: 100px;
+            max-height: 180px;
+            overflow-y: auto;
+            white-space: pre-wrap;
+            word-break: break-all;
         }
 
-        #loading {
-            position: fixed; inset: 0; background: var(--bg); z-index: 1000;
-            display: flex; flex-direction: column; align-items: center; justify-content: center;
-            gap: 20px;
+        body[data-theme="light"] .field-value-box {
+            background: rgba(0, 0, 0, 0.03);
         }
-        .spinner { width: 30px; height: 30px; border: 2px solid var(--border); border-top-color: var(--accent); border-radius: 50%; animation: spin 1s linear infinite; }
-        @keyframes spin { to { transform: rotate(360deg); } }
+
+        /* Probing loader */
+        #loading {
+            position: fixed;
+            inset: 0;
+            background: var(--bg);
+            z-index: 1000;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            gap: 16px;
+        }
+
+        .spinner {
+            width: 24px;
+            height: 24px;
+            border: 2px solid var(--border);
+            border-top-color: var(--accent);
+            border-radius: 50%;
+            animation: spin 0.8s linear infinite;
+        }
     </style>
 </head>
 <body>
+    <div class="ambient-glow"></div>
+
     <div id="loading">
         <div class="spinner"></div>
-        <div style="font-size: 12px; color: var(--text-muted); font-family: 'Outfit'; letter-spacing: 2px;">PROBING SECURITY...</div>
+        <div style="font-size: 9px; font-weight: 800; color: var(--text-muted); font-family: var(--font-title); letter-spacing: 2px;">SECURE HANDSHAKE...</div>
     </div>
 
     <div class="header">
-        <div class="title-row">
-            <i class="fas fa-certificate cert-icon"></i>
-            <h1 id="viewer-title">Certificate Viewer: Loading...</h1>
+        <div class="title-group">
+            <i class="fas fa-shield-halved cert-icon"></i>
+            <h1 id="viewer-title">Security Certificate Viewer</h1>
         </div>
         <div class="tabs">
-            <div class="tab active" data-screen="general">General</div>
-            <div class="tab" data-screen="details">Details</div>
+            <div class="tab active" data-screen="general">Overview</div>
+            <div class="tab" data-screen="details">Raw Details</div>
         </div>
     </div>
 
     <div class="content-scroll">
-        <!-- General Screen -->
+        <!-- General Overview Screen -->
         <div class="screen active" id="general-screen">
             <div class="section">
                 <div class="section-label">Issued To</div>
@@ -139,7 +366,7 @@
             </div>
             
             <div class="section">
-                <div class="section-label">Issued By</div>
+                <div class="section-label">Issuer Authority</div>
                 <div class="info-grid">
                     <div class="label">Common Name (CN)</div><div class="value" id="iss-cn">-</div>
                     <div class="label">Organization (O)</div><div class="value" id="iss-o">-</div>
@@ -148,38 +375,44 @@
             </div>
 
             <div class="section">
-                <div class="section-label">Validity Period</div>
+                <div class="section-label">Validity Scope</div>
                 <div class="info-grid">
-                    <div class="label">Issued On</div><div class="value" id="valid-from">-</div>
-                    <div class="label">Expires On</div><div class="value" id="valid-to">-</div>
+                    <div class="label">Activation Date</div><div class="value" id="valid-from">-</div>
+                    <div class="label">Expiration Date</div><div class="value" id="valid-to">-</div>
                 </div>
             </div>
 
             <div class="section">
-                <div class="section-label">Fingerprints</div>
+                <div class="section-label">Cryptographic Signatures</div>
                 <div class="info-grid">
-                    <div class="label">SHA-1</div><div class="value" id="sha1">-</div>
-                    <div class="label">SHA-256</div><div class="value" id="sha256">-</div>
+                    <div class="label">SHA-1 Thumbprint</div><div class="value" id="sha1">-</div>
+                    <div class="label">SHA-256 Thumbprint</div><div class="value" id="sha256">-</div>
                 </div>
             </div>
         </div>
 
-        <!-- Details Screen -->
+        <!-- Details Hierarchy Screen -->
         <div class="screen" id="details-screen">
-            <div class="section-label">Certificate Hierarchy</div>
-            <div class="hierarchy">
-                <div class="hier-item"><i class="fas fa-shield-halved"></i> <span id="hier-root">Root</span></div>
-                <div class="hier-item child"><i class="fas fa-certificate"></i> <span id="hier-leaf">Leaf</span></div>
+            <div class="section">
+                <div class="section-label">Certification Trust Chain</div>
+                <div class="hierarchy">
+                    <div class="hier-item"><i class="fas fa-shield-halved"></i> <span id="hier-root">Root CA</span></div>
+                    <div class="hier-item child"><i class="fas fa-certificate"></i> <span id="hier-leaf">End Entity Certificate</span></div>
+                </div>
             </div>
 
-            <div class="section-label">Certificate Fields</div>
-            <div class="fields-list" id="fields-container">
-                <!-- Fields will be injected here -->
+            <div class="section">
+                <div class="section-label">Field Explorer</div>
+                <div class="fields-list" id="fields-container">
+                    <!-- Dynamic details fields injected here -->
+                </div>
             </div>
 
-            <div class="section-label" style="margin-top: 25px;">Field Value</div>
-            <div class="field-value-box" id="field-value-display">
-                Select a field above to view its value.
+            <div class="section">
+                <div class="section-label">Parsed Values</div>
+                <div class="field-value-box" id="field-value-display">
+                    Select a cert field from the explorer above.
+                </div>
             </div>
         </div>
     </div>

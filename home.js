@@ -509,14 +509,30 @@ function hexToRgba(hex, alpha) {
     return `rgba(${r}, ${g}, ${b}, ${alpha})`;
 }
 
+function getModeAccent(color, isLight) {
+    if (!color) return isLight ? '#058f60' : '#09f0a0';
+    if (!isLight) return color;
+    const hex = color.toLowerCase();
+    if (hex === '#09f0a0' || hex === '#00ffaa' || hex.includes('f0a0')) return '#058f60';
+    if (hex === '#ff007f' || hex === '#ff00aa' || hex.includes('ff007') || hex.includes('ff00a')) return '#d81b60';
+    if (hex === '#00e5ff' || hex === '#00ffff' || hex === '#3b82f6' || hex.includes('00e5') || hex.includes('00f0') || hex.includes('3b82')) return '#0288d1';
+    if (hex === '#ff9100' || hex === '#ffaa00' || hex === '#e8ff47' || hex.includes('ff91') || hex.includes('ffaa') || hex.includes('e8ff')) return '#d97706';
+    if (hex === '#8b5cf6' || hex === '#a855f7' || hex === '#9333ea' || hex === '#7b1fa2' || hex.includes('8b5c') || hex.includes('a855') || hex.includes('7b1f')) return '#6d28d9';
+    if (hex === '#ff4d4d' || hex === '#ff3333' || hex === '#ef4444' || hex === '#ef5350' || hex.includes('ff4d') || hex.includes('ff33') || hex.includes('ef44') || hex.includes('ef53')) return '#dc2626';
+    if (hex === '#ffffff' || hex === '#f4f4f5' || hex === '#e8e8e8' || hex.includes('fff')) return '#0f172a';
+    return color;
+}
+
 function applySettings(s) {
     if (!s) return;
     const root = document.documentElement;
+    const isLight = s.themeMode === 'light';
     if (s.accentColor) {
-        root.style.setProperty('--accent', s.accentColor);
+        const activeAccent = getModeAccent(s.accentColor, isLight);
+        root.style.setProperty('--accent', activeAccent);
         root.style.setProperty('--accent-glow', 'transparent');
-        root.style.setProperty('--accent-dim', hexToRgba(s.accentColor, 0.15));
-        root.style.setProperty('--accent-border', hexToRgba(s.accentColor, 0.4));
+        root.style.setProperty('--accent-dim', hexToRgba(activeAccent, 0.15));
+        root.style.setProperty('--accent-border', hexToRgba(activeAccent, 0.4));
     }
 
     if (s.homeLayout && dashMain) {
@@ -627,6 +643,24 @@ class StyleCustomizer {
             };
         });
 
+        if (window.electronAPI) {
+            window.electronAPI.onSettingsChanged(s => {
+                if (s) {
+                    this.updateAccentDots(s.themeMode);
+                    if (s.accentColor) {
+                        this.accentDots.forEach(dot => {
+                            dot.classList.toggle('active', dot.dataset.color.toLowerCase() === s.accentColor.toLowerCase());
+                        });
+                    }
+                    if (s.themeMode) {
+                        document.querySelectorAll(`.style-option[data-type="theme"]`).forEach(el => {
+                            el.classList.toggle('active', el.dataset.val === s.themeMode);
+                        });
+                    }
+                }
+            });
+        }
+
         // Sliders
         if (this.opacitySlider) {
             this.opacitySlider.oninput = () => {
@@ -700,10 +734,12 @@ class StyleCustomizer {
             window.electronAPI.updateSetting('accentColor', color);
         } else {
             const root = document.documentElement;
-            root.style.setProperty('--accent', color);
+            const isLight = document.body.getAttribute('data-theme') === 'light';
+            const activeAccent = getModeAccent(color, isLight);
+            root.style.setProperty('--accent', activeAccent);
             root.style.setProperty('--accent-glow', 'transparent');
-            root.style.setProperty('--accent-dim', hexToRgba(color, 0.15));
-            root.style.setProperty('--accent-border', hexToRgba(color, 0.4));
+            root.style.setProperty('--accent-dim', hexToRgba(activeAccent, 0.15));
+            root.style.setProperty('--accent-border', hexToRgba(activeAccent, 0.4));
         }
     }
 
@@ -721,6 +757,35 @@ class StyleCustomizer {
         localStorage.setItem('ocal-custom-blur', val);
     }
 
+    updateAccentDots(themeMode) {
+        const isLight = themeMode === 'light';
+        const colors = isLight ? [
+            '#058f60',
+            '#d81b60',
+            '#0288d1',
+            '#d97706',
+            '#6d28d9',
+            '#dc2626',
+            '#0f172a'
+        ] : [
+            '#09f0a0',
+            '#ff007f',
+            '#00e5ff',
+            '#ff9100',
+            '#7b1fa2',
+            '#ef5350',
+            '#ffffff'
+        ];
+
+        this.accentDots.forEach((dot, index) => {
+            if (colors[index]) {
+                const color = colors[index];
+                dot.style.backgroundColor = color;
+                dot.dataset.color = color;
+            }
+        });
+    }
+
     loadSettings() {
         // Load Background Theme
         const bgVal = localStorage.getItem('ocal-custom-bg') || 'static';
@@ -731,10 +796,17 @@ class StyleCustomizer {
             window.electronAPI.getSettings().then(s => {
                 const themeVal = (s && s.themeMode) || 'dark';
                 this.setOption('theme', themeVal);
+                this.updateAccentDots(themeVal);
+                if (s && s.accentColor) {
+                    this.accentDots.forEach(dot => {
+                        dot.classList.toggle('active', dot.dataset.color.toLowerCase() === s.accentColor.toLowerCase());
+                    });
+                }
             });
         } else {
             const themeVal = localStorage.getItem('ocal-custom-theme') || 'dark';
             this.setOption('theme', themeVal);
+            this.updateAccentDots(themeVal);
         }
 
         // Load Visual Effect
@@ -757,17 +829,6 @@ class StyleCustomizer {
         const blurVal = localStorage.getItem('ocal-custom-blur');
         if (blurVal !== null) {
             this.updateBlur(parseInt(blurVal), true);
-        }
-
-        // Highlight Active Accent Dot (approximate match)
-        if (window.electronAPI) {
-            window.electronAPI.getSettings().then(s => {
-                if (s && s.accentColor) {
-                    this.accentDots.forEach(dot => {
-                        dot.classList.toggle('active', dot.dataset.color.toLowerCase() === s.accentColor.toLowerCase());
-                    });
-                }
-            });
         }
     }
 

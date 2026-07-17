@@ -6,7 +6,7 @@
   "main": "main.js",
   "author": "Gaming Network Studio Media Group",
   "scripts": {
-    "start": "electron-forge start",
+    "start": "electron-forge start -- --app-name=\"Ocal Browser\"",
     "package": "electron-forge package",
     "make": "electron-forge make",
     "publish": "electron-forge publish",

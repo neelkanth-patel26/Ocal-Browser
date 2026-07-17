@@ -1,0 +1,585 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Volume Booster</title>
+    <link rel="stylesheet" href="assets/fontawesome/css/all.min.css">
+    <style>
+        :root {
+            --accent: #09f0a0;
+            --accent-glow: rgba(9, 240, 160, 0.25);
+            --accent-dim: rgba(9, 240, 160, 0.12);
+            --bg-glass: rgba(12, 12, 12, 0.95);
+            --border-glass: rgba(255, 255, 255, 0.08);
+            --text-primary: #f4f4f5;
+            --text-secondary: #a1a1aa;
+            --radius: 12px;
+            --font-title: 'Geist', sans-serif;
+            --font-main: 'Geist Mono', monospace;
+
+            /* Sound Level Themes */
+            --theme-color: var(--accent);
+            --theme-glow: var(--accent-glow);
+            --theme-dim: var(--accent-dim);
+        }
+
+        body[data-theme="light"] {
+            --bg-glass: rgba(255, 255, 255, 0.95);
+            --border-glass: rgba(0, 0, 0, 0.08);
+            --text-primary: #0f172a;
+            --text-secondary: #475569;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            user-select: none;
+            border-radius: var(--radius);
+        }
+
+        body {
+            font-family: var(--font-main);
+            background: transparent;
+            overflow: hidden;
+            width: 100vw;
+            height: 100vh;
+            color: var(--text-primary);
+            display: flex;
+            align-items: flex-start;
+            justify-content: flex-start;
+            padding: 10px;
+        }
+
+        .popup-overlay {
+            position: fixed;
+            inset: 0;
+            background: transparent;
+            z-index: 1;
+        }
+
+        .volume-boost-card {
+            position: relative;
+            background: var(--bg-glass);
+            border: 1px solid var(--border-glass);
+            padding: 12px;
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            width: 270px;
+            z-index: 2;
+            opacity: 0;
+            transform: translateY(-8px) scale(0.98);
+            transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+            pointer-events: none;
+            backdrop-filter: blur(24px);
+            -webkit-backdrop-filter: blur(24px);
+        }
+
+        body[data-theme="light"] .volume-boost-card {
+            /* Flat light mode border, no shadow */
+            border: 1px solid rgba(0, 0, 0, 0.1);
+        }
+
+        .volume-boost-card.show {
+            opacity: 1;
+            transform: translateY(0) scale(1);
+            pointer-events: all;
+        }
+
+        /* Compact Header */
+        .vb-header {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding-bottom: 8px;
+            border-bottom: 1px solid var(--border-glass);
+        }
+
+        .vb-icon {
+            color: var(--theme-color);
+            font-size: 11px;
+            transition: transform 0.2s ease, color 0.3s ease;
+        }
+
+        .vb-title {
+            font-size: 8px;
+            font-weight: 800;
+            letter-spacing: 1.5px;
+            text-transform: uppercase;
+            color: var(--text-primary);
+            flex: 1;
+        }
+
+        .header-actions {
+            display: flex;
+            align-items: center;
+            gap: 4px;
+        }
+
+        .header-btn {
+            width: 22px;
+            height: 22px;
+            border-radius: 6px;
+            background: none;
+            border: none;
+            color: var(--text-secondary);
+            font-size: 10px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.15s ease;
+        }
+
+        .header-btn:hover {
+            background: rgba(255, 255, 255, 0.06);
+            color: var(--text-primary);
+        }
+
+        body[data-theme="light"] .header-btn:hover {
+            background: rgba(0, 0, 0, 0.04);
+        }
+
+        /* Compact Tech Display Dashboard */
+        .vb-display {
+            background: rgba(255, 255, 255, 0.02);
+            border: 1px solid var(--border-glass);
+            padding: 8px 12px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            position: relative;
+            gap: 8px;
+        }
+
+        body[data-theme="light"] .vb-display {
+            background: rgba(0, 0, 0, 0.01);
+        }
+
+        .vb-percentage {
+            font-size: 32px;
+            font-weight: 100;
+            color: var(--text-primary);
+            letter-spacing: -1.5px;
+            font-family: var(--font-title);
+            line-height: 1;
+            transition: color 0.3s ease;
+        }
+
+        .vb-percentage.boosted {
+            color: var(--theme-color);
+        }
+
+        .level-badge {
+            font-size: 7px;
+            font-weight: 800;
+            letter-spacing: 1px;
+            text-transform: uppercase;
+            padding: 2px 6px;
+            background: var(--theme-dim);
+            color: var(--theme-color);
+            border: 1px solid color-mix(in srgb, var(--theme-color) 20%, transparent);
+            transition: all 0.3s ease;
+            white-space: nowrap;
+        }
+
+        /* Compact Equalizer Wave */
+        .equalizer-container {
+            display: flex;
+            align-items: flex-end;
+            gap: 3px;
+            height: 14px;
+            margin-top: 2px;
+        }
+
+        .eq-bar {
+            width: 2px;
+            height: 2px;
+            background: var(--text-secondary);
+            opacity: 0.15;
+            transition: height 0.15s ease, background-color 0.3s ease, opacity 0.3s ease;
+            border-radius: 100px;
+        }
+
+        .eq-bar.active {
+            opacity: 0.85;
+            background: var(--theme-color);
+            animation: bounceBar 0.8s ease infinite alternate;
+        }
+
+        @keyframes bounceBar {
+            0% { height: 2px; }
+            100% { height: var(--wave-height, 14px); }
+        }
+
+        .eq-bar:nth-child(1) { animation-delay: 0.1s; }
+        .eq-bar:nth-child(2) { animation-delay: 0.25s; }
+        .eq-bar:nth-child(3) { animation-delay: 0.4s; }
+        .eq-bar:nth-child(4) { animation-delay: 0.15s; }
+        .eq-bar:nth-child(5) { animation-delay: 0.3s; }
+        .eq-bar:nth-child(6) { animation-delay: 0.05s; }
+        .eq-bar:nth-child(7) { animation-delay: 0.2s; }
+
+        /* Compact Slider */
+        .slider-section {
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+        }
+
+        .vb-slider-track {
+            position: relative;
+            width: 100%;
+            height: 18px;
+            display: flex;
+            align-items: center;
+        }
+
+        .vb-slider {
+            width: 100%;
+            height: 4px;
+            -webkit-appearance: none;
+            appearance: none;
+            background: rgba(255, 255, 255, 0.06);
+            border-radius: 100px;
+            outline: none;
+            cursor: pointer;
+            position: relative;
+            z-index: 2;
+        }
+
+        body[data-theme="light"] .vb-slider {
+            background: rgba(0, 0, 0, 0.06);
+        }
+
+        .vb-slider::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            width: 14px;
+            height: 14px;
+            border-radius: 50%;
+            background: var(--theme-color);
+            cursor: pointer;
+            transition: transform 0.15s cubic-bezier(0.16, 1, 0.3, 1), background-color 0.3s ease;
+            border: 2.5px solid var(--bg-glass);
+        }
+
+        .vb-slider::-webkit-slider-thumb:hover {
+            transform: scale(1.2);
+        }
+
+        .vb-slider-fill {
+            position: absolute;
+            top: 50%;
+            left: 0;
+            height: 4px;
+            width: 0%;
+            background: var(--theme-color);
+            border-radius: 100px;
+            transform: translateY(-50%);
+            pointer-events: none;
+            z-index: 1;
+            opacity: 0.7;
+            transition: width 0.05s linear, background-color 0.3s ease;
+        }
+
+        .vb-labels {
+            display: flex;
+            justify-content: space-between;
+            font-size: 7px;
+            font-weight: 800;
+            color: var(--text-secondary);
+            opacity: 0.35;
+            padding: 0 2px;
+        }
+
+        /* Presets Grid */
+        .vb-presets {
+            display: grid;
+            grid-template-columns: repeat(5, 1fr);
+            gap: 4px;
+        }
+
+        .vb-preset {
+            padding: 6px 0;
+            border-radius: 6px;
+            background: rgba(255, 255, 255, 0.02);
+            border: 1px solid var(--border-glass);
+            color: var(--text-secondary);
+            font-size: 8px;
+            font-weight: 800;
+            cursor: pointer;
+            transition: all 0.15s ease;
+            font-family: var(--font-main);
+            text-align: center;
+        }
+
+        body[data-theme="light"] .vb-preset {
+            background: rgba(0, 0, 0, 0.02);
+        }
+
+        .vb-preset:hover {
+            border-color: var(--theme-color);
+            color: var(--theme-color);
+            background: var(--theme-dim);
+        }
+
+        .vb-preset.active {
+            background: var(--theme-dim) !important;
+            border-color: var(--theme-color) !important;
+            color: var(--theme-color) !important;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="popup-overlay" onclick="closePopup()"></div>
+
+    <div class="volume-boost-card" id="vb-card">
+        <div class="vb-header">
+            <i class="fas fa-volume-high vb-icon" id="header-icon"></i>
+            <span class="vb-title">Volume Booster</span>
+            <div class="header-actions">
+                <button class="header-btn" id="vb-reset-btn" title="Reset to 100%"><i class="fas fa-rotate-left"></i></button>
+                <button class="header-btn" onclick="closePopup()"><i class="fas fa-xmark"></i></button>
+            </div>
+        </div>
+        
+        <div class="vb-body" style="display: flex; flex-direction: column; gap: 10px;">
+            <!-- Display Panel -->
+            <div class="vb-display">
+                <span class="vb-percentage" id="vb-percentage">100%</span>
+                
+                <!-- Equalizer Spectrum -->
+                <div class="equalizer-container" id="eq-container">
+                    <div class="eq-bar" style="--wave-height: 6px;"></div>
+                    <div class="eq-bar" style="--wave-height: 10px;"></div>
+                    <div class="eq-bar" style="--wave-height: 14px;"></div>
+                    <div class="eq-bar" style="--wave-height: 12px;"></div>
+                    <div class="eq-bar" style="--wave-height: 8px;"></div>
+                    <div class="eq-bar" style="--wave-height: 13px;"></div>
+                    <div class="eq-bar" style="--wave-height: 5px;"></div>
+                </div>
+
+                <span class="level-badge" id="level-badge">SYSTEM DEFAULT</span>
+            </div>
+
+            <!-- Slider Control Block -->
+            <div class="slider-section">
+                <div class="vb-slider-track">
+                    <input type="range" class="vb-slider" id="vb-slider" min="100" max="500" value="100" step="5">
+                    <div class="vb-slider-fill" id="vb-slider-fill"></div>
+                </div>
+                <div class="vb-labels">
+                    <span>100%</span>
+                    <span>200%</span>
+                    <span>300%</span>
+                    <span>400%</span>
+                    <span>500%</span>
+                </div>
+            </div>
+
+            <!-- Presets Grid -->
+            <div class="vb-presets">
+                <button class="vb-preset" data-gain="1">100%</button>
+                <button class="vb-preset" data-gain="1.5">150%</button>
+                <button class="vb-preset" data-gain="2">200%</button>
+                <button class="vb-preset" data-gain="3.5">350%</button>
+                <button class="vb-preset" data-gain="5">500%</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const { ipcRenderer } = require('electron');
+
+        const card = document.getElementById('vb-card');
+        const vbSlider = document.getElementById('vb-slider');
+        const vbSliderFill = document.getElementById('vb-slider-fill');
+        const vbPercentage = document.getElementById('vb-percentage');
+        const levelBadge = document.getElementById('level-badge');
+        const headerIcon = document.getElementById('header-icon');
+        const vbResetBtn = document.getElementById('vb-reset-btn');
+        const vbPresets = document.querySelectorAll('.vb-preset');
+        const eqBars = document.querySelectorAll('.eq-bar');
+
+        let accentColor = '#09f0a0';
+
+        function hexToRgba(hex, alpha) {
+            if (!hex) return `rgba(9, 240, 160, ${alpha})`;
+            const r = parseInt(hex.slice(1, 3), 16);
+            const g = parseInt(hex.slice(3, 5), 16);
+            const b = parseInt(hex.slice(5, 7), 16);
+            return `rgba(${r}, ${g}, ${b}, ${alpha})`;
+        }
+
+        function getModeAccent(color, isLight) {
+            if (!color) return isLight ? '#058f60' : '#09f0a0';
+            if (!isLight) return color;
+            const hex = color.toLowerCase();
+            if (hex === '#09f0a0' || hex === '#00ffaa' || hex.includes('f0a0')) return '#058f60';
+            if (hex === '#ff007f' || hex === '#ff00aa' || hex.includes('ff007') || hex.includes('ff00a')) return '#d81b60';
+            if (hex === '#00e5ff' || hex === '#00ffff' || hex.includes('00e5') || hex.includes('00f0')) return '#0288d1';
+            if (hex === '#ff9100' || hex === '#ffaa00' || hex.includes('ff91') || hex.includes('ffaa')) return '#d97706';
+            if (hex === '#8b5cf6' || hex === '#a855f7' || hex === '#9333ea' || hex.includes('8b5c') || hex.includes('a855')) return '#6d28d9';
+            if (hex === '#ff4d4d' || hex === '#ff3333' || hex.includes('ff4d') || hex.includes('ff33')) return '#dc2626';
+            if (hex === '#ffffff' || hex === '#f4f4f5' || hex === '#e8e8e8' || hex.includes('fff')) return '#0f172a';
+            return color;
+        }
+
+        function applyAccent(color) {
+            if (!color) return;
+            lastColor = color;
+            const isLight = document.body.getAttribute('data-theme') === 'light';
+            const activeAccent = getModeAccent(color, isLight);
+            accentColor = activeAccent;
+            document.body.style.setProperty('--accent', activeAccent);
+            document.body.style.setProperty('--accent-glow', hexToRgba(activeAccent, 0.25));
+            document.body.style.setProperty('--accent-dim', hexToRgba(activeAccent, 0.12));
+            updateDynamicStyles(parseInt(vbSlider.value) / 100);
+        }
+
+        let lastColor = null;
+
+        // Global Settings Sync
+        ipcRenderer.on('settings-changed', (e, s) => {
+            if (s && s.themeMode) document.body.setAttribute('data-theme', s.themeMode);
+            if (s && s.accentColor) applyAccent(s.accentColor);
+        });
+
+        // Load Initial State & Show
+        ipcRenderer.on('show-popup', (e, { tabId }) => {
+            card.classList.add('show');
+            ipcRenderer.invoke('get-settings').then(settings => {
+                if (settings.themeMode) document.body.setAttribute('data-theme', settings.themeMode);
+                applyAccent(settings.accentColor);
+
+                ipcRenderer.invoke('get-volume-boost').then(gain => {
+                    updateVBDisplay(gain || 1.0);
+                });
+            });
+        });
+
+        function updateDynamicStyles(gain) {
+            const isLight = document.body.getAttribute('data-theme') === 'light';
+            let activeColor = accentColor;
+            let activeGlow = hexToRgba(accentColor, 0.4);
+            let activeDim = hexToRgba(accentColor, 0.12);
+
+            if (gain <= 1.0) {
+                levelBadge.textContent = 'STANDARD OUTPUT';
+                levelBadge.style.animation = 'none';
+                headerIcon.className = 'fas fa-volume-low vb-icon';
+            } else if (gain <= 3.0) {
+                activeGlow = hexToRgba(activeColor, 0.4);
+                activeDim = hexToRgba(activeColor, 0.12);
+                levelBadge.textContent = 'TURBO BOOST';
+                levelBadge.style.animation = 'none';
+                headerIcon.className = 'fas fa-volume-high vb-icon';
+            } else {
+                activeColor = isLight ? '#dc2626' : '#ff0055';
+                activeGlow = hexToRgba(activeColor, 0.5);
+                activeDim = hexToRgba(activeColor, 0.15);
+                levelBadge.textContent = '⚠️ CRITICAL LIMIT';
+                levelBadge.style.animation = 'dangerPulse 1s ease infinite alternate';
+                headerIcon.className = 'fas fa-triangle-exclamation vb-icon';
+            }
+
+            document.body.style.setProperty('--theme-color', activeColor);
+            document.body.style.setProperty('--theme-glow', activeGlow);
+            document.body.style.setProperty('--theme-dim', activeDim);
+        }
+
+        // Add dynamic CSS styles for danger animation
+        if (!document.getElementById('danger-animation-styles')) {
+            const style = document.createElement('style');
+            style.id = 'danger-animation-styles';
+            style.innerHTML = `
+                @keyframes dangerPulse {
+                    0% { box-shadow: 0 0 0 0px var(--theme-glow); opacity: 0.85; }
+                    100% { box-shadow: 0 0 8px 3px var(--theme-glow); opacity: 1; }
+                }
+            `;
+            document.head.appendChild(style);
+        }
+
+        function updateVBDisplay(gain) {
+            const percent = Math.round(gain * 100);
+            vbPercentage.textContent = percent + '%';
+
+            // Slider sync
+            vbSlider.value = percent;
+            const fillPercent = ((percent - 100) / 400) * 100;
+            vbSliderFill.style.width = Math.max(0, fillPercent) + '%';
+
+            // Boost active styling
+            if (gain > 1.0) {
+                vbPercentage.classList.add('boosted');
+                eqBars.forEach((bar, idx) => {
+                    bar.classList.add('active');
+                    bar.style.setProperty('--wave-height', (4 + (gain * 1.8) + (idx % 3) * 1.5) + 'px');
+                    bar.style.animationDuration = (1.1 - (gain * 0.12)) + 's';
+                });
+                headerIcon.style.transform = `scale(${1 + (gain - 1) * 0.08})`;
+            } else {
+                vbPercentage.classList.remove('boosted');
+                eqBars.forEach(bar => {
+                    bar.classList.remove('active');
+                    bar.style.height = '2px';
+                });
+                headerIcon.style.transform = 'scale(1)';
+            }
+
+            // Dynamic color levels
+            updateDynamicStyles(gain);
+
+            // Active preset highlight
+            vbPresets.forEach(p => {
+                const presetGain = parseFloat(p.getAttribute('data-gain'));
+                p.classList.toggle('active', Math.abs(presetGain - gain) < 0.01);
+            });
+        }
+
+        function closePopup() {
+            card.classList.remove('show');
+            setTimeout(() => {
+                ipcRenderer.send('hide-volume-boost-popup');
+            }, 200);
+        }
+
+        // Slider input
+        vbSlider.addEventListener('input', (e) => {
+            const percent = parseInt(e.target.value);
+            const gain = percent / 100;
+            updateVBDisplay(gain);
+
+            if (gain > 1.0) {
+                ipcRenderer.send('set-volume-boost', { gain });
+            } else {
+                ipcRenderer.send('reset-volume-boost');
+            }
+        });
+
+        // Preset buttons
+        vbPresets.forEach(btn => {
+            btn.addEventListener('click', () => {
+                const gain = parseFloat(btn.getAttribute('data-gain'));
+                updateVBDisplay(gain);
+
+                if (gain > 1.0) {
+                    ipcRenderer.send('set-volume-boost', { gain });
+                } else {
+                    ipcRenderer.send('reset-volume-boost');
+                }
+            });
+        });
+
+        // Reset button
+        vbResetBtn.addEventListener('click', () => {
+            updateVBDisplay(1.0);
+            ipcRenderer.send('reset-volume-boost');
+        });
+    </script>
+</body>
+</html>

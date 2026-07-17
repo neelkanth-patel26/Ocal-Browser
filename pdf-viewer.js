@@ -655,6 +655,31 @@ document.getElementById('print-btn').onclick = () => {
     }
 };
 
+window.addEventListener('beforeprint', () => {
+    // Convert all canvases to images so they print correctly and show in the print preview
+    const canvases = document.querySelectorAll('.page-wrapper canvas');
+    canvases.forEach(canvas => {
+        const img = document.createElement('img');
+        img.src = canvas.toDataURL();
+        img.className = canvas.className;
+        img.style.cssText = canvas.style.cssText;
+        img.dataset.isPrintImg = 'true';
+        canvas.style.display = 'none';
+        canvas.parentNode.insertBefore(img, canvas);
+    });
+});
+
+window.addEventListener('afterprint', () => {
+    // Restore canvases and remove the temporary images
+    const printImages = document.querySelectorAll('img[data-is-print-img="true"]');
+    printImages.forEach(img => {
+        if (img.nextElementSibling && img.nextElementSibling.tagName === 'CANVAS') {
+            img.nextElementSibling.style.display = '';
+        }
+        img.remove();
+    });
+});
+
 let isRestoringScroll = false;
 function scrollToPage(num, behavior = 'smooth') {
     const el = document.getElementById(`wrapper-${num}`);
