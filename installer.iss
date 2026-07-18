@@ -7,8 +7,8 @@
 
 [Setup]
 AppName=Ocal Browser
-AppVersion=7.7.04
-AppVerName=Ocal Browser 7.7.04
+AppVersion=7.9.00
+AppVerName=Ocal Browser 7.9.00
 AppPublisher=Gaming Network Studio Media Group
 AppPublisherURL=https://github.com/neelkanth-patel26/Ocal-Browser
 AppSupportURL=https://github.com/neelkanth-patel26/Ocal-Browser/issues
