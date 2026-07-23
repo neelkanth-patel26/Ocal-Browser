@@ -1,6 +1,6 @@
 const container = document.getElementById('menu-container');
 
-// Theme Synchronization
+// Theme Synchronization — immediate from IPC
 window.electronAPI.invoke('get-settings').then(s => {
     if (s && s.themeMode) document.body.setAttribute('data-theme', s.themeMode);
     if (s && s.accentColor) applyAccent(s.accentColor);
@@ -13,13 +13,8 @@ window.electronAPI.on('settings-changed', (s) => {
 
 function applyAccent(hex) {
     if (!hex || hex.length < 7) return;
-    const r = parseInt(hex.slice(1,3), 16);
-    const g = parseInt(hex.slice(3,5), 16);
-    const b = parseInt(hex.slice(5,7), 16);
+    // For now accent color applies but neon-lime is the main bookmark accent
     document.documentElement.style.setProperty('--accent', hex);
-    document.documentElement.style.setProperty('--accent-rgb', `${r}, ${g}, ${b}`);
-    document.documentElement.style.setProperty('--accent-dim', `rgba(${r}, ${g}, ${b}, 0.10)`);
-    document.documentElement.style.setProperty('--accent-glow', `rgba(${r}, ${g}, ${b}, 0.25)`);
 }
 
 function getFirstLetter(title) {
@@ -33,15 +28,22 @@ window.electronAPI.onShowBMDropdown((data) => {
     if (bms.length === 0) {
         container.innerHTML = `
             <div class="empty-state">
-                <i class="fa-regular fa-bookmark"></i>
+                <div class="empty-icon-wrap">
+                    <i class="fa-regular fa-bookmark"></i>
+                </div>
                 <div class="empty-title">No bookmarks yet</div>
-                <div class="empty-subtitle">Press Ctrl+D to save a page</div>
+                <div class="empty-subtitle">Press <span class="kbd">Ctrl</span> + <span class="kbd">D</span> to save this page</div>
             </div>`;
     } else {
-        // Header
+        // Header with count badge
         const header = document.createElement('div');
         header.className = 'dropdown-header';
-        header.innerHTML = `<i class="fa-solid fa-bookmark"></i> Bookmarks`;
+        header.innerHTML = `
+            <div class="header-icon-wrap">
+                <i class="fa-solid fa-bookmark header-icon"></i>
+            </div>
+            <span class="header-label">Bookmarks</span>
+            <span class="header-count">${bms.length}</span>`;
         container.appendChild(header);
 
         bms.forEach((bm, i) => {
@@ -50,7 +52,7 @@ window.electronAPI.onShowBMDropdown((data) => {
 
             const opt = document.createElement('div');
             opt.className = 'menu-option';
-            opt.style.animationDelay = `${i * 30}ms`;
+            opt.style.animationDelay = `${i * 25}ms`;
 
             opt.innerHTML = `
                 <div class="favicon-wrap">
@@ -61,7 +63,7 @@ window.electronAPI.onShowBMDropdown((data) => {
                     <span class="bm-title">${bm.title || domain}</span>
                     ${domain ? `<span class="bm-domain">${domain}</span>` : ''}
                 </div>
-                <i class="fa-solid fa-arrow-right nav-arrow"></i>`;
+                <i class="fa-solid fa-chevron-right nav-arrow"></i>`;
 
             opt.onclick = () => {
                 if (bm && bm.url) {
@@ -73,7 +75,7 @@ window.electronAPI.onShowBMDropdown((data) => {
         });
     }
 
-    // Resize the BrowserView to fit
+    // Resize the BrowserView to fit content
     const rect = container.getBoundingClientRect();
     window.electronAPI.send('resize-bm-dropdown', { width: rect.width + 20, height: rect.height + 20 });
 });

@@ -2,68 +2,60 @@
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Outfit:wght@300;400;500;600;700&display=swap');
 
 :root {
-    --bg: #0c0c0c;
-    --card-bg: #111111;
-    --header-bg: #111111;
-    --sidebar-bg: #111111;
-    --text: #e8e8e8;
-    --text-dim: #666666;
-    --text-muted: #3a3a3a;
-    --chrome-border: #252525;
+    --bg: #EDEDF0;
+    --card-bg: #FFFFFF;
+    --header-bg: #EDEDF0;
+    --sidebar-bg: #EDEDF0;
+    --text: #1A1D20;
+    --text-dim: #7E8492;
+    --text-muted: #A0A5B1;
+    --chrome-border: rgba(0,0,0,0.05);
     
-    --nav-hover-bg: rgba(255, 255, 255, 0.06);
-    --nav-active-bg: rgba(255, 255, 255, 0.1);
+    --nav-hover-bg: rgba(0, 0, 0, 0.04);
+    --nav-active-bg: #FFFFFF;
     
-    --accent: #09f0a0;
-    --accent-glow: rgba(9, 240, 160, 0.2);
-    --accent-dim: rgba(9, 240, 160, 0.12);
+    --accent: #15AC49;
+    --accent-glow: rgba(21, 172, 73, 0.2);
+    --accent-dim: rgba(21, 172, 73, 0.08);
     --accent-border: var(--accent);
+    --lime-accent: #D4FC2B;
     
-    /* GNS Typography Mappings */
     --font-title: 'Plus Jakarta Sans', 'Outfit', 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
     --font-main: 'Plus Jakarta Sans', 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
-    --font-mono: 'JetBrains Mono', monospace;
+    --font-mono: 'Space Mono', 'JetBrains Mono', monospace;
     
-    /* GNS Corner Radius Scale */
-    --radius-sm: 6px;
-    --radius-lg: 12px;
+    --radius-sm: 12px;
+    --radius-lg: 28px;
     --radius-pill: 100px;
     --radius: var(--radius-lg);
     
-    --success: #4ade80;
-    --success-glow: rgba(74, 222, 128, 0.2);
+    --success: #15AC49;
+    --success-glow: rgba(21, 172, 73, 0.2);
 
-    /* GNS Shadow Elevations */
-    --shadow-sm: none;
-    --shadow-md: none;
-    --shadow-lg: none;
-    --shadow-interactive: none;
+    --shadow-sm: 0 4px 16px rgba(0,0,0,0.03);
+    --shadow-md: 0 10px 30px rgba(0,0,0,0.035), 0 2px 8px rgba(0,0,0,0.015);
+    --shadow-lg: 0 16px 40px rgba(0,0,0,0.06);
+    --shadow-interactive: 0 6px 20px rgba(0,0,0,0.05);
 }
 
-/* ── Light Theme ────────────────────────────────────────── */
-body[data-theme="light"] {
-    --bg: #f5f5f5;
-    --card-bg: #ffffff;
-    --header-bg: #ffffff;
-    --sidebar-bg: #fafafa;
-    --text: #1a1a1a;
-    --text-dim: #555555;
-    --text-muted: #999999;
-    --chrome-border: #e0e0e0;
+/* ── Light Theme Lock ────────────────────────────────────────── */
+body[data-theme="light"], body {
+    --bg: #EDEDF0;
+    --card-bg: #FFFFFF;
+    --header-bg: #EDEDF0;
+    --sidebar-bg: #EDEDF0;
+    --text: #1A1D20;
+    --text-dim: #7E8492;
+    --text-muted: #A0A5B1;
+    --chrome-border: rgba(0,0,0,0.05);
     
-    --nav-hover-bg: #f0f0f0;
-    --nav-active-bg: #eaeaea;
+    --nav-hover-bg: rgba(0,0,0,0.04);
+    --nav-active-bg: #FFFFFF;
     
-    --accent: #059669;
-    --accent-glow: rgba(5, 150, 105, 0.12);
-    --accent-dim: rgba(5, 150, 105, 0.06);
+    --accent: #15AC49;
+    --accent-glow: rgba(21, 172, 73, 0.12);
+    --accent-dim: rgba(21, 172, 73, 0.06);
     --accent-border: var(--accent);
-
-    /* GNS Light Theme Shadows */
-    --shadow-sm: none;
-    --shadow-md: none;
-    --shadow-lg: none;
-    --shadow-interactive: none;
 }
 
 /* Reset and Layout */
@@ -231,29 +223,29 @@ body[data-theme="light"] .header-search input[type="text"]:focus {
     display: flex;
     align-items: center;
     gap: 12px;
-    height: 36px;
-    padding: 0 14px;
+    height: 40px;
+    padding: 0 16px;
     color: var(--text-dim);
     font-size: 13px;
     font-weight: 500;
-    border-radius: 8px;
+    border-radius: 100px !important;
     cursor: pointer;
-    margin: 0 12px;
-    transition: background-color 0.2s, color 0.2s, transform 0.15s;
+    margin: 2px 14px;
+    transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
     border: 1px solid transparent;
 }
 
 .nav-item:hover {
-    background: var(--nav-hover-bg) !important;
-    color: var(--text);
-    transform: none;
+    background: rgba(0, 0, 0, 0.04) !important;
+    color: #111111;
 }
 
 .nav-item.active {
-    background: var(--nav-active-bg) !important;
-    color: var(--accent);
-    border-color: rgba(255, 255, 255, 0.02);
-    font-weight: 600;
+    background: #FFFFFF !important;
+    color: #111111 !important;
+    border: 1px solid rgba(0,0,0,0.04) !important;
+    box-shadow: 0 4px 14px rgba(0, 0, 0, 0.04) !important;
+    font-weight: 700;
 }
 
 .nav-item-icon {
