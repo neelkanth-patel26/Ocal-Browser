@@ -9,31 +9,43 @@
         @import url('./assets/fonts/geist-fonts.css');
 
         :root {
-            --bg: rgba(12, 12, 12, 0.95);
+            --bg: #16181D;
             --border: rgba(255, 255, 255, 0.08);
-            --accent: #09f0a0;
-            --accent-glow: rgba(9, 240, 160, 0.25);
-            --accent-dim: rgba(9, 240, 160, 0.12);
-            --card-bg: rgba(255, 255, 255, 0.02);
-            --card-border: rgba(255, 255, 255, 0.04);
-            --card-hover-bg: rgba(255, 255, 255, 0.04);
+            --accent: #15AC49;
+            --accent-glow: rgba(21, 172, 73, 0.25);
+            --accent-dim: rgba(21, 172, 73, 0.12);
+            --lime: #D4FC2B;
+            --card-bg: #20242D;
+            --card-border: rgba(255, 255, 255, 0.06);
+            --card-hover-bg: #2A2E3B;
             --card-hover-border: var(--accent);
-            --text-primary: #f4f4f5;
-            --text-secondary: #a1a1aa;
-            --radius: 12px;
-            --font-main: 'Geist Mono', monospace;
-            --font-title: 'Geist', sans-serif;
+            --text-primary: #FFFFFF;
+            --text-secondary: #9CA3AF;
+            --radius: 20px;
+            --font-main: 'Plus Jakarta Sans', sans-serif;
+            --font-title: 'Plus Jakarta Sans', sans-serif;
         }
 
-        body[data-theme="light"] {
-            --bg: rgba(255, 255, 255, 0.95);
-            --border: rgba(0, 0, 0, 0.08);
-            --card-bg: rgba(0, 0, 0, 0.02);
+        body[data-theme="light"], body {
+            --bg: #FFFFFF;
+            --border: rgba(0, 0, 0, 0.06);
+            --card-bg: #F4F4F6;
             --card-border: rgba(0, 0, 0, 0.04);
-            --card-hover-bg: rgba(0, 0, 0, 0.03);
+            --card-hover-bg: #EAEBED;
             --card-hover-border: var(--accent);
-            --text-primary: #0f172a;
-            --text-secondary: #64748b;
+            --text-primary: #111111;
+            --text-secondary: #475569;
+        }
+
+        body[data-theme="dark"] {
+            --bg: #16181D;
+            --border: rgba(255, 255, 255, 0.08);
+            --card-bg: #20242D;
+            --card-border: rgba(255, 255, 255, 0.06);
+            --card-hover-bg: #2A2E3B;
+            --card-hover-border: var(--accent);
+            --text-primary: #FFFFFF;
+            --text-secondary: #9CA3AF;
         }
 
         * { 

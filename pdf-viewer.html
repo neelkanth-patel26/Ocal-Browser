@@ -11,48 +11,46 @@
     <link rel="stylesheet" href="assets/fonts/geist-fonts.css">
     <style>
         :root {
-            --bg: #0c0c0c;
-            --surface: #111111;
-            --accent: #09f0a0;
-            --accent-glow: rgba(9, 240, 160, 0.3);
-            --accent-dim: rgba(9, 240, 160, 0.08);
-            --accent-border: rgba(9, 240, 160, 0.25);
-            --text: #e8e8e8;
-            --text-dim: #666666;
-            --text-muted: #3a3a3a;
-            --border: #252525;
-            --toolbar-bg: #111111;
-            --toolbar-border: #252525;
-            --btn-hover: rgba(255, 255, 255, 0.08);
+            --bg: #EDEDF0;
+            --surface: #FFFFFF;
+            --accent: #15AC49;
+            --accent-glow: rgba(21, 172, 73, 0.3);
+            --accent-dim: rgba(21, 172, 73, 0.08);
+            --accent-border: #15AC49;
+            --lime: #D4FC2B;
+            --text: #111111;
+            --text-dim: #475569;
+            --text-muted: #9CA3AF;
+            --border: rgba(0, 0, 0, 0.06);
+            --toolbar-bg: #FFFFFF;
+            --toolbar-border: rgba(0, 0, 0, 0.06);
+            --btn-hover: #F4F4F6;
             --sidebar-w: 260px;
-            --panel-blur: none;
-            --radius: 12px;
-            --font-title: 'Outfit', sans-serif;
-            --font-main: 'Inter', sans-serif;
-            --font-mono: 'Geist Mono', monospace;
+            --radius: 20px;
+            --font-title: 'Plus Jakarta Sans', sans-serif;
+            --font-main: 'Plus Jakarta Sans', sans-serif;
         }
 
-        [data-theme="sepia"] { 
-            --bg: #f4ecd8; 
-            --surface: #e6dfcf; 
-            --text: #433422; 
-            --text-dim: #5f4b32; 
-            --border: #dcd3bc; 
-            --toolbar-bg: rgba(230, 223, 207, 0.85);
-            --toolbar-border: #dcd3bc;
-            --btn-hover: rgba(0, 0, 0, 0.05);
+        [data-theme="dark"] {
+            --bg: #0D0E11;
+            --surface: #16181D;
+            --text: #FFFFFF;
+            --text-dim: #9CA3AF;
+            --border: rgba(255, 255, 255, 0.08);
+            --toolbar-bg: #16181D;
+            --toolbar-border: rgba(255, 255, 255, 0.08);
+            --btn-hover: #22262F;
         }
 
-        [data-theme="light"] { 
-            --bg: #f8fafc; 
-            --surface: #ffffff; 
-            --text: #0f172a; 
-            --text-dim: #475569; 
-            --text-muted: #94a3b8;
-            --border: #e2e8f0; 
-            --toolbar-bg: rgba(255, 255, 255, 0.85);
-            --toolbar-border: #e2e8f0;
-            --btn-hover: rgba(0, 0, 0, 0.04);
+        [data-theme="light"], body {
+            --bg: #EDEDF0;
+            --surface: #FFFFFF;
+            --text: #111111;
+            --text-dim: #475569;
+            --border: rgba(0, 0, 0, 0.06);
+            --toolbar-bg: #FFFFFF;
+            --toolbar-border: rgba(0, 0, 0, 0.06);
+            --btn-hover: #F4F4F6;
         }
 
         * { box-sizing: border-box; margin: 0; padding: 0; }
@@ -327,6 +325,12 @@
     </style>
 </head>
 <body data-theme="dark">
+    <script>
+        (function () {
+            const t = localStorage.getItem('ocal-settings-theme') || 'dark';
+            document.body.setAttribute('data-theme', t);
+        })();
+    </script>
 
     <div id="fallback-viewport"></div>
     

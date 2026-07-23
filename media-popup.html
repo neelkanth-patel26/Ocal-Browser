@@ -8,34 +8,42 @@
     <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700&display=swap" rel="stylesheet">
     <style>
         :root {
-            --bg: #0c0c0c;
-            --border: #252525;
-            --accent: #09f0a0;
-            --accent-glow: rgba(9, 240, 160, 0.2);
-            --accent-dim: rgba(9, 240, 160, 0.12);
-            --accent-border: rgba(9, 240, 160, 0.2);
-            --card-bg: #111111;
-            --card-border: #252525;
-            --card-hover-bg: #1e1e1e;
+            --bg: #16181D;
+            --border: rgba(255, 255, 255, 0.08);
+            --accent: #15AC49;
+            --accent-glow: rgba(21, 172, 73, 0.25);
+            --accent-dim: rgba(21, 172, 73, 0.12);
+            --accent-border: #15AC49;
+            --lime: #D4FC2B;
+            --card-bg: #20242D;
+            --card-border: rgba(255, 255, 255, 0.06);
+            --card-hover-bg: #2A2E3B;
             --card-hover-border: var(--accent);
-            --text-primary: #e8e8e8;
-            --text-secondary: #666666;
-            --font: 'Geist Mono', monospace;
+            --text-primary: #FFFFFF;
+            --text-secondary: #9CA3AF;
+            --font: 'Plus Jakarta Sans', sans-serif;
         }
 
-        body[data-theme="light"] {
-            --bg: #ffffff;
-            --border: #e2e8f0;
-            --accent: #058f60;
-            --accent-glow: rgba(5, 143, 96, 0.2);
-            --accent-dim: rgba(5, 143, 96, 0.12);
-            --accent-border: rgba(5, 143, 96, 0.2);
-            --card-bg: #ffffff;
-            --card-border: #e2e8f0;
-            --card-hover-bg: #f1f5f9;
+        body[data-theme="light"], body {
+            --bg: #FFFFFF;
+            --border: rgba(0, 0, 0, 0.06);
+            --card-bg: #F4F4F6;
+            --card-border: rgba(0, 0, 0, 0.04);
+            --card-hover-bg: #EAEBED;
             --card-hover-border: var(--accent);
-            --text-primary: #0f172a;
+            --text-primary: #111111;
             --text-secondary: #475569;
+        }
+
+        body[data-theme="dark"] {
+            --bg: #16181D;
+            --border: rgba(255, 255, 255, 0.08);
+            --card-bg: #20242D;
+            --card-border: rgba(255, 255, 255, 0.06);
+            --card-hover-bg: #2A2E3B;
+            --card-hover-border: var(--accent);
+            --text-primary: #FFFFFF;
+            --text-secondary: #9CA3AF;
         }
 
         * {

@@ -987,9 +987,51 @@ function createMainWindow() {
 
 
 
+// Security States
+const trustedSSLDomains = new Set();
+const trustedMalwareDomains = new Set();
+const maliciousDomains = new Set();
+
+async function updateMaliciousDomains() {
+    try {
+        // Fetch known malicious domains from urlhaus (or similar open lists).
+        // Since we don't have a Google Safe Browsing API key by default, this provides a fast, privacy-preserving in-memory check.
+        // Using a tiny subset or a simulated endpoint if urlhaus is too large. 
+        // For production, a compressed hash list is recommended, but for now we'll do a simple fetch if possible.
+        const res = await require('electron').net.fetch('https://urlhaus.abuse.ch/downloads/hostfile/');
+        if (res.ok) {
+            const text = await res.text();
+            const lines = text.split('\n');
+            for (const line of lines) {
+                if (line.startsWith('#') || !line.trim()) continue;
+                const parts = line.split('\t');
+                if (parts.length > 1) maliciousDomains.add(parts[1].trim().toLowerCase());
+            }
+            console.log(`[Safe Browsing] Loaded ${maliciousDomains.size} malicious domains into memory.`);
+        }
+    } catch (err) {
+        console.log('[Safe Browsing] Failed to update malicious domain list:', err.message);
+    }
+}
+// Update on startup
+setTimeout(updateMaliciousDomains, 5000);
+
 app.on('certificate-error', (event, webContents, url, error, certificate, callback) => {
-    event.preventDefault();
-    callback(true);
+    let hostname;
+    try { hostname = new URL(url).hostname; } catch (e) { hostname = url; }
+    
+    if (trustedSSLDomains.has(hostname)) {
+        // User explicitly bypassed this error for this session
+        event.preventDefault();
+        callback(true);
+    } else {
+        // Block the load and redirect to SSL warning page
+        event.preventDefault();
+        callback(false);
+        const warnUrl = `ocal://ssl-warning?url=${encodeURIComponent(url)}&error=${encodeURIComponent(error)}`;
+        // Delay slightly so the blocked navigation clears
+        setTimeout(() => webContents.loadURL(warnUrl), 10);
+    }
 });
 
 function setupCompatibilityHandler() {
@@ -1529,6 +1571,14 @@ function resolveInternalURL(url) {
     if (cleanBase === 'ocal://offline') return 'file://' + path.join(__dirname, 'offline.html');
     if (cleanBase === 'ocal://suspended') return 'file://' + path.join(__dirname, 'suspended.html') + (url.indexOf('?') !== -1 ? url.substring(url.indexOf('?')) : '');
     if (cleanBase === 'ocal://whats-new' || cleanBase === 'whats-new') return 'file://' + path.join(__dirname, 'whats-new.html');
+    if (cleanBase === 'ocal://ssl-warning') {
+        const qIdx = url.indexOf('?');
+        return 'file://' + path.join(__dirname, 'ssl-warning.html') + (qIdx !== -1 ? url.substring(qIdx) : '');
+    }
+    if (cleanBase === 'ocal://security-warning') {
+        const qIdx = url.indexOf('?');
+        return 'file://' + path.join(__dirname, 'security-warning.html') + (qIdx !== -1 ? url.substring(qIdx) : '');
+    }
     if (cleanBase === 'ocal://games') return 'file://' + path.join(__dirname, 'games.html');
     if (cleanBase === 'ocal://tetris') return 'file://' + path.join(__dirname, 'tetris.html');
     if (cleanBase === 'ocal://game' || cleanBase === 'ocal://snake') return 'file://' + path.join(__dirname, 'snake.html');
@@ -1589,7 +1639,7 @@ function createNewTab(url = null) {
             devTools: true
         },
     });
-    view.setBackgroundColor('#00000000');
+    view.setBackgroundColor(userSettings.themeMode === 'light' ? '#EDEDF0' : '#0D0E11');
     view.webContents.setUserAgent(OCAL_USER_AGENT);
     setupViewEvents(id, view, 'left');
 
@@ -1817,6 +1867,17 @@ function setupViewEvents(tabId, view, side = 'left') {
     // Intercept PDF view navigation and internal ocal:// links
     setupInteractionDismissal(webContents);
     webContents.on('will-navigate', (event, targetUrl) => {
+        let hostname;
+        try { hostname = new URL(targetUrl).hostname; } catch(e) { hostname = ''; }
+        
+        // Safe Browsing Check
+        if (hostname && maliciousDomains.has(hostname) && !trustedMalwareDomains.has(hostname)) {
+            event.preventDefault();
+            const warnUrl = `ocal://security-warning?url=${encodeURIComponent(targetUrl)}`;
+            setTimeout(() => webContents.loadURL(warnUrl), 10);
+            return;
+        }
+
         if (targetUrl.startsWith('ocal://')) {
             event.preventDefault();
             webContents.loadURL(targetUrl);
@@ -1837,6 +1898,14 @@ function setupViewEvents(tabId, view, side = 'left') {
     });
 
     webContents.setWindowOpenHandler(({ url }) => {
+        let hostname;
+        try { hostname = new URL(url).hostname; } catch(e) { hostname = ''; }
+        
+        if (hostname && maliciousDomains.has(hostname) && !trustedMalwareDomains.has(hostname)) {
+            createNewTab(`ocal://security-warning?url=${encodeURIComponent(url)}`);
+            return { action: 'deny' };
+        }
+
         if (url.startsWith('ocal://')) {
             createNewTab(url);
             return { action: 'deny' };
@@ -2148,7 +2217,7 @@ function updateViewBounds(forcedUrl = null) {
     const yPadding = (process.platform === 'win32') ? 1 : 0;
     const yOffset = hTabs + hNav + hBm + yPadding;
 
-    let wSidebar = Math.round(44 * zoom);
+    let wSidebar = Math.round(48 * zoom);
     if (isFullscreen || userSettings.sidebarMode === 'hidden' || userSettings.sidebarMode === 'autohide') {
         wSidebar = 0;
     }
@@ -2158,10 +2227,10 @@ function updateViewBounds(forcedUrl = null) {
 
     if (activeViewEntry && activeViewEntry.view) {
         if (activeViewEntry.view.webContents && !activeViewEntry.view.webContents.isDestroyed() && mainWindow.getBrowserViews().includes(activeViewEntry.view)) {
-            const xBase = Math.round(wSidebar + Math.round(8 * zoom));
-            const yBase = Math.round(yOffset + Math.round(2 * zoom));
-            const totalWidth = Math.round(width - wSidebar - Math.round(16 * zoom));
-            const totalHeight = Math.round(height - yOffset - Math.round(10 * zoom));
+            const xBase = Math.round(wSidebar);
+            const yBase = Math.round(yOffset);
+            const totalWidth = Math.round(width - wSidebar);
+            const totalHeight = Math.round(height - yOffset);
 
             if (isFullscreen) {
                 activeViewEntry.view.setBounds({
@@ -2569,10 +2638,10 @@ function animateSplitBounds(tabId, startSplit, onComplete = null) {
         wSidebar = 0;
     }
 
-    const xBase = Math.round(wSidebar + Math.round(8 * zoom));
-    const yBase = Math.round(yOffset + Math.round(2 * zoom));
-    const totalWidth = Math.round(width - wSidebar - Math.round(16 * zoom));
-    const totalHeight = Math.round(height - yOffset - Math.round(10 * zoom));
+    const xBase = Math.round(wSidebar);
+    const yBase = Math.round(yOffset);
+    const totalWidth = Math.round(width - wSidebar);
+    const totalHeight = Math.round(height - yOffset);
 
     const duration = 250;
     const fps = 60;
@@ -2781,15 +2850,15 @@ ipcMain.on('tab-drag-start', (e, tabId) => {
             const yPadding = (process.platform === 'win32') ? 1 : 0;
             const yOffset = hTabs + hNav + hBm + yPadding;
             
-            let wSidebar = Math.round(44 * zoom);
+            let wSidebar = Math.round(48 * zoom);
             if (userSettings.sidebarMode === 'hidden' || userSettings.sidebarMode === 'autohide') {
                 wSidebar = 0;
             }
             
-            const xBase = Math.round(wSidebar + Math.round(8 * zoom));
-            const yBase = Math.round(yOffset + Math.round(2 * zoom));
-            const totalWidth = Math.round(width - wSidebar - Math.round(16 * zoom));
-            const totalHeight = Math.round(height - yOffset - Math.round(10 * zoom));
+            const xBase = Math.round(wSidebar);
+            const yBase = Math.round(yOffset);
+            const totalWidth = Math.round(width - wSidebar);
+            const totalHeight = Math.round(height - yOffset);
             
             splitOverlayView.setBounds({
                 x: xBase,
@@ -2981,12 +3050,33 @@ ipcMain.on('navigate-to', (e, url) => {
     }
 
     hideSuggestions();
-    activeView.webContents.loadURL(resolveInternalURL(targetUrl));
+    
+    let hostname;
+    try { hostname = new URL(targetUrl).hostname; } catch(e) { hostname = ''; }
+    
+    if (hostname && maliciousDomains.has(hostname) && !trustedMalwareDomains.has(hostname)) {
+        activeView.webContents.loadURL(`ocal://security-warning?url=${encodeURIComponent(targetUrl)}`);
+    } else {
+        activeView.webContents.loadURL(resolveInternalURL(targetUrl));
+    }
 });
 
 ipcMain.on('nav-back', () => { const v = getActiveViewForNavigation(); if (v?.webContents.navigationHistory.canGoBack()) v.webContents.navigationHistory.goBack(); });
 ipcMain.on('nav-forward', () => { const v = getActiveViewForNavigation(); if (v?.webContents.navigationHistory.canGoForward()) v.webContents.navigationHistory.goForward(); });
 ipcMain.on('nav-reload', () => { const v = getActiveViewForNavigation(); if (v) v.webContents.reload(); });
+
+ipcMain.on('bypass-ssl', (event, domain, url) => {
+    trustedSSLDomains.add(domain);
+    const v = getActiveViewForNavigation();
+    if (v) v.webContents.loadURL(url);
+});
+
+ipcMain.on('bypass-security', (event, domain, url) => {
+    trustedMalwareDomains.add(domain);
+    const v = getActiveViewForNavigation();
+    if (v) v.webContents.loadURL(url);
+});
+
 ipcMain.on('window-minimize', () => mainWindow.minimize());
 ipcMain.on('window-maximize', () => { if (mainWindow.isMaximized()) mainWindow.unmaximize(); else mainWindow.maximize(); });
 ipcMain.on('window-close', () => mainWindow.close());
@@ -5519,8 +5609,8 @@ ipcMain.on('show-shield-popup', (e, { x, y, width, height, tabId }) => {
     mainWindow.addBrowserView(shieldPopupView);
 
     const zoom = getOptimalZoomFactor();
-    const popupWidth = Math.round(290 * zoom);
-    const popupHeight = Math.round(340 * zoom);
+    const popupWidth = Math.round(280 * zoom);
+    const popupHeight = Math.round(360 * zoom);
     const contentBounds = mainWindow.getContentBounds();
 
     let targetX = x + (width / 2) - (popupWidth / 2);
@@ -5767,7 +5857,7 @@ ipcMain.on('show-extensions-dropdown', (e, { x, y, width }) => {
     mainWindow.addBrowserView(extensionDropdownView);
     // Align to the right of the button
     const zoom = getOptimalZoomFactor();
-    const popupWidth = Math.round(300 * zoom);
+    const popupWidth = Math.round(280 * zoom);
     const winOffset = getWinOffset();
     let targetX = x + width - popupWidth;
 
@@ -5775,7 +5865,7 @@ ipcMain.on('show-extensions-dropdown', (e, { x, y, width }) => {
         x: Math.round(targetX + winOffset) - 15,
         y: Math.round(y + 10 + winOffset),
         width: popupWidth + 30,
-        height: Math.round(410 * zoom)
+        height: Math.round(400 * zoom)
     });
     mainWindow.setTopBrowserView(extensionDropdownView);
     extensionDropdownView.webContents.send('refresh-extensions');
@@ -7097,8 +7187,8 @@ ipcMain.on('toggle-volume-boost-popup', (e, bounds) => {
     mainWindow.addBrowserView(volumeBoostView);
 
     const zoom = getOptimalZoomFactor();
-    const popupWidth = Math.round(310 * zoom);
-    const popupHeight = Math.round(280 * zoom);
+    const popupWidth = Math.round(280 * zoom);
+    const popupHeight = Math.round(290 * zoom);
 
     let targetX = bounds.x + (bounds.width / 2) - (popupWidth / 2);
     const contentBounds = mainWindow.getContentBounds();

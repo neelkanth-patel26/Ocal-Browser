@@ -5,36 +5,44 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Ocal Shield</title>
     <link rel="stylesheet" href="assets/fontawesome/css/all.min.css">
-    <link rel="stylesheet" href="assets/fonts/geist-fonts.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
     <style>
-        @import url('./assets/fonts/geist-fonts.css');
-
         :root {
-            --accent: #09f0a0;
-            --accent-glow: rgba(9, 240, 160, 0.25);
-            --accent-dim: rgba(9, 240, 160, 0.12);
-            --bg-glass: rgba(12, 12, 12, 0.95);
+            --accent: #15AC49;
+            --accent-glow: rgba(21, 172, 73, 0.3);
+            --lime: #D4FC2B;
+            --bg-glass: #16181D;
             --border-glass: rgba(255, 255, 255, 0.08);
-            --card-bg: rgba(255, 255, 255, 0.02);
-            --card-border: rgba(255, 255, 255, 0.04);
-            --card-hover-bg: rgba(255, 255, 255, 0.04);
-            --card-hover-border: var(--accent);
-            --text-primary: #f4f4f5;
-            --text-secondary: #a1a1aa;
-            --radius: 12px;
-            --font-main: 'Geist Mono', monospace;
-            --font-title: 'Geist', sans-serif;
+            --card-bg: #20242D;
+            --card-border: rgba(255, 255, 255, 0.06);
+            --card-hover-bg: #2A2E3B;
+            --text-primary: #FFFFFF;
+            --text-secondary: #9CA3AF;
+            --radius: 16px;
+            --font-main: 'Plus Jakarta Sans', sans-serif;
+            --font-mono: 'Space Mono', monospace;
         }
 
-        body[data-theme="light"] {
-            --bg-glass: rgba(255, 255, 255, 0.95);
-            --border-glass: rgba(0, 0, 0, 0.08);
-            --card-bg: rgba(0, 0, 0, 0.02);
+        body[data-theme="light"], body {
+            --bg-glass: #FFFFFF;
+            --border-glass: rgba(0, 0, 0, 0.06);
+            --card-bg: #F4F4F6;
             --card-border: rgba(0, 0, 0, 0.04);
-            --card-hover-bg: rgba(0, 0, 0, 0.03);
-            --card-hover-border: var(--accent);
-            --text-primary: #0f172a;
-            --text-secondary: #64748b;
+            --card-hover-bg: #EAEBED;
+            --text-primary: #111111;
+            --text-secondary: #475569;
+        }
+
+        body[data-theme="dark"] {
+            --bg-glass: #16181D;
+            --border-glass: rgba(255, 255, 255, 0.08);
+            --card-bg: #20242D;
+            --card-border: rgba(255, 255, 255, 0.06);
+            --card-hover-bg: #2A2E3B;
+            --text-primary: #FFFFFF;
+            --text-secondary: #9CA3AF;
         }
 
         * {
@@ -42,7 +50,6 @@
             padding: 0;
             box-sizing: border-box;
             user-select: none;
-            border-radius: var(--radius);
         }
 
         body {
@@ -55,7 +62,8 @@
             display: flex;
             align-items: flex-start;
             justify-content: flex-start;
-            padding: 10px;
+            padding: 8px;
+            -webkit-font-smoothing: antialiased;
         }
 
         .popup-overlay {
@@ -69,104 +77,111 @@
             position: relative;
             background: var(--bg-glass);
             border: 1px solid var(--border-glass);
-            padding: 14px;
+            padding: 12px;
             display: flex;
             flex-direction: column;
-            gap: 12px;
-            width: 270px; /* Thinner, more compact layout */
+            gap: 10px;
+            width: 260px;
             z-index: 2;
-            opacity: 0;
-            transform: translateY(-8px) scale(0.98);
-            transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
-            pointer-events: none;
-            box-shadow: none !important;
-            backdrop-filter: blur(20px);
-            -webkit-backdrop-filter: blur(20px);
-        }
-
-        body[data-theme="light"] .shield-card {
-            box-shadow: none !important;
-            border: 1px solid rgba(0, 0, 0, 0.1);
-        }
-
-        .shield-card.show {
             opacity: 1;
-            transform: translateY(0) scale(1);
+            transform: none;
             pointer-events: all;
+            border-radius: var(--radius);
+            box-shadow: 0 8px 24px rgba(0, 0, 0, 0.3);
         }
 
         .header {
             display: flex;
             align-items: center;
-            gap: 8px;
-            border-bottom: 1px solid var(--border-glass);
+            justify-content: space-between;
             padding-bottom: 8px;
-            border-radius: 0;
+            border-bottom: 1px solid var(--border-glass);
         }
 
-        .header i {
-            font-size: 11px;
+        .brand-box {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .shield-icon-badge {
+            width: 26px;
+            height: 26px;
+            background: rgba(21, 172, 73, 0.15);
+            border: 1px solid var(--accent);
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
             color: var(--accent);
+            font-size: 12px;
         }
 
         .header h2 {
-            font-family: var(--font-title);
-            font-size: 12px;
-            font-weight: 600;
+            font-size: 13px;
+            font-weight: 800;
             letter-spacing: -0.2px;
             color: var(--text-primary);
-            border-radius: 0;
         }
 
-        /* Highly Compact Dashboard Stats */
+        .status-badge {
+            font-size: 9px;
+            font-weight: 800;
+            color: #111111;
+            background: #D4FC2B;
+            padding: 3px 8px;
+            border-radius: 100px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        /* Stats Dashboard */
         .stats-dashboard {
-            background: rgba(255, 255, 255, 0.02);
-            border: 1px solid var(--border-glass);
-            padding: 8px 10px;
+            background: var(--card-bg);
+            border: 1px solid var(--card-border);
+            padding: 10px 12px;
+            border-radius: 12px;
             display: flex;
             flex-direction: column;
-            gap: 6px;
-        }
-
-        body[data-theme="light"] .stats-dashboard {
-            background: rgba(0, 0, 0, 0.01);
+            gap: 8px;
         }
 
         .section-label {
-            font-size: 7px;
+            font-size: 8px;
             font-weight: 800;
             letter-spacing: 1px;
             color: var(--text-secondary);
             text-transform: uppercase;
-            opacity: 0.5;
-            border-radius: 0;
         }
 
         .stats-row {
             display: flex;
             justify-content: space-between;
             align-items: center;
-            border-radius: 0;
         }
 
         .stat-group {
             display: flex;
             flex-direction: column;
-            border-radius: 0;
         }
 
         .stat-value-big {
-            font-family: var(--font-title);
+            font-family: var(--font-mono);
             font-size: 20px;
-            font-weight: 300;
+            font-weight: 700;
             color: var(--accent);
             line-height: 1;
         }
 
+        body[data-theme="dark"] .stat-value-big {
+            color: #D4FC2B !important;
+        }
+
         .stat-label-sub {
             font-size: 8px;
+            font-weight: 700;
             color: var(--text-secondary);
-            margin-top: 2px;
+            margin-top: 3px;
             text-transform: uppercase;
             letter-spacing: 0.5px;
         }
@@ -175,31 +190,30 @@
             width: 1px;
             height: 24px;
             background: var(--border-glass);
-            border-radius: 0;
         }
 
         .stat-row-mini {
             display: flex;
             justify-content: space-between;
-            font-size: 9px;
+            font-size: 10px;
             color: var(--text-secondary);
+            font-weight: 600;
             border-top: 1px solid var(--border-glass);
-            padding-top: 4px;
+            padding-top: 6px;
             margin-top: 2px;
-            border-radius: 0;
         }
 
         .stat-row-mini span:last-child {
             color: var(--text-primary);
-            font-weight: 600;
+            font-weight: 800;
+            font-family: var(--font-mono);
         }
 
         /* Toggle items list */
         .toggle-section {
             display: flex;
             flex-direction: column;
-            gap: 4px;
-            border-radius: 0;
+            gap: 6px;
         }
 
         .toggle-item {
@@ -208,46 +222,43 @@
             justify-content: space-between;
             background: var(--card-bg);
             padding: 8px 10px;
-            border-radius: 8px;
+            border-radius: 12px;
             border: 1px solid var(--card-border);
             transition: all 0.2s ease;
         }
 
         .toggle-item:hover {
             background: var(--card-hover-bg);
-            border-color: var(--card-hover-border);
+            border-color: rgba(255, 255, 255, 0.12);
         }
 
         .toggle-info {
-            border-radius: 0;
+            display: flex;
+            flex-direction: column;
+            gap: 1px;
             min-width: 0;
         }
 
         .toggle-title {
-            display: block;
-            font-size: 10px;
-            font-weight: 700;
+            font-size: 11px;
+            font-weight: 800;
             color: var(--text-primary);
             text-transform: uppercase;
             letter-spacing: 0.5px;
-            border-radius: 0;
         }
 
         .toggle-desc {
-            display: block;
-            font-size: 8px;
+            font-size: 9.5px;
+            font-weight: 500;
             color: var(--text-secondary);
-            margin-top: 1px;
-            border-radius: 0;
-            opacity: 0.7;
         }
 
-        /* Compact Switches */
+        /* Switches */
         .switch {
             position: relative;
             display: inline-block;
-            width: 30px;
-            height: 16px;
+            width: 34px;
+            height: 18px;
             flex-shrink: 0;
         }
 
@@ -257,97 +268,109 @@
             position: absolute;
             cursor: pointer;
             inset: 0;
-            background: var(--border-glass);
+            background: rgba(255, 255, 255, 0.15);
             transition: 0.25s cubic-bezier(0.16, 1, 0.3, 1);
             border-radius: 100px;
+        }
+
+        body[data-theme="light"] .slider {
+            background: rgba(0, 0, 0, 0.12);
         }
 
         .slider:before {
             position: absolute;
             content: "";
-            height: 10px;
-            width: 10px;
-            left: 3px;
-            bottom: 3px;
-            background: var(--text-primary);
+            height: 14px;
+            width: 14px;
+            left: 2px;
+            bottom: 2px;
+            background: #FFFFFF;
             transition: 0.2s cubic-bezier(0.16, 1, 0.3, 1);
             border-radius: 50%;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.2);
         }
 
         input:checked + .slider {
-            background: var(--accent) !important;
-            border-radius: 100px !important;
+            background: #D4FC2B !important;
         }
 
         input:checked + .slider:before {
-            transform: translateX(14px);
-            background: var(--bg-glass) !important;
+            transform: translateX(16px);
+            background: #111111 !important;
         }
     </style>
 </head>
-<body>
+<body data-theme="dark">
+    <script>
+        (function () {
+            const t = localStorage.getItem('ocal-settings-theme') || 'dark';
+            document.body.setAttribute('data-theme', t);
+        })();
+    </script>
     <div class="popup-overlay" id="popup-overlay"></div>
+
     <div class="shield-card" id="shield-card">
         <div class="header">
-            <i class="fas fa-shield-halved"></i>
-            <h2>Ocal Shield</h2>
+            <div class="brand-box">
+                <div class="shield-icon-badge"><i class="fas fa-shield-halved"></i></div>
+                <h2>Ocal Shield</h2>
+            </div>
+            <span class="status-badge">Active</span>
         </div>
 
-        <!-- Unified Compact Stats Panel -->
         <div class="stats-dashboard">
-            <span class="section-label">Impact on this Page</span>
+            <div class="section-label">Impact on this page</div>
             <div class="stats-row">
                 <div class="stat-group">
-                    <span class="stat-value-big" id="page-ads">0</span>
+                    <span class="stat-value-big" id="stat-page-ads">0</span>
                     <span class="stat-label-sub">Ads Blocked</span>
                 </div>
                 <div class="stat-divider"></div>
-                <div class="stat-group" style="align-items: flex-end;">
-                    <span class="stat-value-big" id="page-time">0s</span>
+                <div class="stat-group">
+                    <span class="stat-value-big" id="stat-page-time">0.0s</span>
                     <span class="stat-label-sub">Time Saved</span>
                 </div>
             </div>
-            
             <div class="stat-row-mini">
                 <span>Lifetime Blocked:</span>
-                <span id="ads-blocked">0</span>
+                <span id="stat-life-ads">1,304</span>
             </div>
-            <div class="stat-row-mini" style="border-top: none; padding-top: 0; margin-top: 0;">
+            <div class="stat-row-mini">
                 <span>Total Trackers:</span>
-                <span id="trackers-blocked">0</span>
+                <span id="stat-life-trackers">266</span>
             </div>
         </div>
 
         <div class="toggle-section">
             <div class="toggle-item">
                 <div class="toggle-info">
-                    <div class="toggle-title">Ad Block</div>
-                    <div class="toggle-desc">Remove intrusive ads</div>
+                    <span class="toggle-title">Ad Block</span>
+                    <span class="toggle-desc">Remove intrusive ads</span>
                 </div>
                 <label class="switch">
-                    <input type="checkbox" id="adblock-toggle" checked>
+                    <input type="checkbox" id="toggle-adblock" checked>
                     <span class="slider"></span>
                 </label>
             </div>
 
             <div class="toggle-item">
                 <div class="toggle-info">
-                    <div class="toggle-title">Strict Privacy</div>
-                    <div class="toggle-desc">Block cross-site tracking</div>
+                    <span class="toggle-title">Strict Privacy</span>
+                    <span class="toggle-desc">Block cross-site tracking</span>
                 </div>
                 <label class="switch">
-                    <input type="checkbox" id="privacy-toggle" checked>
+                    <input type="checkbox" id="toggle-privacy" checked>
                     <span class="slider"></span>
                 </label>
             </div>
 
             <div class="toggle-item">
                 <div class="toggle-info">
-                    <div class="toggle-title">YouTube Dislikes</div>
-                    <div class="toggle-desc">Restore dislike counts</div>
+                    <span class="toggle-title">YouTube Dislikes</span>
+                    <span class="toggle-desc">Restore dislike counts</span>
                 </div>
                 <label class="switch">
-                    <input type="checkbox" id="dislike-toggle" checked>
+                    <input type="checkbox" id="toggle-dislikes" checked>
                     <span class="slider"></span>
                 </label>
             </div>

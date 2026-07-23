@@ -16,9 +16,13 @@
     <script>
         /* Immediate Theme Application to prevent Flashbang */
         (function () {
-            const cachedTheme = localStorage.getItem('ocal-settings-theme');
-            if (cachedTheme) {
-                document.documentElement.setAttribute('data-theme', cachedTheme);
+            var t = localStorage.getItem('ocal-settings-theme') || 'dark';
+            document.documentElement.setAttribute('data-theme', t);
+            if (t === 'dark') {
+                document.documentElement.style.background = '#0D0E11';
+                document.documentElement.style.colorScheme = 'dark';
+            } else {
+                document.documentElement.style.background = '#EDEDF0';
             }
         })();
     </script>

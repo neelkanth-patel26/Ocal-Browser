@@ -4,13 +4,28 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>File Manager | Ocal Browser</title>
+    <!-- ANTI-FLASH: before any stylesheet -->
+    <script>
+        (function () {
+            var t = localStorage.getItem('ocal-settings-theme') || 'dark';
+            document.documentElement.setAttribute('data-theme', t);
+            document.documentElement.style.background = t === 'dark' ? '#0D0E11' : '#EDEDF0';
+            if (t === 'dark') document.documentElement.style.colorScheme = 'dark';
+        })();
+    </script>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Geist+Mono:wght@100..900&family=Geist:wght@100..900&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="assets/fontawesome/css/all.min.css">
     <link rel="stylesheet" href="file-manager.css">
 </head>
 <body class="pro-studio">
+    <script>
+        (function () {
+            const t = localStorage.getItem('ocal-settings-theme') || 'dark';
+            document.body.setAttribute('data-theme', t);
+        })();
+    </script>
     <div class="app-container">
         <!-- Sidebar Navigation -->
         <aside class="sidebar">
@@ -20,7 +35,7 @@
                         <i class="fas fa-folder-open brand-icon"></i>
                     </div>
                     <div class="brand-text">
-                        <span class="brand-eyebrow">FILE SYSTEM</span>
+                        <span class="brand-eyebrow">LOCAL FILES</span>
                         <span class="brand-name">File Manager</span>
                     </div>
                 </div>
@@ -60,21 +75,20 @@
                     <p>All file indexing and processing happens locally on your computer.</p>
                 </div>
                 <button id="analyze-btn" class="analyze-btn">
-                    <div class="btn-glow"></div>
                     <i class="fas fa-magnifying-glass-folder"></i>
                     <span>Find all PDFs</span>
                 </button>
             </div>
         </aside>
 
-        <!-- Dynamic Content Terminal -->
+        <!-- Dynamic Content Area -->
         <main class="main-content">
             <header class="content-header">
                 <div class="header-main-info">
                     <div class="page-eyebrow">Local Files</div>
-                    <h1 class="page-title">PDF Explorer</h1>
+                    <h1 class="page-title">All PDF Files</h1>
                     <div class="breadcrumbs" id="breadcrumbs">
-                        <span>This PC</span>
+                        <span class="breadcrumb-item">This PC</span>
                     </div>
                 </div>
                 
@@ -82,7 +96,6 @@
                     <div class="search-box">
                         <i class="fas fa-magnifying-glass"></i>
                         <input type="text" id="file-search" placeholder="Search PDF files...">
-                        <div class="search-accent"></div>
                     </div>
                     <div class="view-terminal" id="view-toggles">
                         <button class="view-btn active" id="view-grid" title="Grid View"><i class="fas fa-grip"></i></button>
@@ -113,7 +126,7 @@
         </main>
     </div>
 
-    <!-- Interface Context Terminal -->
+    <!-- Custom Context Menu -->
     <div id="context-menu" class="custom-context-menu"></div>
 
     <script src="file-manager.js"></script>

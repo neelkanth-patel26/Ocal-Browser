@@ -115,6 +115,8 @@ contextBridge.exposeInMainWorld('electronAPI', {
   goBack:       ()        => ipcRenderer.send('nav-back'),
   goForward:    ()        => ipcRenderer.send('nav-forward'),
   reload:       ()        => ipcRenderer.send('nav-reload'),
+  bypassSSL:    (domain, url) => ipcRenderer.send('bypass-ssl', domain, url),
+  bypassSecurity: (domain, url) => ipcRenderer.send('bypass-security', domain, url),
 
   // Window
   minimize:     ()        => ipcRenderer.send('window-minimize'),
@@ -169,7 +171,7 @@ contextBridge.exposeInMainWorld('electronAPI', {
   // Both renderer and sidebars use bookmarks-changed; renderer gets full object
   onBookmarksUpdated:  (cb) => ipcRenderer.on('bookmarks-changed',     (e, d)    => cb(d)),
   onBookmarksChanged:  (cb) => ipcRenderer.on('bookmarks-changed',     (e, d)    => cb(d)),
-  onSuggestionsUpdated: (cb) => ipcRenderer.on('update-suggestions',   (e, d)    => cb(e, d)),
+  onSuggestionsUpdated: (cb) => ipcRenderer.on('update-suggestions',   (e, d)    => cb(d)),
 
   onDownloadUpdated:   (cb) => ipcRenderer.on('download-updated',      (e, dl)   => cb(dl)),
   onToggleSidebar:     (cb) => ipcRenderer.on('toggle-sidebar',  (e, open) => cb(e, open)),

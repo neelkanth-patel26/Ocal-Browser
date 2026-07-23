@@ -1,0 +1,132 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Deceptive site ahead</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #d93025; /* Red background */
+            color: #fff;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+            padding: 0 20px;
+        }
+        .container {
+            max-width: 600px;
+            background: transparent;
+        }
+        .icon {
+            color: #fff;
+            font-size: 48px;
+            margin-bottom: 20px;
+        }
+        h1 {
+            font-size: 28px;
+            font-weight: 400;
+            margin: 0 0 16px;
+        }
+        p {
+            font-size: 15px;
+            line-height: 1.5;
+            margin: 0 0 16px;
+            color: rgba(255, 255, 255, 0.9);
+        }
+        .url {
+            font-weight: bold;
+        }
+        .actions {
+            margin-top: 32px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        button {
+            border: none;
+            border-radius: 4px;
+            padding: 8px 16px;
+            font-size: 14px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: background 0.2s, color 0.2s;
+        }
+        .primary-btn {
+            background-color: #fff;
+            color: #d93025;
+        }
+        .primary-btn:hover {
+            background-color: #f1f3f4;
+        }
+        .secondary-btn {
+            background-color: transparent;
+            color: #fff;
+            border: 1px solid transparent;
+            padding: 8px 0;
+            text-decoration: underline;
+        }
+        .secondary-btn:hover {
+            color: #f8f9fa;
+        }
+        .advanced-details {
+            display: none;
+            margin-top: 24px;
+            padding-top: 24px;
+            border-top: 1px solid rgba(255,255,255,0.2);
+        }
+        .advanced-details.show {
+            display: block;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="icon">🛑</div>
+        <h1>Deceptive site ahead</h1>
+        <p>Attackers on <span class="url" id="domain-text">example.com</span> may trick you into doing something dangerous like installing software or revealing your personal information (for example, passwords, phone numbers, or credit cards).</p>
+        <p>Ocal Safe Browsing has blocked this site as it is flagged in global threat databases.</p>
+
+        <div class="actions">
+            <button class="secondary-btn" id="advanced-btn">Details</button>
+            <button class="primary-btn" id="back-btn">Back to safety</button>
+        </div>
+
+        <div class="advanced-details" id="advanced-details">
+            <p>Ocal Browser blocks sites that are known to host malware or partake in phishing and scams. Visiting this site may harm your computer or result in data theft.</p>
+            <p><button class="secondary-btn" id="proceed-btn" style="padding-left:0;">Ignore warning and proceed to <span id="domain-proceed">example.com</span> (unsafe)</button></p>
+        </div>
+    </div>
+
+    <script>
+        const urlParams = new URLSearchParams(window.location.search);
+        let targetUrl = urlParams.get('url');
+        
+        let hostname = 'unknown site';
+        try { hostname = new URL(targetUrl).hostname; } catch(e) {}
+
+        document.getElementById('domain-text').textContent = hostname;
+        document.getElementById('domain-proceed').textContent = hostname;
+
+        document.getElementById('advanced-btn').onclick = () => {
+            document.getElementById('advanced-details').classList.toggle('show');
+        };
+
+        document.getElementById('back-btn').onclick = () => {
+            if (window.electronAPI && window.electronAPI.goBack) {
+                window.electronAPI.goBack();
+            } else {
+                window.history.back();
+            }
+        };
+
+        document.getElementById('proceed-btn').onclick = () => {
+            if (window.electronAPI && window.electronAPI.bypassSecurity) {
+                window.electronAPI.bypassSecurity(hostname, targetUrl);
+            }
+        };
+    </script>
+</body>
+</html>

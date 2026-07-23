@@ -79,6 +79,8 @@ function updateTick() {
     }
 
     if (dateTxt) dateTxt.textContent = `${days[now.getDay()]}, ${months[now.getMonth()]} ${now.getDate()}`;
+    const clockMini = document.getElementById('clock-mini');
+    if (clockMini) clockMini.textContent = `${String(hours).padStart(2, '0')}:${String(minutes).padStart(2, '0')}`;
 }
 setInterval(updateTick, 1000);
 updateTick();
@@ -148,6 +150,8 @@ class TodoManager {
     }
     save() { localStorage.setItem('ocal-todos', JSON.stringify(this.todos)); }
     render() {
+        const badge = document.getElementById('todo-count-badge');
+        if (badge) badge.textContent = this.todos.filter(t => !t.done).length;
         if (!todoListEl) return;
         todoListEl.innerHTML = '';
         this.todos.forEach(todo => {
@@ -902,3 +906,45 @@ if (window.electronAPI) {
         });
     }
 }
+
+// ── Superpower Tile Navigation & User Name Persistence ─────────────
+document.addEventListener('DOMContentLoaded', () => {
+    // User name editable title persistence
+    const userNameTitle = document.getElementById('user-name-title');
+    if (userNameTitle) {
+        const savedName = localStorage.getItem('sp-user-name');
+        if (savedName) userNameTitle.textContent = savedName;
+
+        userNameTitle.addEventListener('blur', () => {
+            const name = userNameTitle.textContent.trim() || 'Sophia Caldwell';
+            localStorage.setItem('sp-user-name', name);
+        });
+        userNameTitle.addEventListener('keydown', (e) => {
+            if (e.key === 'Enter') {
+                e.preventDefault();
+                userNameTitle.blur();
+            }
+        });
+    }
+
+    // Scratchpad notes auto-save
+    const notesArea = document.getElementById('scratchpad-notes');
+    if (notesArea) {
+        notesArea.value = localStorage.getItem('sp-scratchpad-notes') || '';
+        notesArea.addEventListener('input', () => {
+            localStorage.setItem('sp-scratchpad-notes', notesArea.value);
+        });
+    }
+
+    // Tiles & launch buttons
+    document.querySelectorAll('.sp-tile-item, .tile-item').forEach(tile => {
+        tile.addEventListener('click', () => {
+            const url = tile.getAttribute('data-url');
+            if (url) {
+                const targetUrl = url.startsWith('http') ? url : 'https://' + url;
+                window.location.href = targetUrl;
+            }
+        });
+    });
+});
+
