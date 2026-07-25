@@ -7,9 +7,22 @@
     padding: 0;
 }
 
-html, body {
+html {
     width: 100%;
-    height: 100%;
+    min-height: 100%;
+    height: auto !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    background: #EDEDF0;
+    overflow-x: hidden;
+    overflow-y: auto !important;
+    scrollbar-width: thin;
+}
+
+body {
+    width: 100%;
+    min-height: 100vh;
+    height: auto !important;
     margin: 0 !important;
     padding: 0 !important;
     border-radius: 0 !important;
@@ -17,8 +30,27 @@ html, body {
     font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, sans-serif;
     color: #1A1D20;
     overflow-x: hidden;
-    overflow-y: auto;
+    overflow-y: auto !important;
     -webkit-font-smoothing: antialiased;
+}
+
+/* ── Custom Scrollbar for Home Page ──────────────────────────────── */
+::-webkit-scrollbar {
+    width: 8px;
+    height: 8px;
+}
+
+::-webkit-scrollbar-track {
+    background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+    background: rgba(148, 163, 184, 0.35);
+    border-radius: 10px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+    background: var(--accent, #15AC49);
 }
 
 /* Dark mode on <html> — prevents flash before body data-theme is set */
@@ -107,7 +139,7 @@ html[data-theme="dark"] .sp-user-subtitle {
 }
 
 .motd-quote-icon {
-    color: #09f0a0;
+    color: var(--accent) !important;
     font-size: 11px;
 }
 
@@ -160,8 +192,8 @@ html[data-theme="dark"] .motd-clickable:hover {
 }
 
 .sp-badge-lime {
-    background: #D4FC2B;
-    color: #111111 !important;
+    background: var(--accent) !important;
+    color: var(--accent-text, #111111) !important;
     font-weight: 800;
 }
 
@@ -257,9 +289,10 @@ html[data-theme="dark"] .motd-clickable:hover {
     outline: none;
 }
 
-.sp-search-btn {
-    width: 32px;
-    height: 32px;
+.sp-search-btn,
+.sp-search-submit {
+    width: 34px;
+    height: 34px;
     border-radius: 50%;
     background: #111111;
     color: #FFFFFF;
@@ -267,13 +300,24 @@ html[data-theme="dark"] .motd-clickable:hover {
     display: flex;
     align-items: center;
     justify-content: center;
-    font-size: 12px;
+    font-size: 13px;
     cursor: pointer;
-    transition: transform 0.2s;
+    transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+    flex-shrink: 0;
+    outline: none;
 }
 
-.sp-search-btn:hover {
+body[data-theme="dark"] .sp-search-btn,
+body[data-theme="dark"] .sp-search-submit {
+    background: var(--accent, #15AC49);
+    color: #FFFFFF;
+}
+
+.sp-search-btn:hover,
+.sp-search-submit:hover {
     transform: scale(1.08);
+    background: var(--accent, #15AC49);
+    color: #FFFFFF;
 }
 
 .sp-timeline-pill {
@@ -455,7 +499,8 @@ html[data-theme="dark"] .motd-clickable:hover {
 
 .sp-timer-act-btn:hover {
     transform: scale(1.1);
-    background: #D4FC2B;
+    background: var(--accent) !important;
+    color: var(--accent-text, #111111) !important;
 }
 
 /* Gradient Card 2: Weather & Environment */
@@ -507,7 +552,7 @@ html[data-theme="dark"] .motd-clickable:hover {
 }
 
 .sp-todo-input:focus {
-    border-color: #15AC49;
+    border-color: var(--accent) !important;
     background: #FFFFFF;
 }
 
@@ -545,13 +590,13 @@ html[data-theme="dark"] .motd-clickable:hover {
     width: 16px;
     height: 16px;
     border-radius: 50%;
-    border: 2px solid #15AC49;
+    border: 2px solid var(--accent) !important;
     margin-right: 8px;
     flex-shrink: 0;
 }
 
 .todo-card.done .todo-checkbox {
-    background: #15AC49;
+    background: var(--accent) !important;
 }
 
 .todo-label {
@@ -595,7 +640,7 @@ html[data-theme="dark"] .motd-clickable:hover {
 }
 
 .sp-notes-textarea:focus {
-    border-color: #15AC49;
+    border-color: var(--accent) !important;
     background: #FFFFFF;
 }
 
@@ -701,7 +746,7 @@ body[data-theme="dark"] .del-todo {
 }
 
 body[data-theme="dark"] .sp-tp-sub {
-    color: #D4FC2B !important;
+    color: var(--accent) !important;
     font-weight: 700 !important;
 }
 
@@ -752,8 +797,8 @@ body[data-theme="dark"] .sp-badge-gray {
 
 .sp-news-trigger-btn:hover {
     transform: translateY(-2px);
-    box-shadow: 0 8px 24px rgba(0,0,0,0.08);
-    border-color: rgba(9, 240, 160, 0.4);
+    box-shadow: 0 8px 24px var(--accent-glow);
+    border-color: var(--accent) !important;
 }
 
 body[data-theme="dark"] .sp-news-trigger-btn {
@@ -1477,4 +1522,90 @@ body[data-theme="dark"] .wh-hourly-temp {
     font-size: 10px;
     color: #888888;
     font-weight: 600;
+}
+
+/* ── Floating Bottom Brand & Quick Action Bar ───────────────────── */
+.sp-bottom-bar-container {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    margin-top: 48px;
+    margin-bottom: 32px;
+    width: 100%;
+}
+
+.sp-bottom-bar-pill {
+    display: flex;
+    align-items: center;
+    gap: 20px;
+    padding: 6px 24px;
+    background: #FFFFFF;
+    border: 1px solid rgba(0, 0, 0, 0.06);
+    border-radius: 100px;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.04);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+body[data-theme="dark"] .sp-bottom-bar-pill {
+    background: rgba(22, 24, 29, 0.95);
+    border-color: rgba(255, 255, 255, 0.08);
+    box-shadow: 0 8px 30px rgba(0, 0, 0, 0.3);
+}
+
+.sp-bottom-brand {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-family: 'Space Mono', 'Geist Mono', monospace;
+    font-size: 13px;
+    font-weight: 800;
+    letter-spacing: 2px;
+    color: var(--text-primary, #111111);
+    padding: 0 6px;
+    opacity: 0.9;
+}
+
+body[data-theme="dark"] .sp-bottom-brand {
+    color: #FFFFFF;
+}
+
+.sp-bottom-nav-btn {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 8px 16px;
+    border-radius: 100px;
+    background: transparent;
+    border: none;
+    color: #64748B;
+    font-family: 'Plus Jakarta Sans', sans-serif;
+    font-size: 12.5px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+body[data-theme="dark"] .sp-bottom-nav-btn {
+    color: #94A3B8;
+}
+
+.sp-bottom-nav-btn i {
+    font-size: 13px;
+    transition: transform 0.2s ease;
+}
+
+.sp-bottom-nav-btn:hover {
+    background: rgba(0, 0, 0, 0.04);
+    color: var(--text-primary, #111111);
+}
+
+body[data-theme="dark"] .sp-bottom-nav-btn:hover {
+    background: rgba(255, 255, 255, 0.08);
+    color: #FFFFFF;
+}
+
+.sp-bottom-nav-btn:hover i {
+    transform: scale(1.1);
 }
