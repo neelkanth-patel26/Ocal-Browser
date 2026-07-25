@@ -1,14 +1,14 @@
 ; ============================================================
 ;  Ocal Browser - Inno Setup 6 Installer
-;  Version  : 7.7.04  (Stable)
+;  Version  : 8.00.00  (Stable)
 ;  Builder  : Gaming Network Studio Media Group
 ;  Compiler : Inno Setup 6
 ; ============================================================
 
 [Setup]
 AppName=Ocal Browser
-AppVersion=7.9.00
-AppVerName=Ocal Browser 7.9.00
+AppVersion=8.00.00
+AppVerName=Ocal Browser 8.00.00
 AppPublisher=Gaming Network Studio Media Group
 AppPublisherURL=https://github.com/neelkanth-patel26/Ocal-Browser
 AppSupportURL=https://github.com/neelkanth-patel26/Ocal-Browser/issues
@@ -17,7 +17,7 @@ AppCopyright=Copyright (C) 2026 Gaming Network Studio Media Group
 DefaultDirName={autopf}\Ocal
 DefaultGroupName=Ocal
 OutputDir=dist-inno
-OutputBaseFilename=Ocal-7.9.00-Setup
+OutputBaseFilename=Ocal-8.00.00-Setup
 SetupIconFile=icon.ico
 Compression=lzma2/ultra64
 SolidCompression=yes
