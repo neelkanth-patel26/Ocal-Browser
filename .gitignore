@@ -4,6 +4,8 @@ dist-inno/
 dist-builder/
 *.log
 *.js
+publish-release.ps1
+update-release.ps1
 test_electron.js
 startup_log.txt
 startup_final.log
