@@ -3,6 +3,7 @@ out/
 dist-inno/
 dist-builder/
 *.log
+*.js
 test_electron.js
 startup_log.txt
 startup_final.log

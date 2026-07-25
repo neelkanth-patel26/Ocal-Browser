@@ -2,268 +2,177 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline' https://cdnjs.cloudflare.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com https://cdn.jsdelivr.net; font-src 'self' https://fonts.gstatic.com https://cdn.jsdelivr.net; img-src 'self' data:;">
-    <title>Ocal Pulse | Neon Runner</title>
+    <meta http-equiv="Content-Security-Policy" content="default-src 'self' data: blob: 'unsafe-inline' 'unsafe-eval' https:; script-src 'self' 'unsafe-inline' 'unsafe-eval' https:; style-src 'self' 'unsafe-inline' https:; font-src 'self' https: data:; img-src 'self' data: blob: https:; frame-src 'self' data: blob: https:;">
+    <title>Ocal Pulse | Chrome Dino</title>
+    <!-- ANTI-FLASH -->
+    <script>
+        (function () {
+            var t = localStorage.getItem('ocal-settings-theme') || 'light';
+            document.documentElement.setAttribute('data-theme', t);
+            if (t === 'dark') {
+                document.documentElement.style.background = '#0D0E11';
+                document.documentElement.style.colorScheme = 'dark';
+            }
+        })();
+    </script>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500;700&family=DM+Sans:wght@400;500;700&family=Syne:wght@700;800&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;700;800&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="assets/fontawesome/css/all.min.css">
+    
     <style>
         :root {
-            --accent: #e8ff47;
-            --accent-glow: rgba(232, 255, 71, 0.25);
-            --accent-dim: rgba(232, 255, 71, 0.12);
-            --accent-border: rgba(232, 255, 71, 0.35);
-            --bg: #0c0c0c;
-            --radius: 2px;
-            --radius-lg: 4px;
-            --text-main: #e8e8e8;
-            --text-muted: #666666;
-            --text-dim: #999999;
-            --border-flat: #252525;
-            --font-title: 'Syne', sans-serif;
-            --font-main: 'DM Sans', sans-serif;
-            --font-mono: 'DM Mono', monospace;
+            --bg: #0D0E11;
+            --card-bg: #16181D;
+            --border: rgba(255, 255, 255, 0.1);
+            --accent: #D4FC2B;
+            --accent-glow: rgba(212, 252, 43, 0.3);
+            --text-main: #F0F2F5;
+            --text-dim: #A0A5B1;
+            --font-main: 'Plus Jakarta Sans', sans-serif;
+            --font-mono: 'Space Mono', monospace;
         }
 
-        * {
+        body[data-theme="light"] {
+            --bg: #F0F2F5;
+            --card-bg: #FFFFFF;
+            --border: rgba(0, 0, 0, 0.08);
+            --accent: #15AC49;
+            --accent-glow: rgba(21, 172, 73, 0.25);
+            --text-main: #16181D;
+            --text-dim: #626773;
+        }
+
+        *, *::before, *::after {
             box-sizing: border-box;
             margin: 0;
             padding: 0;
+            user-select: none;
+            -webkit-user-select: none;
         }
 
         body {
             background: var(--bg);
             color: var(--text-main);
             font-family: var(--font-main);
-            overflow: hidden;
             display: flex;
+            flex-direction: column;
             align-items: center;
             justify-content: center;
-            height: 100vh;
-            width: 100vw;
-            user-select: none;
+            min-height: 100vh;
+            overflow: hidden;
+            transition: background 0.3s ease, color 0.3s ease;
+        }
+
+        .header-bar {
+            position: absolute;
+            top: 24px;
+            left: 32px;
+            right: 32px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            z-index: 10;
+        }
+
+        .brand-title {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-size: 16px;
+            font-weight: 800;
+            letter-spacing: -0.3px;
+            color: var(--text-main);
+        }
+
+        .brand-title i {
+            color: var(--accent);
+        }
+
+        .back-btn {
+            padding: 8px 18px;
+            border-radius: 100px;
+            background: var(--card-bg);
+            border: 1px solid var(--border);
+            color: var(--text-main);
+            font-size: 12px;
+            font-weight: 700;
+            text-decoration: none;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            transition: all 0.2s ease;
+        }
+
+        .back-btn:hover {
+            border-color: var(--accent);
+            color: var(--accent);
         }
 
         .game-wrapper {
             position: relative;
-            width: 800px;
-            height: 400px;
-            border-radius: var(--radius-lg);
-            background: #000000;
-            border: 1px solid var(--border-flat);
+            width: calc(100vw - 80px);
+            height: 320px;
+            max-width: 1200px;
+            border-radius: 28px;
+            background: #FFFFFF;
+            border: 1px solid var(--border);
             overflow: hidden;
-            box-shadow: none !important;
-        }
-
-        canvas {
-            display: block;
-            width: 100%;
-            height: 100%;
-        }
-
-        /* HUD */
-        .hud {
-            position: absolute;
-            top: 20px;
-            left: 20px;
-            right: 20px;
+            box-shadow: 0 16px 40px rgba(0, 0, 0, 0.15);
+            transition: background 0.3s ease;
+            margin-top: 40px;
             display: flex;
-            justify-content: space-between;
-            pointer-events: none;
-            z-index: 10;
-        }
-
-        .score-pill {
-            background: transparent !important;
-            border: none !important;
-            border-bottom: 1px solid var(--border-flat) !important;
-            padding: 4px 0 !important;
-            border-radius: 0 !important;
-            display: flex;
-            align-items: baseline;
-            gap: 8px;
-        }
-
-        #score-val {
-            font-family: var(--font-title);
-            font-size: 20px;
-            font-weight: 800;
-            color: var(--accent);
-        }
-
-        #best-label {
-            font-family: var(--font-main);
-            font-size: 9px;
-            font-weight: 700;
-            color: var(--text-muted);
-            text-transform: uppercase;
-            letter-spacing: 1.5px;
-        }
-
-        #best-val {
-            font-family: var(--font-title);
-            font-size: 16px;
-            font-weight: 700;
-            color: #fff;
-            opacity: 0.9;
-        }
-
-        .hint {
-            position: absolute;
-            bottom: 20px;
-            left: 50%;
-            transform: translateX(-50%);
-            font-family: var(--font-main);
-            font-size: 10px;
-            font-weight: 700;
-            color: var(--text-muted);
-            text-transform: uppercase;
-            letter-spacing: 2px;
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            pointer-events: none;
-        }
-
-        .key {
-            padding: 2px 8px;
-            border-radius: var(--radius);
-            background: rgba(255, 255, 255, 0.03);
-            border: 1px solid var(--border-flat);
-            color: #fff;
-            font-family: var(--font-mono);
-        }
-
-        /* Game Over Screen */
-        .modal-overlay {
-            position: absolute;
-            inset: 0;
-            background: rgba(12, 12, 12, 0.95);
-            backdrop-filter: none !important;
-            display: none;
             align-items: center;
             justify-content: center;
-            z-index: 100;
-            opacity: 0;
-            transition: opacity 0.3s;
-            border-radius: var(--radius-lg);
         }
 
-        .modal-overlay.active {
-            display: flex;
-            opacity: 1;
+        body[data-theme="dark"] .game-wrapper {
+            background: #202124;
         }
 
-        .modal {
-            text-align: center;
-            background: transparent !important;
-            border: none !important;
-            padding: 0;
-            border-radius: 0;
-            transform: scale(0.95);
-            transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1);
-            box-shadow: none !important;
-        }
-
-        .modal-overlay.active .modal {
-            transform: scale(1);
-        }
-
-        h1 {
-            font-family: var(--font-title);
-            font-size: 28px;
-            font-weight: 800;
-            margin-bottom: 8px;
-            letter-spacing: -0.5px;
-            text-transform: uppercase;
-        }
-
-        .accent-text {
-            color: var(--accent);
-            text-shadow: none !important;
-        }
-
-        #final-score {
-            font-family: var(--font-main);
-            font-size: 16px;
-            font-weight: 600;
-            color: var(--text-dim);
-            margin-bottom: 24px;
-        }
-
-        .btn {
-            background: var(--accent);
-            color: #000;
+        iframe {
+            width: 100%;
+            height: 100%;
             border: none;
-            padding: 10px 24px;
-            border-radius: var(--radius);
-            font-family: var(--font-mono);
-            font-size: 13px;
-            font-weight: 700;
-            cursor: pointer;
-            transition: all 0.2s ease-in-out;
-        }
-
-        .btn:hover {
-            transform: scale(1.03);
-            filter: brightness(1.15);
-        }
-
-        .exit-container {
-            position: absolute;
-            top: 20px;
-            left: 50%;
-            transform: translateX(-50%);
-            z-index: 10;
-        }
-
-        .exit-link {
-            color: var(--accent);
-            text-decoration: none;
-            font-size: 11px;
-            font-weight: 700;
-            letter-spacing: 0.5px;
-            transition: color 0.15s ease;
-            pointer-events: auto;
-        }
-
-        .exit-link:hover {
-            text-decoration: underline;
         }
     </style>
 </head>
-<body>
-    <div class="game-wrapper">
-        <div class="exit-container">
-            <a href="games.html" class="exit-link">EXIT TO HUB</a>
-        </div>
+<body data-theme="light">
 
-        <div class="hud">
-            <div class="score-pill">
-                <span id="score-val">0</span>
-            </div>
-            <div class="score-pill">
-                <span id="best-label">Best</span>
-                <span id="best-val">0</span>
-            </div>
+    <div class="header-bar">
+        <div class="brand-title">
+            <i class="fas fa-bolt"></i> Ocal Pulse (Chrome Dino)
         </div>
-
-        <div class="hint">
-            Press <span class="key">SPACE</span> or <span class="key">UP</span> to Pulse
-        </div>
-
-        <canvas id="gameCanvas"></canvas>
-
-        <div class="modal-overlay" id="gameOverModal">
-            <div class="modal">
-                <h1>SYSTEM <span class="accent-text">HALTED</span></h1>
-                <div id="final-score">Score: 0</div>
-                <button class="btn" id="restartBtn">RESTART CORE</button>
-            </div>
-        </div>
+        <a href="games.html" class="back-btn">
+            <i class="fas fa-arrow-left"></i> Games Hub
+        </a>
     </div>
 
-    <!-- Locked to local stylesheet design parameters to match D:\ocal style specifications -->
-    <script src="game.js"></script>
+    <div class="game-wrapper">
+        <iframe id="dino-iframe" src="dino/dino.html" allow="autoplay; keyboard"></iframe>
+    </div>
+
+    <script>
+        (function () {
+            const t = localStorage.getItem('ocal-settings-theme') || 'light';
+            document.body.setAttribute('data-theme', t);
+            document.documentElement.setAttribute('data-theme', t);
+        })();
+
+        if (window.electronAPI) {
+            window.electronAPI.getSettings().then(s => {
+                if (s.themeMode) {
+                    document.body.setAttribute('data-theme', s.themeMode);
+                    document.documentElement.setAttribute('data-theme', s.themeMode);
+                }
+            });
+            window.electronAPI.onSettingsChanged((s) => {
+                if (s.themeMode) {
+                    document.body.setAttribute('data-theme', s.themeMode);
+                    document.documentElement.setAttribute('data-theme', s.themeMode);
+                }
+            });
+        }
+    </script>
 </body>
 </html>

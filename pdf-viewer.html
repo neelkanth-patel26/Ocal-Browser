@@ -11,46 +11,35 @@
     <link rel="stylesheet" href="assets/fonts/geist-fonts.css">
     <style>
         :root {
-            --bg: #EDEDF0;
+            --bg: #F4F5F7;
             --surface: #FFFFFF;
             --accent: #15AC49;
-            --accent-glow: rgba(21, 172, 73, 0.3);
+            --accent-glow: rgba(21, 172, 73, 0.25);
             --accent-dim: rgba(21, 172, 73, 0.08);
             --accent-border: #15AC49;
             --lime: #D4FC2B;
             --text: #111111;
-            --text-dim: #475569;
+            --text-dim: #64748B;
             --text-muted: #9CA3AF;
-            --border: rgba(0, 0, 0, 0.06);
-            --toolbar-bg: #FFFFFF;
-            --toolbar-border: rgba(0, 0, 0, 0.06);
-            --btn-hover: #F4F4F6;
-            --sidebar-w: 260px;
+            --border: rgba(0, 0, 0, 0.07);
+            --toolbar-bg: rgba(255, 255, 255, 0.92);
+            --toolbar-border: rgba(0, 0, 0, 0.08);
+            --btn-hover: #F0F1F4;
+            --sidebar-w: 280px;
             --radius: 20px;
-            --font-title: 'Plus Jakarta Sans', sans-serif;
             --font-main: 'Plus Jakarta Sans', sans-serif;
+            --font-mono: 'Geist Mono', monospace;
         }
 
         [data-theme="dark"] {
-            --bg: #0D0E11;
+            --bg: #0E0F12;
             --surface: #16181D;
             --text: #FFFFFF;
             --text-dim: #9CA3AF;
             --border: rgba(255, 255, 255, 0.08);
-            --toolbar-bg: #16181D;
+            --toolbar-bg: rgba(22, 24, 29, 0.92);
             --toolbar-border: rgba(255, 255, 255, 0.08);
             --btn-hover: #22262F;
-        }
-
-        [data-theme="light"], body {
-            --bg: #EDEDF0;
-            --surface: #FFFFFF;
-            --text: #111111;
-            --text-dim: #475569;
-            --border: rgba(0, 0, 0, 0.06);
-            --toolbar-bg: #FFFFFF;
-            --toolbar-border: rgba(0, 0, 0, 0.06);
-            --btn-hover: #F4F4F6;
         }
 
         * { box-sizing: border-box; margin: 0; padding: 0; }
@@ -59,90 +48,202 @@
             background: var(--bg); 
             color: var(--text);
             height: 100vh; overflow: hidden;
-            display: flex; transition: background 0.3s ease, color 0.3s ease;
+            display: flex; flex-direction: column;
+            transition: background 0.3s ease, color 0.3s ease;
             -webkit-font-smoothing: antialiased;
+        }
+
+        /* ── Top Header App Bar ── */
+        .pdf-app-bar {
+            height: 56px;
+            background: var(--surface);
+            border-bottom: 1px solid var(--border);
+            display: flex; align-items: center; justify-content: space-between;
+            padding: 0 16px; z-index: 500; flex-shrink: 0;
+            box-shadow: 0 1px 4px rgba(0,0,0,0.02);
+        }
+
+        .app-bar-left {
+            display: flex; align-items: center; gap: 12px;
+        }
+
+        .doc-identity-badge {
+            display: flex; align-items: center; gap: 10px;
+            padding: 6px 14px; border-radius: 100px;
+            background: rgba(0, 0, 0, 0.03);
+            border: 1px solid var(--border);
+        }
+
+        body[data-theme="dark"] .doc-identity-badge {
+            background: rgba(255, 255, 255, 0.04);
+        }
+
+        .doc-icon-wrap {
+            color: var(--accent, #15AC49); font-size: 15px; display: flex; align-items: center;
+        }
+
+        .doc-title-text {
+            font-size: 13px; font-weight: 800; color: var(--text);
+            max-width: 220px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+        }
+
+        /* ── Center Floating Pill Toolbar ── */
+        .toolbar {
+            background: var(--toolbar-bg);
+            backdrop-filter: blur(20px);
+            border: 1px solid var(--toolbar-border);
+            padding: 5px 10px; border-radius: 100px !important;
+            display: flex; align-items: center; gap: 4px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.06);
+        }
+
+        .tool-group { display: flex; align-items: center; gap: 4px; padding: 0 2px; }
+        .tool-sep { width: 1px; height: 20px; background: var(--border); margin: 0 4px; opacity: 0.6; }
+
+        .btn {
+            background: transparent; border: 1px solid transparent;
+            color: var(--text-dim); width: 34px; height: 34px; border-radius: 50% !important;
+            display: flex; align-items: center; justify-content: center;
+            cursor: pointer; transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1); font-size: 13px;
+            font-family: var(--font-main); outline: none;
+        }
+        .btn:hover { background: var(--btn-hover); color: var(--text); border-color: var(--border); }
+        .btn.active { 
+            background: var(--accent); color: #FFFFFF !important; 
+            border-color: var(--accent);
+            box-shadow: 0 2px 10px var(--accent-glow);
+        }
+        .btn.primary { 
+            background: var(--accent); color: #FFFFFF !important;
+            width: auto; padding: 0 16px; height: 36px; gap: 8px; font-weight: 800; font-size: 12px;
+            letter-spacing: 0.2px; border: 1px solid var(--accent);
+            border-radius: 100px !important;
+            box-shadow: 0 4px 14px var(--accent-glow);
+            transition: all 0.2s ease;
+        }
+        .btn.primary:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 6px 18px var(--accent-glow);
+            filter: brightness(1.05);
+        }
+
+        .color-well {
+            width: 22px; height: 22px; border-radius: 50%;
+            border: 2px solid #FFFFFF;
+            cursor: pointer; transition: transform 0.2s, box-shadow 0.2s;
+            box-shadow: 0 2px 6px rgba(0,0,0,0.15);
+        }
+        .color-well:hover { transform: scale(1.1); }
+        
+        .page-num-jump {
+            background: rgba(0,0,0,0.04); border: 1px solid var(--border);
+            border-radius: 100px !important; padding: 0 10px; height: 34px;
+            display: flex; align-items: center; gap: 4px;
+            font-size: 11px; font-weight: 700; color: var(--text-dim);
+        }
+        body[data-theme="dark"] .page-num-jump {
+            background: rgba(255,255,255,0.05);
+        }
+        .page-num-jump input {
+            background: transparent; border: none; color: var(--text);
+            width: 30px; text-align: center; font-weight: 800; font-family: var(--font-mono);
+            outline: none; font-size: 12px;
+        }
+
+        .zoom-label { 
+            font-size: 11px; font-weight: 800; min-width: 48px; 
+            text-align: center; color: var(--text); font-family: var(--font-mono);
+        }
+
+        /* ── Main Workspace Body ── */
+        .workspace-body {
+            flex: 1; display: flex; position: relative; overflow: hidden;
         }
 
         /* ── Sidebar ── */
         #sidebar {
             width: var(--sidebar-w);
-            height: 100vh;
+            min-width: var(--sidebar-w);
+            height: 100%;
             background: var(--surface);
             border-right: 1px solid var(--border);
             display: flex; flex-direction: column;
-            transition: transform 0.4s cubic-bezier(0.16, 1, 0.3, 1), opacity 0.3s;
-            z-index: 1000;
+            transition: width 0.3s cubic-bezier(0.16, 1, 0.3, 1), min-width 0.3s cubic-bezier(0.16, 1, 0.3, 1), opacity 0.25s;
+            z-index: 400; flex-shrink: 0;
+            overflow: hidden;
         }
         #sidebar.collapsed { 
-            transform: translateX(calc(-1 * var(--sidebar-w)));
+            width: 0; min-width: 0;
             opacity: 0;
-            position: absolute;
+            border-right: none;
             pointer-events: none;
         }
         
         .sidebar-header {
-            padding: 20px;
+            padding: 16px 20px;
             display: flex; align-items: center; justify-content: space-between;
             border-bottom: 1px solid var(--border);
             background: var(--surface);
         }
         .sidebar-title { 
-            font-family: var(--font-title); font-weight: 700; font-size: 13.5px; 
-            letter-spacing: 0.5px; text-transform: uppercase;
+            font-family: var(--font-main); font-weight: 800; font-size: 12px; 
+            letter-spacing: 1px; text-transform: uppercase;
             display: flex; align-items: center; gap: 8px;
-            color: var(--text);
+            color: var(--text-dim);
         }
 
         #thumbnails {
-            flex: 1; overflow-y: auto; padding: 16px;
-            display: grid; grid-template-columns: repeat(2, 1fr); 
+            flex: 1; overflow-y: auto; padding: 12px;
+            display: grid; grid-template-columns: 1fr 1fr;
             grid-auto-rows: min-content;
-            gap: 16px;
-            scrollbar-width: none;
+            gap: 10px;
+            scrollbar-width: thin;
         }
-        #thumbnails::-webkit-scrollbar { display: none; }
         
-        .thumb-group { display: flex; flex-direction: column; align-items: center; gap: 6px; }
+        .thumb-group { display: flex; flex-direction: column; align-items: center; gap: 4px; }
         .thumb {
-            width: 100%; border-radius: 8px; cursor: pointer;
-            border: 1px solid var(--border); transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+            width: 100%; border-radius: 6px; cursor: pointer;
+            border: 2px solid transparent; transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
             overflow: hidden; aspect-ratio: 1 / 1.414;
-            background: rgba(0, 0, 0, 0.1); 
+            background: #FFFFFF;
             display: flex; align-items: center; justify-content: center;
             position: relative;
+            box-shadow: 0 1px 4px rgba(0,0,0,0.06);
+        }
+        body[data-theme="dark"] .thumb {
+            background: #1E2028;
         }
         .thumb:hover { 
             border-color: var(--accent); 
-            transform: none;
-            box-shadow: none;
+            box-shadow: 0 3px 10px rgba(0,0,0,0.1);
         }
         .thumb.active { 
-            border: 2px solid var(--accent); 
-            box-shadow: none !important;
+            border-color: var(--accent); 
+            box-shadow: 0 0 0 2px var(--accent-glow) !important;
         }
-        .thumb canvas { width: 100%; height: 100%; object-fit: cover; }
+        .thumb canvas { width: 100%; height: 100%; object-fit: contain; }
         .thumb-num { 
-            font-size: 10px; font-weight: 600; font-family: var(--font-mono); 
+            font-size: 9.5px; font-weight: 700; font-family: var(--font-mono); 
             color: var(--text-dim);
         }
 
         /* ── Viewport ── */
         main {
-            flex: 1; height: 100vh; 
+            flex: 1; height: 100%; 
             position: relative; display: flex; flex-direction: column;
-            overflow: hidden;
+            overflow: hidden; background: var(--bg);
         }
 
         #viewport {
             flex: 1; overflow: auto;
-            position: relative; padding: 90px 0 50px;
+            position: relative; padding: 40px 0 60px;
             display: flex; flex-direction: column; align-items: center;
             gap: 32px;
             background: var(--bg);
             scrollbar-width: thin;
         }
         
-        /* ── Custom, Simple & Compact Scrollbars ── */
+        /* ── Custom Compact Scrollbars ── */
         ::-webkit-scrollbar {
             width: 6px;
             height: 6px;
@@ -152,24 +253,11 @@
             background: transparent;
         }
         ::-webkit-scrollbar-thumb {
-            background: rgba(255, 255, 255, 0.16);
+            background: rgba(0, 0, 0, 0.15);
             border-radius: 10px;
-            transition: background 0.2s;
         }
-        body[data-theme="light"] ::-webkit-scrollbar-thumb {
-            background: rgba(0, 0, 0, 0.16);
-        }
-        body[data-theme="sepia"] ::-webkit-scrollbar-thumb {
-            background: rgba(67, 52, 34, 0.18);
-        }
-        ::-webkit-scrollbar-thumb:hover {
-            background: rgba(255, 255, 255, 0.36);
-        }
-        body[data-theme="light"] ::-webkit-scrollbar-thumb:hover {
-            background: rgba(0, 0, 0, 0.36);
-        }
-        body[data-theme="sepia"] ::-webkit-scrollbar-thumb:hover {
-            background: rgba(67, 52, 34, 0.36);
+        body[data-theme="dark"] ::-webkit-scrollbar-thumb {
+            background: rgba(255, 255, 255, 0.15);
         }
 
         #page-container-wrapper {
@@ -179,109 +267,24 @@
         
         .page-wrapper {
             position: relative;
-            box-shadow: none !important;
-            background: #fff; border-radius: 8px;
+            background: #FFFFFF; border-radius: 12px;
             border: 1px solid var(--border);
+            box-shadow: 0 16px 40px rgba(0, 0, 0, 0.08);
             overflow: hidden;
             transition: transform 0.3s ease;
         }
-        body[data-theme="light"] .page-wrapper {
-            box-shadow: none !important;
+        body[data-theme="dark"] .page-wrapper {
+            box-shadow: 0 16px 40px rgba(0, 0, 0, 0.4);
         }
         .page-wrapper canvas { display: block; max-width: 100%; }
         
-        /* ── Floating Toolbar ── */
-        .toolbar-anchor {
-            position: absolute; top: 20px; left: 50%; transform: translateX(-50%);
-            z-index: 200; pointer-events: none;
-        }
-
-        .toolbar {
-            pointer-events: auto;
-            background: var(--toolbar-bg); backdrop-filter: var(--panel-blur);
-            border: 1px solid var(--toolbar-border);
-            padding: 6px 8px; border-radius: 100px !important;
-            display: flex; align-items: center; gap: 4px;
-            box-shadow: none !important;
-        }
-
-        .tool-group { display: flex; align-items: center; gap: 4px; padding: 0 2px; }
-        .tool-sep { width: 1px; height: 20px; background: var(--border); margin: 0 6px; opacity: 0.5; }
-
-        .btn {
-            background: transparent; border: 1px solid transparent;
-            color: var(--text-dim); width: 36px; height: 36px; border-radius: 50% !important;
-            display: flex; align-items: center; justify-content: center;
-            cursor: pointer; transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1); font-size: 13px;
-            font-family: var(--font-main);
-        }
-        .btn:hover { background: var(--btn-hover); color: var(--text); border-color: var(--border); }
-        .btn.active { 
-            background: var(--accent); color: #000000 !important; 
-            border-color: var(--accent);
-        }
-        .btn.primary { 
-            background: var(--accent); color: #000000 !important;
-            width: auto; padding: 0 14px; gap: 6px; font-weight: 700; font-size: 11px;
-            text-transform: uppercase; letter-spacing: 0.5px;
-            border: 1px solid var(--accent);
-            border-radius: 100px !important;
-        }
-        .btn.primary:hover {
-            filter: brightness(1.08);
-        }        .color-well {
-            width: 22px; height: 22px; border-radius: 50%;
-            border: 1.5px solid #fff;
-            cursor: pointer; transition: transform 0.2s;
-            box-shadow: none;
-        }
-        .color-well:hover { transform: none; }
-        
-        .page-num-jump {
-            background: rgba(0,0,0,0.25); border: 1px solid var(--border);
-            border-radius: 100px !important; padding: 0 10px; height: 36px;
-            display: flex; align-items: center; gap: 4px;
-            font-size: 11px; font-weight: 700; color: var(--text-dim);
-        }
-        body[data-theme="light"] .page-num-jump {
-            background: rgba(255,255,255,0.8);
-        }
-        .page-num-jump input {
-            background: transparent; border: none; color: var(--text);
-            width: 32px; text-align: center; font-weight: 700; font-family: var(--font-mono);
-            outline: none; font-size: 12px;
-        }
-
-        .zoom-label { 
-            font-size: 11px; font-weight: 700; min-width: 46px; 
-            text-align: center; color: var(--text); font-family: var(--font-mono);
-        }
-
-        /* ── Sidebar Toggle Button ── */
-        .sidebar-toggle { 
-            position: absolute; top: 20px; left: 20px; z-index: 250; 
-            background: var(--surface);
-            border: 1px solid var(--border); color: var(--text);
-            width: 40px; height: 40px; border-radius: 50% !important;
-            transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
-            display: flex; align-items: center; justify-content: center;
-            box-shadow: none !important;
-        }
-        .sidebar-toggle:hover { 
-            background: var(--btn-hover); 
-            color: var(--accent);
-            border-color: var(--accent);
-            box-shadow: none !important;
-            transform: none;
-        }
-
-        /* Chroma Card */
+        /* ── Chroma Palette Popover ── */
         #chroma-card {
-            display: none; position: fixed; z-index: 1000; top: 70px; left: 50%; 
+            display: none; position: fixed; z-index: 1000; top: 68px; left: 50%; 
             transform: translateX(-50%); background: var(--surface);
-            border: 1px solid var(--border); border-radius: var(--radius); 
+            border: 1px solid var(--border); border-radius: 22px; 
             padding: 16px; width: 220px; 
-            box-shadow: none !important; 
+            box-shadow: 0 20px 50px rgba(0,0,0,0.15); 
             animation: chromaPop 0.2s cubic-bezier(0.16, 1, 0.3, 1);
         }
         @keyframes chromaPop {
@@ -290,18 +293,18 @@
         }
 
         #search-input {
-            background: rgba(0,0,0,0.25); border: 1px solid var(--border); 
+            background: rgba(0,0,0,0.04); border: 1px solid var(--border); 
             border-radius: 100px !important; padding: 6px 14px; 
-            color: var(--text); font-size: 12px; outline: none; width: 120px; 
+            color: var(--text); font-size: 12px; outline: none; width: 130px; 
             transition: all 0.25s cubic-bezier(0.16,1,0.3,1); font-family: var(--font-main);
         }
-        body[data-theme="light"] #search-input {
-            background: rgba(255,255,255,0.8);
+        body[data-theme="dark"] #search-input {
+            background: rgba(255,255,255,0.05);
         }
         #search-input:focus { border-color: var(--accent); width: 180px; }
 
         @media print {
-            .toolbar-anchor, #sidebar, .sidebar-toggle, #chroma-card, #floating-input-overlay, .sidebar-header, .sidebar-title {
+            .pdf-app-bar, #sidebar, .sidebar-toggle, #chroma-card, #floating-input-overlay, .sidebar-header {
                 display: none !important;
             }
             body, main, #viewport { 
@@ -313,7 +316,6 @@
                 padding: 0 !important;
                 margin: 0 !important;
             }
-            #viewport { position: static !important; }
             .page-wrapper {
                 box-shadow: none !important;
                 border: 1px solid #eee !important;
@@ -334,103 +336,118 @@
 
     <div id="fallback-viewport"></div>
     
-    <!-- Collapsible Sidebar -->
-    <aside id="sidebar">
-        <div class="sidebar-header">
-            <div class="sidebar-title">
-                <i class="fas fa-file-pdf" style="color:var(--accent);"></i>
-                <span>Navigator</span>
-            </div>
-            <button class="btn" id="hide-sidebar" title="Hide Navigation"><i class="fas fa-xmark"></i></button>
-        </div>
-        <div id="thumbnails"></div>
-    </aside>
-
-    <main>
-        <button class="btn sidebar-toggle" id="show-sidebar" title="Open Navigation">
-            <i class="fas fa-bars"></i>
-        </button>
-
-        <div class="toolbar-anchor">
-            <div class="toolbar">
-                <!-- Nav -->
-                <div class="tool-group">
-                    <button class="btn" id="prev-btn" title="Previous Page"><i class="fas fa-chevron-up"></i></button>
-                    <div class="page-num-jump">
-                        <input type="text" id="page-num" value="1">
-                        <span style="opacity:0.3;">/</span>
-                        <span id="page-count">0</span>
-                    </div>
-                    <button class="btn" id="next-btn" title="Next Page"><i class="fas fa-chevron-down"></i></button>
-                </div>
-                
-                <div class="tool-sep"></div>
-
-                <!-- Annotate -->
-                <div class="tool-group">
-                    <button class="btn active" id="tool-hand" title="Pan"><i class="fas fa-hand"></i></button>
-                    <button class="btn" id="tool-pen" title="Draw"><i class="fas fa-pen"></i></button>
-                    <button class="btn" id="tool-highlight" title="Highlight"><i class="fas fa-highlighter"></i></button>
-                    <button class="btn" id="tool-text" title="Text"><i class="fas fa-font"></i></button>
-                    <button class="btn" id="tool-eraser" title="Eraser"><i class="fas fa-eraser"></i></button>
-                    <div class="color-well" id="color-well-btn" title="Color"></div>
-                </div>
-
-                <div class="tool-sep"></div>
-
-                <!-- View -->
-                <div class="tool-group">
-                    <button class="btn" id="zoom-out"><i class="fas fa-minus"></i></button>
-                    <div class="zoom-label" id="zoom-val">100%</div>
-                    <button class="btn" id="zoom-in"><i class="fas fa-plus"></i></button>
-                    <button class="btn" id="rotate-btn" title="Rotate"><i class="fas fa-rotate"></i></button>
-                </div>
-
-                <div class="tool-sep"></div>
-
-                <!-- Search -->
-                <div class="tool-group">
-                    <button class="btn" id="tool-search" title="Search"><i class="fas fa-magnifying-glass"></i></button>
-                    <div id="search-box" style="display:none; align-items:center; gap:4px; margin-left:8px;">
-                        <input type="text" id="search-input" placeholder="Search...">
-                        <button class="btn" id="search-prev" style="width:24px; height:24px; font-size:10px;"><i class="fas fa-chevron-up"></i></button>
-                        <button class="btn" id="search-next" style="width:24px; height:24px; font-size:10px;"><i class="fas fa-chevron-down"></i></button>
-                        <span id="search-count" style="font-size:10px; font-weight:700; color:var(--text-dim); font-family:'Geist Mono'; margin-left:4px; min-width:24px; opacity:0.6;">0/0</span>
-                    </div>
-                </div>
-
-                <div class="tool-sep"></div>
-
-                <!-- Theme, Print & Download -->
-                <div class="tool-group">
-                    <button class="btn" id="theme-btn" title="Theme"><i class="fas fa-circle-half-stroke"></i></button>
-                    <button class="btn" id="print-btn" title="Print"><i class="fas fa-print"></i></button>
-                    <button class="btn primary" id="download-btn" title="Save">
-                        <i class="fas fa-download"></i>
-                        <span>Save</span>
-                    </button>
-                </div>
+    <!-- Top Header App Bar -->
+    <header class="pdf-app-bar">
+        <div class="app-bar-left">
+            <button class="btn" id="show-sidebar" title="Toggle Navigation Sidebar">
+                <i class="fas fa-bars"></i>
+            </button>
+            <div class="doc-identity-badge">
+                <div class="doc-icon-wrap"><i class="fas fa-file-pdf"></i></div>
+                <span class="doc-title-text" id="doc-title">Ocal Document</span>
             </div>
         </div>
 
-        <div id="chroma-card">
-            <div style="font-family:'Geist Mono'; font-weight:800; font-size:9px; color:var(--text-dim); margin-bottom:12px; letter-spacing:1px; text-transform:uppercase;">Palette</div>
-            <div id="chroma-grid" style="display:grid; grid-template-columns:repeat(4, 1fr); gap:8px; margin-bottom:16px;"></div>
-            <div style="border-top:1px solid var(--border); padding-top:12px;">
-                <input type="text" id="chroma-hex" placeholder="#HEX" style="background:transparent; border:none; color:var(--text); font-family:'Geist Mono'; font-weight:700; font-size:12px; outline:none; width:100%;">
+        <!-- Center Floating Toolbar -->
+        <div class="toolbar">
+            <!-- Navigation Group -->
+            <div class="tool-group">
+                <button class="btn" id="prev-btn" title="Previous Page"><i class="fas fa-chevron-up"></i></button>
+                <div class="page-num-jump">
+                    <input type="text" id="page-num" value="1">
+                    <span style="opacity:0.3;">/</span>
+                    <span id="page-count">0</span>
+                </div>
+                <button class="btn" id="next-btn" title="Next Page"><i class="fas fa-chevron-down"></i></button>
+            </div>
+            
+            <div class="tool-sep"></div>
+
+            <!-- Annotation Tools -->
+            <div class="tool-group">
+                <button class="btn active" id="tool-hand" title="Pan Hand Tool"><i class="fas fa-hand"></i></button>
+                <button class="btn" id="tool-pen" title="Draw Pen"><i class="fas fa-pen"></i></button>
+                <button class="btn" id="tool-highlight" title="Highlighter"><i class="fas fa-highlighter"></i></button>
+                <button class="btn" id="tool-text" title="Text Note"><i class="fas fa-font"></i></button>
+                <button class="btn" id="tool-eraser" title="Eraser"><i class="fas fa-eraser"></i></button>
+                <div class="color-well" id="color-well-btn" title="Color Swatch"></div>
+            </div>
+
+            <div class="tool-sep"></div>
+
+            <!-- Zoom & Rotate Controls -->
+            <div class="tool-group">
+                <button class="btn" id="zoom-out" title="Zoom Out"><i class="fas fa-minus"></i></button>
+                <div class="zoom-label" id="zoom-val">100%</div>
+                <button class="btn" id="zoom-in" title="Zoom In"><i class="fas fa-plus"></i></button>
+                <button class="btn" id="rotate-btn" title="Rotate Document"><i class="fas fa-rotate"></i></button>
+            </div>
+
+            <div class="tool-sep"></div>
+
+            <!-- Search Group -->
+            <div class="tool-group">
+                <button class="btn" id="tool-search" title="Search Text"><i class="fas fa-magnifying-glass"></i></button>
+                <div id="search-box" style="display:none; align-items:center; gap:4px; margin-left:6px;">
+                    <input type="text" id="search-input" placeholder="Find text...">
+                    <button class="btn" id="search-prev" style="width:24px; height:24px; font-size:10px;"><i class="fas fa-chevron-up"></i></button>
+                    <button class="btn" id="search-next" style="width:24px; height:24px; font-size:10px;"><i class="fas fa-chevron-down"></i></button>
+                    <span id="search-count" style="font-size:10px; font-weight:800; color:var(--text-dim); font-family:var(--font-mono); margin-left:4px; min-width:24px; opacity:0.6;">0/0</span>
+                </div>
+            </div>
+
+            <div class="tool-sep"></div>
+
+            <!-- Theme, Print & Export Actions -->
+            <div class="tool-group">
+                <button class="btn" id="theme-btn" title="Toggle Dark/Light Theme"><i class="fas fa-circle-half-stroke"></i></button>
+                <button class="btn" id="print-btn" title="Print Document"><i class="fas fa-print"></i></button>
             </div>
         </div>
 
-        <div id="viewport">
-            <div id="page-container-wrapper"></div>
+        <div class="app-bar-right">
+            <button class="btn primary" id="download-btn" title="Export Annotated PDF">
+                <i class="fas fa-download"></i>
+                <span>Save</span>
+            </button>
         </div>
+    </header>
 
-        <!-- Floating Text Interface -->
-        <div id="floating-input-overlay" style="display:none; position:fixed; z-index:1000; pointer-events:auto;">
-            <input type="text" id="floating-text-input" placeholder="Type a note..." 
-                   style="background:#000; color:#fff; border:1px solid #fff; border-radius: var(--radius); padding:12px 20px; font-family:'Geist Mono'; font-size:13px; font-weight:600; outline:none; box-shadow:none; min-width:220px; transition:all 0.2s;">
-        </div>
-    </main>
+    <!-- Main Document Workspace Body -->
+    <div class="workspace-body">
+        <!-- Collapsible Sidebar -->
+        <aside id="sidebar">
+            <div class="sidebar-header">
+                <div class="sidebar-title">
+                    <i class="fas fa-list-ol" style="color:var(--accent);"></i>
+                    <span>Thumbnails</span>
+                </div>
+                <button class="btn" id="hide-sidebar" title="Hide Sidebar"><i class="fas fa-xmark"></i></button>
+            </div>
+            <div id="thumbnails"></div>
+        </aside>
+
+        <!-- Viewport Workspace -->
+        <main>
+            <div id="chroma-card">
+                <div style="font-family:var(--font-mono); font-weight:800; font-size:9px; color:var(--text-dim); margin-bottom:12px; letter-spacing:1px; text-transform:uppercase;">Color Palette</div>
+                <div id="chroma-grid" style="display:grid; grid-template-columns:repeat(4, 1fr); gap:8px; margin-bottom:16px;"></div>
+                <div style="border-top:1px solid var(--border); padding-top:12px;">
+                    <input type="text" id="chroma-hex" placeholder="#HEX" style="background:transparent; border:none; color:var(--text); font-family:var(--font-mono); font-weight:700; font-size:12px; outline:none; width:100%;">
+                </div>
+            </div>
+
+            <div id="viewport">
+                <div id="page-container-wrapper"></div>
+            </div>
+
+            <!-- Floating Text Overlay -->
+            <div id="floating-input-overlay" style="display:none; position:fixed; z-index:1000; pointer-events:auto;">
+                <input type="text" id="floating-text-input" placeholder="Type a note & press enter..." 
+                       style="background:var(--surface); color:var(--text); border:1px solid var(--accent); border-radius: 100px; padding:10px 20px; font-family:var(--font-main); font-size:13px; font-weight:600; outline:none; box-shadow:0 10px 30px rgba(0,0,0,0.15); min-width:240px;">
+            </div>
+        </main>
+    </div>
 
     <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
     <script src="https://unpkg.com/pdf-lib/dist/pdf-lib.min.js"></script>
