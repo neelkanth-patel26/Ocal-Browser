@@ -2,403 +2,597 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com https://cdn.jsdelivr.net; font-src 'self' https://fonts.gstatic.com https://cdn.jsdelivr.net; img-src 'self' data: https:;">
+    <meta http-equiv="Content-Security-Policy" content="default-src 'self' 'unsafe-inline' 'unsafe-eval' data: blob: https:; script-src 'self' 'unsafe-inline' 'unsafe-eval' https:; style-src 'self' 'unsafe-inline' https:; font-src 'self' data: https:; img-src 'self' data: https:; frame-src 'self' blob: data: https:;">
     <title>Ocal Games Hub</title>
+    <!-- ANTI-FLASH: must be FIRST in head -->
+    <script>
+        (function () {
+            var t = localStorage.getItem('ocal-settings-theme') || 'light';
+            document.documentElement.setAttribute('data-theme', t);
+            if (t === 'dark') {
+                document.documentElement.style.background = '#0D0E11';
+                document.documentElement.style.colorScheme = 'dark';
+            }
+        })();
+    </script>
     <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="stylesheet" href="assets/fonts/geist-fonts.css">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="assets/fontawesome/css/all.min.css">
-    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="home.css">
+
     <style>
-        :root {
-            --bg: #0c0c0c;
-            --surface: #111111;
-            --surface-hover: #1e1e1e;
-            --border: #252525;
-            --text-primary: #e8e8e8;
-            --text-secondary: rgba(255, 255, 255, 0.6);
-            --text-muted: rgba(255, 255, 255, 0.38);
-            --accent: #09f0a0;
-            --accent-glow: transparent;
-            --accent-dim: rgba(9, 240, 160, 0.12);
-            --accent-border: #09f0a0;
-            
-            --card-opacity-val: 0.45;
-            --card-blur-val: 20px;
-            --glass-panel-bg: rgba(18, 18, 18, var(--card-opacity-val));
-            --glass-panel-border-val: 1px solid rgba(255, 255, 255, 0.05);
-            --glass-panel-blur-val: blur(var(--card-blur-val));
-            --glass-panel-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
-            --font: 'Outfit', -apple-system, BlinkMacSystemFont, sans-serif;
+        /* Extra Arcade Home Page Styling Adjustments */
+        .arcade-hero-card {
+            background: #FFFFFF;
+            border-radius: 28px;
+            padding: 32px 36px;
+            border: 1px solid rgba(0, 0, 0, 0.06);
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.03);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 32px;
+            position: relative;
+            overflow: hidden;
+            transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
         }
 
-        body[data-theme="light"] {
-            --bg: #f5f5f5;
-            --surface: #ffffff;
-            --surface-hover: #f0f0f0;
-            --border: #e0e0e0;
-            --text-primary: #1a1a1a;
-            --text-secondary: #555555;
-            --text-muted: #999999;
-            --accent: #059669;
-            --accent-glow: transparent;
-            --accent-dim: rgba(5, 150, 105, 0.06);
-            --accent-border: var(--accent);
-            
-            --glass-panel-bg: rgba(255, 255, 255, var(--card-opacity-val));
-            --glass-panel-border-val: 1px solid rgba(0, 0, 0, 0.05);
-            --glass-panel-blur-val: blur(var(--card-blur-val));
-            --glass-panel-shadow: 0 4px 16px rgba(0, 0, 0, 0.04);
+        body[data-theme="dark"] .arcade-hero-card {
+            background: #16181D !important;
+            border-color: rgba(255, 255, 255, 0.08) !important;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3) !important;
         }
 
-        * {
-            box-sizing: border-box;
-            margin: 0;
-            padding: 0;
-            user-select: none;
-            -webkit-font-smoothing: antialiased;
-        }
-
-        body {
-            background: transparent !important;
-            color: var(--text-primary);
-            font-family: var(--font);
-            overflow-x: hidden;
-            overflow-y: auto;
-            min-height: 100vh;
+        .arcade-hero-left {
             display: flex;
             flex-direction: column;
-            align-items: center;
-            padding: 80px 20px 60px;
-        }
-
-        /* ── Wallpaper Background (matches homepage) ── */
-        .wallpaper-bg {
-            position: fixed;
-            inset: 0;
-            z-index: -2;
-            background: var(--bg) !important;
-            border-radius: 12px;
-        }
-
-        @keyframes gradientBG {
-            0% { background-position: 0% 50%; }
-            50% { background-position: 100% 50%; }
-            100% { background-position: 0% 50%; }
-        }
-
-        .wallpaper-bg.animated-aurora {
-            background: linear-gradient(-45deg, #011c18, #033c39, #081e4b, #050410) !important;
-            background-size: 400% 400% !important;
-            animation: gradientBG 15s ease infinite !important;
-        }
-
-        .wallpaper-bg.animated-cosmic {
-            background: linear-gradient(-45deg, #090013, #20003e, #360862, #0d0024) !important;
-            background-size: 400% 400% !important;
-            animation: gradientBG 18s ease infinite !important;
-        }
-
-        .wallpaper-bg.animated-sunset {
-            background: linear-gradient(-45deg, #180902, #36110a, #400d28, #110b1d) !important;
-            background-size: 400% 400% !important;
-            animation: gradientBG 16s ease infinite !important;
-        }
-
-        .wallpaper-bg.animated-cyber {
-            background: linear-gradient(-45deg, #031215, #05272a, #230132, #030814) !important;
-            background-size: 400% 400% !important;
-            animation: gradientBG 12s ease infinite !important;
-        }
-
-        /* Light mode animated gradients */
-        body[data-theme="light"] .wallpaper-bg.animated-aurora {
-            background: linear-gradient(-45deg, #e0f2f1, #b2dfdb, #e8f5e9, #e0f7fa) !important;
-            background-size: 400% 400% !important;
-            animation: gradientBG 15s ease infinite !important;
-        }
-
-        body[data-theme="light"] .wallpaper-bg.animated-cosmic {
-            background: linear-gradient(-45deg, #f3e5f5, #e1bee7, #ede7f6, #f3e5f5) !important;
-            background-size: 400% 400% !important;
-            animation: gradientBG 18s ease infinite !important;
-        }
-
-        body[data-theme="light"] .wallpaper-bg.animated-sunset {
-            background: linear-gradient(-45deg, #fff3e0, #ffe0b2, #fce4ec, #fff8e1) !important;
-            background-size: 400% 400% !important;
-            animation: gradientBG 16s ease infinite !important;
-        }
-
-        body[data-theme="light"] .wallpaper-bg.animated-cyber {
-            background: linear-gradient(-45deg, #e0f7fa, #e1f5fe, #f3e5f5, #e8eaf6) !important;
-            background-size: 400% 400% !important;
-            animation: gradientBG 12s ease infinite !important;
-        }
-
-        /* ── Header ── */
-        header {
-            text-align: center;
-            margin-bottom: 56px;
-            z-index: 10;
-        }
-
-        .brand-badge {
-            display: inline-flex;
-            align-items: center;
-            gap: 6px;
-            padding: 6px 16px;
-            border-radius: 100px;
-            background: var(--glass-panel-bg);
-            backdrop-filter: var(--glass-panel-blur-val);
-            -webkit-backdrop-filter: var(--glass-panel-blur-val);
-            border: var(--glass-panel-border-val);
-            box-shadow: var(--glass-panel-shadow);
-            color: var(--accent);
-            font-size: 11px;
-            font-weight: 700;
-            letter-spacing: 2px;
-            text-transform: uppercase;
-            margin-bottom: 16px;
-        }
-
-        h1 {
-            font-size: 42px;
-            font-weight: 900;
-            letter-spacing: -0.03em;
-            color: var(--text-primary);
-            line-height: 1.1;
-        }
-
-        h1 span {
-            color: var(--accent);
-        }
-
-        .subtitle {
-            font-size: 14px;
-            color: var(--text-secondary);
-            margin-top: 10px;
-        }
-
-        /* ── Games Container ── */
-        .games-container {
-            width: 100%;
-            max-width: 960px;
-            z-index: 10;
-        }
-
-        .games-grid {
-            display: grid;
-            grid-template-columns: repeat(3, 1fr);
-            gap: 28px;
-            width: 100%;
-        }
-
-        @media (max-width: 900px) {
-            .games-grid {
-                grid-template-columns: repeat(2, 1fr);
-            }
-        }
-
-        @media (max-width: 600px) {
-            .games-grid {
-                grid-template-columns: 1fr;
-            }
-        }
-
-        .game-card {
-            background: var(--glass-panel-bg) !important;
-            backdrop-filter: var(--glass-panel-blur-val);
-            -webkit-backdrop-filter: var(--glass-panel-blur-val);
-            border: var(--glass-panel-border-val) !important;
-            border-radius: 16px;
-            padding: 32px 24px;
-            cursor: pointer;
-            transition: border-color 0.25s, transform 0.25s, box-shadow 0.25s;
-            text-decoration: none;
-            color: inherit;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            text-align: center;
-            box-shadow: var(--glass-panel-shadow);
-        }
-
-        .game-card:hover {
-            border-color: var(--accent) !important;
-            transform: translateY(-4px);
-        }
-
-        .icon-container {
-            width: 72px;
-            height: 72px;
-            border-radius: 18px;
-            background: rgba(0, 0, 0, 0.15);
-            border: var(--glass-panel-border-val);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            margin-bottom: 24px;
-            font-size: 32px;
-            color: var(--accent);
-            transition: transform 0.3s;
-        }
-
-        .game-card:hover .icon-container {
-            transform: scale(1.1) rotate(-5deg);
-        }
-
-        h2 {
-            font-size: 20px;
-            font-weight: 800;
-            margin-bottom: 10px;
-            color: var(--text-primary);
-            letter-spacing: -0.01em;
-        }
-
-        .desc {
-            font-size: 13.5px;
-            color: var(--text-secondary);
-            line-height: 1.6;
-            margin-bottom: 24px;
+            gap: 12px;
             flex: 1;
         }
 
-        .stats-badge {
+        .arcade-hero-tag {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 11px;
+            font-weight: 800;
+            letter-spacing: 1px;
+            text-transform: uppercase;
+            color: var(--sp-accent, #15AC49);
+        }
+
+        body[data-theme="dark"] .arcade-hero-tag {
+            color: #D4FC2B !important;
+        }
+
+        .arcade-hero-title {
+            font-size: 28px;
+            font-weight: 800;
+            letter-spacing: -0.6px;
+            color: var(--sp-text-primary, #111111);
+            line-height: 1.2;
+        }
+
+        body[data-theme="dark"] .arcade-hero-title {
+            color: #FFFFFF !important;
+        }
+
+        .arcade-hero-desc {
+            font-size: 13.5px;
+            color: var(--sp-text-muted, #555555);
+            line-height: 1.55;
+            max-width: 540px;
+        }
+
+        body[data-theme="dark"] .arcade-hero-desc {
+            color: #A0A5B1 !important;
+        }
+
+        .arcade-hero-actions {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin-top: 6px;
+        }
+
+        .btn-sp-play {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            padding: 12px 24px;
+            border-radius: 100px;
+            background: #D4FC2B;
+            color: #111111;
+            font-size: 13px;
+            font-weight: 800;
+            border: none;
+            cursor: pointer;
+            transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+            box-shadow: 0 4px 14px rgba(212, 252, 43, 0.3);
+        }
+
+        body[data-theme="light"] .btn-sp-play {
+            background: #15AC49;
+            color: #FFFFFF;
+            box-shadow: 0 4px 14px rgba(21, 172, 73, 0.25);
+        }
+
+        .btn-sp-play:hover {
+            transform: translateY(-2px) scale(1.02);
+        }
+
+        .btn-sp-sec {
             display: inline-flex;
             align-items: center;
             gap: 6px;
-            padding: 6px 14px;
-            border-radius: 20px;
-            background: rgba(0, 0, 0, 0.15);
-            border: var(--glass-panel-border-val);
-            font-size: 11px;
+            padding: 12px 20px;
+            border-radius: 100px;
+            background: rgba(0, 0, 0, 0.04);
+            border: 1px solid rgba(0, 0, 0, 0.08);
+            color: #111111;
+            font-size: 12.5px;
             font-weight: 700;
-            color: var(--accent);
-            letter-spacing: 0.5px;
+            cursor: pointer;
+            transition: all 0.2s ease;
         }
 
-        .stats-badge i {
-            font-size: 10px;
+        body[data-theme="dark"] .btn-sp-sec {
+            background: rgba(255, 255, 255, 0.06);
+            border-color: rgba(255, 255, 255, 0.1);
+            color: #FFFFFF;
         }
 
-        .footer {
-            margin-top: 80px;
-            font-size: 11px;
-            font-weight: 600;
-            color: var(--text-muted);
-            letter-spacing: 1px;
-            text-transform: uppercase;
-            z-index: 10;
+        .btn-sp-sec:hover {
+            background: rgba(0, 0, 0, 0.08);
+        }
+
+        body[data-theme="dark"] .btn-sp-sec:hover {
+            background: rgba(255, 255, 255, 0.12);
+        }
+
+        .arcade-hero-preview {
+            width: 140px;
+            height: 140px;
+            border-radius: 24px;
+            background: rgba(0, 0, 0, 0.03);
+            border: 1px solid rgba(0, 0, 0, 0.06);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            color: var(--sp-accent, #15AC49);
+            font-size: 42px;
+            flex-shrink: 0;
+        }
+
+        body[data-theme="dark"] .arcade-hero-preview {
+            background: rgba(255, 255, 255, 0.03);
+            border-color: rgba(255, 255, 255, 0.08);
+            color: #D4FC2B;
+        }
+
+        /* ── Games Grid Layout ── */
+        .arcade-games-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 18px;
+        }
+
+        @media (max-width: 1100px) {
+            .arcade-games-grid { grid-template-columns: repeat(2, 1fr); }
+        }
+
+        @media (max-width: 600px) {
+            .arcade-games-grid { grid-template-columns: 1fr; }
+            .arcade-hero-card { flex-direction: column; text-align: center; }
+            .arcade-hero-left { align-items: center; }
+        }
+
+        .sp-game-card {
+            background: #FFFFFF;
+            border-radius: 24px;
+            padding: 24px 20px;
+            border: 1px solid rgba(0, 0, 0, 0.06);
+            box-shadow: 0 4px 16px rgba(0, 0, 0, 0.03);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            text-align: center;
+            cursor: pointer;
+            text-decoration: none;
+            color: inherit;
+            transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+
+        body[data-theme="dark"] .sp-game-card {
+            background: #16181D !important;
+            border-color: rgba(255, 255, 255, 0.08) !important;
+            box-shadow: 0 6px 20px rgba(0, 0, 0, 0.2) !important;
+        }
+
+        .sp-game-card:hover {
+            transform: translateY(-4px);
+            border-color: #D4FC2B !important;
+        }
+
+        body[data-theme="light"] .sp-game-card:hover {
+            border-color: #15AC49 !important;
+        }
+
+        .game-icon-bubble {
+            width: 56px;
+            height: 56px;
+            border-radius: 18px;
+            background: rgba(0, 0, 0, 0.03);
+            border: 1px solid rgba(0, 0, 0, 0.06);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 24px;
+            color: #15AC49;
+            margin-bottom: 14px;
+            transition: transform 0.3s ease;
+        }
+
+        body[data-theme="dark"] .game-icon-bubble {
+            background: rgba(255, 255, 255, 0.04);
+            border-color: rgba(255, 255, 255, 0.08);
+            color: #D4FC2B;
+        }
+
+        .sp-game-card:hover .game-icon-bubble {
+            transform: scale(1.1) rotate(-4deg);
+        }
+
+        .sp-game-title {
+            font-size: 17px;
+            font-weight: 700;
+            color: #111111;
+            margin-bottom: 6px;
+        }
+
+        body[data-theme="dark"] .sp-game-title {
+            color: #FFFFFF !important;
+        }
+
+        .sp-game-desc {
+            font-size: 12.5px;
+            color: #555555;
+            line-height: 1.5;
+            margin-bottom: 18px;
+            flex: 1;
+        }
+
+        body[data-theme="dark"] .sp-game-desc {
+            color: #A0A5B1 !important;
+        }
+
+        .sp-game-btn {
+            width: 100%;
+            padding: 8px 14px;
+            border-radius: 100px;
+            background: rgba(0, 0, 0, 0.04);
+            border: 1px solid rgba(0, 0, 0, 0.06);
+            font-size: 11.5px;
+            font-weight: 700;
+            color: #111111;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 6px;
+            transition: all 0.2s ease;
+        }
+
+        body[data-theme="dark"] .sp-game-btn {
+            background: rgba(255, 255, 255, 0.05);
+            border-color: rgba(255, 255, 255, 0.08);
+            color: #FFFFFF;
+        }
+
+        .sp-game-card:hover .sp-game-btn {
+            background: #15AC49 !important;
+            color: #FFFFFF !important;
+            border-color: #15AC49 !important;
+        }
+
+        body[data-theme="dark"] .sp-game-card:hover .sp-game-btn {
+            background: #D4FC2B !important;
+            color: #111111 !important;
+            border-color: #D4FC2B !important;
+        }
+
+        /* ── HexGL 3D Fullscreen Modal View ── */
+        .hexgl-modal-overlay {
+            position: fixed;
+            inset: 0;
+            background: #09090B;
+            z-index: 99999;
+            display: none;
+            flex-direction: column;
+        }
+
+        .hexgl-modal-overlay.active {
+            display: flex;
+        }
+
+        .hexgl-header-bar {
+            height: 52px;
+            background: #111318;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0 20px;
+            flex-shrink: 0;
+        }
+
+        .hexgl-header-left {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-size: 13.5px;
+            font-weight: 700;
+            color: #FFFFFF;
+        }
+
+        .hexgl-header-left i {
+            color: #D4FC2B;
+        }
+
+        .hexgl-header-right {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .hexgl-hdr-btn {
+            padding: 6px 14px;
+            border-radius: 100px;
+            background: rgba(255, 255, 255, 0.08);
+            border: 1px solid rgba(255, 255, 255, 0.12);
+            color: #FFFFFF;
+            font-size: 11.5px;
+            font-weight: 700;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            transition: all 0.2s ease;
+        }
+
+        .hexgl-hdr-btn:hover {
+            background: rgba(255, 255, 255, 0.15);
+        }
+
+        .hexgl-hdr-btn.close-btn:hover {
+            background: #ef4444 !important;
+            border-color: #ef4444 !important;
+        }
+
+        .hexgl-iframe-wrapper {
+            flex: 1;
+            width: 100%;
+            height: calc(100vh - 52px);
+            background: #000000;
+        }
+
+        .hexgl-iframe-wrapper iframe {
+            width: 100%;
+            height: 100%;
+            border: none;
         }
     </style>
 </head>
-<body data-theme="dark"> <!-- Updated dynamically by JS -->
+<body class="sp-dashboard-body">
 
-    <!-- Premium Wallpaper Background to enable perfect corner clipping -->
-    <div class="wallpaper-bg"></div>
+    <div class="sp-wallpaper-bg"></div>
 
-    <header>
-        <div class="brand-badge">
-            <i class="fas fa-gamepad"></i> Arcade
+    <!-- Main Dashboard Container matching Home Page -->
+    <main class="sp-dashboard-wrapper">
+        
+        <!-- Header Row -->
+        <header class="sp-header-row">
+            <div class="sp-user-greeting">
+                <h1 class="sp-user-name">Ocal Arcade Hub</h1>
+                <span class="sp-user-subtitle">3D WebGL Anti-Gravity Racing & Offline Retro Games</span>
+            </div>
+
+            <!-- Dot-Matrix Stats Bar -->
+            <div class="sp-stats-bar">
+                <div class="sp-stat-item">
+                    <span class="sp-dot-num">HexGL 3D</span>
+                    <span class="sp-badge sp-badge-lime">Offline</span>
+                </div>
+                <div class="sp-stat-item">
+                    <span class="sp-dot-num">3 Games</span>
+                    <span class="sp-badge sp-badge-gray">Arcade</span>
+                </div>
+            </div>
+
+            <!-- Top Status Action Card -->
+            <div class="sp-top-actions">
+                <div class="sp-action-card sp-connect-tracker-mini">
+                    <div class="sp-ac-left">
+                        <span class="sp-ac-title">Offline Arcade<br>Ready</span>
+                    </div>
+                    <div class="sp-pulse-ring">
+                        <div class="sp-pulse-center"></div>
+                    </div>
+                </div>
+            </div>
+        </header>
+
+        <!-- Search Bar Section -->
+        <section class="sp-search-section">
+            <div class="sp-search-pill">
+                <div class="sp-search-logo">
+                    <i class="fas fa-gamepad" style="color: var(--sp-accent, #15AC49); font-size: 16px;"></i>
+                </div>
+                <input type="text" id="arcade-search-input" class="sp-search-input" placeholder="Search arcade games or filter collection..." autocomplete="off">
+            </div>
+        </section>
+
+        <!-- Featured Hero Card: HexGL 3D Anti-Gravity Racer (100% OFFLINE) -->
+        <div class="arcade-hero-card" id="hero-hexgl-card">
+            <div class="arcade-hero-left">
+                <div class="arcade-hero-tag">
+                    <i class="fas fa-bolt"></i> FEATURED 3D WEBGL RACER • OFFLINE PLAYABLE
+                </div>
+                <div class="arcade-hero-title">HexGL 3D Anti-Gravity Racer</div>
+                <div class="arcade-hero-desc">
+                    Experience ultra-fast 3D WebGL hovercraft racing across futuristic tracks. Cloned locally in your browser for 100% offline play at 60 FPS speeds.
+                </div>
+                <div class="arcade-hero-actions">
+                    <button class="btn-sp-play" onclick="launchHexGLOffline()">
+                        <i class="fas fa-play"></i> LAUNCH HEXGL 3D (OFFLINE)
+                    </button>
+                    <button class="btn-sp-sec" onclick="alert('HEXGL CONTROLS:\n\n• [W] or [Up Arrow]: Accelerate\n• [A / D] or [Left / Right]: Steer\n• [S] or [Down Arrow]: Brake\n• [Space]: Right Airbrake\n• [Shift]: Left Airbrake\n• [R]: Restart Track')">
+                        <i class="fas fa-keyboard"></i> CONTROLS GUIDE
+                    </button>
+                </div>
+            </div>
+            <div class="arcade-hero-preview">
+                <i class="fas fa-rocket"></i>
+                <span style="font-size: 11px; font-weight: 800; letter-spacing: 1px;">HEXGL 3D</span>
+            </div>
         </div>
-        <h1>Ocal <span>Games</span></h1>
-        <p class="subtitle">Premium offline retro arcade experiences</p>
-    </header>
 
-    <div class="games-container">
-        <div class="games-grid">
-            <!-- Ocal Pulse -->
-            <a href="game.html" class="game-card">
-                <div class="icon-container">
-                    <i class="fas fa-bolt"></i>
+        <!-- Games Grid (3 Cards) -->
+        <div class="arcade-games-grid" id="arcade-games-grid">
+            
+            <!-- HexGL 3D Card -->
+            <div class="sp-game-card" data-title="hexgl 3d anti-gravity racer" onclick="launchHexGLOffline()">
+                <div class="game-icon-bubble">
+                    <i class="fas fa-rocket"></i>
                 </div>
-                <h2>Ocal Pulse</h2>
-                <p class="desc">A high-speed neon runner through the synthwave grid.</p>
-                <div class="stats-badge" id="pulse-score">
-                    <i class="fas fa-trophy"></i> BEST: ---
+                <div class="sp-game-title">HexGL 3D</div>
+                <div class="sp-game-desc">Futuristic 3D anti-gravity ship racer built with WebGL Three.js. 100% offline.</div>
+                <div class="sp-game-btn">
+                    <i class="fas fa-play"></i> PLAY 3D RACER
                 </div>
-            </a>
+            </div>
 
             <!-- Ocal Grid -->
-            <a href="tetris.html" class="game-card">
-                <div class="icon-container">
+            <a href="tetris.html" class="sp-game-card" data-title="ocal grid glass tetris block puzzle">
+                <div class="game-icon-bubble">
                     <i class="fas fa-cubes"></i>
                 </div>
-                <h2>Ocal Grid</h2>
-                <p class="desc">Master the blocks in this high-fidelity glass Tetris experience.</p>
-                <div class="stats-badge" id="grid-score">
-                    <i class="fas fa-trophy"></i> BEST: ---
+                <div class="sp-game-title">Ocal Grid</div>
+                <div class="sp-game-desc">Master the blocks in this high-fidelity glass Tetris experience with smooth rotation controls.</div>
+                <div class="sp-game-btn">
+                    <i class="fas fa-play"></i> PLAY GRID
                 </div>
             </a>
 
             <!-- Ocal Snake -->
-            <a href="snake.html" class="game-card">
-                <div class="icon-container">
+            <a href="snake.html" class="sp-game-card" data-title="ocal snake cyber data hunter">
+                <div class="game-icon-bubble">
                     <i class="fas fa-ring"></i>
                 </div>
-                <h2>Ocal Snake</h2>
-                <p class="desc">Slither through the grid in this neon-infused data-bit hunter.</p>
-                <div class="stats-badge" id="snake-score">
-                    <i class="fas fa-trophy"></i> BEST: ---
+                <div class="sp-game-title">Ocal Snake</div>
+                <div class="sp-game-desc">Slither through the neon grid in this cyber data-bit hunter with custom speed controls.</div>
+                <div class="sp-game-btn">
+                    <i class="fas fa-play"></i> PLAY SNAKE
                 </div>
             </a>
+
+        </div>
+
+    </main>
+
+    <!-- HexGL 3D Fullscreen WebGL Modal View -->
+    <div id="hexgl-modal" class="hexgl-modal-overlay">
+        <div class="hexgl-header-bar">
+            <div class="hexgl-header-left">
+                <i class="fas fa-rocket"></i> HexGL 3D Anti-Gravity Racer (Offline WebGL)
+            </div>
+            <div class="hexgl-header-right">
+                <button class="hexgl-hdr-btn" onclick="toggleHexGLFullscreen()">
+                    <i class="fas fa-expand"></i> Fullscreen
+                </button>
+                <button class="hexgl-hdr-btn close-btn" onclick="closeHexGLModal()">
+                    <i class="fas fa-xmark"></i> Exit Game
+                </button>
+            </div>
+        </div>
+        <div class="hexgl-iframe-wrapper">
+            <iframe id="hexgl-iframe" src="about:blank" allow="autoplay; fullscreen; keyboard"></iframe>
         </div>
     </div>
 
-    <div class="footer">Ocal Entertainment Protocol v1.2</div>
-
     <script>
-        // ── Dynamic Theme & Wallpaper Integration from localStorage ──
+        // ── Theme Sync from localStorage / Electron API ──
         (function () {
-            const t = localStorage.getItem('ocal-settings-theme');
-            if (t) document.body.setAttribute('data-theme', t);
-            
+            const t = localStorage.getItem('ocal-settings-theme') || 'light';
+            document.body.setAttribute('data-theme', t);
+            document.documentElement.setAttribute('data-theme', t);
+
             const a = localStorage.getItem('ocal-settings-accent');
-            if (a) {
-                document.documentElement.style.setProperty('--accent', a);
-                document.documentElement.style.setProperty('--accent-glow', `color-mix(in srgb, ${a} 30%, transparent)`);
-                document.documentElement.style.setProperty('--accent-dim', `color-mix(in srgb, ${a} 12%, transparent)`);
-                document.documentElement.style.setProperty('--accent-border', a);
-            }
-
-            const op = localStorage.getItem('ocal-custom-opacity');
-            if (op !== null) {
-                document.documentElement.style.setProperty('--card-opacity-val', op / 100);
-            }
-
-            const bl = localStorage.getItem('ocal-custom-blur');
-            if (bl !== null) {
-                document.documentElement.style.setProperty('--card-blur-val', bl + 'px');
-            }
-
-            const bgVal = localStorage.getItem('ocal-custom-bg') || 'static';
-            const wallpaperBg = document.querySelector('.wallpaper-bg');
-            if (wallpaperBg && bgVal !== 'static') {
-                wallpaperBg.classList.add('animated-' + bgVal);
-            }
+            if (a) document.documentElement.style.setProperty('--sp-accent', a);
         })();
 
-        // Load high scores from localStorage
-        const pulseBest = localStorage.getItem('ocalPulseHighScore');
-        const gridBest = localStorage.getItem('ocalGridHighScore');
-        const snakeBest = localStorage.getItem('ocalSnakeHighScore');
-
-        if (pulseBest) document.getElementById('pulse-score').innerHTML = `<i class="fas fa-trophy"></i> BEST: ${pulseBest}`;
-        if (gridBest) document.getElementById('grid-score').innerHTML = `<i class="fas fa-trophy"></i> BEST: ${gridBest}`;
-        if (snakeBest) document.getElementById('snake-score').innerHTML = `<i class="fas fa-trophy"></i> BEST: ${snakeBest}`;
-
-        // Sync settings dynamically from Electron API
         if (window.electronAPI) {
             window.electronAPI.getSettings().then(s => {
-                if (s.accentColor) {
-                    document.documentElement.style.setProperty('--accent', s.accentColor);
+                if (s.themeMode) {
+                    document.body.setAttribute('data-theme', s.themeMode);
+                    document.documentElement.setAttribute('data-theme', s.themeMode);
                 }
+                if (s.accentColor) document.documentElement.style.setProperty('--sp-accent', s.accentColor);
             });
             window.electronAPI.onSettingsChanged((s) => {
-                if (s.accentColor) {
-                    document.documentElement.style.setProperty('--accent', s.accentColor);
+                if (s.themeMode) {
+                    document.body.setAttribute('data-theme', s.themeMode);
+                    document.documentElement.setAttribute('data-theme', s.themeMode);
                 }
+                if (s.accentColor) document.documentElement.style.setProperty('--sp-accent', s.accentColor);
             });
+        }
+
+        // ── Real-time Search Filtering ──
+        const searchInput = document.getElementById('arcade-search-input');
+        if (searchInput) {
+            searchInput.addEventListener('input', (e) => {
+                const query = e.target.value.toLowerCase().trim();
+                document.querySelectorAll('.sp-game-card').forEach(card => {
+                    const title = card.getAttribute('data-title') || '';
+                    if (!query || title.includes(query)) {
+                        card.style.display = 'flex';
+                    } else {
+                        card.style.display = 'none';
+                    }
+                });
+            });
+        }
+
+        // ── Launch Local HexGL 100% Offline ──
+        function launchHexGLOffline() {
+            const modal = document.getElementById('hexgl-modal');
+            const iframe = document.getElementById('hexgl-iframe');
+            
+            // Point to local cloned HexGL offline index.html!
+            iframe.src = 'hexgl/index.html';
+            modal.classList.add('active');
+            document.body.style.overflow = 'hidden';
+        }
+
+        function closeHexGLModal() {
+            const modal = document.getElementById('hexgl-modal');
+            const iframe = document.getElementById('hexgl-iframe');
+            
+            modal.classList.remove('active');
+            iframe.src = 'about:blank';
+            document.body.style.overflow = 'auto';
+        }
+
+        function toggleHexGLFullscreen() {
+            const iframe = document.getElementById('hexgl-iframe');
+            if (iframe.requestFullscreen) {
+                iframe.requestFullscreen();
+            } else if (iframe.webkitRequestFullscreen) {
+                iframe.webkitRequestFullscreen();
+            }
         }
     </script>
 </body>

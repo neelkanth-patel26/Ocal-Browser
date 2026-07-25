@@ -4,249 +4,342 @@
     <meta charset="UTF-8">
     <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com https://cdn.jsdelivr.net; font-src 'self' https://fonts.gstatic.com https://cdn.jsdelivr.net; img-src 'self' data:;">
     <title>Ocal Grid | Glass Tetris</title>
+    <!-- ANTI-FLASH: must be FIRST in head -->
+    <script>
+        (function () {
+            var t = localStorage.getItem('ocal-settings-theme') || 'light';
+            document.documentElement.setAttribute('data-theme', t);
+            if (t === 'dark') {
+                document.documentElement.style.background = '#0D0E11';
+                document.documentElement.style.colorScheme = 'dark';
+            }
+        })();
+    </script>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500;700&family=DM+Sans:wght@400;500;700&family=Syne:wght@700;800&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;700;800&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="assets/fontawesome/css/all.min.css">
+    
     <style>
         :root {
-            --accent: #e8ff47;
-            --accent-glow: rgba(232, 255, 71, 0.25);
-            --accent-dim: rgba(232, 255, 71, 0.12);
-            --accent-border: rgba(232, 255, 71, 0.35);
-            --bg: #0c0c0c;
-            --radius: 2px;
-            --text-main: #e8e8e8;
-            --text-muted: #666666;
-            --text-dim: #999999;
-            --border-flat: #252525;
-            --font-title: 'Syne', sans-serif;
-            --font-main: 'DM Sans', sans-serif;
-            --font-mono: 'DM Mono', monospace;
+            --bg: #0D0E11;
+            --card-bg: #16181D;
+            --border: rgba(255, 255, 255, 0.08);
+            --accent: #D4FC2B;
+            --accent-glow: rgba(212, 252, 43, 0.3);
+            --text-main: #F0F2F5;
+            --text-dim: #A0A5B1;
+            --font-main: 'Plus Jakarta Sans', sans-serif;
+            --font-mono: 'Space Mono', monospace;
         }
 
-        * {
+        body[data-theme="light"] {
+            --bg: #F0F2F5;
+            --card-bg: #FFFFFF;
+            --border: rgba(0, 0, 0, 0.08);
+            --accent: #15AC49;
+            --accent-glow: rgba(21, 172, 73, 0.25);
+            --text-main: #16181D;
+            --text-dim: #626773;
+        }
+
+        *, *::before, *::after {
             box-sizing: border-box;
             margin: 0;
             padding: 0;
+            user-select: none;
+            -webkit-user-select: none;
         }
 
         body {
             background: var(--bg);
             color: var(--text-main);
             font-family: var(--font-main);
-            overflow: hidden;
             display: flex;
+            flex-direction: column;
             align-items: center;
             justify-content: center;
-            height: 100vh;
-            width: 100vw;
-            user-select: none;
+            min-height: 100vh;
+            overflow: hidden;
+            transition: background 0.3s ease, color 0.3s ease;
+        }
+
+        .header-bar {
+            position: absolute;
+            top: 24px;
+            left: 32px;
+            right: 32px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            z-index: 10;
+        }
+
+        .brand-title {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-size: 16px;
+            font-weight: 800;
+            letter-spacing: -0.3px;
+        }
+
+        .brand-title i {
+            color: var(--accent);
+        }
+
+        .back-btn {
+            padding: 8px 18px;
+            border-radius: 100px;
+            background: var(--card-bg);
+            border: 1px solid var(--border);
+            color: var(--text-main);
+            font-size: 12px;
+            font-weight: 700;
+            text-decoration: none;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            transition: all 0.2s ease;
+        }
+
+        .back-btn:hover {
+            border-color: var(--accent);
+            color: var(--accent);
         }
 
         .game-layout {
             display: flex;
-            gap: 40px;
-            padding: 0;
-            background: transparent !important;
-            border: none !important;
-            border-radius: 0 !important;
-            box-shadow: none !important;
+            align-items: flex-start;
+            gap: 28px;
+            padding: 24px;
+            background: var(--card-bg);
+            border: 1px solid var(--border);
+            border-radius: 28px;
+            box-shadow: 0 16px 40px rgba(0, 0, 0, 0.15);
+            position: relative;
+            transition: background 0.3s ease;
         }
 
-        /* Left Panel: Stats */
-        .side-panel {
-            width: 160px;
+        .side-box {
+            width: 140px;
             display: flex;
             flex-direction: column;
-            justify-content: space-between;
+            gap: 16px;
         }
 
-        .stat-box {
-            background: transparent !important;
-            border: none !important;
-            border-bottom: 1px solid var(--border-flat) !important;
-            padding: 12px 0;
-            border-radius: 0 !important;
-            margin-bottom: 12px;
-            text-align: left;
+        .stat-card {
+            background: rgba(0, 0, 0, 0.2);
+            border: 1px solid var(--border);
+            border-radius: 16px;
+            padding: 12px 14px;
         }
 
-        .stat-label {
-            font-size: 9px;
+        body[data-theme="light"] .stat-card {
+            background: rgba(0, 0, 0, 0.03);
+        }
+
+        .stat-lbl {
+            font-size: 10px;
             font-weight: 700;
-            color: var(--text-muted);
+            color: var(--text-dim);
             text-transform: uppercase;
-            letter-spacing: 1.5px;
+            letter-spacing: 0.8px;
             margin-bottom: 4px;
         }
 
-        .stat-value {
-            font-family: var(--font-title);
-            font-size: 20px;
+        .stat-val {
+            font-family: var(--font-mono);
+            font-size: 18px;
             font-weight: 700;
             color: var(--accent);
         }
 
-        /* Center: Grid */
-        .grid-container {
+        .canvas-container {
             position: relative;
-            background: #000000;
-            border: 1px solid var(--border-flat);
-            border-radius: var(--radius);
+            background: #090A0D;
+            border: 1px solid var(--border);
+            border-radius: 18px;
             overflow: hidden;
-            box-shadow: none !important;
+            transition: background 0.3s ease;
         }
 
-        canvas {
+        body[data-theme="light"] .canvas-container {
+            background: #F8F9FA;
+        }
+
+        canvas#gameCanvas {
             display: block;
         }
 
-        /* Right Panel: Preview & Instructions */
-        .preview-box {
-            background: transparent !important;
-            border: 1px solid var(--border-flat) !important;
-            width: 120px;
-            height: 120px;
-            border-radius: var(--radius);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            margin-bottom: 20px;
+        .preview-canvas {
+            display: block;
+            margin: 0 auto;
         }
 
-        .controls-hint {
+        .controls-card {
             margin-top: auto;
-            font-size: 10px;
-            color: var(--text-muted);
-            line-height: 2;
+            background: rgba(0, 0, 0, 0.2);
+            border: 1px solid var(--border);
+            border-radius: 16px;
+            padding: 12px 14px;
+            font-size: 11px;
+            color: var(--text-dim);
+            line-height: 1.8;
         }
 
-        .key {
-            display: inline-block;
-            padding: 2px 6px;
-            background: rgba(255, 255, 255, 0.03);
-            border: 1px solid var(--border-flat);
+        body[data-theme="light"] .controls-card {
+            background: rgba(0, 0, 0, 0.03);
+        }
+
+        .key-tag {
+            padding: 1px 6px;
             border-radius: 4px;
-            color: #fff;
-            margin: 0 2px;
+            background: rgba(255, 255, 255, 0.08);
+            border: 1px solid var(--border);
+            color: var(--text-main);
             font-family: var(--font-mono);
+            font-size: 10px;
         }
 
-        /* Overlays */
-        .overlay {
+        body[data-theme="light"] .key-tag {
+            background: rgba(0, 0, 0, 0.05);
+        }
+
+        /* Overlay Modals */
+        .overlay-modal {
             position: absolute;
             inset: 0;
-            background: rgba(12, 12, 12, 0.95);
-            backdrop-filter: none !important;
-            display: none;
+            background: rgba(9, 10, 13, 0.94);
+            backdrop-filter: blur(12px);
+            display: flex;
             flex-direction: column;
             align-items: center;
             justify-content: center;
+            gap: 16px;
             z-index: 100;
-            border-radius: var(--radius);
+            border-radius: 28px;
+            transition: opacity 0.25s ease;
         }
 
-        .overlay.active {
-            display: flex;
+        body[data-theme="light"] .overlay-modal {
+            background: rgba(255, 255, 255, 0.95);
+            color: #16181D;
         }
 
-        h2 {
-            font-family: var(--font-title);
-            font-size: 24px;
+        .modal-title-text {
+            font-size: 26px;
             font-weight: 800;
-            margin-bottom: 16px;
-            letter-spacing: -0.5px;
-            text-transform: uppercase;
+            color: var(--text-main);
         }
 
-        .btn {
-            background: var(--accent);
-            color: #000;
-            border: none;
-            padding: 10px 24px;
-            border-radius: 4px;
-            font-family: var(--font-main);
+        body[data-theme="light"] .modal-title-text {
+            color: #16181D !important;
+        }
+
+        .modal-sub-text {
             font-size: 13px;
-            font-weight: 700;
+            color: var(--text-dim);
+        }
+
+        body[data-theme="light"] .modal-sub-text {
+            color: #626773 !important;
+        }
+
+        .modal-btn {
+            padding: 12px 28px;
+            border-radius: 100px;
+            background: var(--accent);
+            color: #000000;
+            font-size: 13px;
+            font-weight: 800;
+            border: none;
             cursor: pointer;
-            transition: all 0.2s ease-in-out;
+            transition: all 0.2s ease;
+            box-shadow: 0 4px 16px var(--accent-glow);
         }
 
-        .btn:hover {
-            transform: scale(1.03);
-            filter: brightness(1.15);
+        body[data-theme="light"] .modal-btn {
+            color: #FFFFFF;
         }
 
-        .exit-link {
-            color: var(--accent);
-            text-decoration: none;
-            font-size: 11px;
-            font-weight: 700;
-            letter-spacing: 0.5px;
-            transition: opacity 0.15s ease;
-        }
-
-        .exit-link:hover {
-            text-decoration: underline;
+        .modal-btn:hover {
+            transform: scale(1.04);
         }
     </style>
 </head>
 <body>
+
+    <div class="header-bar">
+        <div class="brand-title">
+            <i class="fas fa-cubes"></i> Ocal Grid (Glass Tetris)
+        </div>
+        <a href="games.html" class="back-btn">
+            <i class="fas fa-arrow-left"></i> Games Hub
+        </a>
+    </div>
+
     <div class="game-layout">
-        <div class="side-panel">
-            <div>
-                <div class="stat-box">
-                    <div class="stat-label">Score</div>
-                    <div class="stat-value" id="score">0</div>
-                </div>
-                <div class="stat-box">
-                    <div class="stat-label">Lines</div>
-                    <div class="stat-value" id="lines">0</div>
-                </div>
-                <div class="stat-box">
-                    <div class="stat-label">Level</div>
-                    <div class="stat-value" id="level">1</div>
-                </div>
+        <!-- Left Panel: Stats -->
+        <div class="side-box">
+            <div class="stat-card">
+                <div class="stat-lbl">HOLD PIECE</div>
+                <canvas id="holdCanvas" class="preview-canvas" width="100" height="70"></canvas>
             </div>
-            
-            <div class="controls-hint">
-                <span class="key">←</span> <span class="key">→</span> Move<br>
-                <span class="key">↑</span> Rotate<br>
-                <span class="key">↓</span> Soft Drop<br>
-                <span class="key">SPACE</span> Hard Drop
+            <div class="stat-card">
+                <div class="stat-lbl">SCORE</div>
+                <div class="stat-val" id="score">00000</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-lbl">LINES</div>
+                <div class="stat-val" id="lines">0</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-lbl">LEVEL</div>
+                <div class="stat-val" id="level">1</div>
             </div>
         </div>
 
-        <div class="grid-container">
-            <canvas id="gameCanvas"></canvas>
-            
-            <div class="overlay active" id="startOverlay">
-                <h2>OCAL GRID</h2>
-                <button class="btn" id="startBtn">START SYSTEM</button>
+        <!-- Center: Main Grid -->
+        <div class="canvas-container">
+            <canvas id="gameCanvas" width="300" height="600"></canvas>
+        </div>
+
+        <!-- Right Panel: Preview & Controls -->
+        <div class="side-box">
+            <div class="stat-card">
+                <div class="stat-lbl">NEXT PIECE</div>
+                <canvas id="nextCanvas" class="preview-canvas" width="100" height="70"></canvas>
             </div>
 
-            <div class="overlay" id="gameOverOverlay">
-                <h2 style="color: #ff3366;">GRID HALTED</h2>
-                <div style="font-size: 18px; opacity: 0.7; margin-bottom: 20px;">Top Score: <span id="finalScore">0</span></div>
-                <button class="btn" id="restartBtn">REBOOT</button>
+            <div class="controls-card">
+                <div><span class="key-tag">←</span> <span class="key-tag">→</span> Move</div>
+                <div><span class="key-tag">↑</span> Rotate</div>
+                <div><span class="key-tag">↓</span> Soft Drop</div>
+                <div><span class="key-tag">Space</span> Hard Drop</div>
+                <div><span class="key-tag">C</span> Hold Piece</div>
             </div>
         </div>
 
-        <div class="side-panel" style="width: 120px; align-items: center; justify-content: space-between;">
-            <div style="width: 100%;">
-                <div class="stat-label" style="text-align: center; margin-bottom: 8px;">Next Core</div>
-                <div class="preview-box">
-                    <canvas id="nextCanvas" width="100" height="100"></canvas>
-                </div>
-            </div>
-            
-            <div style="margin-bottom: 12px; text-align: center;">
-                <a href="games.html" class="exit-link">EXIT TO HUB</a>
-            </div>
+        <!-- Start Overlay -->
+        <div class="overlay-modal" id="startOverlay">
+            <div class="modal-title-text">OCAL GRID</div>
+            <div class="modal-sub-text">High-fidelity neon glass Tetris engine</div>
+            <button class="modal-btn" onclick="startGame()">
+                <i class="fas fa-play"></i> START GAME
+            </button>
+        </div>
+
+        <!-- Game Over Overlay -->
+        <div class="overlay-modal" id="gameOverOverlay" style="display: none;">
+            <div class="modal-title-text">GAME OVER</div>
+            <div style="font-size: 16px; font-family: var(--font-mono); color: var(--accent);" id="finalScore">SCORE: 0</div>
+            <button class="modal-btn" onclick="startGame()">
+                <i class="fas fa-rotate-right"></i> PLAY AGAIN
+            </button>
         </div>
     </div>
 
-    <!-- Locked to local stylesheet design parameters to match D:\ocal style specifications -->
     <script src="tetris.js"></script>
 </body>
 </html>

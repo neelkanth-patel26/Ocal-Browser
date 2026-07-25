@@ -184,10 +184,35 @@
         </div>
     </div>
     
-    <!-- Floating WebApp Close Button (Outside the panel) -->
-    <button id="floating-webapp-close-btn" class="floating-webapp-close-btn" title="Close Panel">
-        <i class="fas fa-xmark"></i>
-    </button>
+    <!-- Floating WebApp Controls Bar (Outside panel on the right) -->
+    <div id="floating-webapp-bar" class="floating-webapp-bar" style="display: none;">
+        <button class="floating-webapp-btn" id="webapp-shrink-btn" title="Decrease Width (-80px)">
+            <i class="fas fa-minus"></i>
+        </button>
+        <button class="floating-webapp-btn" id="webapp-expand-btn" title="Increase Width (+80px)">
+            <i class="fas fa-plus"></i>
+        </button>
+        <button class="floating-webapp-btn" id="webapp-presets-btn" title="Choose Panel Size">
+            <i class="fas fa-up-right-and-down-left-from-center"></i>
+        </button>
+        <button class="floating-webapp-btn close-btn" id="floating-webapp-close-btn" title="Close Panel">
+            <i class="fas fa-xmark"></i>
+        </button>
+    </div>
+
+    <!-- WebApp Size Presets Menu -->
+    <div id="webapp-presets-menu" class="webapp-presets-menu" style="display: none;">
+        <div class="preset-menu-header">PANEL WIDTH PRESETS</div>
+        <button class="preset-opt-btn" data-width="480"><i class="fas fa-mobile-screen"></i> Compact (480px)</button>
+        <button class="preset-opt-btn" data-width="680"><i class="fas fa-tablet-screen-button"></i> Medium (680px)</button>
+        <button class="preset-opt-btn" data-width="880"><i class="fas fa-desktop"></i> Wide (880px)</button>
+        <button class="preset-opt-btn" data-width="1080"><i class="fas fa-expand"></i> Max (1080px)</button>
+    </div>
+
+    <!-- Hidden Drag Handle for edge dragging -->
+    <div id="webapp-resize-handle" class="webapp-resize-handle" title="Drag left/right to resize sidebar app">
+        <div class="resize-handle-bar"></div>
+    </div>
 
     <!-- ── Row 4: Floating Web Content Frame ──────────────────────── -->
     <div class="web-content-container" id="web-content-container"></div>
