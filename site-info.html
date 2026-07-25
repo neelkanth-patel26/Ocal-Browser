@@ -9,40 +9,41 @@
         @import url('./assets/fonts/geist-fonts.css');
 
         :root {
-            --bg: #16181D;
-            --border: rgba(255, 255, 255, 0.08);
+            --bg: #121316;
+            --popup-bg: rgba(22, 24, 29, 0.95);
+            --border: rgba(255, 255, 255, 0.09);
             --accent: #15AC49;
             --accent-glow: rgba(21, 172, 73, 0.25);
             --accent-dim: rgba(21, 172, 73, 0.12);
-            --lime: #D4FC2B;
-            --card-bg: #20242D;
+            --accent-border: var(--accent);
+            --card-bg: rgba(255, 255, 255, 0.04);
             --card-border: rgba(255, 255, 255, 0.06);
-            --card-hover-bg: #2A2E3B;
+            --card-hover-bg: rgba(255, 255, 255, 0.08);
             --card-hover-border: var(--accent);
             --text-primary: #FFFFFF;
             --text-secondary: #9CA3AF;
-            --radius: 20px;
-            --font-main: 'Plus Jakarta Sans', sans-serif;
-            --font-title: 'Plus Jakarta Sans', sans-serif;
+            --font-main: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, sans-serif;
         }
 
         body[data-theme="light"], body {
-            --bg: #FFFFFF;
-            --border: rgba(0, 0, 0, 0.06);
-            --card-bg: #F4F4F6;
-            --card-border: rgba(0, 0, 0, 0.04);
-            --card-hover-bg: #EAEBED;
+            --bg: #F4F5F7;
+            --popup-bg: rgba(255, 255, 255, 0.96);
+            --border: rgba(0, 0, 0, 0.08);
+            --card-bg: #FFFFFF;
+            --card-border: rgba(0, 0, 0, 0.06);
+            --card-hover-bg: #F8FAFC;
             --card-hover-border: var(--accent);
             --text-primary: #111111;
-            --text-secondary: #475569;
+            --text-secondary: #64748B;
         }
 
         body[data-theme="dark"] {
-            --bg: #16181D;
-            --border: rgba(255, 255, 255, 0.08);
-            --card-bg: #20242D;
+            --bg: #121316;
+            --popup-bg: rgba(22, 24, 29, 0.95);
+            --border: rgba(255, 255, 255, 0.09);
+            --card-bg: rgba(255, 255, 255, 0.04);
             --card-border: rgba(255, 255, 255, 0.06);
-            --card-hover-bg: #2A2E3B;
+            --card-hover-bg: rgba(255, 255, 255, 0.08);
             --card-hover-border: var(--accent);
             --text-primary: #FFFFFF;
             --text-secondary: #9CA3AF;
@@ -50,40 +51,38 @@
 
         * { 
             box-sizing: border-box; 
-            margin: 0; padding: 0; 
-            border-radius: var(--radius);
+            margin: 0; 
+            padding: 0;
         }
 
-        body {
-            background: transparent;
-            margin: 0; padding: 12px;
+        html, body {
+            height: 100%;
+            width: 100%;
             overflow: hidden;
+            background: transparent;
             font-family: var(--font-main);
             color: var(--text-primary);
             -webkit-font-smoothing: antialiased;
         }
 
+        body {
+            padding: 0;
+        }
+
         .site-info-popup {
             position: relative;
-            background: var(--bg);
+            background: var(--popup-bg);
             border: 1px solid var(--border);
-            padding: 14px;
+            padding: 16px;
             display: flex;
             flex-direction: column;
-            gap: 12px;
-            width: 280px; /* Thinner, more compact layout */
+            width: 100%;
+            height: 100%;
+            border-radius: 20px;
             box-shadow: none !important;
-            backdrop-filter: blur(20px);
-            -webkit-backdrop-filter: blur(20px);
-        }
-
-        body[data-theme="light"] .site-info-popup {
-            box-shadow: none !important;
-            border: 1px solid rgba(0, 0, 0, 0.1);
-        }
-
-        .site-info-popup::before {
-            display: none !important;
+            backdrop-filter: blur(24px);
+            -webkit-backdrop-filter: blur(24px);
+            overflow: hidden;
         }
 
         .screen {
@@ -91,61 +90,84 @@
             flex-direction: column;
             width: 100%;
             height: 100%;
-            border-radius: 0;
-            gap: 10px;
+            gap: 12px;
+            overflow: hidden;
         }
 
-        .screen.active { display: flex; }
+        .screen.active { 
+            display: flex; 
+        }
 
         .sip-header { 
-            padding-bottom: 8px; 
+            padding-bottom: 12px; 
             border-bottom: 1px solid var(--border);
-            margin-bottom: 2px;
             display: flex; 
             align-items: center; 
             justify-content: space-between; 
-            border-radius: 0;
+            flex-shrink: 0;
         }
         
-        .sip-header-left { display: flex; align-items: center; gap: 8px; border-radius: 0; }
+        .sip-header-left { 
+            display: flex; 
+            align-items: center; 
+            gap: 10px; 
+        }
         
         .sip-title { 
-            font-family: var(--font-title); 
-            font-size: 11px; 
-            font-weight: 600; 
+            font-size: 13px; 
+            font-weight: 700; 
             color: var(--text-primary); 
-            border-radius: 0; 
             white-space: nowrap; 
             overflow: hidden; 
             text-overflow: ellipsis;
-            max-width: 180px;
+            max-width: 200px;
+            letter-spacing: -0.2px;
         }
-        .sip-domain { font-size: 9px; color: var(--text-secondary); margin-top: 1px; border-radius: 0; }
+
+        .sip-domain { 
+            font-size: 10px; 
+            color: var(--text-secondary); 
+            margin-top: 1px; 
+        }
         
         .sip-back-btn, .sip-close {
-            width: 22px; height: 22px; border-radius: 6px !important;
-            background: transparent; border: none;
-            color: var(--text-secondary); cursor: pointer;
-            display: flex; align-items: center; justify-content: center;
-            font-size: 10px; transition: all 0.15s ease;
+            width: 26px; 
+            height: 26px; 
+            border-radius: 50%;
+            background: rgba(0, 0, 0, 0.04); 
+            border: 1px solid var(--border);
+            color: var(--text-secondary); 
+            cursor: pointer;
+            display: flex; 
+            align-items: center; 
+            justify-content: center;
+            font-size: 11px; 
+            transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
         }
-        .sip-back-btn:hover, .sip-close:hover {
+
+        body[data-theme="dark"] .sip-back-btn,
+        body[data-theme="dark"] .sip-close {
             background: rgba(255, 255, 255, 0.06);
-            color: var(--text-primary);
         }
-        body[data-theme="light"] .sip-back-btn:hover,
-        body[data-theme="light"] .sip-close:hover {
-            background: rgba(0, 0, 0, 0.04);
+
+        .sip-back-btn:hover, .sip-close:hover {
+            background: var(--accent);
+            color: #FFFFFF;
+            border-color: var(--accent);
+            transform: scale(1.05);
         }
         
+        /* Smooth Scrollable Container */
         .sip-content { 
+            flex: 1; 
             display: flex; 
             flex-direction: column; 
-            gap: 4px; 
-            border-radius: 0; 
+            gap: 8px; 
             overflow-y: auto;
-            max-height: 380px;
+            padding-right: 4px;
+            scrollbar-width: thin;
         }
+
         .sip-content::-webkit-scrollbar {
             width: 4px;
         }
@@ -153,147 +175,242 @@
             background: transparent;
         }
         .sip-content::-webkit-scrollbar-thumb {
-            background: var(--border);
+            background: rgba(100, 116, 139, 0.3);
             border-radius: 10px;
+        }
+        .sip-content::-webkit-scrollbar-thumb:hover {
+            background: var(--accent);
         }
         
         .sip-row { 
-            padding: 8px 10px; 
-            border-radius: 8px; 
+            padding: 12px 14px; 
+            border-radius: 14px; 
             background: var(--card-bg);
             border: 1px solid var(--card-border);
             display: flex; 
             align-items: center; 
-            gap: 10px; 
+            gap: 12px; 
             cursor: pointer; 
-            transition: all 0.2s ease; 
+            transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1); 
         }
+
         .sip-row:hover {
             background: var(--card-hover-bg);
             border-color: var(--card-hover-border);
+            transform: translateY(-1px);
         }
         
         .sip-row-icon {
-            width: 26px; height: 26px; border-radius: 6px;
-            background: var(--card-bg); border: 1px solid var(--card-border);
-            display: flex; align-items: center; justify-content: center;
-            font-size: 11px; color: var(--text-secondary); flex-shrink: 0;
+            width: 32px; 
+            height: 32px; 
+            border-radius: 10px;
+            background: var(--accent-dim); 
+            border: 1px solid var(--accent-glow);
+            display: flex; 
+            align-items: center; 
+            justify-content: center;
+            font-size: 13px; 
+            color: var(--accent); 
+            flex-shrink: 0;
         }
-        .sip-row-icon.secure {
-            color: var(--accent);
-            border-color: var(--accent-glow);
-        }
-        .sip-row-text { flex: 1; min-width: 0; border-radius: 0; }
-        .sip-row-title { font-size: 11px; font-weight: 600; color: var(--text-primary); border-radius: 0; }
-        .sip-row-desc { font-size: 9px; color: var(--text-secondary); margin-top: 1px; border-radius: 0; opacity: 0.8; }
-        .sip-arrow { font-size: 8px; color: var(--text-secondary); opacity: 0.5; flex-shrink: 0; }
 
-        .sip-separator { height: 1px; background: var(--border); margin: 4px 0; border-radius: 0; }
+        .sip-row-text { 
+            flex: 1; 
+            min-width: 0; 
+        }
+
+        .sip-row-title { 
+            font-size: 12px; 
+            font-weight: 700; 
+            color: var(--text-primary); 
+        }
+
+        .sip-row-desc { 
+            font-size: 10px; 
+            color: var(--text-secondary); 
+            margin-top: 2px; 
+            line-height: 1.35;
+        }
+
+        .sip-arrow { 
+            font-size: 10px; 
+            color: var(--text-secondary); 
+            opacity: 0.6; 
+            flex-shrink: 0; 
+        }
+
+        .sip-separator { 
+            height: 1px; 
+            background: var(--border); 
+            margin: 4px 0; 
+            flex-shrink: 0;
+        }
         
-        .sip-permissions { display: flex; flex-direction: column; gap: 4px; border-radius: 0; }
+        .sip-permissions { 
+            display: flex; 
+            flex-direction: column; 
+            gap: 6px; 
+        }
+
         .sip-perm-item { 
             display: flex; 
             align-items: center; 
             justify-content: space-between; 
-            padding: 8px 10px; 
-            border-radius: 8px;
+            padding: 10px 12px; 
+            border-radius: 12px;
             background: var(--card-bg);
             border: 1px solid var(--card-border);
-            transition: all 0.2s ease;
+            transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
         }
+
         .sip-perm-item:hover {
             background: var(--card-hover-bg);
             border-color: var(--card-hover-border);
         }
-        .sip-perm-label { display: flex; align-items: center; gap: 10px; font-size: 11px; font-weight: 600; color: var(--text-primary); border-radius: 0; }
-        .sip-perm-label i {
-            width: 26px; height: 26px; border-radius: 6px;
-            background: var(--card-bg); border: 1px solid var(--card-border);
-            display: flex; align-items: center; justify-content: center;
-            font-size: 11px; color: var(--accent); flex-shrink: 0;
+
+        .sip-perm-label { 
+            display: flex; 
+            align-items: center; 
+            gap: 10px; 
+            font-size: 12px; 
+            font-weight: 600; 
+            color: var(--text-primary); 
         }
 
-        /* Compact custom switches */
+        .sip-perm-label i {
+            width: 28px; 
+            height: 28px; 
+            border-radius: 8px;
+            background: rgba(0, 0, 0, 0.04); 
+            border: 1px solid var(--border);
+            display: flex; 
+            align-items: center; 
+            justify-content: center;
+            font-size: 12px; 
+            color: var(--text-primary); 
+            flex-shrink: 0;
+        }
+
+        body[data-theme="dark"] .sip-perm-label i {
+            background: rgba(255, 255, 255, 0.05);
+        }
+
+        /* Modern Toggle Switches */
         .sip-toggle {
             position: relative;
             display: inline-block;
-            width: 30px;
-            height: 16px;
+            width: 36px;
+            height: 20px;
             flex-shrink: 0;
-            background: var(--border);
-            transition: 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+            background: rgba(100, 116, 139, 0.25);
+            transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
             border-radius: 100px;
             cursor: pointer;
-        }
-        .sip-toggle-dot {
-            position: absolute;
-            height: 10px;
-            width: 10px;
-            left: 3px;
-            top: 3px;
-            background: var(--text-primary);
-            transition: 0.2s cubic-bezier(0.16, 1, 0.3, 1);
-            border-radius: 50%;
-        }
-        .sip-toggle.on {
-            background: var(--accent) !important;
-            border-radius: 100px !important;
-        }
-        .sip-toggle.on .sip-toggle-dot {
-            transform: translateX(14px);
-            background: var(--bg) !important;
+            border: 1px solid var(--border);
         }
 
-        .sip-footer { display: flex; flex-direction: column; gap: 4px; border-radius: 0; }
+        .sip-toggle-dot {
+            position: absolute;
+            height: 14px;
+            width: 14px;
+            left: 2px;
+            top: 2px;
+            background: #FFFFFF;
+            transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+            border-radius: 50%;
+        }
+
+        .sip-toggle.on {
+            background: var(--accent) !important;
+            border-color: var(--accent) !important;
+        }
+
+        .sip-toggle.on .sip-toggle-dot {
+            transform: translateX(16px);
+            background: #FFFFFF !important;
+        }
+
+        .sip-footer { 
+            display: flex; 
+            flex-direction: column; 
+            gap: 6px; 
+        }
+
         .sip-footer-item { 
-            padding: 8px 10px; 
+            padding: 10px 12px; 
             display: flex; 
             align-items: center; 
             gap: 10px; 
             cursor: pointer; 
-            transition: all 0.2s ease; 
-            border-radius: 8px; 
+            transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1); 
+            border-radius: 12px; 
             background: var(--card-bg);
             border: 1px solid var(--card-border);
         }
+
         .sip-footer-item:hover {
             background: var(--card-hover-bg);
             border-color: var(--card-hover-border);
+            transform: translateY(-1px);
         }
-        .sip-footer-item i {
-            width: 26px; height: 26px; border-radius: 6px;
-            background: var(--card-bg); border: 1px solid var(--card-border);
-            display: flex; align-items: center; justify-content: center;
-            font-size: 11px; color: var(--accent); flex-shrink: 0;
+
+        .sip-footer-item i.fas {
+            width: 28px; 
+            height: 28px; 
+            border-radius: 8px;
+            background: rgba(0, 0, 0, 0.04); 
+            border: 1px solid var(--border);
+            display: flex; 
+            align-items: center; 
+            justify-content: center;
+            font-size: 12px; 
+            color: var(--text-primary); 
+            flex-shrink: 0;
         }
-        .sip-footer-label { flex: 1; font-size: 11px; font-weight: 600; color: var(--text-primary); border-radius: 0; }
+
+        body[data-theme="dark"] .sip-footer-item i.fas {
+            background: rgba(255, 255, 255, 0.05);
+        }
+
+        .sip-footer-label { 
+            flex: 1; 
+            font-size: 12px; 
+            font-weight: 600; 
+            color: var(--text-primary); 
+        }
         
+        /* Modern Reset Button */
         .sip-reset-btn { 
             background: rgba(239, 68, 68, 0.08); 
-            border: 1px solid rgba(239, 68, 68, 0.15); 
+            border: 1px solid rgba(239, 68, 68, 0.2); 
             cursor: pointer;
-            width: 100%; text-align: center; padding: 8px;
-            font-size: 10px; font-weight: 700; color: #ef4444;
-            transition: all 0.2s ease;
-            border-radius: 8px;
+            width: 100%; 
+            text-align: center; 
+            padding: 10px;
+            font-size: 11px; 
+            font-weight: 700; 
+            color: #ef4444;
+            transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+            border-radius: 12px;
             font-family: inherit;
             text-transform: uppercase;
             letter-spacing: 0.5px;
-            margin-top: 4px;
+            margin-top: 2px;
         }
+
         .sip-reset-btn:hover {
-            background: rgba(239, 68, 68, 0.15);
+            background: #ef4444;
             border-color: #ef4444;
-            color: #ff5f5f;
+            color: #FFFFFF;
         }
 
         .sip-btn {
-            padding: 6px 14px;
-            border-radius: 8px;
-            font-size: 10px;
+            padding: 8px 18px;
+            border-radius: 100px;
+            font-size: 11px;
             font-weight: 800;
             cursor: pointer;
-            border: 1px solid transparent;
+            border: none;
             transition: all 0.2s ease;
             font-family: inherit;
             display: inline-flex;
@@ -302,42 +419,88 @@
             text-transform: uppercase;
             letter-spacing: 0.5px;
         }
+
         .sip-btn.primary {
             background: var(--accent);
-            color: #000;
-        }
-        .sip-btn.primary:hover {
-            opacity: 0.95;
+            color: #FFFFFF;
         }
 
-        .security-desc { padding: 6px 10px; font-size: 10px; color: var(--text-secondary); line-height: 1.5; border-radius: 0; }
-        .security-desc a { color: var(--accent); text-decoration: none; }
-        .security-desc a:hover { text-decoration: underline; }
+        .sip-btn.primary:hover {
+            transform: translateY(-1px);
+            filter: brightness(1.08);
+        }
+
+        .security-desc { 
+            padding: 8px 12px; 
+            font-size: 11px; 
+            color: var(--text-secondary); 
+            line-height: 1.5; 
+        }
+
+        .security-desc a { 
+            color: var(--accent); 
+            text-decoration: none; 
+            font-weight: 600;
+        }
+
+        .security-desc a:hover { 
+            text-decoration: underline; 
+        }
 
         .cookie-item {
             display: flex;
             align-items: center;
-            padding: 6px 10px;
-            margin: 2px 0;
+            padding: 8px 12px;
+            margin: 3px 0;
             gap: 10px;
             background: var(--card-bg);
             border: 1px solid var(--card-border);
-            border-radius: 8px;
-            transition: all 0.2s;
+            border-radius: 10px;
+            transition: all 0.2s ease;
         }
+
         .cookie-item:hover {
             background: var(--card-hover-bg);
             border-color: var(--card-hover-border);
         }
-        .cookie-favicon { width: 14px; height: 14px; border-radius: 3px; opacity: 0.8; flex-shrink: 0; }
-        .cookie-domain { flex: 1; font-size: 11px; font-weight: 600; color: var(--text-primary); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; border-radius: 0; }
-        .cookie-action { 
-            width: 22px; height: 22px; display: flex; align-items: center; justify-content: center;
-            color: var(--text-secondary); cursor: pointer; transition: all 0.2s; border-radius: 6px !important;
-            border: 1px solid var(--border); background: transparent;
-            font-size: 9px;
+
+        .cookie-favicon { 
+            width: 16px; 
+            height: 16px; 
+            border-radius: 4px; 
+            flex-shrink: 0; 
         }
-        .cookie-action:hover { background: rgba(239, 68, 68, 0.15); color: #ef4444; border-color: #ef4444; }
+
+        .cookie-domain { 
+            flex: 1; 
+            font-size: 12px; 
+            font-weight: 600; 
+            color: var(--text-primary); 
+            white-space: nowrap; 
+            overflow: hidden; 
+            text-overflow: ellipsis; 
+        }
+
+        .cookie-action { 
+            width: 24px; 
+            height: 24px; 
+            display: flex; 
+            align-items: center; 
+            justify-content: center;
+            color: var(--text-secondary); 
+            cursor: pointer; 
+            transition: all 0.2s ease; 
+            border-radius: 6px;
+            border: 1px solid var(--border); 
+            background: transparent;
+            font-size: 10px;
+        }
+
+        .cookie-action:hover { 
+            background: rgba(239, 68, 68, 0.15); 
+            color: #ef4444; 
+            border-color: #ef4444; 
+        }
     </style>
 </head>
 <body>
@@ -351,7 +514,7 @@
             
             <div class="sip-content">
                 <div class="sip-row" id="go-to-security">
-                    <i class="fas fa-lock sip-row-icon secure"></i>
+                    <i class="fas fa-shield-halved sip-row-icon secure"></i>
                     <div class="sip-row-text">
                         <div class="sip-row-title">Connection is secure</div>
                         <div class="sip-row-desc">Your info is private as it is sent to this site.</div>
@@ -410,7 +573,7 @@
             
             <div class="sip-content">
                 <div class="sip-row" style="cursor: default;">
-                    <i class="fas fa-lock sip-row-icon secure"></i>
+                    <i class="fas fa-shield-halved sip-row-icon secure"></i>
                     <div class="sip-row-text">
                         <div class="sip-row-title">Secure Connection</div>
                         <div class="sip-row-desc">Your passwords and private numbers remain confidential when transmitted to this host.</div>
@@ -445,16 +608,16 @@
                     Sites store data locally to preserve your active state (such as logins or preferences). <a href="#" id="manage-data-link">Manage site data</a>
                 </div>
                 
-                <div class="security-desc" style="padding-top:0; font-weight: 600; color: var(--text-primary);">
+                <div class="security-desc" style="padding-top:0; font-weight: 700; color: var(--text-primary);">
                     Data from the site you're visiting:
                 </div>
 
-                <div id="cookies-list" style="max-height: 220px; overflow-y: auto; margin-top: 4px;">
+                <div id="cookies-list" style="flex: 1; min-height: 120px; overflow-y: auto; margin-top: 4px;">
                     <!-- Injected items -->
                 </div>
             </div>
 
-            <div style="padding-top: 10px; border-top: 1px solid var(--border); display: flex; justify-content: flex-end; border-radius: 0;">
+            <div style="padding-top: 10px; border-top: 1px solid var(--border); display: flex; justify-content: flex-end; flex-shrink: 0;">
                 <button class="sip-btn primary" id="cookies-done-btn">Done</button>
             </div>
         </div>

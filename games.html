@@ -51,6 +51,13 @@
             flex: 1;
         }
 
+        :root {
+            --accent: #09f0a0;
+            --accent-dim: rgba(9, 240, 160, 0.15);
+            --accent-glow: rgba(9, 240, 160, 0.3);
+            --sp-accent: var(--accent);
+        }
+
         .arcade-hero-tag {
             display: inline-flex;
             align-items: center;
@@ -59,11 +66,11 @@
             font-weight: 800;
             letter-spacing: 1px;
             text-transform: uppercase;
-            color: var(--sp-accent, #15AC49);
+            color: var(--accent) !important;
         }
 
         body[data-theme="dark"] .arcade-hero-tag {
-            color: #D4FC2B !important;
+            color: var(--accent) !important;
         }
 
         .arcade-hero-title {
@@ -102,24 +109,25 @@
             gap: 8px;
             padding: 12px 24px;
             border-radius: 100px;
-            background: #D4FC2B;
-            color: #111111;
+            background: var(--accent) !important;
+            color: #0F172A !important;
             font-size: 13px;
             font-weight: 800;
             border: none;
             cursor: pointer;
             transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
-            box-shadow: 0 4px 14px rgba(212, 252, 43, 0.3);
+            box-shadow: 0 4px 14px var(--accent-dim) !important;
         }
 
         body[data-theme="light"] .btn-sp-play {
-            background: #15AC49;
-            color: #FFFFFF;
-            box-shadow: 0 4px 14px rgba(21, 172, 73, 0.25);
+            background: var(--accent) !important;
+            color: #FFFFFF !important;
+            box-shadow: 0 4px 14px var(--accent-dim) !important;
         }
 
         .btn-sp-play:hover {
             transform: translateY(-2px) scale(1.02);
+            filter: brightness(1.08);
         }
 
         .btn-sp-sec {
@@ -155,22 +163,22 @@
             width: 140px;
             height: 140px;
             border-radius: 24px;
-            background: rgba(0, 0, 0, 0.03);
-            border: 1px solid rgba(0, 0, 0, 0.06);
+            background: var(--accent-dim) !important;
+            border: 1px solid color-mix(in srgb, var(--accent) 30%, transparent) !important;
             display: flex;
             flex-direction: column;
             align-items: center;
             justify-content: center;
             gap: 8px;
-            color: var(--sp-accent, #15AC49);
+            color: var(--accent) !important;
             font-size: 42px;
             flex-shrink: 0;
         }
 
         body[data-theme="dark"] .arcade-hero-preview {
-            background: rgba(255, 255, 255, 0.03);
-            border-color: rgba(255, 255, 255, 0.08);
-            color: #D4FC2B;
+            background: var(--accent-dim) !important;
+            border-color: color-mix(in srgb, var(--accent) 30%, transparent) !important;
+            color: var(--accent) !important;
         }
 
         /* ── Games Grid Layout ── */
@@ -214,32 +222,32 @@
 
         .sp-game-card:hover {
             transform: translateY(-4px);
-            border-color: #D4FC2B !important;
+            border-color: var(--accent) !important;
         }
 
         body[data-theme="light"] .sp-game-card:hover {
-            border-color: #15AC49 !important;
+            border-color: var(--accent) !important;
         }
 
         .game-icon-bubble {
             width: 56px;
             height: 56px;
             border-radius: 18px;
-            background: rgba(0, 0, 0, 0.03);
-            border: 1px solid rgba(0, 0, 0, 0.06);
+            background: var(--accent-dim) !important;
+            border: 1px solid color-mix(in srgb, var(--accent) 30%, transparent) !important;
             display: flex;
             align-items: center;
             justify-content: center;
             font-size: 24px;
-            color: #15AC49;
+            color: var(--accent) !important;
             margin-bottom: 14px;
             transition: transform 0.3s ease;
         }
 
         body[data-theme="dark"] .game-icon-bubble {
-            background: rgba(255, 255, 255, 0.04);
-            border-color: rgba(255, 255, 255, 0.08);
-            color: #D4FC2B;
+            background: var(--accent-dim) !important;
+            border-color: color-mix(in srgb, var(--accent) 30%, transparent) !important;
+            color: var(--accent) !important;
         }
 
         .sp-game-card:hover .game-icon-bubble {
@@ -524,30 +532,36 @@
 
     <script>
         // ── Theme Sync from localStorage / Electron API ──
-        (function () {
-            const t = localStorage.getItem('ocal-settings-theme') || 'light';
-            document.body.setAttribute('data-theme', t);
-            document.documentElement.setAttribute('data-theme', t);
-
-            const a = localStorage.getItem('ocal-settings-accent');
-            if (a) document.documentElement.style.setProperty('--sp-accent', a);
-        })();
+        function applyTheme(s) {
+            if (!s) return;
+            if (s.themeMode) {
+                document.body.setAttribute('data-theme', s.themeMode);
+                document.documentElement.setAttribute('data-theme', s.themeMode);
+            }
+            if (s.accentColor) {
+                document.documentElement.style.setProperty('--accent', s.accentColor);
+                document.documentElement.style.setProperty('--sp-accent', s.accentColor);
+                const hex = s.accentColor.replace('#', '');
+                if (hex.length === 6) {
+                    const r = parseInt(hex.slice(0, 2), 16);
+                    const g = parseInt(hex.slice(2, 4), 16);
+                    const b = parseInt(hex.slice(4, 6), 16);
+                    if (!isNaN(r) && !isNaN(g) && !isNaN(b)) {
+                        document.documentElement.style.setProperty('--accent-dim', `rgba(${r}, ${g}, ${b}, 0.15)`);
+                        document.documentElement.style.setProperty('--accent-glow', `rgba(${r}, ${g}, ${b}, 0.3)`);
+                    }
+                }
+            }
+        }
 
         if (window.electronAPI) {
-            window.electronAPI.getSettings().then(s => {
-                if (s.themeMode) {
-                    document.body.setAttribute('data-theme', s.themeMode);
-                    document.documentElement.setAttribute('data-theme', s.themeMode);
-                }
-                if (s.accentColor) document.documentElement.style.setProperty('--sp-accent', s.accentColor);
-            });
-            window.electronAPI.onSettingsChanged((s) => {
-                if (s.themeMode) {
-                    document.body.setAttribute('data-theme', s.themeMode);
-                    document.documentElement.setAttribute('data-theme', s.themeMode);
-                }
-                if (s.accentColor) document.documentElement.style.setProperty('--sp-accent', s.accentColor);
-            });
+            window.electronAPI.getSettings().then(s => applyTheme(s)).catch(() => {});
+            if (window.electronAPI.onSettingsChanged) {
+                window.electronAPI.onSettingsChanged((s) => applyTheme(s));
+            }
+            if (window.electronAPI.on) {
+                window.electronAPI.on('settings-changed', (e, s) => applyTheme(s));
+            }
         }
 
         // ── Real-time Search Filtering ──

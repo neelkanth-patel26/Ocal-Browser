@@ -112,7 +112,7 @@
                     </svg>
                 </div>
                 <input type="text" class="sp-search-input" id="main-search-input" placeholder="Search Google or enter web URL..." autocomplete="off" spellcheck="false">
-                <button class="sp-search-submit" id="main-search-btn" title="Search"><i class="fas fa-arrow-right"></i></button>
+                <button class="sp-search-btn" id="main-search-btn" title="Search"><i class="fas fa-arrow-right"></i></button>
             </div>
 
             <!-- System Status Pill -->
@@ -181,7 +181,7 @@
             <!-- Widget 3: Daily Todo Checklist (White Card) -->
             <div class="sp-card sp-card-white sp-todo-card-container">
                 <div class="sp-card-header-flex">
-                    <span class="sp-card-title"><i class="fas fa-circle-check" style="color: #15AC49;"></i> Quick Tasks</span>
+                    <span class="sp-card-title"><i class="fas fa-circle-check" style="color: var(--accent);"></i> Quick Tasks</span>
                     <span class="sp-badge sp-badge-gray" id="todo-badge-header">0 Pending</span>
                 </div>
 
@@ -245,6 +245,25 @@
                 </div>
             </div>
         </section>
+
+        <!-- Floating Bottom Brand & Quick Action Bar -->
+        <div class="sp-bottom-bar-container">
+            <div class="sp-bottom-bar-pill">
+                <button class="sp-bottom-nav-btn" id="history-btn" title="Browsing History">
+                    <i class="fas fa-clock-rotate-left"></i>
+                    <span>History</span>
+                </button>
+                
+                <div class="sp-bottom-brand">
+                    <span class="sp-brand-text">OCAL</span>
+                </div>
+                
+                <button class="sp-bottom-nav-btn" id="settings-btn" title="Browser Settings">
+                    <i class="fas fa-gear"></i>
+                    <span>Settings</span>
+                </button>
+            </div>
+        </div>
 
     </main>
 

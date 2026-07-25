@@ -11,67 +11,71 @@
         @import url('./assets/fonts/geist-fonts.css');
 
         :root {
-            --bg: #0c0c0c;
-            --surface: rgba(18, 18, 18, 0.45);
-            --accent: #09f0a0;
-            --accent-glow: rgba(9, 240, 160, 0.25);
-            --accent-dim: rgba(9, 240, 160, 0.12);
-            --text-primary: #e8e8e8;
-            --text-secondary: rgba(255, 255, 255, 0.6);
-            --text-muted: rgba(255, 255, 255, 0.35);
-            --border: rgba(255, 255, 255, 0.05);
-            --card-border-val: 1px solid rgba(255, 255, 255, 0.05);
+            --bg: #0E0F12;
+            --surface: rgba(22, 24, 29, 0.7);
+            --accent: #15AC49;
+            --accent-glow: rgba(21, 172, 73, 0.25);
+            --accent-dim: rgba(21, 172, 73, 0.12);
+            --text-primary: #FFFFFF;
+            --text-secondary: rgba(255, 255, 255, 0.65);
+            --text-muted: rgba(255, 255, 255, 0.4);
+            --border: rgba(255, 255, 255, 0.08);
+            --card-border-val: 1px solid rgba(255, 255, 255, 0.08);
             --font-main: 'Geist Mono', monospace;
-            --font-title: 'Geist', sans-serif;
-            --radius: 12px;
-            --blur: blur(20px);
+            --font-title: 'Plus Jakarta Sans', -apple-system, sans-serif;
+            --radius: 16px;
+            --blur: blur(24px);
         }
 
         body[data-theme="light"] {
-            --bg: #f5f5f5;
-            --surface: rgba(255, 255, 255, 0.5);
-            --text-primary: #0f172a;
+            --bg: #F4F5F7;
+            --surface: rgba(255, 255, 255, 0.85);
+            --text-primary: #111111;
             --text-secondary: #475569;
-            --text-muted: #94a3b8;
+            --text-muted: #94A3B8;
             --border: rgba(0, 0, 0, 0.08);
-            --card-border-val: 1px solid rgba(0, 0, 0, 0.05);
+            --card-border-val: 1px solid rgba(0, 0, 0, 0.08);
         }
 
         * {
             box-sizing: border-box;
             margin: 0;
             padding: 0;
-            border-radius: var(--radius);
+        }
+
+        html, body {
+            height: 100%;
+            width: 100%;
+            overflow: hidden;
+            background: var(--bg);
+            color: var(--text-primary);
+            font-family: var(--font-main);
+            -webkit-font-smoothing: antialiased;
+            transition: background 0.3s ease;
         }
 
         body { 
-            font-family: var(--font-main); 
-            background: var(--bg) !important; 
-            color: var(--text-primary);
-            height: 100vh;
-            overflow: hidden;
             display: flex;
             flex-direction: column;
             padding: 24px;
-            transition: background 0.4s ease;
         }
 
         /* Ambient background glow */
         .ambient-glow {
             position: fixed;
-            top: -10%;
+            top: -15%;
             left: 50%;
             transform: translateX(-50%);
-            width: 500px;
-            height: 250px;
+            width: 600px;
+            height: 300px;
             background: radial-gradient(circle, var(--accent-dim) 0%, transparent 70%);
             pointer-events: none;
-            z-index: -1;
-            opacity: 0.6;
+            z-index: 0;
+            opacity: 0.8;
         }
 
         .header {
-            padding: 16px 20px;
+            padding: 16px 22px;
             background: var(--surface);
             border: var(--card-border-val);
             backdrop-filter: var(--blur);
@@ -79,64 +83,71 @@
             display: flex;
             justify-content: space-between;
             align-items: center;
-            margin-bottom: 16px;
+            margin-bottom: 20px;
             flex-shrink: 0;
+            border-radius: var(--radius);
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.08);
+            z-index: 1;
         }
 
         .title-group {
             display: flex;
             align-items: center;
             gap: 12px;
-            border-radius: 0;
         }
 
         .cert-icon {
-            font-size: 16px;
+            font-size: 18px;
             color: var(--accent);
-            animation: pulse 2s ease-in-out infinite;
+            animation: pulse 2.5s ease-in-out infinite;
         }
 
         @keyframes pulse {
-            0%, 100% { opacity: 0.6; transform: scale(0.95); }
+            0%, 100% { opacity: 0.7; transform: scale(0.95); }
             50% { opacity: 1; transform: scale(1.05); }
         }
 
         h1 {
             font-family: var(--font-title);
-            font-size: 15px;
-            font-weight: 500;
+            font-size: 16px;
+            font-weight: 700;
             letter-spacing: -0.3px;
         }
 
         .tabs {
             display: flex;
             gap: 6px;
-            background: rgba(0, 0, 0, 0.15);
+            background: rgba(0, 0, 0, 0.1);
             border: 1px solid var(--border);
-            padding: 3px;
-            border-radius: 8px;
+            padding: 4px;
+            border-radius: 100px;
         }
 
-        body[data-theme="light"] .tabs {
-            background: rgba(0, 0, 0, 0.03);
+        body[data-theme="dark"] .tabs {
+            background: rgba(255, 255, 255, 0.05);
         }
 
         .tab { 
-            padding: 6px 16px;
-            font-size: 10px;
+            padding: 6px 18px;
+            font-size: 11px;
             font-weight: 800; 
             text-transform: uppercase;
-            letter-spacing: 1px;
+            letter-spacing: 0.8px;
             color: var(--text-muted);
             cursor: pointer;
             transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
-            border-radius: 6px;
+            border-radius: 100px;
+            font-family: var(--font-title);
         }
-        .tab:hover { color: var(--text-primary); }
+
+        .tab:hover { 
+            color: var(--text-primary); 
+        }
+
         .tab.active {
-            color: var(--accent);
-            background: var(--accent-dim);
-            border: 1px solid color-mix(in srgb, var(--accent) 15%, transparent);
+            color: #FFFFFF;
+            background: var(--accent);
+            box-shadow: 0 4px 12px var(--accent-glow);
         }
 
         .content-scroll {
@@ -144,32 +155,40 @@
             overflow-y: auto;
             display: flex;
             flex-direction: column;
-            gap: 16px;
-            padding-right: 4px;
+            gap: 20px;
+            padding-right: 6px;
+            z-index: 1;
+            scrollbar-width: thin;
         }
 
         .content-scroll::-webkit-scrollbar { width: 6px; }
-        .content-scroll::-webkit-scrollbar-thumb { background: var(--border); border-radius: 10px; }
+        .content-scroll::-webkit-scrollbar-thumb { background: rgba(100, 116, 139, 0.3); border-radius: 10px; }
         .content-scroll::-webkit-scrollbar-thumb:hover { background: var(--accent); }
 
-        .screen { display: none; border-radius: 0; }
-        .screen.active { display: flex; flex-direction: column; gap: 16px; animation: fadeIn 0.25s cubic-bezier(0.16, 1, 0.3, 1); }
-        @keyframes fadeIn { from { opacity: 0; transform: translateY(4px); } to { opacity: 1; transform: translateY(0); } }
-
-        /* Compact Layout grid styling */
-        .section {
-            border-radius: 0;
+        .screen { display: none; }
+        .screen.active { 
+            display: flex; 
+            flex-direction: column; 
+            gap: 20px; 
+            animation: fadeIn 0.3s cubic-bezier(0.16, 1, 0.3, 1); 
+        }
+        @keyframes fadeIn { 
+            from { opacity: 0; transform: translateY(6px); } 
+            to { opacity: 1; transform: translateY(0); } 
         }
 
         .section-label { 
             font-family: var(--font-title);
-            font-size: 9px;
+            font-size: 11px;
             font-weight: 800; 
             text-transform: uppercase;
-            letter-spacing: 1.5px;
-            color: var(--text-muted);
+            letter-spacing: 1.2px;
+            color: var(--accent);
             margin-bottom: 8px;
             padding-left: 4px;
+            display: flex;
+            align-items: center;
+            gap: 6px;
         }
 
         .info-grid { 
@@ -177,79 +196,94 @@
             border: var(--card-border-val);
             backdrop-filter: var(--blur);
             -webkit-backdrop-filter: var(--blur);
-            padding: 12px 16px;
+            padding: 16px 20px;
             display: grid;
-            grid-template-columns: 180px 1fr;
-            gap: 8px 16px;
+            grid-template-columns: 200px 1fr;
+            gap: 10px 20px;
+            border-radius: var(--radius);
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.04);
+            transition: all 0.2s ease;
         }
 
-        @media (max-width: 600px) {
-            .info-grid { grid-template-columns: 1fr; gap: 4px; }
+        .info-grid:hover {
+            border-color: rgba(21, 172, 73, 0.3);
+        }
+
+        @media (max-width: 640px) {
+            .info-grid { grid-template-columns: 1fr; gap: 6px; }
         }
 
         .label {
-            font-size: 11px;
+            font-size: 12px;
             color: var(--text-secondary);
-            font-weight: 500;
+            font-weight: 600;
             display: flex;
             align-items: center;
-            border-radius: 0;
+            font-family: var(--font-title);
         }
 
         .value {
-            font-size: 11px;
+            font-size: 12px;
             color: var(--text-primary);
             word-break: break-all;
             font-family: var(--font-main);
-            border-radius: 0;
+            font-weight: 500;
         }
 
         /* Hierarchy card style */
         .hierarchy { 
             background: var(--surface);
             border: var(--card-border-val);
-            padding: 14px 16px;
+            backdrop-filter: var(--blur);
+            -webkit-backdrop-filter: var(--blur);
+            padding: 18px 20px;
             display: flex;
             flex-direction: column;
-            gap: 8px;
+            gap: 12px;
+            border-radius: var(--radius);
         }
 
         .hier-item {
             display: flex;
             align-items: center;
-            gap: 8px;
-            font-size: 12px;
-            border-radius: 0;
+            gap: 10px;
+            font-size: 13px;
+            font-weight: 600;
+            font-family: var(--font-title);
         }
 
         .hier-item.child {
-            margin-left: 24px;
+            margin-left: 28px;
             color: var(--accent);
-            font-weight: 600;
+            font-weight: 700;
             position: relative;
         }
 
         .hier-item.child::before {
             content: '';
             position: absolute;
-            left: -14px;
-            top: -6px;
-            width: 8px;
-            height: 14px;
-            border-left: 1px solid var(--border);
-            border-bottom: 1px solid var(--border);
-            border-bottom-left-radius: 4px;
+            left: -16px;
+            top: -8px;
+            width: 10px;
+            height: 18px;
+            border-left: 2px solid var(--accent);
+            border-bottom: 2px solid var(--accent);
+            border-bottom-left-radius: 6px;
+            opacity: 0.6;
         }
 
         .hier-item i {
-            font-size: 10px;
-            opacity: 0.6;
+            font-size: 14px;
+            color: var(--accent);
         }
 
         /* Detail table fields styling */
         .fields-list { 
             background: var(--surface);
             border: var(--card-border-val);
+            backdrop-filter: var(--blur);
+            -webkit-backdrop-filter: var(--blur);
+            border-radius: var(--radius);
             overflow: hidden;
             display: flex;
             flex-direction: column;
@@ -259,56 +293,58 @@
             display: flex;
             border-bottom: 1px solid var(--border); 
             cursor: pointer;
-            transition: all 0.15s ease;
-            border-radius: 0;
+            transition: all 0.2s ease;
         }
 
         .field-row:last-child { border-bottom: none; }
-        .field-row:hover { background: rgba(255, 255, 255, 0.02); }
-        body[data-theme="light"] .field-row:hover { background: rgba(0, 0, 0, 0.02); }
+        .field-row:hover { background: rgba(255, 255, 255, 0.04); }
+        body[data-theme="light"] .field-row:hover { background: rgba(0, 0, 0, 0.03); }
 
         .field-row.selected {
             background: var(--accent-dim);
+            border-left: 3px solid var(--accent);
         }
 
         .field-name {
-            width: 200px;
-            padding: 10px 16px;
-            font-size: 11.5px;
+            width: 220px;
+            padding: 12px 18px;
+            font-size: 12px;
             color: var(--text-secondary);
             border-right: 1px solid var(--border);
-            font-weight: 600;
-            border-radius: 0;
+            font-weight: 700;
+            font-family: var(--font-title);
         }
 
         .field-summary {
             flex: 1;
-            padding: 10px 16px;
-            font-size: 11px;
+            padding: 12px 18px;
+            font-size: 12px;
             color: var(--text-primary);
             white-space: nowrap;
             overflow: hidden;
             text-overflow: ellipsis;
-            border-radius: 0;
+            font-family: var(--font-main);
         }
 
         .field-value-box {
-            background: rgba(0, 0, 0, 0.2);
+            background: rgba(0, 0, 0, 0.3);
             border: 1px solid var(--border);
             border-radius: var(--radius);
-            padding: 12px;
+            padding: 16px;
             font-family: var(--font-main);
-            font-size: 11px;
+            font-size: 12px;
             color: var(--text-secondary);
-            min-height: 100px;
-            max-height: 180px;
+            min-height: 120px;
+            max-height: 220px;
             overflow-y: auto;
             white-space: pre-wrap;
             word-break: break-all;
+            line-height: 1.6;
         }
 
         body[data-theme="light"] .field-value-box {
-            background: rgba(0, 0, 0, 0.03);
+            background: rgba(0, 0, 0, 0.04);
+            color: #334155;
         }
 
         /* Probing loader */
@@ -322,16 +358,18 @@
             align-items: center;
             justify-content: center;
             gap: 16px;
+            transition: opacity 0.4s ease;
         }
 
         .spinner {
-            width: 24px;
-            height: 24px;
-            border: 2px solid var(--border);
+            width: 32px;
+            height: 32px;
+            border: 3px solid var(--border);
             border-top-color: var(--accent);
             border-radius: 50%;
             animation: spin 0.8s linear infinite;
         }
+        @keyframes spin { to { transform: rotate(360deg); } }
     </style>
 </head>
 <body>
@@ -339,7 +377,7 @@
 
     <div id="loading">
         <div class="spinner"></div>
-        <div style="font-size: 9px; font-weight: 800; color: var(--text-muted); font-family: var(--font-title); letter-spacing: 2px;">SECURE HANDSHAKE...</div>
+        <div style="font-size: 11px; font-weight: 800; color: var(--text-muted); font-family: var(--font-title); letter-spacing: 2px;">SECURE HANDSHAKE...</div>
     </div>
 
     <div class="header">
@@ -357,7 +395,7 @@
         <!-- General Overview Screen -->
         <div class="screen active" id="general-screen">
             <div class="section">
-                <div class="section-label">Issued To</div>
+                <div class="section-label"><i class="fas fa-user-shield"></i> Issued To</div>
                 <div class="info-grid">
                     <div class="label">Common Name (CN)</div><div class="value" id="sub-cn">-</div>
                     <div class="label">Organization (O)</div><div class="value" id="sub-o">-</div>
@@ -366,7 +404,7 @@
             </div>
             
             <div class="section">
-                <div class="section-label">Issuer Authority</div>
+                <div class="section-label"><i class="fas fa-building-columns"></i> Issuer Authority</div>
                 <div class="info-grid">
                     <div class="label">Common Name (CN)</div><div class="value" id="iss-cn">-</div>
                     <div class="label">Organization (O)</div><div class="value" id="iss-o">-</div>
@@ -375,7 +413,7 @@
             </div>
 
             <div class="section">
-                <div class="section-label">Validity Scope</div>
+                <div class="section-label"><i class="fas fa-calendar-check"></i> Validity Scope</div>
                 <div class="info-grid">
                     <div class="label">Activation Date</div><div class="value" id="valid-from">-</div>
                     <div class="label">Expiration Date</div><div class="value" id="valid-to">-</div>
@@ -383,7 +421,7 @@
             </div>
 
             <div class="section">
-                <div class="section-label">Cryptographic Signatures</div>
+                <div class="section-label"><i class="fas fa-fingerprint"></i> Cryptographic Signatures</div>
                 <div class="info-grid">
                     <div class="label">SHA-1 Thumbprint</div><div class="value" id="sha1">-</div>
                     <div class="label">SHA-256 Thumbprint</div><div class="value" id="sha256">-</div>
@@ -394,7 +432,7 @@
         <!-- Details Hierarchy Screen -->
         <div class="screen" id="details-screen">
             <div class="section">
-                <div class="section-label">Certification Trust Chain</div>
+                <div class="section-label"><i class="fas fa-link"></i> Certification Trust Chain</div>
                 <div class="hierarchy">
                     <div class="hier-item"><i class="fas fa-shield-halved"></i> <span id="hier-root">Root CA</span></div>
                     <div class="hier-item child"><i class="fas fa-certificate"></i> <span id="hier-leaf">End Entity Certificate</span></div>
@@ -402,14 +440,14 @@
             </div>
 
             <div class="section">
-                <div class="section-label">Field Explorer</div>
+                <div class="section-label"><i class="fas fa-list-check"></i> Field Explorer</div>
                 <div class="fields-list" id="fields-container">
                     <!-- Dynamic details fields injected here -->
                 </div>
             </div>
 
             <div class="section">
-                <div class="section-label">Parsed Values</div>
+                <div class="section-label"><i class="fas fa-code"></i> Parsed Values</div>
                 <div class="field-value-box" id="field-value-display">
                     Select a cert field from the explorer above.
                 </div>

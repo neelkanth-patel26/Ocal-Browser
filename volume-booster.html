@@ -176,7 +176,7 @@
         }
 
         body[data-theme="dark"] .vb-percentage {
-            color: #D4FC2B !important;
+            color: var(--accent) !important;
         }
 
         .level-badge {
@@ -186,9 +186,9 @@
             text-transform: uppercase;
             padding: 4px 8px;
             border-radius: 100px;
-            background: rgba(212, 252, 43, 0.15);
-            color: var(--theme-color);
-            border: 1px solid var(--theme-color);
+            background: var(--accent-dim);
+            color: var(--accent);
+            border: 1px solid var(--accent);
         }
 
         /* Slider */
@@ -228,11 +228,11 @@
             width: 14px;
             height: 14px;
             border-radius: 50%;
-            background: #D4FC2B;
+            background: var(--accent);
             cursor: pointer;
             transition: transform 0.15s ease;
             border: 2px solid #111111;
-            box-shadow: 0 0 8px rgba(212, 252, 43, 0.6);
+            box-shadow: 0 0 8px var(--accent-glow);
         }
 
         .vb-slider::-webkit-slider-thumb:hover {
@@ -278,10 +278,10 @@
         }
 
         .vb-preset.active {
-            background: #D4FC2B !important;
-            color: #111111 !important;
-            border-color: #D4FC2B !important;
-            box-shadow: 0 2px 6px rgba(212, 252, 43, 0.35);
+            background: var(--accent) !important;
+            color: var(--accent-text, #111111) !important;
+            border-color: var(--accent) !important;
+            box-shadow: 0 2px 6px var(--accent-glow);
         }
     </style>
 </head>

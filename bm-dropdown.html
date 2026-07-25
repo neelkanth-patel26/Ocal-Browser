@@ -8,19 +8,17 @@
     <style>
         /* ── Design Tokens ─────────────────────────── */
         :root {
-            --lime: #D4FC2B;
-            --lime-dim: rgba(212, 252, 43, 0.12);
-            --lime-glow: rgba(212, 252, 43, 0.25);
-            --accent: #15AC49;
-            --accent-dim: rgba(21, 172, 73, 0.12);
-            --bg: #16181D;
-            --bg-surface: #1C1F28;
-            --border: rgba(255, 255, 255, 0.08);
-            --border-hover: rgba(255, 255, 255, 0.14);
-            --text-main: #FFFFFF;
-            --text-dim: #9CA3AF;
-            --text-muted: #6B7280;
-            --radius: 16px;
+            --accent: #09f0a0;
+            --accent-dim: rgba(9, 240, 160, 0.12);
+            --accent-glow: rgba(9, 240, 160, 0.25);
+            --bg: #181b20;
+            --bg-surface: rgba(255, 255, 255, 0.05);
+            --border: rgba(255, 255, 255, 0.1);
+            --border-hover: rgba(255, 255, 255, 0.16);
+            --text-main: #f3f4f6;
+            --text-dim: #9ca3af;
+            --text-muted: #6b7280;
+            --radius: 12px;
             --font: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, sans-serif;
         }
 
@@ -28,15 +26,15 @@
         body[data-theme="light"] {
             --bg: #FFFFFF;
             --bg-surface: #F4F4F6;
-            --border: rgba(0, 0, 0, 0.07);
-            --border-hover: rgba(0, 0, 0, 0.12);
-            --text-main: #111111;
+            --border: rgba(0, 0, 0, 0.08);
+            --border-hover: rgba(0, 0, 0, 0.14);
+            --text-main: #0F172A;
             --text-dim: #475569;
             --text-muted: #94A3B8;
         }
 
         body[data-theme="light"] .dropdown-container {
-            box-shadow: none !important;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.12), 0 2px 8px rgba(0, 0, 0, 0.06) !important;
         }
 
         body[data-theme="light"] .favicon-wrap {
@@ -48,20 +46,16 @@
             color: #94A3B8;
         }
 
-        body[data-theme="light"] .header-icon {
-            color: #15AC49 !important;
-        }
-
         body[data-theme="light"] .dropdown-header {
             border-bottom-color: rgba(0, 0, 0, 0.06) !important;
         }
 
         body[data-theme="light"] .menu-option:hover {
-            background: rgba(212, 252, 43, 0.15) !important;
+            background: var(--accent-dim) !important;
         }
 
         body[data-theme="light"] .menu-option:hover .bm-title {
-            color: #111111 !important;
+            color: var(--accent) !important;
         }
 
         body[data-theme="light"] .menu-option:hover .bm-domain {
@@ -69,7 +63,7 @@
         }
 
         body[data-theme="light"] .menu-option:hover .nav-arrow {
-            color: #15AC49 !important;
+            color: var(--accent) !important;
         }
 
         /* ── Base ─────────────────────────── */
@@ -93,13 +87,13 @@
             max-height: 420px;
             background: var(--bg);
             border: 1px solid var(--border);
-            border-radius: 14px;
+            border-radius: var(--radius);
             overflow-y: auto;
             overflow-x: hidden;
             display: flex;
             flex-direction: column;
             padding: 5px;
-            box-shadow: none;
+            box-shadow: none !important;
             animation: containerIn 0.18s cubic-bezier(0.16, 1, 0.3, 1);
         }
 
@@ -123,8 +117,8 @@
             width: 20px;
             height: 20px;
             border-radius: 6px;
-            background: var(--lime-dim);
-            border: 1px solid rgba(212, 252, 43, 0.25);
+            background: var(--accent-dim);
+            border: 1px solid color-mix(in srgb, var(--accent) 30%, transparent);
             display: flex;
             align-items: center;
             justify-content: center;
@@ -132,7 +126,7 @@
 
         .header-icon {
             font-size: 9px;
-            color: var(--lime) !important;
+            color: var(--accent) !important;
         }
 
         .header-label {
@@ -176,12 +170,12 @@
         }
 
         .menu-option:hover {
-            background: var(--bg-surface);
-            border-radius: 10px;
+            background: var(--accent-dim);
+            border-radius: 8px;
         }
 
         .menu-option:hover .bm-title {
-            color: var(--lime);
+            color: var(--accent);
         }
 
         .menu-option:active {
@@ -204,8 +198,8 @@
         }
 
         .menu-option:hover .favicon-wrap {
-            background: var(--lime-dim);
-            border-color: rgba(212, 252, 43, 0.3);
+            background: var(--accent-dim);
+            border-color: color-mix(in srgb, var(--accent) 40%, transparent);
         }
 
         .favicon-wrap img {
@@ -223,7 +217,7 @@
             justify-content: center;
             font-size: 12px;
             font-weight: 800;
-            color: var(--lime);
+            color: var(--accent);
             text-transform: uppercase;
         }
 
@@ -274,7 +268,7 @@
         .menu-option:hover .nav-arrow {
             opacity: 1;
             transform: translateX(0);
-            color: var(--lime);
+            color: var(--accent);
         }
 
         /* ── Empty State ─────────────────────────── */

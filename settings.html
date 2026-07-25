@@ -47,22 +47,7 @@
     <header class="settings-header">
         <div class="header-left">
             <div class="header-logo">
-                <svg class="header-logo-svg" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                    <defs>
-                        <linearGradient id="ocal-logo-grad-settings" x1="2" y1="2" x2="22" y2="22"
-                            gradientUnits="userSpaceOnUse">
-                            <stop offset="0%" stop-color="var(--accent)" />
-                            <stop offset="100%" stop-color="color-mix(in srgb, var(--accent) 30%, #000000)" />
-                        </linearGradient>
-                    </defs>
-                    <path
-                        d="M12 2C6.48 2 2 6.48 2 12C2 17.52 6.48 22 12 22C17.52 22 22 17.52 22 12C22 9.24 20.88 6.74 19.07 4.93L17.66 6.34C19.11 7.79 20 9.79 20 12C20 16.42 16.42 20 12 20C7.58 20 4 16.42 4 12C4 7.58 7.58 4 12 4C13.1 4 14.15 4.22 15.11 4.62L16.63 3.1C15.22 2.4 13.66 2 12 2Z"
-                        fill="url(#ocal-logo-grad-settings)" />
-                    <path
-                        d="M12 7C9.24 7 7 9.24 7 12C7 14.76 9.24 17 12 17C14.76 17 17 14.76 17 12C17 10.9 16.64 9.88 16.03 9.06L14.61 10.48C14.86 10.92 15 11.44 15 12C15 13.66 13.66 15 12 15C10.34 15 9 13.66 9 12C9 10.34 10.34 9 12 9C12.56 9 13.08 9.14 13.52 9.39L14.94 7.97C14.12 7.36 13.1 7 12 7Z"
-                        fill="url(#ocal-logo-grad-settings)" />
-                    <circle cx="12" cy="12" r="2" fill="url(#ocal-logo-grad-settings)" />
-                </svg>
+                <img src="assets/icon.png" class="header-logo-img" alt="Ocal">
             </div>
             <div class="header-logo-text">Ocal Settings</div>
         </div>
@@ -302,32 +287,34 @@
                 <div class="page-header">
                     <div class="page-eyebrow">Appearance & Layout</div>
                     <div class="page-title">Homepage & Workspace</div>
-                    <div class="page-desc">Customize system theme modes, accent palettes, sidebar behavior, and layout density.</div>
+                    <div class="page-desc">Customize system theme, accent color, sidebar behavior, and layout density.</div>
                 </div>
 
                 <div class="page-body">
                     <div class="homepage-bento-grid">
 
-                        <!-- Column 1: Theme & Visual Identity -->
+                        <!-- ─── Theme & Accent ─── -->
                         <div class="card homepage-card-box">
                             <div class="homepage-card-header">
                                 <i class="fas fa-palette"></i>
-                                <span>Theme & Visual Identity</span>
+                                <span>Theme & Accent</span>
                             </div>
-                            <div class="homepage-rows-container">
-                                <div class="security-toggle-row">
+                            <div class="homepage-rows-container" style="gap: 14px; padding: 16px 20px;">
+                                <!-- Dark Mode Toggle -->
+                                <div class="security-toggle-row" style="padding-bottom: 14px;">
                                     <div class="row-info">
                                         <h4>Dark System Theme</h4>
-                                        <p>Toggle between high-contrast Dark and crisp Light mode</p>
+                                        <p>Toggle between Dark and Light mode</p>
                                     </div>
                                     <div class="toggle on" id="theme-mode-toggle"></div>
                                 </div>
-                                <div class="security-toggle-row" style="flex-direction: column; align-items: flex-start; gap: 10px;">
+                                <!-- Accent Palette -->
+                                <div class="security-toggle-row" style="flex-direction: column; align-items: flex-start; gap: 10px; padding-bottom: 0; border-bottom: none;">
                                     <div class="row-info">
                                         <h4>Accent Highlight Palette</h4>
-                                        <p>Select primary accent focal color for tabs, buttons, and highlights</p>
+                                        <p>Primary accent color for tabs, buttons, and highlights</p>
                                     </div>
-                                    <div class="color-row">
+                                    <div class="color-row" style="margin-top: 0; width: 100%;">
                                         <div class="color-dot active" data-color="#09f0a0" style="background:#09f0a0;" title="Emerald Green"></div>
                                         <div class="color-dot" data-color="#ffffff" style="background:#ffffff;" title="Pure White"></div>
                                         <div class="color-dot" data-color="#a855f7" style="background:#a855f7;" title="Neon Purple"></div>
@@ -339,107 +326,106 @@
                             </div>
                         </div>
 
-                        <!-- Column 2: Workspace & Navigation Layout -->
+                        <!-- ─── Workspace Toggles ─── -->
                         <div class="card homepage-card-box">
                             <div class="homepage-card-header">
                                 <i class="fas fa-window-maximize"></i>
                                 <span>Workspace & Density</span>
                             </div>
-                            <div class="homepage-rows-container">
-                                <div class="security-toggle-row">
+                            <div class="homepage-rows-container" style="gap: 0; padding: 0;">
+                                <div class="security-toggle-row" style="padding: 14px 20px; border-bottom: 1px solid var(--chrome-border);">
                                     <div class="row-info">
-                                        <h4>Compact Workspace Density</h4>
-                                        <p>Condensed padding and tab heights for power users</p>
+                                        <h4>Compact Density</h4>
+                                        <p>Condensed UI for power users</p>
                                     </div>
                                     <div class="toggle" id="compact-toggle"></div>
                                 </div>
-                                <div class="security-toggle-row">
+                                <div class="security-toggle-row" style="padding: 14px 20px; border-bottom: 1px solid var(--chrome-border);">
                                     <div class="row-info">
-                                        <h4>Persistent Bookmarks Bar</h4>
-                                        <p>Show bookmarks toolbar persistently below the address bar</p>
+                                        <h4>Bookmarks Bar</h4>
+                                        <p>Persistent toolbar below address bar</p>
                                     </div>
                                     <div class="toggle on" id="bookmarks-bar-toggle"></div>
                                 </div>
-                                <div class="security-toggle-row">
+                                <div class="security-toggle-row" style="padding: 14px 20px; border-bottom: none;">
                                     <div class="row-info">
-                                        <h4>Live News Hub Feed</h4>
-                                        <p>Display real-time global news button on Home Dashboard</p>
+                                        <h4>News Hub Feed</h4>
+                                        <p>Live news button on Home Dashboard</p>
                                     </div>
                                     <div class="toggle on" id="show-news-toggle"></div>
                                 </div>
                             </div>
                         </div>
 
-                        <!-- Full Width Card: Sidebar Navigation Controls -->
+                        <!-- ─── Sidebar Controls ─── -->
                         <div class="card homepage-card-box" style="grid-column: 1 / -1;">
                             <div class="homepage-card-header">
                                 <i class="fas fa-sidebar"></i>
-                                <span>Sidebar App Dock & Layout Controls</span>
+                                <span>Sidebar Controls</span>
                             </div>
-                            <div class="homepage-rows-container" style="gap: 20px;">
-                                <div class="security-toggle-row" style="flex-direction: column; align-items: flex-start; gap: 12px;">
+                            <div class="homepage-rows-container" style="gap: 14px; padding: 16px 20px;">
+                                <div class="security-toggle-row" style="flex-direction: column; align-items: flex-start; gap: 10px; padding-bottom: 14px;">
                                     <div class="row-info">
-                                        <h4>Sidebar Default State</h4>
-                                        <p>Choose whether the sidebar is visible by default or hidden on browser startup</p>
+                                        <h4>Default State</h4>
+                                        <p>Visibility on browser startup</p>
                                     </div>
-                                    <div class="choice-grid" id="sidebar-mode-grid" style="grid-template-columns: repeat(2, 1fr); gap: 12px; width: 100%;">
+                                    <div class="choice-grid" id="sidebar-mode-grid" style="grid-template-columns: repeat(2, 1fr); gap: 10px; width: 100%;">
                                         <div class="choice-item active" data-value="visible">
                                             <i class="fas fa-eye"></i>
-                                            <span>Show Sidebar</span>
+                                            <span>Show</span>
                                         </div>
                                         <div class="choice-item" data-value="hidden">
                                             <i class="fas fa-eye-slash"></i>
-                                            <span>Hide Sidebar</span>
+                                            <span>Hide</span>
                                         </div>
                                     </div>
                                 </div>
-
-                                <div class="security-toggle-row" style="flex-direction: column; align-items: flex-start; gap: 12px; padding-bottom: 0; border-bottom: none;">
+                                <div class="security-toggle-row" style="flex-direction: column; align-items: flex-start; gap: 10px; padding-bottom: 0; border-bottom: none;">
                                     <div class="row-info">
-                                        <h4>Sidebar WebApp Drawer Width</h4>
-                                        <p>Set default panel size for sidebar web apps like WhatsApp, Discord, Spotify & ChatGPT</p>
+                                        <h4>WebApp Drawer Width</h4>
+                                        <p>Panel size for WhatsApp, Discord, Spotify & ChatGPT</p>
                                     </div>
-                                    <div class="choice-grid" id="sidebar-app-width-grid" style="grid-template-columns: repeat(4, 1fr); gap: 12px; width: 100%;">
+                                    <div class="choice-grid" id="sidebar-app-width-grid" style="grid-template-columns: repeat(4, 1fr); gap: 8px; width: 100%;">
                                         <div class="choice-item" data-value="480">
                                             <i class="fas fa-mobile-screen"></i>
-                                            <span>480px (Compact)</span>
+                                            <span>480px</span>
                                         </div>
                                         <div class="choice-item" data-value="680">
                                             <i class="fas fa-tablet-screen-button"></i>
-                                            <span>680px (Medium)</span>
+                                            <span>680px</span>
                                         </div>
                                         <div class="choice-item active" data-value="880">
                                             <i class="fas fa-desktop"></i>
-                                            <span>880px (Standard)</span>
+                                            <span>880px</span>
                                         </div>
                                         <div class="choice-item" data-value="1080">
                                             <i class="fas fa-expand"></i>
-                                            <span>1080px (Wide)</span>
+                                            <span>1080px</span>
                                         </div>
                                     </div>
                                 </div>
                             </div>
                         </div>
 
-                        <!-- Full Width Card: Weather Location Customizer -->
+                        <!-- ─── Weather Location ─── -->
                         <div class="card homepage-card-box" style="grid-column: 1 / -1;">
                             <div class="homepage-card-header">
                                 <i class="fas fa-cloud-sun"></i>
-                                <span>Weather Location & Meteorological Radar Settings</span>
+                                <span>Weather Location</span>
                             </div>
-                            <div class="homepage-rows-container">
-                                <div class="security-toggle-row" style="flex-wrap: wrap; gap: 16px;">
-                                    <div class="row-info" style="flex: 1; min-width: 240px;">
-                                        <h4>Default Weather City / Location</h4>
-                                        <p>Specify your preferred city for live meteorological forecasts on the Home Dashboard</p>
+                            <div class="homepage-rows-container" style="padding: 16px 20px;">
+                                <div class="security-toggle-row" style="flex-wrap: wrap; gap: 12px;">
+                                    <div class="row-info" style="flex: 1; min-width: 200px;">
+                                        <h4>Default City</h4>
+                                        <p>Preferred city for live forecasts on the Home Dashboard</p>
                                     </div>
-                                    <div style="display: flex; align-items: center; gap: 10px; flex-wrap: wrap;">
-                                        <input type="text" id="settings-weather-city-input" class="custom-endpoint-text" placeholder="e.g. Ahmedabad, London, New York" style="width: 240px; padding: 9px 14px; border-radius: 10px; border: 1px solid var(--chrome-border); background: color-mix(in srgb, var(--text) 3%, transparent); color: var(--text); font-size: 13px;">
-                                        <button class="btn secondary" id="save-weather-city-btn" style="padding: 9px 16px; font-size: 12px; font-weight: 700; border-radius: 10px;">
-                                            <i class="fas fa-check" style="margin-right: 6px; color: var(--accent);"></i> Save Location
+                                    <div style="display: flex; align-items: center; gap: 8px; flex-wrap: wrap;">
+                                        <input type="text" id="settings-weather-city-input" class="custom-endpoint-text" placeholder="e.g. Ahmedabad, London" style="width: 200px; padding: 8px 12px; border-radius: 10px; border: 1px solid var(--chrome-border); background: color-mix(in srgb, var(--text) 3%, transparent); color: var(--text); font-size: 12.5px;">
+                                        <button class="btn secondary" id="save-weather-city-btn" style="padding: 8px 14px; font-size: 11.5px; font-weight: 700; border-radius: 10px;">
+                                            <i class="fas fa-check" style="margin-right: 5px; color: var(--accent);"></i> Save
                                         </button>
-                                        <button class="btn secondary" id="auto-weather-city-btn" style="padding: 9px 16px; font-size: 12px; font-weight: 700; border-radius: 10px;" title="Reset to GPS auto-detection">
-                                            <i class="fas fa-location-crosshairs" style="margin-right: 6px;"></i> Auto-detect
+                                        <button class="btn secondary" id="auto-weather-city-btn" style="padding: 8px 14px; font-size: 11.5px; font-weight: 700; border-radius: 10px;" title="Reset to GPS auto-detection">
+                                            <i class="fas fa-location-crosshairs" style="margin-right: 5px;"></i> Auto
                                         </button>
                                     </div>
                                 </div>
@@ -571,83 +557,85 @@
                 <div class="page-header">
                     <div class="page-eyebrow">Hardware & Environment</div>
                     <div class="page-title">System Configuration</div>
-                    <div class="page-desc">Configure browser shell limits, download terminals, and diagnostic behaviors.</div>
+                    <div class="page-desc">Configure browser shell limits, download paths, and diagnostic behaviors.</div>
                 </div>
 
                 <div class="page-body">
                     <div class="system-bento-grid">
 
-                        <!-- Core Environment Status Card -->
+                        <!-- ─── Environment & Shell Status ─── -->
                         <div class="card system-bento-card status-card">
                             <div class="card-header-styled">
                                 <i class="fas fa-desktop"></i>
                                 <span>Environment & Shell Status</span>
                             </div>
-                            <div class="diagnostics-panel">
-                                <div class="diagnostic-row-item">
+                            <div class="diagnostics-panel" style="gap: 12px; padding: 14px 16px;">
+                                <div class="diagnostic-row-item" style="padding-bottom: 10px;">
                                     <div class="diag-label">Host Shell Status</div>
-                                    <div id="default-browser-status" class="diag-value status-checking"
-                                        style="font-size: 11.5px; font-weight: 700; padding: 4px 12px; border-radius: 100px; background: rgba(255,193,7,0.12); color: #ffc107; border: 1px solid rgba(255,193,7,0.25);">
-                                        Checking status...
+                                    <div style="display: flex; align-items: center; gap: 8px;">
+                                        <div id="default-browser-status" class="diag-value status-checking"
+                                            style="font-size: 11px; font-weight: 700; padding: 3px 10px; border-radius: 100px; background: rgba(255,193,7,0.12); color: #ffc107; border: 1px solid rgba(255,193,7,0.25);">
+                                            Checking status...
+                                        </div>
+                                        <button class="btn secondary" id="set-default-btn" style="padding: 4px 12px; font-size: 11px; border-radius: 8px; font-weight: 700;">
+                                            Make Default
+                                        </button>
                                     </div>
                                 </div>
-                                <div class="diagnostic-row-item">
+                                <div class="diagnostic-row-item" style="padding-bottom: 0; border-bottom: none;">
                                     <div class="diag-label">V8 Execution Sandbox</div>
                                     <div class="diag-value status-active"
-                                        style="font-size: 11.5px; font-weight: 700; padding: 4px 12px; border-radius: 100px; background: var(--accent-dim); color: var(--accent); border: 1px solid var(--accent-border);">
+                                        style="font-size: 11px; font-weight: 700; padding: 3px 10px; border-radius: 100px; background: var(--accent-dim); color: var(--accent); border: 1px solid var(--accent-border);">
                                         Active (Isolated Thread)
                                     </div>
                                 </div>
                             </div>
-                            <div style="padding: 14px 20px; display: flex; justify-content: flex-end; border-top: 1px solid var(--chrome-border); background: color-mix(in srgb, var(--text) 2.5%, transparent);">
-                                <button class="btn secondary" id="set-default-btn" style="padding: 8px 18px; font-size: 12px; border-radius: 10px; font-weight: 700;">
-                                    <i class="fas fa-link" style="margin-right: 6px;"></i> Make Default Shell
-                                </button>
-                            </div>
                         </div>
 
-                        <!-- Operations Control Card -->
+                        <!-- ─── Operations Control ─── -->
                         <div class="card system-bento-card operations-card">
                             <div class="card-header-styled">
                                 <i class="fas fa-sliders"></i>
                                 <span>Operations Control</span>
                             </div>
-                            <div class="diagnostics-panel" style="gap: 16px;">
-                                <div class="security-toggle-row">
+                            <div class="diagnostics-panel" style="gap: 0; padding: 0;">
+                                <div class="security-toggle-row" style="padding: 12px 16px; border-bottom: 1px solid var(--chrome-border);">
                                     <div class="row-info">
                                         <h4>Confirm Session Close</h4>
-                                        <p>Show confirmation dialog before closing browser window sessions.</p>
+                                        <p>Show confirmation dialog before closing window</p>
                                     </div>
                                     <div class="toggle on" id="confirm-exit-toggle"></div>
                                 </div>
-                                <div class="security-toggle-row">
+                                <div class="security-toggle-row" style="padding: 12px 16px; border-bottom: none;">
                                     <div class="row-info">
                                         <h4>Power Optimization</h4>
-                                        <p>Throttle background tab execution to preserve battery power.</p>
+                                        <p>Throttle background tabs to preserve battery</p>
                                     </div>
                                     <div class="toggle" id="battery-saver-toggle"></div>
                                 </div>
                             </div>
                         </div>
 
-                        <!-- Downloads Terminal Console Card -->
+                        <!-- ─── Downloads & File Handling ─── -->
                         <div class="card system-bento-card downloads-card" style="grid-column: 1 / -1;">
                             <div class="card-header-styled">
-                                <i class="fas fa-terminal"></i>
-                                <span>Downloads Console Terminal</span>
+                                <i class="fas fa-download"></i>
+                                <span>Downloads & File Handling</span>
                             </div>
-                            <div style="padding: 20px; display: flex; flex-direction: column; gap: 20px;">
+                            <div style="padding: 14px 16px; display: flex; flex-direction: column; gap: 14px;">
+                                <!-- Path Display Box -->
                                 <div class="downloads-console-display">
-                                    <span class="console-terminal-badge">CLI Terminal</span>
                                     <div class="console-prompt">
-                                        <span style="color: var(--accent); font-weight: 800;">&gt;</span> <span>echo $OCAL_DOWNLOAD_PATH</span>
+                                        <i class="fas fa-folder" style="color: var(--accent); font-size: 13px;"></i>
+                                        <span style="font-weight: 700; font-size: 12px; color: var(--text);">Default Download Directory</span>
                                     </div>
-                                    <div class="console-output">
-                                        <span class="path-text">C:\Users\<span style="color: var(--accent);">neelk</span>\Downloads</span>
-                                        <span style="font-size: 9.5px; font-weight: 800; padding: 2px 8px; border-radius: 6px; background: rgba(59,130,246,0.15); color: #3b82f6; border: 1px solid rgba(59,130,246,0.25);">SYSTEM DEFAULT</span>
+                                    <div class="console-output" style="margin-top: 6px;">
+                                        <span class="path-text" style="font-family: var(--font-mono); font-size: 12px;">C:\Users\<span style="color: var(--accent);">neelk</span>\Downloads</span>
+                                        <span style="font-size: 9px; font-weight: 800; padding: 2px 8px; border-radius: 6px; background: color-mix(in srgb, var(--accent) 15%, transparent); color: var(--accent); border: 1px solid color-mix(in srgb, var(--accent) 30%, transparent);">SYSTEM DEFAULT</span>
                                     </div>
                                 </div>
 
+                                <!-- Accessory Toggles Grid -->
                                 <div class="downloads-toggles-grid">
                                     <div class="accessory-card">
                                         <div class="accessory-icon-box">
@@ -655,7 +643,7 @@
                                         </div>
                                         <div class="accessory-info">
                                             <h4>Confirm Save Path</h4>
-                                            <p>Ask where to save each file before downloading.</p>
+                                            <p>Ask where to save each file before downloading</p>
                                         </div>
                                         <div class="toggle" id="ask-save-toggle"></div>
                                     </div>
@@ -666,7 +654,7 @@
                                         </div>
                                         <div class="accessory-info">
                                             <h4>Sandboxed PDF Engine</h4>
-                                            <p>Render PDFs securely inside our local viewer sandbox.</p>
+                                            <p>Render PDFs securely inside local viewer</p>
                                         </div>
                                         <div class="toggle on" id="pdf-viewer-toggle"></div>
                                     </div>

@@ -311,8 +311,8 @@
         .hero-left {
             display: flex;
             flex-direction: column;
-            color: #FFFFFF;
-            mix-blend-mode: overlay;
+            color: #0F172A;
+            z-index: 2;
         }
 
         .hero-tag {
@@ -320,8 +320,8 @@
             font-weight: 800;
             letter-spacing: 2.5px;
             text-transform: uppercase;
-            color: #FFFFFF;
-            opacity: 0.85;
+            color: #0F172A;
+            opacity: 0.8;
             margin-bottom: 8px;
             font-family: var(--font-main);
         }
@@ -331,14 +331,16 @@
             font-weight: 800;
             letter-spacing: -1.5px;
             line-height: 1.1;
+            color: #0F172A;
         }
 
         .hero-main-desc {
             font-size: 14.5px;
-            font-weight: 500;
+            font-weight: 600;
             margin-top: 8px;
             max-width: 460px;
             line-height: 1.5;
+            color: #1E293B;
             opacity: 0.9;
         }
 
@@ -348,14 +350,14 @@
             align-items: center;
             justify-content: center;
             text-align: center;
-            background: rgba(255, 255, 255, 0.15);
+            background: rgba(15, 23, 42, 0.12);
             backdrop-filter: blur(20px);
-            border: 1px solid rgba(255, 255, 255, 0.2);
+            border: 1px solid rgba(15, 23, 42, 0.18);
             border-radius: 24px;
             padding: 24px 32px;
             min-width: 180px;
-            color: #FFFFFF;
-            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+            color: #0F172A;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.08);
         }
 
         .radial-metric-title {
@@ -364,6 +366,7 @@
             line-height: 1;
             font-family: var(--font-main);
             letter-spacing: -2px;
+            color: #0F172A;
         }
 
         .radial-metric-status {
@@ -372,7 +375,8 @@
             letter-spacing: 1px;
             text-transform: uppercase;
             margin-top: 6px;
-            opacity: 0.9;
+            color: #0F172A;
+            opacity: 0.85;
         }
 
         /* Sparkline representation in CSS */
@@ -388,7 +392,7 @@
             width: 4px;
             height: 4px;
             border-radius: 50%;
-            background: #FFFFFF;
+            background: #0F172A;
             opacity: 0.4;
         }
 
@@ -854,19 +858,19 @@
             <!-- Sophia Caldwell Inspired Gradient Banner Card -->
             <div class="biomarkers-hero-card">
                 <div class="hero-left">
-                    <div class="hero-tag">System Diagnostics</div>
-                    <h2 class="hero-main-title">Ocal Browser</h2>
+                    <div class="hero-tag">v8.0.0 Major Release</div>
+                    <h2 class="hero-main-title">Ocal Overhaul</h2>
                     <p class="hero-main-desc" id="hero-desc"></p>
                 </div>
                 <div class="hero-right-visual">
-                    <div class="radial-metric-title">7.7</div>
-                    <div class="radial-metric-status">On Track</div>
+                    <div class="radial-metric-title">8.0</div>
+                    <div class="radial-metric-status">Major Release</div>
                     <div class="sparkline-dots">
                         <span class="spark-dot"></span>
                         <span class="spark-dot"></span>
                         <span class="spark-dot"></span>
-                        <span class="spark-dot active"></span>
                         <span class="spark-dot"></span>
+                        <span class="spark-dot active"></span>
                         <span class="spark-dot"></span>
                     </div>
                 </div>
@@ -1003,7 +1007,7 @@
         }
 
         // ── Typing Animation ──
-        const heroText = "Uncompromising speed, highly customizable sidebar widgets, dynamic layout engines, and isolated security shields built exclusively for power users.";
+        const heroText = "Ocal Browser v8.0 is here — featuring a complete UI overhaul with dynamic accent color palettes, human-readable tab titles, floating navigation pills, and an upgraded AI Assistant capable of analyzing PDF documents and web pages instantly.";
         const heroDesc = document.getElementById('hero-desc');
         let charIndex = 0;
 
@@ -1109,28 +1113,28 @@
 
         // ── Features & Team Data ──
         const items = [
-            { type: 'feature', category: 'multitasking', icon: 'fa-columns', title: 'Splitscreen Mode', desc: 'Browse two websites in parallel. Drag tabs to full-height dropzones with ratio adjusters.', actionText: 'Explore' },
-            { type: 'feature', category: 'multitasking', icon: 'fa-face-smile', title: 'Tab Emojis', desc: 'Personalize your workspace tab layouts and express yourself with expressive Tab Emojis.', actionText: 'Learn More' },
+            { type: 'feature', category: 'multitasking', icon: 'fa-wand-magic-sparkles', title: 'AI PDF Document Analysis', desc: 'Ocal AI Assistant can now digest, summarize, and extract insights directly from PDF files and open browser tabs.', actionText: 'Try AI' },
+            { type: 'feature', category: 'media', icon: 'fa-palette', title: 'Complete UI Overhaul', desc: 'Vibrant glassmorphism, dynamic accent highlight color system, custom glass select popovers, and sleek dark modes.', actionText: 'Customizer' },
+            { type: 'feature', category: 'multitasking', icon: 'fa-compass', title: 'Floating Navigation Bar', desc: 'Center-aligned floating pill with instant access to History, OCAL Brand, and Browser Settings.', actionText: 'View Bar' },
+            { type: 'feature', category: 'multitasking', icon: 'fa-window-maximize', title: 'Smart Tab Titles', desc: 'Clean, simplified tab labels with full hostname context (e.g. Site Settings - youtube.com) and custom icons.', actionText: 'Learn More' },
             { type: 'feature', category: 'performance', icon: 'fa-leaf', title: 'Memory Saver Daemon', desc: 'Intelligent tab suspension kicks in after 10 minutes of inactivity to optimize visual threads.', actionText: 'Configure' },
             { type: 'feature', category: 'performance', icon: 'fa-shield-halved', title: 'Pre-Compiled Blocker', desc: 'Block lists are compiled once at boot to bypass individual request lookup delays.', actionText: 'Shield' },
             { type: 'feature', category: 'performance', icon: 'fa-microchip', title: 'GPU Rasterization', desc: 'Forced zero-copy layouts and multi-threaded rendering pipelines optimize frame draw rates.', actionText: 'Metrics' },
             { type: 'feature', category: 'media', icon: 'fa-circle-play', title: 'Media Master Engine', desc: 'Unified media popups with native path decoders, live previews, and file downloader access.', actionText: 'Try It' },
-            { type: 'feature', category: 'media', icon: 'fa-image', title: 'Wallpaper Customizer', desc: 'Refine your setup with customizable opacity sliders and local image uploads.', actionText: 'Customize' },
-            { type: 'feature', category: 'media', icon: 'fa-wand-magic-sparkles', title: 'AI Smart Bookmarks', desc: 'Wand classifies and groups links automatically into simple categorization folders.', actionText: 'Bookmarks' },
             { type: 'feature', category: 'media', icon: 'fa-volume-high', title: 'Volume Booster', desc: 'Increase active output streams by up to 500% natively using high-gain synthesizer pipelines.', actionText: 'Boost Audio' },
-            { type: 'contributor', category: 'contributors', icon: 'fa-user-gear', title: 'Neelkanth Patel', desc: 'Project founder and lead browser architect. Wrote the Electron main wrapper and tab manager daemon.', role: 'Founder & Lead Dev' },
+            { type: 'contributor', category: 'contributors', icon: 'fa-user-gear', title: 'Neelkanth Patel', desc: 'Project founder and lead browser architect. Wrote the Electron main wrapper, tab manager daemon, and AI PDF parser.', role: 'Founder & Lead Dev' },
             { type: 'contributor', category: 'contributors', icon: 'fa-user-code', title: 'Jay Shah', desc: 'Worked on tab lifecycle algorithms, background Memory Saver suspensions, and auto-wake event bindings.', role: 'Software Engineer' },
-            { type: 'contributor', category: 'contributors', icon: 'fa-user-pen', title: 'Jiya Thakkar', desc: 'Lead UX designer behind Ocal Shield card alignments, Settings tab overlays, and light/dark styling guidelines.', role: 'Lead Designer' },
-            { type: 'contributor', category: 'contributors', icon: 'fa-user-astronaut', title: 'Reese Whiteman', desc: 'Engineered the AI Bookmarking heuristics, custom tag mappings, and classification keyword parsing scripts.', role: 'AI & Research Lead' },
+            { type: 'contributor', category: 'contributors', icon: 'fa-user-pen', title: 'Jiya Thakkar', desc: 'Lead UX designer behind Ocal UI Overhaul, Glassmorphic select popovers, and dynamic contrast themes.', role: 'Lead Designer' },
+            { type: 'contributor', category: 'contributors', icon: 'fa-user-astronaut', title: 'Reese Whiteman', desc: 'Engineered the AI PDF Analysis engine, document chunking heuristics, and multi-model API bindings.', role: 'AI & Research Lead' },
             { type: 'contributor', category: 'contributors', icon: 'fa-user-shield', title: 'Samantha Chen', desc: 'Optimized network security structures, precompiling ad-block lists and adding CSP parameters.', role: 'Security Engineer' },
             { type: 'contributor', category: 'contributors', icon: 'fa-user-clock', title: 'Oscar Nilsson', desc: 'Configured Chromium V8 optimization variables, multi-threaded downloads, and GPU rasterization flags.', role: 'Performance Engineer' }
         ];
 
         const changelog = [
-            { date: 'July 2026', title: 'v7.7.04 — Stable Release', desc: 'Added splitscreen dropzones, wallpaper customizer fine-tuning, and GPU raster acceleration flags.', tags: ['Performance', 'UI'] },
-            { date: 'June 2026', title: 'v7.6.12 — Memory Optimizations', desc: 'Introduced intelligent tab suspension daemon with 10-minute idle threshold and auto-wake bindings.', tags: ['System', 'Memory'] },
-            { date: 'May 2026', title: 'v7.5.08 — AI Bookmarks Beta', desc: 'Launched AI-powered bookmark classification with category folder auto-grouping.', tags: ['AI', 'Bookmarks'] },
-            { date: 'April 2026', title: 'v7.4.02 — Security Hardening', desc: 'Pre-compiled ad-block filter lists, enhanced CSP headers, and certificate transparency checks.', tags: ['Security', 'Shield'] },
+            { date: 'July 2026', title: 'v8.0.0 — Major UI Overhaul & PDF AI Intelligence', desc: 'Complete design system revamp with dynamic accent highlights, floating navigation pill, human-readable tab titles, and PDF document analysis in Ocal AI Assistant.', tags: ['Major Update', 'UI/UX', 'AI'] },
+            { date: 'July 2026', title: 'v7.8.00 — Dynamic Color Palette System', desc: 'Introduced 6 custom accent color options (Purple, Neon Green, Ocean Blue, Coral Red, Lime, White) with contrast text adaptation.', tags: ['Theme', 'Accent'] },
+            { date: 'June 2026', title: 'v7.7.04 — Splitscreen & GPU Acceleration', desc: 'Added splitscreen dropzones, wallpaper customizer fine-tuning, and GPU raster acceleration flags.', tags: ['Performance', 'UI'] },
+            { date: 'May 2026', title: 'v7.6.12 — Memory Saver Daemon', desc: 'Introduced intelligent tab suspension daemon with 10-minute idle threshold and auto-wake bindings.', tags: ['System', 'Memory'] }
         ];
 
         let currentCategory = 'all';
@@ -1240,10 +1244,10 @@
 
             // Update title strings
             const map = {
-                all: ['All Features', 'SHOWING ALL RECENT IMPROVEMENTS IN V7.7.04'],
-                multitasking: ['Multitasking Features', 'BROWSE SIDE-BY-SIDE WORKSPACE SCREENS'],
+                all: ['All Features', 'SHOWING ALL RECENT IMPROVEMENTS IN V8.0.0 — OVERHAUL & PDF AI'],
+                multitasking: ['Multitasking & Navigation', 'FLOATING PILL, SMART TAB TITLES & PDF AI'],
                 performance: ['Performance Upgrades', 'FASTER LOADING, LOW CPU CYCLES, MEMORY DAEMONS'],
-                media: ['Media & Customizers', 'AESTHETIC STYLES AND WALLPAPER OPTIONS'],
+                media: ['Media & Design System', 'DYNAMIC ACCENT HIGHLIGHTS & GLASS UI'],
                 contributors: ['Ocal Lead Team', 'THE ARCHITECTS AND DESIGNERS OF THE STABLE CORE']
             };
 

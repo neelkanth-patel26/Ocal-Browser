@@ -151,14 +151,17 @@ body[data-theme="dark"] .panel-header {
     z-index: 1; letter-spacing: 0.1px;
     font-family: 'Plus Jakarta Sans', sans-serif;
 }
-.tab-pill.active {
-    color: #111111 !important;
-    background: #D4FC2B !important;
-    box-shadow: 0 2px 8px rgba(212, 252, 43, 0.35) !important;
+.tab-pill.active,
+body[data-theme="dark"] .tab-pill.active,
+body[data-theme="light"] .tab-pill.active {
+    color: var(--accent-text, #ffffff) !important;
+    background: var(--accent) !important;
+    box-shadow: 0 2px 8px var(--accent-glow) !important;
     font-weight: 800;
 }
-.tab-pill i { font-size: 11px; color: inherit; }
-.tab-pill:hover:not(.active) { color: #111111; background: rgba(0,0,0,0.04); }
+.tab-pill.active i { color: var(--accent-text, #ffffff) !important; }
+.tab-pill i { font-size: 11px; }
+.tab-pill:hover:not(.active) { color: #ffffff; background: rgba(255,255,255,0.08); }
 
 /* ── Search Bar ───────────────────────────────── */
 .panel-search { padding: 0 14px 10px; flex-shrink: 0; }
@@ -169,13 +172,10 @@ body[data-theme="dark"] .panel-header {
     border-radius: 100px !important; padding: 9px 16px;
     transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
 }
-.search-row:focus-within {
-    border-color: #D4FC2B !important;
-    box-shadow: 0 0 0 3px rgba(212, 252, 43, 0.15) !important;
-}
+.search-row:focus-within,
 body[data-theme="light"] .search-row:focus-within {
-    border-color: #15AC49 !important;
-    box-shadow: 0 0 0 3px rgba(21, 172, 73, 0.12) !important;
+    border-color: var(--accent) !important;
+    box-shadow: 0 0 0 3px var(--accent-glow) !important;
 }
 .search-row i { font-size: 12px; color: var(--text-dim); flex-shrink: 0; }
 .search-row input {
@@ -265,8 +265,8 @@ body[data-theme="dark"] .tab-strip {
     border-color: rgba(255, 255, 255, 0.07) !important;
     box-shadow: none;
 }
-body[data-theme="dark"] .tab-pill {
-    color: #6B7280 !important;
+body[data-theme="dark"] .tab-pill:not(.active) {
+    color: #9CA3AF !important;
 }
 body[data-theme="dark"] .bm-tool-btn {
     background: transparent !important;
@@ -274,9 +274,9 @@ body[data-theme="dark"] .bm-tool-btn {
     color: #9CA3AF !important;
 }
 body[data-theme="dark"] .bm-tool-btn:hover {
-    background: #D4FC2B !important;
-    border-color: #D4FC2B !important;
-    color: #111111 !important;
+    background: var(--accent) !important;
+    border-color: var(--accent) !important;
+    color: var(--accent-text, #111111) !important;
 }
 .current-active { 
     background: rgba(255,255,255,0.05) !important; 
