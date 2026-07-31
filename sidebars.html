@@ -709,20 +709,20 @@ body[data-theme="light"] #modal-container {
 #modal-icon {
     width: 64px; height: 64px;
     border-radius: 20px !important;
-    background: rgba(212, 252, 43, 0.12);
-    border: 1.5px solid rgba(212, 252, 43, 0.35);
-    color: #D4FC2B;
+    background: var(--accent-dim) !important;
+    border: 1.5px solid var(--accent-border) !important;
+    color: var(--accent) !important;
     font-size: 24px;
     display: flex; align-items: center; justify-content: center;
     margin: 0 auto 24px;
     position: relative;
-    box-shadow: 0 4px 24px rgba(212, 252, 43, 0.15);
+    box-shadow: 0 4px 24px var(--accent-glow) !important;
 }
 body[data-theme="light"] #modal-icon {
-    background: rgba(21, 172, 73, 0.1);
-    border-color: rgba(21, 172, 73, 0.3);
-    color: #15AC49;
-    box-shadow: 0 4px 16px rgba(21, 172, 73, 0.15);
+    background: var(--accent-dim) !important;
+    border-color: var(--accent-border) !important;
+    color: var(--accent) !important;
+    box-shadow: 0 4px 16px var(--accent-glow) !important;
 }
 #modal-icon::after { display: none !important; }
 
@@ -783,24 +783,24 @@ body[data-theme="light"] #modal-cancel:hover {
 #modal-cancel:active { transform: scale(0.97); }
 
 #modal-confirm {
-    background: #D4FC2B !important;
-    color: #111111 !important;
+    background: var(--accent) !important;
+    color: var(--accent-text, #ffffff) !important;
     border: none !important;
     font-weight: 800 !important;
-    box-shadow: 0 4px 16px rgba(212, 252, 43, 0.3);
+    box-shadow: 0 4px 16px var(--accent-glow) !important;
 }
 body[data-theme="light"] #modal-confirm {
-    background: #15AC49 !important;
-    color: #FFFFFF !important;
-    box-shadow: 0 4px 16px rgba(21, 172, 73, 0.3);
+    background: var(--accent) !important;
+    color: var(--accent-text, #ffffff) !important;
+    box-shadow: 0 4px 16px var(--accent-glow) !important;
 }
 #modal-confirm:hover {
     transform: translateY(-2px) !important;
-    box-shadow: 0 8px 24px rgba(212, 252, 43, 0.45) !important;
+    box-shadow: 0 8px 24px var(--accent-glow) !important;
     filter: brightness(1.06);
 }
 body[data-theme="light"] #modal-confirm:hover {
-    box-shadow: 0 8px 24px rgba(21, 172, 73, 0.4) !important;
+    box-shadow: 0 8px 24px var(--accent-glow) !important;
 }
 #modal-confirm:active { transform: scale(0.97) !important; }
 

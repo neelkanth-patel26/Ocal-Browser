@@ -18,6 +18,7 @@
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="assets/fontawesome/css/all.min.css">
     <link rel="stylesheet" href="file-manager.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
 </head>
 <body class="pro-studio">
     <script>
@@ -47,14 +48,14 @@
                     <button class="nav-item active" data-folder="home">
                         <i class="fas fa-house"></i> <span>Home</span>
                     </button>
+                    <button class="nav-item" data-folder="desktop">
+                        <i class="fas fa-desktop"></i> <span>Desktop</span>
+                    </button>
                     <button class="nav-item" data-folder="downloads">
                         <i class="fas fa-download"></i> <span>Downloads</span>
                     </button>
                     <button class="nav-item" data-folder="documents">
                         <i class="fas fa-file-lines"></i> <span>Documents</span>
-                    </button>
-                    <button class="nav-item" data-folder="desktop">
-                        <i class="fas fa-desktop"></i> <span>Desktop</span>
                     </button>
                 </div>
                 
@@ -63,6 +64,11 @@
                     <button class="nav-item" data-folder="pictures"><i class="fas fa-image"></i> <span>Pictures</span></button>
                     <button class="nav-item" data-folder="videos"><i class="fas fa-video"></i> <span>Videos</span></button>
                     <button class="nav-item" data-folder="music"><i class="fas fa-music"></i> <span>Music</span></button>
+                </div>
+
+                <div class="nav-section">
+                    <div class="section-title"><i class="fas fa-computer" style="font-size: 11px; margin-right: 4px;"></i> This PC</div>
+                    <div id="drives-list" style="display: flex; flex-direction: column; gap: 2px;"></div>
                 </div>
             </nav>
 
@@ -74,10 +80,6 @@
                     </div>
                     <p>All file indexing and processing happens locally on your computer.</p>
                 </div>
-                <button id="analyze-btn" class="analyze-btn">
-                    <i class="fas fa-magnifying-glass-folder"></i>
-                    <span>Find all PDFs</span>
-                </button>
             </div>
         </aside>
 
@@ -95,8 +97,12 @@
                 <div class="header-actions">
                     <div class="search-box">
                         <i class="fas fa-magnifying-glass"></i>
-                        <input type="text" id="file-search" placeholder="Search PDF files...">
+                        <input type="text" id="file-search" placeholder="Search files...">
                     </div>
+                    <button class="preview-toggle-btn active" id="toggle-previews-btn" title="Toggle PDF & Photo Previews">
+                        <i class="fas fa-eye"></i>
+                        <span>Previews ON</span>
+                    </button>
                     <div class="view-terminal" id="view-toggles">
                         <button class="view-btn active" id="view-grid" title="Grid View"><i class="fas fa-grip"></i></button>
                         <button class="view-btn" id="view-list" title="List View"><i class="fas fa-list"></i></button>
@@ -105,12 +111,37 @@
             </header>
 
             <div class="explorer-body">
-                <div id="file-grid" class="file-grid">
-                    <div class="loading-state">
-                        <i class="fas fa-circle-notch fa-spin"></i>
-                        <span>Searching files...</span>
+                <div class="explorer-content">
+                    <div id="file-grid" class="file-grid">
+                        <div class="loading-state">
+                            <i class="fas fa-circle-notch fa-spin"></i>
+                            <span>Searching files...</span>
+                        </div>
                     </div>
                 </div>
+
+                <!-- Docked Right Preview Inspector Panel (Zero Gaps) -->
+                <aside id="preview-inspector" class="preview-inspector" style="display: none;">
+                    <div class="inspector-header">
+                        <span class="inspector-title">File Details</span>
+                        <button class="inspector-close" id="inspector-close-btn"><i class="fas fa-xmark"></i></button>
+                    </div>
+                    <div class="inspector-body">
+                        <div class="inspector-preview-box" id="inspector-preview-box"></div>
+                        <div class="inspector-file-name" id="inspector-file-name">File Name</div>
+                        <div class="inspector-meta-grid">
+                            <div class="meta-row"><span class="label">Type:</span><span id="inspector-type" class="val">Document</span></div>
+                            <div class="meta-row"><span class="label">Size:</span><span id="inspector-size" class="val">--</span></div>
+                            <div class="meta-row"><span class="label">Modified:</span><span id="inspector-date" class="val">--</span></div>
+                            <div class="meta-row"><span class="label">Location:</span><span id="inspector-path" class="val">--</span></div>
+                        </div>
+                    </div>
+                    <div class="inspector-footer">
+                        <button class="inspector-btn primary" id="inspector-open-btn">
+                            <i class="fas fa-arrow-up-right-from-square"></i> Open File
+                        </button>
+                    </div>
+                </aside>
             </div>
             
             <footer class="content-footer" id="status-bar">
@@ -128,6 +159,224 @@
 
     <!-- Custom Context Menu -->
     <div id="context-menu" class="custom-context-menu"></div>
+
+    <!-- Built-in Custom Media Player Modal -->
+    <div id="media-player-modal" class="media-player-modal" style="display:none;">
+        <div class="media-modal-backdrop" id="media-modal-backdrop"></div>
+        <div class="media-modal-card">
+            <div class="media-modal-header">
+                <div class="media-modal-title">
+                    <i id="media-modal-icon" class="fas fa-circle-play"></i>
+                    <span id="media-modal-name">Playing Media</span>
+                </div>
+                <button class="media-modal-close" id="media-modal-close"><i class="fas fa-xmark"></i></button>
+            </div>
+            
+            <div class="media-modal-body" id="media-modal-body"></div>
+
+            <!-- Custom Controls Bar -->
+            <div class="custom-media-controls" id="custom-media-controls">
+                <!-- Audio Studio Enhancer Toolbar -->
+                <div class="audio-enhancer-toolbar" id="audio-enhancer-toolbar">
+                    <div class="enhancer-toggle-row">
+                        <span class="enhancer-label"><i class="fas fa-sliders"></i> Audio FX:</span>
+                        <button class="enhancer-pill-btn active" id="enhancer-tab-3d"><i class="fas fa-arrows-spin"></i> 3D Surround</button>
+                        <button class="enhancer-pill-btn" id="enhancer-tab-clarity"><i class="fas fa-wand-magic-sparkles"></i> Enhancer</button>
+                        <button class="enhancer-pill-btn" id="enhancer-tab-bass"><i class="fas fa-drum"></i> Bass Boost</button>
+                        <button class="enhancer-pill-btn" id="enhancer-tab-eq"><i class="fas fa-chart-simple"></i> 10-Band EQ</button>
+                    </div>
+
+                    <!-- 3D Surround Sound Control Panel -->
+                    <div class="enhancer-panel" id="panel-3d" style="display: flex;">
+                        <div class="fx-control-group">
+                            <label>Surround Mode:</label>
+                            <div class="custom-fx-dropdown" id="custom-surround-dropdown">
+                                <button class="fx-dropdown-trigger" id="surround-dropdown-trigger" type="button">
+                                    <span id="surround-current-val"><i class="fas fa-film"></i> 3D Cinema Stage</span>
+                                    <i class="fas fa-chevron-down arrow-icon"></i>
+                                </button>
+                                <div class="fx-dropdown-menu" id="surround-dropdown-menu">
+                                    <div class="fx-dropdown-item active" data-value="cinema"><i class="fas fa-film"></i> 3D Cinema Stage</div>
+                                    <div class="fx-dropdown-item" data-value="spatial8d"><i class="fas fa-arrows-spin"></i> 8D Spatial Orbit</div>
+                                    <div class="fx-dropdown-item" data-value="studio"><i class="fas fa-sliders"></i> Studio Concert Hall</div>
+                                    <div class="fx-dropdown-item" data-value="off"><i class="fas fa-power-off"></i> Off (Standard Stereo)</div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="fx-control-group">
+                            <label>Spatial Depth:</label>
+                            <input type="range" id="fx-surround-width" min="0" max="1" value="0.7" step="0.05">
+                        </div>
+                    </div>
+
+                    <!-- Music Enhancer Panel -->
+                    <div class="enhancer-panel" id="panel-clarity" style="display: none;">
+                        <div class="fx-control-group">
+                            <label>Dynamic Master Enhancer:</label>
+                            <button class="fx-toggle-btn active" id="fx-clarity-toggle">ON</button>
+                        </div>
+                        <div class="fx-control-group">
+                            <label>Vocal & Highs Exciter:</label>
+                            <input type="range" id="fx-highs-slider" min="0" max="12" value="4" step="1">
+                        </div>
+                    </div>
+
+                    <!-- Bass Boost Panel -->
+                    <div class="enhancer-panel" id="panel-bass" style="display: none;">
+                        <div class="fx-control-group">
+                            <label>Sub-Bass Punch (60Hz):</label>
+                            <input type="range" id="fx-bass-slider" min="0" max="15" value="6" step="1">
+                        </div>
+                    </div>
+
+                    <!-- 10-Band EQ Panel -->
+                    <div class="enhancer-panel" id="panel-eq" style="display: none; flex-direction: column; gap: 10px;">
+                        <div class="eq-presets-row">
+                            <span class="eq-preset-label">Presets:</span>
+                            <button class="eq-preset-btn active" data-preset="flat">Flat</button>
+                            <button class="eq-preset-btn" data-preset="bass">Bass</button>
+                            <button class="eq-preset-btn" data-preset="vocal">Vocal</button>
+                            <button class="eq-preset-btn" data-preset="rock">Rock</button>
+                            <button class="eq-preset-btn" data-preset="pop">Pop</button>
+                            <button class="eq-preset-btn" data-preset="electronic">Electronic</button>
+                        </div>
+                        <div class="eq-sliders-row">
+                            <div class="eq-band"><span class="eq-lbl">32Hz</span><input type="range" class="eq-slider" data-freq="32" min="-12" max="12" value="2" orient="vertical"><span class="eq-val">+2</span></div>
+                            <div class="eq-band"><span class="eq-lbl">64Hz</span><input type="range" class="eq-slider" data-freq="64" min="-12" max="12" value="4" orient="vertical"><span class="eq-val">+4</span></div>
+                            <div class="eq-band"><span class="eq-lbl">125Hz</span><input type="range" class="eq-slider" data-freq="125" min="-12" max="12" value="3" orient="vertical"><span class="eq-val">+3</span></div>
+                            <div class="eq-band"><span class="eq-lbl">250Hz</span><input type="range" class="eq-slider" data-freq="250" min="-12" max="12" value="0" orient="vertical"><span class="eq-val">0</span></div>
+                            <div class="eq-band"><span class="eq-lbl">500Hz</span><input type="range" class="eq-slider" data-freq="500" min="-12" max="12" value="-1" orient="vertical"><span class="eq-val">-1</span></div>
+                            <div class="eq-band"><span class="eq-lbl">1kHz</span><input type="range" class="eq-slider" data-freq="1000" min="-12" max="12" value="0" orient="vertical"><span class="eq-val">0</span></div>
+                            <div class="eq-band"><span class="eq-lbl">2kHz</span><input type="range" class="eq-slider" data-freq="2000" min="-12" max="12" value="2" orient="vertical"><span class="eq-val">+2</span></div>
+                            <div class="eq-band"><span class="eq-lbl">4kHz</span><input type="range" class="eq-slider" data-freq="4000" min="-12" max="12" value="3" orient="vertical"><span class="eq-val">+3</span></div>
+                            <div class="eq-band"><span class="eq-lbl">8kHz</span><input type="range" class="eq-slider" data-freq="8000" min="-12" max="12" value="4" orient="vertical"><span class="eq-val">+4</span></div>
+                            <div class="eq-band"><span class="eq-lbl">16kHz</span><input type="range" class="eq-slider" data-freq="16000" min="-12" max="12" value="3" orient="vertical"><span class="eq-val">+3</span></div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="media-time-row">
+                    <span id="media-time-current">0:00</span>
+                    <div class="media-seek-container">
+                        <input type="range" id="media-seek-bar" min="0" max="100" value="0" step="0.1">
+                    </div>
+                    <span id="media-time-duration">0:00</span>
+                </div>
+                
+                <div class="media-buttons-row">
+                    <div class="media-vol-group">
+                        <button class="media-ctrl-btn" id="media-mute-btn" title="Mute/Unmute">
+                            <i class="fas fa-volume-high"></i>
+                        </button>
+                        <input type="range" id="media-vol-bar" min="0" max="1" value="1" step="0.05">
+                    </div>
+
+                    <div class="media-main-ctrls">
+                        <button class="media-ctrl-btn" id="media-rew-btn" title="Rewind 10s">
+                            <i class="fas fa-rotate-left"></i>
+                        </button>
+                        <button class="media-play-btn" id="media-play-btn" title="Play/Pause">
+                            <i class="fas fa-play"></i>
+                        </button>
+                        <button class="media-ctrl-btn" id="media-fwd-btn" title="Forward 10s">
+                            <i class="fas fa-rotate-right"></i>
+                        </button>
+                    </div>
+
+                    <div class="media-right-group">
+                        <button class="media-ctrl-btn" id="media-fs-btn" title="Fullscreen" style="display:none;">
+                            <i class="fas fa-expand"></i>
+                        </button>
+                        <button class="media-modal-btn" id="media-open-tab-btn">
+                            <i class="fas fa-up-right-from-square"></i> Open in Tab
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Custom Photo Editor & Image Viewer Modal -->
+    <div id="photo-editor-modal" class="modal-overlay" style="display: none;">
+        <div class="photo-editor-container">
+            <!-- Header -->
+            <div class="editor-header">
+                <div class="editor-title-cluster">
+                    <i class="fas fa-image" style="color: var(--accent);"></i>
+                    <span id="editor-filename" class="editor-filename">image.jpg</span>
+                    <span id="editor-meta" class="editor-meta-badge">IMAGE VIEWER & EDITOR</span>
+                </div>
+                <div class="editor-header-actions">
+                    <button id="editor-save-btn" class="editor-btn primary" title="Save / Export Image">
+                        <i class="fas fa-download"></i> <span>Save Image</span>
+                    </button>
+                    <button id="editor-close-btn" class="editor-btn close" title="Close">
+                        <i class="fas fa-times"></i>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Viewport -->
+            <div class="editor-viewport">
+                <div class="editor-canvas-wrapper" id="editor-canvas-wrapper">
+                    <img id="editor-img-target" class="editor-img-target" alt="Photo Preview">
+                </div>
+            </div>
+
+            <!-- Toolbar & Controls -->
+            <div class="editor-toolbar">
+                <div class="editor-tool-group">
+                    <button class="editor-icon-btn" id="tool-rotate-left" title="Rotate Left 90°"><i class="fas fa-rotate-left"></i></button>
+                    <button class="editor-icon-btn" id="tool-rotate-right" title="Rotate Right 90°"><i class="fas fa-rotate-right"></i></button>
+                    <button class="editor-icon-btn" id="tool-flip-h" title="Flip Horizontal"><i class="fas fa-arrows-left-right"></i></button>
+                    <button class="editor-icon-btn" id="tool-flip-v" title="Flip Vertical"><i class="fas fa-arrows-up-down"></i></button>
+                    <div class="editor-divider"></div>
+                    <button class="editor-icon-btn" id="tool-zoom-in" title="Zoom In"><i class="fas fa-magnifying-glass-plus"></i></button>
+                    <button class="editor-icon-btn" id="tool-zoom-out" title="Zoom Out"><i class="fas fa-magnifying-glass-minus"></i></button>
+                    <button class="editor-icon-btn" id="tool-fit" title="Fit Screen"><i class="fas fa-expand"></i></button>
+                    <button class="editor-icon-btn text-btn" id="tool-reset" title="Reset All Edits"><i class="fas fa-arrow-rotate-left"></i> Reset</button>
+                </div>
+
+                <div class="editor-preset-row">
+                    <span class="editor-preset-label">Presets:</span>
+                    <button class="editor-chip active" data-preset="normal">Original</button>
+                    <button class="editor-chip" data-preset="vivid">Vivid</button>
+                    <button class="editor-chip" data-preset="bw">B&W</button>
+                    <button class="editor-chip" data-preset="sepia">Sepia</button>
+                    <button class="editor-chip" data-preset="cyber">Cyberpunk</button>
+                    <button class="editor-chip" data-preset="warm">Warm Film</button>
+                </div>
+
+                <div class="editor-sliders-grid">
+                    <div class="slider-field">
+                        <label><i class="fas fa-sun"></i> Brightness</label>
+                        <input type="range" id="slider-brightness" min="0" max="200" value="100">
+                        <span id="val-brightness">100%</span>
+                    </div>
+                    <div class="slider-field">
+                        <label><i class="fas fa-circle-half-stroke"></i> Contrast</label>
+                        <input type="range" id="slider-contrast" min="0" max="200" value="100">
+                        <span id="val-contrast">100%</span>
+                    </div>
+                    <div class="slider-field">
+                        <label><i class="fas fa-droplet"></i> Saturation</label>
+                        <input type="range" id="slider-saturation" min="0" max="200" value="100">
+                        <span id="val-saturation">100%</span>
+                    </div>
+                    <div class="slider-field">
+                        <label><i class="fas fa-eye-dropper"></i> Sepia</label>
+                        <input type="range" id="slider-sepia" min="0" max="100" value="0">
+                        <span id="val-sepia">0%</span>
+                    </div>
+                    <div class="slider-field">
+                        <label><i class="fas fa-wand-magic-sparkles"></i> Blur</label>
+                        <input type="range" id="slider-blur" min="0" max="20" value="0">
+                        <span id="val-blur">0px</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
 
     <script src="file-manager.js"></script>
 </body>

@@ -2957,3 +2957,189 @@ body[data-theme="light"] .preset-opt-btn:hover {
 body[data-theme="light"] .resize-handle-bar {
   background: rgba(0, 0, 0, 0.3);
 }
+
+/* ── Split Screen Helper Popover ── */
+.split-helper-popover {
+  position: absolute;
+  top: 48px;
+  right: 180px;
+  width: 320px;
+  background: var(--chrome);
+  border: 1px solid var(--chrome-border);
+  border-radius: 16px;
+  padding: 14px;
+  box-shadow: 0 12px 36px rgba(0, 0, 0, 0.25);
+  z-index: 100000;
+  animation: popoverIn 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+  -webkit-app-region: no-drag !important;
+}
+
+body[data-theme="light"] .split-helper-popover {
+  box-shadow: 0 12px 36px rgba(0, 0, 0, 0.1);
+}
+
+@keyframes popoverIn {
+  from { opacity: 0; transform: translateY(-8px) scale(0.96); }
+  to   { opacity: 1; transform: translateY(0) scale(1); }
+}
+
+.split-helper-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding-bottom: 10px;
+  margin-bottom: 10px;
+  border-bottom: 1px solid var(--chrome-border);
+}
+
+.split-helper-title {
+  font-family: var(--font-title);
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--text);
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.split-helper-title i {
+  color: var(--accent);
+}
+
+.split-helper-close {
+  background: transparent;
+  border: none;
+  color: var(--text-dim);
+  font-size: 13px;
+  cursor: pointer;
+  padding: 4px 6px;
+  border-radius: 6px;
+  transition: all 0.15s ease;
+}
+
+.split-helper-close:hover {
+  background: var(--hover);
+  color: var(--text);
+}
+
+.split-helper-grid {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.split-helper-opt {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 10px 12px;
+  background: var(--card-bg);
+  border: 1px solid var(--chrome-border);
+  border-radius: 10px;
+  cursor: pointer;
+  text-align: left;
+  transition: all 0.15s ease;
+  color: var(--text);
+}
+
+.split-helper-opt:hover {
+  background: var(--accent-dim);
+  border-color: color-mix(in srgb, var(--accent) 40%, transparent);
+  transform: translateX(2px);
+}
+
+.sh-opt-icon {
+  width: 32px;
+  height: 32px;
+  border-radius: 8px;
+  background: rgba(255, 255, 255, 0.05);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 14px;
+  color: var(--accent);
+  flex-shrink: 0;
+}
+
+body[data-theme="light"] .sh-opt-icon {
+  background: rgba(0, 0, 0, 0.04);
+}
+
+.sh-opt-text {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+}
+
+.sh-opt-name {
+  font-family: var(--font-title);
+  font-size: 12.5px;
+  font-weight: 700;
+  color: var(--text);
+}
+
+.sh-opt-desc {
+  font-size: 10.5px;
+  color: var(--text-dim);
+}
+
+.split-helper-footer {
+  display: flex;
+  gap: 8px;
+  margin-top: 10px;
+  padding-top: 10px;
+  border-top: 1px solid var(--chrome-border);
+}
+
+.sh-footer-btn {
+  flex: 1;
+  padding: 8px 12px;
+  border-radius: 8px;
+  font-size: 11.5px;
+  font-weight: 700;
+  border: 1px solid var(--chrome-border);
+  background: var(--card-bg);
+  color: var(--text);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  transition: all 0.15s ease;
+}
+
+.sh-footer-btn:hover {
+  background: var(--accent-dim);
+  border-color: var(--accent);
+  color: var(--accent);
+}
+
+.sh-footer-btn.exit-btn:hover {
+  background: rgba(239, 68, 68, 0.15);
+  border-color: rgba(239, 68, 68, 0.4);
+  color: #ef4444;
+}
+
+/* Split Active Pill in Toolbar */
+.split-active-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 10px;
+  background: var(--accent-dim);
+  border: 1px solid color-mix(in srgb, var(--accent) 35%, transparent);
+  border-radius: 100px;
+  color: var(--accent);
+  font-size: 11px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  margin-right: 6px;
+  -webkit-app-region: no-drag !important;
+}
+
+.split-active-pill:hover {
+  background: color-mix(in srgb, var(--accent) 25%, transparent);
+  transform: scale(1.04);
+}
