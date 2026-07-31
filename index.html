@@ -135,6 +135,11 @@
         <!-- Right: toolbar actions -->
         <div class="invisible-wall"></div>
         <div class="toolbar-actions">
+            <div class="split-active-pill" id="split-active-pill" style="display: none;" title="Split View Active — Click for Helper Menu">
+                <i class="fas fa-columns"></i>
+                <span id="split-active-label">Split View</span>
+                <i class="fas fa-chevron-down" style="font-size: 9px; margin-left: 2px;"></i>
+            </div>
             <button class="tool-btn media-master-btn" id="media-master-btn" title="Ocal Media Master" style="display:none;">
                 <i class="fas fa-layer-group"></i>
                 <span id="media-count-chip">0</span>
@@ -227,6 +232,48 @@
         <div class="split-undo-content">
             <i class="fas fa-columns"></i>
             <span>Split workspace closed</span>
+        </div>
+    </div>
+
+    <!-- Split Screen Helper Quick Access Popover -->
+    <div class="split-helper-popover" id="split-helper-popover" style="display: none;">
+        <div class="split-helper-header">
+            <div class="split-helper-title"><i class="fas fa-columns"></i> Split Screen Helper</div>
+            <button class="split-helper-close" id="split-helper-close"><i class="fas fa-xmark"></i></button>
+        </div>
+        <div class="split-helper-grid">
+            <button class="split-helper-opt" id="sh-opt-home">
+                <div class="sh-opt-icon"><i class="fas fa-house"></i></div>
+                <div class="sh-opt-text">
+                    <span class="sh-opt-name">Split with Home Page</span>
+                    <span class="sh-opt-desc">Open Ocal Home side-by-side</span>
+                </div>
+            </button>
+            <button class="split-helper-opt" id="sh-opt-duplicate">
+                <div class="sh-opt-icon"><i class="fas fa-clone"></i></div>
+                <div class="sh-opt-text">
+                    <span class="sh-opt-name">Duplicate Current View</span>
+                    <span class="sh-opt-desc">Clone active page into split window</span>
+                </div>
+            </button>
+            <button class="split-helper-opt" id="sh-opt-explorer">
+                <div class="sh-opt-icon"><i class="fas fa-folder-tree"></i></div>
+                <div class="sh-opt-text">
+                    <span class="sh-opt-name">Split with System Explorer</span>
+                    <span class="sh-opt-desc">Open File Manager side-by-side</span>
+                </div>
+            </button>
+            <button class="split-helper-opt" id="sh-opt-games">
+                <div class="sh-opt-icon"><i class="fas fa-gamepad"></i></div>
+                <div class="sh-opt-text">
+                    <span class="sh-opt-name">Split with Games Hub</span>
+                    <span class="sh-opt-desc">Play games alongside your work</span>
+                </div>
+            </button>
+        </div>
+        <div class="split-helper-footer" id="split-helper-active-actions" style="display: none;">
+            <button class="sh-footer-btn" id="sh-act-swap"><i class="fas fa-right-left"></i> Swap Panes</button>
+            <button class="sh-footer-btn exit-btn" id="sh-act-exit"><i class="fas fa-xmark"></i> Exit Split</button>
         </div>
     </div>
 

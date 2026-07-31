@@ -273,10 +273,13 @@
             <!-- Header Toolbar -->
             <div class="news-modal-header">
                 <div class="news-header-left">
-                    <div class="news-header-icon" style="background: rgba(9, 240, 160, 0.12); color: var(--accent, #09f0a0);"><i class="fas fa-cloud-sun-rain"></i></div>
-                    <div>
-                        <h3 class="news-modal-title" id="weather-modal-location-title">Live Weather & Satellite Radar</h3>
-                        <p class="news-modal-sub" id="weather-modal-status-sub"><i class="fas fa-signal" style="color: var(--accent, #09f0a0); margin-right: 6px;"></i> Updating high-resolution meteorological telemetry...</p>
+                    <div class="news-header-icon" style="background: var(--accent-dim); color: var(--accent);"><i class="fas fa-cloud-sun-rain"></i></div>
+                    <div style="display: flex; flex-direction: column; gap: 4px;">
+                        <div style="display: flex; align-items: center; gap: 10px;">
+                            <h3 class="news-modal-title" id="weather-modal-location-title" style="margin: 0; font-size: 17px; font-weight: 800; line-height: 1.2; color: var(--text);">Live Weather & Satellite Radar</h3>
+                            <a href="https://open-meteo.com/" target="_blank" class="weather-source-badge" title="Open Meteorological Telemetry Source Data (Open-Meteo API)"><i class="fas fa-database"></i> Source: Open-Meteo <i class="fas fa-arrow-up-right-from-square" style="font-size: 9px; margin-left: 2px;"></i></a>
+                        </div>
+                        <p class="news-modal-sub" id="weather-modal-status-sub" style="margin: 0; font-size: 11.5px; font-weight: 600; color: var(--text-dim);"><i class="fas fa-signal" style="color: var(--accent); margin-right: 6px;"></i> Meteorological telemetry active &bull; Live Telemetry Sync</p>
                     </div>
                 </div>
                 
@@ -361,7 +364,7 @@
                         </div>
 
                         <div class="w-detail-card">
-                            <i class="fas fa-temperature-arrow-down icon-dew"></i>
+                            <i class="fas fa-temperature-low icon-dew"></i>
                             <div class="w-detail-info">
                                 <span class="w-detail-label">Dew Point</span>
                                 <span class="w-detail-val" id="wd-dew">--°C</span>
@@ -369,7 +372,7 @@
                         </div>
 
                         <div class="w-detail-card">
-                            <i class="fas fa-sun-plant-wilt icon-sunrise"></i>
+                            <i class="fas fa-sun icon-sunrise"></i>
                             <div class="w-detail-info">
                                 <span class="w-detail-label">Sunrise</span>
                                 <span class="w-detail-val" id="wd-sunrise">--:-- AM</span>
@@ -393,7 +396,7 @@
                         </div>
 
                         <div class="w-detail-card">
-                            <i class="fas fa-wind-warning icon-gusts"></i>
+                            <i class="fas fa-fan icon-gusts"></i>
                             <div class="w-detail-info">
                                 <span class="w-detail-label">Wind Gusts</span>
                                 <span class="w-detail-val" id="wd-gusts">-- km/h</span>
@@ -414,6 +417,45 @@
                     </div>
                 </div>
 
+            </div>
+        </div>
+    </div>
+
+    <!-- Dual Half-Screen Split Drag & Drop Multitasking Overlay -->
+    <div class="split-drop-zones-overlay" id="split-drop-zones-overlay" style="display: none;">
+        <div class="split-drop-zone left-zone" data-direction="left">
+            <div class="split-zone-inner">
+                <div class="split-zone-icon-box">
+                    <i class="fas fa-columns"></i>
+                </div>
+                <div class="split-zone-content">
+                    <span class="split-zone-tag">LEFT SIDE</span>
+                    <h3>We should split up</h3>
+                    <p>Drop tab here to split workspace on the left</p>
+                </div>
+                <div class="split-drop-prompt-box">
+                    <i class="fas fa-arrow-down-long"></i>
+                    <span>Drop Anywhere on Left</span>
+                </div>
+            </div>
+        </div>
+        
+        <div class="split-drop-divider"></div>
+
+        <div class="split-drop-zone right-zone" data-direction="right">
+            <div class="split-zone-inner">
+                <div class="split-zone-icon-box">
+                    <i class="fas fa-columns"></i>
+                </div>
+                <div class="split-zone-content">
+                    <span class="split-zone-tag">RIGHT SIDE</span>
+                    <h3>Split happens</h3>
+                    <p>Drop tab here to split workspace on the right</p>
+                </div>
+                <div class="split-drop-prompt-box">
+                    <i class="fas fa-arrow-down-long"></i>
+                    <span>Drop Anywhere on Right</span>
+                </div>
             </div>
         </div>
     </div>
