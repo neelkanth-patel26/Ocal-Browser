@@ -858,13 +858,13 @@
             <!-- Sophia Caldwell Inspired Gradient Banner Card -->
             <div class="biomarkers-hero-card">
                 <div class="hero-left">
-                    <div class="hero-tag">v8.0.0 Major Release</div>
-                    <h2 class="hero-main-title">Ocal Overhaul</h2>
+                    <div class="hero-tag">v8.2.00 Release</div>
+                    <h2 class="hero-main-title">Office & AI Suite</h2>
                     <p class="hero-main-desc" id="hero-desc"></p>
                 </div>
                 <div class="hero-right-visual">
-                    <div class="radial-metric-title">8.0</div>
-                    <div class="radial-metric-status">Major Release</div>
+                    <div class="radial-metric-title">8.2.00</div>
+                    <div class="radial-metric-status">Latest Version</div>
                     <div class="sparkline-dots">
                         <span class="spark-dot"></span>
                         <span class="spark-dot"></span>
@@ -1007,7 +1007,7 @@
         }
 
         // ── Typing Animation ──
-        const heroText = "Ocal Browser v8.0 is here — featuring a complete UI overhaul with dynamic accent color palettes, human-readable tab titles, floating navigation pills, and an upgraded AI Assistant capable of analyzing PDF documents and web pages instantly.";
+        const heroText = "Ocal Browser v8.2.00 is officially live! Featuring an in-browser open-source Excel & Word suite (SheetJS + docx-preview), native System App integration (Open in App), pdf-icon.ico branding, AI Persona Mood Swings & Anger dynamics, and a sleek 2-column glassmorphic AI sidebar.";
         const heroDesc = document.getElementById('hero-desc');
         let charIndex = 0;
 
@@ -1113,28 +1113,25 @@
 
         // ── Features & Team Data ──
         const items = [
-            { type: 'feature', category: 'multitasking', icon: 'fa-wand-magic-sparkles', title: 'AI PDF Document Analysis', desc: 'Ocal AI Assistant can now digest, summarize, and extract insights directly from PDF files and open browser tabs.', actionText: 'Try AI' },
-            { type: 'feature', category: 'media', icon: 'fa-palette', title: 'Complete UI Overhaul', desc: 'Vibrant glassmorphism, dynamic accent highlight color system, custom glass select popovers, and sleek dark modes.', actionText: 'Customizer' },
-            { type: 'feature', category: 'multitasking', icon: 'fa-compass', title: 'Floating Navigation Bar', desc: 'Center-aligned floating pill with instant access to History, OCAL Brand, and Browser Settings.', actionText: 'View Bar' },
-            { type: 'feature', category: 'multitasking', icon: 'fa-window-maximize', title: 'Smart Tab Titles', desc: 'Clean, simplified tab labels with full hostname context (e.g. Site Settings - youtube.com) and custom icons.', actionText: 'Learn More' },
-            { type: 'feature', category: 'performance', icon: 'fa-leaf', title: 'Memory Saver Daemon', desc: 'Intelligent tab suspension kicks in after 10 minutes of inactivity to optimize visual threads.', actionText: 'Configure' },
-            { type: 'feature', category: 'performance', icon: 'fa-shield-halved', title: 'Pre-Compiled Blocker', desc: 'Block lists are compiled once at boot to bypass individual request lookup delays.', actionText: 'Shield' },
-            { type: 'feature', category: 'performance', icon: 'fa-microchip', title: 'GPU Rasterization', desc: 'Forced zero-copy layouts and multi-threaded rendering pipelines optimize frame draw rates.', actionText: 'Metrics' },
-            { type: 'feature', category: 'media', icon: 'fa-circle-play', title: 'Media Master Engine', desc: 'Unified media popups with native path decoders, live previews, and file downloader access.', actionText: 'Try It' },
-            { type: 'feature', category: 'media', icon: 'fa-volume-high', title: 'Volume Booster', desc: 'Increase active output streams by up to 500% natively using high-gain synthesizer pipelines.', actionText: 'Boost Audio' },
-            { type: 'contributor', category: 'contributors', icon: 'fa-user-gear', title: 'Neelkanth Patel', desc: 'Project founder and lead browser architect. Wrote the Electron main wrapper, tab manager daemon, and AI PDF parser.', role: 'Founder & Lead Dev' },
+            { type: 'feature', category: 'multitasking', icon: 'fa-file-excel', title: 'Open-Source Excel Suite (SheetJS)', desc: 'View, edit, formula-calculate, and export binary .xlsx, .xls, .csv, and .ods workbooks with multi-sheet tabs.', actionText: 'Try Excel' },
+            { type: 'feature', category: 'multitasking', icon: 'fa-file-word', title: 'Open-Source Word Engine (docx-preview)', desc: '100% pixel-perfect Microsoft Word document layouts with A4 pagination, borders, tables, fonts, and images.', actionText: 'Try Word' },
+            { type: 'feature', category: 'multitasking', icon: 'fa-arrow-up-right-from-square', title: 'Native System App Integration', desc: 'Click "Open in App" to open documents directly in your assigned desktop app (MS Word, Excel, ONLYOFFICE).', actionText: 'File Manager' },
+            { type: 'feature', category: 'media', icon: 'fa-file-pdf', title: 'Windows Custom PDF Branding', desc: 'Native pdf-icon.ico icon integration and built-in PDF viewer tab (ocal://pdf-viewer) with printing.', actionText: 'PDF Viewer' },
+            { type: 'feature', category: 'media', icon: 'fa-masks-theater', title: 'AI Persona Mood Swings & Anger', desc: 'GF, Wife & Companion AI personas now feature dynamic mood shifts, emotional reactivity, and storytelling.', actionText: 'Try AI' },
+            { type: 'feature', category: 'media', icon: 'fa-table-cells', title: '2-Column Glassmorphic AI Sidebar', desc: 'Redesigned spacious 2-column persona grid with glowing emerald accents and vector icons.', actionText: 'AI Sidebar' },
+            { type: 'feature', category: 'performance', icon: 'fa-list-check', title: 'Optimized File Manager List View', desc: 'Compact horizontal list rows with file icons, size alignment, modification dates, and zero layout shift.', actionText: 'Explorer' },
+            { type: 'feature', category: 'performance', icon: 'fa-layer-group', title: 'A4 Paper Sheet Pagination', desc: 'Paginated document view with page break dividers, page badges (Page 1 of N), and zero text clipping.', actionText: 'Docs' },
+            { type: 'contributor', category: 'contributors', icon: 'fa-user-gear', title: 'Neelkanth Patel', desc: 'Lead browser architect. Wrote SheetJS Excel integration, docx-preview engine, and native system app launcher.', role: 'Founder & Lead Dev' },
             { type: 'contributor', category: 'contributors', icon: 'fa-user-code', title: 'Jay Shah', desc: 'Worked on tab lifecycle algorithms, background Memory Saver suspensions, and auto-wake event bindings.', role: 'Software Engineer' },
-            { type: 'contributor', category: 'contributors', icon: 'fa-user-pen', title: 'Jiya Thakkar', desc: 'Lead UX designer behind Ocal UI Overhaul, Glassmorphic select popovers, and dynamic contrast themes.', role: 'Lead Designer' },
-            { type: 'contributor', category: 'contributors', icon: 'fa-user-astronaut', title: 'Reese Whiteman', desc: 'Engineered the AI PDF Analysis engine, document chunking heuristics, and multi-model API bindings.', role: 'AI & Research Lead' },
-            { type: 'contributor', category: 'contributors', icon: 'fa-user-shield', title: 'Samantha Chen', desc: 'Optimized network security structures, precompiling ad-block lists and adding CSP parameters.', role: 'Security Engineer' },
-            { type: 'contributor', category: 'contributors', icon: 'fa-user-clock', title: 'Oscar Nilsson', desc: 'Configured Chromium V8 optimization variables, multi-threaded downloads, and GPU rasterization flags.', role: 'Performance Engineer' }
+            { type: 'contributor', category: 'contributors', icon: 'fa-user-pen', title: 'Jiya Thakkar', desc: 'Lead UX designer behind 2-column AI sidebar, Glassmorphic select popovers, and dynamic contrast themes.', role: 'Lead Designer' },
+            { type: 'contributor', category: 'contributors', icon: 'fa-user-astronaut', title: 'Reese Whiteman', desc: 'Engineered AI Persona Mood Swings, anger reactivity dynamics, and creative story generation heuristics.', role: 'AI & Research Lead' }
         ];
 
         const changelog = [
+            { date: 'August 2026', title: 'v8.2.00 — Open-Source Office Suite & System App Integration', desc: 'Added SheetJS Excel suite with multi-sheet tabs, docx-preview Word engine, Open in System App handler, pdf-icon.ico branding, AI Persona Moodswings & Anger, and 2-column glassmorphic AI sidebar.', tags: ['v8.2.00', 'Office Suite', 'AI Moods', 'System App'] },
             { date: 'July 2026', title: 'v8.0.0 — Major UI Overhaul & PDF AI Intelligence', desc: 'Complete design system revamp with dynamic accent highlights, floating navigation pill, human-readable tab titles, and PDF document analysis in Ocal AI Assistant.', tags: ['Major Update', 'UI/UX', 'AI'] },
             { date: 'July 2026', title: 'v7.8.00 — Dynamic Color Palette System', desc: 'Introduced 6 custom accent color options (Purple, Neon Green, Ocean Blue, Coral Red, Lime, White) with contrast text adaptation.', tags: ['Theme', 'Accent'] },
-            { date: 'June 2026', title: 'v7.7.04 — Splitscreen & GPU Acceleration', desc: 'Added splitscreen dropzones, wallpaper customizer fine-tuning, and GPU raster acceleration flags.', tags: ['Performance', 'UI'] },
-            { date: 'May 2026', title: 'v7.6.12 — Memory Saver Daemon', desc: 'Introduced intelligent tab suspension daemon with 10-minute idle threshold and auto-wake bindings.', tags: ['System', 'Memory'] }
+            { date: 'June 2026', title: 'v7.7.04 — Splitscreen & GPU Acceleration', desc: 'Added splitscreen dropzones, wallpaper customizer fine-tuning, and GPU raster acceleration flags.', tags: ['Performance', 'UI'] }
         ];
 
         let currentCategory = 'all';
@@ -1182,7 +1179,7 @@
                 
                 card.onclick = () => {
                     if (item.type === 'feature') {
-                        if (item.category === 'multitasking') navigate('ocal://home');
+                        if (item.category === 'multitasking') navigate('ocal://file-manager');
                         else if (item.category === 'performance') navigate('ocal://settings');
                         else if (item.category === 'media') navigate('ocal://settings');
                     }
@@ -1244,10 +1241,10 @@
 
             // Update title strings
             const map = {
-                all: ['All Features', 'SHOWING ALL RECENT IMPROVEMENTS IN V8.0.0 — OVERHAUL & PDF AI'],
-                multitasking: ['Multitasking & Navigation', 'FLOATING PILL, SMART TAB TITLES & PDF AI'],
-                performance: ['Performance Upgrades', 'FASTER LOADING, LOW CPU CYCLES, MEMORY DAEMONS'],
-                media: ['Media & Design System', 'DYNAMIC ACCENT HIGHLIGHTS & GLASS UI'],
+                all: ['All Features', 'SHOWING ALL RECENT IMPROVEMENTS IN V8.2.00 — OFFICE SUITE & AI MOODS'],
+                multitasking: ['Office & Multitasking', 'SHEETJS EXCEL SUITE, WORD ENGINE & NATIVE SYSTEM APP'],
+                performance: ['Performance Upgrades', 'FASTER LOADING, COMPACT LIST VIEW & PAPER PAGINATION'],
+                media: ['Media & AI Engine', 'AI PERSONA MOOD SWINGS, ANGER DYNAMICS & PDF BRANDING'],
                 contributors: ['Ocal Lead Team', 'THE ARCHITECTS AND DESIGNERS OF THE STABLE CORE']
             };
 

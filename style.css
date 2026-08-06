@@ -217,7 +217,7 @@ body {
   height: 100% !important;
   align-self: stretch;
   margin: 0 !important;
-  background: #11141A !important;
+  background: #0D0E11 !important;
   border-right: 1px solid rgba(255, 255, 255, 0.08) !important;
   border-radius: 0 !important;
   display: flex;
@@ -235,7 +235,7 @@ body {
 }
 
 body[data-theme="light"] .left-sidebar {
-  background: #F4F5F7 !important;
+  background: #EDEDF0 !important;
   border-right: 1px solid rgba(0, 0, 0, 0.08) !important;
   box-shadow: none !important;
 }
