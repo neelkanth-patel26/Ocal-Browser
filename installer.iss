@@ -1,14 +1,14 @@
 ; ============================================================
 ;  Ocal Browser - Inno Setup 6 Installer
-;  Version  : 8.00.00  (Stable)
+;  Version  : 8.5.00  (Stable)
 ;  Builder  : Gaming Network Studio Media Group
 ;  Compiler : Inno Setup 6
 ; ============================================================
 
 [Setup]
 AppName=Ocal Browser
-AppVersion=8.00.00
-AppVerName=Ocal Browser 8.00.00
+AppVersion=8.5.00
+AppVerName=Ocal Browser 8.5.00
 AppPublisher=Gaming Network Studio Media Group
 AppPublisherURL=https://github.com/neelkanth-patel26/Ocal-Browser
 AppSupportURL=https://github.com/neelkanth-patel26/Ocal-Browser/issues
@@ -17,7 +17,7 @@ AppCopyright=Copyright (C) 2026 Gaming Network Studio Media Group
 DefaultDirName={autopf}\Ocal
 DefaultGroupName=Ocal
 OutputDir=dist-inno
-OutputBaseFilename=Ocal-8.00.00-Setup
+OutputBaseFilename=Ocal-8.5.00-Setup
 SetupIconFile=icon.ico
 Compression=lzma2/ultra64
 SolidCompression=yes
@@ -28,12 +28,12 @@ ArchitecturesInstallIn64BitMode=x64
 LicenseFile=license.txt
 MinVersion=10.0.17763
 UninstallDisplayIcon={app}\icon.ico
-UninstallDisplayName=Ocal Browser 7.7.04
-VersionInfoVersion=7.7.0.4
+UninstallDisplayName=Ocal Browser 8.5.00
+VersionInfoVersion=8.5.0.0
 VersionInfoCompany=Gaming Network Studio Media Group
 VersionInfoDescription=Ocal Browser Installer
 VersionInfoProductName=Ocal Browser
-VersionInfoProductVersion=7.7.04
+VersionInfoProductVersion=8.5.00
 WizardStyle=modern
 WizardResizable=no
 ShowLanguageDialog=no
@@ -61,7 +61,7 @@ InstallingCore=Installing Ocal Browser core files...
 InstallingPDF=Registering PDF viewer association...
 
 LaunchAfterInstall=Launch Ocal Browser now
-ReleaseNotes=View release notes for v7.7.04
+ReleaseNotes=View release notes for v8.5.00
 
 ; ── File Catalog ────────────────────────────────────────────
 [InstallDelete]
@@ -92,12 +92,12 @@ Root: HKCR; Subkey: "Ocal.PDF\DefaultIcon";          ValueType: string; ValueNam
 Root: HKCR; Subkey: "Ocal.PDF\shell\open\command";   ValueType: string; ValueName: "";                ValueData: """{app}\Ocal Browser.exe"" ""%1""";                   Flags: uninsdeletekey;    Components: pdfviewer
 Root: HKCR; Subkey: "Ocal.PDF\shell\open";           ValueType: string; ValueName: "FriendlyAppName"; ValueData: "Ocal Browser";                                Flags: uninsdeletekey;    Components: pdfviewer
 ; App registration for Add/Remove Programs detail
-Root: HKLM; Subkey: "Software\OcalBrowser"; ValueType: string; ValueName: "Version";      ValueData: "7.7.04";                                              Flags: uninsdeletekey
+Root: HKLM; Subkey: "Software\OcalBrowser"; ValueType: string; ValueName: "Version";      ValueData: "8.5.00";                                              Flags: uninsdeletekey
 Root: HKLM; Subkey: "Software\OcalBrowser"; ValueType: string; ValueName: "InstallPath"; ValueData: "{app}";                                                  Flags: uninsdeletekey
 
 ; ── Post-Install Run ────────────────────────────────────────
 [Run]
 Filename: "{app}\Ocal Browser.exe"; Parameters: "--install";      Description: "{cm:LaunchAfterInstall}";  Flags: nowait postinstall skipifsilent
-Filename: "https://github.com/neelkanth-patel26/Ocal-Browser/releases/tag/v7.7.04"; Description: "{cm:ReleaseNotes}"; Flags: shellexec postinstall skipifsilent unchecked
+Filename: "https://github.com/neelkanth-patel26/Ocal-Browser/releases/tag/v8.5.00"; Description: "{cm:ReleaseNotes}"; Flags: shellexec postinstall skipifsilent unchecked
 
 
