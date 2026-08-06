@@ -364,19 +364,29 @@
                                 <span>Sidebar Controls</span>
                             </div>
                             <div class="homepage-rows-container" style="gap: 14px; padding: 16px 20px;">
+                                <div class="security-toggle-row" style="padding-bottom: 14px;">
+                                    <div class="row-info">
+                                        <h4>Hide Sidebar (Force Feature)</h4>
+                                        <p>Force hide sidebar on startup for a full-screen viewport (On by default)</p>
+                                    </div>
+                                    <label class="toggle-switch">
+                                        <input type="checkbox" id="force-hide-sidebar-toggle" checked>
+                                        <span class="slider round"></span>
+                                    </label>
+                                </div>
                                 <div class="security-toggle-row" style="flex-direction: column; align-items: flex-start; gap: 10px; padding-bottom: 14px;">
                                     <div class="row-info">
-                                        <h4>Default State</h4>
-                                        <p>Visibility on browser startup</p>
+                                        <h4>Default Sidebar State</h4>
+                                        <p>Visibility preference on browser launch</p>
                                     </div>
                                     <div class="choice-grid" id="sidebar-mode-grid" style="grid-template-columns: repeat(2, 1fr); gap: 10px; width: 100%;">
-                                        <div class="choice-item active" data-value="visible">
-                                            <i class="fas fa-eye"></i>
-                                            <span>Show</span>
-                                        </div>
-                                        <div class="choice-item" data-value="hidden">
+                                        <div class="choice-item active" data-value="hidden">
                                             <i class="fas fa-eye-slash"></i>
-                                            <span>Hide</span>
+                                            <span>Hide Sidebar (Default)</span>
+                                        </div>
+                                        <div class="choice-item" data-value="visible">
+                                            <i class="fas fa-eye"></i>
+                                            <span>Show Sidebar</span>
                                         </div>
                                     </div>
                                 </div>
@@ -863,6 +873,26 @@
                                 </div>
                             </div>
 
+                        </div>
+
+                        <!-- Password Vault & Saved Credentials Manager -->
+                        <div class="card security-card-box" style="grid-column: 1 / -1;">
+                            <div class="security-card-header">
+                                <i class="fas fa-vault" style="color: var(--accent, #09f0a0);"></i>
+                                <span>Password Manager & Encrypted Vault</span>
+                            </div>
+                            <div style="padding: 16px;">
+                                <div style="display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-bottom: 12px; flex-wrap: wrap;">
+                                    <div style="position: relative; flex: 1; min-width: 200px; max-width: 320px;">
+                                        <i class="fas fa-magnifying-glass" style="position: absolute; left: 10px; top: 10px; color: var(--text-dim, #9ca3af); font-size: 12px;"></i>
+                                        <input type="text" id="settings-passwords-search" placeholder="Search saved accounts..." style="width: 100%; padding: 8px 12px 8px 32px; background: rgba(255,255,255,0.05); border: 1px solid var(--chrome-border); border-radius: 8px; color: var(--text); font-size: 12px; outline: none;">
+                                    </div>
+                                    <span style="font-size: 12px; color: var(--text-dim);" id="settings-passwords-count">0 saved logins</span>
+                                </div>
+                                <div id="settings-passwords-list" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 10px; max-height: 360px; overflow-y: auto; padding-right: 4px;">
+                                    <!-- Loaded dynamically in settings.js -->
+                                </div>
+                            </div>
                         </div>
 
                     </div>

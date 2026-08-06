@@ -121,11 +121,12 @@
                 <div class="omnibox-icon"></div>
                 <div class="url-overlay-area">
                     <div class="pretty-url" id="pretty-url"></div>
-                    <input type="text" class="omnibox-input" id="address-input" placeholder="Search or enter address" autocomplete="off" spellcheck="false">
+                    <input type="text" class="omnibox-input" id="address-input" placeholder="Search or enter address" autocomplete="off" spellcheck="true">
                 </div>
             </div>
             <div class="omnibox-actions">
                 <button class="omni-btn" id="pip-btn" title="Popout Video" style="display:none; color: var(--accent);"><i class="fas fa-up-right-from-square"></i></button>
+                <button class="omni-btn" id="passwords-btn" title="Saved Passwords for this site" style="position: relative; display: none;"><i class="fas fa-key"></i><span id="passwords-badge" class="passwords-badge" style="display: none;">0</span></button>
                 <button class="omni-btn" id="bookmark-heart-btn" title="Bookmark this page"><i class="far fa-heart"></i></button>
                 <button class="omni-btn" id="screenshot-btn" title="Screenshot"><i class="fas fa-camera"></i></button>
                 <button class="omni-btn" id="download-icon-btn" title="Downloads"><i class="fas fa-arrow-down"></i></button>
@@ -155,6 +156,26 @@
             <button class="tool-btn" id="file-manager-btn" title="System Explorer"><i class="fas fa-folder-tree"></i></button>
             <button class="tool-btn" id="history-sidebar-btn" title="History"><i class="fas fa-clock-rotate-left"></i></button>
             <button class="tool-btn" id="burger-menu-btn" title="Menu"><i class="fas fa-ellipsis-vertical"></i></button>
+        </div>
+    </div>
+
+    <!-- Passwords Vault Popover -->
+    <div class="passwords-popover" id="passwords-popover" style="display: none;">
+        <div class="passwords-popover-header">
+            <div class="passwords-popover-title">
+                <i class="fas fa-vault" style="color: var(--accent, #09f0a0);"></i>
+                <span>Password Vault</span>
+            </div>
+            <button class="passwords-popover-close" id="passwords-popover-close"><i class="fas fa-xmark"></i></button>
+        </div>
+        
+        <div class="passwords-popover-search">
+            <i class="fas fa-magnifying-glass" style="color: var(--text-dim, #a0a5b1);"></i>
+            <input type="text" id="passwords-search-input" placeholder="Search saved accounts..." autocomplete="off">
+        </div>
+
+        <div class="passwords-popover-content" id="passwords-popover-content">
+            <!-- Dynamic list of saved credentials -->
         </div>
     </div>
 

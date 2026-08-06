@@ -241,12 +241,46 @@ body[data-theme="light"] .left-sidebar {
 }
 
 /* Sidebar Visibility Modes */
+body.sidebar-visible .left-sidebar {
+  display: flex !important;
+  position: relative !important;
+  transform: none !important;
+  opacity: 1 !important;
+  pointer-events: auto !important;
+}
+
 body.sidebar-hidden {
   --sidebar-w: 0px !important;
 }
-body.sidebar-hidden .left-sidebar,
+body.sidebar-hidden .left-sidebar {
+  position: fixed;
+  left: 0;
+  top: 0;
+  bottom: 0;
+  transform: translateX(-100%);
+  opacity: 0;
+  pointer-events: none;
+  z-index: 9999;
+  transition: transform 0.25s cubic-bezier(0.16, 1, 0.3, 1), opacity 0.25s ease !important;
+}
+
+body.sidebar-hidden.sidebar-open .left-sidebar,
+body.sidebar-hidden .left-sidebar.active,
+body.sidebar-hidden .left-sidebar:hover {
+  transform: translateX(0) !important;
+  opacity: 1 !important;
+  pointer-events: auto !important;
+}
+
 body.sidebar-hidden .sidebar-hover-trigger {
-  display: none !important;
+  display: block;
+  position: fixed;
+  left: 0;
+  top: 0;
+  bottom: 0;
+  width: 8px;
+  z-index: 9998;
+  background: transparent;
 }
 
 body.sidebar-autohide {
@@ -722,30 +756,18 @@ body.maximized {
   padding: 0;
 }
 
-/* ── Global Premium Scrollbar ────────────────────────────────── */
-::-webkit-scrollbar {
-  width: 6px;
-  height: 6px;
-  background: transparent;
+/* ── Force Hide All Scrollbars ────────────────────────────────── */
+::-webkit-scrollbar,
+*::-webkit-scrollbar,
+html::-webkit-scrollbar,
+body::-webkit-scrollbar {
+  width: 0px !important;
+  height: 0px !important;
+  display: none !important;
 }
-::-webkit-scrollbar-track {
-  background: transparent;
-}
-::-webkit-scrollbar-thumb {
-  background: rgba(255, 255, 255, 0.16);
-  border-radius: 10px;
-}
-body[data-theme="light"] ::-webkit-scrollbar-thumb {
-  background: rgba(0, 0, 0, 0.16);
-}
-::-webkit-scrollbar-thumb:hover {
-  background: rgba(255, 255, 255, 0.36);
-}
-body[data-theme="light"] ::-webkit-scrollbar-thumb:hover {
-  background: rgba(0, 0, 0, 0.36);
-}
-::-webkit-scrollbar-corner {
-  background: transparent;
+* {
+  scrollbar-width: none !important;
+  -ms-overflow-style: none !important;
 }
 
 /* ── Fullscreen ────────────────────────────────────────────────── */
@@ -847,7 +869,6 @@ body.compact-mode .tab-item { height: 28px; padding: 0 6px; border-radius: 6px; 
 }
 .tab-item.active .tab-favicon {
   opacity: 1;
-  filter: none;
 }
 .tab-item .tab-favicon {
   width: 14px;
@@ -860,6 +881,24 @@ body.compact-mode .tab-item { height: 28px; padding: 0 6px; border-radius: 6px; 
   align-items: center;
   justify-content: center;
 }
+
+/* Dark/Light Theme Icon Contrast Adaptation for Favicons */
+body[data-theme="light"] img.tab-favicon,
+body[data-theme="light"] svg.tab-favicon,
+body[data-theme="light"] img.omnibox-favicon,
+body[data-theme="light"] svg.omnibox-favicon,
+body[data-theme="light"] .tab-favicon.tab-emoji-img {
+    filter: invert(0.92) hue-rotate(180deg) !important;
+}
+
+body[data-theme="dark"] img.tab-favicon,
+body[data-theme="dark"] svg.tab-favicon,
+body[data-theme="dark"] img.omnibox-favicon,
+body[data-theme="dark"] svg.omnibox-favicon,
+body[data-theme="dark"] .tab-favicon.tab-emoji-img {
+    filter: contrast(110%) brightness(1.1) !important;
+}
+
 .tab-item i.tab-favicon {
   width: auto;
   height: auto;
@@ -1401,7 +1440,6 @@ body.compact-mode .omnibox { height: 32px; padding: 0 10px; gap: 6px; border-rad
   flex: 1;
   height: 100%;
   margin-left: 2px;
-  gap: 8px;
   min-width: 0;
 }
 
@@ -1415,7 +1453,6 @@ body.compact-mode .omnibox { height: 32px; padding: 0 10px; gap: 6px; border-rad
 }
 
 .omnibox-icon { 
-  width: 28px;
   height: 100%;
   display: flex; 
   align-items: center; 
@@ -1424,6 +1461,12 @@ body.compact-mode .omnibox { height: 32px; padding: 0 10px; gap: 6px; border-rad
   color: rgba(255, 255, 255, 0.85);
   font-size: 14px;
   transition: all 0.2s ease;
+  margin-left: 0px;
+  margin-right: 8px;
+}
+
+.omnibox-icon:empty {
+  display: none !important;
 }
 
 .omnibox-icon:hover {
@@ -3142,4 +3185,203 @@ body[data-theme="light"] .sh-opt-icon {
 .split-active-pill:hover {
   background: color-mix(in srgb, var(--accent) 25%, transparent);
   transform: scale(1.04);
+}
+
+/* ── Password Vault & Topbar Key Badge ── */
+.passwords-badge {
+    position: absolute;
+    top: -3px;
+    right: -3px;
+    background: var(--accent, #09f0a0);
+    color: #0d0e11;
+    font-size: 10px;
+    font-weight: 800;
+    width: 15px;
+    height: 15px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: none !important;
+}
+
+.omni-btn.passwords-active, .tool-btn.passwords-active {
+    color: var(--accent, #09f0a0) !important;
+    animation: none !important;
+    filter: none !important;
+}
+
+.passwords-popover {
+    position: fixed;
+    top: 56px;
+    right: 70px;
+    width: 350px;
+    max-height: 480px;
+    background: rgba(22, 24, 29, 0.94);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    border: 1px solid rgba(255, 255, 255, 0.12);
+    border-radius: 18px;
+    padding: 16px;
+    z-index: 99999;
+    box-shadow: 0 16px 40px rgba(0, 0, 0, 0.5), 0 0 25px rgba(9, 240, 160, 0.15);
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    color: var(--text, #fff);
+    animation: popoverFadeIn 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+@keyframes popoverFadeIn {
+    from { opacity: 0; transform: translateY(-8px) scale(0.97); }
+    to { opacity: 1; transform: translateY(0) scale(1); }
+}
+
+.passwords-popover-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+
+.passwords-popover-title {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-weight: 700;
+    font-size: 15px;
+}
+
+.passwords-popover-close {
+    background: transparent;
+    border: none;
+    color: var(--text-dim, #a0a5b1);
+    cursor: pointer;
+    font-size: 14px;
+    padding: 4px;
+    border-radius: 6px;
+}
+.passwords-popover-close:hover {
+    color: #fff;
+    background: rgba(255, 255, 255, 0.1);
+}
+
+.passwords-popover-search {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 10px;
+    padding: 8px 12px;
+}
+
+.passwords-popover-search input {
+    background: transparent;
+    border: none;
+    outline: none;
+    color: #fff;
+    font-size: 13px;
+    width: 100%;
+}
+
+.passwords-popover-content {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    overflow-y: auto;
+    max-height: 320px;
+    padding-right: 4px;
+}
+
+.cred-card {
+    background: rgba(255, 255, 255, 0.03);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    border-radius: 12px;
+    padding: 10px 12px;
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    transition: all 0.2s ease;
+}
+
+.cred-card:hover {
+    background: rgba(255, 255, 255, 0.06);
+    border-color: rgba(9, 240, 160, 0.3);
+}
+
+.cred-domain {
+    font-size: 12px;
+    font-weight: 700;
+    color: var(--accent, #09f0a0);
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.cred-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    font-size: 13px;
+}
+
+.cred-user {
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--text, #fff);
+}
+
+.cred-pass-group {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-family: monospace;
+    font-size: 13px;
+    background: rgba(0, 0, 0, 0.3);
+    padding: 4px 8px;
+    border-radius: 6px;
+}
+
+.cred-actions {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    margin-top: 4px;
+}
+
+.cred-btn {
+    padding: 5px 12px;
+    font-size: 11.5px;
+    font-weight: 700;
+    border-radius: 6px;
+    border: none;
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    transition: all 0.15s ease;
+}
+
+.cred-btn-fill {
+    background: var(--accent, #09f0a0);
+    color: #0d0e11;
+}
+.cred-btn-fill:hover {
+    filter: brightness(1.1);
+}
+
+.cred-btn-copy {
+    background: rgba(255, 255, 255, 0.1);
+    color: #fff;
+}
+.cred-btn-copy:hover {
+    background: rgba(255, 255, 255, 0.2);
+}
+
+.cred-btn-delete {
+    background: rgba(255, 69, 58, 0.15);
+    color: #ff453a;
+}
+.cred-btn-delete:hover {
+    background: rgba(255, 69, 58, 0.3);
 }

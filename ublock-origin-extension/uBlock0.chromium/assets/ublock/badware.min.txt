@@ -1,6 +1,6 @@
 ! Title: uBlock filters – Badware risks
 ! Expires: 5 days
-! Last modified: Tue, 07 Jul 2026 15:02:15 +0000
+! Last modified: Tue, 04 Aug 2026 15:45:47 +0000
 ! Diff-Path: %diffpath%#ublock-badware
 ! Diff-Expires: 317 minutes
 ! License: https://github.com/uBlockOrigin/uAssets/blob/master/LICENSE
@@ -798,6 +798,9 @@ cracksmid.com##div[style=""] > center > center
 ||fanbox.help^$all
 ||meetu.usd1.party^$doc
 ||fanbox.autos^$all
+||luxoriahub.shop^$all
+||claude-ai.cyou^$all
+||aisyncad.com^$all
 ! scam sites
 ||webuzz.me^$doc
 ||coup-ling.net^$all
@@ -2186,19 +2189,21 @@ cracksmid.com##div[style=""] > center > center
 ||girlsmakeithard.monster^$all
 ||web.core.windows.net/?call=*&code=$doc
 .amazonaws.com/*.*.*.*.*.*.denied/$doc,domain=amazonaws.com|github.io
-/^https:\/\/[0-9a-z]{30,}\.s3\.[-a-z]+\d+\.backblazeb2\.com\/W[0-9A-Za-z]*in0[0-9A-Za-z]*Er0[0-9A-Za-z]*\/index\.html/$doc,match-case,domain=backblazeb2.com
 ||ondigitalocean.app/*/?bcda=$doc
 ||grootcam.shop^$all
 ||z13.web.core.windows.net/*/?clickid=$doc
 ||viruswarning*.web.core.windows.net^$all
 ://message1*.z13.web.core.windows.net^$doc
 ^Anph=(0101)-$doc
-/^https:\/\/[a-z]{5,20}-[0-9a-z]{16}\.z03\.azurefd\.net\/[0-9A-Za-z]+0[0-9A-Za-z]+\/index\.html/$doc,match-case,domain=z03.azurefd.net
+/^https:\/\/[a-z]{5,20}-[0-9a-z]{16}\.z0\d\.azurefd\.net\/[0-9A-Za-z]+0[0-9A-Za-z]+\/index\.html/$doc,match-case,domain=azurefd.net
 ||azurefd.net/?bcda=$doc
 ?Kuph=1-$doc
+||web.core.windows.net/?111=$doc
 !://main.d*.amplifyapp.com/?$doc
 ||ondigitalocean.app/Win0codejInfouycinfcode/$doc
-ondigitalocean.app##body#mycanvas.map[style="cursor:none"]
+azurefd.net,azurestaticapps.net,ondigitalocean.app##body#mycanvas.map[style="cursor:none"]
+||azurefd.net/Win20Errfb020/index.html$doc
+sgp1.cdn.digitaloceanspaces.com###frame[title="encrypted shop"][allowfullscreen][allow="fullscreen"][src^="blob"][style="display: block;"]
 ||pages.dev/*/Fm7-alert.wav
 ||pages.dev/*/ai2.mp3
 ||pages.dev/*_Fm7-alert.mp3
@@ -2297,7 +2302,7 @@ ondigitalocean.app##body#mycanvas.map[style="cursor:none"]
 ||azurewebsites.net/alertmicrosoft.mp3
 ||azureedge.net/*/esc.js
 ||azureedge.net/*/flscn.js
-/text_tel.js$domain=app|dev|fit|me|page|site|github.io
+/text_tel.js$domain=amplifyapp.com|app|azurestaticapps.net|dev|fit|me|page|site|github.io|herokuapp.com
 ||netlify.app/text.js|$1p
 ||github.io/my-new-app/text.js$1p
 /a0ler0tm0s.mp3$domain=dev|online|shop
@@ -2316,7 +2321,7 @@ ondigitalocean.app##body#mycanvas.map[style="cursor:none"]
 ||amazonaws.com/_Fm7-alert.mp3
 ||on-forge.com/win*/alert-en.wav
 z13.web.core.windows.net##+js(aeld, DOMContentLoaded, fullscreenEnabled)
-! ClickFix
+! SECTION: ClickFix
 /^https:\/\/[0-9a-z]{4}\.[a-z]{15,}\.monster\/\?[0-9a-f]{16,}$/$doc
 !#if env_safari
 /^https:\/\/[0-9a-z][0-9a-z][0-9a-z][0-9a-z]\.[a-z][a-z][a-z][a-z][a-z][a-z][a-z][a-z][a-z][a-z][a-z][a-z][a-z][a-z][a-z]+\.monster\/\?[0-9a-f][0-9a-f][0-9a-f][0-9a-f][0-9a-f][0-9a-f][0-9a-f][0-9a-f][0-9a-f][0-9a-f][0-9a-f][0-9a-f][0-9a-f][0-9a-f][0-9a-f][0-9a-f]$/$doc
@@ -2324,8 +2329,47 @@ z13.web.core.windows.net##+js(aeld, DOMContentLoaded, fullscreenEnabled)
 /api.php?s=*&_v=$script
 /api.php?k=*&d=$xhr,redirect=noop.txt
 ||authorization-cdn-press-enter.info^
+||auth-code-verif.beer^
 monster###bw-rc-host[style="position: fixed !important; inset: 0px !important; z-index: 2147483647 !important;"]
 .monster/index*.php?flow_id=$doc
+##div.card > div#cbRow.checkbox-row[onclick="startVerify()"]
+gemfellowship.org##+js(rmnt, script, TextDecoder)
+||idverification-cdn.info^$all
+##html > #bw-cf-root
+##body > .page > #mainVerifyRow
+##body > .page > .verify-row
+! ClickFix Errtrafficv2
+longhall.consulting##+js(rmnt, script, /document\.currentScript\.remove|0x0/)
+/api/css.js^$3p,script
+||great-fade.sbs^$all
+||re-captcha.xyz^$all
+||gtm-tools.xyz^$all
+||cloudproxy.digital^$3p,xhr
+##html.canvas > body.wp-singular + div[popover="manual"]
+||low-house.com^$all
+###uc-cf-overlay
+###turnstile[onclick="handleClick()"]
+##body > .content-wrapper > .cf-wrap
+/static/verify-page.js?v=$script,1p
+||ajvcu.cn^$all
+||vpu.baby^$all
+||232323.eu.org^$all
+###cmdTextDisplay
+###cmdTextDisplay ~ *
+##.btn-primary[onclick="showVerification()"]
+||docs163.com^$all
+##.cta-button[onclick="openUpdateModal()"]
+||playcomla.com.ar^$all
+||jarretelvankortrijk.be^$all
+###captchaBox
+! ##.captcha-wrap
+###mainBtn[onclick="startVerify()"]
+###ipBar + .main
+casabasics.es##+js(rmnt, script, String.fromCharCode)
+||maletoks.pro^$all
+/landing/windows.html?src=$frame,3p
+##.wp-singular > div[data-sm][style*="2147483647"] > iframe[style*="100%"][allow*="clipboard-write"]
+! !SECTION: ClickFix
 ||cracksway.com^$all
 ||gamingdebates.com^$all
 ||bonzi.link^$all
@@ -2882,7 +2926,6 @@ www.cambe.pr.gov.br##+js(noeval-if, tigervip2)
 /tmp/vmo.html$doc
 ! santander
 ||recompensaszurichsantander.com.mx^$all
-||santander.*.fino.digital^$all
 ||santander.cf.sandbox.motrada.ch^$all
 ||santanderpod.*.co.uk^$all
 ||webmo.fr/Fi/SP/PANKKI/*/auth/$doc
@@ -3781,7 +3824,7 @@ rapidkil.com.au##+js(aost, XMLHttpRequest, /wp-content)
 ||sentinelbotcore.co.in^$all
 ||kexornero.co.in^$all
 !#if !ext_ubol
-/^https?:\/\/[a-z0-9]{10,}\.[a-z]{9,}\.co\.in\//$all,to=co.in
+/^https?:\/\/[a-z0-9]{10,}\.[a-z]{9,}\.co\.in\//$all,to=co.in|~unitybank.co.in
 !#endif
 ||vironexta.com^$all
 ||fusionchainedge.com^$all
@@ -4262,7 +4305,6 @@ sport.elwatannews.com##+js(aost, Array.prototype.indexOf, isWin)
 ||infinitetweet.com^$all
 ||redirecttoplace.online^$all
 ||crimsonmods.cc^$all
-||low-house.com^$all
 ||sites.google.com/view/newext$doc
 ||cloudfenceai.com^$all
 ||7zip.com^$all
@@ -4307,7 +4349,6 @@ ublockorigin.app###main::before:style(content: 'This is not the official uBlock 
 ||ourdateideas.com/wp-logo.svg
 ||plus.rustfacepunch.com^$all
 ||studio-blender.com^$all
-##div.card > div#cbRow.checkbox-row[onclick="startVerify()"]
 ||keepass-xc.com^$all
 ##body > div.captcha-container > div.captcha-card
 -sogou.com.cn^$doc,to=com.cn
@@ -4451,8 +4492,6 @@ top##body > center + .A + .post
 ###hero + div.marquee-wrap + section#games + section#features + #download
 ||checkmyapp.store^$all
 ||shrtweb.site^$all
-##body > .page > #mainVerifyRow
-##body > .page > .verify-row
 ||bisque-bison-333202.hostingersite.com^$all
 ||karedeutschland.com^$all
 ||daskljtitaskastvv.pro^$all,reason=malicious
@@ -4460,25 +4499,108 @@ top##body > center + .A + .post
 ||claudverification-id.beer/api.php
 ||invites-tracker-app.com^$all
 ||invite-track.click^$all
-||ledger-lives-desktop.io^$all
+||com-softwares.com^$all
+||ledger-live*-*.io^$all
 ||legder.*.us.com^$all
+||ledgertp.com^$all
 /\/checking\.php\?t=[a-zA-Z0-9%]+$/$doc,match-case
-gemfellowship.org##+js(rmnt, script, TextDecoder)
-||idverification-cdn.info^$all
-##html > #bw-cf-root
 ||microsoft-update.support^$all
 ||flavamovie.com^$all
-! ClickFix Errtrafficv2
-longhall.consulting##+js(rmnt, script, /document\.currentScript\.remove|0x0/)
-/api/css.js^$3p,script
-||great-fade.sbs^$all
-||re-captcha.xyz^$all
-||gtm-tools.xyz^$all
-||cloudproxy.digital^$3p,xhr
-##html.canvas > body.wp-singular + div[popover="manual"]
 ! Typosquatting which redirects to scam
 ||e261.net^$all
 ||imtolenplex.com^$all
 ||immanitys.com^$all
 ||tagesschau.tech^$doc
 ||shuru-baidu.com.cn^$all
+||roblox.com.$all,to=~cloudflare.net
+||lumennix.xyz^$all
+||omgexplolts.com^$all
+||mon-mrlay-suivi.com^$all
+||petbok.com^$all
+||ccleaner.lol^$all
+||ccleaner.mom^$all
+||ccleaner.lat^$all
+||saltairus.it.com^$all
+||10mintimer.com^$doc
+||arduinodroid.com^$doc
+||beardlib.com^$doc
+||bepisdb.com^$doc
+||christitustool.com^$doc
+||crystaldiskinfo.app^$doc
+||crystaldiskmark.net^$doc
+||cursorslibrary.com^$doc
+||cxxdroid.com^$doc
+||daijisho.app^$doc
+||darktable.app^$doc
+||easybcd.app^$doc
+||fakeflashtest.com^$doc
+||findoutdate.com^$doc
+||freefilesync.net^$doc
+||freeminutetimer.com^$doc
+||freewheelofnames.com^$doc
+||furfsky.com^$doc
+||gliden64.com^$doc
+||guiformat.app^$doc
+||hakchi2.com^$doc
+||hashcat.app^$doc
+||hddsentinel.com^$doc
+||hifiasm.com^$doc
+||iso2god.com^$doc
+||je2be.com^$doc
+||kalkulyator.com^$doc
+||lax1dude.com^$doc
+||liveclockwithseconds.com^$doc
+||lspconfig.com^$doc
+||mimalloc.com^$doc
+||moliyachi.com^$doc
+||mongosh.com^$doc
+||mouse-clicker.com^$doc
+||mouse-cursors.com^$doc
+||mouse-mover.com^$doc
+||mousecape.app^$doc
+||mousecape.net^$doc
+||move-mouse.com^$doc
+||movemouse.net^$doc
+||mumuplayer.app^$doc
+||nircmd.net^$doc
+||noisium.com^$doc
+||notatnikonline.com^$doc
+||ocrmypdf.com^$doc
+||power-toys.com^$doc
+||powertoys.app^$doc
+||productkeyscanner.com^$doc
+||pwndbg.com^$doc
+||pyjwt.com^$doc
+||quickassistapp.com^$doc
+||retraitedz.com^$doc
+||rezygisk.com^$doc
+||sageattention.com^$doc
+||searchmyfiles.com^$doc
+||shellmenuview.com^$doc
+||showmore.app^$doc
+||simplestickynotes.app^$doc
+||skse64.com^$doc
+||spacesniffer.app^$doc
+||themouseclicker.com^$doc
+||urlaubscountdown.com^$doc
+||usblogview.com^$doc
+||wiblr.com^$doc
+||winexp.app^$doc
+||wintoys.app^$doc
+||winutil.app^$doc
+||wushowhide.com^$doc
+||zhpcleaner.com^$doc
+||crystaldiskmark.org^$all
+||dnspy.org^$all
+||ghidralite.com^$all
+||grpcurl.com^$all
+||guiformat.com^$all
+||mfcmapi.com^$all
+||mqttexplorer.com^$all
+||winsetupfromusb.org^$all
+||file-enter-web.com^$all
+||trkscope.xyz^$all
+||losslesscut.net^$all
+||losslesscut.cn^$all
+||losslesscut.$doc,to=~losslesscut.app
+||bloomnnu.it.com^$all

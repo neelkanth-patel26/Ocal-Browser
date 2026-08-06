@@ -1,6 +1,6 @@
 ! Title: uBlock filters – Quick fixes
 ! Expires: 12 hours
-! Last modified: Wed, 08 Jul 2026 10:13:42 +0000
+! Last modified: Mon, 03 Aug 2026 13:51:42 +0000
 ! Diff-Path: %diffpath%#ublock-quick-fixes
 ! Diff-Expires: 317 minutes
 ! License: https://github.com/uBlockOrigin/uAssets/blob/master/LICENSE
@@ -89,25 +89,36 @@ web.facebook.com,www.facebook.com##div[role="complementary"] div[data-visualcomp
 web.facebook.com,www.facebook.com##div[role="complementary"] div[data-visualcompletion="ignore-dynamic"] a[rel="nofollow noreferrer tag"][aria-labelledby^="_R_"]
 web.facebook.com,www.facebook.com##div[role="complementary"] a[attributionsrc][href^="http"][target="_blank"][role="link"][rel*="noreferrer"]:has(img[src])
 web.facebook.com,www.facebook.com##div[role="complementary"] h3 span[style^="-webkit-box-orient:vertical"]:has-text(/^Sponsored$/)
-web.facebook.com,www.facebook.com##+js(rpnt, script, "x3m9kf2n":true\,, , condition, compat_iframe_token)
+! web.facebook.com,www.facebook.com##+js(rpnt, script, "x3m9kf2n":true\,, , condition, compat_iframe_token)
 web.facebook.com,www.facebook.com##+js(json-prune, require.0.3.0.__bbox.require.[].3.1.__bbox.result.data.serpResponse.results.edges.[-].rendering_strategy.view_model.story.sponsored_data.ad_id)
-web.facebook.com,www.facebook.com##+js(json-edit, ..node[?.*.__typename=="SponsoredData"])
+web.facebook.com,www.facebook.com##+js(json-edit, .require..node[?.*.__typename=="SponsoredData"])
+web.facebook.com,www.facebook.com##+js(json-edit, ..edges..node[?.*.__typename=="SponsoredData"])
 web.facebook.com,www.facebook.com##+js(json-edit, ..nodes.*[?.sponsored_data])
 web.facebook.com,www.facebook.com##+js(jsonl-edit-xhr-response, .data[?.category=="SPONSORED"].node, propsToMatch, /graphql)
 web.facebook.com,www.facebook.com##+js(jsonl-edit-xhr-response, ..node[?.*.__typename=="SponsoredData"], propsToMatch, /graphql)
 web.facebook.com,www.facebook.com##+js(jsonl-edit-xhr-response, .data.viewer.news_feed.edges.*[?.category=="SPONSORED"].node, propsToMatch, /graphql)
 web.facebook.com,www.facebook.com##+js(trusted-prevent-dom-bypass, Node.prototype.appendChild, JSON.parse)
 web.facebook.com,www.facebook.com##+js(trusted-prevent-dom-bypass, Node.prototype.appendChild, Function.prototype.toString)
+web.facebook.com,www.facebook.com##+js(trusted-prevent-dom-bypass, Node.prototype.insertBefore, JSON.parse)
+web.facebook.com,www.facebook.com##+js(trusted-prevent-dom-bypass, Node.prototype.insertBefore, Function.prototype.toString)
 web.facebook.com,www.facebook.com##+js(trusted-prevent-dom-bypass, Element.prototype.insertAdjacentElement, JSON.parse)
 web.facebook.com,www.facebook.com##+js(trusted-prevent-dom-bypass, Element.prototype.insertAdjacentElement, Function.prototype.toString)
+web.facebook.com,www.facebook.com##+js(trusted-prevent-dom-bypass, Element.prototype.append, JSON.parse)
+web.facebook.com,www.facebook.com##+js(trusted-prevent-dom-bypass, Element.prototype.append, Function.prototype.toString)
+web.facebook.com,www.facebook.com##+js(trusted-prevent-dom-bypass, Element.prototype.prepend, JSON.parse)
+web.facebook.com,www.facebook.com##+js(trusted-prevent-dom-bypass, Element.prototype.prepend, Function.prototype.toString)
+web.facebook.com,www.facebook.com##+js(trusted-prevent-dom-bypass, Element.prototype.before, JSON.parse)
+web.facebook.com,www.facebook.com##+js(trusted-prevent-dom-bypass, Element.prototype.before, Function.prototype.toString)
+web.facebook.com,www.facebook.com##+js(trusted-prevent-dom-bypass, Element.prototype.after, JSON.parse)
+web.facebook.com,www.facebook.com##+js(trusted-prevent-dom-bypass, Element.prototype.after, Function.prototype.toString)
 ||static.xx.fbcdn.net/rsrc.php/$script,domain=web.facebook.com|www.facebook.com,replace=/return r instanceof ArrayBuffer/return r.constructor.name==="ArrayBuffer"/
 ! VOE sites
-||imasdk.googleapis.com/js/sdkloader/ima3.js$script,3p,redirect=google-ima.js,domain=pamelachangemission.com,important
-pamelachangemission.com##+js(nowoif)
-pamelachangemission.com##+js(set, console.clear, undefined)
-pamelachangemission.com##+js(acs, globalThis, break;case)
-pamelachangemission.com##+js(acs, WebAssembly, atob)
-||pamelachangemission.com^$badfilter
+||imasdk.googleapis.com/js/sdkloader/ima3.js$script,3p,redirect=google-ima.js,domain=jessicachoosemake.com,important
+jessicachoosemake.com##+js(nowoif)
+jessicachoosemake.com##+js(set, console.clear, undefined)
+jessicachoosemake.com##+js(acs, globalThis, break;case)
+jessicachoosemake.com##+js(acs, WebAssembly, atob)
+||jessicachoosemake.com^$badfilter
 ! next-episode .net
 !next-episode.net##+js(rmnt, script, '/[\s\S]{0,}head[\s\S]{1900,}/')
 !next-episode.net##+js(rpnt, script, '/.then[\s\S]{0,}?;/g')
@@ -248,7 +259,7 @@ smsonline.cloud##+js(nostif, (new Error(, 3000-6000)
 smsonline.cloud##aside[class^="css-"]:has(> p:has-text(Advertisement) + ins.adsbygoogle)
 ||loader.nyitvatartas24.hu^
 bing.com##+js(no-xhr-if, /fd/ls/lsp.aspx)
-bing.com##+js(rpnt, script, function processEmbImg, `(()=>{if(!location.pathname.startsWith("/search"))return;if(document.querySelector("ol#b_results > li.b_algo > .b_title > h2 > a[id][ads]"))return;window.addEventListener("scroll",(()=>{for(const t of Object.keys(window).sort())if(t.endsWith("_lnk")){if(t.length<4)continue;document.querySelectorAll("ol#b_results > li.b_algo > .b_title > h2 > a#"+t.split("_lnk")[0]).forEach((t=>{t.setAttribute("ads","")}))}}))})();function processEmbImg`, sedCount, 1)
+bing.com##+js(trusted-replace-node-text, script, function processEmbImg, 'location.pathname.startsWith("/search")&&(document.querySelector("ol#b_results > li.b_algo > .b_title > h2 > a[id][ads]")||window.addEventListener("scroll",(()=>{for(const t of Object.keys(window).sort())"function"==typeof window[t]&&/^[a-z]+$/.test(t)&&document.querySelector("ol#b_results > li.b_algo > .b_title > h2 > a#"+t)?.setAttribute?.("ads","")})));function processEmbImg', sedCount, 1)
 bing.com##ol#b_results > li.b_algo:has(> .b_title > h2 > a[id][ads])
 bing.com##ol#b_results > li:has(> :is(.b_tpcn, .b_title, h2) a[href^="https://www.bing.com/aclk?"])
 bing.com##ol#b_results > li.b_algo:has(.b_lineclamp3:matches-css-before(content:/^url\(\Sdata:image\/png;base64,iVBORw0KGgoAAAANSUhEUgAAAD.AAAA/))
@@ -331,9 +342,11 @@ client.falixnodes.net##+js(nosiif, /lovelylovely|veryveryplease|click\(\)|MouseE
 client.falixnodes.net##+js(nostif, /lovelylovely|veryveryplease|click\(\)|MouseEvent|dispatchEvent/)
 client.falixnodes.net##+js(nostif, )}}}})
 client.falixnodes.net##+js(nostif, ]])!==)
+client.falixnodes.net##+js(nostif, ]/*)
+client.falixnodes.net##+js(nostif, }/*)
+client.falixnodes.net##^script:has-text(/\=arguments\;if\(typeof /)
+client.falixnodes.net##+js(rmnt, script, /\=arguments\;if\(typeof /)
 !#endif
-cimanow.cc,freex2line.online##+js(norafif, ++)
-||rm.freex2line.online/*.js|$domain=cimanow.cc
 ||global.novelpia.com/_nuxt/*.js|$script,replace=/if\(\w\.check_is_ad_free\(\)\)/if(true)/
 @@||global.novelpia.com^$ghide
 global.novelpia.com##+js(no-fetch-if, g.doubleclick.net, length:100000)
@@ -364,15 +377,11 @@ magma.com##+js(set, Object.prototype.hasBottomPartnership, falseFunc)
 embedtv.best##+js(rpnt, script, (popupLoaded), (true))
 myanimelist.net##a.ga-click[data-ga-click-type="hia"]
 myanimelist.net##div[id$="_NXU_wrap"], div[id$="_NXU_TITLE_wrap"]
-@@||getthispdf.com/about.html$ghide
-getthispdf.com##.content > #pageAdSlot
-getthispdf.com##+js(rmnt, script, document.styleSheets)
-getthispdf.com##+js(set, _adBlockState, undefined)
-getthispdf.com##+js(rmnt, script, /'onerror'|'offsetHe|'offsetWi/)
 gumtree.com#@#+js(trusted-set, experimentOverrides, json:"%5B%7B%20defaultValue%3A%20%22OFF%22%7D%5D")
 bus-location.1507t.xyz#@#.ad-area:not(.text-ad)
 bus-location.1507t.xyz##div[id]:empty:style(height: 1px !important; width 1px !important; position: fixed !important; z-index: 2147483647 !important;)
 bus-location.1507t.xyz##div[id]:has(> script[src^="https://adm.shinobi.jp"]):style(height: 1px !important; width 1px !important; position: fixed !important; z-index: 2147483647 !important;)
+||adm.shinobi.jp^$script,redirect=noop.js,domain=bus-location.1507t.xyz
 ||cloudfront.net/?$script,redirect=noopjs,domain=meuplayeronlinehd.com|multicanaistt.space
 meuplayeronlinehd.com##+js(rmnt, script, _0x, excludes, /source|URLSearchParams/)
 meuplayeronlinehd.com###player:style(display: block !important;)
@@ -385,5 +394,18 @@ streamcash.to##+js(rmnt, script, /\${''}|body:JSON\.stringify/)
 streamcash.to##div[id]:has(button[onclick*="location.reload()"])
 akirabox.com,akirabox.to,bowfile.com,buzzheavier.com,bzzhr.co,bzzhr.to,datavaults.co,fuckingfast.*,multiup.io,rootz.so,usersdrive.com,vik1ngfile.site,zpaste.net#@#+js(set, Document.prototype.createElement.call, noopFunc)
 zeilink.net#@#+js(remove-node-text, script, /"\\|\\[ux]|\+\[\]/)
-||detour.padovia.it^$badfilter
-vk.sportsbull.jp##+js(rc, hidden-by-ima, #vid1_html5_api)
+decompiler.com##+js(set, OffscreenCanvas.prototype.getContext, undefined)
+decompiler.com##+js(nosiif, === false)
+decompiler.com##+js(aost, Element.prototype.removeChild, /blocked|tick/)
+!#if env_firefox
+javmix.*#@#+js(acs, addEventListener, style.display)
+!#endif
+twitch.tv##.stream-display-ad__wrapper + div > div[style^="position:"] > div[class^="Layout-sc-"]:has(video[src^="https://m.media-amazon.com"])
+twitch.tv##.chat-shell > div[class^="Layout-sc-"]  > div[style^="transition:"]:has(video[src^="https://m.media-amazon.com"])
+||vk.com/images/$third-party,badfilter
+||yastatic.net^$badfilter
+@@/uxab/ui-core-analytics-bundle.jsdbx$1p
+fo76db.com#@#+js(aeld, DOMContentLoaded, /ads|AmazonCarousel/)
+fo76db.com###fo-ad-modal
+fo76db.com##body.swiper:style(overflow: auto !important; position: static !important;)
+fo76db.com##+js(trusted-rpnt, script, / ads\.map[\S\s\n]+?join\(''\)/)

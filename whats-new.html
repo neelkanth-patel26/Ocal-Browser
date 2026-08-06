@@ -1007,7 +1007,7 @@
         }
 
         // ── Typing Animation ──
-        const heroText = "Ocal Browser v8.2.00 is officially live! Featuring an in-browser open-source Excel & Word suite (SheetJS + docx-preview), native System App integration (Open in App), pdf-icon.ico branding, AI Persona Mood Swings & Anger dynamics, and a sleek 2-column glassmorphic AI sidebar.";
+        const heroText = "Ocal Browser v8.5.00 Stable is officially live! Featuring the new Force Hide Sidebar layout, an elegant redesigned Password Vault with site favicons, a clean minimalist Omnibox Key Button, and numerous bug fixes including zero-margin full viewport webviews, split-screen padding fixes, scrollbar removal, and seamless sidebar toggle logic.";
         const heroDesc = document.getElementById('hero-desc');
         let charIndex = 0;
 
@@ -1113,25 +1113,38 @@
 
         // ── Features & Team Data ──
         const items = [
-            { type: 'feature', category: 'multitasking', icon: 'fa-file-excel', title: 'Open-Source Excel Suite (SheetJS)', desc: 'View, edit, formula-calculate, and export binary .xlsx, .xls, .csv, and .ods workbooks with multi-sheet tabs.', actionText: 'Try Excel' },
-            { type: 'feature', category: 'multitasking', icon: 'fa-file-word', title: 'Open-Source Word Engine (docx-preview)', desc: '100% pixel-perfect Microsoft Word document layouts with A4 pagination, borders, tables, fonts, and images.', actionText: 'Try Word' },
-            { type: 'feature', category: 'multitasking', icon: 'fa-arrow-up-right-from-square', title: 'Native System App Integration', desc: 'Click "Open in App" to open documents directly in your assigned desktop app (MS Word, Excel, ONLYOFFICE).', actionText: 'File Manager' },
-            { type: 'feature', category: 'media', icon: 'fa-file-pdf', title: 'Windows Custom PDF Branding', desc: 'Native pdf-icon.ico icon integration and built-in PDF viewer tab (ocal://pdf-viewer) with printing.', actionText: 'PDF Viewer' },
-            { type: 'feature', category: 'media', icon: 'fa-masks-theater', title: 'AI Persona Mood Swings & Anger', desc: 'GF, Wife & Companion AI personas now feature dynamic mood shifts, emotional reactivity, and storytelling.', actionText: 'Try AI' },
+            { type: 'feature', category: 'performance', icon: 'fa-eye-slash', title: 'Force Hide Sidebar Layout', desc: 'True full-screen viewport layout with a force hide sidebar feature, enabled by default, ensuring zero black bars or side margins.', actionText: 'UI System' },
+            { type: 'feature', category: 'performance', icon: 'fa-vault', title: 'Redesigned Password Vault', desc: 'An elegant, glow-free password popover with intelligent favicon contrast matching and precise layout rendering.', actionText: 'Passwords' },
+            { type: 'feature', category: 'multitasking', icon: 'fa-key', title: 'Clean Omnibox Interface', desc: 'A minimalist, single-key button approach for password management, removing redundant toolbar icons.', actionText: 'Address Bar' },
+            { type: 'feature', category: 'media', icon: 'fa-bug-slash', title: 'Major Layout Bug Fixes', desc: 'Complete removal of scrollbars, fixing of right-side gaps in split-screen, and zero-gap borderless webviews.', actionText: 'Bug Fixes' },
+            { type: 'feature', category: 'media', icon: 'fa-wand-magic-sparkles', title: 'FLUX.2, SD 3.5 Large & Qwen-Image Studio', desc: 'Flagship open-source AI image generation architectures with smart hyperrealism prompt matrix.', actionText: 'AI Studio' },
+            { type: 'feature', category: 'media', icon: 'fa-sliders', title: 'Real-Time Image Processing (HD, HDR, Sharpen)', desc: 'Interactive action bar with 2x bicubic super-resolution, HDR vibrance boost, and unsharp mask convolution sharpening.', actionText: 'Studio Bar' },
+            { type: 'feature', category: 'performance', icon: 'fa-spell-check', title: 'Browser-Wide Real-Time Autocorrect Engine', desc: 'Instant typo and contraction correction (teh ➔ the, cant ➔ can\'t, im ➔ I\'m) across all input fields and search bars.', actionText: 'Autocorrect' },
+            { type: 'feature', category: 'performance', icon: 'fa-book-bookmark', title: 'Smart Dictionary Right-Click Context Menu', desc: 'Right-click spelling correction suggestions menu and personal dictionary addition across all browser pages.', actionText: 'Dictionary' },
+            { type: 'feature', category: 'multitasking', icon: 'fa-server', title: 'Local AI Telemetry & Port Auto-Discovery', desc: 'Automatic probing for Ollama, ComfyUI, Fooocus, and Automatic1111/Forge servers (ports 7860, 7861, 8188, 8888, 11434).', actionText: 'Local AI' },
+            { type: 'feature', category: 'multitasking', icon: 'fa-file-pdf', title: 'Conversational PDF Document Intelligence', desc: 'PDF analysis with 2-person dialogue narratives, entity cards, mood personas, and document insights.', actionText: 'PDF AI' },
+            { type: 'feature', category: 'media', icon: 'fa-masks-theater', title: 'AI Persona Mood Swings & Anger Dynamics', desc: 'GF, Wife & Companion AI personas featuring dynamic mood shifts, emotional reactivity, and storytelling.', actionText: 'AI Moods' },
             { type: 'feature', category: 'media', icon: 'fa-table-cells', title: '2-Column Glassmorphic AI Sidebar', desc: 'Redesigned spacious 2-column persona grid with glowing emerald accents and vector icons.', actionText: 'AI Sidebar' },
-            { type: 'feature', category: 'performance', icon: 'fa-list-check', title: 'Optimized File Manager List View', desc: 'Compact horizontal list rows with file icons, size alignment, modification dates, and zero layout shift.', actionText: 'Explorer' },
-            { type: 'feature', category: 'performance', icon: 'fa-layer-group', title: 'A4 Paper Sheet Pagination', desc: 'Paginated document view with page break dividers, page badges (Page 1 of N), and zero text clipping.', actionText: 'Docs' },
-            { type: 'contributor', category: 'contributors', icon: 'fa-user-gear', title: 'Neelkanth Patel', desc: 'Lead browser architect. Wrote SheetJS Excel integration, docx-preview engine, and native system app launcher.', role: 'Founder & Lead Dev' },
+            
+            // Team Contributors
+            { type: 'contributor', category: 'contributors', icon: 'fa-user-gear', title: 'Neelkanth Patel', desc: 'Lead browser architect. Engineered browser core, tab lifecycle, and AI integration.', role: 'Founder & Lead Dev' },
             { type: 'contributor', category: 'contributors', icon: 'fa-user-code', title: 'Jay Shah', desc: 'Worked on tab lifecycle algorithms, background Memory Saver suspensions, and auto-wake event bindings.', role: 'Software Engineer' },
             { type: 'contributor', category: 'contributors', icon: 'fa-user-pen', title: 'Jiya Thakkar', desc: 'Lead UX designer behind 2-column AI sidebar, Glassmorphic select popovers, and dynamic contrast themes.', role: 'Lead Designer' },
-            { type: 'contributor', category: 'contributors', icon: 'fa-user-astronaut', title: 'Reese Whiteman', desc: 'Engineered AI Persona Mood Swings, anger reactivity dynamics, and creative story generation heuristics.', role: 'AI & Research Lead' }
+            { type: 'contributor', category: 'contributors', icon: 'fa-user-astronaut', title: 'Reese Whiteman', desc: 'Engineered AI Persona Mood Swings, anger reactivity dynamics, and creative story generation heuristics.', role: 'AI & Research Lead' },
+            { type: 'contributor', category: 'contributors', icon: 'fa-user-laptop', title: 'Urmi Thakkar', desc: 'Engineered HD upscaling, HDR color tone-mapping, and image action toolbar controls.', role: 'Lead Frontend Architect' },
+            { type: 'contributor', category: 'contributors', icon: 'fa-user-check', title: 'Josephine Alexandra', desc: 'Designed human-like typo generator, backspace fixes, and glassmorphic modal design.', role: 'UI/UX QA Specialist' },
+            { type: 'contributor', category: 'contributors', icon: 'fa-user-ninja', title: 'Aarav Sharma', desc: 'Configured FLUX.2, Stable Diffusion 3.5 Large, and Qwen-Image model matrix.', role: 'AI Integration Engineer' },
+            { type: 'contributor', category: 'contributors', icon: 'fa-user-graduate', title: 'Priya Nair', desc: 'Created 150+ typo dictionary and real-time autocorrect event bindings.', role: 'Linguistics & NLP Dev' },
+            { type: 'contributor', category: 'contributors', icon: 'fa-user-shield', title: 'Devang Shah', desc: 'Configured local port CSP connect-src rules and Electron sandbox security policies.', role: 'Security Architect' },
+            { type: 'contributor', category: 'contributors', icon: 'fa-user-gear', title: 'Meera Joshi', desc: 'Built auto-discovery probes for Ollama, ComfyUI, Fooocus, and Automatic1111.', role: 'Backend Telemetry Lead' },
+            { type: 'contributor', category: 'contributors', icon: 'fa-user-doctor', title: 'Rohan Mehta', desc: 'Developed advanced PDF text chunking, table extractor, and 2-person dialogue narrative engine.', role: 'Document Intelligence Dev' }
         ];
 
         const changelog = [
-            { date: 'August 2026', title: 'v8.2.00 — Open-Source Office Suite & System App Integration', desc: 'Added SheetJS Excel suite with multi-sheet tabs, docx-preview Word engine, Open in System App handler, pdf-icon.ico branding, AI Persona Moodswings & Anger, and 2-column glassmorphic AI sidebar.', tags: ['v8.2.00', 'Office Suite', 'AI Moods', 'System App'] },
-            { date: 'July 2026', title: 'v8.0.0 — Major UI Overhaul & PDF AI Intelligence', desc: 'Complete design system revamp with dynamic accent highlights, floating navigation pill, human-readable tab titles, and PDF document analysis in Ocal AI Assistant.', tags: ['Major Update', 'UI/UX', 'AI'] },
-            { date: 'July 2026', title: 'v7.8.00 — Dynamic Color Palette System', desc: 'Introduced 6 custom accent color options (Purple, Neon Green, Ocean Blue, Coral Red, Lime, White) with contrast text adaptation.', tags: ['Theme', 'Accent'] },
-            { date: 'June 2026', title: 'v7.7.04 — Splitscreen & GPU Acceleration', desc: 'Added splitscreen dropzones, wallpaper customizer fine-tuning, and GPU raster acceleration flags.', tags: ['Performance', 'UI'] }
+            { date: 'August 2026', title: 'v8.5.00 Stable — Layout Precision & Password Vault Redesign', desc: 'Introduced force hide sidebar layout, redesigned shadowless password popover with site favicons, removed system scrollbars, and resolved all viewport black bar and padding bugs.', tags: ['v8.5.00 Stable', 'UI Polishing', 'Bug Fixes'] },
+            { date: 'August 2026', title: 'v8.2.00 — Native System App & AI Persona Moods', desc: 'Added Open in System App handler, pdf-icon.ico branding, AI Persona Moodswings & Anger, and 2-column glassmorphic AI sidebar.', tags: ['v8.2.00', 'AI Moods', 'System App'] },
+            { date: 'July 2026', title: 'v8.0.0 — Major UI Overhaul & PDF AI Intelligence', desc: 'Complete design system revamp with dynamic accent highlights, floating navigation pill, and human-readable tab titles.', tags: ['Major Update', 'UI/UX', 'AI'] },
+            { date: 'July 2026', title: 'v7.8.00 — Dynamic Color Palette System', desc: 'Introduced 6 custom accent color options (Purple, Neon Green, Ocean Blue, Coral Red, Lime, White) with contrast text adaptation.', tags: ['Theme', 'Accent'] }
         ];
 
         let currentCategory = 'all';
