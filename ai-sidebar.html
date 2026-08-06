@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta http-equiv="Content-Security-Policy" content="default-src 'self' 'unsafe-inline' 'unsafe-eval' https: data:; script-src 'self' 'unsafe-inline' 'unsafe-eval' https://cdnjs.cloudflare.com https://unpkg.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com https://cdnjs.cloudflare.com https://cdn.jsdelivr.net; font-src 'self' https://fonts.gstatic.com https://cdnjs.cloudflare.com https://cdn.jsdelivr.net; connect-src 'self' https: wss: http://127.0.0.1:11434 http://localhost:11434 http://127.0.0.1:7860 http://localhost:7860; img-src 'self' https: data: blob:; worker-src 'self' blob: https://cdnjs.cloudflare.com;">
-    <title>Ocal AI Assistant</title>
+    <title>Ocal AI</title>
     <link rel="stylesheet" href="assets/fontawesome/css/all.min.css">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -15,39 +15,70 @@
     <style>
         :root {
             --accent: #15AC49;
-            --accent-glow: rgba(21, 172, 73, 0.3);
+            --accent-glow: rgba(21, 172, 73, 0.25);
+            --accent-dim: rgba(21, 172, 73, 0.12);
+            --accent-border: #15AC49;
             --lime: #D4FC2B;
-            --chrome: #0D0E11;
-            --border: rgba(255, 255, 255, 0.08);
-            --border-heavy: rgba(255, 255, 255, 0.15);
-            --text: #FFFFFF;
-            --text-dim: #9CA3AF;
-            --text-muted: #6B7280;
-            --panel-bg: #0D0E11;
-            --card-bg: #16181D;
-            --card-border: rgba(255, 255, 255, 0.08);
-            --input-bg: #16181D;
-            --input-border: rgba(255, 255, 255, 0.1);
-            --radius: 16px;
+            --bg: #EDEDF0;
+            --panel-bg: #FFFFFF;
+            --border: rgba(0, 0, 0, 0.06);
+            --hover: #F4F4F6;
+            --glass: #FFFFFF;
+            --glass-hover: #F4F4F6;
+            --glass-border: rgba(0, 0, 0, 0.04);
+            --card-bg: #FFFFFF;
+            --card-border: rgba(0, 0, 0, 0.06);
+            --card-hover-bg: #F4F4F6;
+            --card-hover-border: var(--accent);
+            --input-bg: #F4F4F6;
+            --input-border: rgba(0, 0, 0, 0.08);
+            --tab-strip-bg: rgba(0, 0, 0, 0.03);
+            --text: #1A1D20;
+            --text-dim: #7E8492;
+            --text-muted: #A0A5B1;
+            --radius: 20px;
             --title-font: 'Plus Jakarta Sans', sans-serif;
-            --font: 'Plus Jakarta Sans', sans-serif;
+            --font: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, sans-serif;
             --mono: 'Space Mono', monospace;
         }
 
+        body[data-theme="dark"] {
+            --bg: #0D0E11;
+            --panel-bg: #16181D;
+            --border: rgba(255, 255, 255, 0.08);
+            --hover: #22262F;
+            --glass: #16181D;
+            --glass-hover: #22262F;
+            --glass-border: rgba(255, 255, 255, 0.08);
+            --card-bg: #16181D;
+            --card-border: rgba(255, 255, 255, 0.08);
+            --card-hover-bg: #22262F;
+            --card-hover-border: #15AC49;
+            --input-bg: #20242D;
+            --input-border: rgba(255, 255, 255, 0.1);
+            --tab-strip-bg: #16181D;
+            --text: #F3F4F6;
+            --text-dim: #9CA3AF;
+            --text-muted: #6B7280;
+        }
+
         body[data-theme="light"] {
-            --accent: #15AC49;
-            --accent-glow: rgba(21, 172, 73, 0.2);
-            --chrome: #EDEDF0;
-            --panel-bg: #EDEDF0;
+            --bg: #EDEDF0;
+            --panel-bg: #FFFFFF;
+            --border: rgba(0, 0, 0, 0.06);
+            --hover: #F4F4F6;
+            --glass: #FFFFFF;
+            --glass-hover: #F4F4F6;
+            --glass-border: rgba(0, 0, 0, 0.04);
             --card-bg: #FFFFFF;
             --card-border: rgba(0, 0, 0, 0.06);
-            --input-bg: #FFFFFF;
+            --card-hover-bg: #F4F4F6;
+            --card-hover-border: var(--accent);
+            --input-bg: #F4F4F6;
             --input-border: rgba(0, 0, 0, 0.08);
-            --text: #111111;
-            --text-dim: #475569;
-            --text-muted: #94A3B8;
-            --border: rgba(0, 0, 0, 0.06);
-            --border-heavy: rgba(0, 0, 0, 0.12);
+            --text: #1A1D20;
+            --text-dim: #7E8492;
+            --text-muted: #A0A5B1;
         }
 
         /* Reset & Base Elements */
@@ -81,19 +112,19 @@
             background: var(--accent);
         }
 
-        /* Panel Container matched with topbar color */
+        /* Panel Container matched with sidebars.html design */
         .ai-panel {
             flex: 1;
-            background: var(--panel-bg);
-            border: 1px solid var(--border);
-            border-radius: 20px !important;
-            margin: 8px 8px 8px 4px;
+            background: var(--panel-bg) !important;
+            border: 1px solid var(--border) !important;
+            border-radius: var(--radius) !important;
+            margin: 8px;
             display: flex;
             flex-direction: column;
             overflow: hidden;
             position: relative;
-            opacity: 0;
-            visibility: hidden;
+            opacity: 1;
+            visibility: visible;
             will-change: transform, opacity;
             box-shadow: none !important;
         }
@@ -118,16 +149,16 @@
             to { transform: translateX(100%); opacity: 0; }
         }
 
-        /* Header Styling matching topbar */
+        /* Header Styling matching sidebars.html */
         .ai-header {
-            height: 56px;
+            height: 54px;
             display: flex;
             align-items: center;
             justify-content: space-between;
             padding: 0 16px;
             border-bottom: 1px solid var(--border);
             flex-shrink: 0;
-            background: var(--panel-bg);
+            background: var(--panel-bg) !important;
             z-index: 10;
         }
 
@@ -137,65 +168,69 @@
             gap: 10px;
         }
 
-        .ai-logo,
-        body[data-theme="light"] .ai-logo {
-            width: 32px;
-            height: 32px;
+        .ai-logo {
+            width: 30px;
+            height: 30px;
             background: var(--accent) !important;
             display: flex;
             align-items: center;
             justify-content: center;
-            color: var(--accent-text, #111111) !important;
-            font-size: 14px;
-            border-radius: 10px;
+            color: #FFFFFF !important;
+            font-size: 13px;
+            border-radius: 8px;
             font-weight: 800;
+            box-shadow: none !important;
         }
 
         .ai-title-text h1 {
-            font-family: var(--title-font);
-            font-size: 14px;
+            font-family: var(--font);
+            font-size: 15px;
             font-weight: 800;
-            letter-spacing: -0.2px;
+            letter-spacing: -0.3px;
             color: var(--text);
         }
 
-        .model-badge,
-        body[data-theme="light"] .model-badge {
-            font-size: 9.5px;
-            font-weight: 800;
+        .model-badge {
+            font-size: 10px;
+            font-weight: 700;
             background: var(--accent-dim) !important;
-            border: 1px solid var(--accent-border) !important;
-            padding: 2px 8px;
-            border-radius: 100px;
+            border: 1px solid var(--accent) !important;
             color: var(--accent) !important;
+            padding: 2px 9px;
+            border-radius: 100px;
             white-space: nowrap;
         }
 
         .ai-controls {
             display: flex;
-            gap: 6px;
+            gap: 4px;
         }
 
         .control-btn {
             width: 30px;
             height: 30px;
-            border-radius: 50% !important;
-            border: 1px solid var(--border);
-            background: rgba(255, 255, 255, 0.04);
+            border-radius: 8px !important;
+            border: 1px solid transparent;
+            background: transparent;
             color: var(--text-dim);
             cursor: pointer;
             display: flex;
             align-items: center;
             justify-content: center;
             transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
-            font-size: 11px;
+            font-size: 12px;
         }
 
         .control-btn:hover {
-            background: var(--accent) !important;
-            border-color: var(--accent) !important;
-            color: var(--accent-text, #111111) !important;
-            transform: scale(1.08);
+            background: var(--hover) !important;
+            color: var(--text) !important;
+            border-color: var(--border);
+        }
+
+        #close-ai:hover {
+            background: rgba(239, 68, 68, 0.12) !important;
+            color: #EF4444 !important;
+            border-color: rgba(239, 68, 68, 0.2) !important;
         }
 
         /* Chat View Panel */
@@ -205,7 +240,7 @@
             flex-direction: column;
             min-height: 0;
             z-index: 10;
-            background: var(--panel-bg);
+            background: transparent !important;
         }
 
         .messages-scroll {
@@ -368,33 +403,35 @@
         }
 
         .user .msg-bubble {
-            background: rgba(212, 252, 43, 0.15) !important;
-            border: 1px solid rgba(212, 252, 43, 0.3) !important;
-            border-radius: 16px 16px 4px 16px !important;
-            color: #FFFFFF !important;
+            background: var(--accent) !important;
+            border: 1px solid var(--accent) !important;
+            border-radius: 12px 12px 2px 12px !important;
+            color: #ffffff !important;
             font-weight: 600;
+            box-shadow: none !important;
         }
 
         body[data-theme="light"] .user .msg-bubble {
-            background: rgba(21, 172, 73, 0.12) !important;
-            border-color: rgba(21, 172, 73, 0.25) !important;
-            color: #111111 !important;
+            background: var(--accent) !important;
+            border-color: var(--accent) !important;
+            color: #ffffff !important;
         }
 
         .ai .msg-bubble {
-            background: #16181D !important;
-            border: 1px solid rgba(255, 255, 255, 0.08) !important;
-            border-radius: 16px 16px 16px 4px !important;
-            color: #F3F4F6 !important;
-            font-weight: 500;
-            box-shadow: 0 4px 14px rgba(0, 0, 0, 0.2) !important;
+            background: var(--panel-bg) !important;
+            border: 1px solid var(--border) !important;
+            border-radius: 4px 14px 14px 14px !important;
+            color: var(--text) !important;
+            font-weight: 400;
+            box-shadow: none !important;
+            line-height: 1.65;
         }
 
         body[data-theme="light"] .ai .msg-bubble {
-            background: #FFFFFF !important;
-            border-color: rgba(0, 0, 0, 0.06) !important;
-            color: #111111 !important;
-            box-shadow: 0 4px 14px rgba(0, 0, 0, 0.03) !important;
+            background: #ffffff !important;
+            border-color: #e2e5ea !important;
+            color: #1a1d20 !important;
+            box-shadow: none !important;
         }
 
         .msg-content {
@@ -613,14 +650,14 @@
             100% { transform: scale(0.8); opacity: 0.4; }
         }
 
-        /* Input Zone matching topbar color */
+        /* Input Zone matching sidebars.html */
         .ai-input-wrapper {
-            padding: 12px 14px 16px 14px;
+            padding: 10px 14px 14px 14px;
             border-top: 1px solid var(--border);
             display: flex;
             flex-direction: column;
-            gap: 10px;
-            background: var(--panel-bg);
+            gap: 8px;
+            background: var(--panel-bg) !important;
             z-index: 10;
         }
 
@@ -629,73 +666,54 @@
             gap: 6px;
             overflow-x: auto;
             padding: 2px 0;
+            scrollbar-width: none;
         }
         .quick-tools::-webkit-scrollbar { display: none; }
 
-        /* Floating Pill Chips */
+        /* Floating Pill Chips matching sidebars.html */
         .tool-chip {
-            padding: 6px 12px;
-            background: #16181D !important;
-            border: 1px solid rgba(255, 255, 255, 0.08) !important;
+            padding: 5px 12px;
+            background: var(--card-bg) !important;
+            border: 1px solid var(--card-border) !important;
             border-radius: 100px !important;
-            font-family: var(--title-font);
-            font-size: 11px;
+            font-family: var(--font);
+            font-size: 11.5px;
             font-weight: 700;
-            color: #FFFFFF !important;
+            color: var(--text-dim) !important;
             cursor: pointer;
             white-space: nowrap;
-            transition: all 0.2s ease;
+            transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
             display: flex;
             align-items: center;
-            gap: 6px;
+            gap: 5px;
         }
 
-        body[data-theme="light"] .tool-chip {
-            background: #FFFFFF !important;
-            color: #111111 !important;
-            border-color: rgba(0, 0, 0, 0.08) !important;
-        }
-
-        .tool-chip i,
-        body[data-theme="light"] .tool-chip i {
+        .tool-chip i {
             color: var(--accent) !important;
-            font-size: 10px;
+            font-size: 11px;
         }
 
-        .tool-chip:hover,
-        body[data-theme="light"] .tool-chip:hover {
-            background: var(--accent) !important;
+        .tool-chip:hover {
+            background: var(--card-hover-bg) !important;
             border-color: var(--accent) !important;
-            color: var(--accent-text, #111111) !important;
-            transform: translateY(-1px);
+            color: var(--accent) !important;
         }
 
-        .tool-chip:hover i,
-        body[data-theme="light"] .tool-chip:hover i {
-            color: var(--accent-text, #111111) !important;
-        }
-
-        /* Capsule Input Bar */
+        /* Capsule Input Bar matching sidebars.html search row */
         .input-container {
-            background: #16181D !important;
-            border: 1px solid rgba(255, 255, 255, 0.1) !important;
+            background: var(--input-bg) !important;
+            border: 1px solid var(--input-border) !important;
             border-radius: 100px !important;
-            padding: 4px 6px 4px 14px;
+            padding: 5px 6px 5px 14px;
             display: flex;
             align-items: center;
-            gap: 6px;
-            transition: all 0.2s ease;
+            gap: 8px;
+            transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
         }
 
-        body[data-theme="light"] .input-container {
-            background: #FFFFFF !important;
-            border-color: rgba(0, 0, 0, 0.08) !important;
-        }
-
-        .input-container:focus-within,
-        body[data-theme="light"] .input-container:focus-within {
+        .input-container:focus-within {
             border-color: var(--accent) !important;
-            box-shadow: 0 0 12px var(--accent-glow) !important;
+            box-shadow: none !important;
         }
 
         #ai-query {
@@ -703,84 +721,92 @@
             background: transparent;
             border: none;
             outline: none;
-            color: #FFFFFF !important;
+            color: var(--text) !important;
             font-weight: 500;
-            padding: 6px 2px;
+            padding: 4px 2px;
             font-family: var(--font);
-            font-size: 13px;
+            font-size: 13.5px;
             resize: none;
             max-height: 120px;
-            min-height: 20px;
-            line-height: 1.4;
-        }
-
-        body[data-theme="light"] #ai-query {
-            color: #111111 !important;
+            min-height: 22px;
+            line-height: 1.45;
         }
 
         #ai-query::placeholder {
-            color: #9CA3AF;
+            color: var(--text-muted);
         }
 
         /* Send Button */
-        .send-btn,
-        body[data-theme="light"] .send-btn {
-            width: 34px;
-            height: 34px;
+        .send-btn {
+            width: 32px;
+            height: 32px;
+            min-width: 32px;
             border-radius: 50% !important;
             border: none;
             background: var(--accent) !important;
-            color: var(--accent-text, #111111) !important;
+            color: #FFFFFF !important;
             cursor: pointer;
             display: flex;
             align-items: center;
             justify-content: center;
-            transition: all 0.2s ease;
+            transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
             flex-shrink: 0;
             font-size: 12px;
+            font-weight: 700;
+            box-shadow: none !important;
         }
 
-        /* Navigation Tab Switcher */
+        .send-btn:hover {
+            transform: scale(1.06);
+            box-shadow: none !important;
+        }
+
+        /* Navigation Tab Switcher matching sidebars.html pill tabs */
         .ai-nav-bar {
             display: flex;
             gap: 4px;
-            padding: 6px 12px;
-            background: rgba(0, 0, 0, 0.15);
-            border-bottom: 1px solid var(--border);
-        }
-
-        body[data-theme="light"] .ai-nav-bar {
-            background: rgba(0, 0, 0, 0.03);
+            margin: 10px 14px 4px;
+            padding: 3px;
+            background: var(--input-bg) !important;
+            border: 1px solid var(--input-border) !important;
+            border-radius: 100px !important;
+            box-shadow: none !important;
+            flex-shrink: 0;
         }
 
         .ai-nav-tab {
             flex: 1;
+            height: 32px;
             display: flex;
             align-items: center;
             justify-content: center;
             gap: 6px;
-            padding: 6px 12px;
-            border-radius: 8px;
-            border: 1px solid transparent;
+            padding: 0 12px;
+            border-radius: 100px !important;
+            border: none;
             background: transparent;
             color: var(--text-dim);
-            font-size: 11.5px;
+            font-size: 12px;
             font-weight: 700;
             font-family: var(--font);
             cursor: pointer;
-            transition: all 0.2s ease;
+            transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
         }
 
-        .ai-nav-tab:hover {
-            background: var(--accent-dim);
-            color: var(--accent);
+        .ai-nav-tab:hover:not(.active) {
+            color: var(--text);
+            background: var(--hover);
         }
 
         .ai-nav-tab.active {
             background: var(--accent) !important;
-            color: var(--accent-text, #111111) !important;
-            border-color: var(--accent) !important;
+            color: #FFFFFF !important;
+            box-shadow: none !important;
             font-weight: 800;
+        }
+
+        .ai-nav-tab.active i {
+            color: #FFFFFF !important;
         }
 
         /* Status Badges */
@@ -848,91 +874,152 @@
             border-bottom: none !important;
         }
 
-        /* Image Studio Styles */
-        .ai-image-studio-view {
+        /* Image Studio Styles matching sidebars.html */
+        .ai-image-studio-view,
+        .ai-settings-view {
             flex: 1;
             display: flex;
             flex-direction: column;
             min-height: 0;
             z-index: 10;
-            background: var(--panel-bg);
+            background: transparent !important;
         }
 
         .studio-scroll-area {
             flex: 1;
             overflow-y: auto;
-            padding: 14px;
+            padding: 16px;
             display: flex;
             flex-direction: column;
-            gap: 12px;
+            gap: 14px;
+            scrollbar-width: none;
         }
+        .studio-scroll-area::-webkit-scrollbar { display: none; }
 
         .studio-card {
-            background: var(--card-bg, #1A1D24);
-            border: 1px solid var(--border);
-            border-radius: 16px;
-            padding: 14px;
+            background: var(--card-bg) !important;
+            border: 1px solid var(--card-border) !important;
+            border-radius: 18px !important;
+            padding: 18px;
             display: flex;
             flex-direction: column;
-            gap: 12px;
+            gap: 16px;
+            box-shadow: none !important;
         }
 
         .studio-card-header {
             display: flex;
             align-items: center;
-            gap: 8px;
-            font-size: 13px;
-            font-weight: 800;
-            color: var(--accent);
+            justify-content: space-between;
             border-bottom: 1px solid var(--border);
-            padding-bottom: 10px;
+            padding-bottom: 12px;
+            margin-bottom: 2px;
+        }
+
+        .studio-header-title {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .studio-header-icon {
+            width: 32px;
+            height: 32px;
+            border-radius: 10px;
+            background: var(--accent-dim);
+            color: var(--accent);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 14px;
+        }
+
+        .studio-header-text {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .studio-header-text h3 {
+            font-size: 14px;
+            font-weight: 800;
+            color: var(--text);
+            letter-spacing: -0.2px;
+            margin: 0;
+        }
+
+        .studio-header-text span {
+            font-size: 11px;
+            color: var(--text-dim);
+            font-weight: 500;
         }
 
         .studio-field {
             display: flex;
             flex-direction: column;
-            gap: 6px;
+            gap: 7px;
         }
 
         .studio-field label {
-            font-size: 10.5px;
+            font-size: 11px;
             font-weight: 800;
             text-transform: uppercase;
-            letter-spacing: 0.5px;
+            letter-spacing: 0.6px;
             color: var(--text-dim);
             display: flex;
             align-items: center;
-            gap: 5px;
+            gap: 6px;
+        }
+
+        .studio-field label i {
+            color: var(--accent);
+            font-size: 11px;
         }
 
         .studio-select {
-            background: var(--panel-bg);
-            border: 1px solid var(--border);
-            border-radius: 10px;
-            padding: 8px 10px;
+            background: var(--input-bg) !important;
+            border: 1px solid var(--input-border) !important;
+            border-radius: 12px !important;
+            padding: 9px 12px;
             color: var(--text);
-            font-size: 12px;
+            font-size: 13px;
             font-family: var(--font);
             outline: none;
             cursor: pointer;
+            transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+
+        .studio-select:focus {
+            border-color: var(--accent) !important;
+            box-shadow: none !important;
         }
 
         .studio-select option {
-            background: var(--panel-bg);
+            background: var(--panel-bg) !important;
             color: var(--text);
         }
 
         .studio-textarea {
-            background: var(--panel-bg);
-            border: 1px solid var(--border);
-            border-radius: 10px;
-            padding: 10px;
+            background: var(--input-bg) !important;
+            border: 1px solid var(--input-border) !important;
+            border-radius: 14px !important;
+            padding: 12px 14px;
             color: var(--text);
-            font-size: 12px;
+            font-size: 13px;
             font-family: var(--font);
             outline: none;
             resize: vertical;
-            min-height: 70px;
+            min-height: 84px;
+            line-height: 1.5;
+            transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+
+        .studio-textarea:focus {
+            border-color: var(--accent) !important;
+            box-shadow: none !important;
+        }
+
+        .studio-textarea::placeholder {
+            color: var(--text-muted);
         }
 
         .preset-chips-grid {
@@ -942,38 +1029,44 @@
         }
 
         .preset-chip {
-            padding: 5px 10px;
-            border-radius: 100px;
-            background: rgba(255, 255, 255, 0.05);
-            border: 1px solid var(--border);
+            padding: 6px 14px;
+            border-radius: 100px !important;
+            background: var(--input-bg) !important;
+            border: 1px solid var(--input-border) !important;
             color: var(--text-dim);
-            font-size: 10.5px;
+            font-size: 11.5px;
             font-weight: 700;
             font-family: var(--font);
             cursor: pointer;
             display: flex;
             align-items: center;
-            gap: 4px;
-            transition: all 0.2s ease;
+            gap: 6px;
+            transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
         }
 
-        body[data-theme="light"] .preset-chip {
-            background: rgba(0, 0, 0, 0.04);
-        }
-
-        .preset-chip:hover {
-            background: var(--accent-dim);
+        .preset-chip i {
             color: var(--accent);
-            border-color: var(--accent-border);
+            font-size: 11px;
+        }
+
+        .preset-chip:hover, .preset-chip.active {
+            background: var(--accent) !important;
+            color: #FFFFFF !important;
+            border-color: var(--accent) !important;
+            box-shadow: none !important;
+        }
+
+        .preset-chip:hover i, .preset-chip.active i {
+            color: #FFFFFF !important;
         }
 
         .studio-submit-btn {
-            padding: 10px 16px;
-            border-radius: 12px;
-            background: var(--accent);
-            color: var(--accent-text, #111111);
+            height: 44px;
+            border-radius: 100px !important;
+            background: linear-gradient(135deg, #15AC49 0%, #09f0a0 100%) !important;
+            color: #0D0E11 !important;
             border: none;
-            font-size: 12.5px;
+            font-size: 13px;
             font-weight: 800;
             font-family: var(--font);
             cursor: pointer;
@@ -981,28 +1074,36 @@
             align-items: center;
             justify-content: center;
             gap: 8px;
-            transition: all 0.2s ease;
-            margin-top: 4px;
+            transition: all 0.22s cubic-bezier(0.16, 1, 0.3, 1);
+            margin-top: 6px;
+            box-shadow: none !important;
+            letter-spacing: -0.2px;
         }
 
         .studio-submit-btn:hover {
-            transform: translateY(-1px);
-            opacity: 0.92;
+            transform: translateY(-2px);
+            box-shadow: none !important;
+            opacity: 0.96;
+        }
+
+        .studio-submit-btn:active {
+            transform: translateY(0);
         }
 
         .studio-preview-card {
-            background: var(--card-bg, #1A1D24);
-            border: 1px solid var(--border);
-            border-radius: 16px;
-            padding: 14px;
+            background: var(--card-bg) !important;
+            border: 1px solid var(--card-border) !important;
+            border-radius: 18px !important;
+            padding: 16px;
             display: flex;
             flex-direction: column;
-            gap: 10px;
+            gap: 12px;
             align-items: center;
+            box-shadow: none !important;
         }
 
         .studio-status {
-            font-size: 11.5px;
+            font-size: 12px;
             font-weight: 700;
             color: var(--accent);
             display: flex;
@@ -1013,9 +1114,9 @@
         .studio-img-wrap {
             width: 100%;
             max-height: 360px;
-            border-radius: 12px;
+            border-radius: 14px !important;
             overflow: hidden;
-            border: 1px solid var(--border);
+            border: 1px solid var(--card-border) !important;
             display: flex;
             align-items: center;
             justify-content: center;
@@ -1027,6 +1128,7 @@
             max-height: 360px;
             object-fit: contain;
             display: block;
+            border-radius: 14px;
         }
 
         .studio-actions {
@@ -1037,12 +1139,12 @@
 
         .studio-action-btn {
             flex: 1;
-            padding: 8px 12px;
-            border-radius: 8px;
-            background: rgba(255, 255, 255, 0.06);
-            border: 1px solid var(--border);
+            height: 36px;
+            border-radius: 100px !important;
+            background: var(--input-bg);
+            border: 1px solid var(--input-border);
             color: var(--text);
-            font-size: 11px;
+            font-size: 11.5px;
             font-weight: 700;
             font-family: var(--font);
             cursor: pointer;
@@ -1050,13 +1152,1221 @@
             align-items: center;
             justify-content: center;
             gap: 6px;
-            transition: all 0.2s ease;
+            transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
         }
 
         .studio-action-btn:hover {
             background: var(--accent-dim);
             color: var(--accent);
             border-color: var(--accent-border);
+        }
+
+        /* Custom Dropdown Styling */
+        .custom-dropdown {
+            position: relative;
+            width: 100%;
+        }
+
+        .dropdown-trigger {
+            width: 100%;
+            background: var(--input-bg) !important;
+            border: 1px solid var(--input-border) !important;
+            border-radius: 12px !important;
+            padding: 10px 14px;
+            color: var(--text) !important;
+            font-family: var(--font);
+            font-size: 13px;
+            font-weight: 600;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 10px;
+            transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+            text-align: left;
+        }
+
+        .dropdown-trigger:hover, .dropdown-trigger:focus {
+            border-color: var(--accent) !important;
+            box-shadow: none !important;
+            outline: none;
+        }
+
+        .trigger-label {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .trigger-arrow {
+            font-size: 10px;
+            color: var(--text-dim);
+            transition: transform 0.25s ease;
+        }
+
+        .custom-dropdown.open .trigger-arrow {
+            transform: rotate(180deg);
+        }
+
+        .dropdown-options {
+            position: absolute;
+            top: calc(100% + 6px);
+            left: 0;
+            width: 100%;
+            background: var(--panel-bg) !important;
+            border: 1px solid var(--border) !important;
+            border-radius: 14px !important;
+            box-shadow: none !important;
+            z-index: 1000;
+            opacity: 0;
+            visibility: hidden;
+            transform: translateY(-8px);
+            transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+            overflow: hidden;
+            padding: 6px;
+        }
+
+        .custom-dropdown.open .dropdown-options {
+            opacity: 1;
+            visibility: visible;
+            transform: translateY(0);
+        }
+
+        .dropdown-option {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 10px 12px;
+            border-radius: 10px !important;
+            cursor: pointer;
+            transition: all 0.18s ease;
+            color: var(--text);
+        }
+
+        .dropdown-option:hover {
+            background: var(--hover) !important;
+            color: var(--text) !important;
+        }
+
+        .dropdown-option.active {
+            background: var(--accent-dim) !important;
+            color: var(--accent) !important;
+            border: 1px solid var(--accent-border) !important;
+            font-weight: 700;
+        }
+
+        .option-icon {
+            font-size: 16px;
+            width: 24px;
+            height: 24px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
+        }
+
+        .option-text {
+            display: flex;
+            flex-direction: column;
+            gap: 2px;
+            min-width: 0;
+        }
+
+        .option-title {
+            font-size: 12px;
+            font-weight: 700;
+        }
+
+        .option-desc {
+            font-size: 10px;
+            color: var(--text-dim);
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        /* Advanced Settings Collapsible */
+        .advanced-settings-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            cursor: pointer;
+            padding: 11px 14px;
+            background: var(--input-bg);
+            border: 1px solid var(--input-border);
+            border-radius: 12px;
+            margin-top: 4px;
+            font-size: 11.5px;
+            font-weight: 800;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            color: var(--text-dim);
+            user-select: none;
+            transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+
+        .advanced-settings-header:hover {
+            color: var(--text);
+            border-color: var(--accent);
+        }
+
+        .advanced-settings-header i {
+            color: var(--accent);
+        }
+
+        .advanced-settings-content {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            margin-top: 6px;
+            padding: 12px 14px;
+            background: var(--input-bg);
+            border: 1px solid var(--input-border);
+            border-radius: 12px;
+        }
+
+        .advanced-arrow {
+            transition: transform 0.2s ease;
+        }
+
+        .advanced-arrow.open {
+            transform: rotate(180deg);
+        }
+
+        /* AI Image Studio Loading Shimmer (Gemini & ChatGPT style) */
+        .loading-shimmer-canvas {
+            position: relative;
+            width: 100%;
+            aspect-ratio: var(--aspect-ratio, 1 / 1);
+            border-radius: 8px !important;
+            overflow: hidden;
+            border: 1px solid var(--card-border) !important;
+            background: #090a0f;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-top: 8px;
+            box-shadow: inset 0 0 40px rgba(0, 0, 0, 0.6);
+        }
+
+        body[data-theme="light"] .loading-shimmer-canvas {
+            background: #f1f2f6;
+            box-shadow: inset 0 0 20px rgba(0, 0, 0, 0.05);
+        }
+
+        .shimmer-gradient-flow {
+            position: absolute;
+            width: 200%;
+            height: 200%;
+            background: linear-gradient(-45deg, #3b82f6, #8b5cf6, #ec4899, #10b981, #f59e0b, #3b82f6);
+            background-size: 300% 300%;
+            animation: shimmer-flow 10s ease infinite;
+            opacity: 0.9;
+        }
+
+        body[data-theme="light"] .shimmer-gradient-flow {
+            background: linear-gradient(-45deg, #a7f3d0, #fbcfe8, #c7d2fe, #fed7aa, #a7f3d0);
+            opacity: 0.95;
+        }
+
+        @keyframes shimmer-flow {
+            0% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+            100% { background-position: 0% 50%; }
+        }
+
+        .shimmer-glow-overlay {
+            position: absolute;
+            inset: 0;
+            backdrop-filter: blur(25px) saturate(1.2);
+            -webkit-backdrop-filter: blur(25px) saturate(1.2);
+            background: radial-gradient(circle, rgba(0,0,0,0) 20%, rgba(20,20,25,0.4) 90%);
+        }
+
+        body[data-theme="light"] .shimmer-glow-overlay {
+            background: radial-gradient(circle, rgba(255,255,255,0) 20%, rgba(255,255,255,0.4) 90%);
+        }
+
+        .shimmer-progress-overlay {
+            position: relative;
+            z-index: 5;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+            gap: 12px;
+            padding: 20px;
+        }
+
+        .progress-spinner {
+            position: relative;
+            width: 60px;
+            height: 60px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .spinner-circle {
+            position: absolute;
+            inset: 0;
+            border: 3px solid rgba(255, 255, 255, 0.1);
+            border-top: 3px solid var(--accent);
+            border-radius: 50% !important;
+            animation: spin 1s linear infinite;
+        }
+
+        body[data-theme="light"] .spinner-circle {
+            border-color: rgba(0, 0, 0, 0.05);
+            border-top-color: var(--accent);
+        }
+
+        .painting-brush-icon {
+            font-size: 20px;
+            color: var(--text);
+            animation: paint-brush-move 2.5s ease-in-out infinite;
+        }
+
+        @keyframes paint-brush-move {
+            0% { transform: translate(0, 0) rotate(0deg); }
+            25% { transform: translate(4px, -4px) rotate(15deg); }
+            50% { transform: translate(-3px, 5px) rotate(-10deg); }
+            75% { transform: translate(5px, 3px) rotate(5deg); }
+            100% { transform: translate(0, 0) rotate(0deg); }
+        }
+
+        #shimmer-progress-percentage {
+            font-family: var(--title-font);
+            font-size: 14px;
+            font-weight: 800;
+            color: var(--text);
+            letter-spacing: -0.2px;
+        }
+
+        #shimmer-progress-subtext {
+            font-size: 10.5px;
+            color: var(--text-dim);
+            font-weight: 500;
+            max-width: 220px;
+            line-height: 1.4;
+        }
+
+        /* Smooth result animation */
+        .studio-result-img {
+            animation: reveal-image 0.6s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+        }
+
+        @keyframes reveal-image {
+            from { opacity: 0; transform: scale(0.96); filter: blur(10px); }
+            to { opacity: 1; transform: scale(1); filter: blur(0); }
+        }
+
+        /* ================================================================
+           SIDEBAR DRAWER (Non-Fullscreen Mode)
+           ================================================================ */
+        body:not(.fullscreen-mode) .history-sidebar {
+            position: absolute;
+            top: 0;
+            left: 0;
+            bottom: 0;
+            width: 270px;
+            background: var(--panel-bg);
+            border-right: 1px solid var(--border);
+            z-index: 100;
+            transform: translateX(-100%);
+            transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+            box-shadow: none !important;
+            padding: 14px 10px;
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+        }
+
+        body:not(.fullscreen-mode) .history-sidebar.open {
+            transform: translateX(0);
+        }
+
+        /* ================================================================
+           FULLSCREEN MODE — Complete Layout
+           ================================================================ */
+        body.fullscreen-mode {
+            background-color: var(--bg) !important;
+            color: var(--text) !important;
+            font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, sans-serif !important;
+            overflow: hidden !important;
+        }
+
+        /* Outer panel: full viewport, flex ROW */
+        body.fullscreen-mode .ai-panel {
+            margin: 0 !important;
+            border: none !important;
+            border-radius: 0 !important;
+            height: 100vh !important;
+            width: 100vw !important;
+            background: var(--bg) !important;
+            display: flex !important;
+            flex-direction: row !important;
+        }
+
+        /* Hide sidebar controls not needed in fullscreen */
+        body.fullscreen-mode #resize-handle,
+        body.fullscreen-mode #close-ai,
+        body.fullscreen-mode #fullscreen-toggle,
+        body.fullscreen-mode .ai-nav-bar,
+        body.fullscreen-mode .ai-header {
+            display: none !important;
+        }
+
+        /* ---- SIDEBAR ---- */
+        /* Override the base absolute positioning so sidebar is visible */
+        body.fullscreen-mode .history-sidebar {
+            position: relative !important;
+            left: 0 !important;
+            top: 0 !important;
+            bottom: 0 !important;
+            transform: none !important;
+            box-shadow: none !important;
+            width: 256px !important;
+            min-width: 256px !important;
+            max-width: 256px !important;
+            height: 100vh !important;
+            flex-shrink: 0 !important;
+            background: var(--panel-bg) !important;
+            border-right: 1px solid var(--border) !important;
+            padding: 14px 10px !important;
+            display: flex !important;
+            flex-direction: column !important;
+            gap: 2px !important;
+            overflow-y: auto !important;
+            z-index: 10 !important;
+        }
+
+        /* Light mode sidebar contrast */
+        body[data-theme="light"].fullscreen-mode .history-sidebar {
+            background: #f7f8fa !important;
+            border-right: 1px solid #dde1e7 !important;
+        }
+
+        /* Hide sidebar scrollbar */
+        body.fullscreen-mode .history-sidebar::-webkit-scrollbar { width: 0 !important; }
+
+        /* ---- SIDEBAR COMPONENTS ---- */
+        .gemini-sidebar-top {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 2px 4px 14px 4px;
+        }
+
+        .gemini-logo {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 16px;
+            font-weight: 800;
+            color: var(--text);
+        }
+
+        .gemini-star-icon {
+            background: linear-gradient(135deg, #15AC49, #09f0a0);
+            background-clip: text;
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            font-size: 18px;
+        }
+
+        .gemini-mode-pill {
+            display: flex;
+            background: var(--card-bg);
+            border: 1px solid var(--border);
+            padding: 3px;
+            border-radius: 10px;
+            margin-bottom: 10px;
+        }
+
+        @keyframes jellyBounce {
+            0% { transform: scale(1, 1); }
+            40% { transform: scale(1.04, 0.97); }
+            70% { transform: scale(0.98, 1.02); }
+            100% { transform: scale(1, 1); }
+        }
+
+        @keyframes jellyIcon {
+            0% { transform: scale(1) translateX(0); }
+            40% { transform: scale(1.08) translateX(1.5px) rotate(-2deg); }
+            70% { transform: scale(0.97) translateX(-0.5px) rotate(1deg); }
+            100% { transform: scale(1.06) translateX(0) rotate(0deg); }
+        }
+
+        .gemini-mode-btn {
+            flex: 1;
+            padding: 6px 10px;
+            border-radius: 8px;
+            border: none;
+            background: transparent;
+            color: var(--text-dim);
+            font-size: 12px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1) !important;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 6px;
+            font-family: 'Plus Jakarta Sans', sans-serif;
+        }
+
+        .gemini-mode-btn i {
+            transition: transform 0.25s cubic-bezier(0.16, 1, 0.3, 1) !important;
+        }
+
+        .gemini-mode-btn.active {
+            background: var(--panel-bg);
+            color: var(--accent);
+            box-shadow: none !important;
+            animation: jellyBounce 0.35s cubic-bezier(0.16, 1, 0.3, 1) !important;
+        }
+
+        .gemini-mode-btn.active i {
+            animation: jellyIcon 0.35s cubic-bezier(0.16, 1, 0.3, 1) !important;
+            transform: scale(1.08) !important;
+        }
+
+        .gemini-mode-btn:hover:not(.active) i {
+            transform: scale(1.08) !important;
+        }
+
+        .gemini-nav-item {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 8px 12px;
+            border-radius: 8px;
+            color: var(--text-dim);
+            font-size: 13px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1) !important;
+            background: transparent;
+            border: none;
+            width: 100%;
+            text-align: left;
+            font-family: 'Plus Jakarta Sans', sans-serif;
+        }
+
+        .gemini-nav-item:hover {
+            background: var(--card-bg);
+            color: var(--text);
+            transform: translateX(2px) !important;
+        }
+
+        .gemini-nav-item i {
+            width: 16px;
+            font-size: 13px;
+            text-align: center;
+            color: var(--accent);
+            flex-shrink: 0;
+            transition: transform 0.25s cubic-bezier(0.16, 1, 0.3, 1) !important;
+        }
+
+        .gemini-nav-item:hover i {
+            transform: scale(1.1) !important;
+        }
+
+        .gemini-section-title {
+            font-size: 9.5px;
+            font-weight: 700;
+            color: var(--text-muted);
+            margin: 12px 12px 3px 12px;
+            text-transform: uppercase;
+            letter-spacing: 0.9px;
+        }
+
+        .gemini-user-footer {
+            margin-top: auto;
+            padding: 10px 4px 2px 4px;
+            border-top: 1px solid var(--border);
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .gemini-user-info {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            flex: 1;
+        }
+
+        .gemini-user-avatar {
+            width: 30px;
+            height: 30px;
+            border-radius: 8px;
+            background: linear-gradient(135deg, #15AC49, #09f0a0);
+            color: #0D0E11;
+            font-weight: 800;
+            font-size: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
+        }
+
+        .gemini-user-details { display: flex; flex-direction: column; gap: 1px; }
+
+        .gemini-user-name {
+            font-size: 12px;
+            font-weight: 700;
+            color: var(--text);
+            line-height: 1.2;
+        }
+
+        .gemini-user-badge {
+            font-size: 9px;
+            color: var(--accent);
+            font-weight: 600;
+        }
+
+        /* ---- MAIN AREA ---- */
+        body.fullscreen-mode .ai-main-container {
+            flex: 1 !important;
+            min-width: 0 !important;
+            display: flex !important;
+            flex-direction: column !important;
+            height: 100vh !important;
+            overflow: hidden !important;
+            background: var(--bg) !important;
+        }
+
+        body.fullscreen-mode .ai-views-container {
+            flex: 1 !important;
+            display: flex !important;
+            flex-direction: column !important;
+            overflow: hidden !important;
+            min-height: 0 !important;
+        }
+
+        body.fullscreen-mode .ai-chat-view {
+            flex: 1 !important;
+            display: flex !important;
+            flex-direction: column !important;
+            overflow: hidden !important;
+            min-height: 0 !important;
+        }
+
+        /* Hero greeting & starter prompt cards */
+        .gemini-hero-container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            flex: 1;
+            padding: 40px 24px;
+            max-width: 720px;
+            margin: 0 auto;
+            width: 100%;
+            box-sizing: border-box;
+        }
+
+        .gemini-hero-title {
+            font-size: 32px;
+            font-weight: 800;
+            margin-bottom: 6px;
+            letter-spacing: -0.7px;
+            text-align: center;
+            font-family: 'Plus Jakarta Sans', sans-serif;
+            background: linear-gradient(135deg, var(--text) 30%, var(--accent) 100%);
+            background-clip: text;
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .gemini-hero-subtitle {
+            font-size: 13.5px;
+            color: var(--text-dim);
+            font-weight: 500;
+            margin-bottom: 28px;
+            text-align: center;
+        }
+
+        .hero-prompt-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 12px;
+            width: 100%;
+        }
+
+        .hero-prompt-card {
+            background: var(--card-bg);
+            border: 1px solid var(--card-border);
+            border-radius: 14px;
+            padding: 14px 16px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+
+        .hero-prompt-card:hover {
+            border-color: var(--accent);
+            background: var(--hover);
+            transform: translateY(-2px);
+        }
+
+        .hero-prompt-card i {
+            font-size: 18px;
+            color: var(--accent);
+            flex-shrink: 0;
+        }
+
+        .hero-prompt-text {
+            display: flex;
+            flex-direction: column;
+            gap: 2px;
+        }
+
+        .hero-prompt-text strong {
+            font-size: 13px;
+            font-weight: 700;
+            color: var(--text);
+        }
+
+        .hero-prompt-text span {
+            font-size: 11px;
+            color: var(--text-dim);
+        }
+
+        body[data-theme="light"].fullscreen-mode {
+            background: #F8F9FA !important;
+        }
+
+        body[data-theme="light"].fullscreen-mode .history-sidebar {
+            background: #FFFFFF !important;
+            border-right: 1px solid #E2E5EA !important;
+        }
+
+        body[data-theme="light"].fullscreen-mode .ai-main-container {
+            background: #F8F9FA !important;
+        }
+
+        body[data-theme="light"].fullscreen-mode .ai-input-wrapper {
+            background: #FFFFFF !important;
+            border: 1px solid #E2E5EA !important;
+        }
+
+        body[data-theme="light"] .hero-prompt-card {
+            background: #FFFFFF !important;
+            border: 1px solid #E2E5EA !important;
+        }
+
+        body[data-theme="light"] .hero-prompt-card:hover {
+            border-color: var(--accent) !important;
+            background: #F4F5F7 !important;
+        }
+
+        /* ---- SCROLLABLE CHAT COLUMN (centered, hidden scrollbar) ---- */
+
+        /* Wrapper that centers content with max-width */
+        body.fullscreen-mode .ai-chat-view > #ai-chat-messages {
+            flex: 1 !important;
+            overflow-y: auto !important;
+            /* HIDE scrollbar */
+            scrollbar-width: none !important;
+            -ms-overflow-style: none !important;
+            padding: 32px 0 24px 0 !important;
+            display: flex !important;
+            flex-direction: column !important;
+            gap: 16px !important;
+            width: 100% !important;
+            box-sizing: border-box !important;
+        }
+
+        body.fullscreen-mode #ai-chat-messages::-webkit-scrollbar {
+            display: none !important;
+            width: 0 !important;
+        }
+
+        /* Constrain message content width and center it */
+        body.fullscreen-mode .msg-group {
+            display: flex !important;
+            flex-direction: column !important;
+            width: 100% !important;
+            max-width: 740px !important;
+            margin: 0 auto !important;
+            padding: 0 24px !important;
+            box-sizing: border-box !important;
+        }
+
+        body.fullscreen-mode .msg-group.user { align-items: flex-end !important; }
+        body.fullscreen-mode .msg-group.ai { align-items: flex-start !important; }
+
+        /* User bubble — right-aligned pill */
+        body.fullscreen-mode .user .msg-bubble {
+            background: var(--card-bg) !important;
+            border: 1px solid var(--card-border) !important;
+            border-radius: 18px 18px 4px 18px !important;
+            color: var(--text) !important;
+            font-size: 14px !important;
+            font-weight: 500 !important;
+            padding: 10px 16px !important;
+            max-width: 78% !important;
+            box-shadow: none !important;
+            line-height: 1.55 !important;
+        }
+
+        /* AI response — left-aligned pill */
+        body.fullscreen-mode .ai .msg-bubble {
+            background: var(--panel-bg) !important;
+            border: 1px solid var(--border) !important;
+            border-radius: 4px 18px 18px 18px !important;
+            color: var(--text) !important;
+            font-size: 14px !important;
+            line-height: 1.7 !important;
+            padding: 12px 16px !important;
+            max-width: 100% !important;
+            box-shadow: none !important;
+        }
+
+        body[data-theme="light"].fullscreen-mode .ai .msg-bubble {
+            background: #ffffff !important;
+            border: 1px solid #e2e5ea !important;
+            color: #1a1d20 !important;
+        }
+
+        body[data-theme="light"].fullscreen-mode .user .msg-bubble {
+            background: #eef0f3 !important;
+            border: 1px solid #dde1e7 !important;
+            color: #1a1d20 !important;
+        }
+
+        /* ---- INPUT AREA (inline, aligned with messages) ---- */
+        body.fullscreen-mode .ai-input-wrapper {
+            flex-shrink: 0 !important;
+            position: relative !important;
+            left: auto !important;
+            bottom: auto !important;
+            transform: none !important;
+            width: 100% !important;
+            max-width: 740px !important;
+            margin: 0 auto 20px auto !important;
+            background: var(--panel-bg) !important;
+            border: 1px solid var(--border) !important;
+            border-radius: 14px !important;
+            padding: 10px 14px !important;
+            box-shadow: none !important;
+            z-index: 10 !important;
+        }
+
+        body.fullscreen-mode .input-container {
+            display: flex !important;
+            align-items: center !important;
+            gap: 10px !important;
+            background: transparent !important;
+            border: none !important;
+            padding: 0 !important;
+        }
+
+        body.fullscreen-mode #ai-query {
+            background: transparent !important;
+            border: none !important;
+            color: var(--text) !important;
+            font-size: 14px !important;
+            font-family: 'Plus Jakarta Sans', sans-serif !important;
+            resize: none !important;
+            outline: none !important;
+            flex: 1 !important;
+            min-height: 22px !important;
+            max-height: 120px !important;
+            line-height: 1.5 !important;
+        }
+
+        body.fullscreen-mode #ai-query::placeholder {
+            color: var(--text-muted) !important;
+        }
+
+        /* Quick tools */
+        body.fullscreen-mode .quick-tools {
+            display: flex !important;
+            flex-wrap: wrap !important;
+            gap: 6px !important;
+            margin-bottom: 8px !important;
+        }
+
+        body.fullscreen-mode .tool-chip {
+            background: transparent !important;
+            border: 1px solid var(--border) !important;
+            color: var(--text-dim) !important;
+            border-radius: 100px !important;
+            padding: 4px 12px !important;
+            font-size: 11.5px !important;
+            font-weight: 500 !important;
+            cursor: pointer !important;
+            transition: all 0.15s ease !important;
+            font-family: 'Plus Jakarta Sans', sans-serif !important;
+        }
+        body.fullscreen-mode .tool-chip:hover {
+            border-color: var(--accent) !important;
+            color: var(--accent) !important;
+        }
+
+        body.fullscreen-mode .send-btn {
+            background: var(--accent) !important;
+            color: #0D0E11 !important;
+            border-radius: 8px !important;
+            width: 30px !important;
+            height: 30px !important;
+            min-width: 30px !important;
+            display: flex !important;
+            align-items: center !important;
+            justify-content: center !important;
+            border: none !important;
+            font-weight: 700 !important;
+            cursor: pointer !important;
+        }
+
+        body.fullscreen-mode #ai-attach-btn {
+            color: var(--text-muted) !important;
+            background: transparent !important;
+            border: none !important;
+            font-size: 15px !important;
+            cursor: pointer !important;
+        }
+
+        body.fullscreen-mode #ai-attach-btn:hover { color: var(--accent) !important; }
+
+        /* History items */
+        body.fullscreen-mode .history-item {
+            border-radius: 8px !important;
+            padding: 7px 10px !important;
+            color: var(--text-dim) !important;
+            font-size: 12.5px !important;
+        }
+
+        body.fullscreen-mode .history-item.active {
+            background: var(--card-bg) !important;
+            color: var(--text) !important;
+            border: 1px solid var(--border) !important;
+        }
+
+        .history-list {
+            flex: 1;
+            overflow-y: auto;
+            padding: 4px 0;
+            display: flex;
+            flex-direction: column;
+            gap: 2px;
+        }
+
+        /* Hide history-list scrollbar */
+        .history-list::-webkit-scrollbar { width: 0; }
+        .history-list { scrollbar-width: none; }
+
+        .history-item {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 8px 12px;
+            border-radius: 8px !important;
+            cursor: pointer;
+            color: var(--text-dim);
+            transition: all 0.15s ease;
+            font-size: 12.5px;
+            font-weight: 500;
+        }
+
+        .history-item:hover, .history-item.active {
+            background: var(--card-bg);
+            color: var(--text);
+        }
+
+        .history-item.active {
+            background: var(--accent-dim) !important;
+            color: var(--accent) !important;
+            font-weight: 700;
+            border: 1px solid var(--accent-border) !important;
+        }
+
+        .history-item-actions {
+            display: flex;
+            gap: 6px;
+            opacity: 0;
+            transition: opacity 0.2s ease;
+        }
+
+        .history-item:hover .history-item-actions {
+            opacity: 1;
+        }
+
+        .history-action-btn {
+            background: transparent;
+            border: none;
+            color: var(--text-muted);
+            cursor: pointer;
+            padding: 2px;
+            font-size: 11px;
+            transition: color 0.2s ease;
+        }
+
+        .history-action-btn:hover {
+            color: var(--text);
+        }
+
+        .history-action-btn.delete-btn:hover {
+            color: #ff453a;
+        }
+
+        /* Col 2/3: Main Grid Containers */
+        .ai-main-container {
+            display: flex;
+            flex-direction: column;
+            flex: 1;
+            min-width: 0;
+            height: 100%;
+        }
+
+        .ai-views-container {
+            display: flex;
+            flex: 1;
+            min-width: 0;
+            height: calc(100% - 56px);
+            position: relative;
+        }
+
+        /* Chat View — fills its container */
+        .ai-chat-view {
+            display: flex;
+            flex-direction: column;
+            flex: 1;
+            min-width: 0;
+            height: 100%;
+            background: transparent;
+        }
+
+
+
+        /* Image Studio & Settings Fullscreen View Override */
+        body.fullscreen-mode #ai-image-studio-view,
+        body.fullscreen-mode #ai-settings-view {
+            flex: 1 !important;
+            width: 100% !important;
+            max-width: 860px !important;
+            margin: 0 auto !important;
+            background: transparent !important;
+            border: none !important;
+            height: 100% !important;
+            overflow-y: auto !important;
+            padding: 24px 16px 100px 16px !important;
+        }
+
+        /* Dashboard borders and styles matching sidebars.html */
+        .ai-header {
+            border-bottom: 1px solid var(--border) !important;
+        }
+        
+        .studio-card-header {
+            font-size: 13px;
+            font-weight: 800;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            border-bottom: 1px solid var(--border);
+            padding-bottom: 10px;
+            margin-bottom: 14px;
+        }
+
+        /* Light mode: ensure sidebar is clearly visible */
+        body[data-theme="light"].fullscreen-mode .history-sidebar {
+            background: #f4f5f7 !important;
+            border-right: 1px solid #d1d5db !important;
+            box-shadow: none !important;
+        }
+
+        /* Light mode: hero title dark text */
+        body[data-theme="light"] .gemini-hero-title {
+            background: linear-gradient(135deg, #1a1a1a 30%, #15AC49 100%);
+            background-clip: text;
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        /* Light mode: dark card background for bubbles */
+        body[data-theme="light"].fullscreen-mode .user .msg-bubble {
+            background: #f0f2f5 !important;
+            border: 1px solid #d1d5db !important;
+            color: #1a1a1a !important;
+        }
+
+        /* Sidebar nav hover in light mode */
+        body[data-theme="light"] .gemini-nav-item:hover {
+            background: #e8ecef !important;
+        }
+
+        /* Username input focus */
+        #username-input:focus {
+            border-color: var(--accent) !important;
+            box-shadow: none !important;
+        }
+
+        /* ================================================================
+           LIGHT THEME STYLING FOR IMAGE STUDIO & COMPONENTS
+           ================================================================ */
+        body[data-theme="light"] .studio-card {
+            background: #FFFFFF !important;
+            border: 1px solid #E2E5EA !important;
+        }
+
+        body[data-theme="light"] .studio-header-text h3 {
+            color: #1A1D20 !important;
+        }
+
+        body[data-theme="light"] .studio-header-text span {
+            color: #7E8492 !important;
+        }
+
+        body[data-theme="light"] .studio-field label {
+            color: #475569 !important;
+        }
+
+        body[data-theme="light"] .dropdown-trigger,
+        body[data-theme="light"] .studio-select,
+        body[data-theme="light"] .studio-textarea,
+        body[data-theme="light"] .advanced-settings-header,
+        body[data-theme="light"] .advanced-settings-content {
+            background: #F8F9FA !important;
+            border: 1px solid #E2E5EA !important;
+            color: #1A1D20 !important;
+        }
+
+        body[data-theme="light"] .dropdown-trigger:hover,
+        body[data-theme="light"] .studio-select:focus,
+        body[data-theme="light"] .studio-textarea:focus,
+        body[data-theme="light"] .advanced-settings-header:hover {
+            background: #FFFFFF !important;
+            border-color: #15AC49 !important;
+        }
+
+        body[data-theme="light"] .studio-textarea::placeholder {
+            color: #94A3B8 !important;
+        }
+
+        body[data-theme="light"] .dropdown-options {
+            background: #FFFFFF !important;
+            border: 1px solid #E2E5EA !important;
+        }
+
+        body[data-theme="light"] .dropdown-option {
+            color: #1A1D20 !important;
+        }
+
+        body[data-theme="light"] .dropdown-option:hover {
+            background: #F4F5F7 !important;
+        }
+
+        body[data-theme="light"] .preset-chip {
+            background: #F4F5F7 !important;
+            border: 1px solid #E2E5EA !important;
+            color: #1A1D20 !important;
+            font-weight: 700 !important;
+        }
+
+        body[data-theme="light"] .preset-chip i {
+            color: #15AC49 !important;
+        }
+
+        body[data-theme="light"] .preset-chip:hover,
+        body[data-theme="light"] .preset-chip.active {
+            background: #15AC49 !important;
+            color: #FFFFFF !important;
+            border-color: #15AC49 !important;
+        }
+
+        body[data-theme="light"] .preset-chip:hover i,
+        body[data-theme="light"] .preset-chip.active i {
+            color: #FFFFFF !important;
+        }
+
+        /* Personality Mood Grid & Chips - Premium 2-Column Glassmorphic Layout */
+        .persona-pill-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 6px;
+            padding: 2px 0 10px 0;
+            margin-bottom: 6px;
+        }
+
+        .persona-chip {
+            display: flex;
+            align-items: center;
+            justify-content: flex-start;
+            gap: 7px;
+            padding: 7px 10px;
+            border-radius: 10px;
+            background: var(--card-bg);
+            border: 1px solid var(--border);
+            color: var(--text-dim);
+            font-size: 11.5px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+            font-family: 'Plus Jakarta Sans', sans-serif;
+            white-space: nowrap;
+            user-select: none;
+        }
+
+        .persona-chip i {
+            font-size: 13px;
+            width: 15px;
+            text-align: center;
+            flex-shrink: 0;
+            transition: transform 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+
+        .persona-chip:hover {
+            color: var(--text);
+            border-color: var(--accent);
+            background: var(--hover-bg, rgba(255, 255, 255, 0.04));
+            transform: translateY(-1.5px);
+        }
+
+        .persona-chip:hover i {
+            transform: scale(1.15);
+        }
+
+        .persona-chip.active {
+            background: var(--accent-dim, rgba(21, 172, 73, 0.12)) !important;
+            border-color: var(--accent) !important;
+            color: var(--accent) !important;
+            font-weight: 700;
+            box-shadow: 0 3px 12px rgba(21, 172, 73, 0.2) !important;
+        }
+
+        .persona-chip.active i {
+            transform: scale(1.15);
+            color: var(--accent) !important;
+        }
+
+        .memory-tag {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            background: var(--card-bg);
+            border: 1px solid var(--border);
+            padding: 4px 10px;
+            border-radius: 20px;
+            font-size: 12px;
+            color: var(--text);
+            margin: 3px;
+        }
+
+        .memory-tag i.fa-times {
+            cursor: pointer;
+            color: var(--text-muted);
+            transition: color 0.15s ease;
+        }
+
+        .memory-tag i.fa-times:hover {
+            color: #ef4444;
         }
     </style>
 </head>
@@ -1065,85 +2375,252 @@
         (function () {
             const t = localStorage.getItem('ocal-settings-theme') || 'dark';
             document.body.setAttribute('data-theme', t);
+            const isFullscreenParam = new URLSearchParams(window.location.search).get('fullscreen') === 'true';
+            if (isFullscreenParam || window.innerWidth > 600) {
+                document.body.classList.add('fullscreen-mode');
+            }
         })();
     </script>
     <div id="resize-handle"></div>
     <div class="ai-panel">
-        <div class="ai-header">
-            <div class="ai-brand">
-                <div class="ai-logo"><i class="fas fa-bolt"></i></div>
-                <div class="ai-title-text" style="display: flex; align-items: center; gap: 8px;">
-                    <h1>Ocal Assistant</h1>
-                    <span id="active-model-badge" class="model-badge" style="display: none;">Local: gemma-4</span>
+        <!-- Col 1: Gemini Style Left Sidebar -->
+        <div class="history-sidebar" id="history-sidebar">
+            <div class="gemini-sidebar-top">
+                <div class="gemini-logo">
+                    <i class="fas fa-sparkles gemini-star-icon"></i>
+                    <span>Ocal</span>
                 </div>
             </div>
-            <div class="ai-controls">
-                <button class="control-btn" id="clear-chat" title="Clear Chat"><i class="fas fa-trash-can"></i></button>
-                <button class="control-btn" id="close-ai" title="Close"><i class="fas fa-times"></i></button>
+
+            <!-- Mode Switcher Pill -->
+            <div class="gemini-mode-pill">
+                <button class="gemini-mode-btn active" id="mode-btn-chat">
+                    <i class="fas fa-comments"></i> <span>Chat</span>
+                </button>
+                <button class="gemini-mode-btn" id="mode-btn-studio">
+                    <i class="fas fa-wand-magic-sparkles"></i> <span>Studio</span>
+                </button>
+            </div>
+
+            <!-- Personality Mood Selector -->
+            <div class="gemini-section-title" style="display: flex; align-items: center; justify-content: space-between; margin-top: 4px;">
+                <span>Personality Mood</span>
+                <span id="active-persona-indicator" style="font-size: 10px; color: var(--accent); font-weight: 700; text-transform: uppercase;">Pro</span>
+            </div>
+            <div class="persona-pill-grid" id="persona-pill-grid">
+                <button class="persona-chip active" data-persona="professional" title="Professional Assistant">
+                    <i class="fas fa-briefcase"></i> <span>Pro</span>
+                </button>
+                <button class="persona-chip" data-persona="funny" title="Witty Companion">
+                    <i class="fas fa-face-laugh-beam"></i> <span>Witty</span>
+                </button>
+                <button class="persona-chip" data-persona="bf" title="Supportive Boyfriend Vibe">
+                    <i class="fas fa-heart" style="color: #3b82f6;"></i> <span>BF</span>
+                </button>
+                <button class="persona-chip" data-persona="gf" title="Affectionate Girlfriend Vibe">
+                    <i class="fas fa-heart" style="color: #ec4899;"></i> <span>GF</span>
+                </button>
+                <button class="persona-chip" data-persona="wife" title="Caring & Bossy Wife Vibe">
+                    <i class="fas fa-ring" style="color: #f59e0b;"></i> <span>Wife</span>
+                </button>
+                <button class="persona-chip" data-persona="tech" title="Tech Master">
+                    <i class="fas fa-code"></i> <span>Tech</span>
+                </button>
+                <button class="persona-chip" data-persona="calm" title="Mindful Coach">
+                    <i class="fas fa-leaf"></i> <span>Calm</span>
+                </button>
+                <button class="persona-chip" data-persona="custom" title="Custom Setup">
+                    <i class="fas fa-user-gear" style="color: var(--accent);"></i> <span>Custom</span>
+                </button>
+            </div>
+
+            <!-- Action Navigation Items -->
+            <button class="gemini-nav-item" id="new-chat-btn">
+                <i class="fas fa-edit"></i> <span>New chat</span>
+            </button>
+            <button class="gemini-nav-item" id="nav-images-btn">
+                <i class="fas fa-image"></i> <span>Images</span>
+            </button>
+
+            <!-- Recents Section -->
+            <div class="gemini-section-title">Recents</div>
+            <div class="history-list" id="history-list">
+                <!-- Dynamically loaded chat history -->
+            </div>
+
+            <!-- User Profile Footer with editable username -->
+            <div class="gemini-user-footer">
+                <div class="gemini-user-info" id="user-info-display" title="Click to change username" style="cursor: pointer; flex: 1;" onclick="document.getElementById('username-edit-row').style.display='flex'; this.parentElement.parentElement.querySelector('#user-info-display').style.display='none'; document.getElementById('username-input').focus();">
+                    <div class="gemini-user-avatar" id="user-avatar-initials">GN</div>
+                    <div class="gemini-user-details">
+                        <div class="gemini-user-name" id="display-username">Gaming Network</div>
+                        <div class="gemini-user-badge" style="color: var(--accent); font-size: 10px;">Edit name</div>
+                    </div>
+                </div>
+                <div id="username-edit-row" style="display: none; align-items: center; gap: 6px; flex: 1;">
+                    <input type="text" id="username-input" placeholder="Your name..." maxlength="20"
+                        style="flex: 1; background: var(--card-bg); border: 1px solid var(--accent); border-radius: 8px; padding: 6px 10px; font-size: 12px; color: var(--text); outline: none; font-family: inherit;">
+                    <button id="username-save-btn" style="background: var(--accent); color: #0D0E11; border: none; border-radius: 6px; padding: 6px 10px; font-size: 11px; font-weight: 700; cursor: pointer;">Save</button>
+                    <button onclick="document.getElementById('username-edit-row').style.display='none'; document.getElementById('user-info-display').style.display='flex';" style="background: transparent; border: none; color: var(--text-muted); cursor: pointer; font-size: 13px;"><i class="fas fa-times"></i></button>
+                </div>
+                <button class="history-action-btn" id="sidebar-settings-btn" title="Settings" style="font-size: 14px; flex-shrink: 0;">
+                    <i class="fas fa-cog"></i>
+                </button>
             </div>
         </div>
 
-        <!-- Navigation Tab Switcher -->
-        <div class="ai-nav-bar">
-            <button class="ai-nav-tab active" id="nav-tab-chat">
-                <i class="fas fa-comments"></i> <span>Chat</span>
-            </button>
-            <button class="ai-nav-tab" id="nav-tab-image">
-                <i class="fas fa-wand-magic-sparkles"></i> <span>Image Studio</span>
-            </button>
-        </div>
+        <!-- Col 2/3 Main View Wrapper -->
+        <div class="ai-main-container" id="ai-main-container">
+            <!-- Header always visible -->
+            <div class="ai-header">
+                <div class="ai-brand">
+                    <div class="ai-logo"><i class="fas fa-bolt"></i></div>
+                    <div class="ai-title-text" style="display: flex; align-items: center; gap: 8px;">
+                        <h1>Ocal Assistant</h1>
+                        <span id="active-model-badge" class="model-badge" style="display: none;">Local: gemma-4</span>
+                    </div>
+                </div>
+                <div class="ai-controls">
+                    <button class="control-btn" id="toggle-history" title="Chat History"><i class="fas fa-history"></i></button>
+                    <button class="control-btn" id="fullscreen-toggle" title="Full Screen Workspace"><i class="fas fa-expand-alt"></i></button>
+                    <button class="control-btn" id="clear-chat" title="Clear Chat"><i class="fas fa-trash-can"></i></button>
+                    <button class="control-btn" id="close-ai" title="Close"><i class="fas fa-times"></i></button>
+                </div>
+            </div>
 
-        <!-- Chat View -->
-        <div class="ai-chat-view" id="ai-chat-view">
-            <div id="ai-chat-messages" class="messages-scroll">
-                <div class="msg-group ai">
-                    <div class="msg-bubble">
-                        <div class="msg-content">
-                            Hello! I am your <b>Ocal AI</b>. I can summarize pages, change your browser settings, generate artwork, and help you find what you're looking for.
+            <!-- Tab Switcher (hidden in full-screen) -->
+            <div class="ai-nav-bar" id="ai-nav-bar">
+                <button class="ai-nav-tab active" id="nav-tab-chat">
+                    <i class="fas fa-comments"></i> <span>Chat</span>
+                </button>
+                <button class="ai-nav-tab" id="nav-tab-image">
+                    <i class="fas fa-wand-magic-sparkles"></i> <span>Image Studio</span>
+                </button>
+            </div>
+
+            <!-- Views Container (Grid in Full Screen) -->
+            <div class="ai-views-container">
+                <!-- Chat View -->
+                <div class="ai-chat-view" id="ai-chat-view">
+                    <!-- Hero Greeting Title & Starter Cards -->
+                    <div class="gemini-hero-container" id="gemini-hero-container">
+                        <h1 class="gemini-hero-title" id="gemini-hero-title">Hi Gaming, what's on your mind?</h1>
+                        <p class="gemini-hero-subtitle">Ask anything, generate artwork, or automate browser tasks</p>
+                        <div class="hero-prompt-grid">
+                            <div class="hero-prompt-card" data-prompt="Summarize the current page with key bullet points">
+                                <i class="fas fa-file-lines"></i>
+                                <div class="hero-prompt-text">
+                                    <strong>Summarize Page</strong>
+                                    <span>Get key points & insights</span>
+                                </div>
+                            </div>
+                            <div class="hero-prompt-card" data-prompt="Open Image Studio and generate a futuristic sci-fi city artwork">
+                                <i class="fas fa-wand-magic-sparkles"></i>
+                                <div class="hero-prompt-text">
+                                    <strong>Generate Artwork</strong>
+                                    <span>Create 8K images in Studio</span>
+                                </div>
+                            </div>
+                            <div class="hero-prompt-card" data-prompt="Help me configure my browser settings and privacy options">
+                                <i class="fas fa-sliders"></i>
+                                <div class="hero-prompt-text">
+                                    <strong>Browser Settings</strong>
+                                    <span>Tweak privacy & theme</span>
+                                </div>
+                            </div>
+                            <div class="hero-prompt-card" data-prompt="Search my saved bookmarks and history for recent tabs">
+                                <i class="fas fa-bookmark"></i>
+                                <div class="hero-prompt-text">
+                                    <strong>Find Bookmarks</strong>
+                                    <span>Organize saved pages</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div id="ai-chat-messages" class="messages-scroll">
+                        <div class="msg-group ai">
+                            <div class="msg-bubble">
+                                <div class="msg-content">
+                                    Hello! I am your <b>Ocal AI</b>. I can summarize pages, change your browser settings, generate artwork, and help you find what you're looking for.
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="ai-input-wrapper">
+                        <div class="quick-tools">
+                            <button class="tool-chip" id="tool-summarize"><i class="fas fa-file-lines"></i> Summarize</button>
+                            <button class="tool-chip" id="tool-status"><i class="fas fa-chart-pie"></i> Status</button>
+                            <button class="tool-chip" id="tool-settings"><i class="fas fa-sliders"></i> My Settings</button>
+                            <button class="tool-chip" id="tool-bookmarks"><i class="fas fa-bookmark"></i> Bookmarks</button>
+                            <button class="tool-chip" id="tool-email"><i class="fas fa-paper-plane"></i> Email</button>
+                            <button class="tool-chip" id="tool-help"><i class="fas fa-circle-question"></i> Help</button>
+                        </div>
+                        <div id="ai-file-preview" style="display: none; align-items: center; gap: 8px; background: var(--card-bg); border: 1px solid var(--border); padding: 6px 12px; border-radius: var(--radius); font-size: 12.5px; color: var(--text-dim); margin-bottom: 8px;">
+                            <i id="ai-file-icon" class="fas fa-file-lines"></i>
+                            <span id="ai-file-name" style="flex: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-weight: 500;">filename.txt</span>
+                            <button id="ai-file-remove" class="control-btn" style="width: 20px; height: 20px; min-width: 20px; font-size: 10px; margin: 0; display: flex; align-items: center; justify-content: center;"><i class="fas fa-times"></i></button>
+                        </div>
+                        <div class="input-container">
+                            <input type="file" id="ai-file-input" style="display: none;">
+                            <button id="ai-attach-btn" class="control-btn" title="Attach file" style="width: 30px; height: 30px; flex-shrink: 0;"><i class="fas fa-paperclip"></i></button>
+                            <textarea id="ai-query" placeholder="How can I assist you?" rows="1"></textarea>
+                            <button id="ai-send" class="send-btn"><i class="fas fa-arrow-up"></i></button>
                         </div>
                     </div>
                 </div>
-            </div>
-
-            <div class="ai-input-wrapper">
-                <div class="quick-tools">
-                    <button class="tool-chip" id="tool-summarize"><i class="fas fa-file-lines"></i> Summarize</button>
-                    <button class="tool-chip" id="tool-status"><i class="fas fa-chart-pie"></i> Status</button>
-                    <button class="tool-chip" id="tool-settings"><i class="fas fa-sliders"></i> My Settings</button>
-                    <button class="tool-chip" id="tool-bookmarks"><i class="fas fa-bookmark"></i> Bookmarks</button>
-                    <button class="tool-chip" id="tool-email"><i class="fas fa-paper-plane"></i> Email</button>
-                    <button class="tool-chip" id="tool-help"><i class="fas fa-circle-question"></i> Help</button>
-                </div>
-                <div id="ai-file-preview" style="display: none; align-items: center; gap: 8px; background: var(--card-bg); border: 1px solid var(--border); padding: 6px 12px; border-radius: var(--radius); font-size: 12.5px; color: var(--text-dim); margin-bottom: 8px;">
-                    <i id="ai-file-icon" class="fas fa-file-lines"></i>
-                    <span id="ai-file-name" style="flex: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-weight: 500;">filename.txt</span>
-                    <button id="ai-file-remove" class="control-btn" style="width: 20px; height: 20px; min-width: 20px; font-size: 10px; margin: 0; display: flex; align-items: center; justify-content: center;"><i class="fas fa-times"></i></button>
-                </div>
-                <div class="input-container">
-                    <input type="file" id="ai-file-input" style="display: none;">
-                    <button id="ai-attach-btn" class="control-btn" title="Attach file" style="width: 30px; height: 30px; flex-shrink: 0;"><i class="fas fa-paperclip"></i></button>
-                    <textarea id="ai-query" placeholder="How can I assist you?" rows="1"></textarea>
-                    <button id="ai-send" class="send-btn"><i class="fas fa-arrow-up"></i></button>
-                </div>
-            </div>
-        </div>
 
         <!-- Image Studio View -->
         <div class="ai-image-studio-view" id="ai-image-studio-view" style="display: none;">
             <div class="studio-scroll-area">
                 <div class="studio-card">
                     <div class="studio-card-header">
-                        <i class="fas fa-palette"></i> <span>AI Image Studio</span>
+                        <div class="studio-header-title">
+                            <div class="studio-header-icon"><i class="fas fa-palette"></i></div>
+                            <div class="studio-header-text">
+                                <h3>AI Image Studio</h3>
+                                <span>Generate & customize artwork</span>
+                            </div>
+                        </div>
                     </div>
 
                     <!-- Engine Selector -->
                     <div class="studio-field">
                         <label><i class="fas fa-microchip"></i> Generation Engine</label>
-                        <select id="studio-engine-select" class="studio-select">
-                            <option value="local">🤖 Local Model / SD (Stable Diffusion & Pollinations)</option>
-                            <option value="openai">⚡ ChatGPT / DALL-E 3 API</option>
-                            <option value="gemini">🔮 Gemini / Google Imagen API</option>
-                        </select>
+                        <div class="custom-dropdown" id="engine-dropdown-container">
+                            <input type="hidden" id="studio-engine-select" value="local">
+                            <button type="button" class="dropdown-trigger" id="engine-dropdown-trigger">
+                                <span class="trigger-label" id="engine-dropdown-label">
+                                    <span class="option-icon" style="color: var(--accent);"><i class="fas fa-robot"></i></span>
+                                    <span class="option-title">Local Model (Flux.1 / SDXL / ComfyUI / Fooocus)</span>
+                                </span>
+                                <i class="fas fa-chevron-down trigger-arrow"></i>
+                            </button>
+                            <div class="dropdown-options" id="engine-dropdown-options">
+                                <div class="dropdown-option active" data-value="local">
+                                    <span class="option-icon" style="color: var(--accent);"><i class="fas fa-robot"></i></span>
+                                    <div class="option-text">
+                                        <div class="option-title">Local Model (Flux.1 / SDXL / ComfyUI / Fooocus)</div>
+                                        <div class="option-desc">Free & Offline dynamic generation</div>
+                                    </div>
+                                </div>
+                                <div class="dropdown-option" data-value="openai">
+                                    <span class="option-icon" style="color: #ff9f0a;"><i class="fas fa-bolt"></i></span>
+                                    <div class="option-text">
+                                        <div class="option-title">ChatGPT / DALL-E 3 API</div>
+                                        <div class="option-desc">Commercial high-fidelity cloud generation</div>
+                                    </div>
+                                </div>
+                                <div class="dropdown-option" data-value="gemini">
+                                    <span class="option-icon" style="color: #0a84ff;"><i class="fas fa-wand-magic-sparkles"></i></span>
+                                    <div class="option-text">
+                                        <div class="option-title">Gemini / Google Imagen API</div>
+                                        <div class="option-desc">Advanced cloud-based vision model suite</div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
                     </div>
 
                     <!-- Prompt Input -->
@@ -1164,6 +2641,75 @@
                         </div>
                     </div>
 
+                    <!-- Aspect Ratio Selector -->
+                    <div class="studio-field">
+                        <label><i class="fas fa-crop-simple"></i> Aspect Ratio</label>
+                        <div class="custom-dropdown" id="ratio-dropdown-container">
+                            <input type="hidden" id="studio-aspect-ratio" value="1:1">
+                            <button type="button" class="dropdown-trigger" id="ratio-dropdown-trigger">
+                                <span class="trigger-label" id="ratio-dropdown-label">
+                                    <span class="option-icon" style="color: var(--accent);"><i class="fas fa-square"></i></span>
+                                    <span class="option-title">Square (1:1)</span>
+                                </span>
+                                <i class="fas fa-chevron-down trigger-arrow"></i>
+                            </button>
+                            <div class="dropdown-options" id="ratio-dropdown-options">
+                                <div class="dropdown-option active" data-value="1:1" data-w="1024" data-h="1024">
+                                    <span class="option-icon" style="color: var(--accent);"><i class="fas fa-square"></i></span>
+                                    <div class="option-text">
+                                        <div class="option-title">Square (1:1)</div>
+                                        <div class="option-desc">1024 x 1024 px (Social posts)</div>
+                                    </div>
+                                </div>
+                                <div class="dropdown-option" data-value="9:16" data-w="768" data-h="1344">
+                                    <span class="option-icon" style="color: #ff9f0a;"><i class="fas fa-mobile-screen"></i></span>
+                                    <div class="option-text">
+                                        <div class="option-title">Portrait (9:16)</div>
+                                        <div class="option-desc">768 x 1344 px (Mobile stories)</div>
+                                    </div>
+                                </div>
+                                <div class="dropdown-option" data-value="16:9" data-w="1344" data-h="768">
+                                    <span class="option-icon" style="color: #0a84ff;"><i class="fas fa-display"></i></span>
+                                    <div class="option-text">
+                                        <div class="option-title">Landscape (16:9)</div>
+                                        <div class="option-desc">1344 x 768 px (Widescreen displays)</div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Collapsible Advanced Settings -->
+                    <div class="advanced-settings-header" id="advanced-settings-toggle">
+                        <span><i class="fas fa-sliders-h"></i> Advanced Settings</span>
+                        <i class="fas fa-chevron-down advanced-arrow" id="advanced-arrow-icon"></i>
+                    </div>
+                    <div class="advanced-settings-content" id="advanced-settings-panel" style="display: none;">
+                        <!-- Negative Prompt -->
+                        <div class="studio-field">
+                            <label><i class="fas fa-ban"></i> Negative Prompt</label>
+                            <input type="text" id="studio-negative-input" class="studio-select" placeholder="blurry, low quality, deformed, extra fingers..." style="padding: 8px 10px;">
+                        </div>
+
+                        <!-- Seed Control -->
+                        <div class="studio-field" style="flex-direction: row; align-items: center; justify-content: space-between; gap: 10px; margin-top: 4px;">
+                            <label style="margin: 0;"><i class="fas fa-key"></i> Lock Seed</label>
+                            <input type="checkbox" id="studio-seed-lock" style="width: 16px; height: 16px; cursor: pointer; accent-color: var(--accent);">
+                        </div>
+                        <div class="studio-field" id="seed-input-container" style="display: none;">
+                            <input type="number" id="studio-seed-value" class="studio-select" placeholder="Random seed (e.g. 42792)" style="padding: 8px 10px;">
+                        </div>
+
+                        <!-- Watermark -->
+                        <div class="studio-field" style="flex-direction: row; align-items: center; justify-content: space-between; gap: 10px; margin-top: 4px;">
+                            <label style="margin: 0;"><i class="fas fa-copyright"></i> Add Watermark</label>
+                            <input type="checkbox" id="studio-watermark-toggle" checked style="width: 16px; height: 16px; cursor: pointer; accent-color: var(--accent);">
+                        </div>
+                        <div class="studio-field" id="watermark-input-container" style="margin-top: 4px;">
+                            <input type="text" id="studio-watermark-text" class="studio-select" value="Ocal AI Studio" placeholder="Watermark text" style="padding: 8px 10px;">
+                        </div>
+                    </div>
+
                     <button id="studio-generate-btn" class="studio-submit-btn">
                         <i class="fas fa-wand-magic-sparkles"></i> <span>Generate Image</span>
                     </button>
@@ -1174,8 +2720,17 @@
                     <div id="studio-status-indicator" class="studio-status">
                         <i class="fas fa-spinner fa-spin"></i> <span id="studio-status-text">Synthesizing image...</span>
                     </div>
-                    <div class="studio-img-wrap" id="studio-img-wrap">
-                        <img id="studio-result-img" class="studio-result-img" alt="Generated AI Artwork">
+                    <div class="studio-img-wrap" id="studio-img-wrap" style="width: 100%; position: relative;">
+                        <!-- Gemini/ChatGPT style loading shimmer -->
+                        <div id="studio-loading-shimmer" class="loading-shimmer-canvas" style="display: none;">
+                            <div class="shimmer-gradient-flow"></div>
+                            <div class="shimmer-glow-overlay"></div>
+                            <div class="shimmer-progress-overlay">
+                                <span id="shimmer-progress-percentage" style="font-size: 13.5px; font-weight: 700;">Painting canvas...</span>
+                                <span id="shimmer-progress-subtext">Denoising latent noise fields (Flux.1)</span>
+                            </div>
+                        </div>
+                        <img id="studio-result-img" class="studio-result-img" alt="Generated AI Artwork" style="display: none; width: 100%; border-radius: 8px;">
                     </div>
                     <div class="studio-actions" id="studio-actions" style="display: none;">
                         <button id="studio-download-btn" class="studio-action-btn"><i class="fas fa-download"></i> Save Image</button>
@@ -1183,8 +2738,138 @@
                     </div>
                 </div>
             </div>
-        </div>
-    </div>
+
+            <!-- Ocal AI Settings View -->
+            <div class="ai-settings-view" id="ai-settings-view" style="display: none; flex: 1; flex-direction: column; overflow-y: auto; padding: 24px; max-width: 800px; margin: 0 auto; width: 100%;">
+                <div class="studio-card">
+                    <div class="studio-card-header" style="display: flex; align-items: center; justify-content: space-between;">
+                        <div class="studio-header-title">
+                            <div class="studio-header-icon" style="background: var(--accent-dim); color: var(--accent);"><i class="fas fa-cog"></i></div>
+                            <div class="studio-header-text">
+                                <h3>Ocal AI Settings</h3>
+                                <span>Preferences, Model Engine & System Configuration</span>
+                            </div>
+                        </div>
+                        <button class="control-btn" id="close-settings-btn" title="Back to Chat" style="width: 32px; height: 32px; border-radius: 50%; border: 1px solid var(--border); background: var(--input-bg); color: var(--text); cursor: pointer;"><i class="fas fa-times"></i></button>
+                    </div>
+
+                    <!-- AI Engine Selection -->
+                    <div class="studio-field">
+                        <label><i class="fas fa-robot"></i> Primary LLM Engine</label>
+                        <select id="settings-llm-engine" class="studio-select">
+                            <option value="local-gemma">Local Gemma 4 (Ollama / Local Server)</option>
+                            <option value="local-llama">Local Llama 3 (Ollama)</option>
+                            <option value="cloud-gemini">Cloud Gemini 1.5 Pro</option>
+                            <option value="cloud-openai">OpenAI GPT-4o</option>
+                        </select>
+                    </div>
+
+                    <!-- User Profile Username -->
+                    <div class="studio-field">
+                        <label><i class="fas fa-user"></i> Display Username</label>
+                        <input type="text" id="settings-username-input" class="studio-select" placeholder="Enter your display name...">
+                    </div>
+
+                    <!-- Accent Color Theme -->
+                    <div class="studio-field">
+                        <label><i class="fas fa-palette"></i> Accent Theme Color</label>
+                        <div style="display: flex; gap: 10px; flex-wrap: wrap; margin-top: 4px;">
+                            <button class="accent-picker-btn active" data-color="#15AC49" style="width: 34px; height: 34px; border-radius: 50%; background: #15AC49; border: 2px solid #FFFFFF; cursor: pointer; box-shadow: 0 2px 6px rgba(0,0,0,0.2);"></button>
+                            <button class="accent-picker-btn" data-color="#06B6D4" style="width: 34px; height: 34px; border-radius: 50%; background: #06B6D4; border: 2px solid transparent; cursor: pointer;"></button>
+                            <button class="accent-picker-btn" data-color="#8B5CF6" style="width: 34px; height: 34px; border-radius: 50%; background: #8B5CF6; border: 2px solid transparent; cursor: pointer;"></button>
+                            <button class="accent-picker-btn" data-color="#F97316" style="width: 34px; height: 34px; border-radius: 50%; background: #F97316; border: 2px solid transparent; cursor: pointer;"></button>
+                            <button class="accent-picker-btn" data-color="#3B82F6" style="width: 34px; height: 34px; border-radius: 50%; background: #3B82F6; border: 2px solid transparent; cursor: pointer;"></button>
+                        </div>
+                    </div>
+
+                    <!-- AI Assistant Preferences -->
+                    <div class="studio-field">
+                        <label><i class="fas fa-sliders"></i> Features & Preferences</label>
+                        <div style="display: flex; flex-direction: column; gap: 10px; margin-top: 6px;">
+                            <label style="display: flex; align-items: center; justify-content: space-between; text-transform: none; font-size: 13px; font-weight: 600; color: var(--text); cursor: pointer;">
+                                <span>Auto-Summarize Web Pages</span>
+                                <input type="checkbox" id="setting-toggle-summarize" checked style="width: 18px; height: 18px; accent-color: var(--accent); cursor: pointer;">
+                            </label>
+                            <label style="display: flex; align-items: center; justify-content: space-between; text-transform: none; font-size: 13px; font-weight: 600; color: var(--text); cursor: pointer;">
+                                <span>Enable Local Web Search Context</span>
+                                <input type="checkbox" id="setting-toggle-search" checked style="width: 18px; height: 18px; accent-color: var(--accent); cursor: pointer;">
+                            </label>
+                            <label style="display: flex; align-items: center; justify-content: space-between; text-transform: none; font-size: 13px; font-weight: 600; color: var(--text); cursor: pointer;">
+                                <span>Save Chat History Locally</span>
+                                <input type="checkbox" id="setting-toggle-history" checked style="width: 18px; height: 18px; accent-color: var(--accent); cursor: pointer;">
+                            </label>
+                        </div>
+                    </div>
+
+                    <!-- AI Personality Mood Selector -->
+                    <div class="studio-field">
+                        <label><i class="fas fa-face-smile"></i> AI Personality Mood</label>
+                        <select id="settings-persona-select" class="studio-select">
+                            <option value="professional">💼 Professional & Concise</option>
+                            <option value="funny">😂 Witty & Funny Companion</option>
+                            <option value="bf">💙 Supportive Boyfriend (BF)</option>
+                            <option value="gf">💖 Affectionate Girlfriend (GF)</option>
+                            <option value="tech">⚡ Tech & Coding Master</option>
+                            <option value="calm">🧘 Mindful & Reassuring Coach</option>
+                            <option value="custom">🎨 Custom Human Companion</option>
+                        </select>
+                    </div>
+
+                    <!-- Custom AI Companion Setup Card -->
+                    <div class="studio-field" id="custom-companion-card" style="background: var(--card-bg); border: 1px solid var(--accent); border-radius: var(--radius); padding: 14px; margin-top: 10px;">
+                        <label style="color: var(--accent); text-transform: uppercase; font-size: 11px; font-weight: 800; letter-spacing: 0.8px;"><i class="fas fa-user-gear"></i> Custom Human Companion Setup</label>
+                        <p style="font-size: 11.5px; color: var(--text-dim); margin: 2px 0 10px 0;">Design your own personalized human AI companion:</p>
+                        
+                        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
+                            <div>
+                                <label style="font-size: 11px;">Companion Name</label>
+                                <input type="text" id="custom-ai-name" class="studio-select" placeholder="e.g. Sophia, Alex..." value="Ocal Companion" style="padding: 7px 10px;">
+                            </div>
+                            <div>
+                                <label style="font-size: 11px;">Relationship Vibe</label>
+                                <select id="custom-ai-role" class="studio-select" style="padding: 7px 10px;">
+                                    <option value="gf">Partner / Girlfriend Vibe 💕</option>
+                                    <option value="bf">Partner / Boyfriend Vibe 💙</option>
+                                    <option value="friend">Best Friend / Casual Buddy 🤗</option>
+                                    <option value="mentor">Personal Mentor / Coach 🧘</option>
+                                    <option value="tech">Coding / Tech Partner ⚡</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <div style="margin-top: 10px;">
+                            <label style="font-size: 11px;">Call Me (Your Preferred Nickname)</label>
+                            <input type="text" id="custom-user-nickname" class="studio-select" placeholder="e.g. Babe, Alex, Captain..." value="Babe" style="padding: 7px 10px;">
+                        </div>
+
+                        <div style="margin-top: 10px;">
+                            <label style="font-size: 11px;">Custom Companion Persona & Instructions</label>
+                            <textarea id="custom-ai-bio" class="studio-select" rows="2" placeholder="e.g. Sweet, witty, caring, speaks naturally like a human friend..." style="resize: vertical; font-family: inherit; font-size: 12px; padding: 8px 10px;"></textarea>
+                        </div>
+                    </div>
+
+                    <!-- Long-Term Memory Bank -->
+                    <div class="studio-field">
+                        <label><i class="fas fa-brain"></i> Long-Term Memory Bank</label>
+                        <p style="font-size: 11.5px; color: var(--text-dim); margin: 0 0 6px 0;">Facts Ocal AI remembers across all conversations:</p>
+                        <div id="memory-tags-container" style="display: flex; flex-wrap: wrap; gap: 4px; background: var(--card-bg); border: 1px solid var(--border); padding: 10px; border-radius: var(--radius); min-height: 48px; align-items: center;">
+                            <!-- Memory tags loaded dynamically -->
+                        </div>
+                        <div style="display: flex; gap: 8px; margin-top: 6px;">
+                            <input type="text" id="add-memory-input" class="studio-select" placeholder="Add fact to remember (e.g. 'Builds web apps with Vite')..." style="padding: 8px 10px; flex: 1;">
+                            <button id="add-memory-btn" style="background: var(--accent); color: #0D0E11; border: none; border-radius: 8px; padding: 0 14px; font-weight: 700; cursor: pointer; font-size: 12px;"><i class="fas fa-plus"></i> Add</button>
+                        </div>
+                    </div>
+
+                    <!-- Save Button -->
+                    <button id="save-ai-settings-btn" class="studio-submit-btn" style="margin-top: 14px;">
+                        <i class="fas fa-check"></i> <span>Save & Apply Settings</span>
+                    </button>
+                </div>
+            </div>
+            </div> <!-- closes .ai-views-container -->
+        </div> <!-- closes .ai-main-container -->
+    </div> <!-- closes .ai-panel -->
 
     <script src="ai-sidebar.js"></script>
 </body>
