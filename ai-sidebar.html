@@ -898,20 +898,42 @@
 
         .studio-card {
             background: var(--card-bg) !important;
-            border: 1px solid var(--card-border) !important;
-            border-radius: 18px !important;
-            padding: 18px;
+            border: 1px solid var(--border, rgba(255, 255, 255, 0.08)) !important;
+            border-radius: 20px !important;
+            padding: 20px;
             display: flex;
             flex-direction: column;
-            gap: 16px;
-            box-shadow: none !important;
+            gap: 14px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.15) !important;
+            transition: all 0.3s ease;
+        }
+
+        .studio-row-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 12px;
+            width: 100%;
+        }
+
+        .studio-header-badge {
+            font-size: 10px;
+            font-weight: 800;
+            letter-spacing: 0.5px;
+            padding: 4px 10px;
+            border-radius: 100px;
+            background: var(--accent-dim);
+            color: var(--accent);
+            display: flex;
+            align-items: center;
+            gap: 4px;
+            border: 1px solid var(--accent-dim);
         }
 
         .studio-card-header {
             display: flex;
             align-items: center;
             justify-content: space-between;
-            border-bottom: 1px solid var(--border);
+            border-bottom: 1px solid var(--border, rgba(255, 255, 255, 0.06));
             padding-bottom: 12px;
             margin-bottom: 2px;
         }
@@ -923,15 +945,15 @@
         }
 
         .studio-header-icon {
-            width: 32px;
-            height: 32px;
-            border-radius: 10px;
+            width: 34px;
+            height: 34px;
+            border-radius: 12px;
             background: var(--accent-dim);
             color: var(--accent);
             display: flex;
             align-items: center;
             justify-content: center;
-            font-size: 14px;
+            font-size: 15px;
         }
 
         .studio-header-text {
@@ -940,7 +962,7 @@
         }
 
         .studio-header-text h3 {
-            font-size: 14px;
+            font-size: 14.5px;
             font-weight: 800;
             color: var(--text);
             letter-spacing: -0.2px;
@@ -956,7 +978,8 @@
         .studio-field {
             display: flex;
             flex-direction: column;
-            gap: 7px;
+            gap: 6px;
+            width: 100%;
         }
 
         .studio-field label {
@@ -2213,15 +2236,17 @@
            ================================================================ */
         body[data-theme="light"] .studio-card {
             background: #FFFFFF !important;
-            border: 1px solid #E2E5EA !important;
+            border: 1px solid rgba(0, 0, 0, 0.08) !important;
+            box-shadow: 0 8px 30px rgba(0, 0, 0, 0.06) !important;
+            border-radius: 20px !important;
         }
 
         body[data-theme="light"] .studio-header-text h3 {
-            color: #1A1D20 !important;
+            color: #0F172A !important;
         }
 
         body[data-theme="light"] .studio-header-text span {
-            color: #7E8492 !important;
+            color: #64748B !important;
         }
 
         body[data-theme="light"] .studio-field label {
@@ -2233,9 +2258,10 @@
         body[data-theme="light"] .studio-textarea,
         body[data-theme="light"] .advanced-settings-header,
         body[data-theme="light"] .advanced-settings-content {
-            background: #F8F9FA !important;
-            border: 1px solid #E2E5EA !important;
-            color: #1A1D20 !important;
+            background: #F8FAFC !important;
+            border: 1px solid #E2E8F0 !important;
+            color: #0F172A !important;
+            border-radius: 14px !important;
         }
 
         body[data-theme="light"] .dropdown-trigger:hover,
@@ -2583,118 +2609,124 @@
                                 <span>Generate & customize artwork</span>
                             </div>
                         </div>
+                        <div class="studio-header-badge"><i class="fas fa-sparkles"></i> PRO</div>
                     </div>
 
-                    <!-- Engine Selector -->
-                    <div class="studio-field">
-                        <label><i class="fas fa-microchip"></i> Generation Engine</label>
-                        <div class="custom-dropdown" id="engine-dropdown-container">
-                            <input type="hidden" id="studio-engine-select" value="local">
-                            <button type="button" class="dropdown-trigger" id="engine-dropdown-trigger">
-                                <span class="trigger-label" id="engine-dropdown-label">
-                                    <span class="option-icon" style="color: var(--accent);"><i class="fas fa-robot"></i></span>
-                                    <span class="option-title">Local Model (Flux.1 / SDXL / ComfyUI / Fooocus)</span>
-                                </span>
-                                <i class="fas fa-chevron-down trigger-arrow"></i>
-                            </button>
-                            <div class="dropdown-options" id="engine-dropdown-options">
-                                <div class="dropdown-option active" data-value="local">
-                                    <span class="option-icon" style="color: var(--accent);"><i class="fas fa-robot"></i></span>
-                                    <div class="option-text">
-                                        <div class="option-title">Local Model (Flux.1 / SDXL / ComfyUI / Fooocus)</div>
-                                        <div class="option-desc">Free & Offline dynamic generation</div>
+                    <!-- 2-Column Grid: Engine & Model Selectors -->
+                    <div class="studio-row-grid">
+                        <!-- Engine Selector -->
+                        <div class="studio-field">
+                            <label><i class="fas fa-microchip"></i> Generation Engine</label>
+                            <div class="custom-dropdown" id="engine-dropdown-container">
+                                <input type="hidden" id="studio-engine-select" value="local">
+                                <button type="button" class="dropdown-trigger" id="engine-dropdown-trigger">
+                                    <span class="trigger-label" id="engine-dropdown-label">
+                                        <span class="option-icon" style="color: var(--accent);"><i class="fas fa-robot"></i></span>
+                                        <span class="option-title">Local Model (Flux.1 / SDXL)</span>
+                                    </span>
+                                    <i class="fas fa-chevron-down trigger-arrow"></i>
+                                </button>
+                                <div class="dropdown-options" id="engine-dropdown-options">
+                                    <div class="dropdown-option active" data-value="local">
+                                        <span class="option-icon" style="color: var(--accent);"><i class="fas fa-robot"></i></span>
+                                        <div class="option-text">
+                                            <div class="option-title">Local Model (Flux.1 / SDXL / ComfyUI / Fooocus)</div>
+                                            <div class="option-desc">Free & Offline dynamic generation</div>
+                                        </div>
                                     </div>
-                                </div>
-                                <div class="dropdown-option" data-value="openai">
-                                    <span class="option-icon" style="color: #ff9f0a;"><i class="fas fa-bolt"></i></span>
-                                    <div class="option-text">
-                                        <div class="option-title">ChatGPT / DALL-E 3 API</div>
-                                        <div class="option-desc">Commercial high-fidelity cloud generation</div>
+                                    <div class="dropdown-option" data-value="openai">
+                                        <span class="option-icon" style="color: #ff9f0a;"><i class="fas fa-bolt"></i></span>
+                                        <div class="option-text">
+                                            <div class="option-title">ChatGPT / DALL-E 3 API</div>
+                                            <div class="option-desc">Commercial high-fidelity cloud generation</div>
+                                        </div>
                                     </div>
-                                </div>
-                                <div class="dropdown-option" data-value="gemini">
-                                    <span class="option-icon" style="color: #0a84ff;"><i class="fas fa-wand-magic-sparkles"></i></span>
-                                    <div class="option-text">
-                                        <div class="option-title">Gemini / Google Imagen API</div>
-                                        <div class="option-desc">Advanced cloud-based vision model suite</div>
+                                    <div class="dropdown-option" data-value="gemini">
+                                        <span class="option-icon" style="color: #0a84ff;"><i class="fas fa-wand-magic-sparkles"></i></span>
+                                        <div class="option-text">
+                                            <div class="option-title">Gemini / Google Imagen API</div>
+                                            <div class="option-desc">Advanced cloud-based vision model suite</div>
+                                        </div>
                                     </div>
                                 </div>
                             </div>
                         </div>
-                    <!-- Open Source Model Architecture Selector -->
-                    <div class="studio-field" id="os-model-field">
-                        <label><i class="fas fa-brain"></i> Open Source Model</label>
-                        <div class="custom-dropdown" id="os-model-dropdown-container">
-                            <input type="hidden" id="studio-os-model-select" value="flux-2">
-                            <button type="button" class="dropdown-trigger" id="os-model-dropdown-trigger">
-                                <span class="trigger-label" id="os-model-dropdown-label">
-                                    <span class="option-icon" style="color: #34c759;"><i class="fas fa-bolt-lightning"></i></span>
-                                    <span class="option-title">FLUX.2 (Black Forest Labs Flagship)</span>
-                                </span>
-                                <i class="fas fa-chevron-down trigger-arrow"></i>
-                            </button>
-                            <div class="dropdown-options" id="os-model-dropdown-options">
-                                <div class="dropdown-option active" data-value="flux-2">
-                                    <span class="option-icon" style="color: #34c759;"><i class="fas fa-bolt-lightning"></i></span>
-                                    <div class="option-text">
-                                        <div class="option-title">FLUX.2 (Black Forest Labs Flagship)</div>
-                                        <div class="option-desc">Next-gen 24B parameter photorealism & text rendering model</div>
+
+                        <!-- Open Source Model Architecture Selector -->
+                        <div class="studio-field" id="os-model-field">
+                            <label><i class="fas fa-brain"></i> Open Source Model</label>
+                            <div class="custom-dropdown" id="os-model-dropdown-container">
+                                <input type="hidden" id="studio-os-model-select" value="flux-2">
+                                <button type="button" class="dropdown-trigger" id="os-model-dropdown-trigger">
+                                    <span class="trigger-label" id="os-model-dropdown-label">
+                                        <span class="option-icon" style="color: #34c759;"><i class="fas fa-bolt-lightning"></i></span>
+                                        <span class="option-title">FLUX.2 (Flagship)</span>
+                                    </span>
+                                    <i class="fas fa-chevron-down trigger-arrow"></i>
+                                </button>
+                                <div class="dropdown-options" id="os-model-dropdown-options">
+                                    <div class="dropdown-option active" data-value="flux-2">
+                                        <span class="option-icon" style="color: #34c759;"><i class="fas fa-bolt-lightning"></i></span>
+                                        <div class="option-text">
+                                            <div class="option-title">FLUX.2 (Black Forest Labs Flagship)</div>
+                                            <div class="option-desc">Next-gen 24B parameter photorealism & text rendering model</div>
+                                        </div>
                                     </div>
-                                </div>
-                                <div class="dropdown-option" data-value="sd-3.5">
-                                    <span class="option-icon" style="color: #ff9f0a;"><i class="fas fa-layer-group"></i></span>
-                                    <div class="option-text">
-                                        <div class="option-title">Stable Diffusion 3.5 Large (Stability AI)</div>
-                                        <div class="option-desc">MMDiT architecture with photorealistic prompt accuracy</div>
+                                    <div class="dropdown-option" data-value="sd-3.5">
+                                        <span class="option-icon" style="color: #ff9f0a;"><i class="fas fa-layer-group"></i></span>
+                                        <div class="option-text">
+                                            <div class="option-title">Stable Diffusion 3.5 Large (Stability AI)</div>
+                                            <div class="option-desc">MMDiT architecture with photorealistic prompt accuracy</div>
+                                        </div>
                                     </div>
-                                </div>
-                                <div class="dropdown-option" data-value="qwen-image">
-                                    <span class="option-icon" style="color: #0a84ff;"><i class="fas fa-brain"></i></span>
-                                    <div class="option-text">
-                                        <div class="option-title">Qwen-Image / Qwen-VL (Alibaba Omni)</div>
-                                        <div class="option-desc">Omni vision model with precise spatial layout generation</div>
+                                    <div class="dropdown-option" data-value="qwen-image">
+                                        <span class="option-icon" style="color: #0a84ff;"><i class="fas fa-brain"></i></span>
+                                        <div class="option-text">
+                                            <div class="option-title">Qwen-Image / Qwen-VL (Alibaba Omni)</div>
+                                            <div class="option-desc">Omni vision model with precise spatial layout generation</div>
+                                        </div>
                                     </div>
-                                </div>
-                                <div class="dropdown-option" data-value="flux-realism">
-                                    <span class="option-icon" style="color: #30d158;"><i class="fas fa-camera"></i></span>
-                                    <div class="option-text">
-                                        <div class="option-title">Flux 1.1 Realism Ultra (Hyper-Realistic Photo)</div>
-                                        <div class="option-desc">Portrait tuning & lifelike human skin textures</div>
+                                    <div class="dropdown-option" data-value="flux-realism">
+                                        <span class="option-icon" style="color: #30d158;"><i class="fas fa-camera"></i></span>
+                                        <div class="option-text">
+                                            <div class="option-title">Flux 1.1 Realism Ultra (Hyper-Realistic Photo)</div>
+                                            <div class="option-desc">Portrait tuning & lifelike human skin textures</div>
+                                        </div>
                                     </div>
-                                </div>
-                                <div class="dropdown-option" data-value="flux">
-                                    <span class="option-icon" style="color: #5856d6;"><i class="fas fa-wand-magic-sparkles"></i></span>
-                                    <div class="option-text">
-                                        <div class="option-title">Flux.1 Schnell 12B (High Speed Open Model)</div>
-                                        <div class="option-desc">12 Billion parameter ultra-high detail open model</div>
+                                    <div class="dropdown-option" data-value="flux">
+                                        <span class="option-icon" style="color: #5856d6;"><i class="fas fa-wand-magic-sparkles"></i></span>
+                                        <div class="option-text">
+                                            <div class="option-title">Flux.1 Schnell 12B (High Speed Open Model)</div>
+                                            <div class="option-desc">12 Billion parameter ultra-high detail open model</div>
+                                        </div>
                                     </div>
-                                </div>
-                                <div class="dropdown-option" data-value="flux-candid">
-                                    <span class="option-icon" style="color: #ffd60a;"><i class="fas fa-user"></i></span>
-                                    <div class="option-text">
-                                        <div class="option-title">Flux Candid 4K (Natural Human Portraits)</div>
-                                        <div class="option-desc">Candid photography & natural ambient light</div>
+                                    <div class="dropdown-option" data-value="flux-candid">
+                                        <span class="option-icon" style="color: #ffd60a;"><i class="fas fa-user"></i></span>
+                                        <div class="option-text">
+                                            <div class="option-title">Flux Candid 4K (Natural Human Portraits)</div>
+                                            <div class="option-desc">Candid photography & natural ambient light</div>
+                                        </div>
                                     </div>
-                                </div>
-                                <div class="dropdown-option" data-value="turbo">
-                                    <span class="option-icon" style="color: #ff2d55;"><i class="fas fa-bolt"></i></span>
-                                    <div class="option-text">
-                                        <div class="option-title">SDXL RealVis V4.0 (Fast Photorealism)</div>
-                                        <div class="option-desc">RealVisXL photorealism weights</div>
+                                    <div class="dropdown-option" data-value="turbo">
+                                        <span class="option-icon" style="color: #ff2d55;"><i class="fas fa-bolt"></i></span>
+                                        <div class="option-text">
+                                            <div class="option-title">SDXL RealVis V4.0 (Fast Photorealism)</div>
+                                            <div class="option-desc">RealVisXL photorealism weights</div>
+                                        </div>
                                     </div>
-                                </div>
-                                <div class="dropdown-option" data-value="flux-3d">
-                                    <span class="option-icon" style="color: #64d2ff;"><i class="fas fa-cube"></i></span>
-                                    <div class="option-text">
-                                        <div class="option-title">Flux 3D & Cinematic Render</div>
-                                        <div class="option-desc">Octane/Unreal Engine 5 3D digital renders</div>
+                                    <div class="dropdown-option" data-value="flux-3d">
+                                        <span class="option-icon" style="color: #64d2ff;"><i class="fas fa-cube"></i></span>
+                                        <div class="option-text">
+                                            <div class="option-title">Flux 3D & Cinematic Render</div>
+                                            <div class="option-desc">Octane/Unreal Engine 5 3D digital renders</div>
+                                        </div>
                                     </div>
-                                </div>
-                                <div class="dropdown-option" data-value="flux-anime">
-                                    <span class="option-icon" style="color: #af52de;"><i class="fas fa-paint-brush"></i></span>
-                                    <div class="option-text">
-                                        <div class="option-title">Flux Niji V6 (Vibrant Anime & Manga)</div>
-                                        <div class="option-desc">High quality Japanese anime & illustration style</div>
+                                    <div class="dropdown-option" data-value="flux-anime">
+                                        <span class="option-icon" style="color: #af52de;"><i class="fas fa-paint-brush"></i></span>
+                                        <div class="option-text">
+                                            <div class="option-title">Flux Niji V6 (Vibrant Anime & Manga)</div>
+                                            <div class="option-desc">High quality Japanese anime & illustration style</div>
+                                        </div>
                                     </div>
                                 </div>
                             </div>
@@ -2719,49 +2751,56 @@
                         </div>
                     </div>
 
-                    <!-- Aspect Ratio Selector -->
-                    <div class="studio-field">
-                        <label><i class="fas fa-crop-simple"></i> Aspect Ratio</label>
-                        <div class="custom-dropdown" id="ratio-dropdown-container">
-                            <input type="hidden" id="studio-aspect-ratio" value="1:1">
-                            <button type="button" class="dropdown-trigger" id="ratio-dropdown-trigger">
-                                <span class="trigger-label" id="ratio-dropdown-label">
-                                    <span class="option-icon" style="color: var(--accent);"><i class="fas fa-square"></i></span>
-                                    <span class="option-title">Square (1:1)</span>
-                                </span>
-                                <i class="fas fa-chevron-down trigger-arrow"></i>
-                            </button>
-                            <div class="dropdown-options" id="ratio-dropdown-options">
-                                <div class="dropdown-option active" data-value="1:1" data-w="1024" data-h="1024">
-                                    <span class="option-icon" style="color: var(--accent);"><i class="fas fa-square"></i></span>
-                                    <div class="option-text">
-                                        <div class="option-title">Square (1:1)</div>
-                                        <div class="option-desc">1024 x 1024 px (Social posts)</div>
+                    <!-- 2-Column Grid: Aspect Ratio & Advanced Settings -->
+                    <div class="studio-row-grid">
+                        <!-- Aspect Ratio Selector -->
+                        <div class="studio-field">
+                            <label><i class="fas fa-crop-simple"></i> Aspect Ratio</label>
+                            <div class="custom-dropdown" id="ratio-dropdown-container">
+                                <input type="hidden" id="studio-aspect-ratio" value="1:1">
+                                <button type="button" class="dropdown-trigger" id="ratio-dropdown-trigger">
+                                    <span class="trigger-label" id="ratio-dropdown-label">
+                                        <span class="option-icon" style="color: var(--accent);"><i class="fas fa-square"></i></span>
+                                        <span class="option-title">Square (1:1)</span>
+                                    </span>
+                                    <i class="fas fa-chevron-down trigger-arrow"></i>
+                                </button>
+                                <div class="dropdown-options" id="ratio-dropdown-options">
+                                    <div class="dropdown-option active" data-value="1:1" data-w="1024" data-h="1024">
+                                        <span class="option-icon" style="color: var(--accent);"><i class="fas fa-square"></i></span>
+                                        <div class="option-text">
+                                            <div class="option-title">Square (1:1)</div>
+                                            <div class="option-desc">1024 x 1024 px (Social posts)</div>
+                                        </div>
                                     </div>
-                                </div>
-                                <div class="dropdown-option" data-value="9:16" data-w="768" data-h="1344">
-                                    <span class="option-icon" style="color: #ff9f0a;"><i class="fas fa-mobile-screen"></i></span>
-                                    <div class="option-text">
-                                        <div class="option-title">Portrait (9:16)</div>
-                                        <div class="option-desc">768 x 1344 px (Mobile stories)</div>
+                                    <div class="dropdown-option" data-value="9:16" data-w="768" data-h="1344">
+                                        <span class="option-icon" style="color: #ff9f0a;"><i class="fas fa-mobile-screen"></i></span>
+                                        <div class="option-text">
+                                            <div class="option-title">Portrait (9:16)</div>
+                                            <div class="option-desc">768 x 1344 px (Mobile stories)</div>
+                                        </div>
                                     </div>
-                                </div>
-                                <div class="dropdown-option" data-value="16:9" data-w="1344" data-h="768">
-                                    <span class="option-icon" style="color: #0a84ff;"><i class="fas fa-display"></i></span>
-                                    <div class="option-text">
-                                        <div class="option-title">Landscape (16:9)</div>
-                                        <div class="option-desc">1344 x 768 px (Widescreen displays)</div>
+                                    <div class="dropdown-option" data-value="16:9" data-w="1344" data-h="768">
+                                        <span class="option-icon" style="color: #0a84ff;"><i class="fas fa-display"></i></span>
+                                        <div class="option-text">
+                                            <div class="option-title">Landscape (16:9)</div>
+                                            <div class="option-desc">1344 x 768 px (Widescreen displays)</div>
+                                        </div>
                                     </div>
                                 </div>
                             </div>
                         </div>
+
+                        <!-- Collapsible Advanced Settings -->
+                        <div class="studio-field">
+                            <label><i class="fas fa-sliders-h"></i> Configuration</label>
+                            <div class="advanced-settings-header" id="advanced-settings-toggle">
+                                <span><i class="fas fa-sliders"></i> Advanced Settings</span>
+                                <i class="fas fa-chevron-down advanced-arrow" id="advanced-arrow-icon"></i>
+                            </div>
+                        </div>
                     </div>
 
-                    <!-- Collapsible Advanced Settings -->
-                    <div class="advanced-settings-header" id="advanced-settings-toggle">
-                        <span><i class="fas fa-sliders-h"></i> Advanced Settings</span>
-                        <i class="fas fa-chevron-down advanced-arrow" id="advanced-arrow-icon"></i>
-                    </div>
                     <div class="advanced-settings-content" id="advanced-settings-panel" style="display: none;">
                         <!-- Negative Prompt -->
                         <div class="studio-field">
