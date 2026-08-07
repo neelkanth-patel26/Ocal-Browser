@@ -9104,15 +9104,16 @@ function setupContextMenu(contents) {
         menu.append(new MenuItem({ label: 'Forward', enabled: navHist ? navHist.canGoForward() : false, click: () => { if (navHist) navHist.goForward(); } }));
         menu.append(new MenuItem({ label: 'Reload', click: () => { contents.reload(); } }));
 
-        // Dynamic Inspect Element: Allowed only on non-internal pages
-        const ctxUrl = contents.getURL ? contents.getURL() : '';
-        const isInternalCtx = ctxUrl.startsWith('ocal://') || ctxUrl.startsWith('file://');
-        if (!isInternalCtx) {
-            menu.append(new MenuItem({ type: 'separator' }));
-            menu.append(new MenuItem({ label: 'Inspect Element', click: () => { contents.inspectElement(props.x, props.y); } }));
-        }
+        // Inspect Element
+        menu.append(new MenuItem({ type: 'separator' }));
+        menu.append(new MenuItem({ label: 'Inspect Element', click: () => { try { contents.inspectElement(props.x, props.y); } catch(err){} } }));
 
-        menu.popup({ window: BrowserWindow.fromWebContents(contents) });
+        const win = BrowserWindow.fromWebContents(contents) || mainWindow || BrowserWindow.getFocusedWindow();
+        if (win && !win.isDestroyed()) {
+            menu.popup({ window: win });
+        } else {
+            menu.popup({});
+        }
     });
 }
 
