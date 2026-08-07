@@ -4419,6 +4419,7 @@ ipcMain.handle('ai-agent-execute', async (event, query) => {
                     };
                 })()
             `).catch(() => null);
+            }
 
             if (!pageData || !pageData.structuredContent || pageData.structuredContent.length < 50) {
                 return { text: "I couldn't extract enough content from this page. The page might be dynamically loaded or require login.", actions };
