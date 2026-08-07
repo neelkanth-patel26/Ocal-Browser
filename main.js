@@ -4096,7 +4096,7 @@ ipcMain.handle('ai-agent-execute', async (event, query) => {
                 }
 
                 if (q.includes('find') || q.includes('search')) {
-                    const searchTerm = query.replace(/find|search for|show me/gi, '').trim();
+                    const searchTerm = prompt.replace(/find|search for|show me/gi, '').trim();
                     if (searchTerm) {
                         return {
                             text: `I've analyzed your system for **"${searchTerm}"**. I can filter this for you in the active tab.`,
@@ -4126,18 +4126,18 @@ ipcMain.handle('ai-agent-execute', async (event, query) => {
             notifyAction("Initializing Email Workspace...", 'fa-envelope-open-text');
 
             // 1. Data Collection & Extraction
-            const emailMatch = query.match(/([a-zA-Z0-9._-]+@[a-zA-Z0-9._-]+\.[a-zA-Z0-9_-]+)/i);
+            const emailMatch = prompt.match(/([a-zA-Z0-9._-]+@[a-zA-Z0-9._-]+\.[a-zA-Z0-9_-]+)/i);
             if (emailMatch) aiSessionContext.data.to = emailMatch[0];
 
-            const aboutMatch = query.match(/about\s+(.*?)(?:\s+saying|\s+telling|\s+asking|$)/i);
+            const aboutMatch = prompt.match(/about\s+(.*?)(?:\s+saying|\s+telling|\s+asking|$)/i);
             if (aboutMatch) aiSessionContext.data.subject = aboutMatch[1].trim();
 
-            const contentMatch = query.match(/(?:saying|telling|asking|message)\s+(.*)/i);
+            const contentMatch = prompt.match(/(?:saying|telling|asking|message)\s+(.*)/i);
             if (contentMatch) aiSessionContext.data.body = contentMatch[1].trim();
 
             // 2. Intelligent Context Inference (Filling missing gaps)
             if (!emailMatch && !isEmailIntent && aiSessionContext.data.to && !aiSessionContext.data.body) {
-                aiSessionContext.data.body = query.trim();
+                aiSessionContext.data.body = prompt.trim();
             }
 
             // 3. Smart Subject Detection (If still missing)
@@ -4224,7 +4224,7 @@ ipcMain.handle('ai-agent-execute', async (event, query) => {
                 }
             }
 
-            const urlMatch = query.match(/(https?:\/\/[^\s]+|www\.[^\s]+|[a-z0-9]+\.[a-z]{2,})/i);
+            const urlMatch = prompt.match(/(https?:\/\/[^\s]+|www\.[^\s]+|[a-z0-9]+\.[a-z]{2,})/i);
             if (urlMatch) {
                 let url = urlMatch[0];
                 if (!url.startsWith('http')) url = 'https://' + url;
@@ -4241,7 +4241,7 @@ ipcMain.handle('ai-agent-execute', async (event, query) => {
             let pageData = null;
 
             // Check if query contains an explicit URL to analyze
-            const explicitUrlMatch = query.match(/(https?:\/\/[^\s]+|www\.[^\s]+|[a-zA-Z0-9-]+\.[a-zA-Z]{2,}(?:\/[^\s]*)?)/i);
+            const explicitUrlMatch = prompt.match(/(https?:\/\/[^\s]+|www\.[^\s]+|[a-zA-Z0-9-]+\.[a-zA-Z]{2,}(?:\/[^\s]*)?)/i);
             
             if (explicitUrlMatch && !explicitUrlMatch[0].includes('ocal://') && !explicitUrlMatch[0].includes('file://')) {
                 let targetUrl = explicitUrlMatch[0];
