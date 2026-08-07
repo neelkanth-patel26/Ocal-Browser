@@ -1229,9 +1229,12 @@ body.compact-mode .new-tab-btn { width: 22px; height: 22px; border-radius: 6px; 
   display: none !important;
 }
 
-/* ── Window controls ────────────────────────────────────────── */
+/* ── Apple-Style Window Controls (Simple, Clean, No Animations) ── */
 .window-controls {
   display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 0 14px;
   -webkit-app-region: no-drag;
   flex-shrink: 0;
   height: 100%;
@@ -1239,43 +1242,58 @@ body.compact-mode .new-tab-btn { width: 22px; height: 22px; border-radius: 6px; 
   z-index: 1000;
   background: transparent;
 }
+
 .ctrl-btn {
-  width: 44px; 
-  height: 100%;
-  display: flex; align-items: center; justify-content: center;
-  color: var(--text-dim);
-  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  width: 12px;
+  height: 12px;
+  min-width: 12px;
+  min-height: 12px;
+  border-radius: 50% !important;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
   position: relative;
-  z-index: 1;
+  transition: filter 0.15s ease, opacity 0.15s ease;
+  border: 1px solid rgba(0, 0, 0, 0.12);
   -webkit-app-region: no-drag !important;
-}
-.ctrl-btn:hover { 
-  background: rgba(255, 255, 255, 0.08); 
-  color: #ffffff; 
+  box-shadow: none !important;
 }
 
 .ctrl-btn svg {
-  transition: transform 0.25s cubic-bezier(0.4, 0, 0.2, 1), opacity 0.2s;
+  width: 7px;
+  height: 7px;
+  opacity: 0;
+  transition: opacity 0.15s ease;
+  transform: none !important; /* Absolutely NO animation */
+}
+
+.window-controls:hover .ctrl-btn svg {
   opacity: 0.75;
 }
 
-.ctrl-btn:hover svg {
-  transform: scale(1.15);
-  opacity: 1;
+.ctrl-btn:hover {
+  filter: brightness(0.9);
+  transform: none !important;
 }
 
-.ctrl-btn.active { 
-  color: var(--accent); 
-  background: var(--accent-dim);
-  text-shadow: 0 0 12px var(--accent-glow); 
+/* Apple macOS Traffic Light Colors */
+#close-btn, .ctrl-close {
+  background: #FF5F56 !important;
+  border-color: #E0443E !important;
+  color: #4D0000 !important;
 }
 
-.ctrl-close:hover { 
-  background: #e81123 !important; /* Windows-standard premium close red */
-  color: #ffffff !important; 
+#min-btn {
+  background: #FFBD2E !important;
+  border-color: #DEA123 !important;
+  color: #5C4100 !important;
 }
-.ctrl-close:hover svg {
-  transform: rotate(90deg) scale(1.1);
+
+#max-btn {
+  background: #27C93F !important;
+  border-color: #1AAB29 !important;
+  color: #004D0D !important;
 }
 
 /* ── Navigation Bar ────────────────────────────────────────────── */
