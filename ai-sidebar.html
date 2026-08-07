@@ -1550,25 +1550,25 @@
             bottom: 0 !important;
             transform: none !important;
             box-shadow: none !important;
-            width: 270px !important;
-            min-width: 270px !important;
-            max-width: 270px !important;
+            width: 256px !important;
+            min-width: 256px !important;
+            max-width: 256px !important;
             height: 100vh !important;
             flex-shrink: 0 !important;
             background: var(--panel-bg) !important;
             border-right: 1px solid var(--border) !important;
-            padding: 16px 12px !important;
+            padding: 14px 10px !important;
             display: flex !important;
             flex-direction: column !important;
-            gap: 8px !important;
+            gap: 2px !important;
             overflow-y: auto !important;
             z-index: 10 !important;
         }
 
         /* Light mode sidebar contrast */
         body[data-theme="light"].fullscreen-mode .history-sidebar {
-            background: #FAFAFC !important;
-            border-right: 1px solid #E2E8F0 !important;
+            background: #f7f8fa !important;
+            border-right: 1px solid #dde1e7 !important;
         }
 
         /* Hide sidebar scrollbar */
@@ -1579,17 +1579,16 @@
             display: flex;
             align-items: center;
             justify-content: space-between;
-            padding: 2px 6px 10px 6px;
+            padding: 2px 4px 14px 4px;
         }
 
         .gemini-logo {
             display: flex;
             align-items: center;
-            gap: 9px;
-            font-size: 17px;
+            gap: 8px;
+            font-size: 16px;
             font-weight: 800;
             color: var(--text);
-            letter-spacing: -0.3px;
         }
 
         .gemini-star-icon {
@@ -1597,17 +1596,16 @@
             background-clip: text;
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
-            font-size: 19px;
+            font-size: 18px;
         }
 
         .gemini-mode-pill {
             display: flex;
             background: var(--card-bg);
             border: 1px solid var(--border);
-            padding: 4px;
-            border-radius: 14px;
-            margin-bottom: 6px;
-            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.03);
+            padding: 3px;
+            border-radius: 10px;
+            margin-bottom: 10px;
         }
 
         @keyframes jellyBounce {
@@ -1626,19 +1624,19 @@
 
         .gemini-mode-btn {
             flex: 1;
-            padding: 7px 12px;
-            border-radius: 10px;
+            padding: 6px 10px;
+            border-radius: 8px;
             border: none;
             background: transparent;
             color: var(--text-dim);
-            font-size: 12.5px;
-            font-weight: 700;
+            font-size: 12px;
+            font-weight: 600;
             cursor: pointer;
             transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1) !important;
             display: flex;
             align-items: center;
             justify-content: center;
-            gap: 7px;
+            gap: 6px;
             font-family: 'Plus Jakarta Sans', sans-serif;
         }
 
@@ -1647,16 +1645,15 @@
         }
 
         .gemini-mode-btn.active {
-            background: var(--accent) !important;
-            color: #0D0E11 !important;
-            box-shadow: 0 4px 14px rgba(9, 240, 160, 0.25) !important;
+            background: var(--panel-bg);
+            color: var(--accent);
+            box-shadow: none !important;
             animation: jellyBounce 0.35s cubic-bezier(0.16, 1, 0.3, 1) !important;
         }
 
         .gemini-mode-btn.active i {
             animation: jellyIcon 0.35s cubic-bezier(0.16, 1, 0.3, 1) !important;
             transform: scale(1.08) !important;
-            color: #0D0E11 !important;
         }
 
         .gemini-mode-btn:hover:not(.active) i {
@@ -1667,11 +1664,11 @@
             display: flex;
             align-items: center;
             gap: 10px;
-            padding: 9px 12px;
-            border-radius: 12px;
+            padding: 8px 12px;
+            border-radius: 8px;
             color: var(--text-dim);
             font-size: 13px;
-            font-weight: 600;
+            font-weight: 500;
             cursor: pointer;
             transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1) !important;
             background: transparent;
@@ -1681,25 +1678,7 @@
             font-family: 'Plus Jakarta Sans', sans-serif;
         }
 
-        .gemini-nav-item#new-chat-btn {
-            background: linear-gradient(135deg, #15AC49 0%, #09f0a0 100%) !important;
-            color: #0D0E11 !important;
-            font-weight: 800 !important;
-            box-shadow: 0 4px 14px rgba(9, 240, 160, 0.2) !important;
-            margin-top: 4px;
-        }
-
-        .gemini-nav-item#new-chat-btn i {
-            color: #0D0E11 !important;
-            font-size: 13.5px;
-        }
-
-        .gemini-nav-item#new-chat-btn:hover {
-            transform: translateY(-1.5px) !important;
-            box-shadow: 0 6px 18px rgba(9, 240, 160, 0.35) !important;
-        }
-
-        .gemini-nav-item:hover:not(#new-chat-btn) {
+        .gemini-nav-item:hover {
             background: var(--card-bg);
             color: var(--text);
             transform: translateX(2px) !important;
@@ -1714,76 +1693,60 @@
             transition: transform 0.25s cubic-bezier(0.16, 1, 0.3, 1) !important;
         }
 
-        .gemini-nav-item:hover:not(#new-chat-btn) i {
+        .gemini-nav-item:hover i {
             transform: scale(1.1) !important;
         }
 
         .gemini-section-title {
-            font-size: 10px;
-            font-weight: 800;
+            font-size: 9.5px;
+            font-weight: 700;
             color: var(--text-muted);
-            margin: 10px 8px 4px 8px;
+            margin: 12px 12px 3px 12px;
             text-transform: uppercase;
             letter-spacing: 0.9px;
         }
 
         .gemini-user-footer {
             margin-top: auto;
-            padding: 9px 12px;
-            background: var(--card-bg);
-            border: 1px solid var(--border);
-            border-radius: 14px;
+            padding: 10px 4px 2px 4px;
+            border-top: 1px solid var(--border);
             display: flex;
             align-items: center;
-            gap: 8px;
-            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.03);
+            gap: 6px;
         }
 
         .gemini-user-info {
             display: flex;
             align-items: center;
-            gap: 9px;
+            gap: 8px;
             flex: 1;
         }
 
         .gemini-user-avatar {
-            width: 32px;
-            height: 32px;
-            border-radius: 10px;
+            width: 30px;
+            height: 30px;
+            border-radius: 8px;
             background: linear-gradient(135deg, #15AC49, #09f0a0);
             color: #0D0E11;
             font-weight: 800;
-            font-size: 11px;
+            font-size: 10px;
             display: flex;
             align-items: center;
             justify-content: center;
             flex-shrink: 0;
-            position: relative;
-        }
-
-        .gemini-user-avatar::after {
-            content: '';
-            position: absolute;
-            bottom: -1px;
-            right: -1px;
-            width: 8px;
-            height: 8px;
-            border-radius: 50%;
-            background: #09f0a0;
-            border: 2px solid var(--card-bg);
         }
 
         .gemini-user-details { display: flex; flex-direction: column; gap: 1px; }
 
         .gemini-user-name {
-            font-size: 12.5px;
+            font-size: 12px;
             font-weight: 700;
             color: var(--text);
             line-height: 1.2;
         }
 
         .gemini-user-badge {
-            font-size: 9.5px;
+            font-size: 9px;
             color: var(--accent);
             font-weight: 600;
         }
@@ -2269,17 +2232,24 @@
         }
 
         /* ================================================================
-           LIGHT THEME STYLING FOR IMAGE STUDIO & COMPONENTS
+           LIGHT THEME STYLING FOR IMAGE STUDIO & COMPONENTS (MATCHES HOME/SIDEBAR)
            ================================================================ */
-        body[data-theme="light"] .studio-card {
+        body[data-theme="light"] .ai-image-studio-view,
+        body[data-theme="light"] .studio-scroll-area {
+            background: #F3F4F6 !important;
+        }
+
+        body[data-theme="light"] .studio-card,
+        body[data-theme="light"] .studio-preview-card {
             background: #FFFFFF !important;
-            border: 1px solid rgba(0, 0, 0, 0.08) !important;
-            box-shadow: 0 8px 30px rgba(0, 0, 0, 0.06) !important;
-            border-radius: 20px !important;
+            border: 1px solid #E5E7EB !important;
+            box-shadow: 0 1px 4px rgba(0, 0, 0, 0.04) !important;
+            border-radius: 16px !important;
         }
 
         body[data-theme="light"] .studio-header-text h3 {
             color: #0F172A !important;
+            font-weight: 700 !important;
         }
 
         body[data-theme="light"] .studio-header-text span {
@@ -2287,7 +2257,8 @@
         }
 
         body[data-theme="light"] .studio-field label {
-            color: #475569 !important;
+            color: #64748B !important;
+            font-weight: 700 !important;
         }
 
         body[data-theme="light"] .dropdown-trigger,
@@ -2295,10 +2266,11 @@
         body[data-theme="light"] .studio-textarea,
         body[data-theme="light"] .advanced-settings-header,
         body[data-theme="light"] .advanced-settings-content {
-            background: #F8FAFC !important;
-            border: 1px solid #E2E8F0 !important;
-            color: #0F172A !important;
-            border-radius: 14px !important;
+            background: #FFFFFF !important;
+            border: 1px solid #E5E7EB !important;
+            color: #1E293B !important;
+            border-radius: 12px !important;
+            font-weight: 500 !important;
         }
 
         body[data-theme="light"] .dropdown-trigger:hover,
@@ -2307,6 +2279,7 @@
         body[data-theme="light"] .advanced-settings-header:hover {
             background: #FFFFFF !important;
             border-color: #15AC49 !important;
+            box-shadow: 0 0 0 3px rgba(21, 172, 73, 0.1) !important;
         }
 
         body[data-theme="light"] .studio-textarea::placeholder {
@@ -2315,22 +2288,26 @@
 
         body[data-theme="light"] .dropdown-options {
             background: #FFFFFF !important;
-            border: 1px solid #E2E5EA !important;
+            border: 1px solid #E5E7EB !important;
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.08) !important;
+            border-radius: 14px !important;
         }
 
         body[data-theme="light"] .dropdown-option {
-            color: #1A1D20 !important;
+            color: #1E293B !important;
         }
 
         body[data-theme="light"] .dropdown-option:hover {
-            background: #F4F5F7 !important;
+            background: #F1F5F9 !important;
         }
 
         body[data-theme="light"] .preset-chip {
-            background: #F4F5F7 !important;
-            border: 1px solid #E2E5EA !important;
-            color: #1A1D20 !important;
-            font-weight: 700 !important;
+            background: #FFFFFF !important;
+            border: 1px solid #E5E7EB !important;
+            color: #475569 !important;
+            border-radius: 12px !important;
+            font-weight: 600 !important;
+            transition: all 0.2s ease !important;
         }
 
         body[data-theme="light"] .preset-chip i {
@@ -2339,48 +2316,62 @@
 
         body[data-theme="light"] .preset-chip:hover,
         body[data-theme="light"] .preset-chip.active {
-            background: #15AC49 !important;
-            color: #FFFFFF !important;
-            border-color: #15AC49 !important;
+            background: rgba(21, 172, 73, 0.08) !important;
+            color: #15AC49 !important;
+            border: 1.5px solid #15AC49 !important;
+            font-weight: 700 !important;
         }
 
         body[data-theme="light"] .preset-chip:hover i,
         body[data-theme="light"] .preset-chip.active i {
+            color: #15AC49 !important;
+        }
+
+        body[data-theme="light"] .studio-submit-btn {
+            background: #15AC49 !important;
             color: #FFFFFF !important;
+            border-radius: 14px !important;
+            font-weight: 700 !important;
+            box-shadow: 0 4px 14px rgba(21, 172, 73, 0.25) !important;
+        }
+
+        body[data-theme="light"] .studio-submit-btn:hover {
+            background: #129740 !important;
+            transform: translateY(-1px) !important;
+            box-shadow: 0 6px 18px rgba(21, 172, 73, 0.35) !important;
         }
 
         /* Personality Mood Grid & Chips - Premium 2-Column Glassmorphic Layout */
         .persona-pill-grid {
             display: grid;
             grid-template-columns: repeat(2, 1fr);
-            gap: 7px;
-            padding: 2px 0 8px 0;
-            margin-bottom: 4px;
+            gap: 6px;
+            padding: 2px 0 10px 0;
+            margin-bottom: 6px;
         }
 
         .persona-chip {
             display: flex;
             align-items: center;
             justify-content: flex-start;
-            gap: 8px;
-            padding: 8px 12px;
-            border-radius: 12px;
+            gap: 7px;
+            padding: 7px 10px;
+            border-radius: 10px;
             background: var(--card-bg);
             border: 1px solid var(--border);
             color: var(--text-dim);
-            font-size: 12px;
+            font-size: 11.5px;
             font-weight: 600;
             cursor: pointer;
             transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
             font-family: 'Plus Jakarta Sans', sans-serif;
             white-space: nowrap;
             user-select: none;
-            box-shadow: 0 2px 6px rgba(0, 0, 0, 0.02);
         }
 
         .persona-chip i {
-            font-size: 13.5px;
-            width: 16px;
+            font-size: 13px;
+            width: 15px;
             text-align: center;
             flex-shrink: 0;
             transition: transform 0.25s cubic-bezier(0.16, 1, 0.3, 1);
@@ -2389,9 +2380,8 @@
         .persona-chip:hover {
             color: var(--text);
             border-color: var(--accent);
-            background: var(--card-bg);
+            background: var(--hover-bg, rgba(255, 255, 255, 0.04));
             transform: translateY(-1.5px);
-            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
         }
 
         .persona-chip:hover i {
@@ -2403,30 +2393,12 @@
             border-color: var(--accent) !important;
             color: var(--accent) !important;
             font-weight: 700;
-            box-shadow: 0 3px 12px var(--accent-dim, rgba(21, 172, 73, 0.2)) !important;
+            box-shadow: 0 3px 12px rgba(21, 172, 73, 0.2) !important;
         }
 
         .persona-chip.active i {
             transform: scale(1.15);
             color: var(--accent) !important;
-        }
-
-        body[data-theme="light"] .persona-chip {
-            background: #FFFFFF !important;
-            border: 1px solid #E2E8F0 !important;
-            color: #475569 !important;
-        }
-
-        body[data-theme="light"] .persona-chip:hover {
-            background: #FFFFFF !important;
-            border-color: #15AC49 !important;
-            color: #0F172A !important;
-        }
-
-        body[data-theme="light"] .persona-chip.active {
-            background: rgba(21, 172, 73, 0.1) !important;
-            border-color: #15AC49 !important;
-            color: #15AC49 !important;
         }
 
         .memory-tag {
