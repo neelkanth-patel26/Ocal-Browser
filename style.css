@@ -897,8 +897,7 @@ body.fullscreen .bookmark-bar { display: none !important; }
 .tab-area-container {
   display: flex;
   align-items: center;
-  flex: 0 1 auto;
-  max-width: calc(100vw - 150px);
+  flex: 1;
   min-width: 0;
   overflow: hidden;
   height: 100%;
@@ -911,41 +910,37 @@ body.fullscreen .bookmark-bar { display: none !important; }
   height: 100%;
   gap: 2px;
   min-width: 0;
-  flex: 0 1 auto;
-  overflow-x: auto;
-  scrollbar-width: none;
+  flex: 1;
+  overflow-x: hidden;
   padding-left: 4px;
-}
-#tab-list::-webkit-scrollbar {
-  display: none;
 }
 
 .tab-item {
   display: flex;
   align-items: center;
-  gap: 8px;
-  padding: 0 12px;
+  gap: 6px;
+  padding: 0 8px;
   height: calc(100% - 10px);
-  flex: 1 1 240px;
-  min-width: 120px;
-  max-width: 240px;
+  flex: 1 1 220px;
+  min-width: 36px;
+  max-width: 220px;
   font-family: var(--font-title);
-  font-size: 12.5px;
+  font-size: 12px;
   font-weight: 600;
   color: var(--text-dim);
   border: 1px solid rgba(255, 255, 255, 0.08);
-  border-radius: 10px !important;
+  border-radius: 8px !important;
   background: rgba(255, 255, 255, 0.05);
   cursor: pointer;
-  transition: background 0.15s ease, border-color 0.15s ease, color 0.15s ease, flex-basis 0.15s ease;
+  transition: background 0.15s ease, border-color 0.15s ease, color 0.15s ease;
   -webkit-app-region: no-drag !important;
   position: relative;
   overflow: hidden;
-  margin: 4px 2px;
+  margin: 4px 1px;
   box-sizing: border-box;
-  flex-shrink: 1;
+  flex-shrink: 1 !important;
 }
-body.compact-mode .tab-item { height: 28px; padding: 0 8px; border-radius: 8px; min-width: 100px; max-width: 200px; }
+body.compact-mode .tab-item { height: 28px; padding: 0 6px; border-radius: 6px; min-width: 32px; max-width: 180px; }
 
 .tab-item:hover {
   background: rgba(255, 255, 255, 0.09);
