@@ -298,6 +298,20 @@
         </div>
     </div>
 
+    <!-- ── Fullscreen URL Bar Overlay ─────────────────────────────────── -->
+    <div id="fs-url-overlay" class="fs-url-overlay" style="display:none;">
+        <div class="fs-url-pill" id="fs-url-pill">
+            <i class="fas fa-globe fs-url-globe"></i>
+            <span class="fs-url-summary" id="fs-url-summary">Click to navigate...</span>
+        </div>
+        <div class="fs-url-input-wrap" id="fs-url-input-wrap" style="display:none;">
+            <i class="fas fa-lock fs-url-lock-icon" id="fs-url-lock-icon"></i>
+            <input type="text" id="fs-address-input" class="fs-address-input" placeholder="Search or enter address" autocomplete="off" spellcheck="false">
+            <button class="fs-url-go-btn" id="fs-url-go-btn" title="Go"><i class="fas fa-arrow-right"></i></button>
+            <button class="fs-url-close-btn" id="fs-url-close-btn" title="Close"><i class="fas fa-xmark"></i></button>
+        </div>
+    </div>
+
     <script src="renderer.js"></script>
 </body>
 </html>
