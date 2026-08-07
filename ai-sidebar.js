@@ -1457,7 +1457,14 @@ renderHistorySidebar();
 renderSessionMessages(currentSession);
 
 // Tool Handlers
-toolSummarize?.addEventListener('click', () => handleSend("Please summarize the contents of this page."));
+toolSummarize?.addEventListener('click', () => {
+    const text = queryEl?.value?.trim() || '';
+    if (text) {
+        handleSend(`Please summarize this URL or page content: ${text}`);
+    } else {
+        handleSend("Please summarize the contents of this page.");
+    }
+});
 toolEmail?.addEventListener('click', () => handleSend("I'd like to compose an email. Help me draft it."));
 
 const toolStatus = document.getElementById('tool-status');
