@@ -9120,7 +9120,15 @@ function setupContextMenu(contents) {
 
         const win = BrowserWindow.fromWebContents(contents) || mainWindow || BrowserWindow.getFocusedWindow();
         if (win && !win.isDestroyed()) {
-            menu.popup({ window: win });
+            try {
+                const cursorPoint = screen.getCursorScreenPoint();
+                const winBounds = win.getBounds();
+                const x = Math.round(cursorPoint.x - winBounds.x);
+                const y = Math.round(cursorPoint.y - winBounds.y);
+                menu.popup({ window: win, x, y });
+            } catch(err) {
+                menu.popup({ window: win });
+            }
         } else {
             menu.popup({});
         }
