@@ -898,11 +898,12 @@ body.fullscreen .bookmark-bar { display: none !important; }
   display: flex;
   align-items: center;
   flex: 0 1 auto;
-  max-width: calc(100vw - 180px);
+  max-width: calc(100vw - 20px);
   min-width: 0;
   overflow: hidden;
   height: 100%;
   -webkit-app-region: no-drag !important;
+  gap: 8px;
 }
 
 #tab-list {
