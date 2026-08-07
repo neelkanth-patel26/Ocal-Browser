@@ -1229,12 +1229,12 @@ body.compact-mode .new-tab-btn { width: 22px; height: 22px; border-radius: 6px; 
   display: none !important;
 }
 
-/* ── Apple-Style Window Controls (Simple, Clean, No Animations) ── */
+/* ── Apple-Style Window Controls (Clean 15px Circles, Perfectly Centered Icons) ── */
 .window-controls {
   display: flex;
   align-items: center;
-  gap: 8px;
-  padding: 0 14px;
+  gap: 9px;
+  padding: 0 16px;
   -webkit-app-region: no-drag;
   flex-shrink: 0;
   height: 100%;
@@ -1244,40 +1244,43 @@ body.compact-mode .new-tab-btn { width: 22px; height: 22px; border-radius: 6px; 
 }
 
 .ctrl-btn {
-  width: 12px;
-  height: 12px;
-  min-width: 12px;
-  min-height: 12px;
+  width: 15px;
+  height: 15px;
+  min-width: 15px;
+  min-height: 15px;
   border-radius: 50% !important;
   display: flex;
   align-items: center;
   justify-content: center;
   cursor: pointer;
   position: relative;
-  transition: filter 0.15s ease, opacity 0.15s ease;
+  transition: opacity 0.15s ease, filter 0.15s ease;
   border: 1px solid rgba(0, 0, 0, 0.12);
   -webkit-app-region: no-drag !important;
   box-shadow: none !important;
+  padding: 0;
 }
 
 .ctrl-btn svg {
-  width: 7px;
-  height: 7px;
-  opacity: 0;
+  width: 8px;
+  height: 8px;
+  display: block;
+  opacity: 0.8;
   transition: opacity 0.15s ease;
   transform: none !important; /* Absolutely NO animation */
 }
 
-.window-controls:hover .ctrl-btn svg {
-  opacity: 0.75;
-}
-
 .ctrl-btn:hover {
-  filter: brightness(0.9);
+  filter: brightness(0.85);
+  opacity: 1;
   transform: none !important;
 }
 
-/* Apple macOS Traffic Light Colors */
+.ctrl-btn:hover svg {
+  opacity: 1;
+}
+
+/* Apple macOS Colors */
 #close-btn, .ctrl-close {
   background: #FF5F56 !important;
   border-color: #E0443E !important;
