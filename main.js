@@ -4498,7 +4498,7 @@ INSTRUCTIONS:
             notifyAction("Performing local content analysis...", 'fa-brain');
 
             // Extract the actual structured content for heuristic analysis
-            const fallbackData = await activeView.webContents.executeJavaScript(`
+            const fallbackData = (activeView && activeView.webContents) ? await activeView.webContents.executeJavaScript(`
                 (function() {
                     const clone = document.body.cloneNode(true);
                     ['script','style','noscript','iframe','nav','footer','aside','.ad','.cookie-banner','header:not(article header)'].forEach(s => {
@@ -4529,7 +4529,7 @@ INSTRUCTIONS:
 
                     return { paras, heads, title: document.title };
                 })()
-            `).catch(() => null);
+            `).catch(() => null) : null;
 
             if (fallbackData && fallbackData.paras.length > 0) {
                 // Score sentences by information density
@@ -4598,6 +4598,16 @@ INSTRUCTIONS:
                 });
 
                 result += `---\n> [!NOTE]\n> This summary was generated using local content analysis heuristics. For AI-powered deep summaries, configure an AI model in Settings → AI Assistant.`;
+                return { text: result, actions };
+            }
+
+            if (pageData && pageData.structuredContent) {
+                let result = `### 📄 Page Summary: ${pageData.meta ? pageData.meta.title : 'Web Article'}\n\n`;
+                if (pageData.meta && pageData.meta.url) {
+                    result += `**Source:** [${pageData.meta.hostname || 'Web'}](${pageData.meta.url}) | **~${pageData.wordCount || 0} words**\n\n`;
+                }
+                result += `${pageData.structuredContent.substring(0, 1200)}...\n\n`;
+                result += `---\n> [!NOTE]\n> Generated using local page content extraction. For AI-powered deep synthesis, configure your AI API Key or Local Model in Settings.`;
                 return { text: result, actions };
             }
 
