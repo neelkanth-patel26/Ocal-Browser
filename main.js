@@ -8803,7 +8803,10 @@ setInterval(async () => {
 }, 3000);
 
 function setupContextMenu(contents) {
+    if (!contents || contents.isDestroyed()) return;
+
     contents.on('context-menu', (e, props) => {
+        if (!contents || contents.isDestroyed()) return;
         const menu = new Menu();
 
         // 1. Spelling Corrections (Shown at top when right-clicking misspelled words)
@@ -8813,7 +8816,7 @@ function setupContextMenu(contents) {
                     menu.append(new MenuItem({
                         label: suggestion,
                         click: () => {
-                            contents.replaceMisspelling(suggestion);
+                            try { contents.replaceMisspelling(suggestion); } catch (err) {}
                         }
                     }));
                 });
@@ -8835,6 +8838,19 @@ function setupContextMenu(contents) {
         // 2. Link Actions
         if (props.linkURL) {
             menu.append(new MenuItem({ label: 'Open Link in New Tab', click: () => { createNewTab(props.linkURL); } }));
+            menu.append(new MenuItem({ label: 'Open Link in Split View', click: () => {
+                const currentActive = views.find(v => v.id === activeViewId);
+                if (currentActive) {
+                    currentActive.isSplit = true;
+                    currentActive.splitUrl = props.linkURL;
+                    currentActive.splitDirection = currentActive.splitDirection || 'horizontal';
+                    currentActive.focusedSide = 'right';
+                    broadcastTabs();
+                    updateViewBounds();
+                } else {
+                    createNewTab(props.linkURL);
+                }
+            } }));
             menu.append(new MenuItem({ label: 'Copy Link Address', click: () => { clipboard.writeText(props.linkURL); } }));
             menu.append(new MenuItem({ type: 'separator' }));
         }
@@ -8842,19 +8858,30 @@ function setupContextMenu(contents) {
         // 3. Image Actions
         if (props.mediaType === 'image') {
             menu.append(new MenuItem({ label: 'Open Image in New Tab', click: () => { createNewTab(props.srcURL); } }));
-            menu.append(new MenuItem({ label: 'Copy Image', click: () => { contents.copyImageAt(props.x, props.y); } }));
+            menu.append(new MenuItem({ label: 'Copy Image', click: () => { try { contents.copyImageAt(props.x, props.y); } catch (err) {} } }));
             menu.append(new MenuItem({ label: 'Copy Image Address', click: () => { clipboard.writeText(props.srcURL); } }));
-            menu.append(new MenuItem({ label: 'Save Image As...', click: () => { contents.downloadURL(props.srcURL); } }));
+            menu.append(new MenuItem({ label: 'Save Image As...', click: () => { try { contents.downloadURL(props.srcURL); } catch (err) {} } }));
             menu.append(new MenuItem({ type: 'separator' }));
             menu.append(new MenuItem({ label: 'Search with Google Lens', click: () => { createNewTab(`https://lens.google.com/uploadbyurl?url=${encodeURIComponent(props.srcURL)}`); } }));
             menu.append(new MenuItem({ type: 'separator' }));
         }
 
         // 4. Selection Actions
-        if (props.selectionText) {
+        if (props.selectionText && props.selectionText.trim()) {
+            const trimmed = props.selectionText.trim();
             menu.append(new MenuItem({ label: 'Copy', role: 'copy' }));
-            menu.append(new MenuItem({ type: 'separator' }));
-            menu.append(new MenuItem({ label: `Search Google for "${props.selectionText.substring(0, 20)}..."`, click: () => { createNewTab(`https://www.google.com/search?q=${encodeURIComponent(props.selectionText)}`); } }));
+            menu.append(new MenuItem({ 
+                label: `Ask Ocal AI about "${trimmed.length > 24 ? trimmed.substring(0, 24) + '...' : trimmed}"`, 
+                click: () => {
+                    openAiSidebar(`Explain or summarize: "${trimmed}"`);
+                } 
+            }));
+            menu.append(new MenuItem({ 
+                label: `Search Google for "${trimmed.length > 24 ? trimmed.substring(0, 24) + '...' : trimmed}"`, 
+                click: () => { 
+                    createNewTab(`https://www.google.com/search?q=${encodeURIComponent(trimmed)}`); 
+                } 
+            }));
             menu.append(new MenuItem({ type: 'separator' }));
         }
 
@@ -8866,33 +8893,49 @@ function setupContextMenu(contents) {
             menu.append(new MenuItem({ label: 'Cut', role: 'cut' }));
             menu.append(new MenuItem({ label: 'Copy', role: 'copy' }));
             menu.append(new MenuItem({ label: 'Paste', role: 'paste' }));
+            menu.append(new MenuItem({ label: 'Paste and Match Style', role: 'pasteAndMatchStyle' }));
             menu.append(new MenuItem({ label: 'Select All', role: 'selectAll' }));
             menu.append(new MenuItem({ type: 'separator' }));
         }
 
-        // 6. Navigation
-        const navHist = contents.navigationHistory;
-        menu.append(new MenuItem({ label: 'Back', enabled: navHist ? navHist.canGoBack() : false, click: () => { if (navHist) navHist.goBack(); } }));
-        menu.append(new MenuItem({ label: 'Forward', enabled: navHist ? navHist.canGoForward() : false, click: () => { if (navHist) navHist.goForward(); } }));
-        menu.append(new MenuItem({ label: 'Reload', click: () => { contents.reload(); } }));
+        // 6. General Page Navigation & Actions
+        if (!props.linkURL && props.mediaType !== 'image') {
+            const navHist = contents.navigationHistory;
+            menu.append(new MenuItem({ label: 'Back', enabled: navHist ? navHist.canGoBack() : false, click: () => { if (navHist) navHist.goBack(); } }));
+            menu.append(new MenuItem({ label: 'Forward', enabled: navHist ? navHist.canGoForward() : false, click: () => { if (navHist) navHist.goForward(); } }));
+            menu.append(new MenuItem({ label: 'Reload', click: () => { contents.reload(); } }));
+            menu.append(new MenuItem({ type: 'separator' }));
+            menu.append(new MenuItem({ label: 'Print...', click: () => { try { contents.print(); } catch (err) {} } }));
+            menu.append(new MenuItem({ label: 'View Page Source', click: () => {
+                const currentUrl = contents.getURL();
+                if (currentUrl && !currentUrl.startsWith('ocal://') && !currentUrl.startsWith('file://')) {
+                    createNewTab('view-source:' + currentUrl);
+                }
+            } }));
+            menu.append(new MenuItem({ type: 'separator' }));
+        }
 
-        // Inspect Element
-        menu.append(new MenuItem({ type: 'separator' }));
-        menu.append(new MenuItem({ label: 'Inspect Element', click: () => { try { contents.inspectElement(props.x, props.y); } catch(err){} } }));
+        // 7. Inspect Element
+        menu.append(new MenuItem({ 
+            label: 'Inspect Element', 
+            click: () => { 
+                try { 
+                    contents.inspectElement(props.x, props.y); 
+                    if (!contents.isDevToolsOpened()) contents.openDevTools();
+                } catch(err){} 
+            } 
+        }));
 
-        const win = BrowserWindow.fromWebContents(contents) || mainWindow || BrowserWindow.getFocusedWindow();
-        if (win && !win.isDestroyed()) {
-            try {
-                const cursorPoint = screen.getCursorScreenPoint();
-                const winBounds = win.getBounds();
-                const x = Math.round(cursorPoint.x - winBounds.x);
-                const y = Math.round(cursorPoint.y - winBounds.y);
-                menu.popup({ window: win, x, y });
-            } catch(err) {
-                menu.popup({ window: win });
+        const targetWindow = BrowserWindow.fromWebContents(contents) || mainWindow || BrowserWindow.getFocusedWindow();
+        try {
+            if (targetWindow && !targetWindow.isDestroyed()) {
+                menu.popup({ window: targetWindow });
+            } else {
+                menu.popup({});
             }
-        } else {
-            menu.popup({});
+        } catch (err) {
+            console.error('[ContextMenu Error]:', err);
+            try { menu.popup({}); } catch(e) {}
         }
     });
 }
