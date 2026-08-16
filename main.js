@@ -8804,6 +8804,8 @@ setInterval(async () => {
 
 function setupContextMenu(contents) {
     if (!contents || contents.isDestroyed()) return;
+    if (contents._hasOcalContextMenu) return;
+    contents._hasOcalContextMenu = true;
 
     contents.on('context-menu', (e, props) => {
         if (!contents || contents.isDestroyed()) return;
@@ -8900,10 +8902,11 @@ function setupContextMenu(contents) {
 
         // 6. General Page Navigation & Actions
         if (!props.linkURL && props.mediaType !== 'image') {
-            const navHist = contents.navigationHistory;
-            menu.append(new MenuItem({ label: 'Back', enabled: navHist ? navHist.canGoBack() : false, click: () => { if (navHist) navHist.goBack(); } }));
-            menu.append(new MenuItem({ label: 'Forward', enabled: navHist ? navHist.canGoForward() : false, click: () => { if (navHist) navHist.goForward(); } }));
-            menu.append(new MenuItem({ label: 'Reload', click: () => { contents.reload(); } }));
+            const canBack = typeof contents.canGoBack === 'function' ? contents.canGoBack() : (contents.navigationHistory ? contents.navigationHistory.canGoBack() : false);
+            const canFwd = typeof contents.canGoForward === 'function' ? contents.canGoForward() : (contents.navigationHistory ? contents.navigationHistory.canGoForward() : false);
+            menu.append(new MenuItem({ label: 'Back', enabled: canBack, click: () => { try { if (contents.goBack) contents.goBack(); else if (contents.navigationHistory) contents.navigationHistory.goBack(); } catch(e){} } }));
+            menu.append(new MenuItem({ label: 'Forward', enabled: canFwd, click: () => { try { if (contents.goForward) contents.goForward(); else if (contents.navigationHistory) contents.navigationHistory.goForward(); } catch(e){} } }));
+            menu.append(new MenuItem({ label: 'Reload', click: () => { try { contents.reload(); } catch(e){} } }));
             menu.append(new MenuItem({ type: 'separator' }));
             menu.append(new MenuItem({ label: 'Print...', click: () => { try { contents.print(); } catch (err) {} } }));
             menu.append(new MenuItem({ label: 'View Page Source', click: () => {
@@ -8931,11 +8934,10 @@ function setupContextMenu(contents) {
             if (targetWindow && !targetWindow.isDestroyed()) {
                 menu.popup({ window: targetWindow });
             } else {
-                menu.popup({});
+                menu.popup();
             }
         } catch (err) {
-            console.error('[ContextMenu Error]:', err);
-            try { menu.popup({}); } catch(e) {}
+            try { menu.popup(); } catch(e) {}
         }
     });
 }
