@@ -492,18 +492,34 @@ function renderSessionMessages(session) {
         const group = document.createElement('div');
         group.className = `msg-group ${msg.isUser ? 'user' : 'ai'}`;
         
+        if (!msg.isUser) {
+            const aiHeader = document.createElement('div');
+            aiHeader.className = 'msg-sender-header';
+            const personaCfg = PERSONA_CONFIGS[getPersona()] || PERSONA_CONFIGS.professional;
+            aiHeader.innerHTML = `
+                <div class="msg-sender-meta">
+                    <span class="msg-sender-name">Ocal AI</span>
+                    <span class="msg-persona-badge">${personaCfg.badge}</span>
+                </div>
+            `;
+            group.appendChild(aiHeader);
+        }
+
         if (msg.actions && msg.actions.length > 0) {
+            const actionsRow = document.createElement('div');
+            actionsRow.className = 'agent-actions-row';
             msg.actions.forEach(action => {
                 const actionEl = document.createElement('div');
-                actionEl.className = `agent-action ${action.url ? 'clickable' : ''}`;
-                actionEl.innerHTML = `<i class="fas ${action.icon || 'fa-cog fa-spin'}"></i> ${action.text}`;
+                actionEl.className = `agent-action ${action.url || action.command ? 'clickable' : ''}`;
+                actionEl.innerHTML = `<i class="fas ${action.icon || 'fa-bolt'}"></i> <span>${action.text}</span>`;
                 if (action.url) {
                     actionEl.onclick = () => window.electronAPI.send('open-external', action.url);
                 } else if (action.command) {
                     actionEl.onclick = () => window.electronAPI.send('execute-agent-command', action);
                 }
-                group.appendChild(actionEl);
+                actionsRow.appendChild(actionEl);
             });
+            group.appendChild(actionsRow);
         }
 
         const bubble = document.createElement('div');
@@ -511,15 +527,38 @@ function renderSessionMessages(session) {
         const contentDiv = document.createElement('div');
         contentDiv.className = 'msg-content';
         
-        contentDiv.innerHTML = renderMarkdown(msg.content, !msg.isUser);
+        contentDiv.innerHTML = renderMarkdown(msg.content, true);
         if (!msg.isUser) {
             contentDiv.querySelectorAll('pre code').forEach((block) => {
                 hljs.highlightElement(block);
             });
+            enhanceCodeBlocks(contentDiv);
         }
         
         bubble.appendChild(contentDiv);
         group.appendChild(bubble);
+
+        if (!msg.isUser) {
+            const footerBar = document.createElement('div');
+            footerBar.className = 'msg-footer-bar';
+            footerBar.innerHTML = `
+                <button class="msg-action-btn copy-msg-btn" title="Copy response"><i class="fas fa-copy"></i> <span>Copy</span></button>
+                <span class="msg-time">History</span>
+            `;
+            const copyBtn = footerBar.querySelector('.copy-msg-btn');
+            if (copyBtn) {
+                copyBtn.onclick = () => {
+                    navigator.clipboard.writeText(msg.content).then(() => {
+                        copyBtn.innerHTML = '<i class="fas fa-check" style="color: #10B981;"></i> <span>Copied!</span>';
+                        setTimeout(() => {
+                            copyBtn.innerHTML = '<i class="fas fa-copy"></i> <span>Copy</span>';
+                        }, 2000);
+                    });
+                };
+            }
+            group.appendChild(footerBar);
+        }
+
         messagesEl.appendChild(group);
     });
 
@@ -1104,7 +1143,39 @@ const typeMessage = async (container, text, speed = 12) => {
     container.querySelectorAll('pre code').forEach((block) => {
         hljs.highlightElement(block);
     });
+    enhanceCodeBlocks(container);
     scrollToBottom();
+};
+
+// Helper: Enhance Code Blocks with Language Badge & Copy Button
+const enhanceCodeBlocks = (container) => {
+    container.querySelectorAll('pre').forEach(pre => {
+        if (pre.querySelector('.code-header')) return;
+        const codeEl = pre.querySelector('code');
+        let lang = 'code';
+        if (codeEl) {
+            const classMatch = (codeEl.className || '').match(/language-([a-zA-Z0-9_-]+)/i);
+            if (classMatch) lang = classMatch[1];
+        }
+        const header = document.createElement('div');
+        header.className = 'code-header';
+        header.innerHTML = `
+            <span class="code-lang"><i class="fas fa-code"></i> ${lang}</span>
+            <button class="code-copy-btn" title="Copy code"><i class="fas fa-copy"></i> Copy</button>
+        `;
+        const copyBtn = header.querySelector('.code-copy-btn');
+        copyBtn.onclick = (e) => {
+            e.stopPropagation();
+            const textToCopy = codeEl ? codeEl.innerText : pre.innerText;
+            navigator.clipboard.writeText(textToCopy).then(() => {
+                copyBtn.innerHTML = '<i class="fas fa-check" style="color: #10B981;"></i> Copied!';
+                setTimeout(() => {
+                    copyBtn.innerHTML = '<i class="fas fa-copy"></i> Copy';
+                }, 2000);
+            });
+        };
+        pre.insertBefore(header, pre.firstChild);
+    });
 };
 
 // Helper: Add Message
@@ -1127,21 +1198,42 @@ const addMessage = async (content, isUser = false, actions = []) => {
     const group = document.createElement('div');
     group.className = `msg-group ${isUser ? 'user' : 'ai'}`;
     
+    // AI Sender Identity Header
+    if (!isUser) {
+        const aiHeader = document.createElement('div');
+        aiHeader.className = 'msg-sender-header';
+        const personaCfg = PERSONA_CONFIGS[getPersona()] || PERSONA_CONFIGS.professional;
+        const modelName = (globalSettings?.localModel && globalSettings.localModel !== 'auto') 
+            ? globalSettings.localModel 
+            : (globalSettings?.aiEngine === 'gemini' ? 'Gemini 1.5' : (globalSettings?.aiEngine === 'openai' ? 'ChatGPT' : 'Ocal Core'));
+        
+        aiHeader.innerHTML = `
+            <div class="msg-sender-meta">
+                <span class="msg-sender-name">Ocal AI</span>
+                <span class="msg-persona-badge">${personaCfg.badge}</span>
+                <span class="msg-model-tag">${modelName}</span>
+            </div>
+        `;
+        group.appendChild(aiHeader);
+    }
+
     // Actions (if any)
     if (actions && actions.length > 0) {
+        const actionsRow = document.createElement('div');
+        actionsRow.className = 'agent-actions-row';
         actions.forEach(action => {
             const actionEl = document.createElement('div');
-            actionEl.className = `agent-action ${action.url ? 'clickable' : ''}`;
-            actionEl.innerHTML = `<i class="fas ${action.icon || 'fa-cog fa-spin'}"></i> ${action.text}`;
+            actionEl.className = `agent-action ${action.url || action.command ? 'clickable' : ''}`;
+            actionEl.innerHTML = `<i class="fas ${action.icon || 'fa-bolt'}"></i> <span>${action.text}</span>`;
             
             if (action.url) {
                 actionEl.onclick = () => window.electronAPI.send('open-external', action.url);
             } else if (action.command) {
                 actionEl.onclick = () => window.electronAPI.send('execute-agent-command', action);
             }
-            
-            group.appendChild(actionEl);
+            actionsRow.appendChild(actionEl);
         });
+        group.appendChild(actionsRow);
     }
 
     const bubble = document.createElement('div');
@@ -1159,6 +1251,50 @@ const addMessage = async (content, isUser = false, actions = []) => {
         contentDiv.innerHTML = renderMarkdown(content);
     } else {
         await typeMessage(contentDiv, content);
+        
+        // Add Footer Bar for AI responses
+        const footerBar = document.createElement('div');
+        footerBar.className = 'msg-footer-bar';
+        footerBar.innerHTML = `
+            <button class="msg-action-btn copy-msg-btn" title="Copy response"><i class="fas fa-copy"></i> <span>Copy</span></button>
+            <button class="msg-action-btn speak-msg-btn" title="Read aloud"><i class="fas fa-volume-high"></i> <span>Speak</span></button>
+            <span class="msg-time">${new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</span>
+        `;
+        
+        const copyBtn = footerBar.querySelector('.copy-msg-btn');
+        if (copyBtn) {
+            copyBtn.onclick = () => {
+                navigator.clipboard.writeText(content).then(() => {
+                    copyBtn.innerHTML = '<i class="fas fa-check" style="color: #10B981;"></i> <span>Copied!</span>';
+                    setTimeout(() => {
+                        copyBtn.innerHTML = '<i class="fas fa-copy"></i> <span>Copy</span>';
+                    }, 2000);
+                });
+            };
+        }
+
+        const speakBtn = footerBar.querySelector('.speak-msg-btn');
+        if (speakBtn) {
+            speakBtn.onclick = () => {
+                if (window.speechSynthesis.speaking) {
+                    window.speechSynthesis.cancel();
+                    speakBtn.innerHTML = '<i class="fas fa-volume-high"></i> <span>Speak</span>';
+                } else {
+                    const plainText = content.replace(/<[^>]+>/g, '').replace(/[#*_`]/g, '');
+                    const utterance = new SpeechSynthesisUtterance(plainText);
+                    utterance.onend = () => {
+                        speakBtn.innerHTML = '<i class="fas fa-volume-high"></i> <span>Speak</span>';
+                    };
+                    utterance.onerror = () => {
+                        speakBtn.innerHTML = '<i class="fas fa-volume-high"></i> <span>Speak</span>';
+                    };
+                    window.speechSynthesis.speak(utterance);
+                    speakBtn.innerHTML = '<i class="fas fa-pause" style="color: var(--accent);"></i> <span>Playing...</span>';
+                }
+            };
+        }
+
+        group.appendChild(footerBar);
     }
     
     return group;
@@ -1170,12 +1306,18 @@ let currentThinkingEl = null;
 const showThinking = () => {
     if (currentThinkingEl) return;
     const group = document.createElement('div');
-    group.className = 'msg-group ai';
+    group.className = 'msg-group ai thinking-group';
+    const personaCfg = PERSONA_CONFIGS[getPersona()] || PERSONA_CONFIGS.professional;
     group.innerHTML = `
-        <div class="thinking">
-            <div class="dot"></div>
-            <div class="dot"></div>
-            <div class="dot"></div>
+        <div class="msg-sender-header">
+            <div class="msg-sender-meta">
+                <span class="msg-sender-name">Ocal AI</span>
+                <span class="msg-thinking-tag"><span class="thinking-glow-dot"></span> Thinking...</span>
+            </div>
+        </div>
+        <div class="thinking-card">
+            <div class="thinking-spinner-ring"></div>
+            <span class="thinking-label">Synthesizing insights & reasoning...</span>
         </div>
     `;
     messagesEl.appendChild(group);
@@ -1236,6 +1378,7 @@ const handleSend = async (customQuery = null) => {
         persona: personaKey,
         memory: memoryFacts,
         customConfig: customConfig,
+        username: getUsername(),
         file: attachedFile
     };
 
@@ -1311,11 +1454,31 @@ document.getElementById('new-chat-btn')?.addEventListener('click', () => {
 document.querySelectorAll('.hero-prompt-card').forEach(card => {
     card.addEventListener('click', () => {
         const promptText = card.getAttribute('data-prompt');
-        if (promptText && queryInput) {
-            queryInput.value = promptText;
-            sendBtn?.click();
+        if (promptText) {
+            const cardTitle = card.querySelector('.hero-prompt-text strong')?.textContent || '';
+            if (cardTitle.includes('Generate Artwork') || promptText.includes('Image Studio')) {
+                const studioBtn = document.getElementById('mode-btn-studio');
+                if (studioBtn) {
+                    studioBtn.click();
+                    const studioPrompt = document.getElementById('studio-prompt-input');
+                    if (studioPrompt) {
+                        studioPrompt.focus();
+                        studioPrompt.value = "A futuristic sci-fi city with glowing neon lights, 8k resolution, cinematic lighting";
+                    }
+                }
+                return;
+            }
+            if (queryEl) {
+                queryEl.value = promptText;
+                handleSend();
+            }
         }
     });
+});
+
+document.getElementById('nav-images-btn')?.addEventListener('click', () => {
+    const studioBtn = document.getElementById('mode-btn-studio');
+    if (studioBtn) studioBtn.click();
 });
 
 document.getElementById('fullscreen-toggle')?.addEventListener('click', () => {
