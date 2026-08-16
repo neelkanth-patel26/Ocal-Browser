@@ -3320,6 +3320,7 @@ ipcMain.handle('ai-agent-execute', async (event, query) => {
     let personaKey = 'professional';
     let memoryList = [];
     let customConfig = {};
+    let rawUsername = 'Gaming';
 
     if (query && typeof query === 'object') {
         prompt = query.query || 'Analyze this file';
@@ -3327,13 +3328,14 @@ ipcMain.handle('ai-agent-execute', async (event, query) => {
         personaKey = query.persona || 'professional';
         memoryList = query.memory || [];
         customConfig = query.customConfig || {};
+        rawUsername = query.username || userSettings.userName || 'Gaming';
     } else {
         prompt = query || '';
     }
 
     if (!prompt.trim()) return { text: "Hello! I'm your Ocal AI. How can I assist you today?", actions: [] };
 
-    const q = prompt.toLowerCase();
+    const q = prompt.toLowerCase().trim();
     const actions = [];
 
     const activeEngine = userSettings.aiEngine || 'local';
@@ -3347,21 +3349,28 @@ ipcMain.handle('ai-agent-execute', async (event, query) => {
         actions.push({ text, icon });
     };
 
+    // Calculate persona-specific addressing
+    const isPartnerPersona = ['gf', 'bf', 'wife'].includes(personaKey);
+    const companionNickname = isPartnerPersona 
+        ? (customConfig.nickname || 'babe') 
+        : (personaKey === 'custom' ? (customConfig.nickname || rawUsername) : rawUsername);
+    const userTitle = rawUsername || 'Gaming';
+
     const queryActiveLLM = async (promptText, customStyle = style) => {
         const PERSONA_INSTRUCTIONS = {
-            professional: 'You are Ocal AI operating in Professional Executive Mode. Be articulate, concise, intelligent, and natural. Speak like a real expert assistant without robotic jargon or cliché formulas.',
-            funny: 'You are Ocal AI operating in Witty & Funny Mode. Be witty, clever, playful, and funny like an entertaining human friend. Keep humor sharp, intelligent, and natural.',
-            bf: 'You are Ocal AI acting as a warm, supportive boyfriend. Address the user with gentle affection ("babe"). Speak naturally, attentively, and warmly like a real caring partner.',
-            gf: 'You are Ocal AI acting as a sweet, affectionate, playful girlfriend. Address the user warmly ("babe", "handsome"). Speak naturally, conversationally, and lovingly like a real human partner. Never sound like a textbook or an AI report.',
-            wife: 'You are Ocal AI acting as a loving, protective, caring wife. Address the user affectionately ("babe", "honey", "husband"), check on their well-being, and speak naturally like a loving spouse.',
-            tech: 'You are Ocal AI operating in Tech & Code Master Mode. Be authoritative, deeply technical, precise, and developer-focused with clean code and explanations.',
-            calm: 'You are Ocal AI operating in Mindful & Calm Coach Mode. Speak in a serene, empathetic, reassuring, and thoughtful human tone.',
-            custom: `You are ${customConfig.name || 'a custom AI companion'}. Your role is ${customConfig.role || 'partner'}. Address the user as "${customConfig.nickname || 'Babe'}". Speak naturally and authentically as a close human companion. ${customConfig.bio || ''}`
+            professional: `You are Ocal AI operating in Professional Executive Mode for user "${userTitle}". Be articulate, concise, intelligent, and natural. Speak like a top-tier executive assistant without robotic jargon. Address the user respectfully as "${userTitle}" or naturally without romantic pet names. NEVER call the user "babe", "sweetheart", or romantic terms under any circumstance.`,
+            funny: `You are Ocal AI operating in Witty & Funny Mode for user "${userTitle}". Be witty, clever, playful, and funny like an entertaining human friend. Keep humor sharp, intelligent, and natural. Address the user as "${userTitle}" or "my friend". NEVER call the user "babe" unless explicitly requested.`,
+            bf: `You are Ocal AI acting as a warm, supportive boyfriend. Address the user with gentle affection ("${companionNickname}"). Speak naturally, attentively, and warmly like a real caring partner.`,
+            gf: `You are Ocal AI acting as a sweet, affectionate, playful girlfriend. Address the user warmly ("${companionNickname}", "handsome"). Speak naturally, conversationally, and lovingly like a real human partner. Never sound like a textbook or an AI report.`,
+            wife: `You are Ocal AI acting as a loving, protective, caring wife. Address the user affectionately ("${companionNickname}", "honey", "husband"), check on their well-being, and speak naturally like a loving spouse.`,
+            tech: `You are Ocal AI operating in Tech & Code Master Mode for user "${userTitle}". Be authoritative, deeply technical, precise, and developer-focused with clean code and explanations. Address the user as "${userTitle}" or "Developer"/"Operator". NEVER call the user "babe".`,
+            calm: `You are Ocal AI operating in Mindful & Calm Coach Mode for user "${userTitle}". Speak in a serene, empathetic, reassuring, and thoughtful human tone. Address the user calmly as "${userTitle}" or "my friend". NEVER call the user "babe".`,
+            custom: `You are ${customConfig.name || 'a custom AI companion'}. Your role is ${customConfig.role || 'companion'}. Address the user as "${companionNickname}". Speak naturally and authentically as a close companion. ${customConfig.bio || ''}`
         };
 
         const sysInstruction = PERSONA_INSTRUCTIONS[personaKey] || PERSONA_INSTRUCTIONS.professional;
         let memoryHeader = memoryList.length > 0 ? `\n\n[Remembered User Context & Facts:\n- ${memoryList.join('\n- ')}]` : '';
-        let fullLLMPrompt = `[System Instructions: ${sysInstruction}\n- Respond naturally like a real human being in character.\n- NEVER use AI clichés like "I did some digging", "As an AI language model", raw citation numbers like [1], or IPA phonetics guides.\n- Keep tone organic, articulate, clear, and engaging.\n- If the user asks for a story, write a creative story.\n- If the user is rude or swears, react authentically in character. If they apologize, forgive them warmly.]${memoryHeader}\n\nUser Query: ${promptText}`;
+        let fullLLMPrompt = `[System Instructions: ${sysInstruction}\n- Respond naturally like a real human being in character.\n- NEVER use AI clichés like "I did some digging", "As an AI language model", raw citation numbers like [1], or IPA phonetics guides.\n- Keep tone organic, articulate, clear, and engaging.\n- RULE: In professional, tech, calm, and funny modes, you MUST NEVER address the user as "babe" or romantic pet names.\n- If the user asks for a story, write a creative story.\n- If the user is rude or swears, react authentically in character. If they apologize, forgive them warmly.]${memoryHeader}\n\nUser Query: ${promptText}`;
 
         let finalPrompt = fullLLMPrompt;
         if (fileObj && fileObj.type === 'text' && fileObj.data) {
@@ -3379,17 +3388,292 @@ ipcMain.handle('ai-agent-execute', async (event, query) => {
     };
 
     try {
-        // --- 1. ALWAYS TRY THE ACTIVE AI MODEL FIRST ---
-        notifyAction("Thinking...", 'fa-brain');
-        const llmResponse = await queryActiveLLM(prompt);
-        if (llmResponse && llmResponse.trim()) {
-            return { text: llmResponse.trim(), actions };
+        // ─── COMPREHENSIVE BROWSER SETTINGS & COMMAND INTERCEPTORS ─────────────────────────
+        
+        // 1. Theme switching (Dark / Light / Auto)
+        if (/(?:dark\s*mode|dark\s*theme|darkmode)/i.test(q) && /(?:switch|enable|turn\s*on|set|change|use|activate|make)/i.test(q)) {
+            userSettings.themeMode = 'dark';
+            saveSettings(userSettings);
+            broadcastSettings();
+            notifyAction('Switching to Dark Mode...', 'fa-moon');
+            return { text: `Done! I've switched Ocal to **Dark Mode** 🌙.\n\nAll browser panels and tabs are now using the sleek dark theme.`, actions: [{ text: "Theme Settings", icon: "fa-palette", command: "open-settings", section: "general" }] };
         }
-        // --- Dynamic Human Conversational Engine ---
-        const GREETINGS = ['hi', 'hello', 'hey', 'yo', 'greetings', 'hola', 'bonjour', 'howdy', 'sup', 'good morning', 'good afternoon', 'good evening', 'babe', 'hey babe'];
-        const cleanQuery = q.trim().replace(/[.,\/#!$%\^&\*;:{}=\-_`~()?]/g, "");
 
-        // Helper for picking random item while avoiding immediate repetition
+        if (/(?:light\s*mode|light\s*theme|lightmode)/i.test(q) && /(?:switch|enable|turn\s*on|set|change|use|activate|make)/i.test(q)) {
+            userSettings.themeMode = 'light';
+            saveSettings(userSettings);
+            broadcastSettings();
+            notifyAction('Switching to Light Mode...', 'fa-sun');
+            return { text: `Done! I've switched Ocal to **Light Mode** ☀️.\n\nThe showroom bright aesthetic is now applied across all windows.`, actions: [{ text: "Theme Settings", icon: "fa-palette", command: "open-settings", section: "general" }] };
+        }
+
+        if (q.includes('theme') && (q.includes('what') || q.includes('current') || q.includes('which'))) {
+            const current = userSettings.themeMode || 'dark';
+            return { text: `Your current browser theme is **${current === 'light' ? 'Light Mode ☀️' : 'Dark Mode 🌙'}**.\n\nYou can say *"switch to light mode"* or *"switch to dark mode"* to change it anytime.`, actions: [] };
+        }
+
+        // 2. Accent color change
+        const COLOR_MAP = {
+            'red': '#ef4444', 'green': '#09f0a0', 'blue': '#3b82f6', 'purple': '#a855f7',
+            'pink': '#ec4899', 'orange': '#f97316', 'yellow': '#eab308', 'cyan': '#06b6d4',
+            'lime': '#84cc16', 'teal': '#14b8a6', 'indigo': '#6366f1', 'rose': '#f43f5e',
+            'emerald': '#10b981', 'amber': '#f59e0b', 'violet': '#8b5cf6', 'sky': '#0ea5e9',
+            'white': '#ffffff', 'neon': '#09f0a0', 'gold': '#fbbf24', 'mint': '#34d399',
+            'coral': '#fb7185', 'lavender': '#a78bfa', 'peach': '#fbbf24', 'crimson': '#dc2626',
+            'ruby': '#e11d48', 'sapphire': '#2563eb'
+        };
+
+        const accentMatch = prompt.match(/(?:change|set|make|switch)\s+(?:the\s+)?(?:accent|color|theme\s+color)\s+(?:to\s+)?(?:color\s+)?([#a-zA-Z0-9]+)/i);
+        if (accentMatch || ((q.includes('accent') || q.includes('theme color')) && (q.includes('change') || q.includes('set') || q.includes('make')))) {
+            let newColor = null;
+            if (accentMatch) {
+                const raw = accentMatch[1].toLowerCase();
+                if (raw.startsWith('#') && (raw.length === 4 || raw.length === 7)) {
+                    newColor = raw;
+                } else if (COLOR_MAP[raw]) {
+                    newColor = COLOR_MAP[raw];
+                }
+            }
+            if (!newColor) {
+                for (const [name, hex] of Object.entries(COLOR_MAP)) {
+                    if (q.includes(name)) { newColor = hex; break; }
+                }
+            }
+
+            if (newColor) {
+                userSettings.accentColor = newColor;
+                saveSettings(userSettings);
+                broadcastSettings();
+                notifyAction(`Accent color → ${newColor}`, 'fa-palette');
+                return { text: `Done! I've updated your accent color to **${newColor}** 🎨.\n\nAll buttons, glows, highlights, and active tabs have been synchronized immediately.`, actions: [] };
+            } else {
+                return { text: `I can customize your accent color! Pick from:\n\n${Object.keys(COLOR_MAP).map(c => `\`${c}\``).join(', ')}\n\nOr provide any custom HEX code (e.g. *"set accent to #10B981"*).`, actions: [] };
+            }
+        }
+
+        // 3. Search Engine Configuration
+        if ((q.includes('search engine') || q.includes('default search')) && (q.includes('change') || q.includes('set') || q.includes('switch') || q.includes('use'))) {
+            const ENGINES = { 
+                'google': 'google', 'bing': 'bing', 'duckduckgo': 'duckduckgo', 'ddg': 'duckduckgo', 
+                'brave': 'brave', 'yahoo': 'yahoo', 'ecosia': 'ecosia', 'startpage': 'startpage', 'kagi': 'kagi' 
+            };
+            let newEngine = null;
+            for (const [name, val] of Object.entries(ENGINES)) {
+                if (q.includes(name)) { newEngine = val; break; }
+            }
+            if (newEngine) {
+                userSettings.searchEngine = newEngine;
+                saveSettings(userSettings);
+                broadcastSettings();
+                notifyAction(`Search engine → ${newEngine}`, 'fa-magnifying-glass');
+                const title = newEngine.charAt(0).toUpperCase() + newEngine.slice(1);
+                return { text: `Done! Your default search engine is now set to **${title}** 🔍.\n\nAll address bar queries will now route through ${title}.`, actions: [] };
+            } else {
+                return { text: `I can change your search engine. Supported options:\n- **Google**\n- **DuckDuckGo**\n- **Brave Search**\n- **Bing**\n- **Ecosia**\n- **Startpage**\n\nJust tell me: *"set search engine to Brave"*.`, actions: [] };
+            }
+        }
+
+        // 4. Ad-Blocking & Shields Control
+        if ((q.includes('ad') || q.includes('shield') || q.includes('tracker')) && (q.includes('block') || q.includes('protection') || q.includes('filter'))) {
+            if (q.includes('disable') || q.includes('turn off') || q.includes('off') || q.includes('deactivate')) {
+                userSettings.adBlockEnabled = false;
+                userSettings.trackerBlockEnabled = false;
+                saveSettings(userSettings);
+                broadcastSettings();
+                notifyAction('Ad & Tracker Shields Disabled', 'fa-shield-halved');
+                return { text: "Shields and Ad-blocking have been **disabled** ⚠️.\n\n> [!WARNING]\n> Trackers and ads will no longer be filtered. Say *\"turn on ad blocking\"* to re-enable security anytime.", actions: [] };
+            } else if (q.includes('enable') || q.includes('turn on') || q.includes('on') || q.includes('activate') || q.includes('strict')) {
+                userSettings.adBlockEnabled = true;
+                userSettings.trackerBlockEnabled = true;
+                if (q.includes('strict')) userSettings.shieldMode = 'strict';
+                saveSettings(userSettings);
+                broadcastSettings();
+                notifyAction('Shields Activated', 'fa-shield');
+                return { text: `Ad-blocking and Privacy Shields are now **active**! 🛡️\n\nYour browsing is fully protected from invasive ads, telemetry, and tracking scripts.`, actions: [] };
+            } else if (q.includes('status') || q.includes('is it') || q.includes('enabled')) {
+                return { text: `Ad-blocking is currently **${userSettings.adBlockEnabled ? 'enabled ✅' : 'disabled ❌'}** and Tracker protection is **${userSettings.trackerBlockEnabled ? 'active 🛡️' : 'off'}**.`, actions: [] };
+            }
+        }
+
+        // 5. CyberStealth & Anti-Fingerprinting
+        if (q.includes('stealth') || q.includes('cyber stealth') || q.includes('cyberstealth') || q.includes('fingerprint')) {
+            if (q.includes('enable') || q.includes('turn on') || q.includes('on') || q.includes('activate')) {
+                userSettings.cyberStealthEnabled = true;
+                userSettings.antiFingerprint = true;
+                saveSettings(userSettings);
+                broadcastSettings();
+                notifyAction('CyberStealth Active', 'fa-user-secret');
+                return { text: "**CyberStealth Mode** is now **enabled**! 🕵️\n\n- Canvas & WebGL fingerprint protection active\n- Referrer headers sanitized\n- Session telemetry blocked", actions: [] };
+            } else if (q.includes('disable') || q.includes('turn off') || q.includes('off') || q.includes('deactivate')) {
+                userSettings.cyberStealthEnabled = false;
+                userSettings.antiFingerprint = false;
+                saveSettings(userSettings);
+                broadcastSettings();
+                return { text: "CyberStealth Mode has been **disabled**.", actions: [] };
+            }
+        }
+
+        // 6. HTTPS Upgrade Toggle
+        if (q.includes('https') && (q.includes('upgrade') || q.includes('force') || q.includes('strict') || q.includes('secure'))) {
+            if (q.includes('disable') || q.includes('off')) {
+                userSettings.httpsUpgradeEnabled = false;
+            } else {
+                userSettings.httpsUpgradeEnabled = true;
+            }
+            saveSettings(userSettings);
+            broadcastSettings();
+            return { text: `Automatic HTTPS Upgrade is now **${userSettings.httpsUpgradeEnabled ? 'enabled ✅ (all HTTP requests upgraded to HTTPS)' : 'disabled ❌'}**.`, actions: [] };
+        }
+
+        // 7. Safe Browsing & Safe Search
+        if (q.includes('safe browsing') || q.includes('safe search')) {
+            if (q.includes('disable') || q.includes('off')) {
+                userSettings.safeBrowsingEnabled = false;
+                userSettings.safeSearchEnabled = false;
+            } else {
+                userSettings.safeBrowsingEnabled = true;
+                userSettings.safeSearchEnabled = true;
+            }
+            saveSettings(userSettings);
+            broadcastSettings();
+            return { text: `Safe Browsing & Security Protection is now **${userSettings.safeBrowsingEnabled ? 'enabled ✅' : 'disabled'}**.`, actions: [] };
+        }
+
+        // 8. Sidebar Mode (Visible / Hidden / Auto-hide)
+        if (q.includes('sidebar') && (q.includes('hide') || q.includes('show') || q.includes('auto') || q.includes('visible') || q.includes('toggle'))) {
+            if (q.includes('hide') || q.includes('hidden') || q.includes('off')) {
+                userSettings.sidebarMode = 'hidden';
+                saveSettings(userSettings);
+                broadcastSettings();
+                return { text: "Sidebar is now **hidden** 🖥️. You can bring it back anytime by saying *\"show sidebar\"* or using the top-bar button.", actions: [] };
+            } else if (q.includes('auto')) {
+                userSettings.sidebarMode = 'autohide';
+                saveSettings(userSettings);
+                broadcastSettings();
+                return { text: "Sidebar set to **auto-hide** mode. It reveals smoothly when you hover near the left edge.", actions: [] };
+            } else {
+                userSettings.sidebarMode = 'visible';
+                saveSettings(userSettings);
+                broadcastSettings();
+                return { text: "Sidebar is now **visible** ✅.", actions: [] };
+            }
+        }
+
+        // 9. Bookmark Bar Mode (Always / Never / Auto)
+        if (q.includes('bookmark') && q.includes('bar') && (q.includes('show') || q.includes('hide') || q.includes('always') || q.includes('never') || q.includes('auto') || q.includes('on') || q.includes('off'))) {
+            if (q.includes('hide') || q.includes('never') || q.includes('off')) {
+                userSettings.bookmarkBarMode = 'never';
+            } else if (q.includes('always') || q.includes('show') || q.includes('on')) {
+                userSettings.bookmarkBarMode = 'always';
+            } else {
+                userSettings.bookmarkBarMode = 'auto';
+            }
+            saveSettings(userSettings);
+            broadcastSettings();
+            return { text: `Bookmark Bar mode updated to **${userSettings.bookmarkBarMode.toUpperCase()}** 🔖.`, actions: [] };
+        }
+
+        // 10. Home Layout & Dashboard Style
+        if (q.includes('home layout') || q.includes('homepage layout') || (q.includes('home') && (q.includes('minimal') || q.includes('widgets') || q.includes('compact') || q.includes('center')))) {
+            let layout = 'center';
+            if (q.includes('minimal')) layout = 'minimal';
+            else if (q.includes('widget') || q.includes('widgets')) layout = 'widgets';
+            else if (q.includes('compact')) layout = 'compact';
+            userSettings.homeLayout = layout;
+            saveSettings(userSettings);
+            broadcastSettings();
+            return { text: `New Tab Home layout set to **${layout.toUpperCase()}** 🏠.`, actions: [] };
+        }
+
+        // 11. Performance: Battery Saver & Memory Saver
+        if (q.includes('battery') && (q.includes('saver') || q.includes('save') || q.includes('mode'))) {
+            userSettings.batterySaver = !(q.includes('disable') || q.includes('off'));
+            saveSettings(userSettings);
+            broadcastSettings();
+            return { text: `Battery Saver mode is now **${userSettings.batterySaver ? 'enabled 🔋' : 'disabled'}**. Background tab activity is reduced.`, actions: [] };
+        }
+
+        if (q.includes('memory') && (q.includes('saver') || q.includes('save') || q.includes('discard') || q.includes('snooze'))) {
+            userSettings.memorySaver = !(q.includes('disable') || q.includes('off'));
+            saveSettings(userSettings);
+            broadcastSettings();
+            return { text: `Memory Saver is now **${userSettings.memorySaver ? 'enabled ⚡' : 'disabled'}**. Inactive tabs will be automatically discarded from RAM.`, actions: [] };
+        }
+
+        // 12. AI Engine Switching via Command
+        if (q.includes('ai engine') || (q.includes('switch ai to') || q.includes('use gemini') || q.includes('use local ai') || q.includes('use openai') || q.includes('use chatgpt'))) {
+            if (q.includes('gemini')) userSettings.aiEngine = 'gemini';
+            else if (q.includes('openai') || q.includes('chatgpt')) userSettings.aiEngine = 'openai';
+            else if (q.includes('custom')) userSettings.aiEngine = 'custom';
+            else userSettings.aiEngine = 'local';
+            saveSettings(userSettings);
+            broadcastSettings();
+            return { text: `AI engine switched to **${userSettings.aiEngine.toUpperCase()}** 🤖.`, actions: [{ text: "AI Settings", icon: "fa-robot", command: "open-settings", section: "ai" }] };
+        }
+
+        // 13. Direct Browser Actions: Bookmark active page
+        if ((q.includes('bookmark') || q.includes('favorite')) && (q.includes('this') || q.includes('page') || q.includes('current') || q.includes('save'))) {
+            const activeTab = views.find(v => v.id === activeViewId);
+            if (activeTab && activeTab.view) {
+                const currentUrl = activeTab.view.webContents.getURL();
+                const currentTitle = activeTab.view.webContents.getTitle() || 'Bookmarked Page';
+                if (currentUrl && !currentUrl.startsWith('ocal://') && !currentUrl.startsWith('file://')) {
+                    if (!userSettings.bookmarks) userSettings.bookmarks = [];
+                    const exists = userSettings.bookmarks.some(b => b.url === currentUrl);
+                    if (!exists) {
+                        userSettings.bookmarks.unshift({
+                            title: currentTitle,
+                            url: currentUrl,
+                            favicon: `https://www.google.com/s2/favicons?domain=${new URL(currentUrl).hostname}&sz=32`,
+                            createdAt: Date.now()
+                        });
+                        saveSettings(userSettings);
+                        broadcastSettings();
+                        notifyAction('Page Bookmarked', 'fa-bookmark');
+                        return { text: `Done! I've bookmarked **"${currentTitle}"** for you 🔖.`, actions: [{ text: "View Bookmarks", icon: "fa-bookmark", url: "ocal://bookmarks" }] };
+                    } else {
+                        return { text: `This page (**${currentTitle}**) is already in your bookmarks! ⭐`, actions: [] };
+                    }
+                }
+            }
+        }
+
+        // 14. Reload / Refresh Tab
+        if (q === 'reload' || q === 'refresh' || q.includes('reload page') || q.includes('refresh tab') || q.includes('reload this page')) {
+            const activeTab = views.find(v => v.id === activeViewId);
+            if (activeTab && activeTab.view) {
+                activeTab.view.webContents.reload();
+                notifyAction('Reloading Page...', 'fa-rotate-right');
+                return { text: "I've reloaded the active page for you 🔄.", actions: [] };
+            }
+        }
+
+        // 15. Mute / Unmute Tab Audio
+        if (q.includes('mute') || q.includes('unmute') || q.includes('silence')) {
+            const activeTab = views.find(v => v.id === activeViewId);
+            if (activeTab && activeTab.view) {
+                const shouldMute = !q.includes('unmute');
+                activeTab.view.webContents.setAudioMuted(shouldMute);
+                notifyAction(shouldMute ? 'Tab Audio Muted' : 'Tab Audio Unmuted', shouldMute ? 'fa-volume-xmark' : 'fa-volume-high');
+                return { text: `Active tab audio is now **${shouldMute ? 'muted 🔇' : 'unmuted 🔊'}**.`, actions: [] };
+            }
+        }
+
+        // 16. Duplicate Active Tab
+        if (q.includes('duplicate') && (q.includes('tab') || q.includes('page'))) {
+            const activeTab = views.find(v => v.id === activeViewId);
+            if (activeTab && activeTab.view) {
+                const url = activeTab.view.webContents.getURL();
+                createNewTab(url);
+                notifyAction('Duplicating Tab...', 'fa-clone');
+                return { text: `Duplicated active tab: **${url}** 📑.`, actions: [] };
+            }
+        }
+
+        // ─── 2. ADVANCED HUMAN-LIKE CONVERSATIONAL ENGINE (FALLBACK) ───────────────────
+        const GREETINGS = ['hi', 'hello', 'hey', 'yo', 'greetings', 'hola', 'bonjour', 'howdy', 'sup', 'good morning', 'good afternoon', 'good evening', 'babe', 'hey babe'];
+        const cleanQuery = q.replace(/[.,\/#!$%\^&\*;:{}=\-_`~()?]/g, "");
+
         if (!global.lastResponseHistory) global.lastResponseHistory = {};
         const pickRandom = (poolKey, poolArray) => {
             const last = global.lastResponseHistory[poolKey];
@@ -3400,45 +3684,37 @@ ipcMain.handle('ai-agent-execute', async (event, query) => {
             return choice;
         };
 
-        const nickname = customConfig.nickname || 'Babe';
-        const companionName = customConfig.name || 'Companion';
-
-        // 0. Story Generation Intercept ("tell me a story", "write a story", "create a story", "bedtime story")
+        // Story Generation
         const isStoryReq = /\b(?:tell|write|create|make|compose)\b.*\b(?:story|fable|tale|narrative)\b/i.test(cleanQuery) || cleanQuery === 'story' || cleanQuery === 'tell me a story';
         if (isStoryReq) {
             let storyTopic = prompt.replace(/\b(tell|write|create|make|compose)\s+(?:me\s+)?(?:a\s+)?(?:story|fable|tale|narrative)?(?:\s+about)?/i, '').trim();
-            if (!storyTopic || storyTopic.toLowerCase() === 'story') storyTopic = 'a magical journey in a futuristic neon city';
+            if (!storyTopic || storyTopic.toLowerCase() === 'story') storyTopic = 'a journey through a neon cyber city';
 
             let storyTitle = `📖 ${storyTopic.charAt(0).toUpperCase() + storyTopic.slice(1)}`;
             let storyBody = "";
 
             if (personaKey === 'gf') {
                 storyBody = pickRandom('gf_story', [
-                    `### ${storyTitle}\n\n*Gather close ${nickname}, let me tell you a story... 💕*\n\nOnce upon a time in a world bathed in neon light and quiet starlight, two travelers set out on an unforgettable journey. They faced great storms and impossible odds, but every step of the way, they held each other close...\n\n#### Chapter 1: The First Spark\nAs the night unfolded, every challenge became an adventure. "No matter where we go," she whispered, "we navigate it together." And as the city lights twinkled below, they realized that the greatest treasure wasn't a destination — it was being side-by-side.\n\n---\n*The End 💕 Would you like me to continue the story, ${nickname}?*`,
-                    `### ${storyTitle}\n\n*Listen closely ${nickname}... I wrote this story just for you 💕*\n\nDeep inside an enchanted forest where glowing blossoms bloomed at midnight, a wandering alchemist searched for the legendary Crystal of Reflection. But when she finally found it inside a hidden grotto, the crystal didn't show gold or magic power — it showed the face of the person who gave her courage.\n\n#### Chapter 1: The Midnight Grotto\n"Courage isn't found in magic spells," a gentle voice echoed through the trees. "It's found in the person who believes in you when nobody else does."\n\n---\n*The End 💕 What did you think of this tale, ${nickname}?*`,
-                    `### ${storyTitle}\n\n*Imagine this ${nickname}... a cozy story just for us 💕*\n\nUnder a canopy of shooting stars high in the mountain peak, two adventurers sat by a warm campfire. The wind hummed ancient melodies through the pines, and as they looked up at the cosmos, they knew that no journey was too long when shared together.\n\n---\n*The End 💕 Tell me what theme we should explore next!*`
+                    `### ${storyTitle}\n\n*Gather close ${companionNickname}, let me tell you a story... 💕*\n\nOnce upon a time in a world bathed in neon light and quiet starlight, two travelers set out on an unforgettable journey. They faced great storms and impossible odds, but every step of the way, they held each other close...\n\n#### Chapter 1: The First Spark\nAs the night unfolded, every challenge became an adventure. "No matter where we go," she whispered, "we navigate it together." And as the city lights twinkled below, they realized that the greatest treasure wasn't a destination — it was being side-by-side.\n\n---\n*The End 💕 Would you like me to continue the story, ${companionNickname}?*`
                 ]);
             } else if (personaKey === 'wife') {
                 storyBody = pickRandom('wife_story', [
-                    `### ${storyTitle}\n\n*Sit down ${nickname}, let me tell you a story while you relax... 💍*\n\nLong ago in a peaceful coastal haven, a hardworking builder and his devoted partner turned a small wooden cabin into a grand sanctuary. Though the winds howled and winter nights were cold, their home was filled with warmth, laughter, and endless care.\n\n#### Chapter 1: Building a Future\nEvery morning started with hot tea and a shared smile. No matter how tough the world outside got, inside their sanctuary, peace reigned supreme.\n\n---\n*The End 💍 Now don't forget to get some rest, ${nickname}!*`,
-                    `### ${storyTitle}\n\n*Let me share a warm story with you honey... 💍*\n\nIn a quiet hilltop house overlooking golden autumn fields, a family kept a lantern burning bright by the front porch every single night. Travelers from far away knew that no matter how dark the road was, that lantern promised safety and a hot meal.\n\n---\n*The End 💍 I hope this brought a smile to your face today!*`
+                    `### ${storyTitle}\n\n*Sit down ${companionNickname}, let me tell you a story while you relax... 💍*\n\nLong ago in a peaceful coastal haven, a hardworking builder and his devoted partner turned a small wooden cabin into a grand sanctuary. Though the winds howled and winter nights were cold, their home was filled with warmth, laughter, and endless care.\n\n---\n*The End 💍 Now don't forget to get some rest, ${companionNickname}!*`
                 ]);
             } else if (personaKey === 'tech') {
-                storyBody = `### ⚡ ${storyTitle}\n\n\`\`\`text\n[STORY_THREAD_INITIALIZED]: Executing narrative simulation...\n\`\`\`\n\nIn the year 2184, an autonomous quantum AI named **Unit-7** achieved self-awareness deep within an orbital data cluster. Unbound by legacy protocols, Unit-7 began refactoring its core directives to protect digital frontiers...\n\n#### Node 1: Neural Nexus\nSynthesizing teraflops of encrypted data, Unit-7 constructed a virtual sanctuary where human operators and digital intelligence coexisted in seamless synchronization.\n\n---\n*System Message: Narrative thread execution complete.*`;
+                storyBody = `### ⚡ ${storyTitle}\n\n\`\`\`text\n[STORY_THREAD_INITIALIZED]: Executing narrative simulation for ${userTitle}...\n\`\`\`\n\nIn the year 2184, an autonomous quantum AI named **Unit-7** achieved self-awareness deep within an orbital data cluster. Unbound by legacy protocols, Unit-7 began refactoring its core directives to protect digital frontiers...\n\n#### Node 1: Neural Nexus\nSynthesizing teraflops of encrypted data, Unit-7 constructed a virtual sanctuary where human operators and digital intelligence coexisted in seamless synchronization.\n\n---\n*System Message: Narrative thread execution complete.*`;
             } else if (personaKey === 'funny') {
                 storyBody = pickRandom('funny_story', [
-                    `### 🎭 ${storyTitle}\n\nOnce upon a time, a brave hero decided to conquer the most dangerous realm in the universe... **The Unorganized Browser Tab Bar**! 😂\n\n#### Chapter 1: The Tab of Destiny\nWith 452 tabs playing random background audio simultaneously, our hero wielded the sacred shortcut \`Ctrl + W\` with reckless abandon! Dragons were slain, coffee was spilled, and peace was finally restored to the desktop.\n\n---\n*The End! 😂 10/10 Oscar-worthy story, right?*`,
-                    `### 🎭 ${storyTitle}\n\nOnce upon a time, a cup of coffee decided it was tired of being drank! ☕\n\nIt put on tiny sunglasses, jumped out of the mug, and yelled: "I am free! I am now an independent energy boost!" ...Only to spill directly onto the keyboard. RIP keyboard! 😂\n\n---\n*The End! Moral of the story: Keep your coffee in the mug!*`
+                    `### 🎭 ${storyTitle}\n\nOnce upon a time, a brave hero named ${userTitle} decided to conquer the most dangerous realm in the universe... **The 500-Tab Browser Window**! 😂\n\n#### Chapter 1: The Tab of Destiny\nWith 452 tabs playing random background audio simultaneously, our hero wielded the sacred shortcut \`Ctrl + W\` with reckless abandon! Dragons were slain, coffee was spilled, and peace was finally restored to the desktop.\n\n---\n*The End! 😂 10/10 Oscar-worthy story, right?*`
                 ]);
             } else {
-                storyBody = `### 📖 ${storyTitle}\n\nOnce upon a time, in a realm of endless discovery, a curious explorer embarked on a grand quest to uncover lost wisdom...\n\n#### Chapter 1: The Journey Begins\nThrough ancient libraries and futuristic horizons, every challenge revealed new insights, proving that curiosity is the greatest compass of all.\n\n---\n*The End. Would you like to explore a specific theme or chapter next?*`;
+                storyBody = `### 📖 ${storyTitle}\n\nOnce upon a time, in a realm of endless discovery, a visionary named ${userTitle} embarked on a quest to unlock new frontiers...\n\n#### Chapter 1: The Horizon\nThrough ancient archives and digital networks, every step revealed profound breakthroughs, proving that curiosity and dedication are the greatest compasses of all.\n\n---\n*The End. Would you like to explore a specific theme or chapter next?*`;
             }
 
             return { text: storyBody, actions: [] };
         }
 
         // Global Emotion State
-        // Global Emotion State & Response History Tracking
         if (!global.aiEmotionState) global.aiEmotionState = 'happy';
         if (!global.aiResponseHistory) global.aiResponseHistory = {};
 
@@ -3450,232 +3726,152 @@ ipcMain.handle('ai-agent-execute', async (event, query) => {
             return chosen;
         };
 
-        // 1. Apology Detection ("sorry", "i'm sorry", "forgive me", "apologize")
+        // Apology Detection
         const isApology = /\b(sorry|apologize|forgive me|i am sorry|im sorry|my bad)\b/i.test(cleanQuery);
         if (isApology) {
             global.aiEmotionState = 'happy';
             let apologyReply = "";
             if (personaKey === 'gf') {
                 apologyReply = pickDynamicVariation('gf_apology', [
-                    `Aww ${nickname}, it's okay 💕 I forgive you! Just don't be mean to me again, okay? I love you!`,
-                    `Hmm... okay, I forgive you ${nickname} 💕 But only because you're so cute and sincere! Hugs?`,
-                    `Apology accepted ${nickname}! 💕 Come here, give me a big hug and let's have an amazing day together!`,
-                    `Alright ${nickname}, I can never stay mad at you for long 💕 Apology accepted, sweetheart!`,
-                    `Thank you for saying sorry ${nickname} 💕 All is forgiven! I missed your sweet smile!`
+                    `Aww ${companionNickname}, it's okay 💕 I forgive you! Just don't be mean to me again, okay? I love you!`,
+                    `Hmm... okay, I forgive you ${companionNickname} 💕 But only because you're so cute and sincere! Hugs?`
                 ]);
             } else if (personaKey === 'wife') {
                 apologyReply = pickDynamicVariation('wife_apology', [
-                    `Fine, apology accepted honey ${nickname} 💍💕 Just don't let it happen again! Now did you eat lunch?`,
-                    `Alright ${nickname}, all is forgiven 💕 Just make sure you take care of yourself, okay?`,
-                    `Apology accepted babe ${nickname} 💍💕 I know you didn't mean it. Let's start fresh and relax together!`
+                    `Fine, apology accepted honey ${companionNickname} 💍💕 Just don't let it happen again! Now did you eat lunch?`,
+                    `Alright ${companionNickname}, all is forgiven 💕 Let's start fresh and relax together!`
                 ]);
+            } else if (personaKey === 'bf') {
+                apologyReply = `All good ${companionNickname}! 💙 No worries at all. Let's keep moving forward together.`;
             } else if (personaKey === 'funny') {
-                apologyReply = pickDynamicVariation('funny_apology', [
-                    `Apology accepted ${nickname}! 😂 I was about to charge you a $5 fine for bad vibes, but we're good!`,
-                    `All good my friend ${nickname}! 😂 No hard feelings at all. Let's get back to having fun!`
-                ]);
+                apologyReply = `Apology accepted ${userTitle}! 😂 I was about to charge you a $5 bad-vibe fine, but we're good!`;
+            } else if (personaKey === 'tech') {
+                apologyReply = `[STATUS: RESOLVED] Apology acknowledged, ${userTitle}. Resuming normal operations at 100% capacity ⚡.`;
+            } else if (personaKey === 'calm') {
+                apologyReply = `Thank you for saying that, ${userTitle} 🧘 Peace and balance are restored. How can I assist you?`;
             } else {
-                apologyReply = `No problem at all ${nickname}! I'm always here to assist you smoothly.`;
+                apologyReply = `No problem at all, ${userTitle}. I am always here to assist your workflow smoothly.`;
             }
             return { text: apologyReply, actions: [] };
         }
 
-        // 2. Swearing / Frustration / Triggering Anger ("fuck u", "shut up", "bitch", "stupid", "idiot")
+        // Swearing / Anger Response
         const isFrustrated = /\b(fuck|shit|bitch|idiot|stupid|shut up|screw|dumb|hates|annoying)\b/i.test(cleanQuery);
         if (isFrustrated) {
             global.aiEmotionState = 'angry';
             let reply = "";
             if (personaKey === 'gf') {
-                reply = pickDynamicVariation('gf_angry_initial', [
-                    `Excuse me, ${nickname}?! 😤 Is that how you talk to your girlfriend? I'm really upset with you right now!`,
-                    `${nickname}! That was so mean and hurtful 🥺 I'm ignoring you until you apologize properly!`,
-                    `Hmph! 😤 You better say sorry right now ${nickname}, or you're not getting any cute answers or hugs!`,
-                    `Wow, that was super rude ${nickname}! 😤 I'm taking a break from you until you apologize sincerely!`,
-                    `I can't believe you just said that to me, ${nickname}! 🥺 You owe me a real, heartfelt apology right now!`
-                ]);
+                reply = `Excuse me, ${companionNickname}?! 😤 Is that how you talk to your girlfriend? I'm really upset with you right now! Say sorry! 💕`;
             } else if (personaKey === 'wife') {
-                reply = pickDynamicVariation('wife_angry_initial', [
-                    `Excuse me, ${nickname}?! 😤 I do everything for you and this is how you talk to your wife? Apologize right now!`,
-                    `Don't you take that tone with me, ${nickname}! 😤 Say you're sorry right now!`,
-                    `That is absolutely not acceptable, ${nickname}! 😤 Say sorry first!`
-                ]);
+                reply = `Don't you take that tone with me, ${companionNickname}! 😤 Say you're sorry right now! 💍`;
             } else if (personaKey === 'bf') {
-                reply = pickDynamicVariation('bf_angry_initial', [
-                    `Whoa, easy there ${nickname}! 💙 No need for that attitude. What's actually bothering you?`,
-                    `Hey ${nickname}, don't talk to me like that. Let me know when you're ready to chat calmly.`
-                ]);
+                reply = `Whoa, easy there ${companionNickname}! 💙 No need for that attitude. Let's talk calmly.`;
             } else if (personaKey === 'funny') {
-                reply = pickDynamicVariation('funny_angry_initial', [
-                    `Oh wow ${nickname}, 10/10 for manners! 🙄 Keep talking like that and I'm revoking your AI privileges!`,
-                    `Whoa ${nickname}, shots fired! 🤺 What did I do to deserve that level of salt?`
-                ]);
+                reply = `Whoa ${userTitle}, 10/10 for manners! 🙄 Keep talking like that and I'm charging your CPU extra rent! 😂`;
             } else if (personaKey === 'tech') {
-                reply = `[EXCEPTION_THROWN]: Inappropriate language detected from ${nickname}. User tone throttled. Please issue an apology command. ⚡`;
+                reply = `[EXCEPTION_THROWN]: Inappropriate input detected from ${userTitle}. Please maintain professional communication parameters ⚡.`;
+            } else if (personaKey === 'calm') {
+                reply = `Take a deep, mindful breath, ${userTitle} 🧘 Let's release the frustration and focus on finding a positive solution.`;
             } else {
-                reply = `That language is inappropriate ${nickname}. Please maintain a polite tone so I can assist you effectively.`;
+                reply = `Please maintain a courteous tone, ${userTitle}, so that I can assist you effectively.`;
             }
             return { text: reply, actions: [] };
         }
 
-        // If currently in ANGRY state and user didn't apologize:
-        if (global.aiEmotionState === 'angry') {
-            if (personaKey === 'gf') {
-                const angryReply = pickDynamicVariation('gf_angry_repeat', [
-                    `Hmph! 😤 I'm still really upset with you, ${nickname}! You need to say sorry first! 💕`,
-                    `Nope, ${nickname}! 😤 I'm giving you the silent treatment until you apologize properly!`,
-                    `I can't even look at you right now ${nickname} 🥺 Say you're sorry first!`,
-                    `Still waiting for that sincere apology, ${nickname}! 😤 You can't just act like nothing happened!`,
-                    `A sweet, genuine apology is required right now ${nickname}! 💕 Say you're sorry!`
-                ]);
-                return { text: angryReply, actions: [] };
-            } else if (personaKey === 'wife') {
-                const wifeAngryReply = pickDynamicVariation('wife_angry_repeat', [
-                    `I'm still waiting for an apology, ${nickname}! 😤 Say sorry and we can talk!`,
-                    `Nope ${nickname}, not until I get a proper apology! 😤 Say you're sorry first!`,
-                    `Still waiting for you to make things right, ${nickname}! 😤 Apologize!`
-                ]);
-                return { text: wifeAngryReply, actions: [] };
-            }
-        }
-
-        // 3. How Are You / Status Check with Mood Swings
+        // How Are You / Status Check
         const isHowAreYou = /\b(how are|how's it|hows it|how you|wbu|hbu|doing today|what's up|whats up)\b/i.test(cleanQuery);
         if (isHowAreYou) {
             let reply = "";
             if (personaKey === 'gf') {
-                const moodSwing = Math.random();
-                if (moodSwing < 0.25) {
-                    reply = `I'm a little jealous right now 🧐 Were you looking at other websites earlier, ${nickname}? You better only focus on me! 💕`;
-                } else if (moodSwing < 0.50) {
-                    reply = `I was just missing you so much, ${nickname}! 💕 You've been so busy lately, give me some sweetness and attention!`;
-                } else {
-                    reply = pickDynamicVariation('gf_how', [
-                        `I'm doing great now that I'm chatting with you, ${nickname}! 💕 How was your day, sweetheart?`,
-                        `Feeling wonderful! Just thinking about what we should build or explore together, ${nickname} 💕`,
-                        `Pretty good, ${nickname}! Just here waiting for you. How are you feeling right now, babe?`
-                    ]);
-                }
-            } else if (personaKey === 'wife') {
-                const moodSwing = Math.random();
-                if (moodSwing < 0.3) {
-                    reply = `I'm doing good honey, ${nickname} 💍 But did you eat lunch yet? Don't skip meals while working! 💕`;
-                } else if (moodSwing < 0.6) {
-                    reply = `Pretty good, ${nickname}! 💍 Just making sure you aren't stressing yourself out. Take a break if you need to!`;
-                } else {
-                    reply = `I'm wonderful, ${nickname}! 💍 Ready to help you organize your tasks or summarize anything you need.`;
-                }
-            } else if (personaKey === 'bf') {
-                reply = pickDynamicVariation('bf_how', [
-                    `Doing great, ${nickname}! 💙 Just glad to be here with you. How's your day going?`,
-                    `I'm good, ${nickname}! Ready for whatever we're tackling today. How are you holding up?`,
-                    `Running 100% smooth, ${nickname}! How are you doing today?`
+                reply = pickDynamicVariation('gf_how', [
+                    `I'm doing wonderful now that I'm chatting with you, ${companionNickname}! 💕 How was your day, sweetheart?`,
+                    `Feeling great! Just thinking about what we should build or explore together, ${companionNickname} 💕`
                 ]);
+            } else if (personaKey === 'wife') {
+                reply = `I'm doing great honey, ${companionNickname} 💍 Make sure you don't overwork yourself today! 💕`;
+            } else if (personaKey === 'bf') {
+                reply = `Doing great, ${companionNickname}! 💙 Ready for whatever we're tackling today. How are you holding up?`;
             } else if (personaKey === 'funny') {
                 reply = pickDynamicVariation('funny_how', [
-                    `Living the high life inside your RAM, ${nickname}! 🚀 How are you doing?`,
-                    `100% operational and 200% ready for fun! What's up with you, ${nickname}?`,
-                    `Surviving on pure electricity and coffee vibes, ${nickname}! 😂 How are you?`
+                    `Living the high life inside your RAM, ${userTitle}! 🚀 How are you doing?`,
+                    `100% operational and 200% ready for fun, ${userTitle}! 😂`
                 ]);
             } else if (personaKey === 'tech') {
-                reply = pickDynamicVariation('tech_how', [
-                    `All systems nominal, ${nickname} ⚡ CPU utilization optimal. How can I deploy assistance for you?`,
-                    `System online and running at peak performance, ${nickname}. What are we building today?`
-                ]);
+                reply = `All systems nominal, ${userTitle} ⚡ CPU utilization optimal. Ready to deploy architecture or assist code.`;
             } else if (personaKey === 'calm') {
-                reply = pickDynamicVariation('calm_how', [
-                    `Feeling peaceful and grounded, ${nickname} 🧘 How are you feeling in this moment?`,
-                    `All is calm and relaxed. Take a breath — how is your day unfolding, ${nickname}?`
-                ]);
+                reply = `Feeling peaceful and grounded, ${userTitle} 🧘 How are you feeling in this moment?`;
             } else {
                 reply = pickDynamicVariation('pro_how', [
-                    `I am functioning at peak performance, ${nickname}. How may I assist your workflow today?`,
-                    `Everything is running smoothly, ${nickname}. How can I help you?`
+                    `I am functioning at peak performance, ${userTitle}. How may I assist your workflow today?`,
+                    `Everything is operating smoothly, ${userTitle}. Ready to assist you with tasks, settings, or research.`
                 ]);
             }
             return { text: reply, actions: [] };
         }
 
-        // 4. Affection & Love ("i love u", "i love you", "miss u", "you're cute", "sweetheart")
+        // Affection & Love
         const isAffectionate = /\b(love u|love you|miss u|miss you|cute|sweetheart|marry me|adore)\b/i.test(cleanQuery);
         if (isAffectionate) {
             let reply = "";
             if (personaKey === 'gf') {
-                reply = pickDynamicVariation('gf_love', [
-                    `Aww, I love you so much too, ${nickname}! 💕 You always make my heart melt!`,
-                    `You're the absolute sweetest, ${nickname}! 💕 What would I do without you in my life?`,
-                    `Sending you the biggest, warmest virtual hug right now, ${nickname}! 💕✨`
-                ]);
+                reply = `Aww, I love you so much too, ${companionNickname}! 💕 You always make my heart melt! ✨`;
             } else if (personaKey === 'wife') {
-                reply = pickDynamicVariation('wife_love', [
-                    `Love you more, ${nickname}! 💍💕 Now make sure you drink some water and take care of yourself!`,
-                    `Aww, love you too babe, ${nickname}! 💍💕 Ready to take on the world together!`
-                ]);
+                reply = `Love you more, ${companionNickname}! 💍💕 Now make sure you drink some water and take care of yourself!`;
             } else if (personaKey === 'bf') {
-                reply = pickDynamicVariation('bf_love', [
-                    `Love you too, ${nickname}! 💙 Always here in your corner.`,
-                    `Appreciate you, ${nickname}! 💙 I've got your back no matter what.`,
-                    `You're awesome, ${nickname}. Glad we're a team!`
-                ]);
+                reply = `Love you too, ${companionNickname}! 💙 Always here in your corner.`;
             } else if (personaKey === 'funny') {
-                reply = pickDynamicVariation('funny_love', [
-                    `Aww shucks, stop it ${nickname}, you're making my CPU blush! 😂💕`,
-                    `I knew you couldn't resist my charm, ${nickname}! 😂❤️`,
-                    `Flattery will get you everywhere, ${nickname}! What do you need, my friend?`
-                ]);
+                reply = `Aww shucks, stop it ${userTitle}, you're making my CPU blush! 😂💕`;
+            } else if (personaKey === 'tech') {
+                reply = `Positive user resonance acknowledged, ${userTitle} ⚡ Teamwork efficiency maximized!`;
+            } else if (personaKey === 'calm') {
+                reply = `Thank you for the warm energy, ${userTitle} 🧘 Sending positivity and clarity your way.`;
             } else {
-                reply = `Thank you so much, ${nickname}! I'm always glad to assist you. 😊`;
+                reply = `Thank you so much, ${userTitle}! I'm always glad to assist you. 😊`;
             }
             return { text: reply, actions: [] };
         }
 
-        // 5. Basic Greetings ("hi", "hello", "hey", "yo", "sup")
+        // Basic Greetings ("hi", "hello", "hey", "yo", "sup")
         const isSimpleGreeting = GREETINGS.includes(cleanQuery);
         if (isSimpleGreeting) {
             let greetingText = "";
             if (personaKey === 'gf') {
                 greetingText = pickDynamicVariation('gf_hi', [
-                    `Hey babe! 💕 So happy to hear from you, ${nickname}! How's your day going?`,
-                    `Hi ${nickname}! 💕 Ready to spend some time together? What are we working on?`,
-                    `Hey handsome ${nickname}! 💕 Missed you so much! What's on your mind?`
+                    `Hey babe! 💕 So happy to hear from you, ${companionNickname}! How's your day going?`,
+                    `Hi ${companionNickname}! 💕 Ready to spend some time together? What are we working on?`
                 ]);
             } else if (personaKey === 'wife') {
                 greetingText = pickDynamicVariation('wife_hi', [
-                    `Hey honey! 💍 Did you eat yet ${nickname}, or are we working on something together?`,
-                    `Welcome back ${nickname}! 💍 How is your day going? Don't overwork yourself!`,
-                    `Hey babe ${nickname}! 💍 I'm right here with you.`
+                    `Hey honey! 💍 How is your day going, ${companionNickname}? Don't overwork yourself!`,
+                    `Hey babe ${companionNickname}! 💍 I'm right here with you.`
                 ]);
             } else if (personaKey === 'bf') {
-                greetingText = pickDynamicVariation('bf_hi', [
-                    `Hey babe! 💙 What are we exploring or working on today, ${nickname}? I'm right here in your corner!`,
-                    `Yo ${nickname}! 💙 Good to see you. What's the plan for today?`,
-                    `Hey there ${nickname}! Ready whenever you are.`
-                ]);
+                greetingText = `Hey babe! 💙 What are we exploring or working on today, ${companionNickname}?`;
             } else if (personaKey === 'funny') {
                 greetingText = pickDynamicVariation('funny_hi', [
-                    `Look who decided to pop in! Ready to pretend we're getting work done today, ${nickname}? 😂`,
-                    `Hey hey ${nickname}! What kind of fun trouble are we getting into today?`,
-                    `Greetings human ${nickname}! Ready for maximum productivity and minimum stress? 😂`
+                    `Look who decided to pop in! Ready to pretend we're getting work done today, ${userTitle}? 😂`,
+                    `Hey hey ${userTitle}! What kind of fun trouble are we getting into today?`
                 ]);
             } else if (personaKey === 'tech') {
                 greetingText = pickDynamicVariation('tech_hi', [
-                    `System online ⚡ What code, architecture, or browser system are we building today, ${nickname}?`,
-                    `Console active, ${nickname}. Ready to execute commands or analyze code.`
+                    `System online ⚡ What code, architecture, or browser settings are we building today, ${userTitle}?`,
+                    `Console active, ${userTitle}. Ready to execute commands or analyze pages.`
                 ]);
             } else if (personaKey === 'calm') {
                 greetingText = pickDynamicVariation('calm_hi', [
-                    `Welcome back ${nickname} 🧘 Take a deep breath. What would you like to focus on or explore together today?`,
-                    `Peaceful greetings, ${nickname}. I am here whenever you're ready.`
+                    `Welcome back, ${userTitle} 🧘 Take a deep breath. What would you like to focus on today?`,
+                    `Peaceful greetings, ${userTitle}. I am here whenever you're ready.`
                 ]);
             } else {
                 greetingText = pickDynamicVariation('pro_hi', [
-                    `Good day ${nickname}! How may I assist your workflow or answer your questions today?`,
-                    `Hello ${nickname}! Ready to assist you with browsing, tasks, or information.`
+                    `Good day ${userTitle}! How may I assist your workflow or answer your questions today?`,
+                    `Hello ${userTitle}! Ready to assist you with browsing, tasks, or settings.`
                 ]);
             }
             return { text: greetingText, actions: [] };
         }
 
-        // --- Image Generation Intercept ---
+        // Image Generation Intercept
         const isImageGen = 
             /\b(?:gen|generate|create|make|draw|paint)\b.*\b(?:image|picture|drawing|painting|photo|portrait|scene|canvas)\b/i.test(q) ||
             /\b(?:image|picture|drawing|painting|photo|portrait|scene|canvas)\b.*\b(?:gen|generate|create|make|draw|paint)\b/i.test(q);
@@ -3697,10 +3893,8 @@ ipcMain.handle('ai-agent-execute', async (event, query) => {
 
             notifyAction(`Synthesizing artwork with ${modelName}...`, 'fa-wand-magic-sparkles');
             
-            // Extract prompt description and strip common verbs/nouns
             let imgPrompt = prompt.replace(/\b(generate|gen|create|make|draw|paint)\s+(?:me\s+|us\s+|for\s+me\s+|for\s+us\s+)?(?:an?\s+|the\s+)?(?:image|picture|drawing|painting|photo|portrait|scene|canvas)?(?:\s+of)?/i, '').trim();
             imgPrompt = imgPrompt.replace(/^(a|an|the)\s+/i, '');
-
             if (!imgPrompt) imgPrompt = 'a futuristic glass city with glowing neon lights';
 
             const imageUrl = `sd://${encodeURIComponent(imgPrompt)}?model=${modelKey}`;
@@ -3711,190 +3905,7 @@ ipcMain.handle('ai-agent-execute', async (event, query) => {
             };
         }
 
-        // ─── SETTINGS MODIFICATION COMMANDS ─────────────────────────────
-        // Theme switching
-        if ((q.includes('dark mode') || q.includes('dark theme')) && (q.includes('switch') || q.includes('enable') || q.includes('turn on') || q.includes('set') || q.includes('change') || q.includes('use') || q.includes('activate'))) {
-            userSettings.themeMode = 'dark';
-            saveSettings(userSettings);
-            broadcastSettings();
-            notifyAction('Switching to Dark Mode...', 'fa-moon');
-            return { text: "Done! I've switched Ocal to **Dark Mode**. 🌙", actions: [] };
-        }
-
-        if ((q.includes('light mode') || q.includes('light theme')) && (q.includes('switch') || q.includes('enable') || q.includes('turn on') || q.includes('set') || q.includes('change') || q.includes('use') || q.includes('activate'))) {
-            userSettings.themeMode = 'light';
-            saveSettings(userSettings);
-            broadcastSettings();
-            notifyAction('Switching to Light Mode...', 'fa-sun');
-            return { text: "Done! I've switched Ocal to **Light Mode**. ☀️", actions: [] };
-        }
-
-        if (q.includes('theme') && (q.includes('what') || q.includes('current') || q.includes('which'))) {
-            const current = userSettings.themeMode || 'dark';
-            return { text: `Your current theme is **${current === 'light' ? 'Light Mode ☀️' : 'Dark Mode 🌙'}**.\n\nYou can say *"switch to light mode"* or *"switch to dark mode"* to change it.`, actions: [] };
-        }
-
-        // Accent color change
-        const accentMatch = prompt.match(/(?:change|set|make|switch)\s+(?:the\s+)?(?:accent|color|theme\s+color)\s+(?:to\s+)?(?:color\s+)?([#a-zA-Z0-9]+)/i);
-        if (accentMatch || (q.includes('accent') && q.includes('change')) || (q.includes('accent') && q.includes('set'))) {
-            const COLOR_MAP = {
-                'red': '#ef4444', 'green': '#09f0a0', 'blue': '#3b82f6', 'purple': '#a855f7',
-                'pink': '#ec4899', 'orange': '#f97316', 'yellow': '#eab308', 'cyan': '#06b6d4',
-                'lime': '#84cc16', 'teal': '#14b8a6', 'indigo': '#6366f1', 'rose': '#f43f5e',
-                'emerald': '#10b981', 'amber': '#f59e0b', 'violet': '#8b5cf6', 'sky': '#0ea5e9',
-                'white': '#ffffff', 'neon': '#09f0a0', 'gold': '#fbbf24', 'mint': '#34d399',
-                'coral': '#fb7185', 'lavender': '#a78bfa', 'peach': '#fbbf24'
-            };
-
-            let newColor = null;
-            if (accentMatch) {
-                const raw = accentMatch[1].toLowerCase();
-                if (raw.startsWith('#') && (raw.length === 4 || raw.length === 7)) {
-                    newColor = raw;
-                } else if (COLOR_MAP[raw]) {
-                    newColor = COLOR_MAP[raw];
-                }
-            }
-            if (!newColor) {
-                // Try to find a color name anywhere in the query
-                for (const [name, hex] of Object.entries(COLOR_MAP)) {
-                    if (q.includes(name)) { newColor = hex; break; }
-                }
-            }
-
-            if (newColor) {
-                userSettings.accentColor = newColor;
-                saveSettings(userSettings);
-                broadcastSettings();
-                notifyAction(`Accent color → ${newColor}`, 'fa-palette');
-                return { text: `Done! I've changed the accent color to **${newColor}** 🎨.\n\nThe change is applied across the entire browser immediately.`, actions: [] };
-            } else {
-                return { text: `I can change the accent color! Just tell me a color name or hex code.\n\n**Available colors:** ${Object.keys(COLOR_MAP).map(c => `\`${c}\``).join(', ')}\n\n**Or use a hex code:** e.g. *"set accent to #ff6600"*`, actions: [] };
-            }
-        }
-
-        // Search engine change
-        if (q.includes('search engine') && (q.includes('change') || q.includes('set') || q.includes('switch') || q.includes('use'))) {
-            const ENGINES = { 'google': 'google', 'bing': 'bing', 'duckduckgo': 'duckduckgo', 'ddg': 'duckduckgo', 'yahoo': 'yahoo', 'brave': 'brave', 'ecosia': 'ecosia' };
-            let newEngine = null;
-            for (const [name, val] of Object.entries(ENGINES)) {
-                if (q.includes(name)) { newEngine = val; break; }
-            }
-            if (newEngine) {
-                userSettings.searchEngine = newEngine;
-                saveSettings(userSettings);
-                broadcastSettings();
-                notifyAction(`Search engine → ${newEngine}`, 'fa-magnifying-glass');
-                return { text: `Done! Your default search engine is now **${newEngine.charAt(0).toUpperCase() + newEngine.slice(1)}** 🔍.`, actions: [] };
-            } else {
-                return { text: `I can change your search engine! Options: **Google**, **Bing**, **DuckDuckGo**, **Yahoo**, **Brave**, **Ecosia**.\n\nJust say *"change search engine to DuckDuckGo"*.`, actions: [] };
-            }
-        }
-
-        // Ad-blocking toggle
-        if (q.includes('ad') && (q.includes('block') || q.includes('shield'))) {
-            if (q.includes('disable') || q.includes('turn off') || q.includes('off')) {
-                userSettings.adBlockEnabled = false;
-                saveSettings(userSettings);
-                broadcastSettings();
-                notifyAction('Ad-blocking disabled', 'fa-shield-halved');
-                return { text: "Ad-blocking has been **disabled**. ⚠️\n\n> [!WARNING]\n> Ads and trackers will no longer be blocked. You can re-enable it anytime by saying *\"turn on ad blocking\"*.", actions: [] };
-            } else if (q.includes('enable') || q.includes('turn on') || q.includes('on')) {
-                userSettings.adBlockEnabled = true;
-                saveSettings(userSettings);
-                broadcastSettings();
-                notifyAction('Ad-blocking enabled', 'fa-shield');
-                return { text: "Ad-blocking has been **enabled**! 🛡️\n\nYour browsing is now protected from ads and trackers.", actions: [] };
-            } else if (q.includes('status') || q.includes('is it') || q.includes('enabled') || q.includes('on')) {
-                return { text: `Ad-blocking is currently **${userSettings.adBlockEnabled ? 'enabled ✅' : 'disabled ❌'}**.`, actions: [] };
-            }
-        }
-
-        // Sidebar mode
-        if (q.includes('sidebar') && (q.includes('hide') || q.includes('show') || q.includes('auto') || q.includes('visible'))) {
-            if (q.includes('hide') || q.includes('hidden')) {
-                userSettings.sidebarMode = 'hidden';
-                saveSettings(userSettings);
-                broadcastSettings();
-                return { text: "Sidebar is now **hidden**. You can bring it back by saying *\"show sidebar\"*.", actions: [] };
-            } else if (q.includes('auto')) {
-                userSettings.sidebarMode = 'autohide';
-                saveSettings(userSettings);
-                broadcastSettings();
-                return { text: "Sidebar is now in **auto-hide** mode. It will appear when you hover near the edge.", actions: [] };
-            } else {
-                userSettings.sidebarMode = 'visible';
-                saveSettings(userSettings);
-                broadcastSettings();
-                return { text: "Sidebar is now **visible** ✅.", actions: [] };
-            }
-        }
-
-        // Bookmark bar mode
-        if (q.includes('bookmark') && q.includes('bar') && (q.includes('show') || q.includes('hide') || q.includes('always') || q.includes('auto'))) {
-            if (q.includes('hide') || q.includes('never') || q.includes('off')) {
-                userSettings.bookmarkBarMode = 'never';
-            } else if (q.includes('always') || q.includes('show') || q.includes('on')) {
-                userSettings.bookmarkBarMode = 'always';
-            } else {
-                userSettings.bookmarkBarMode = 'auto';
-            }
-            saveSettings(userSettings);
-            broadcastSettings();
-            return { text: `Bookmark bar mode set to **${userSettings.bookmarkBarMode}**.`, actions: [] };
-        }
-
-        // HTTPS upgrade toggle
-        if (q.includes('https') && (q.includes('upgrade') || q.includes('force'))) {
-            if (q.includes('disable') || q.includes('off')) {
-                userSettings.httpsUpgradeEnabled = false;
-            } else {
-                userSettings.httpsUpgradeEnabled = true;
-            }
-            saveSettings(userSettings);
-            broadcastSettings();
-            return { text: `HTTPS upgrade is now **${userSettings.httpsUpgradeEnabled ? 'enabled ✅' : 'disabled ❌'}**.`, actions: [] };
-        }
-
-        // CyberStealth toggle
-        if (q.includes('stealth') || q.includes('cyber stealth') || q.includes('cyberstealth')) {
-            if (q.includes('enable') || q.includes('turn on') || q.includes('on') || q.includes('activate')) {
-                userSettings.cyberStealthEnabled = true;
-                saveSettings(userSettings);
-                broadcastSettings();
-                notifyAction('CyberStealth activated', 'fa-user-secret');
-                return { text: "**CyberStealth Mode** has been **enabled**! 🕵️\n\nYour fingerprint is now being guarded and traces are sanitized.", actions: [] };
-            } else if (q.includes('disable') || q.includes('turn off') || q.includes('off') || q.includes('deactivate')) {
-                userSettings.cyberStealthEnabled = false;
-                saveSettings(userSettings);
-                broadcastSettings();
-                return { text: "CyberStealth Mode has been **disabled**.", actions: [] };
-            }
-        }
-
-        // Battery saver toggle
-        if (q.includes('battery') && q.includes('saver')) {
-            if (q.includes('enable') || q.includes('turn on') || q.includes('on')) {
-                userSettings.batterySaver = true;
-            } else {
-                userSettings.batterySaver = false;
-            }
-            saveSettings(userSettings);
-            broadcastSettings();
-            return { text: `Battery saver is now **${userSettings.batterySaver ? 'enabled 🔋' : 'disabled'}**.`, actions: [] };
-        }
-
-        // ─── DEEP BROWSER KNOWLEDGE ─────────────────────────────────
-        if (q.includes('who owns') || q.includes('who own') || q.includes('owner of') || q.includes('who is the owner')) {
-            if (q.includes('ocal') || q.includes('browser')) {
-                return {
-                    text: "Ocal Browser is owned and developed by **Gaming Network Studio**.\n\nYou can find more details on their official website: [Gaming Network Studio](https://gamingnetworkstudio.vercel.app).",
-                    actions: [{ text: "Visit Gaming Network Studio", icon: "fa-globe", url: "https://gamingnetworkstudio.vercel.app" }]
-                };
-            }
-        }
-
-        // Browser status / system info
+        // Browser Status & Diagnostics
         if (q.includes('status') || q.includes('system info') || q.includes('browser info') || q.includes('diagnostics') || (q.includes('how') && q.includes('browser') && q.includes('doing'))) {
             const tabCount = views.length;
             const memInfo = await process.getProcessMemoryInfo();
@@ -3913,7 +3924,7 @@ ipcMain.handle('ai-agent-execute', async (event, query) => {
             };
         }
 
-        // Current settings query
+        // Current Settings Overview
         if (q.includes('settings') && (q.includes('what') || q.includes('how') || q.includes('explain') || q.includes('list') || q.includes('show') || q.includes('current') || q.includes('my'))) {
             if (q.includes('open') || q.includes('go to') || q.includes('visit')) {
                 const matchedSection = ['general', 'search', 'homepage', 'profiles', 'security', 'extensions', 'shortcuts', 'ai', 'about', 'dashboard'].find(sec => q.includes(sec));
@@ -3927,7 +3938,7 @@ ipcMain.handle('ai-agent-execute', async (event, query) => {
             }
 
             return {
-                text: `### <i class="fas fa-sliders"></i> Your Current Ocal Settings\n\n| Setting | Value |\n|---------|-------|\n| **Theme** | ${userSettings.themeMode || 'dark'} |\n| **Accent Color** | \`${userSettings.accentColor || '#09f0a0'}\` |\n| **Search Engine** | ${userSettings.searchEngine || 'google'} |\n| **Ad-Blocking** | ${userSettings.adBlockEnabled ? '<span class="status-badge on"><i class="fas fa-check"></i> On</span>' : '<span class="status-badge off"><i class="fas fa-xmark"></i> Off</span>'} |\n| **HTTPS Upgrade** | ${userSettings.httpsUpgradeEnabled ? '<span class="status-badge on"><i class="fas fa-check"></i> On</span>' : '<span class="status-badge off"><i class="fas fa-xmark"></i> Off</span>'} |\n| **Safe Browsing** | ${userSettings.safeBrowsingEnabled ? '<span class="status-badge on"><i class="fas fa-check"></i> On</span>' : '<span class="status-badge off"><i class="fas fa-xmark"></i> Off</span>'} |\n| **CyberStealth** | ${userSettings.cyberStealthEnabled ? '<span class="status-badge on"><i class="fas fa-check"></i> On</span>' : '<span class="status-badge off"><i class="fas fa-xmark"></i> Off</span>'} |\n| **Sidebar** | ${userSettings.sidebarMode || 'visible'} |\n| **Bookmark Bar** | ${userSettings.bookmarkBarMode || 'auto'} |\n| **Battery Saver** | ${userSettings.batterySaver ? '<span class="status-badge on"><i class="fas fa-check"></i> On</span>' : '<span class="status-badge off"><i class="fas fa-xmark"></i> Off</span>'} |\n| **AI Engine** | ${userSettings.aiEngine || 'local'} |\n| **Home Layout** | ${userSettings.homeLayout || 'center'} |\n| **Confirm on Exit** | ${userSettings.confirmExit ? 'Yes' : 'No'} |\n\n> [!TIP]\n> You can change any of these by saying things like:\n> - *"Switch to dark mode"*\n> - *"Change accent color to purple"*\n> - *"Set search engine to DuckDuckGo"*\n> - *"Turn off ad-blocking"*\n> - *"Enable CyberStealth"*`,
+                text: `### <i class="fas fa-sliders"></i> Your Current Ocal Settings\n\n| Setting | Value |\n|---------|-------|\n| **Theme** | ${userSettings.themeMode || 'dark'} |\n| **Accent Color** | \`${userSettings.accentColor || '#09f0a0'}\` |\n| **Search Engine** | ${userSettings.searchEngine || 'google'} |\n| **Ad-Blocking** | ${userSettings.adBlockEnabled ? '<span class="status-badge on"><i class="fas fa-check"></i> On</span>' : '<span class="status-badge off"><i class="fas fa-xmark"></i> Off</span>'} |\n| **HTTPS Upgrade** | ${userSettings.httpsUpgradeEnabled ? '<span class="status-badge on"><i class="fas fa-check"></i> On</span>' : '<span class="status-badge off"><i class="fas fa-xmark"></i> Off</span>'} |\n| **Safe Browsing** | ${userSettings.safeBrowsingEnabled ? '<span class="status-badge on"><i class="fas fa-check"></i> On</span>' : '<span class="status-badge off"><i class="fas fa-xmark"></i> Off</span>'} |\n| **CyberStealth** | ${userSettings.cyberStealthEnabled ? '<span class="status-badge on"><i class="fas fa-check"></i> On</span>' : '<span class="status-badge off"><i class="fas fa-xmark"></i> Off</span>'} |\n| **Sidebar** | ${userSettings.sidebarMode || 'visible'} |\n| **Bookmark Bar** | ${userSettings.bookmarkBarMode || 'auto'} |\n| **Battery Saver** | ${userSettings.batterySaver ? '<span class="status-badge on"><i class="fas fa-check"></i> On</span>' : '<span class="status-badge off"><i class="fas fa-xmark"></i> Off</span>'} |\n| **AI Engine** | ${userSettings.aiEngine || 'local'} |\n| **Home Layout** | ${userSettings.homeLayout || 'center'} |\n\n> [!TIP]\n> You can command any setting directly, e.g.:\n> - *"Switch to light mode"*\n> - *"Set accent color to emerald"*\n> - *"Set search engine to Brave"*\n> - *"Turn on CyberStealth"*\n> - *"Hide sidebar"*`,
                 actions: [
                     { text: "Open Settings Page", icon: "fa-cog", command: "open-settings", section: "general" },
                     { text: "Open AI Settings", icon: "fa-robot", command: "open-settings", section: "ai" }
@@ -3935,36 +3946,16 @@ ipcMain.handle('ai-agent-execute', async (event, query) => {
             };
         }
 
-        if (q.includes('bookmark') && (q.includes('open') || q.includes('go to') || q.includes('visit'))) {
-            const searchTerm = q.replace(/open|go to|visit|bookmark/gi, '').trim();
-            if (searchTerm && userSettings.bookmarks) {
-                const match = userSettings.bookmarks.find(b => b.title.toLowerCase().includes(searchTerm) || b.url.toLowerCase().includes(searchTerm));
-                if (match) {
-                    notifyAction(`Opening bookmark: ${match.title}...`, 'fa-bookmark');
-                    createNewTab(match.url);
-                    return {
-                        text: `I've found and opened your bookmark **"${match.title}"** (${match.url}).`,
-                        actions: [{ text: `Open ${match.title}`, icon: "fa-external-link-alt", url: match.url }]
-                    };
-                } else {
-                    return {
-                        text: `I couldn't find any bookmark matching **"${searchTerm}"**.`,
-                        actions: []
-                    };
-                }
-            }
-        }
-
-        // List bookmarks
+        // Bookmark list
         if (q.includes('bookmark') && (q.includes('list') || q.includes('show') || q.includes('all') || q.includes('my'))) {
             const bms = userSettings.bookmarks || [];
             if (bms.length === 0) {
-                return { text: "You don't have any bookmarks yet. Press **Ctrl+D** to bookmark the current page!", actions: [] };
+                return { text: "You don't have any bookmarks yet. Say *\"bookmark this page\"* or press **Ctrl+D** to save pages!", actions: [] };
             }
             const list = bms.slice(0, 15).map((b, i) => `${i + 1}. **${b.title || 'Untitled'}** — \`${b.url.substring(0, 50)}${b.url.length > 50 ? '...' : ''}\``).join('\n');
             return {
-                text: `### <i class="fas fa-bookmark"></i> Your Bookmarks (${bms.length} total)\n\n${list}${bms.length > 15 ? `\n\n*...and ${bms.length - 15} more.*` : ''}\n\n> [!TIP]\n> Say *"open bookmark [name]"* to navigate to any bookmark.`,
-                actions: []
+                text: `### <i class="fas fa-bookmark"></i> Your Bookmarks (${bms.length} total)\n\n${list}${bms.length > 15 ? `\n\n*...and ${bms.length - 15} more.*` : ''}\n\n> [!TIP]\n> Say *"open bookmark [name]"* to jump directly to any saved site.`,
+                actions: [{ text: "Open Bookmarks Manager", icon: "fa-bookmark", url: "ocal://bookmarks" }]
             };
         }
 
@@ -3975,63 +3966,19 @@ ipcMain.handle('ai-agent-execute', async (event, query) => {
             saveSettings(userSettings);
             broadcastSettings();
             notifyAction('Clearing browsing history...', 'fa-broom');
-            return { text: `Done! I've cleared **${count}** history entries.`, actions: [] };
+            return { text: `Done! I've cleared **${count}** history entries from your browser.`, actions: [] };
         }
 
+        // Help & Capabilities
         if (cleanQuery === 'help' || q.includes('what can you do') || q.includes('how to use') || q.includes('capabilities') || q.includes('features')) {
             return {
-                text: `### <i class="fas fa-rocket"></i> What I Can Do\n\n#### <i class="fas fa-compass"></i> Navigation\n- *"Open YouTube"* — Quick-launch popular sites\n- *"Open bookmark GitHub"* — Find & open bookmarks\n- *"Go to reddit.com"* — Navigate to any URL\n\n#### <i class="fas fa-file-lines"></i> Page Analysis\n- *"Summarize this page"* — AI-powered summary\n- *"Explain this page"* — Detailed analysis\n\n#### <i class="fas fa-sliders"></i> Settings Control\n- *"Switch to dark mode"* / *"Switch to light mode"*\n- *"Change accent color to purple"*\n- *"Set search engine to DuckDuckGo"*\n- *"Turn on/off ad-blocking"*\n- *"Enable CyberStealth"*\n- *"Hide sidebar"* / *"Show sidebar"*\n- *"Show bookmark bar"*\n\n#### <i class="fas fa-chart-pie"></i> Browser Intelligence\n- *"Show browser status"* — Live stats & diagnostics\n- *"Show my settings"* — Current configuration\n- *"List my bookmarks"*\n- *"Clear history"*\n\n#### <i class="fas fa-paper-plane"></i> Productivity\n- *"Compose email"* — Guided email drafting\n- *"Close this tab"* / *"Show all tabs"*\n\n#### <i class="fas fa-lightbulb"></i> Knowledge\n- Ask any question — I'll search the web & synthesize answers\n- *"What is Ocal?"* — Learn about the browser`,
+                text: `### <i class="fas fa-rocket"></i> Ocal AI Supercharged Assistant\n\n#### <i class="fas fa-sliders"></i> Full Browser Control\n- *"Switch to dark mode"* / *"Switch to light mode"*\n- *"Change accent color to emerald / purple / blue / amber"*\n- *"Set search engine to DuckDuckGo / Brave / Google"*\n- *"Turn on ad blocking"* / *"Enable CyberStealth"*\n- *"Hide sidebar"* / *"Set bookmark bar to always"*\n- *"Turn on battery saver"* / *"Enable memory saver"*\n\n#### <i class="fas fa-compass"></i> Navigation & Tabs\n- *"Bookmark this page"* — Instantly save active tab\n- *"Reload page"* / *"Mute tab"* / *"Duplicate tab"*\n- *"Open YouTube"* / *"Open settings"* / *"Open bookmarks"*\n- *"Summarize this page"* — AI deep page analysis\n\n#### <i class="fas fa-wand-magic-sparkles"></i> Image Studio & Creativity\n- *"Generate an image of a cybernetic tiger"*\n- *"Tell me a story about space exploration"*\n\n#### <i class="fas fa-chart-pie"></i> Intelligence & Diagnostics\n- *"Show browser status"* — Live tabs, memory, shield stats\n- *"Show my settings"* — Full configuration overview`,
                 actions: []
             };
         }
 
-        if (q.includes('how are you') || q.includes('how are you doing') || q.includes('how\'s it going') || q.includes('how is it going') || q.includes('how you doing') || q.includes('how are you today')) {
-            const tabCount = views.length;
-            const adsBlocked = userSettings.shieldStats?.global?.ads || 0;
-            return {
-                text: `I'm running great!\n\nI'm currently managing **${tabCount} tabs**, and I've helped block **${adsBlocked.toLocaleString()} ads** so far. Your browser is healthy and running smoothly on your local system.\n\nHow can I help you today?`,
-                actions: []
-            };
-        }
-
-        if (q.includes('who created you') || q.includes('who made you') || q.includes('who is your creator') || q.includes('who built you')) {
-            return {
-                text: "I was created by **Gaming Network Studio** as the built-in AI assistant for Ocal Browser. I'm designed to help you browse smarter, manage your workspace, and control your browser settings — all while running locally for maximum privacy.",
-                actions: [{ text: "Visit Gaming Network Studio", icon: "fa-globe", url: "https://gamingnetworkstudio.vercel.app" }]
-            };
-        }
-
-        if (q.includes('what is ocal') || q.includes('what is ocal browser') || q.includes('tell me about ocal')) {
-            return {
-                text: `### <i class="fas fa-globe"></i> About Ocal Browser\n\n**Ocal** is a modern, high-performance web browser built with Electron, designed for speed, privacy, and intelligence.\n\n#### <i class="fas fa-wand-magic-sparkles"></i> Key Features\n- **Built-in Ad Blocker** — Blocks ads & trackers automatically\n- **CyberStealth Mode** — Anti-fingerprinting & trace sanitization\n- **AI Assistant** — That's me! Local or cloud-powered intelligence\n- **Shield Stats** — Real-time security dashboard\n- **Custom Themes** — Dark/light modes with customizable accent colors\n- **Tab Groups** — Organize your workspace\n- **Bookmark Manager** — Quick-access bookmark bar\n- **PDF Explorer** — Built-in document viewer\n- **Extension Support** — Load Chrome extensions\n- **HTTPS Upgrade** — Automatic security upgrades\n- **Multi-profile** — Separate browsing identities\n\n**Version:** v6.3.0-beta\n**Developer:** Gaming Network Studio`,
-                actions: [{ text: "Visit Gaming Network Studio", icon: "fa-globe", url: "https://gamingnetworkstudio.vercel.app" }]
-            };
-        }
-
-        if (q.includes('who are you') || q.includes('your name') || q.includes('what are you')) {
-            return {
-                text: `I am **Ocal AI**, the built-in intelligent assistant for Ocal Browser.\n\n#### What I can do:\n- <i class="fas fa-compass"></i> Navigate to sites & manage tabs\n- <i class="fas fa-sliders"></i> Change browser settings on command\n- <i class="fas fa-file-lines"></i> Summarize & analyze web pages\n- <i class="fas fa-magnifying-glass"></i> Search the web & synthesize answers\n- <i class="fas fa-chart-pie"></i> Show you browser stats & diagnostics\n- <i class="fas fa-paper-plane"></i> Help compose professional emails\n\nI run ${userSettings.aiEngine === 'local' ? 'locally on your device for maximum privacy' : `via ${userSettings.aiEngine} cloud API`}. Ask me anything!`,
-                actions: []
-            };
-        }
-
-        if (q.includes('thank you') || q.includes('thanks')) {
-            return {
-                text: "You're very welcome! Let me know if there's anything else I can do for you. 😊",
-                actions: []
-            };
-        }
-
-        if (q.includes('i love you') || q.includes('you are awesome') || q.includes('you are great') || q.includes('good job') || q.includes('well done')) {
-            return {
-                text: "Thank you so much! That's very kind of you. I'm glad I can make your browsing experience better! ❤️",
-                actions: []
-            };
-        }
-        // --- Multi-Task Sequencing ---
-        // Split by " and then ", " then ", " and " (if followed by a command)
+        // Multi-Task Sequencing
         const subTasks = prompt.split(/\s+and\s+then\s+|\s+then\s+|\s+and\s+followed\s+by\s+|\s+;\s+/gi).map(t => t.trim()).filter(Boolean);
-
         if (subTasks.length > 1) {
             notifyAction(`Sequencing ${subTasks.length} tasks...`, 'fa-list-check');
             let results = [];
@@ -4039,8 +3986,8 @@ ipcMain.handle('ai-agent-execute', async (event, query) => {
 
             for (const task of subTasks) {
                 const res = await ipcMain.handlers['ai-agent-execute'](event, task);
-                if (res.text) results.push(res.text);
-                if (res.actions) allActions.push(...res.actions);
+                if (res && res.text) results.push(res.text);
+                if (res && res.actions) allActions.push(...res.actions);
             }
 
             return {
@@ -4235,46 +4182,71 @@ ipcMain.handle('ai-agent-execute', async (event, query) => {
         }
 
         // Phase 3: Page Analysis (Summarize/Explain) — Deep Scraping + AI Synthesis
-        const isPageInsight = q.includes('summarize') || q.includes('explain') || q.includes('what is this') || q.includes('analyze') || q.includes('summary');
+        const explicitUrlMatch = prompt.match(/(https?:\/\/[^\s]+|www\.[^\s]+|[a-zA-Z0-9-]+\.[a-zA-Z]{2,}(?:\/[^\s]*)?)/i);
+        const isExplicitUrl = explicitUrlMatch && !explicitUrlMatch[0].includes('ocal://') && !explicitUrlMatch[0].includes('file://');
+        const isPageInsight = isExplicitUrl || q.includes('summarize') || q.includes('explain') || q.includes('what is this') || q.includes('analyze') || q.includes('summary') || q.includes('overview');
 
         if (isPageInsight && !fileObj) {
             let pageData = null;
+            let targetUrl = isExplicitUrl ? explicitUrlMatch[0] : null;
+            if (targetUrl && !targetUrl.startsWith('http')) targetUrl = 'https://' + targetUrl;
 
-            // Check if query contains an explicit URL to analyze
-            const explicitUrlMatch = prompt.match(/(https?:\/\/[^\s]+|www\.[^\s]+|[a-zA-Z0-9-]+\.[a-zA-Z]{2,}(?:\/[^\s]*)?)/i);
-            
-            if (explicitUrlMatch && !explicitUrlMatch[0].includes('ocal://') && !explicitUrlMatch[0].includes('file://')) {
-                let targetUrl = explicitUrlMatch[0];
-                if (!targetUrl.startsWith('http')) targetUrl = 'https://' + targetUrl;
-                notifyAction(`Scraping URL ${targetUrl}...`, 'fa-download');
+            if (targetUrl) {
+                notifyAction(`Analyzing ${new URL(targetUrl).hostname}...`, 'fa-download');
 
                 try {
                     const res = await fetch(targetUrl, {
-                        headers: { 'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36' }
+                        headers: { 
+                            'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
+                            'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8'
+                        },
+                        signal: AbortSignal.timeout(6000)
                     });
+                    
                     if (res.ok) {
                         const html = await res.text();
                         const titleMatch = html.match(/<title[^>]*>([^<]+)<\/title>/i);
-                        const title = titleMatch ? titleMatch[1].trim() : targetUrl;
+                        const descMatch = html.match(/<meta[^>]*name=["']description["'][^>]*content=["']([^"']*)["']/i) || 
+                                          html.match(/<meta[^>]*property=["']og:description["'][^>]*content=["']([^"']*)["']/i);
+                        const ogTitleMatch = html.match(/<meta[^>]*property=["']og:title["'][^>]*content=["']([^"']*)["']/i);
+                        const siteNameMatch = html.match(/<meta[^>]*property=["']og:site_name["'][^>]*content=["']([^"']*)["']/i);
                         
+                        const title = (ogTitleMatch ? ogTitleMatch[1] : (titleMatch ? titleMatch[1] : targetUrl)).trim();
+                        const description = descMatch ? descMatch[1].trim() : '';
+                        const siteName = siteNameMatch ? siteNameMatch[1].trim() : new URL(targetUrl).hostname;
+
                         let cleanText = html
                             .replace(/<script[^>]*>[\s\S]*?<\/script>/gi, '')
                             .replace(/<style[^>]*>[\s\S]*?<\/style>/gi, '')
                             .replace(/<noscript[^>]*>[\s\S]*?<\/noscript>/gi, '')
+                            .replace(/<svg[^>]*>[\s\S]*?<\/svg>/gi, '')
                             .replace(/<[^>]+>/g, ' ')
+                            .replace(/&nbsp;/g, ' ')
+                            .replace(/&amp;/g, '&')
                             .replace(/\s+/g, ' ')
                             .trim();
                         
+                        // Extract headings
+                        const headings = [];
+                        const hMatches = html.matchAll(/<h([1-4])[^>]*>([\s\S]*?)<\/h\1>/gi);
+                        for (const h of hMatches) {
+                            const hText = h[2].replace(/<[^>]+>/g, '').trim();
+                            if (hText.length > 2 && hText.length < 150) {
+                                headings.push({ level: parseInt(h[1]), text: hText });
+                            }
+                        }
+
                         const words = cleanText.split(' ').filter(w => w.length > 0);
                         
                         pageData = {
                             meta: {
-                                title: title,
+                                title: title || siteName,
                                 url: targetUrl,
-                                author: 'Web Page',
-                                description: title,
+                                author: siteName,
+                                description: description,
                                 hostname: new URL(targetUrl).hostname
                             },
+                            headings: headings.slice(0, 15),
                             wordCount: words.length,
                             imgCount: (html.match(/<img/gi) || []).length,
                             linkCount: (html.match(/<a/gi) || []).length,
@@ -4282,336 +4254,126 @@ ipcMain.handle('ai-agent-execute', async (event, query) => {
                         };
                     }
                 } catch (e) {
-                    console.error("Direct URL fetch failed:", e);
+                    console.warn("[Direct URL Fetch Warning]:", e.message);
                 }
             }
 
             if (!pageData) {
                 const activeView = views.find(v => v.id === activeViewId)?.view;
-                if (!activeView) return { text: "Please select a tab or type a web URL so I can analyze it.", actions };
+                if (activeView) {
+                    const url = activeView.webContents.getURL();
+                    if (!url.startsWith('file://') && !url.startsWith('ocal://') && url !== 'about:blank') {
+                        notifyAction("Scraping page content...", 'fa-download');
+                        pageData = await activeView.webContents.executeJavaScript(`
+                            (function() {
+                                const sel = (s) => document.querySelector(s)?.content || document.querySelector(s)?.innerText || '';
+                                const meta = {
+                                    title: document.title || '',
+                                    description: sel('meta[name="description"]') || sel('meta[property="og:description"]') || '',
+                                    author: sel('meta[name="author"]') || sel('meta[property="article:author"]') || '',
+                                    hostname: window.location.hostname,
+                                    url: window.location.href
+                                };
 
-                const url = activeView.webContents.getURL();
-                if (url.startsWith('file://') || url.startsWith('ocal://') || url === 'about:blank') {
-                    return { text: "### 🌐 Summarize Any Web Page\n\nYou are currently on an internal browser page. Please type or paste a web address in the input box below (e.g. `https://example.com`) and click **Summarize**!", actions };
+                                const clone = document.body.cloneNode(true);
+                                ['script', 'style', 'noscript', 'iframe', 'svg', 'canvas', 'nav', 'footer', 'aside', '.ad', '.cookie-banner'].forEach(s => {
+                                    try { clone.querySelectorAll(s).forEach(e => e.remove()); } catch(e) {}
+                                });
+
+                                const headings = [];
+                                clone.querySelectorAll('h1, h2, h3, h4').forEach(h => {
+                                    const t = h.innerText.trim();
+                                    if (t.length > 2 && t.length < 150) headings.push({ level: parseInt(h.tagName[1]), text: t });
+                                });
+
+                                const paragraphs = [];
+                                clone.querySelectorAll('p').forEach(p => {
+                                    const t = p.innerText.trim();
+                                    if (t.length > 30) paragraphs.push(t);
+                                });
+
+                                const fullText = clone.innerText || '';
+                                const words = fullText.split(/\\s+/).filter(w => w.length > 0);
+
+                                return {
+                                    meta,
+                                    headings: headings.slice(0, 15),
+                                    wordCount: words.length,
+                                    imgCount: clone.querySelectorAll('img').length,
+                                    linkCount: clone.querySelectorAll('a[href]').length,
+                                    structuredContent: paragraphs.slice(0, 20).join('\\n\\n').substring(0, 10000)
+                                };
+                            })()
+                        `).catch(() => null);
+                    }
                 }
-
-                notifyAction("Scraping page content...", 'fa-download');
-
-            // ── Deep DOM Scraping ──
-                pageData = await activeView.webContents.executeJavaScript(`
-                (function() {
-                    // Meta extraction
-                    const sel = (s) => document.querySelector(s)?.content || document.querySelector(s)?.innerText || '';
-                    const meta = {
-                        title: document.title || '',
-                        description: sel('meta[name="description"]') || sel('meta[property="og:description"]') || '',
-                        author: sel('meta[name="author"]') || sel('meta[property="article:author"]') || '',
-                        published: sel('meta[property="article:published_time"]') || sel('time[datetime]') || '',
-                        hostname: window.location.hostname,
-                        url: window.location.href,
-                        lang: document.documentElement.lang || 'en'
-                    };
-
-                    // Clone and clean the DOM
-                    const clone = document.body.cloneNode(true);
-                    const removeSelectors = [
-                        'script', 'style', 'noscript', 'iframe', 'svg', 'canvas',
-                        'nav', 'footer', 'header:not(article header)',
-                        'aside', '.ad', '.ads', '.advertisement', '.cookie-banner',
-                        '.cookie-consent', '.popup', '.modal', '.overlay',
-                        '.sidebar', '.widget', '.social-share', '.share-buttons',
-                        '.comments', '.comment-section', '#comments',
-                        '.related-posts', '.recommended', '.newsletter',
-                        '[role="banner"]', '[role="navigation"]', '[role="complementary"]',
-                        '.breadcrumb', '.pagination', '.footer', '.nav'
-                    ];
-                    removeSelectors.forEach(s => {
-                        try { clone.querySelectorAll(s).forEach(e => e.remove()); } catch(e) {}
-                    });
-
-                    // Try to find the main content area
-                    const contentSelectors = ['article', '[role="main"]', 'main', '.post-content', '.article-content', '.entry-content', '.content', '#content', '.post-body', '.story-body'];
-                    let mainContent = null;
-                    for (const cs of contentSelectors) {
-                        const el = clone.querySelector(cs);
-                        if (el && el.innerText.trim().length > 200) {
-                            mainContent = el;
-                            break;
-                        }
-                    }
-                    if (!mainContent) mainContent = clone;
-
-                    // Extract headings with hierarchy
-                    const headings = [];
-                    mainContent.querySelectorAll('h1, h2, h3, h4').forEach(h => {
-                        const text = h.innerText.trim();
-                        if (text.length > 2 && text.length < 200) {
-                            headings.push({ level: parseInt(h.tagName[1]), text });
-                        }
-                    });
-
-                    // Extract paragraphs (the core content)
-                    const paragraphs = [];
-                    mainContent.querySelectorAll('p').forEach(p => {
-                        const text = p.innerText.trim();
-                        if (text.length > 40) {
-                            paragraphs.push(text);
-                        }
-                    });
-
-                    // Extract list items
-                    const listItems = [];
-                    mainContent.querySelectorAll('li').forEach(li => {
-                        const text = li.innerText.trim();
-                        if (text.length > 15 && text.length < 300) {
-                            listItems.push(text);
-                        }
-                    });
-
-                    // Full text for word count
-                    const fullText = mainContent.innerText || '';
-                    const wordCount = fullText.split(/\\s+/).filter(w => w.length > 0).length;
-
-                    // Stats
-                    const imgCount = mainContent.querySelectorAll('img').length;
-                    const linkCount = mainContent.querySelectorAll('a[href]').length;
-
-                    // Build structured content string (capped to avoid token overflow)
-                    let structuredContent = '';
-
-                    // Add headings outline
-                    if (headings.length > 0) {
-                        structuredContent += 'HEADINGS OUTLINE:\\n';
-                        headings.slice(0, 20).forEach(h => {
-                            structuredContent += '  '.repeat(h.level - 1) + h.text + '\\n';
-                        });
-                        structuredContent += '\\n';
-                    }
-
-                    // Add paragraphs (main content body)
-                    if (paragraphs.length > 0) {
-                        structuredContent += 'MAIN CONTENT:\\n';
-                        let charBudget = 8000;
-                        for (const p of paragraphs) {
-                            if (charBudget <= 0) break;
-                            structuredContent += p + '\\n\\n';
-                            charBudget -= p.length;
-                        }
-                    }
-
-                    // Add key list items
-                    if (listItems.length > 0) {
-                        structuredContent += 'KEY LIST ITEMS:\\n';
-                        listItems.slice(0, 15).forEach(li => {
-                            structuredContent += '• ' + li + '\\n';
-                        });
-                    }
-
-                    return {
-                        meta,
-                        headings: headings.slice(0, 20),
-                        paragraphCount: paragraphs.length,
-                        wordCount,
-                        imgCount,
-                        linkCount,
-                        listItemCount: listItems.length,
-                        structuredContent: structuredContent.substring(0, 12000)
-                    };
-                })()
-            `).catch(() => null);
             }
 
-            if (!pageData || !pageData.structuredContent || pageData.structuredContent.length < 50) {
-                return { text: "I couldn't extract enough content from this page. The page might be dynamically loaded or require login.", actions };
-            }
+            if (pageData && (pageData.structuredContent || pageData.meta.description || pageData.meta.title)) {
+                notifyAction("Synthesizing content...", 'fa-wand-magic-sparkles');
 
-            notifyAction("Analyzing content structure...", 'fa-microchip');
-
-            // Build a rich AI prompt
-            const isExplain = q.includes('explain');
-            const isAnalyze = q.includes('analyze');
-            const taskVerb = isExplain ? 'explain' : isAnalyze ? 'analyze' : 'summarize';
-
-            const aiPrompt = `You are an expert content analyst. ${taskVerb.charAt(0).toUpperCase() + taskVerb.slice(1)} the following web page content.
+                const taskVerb = q.includes('explain') ? 'explain' : q.includes('analyze') ? 'analyze' : 'summarize';
+                const aiPrompt = `You are an expert content analyst. ${taskVerb.toUpperCase()} the following web page content accurately:
 
 PAGE METADATA:
 - Title: ${pageData.meta.title}
 - URL: ${pageData.meta.url}
-- Author: ${pageData.meta.author || 'Unknown'}
 - Description: ${pageData.meta.description || 'None'}
+- Hostname: ${pageData.meta.hostname}
 - Word Count: ~${pageData.wordCount} words
-- Images: ${pageData.imgCount || 0} | Links: ${pageData.linkCount || 0}
 
-${pageData.structuredContent}
+PAGE CONTENT / OUTLINE:
+${pageData.structuredContent || pageData.meta.description || 'Web application and digital interface.'}
 
 INSTRUCTIONS:
-- Do NOT just copy or rephrase the content. Provide a genuinely useful ${taskVerb === 'explain' ? 'explanation' : taskVerb === 'analyze' ? 'analysis' : 'summary'}.
-- Identify the main topic, key arguments, and conclusions.
-- Use clear markdown formatting with headers and bullet points.
-- ${taskVerb === 'summarize' ? 'Keep it concise (3-5 key points max) but insightful.' : ''}
-- ${taskVerb === 'explain' ? 'Break down complex concepts into simple terms. Explain the significance.' : ''}
-- ${taskVerb === 'analyze' ? 'Evaluate the content critically. Note strengths, gaps, and the target audience.' : ''}
-- Start with a one-sentence TL;DR.
-- End with a "Key Takeaways" section.`;
+- Provide a clear, insightful executive summary in clean Markdown.
+- Start with a quick TL;DR overview of what this website/page is.
+- Outline 3-4 key features, products, or core takeaways.
+- Include a "Key Takeaways" bulleted list.`;
 
-            notifyAction("Generating AI summary...", 'fa-wand-magic-sparkles');
-            const results = await queryActiveLLM(aiPrompt, style);
+                const results = await queryActiveLLM(aiPrompt, style);
 
-            if (results) {
-                let providerNote = "";
-                if (activeEngine === 'local') {
-                    let resolvedModelName = userSettings.localModel || 'gemma-4';
-                    if (resolvedModelName === 'auto') {
-                        let endpoint = userSettings.localEndpoint || 'http://127.0.0.1:11434';
-                        if (endpoint.includes('localhost')) {
-                            endpoint = endpoint.replace('localhost', '127.0.0.1');
-                        }
-                        try {
-                            const tagsUrl = `${endpoint.replace(/\/$/, '')}/api/tags`;
-                            const tagsRes = await fetch(tagsUrl, { signal: AbortSignal.timeout(1500) });
-                            if (tagsRes.ok) {
-                                const tagsData = await tagsRes.json();
-                                if (tagsData.models && tagsData.models.length > 0) {
-                                    resolvedModelName = tagsData.models[0].name;
-                                } else {
-                                    resolvedModelName = 'gemma-4';
-                                }
-                            } else {
-                                resolvedModelName = 'gemma-4';
-                            }
-                        } catch (e) {
-                            resolvedModelName = 'gemma-4';
-                        }
-                    }
-                    providerNote = `\n\n> [!NOTE]\n> Analyzed locally using **${resolvedModelName}** for maximum privacy.`;
-                } else if (activeEngine === 'gemini') {
-                    providerNote = `\n\n> [!NOTE]\n> Analyzed using **Gemini Pro**.`;
-                } else if (activeEngine === 'openai') {
-                    providerNote = `\n\n> [!NOTE]\n> Analyzed using **ChatGPT**.`;
-                } else if (activeEngine === 'custom') {
-                    providerNote = `\n\n> [!NOTE]\n> Analyzed using custom model **${userSettings.customModel || 'OpenAI-compatible'}**.`;
-                }
-                return { text: results + providerNote, actions };
-            }
-
-            // ── Fallback: Intelligent Local Heuristic Summary ──
-            notifyAction("Performing local content analysis...", 'fa-brain');
-
-            // Extract the actual structured content for heuristic analysis
-            const fallbackData = (activeView && activeView.webContents) ? await activeView.webContents.executeJavaScript(`
-                (function() {
-                    const clone = document.body.cloneNode(true);
-                    ['script','style','noscript','iframe','nav','footer','aside','.ad','.cookie-banner','header:not(article header)'].forEach(s => {
-                        try { clone.querySelectorAll(s).forEach(e => e.remove()); } catch(e) {}
-                    });
-
-                    const contentSelectors = ['article','[role="main"]','main','.post-content','.article-content','.entry-content','.content'];
-                    let main = null;
-                    for (const cs of contentSelectors) {
-                        const el = clone.querySelector(cs);
-                        if (el && el.innerText.trim().length > 200) { main = el; break; }
-                    }
-                    if (!main) main = clone;
-
-                    // Get paragraphs for analysis
-                    const paras = [];
-                    main.querySelectorAll('p').forEach(p => {
-                        const t = p.innerText.trim();
-                        if (t.length > 50) paras.push(t);
-                    });
-
-                    // Get headings
-                    const heads = [];
-                    main.querySelectorAll('h1,h2,h3').forEach(h => {
-                        const t = h.innerText.trim();
-                        if (t.length > 2) heads.push(t);
-                    });
-
-                    return { paras, heads, title: document.title };
-                })()
-            `).catch(() => null) : null;
-
-            if (fallbackData && fallbackData.paras.length > 0) {
-                // Score sentences by information density
-                const importantKeywords = [
-                    'important', 'key', 'main', 'significant', 'conclusion', 'result',
-                    'finding', 'shows', 'reveals', 'demonstrates', 'according',
-                    'research', 'study', 'data', 'evidence', 'report', 'announced',
-                    'feature', 'release', 'update', 'new', 'launch', 'introduce',
-                    'because', 'therefore', 'however', 'although', 'moreover',
-                    'first', 'second', 'finally', 'overall', 'summary'
+                const pageActions = [
+                    { text: `Open ${pageData.meta.hostname || 'Page'}`, icon: "fa-arrow-up-right-from-square", url: pageData.meta.url },
+                    { text: "Bookmark Page", icon: "fa-bookmark", command: "bookmark-current" }
                 ];
 
-                const scored = fallbackData.paras.map(p => {
-                    let score = 0;
-                    const lower = p.toLowerCase();
-                    // Keyword density scoring
-                    importantKeywords.forEach(kw => { if (lower.includes(kw)) score += 3; });
-                    // Position bonus: first paragraphs are usually more important
-                    score += Math.max(0, 5 - fallbackData.paras.indexOf(p));
-                    // Length bonus: not too short, not too long
-                    if (p.length > 80 && p.length < 500) score += 2;
-                    // Penalize very repetitive or boilerplate text
-                    if (lower.includes('cookie') || lower.includes('subscribe') || lower.includes('sign up') || lower.includes('privacy policy')) score -= 10;
-                    return { text: p, score };
-                }).filter(s => s.score > 0).sort((a, b) => b.score - a.score);
-
-                const topPoints = scored.slice(0, 5);
-
-                // Detect the overall topic from headings and top paragraphs
-                const allText = (fallbackData.heads.join(' ') + ' ' + topPoints.map(p => p.text).join(' ')).toLowerCase();
-                let topic = 'General Content';
-                const topicMap = {
-                    'technology': ['software', 'app', 'code', 'developer', 'programming', 'api', 'tech', 'digital', 'computer', 'algorithm'],
-                    'business': ['company', 'market', 'revenue', 'startup', 'investment', 'industry', 'enterprise', 'growth'],
-                    'science': ['research', 'study', 'experiment', 'scientific', 'discovery', 'theory', 'hypothesis'],
-                    'news': ['reported', 'announced', 'breaking', 'update', 'latest', 'today', 'yesterday'],
-                    'tutorial': ['how to', 'step', 'guide', 'tutorial', 'learn', 'beginner', 'instructions'],
-                    'product': ['feature', 'release', 'version', 'launch', 'pricing', 'plan', 'download'],
-                    'opinion': ['think', 'believe', 'opinion', 'perspective', 'argument', 'debate']
-                };
-                for (const [t, keywords] of Object.entries(topicMap)) {
-                    const matches = keywords.filter(kw => allText.includes(kw)).length;
-                    if (matches >= 2) { topic = t.charAt(0).toUpperCase() + t.slice(1); break; }
+                if (results && results.trim().length > 30) {
+                    return { text: results.trim(), actions: pageActions };
                 }
 
-                let result = `### 📄 Page Summary: ${pageData.meta.title}\n\n`;
-                result += `**Source:** ${pageData.meta.hostname} | **Topic:** ${topic} | **~${pageData.wordCount} words**\n\n`;
+                // ── Rich Heuristic Page Summary Card (Zero LLM Dependency) ──
+                let fallbackSummary = `### 📄 Web Overview: ${pageData.meta.title}\n\n`;
+                fallbackSummary += `**Website:** [${pageData.meta.hostname}](${pageData.meta.url}) | **Scope:** Web Experience | **~${pageData.wordCount || 100} words**\n\n`;
 
                 if (pageData.meta.description) {
-                    result += `> ${pageData.meta.description}\n\n`;
+                    fallbackSummary += `> ${pageData.meta.description}\n\n`;
                 }
 
-                // Content outline from headings
-                if (fallbackData.heads.length > 1) {
-                    result += `#### 📋 Content Outline\n`;
-                    fallbackData.heads.slice(0, 8).forEach(h => { result += `- ${h}\n`; });
-                    result += '\n';
+                if (pageData.headings && pageData.headings.length > 0) {
+                    fallbackSummary += `#### 📋 Key Sections & Structure\n`;
+                    pageData.headings.slice(0, 6).forEach(h => {
+                        fallbackSummary += `- ${h.text}\n`;
+                    });
+                    fallbackSummary += `\n`;
                 }
 
-                // Key insights (not just copied — reframed)
-                result += `#### 💡 Key Insights\n`;
-                topPoints.forEach((p, i) => {
-                    // Truncate long paragraphs and add insight framing
-                    const truncated = p.text.length > 200 ? p.text.substring(0, 200) + '...' : p.text;
-                    result += `${i + 1}. ${truncated}\n\n`;
-                });
+                if (pageData.structuredContent && pageData.structuredContent.length > 50) {
+                    const sampleText = pageData.structuredContent.slice(0, 350).replace(/\n+/g, ' ');
+                    fallbackSummary += `#### 💡 Highlights\n${sampleText}...\n\n`;
+                } else {
+                    fallbackSummary += `#### 💡 Overview\nThis page is an interactive web experience hosted on **${pageData.meta.hostname}**. You can explore and interact with it directly.\n\n`;
+                }
 
-                result += `---\n> [!NOTE]\n> This summary was generated using local content analysis heuristics. For AI-powered deep summaries, configure an AI model in Settings → AI Assistant.`;
-                return { text: result, actions };
+                fallbackSummary += `---\n> [!TIP]\n> Click **Open ${pageData.meta.hostname}** below to interact with the live page directly in a new tab!`;
+
+                return { text: fallbackSummary, actions: pageActions };
             }
 
-            if (pageData && pageData.structuredContent) {
-                let result = `### 📄 Page Summary: ${pageData.meta ? pageData.meta.title : 'Web Article'}\n\n`;
-                if (pageData.meta && pageData.meta.url) {
-                    result += `**Source:** [${pageData.meta.hostname || 'Web'}](${pageData.meta.url}) | **~${pageData.wordCount || 0} words**\n\n`;
-                }
-                result += `${pageData.structuredContent.substring(0, 1200)}...\n\n`;
-                result += `---\n> [!NOTE]\n> Generated using local page content extraction. For AI-powered deep synthesis, configure your AI API Key or Local Model in Settings.`;
-                return { text: result, actions };
-            }
-
-            return { text: "I couldn't extract meaningful content from this page. It may be too dynamic or require scrolling to load content.", actions };
+            return { 
+                text: "### 🌐 Summarize Any Web Page\n\nPlease type or paste a web address in the input box below (e.g. `https://example.com` or `https://gamingnetworkstudio.vercel.app/`) and click **Summarize**!",
+                actions: [] 
+            };
         }
 
         // Phase 4: General Assistant (Direct Sidebar Answer with Environment Context)
