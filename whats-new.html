@@ -1007,7 +1007,7 @@
         }
 
         // ── Typing Animation ──
-        const heroText = "Ocal Browser v8.5.00 Stable is officially live! Featuring the new Force Hide Sidebar layout, an elegant redesigned Password Vault with site favicons, a clean minimalist Omnibox Key Button, and numerous bug fixes including zero-margin full viewport webviews, split-screen padding fixes, scrollbar removal, and seamless sidebar toggle logic.";
+        const heroText = "Ocal Browser v8.6.00 Stable is officially live! Featuring the flagship Showroom-Grade AI Intelligence Suite with real-time TTS Voice & Copy action bars, zero-LLM URL deep scraping heuristics, natural language browser settings controls, deduplicated native web context menus with Google Lens and split view, plus engine matrix upgrades to Electron 43.4.0, uBlock Origin 1.73.0, and Return YouTube Dislike 4.0.4.";
         const heroDesc = document.getElementById('hero-desc');
         let charIndex = 0;
 
@@ -1113,21 +1113,20 @@
 
         // ── Features & Team Data ──
         const items = [
+            { type: 'feature', category: 'media', icon: 'fa-sparkles', title: 'Showroom-Grade AI Intelligence Suite', desc: 'Sleek elevated message cards, dynamic personality badges, code block headers with copy buttons, TTS speech synthesis, and full-response copy actions.', actionText: 'AI Workspace' },
+            { type: 'feature', category: 'performance', icon: 'fa-file-lines', title: 'Zero-Failure Web & SPA Summarizer', desc: 'Resilient multi-layer page scraper supporting modern Single Page Apps (Next.js/React) with OpenGraph metadata extraction and heuristic fallback cards.', actionText: 'Web AI' },
+            { type: 'feature', category: 'multitasking', icon: 'fa-sliders', title: 'Natural Language Browser Control', desc: 'Instruct Ocal AI in plain English to toggle dark/light modes, customize 25+ accent colors, switch search engines, and manage tabs effortlessly.', actionText: 'AI Control' },
+            { type: 'feature', category: 'performance', icon: 'fa-arrow-pointer', title: 'Native High-Precision Context Menu', desc: 'Restored right-click context menu with Google Lens search, AI selection analyzer, split view opening, and dictionary suggestions without DPI distortion.', actionText: 'Context Menu' },
+            { type: 'feature', category: 'performance', icon: 'fa-shield-halved', title: 'Engine & Extension Matrix v8.6', desc: 'Upgraded to Electron 43.4.0, uBlock Origin v1.73.0, and Return YouTube Dislike v4.0.4 for maximum speed, security, and ad neutrality.', actionText: 'Engines' },
             { type: 'feature', category: 'performance', icon: 'fa-eye-slash', title: 'Force Hide Sidebar Layout', desc: 'True full-screen viewport layout with a force hide sidebar feature, enabled by default, ensuring zero black bars or side margins.', actionText: 'UI System' },
             { type: 'feature', category: 'performance', icon: 'fa-vault', title: 'Redesigned Password Vault', desc: 'An elegant, glow-free password popover with intelligent favicon contrast matching and precise layout rendering.', actionText: 'Passwords' },
             { type: 'feature', category: 'multitasking', icon: 'fa-key', title: 'Clean Omnibox Interface', desc: 'A minimalist, single-key button approach for password management, removing redundant toolbar icons.', actionText: 'Address Bar' },
-            { type: 'feature', category: 'media', icon: 'fa-bug-slash', title: 'Major Layout Bug Fixes', desc: 'Complete removal of scrollbars, fixing of right-side gaps in split-screen, and zero-gap borderless webviews.', actionText: 'Bug Fixes' },
             { type: 'feature', category: 'media', icon: 'fa-wand-magic-sparkles', title: 'FLUX.2, SD 3.5 Large & Qwen-Image Studio', desc: 'Flagship open-source AI image generation architectures with smart hyperrealism prompt matrix.', actionText: 'AI Studio' },
-            { type: 'feature', category: 'media', icon: 'fa-sliders', title: 'Real-Time Image Processing (HD, HDR, Sharpen)', desc: 'Interactive action bar with 2x bicubic super-resolution, HDR vibrance boost, and unsharp mask convolution sharpening.', actionText: 'Studio Bar' },
             { type: 'feature', category: 'performance', icon: 'fa-spell-check', title: 'Browser-Wide Real-Time Autocorrect Engine', desc: 'Instant typo and contraction correction (teh ➔ the, cant ➔ can\'t, im ➔ I\'m) across all input fields and search bars.', actionText: 'Autocorrect' },
-            { type: 'feature', category: 'performance', icon: 'fa-book-bookmark', title: 'Smart Dictionary Right-Click Context Menu', desc: 'Right-click spelling correction suggestions menu and personal dictionary addition across all browser pages.', actionText: 'Dictionary' },
-            { type: 'feature', category: 'multitasking', icon: 'fa-server', title: 'Local AI Telemetry & Port Auto-Discovery', desc: 'Automatic probing for Ollama, ComfyUI, Fooocus, and Automatic1111/Forge servers (ports 7860, 7861, 8188, 8888, 11434).', actionText: 'Local AI' },
             { type: 'feature', category: 'multitasking', icon: 'fa-file-pdf', title: 'Conversational PDF Document Intelligence', desc: 'PDF analysis with 2-person dialogue narratives, entity cards, mood personas, and document insights.', actionText: 'PDF AI' },
-            { type: 'feature', category: 'media', icon: 'fa-masks-theater', title: 'AI Persona Mood Swings & Anger Dynamics', desc: 'GF, Wife & Companion AI personas featuring dynamic mood shifts, emotional reactivity, and storytelling.', actionText: 'AI Moods' },
-            { type: 'feature', category: 'media', icon: 'fa-table-cells', title: '2-Column Glassmorphic AI Sidebar', desc: 'Redesigned spacious 2-column persona grid with glowing emerald accents and vector icons.', actionText: 'AI Sidebar' },
             
             // Team Contributors
-            { type: 'contributor', category: 'contributors', icon: 'fa-user-gear', title: 'Neelkanth Patel', desc: 'Lead browser architect. Engineered browser core, tab lifecycle, and AI integration.', role: 'Founder & Lead Dev' },
+            { type: 'contributor', category: 'contributors', icon: 'fa-user-gear', title: 'Neelkanth Patel', desc: 'Lead browser architect. Engineered browser core, tab lifecycle, AI intelligence suite, and engine packaging.', role: 'Founder & Lead Dev' },
             { type: 'contributor', category: 'contributors', icon: 'fa-user-code', title: 'Jay Shah', desc: 'Worked on tab lifecycle algorithms, background Memory Saver suspensions, and auto-wake event bindings.', role: 'Software Engineer' },
             { type: 'contributor', category: 'contributors', icon: 'fa-user-pen', title: 'Jiya Thakkar', desc: 'Lead UX designer behind 2-column AI sidebar, Glassmorphic select popovers, and dynamic contrast themes.', role: 'Lead Designer' },
             { type: 'contributor', category: 'contributors', icon: 'fa-user-astronaut', title: 'Reese Whiteman', desc: 'Engineered AI Persona Mood Swings, anger reactivity dynamics, and creative story generation heuristics.', role: 'AI & Research Lead' },
@@ -1141,7 +1140,8 @@
         ];
 
         const changelog = [
-            { date: 'August 2026', title: 'v8.5.00 Stable — Layout Precision & Password Vault Redesign', desc: 'Introduced force hide sidebar layout, redesigned shadowless password popover with site favicons, removed system scrollbars, and resolved all viewport black bar and padding bugs.', tags: ['v8.5.00 Stable', 'UI Polishing', 'Bug Fixes'] },
+            { date: 'August 2026', title: 'v8.6.00 Stable — Showroom AI Suite, Web Summarizer & Engine Matrix', desc: 'Overhauled Ocal AI Assistant with real-time browser settings control, TTS voice, code copy, and robust SPA page scraping. Restored native right-click context menu, eliminated sidebar gap and bubble layout bugs, and upgraded Electron to 43.4.0 with latest uBlock Origin and Dislike extensions.', tags: ['v8.6.00 Stable', 'AI Intelligence', 'Context Menu', 'Engine Upgrade'] },
+            { date: 'August 2026', title: 'v8.5.00 — Layout Precision & Password Vault Redesign', desc: 'Introduced force hide sidebar layout, redesigned shadowless password popover with site favicons, removed system scrollbars, and resolved all viewport black bar and padding bugs.', tags: ['v8.5.00', 'UI Polishing', 'Bug Fixes'] },
             { date: 'August 2026', title: 'v8.2.00 — Native System App & AI Persona Moods', desc: 'Added Open in System App handler, pdf-icon.ico branding, AI Persona Moodswings & Anger, and 2-column glassmorphic AI sidebar.', tags: ['v8.2.00', 'AI Moods', 'System App'] },
             { date: 'July 2026', title: 'v8.0.0 — Major UI Overhaul & PDF AI Intelligence', desc: 'Complete design system revamp with dynamic accent highlights, floating navigation pill, and human-readable tab titles.', tags: ['Major Update', 'UI/UX', 'AI'] },
             { date: 'July 2026', title: 'v7.8.00 — Dynamic Color Palette System', desc: 'Introduced 6 custom accent color options (Purple, Neon Green, Ocean Blue, Coral Red, Lime, White) with contrast text adaptation.', tags: ['Theme', 'Accent'] }
