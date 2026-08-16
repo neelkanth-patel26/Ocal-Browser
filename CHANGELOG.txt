@@ -1,4 +1,38 @@
 OCAL BROWSER - UPDATE CATALOG
+Version: 8.6.00 Stable
+Release Date: August 16, 2026
+
+-------------------------------------------------------------------------------
+[SHOWROOM-GRADE AI INTELLIGENCE & CHAT WORKSPACE]
+-------------------------------------------------------------------------------
+* SHOWROOM-GRADE CHAT UI: Elevated message cards, dynamic personality badges,
+  glowing sparkle avatars, integrated code block headers with dedicated copy buttons.
+* TTS VOICE & RESPONSE ACTIONS: Added interactive footer action bar beneath AI responses
+  with full-response copy and native SpeechSynthesis read-aloud TTS capabilities.
+* REFINED PERSONA BEHAVIORS: Strict personality boundaries addressing the user professionally
+  or technically, isolating companion nicknames exclusively to companion persona modes.
+* ZERO-FAILURE WEB SUMMARIZER: Multi-source DOM scraper extracting OpenGraph metadata,
+  headings hierarchy, and structured content from SPAs (Next.js/React/Vercel) with 
+  rich executive summary cards when offline.
+* NATURAL LANGUAGE BROWSER CONTROL: Direct natural language instructions to toggle themes,
+  25+ accent colors, Shields, search engines, and tabs in real time.
+
+-------------------------------------------------------------------------------
+[HIGH-PRECISION NATIVE RIGHT-CLICK CONTEXT MENU]
+-------------------------------------------------------------------------------
+* NATIVE OS CURSOR POPUP: Fixed context menu rendering by eliminating DPI coordinate
+  distortion and preventing duplicate event listener cancellation.
+* ADVANCED WEB ACTIONS: Added Google Lens image search, Ask Ocal AI selection analyzer,
+  split-view link launcher, page source viewer, print dialog, and dictionary spellchecking.
+
+-------------------------------------------------------------------------------
+[ENGINE & EXTENSION UPGRADES]
+-------------------------------------------------------------------------------
+* CORE ENGINE: Upgraded to Electron 43.4.0 with optimized Chromium runtime.
+* EXTENSIONS MATRIX: Updated uBlock Origin to v1.73.0 and Return YouTube Dislike to v4.0.4.
+* INNO SETUP PACKAGING: Modern lzma2/ultra64 compression installer with custom icon branding.
+
+-------------------------------------------------------------------------------
 Version: 7.1.00
 Release Date: July 11, 2026
 
