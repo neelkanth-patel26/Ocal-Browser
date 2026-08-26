@@ -451,5 +451,33 @@
     </div>
 
     <script src="home.js"></script>
+    <script>
+        (function() {
+            if (window.location.hash === '#drag-overlay') {
+                document.body.classList.add('drag-overlay-mode');
+                const overlay = document.getElementById('split-drop-zones-overlay');
+                if (overlay) {
+                    overlay.style.display = 'flex';
+                    overlay.classList.add('active');
+                }
+
+                document.querySelectorAll('.split-drop-zone').forEach(zone => {
+                    zone.ondragover = (e) => {
+                        e.preventDefault();
+                        zone.classList.add('drag-over');
+                    };
+                    zone.ondragleave = () => zone.classList.remove('drag-over');
+                    zone.ondrop = (e) => {
+                        e.preventDefault();
+                        zone.classList.remove('drag-over');
+                        const dir = zone.getAttribute('data-direction');
+                        if (window.electronAPI && window.electronAPI.send) {
+                            window.electronAPI.send('drop-tab-to-split', dir);
+                        }
+                    };
+                });
+            }
+        })();
+    </script>
 </body>
 </html>

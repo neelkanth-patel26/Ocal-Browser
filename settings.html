@@ -357,6 +357,79 @@
                             </div>
                         </div>
 
+                        <!-- ─── Tab Layout & Vertical Tabs (Arc / Crescent / Edge) ─── -->
+                        <div class="card homepage-card-box" style="grid-column: 1 / -1;">
+                            <div class="homepage-card-header">
+                                <i class="fas fa-table-columns"></i>
+                                <span>Tab Layout & Vertical Tabs (Arc / Crescent)</span>
+                            </div>
+                            <div class="homepage-rows-container" style="gap: 14px; padding: 16px 20px;">
+                                <!-- Tab Layout Mode Grid -->
+                                <div class="security-toggle-row" style="flex-direction: column; align-items: flex-start; gap: 10px; padding-bottom: 14px;">
+                                    <div class="row-info">
+                                        <h4>Tab Strip Orientation</h4>
+                                        <p>Choose between traditional top tab bar or modern vertical sidebar tabs (Arc Browser / Crescent style)</p>
+                                    </div>
+                                    <div class="choice-grid" id="tab-layout-grid" style="grid-template-columns: repeat(2, 1fr); gap: 12px; width: 100%;">
+                                        <div class="choice-item active" data-value="horizontal">
+                                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                                <rect width="18" height="18" x="3" y="3" rx="3.5"/>
+                                                <line x1="3" y1="9.5" x2="21" y2="9.5"/>
+                                            </svg>
+                                            <div style="display: flex; flex-direction: column; align-items: flex-start; text-align: left;">
+                                                <span style="font-weight: 700;">Horizontal Tabs</span>
+                                                <span style="font-size: 11px; opacity: 0.7;">Classic top tab bar</span>
+                                            </div>
+                                        </div>
+                                        <div class="choice-item" data-value="vertical">
+                                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="color: var(--accent);">
+                                                <rect width="18" height="18" x="3" y="3" rx="3.5"/>
+                                                <line x1="9.5" y1="3" x2="9.5" y2="21"/>
+                                            </svg>
+                                            <div style="display: flex; flex-direction: column; align-items: flex-start; text-align: left;">
+                                                <span style="font-weight: 700;">Vertical Tabs</span>
+                                                <span style="font-size: 11px; opacity: 0.7;">Arc / Crescent left dock</span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <!-- Vertical Tabs Collapsed Toggle -->
+                                <div class="security-toggle-row" id="vt-collapse-setting-row" style="padding-bottom: 14px;">
+                                    <div class="row-info">
+                                        <h4>Collapsed Mini Mode</h4>
+                                        <p>Start vertical tabs in compact icon-only dock (expands on hover or click)</p>
+                                    </div>
+                                    <label class="toggle-switch">
+                                        <input type="checkbox" id="vertical-tabs-collapsed-toggle">
+                                        <span class="slider round"></span>
+                                    </label>
+                                </div>
+
+                                <!-- Vertical Tabs Width -->
+                                <div class="security-toggle-row" id="vt-width-setting-row" style="flex-direction: column; align-items: flex-start; gap: 10px; padding-bottom: 0; border-bottom: none;">
+                                    <div class="row-info">
+                                        <h4>Vertical Sidebar Width</h4>
+                                        <p>Preferred width when vertical tabs panel is expanded</p>
+                                    </div>
+                                    <div class="choice-grid" id="vt-width-grid" style="grid-template-columns: repeat(3, 1fr); gap: 10px; width: 100%;">
+                                        <div class="choice-item" data-value="200">
+                                            <i class="fas fa-mobile-screen"></i>
+                                            <span>Compact (200px)</span>
+                                        </div>
+                                        <div class="choice-item active" data-value="240">
+                                            <i class="fas fa-tablet-screen-button"></i>
+                                            <span>Standard (240px)</span>
+                                        </div>
+                                        <div class="choice-item" data-value="280">
+                                            <i class="fas fa-desktop"></i>
+                                            <span>Spacious (280px)</span>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
                         <!-- ─── Sidebar Controls ─── -->
                         <div class="card homepage-card-box" style="grid-column: 1 / -1;">
                             <div class="homepage-card-header">
