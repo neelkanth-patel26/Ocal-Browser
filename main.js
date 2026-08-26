@@ -226,6 +226,9 @@ let userSettings = loadSettings() || {
     bookmarks: [],
     folders: [],
     bookmarkBarMode: 'auto',
+    tabLayout: 'horizontal', // 'horizontal' or 'vertical'
+    verticalTabsCollapsed: false,
+    verticalTabsWidth: 240,
     homeLayout: 'center', // 'top', 'center', 'bottom'
     homeTileSize: 80,
     homeTileSpacing: 20,
@@ -259,6 +262,9 @@ let userSettings = loadSettings() || {
 };
 
 if (!userSettings.bookmarks) userSettings.bookmarks = [];
+if (!userSettings.tabLayout) userSettings.tabLayout = 'horizontal';
+if (userSettings.verticalTabsCollapsed === undefined) userSettings.verticalTabsCollapsed = false;
+if (!userSettings.verticalTabsWidth) userSettings.verticalTabsWidth = 240;
 if (!userSettings.localModel) userSettings.localModel = 'gemma-4';
 if (!userSettings.localEndpoint) userSettings.localEndpoint = 'http://127.0.0.1:11434';
 if (!userSettings.openaiApiKey) userSettings.openaiApiKey = '';
@@ -2265,7 +2271,8 @@ function updateViewBounds(forcedUrl = null) {
 
     const winOffset = 0; // Simplified for modern Electron styling
 
-    const hTabs = isFullscreen ? 0 : Math.round((userSettings.compactMode ? 36 : 44) * zoom);
+    const isVerticalTabs = (userSettings.tabLayout === 'vertical');
+    const hTabs = (isFullscreen || isVerticalTabs) ? 0 : Math.round((userSettings.compactMode ? 36 : 44) * zoom);
     const hNav = isFullscreen ? 0 : Math.round((userSettings.compactMode ? 40 : 52) * zoom);
 
     // Bookmark Bar Logic
@@ -2291,19 +2298,21 @@ function updateViewBounds(forcedUrl = null) {
 
     const isHideMode = (isFullscreen || userSettings.sidebarMode === 'hidden' || userSettings.sidebarMode === 'autohide');
     let wSidebar = isHideMode ? 0 : Math.round(48 * zoom);
+    const wVertTabs = (isFullscreen || !isVerticalTabs) ? 0 : Math.round((userSettings.verticalTabsCollapsed ? 56 : (userSettings.verticalTabsWidth || 240)) * zoom);
+    const wSidebarTotal = wSidebar + wVertTabs;
 
     lastYOffset = yOffset;
-    lastWSidebar = wSidebar;
+    lastWSidebar = wSidebarTotal;
 
     if (activeViewEntry && activeViewEntry.view) {
         if (activeViewEntry.view.webContents && !activeViewEntry.view.webContents.isDestroyed() && mainWindow.getBrowserViews().includes(activeViewEntry.view)) {
-            const sideGap = isHideMode ? 0 : Math.round(6 * zoom);
-            const topGap = isHideMode ? 0 : Math.round(4 * zoom);
-            const bottomGap = isHideMode ? 0 : Math.round(6 * zoom);
+            const sideGap = isHideMode && !isVerticalTabs ? 0 : Math.round(6 * zoom);
+            const topGap = isHideMode && !isVerticalTabs ? 0 : Math.round(4 * zoom);
+            const bottomGap = isHideMode && !isVerticalTabs ? 0 : Math.round(6 * zoom);
 
-            const xBase = Math.round(wSidebar + sideGap);
+            const xBase = Math.round(wSidebarTotal + sideGap);
             const yBase = Math.round(yOffset + topGap);
-            const totalWidth = Math.max(10, Math.round(width - wSidebar - (sideGap * 2)));
+            const totalWidth = Math.max(10, Math.round(width - wSidebarTotal - (sideGap * 2)));
             const totalHeight = Math.max(10, Math.round(height - yOffset - topGap - bottomGap));
 
             if (isFullscreen) {
@@ -2401,9 +2410,9 @@ function updateViewBounds(forcedUrl = null) {
     // 2. Stack Sidebar Overlay (on the left, covering the whole window for backdrop)
     if (sidebarOverlayView && sidebarOverlayView.webContents && !sidebarOverlayView.webContents.isDestroyed() && mainWindow.getBrowserViews().includes(sidebarOverlayView)) {
         sidebarOverlayView.setBounds({
-            x: Math.round(wSidebar + winOffset),
+            x: Math.round(wSidebarTotal + winOffset),
             y: Math.round(yOffset + winOffset),
-            width: Math.round(width - wSidebar - (winOffset * 2)),
+            width: Math.round(width - wSidebarTotal - (winOffset * 2)),
             height: Math.round(height - yOffset - (winOffset * 2))
         });
         mainWindow.setTopBrowserView(sidebarOverlayView);
@@ -2422,7 +2431,7 @@ function updateViewBounds(forcedUrl = null) {
         const viewWidth = Math.max(100, webAppWidth - 8);
 
         webAppView.setBounds({
-            x: Math.round(wSidebar + sideGap),
+            x: Math.round(wSidebarTotal + sideGap),
             y: Math.round(yOffset + topGap),
             width: viewWidth,
             height: Math.round(height - yOffset - topGap - bottomGap)
@@ -2715,7 +2724,8 @@ function animateSplitBounds(tabId, startSplit, onComplete = null) {
         return;
     }
 
-    const hTabs = Math.round((userSettings.compactMode ? 36 : 44) * zoom);
+    const isVerticalTabs = userSettings.tabLayout === 'vertical';
+    const hTabs = isVerticalTabs ? 0 : Math.round((userSettings.compactMode ? 36 : 44) * zoom);
     const hNav = Math.round((userSettings.compactMode ? 40 : 52) * zoom);
     let isBmVisible = bookmarkBarVisible;
     const url = entry.view.webContents.isDestroyed() ? '' : entry.view.webContents.getURL();
@@ -2733,9 +2743,18 @@ function animateSplitBounds(tabId, startSplit, onComplete = null) {
         wSidebar = 0;
     }
 
-    const xBase = Math.round(wSidebar);
+    let wVertTabs = 0;
+    if (isVerticalTabs) {
+        const isCollapsed = !!userSettings.verticalTabsCollapsed;
+        const baseVtWidth = isCollapsed ? 56 : (userSettings.verticalTabsWidth || 240);
+        wVertTabs = Math.round(baseVtWidth * zoom);
+    }
+
+    const wSidebarTotal = wSidebar + wVertTabs;
+
+    const xBase = Math.round(wSidebarTotal);
     const yBase = Math.round(yOffset);
-    const totalWidth = Math.round(width - wSidebar);
+    const totalWidth = Math.round(width - wSidebarTotal);
     const totalHeight = Math.round(height - yOffset);
 
     const duration = 250;
@@ -2999,7 +3018,8 @@ ipcMain.on('tab-drag-start', (e, tabId) => {
             const { width, height } = mainWindow.getContentBounds();
             const zoom = getOptimalZoomFactor();
             
-            const hTabs = Math.round((userSettings.compactMode ? 36 : 44) * zoom);
+            const isVerticalTabs = userSettings.tabLayout === 'vertical';
+            const hTabs = isVerticalTabs ? 0 : Math.round((userSettings.compactMode ? 36 : 44) * zoom);
             const hNav = Math.round((userSettings.compactMode ? 40 : 52) * zoom);
             
             let isBmVisible = bookmarkBarVisible;
@@ -3019,10 +3039,19 @@ ipcMain.on('tab-drag-start', (e, tabId) => {
             if (userSettings.sidebarMode === 'hidden' || userSettings.sidebarMode === 'autohide') {
                 wSidebar = 0;
             }
+
+            let wVertTabs = 0;
+            if (isVerticalTabs) {
+                const isCollapsed = !!userSettings.verticalTabsCollapsed;
+                const baseVtWidth = isCollapsed ? 56 : (userSettings.verticalTabsWidth || 240);
+                wVertTabs = Math.round(baseVtWidth * zoom);
+            }
+
+            const wSidebarTotal = wSidebar + wVertTabs;
             
-            const xBase = Math.round(wSidebar);
+            const xBase = Math.round(wSidebarTotal);
             const yBase = Math.round(yOffset);
-            const totalWidth = Math.round(width - wSidebar);
+            const totalWidth = Math.round(width - wSidebarTotal);
             const totalHeight = Math.round(height - yOffset);
             
             splitOverlayView.setBounds({
@@ -5831,7 +5860,7 @@ ipcMain.on('update-setting', (e, key, val) => {
     // Broadcast to all relevant views
     broadcastSettings(userSettings);
 
-    if (key === 'compactMode' || key === 'bookmarkBarMode' || key === 'sidebarMode') updateViewBounds();
+    if (key === 'compactMode' || key === 'bookmarkBarMode' || key === 'sidebarMode' || key === 'tabLayout' || key === 'verticalTabsCollapsed' || key === 'verticalTabsWidth') updateViewBounds();
     if (key === 'dns') console.log(`[DNS] Global resolver updated to: ${val}`);
     if (key === 'batterySaver') applyBatterySaverGlobally();
 
@@ -5850,6 +5879,20 @@ ipcMain.on('update-setting', (e, key, val) => {
             }
         });
     }
+});
+
+ipcMain.on('toggle-vertical-tabs', () => {
+    userSettings.tabLayout = userSettings.tabLayout === 'vertical' ? 'horizontal' : 'vertical';
+    saveSettings(userSettings);
+    broadcastSettings();
+    updateViewBounds();
+});
+
+ipcMain.on('toggle-vertical-tabs-collapse', () => {
+    userSettings.verticalTabsCollapsed = !userSettings.verticalTabsCollapsed;
+    saveSettings(userSettings);
+    broadcastSettings();
+    updateViewBounds();
 });
 
 
@@ -6051,6 +6094,11 @@ function handleShortcuts(event, input) {
     else if (cmdOrCtrl && input.shift && input.key.toLowerCase() === 'a') {
         event.preventDefault();
         ipcMain.emit('toggle-ai-sidebar');
+    }
+    // Ctrl + Shift + V: Toggle Vertical Tabs
+    else if (cmdOrCtrl && input.shift && input.key.toLowerCase() === 'v') {
+        event.preventDefault();
+        ipcMain.emit('toggle-vertical-tabs');
     }
     // Sidebar Toggles
     else if (cmdOrCtrl && input.key.toLowerCase() === 'h') {

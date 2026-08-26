@@ -413,6 +413,222 @@ function renderTabs() {
             window.electronAPI.closeTab(btn.getAttribute('data-id'));
         };
     });
+
+    // ── Render Vertical Tabs (Arc / Crescent / Edge style) ────────
+    const vtTabList = document.getElementById('vt-tab-list');
+    const vtTabCount = document.getElementById('vt-tab-count');
+    if (vtTabCount) {
+        vtTabCount.textContent = tabs.length;
+    }
+
+    if (vtTabList) {
+        vtTabList.innerHTML = '';
+        const vtProcessedGroups = new Set();
+
+        tabs.forEach((tab, index) => {
+            if (tab.groupId && !vtProcessedGroups.has(tab.groupId)) {
+                const group = tabGroups.find(g => g.id === tab.groupId);
+                if (group) {
+                    const groupHeader = document.createElement('div');
+                    groupHeader.className = 'vt-group-header' + (!group.name ? ' no-name' : '') + (group.collapsed ? ' collapsed' : '');
+                    groupHeader.style.setProperty('--group-color', group.color);
+                    const groupTitle = group.name ? group.name : 'Group';
+                    const groupCount = tabs.filter(t => t.groupId === group.id).length;
+                    groupHeader.innerHTML = `
+                        <div class="vt-group-header-left">
+                            <span class="vt-group-dot" style="background: ${group.color};"></span>
+                            <span class="vt-group-name" style="color: ${group.color};">${groupTitle}</span>
+                        </div>
+                        <div class="vt-group-header-right">
+                            <span class="vt-group-badge">${groupCount}</span>
+                            <i class="fas fa-chevron-down vt-group-chevron"></i>
+                        </div>
+                    `;
+                    groupHeader.title = `${groupTitle} (Click to toggle collapse)`;
+                    groupHeader.onclick = () => window.electronAPI.send('toggle-group-collapse', group.id);
+
+                    groupHeader.ondragover = (e) => {
+                        const tabIndex = parseInt(e.dataTransfer.getData('tab-index'));
+                        const tab = tabs[tabIndex];
+                        if (tab && tab.isSplit) return;
+                        e.preventDefault();
+                        groupHeader.classList.add('drag-over');
+                    };
+                    groupHeader.ondragleave = () => groupHeader.classList.remove('drag-over');
+                    groupHeader.ondrop = (e) => {
+                        e.preventDefault();
+                        groupHeader.classList.remove('drag-over');
+                        const tabIndex = parseInt(e.dataTransfer.getData('tab-index'));
+                        const tab = tabs[tabIndex];
+                        if (tab && tab.isSplit) {
+                            showToast('Split screen tabs cannot join tab groups. Group other tabs instead.', 'fa-layer-group');
+                            return;
+                        }
+                        if (tab && tab.id) {
+                            window.electronAPI.send('add-to-group', { tabId: tab.id, groupId: group.id });
+                        }
+                    };
+
+                    groupHeader.oncontextmenu = (e) => {
+                        e.preventDefault();
+                        const rect = groupHeader.getBoundingClientRect();
+                        window.electronAPI.send('open-tab-group-popup', { 
+                            groupId: group.id, 
+                            x: rect.left, 
+                            y: rect.bottom + 5 
+                        });
+                    };
+                    vtTabList.appendChild(groupHeader);
+                    vtProcessedGroups.add(tab.groupId);
+                }
+            }
+
+            const group = tab.groupId ? tabGroups.find(g => g.id === tab.groupId) : null;
+            const isCollapsed = group && group.collapsed;
+
+            const vtEl = document.createElement('div');
+            vtEl.className = `vt-tab-item ${tab.id === activeTabId ? 'active' : ''} ${tab.groupId ? 'grouped' : ''} ${isCollapsed ? 'collapsed' : ''} ${tab.isSplit ? 'split-tab' : ''}`;
+            if (tab.groupId && group) {
+                vtEl.style.setProperty('--group-color', group.color);
+            }
+            vtEl.draggable = tabs.length > 1;
+
+            vtEl.ondragstart = (e) => {
+                e.dataTransfer.setData('tab-index', index);
+                vtEl.classList.add('dragging');
+                if (!tab.isSplit) {
+                    window.electronAPI.send('tab-drag-start', tab.id);
+                }
+                vtTabList.classList.add('dragging-active');
+            };
+
+            vtEl.ondragover = (e) => {
+                e.preventDefault();
+                vtEl.classList.add('drag-over');
+            };
+
+            vtEl.ondragleave = () => vtEl.classList.remove('drag-over');
+
+            vtEl.ondrop = (e) => {
+                e.preventDefault();
+                vtEl.classList.remove('drag-over');
+                const fromIndex = parseInt(e.dataTransfer.getData('tab-index'));
+                const toIndex = index;
+                if (fromIndex !== toIndex) {
+                    window.electronAPI.send('reorder-tabs', { fromIndex, toIndex });
+                }
+            };
+
+            vtEl.ondragend = () => {
+                vtEl.classList.remove('dragging', 'drag-over');
+                window.electronAPI.send('tab-drag-end');
+                vtTabList.classList.remove('dragging-active');
+            };
+
+            vtEl.oncontextmenu = (e) => {
+                e.preventDefault();
+                showTabContextMenu(e, tab.id);
+            };
+
+            const simplifiedTitle = getSimplifiedTitle(tab.title, tab.url);
+            const iconHtml = getTabIconHtml(tab, group ? group.color : null);
+
+            if (tab.isSplit) {
+                const active1 = (tab.id === activeTabId && tab.focusedSide === 'left') ? 'active' : '';
+                const active2 = (tab.id === activeTabId && tab.focusedSide === 'right') ? 'active' : '';
+                const fakeTab1 = { url: tab.url, favicon: tab.favicon, emoji: tab.emoji };
+                const fakeTab2 = { url: tab.url2, favicon: tab.favicon2, emoji: tab.emoji2 };
+                const iconHtml1 = getTabIconHtml(fakeTab1, group ? group.color : null);
+                const iconHtml2 = getTabIconHtml(fakeTab2, group ? group.color : null);
+                const title1 = getSimplifiedTitle(tab.title, tab.url);
+                const title2 = getSimplifiedTitle(tab.title2, tab.url2);
+
+                vtEl.innerHTML = `
+                    <div class="vt-tab-content vt-split-content">
+                        <div class="vt-split-pane ${active1}" data-side="left" title="${title1}">
+                            ${iconHtml1}
+                            <span class="vt-split-title">${title1}</span>
+                        </div>
+                        <div class="vt-split-divider"></div>
+                        <div class="vt-split-pane ${active2}" data-side="right" title="${title2}">
+                            ${iconHtml2}
+                            <span class="vt-split-title">${title2}</span>
+                        </div>
+                    </div>
+                    <button class="vt-tab-close" data-id="${tab.id}" title="Close split workspace"><i class="fas fa-times"></i></button>
+                `;
+
+                vtEl.querySelectorAll('.vt-split-pane').forEach(pane => {
+                    pane.onclick = (e) => {
+                        e.stopPropagation();
+                        const side = pane.getAttribute('data-side');
+                        window.electronAPI.send('focus-split-side', { tabId: tab.id, side });
+                        if (activeTabId !== tab.id) {
+                            activeTabId = tab.id;
+                            window.electronAPI.switchTab(tab.id);
+                        }
+                        renderTabs();
+                    };
+                });
+            } else {
+                vtEl.title = tab.title || tab.url || 'Tab';
+                vtEl.innerHTML = `
+                    <div class="vt-tab-favicon">${iconHtml}</div>
+                    <div class="vt-tab-info">
+                        <span class="vt-tab-title" style="${group ? `color: ${group.color};` : ''}">${simplifiedTitle}</span>
+                    </div>
+                    ${tab.audible ? '<i class="fas fa-volume-high vt-audio-icon"></i>' : ''}
+                    <div class="vt-tab-split-zone" data-target-id="${tab.id}" title="Drop tab here to split">
+                        <i class="fas fa-columns"></i>
+                    </div>
+                    <button class="vt-tab-close" data-id="${tab.id}" title="Close tab"><i class="fas fa-times"></i></button>
+                `;
+
+                const vtSplitZone = vtEl.querySelector('.vt-tab-split-zone');
+                if (vtSplitZone) {
+                    vtSplitZone.ondragover = (e) => {
+                        e.preventDefault();
+                        e.stopPropagation();
+                        vtSplitZone.classList.add('drag-over');
+                    };
+                    vtSplitZone.ondragleave = () => vtSplitZone.classList.remove('drag-over');
+                    vtSplitZone.ondrop = (e) => {
+                        e.preventDefault();
+                        e.stopPropagation();
+                        vtSplitZone.classList.remove('drag-over');
+                        const fromIndex = parseInt(e.dataTransfer.getData('tab-index'));
+                        const draggedTab = tabs[fromIndex];
+                        const targetTabId = vtSplitZone.getAttribute('data-target-id');
+                        if (draggedTab && draggedTab.id !== targetTabId) {
+                            window.electronAPI.send('merge-tabs-to-split', {
+                                sourceTabId: draggedTab.id,
+                                targetTabId: targetTabId
+                            });
+                        }
+                    };
+                }
+            }
+
+            vtEl.onclick = (e) => {
+                if (e.target.closest('.vt-tab-close') || e.target.closest('.vt-tab-split-zone')) return;
+                if (tab.isSplit) return;
+                activeTabId = tab.id;
+                window.electronAPI.switchTab(tab.id);
+                renderTabs();
+                updatePageTimeChip(tab.id);
+                updateMediaMasterIcon(tab.id);
+            };
+
+            vtTabList.appendChild(vtEl);
+        });
+
+        vtTabList.querySelectorAll('.vt-tab-close').forEach(btn => {
+            btn.onclick = (e) => {
+                e.stopPropagation();
+                window.electronAPI.closeTab(btn.getAttribute('data-id'));
+            };
+        });
+    }
 }
 
 window.electronAPI.onTabsChanged((data) => {
@@ -530,10 +746,20 @@ function syncOmnibox(url) {
     const identityBtn = document.getElementById('identity-btn');
     
     if (identityBtn) {
-        if (isHome || url.startsWith('ocal://')) {
+        if (isHome || url.startsWith('ocal://') || url.startsWith('file://')) {
             identityBtn.style.display = 'none';
         } else {
             identityBtn.style.display = 'flex';
+            const isHttp = url.startsWith('http://');
+            if (isHttp) {
+                identityBtn.innerHTML = '<i class="fas fa-lock-open site-lock-icon insecure"></i>';
+                identityBtn.classList.add('insecure');
+                identityBtn.title = 'Connection is not secure (HTTP)';
+            } else {
+                identityBtn.innerHTML = '<i class="fas fa-lock site-lock-icon secure"></i>';
+                identityBtn.classList.remove('insecure');
+                identityBtn.title = 'Connection is secure (HTTPS)';
+            }
         }
     }
     
@@ -558,12 +784,17 @@ function updatePrettyUrl(url) {
     }
 
     try {
-        const urlObj = new URL(url.startsWith('http') || url.startsWith('file:') || url.startsWith('ocal:') ? url : 'https://' + url);
+        let rawUrl = url;
+        if (!rawUrl.startsWith('http://') && !rawUrl.startsWith('https://') && !rawUrl.startsWith('file://') && !rawUrl.startsWith('ocal://')) {
+            rawUrl = 'https://' + rawUrl;
+        }
+        const urlObj = new URL(rawUrl);
+        const isHttp = urlObj.protocol === 'http:';
         const protocol = urlObj.protocol + '//';
         const domain = urlObj.hostname || (urlObj.protocol === 'file:' ? 'Local File' : '');
         const path = urlObj.pathname + urlObj.search + urlObj.hash;
         
-        prettyEl.innerHTML = `<span class="protocol">${protocol}</span>${domain ? `<span class="domain">${domain}</span>` : ''}<span class="path">${path === '/' || path === '///' ? '' : path}</span>`;
+        prettyEl.innerHTML = `<span class="protocol ${isHttp ? 'insecure' : ''}">${protocol}</span>${domain ? `<span class="domain">${domain}</span>` : ''}<span class="path">${path === '/' || path === '///' ? '' : path}</span>`;
     } catch (e) {
         prettyEl.innerText = url;
     }
@@ -811,7 +1042,7 @@ function updateOmniboxIcon(url) {
     // Try to load active tab favicon
     const activeTab = tabs.find(t => t.id === activeTabId);
     if (activeTab && activeTab.favicon) {
-        iconContainer.innerHTML = `<img src="${activeTab.favicon}" class="omnibox-favicon" style="width: 14px; height: 14px; border-radius: 3px; object-fit: contain;">`;
+        iconContainer.innerHTML = `<img src="${activeTab.favicon}" class="omnibox-favicon" style="width: 14px; height: 14px; border-radius: 3px; object-fit: contain;" onerror="const i=document.createElement('i'); i.className='fas fa-globe'; i.style.color='var(--accent)'; i.style.fontSize='13px'; this.replaceWith(i);">`;
         return;
     }
 
@@ -918,20 +1149,38 @@ document.addEventListener('DOMContentLoaded', () => {
     const maxBtn   = document.getElementById('max-btn');
     const tabArea  = document.querySelector('.tab-bar');
     const closeBtn = document.getElementById('close-btn');
-    
-    if (tabArea) {
-        tabArea.ondblclick = (e) => {
-            // Only maximize if not clicking on buttons or tabs
-            if (e.target.classList.contains('tab-bar') || e.target.classList.contains('tab-drag-spacer')) {
-                window.electronAPI.maximize();
-            }
-        };
-    }
-
 
     if (minBtn)   minBtn.onclick   = () => window.electronAPI.minimize();
     if (maxBtn)   maxBtn.onclick   = () => window.electronAPI.maximize();
     if (closeBtn) closeBtn.onclick = () => window.electronAPI.close();
+
+    // ── Vertical Tabs Actions ───────────────────────────
+    const vtNewTabBtn = document.getElementById('vt-new-tab-btn');
+    if (vtNewTabBtn) vtNewTabBtn.onclick = () => window.electronAPI.newTab();
+
+    const vtToggleCollapseBtn = document.getElementById('vt-toggle-collapse-btn');
+    if (vtToggleCollapseBtn) vtToggleCollapseBtn.onclick = () => window.electronAPI.send('toggle-vertical-tabs-collapse');
+
+    const toggleVtTopBtn = document.getElementById('toggle-vertical-tabs-top-btn');
+    if (toggleVtTopBtn) toggleVtTopBtn.onclick = () => window.electronAPI.send('toggle-vertical-tabs');
+
+    const toggleVtNavBtn = document.getElementById('toggle-vertical-tabs-nav-btn');
+    if (toggleVtNavBtn) toggleVtNavBtn.onclick = () => window.electronAPI.send('toggle-vertical-tabs');
+
+    const vtSwitchHorizontalBtn = document.getElementById('vt-switch-horizontal-btn');
+    if (vtSwitchHorizontalBtn) vtSwitchHorizontalBtn.onclick = () => window.electronAPI.send('toggle-vertical-tabs');
+
+    const vtSettingsBtn = document.getElementById('vt-settings-btn');
+    if (vtSettingsBtn) vtSettingsBtn.onclick = () => window.electronAPI.navigateTo('ocal://settings');
+
+    // Nav Window Controls (Vertical Tabs mode)
+    const navMinBtn   = document.getElementById('nav-min-btn');
+    const navMaxBtn   = document.getElementById('nav-max-btn');
+    const navCloseBtn = document.getElementById('nav-close-btn');
+
+    if (navMinBtn)   navMinBtn.onclick   = () => window.electronAPI.minimize();
+    if (navMaxBtn)   navMaxBtn.onclick   = () => window.electronAPI.maximize();
+    if (navCloseBtn) navCloseBtn.onclick = () => window.electronAPI.close();
     
 
 
@@ -1399,6 +1648,24 @@ function applyGlobalSettings(s) {
     document.body.classList.toggle('sidebar-visible', s.sidebarMode === 'visible');
     document.body.classList.toggle('sidebar-hidden', isHide);
     document.body.classList.toggle('sidebar-autohide', s.sidebarMode === 'autohide');
+
+    // ── Vertical Tabs Layout Settings ──
+    const isVertical = s.tabLayout === 'vertical';
+    document.body.classList.toggle('tab-layout-vertical', isVertical);
+    document.body.classList.toggle('vertical-tabs-collapsed', isVertical && !!s.verticalTabsCollapsed);
+    if (s.verticalTabsWidth) {
+        document.documentElement.style.setProperty('--vt-width', `${s.verticalTabsWidth}px`);
+    }
+
+    const vtCollapseIcon = document.getElementById('vt-collapse-icon');
+    if (vtCollapseIcon) {
+        vtCollapseIcon.className = s.verticalTabsCollapsed ? 'fas fa-chevron-right' : 'fas fa-chevron-left';
+    }
+
+    const navWinControls = document.getElementById('nav-window-controls');
+    if (navWinControls) {
+        navWinControls.style.display = isVertical ? 'flex' : 'none';
+    }
     
     // Update Power-Up Icons
     const sStatus = document.getElementById('shield-status');
@@ -1568,6 +1835,15 @@ function renderBookmarkBar() {
         el.onclick = () => window.electronAPI.navigateTo(b.url);
         bookmarkBar.appendChild(el);
     });
+}
+
+if (bookmarkBar) {
+    bookmarkBar.addEventListener('wheel', (e) => {
+        if (e.deltaY !== 0) {
+            e.preventDefault();
+            bookmarkBar.scrollLeft += e.deltaY * 0.8;
+        }
+    }, { passive: false });
 }
 
 window.electronAPI.onBookmarksUpdated((data) => {
