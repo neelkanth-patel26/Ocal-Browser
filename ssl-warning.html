@@ -5,38 +5,52 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com https://cdn.jsdelivr.net; font-src 'self' https://fonts.gstatic.com https://cdn.jsdelivr.net; img-src 'self' data:;">
     <title>Privacy Error | Ocal Browser</title>
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700;800&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6.5.1/css/all.min.css">
+    <link rel="stylesheet" href="assets/fontawesome/css/all.min.css">
+    <link rel="stylesheet" href="assets/fonts/geist-fonts.css">
     <style>
+        @import url('./assets/fonts/geist-fonts.css');
+
         :root {
-            --bg: #090A0F;
-            --card-bg: rgba(18, 20, 29, 0.85);
+            --bg: #0D0E11;
+            --card-bg: rgba(22, 24, 29, 0.82);
             --card-border: rgba(255, 255, 255, 0.08);
-            --text-main: #FFFFFF;
-            --text-dim: #94A3B8;
-            --text-muted: #64748B;
-            --accent: #09F0A0;
-            --accent-glow: rgba(9, 240, 160, 0.25);
+            --text-main: #F0F2F5;
+            --text-dim: #A0A5B1;
+            --text-muted: #626773;
+            --accent: #15AC49;
+            --accent-glow: rgba(21, 172, 73, 0.25);
+            --accent-dim: rgba(21, 172, 73, 0.1);
             --warn: #F59E0B;
-            --warn-glow: rgba(245, 158, 11, 0.25);
+            --warn-glow: rgba(245, 158, 11, 0.22);
+            --warn-bg: rgba(245, 158, 11, 0.12);
             --danger: #EF4444;
-            --danger-glow: rgba(239, 68, 68, 0.25);
+            --danger-glow: rgba(239, 68, 68, 0.22);
+            --danger-bg: rgba(239, 68, 68, 0.1);
+            --font-title: 'Geist', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            --font-main: 'Geist', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            --font-mono: 'Geist Mono', 'Space Mono', monospace;
+            --radius-card: 26px;
+            --radius-btn: 14px;
+            --card-shadow: 0 30px 80px rgba(0, 0, 0, 0.45), 0 0 0 1px rgba(255, 255, 255, 0.06);
         }
 
         body[data-theme="light"] {
-            --bg: #F8FAFC;
-            --card-bg: rgba(255, 255, 255, 0.95);
-            --card-border: rgba(0, 0, 0, 0.08);
-            --text-main: #0F172A;
-            --text-dim: #475569;
+            --bg: #EDEDF0;
+            --card-bg: rgba(255, 255, 255, 0.94);
+            --card-border: rgba(0, 0, 0, 0.07);
+            --text-main: #1A1D20;
+            --text-dim: #626773;
             --text-muted: #94A3B8;
-            --accent: #059669;
-            --accent-glow: rgba(5, 150, 105, 0.2);
+            --accent: #15AC49;
+            --accent-glow: rgba(21, 172, 73, 0.2);
+            --accent-dim: rgba(21, 172, 73, 0.08);
             --warn: #D97706;
-            --warn-glow: rgba(217, 119, 6, 0.2);
+            --warn-glow: rgba(217, 119, 6, 0.18);
+            --warn-bg: rgba(217, 119, 6, 0.1);
             --danger: #DC2626;
-            --danger-glow: rgba(220, 38, 38, 0.2);
+            --danger-glow: rgba(220, 38, 38, 0.18);
+            --danger-bg: rgba(220, 38, 38, 0.08);
+            --card-shadow: 0 24px 60px rgba(0, 0, 0, 0.08), 0 2px 8px rgba(0, 0, 0, 0.03), 0 0 0 1px rgba(0, 0, 0, 0.04);
         }
 
         * {
@@ -48,7 +62,7 @@
         body {
             background: var(--bg);
             color: var(--text-main);
-            font-family: 'Outfit', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            font-family: var(--font-main);
             min-height: 100vh;
             display: flex;
             align-items: center;
@@ -57,20 +71,22 @@
             overflow: hidden;
             position: relative;
             user-select: none;
+            transition: background 0.3s ease, color 0.3s ease;
         }
 
         /* Ambient Glow Backdrop */
         .ambient-glow {
             position: absolute;
-            width: 500px;
-            height: 500px;
-            background: radial-gradient(circle, var(--warn-glow) 0%, transparent 70%);
+            width: 520px;
+            height: 520px;
+            background: radial-gradient(circle, var(--warn-glow) 0%, transparent 68%);
             top: 50%;
             left: 50%;
             transform: translate(-50%, -50%);
-            filter: blur(80px);
+            filter: blur(85px);
             pointer-events: none;
             z-index: 0;
+            transition: background 0.3s ease;
         }
 
         .warning-card {
@@ -80,58 +96,61 @@
             max-width: 580px;
             background: var(--card-bg);
             border: 1px solid var(--card-border);
-            border-radius: 24px;
-            padding: 40px;
+            border-radius: var(--radius-card);
+            padding: 38px 40px;
             backdrop-filter: blur(32px);
             -webkit-backdrop-filter: blur(32px);
-            box-shadow: 0 24px 60px rgba(0, 0, 0, 0.25), 0 0 0 1px rgba(255, 255, 255, 0.05);
-            animation: cardAppear 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+            box-shadow: var(--card-shadow);
+            animation: cardAppear 0.35s cubic-bezier(0.16, 1, 0.3, 1);
+            transition: background 0.3s ease, border-color 0.3s ease, box-shadow 0.3s ease;
         }
 
         @keyframes cardAppear {
-            from { opacity: 0; transform: translateY(16px) scale(0.97); }
+            from { opacity: 0; transform: translateY(14px) scale(0.98); }
             to { opacity: 1; transform: translateY(0) scale(1); }
         }
 
         .shield-icon-container {
-            width: 64px;
-            height: 64px;
+            width: 62px;
+            height: 62px;
             border-radius: 18px;
-            background: linear-gradient(135deg, rgba(245, 158, 11, 0.15), rgba(245, 158, 11, 0.05));
-            border: 1px solid rgba(245, 158, 11, 0.3);
+            background: var(--warn-bg);
+            border: 1px solid var(--warn-glow);
             display: flex;
             align-items: center;
             justify-content: center;
-            font-size: 28px;
+            font-size: 26px;
             color: var(--warn);
-            margin-bottom: 24px;
+            margin-bottom: 22px;
             box-shadow: 0 8px 24px var(--warn-glow);
+            transition: all 0.3s ease;
         }
 
         h1 {
-            font-size: 26px;
+            font-size: 24px;
             font-weight: 800;
-            letter-spacing: -0.02em;
+            letter-spacing: -0.4px;
             margin-bottom: 12px;
             color: var(--text-main);
+            line-height: 1.25;
         }
 
         .desc-text {
-            font-size: 15px;
+            font-size: 14.5px;
             line-height: 1.6;
             color: var(--text-dim);
-            margin-bottom: 20px;
+            margin-bottom: 24px;
         }
 
         .domain-badge {
-            font-family: 'JetBrains Mono', monospace;
+            font-family: var(--font-mono);
             font-weight: 700;
             color: var(--text-main);
             background: rgba(255, 255, 255, 0.08);
             border: 1px solid var(--card-border);
             padding: 2px 8px;
             border-radius: 6px;
-            font-size: 13.5px;
+            font-size: 13px;
             display: inline-block;
         }
 
@@ -143,19 +162,19 @@
             display: flex;
             align-items: center;
             justify-content: space-between;
-            gap: 16px;
-            margin-top: 32px;
+            gap: 14px;
+            margin-top: 28px;
         }
 
         .btn {
-            padding: 12px 24px;
-            border-radius: 12px;
-            font-family: 'Outfit', sans-serif;
-            font-size: 14.5px;
+            padding: 11px 22px;
+            border-radius: var(--radius-btn);
+            font-family: var(--font-main);
+            font-size: 14px;
             font-weight: 700;
             cursor: pointer;
             transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
-            display: flex;
+            display: inline-flex;
             align-items: center;
             gap: 8px;
             border: none;
@@ -163,14 +182,19 @@
         }
 
         .btn-primary {
-            background: linear-gradient(135deg, #2563EB, #1D4ED8);
+            background: var(--accent);
             color: #FFFFFF;
-            box-shadow: 0 6px 20px rgba(37, 99, 235, 0.35);
+            box-shadow: 0 6px 20px var(--accent-glow);
         }
 
         .btn-primary:hover {
             transform: translateY(-2px);
-            box-shadow: 0 10px 28px rgba(37, 99, 235, 0.45);
+            box-shadow: 0 10px 26px var(--accent-glow);
+            filter: brightness(1.06);
+        }
+
+        .btn-primary:active {
+            transform: translateY(0);
         }
 
         .btn-secondary {
@@ -189,13 +213,22 @@
             transform: translateY(-1px);
         }
 
+        body[data-theme="light"] .btn-secondary:hover {
+            background: rgba(0, 0, 0, 0.08);
+        }
+
         /* Advanced Technical Diagnostic Box */
         .advanced-box {
             display: none;
-            margin-top: 24px;
-            padding-top: 24px;
+            margin-top: 22px;
+            padding-top: 22px;
             border-top: 1px solid var(--card-border);
-            animation: fadeIn 0.3s ease;
+            animation: fadeIn 0.25s ease;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(-4px); }
+            to { opacity: 1; transform: translateY(0); }
         }
 
         .advanced-box.show {
@@ -206,18 +239,18 @@
             display: inline-flex;
             align-items: center;
             gap: 6px;
-            font-family: 'JetBrains Mono', monospace;
-            font-size: 12px;
-            background: rgba(239, 68, 68, 0.12);
-            border: 1px solid rgba(239, 68, 68, 0.25);
+            font-family: var(--font-mono);
+            font-size: 11.5px;
+            background: var(--danger-bg);
+            border: 1px solid var(--danger-glow);
             color: var(--danger);
             padding: 4px 10px;
             border-radius: 8px;
-            margin-bottom: 14px;
+            margin-bottom: 12px;
         }
 
         .adv-desc {
-            font-size: 13.5px;
+            font-size: 13px;
             line-height: 1.55;
             color: var(--text-dim);
             margin-bottom: 16px;
@@ -236,11 +269,12 @@
             padding: 4px 0;
             text-decoration: underline;
             text-underline-offset: 3px;
-            transition: opacity 0.2s;
+            transition: opacity 0.2s, transform 0.2s;
         }
 
         .btn-danger-link:hover {
-            opacity: 0.8;
+            opacity: 0.85;
+            transform: translateX(2px);
         }
     </style>
 </head>
@@ -260,11 +294,11 @@
         <div class="actions">
             <button class="btn btn-secondary" id="advanced-btn">
                 <i class="fas fa-sliders"></i>
-                Advanced
+                <span>Advanced</span>
             </button>
             <button class="btn btn-primary" id="back-btn">
                 <i class="fas fa-shield-halved"></i>
-                Back to Safety
+                <span>Back to Safety</span>
             </button>
         </div>
 
@@ -277,18 +311,66 @@
                 The server presented a security certificate that cannot be verified by your operating system or local root certificate authority. This could indicate an active man-in-the-middle attack or a server misconfiguration.
             </p>
             <button class="btn-danger-link" id="proceed-btn">
-                Proceed to <span id="domain-proceed">example.com</span> (unsafe) <i class="fas fa-arrow-right"></i>
+                <span>Proceed to <span id="domain-proceed">example.com</span> (unsafe)</span>
+                <i class="fas fa-arrow-right"></i>
             </button>
         </div>
     </div>
 
     <script>
-        // Sync Theme from settings/parent
-        try {
-            const savedTheme = localStorage.getItem('theme') || 'dark';
-            document.body.setAttribute('data-theme', savedTheme);
-        } catch (e) {}
+        // ── Comprehensive Theme & Accent Synchronization ──
+        function applyTheme(theme, accent) {
+            try {
+                if (!theme) {
+                    const urlParams = new URLSearchParams(window.location.search);
+                    theme = urlParams.get('theme') || localStorage.getItem('ocal-settings-theme');
+                    if (!theme) {
+                        theme = (window.matchMedia && window.matchMedia('(prefers-color-scheme: light)').matches) ? 'light' : 'dark';
+                    }
+                }
+                document.body.setAttribute('data-theme', theme);
+                document.documentElement.setAttribute('data-theme', theme);
 
+                if (!accent) {
+                    const urlParams = new URLSearchParams(window.location.search);
+                    accent = urlParams.get('accent') || localStorage.getItem('ocal-settings-accent') || (theme === 'light' ? '#15AC49' : '#09F0A0');
+                }
+                if (accent) {
+                    document.documentElement.style.setProperty('--accent', accent);
+                    document.documentElement.style.setProperty('--accent-glow', `color-mix(in srgb, ${accent} 25%, transparent)`);
+                    document.documentElement.style.setProperty('--accent-dim', `color-mix(in srgb, ${accent} 10%, transparent)`);
+                }
+            } catch (e) {
+                console.warn('Error applying theme:', e);
+            }
+        }
+
+        // Apply immediately on load
+        applyTheme();
+
+        // Listen for browser settings changes
+        if (window.electronAPI && window.electronAPI.onSettingsChanged) {
+            window.electronAPI.onSettingsChanged((s) => {
+                if (s) applyTheme(s.themeMode, s.accentColor);
+            });
+        }
+        if (window.electronAPI && window.electronAPI.getSettings) {
+            window.electronAPI.getSettings().then((s) => {
+                if (s) applyTheme(s.themeMode, s.accentColor);
+            }).catch(() => {});
+        }
+
+        window.addEventListener('storage', (e) => {
+            if (e.key === 'ocal-settings-theme' || e.key === 'ocal-settings-accent') {
+                applyTheme();
+            }
+        });
+
+        if (window.matchMedia) {
+            window.matchMedia('(prefers-color-scheme: light)').addEventListener('change', () => applyTheme());
+        }
+
+        // ── Target Domain & Error Details ──
         const urlParams = new URLSearchParams(window.location.search);
         let targetUrl = urlParams.get('url') || '';
         let errorMsg = urlParams.get('error') || 'NET::ERR_CERT_INVALID';
@@ -319,6 +401,8 @@
         document.getElementById('proceed-btn').onclick = () => {
             if (window.electronAPI && window.electronAPI.bypassSSL) {
                 window.electronAPI.bypassSSL(hostname, targetUrl);
+            } else {
+                window.location.href = targetUrl;
             }
         };
     </script>
