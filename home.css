@@ -951,9 +951,9 @@ body[data-theme="dark"] .news-modal-sub {
 
 body[data-theme="dark"] #news-search-input,
 body[data-theme="dark"] #weather-city-search-input {
-    background: rgba(255, 255, 255, 0.04);
+    background: #28282D;
     border-color: rgba(255, 255, 255, 0.08);
-    color: #FFFFFF;
+    color: #F4F4F5;
 }
 
 #news-search-input:focus, #weather-city-search-input:focus {
@@ -979,9 +979,9 @@ body[data-theme="dark"] #weather-city-search-input {
 
 body[data-theme="dark"] .news-refresh-btn, 
 body[data-theme="dark"] .news-close-btn {
-    background: rgba(255, 255, 255, 0.04);
+    background: #28282D;
     border-color: rgba(255, 255, 255, 0.08);
-    color: #FFFFFF;
+    color: #F4F4F5;
 }
 
 .news-refresh-btn:hover, .news-close-btn:hover {
@@ -1115,11 +1115,9 @@ body[data-theme="dark"] .news-card-item {
     border-radius: 28px;
     display: flex;
     flex-direction: column;
-    background: rgba(22, 25, 33, 0.94);
-    backdrop-filter: blur(36px) saturate(180%);
-    -webkit-backdrop-filter: blur(36px) saturate(180%);
-    border: 1px solid rgba(255, 255, 255, 0.1);
-    box-shadow: 0 30px 90px rgba(0, 0, 0, 0.5), 0 0 0 1px rgba(255, 255, 255, 0.05) !important;
+    background: #222226;
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    box-shadow: 0 30px 90px rgba(0, 0, 0, 0.5) !important;
     overflow: hidden;
     transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
 }
@@ -1156,8 +1154,8 @@ body[data-theme="light"] .weather-modal-custom {
 }
 
 .weather-hero-main-card {
-    background: linear-gradient(145deg, rgba(30, 41, 59, 0.7) 0%, rgba(15, 23, 42, 0.85) 100%);
-    border: 1px solid rgba(255, 255, 255, 0.09);
+    background: #28282D;
+    border: 1px solid rgba(255, 255, 255, 0.08);
     border-radius: 22px;
     padding: 24px;
     display: flex;
@@ -1291,8 +1289,8 @@ body[data-theme="light"] .wh-condition-title {
 }
 
 .w-detail-card {
-    background: rgba(255, 255, 255, 0.03);
-    border: 1px solid rgba(255, 255, 255, 0.07);
+    background: #28282D;
+    border: 1px solid rgba(255, 255, 255, 0.08);
     border-radius: 16px;
     padding: 12px 14px;
     display: flex;
@@ -1420,8 +1418,8 @@ body[data-theme="light"] .weather-section-title-bar h4 {
     min-width: 84px;
     flex: 0 0 auto;
     scroll-snap-align: start;
-    background: rgba(255, 255, 255, 0.03);
-    border: 1px solid rgba(255, 255, 255, 0.07);
+    background: #28282D;
+    border: 1px solid rgba(255, 255, 255, 0.08);
     border-radius: 16px;
     padding: 12px 8px;
     display: flex;
