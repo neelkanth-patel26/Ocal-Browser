@@ -1075,6 +1075,7 @@ body[data-theme="dark"] .tab-favicon.tab-emoji-img {
 .tab-close {
   font-size: 9px !important;
   opacity: 0;
+  pointer-events: none;
   width: 18px;
   height: 18px;
   min-width: 18px;
@@ -1097,9 +1098,16 @@ body[data-theme="dark"] .tab-favicon.tab-emoji-img {
   margin: 0 !important;
   padding: 0 !important;
 }
-.tab-item:hover .tab-close,
-.tab-item.active .tab-close { opacity: 0.6; }
-.tab-close:hover { opacity: 1 !important; color: #FFFFFF !important; background: rgba(239, 68, 68, 0.9) !important; transform: scale(1.05); }
+.tab-item:hover .tab-close { 
+  opacity: 0.7; 
+  pointer-events: auto;
+}
+.tab-close:hover { 
+  opacity: 1 !important; 
+  color: #FFFFFF !important; 
+  background: rgba(239, 68, 68, 0.9) !important; 
+  transform: scale(1.05); 
+}
 .tab-audio-icon {
   font-size: 10px;
   color: var(--accent);
@@ -2865,10 +2873,17 @@ body[data-theme="light"] .tab-item.split-tab .sub-tab-divider {
 
 .tab-item.split-tab .tab-close {
   margin-right: 6px;
-  opacity: 0.6;
+  opacity: 0;
+  pointer-events: none;
   font-size: 11px;
   align-self: center;
   color: var(--text-dim, #A0A5B1) !important;
+  transition: opacity 0.16s ease;
+}
+
+.tab-item.split-tab:hover .tab-close {
+  opacity: 0.7;
+  pointer-events: auto;
 }
 
 body[data-theme="light"] .tab-item.split-tab .tab-close {
@@ -4015,14 +4030,15 @@ body[data-theme="light"] .vt-tab-item.active::before {
   border: none;
   color: var(--text-dim);
   opacity: 0;
+  pointer-events: none;
   cursor: pointer;
   transition: all 0.15s ease;
   font-size: 11px;
 }
 
-.vt-tab-item:hover .vt-tab-close,
-.vt-tab-item.active .vt-tab-close {
+.vt-tab-item:hover .vt-tab-close {
   opacity: 0.7;
+  pointer-events: auto;
 }
 
 .vt-tab-close:hover {
