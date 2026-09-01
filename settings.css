@@ -21,16 +21,16 @@
 }
 
 body[data-theme="dark"], body {
-    --bg: #0D0E11;
-    --card-bg: #16181D;
-    --header-bg: #0D0E11;
-    --sidebar-bg: #0D0E11;
-    --text: #FFFFFF;
-    --text-dim: #9CA3AF;
-    --text-muted: #6B7280;
+    --bg: #18181B;
+    --card-bg: #222226;
+    --header-bg: #18181B;
+    --sidebar-bg: #18181B;
+    --text: #F4F4F5;
+    --text-dim: #A1A1AA;
+    --text-muted: #71717A;
     --chrome-border: rgba(255, 255, 255, 0.08);
     
-    --nav-hover-bg: rgba(255, 255, 255, 0.05);
+    --nav-hover-bg: #2E2E33;
     --nav-active-bg: var(--accent);
     --accent-border: var(--accent);
     --lime-accent: var(--accent);

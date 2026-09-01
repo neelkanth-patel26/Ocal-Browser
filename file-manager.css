@@ -37,17 +37,17 @@ body[data-theme="light"], body {
 }
 
 body[data-theme="dark"] {
-    --background: #0D0E11;
-    --foreground: #FFFFFF;
-    --bg: #0D0E11;
-    --sidebar-bg: #16181D;
-    --card-bg: #16181D;
+    --background: #18181B;
+    --foreground: #F4F4F5;
+    --bg: #18181B;
+    --sidebar-bg: #222226;
+    --card-bg: #222226;
     --card-border: rgba(255, 255, 255, 0.08);
-    --card-hover-bg: #20242D;
+    --card-hover-bg: #28282D;
     --border-color: rgba(255, 255, 255, 0.08);
-    --text-main: #FFFFFF;
-    --text-dim: #9CA3AF;
-    --text-muted: #6B7280;
+    --text-main: #F4F4F5;
+    --text-dim: #A1A1AA;
+    --text-muted: #71717A;
 }
 
 * {
