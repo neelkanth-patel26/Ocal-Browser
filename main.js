@@ -7347,13 +7347,16 @@ ipcMain.on('show-site-info', (e, bounds) => {
     hidePopups();
     mainWindow.addBrowserView(siteInfoView);
 
-    // Position below the address bar identity area with shadow margin
+    // Position below the address bar identity area with clean floating gap and shadow margin
     const zoom = getOptimalZoomFactor();
+    const winOffset = getWinOffset();
+    const popupWidth = Math.round(336 * zoom);
+    const popupHeight = Math.round(490 * zoom);
     siteInfoView.setBounds({
-        x: Math.max(10, Math.round(bounds.x) - 15),
-        y: Math.round(bounds.y + bounds.height + 4),
-        width: Math.round(330 * zoom),
-        height: Math.round(480 * zoom) // Increased height for complete layout and scrolling
+        x: Math.max(10, Math.round(bounds.x + winOffset) - 8),
+        y: Math.round(bounds.y + bounds.height + 8 + winOffset),
+        width: popupWidth + 16,
+        height: popupHeight + 16
     });
 
     mainWindow.setTopBrowserView(siteInfoView);
