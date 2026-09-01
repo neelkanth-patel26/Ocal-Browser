@@ -863,6 +863,22 @@ function formatDisplayUrl(url) {
     if (url.includes('game.html')) return 'ocal://runner';
     if (url.includes('whats-new.html')) return 'ocal://whats-new';
     if (url.includes('suspended.html')) return 'ocal://suspended';
+    if (url.includes('ssl-warning.html') || url.startsWith('ocal://ssl-warning')) {
+        try {
+            const u = new URL(url.startsWith('file://') || url.startsWith('ocal://') ? url : 'https://' + url);
+            const target = u.searchParams.get('url');
+            if (target) return target;
+        } catch(e) {}
+        return 'ocal://privacy-error';
+    }
+    if (url.includes('security-warning.html') || url.startsWith('ocal://security-warning')) {
+        try {
+            const u = new URL(url.startsWith('file://') || url.startsWith('ocal://') ? url : 'https://' + url);
+            const target = u.searchParams.get('url');
+            if (target) return target;
+        } catch(e) {}
+        return 'ocal://security-warning';
+    }
     return url;
 }
 
@@ -878,6 +894,8 @@ function getSimplifiedTitle(title, url) {
         } catch(e) {}
         return 'Site Settings';
     }
+    if (url.includes('ssl-warning.html') || url.startsWith('ocal://ssl-warning')) return 'Privacy Error';
+    if (url.includes('security-warning.html') || url.startsWith('ocal://security-warning')) return 'Security Warning';
     if (url.includes('music-player.html') || url.startsWith('ocal://music-player') || url.startsWith('ocal://music')) return 'Ocal AI Music Player';
     if (url.includes('settings.html') || url.startsWith('ocal://settings')) return 'Settings';
     if (url.includes('downloads.html') || url.startsWith('ocal://downloads')) return 'Downloads';
@@ -919,9 +937,15 @@ function getTabIconHtml(tab, tintColor) {
     if (tab.loading) {
         return `<i class="fas fa-circle-notch tab-favicon spinner" style="color:${tintColor || 'var(--accent)'}"></i>`;
     }
-    if (tab.favicon) return `<img src="${tab.favicon}" class="tab-favicon">`;
     
-    const url = tab.url;
+    const url = tab.url || '';
+    if (url.includes('ssl-warning.html') || url.startsWith('ocal://ssl-warning')) {
+        return `<i class="fas fa-lock-open tab-favicon" style="color: #f59e0b;"></i>`;
+    }
+    if (url.includes('security-warning.html') || url.startsWith('ocal://security-warning')) {
+        return `<i class="fas fa-triangle-exclamation tab-favicon" style="color: #ef4444;"></i>`;
+    }
+    if (tab.favicon) return `<img src="${tab.favicon}" class="tab-favicon">`;
     const accentColor = tintColor || 'var(--accent)';
     
     if (!url || url.includes('home.html')) return `<i class="fas fa-house tab-favicon" style="color:${accentColor}"></i>`;
@@ -978,6 +1002,14 @@ function updateOmniboxIcon(url) {
         return;
     }
 
+    if (url && (url.includes('ssl-warning.html') || url.startsWith('ocal://ssl-warning'))) {
+        iconContainer.innerHTML = '<i class="fas fa-lock-open" style="color:var(--warn, #f59e0b); font-size:13px;"></i>';
+        return;
+    }
+    if (url && (url.includes('security-warning.html') || url.startsWith('ocal://security-warning'))) {
+        iconContainer.innerHTML = '<i class="fas fa-triangle-exclamation" style="color:var(--danger, #ef4444); font-size:13px;"></i>';
+        return;
+    }
     if (url && (url.includes('music-player.html') || url.startsWith('ocal://music-player') || url.startsWith('ocal://music'))) {
         iconContainer.innerHTML = '<i class="fas fa-compact-disc" style="color:var(--accent)"></i>';
         return;

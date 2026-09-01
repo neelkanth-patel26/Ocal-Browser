@@ -5,30 +5,40 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com https://cdn.jsdelivr.net; font-src 'self' https://fonts.gstatic.com https://cdn.jsdelivr.net; img-src 'self' data:;">
     <title>Deceptive Site Blocked | Ocal Browser</title>
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700;800&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6.5.1/css/all.min.css">
+    <link rel="stylesheet" href="assets/fontawesome/css/all.min.css">
+    <link rel="stylesheet" href="assets/fonts/geist-fonts.css">
     <style>
+        @import url('./assets/fonts/geist-fonts.css');
+
         :root {
-            --bg: #0C0A09;
-            --card-bg: rgba(24, 20, 20, 0.88);
+            --bg: #0D0E11;
+            --card-bg: rgba(24, 20, 20, 0.85);
             --card-border: rgba(239, 68, 68, 0.2);
-            --text-main: #FFFFFF;
-            --text-dim: #94A3B8;
-            --text-muted: #64748B;
-            --accent: #EF4444;
-            --accent-glow: rgba(239, 68, 68, 0.35);
+            --text-main: #F0F2F5;
+            --text-dim: #A0A5B1;
+            --text-muted: #626773;
+            --danger: #EF4444;
+            --danger-glow: rgba(239, 68, 68, 0.3);
+            --danger-bg: rgba(239, 68, 68, 0.12);
+            --font-title: 'Geist', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            --font-main: 'Geist', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            --font-mono: 'Geist Mono', 'Space Mono', monospace;
+            --radius-card: 26px;
+            --radius-btn: 14px;
+            --card-shadow: 0 30px 80px rgba(0, 0, 0, 0.45), 0 0 30px rgba(239, 68, 68, 0.15);
         }
 
         body[data-theme="light"] {
-            --bg: #FEF2F2;
-            --card-bg: rgba(255, 255, 255, 0.96);
+            --bg: #EDEDF0;
+            --card-bg: rgba(255, 255, 255, 0.94);
             --card-border: rgba(220, 38, 38, 0.15);
-            --text-main: #0F172A;
-            --text-dim: #475569;
+            --text-main: #1A1D20;
+            --text-dim: #626773;
             --text-muted: #94A3B8;
-            --accent: #DC2626;
-            --accent-glow: rgba(220, 38, 38, 0.2);
+            --danger: #DC2626;
+            --danger-glow: rgba(220, 38, 38, 0.2);
+            --danger-bg: rgba(220, 38, 38, 0.08);
+            --card-shadow: 0 24px 60px rgba(0, 0, 0, 0.08), 0 2px 8px rgba(0, 0, 0, 0.03), 0 0 20px rgba(220, 38, 38, 0.06);
         }
 
         * {
@@ -40,7 +50,7 @@
         body {
             background: var(--bg);
             color: var(--text-main);
-            font-family: 'Outfit', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            font-family: var(--font-main);
             min-height: 100vh;
             display: flex;
             align-items: center;
@@ -49,6 +59,7 @@
             overflow: hidden;
             position: relative;
             user-select: none;
+            transition: background 0.3s ease, color 0.3s ease;
         }
 
         /* Ambient Danger Glow */
@@ -56,13 +67,14 @@
             position: absolute;
             width: 520px;
             height: 520px;
-            background: radial-gradient(circle, var(--accent-glow) 0%, transparent 70%);
+            background: radial-gradient(circle, var(--danger-glow) 0%, transparent 68%);
             top: 50%;
             left: 50%;
             transform: translate(-50%, -50%);
-            filter: blur(90px);
+            filter: blur(85px);
             pointer-events: none;
             z-index: 0;
+            transition: background 0.3s ease;
         }
 
         .warning-card {
@@ -72,107 +84,112 @@
             max-width: 580px;
             background: var(--card-bg);
             border: 1px solid var(--card-border);
-            border-radius: 24px;
-            padding: 40px;
+            border-radius: var(--radius-card);
+            padding: 38px 40px;
             backdrop-filter: blur(32px);
             -webkit-backdrop-filter: blur(32px);
-            box-shadow: 0 24px 60px rgba(0, 0, 0, 0.3), 0 0 30px var(--accent-glow);
-            animation: cardAppear 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+            box-shadow: var(--card-shadow);
+            animation: cardAppear 0.35s cubic-bezier(0.16, 1, 0.3, 1);
+            transition: background 0.3s ease, border-color 0.3s ease, box-shadow 0.3s ease;
         }
 
         @keyframes cardAppear {
-            from { opacity: 0; transform: translateY(16px) scale(0.97); }
+            from { opacity: 0; transform: translateY(14px) scale(0.98); }
             to { opacity: 1; transform: translateY(0) scale(1); }
         }
 
         .shield-icon-container {
-            width: 64px;
-            height: 64px;
+            width: 62px;
+            height: 62px;
             border-radius: 18px;
-            background: linear-gradient(135deg, rgba(239, 68, 68, 0.2), rgba(239, 68, 68, 0.06));
-            border: 1px solid rgba(239, 68, 68, 0.35);
+            background: var(--danger-bg);
+            border: 1px solid var(--danger-glow);
             display: flex;
             align-items: center;
             justify-content: center;
-            font-size: 28px;
-            color: var(--accent);
-            margin-bottom: 24px;
-            box-shadow: 0 8px 24px var(--accent-glow);
+            font-size: 26px;
+            color: var(--danger);
+            margin-bottom: 22px;
+            box-shadow: 0 8px 24px var(--danger-glow);
+            transition: all 0.3s ease;
         }
 
         h1 {
-            font-size: 26px;
+            font-size: 24px;
             font-weight: 800;
-            letter-spacing: -0.02em;
+            letter-spacing: -0.4px;
             margin-bottom: 12px;
             color: var(--text-main);
+            line-height: 1.25;
         }
 
         .desc-text {
-            font-size: 15px;
+            font-size: 14.5px;
             line-height: 1.6;
             color: var(--text-dim);
-            margin-bottom: 20px;
+            margin-bottom: 24px;
         }
 
         .domain-badge {
-            font-family: 'JetBrains Mono', monospace;
+            font-family: var(--font-mono);
             font-weight: 700;
-            color: var(--text-main);
-            background: rgba(255, 255, 255, 0.08);
-            border: 1px solid var(--card-border);
+            color: var(--danger);
+            background: var(--danger-bg);
+            border: 1px solid var(--danger-glow);
             padding: 2px 8px;
             border-radius: 6px;
-            font-size: 13.5px;
+            font-size: 13px;
             display: inline-block;
-        }
-
-        body[data-theme="light"] .domain-badge {
-            background: rgba(0, 0, 0, 0.05);
         }
 
         .actions {
             display: flex;
             align-items: center;
             justify-content: space-between;
-            gap: 16px;
-            margin-top: 32px;
+            gap: 14px;
+            margin-top: 28px;
         }
 
         .btn {
-            padding: 12px 24px;
-            border-radius: 12px;
-            font-family: 'Outfit', sans-serif;
-            font-size: 14.5px;
+            padding: 11px 22px;
+            border-radius: var(--radius-btn);
+            font-family: var(--font-main);
+            font-size: 14px;
             font-weight: 700;
             cursor: pointer;
             transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
-            display: flex;
+            display: inline-flex;
             align-items: center;
             gap: 8px;
             border: none;
             outline: none;
         }
 
-        .btn-primary {
-            background: linear-gradient(135deg, #EF4444, #DC2626);
+        .btn-danger {
+            background: var(--danger);
             color: #FFFFFF;
-            box-shadow: 0 6px 20px rgba(239, 68, 68, 0.4);
+            box-shadow: 0 6px 20px var(--danger-glow);
         }
 
-        .btn-primary:hover {
+        .btn-danger:hover {
             transform: translateY(-2px);
-            box-shadow: 0 10px 28px rgba(239, 68, 68, 0.55);
+            box-shadow: 0 10px 26px var(--danger-glow);
+            filter: brightness(1.08);
+        }
+
+        .btn-danger:active {
+            transform: translateY(0);
         }
 
         .btn-secondary {
             background: rgba(255, 255, 255, 0.06);
             color: var(--text-dim);
-            border: 1px solid var(--card-border);
+            border: 1px solid rgba(255, 255, 255, 0.1);
         }
 
         body[data-theme="light"] .btn-secondary {
             background: rgba(0, 0, 0, 0.04);
+            border-color: rgba(0, 0, 0, 0.08);
         }
 
         .btn-secondary:hover {
@@ -181,35 +198,44 @@
             transform: translateY(-1px);
         }
 
+        body[data-theme="light"] .btn-secondary:hover {
+            background: rgba(0, 0, 0, 0.08);
+        }
+
         /* Advanced Technical Diagnostic Box */
         .advanced-box {
             display: none;
-            margin-top: 24px;
-            padding-top: 24px;
+            margin-top: 22px;
+            padding-top: 22px;
             border-top: 1px solid var(--card-border);
-            animation: fadeIn 0.3s ease;
+            animation: fadeIn 0.25s ease;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(-4px); }
+            to { opacity: 1; transform: translateY(0); }
         }
 
         .advanced-box.show {
             display: block;
         }
 
-        .threat-chip {
+        .error-chip {
             display: inline-flex;
             align-items: center;
             gap: 6px;
-            font-family: 'JetBrains Mono', monospace;
-            font-size: 12px;
-            background: rgba(239, 68, 68, 0.15);
-            border: 1px solid rgba(239, 68, 68, 0.3);
-            color: var(--accent);
+            font-family: var(--font-mono);
+            font-size: 11.5px;
+            background: var(--danger-bg);
+            border: 1px solid var(--danger-glow);
+            color: var(--danger);
             padding: 4px 10px;
             border-radius: 8px;
-            margin-bottom: 14px;
+            margin-bottom: 12px;
         }
 
         .adv-desc {
-            font-size: 13.5px;
+            font-size: 13px;
             line-height: 1.55;
             color: var(--text-dim);
             margin-bottom: 16px;
@@ -217,10 +243,10 @@
 
         .btn-danger-link {
             background: transparent;
-            color: var(--text-dim);
+            color: var(--danger);
             border: none;
             font-size: 13px;
-            font-weight: 600;
+            font-weight: 700;
             cursor: pointer;
             display: inline-flex;
             align-items: center;
@@ -228,11 +254,12 @@
             padding: 4px 0;
             text-decoration: underline;
             text-underline-offset: 3px;
-            transition: color 0.2s;
+            transition: opacity 0.2s, transform 0.2s;
         }
 
         .btn-danger-link:hover {
-            color: var(--accent);
+            opacity: 0.85;
+            transform: translateX(2px);
         }
     </style>
 </head>
@@ -241,46 +268,82 @@
 
     <div class="warning-card">
         <div class="shield-icon-container">
-            <i class="fas fa-hand"></i>
+            <i class="fas fa-triangle-exclamation"></i>
         </div>
 
         <h1>Deceptive site ahead</h1>
         <p class="desc-text">
-            Ocal Safe Browsing has blocked <span class="domain-badge" id="domain-text">example.com</span>. Attackers may attempt to trick you into downloading malware or revealing sensitive personal info.
+            Attackers on <span class="domain-badge" id="domain-text">malicious-site.com</span> may trick you into doing something dangerous like installing software or revealing your personal information (for example, passwords, phone numbers, or credit cards).
         </p>
 
         <div class="actions">
             <button class="btn btn-secondary" id="advanced-btn">
                 <i class="fas fa-sliders"></i>
-                Details
+                <span>Details</span>
             </button>
-            <button class="btn btn-primary" id="back-btn">
+            <button class="btn btn-danger" id="back-btn">
                 <i class="fas fa-shield-halved"></i>
-                Back to Safety
+                <span>Back to Safety</span>
             </button>
         </div>
 
         <div class="advanced-box" id="advanced-details">
-            <div class="threat-chip">
+            <div class="error-chip">
                 <i class="fas fa-biohazard"></i>
-                <span>OCAL_SAFE_BROWSING_MALWARE_BLOCK</span>
+                <span>DANGEROUS_CONTENT_BLOCKED</span>
             </div>
             <p class="adv-desc">
-                This domain is flagged in real-time threat intelligence feeds for hosting malicious exploits, phishing campaigns, or fraudulent pages.
+                Ocal Safe Browsing detected this site as potentially deceptive, phishing, or serving malicious payloads. Visiting this page could compromise your browser security or private credentials.
             </p>
             <button class="btn-danger-link" id="proceed-btn">
-                Ignore warning and proceed to <span id="domain-proceed">example.com</span> (unsafe) <i class="fas fa-arrow-right"></i>
+                <span>Proceed to <span id="domain-proceed">malicious-site.com</span> (unsafe)</span>
+                <i class="fas fa-arrow-right"></i>
             </button>
         </div>
     </div>
 
     <script>
-        // Sync Theme from settings/parent
-        try {
-            const savedTheme = localStorage.getItem('theme') || 'dark';
-            document.body.setAttribute('data-theme', savedTheme);
-        } catch (e) {}
+        // ── Comprehensive Theme & Accent Synchronization ──
+        function applyTheme(theme) {
+            try {
+                if (!theme) {
+                    const urlParams = new URLSearchParams(window.location.search);
+                    theme = urlParams.get('theme') || localStorage.getItem('ocal-settings-theme');
+                    if (!theme) {
+                        theme = (window.matchMedia && window.matchMedia('(prefers-color-scheme: light)').matches) ? 'light' : 'dark';
+                    }
+                }
+                document.body.setAttribute('data-theme', theme);
+                document.documentElement.setAttribute('data-theme', theme);
+            } catch (e) {
+                console.warn('Error applying theme:', e);
+            }
+        }
 
+        // Apply immediately on load
+        applyTheme();
+
+        // Listen for browser settings changes
+        if (window.electronAPI && window.electronAPI.onSettingsChanged) {
+            window.electronAPI.onSettingsChanged((s) => {
+                if (s && s.themeMode) applyTheme(s.themeMode);
+            });
+        }
+        if (window.electronAPI && window.electronAPI.getSettings) {
+            window.electronAPI.getSettings().then((s) => {
+                if (s && s.themeMode) applyTheme(s.themeMode);
+            }).catch(() => {});
+        }
+
+        window.addEventListener('storage', (e) => {
+            if (e.key === 'ocal-settings-theme') applyTheme();
+        });
+
+        if (window.matchMedia) {
+            window.matchMedia('(prefers-color-scheme: light)').addEventListener('change', () => applyTheme());
+        }
+
+        // ── Target Domain Details ──
         const urlParams = new URLSearchParams(window.location.search);
         let targetUrl = urlParams.get('url') || '';
         
@@ -309,6 +372,8 @@
         document.getElementById('proceed-btn').onclick = () => {
             if (window.electronAPI && window.electronAPI.bypassSecurity) {
                 window.electronAPI.bypassSecurity(hostname, targetUrl);
+            } else {
+                window.location.href = targetUrl;
             }
         };
     </script>

@@ -1043,14 +1043,55 @@ app.on('certificate-error', (event, webContents, url, error, certificate, callba
         // User explicitly bypassed this error for this session
         event.preventDefault();
         callback(true);
-    } else {
-        // Block the load and redirect to SSL warning page
-        event.preventDefault();
-        callback(false);
-        const warnUrl = `ocal://ssl-warning?url=${encodeURIComponent(url)}&error=${encodeURIComponent(error)}`;
-        // Delay slightly so the blocked navigation clears
-        setTimeout(() => webContents.loadURL(warnUrl), 10);
+        return;
     }
+
+    event.preventDefault();
+    callback(false);
+
+    // CRITICAL: NEVER navigate the main window chrome or helper views (sidebars, popups) to the warning page!
+    if (!mainWindow || webContents === mainWindow.webContents) {
+        return;
+    }
+    if (sidebarOverlayView && webContents === sidebarOverlayView.webContents) return;
+    if (aiSidebarView && webContents === aiSidebarView.webContents) return;
+    if (suggestionsView && webContents === suggestionsView.webContents) return;
+    if (shieldPopupView && webContents === shieldPopupView.webContents) return;
+    if (siteInfoView && webContents === siteInfoView.webContents) return;
+    if (passwordsPopupView && webContents === passwordsPopupView.webContents) return;
+    if (bmDropdownView && webContents === bmDropdownView.webContents) return;
+    if (extensionDropdownView && webContents === extensionDropdownView.webContents) return;
+    if (volumeBoostView && webContents === volumeBoostView.webContents) return;
+
+    // Verify that this webContents belongs to a registered browser tab
+    const isTab = views.some(v => 
+        (v.view && !v.view.webContents.isDestroyed() && v.view.webContents === webContents) ||
+        (v.view2 && !v.view2.webContents.isDestroyed() && v.view2.webContents === webContents)
+    );
+    if (!isTab) return;
+
+    // Don't redirect if the tab is already displaying a warning page
+    const curUrl = webContents.getURL() || '';
+    if (curUrl.includes('ssl-warning.html') || curUrl.includes('security-warning.html')) {
+        return;
+    }
+
+    // Ignore subresource certificate errors (e.g. background icons, assets, trackers) so we don't disrupt the page
+    const isAsset = /\.(ico|png|jpg|jpeg|svg|gif|webp|css|js|woff2?|ttf)($|\?)/i.test(url) || url.includes('/favicon');
+    if (isAsset && curUrl && !curUrl.startsWith('about:blank') && curUrl !== 'ocal://newtab') {
+        return;
+    }
+
+    const theme = (userSettings && userSettings.themeMode) ? userSettings.themeMode : 'dark';
+    const accent = (userSettings && userSettings.accentColor) ? encodeURIComponent(userSettings.accentColor) : '%2309F0A0';
+    const warnUrl = `ocal://ssl-warning?url=${encodeURIComponent(url)}&error=${encodeURIComponent(error)}&theme=${theme}&accent=${accent}`;
+
+    // Delay slightly so the blocked navigation clears
+    setTimeout(() => {
+        if (!webContents.isDestroyed()) {
+            webContents.loadURL(warnUrl).catch(() => {});
+        }
+    }, 10);
 });
 
 function setupCompatibilityHandler() {
@@ -1948,7 +1989,8 @@ function setupViewEvents(tabId, view, side = 'left') {
         // Safe Browsing Check
         if (hostname && maliciousDomains.has(hostname) && !trustedMalwareDomains.has(hostname)) {
             event.preventDefault();
-            const warnUrl = `ocal://security-warning?url=${encodeURIComponent(targetUrl)}`;
+            const theme = (userSettings && userSettings.themeMode) ? userSettings.themeMode : 'dark';
+            const warnUrl = `ocal://security-warning?url=${encodeURIComponent(targetUrl)}&theme=${theme}`;
             setTimeout(() => webContents.loadURL(warnUrl), 10);
             return;
         }
@@ -1977,7 +2019,8 @@ function setupViewEvents(tabId, view, side = 'left') {
         try { hostname = new URL(url).hostname; } catch(e) { hostname = ''; }
         
         if (hostname && maliciousDomains.has(hostname) && !trustedMalwareDomains.has(hostname)) {
-            createNewTab(`ocal://security-warning?url=${encodeURIComponent(url)}`);
+            const theme = (userSettings && userSettings.themeMode) ? userSettings.themeMode : 'dark';
+            createNewTab(`ocal://security-warning?url=${encodeURIComponent(url)}&theme=${theme}`);
             return { action: 'deny' };
         }
 
@@ -3250,7 +3293,8 @@ ipcMain.on('navigate-to', (e, url) => {
     try { hostname = new URL(targetUrl).hostname; } catch(e) { hostname = ''; }
     
     if (hostname && maliciousDomains.has(hostname) && !trustedMalwareDomains.has(hostname)) {
-        activeView.webContents.loadURL(`ocal://security-warning?url=${encodeURIComponent(targetUrl)}`);
+        const theme = (userSettings && userSettings.themeMode) ? userSettings.themeMode : 'dark';
+        activeView.webContents.loadURL(`ocal://security-warning?url=${encodeURIComponent(targetUrl)}&theme=${theme}`);
     } else {
         activeView.webContents.loadURL(resolveInternalURL(targetUrl));
     }
@@ -3261,15 +3305,33 @@ ipcMain.on('nav-forward', () => { const v = getActiveViewForNavigation(); if (v?
 ipcMain.on('nav-reload', () => { const v = getActiveViewForNavigation(); if (v) v.webContents.reload(); });
 
 ipcMain.on('bypass-ssl', (event, domain, url) => {
-    trustedSSLDomains.add(domain);
-    const v = getActiveViewForNavigation();
-    if (v) v.webContents.loadURL(url);
+    if (domain) trustedSSLDomains.add(domain);
+    let target = url;
+    if (!target && domain) target = `https://${domain}/`;
+
+    let targetWebContents = event.sender;
+    const isTabSender = views.some(v => (v.view?.webContents === targetWebContents) || (v.view2?.webContents === targetWebContents));
+    if (isTabSender && !targetWebContents.isDestroyed()) {
+        targetWebContents.loadURL(target);
+    } else {
+        const v = getActiveViewForNavigation();
+        if (v && !v.webContents.isDestroyed()) v.webContents.loadURL(target);
+    }
 });
 
 ipcMain.on('bypass-security', (event, domain, url) => {
-    trustedMalwareDomains.add(domain);
-    const v = getActiveViewForNavigation();
-    if (v) v.webContents.loadURL(url);
+    if (domain) trustedMalwareDomains.add(domain);
+    let target = url;
+    if (!target && domain) target = `https://${domain}/`;
+
+    let targetWebContents = event.sender;
+    const isTabSender = views.some(v => (v.view?.webContents === targetWebContents) || (v.view2?.webContents === targetWebContents));
+    if (isTabSender && !targetWebContents.isDestroyed()) {
+        targetWebContents.loadURL(target);
+    } else {
+        const v = getActiveViewForNavigation();
+        if (v && !v.webContents.isDestroyed()) v.webContents.loadURL(target);
+    }
 });
 
 ipcMain.on('window-minimize', () => mainWindow.minimize());
