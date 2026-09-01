@@ -3951,7 +3951,7 @@ body[data-theme="dark"] .vt-tab-item:hover {
   width: 3.5px;
   border-radius: 0 3px 3px 0;
   background: var(--accent);
-  box-shadow: 0 0 8px var(--accent);
+  box-shadow: none;
 }
 
 .vt-tab-item.active .vt-tab-favicon i {
@@ -3974,7 +3974,7 @@ body[data-theme="light"] .vt-tab-item.active::before {
   width: 3.5px;
   border-radius: 0 3px 3px 0;
   background: var(--accent);
-  box-shadow: 0 0 6px rgba(9, 240, 160, 0.4);
+  box-shadow: none;
 }
 
 .vt-tab-favicon {
@@ -4339,7 +4339,7 @@ body.tab-layout-vertical.vertical-tabs-collapsed .vt-tab-favicon {
 
 body.tab-layout-vertical.vertical-tabs-collapsed .vt-tab-item.active {
   border: 1.5px solid var(--accent) !important;
-  box-shadow: 0 2px 10px var(--accent-glow, rgba(9, 240, 160, 0.2)) !important;
+  box-shadow: none !important;
 }
 
 body.tab-layout-vertical.vertical-tabs-collapsed .vt-group-header {
