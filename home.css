@@ -56,8 +56,8 @@ body {
 /* Dark mode on <html> — prevents flash before body data-theme is set */
 html[data-theme="dark"],
 html[data-theme="dark"] body {
-    background: #0D0E11 !important;
-    color: #F3F4F6;
+    background: #18181B !important;
+    color: #F4F4F5;
     color-scheme: dark;
 }
 
@@ -717,13 +717,13 @@ body[data-theme="dark"] .sp-search-submit {
 
 /* ── Dark Mode Overrides ───────────────────────────────────────── */
 body[data-theme="dark"], body[data-theme="dark"] .sp-dashboard-body {
-    background: #0D0E11 !important;
-    color: #F3F4F6 !important;
+    background: #18181B !important;
+    color: #F4F4F5 !important;
 }
 
 body[data-theme="dark"] .sp-wallpaper-bg,
 html[data-theme="dark"] .sp-wallpaper-bg {
-    background: #0D0E11 !important;
+    background: #18181B !important;
 }
 
 body[data-theme="dark"] .sp-user-name,
@@ -742,7 +742,7 @@ body[data-theme="dark"] .sp-tp-title {
 body[data-theme="dark"] .sp-user-subtitle,
 body[data-theme="dark"] .sp-section-subtitle,
 body[data-theme="dark"] .del-todo {
-    color: #9CA3AF !important;
+    color: #A1A1AA !important;
 }
 
 body[data-theme="dark"] .sp-tp-sub {
@@ -751,29 +751,29 @@ body[data-theme="dark"] .sp-tp-sub {
 }
 
 body[data-theme="dark"] .sp-card-white {
-    background: #16181D !important;
+    background: #222226 !important;
     border-color: rgba(255, 255, 255, 0.08) !important;
-    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.4) !important;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.35) !important;
 }
 
 body[data-theme="dark"] .sp-search-pill,
 body[data-theme="dark"] .sp-stats-bar,
 body[data-theme="dark"] .sp-timeline-pill,
 body[data-theme="dark"] .sp-tile-item {
-    background: #16181D !important;
+    background: #222226 !important;
     border-color: rgba(255, 255, 255, 0.08) !important;
 }
 
 body[data-theme="dark"] .sp-todo-input,
 body[data-theme="dark"] .sp-notes-textarea,
 body[data-theme="dark"] .todo-card {
-    background: #20242D !important;
+    background: #28282D !important;
     border-color: rgba(255, 255, 255, 0.08) !important;
     color: #FFFFFF !important;
 }
 
 body[data-theme="dark"] .sp-badge-gray {
-    background: #2D323E !important;
+    background: #2E2E33 !important;
     color: #FFFFFF !important;
 }
 
@@ -1529,7 +1529,7 @@ body[data-theme="light"] .wh-hourly-temp {
 }
 
 body[data-theme="dark"] .sp-bottom-bar-pill {
-    background: rgba(22, 24, 29, 0.95);
+    background: #222226;
     border-color: rgba(255, 255, 255, 0.08);
     box-shadow: 0 8px 30px rgba(0, 0, 0, 0.3);
 }
