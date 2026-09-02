@@ -427,236 +427,303 @@
                 </div>
             </section>
 
-                    <!-- ── HOME PAGE ── -->
-            <!-- ── HOME PAGE & APPEARANCE ── -->
+            <!-- ── HOMEPAGE & WORKSPACE (HOME PAGE STYLE) ── -->
             <section id="homepage" class="section">
-                <div class="page-header">
-                    <div class="page-eyebrow">Appearance & Layout</div>
-                    <div class="page-title">Homepage & Workspace</div>
-                    <div class="page-desc">Customize system theme, accent color, sidebar behavior, and layout density.</div>
+                <!-- Home-style Header Row: Title & Stats Bar -->
+                <div class="home-settings-header-row">
+                    <div class="home-settings-greeting">
+                        <h1 class="home-settings-title">Homepage & Workspace</h1>
+                        <div class="home-settings-subtitle">
+                            <i class="fas fa-quote-left home-quote-icon"></i>
+                            <span>Customize visual appearance, accent colors, tab strip orientation, and workspace layouts.</span>
+                        </div>
+                    </div>
+
+                    <!-- Dot-Matrix Stats Bar matching Home Page .sp-stats-bar -->
+                    <div class="home-stats-bar">
+                        <div class="home-stat-item">
+                            <span class="home-dot-num" id="homepage-stat-theme">Dark</span>
+                            <span class="home-badge home-badge-lime">Theme</span>
+                        </div>
+                        <div class="home-stat-item">
+                            <span class="home-dot-num" id="homepage-stat-layout">Horizontal</span>
+                            <span class="home-badge home-badge-gray">Layout</span>
+                        </div>
+                        <div class="home-stat-item">
+                            <span class="home-dot-num" id="homepage-stat-accent">Emerald</span>
+                            <span class="home-badge home-badge-gray">Accent</span>
+                        </div>
+                    </div>
                 </div>
 
                 <div class="page-body">
                     <div class="homepage-bento-grid">
 
-                        <!-- ─── Theme & Accent ─── -->
-                        <div class="card homepage-card-box">
-                            <div class="homepage-card-header">
-                                <i class="fas fa-palette"></i>
-                                <span>Theme & Accent</span>
-                            </div>
-                            <div class="homepage-rows-container" style="gap: 14px; padding: 16px 20px;">
-                                <!-- Dark Mode Toggle -->
-                                <div class="security-toggle-row" style="padding-bottom: 14px;">
-                                    <div class="row-info">
-                                        <h4>Dark System Theme</h4>
-                                        <p>Toggle between Dark and Light mode</p>
+                        <!-- ─── 1. Theme & Accent Visual System ─── -->
+                        <div class="card homepage-bento-card sp-card-white">
+                            <div class="hbc-header">
+                                <div class="hbc-header-left">
+                                    <div class="hbc-icon theme-bg">
+                                        <i class="fas fa-palette"></i>
                                     </div>
-                                    <div class="toggle on" id="theme-mode-toggle"></div>
+                                    <div class="hbc-identity">
+                                        <h4 class="hbc-name">Visual System & Theme</h4>
+                                        <div class="hbc-tagline">Theme Mode &middot; Accent Highlight Palette</div>
+                                    </div>
                                 </div>
-                                <!-- Accent Palette -->
-                                <div class="security-toggle-row" style="flex-direction: column; align-items: flex-start; gap: 10px; padding-bottom: 0; border-bottom: none;">
-                                    <div class="row-info">
+                                <span class="hbc-badge visual">SYSTEM STYLING</span>
+                            </div>
+
+                            <div class="hbc-rows">
+                                <!-- Dark Mode Row -->
+                                <div class="hbc-toggle-row">
+                                    <div class="hbc-row-info">
+                                        <h4>Dark System Interface</h4>
+                                        <p>Toggle between neutral dark gray (#18181B) and crisp light mode (#EDEDF0)</p>
+                                    </div>
+                                    <label class="ext-toggle-wrap">
+                                        <input type="checkbox" id="theme-mode-toggle-cb" checked
+                                            onchange="handleThemeToggle(this.checked)">
+                                        <span class="ext-slider"></span>
+                                    </label>
+                                </div>
+
+                                <!-- Accent Palette Row -->
+                                <div class="hbc-palette-wrap">
+                                    <div class="hbc-row-info">
                                         <h4>Accent Highlight Palette</h4>
-                                        <p>Primary accent color for tabs, buttons, and highlights</p>
+                                        <p>Primary focus accent for active tabs, omnibox highlights, and interactive toggles</p>
                                     </div>
-                                    <div class="color-row" style="margin-top: 0; width: 100%;">
-                                        <div class="color-dot active" data-color="#09f0a0" style="background:#09f0a0;" title="Emerald Green"></div>
-                                        <div class="color-dot" data-color="#ffffff" style="background:#ffffff;" title="Pure White"></div>
-                                        <div class="color-dot" data-color="#a855f7" style="background:#a855f7;" title="Neon Purple"></div>
-                                        <div class="color-dot" data-color="#3b82f6" style="background:#3b82f6;" title="Royal Blue"></div>
-                                        <div class="color-dot" data-color="#ef4444" style="background:#ef4444;" title="Crimson Red"></div>
-                                        <div class="color-dot" data-color="#e8ff47" style="background:#e8ff47;" title="Cyber Yellow"></div>
+                                    <div class="hbc-color-swatches" id="accent-swatches-row">
+                                        <div class="hbc-swatch active" data-color="#09f0a0" style="--swatch-color: #09f0a0;" title="Emerald Green"><span class="swatch-check"><i class="fas fa-check"></i></span></div>
+                                        <div class="hbc-swatch" data-color="#ffffff" style="--swatch-color: #ffffff;" title="Pure White"><span class="swatch-check"><i class="fas fa-check"></i></span></div>
+                                        <div class="hbc-swatch" data-color="#a855f7" style="--swatch-color: #a855f7;" title="Neon Purple"><span class="swatch-check"><i class="fas fa-check"></i></span></div>
+                                        <div class="hbc-swatch" data-color="#3b82f6" style="--swatch-color: #3b82f6;" title="Royal Blue"><span class="swatch-check"><i class="fas fa-check"></i></span></div>
+                                        <div class="hbc-swatch" data-color="#ef4444" style="--swatch-color: #ef4444;" title="Crimson Red"><span class="swatch-check"><i class="fas fa-check"></i></span></div>
+                                        <div class="hbc-swatch" data-color="#e8ff47" style="--swatch-color: #e8ff47;" title="Cyber Yellow"><span class="swatch-check"><i class="fas fa-check"></i></span></div>
+                                        <div class="hbc-swatch" data-color="#fb923c" style="--swatch-color: #fb923c;" title="Sunset Orange"><span class="swatch-check"><i class="fas fa-check"></i></span></div>
+                                        <div class="hbc-swatch" data-color="#06b6d4" style="--swatch-color: #06b6d4;" title="Electric Cyan"><span class="swatch-check"><i class="fas fa-check"></i></span></div>
                                     </div>
                                 </div>
                             </div>
                         </div>
 
-                        <!-- ─── Workspace Toggles ─── -->
-                        <div class="card homepage-card-box">
-                            <div class="homepage-card-header">
-                                <i class="fas fa-window-maximize"></i>
-                                <span>Workspace & Density</span>
+                        <!-- ─── 2. Workspace Density & Quick Toggles ─── -->
+                        <div class="card homepage-bento-card sp-card-white">
+                            <div class="hbc-header">
+                                <div class="hbc-header-left">
+                                    <div class="hbc-icon workspace-bg">
+                                        <i class="fas fa-window-maximize"></i>
+                                    </div>
+                                    <div class="hbc-identity">
+                                        <h4 class="hbc-name">Workspace Density & Layout</h4>
+                                        <div class="hbc-tagline">Bookmarks &middot; Compact View &middot; News</div>
+                                    </div>
+                                </div>
+                                <span class="hbc-badge workspace">DENSITY & FEEDS</span>
                             </div>
-                            <div class="homepage-rows-container" style="gap: 0; padding: 0;">
-                                <div class="security-toggle-row" style="padding: 14px 20px; border-bottom: 1px solid var(--chrome-border);">
-                                    <div class="row-info">
-                                        <h4>Compact Density</h4>
-                                        <p>Condensed UI for power users</p>
+
+                            <div class="hbc-rows">
+                                <div class="hbc-toggle-row">
+                                    <div class="hbc-row-info">
+                                        <h4>Compact Interface Density</h4>
+                                        <p>Condenses omnibox margins and padding for maximum web viewport space</p>
                                     </div>
-                                    <div class="toggle" id="compact-toggle"></div>
+                                    <label class="ext-toggle-wrap">
+                                        <input type="checkbox" id="compact-toggle-cb"
+                                            onchange="handleCompactToggle(this.checked)">
+                                        <span class="ext-slider"></span>
+                                    </label>
                                 </div>
-                                <div class="security-toggle-row" style="padding: 14px 20px; border-bottom: 1px solid var(--chrome-border);">
-                                    <div class="row-info">
-                                        <h4>Bookmarks Bar</h4>
-                                        <p>Persistent toolbar below address bar</p>
+                                <div class="hbc-toggle-row">
+                                    <div class="hbc-row-info">
+                                        <h4>Bookmarks Bar Toolbar</h4>
+                                        <p>Persistent quick-access bookmarks strip directly below the address bar</p>
                                     </div>
-                                    <div class="toggle on" id="bookmarks-bar-toggle"></div>
+                                    <label class="ext-toggle-wrap">
+                                        <input type="checkbox" id="bookmarks-bar-toggle-cb" checked
+                                            onchange="handleBookmarksBarToggle(this.checked)">
+                                        <span class="ext-slider"></span>
+                                    </label>
                                 </div>
-                                <div class="security-toggle-row" style="padding: 14px 20px; border-bottom: none;">
-                                    <div class="row-info">
-                                        <h4>News Hub Feed</h4>
-                                        <p>Live news button on Home Dashboard</p>
+                                <div class="hbc-toggle-row">
+                                    <div class="hbc-row-info">
+                                        <h4>Home News Feed Hub</h4>
+                                        <p>Live news button and trending category stream on the Home Dashboard</p>
                                     </div>
-                                    <div class="toggle on" id="show-news-toggle"></div>
+                                    <label class="ext-toggle-wrap">
+                                        <input type="checkbox" id="show-news-toggle-cb" checked
+                                            onchange="handleNewsToggle(this.checked)">
+                                        <span class="ext-slider"></span>
+                                    </label>
                                 </div>
                             </div>
                         </div>
 
-                        <!-- ─── Tab Layout & Vertical Tabs (Arc / Crescent / Edge) ─── -->
-                        <div class="card homepage-card-box" style="grid-column: 1 / -1;">
-                            <div class="homepage-card-header">
-                                <i class="fas fa-table-columns"></i>
-                                <span>Tab Layout & Vertical Tabs (Arc / Crescent)</span>
-                            </div>
-                            <div class="homepage-rows-container" style="gap: 14px; padding: 16px 20px;">
-                                <!-- Tab Layout Mode Grid -->
-                                <div class="security-toggle-row" style="flex-direction: column; align-items: flex-start; gap: 10px; padding-bottom: 14px;">
-                                    <div class="row-info">
-                                        <h4>Tab Strip Orientation</h4>
-                                        <p>Choose between traditional top tab bar or modern vertical sidebar tabs (Arc Browser / Crescent style)</p>
+                        <!-- ─── 3. Tab Orientation & Layout Engine (Arc / Crescent Style) ─── -->
+                        <div class="card homepage-bento-card sp-card-white span-full">
+                            <div class="hbc-header">
+                                <div class="hbc-header-left">
+                                    <div class="hbc-icon tab-bg">
+                                        <i class="fas fa-table-columns"></i>
                                     </div>
-                                    <div class="choice-grid" id="tab-layout-grid" style="grid-template-columns: repeat(2, 1fr); gap: 12px; width: 100%;">
-                                        <div class="choice-item active" data-value="horizontal">
-                                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                                                <rect width="18" height="18" x="3" y="3" rx="3.5"/>
-                                                <line x1="3" y1="9.5" x2="21" y2="9.5"/>
-                                            </svg>
-                                            <div style="display: flex; flex-direction: column; align-items: flex-start; text-align: left;">
-                                                <span style="font-weight: 700;">Horizontal Tabs</span>
-                                                <span style="font-size: 11px; opacity: 0.7;">Classic top tab bar</span>
-                                            </div>
-                                        </div>
-                                        <div class="choice-item" data-value="vertical">
-                                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="color: var(--accent);">
-                                                <rect width="18" height="18" x="3" y="3" rx="3.5"/>
-                                                <line x1="9.5" y1="3" x2="9.5" y2="21"/>
-                                            </svg>
-                                            <div style="display: flex; flex-direction: column; align-items: flex-start; text-align: left;">
-                                                <span style="font-weight: 700;">Vertical Tabs</span>
-                                                <span style="font-size: 11px; opacity: 0.7;">Arc / Crescent left dock</span>
-                                            </div>
-                                        </div>
+                                    <div class="hbc-identity">
+                                        <h4 class="hbc-name">Tab Orientation & Navigation Dock</h4>
+                                        <div class="hbc-tagline">Classic Top Bar vs Modern Arc/Crescent Vertical Dock</div>
                                     </div>
                                 </div>
+                                <span class="hbc-badge tab">NAVIGATION ENGINE</span>
+                            </div>
 
-                                <!-- Vertical Tabs Collapsed Toggle -->
-                                <div class="security-toggle-row" id="vt-collapse-setting-row" style="padding-bottom: 14px;">
-                                    <div class="row-info">
+                            <div class="tab-orientation-picker" id="tab-layout-grid">
+                                <!-- Horizontal Choice Card -->
+                                <div class="tab-choice-card active" data-value="horizontal" onclick="selectTabLayout('horizontal')">
+                                    <div class="tcc-header">
+                                        <div class="tcc-icon">
+                                            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                                <rect width="18" height="18" x="3" y="3" rx="4"/>
+                                                <line x1="3" y1="9" x2="21" y2="9"/>
+                                            </svg>
+                                        </div>
+                                        <div class="tcc-radio">
+                                            <div class="tcc-dot"><i class="fas fa-check"></i></div>
+                                        </div>
+                                    </div>
+                                    <h4 class="tcc-title">Horizontal Tabs</h4>
+                                    <p class="tcc-desc">Traditional top tab bar with elevated active squircles, proportional auto-scaling, and inline '+' action button.</p>
+                                    <div class="tcc-tag">DEFAULT STANDARD</div>
+                                </div>
+
+                                <!-- Vertical Choice Card -->
+                                <div class="tab-choice-card" data-value="vertical" onclick="selectTabLayout('vertical')">
+                                    <div class="tcc-header">
+                                        <div class="tcc-icon">
+                                            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                                <rect width="18" height="18" x="3" y="3" rx="4"/>
+                                                <line x1="9" y1="3" x2="9" y2="21"/>
+                                            </svg>
+                                        </div>
+                                        <div class="tcc-radio">
+                                            <div class="tcc-dot"><i class="fas fa-check"></i></div>
+                                        </div>
+                                    </div>
+                                    <h4 class="tcc-title">Vertical Tabs (Arc Style)</h4>
+                                    <p class="tcc-desc">Modern left docking rail with collapsible icon mode, smooth drag reordering, and distraction-free wide web viewports.</p>
+                                    <div class="tcc-tag arc">ARC / CRESCENT DOCK</div>
+                                </div>
+                            </div>
+
+                            <!-- Vertical Dock Advanced Tuning Row -->
+                            <div class="vt-tuning-container" id="vt-tuning-section">
+                                <div class="hbc-toggle-row" id="vt-collapse-setting-row">
+                                    <div class="hbc-row-info">
                                         <h4>Collapsed Mini Mode</h4>
-                                        <p>Start vertical tabs in compact icon-only dock (expands on hover or click)</p>
+                                        <p>Start vertical tabs in a slim icon rail (56px) that expands smoothly on hover</p>
                                     </div>
-                                    <label class="toggle-switch">
-                                        <input type="checkbox" id="vertical-tabs-collapsed-toggle">
-                                        <span class="slider round"></span>
+                                    <label class="ext-toggle-wrap">
+                                        <input type="checkbox" id="vertical-tabs-collapsed-toggle-cb"
+                                            onchange="window.electronAPI.updateSetting('verticalTabsCollapsed', this.checked)">
+                                        <span class="ext-slider"></span>
                                     </label>
                                 </div>
 
-                                <!-- Vertical Tabs Width -->
-                                <div class="security-toggle-row" id="vt-width-setting-row" style="flex-direction: column; align-items: flex-start; gap: 10px; padding-bottom: 0; border-bottom: none;">
-                                    <div class="row-info">
-                                        <h4>Vertical Sidebar Width</h4>
-                                        <p>Preferred width when vertical tabs panel is expanded</p>
+                                <div class="vt-width-row">
+                                    <div class="hbc-row-info">
+                                        <h4>Vertical Dock Expanded Width</h4>
+                                        <p>Custom pixel width when vertical tabs panel is expanded</p>
                                     </div>
-                                    <div class="choice-grid" id="vt-width-grid" style="grid-template-columns: repeat(3, 1fr); gap: 10px; width: 100%;">
-                                        <div class="choice-item" data-value="200">
-                                            <i class="fas fa-mobile-screen"></i>
-                                            <span>Compact (200px)</span>
-                                        </div>
-                                        <div class="choice-item active" data-value="240">
-                                            <i class="fas fa-tablet-screen-button"></i>
-                                            <span>Standard (240px)</span>
-                                        </div>
-                                        <div class="choice-item" data-value="280">
-                                            <i class="fas fa-desktop"></i>
-                                            <span>Spacious (280px)</span>
-                                        </div>
+                                    <div class="vt-width-pills" id="vt-width-grid">
+                                        <button class="vt-pill-btn" data-value="200" onclick="selectVtWidth(200)"><i class="fas fa-mobile-screen"></i> 200px Compact</button>
+                                        <button class="vt-pill-btn active" data-value="240" onclick="selectVtWidth(240)"><i class="fas fa-tablet-screen-button"></i> 240px Standard</button>
+                                        <button class="vt-pill-btn" data-value="280" onclick="selectVtWidth(280)"><i class="fas fa-desktop"></i> 280px Spacious</button>
                                     </div>
                                 </div>
                             </div>
                         </div>
 
-                        <!-- ─── Sidebar Controls ─── -->
-                        <div class="card homepage-card-box" style="grid-column: 1 / -1;">
-                            <div class="homepage-card-header">
-                                <i class="fas fa-sidebar"></i>
-                                <span>Sidebar Controls</span>
-                            </div>
-                            <div class="homepage-rows-container" style="gap: 14px; padding: 16px 20px;">
-                                <div class="security-toggle-row" style="padding-bottom: 14px;">
-                                    <div class="row-info">
-                                        <h4>Hide Sidebar (Force Feature)</h4>
-                                        <p>Force hide sidebar on startup for a full-screen viewport (On by default)</p>
+                        <!-- ─── 4. Sidebar Controls & WebApp Slideover Drawer ─── -->
+                        <div class="card homepage-bento-card sp-card-white span-full">
+                            <div class="hbc-header">
+                                <div class="hbc-header-left">
+                                    <div class="hbc-icon sidebar-bg">
+                                        <i class="fas fa-sidebar"></i>
                                     </div>
-                                    <label class="toggle-switch">
-                                        <input type="checkbox" id="force-hide-sidebar-toggle" checked>
-                                        <span class="slider round"></span>
+                                    <div class="hbc-identity">
+                                        <h4 class="hbc-name">Sidebar & WebApp Slideover Drawer</h4>
+                                        <div class="hbc-tagline">AI, WhatsApp, Spotify, Discord & ChatGPT Docking</div>
+                                    </div>
+                                </div>
+                                <span class="hbc-badge sidebar">SIDEBAR DOCK</span>
+                            </div>
+
+                            <div class="hbc-rows">
+                                <div class="hbc-toggle-row">
+                                    <div class="hbc-row-info">
+                                        <h4>Force Hide Sidebar on Launch</h4>
+                                        <p>Keep sidebar collapsed on startup to provide an edge-to-edge web workspace</p>
+                                    </div>
+                                    <label class="ext-toggle-wrap">
+                                        <input type="checkbox" id="force-hide-sidebar-toggle-cb" checked
+                                            onchange="handleForceHideSidebar(this.checked)">
+                                        <span class="ext-slider"></span>
                                     </label>
                                 </div>
-                                <div class="security-toggle-row" style="flex-direction: column; align-items: flex-start; gap: 10px; padding-bottom: 14px;">
-                                    <div class="row-info">
+
+                                <div class="vt-width-row">
+                                    <div class="hbc-row-info">
                                         <h4>Default Sidebar State</h4>
-                                        <p>Visibility preference on browser launch</p>
+                                        <p>Visibility preference when opening a new browser window</p>
                                     </div>
-                                    <div class="choice-grid" id="sidebar-mode-grid" style="grid-template-columns: repeat(2, 1fr); gap: 10px; width: 100%;">
-                                        <div class="choice-item active" data-value="hidden">
-                                            <i class="fas fa-eye-slash"></i>
-                                            <span>Hide Sidebar (Default)</span>
-                                        </div>
-                                        <div class="choice-item" data-value="visible">
-                                            <i class="fas fa-eye"></i>
-                                            <span>Show Sidebar</span>
-                                        </div>
+                                    <div class="vt-width-pills" id="sidebar-mode-grid">
+                                        <button class="vt-pill-btn active" data-value="hidden" onclick="selectSidebarMode('hidden')"><i class="fas fa-eye-slash"></i> Hidden (Recommended)</button>
+                                        <button class="vt-pill-btn" data-value="visible" onclick="selectSidebarMode('visible')"><i class="fas fa-eye"></i> Always Visible</button>
                                     </div>
                                 </div>
-                                <div class="security-toggle-row" style="flex-direction: column; align-items: flex-start; gap: 10px; padding-bottom: 0; border-bottom: none;">
-                                    <div class="row-info">
-                                        <h4>WebApp Drawer Width</h4>
-                                        <p>Panel size for WhatsApp, Discord, Spotify & ChatGPT</p>
+
+                                <div class="vt-width-row">
+                                    <div class="hbc-row-info">
+                                        <h4>WebApp Slideover Drawer Width</h4>
+                                        <p>Adjust width for web applications running inside the sidebar drawer</p>
                                     </div>
-                                    <div class="choice-grid" id="sidebar-app-width-grid" style="grid-template-columns: repeat(4, 1fr); gap: 8px; width: 100%;">
-                                        <div class="choice-item" data-value="480">
-                                            <i class="fas fa-mobile-screen"></i>
-                                            <span>480px</span>
-                                        </div>
-                                        <div class="choice-item" data-value="680">
-                                            <i class="fas fa-tablet-screen-button"></i>
-                                            <span>680px</span>
-                                        </div>
-                                        <div class="choice-item active" data-value="880">
-                                            <i class="fas fa-desktop"></i>
-                                            <span>880px</span>
-                                        </div>
-                                        <div class="choice-item" data-value="1080">
-                                            <i class="fas fa-expand"></i>
-                                            <span>1080px</span>
-                                        </div>
+                                    <div class="vt-width-pills" id="sidebar-app-width-grid">
+                                        <button class="vt-pill-btn" data-value="480" onclick="selectSidebarAppWidth(480)"><i class="fas fa-mobile-screen"></i> 480px</button>
+                                        <button class="vt-pill-btn" data-value="680" onclick="selectSidebarAppWidth(680)"><i class="fas fa-tablet-screen-button"></i> 680px</button>
+                                        <button class="vt-pill-btn active" data-value="880" onclick="selectSidebarAppWidth(880)"><i class="fas fa-desktop"></i> 880px Standard</button>
+                                        <button class="vt-pill-btn" data-value="1080" onclick="selectSidebarAppWidth(1080)"><i class="fas fa-expand"></i> 1080px Wide</button>
                                     </div>
                                 </div>
                             </div>
                         </div>
 
-                        <!-- ─── Weather Location ─── -->
-                        <div class="card homepage-card-box" style="grid-column: 1 / -1;">
-                            <div class="homepage-card-header">
-                                <i class="fas fa-cloud-sun"></i>
-                                <span>Weather Location</span>
+                        <!-- ─── 5. Weather Intelligence Location ─── -->
+                        <div class="card homepage-bento-card sp-card-white span-full">
+                            <div class="hbc-header">
+                                <div class="hbc-header-left">
+                                    <div class="hbc-icon weather-bg">
+                                        <i class="fas fa-cloud-sun"></i>
+                                    </div>
+                                    <div class="hbc-identity">
+                                        <h4 class="hbc-name">Weather Intelligence Location</h4>
+                                        <div class="hbc-tagline">Live Forecast & Temperature Synced with Home Dashboard</div>
+                                    </div>
+                                </div>
+                                <span class="hbc-badge weather">TELEMETRY</span>
                             </div>
-                            <div class="homepage-rows-container" style="padding: 16px 20px;">
-                                <div class="security-toggle-row" style="flex-wrap: wrap; gap: 12px;">
-                                    <div class="row-info" style="flex: 1; min-width: 200px;">
-                                        <h4>Default City</h4>
-                                        <p>Preferred city for live forecasts on the Home Dashboard</p>
-                                    </div>
-                                    <div style="display: flex; align-items: center; gap: 8px; flex-wrap: wrap;">
-                                        <input type="text" id="settings-weather-city-input" class="custom-endpoint-text" placeholder="e.g. Ahmedabad, London" style="width: 200px; padding: 8px 12px; border-radius: 10px; border: 1px solid var(--chrome-border); background: color-mix(in srgb, var(--text) 3%, transparent); color: var(--text); font-size: 12.5px;">
-                                        <button class="btn secondary" id="save-weather-city-btn" style="padding: 8px 14px; font-size: 11.5px; font-weight: 700; border-radius: 10px;">
-                                            <i class="fas fa-check" style="margin-right: 5px; color: var(--accent);"></i> Save
-                                        </button>
-                                        <button class="btn secondary" id="auto-weather-city-btn" style="padding: 8px 14px; font-size: 11.5px; font-weight: 700; border-radius: 10px;" title="Reset to GPS auto-detection">
-                                            <i class="fas fa-location-crosshairs" style="margin-right: 5px;"></i> Auto
-                                        </button>
-                                    </div>
+
+                            <div class="weather-location-container">
+                                <div class="weather-input-pill">
+                                    <i class="fas fa-location-dot"></i>
+                                    <input type="text" id="settings-weather-city-input" placeholder="Enter city name (e.g. Ahmedabad, London, New York)..." autocomplete="off" spellcheck="false" onkeydown="if(event.key==='Enter') saveWeatherLocation();">
+                                </div>
+                                <div class="weather-action-buttons">
+                                    <button class="weather-action-btn primary" id="save-weather-city-btn" onclick="saveWeatherLocation()">
+                                        <i class="fas fa-check"></i>
+                                        <span>Save City</span>
+                                    </button>
+                                    <button class="weather-action-btn secondary" id="auto-weather-city-btn" onclick="autoDetectWeatherLocation()">
+                                        <i class="fas fa-location-crosshairs"></i>
+                                        <span>Auto GPS</span>
+                                    </button>
                                 </div>
                             </div>
                         </div>
