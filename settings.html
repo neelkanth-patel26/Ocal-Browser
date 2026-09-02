@@ -125,156 +125,302 @@
 
 
 
-            <!-- ── SEARCH ── -->
+            <!-- ── SEARCH ENGINE (HOME PAGE STYLE) ── -->
             <section id="search" class="section active">
-                <div class="page-header">
-                    <div class="page-eyebrow">Web Discovery</div>
-                    <div class="page-title">Search Engine</div>
-                    <div class="page-desc">Choose your default search provider and configure search behavior.</div>
+                <!-- Home-style Header Row: Title & Stats Bar -->
+                <div class="search-home-header-row">
+                    <div class="search-home-greeting">
+                        <h1 class="search-home-title">Web Discovery & Search</h1>
+                        <div class="search-home-subtitle">
+                            <i class="fas fa-quote-left search-quote-icon"></i>
+                            <span>Configure default search intelligence, address bar predictions, and safe browsing telemetry.</span>
+                        </div>
+                    </div>
+
+                    <!-- Dot-Matrix Stats Bar matching Home Page .sp-stats-bar -->
+                    <div class="search-stats-bar">
+                        <div class="search-stat-item">
+                            <span class="search-dot-num" id="search-stat-engine">Google</span>
+                            <span class="search-badge search-badge-lime">Default</span>
+                        </div>
+                        <div class="search-stat-item">
+                            <span class="search-dot-num" id="search-stat-autocomplete">Active</span>
+                            <span class="search-badge search-badge-gray">Predict</span>
+                        </div>
+                        <div class="search-stat-item">
+                            <span class="search-dot-num" id="search-stat-safesearch">Filtered</span>
+                            <span class="search-badge search-badge-gray">Guard</span>
+                        </div>
+                    </div>
                 </div>
+
                 <div class="page-body">
 
-                    <!-- ─── Default Provider Hero Card ─── -->
-                    <div class="search-hero-card">
-                        <div class="search-hero-header">
-                            <div class="search-hero-icon">
-                                <i class="fas fa-magnifying-glass"></i>
+                    <!-- Home-style Search Preview Pill (Live Interactive Search Test) -->
+                    <div class="search-preview-section">
+                        <div class="search-preview-pill">
+                            <div class="search-preview-logo" id="search-preview-logo">
+                                <svg width="20" height="20" viewBox="0 0 24 24">
+                                    <path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="#4285F4"/>
+                                    <path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98 1.06-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853"/>
+                                    <path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l3.66-2.84z" fill="#FBBC05"/>
+                                    <path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" fill="#EA4335"/>
+                                </svg>
                             </div>
-                            <div class="search-hero-title-group">
-                                <h3 class="search-hero-title">Default Provider</h3>
-                                <p class="search-hero-subtitle">Select the search engine used when typing in the address bar</p>
-                            </div>
+                            <input type="text" class="search-preview-input" id="search-preview-input" placeholder="Type a search query to test default engine..." autocomplete="off" spellcheck="false" onkeydown="if(event.key==='Enter') testSearchPreview();">
+                            <button class="search-preview-btn" title="Execute Search" onclick="testSearchPreview();">
+                                <i class="fas fa-arrow-right"></i>
+                            </button>
                         </div>
 
-                        <div id="search-engine-grid" class="search-provider-grid">
-                            <div class="search-provider-pill active" data-search-engine="google" data-value="google">
-                                <div class="provider-icon google-icon">
-                                    <i class="fab fa-google"></i>
-                                </div>
-                                <div class="provider-info">
-                                    <span class="provider-name">Google</span>
-                                    <span class="provider-tagline">The world's standard search engine</span>
-                                </div>
-                                <div class="provider-check">
-                                    <input type="radio" name="search-engine" value="google" checked>
-                                    <div class="check-dot"><i class="fas fa-check"></i></div>
-                                </div>
-                            </div>
-
-                            <div class="search-provider-pill" data-search-engine="bing" data-value="bing">
-                                <div class="provider-icon bing-icon">
-                                    <i class="fas fa-b" style="font-weight: 900; font-family: sans-serif;"></i>
-                                </div>
-                                <div class="provider-info">
-                                    <span class="provider-name">Bing</span>
-                                    <span class="provider-tagline">Microsoft's AI-powered search</span>
-                                </div>
-                                <div class="provider-check">
-                                    <input type="radio" name="search-engine" value="bing">
-                                    <div class="check-dot"><i class="fas fa-check"></i></div>
-                                </div>
-                            </div>
-
-                            <div class="search-provider-pill" data-search-engine="duckduckgo" data-value="duckduckgo">
-                                <div class="provider-icon ddg-icon">
-                                    <i class="fas fa-shield-cat"></i>
-                                </div>
-                                <div class="provider-info">
-                                    <span class="provider-name">DuckDuckGo</span>
-                                    <span class="provider-tagline">Privacy-focused, no tracking</span>
-                                </div>
-                                <div class="provider-check">
-                                    <input type="radio" name="search-engine" value="duckduckgo">
-                                    <div class="check-dot"><i class="fas fa-check"></i></div>
-                                </div>
-                            </div>
-
-                            <div class="search-provider-pill" data-search-engine="brave" data-value="brave">
-                                <div class="provider-icon brave-icon">
-                                    <i class="fa-brands fa-brave"></i>
-                                </div>
-                                <div class="provider-info">
-                                    <span class="provider-name">Brave</span>
-                                    <span class="provider-tagline">Independent index, ad-free results</span>
-                                </div>
-                                <div class="provider-check">
-                                    <input type="radio" name="search-engine" value="brave">
-                                    <div class="check-dot"><i class="fas fa-check"></i></div>
-                                </div>
-                            </div>
-
-                            <div class="search-provider-pill" data-search-engine="yahoo" data-value="yahoo">
-                                <div class="provider-icon yahoo-icon">
-                                    <i class="fa-brands fa-yahoo"></i>
-                                </div>
-                                <div class="provider-info">
-                                    <span class="provider-name">Yahoo</span>
-                                    <span class="provider-tagline">Classic web search portal</span>
-                                </div>
-                                <div class="provider-check">
-                                    <input type="radio" name="search-engine" value="yahoo">
-                                    <div class="check-dot"><i class="fas fa-check"></i></div>
-                                </div>
+                        <div class="search-timeline-pill">
+                            <i class="fas fa-globe"></i>
+                            <div class="search-tp-text">
+                                <span class="search-tp-title">Omnibox Integration</span>
+                                <span class="search-tp-sub">Address bar queries route through this engine</span>
                             </div>
                         </div>
                     </div>
 
-                    <!-- ─── Search Features ─── -->
+                    <!-- Bento Grid of Search Providers (Squircle Cards matching Home page) -->
+                    <div id="search-engine-grid" class="search-provider-grid">
+
+                        <!-- Google -->
+                        <div class="card search-provider-card sp-card-white active" data-search-engine="google" data-value="google">
+                            <div class="spc-header">
+                                <div class="spc-header-left">
+                                    <div class="spc-icon google-bg">
+                                        <i class="fab fa-google"></i>
+                                    </div>
+                                    <div class="spc-identity">
+                                        <h4 class="spc-name">Google</h4>
+                                        <div class="spc-tagline">Global Standard &middot; Knowledge Graph</div>
+                                    </div>
+                                </div>
+                                <div class="spc-radio-wrap">
+                                    <input type="radio" name="search-engine" value="google" checked>
+                                    <div class="spc-check-dot"><i class="fas fa-check"></i></div>
+                                </div>
+                            </div>
+                            <div class="spc-desc">
+                                Comprehensive web index with real-time knowledge graphs, local maps integration, and lightning-fast query resolution.
+                            </div>
+                            <div class="spc-footer">
+                                <span class="spc-badge popular">DEFAULT STANDARD</span>
+                                <span class="spc-status active"><span class="status-dot"></span><span>Active Provider</span></span>
+                            </div>
+                        </div>
+
+                        <!-- Microsoft Bing -->
+                        <div class="card search-provider-card sp-card-white" data-search-engine="bing" data-value="bing">
+                            <div class="spc-header">
+                                <div class="spc-header-left">
+                                    <div class="spc-icon bing-bg">
+                                        <i class="fab fa-microsoft"></i>
+                                    </div>
+                                    <div class="spc-identity">
+                                        <h4 class="spc-name">Microsoft Bing</h4>
+                                        <div class="spc-tagline">AI-Powered &middot; Visual Index</div>
+                                    </div>
+                                </div>
+                                <div class="spc-radio-wrap">
+                                    <input type="radio" name="search-engine" value="bing">
+                                    <div class="spc-check-dot"><i class="fas fa-check"></i></div>
+                                </div>
+                            </div>
+                            <div class="spc-desc">
+                                Copilot-enhanced web intelligence with multimedia summaries, daily curated photography, and deep entity linking.
+                            </div>
+                            <div class="spc-footer">
+                                <span class="spc-badge ai">AI-AUGMENTED</span>
+                                <span class="spc-status"><span class="status-dot"></span><span>Available</span></span>
+                            </div>
+                        </div>
+
+                        <!-- DuckDuckGo -->
+                        <div class="card search-provider-card sp-card-white" data-search-engine="duckduckgo" data-value="duckduckgo">
+                            <div class="spc-header">
+                                <div class="spc-header-left">
+                                    <div class="spc-icon ddg-bg">
+                                        <i class="fas fa-shield-cat"></i>
+                                    </div>
+                                    <div class="spc-identity">
+                                        <h4 class="spc-name">DuckDuckGo</h4>
+                                        <div class="spc-tagline">Zero Tracking &middot; Private Search</div>
+                                    </div>
+                                </div>
+                                <div class="spc-radio-wrap">
+                                    <input type="radio" name="search-engine" value="duckduckgo">
+                                    <div class="spc-check-dot"><i class="fas fa-check"></i></div>
+                                </div>
+                            </div>
+                            <div class="spc-desc">
+                                Privacy-first search engine that never logs IP addresses, never tracks search history, and avoids algorithmic filter bubbles.
+                            </div>
+                            <div class="spc-footer">
+                                <span class="spc-badge privacy">ZERO TELEMETRY</span>
+                                <span class="spc-status"><span class="status-dot"></span><span>Available</span></span>
+                            </div>
+                        </div>
+
+                        <!-- Brave Search -->
+                        <div class="card search-provider-card sp-card-white" data-search-engine="brave" data-value="brave">
+                            <div class="spc-header">
+                                <div class="spc-header-left">
+                                    <div class="spc-icon brave-bg">
+                                        <i class="fab fa-brave"></i>
+                                    </div>
+                                    <div class="spc-identity">
+                                        <h4 class="spc-name">Brave Search</h4>
+                                        <div class="spc-tagline">Independent Index &middot; Ad-Free</div>
+                                    </div>
+                                </div>
+                                <div class="spc-radio-wrap">
+                                    <input type="radio" name="search-engine" value="brave">
+                                    <div class="spc-check-dot"><i class="fas fa-check"></i></div>
+                                </div>
+                            </div>
+                            <div class="spc-desc">
+                                Built on an entirely independent web crawl index with zero tracking, no reliance on Big Tech providers, and transparent ranking.
+                            </div>
+                            <div class="spc-footer">
+                                <span class="spc-badge independent">INDEPENDENT CRAWL</span>
+                                <span class="spc-status"><span class="status-dot"></span><span>Available</span></span>
+                            </div>
+                        </div>
+
+                        <!-- Yahoo -->
+                        <div class="card search-provider-card sp-card-white" data-search-engine="yahoo" data-value="yahoo">
+                            <div class="spc-header">
+                                <div class="spc-header-left">
+                                    <div class="spc-icon yahoo-bg">
+                                        <i class="fab fa-yahoo"></i>
+                                    </div>
+                                    <div class="spc-identity">
+                                        <h4 class="spc-name">Yahoo Search</h4>
+                                        <div class="spc-tagline">Classic Portal &middot; Media News</div>
+                                    </div>
+                                </div>
+                                <div class="spc-radio-wrap">
+                                    <input type="radio" name="search-engine" value="yahoo">
+                                    <div class="spc-check-dot"><i class="fas fa-check"></i></div>
+                                </div>
+                            </div>
+                            <div class="spc-desc">
+                                Heritage web portal pairing search indexing with trending sports, entertainment, finance feeds, and regional weather.
+                            </div>
+                            <div class="spc-footer">
+                                <span class="spc-badge portal">PORTAL INDEX</span>
+                                <span class="spc-status"><span class="status-dot"></span><span>Available</span></span>
+                            </div>
+                        </div>
+
+                        <!-- Custom Search Engine -->
+                        <div class="card search-provider-card sp-card-white" data-search-engine="custom" data-value="custom">
+                            <div class="spc-header">
+                                <div class="spc-header-left">
+                                    <div class="spc-icon custom-bg">
+                                        <i class="fas fa-sliders"></i>
+                                    </div>
+                                    <div class="spc-identity">
+                                        <h4 class="spc-name">Custom Engine</h4>
+                                        <div class="spc-tagline">User-Defined &middot; Self-Hosted / Metasearch</div>
+                                    </div>
+                                </div>
+                                <div class="spc-radio-wrap">
+                                    <input type="radio" name="search-engine" value="custom">
+                                    <div class="spc-check-dot"><i class="fas fa-check"></i></div>
+                                </div>
+                            </div>
+                            <div class="spc-desc">
+                                Route address bar searches to any URL pattern such as Kagi, SearXNG, Startpage, or your internal corporate discovery instance.
+                            </div>
+                            <div class="spc-footer">
+                                <span class="spc-badge custom">CONFIGURABLE</span>
+                                <span class="spc-status"><span class="status-dot"></span><span>Available</span></span>
+                            </div>
+                        </div>
+
+                    </div>
+
+                    <!-- ─── Search Intelligence Features (Squircle Cards) ─── -->
                     <div class="search-features-row">
-                        <div class="search-feature-card">
+                        <!-- Autocomplete Suggestions -->
+                        <div class="card search-feature-card sp-card-white">
                             <div class="feature-card-top">
                                 <div class="feature-icon-wrap suggestions-glow">
                                     <i class="fas fa-wand-magic-sparkles"></i>
                                 </div>
-                                <div class="toggle on" id="instant-search-toggle"
-                                    onclick="toggleSearchFeature('instantSearchEnabled', this)"></div>
+                                <label class="ext-toggle-wrap">
+                                    <input type="checkbox" id="instant-search-toggle-cb" checked
+                                        onchange="window.electronAPI.updateSetting('instantSearchEnabled', this.checked); updateSearchFeatureBadges();">
+                                    <span class="ext-slider"></span>
+                                </label>
                             </div>
                             <div class="feature-card-body">
-                                <h4 class="feature-card-title">Autocomplete Suggestions</h4>
-                                <p class="feature-card-desc">Show real-time predictions as you type in the address bar for faster navigation</p>
+                                <h4 class="feature-card-title">Autocomplete Predictions</h4>
+                                <p class="feature-card-desc">Streams real-time keyword suggestions, navigation shortcuts, and search completions as you type into the omnibox.</p>
                             </div>
-                            <div class="feature-status-badge on">
-                                <span class="status-dot"></span>
-                                <span class="status-label">Active</span>
+                            <div class="feature-card-footer">
+                                <span class="ext-card-tag utility">INTELLIGENCE</span>
+                                <span class="ext-status-indicator on" id="status-autocomplete"><span class="status-dot"></span><span>Active</span></span>
                             </div>
                         </div>
 
-                        <div class="search-feature-card">
+                        <!-- SafeSearch Filtering -->
+                        <div class="card search-feature-card sp-card-white">
                             <div class="feature-card-top">
                                 <div class="feature-icon-wrap safesearch-glow">
                                     <i class="fas fa-shield-halved"></i>
                                 </div>
-                                <div class="toggle" id="safe-search-toggle"
-                                    onclick="toggleSearchFeature('safeSearchEnabled', this)"></div>
+                                <label class="ext-toggle-wrap">
+                                    <input type="checkbox" id="safe-search-toggle-cb"
+                                        onchange="window.electronAPI.updateSetting('safeSearchEnabled', this.checked); updateSearchFeatureBadges();">
+                                    <span class="ext-slider"></span>
+                                </label>
                             </div>
                             <div class="feature-card-body">
-                                <h4 class="feature-card-title">SafeSearch Filtering</h4>
-                                <p class="feature-card-desc">Filter explicit and sensitive content from search suggestions and results</p>
+                                <h4 class="feature-card-title">SafeSearch Content Guard</h4>
+                                <p class="feature-card-desc">Strictly filters adult queries, graphic violence, and explicit results across suggestions and search results.</p>
                             </div>
-                            <div class="feature-status-badge">
-                                <span class="status-dot"></span>
-                                <span class="status-label">Inactive</span>
+                            <div class="feature-card-footer">
+                                <span class="ext-card-tag privacy">CONTENT SAFETY</span>
+                                <span class="ext-status-indicator" id="status-safesearch"><span class="status-dot"></span><span>Disabled</span></span>
                             </div>
                         </div>
                     </div>
 
-                    <!-- ─── Custom Search URL ─── -->
-                    <div class="search-custom-card">
+                    <!-- ─── Custom Search URL Drawer (Home Page Card Style) ─── -->
+                    <div class="search-custom-card sp-card-white">
                         <div class="custom-card-header">
                             <div class="custom-card-icon">
                                 <i class="fas fa-link"></i>
                             </div>
                             <div class="custom-card-title-group">
-                                <h4 class="custom-card-title">Custom Search URL</h4>
-                                <p class="custom-card-desc">Add a custom search engine by providing the search URL. Use <code>%s</code> as a placeholder for the search query.</p>
+                                <h4 class="custom-card-title">Custom Search Engine URL</h4>
+                                <p class="custom-card-desc">Configure your custom query pattern with <code>%s</code> as the keyword placeholder.</p>
                             </div>
                         </div>
+
                         <div class="custom-url-input-row">
-                            <input type="text" class="custom-url-input" id="custom-search-url" placeholder="https://example.com/search?q=%s" spellcheck="false">
+                            <div class="custom-input-pill">
+                                <i class="fas fa-terminal"></i>
+                                <input type="text" class="custom-url-input" id="custom-search-url" placeholder="https://kagi.com/search?q=%s" spellcheck="false">
+                            </div>
                             <button class="custom-url-save-btn" onclick="saveCustomSearchURL()">
-                                <i class="fas fa-plus"></i>
-                                <span>Add</span>
+                                <i class="fas fa-floppy-disk"></i>
+                                <span>Save Engine</span>
                             </button>
+                        </div>
+
+                        <!-- Quick-Fill Preset Chips -->
+                        <div class="custom-presets-wrap">
+                            <span class="custom-presets-label"><i class="fas fa-sparkles" style="color:var(--accent);"></i> Popular Custom Presets:</span>
+                            <button class="custom-chip-btn" onclick="setCustomPreset('https://kagi.com/search?q=%s', 'Kagi')"><i class="fas fa-magnifying-glass"></i> Kagi</button>
+                            <button class="custom-chip-btn" onclick="setCustomPreset('https://searx.be/search?q=%s', 'SearXNG')"><i class="fas fa-shield"></i> SearXNG</button>
+                            <button class="custom-chip-btn" onclick="setCustomPreset('https://www.ecosia.org/search?q=%s', 'Ecosia')"><i class="fas fa-tree"></i> Ecosia</button>
+                            <button class="custom-chip-btn" onclick="setCustomPreset('https://www.startpage.com/sp/search?query=%s', 'Startpage')"><i class="fas fa-lock"></i> Startpage</button>
+                            <button class="custom-chip-btn" onclick="setCustomPreset('https://www.qwant.com/?q=%s', 'Qwant')"><i class="fas fa-globe"></i> Qwant</button>
                         </div>
                     </div>
 
