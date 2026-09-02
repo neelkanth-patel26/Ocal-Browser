@@ -1665,264 +1665,396 @@
             </section>
 
             <!-- ── AI ASSISTANT ── -->
+            <!-- ── AI ASSISTANT (HOME PAGE STYLE) ── -->
             <section id="ai" class="section">
-                <div class="page-header">
-                    <div class="page-eyebrow">Artificial Intelligence</div>
-                    <div class="page-title">Ocal AI Assistant</div>
-                    <div class="page-desc">Configure your intelligent browsing companion, neural backend, and research parameters.</div>
-                </div>
-                <div class="page-body">
+                <!-- Home-style Header Row: Title & Stats Bar -->
+                <div class="ai-home-header-row">
+                    <div class="ai-home-greeting">
+                        <h1 class="ai-home-title">Ocal AI Assistant</h1>
+                        <div class="ai-home-subtitle">
+                            <i class="fas fa-quote-left home-quote-icon"></i>
+                            <span>Neural browsing companion, multimodal intelligence models, and cognitive reasoning parameters.</span>
+                        </div>
+                    </div>
 
-                    <!-- AI Hero Card -->
-                    <div class="ai-hero-card card">
-                        <div class="ai-hero-left">
-                            <div class="ai-hero-icon-box">
-                                <i class="fas fa-brain"></i>
-                            </div>
-                            <div class="ai-hero-info">
-                                <h3 class="ai-hero-title">Ocal AI Assistant V4</h3>
-                                <div class="ai-hero-badges">
-                                    <span class="ai-badge"><i class="fas fa-bolt" style="margin-right: 4px;"></i> Local Heuristics Active</span>
-                                    <span class="ai-badge"><i class="fas fa-earth-americas" style="margin-right: 4px;"></i> Live Web RAG-Lite</span>
-                                    <span class="ai-badge"><i class="fas fa-eye" style="margin-right: 4px;"></i> Vision Ready</span>
+                    <!-- Dot-Matrix Stats Bar matching Home Page .sp-stats-bar -->
+                    <div class="ai-stats-bar">
+                        <div class="ai-stat-item">
+                            <span class="ai-dot-num" id="ai-stat-engine">Local</span>
+                            <span class="ai-badge ai-badge-lime">Engine</span>
+                        </div>
+                        <div class="ai-stat-item">
+                            <span class="ai-dot-num" id="ai-stat-model">Gemma 4</span>
+                            <span class="ai-badge ai-badge-gray">Model</span>
+                        </div>
+                        <div class="ai-stat-item">
+                            <span class="ai-dot-num" id="ai-stat-agency">Autonomous</span>
+                            <span class="ai-badge ai-badge-gray">Agency</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="page-body">
+                    <!-- AI Interactive Hero Simulation Card (Squircle Card) -->
+                    <div class="card ai-bento-card sp-card-white span-full ai-hero-banner">
+                        <div class="ai-hero-content">
+                            <div class="ai-hero-header-left">
+                                <div class="ai-icon-squircle hero-brain">
+                                    <i class="fas fa-brain"></i>
                                 </div>
+                                <div class="ai-hero-text">
+                                    <div class="ai-hero-title-row">
+                                        <h3 class="ai-hero-heading">Ocal Cognitive Engine V4</h3>
+                                        <span class="ai-badge-status online"><span class="status-dot"></span> Online</span>
+                                    </div>
+                                    <div class="ai-feature-chips">
+                                        <span class="ai-chip"><i class="fas fa-bolt"></i> Local Heuristics Active</span>
+                                        <span class="ai-chip"><i class="fas fa-earth-americas"></i> Live Web RAG-Lite</span>
+                                        <span class="ai-chip"><i class="fas fa-eye"></i> Vision Multimodal</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Live AI Query Simulation Pill matching Home Search Pill -->
+                        <div class="ai-preview-pill-wrap">
+                            <div class="ai-preview-pill">
+                                <div class="ai-preview-icon" id="ai-preview-icon">
+                                    <i class="fas fa-sparkles"></i>
+                                </div>
+                                <input type="text" id="ai-preview-input" placeholder="Ask Ocal AI anything (e.g. Summarize active page, explain quantum computing)..." autocomplete="off" spellcheck="false" onkeydown="if(event.key==='Enter') testAIPrompt();">
+                                <button class="ai-preview-send-btn" title="Send to Ocal AI" onclick="testAIPrompt();">
+                                    <i class="fas fa-arrow-right"></i>
+                                </button>
                             </div>
                         </div>
                     </div>
 
-                    <div class="ai-hub-grid">
+                    <!-- Bento Grid for AI Engine Providers and Settings -->
+                    <div class="ai-bento-grid">
 
-                        <!-- Intelligence Core Module -->
-                        <div class="card ai-card intelligence-core-card full-span">
-                            <div class="card-header-styled">
-                                <i class="fas fa-microchip"></i>
-                                <span>Neural Core Backend Provider</span>
-                            </div>
-                            <div class="ai-card-body">
-                                <div class="ai-provider-selection" style="display: flex; flex-direction: column; align-items: flex-start; text-align: left; width: 100%; gap: 10px;">
-                                    <div class="provider-label-wrap" style="text-align: left; width: 100%; display: flex; flex-direction: column; align-items: flex-start;">
-                                        <h4 style="font-family: var(--font-title); font-size: 14px; font-weight: 800; color: var(--text); margin: 0 0 3px 0; text-align: left;">AI Engine Provider</h4>
-                                        <p style="font-size: 12px; color: var(--text-dim); margin: 0; text-align: left;">Select your local execution engine or cloud endpoint provider.</p>
+                        <!-- ─── 1. Neural Core Backend Provider Bento Card ─── -->
+                        <div class="card ai-bento-card sp-card-white span-full">
+                            <div class="abc-header">
+                                <div class="abc-header-left">
+                                    <div class="abc-icon neural-bg">
+                                        <i class="fas fa-microchip"></i>
                                     </div>
-                                    <div class="choice-grid ai-engine-grid" id="ai-engine-grid">
-                                        <div class="choice-item active" data-value="local">
+                                    <div class="abc-identity">
+                                        <h4 class="abc-name">Neural Engine & Model Provider</h4>
+                                        <div class="abc-tagline">Select local offline execution or high-reasoning cloud endpoints</div>
+                                    </div>
+                                </div>
+                                <span class="abc-badge neural">CORE BACKEND</span>
+                            </div>
+
+                            <!-- Provider Selection Squircle Bento Grid -->
+                            <div class="ai-providers-grid" id="ai-engine-grid">
+                                <!-- Local Ollama Provider Card -->
+                                <div class="ai-provider-card active" data-value="local" onclick="selectAIEngine('local')">
+                                    <div class="apc-top">
+                                        <div class="apc-icon local">
                                             <i class="fas fa-microchip"></i>
-                                            <span>Ocal Local</span>
                                         </div>
-                                        <div class="choice-item" data-value="gemini">
-                                            <i class="fas fa-cloud"></i>
-                                            <span>Gemini Pro</span>
+                                        <div class="apc-radio">
+                                            <div class="apc-radio-dot"><i class="fas fa-check"></i></div>
                                         </div>
-                                        <div class="choice-item" data-value="openai">
+                                    </div>
+                                    <h4 class="apc-name">Ocal Local (Ollama)</h4>
+                                    <p class="apc-desc">Zero latency on-device neural model. Completely private with zero cloud telemetry.</p>
+                                    <div class="apc-badge-tag">OFFLINE & PRIVACY</div>
+                                </div>
+
+                                <!-- Gemini Pro Provider Card -->
+                                <div class="ai-provider-card" data-value="gemini" onclick="selectAIEngine('gemini')">
+                                    <div class="apc-top">
+                                        <div class="apc-icon gemini">
+                                            <i class="fas fa-sparkles"></i>
+                                        </div>
+                                        <div class="apc-radio">
+                                            <div class="apc-radio-dot"><i class="fas fa-check"></i></div>
+                                        </div>
+                                    </div>
+                                    <h4 class="apc-name">Google Gemini Pro</h4>
+                                    <p class="apc-desc">Google DeepMind multimodal flagship model with million-token context window.</p>
+                                    <div class="apc-badge-tag gemini">MULTIMODAL CLOUD</div>
+                                </div>
+
+                                <!-- OpenAI ChatGPT Provider Card -->
+                                <div class="ai-provider-card" data-value="openai" onclick="selectAIEngine('openai')">
+                                    <div class="apc-top">
+                                        <div class="apc-icon openai">
                                             <i class="fas fa-comment-dots"></i>
-                                            <span>ChatGPT</span>
                                         </div>
-                                        <div class="choice-item" data-value="custom">
+                                        <div class="apc-radio">
+                                            <div class="apc-radio-dot"><i class="fas fa-check"></i></div>
+                                        </div>
+                                    </div>
+                                    <h4 class="apc-name">OpenAI ChatGPT</h4>
+                                    <p class="apc-desc">GPT-4o intelligence backend known for high-accuracy reasoning and structured coding.</p>
+                                    <div class="apc-badge-tag openai">BENCHMARK REASONING</div>
+                                </div>
+
+                                <!-- Custom Endpoint Provider Card -->
+                                <div class="ai-provider-card" data-value="custom" onclick="selectAIEngine('custom')">
+                                    <div class="apc-top">
+                                        <div class="apc-icon custom">
                                             <i class="fas fa-plug"></i>
-                                            <span>Custom API</span>
+                                        </div>
+                                        <div class="apc-radio">
+                                            <div class="apc-radio-dot"><i class="fas fa-check"></i></div>
                                         </div>
                                     </div>
+                                    <h4 class="apc-name">Custom OpenAI API</h4>
+                                    <p class="apc-desc">Connect custom endpoints like DeepSeek, LM Studio, Anthropic proxies, or vLLM.</p>
+                                    <div class="apc-badge-tag custom">OPENAI-COMPATIBLE</div>
                                 </div>
+                            </div>
 
-                                <!-- Gemini API Key -->
-                                <div class="secure-input-row" id="gemini-key-row">
-                                    <div class="input-details">
-                                        <h4>Gemini API Key</h4>
-                                        <p>Required for cloud reasoning. <a
-                                                href="https://aistudio.google.com/app/apikey" target="_blank"
-                                                class="accent-link">Get a free key</a>.</p>
+                            <!-- Contextual Config Drawer for Active Provider -->
+                            <div class="ai-config-drawer" id="ai-config-drawer">
+                                <!-- Gemini API Key Row -->
+                                <div class="ai-config-row" id="gemini-key-row">
+                                    <div class="ai-config-info">
+                                        <h4>Google Gemini API Key</h4>
+                                        <p>Required for cloud inference. <a href="https://aistudio.google.com/app/apikey" target="_blank" class="accent-link">Get a free key at Google AI Studio &rarr;</a></p>
                                     </div>
-                                    <div class="secure-input-wrapper">
-                                        <input type="password" id="ai-api-key-input"
-                                            placeholder="Paste your Gemini key here...">
-                                        <i class="fas fa-eye secure-eye"
-                                            onclick="toggleAIKeyVisibility('ai-api-key-input', this)"></i>
-                                    </div>
-                                </div>
-
-                                <!-- OpenAI API Key -->
-                                <div class="secure-input-row" id="openai-key-row">
-                                    <div class="input-details">
-                                        <h4>ChatGPT API Key</h4>
-                                        <p>Your OpenAI authorization token. <a
-                                                href="https://platform.openai.com/api-keys" target="_blank"
-                                                class="accent-link">Get a key</a>.</p>
-                                    </div>
-                                    <div class="secure-input-wrapper">
-                                        <input type="password" id="openai-api-key-input" placeholder="sk-...">
-                                        <i class="fas fa-eye secure-eye"
-                                            onclick="toggleAIKeyVisibility('openai-api-key-input', this)"></i>
+                                    <div class="ai-secure-pill">
+                                        <input type="password" id="ai-api-key-input" placeholder="Paste your Gemini API key here..." autocomplete="off">
+                                        <i class="fas fa-eye secure-eye" onclick="toggleAIKeyVisibility('ai-api-key-input', this)"></i>
                                     </div>
                                 </div>
 
-                                <!-- Custom Endpoint -->
-                                <div class="secure-input-row" id="custom-endpoint-row">
-                                    <div class="input-details">
-                                        <h4>Custom API Endpoint</h4>
-                                        <p>OpenAI-compatible endpoint (e.g. LM Studio, DeepSeek).</p>
+                                <!-- OpenAI API Key Row -->
+                                <div class="ai-config-row" id="openai-key-row">
+                                    <div class="ai-config-info">
+                                        <h4>OpenAI API Key</h4>
+                                        <p>Your OpenAI secret token. <a href="https://platform.openai.com/api-keys" target="_blank" class="accent-link">Create key on OpenAI Platform &rarr;</a></p>
                                     </div>
-                                    <input type="text" id="custom-endpoint-input"
-                                        placeholder="https://api.deepseek.com/v1" class="custom-endpoint-text">
-                                </div>
-
-                                <!-- Custom Model Name -->
-                                <div class="secure-input-row" id="custom-model-row">
-                                    <div class="input-details">
-                                        <h4>Custom Model Name</h4>
-                                        <p>Model identifier string.</p>
-                                    </div>
-                                    <input type="text" id="custom-model-input" placeholder="deepseek-chat"
-                                        class="custom-endpoint-text">
-                                </div>
-
-                                <!-- Custom API Key -->
-                                <div class="secure-input-row" id="custom-key-row">
-                                    <div class="input-details">
-                                        <h4>Custom API Key</h4>
-                                        <p>Authorization key for the custom provider endpoint.</p>
-                                    </div>
-                                    <div class="secure-input-wrapper">
-                                        <input type="password" id="custom-key-input"
-                                            placeholder="Paste custom key here...">
-                                        <i class="fas fa-eye secure-eye"
-                                            onclick="toggleAIKeyVisibility('custom-key-input', this)"></i>
+                                    <div class="ai-secure-pill">
+                                        <input type="password" id="openai-api-key-input" placeholder="sk-..." autocomplete="off">
+                                        <i class="fas fa-eye secure-eye" onclick="toggleAIKeyVisibility('openai-api-key-input', this)"></i>
                                     </div>
                                 </div>
 
-                                <!-- Local LLM Model -->
-                                <div class="secure-input-row" id="local-model-row">
-                                    <div class="input-details">
-                                        <h4>Local LLM Model</h4>
-                                        <p>Select Ollama model detected on host. Make sure Ollama is active.</p>
+                                <!-- Custom Endpoint URL Row -->
+                                <div class="ai-config-row" id="custom-endpoint-row">
+                                    <div class="ai-config-info">
+                                        <h4>Custom API Base URL</h4>
+                                        <p>OpenAI-compatible base endpoint (e.g. https://api.deepseek.com/v1)</p>
                                     </div>
-                                    <select id="local-model-select" class="local-select-dropdown">
-                                        <option value="auto">Auto-detect (Heuristics)</option>
-                                    </select>
+                                    <div class="ai-input-pill">
+                                        <input type="text" id="custom-endpoint-input" placeholder="https://api.deepseek.com/v1" autocomplete="off">
+                                    </div>
                                 </div>
 
-                                <!-- Local API Endpoint -->
-                                <div class="secure-input-row" id="local-endpoint-row">
-                                    <div class="input-details">
-                                        <h4>Local API Endpoint</h4>
-                                        <p>Ollama service port endpoint (default: http://localhost:11434).</p>
+                                <!-- Custom Model Name Row -->
+                                <div class="ai-config-row" id="custom-model-row">
+                                    <div class="ai-config-info">
+                                        <h4>Custom Model Identifier</h4>
+                                        <p>Model name string (e.g. deepseek-chat, mistral-large)</p>
                                     </div>
-                                    <input type="text" id="local-endpoint-input" placeholder="http://localhost:11434"
-                                        class="custom-endpoint-text">
+                                    <div class="ai-input-pill">
+                                        <input type="text" id="custom-model-input" placeholder="deepseek-chat" autocomplete="off">
+                                    </div>
+                                </div>
+
+                                <!-- Custom API Key Row -->
+                                <div class="ai-config-row" id="custom-key-row">
+                                    <div class="ai-config-info">
+                                        <h4>Custom Provider API Key</h4>
+                                        <p>Authorization Bearer key for your custom server</p>
+                                    </div>
+                                    <div class="ai-secure-pill">
+                                        <input type="password" id="custom-key-input" placeholder="Paste custom key here..." autocomplete="off">
+                                        <i class="fas fa-eye secure-eye" onclick="toggleAIKeyVisibility('custom-key-input', this)"></i>
+                                    </div>
+                                </div>
+
+                                <!-- Local Ollama Model Selector Row -->
+                                <div class="ai-config-row" id="local-model-row">
+                                    <div class="ai-config-info">
+                                        <h4>Local Neural Model</h4>
+                                        <p>Select Ollama model detected on host. Make sure Ollama daemon is running.</p>
+                                    </div>
+                                    <div class="ai-select-pill">
+                                        <select id="local-model-select">
+                                            <option value="auto">Auto-detect (Heuristics)</option>
+                                        </select>
+                                    </div>
+                                </div>
+
+                                <!-- Local Ollama Endpoint Row -->
+                                <div class="ai-config-row" id="local-endpoint-row">
+                                    <div class="ai-config-info">
+                                        <h4>Local Service Port Endpoint</h4>
+                                        <p>Ollama local address (default: http://localhost:11434)</p>
+                                    </div>
+                                    <div class="ai-input-pill">
+                                        <input type="text" id="local-endpoint-input" placeholder="http://localhost:11434" autocomplete="off">
+                                    </div>
                                 </div>
                             </div>
                         </div>
 
-                        <!-- Left: Constraints & Logic Modules -->
-                        <div class="ai-left-column" style="display: flex; flex-direction: column; gap: 20px;">
-
-                            <!-- Constraints -->
-                            <div class="card ai-card constraints-card">
-                                <div class="card-header-styled">
-                                    <i class="fas fa-robot"></i>
-                                    <span>Agent System Constraints</span>
-                                </div>
-                                <div class="ai-toggles-list">
-                                    <div class="ai-toggle-row">
-                                        <div class="toggle-info">
-                                            <h4>Browser Control</h4>
-                                            <p>Allow agent to manage active tabs and page shell actions.</p>
-                                        </div>
-                                        <div class="toggle on" id="ai-agency-toggle"></div>
+                        <!-- ─── 2. Agent System Constraints Card ─── -->
+                        <div class="card ai-bento-card sp-card-white">
+                            <div class="abc-header">
+                                <div class="abc-header-left">
+                                    <div class="abc-icon agent-bg">
+                                        <i class="fas fa-robot"></i>
                                     </div>
-                                    <div class="ai-toggle-row">
-                                        <div class="toggle-info">
-                                            <h4>Heuristic Extraction</h4>
-                                            <p>Utilize semantic ranking to scan and extract page content.</p>
-                                        </div>
-                                        <div class="toggle on" id="ai-heuristic-toggle"></div>
+                                    <div class="abc-identity">
+                                        <h4 class="abc-name">Agent System Constraints</h4>
+                                        <div class="abc-tagline">Autonomous execution & page heuristics</div>
                                     </div>
                                 </div>
+                                <span class="abc-badge agent">GOVERNANCE</span>
                             </div>
 
-                            <!-- Processing Logic -->
-                            <div class="card ai-card logic-card">
-                                <div class="card-header-styled">
-                                    <i class="fas fa-layer-group"></i>
-                                    <span>Analytical Reasoning Depth</span>
+                            <div class="abc-rows">
+                                <div class="abc-toggle-row">
+                                    <div class="abc-row-info">
+                                        <h4>Browser Automation Control</h4>
+                                        <p>Allow agent to manage active tabs, scroll, and trigger shell actions</p>
+                                    </div>
+                                    <label class="ext-toggle-wrap">
+                                        <input type="checkbox" id="ai-agency-toggle-cb" checked
+                                            onchange="window.electronAPI.updateSetting('aiAgencyEnabled', this.checked); updateAIStats();">
+                                        <span class="ext-slider"></span>
+                                    </label>
                                 </div>
-                                <div class="ai-toggles-list">
-                                    <div class="ai-toggle-row">
-                                        <div class="toggle-info">
-                                            <h4>Deep DOM Scraping</h4>
-                                            <p>Extract extensive document layout trees for contextual processing.</p>
-                                        </div>
-                                        <div class="toggle on" id="ai-deep-scrape-toggle"></div>
+                                <div class="abc-toggle-row">
+                                    <div class="abc-row-info">
+                                        <h4>Semantic Heuristic Extraction</h4>
+                                        <p>Rank and parse document sections using neural vectors for speed</p>
                                     </div>
-                                    <div class="ai-toggle-row">
-                                        <div class="toggle-info">
-                                            <h4>Show Thinking Steps</h4>
-                                            <p>Display intermediate reasoning and research steps in sidepanel.</p>
-                                        </div>
-                                        <div class="toggle on" id="ai-show-reasoning-toggle"></div>
-                                    </div>
+                                    <label class="ext-toggle-wrap">
+                                        <input type="checkbox" id="ai-heuristic-toggle-cb" checked
+                                            onchange="window.electronAPI.updateSetting('aiHeuristicEnabled', this.checked)">
+                                        <span class="ext-slider"></span>
+                                    </label>
                                 </div>
                             </div>
-
                         </div>
 
-                        <!-- Right: Parameters & Output Personality Modules -->
-                        <div class="ai-right-column" style="display: flex; flex-direction: column; gap: 20px;">
-
-                            <!-- Model Parameters -->
-                            <div class="card ai-card parameters-card">
-                                <div class="card-header-styled">
-                                    <i class="fas fa-sliders"></i>
-                                    <span>Generation Parameters</span>
-                                </div>
-                                <div class="ai-card-body" style="gap: 12px;">
-                                    <div class="parameter-slider-item">
-                                        <div class="slider-header">
-                                            <div class="slider-label-info">
-                                                <h4>Creativity Temperature</h4>
-                                                <p>Controls generation randomness quotient</p>
-                                            </div>
-                                            <div id="label-ai-temp" class="mono-bubble-label">0.7</div>
-                                        </div>
-                                        <input type="range" min="0" max="1" step="0.1" value="0.7" id="aiTemperature"
-                                            oninput="updateAISetting('aiTemperature', this.value)">
+                        <!-- ─── 3. Analytical Reasoning Depth Card ─── -->
+                        <div class="card ai-bento-card sp-card-white">
+                            <div class="abc-header">
+                                <div class="abc-header-left">
+                                    <div class="abc-icon logic-bg">
+                                        <i class="fas fa-layer-group"></i>
                                     </div>
-
-                                    <div class="parameter-slider-item" style="margin-bottom: 0;">
-                                        <div class="slider-header">
-                                            <div class="slider-label-info">
-                                                <h4>Max Output Limit</h4>
-                                                <p>Maximum token size response threshold</p>
-                                            </div>
-                                            <div id="label-ai-tokens" class="mono-bubble-label">2048</div>
-                                        </div>
-                                        <input type="range" min="256" max="4096" step="128" value="2048"
-                                            id="aiMaxTokens" oninput="updateAISetting('aiMaxTokens', this.value)">
+                                    <div class="abc-identity">
+                                        <h4 class="abc-name">Analytical Reasoning Depth</h4>
+                                        <div class="abc-tagline">DOM inspection & Chain-of-Thought logs</div>
                                     </div>
                                 </div>
+                                <span class="abc-badge logic">REASONING</span>
                             </div>
 
-                            <!-- Output Personality style grid -->
-                            <div class="card ai-card style-preset-card">
-                                <div class="card-header-styled">
-                                    <i class="fas fa-comment-dots"></i>
-                                    <span>Output Personality Preset</span>
+                            <div class="abc-rows">
+                                <div class="abc-toggle-row">
+                                    <div class="abc-row-info">
+                                        <h4>Deep DOM Tree Scraping</h4>
+                                        <p>Extract extensive document layout trees for contextual processing</p>
+                                    </div>
+                                    <label class="ext-toggle-wrap">
+                                        <input type="checkbox" id="ai-deep-scrape-toggle-cb" checked
+                                            onchange="window.electronAPI.updateSetting('aiDeepScrape', this.checked)">
+                                        <span class="ext-slider"></span>
+                                    </label>
                                 </div>
-                                <div class="choice-grid ai-style-grid" id="ai-style-grid">
-                                    <div class="choice-item" data-value="concise">
-                                        <i class="fas fa-bolt"></i>
-                                        <span>Concise</span>
+                                <div class="abc-toggle-row">
+                                    <div class="abc-row-info">
+                                        <h4>Show Chain-of-Thought Steps</h4>
+                                        <p>Display live intermediate reasoning tokens and search queries</p>
                                     </div>
-                                    <div class="choice-item active" data-value="detailed">
-                                        <i class="fas fa-list-check"></i>
-                                        <span>Detailed</span>
+                                    <label class="ext-toggle-wrap">
+                                        <input type="checkbox" id="ai-show-reasoning-toggle-cb" checked
+                                            onchange="window.electronAPI.updateSetting('aiShowReasoning', this.checked)">
+                                        <span class="ext-slider"></span>
+                                    </label>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- ─── 4. Generation Parameters Card ─── -->
+                        <div class="card ai-bento-card sp-card-white">
+                            <div class="abc-header">
+                                <div class="abc-header-left">
+                                    <div class="abc-icon params-bg">
+                                        <i class="fas fa-sliders"></i>
                                     </div>
-                                    <div class="choice-item" data-value="creative">
+                                    <div class="abc-identity">
+                                        <h4 class="abc-name">Generation Parameters</h4>
+                                        <div class="abc-tagline">Temperature randomness & token thresholds</div>
+                                    </div>
+                                </div>
+                                <span class="abc-badge params">TUNING</span>
+                            </div>
+
+                            <div class="ai-sliders-container">
+                                <!-- Temperature Slider -->
+                                <div class="ai-slider-card">
+                                    <div class="slider-header-row">
+                                        <div class="sh-info">
+                                            <h4>Creativity Temperature</h4>
+                                            <p>Controls generation randomness and hallucination penalty</p>
+                                        </div>
+                                        <div id="label-ai-temp" class="ai-mono-bubble">0.7</div>
+                                    </div>
+                                    <input type="range" min="0" max="1" step="0.1" value="0.7" id="aiTemperature"
+                                        oninput="updateAISetting('aiTemperature', this.value); document.getElementById('label-ai-temp').innerText = parseFloat(this.value).toFixed(1);">
+                                </div>
+
+                                <!-- Max Tokens Slider -->
+                                <div class="ai-slider-card">
+                                    <div class="slider-header-row">
+                                        <div class="sh-info">
+                                            <h4>Max Output Tokens</h4>
+                                            <p>Maximum response length generated per conversation turn</p>
+                                        </div>
+                                        <div id="label-ai-tokens" class="ai-mono-bubble">2048</div>
+                                    </div>
+                                    <input type="range" min="256" max="4096" step="128" value="2048" id="aiMaxTokens"
+                                        oninput="updateAISetting('aiMaxTokens', this.value); document.getElementById('label-ai-tokens').innerText = this.value;">
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- ─── 5. Output Personality Preset Card ─── -->
+                        <div class="card ai-bento-card sp-card-white">
+                            <div class="abc-header">
+                                <div class="abc-header-left">
+                                    <div class="abc-icon preset-bg">
                                         <i class="fas fa-wand-magic-sparkles"></i>
-                                        <span>Creative</span>
+                                    </div>
+                                    <div class="abc-identity">
+                                        <h4 class="abc-name">Output Personality Preset</h4>
+                                        <div class="abc-tagline">Tone, phrasing density, and summarization depth</div>
                                     </div>
                                 </div>
+                                <span class="abc-badge preset">PERSONA</span>
                             </div>
 
+                            <div class="ai-personality-pills" id="ai-style-grid">
+                                <div class="ai-persona-card" data-value="concise" onclick="selectAIPersona('concise')">
+                                    <div class="apc-pill-icon"><i class="fas fa-bolt"></i></div>
+                                    <h4>Concise</h4>
+                                    <p>Bullet points, high-speed facts, minimal narrative prose.</p>
+                                </div>
+                                <div class="ai-persona-card active" data-value="detailed" onclick="selectAIPersona('detailed')">
+                                    <div class="apc-pill-icon"><i class="fas fa-list-check"></i></div>
+                                    <h4>Detailed</h4>
+                                    <p>Balanced analytical synthesis with verified source citations.</p>
+                                </div>
+                                <div class="ai-persona-card" data-value="creative" onclick="selectAIPersona('creative')">
+                                    <div class="apc-pill-icon"><i class="fas fa-wand-magic-sparkles"></i></div>
+                                    <h4>Creative</h4>
+                                    <p>Brainstorming, exploratory framing, expressive reasoning.</p>
+                                </div>
+                            </div>
                         </div>
 
                     </div>
