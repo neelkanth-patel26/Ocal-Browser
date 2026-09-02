@@ -4,217 +4,632 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Ocal Extensions</title>
+    <!-- ANTI-FLASH: must be FIRST in head -->
+    <script>
+        (function () {
+            var t = localStorage.getItem('ocal-settings-theme') || 'dark';
+            document.documentElement.setAttribute('data-theme', t);
+            if (t === 'dark') {
+                document.documentElement.style.background = '#18181B';
+                document.documentElement.style.colorScheme = 'dark';
+            }
+        })();
+    </script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="assets/fontawesome/css/all.min.css">
-    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600&display=swap" rel="stylesheet">
     <style>
         :root {
-            --accent: #ffffff;
-            --bg: #000000;
-            --card-bg: #000000;
-            --border: #171717;
-            --text: #ffffff;
-            --text-dim: #a3a3a3;
+            --font-sans: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, sans-serif;
+            --accent: #15AC49;
+            --accent-text: #FFFFFF;
+            --bg: #EDEDF0;
+            --card-bg: #FFFFFF;
+            --card-inner: #F1F3F5;
+            --border: rgba(0, 0, 0, 0.06);
+            --border-hover: rgba(0, 0, 0, 0.12);
+            --text: #111111;
+            --text-dim: #6B7280;
+            --success: #15AC49;
+        }
+
+        html[data-theme="dark"], body[data-theme="dark"] {
+            --bg: #18181B;
+            --card-bg: #222226;
+            --card-inner: #28282D;
+            --border: rgba(255, 255, 255, 0.08);
+            --border-hover: rgba(255, 255, 255, 0.16);
+            --text: #FFFFFF;
+            --text-dim: #A1A1AA;
+            color-scheme: dark;
         }
 
         * {
             margin: 0;
             padding: 0;
             box-sizing: border-box;
-            font-family: 'Geist Mono', monospace;
+            font-family: var(--font-sans);
         }
 
         body {
-            background: #000000;
+            background: var(--bg);
             color: var(--text);
             min-height: 100vh;
-            padding: 60px 20px;
+            padding: 40px 28px 60px;
             overflow-x: hidden;
+            transition: background-color 0.25s ease, color 0.25s ease;
         }
 
         .container {
-            max-width: 900px;
+            max-width: 1400px;
             margin: 0 auto;
+            display: flex;
+            flex-direction: column;
+            gap: 24px;
         }
 
-        header {
+        /* ── Header Row ───────────────────────────────────────────── */
+        .ext-header-row {
             display: flex;
+            align-items: center;
             justify-content: space-between;
-            align-items: center;
-            margin-bottom: 40px;
+            flex-wrap: wrap;
+            gap: 20px;
         }
 
-        h1 {
-            font-size: 2.5rem;
-            font-weight: 600;
-            color: #fff;
-        }
-
-        .search-box {
-            position: relative;
-            width: 400px;
-        }
-
-        .search-box i {
-            position: absolute;
-            left: 15px;
-            top: 50%;
-            transform: translateY(-50%);
-            color: var(--text-dim);
-        }
-
-        .search-box input {
-            width: 100%;
-            background: var(--card-bg);
-            border: 1px solid var(--border);
-            padding: 12px 12px 12px 45px;
-            border-radius: 12px;
-            color: white;
-            outline: none;
-            transition: 0.3s;
-        }
-
-        .search-box input:focus {
-            border-color: var(--accent);
-            box-shadow: 0 0 15px rgba(168, 85, 247, 0.2);
-        }
-
-        .install-section {
-            background: var(--card-bg);
-            border: 1px solid var(--border);
-            padding: 25px;
-            border-radius: 20px;
-            margin-bottom: 40px;
+        .ext-greeting {
             display: flex;
-            gap: 15px;
-            align-items: center;
+            flex-direction: column;
+            gap: 4px;
         }
 
-        .install-section input {
-            flex: 1;
-            background: rgba(0,0,0,0.2);
-            border: 1px solid var(--border);
-            padding: 12px 15px;
-            border-radius: 10px;
-            color: white;
-            outline: none;
+        .ext-title {
+            font-size: 32px;
+            font-weight: 700;
+            color: var(--text);
+            letter-spacing: -0.8px;
+            line-height: 1.2;
         }
 
-        .btn {
-            padding: 12px 25px;
-            border-radius: 10px;
-            border: none;
+        .ext-subtitle {
+            font-size: 13.5px;
+            color: var(--text-dim);
             font-weight: 600;
-            cursor: pointer;
-            transition: 0.3s;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .motd-quote-icon {
+            color: var(--accent) !important;
+            font-size: 11px;
+        }
+
+        /* Dot-Matrix Stats Bar matching Home Page .sp-stats-bar */
+        .sp-stats-bar {
+            display: flex;
+            align-items: center;
+            gap: 20px;
+            background: var(--card-bg);
+            padding: 10px 22px;
+            border-radius: 100px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.03);
+            border: 1px solid var(--border);
+        }
+
+        body[data-theme="dark"] .sp-stats-bar {
+            box-shadow: 0 4px 16px rgba(0, 0, 0, 0.25);
+        }
+
+        .sp-stat-item {
             display: flex;
             align-items: center;
             gap: 8px;
         }
 
-        .btn-primary {
+        .sp-dot-num {
+            font-family: 'Space Mono', monospace;
+            font-size: 17px;
+            font-weight: 700;
+            color: var(--text);
+        }
+
+        .sp-badge {
+            font-size: 11px;
+            font-weight: 700;
+            padding: 4px 12px;
+            border-radius: 100px;
+            display: inline-flex;
+            align-items: center;
+        }
+
+        .sp-badge-lime {
+            background: var(--accent) !important;
+            color: var(--accent-text, #111111) !important;
+            font-weight: 800;
+        }
+
+        .sp-badge-gray {
+            background: var(--card-inner);
+            color: var(--text) !important;
+            font-weight: 700;
+        }
+
+        /* ── Search Section matching Home Page .sp-search-section ─── */
+        .sp-search-section {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 16px;
+            margin-top: 4px;
+            flex-wrap: wrap;
+        }
+
+        .sp-search-pill {
+            flex: 1;
+            max-width: 620px;
+            height: 48px;
+            background: var(--card-bg);
+            border-radius: 100px;
+            display: flex;
+            align-items: center;
+            padding: 0 18px;
+            gap: 12px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.03);
+            border: 1px solid var(--border);
+            transition: all 0.2s ease;
+        }
+
+        .sp-search-pill:focus-within {
+            border-color: var(--accent);
+            box-shadow: 0 0 0 2px color-mix(in srgb, var(--accent) 25%, transparent);
+        }
+
+        .sp-search-logo {
+            display: flex;
+            align-items: center;
+            font-size: 15px;
+        }
+
+        .sp-search-input {
+            flex: 1;
+            border: none;
+            background: none;
+            font-size: 13.5px;
+            font-weight: 600;
+            color: var(--text);
+            outline: none;
+        }
+
+        .sp-search-input::placeholder {
+            color: var(--text-dim);
+            font-weight: 500;
+        }
+
+        .sp-search-btn {
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            background: var(--card-inner);
+            color: var(--text);
+            border: none;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 12px;
+            cursor: pointer;
+            transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+            flex-shrink: 0;
+            outline: none;
+        }
+
+        .sp-search-btn:hover {
+            transform: scale(1.08);
             background: var(--accent);
-            color: white;
+            color: var(--accent-text, #FFFFFF);
         }
 
-        .btn-primary:hover {
+        .ext-top-actions {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+
+        .ext-action-pill {
+            height: 46px;
+            padding: 0 20px;
+            border-radius: 100px;
+            font-size: 13px;
+            font-weight: 700;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            cursor: pointer;
+            transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+            border: 1px solid transparent;
+            outline: none;
+        }
+
+        .ext-action-pill.primary {
+            background: var(--accent);
+            color: var(--accent-text, #111111);
+            box-shadow: 0 4px 14px color-mix(in srgb, var(--accent) 30%, transparent);
+        }
+
+        .ext-action-pill.primary:hover {
             transform: translateY(-2px);
-            box-shadow: 0 5px 15px rgba(168, 85, 247, 0.4);
+            box-shadow: 0 6px 20px color-mix(in srgb, var(--accent) 45%, transparent);
         }
 
-        .btn-danger {
-            background: rgba(239, 68, 68, 0.1);
+        .ext-action-pill.secondary {
+            background: var(--card-bg);
+            color: var(--text);
+            border-color: var(--border);
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.03);
+        }
+
+        .ext-action-pill.secondary:hover {
+            background: var(--card-inner);
+            transform: translateY(-2px);
+            border-color: var(--border-hover);
+        }
+
+        /* ── Web Store Quick-Install Drawer ───────────────────────── */
+        .ext-install-drawer {
+            background: var(--card-bg);
+            border: 1px solid var(--border);
+            border-radius: 24px;
+            padding: 24px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.04);
+            animation: fadeIn 0.25s ease;
+        }
+
+        body[data-theme="dark"] .ext-install-drawer {
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.35);
+        }
+
+        .ext-drawer-inner {
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
+        }
+
+        .ext-drawer-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 14px;
+        }
+
+        .ext-drawer-title-wrap {
+            display: flex;
+            align-items: center;
+            gap: 14px;
+        }
+
+        .ext-drawer-icon {
+            width: 44px;
+            height: 44px;
+            border-radius: 14px;
+            background: color-mix(in srgb, var(--accent) 14%, transparent);
+            color: var(--accent);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 22px;
+            flex-shrink: 0;
+        }
+
+        .ext-drawer-title {
+            font-size: 16px;
+            font-weight: 700;
+            color: var(--text);
+            margin: 0 0 2px 0;
+        }
+
+        .ext-drawer-desc {
+            font-size: 12.5px;
+            color: var(--text-dim);
+            margin: 0;
+        }
+
+        .ext-drawer-close {
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            background: var(--card-inner);
+            border: none;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: var(--text-dim);
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .ext-drawer-close:hover {
+            background: rgba(239, 68, 68, 0.12);
             color: #ef4444;
-            border: 1px solid rgba(239, 68, 68, 0.2);
         }
 
-        .btn-danger:hover {
-            background: rgba(239, 68, 68, 0.2);
+        .ext-drawer-input-row {
+            display: flex;
+            align-items: center;
+            gap: 12px;
         }
 
+        .ext-input-pill {
+            flex: 1;
+            height: 48px;
+            background: var(--card-inner);
+            border: 1px solid var(--border);
+            border-radius: 100px;
+            display: flex;
+            align-items: center;
+            padding: 0 18px;
+            gap: 12px;
+            transition: all 0.2s ease;
+        }
+
+        .ext-input-pill:focus-within {
+            border-color: var(--accent);
+            box-shadow: 0 0 0 2px color-mix(in srgb, var(--accent) 25%, transparent);
+        }
+
+        .ext-input-pill i {
+            color: var(--text-dim);
+            font-size: 13px;
+        }
+
+        .ext-input-pill input {
+            flex: 1;
+            border: none;
+            background: none;
+            font-size: 13px;
+            font-weight: 600;
+            color: var(--text);
+            outline: none;
+        }
+
+        .ext-install-submit-btn {
+            height: 48px;
+            padding: 0 24px;
+            border-radius: 100px;
+            background: var(--accent);
+            color: var(--accent-text, #111111);
+            border: none;
+            font-size: 13px;
+            font-weight: 700;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            cursor: pointer;
+            transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+            flex-shrink: 0;
+        }
+
+        .ext-install-submit-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 18px color-mix(in srgb, var(--accent) 40%, transparent);
+        }
+
+        .ext-popular-chips-wrap {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            flex-wrap: wrap;
+            padding-top: 14px;
+            border-top: 1px solid var(--border);
+        }
+
+        .ext-chips-label {
+            font-size: 12px;
+            font-weight: 700;
+            color: var(--text-dim);
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            margin-right: 4px;
+        }
+
+        .ext-chip-btn {
+            padding: 6px 14px;
+            border-radius: 100px;
+            background: var(--card-inner);
+            border: 1px solid var(--border);
+            font-size: 12px;
+            font-weight: 600;
+            color: var(--text);
+            cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            transition: all 0.2s ease;
+            outline: none;
+        }
+
+        .ext-chip-btn:hover {
+            background: var(--accent);
+            color: var(--accent-text, #111111);
+            border-color: var(--accent);
+            transform: translateY(-1px);
+        }
+
+        /* ── Bento Grid Cards matching Home Page ──────────────────── */
         .extension-grid {
             display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(400px, 1fr));
+            grid-template-columns: repeat(2, 1fr);
             gap: 20px;
+            width: 100%;
+        }
+
+        @media (max-width: 960px) {
+            .extension-grid {
+                grid-template-columns: 1fr;
+            }
         }
 
         .extension-card {
             background: var(--card-bg);
             border: 1px solid var(--border);
-            padding: 20px;
+            border-radius: 24px;
+            padding: 22px;
             display: flex;
-            gap: 20px;
-            transition: 0.3s;
+            flex-direction: column;
+            justify-content: space-between;
+            gap: 14px;
+            min-height: 170px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.035), 0 2px 8px rgba(0, 0, 0, 0.015);
+            transition: transform 0.25s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.25s, border-color 0.25s;
+        }
+
+        body[data-theme="dark"] .extension-card {
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.35);
         }
 
         .extension-card:hover {
-            border-color: var(--accent);
-            transform: translateY(-5px);
+            transform: translateY(-3px);
+            border-color: color-mix(in srgb, var(--accent) 35%, transparent);
+            box-shadow: 0 16px 36px rgba(0, 0, 0, 0.08);
+        }
+
+        body[data-theme="dark"] .extension-card:hover {
+            box-shadow: 0 16px 40px rgba(0, 0, 0, 0.45);
+        }
+
+        .ext-card-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 14px;
+        }
+
+        .ext-card-header-left {
+            display: flex;
+            align-items: center;
+            gap: 14px;
         }
 
         .ext-icon {
-            width: 50px;
-            height: 50px;
-            border-radius: 14px;
-            background: rgba(255,255,255,0.05);
+            width: 48px;
+            height: 48px;
+            border-radius: 16px;
             display: flex;
             align-items: center;
             justify-content: center;
-            font-size: 1.5rem;
+            font-size: 20px;
             flex-shrink: 0;
+            background: color-mix(in srgb, var(--accent) 14%, transparent);
+            color: var(--accent);
+            border: 1px solid color-mix(in srgb, var(--accent) 25%, transparent);
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+            overflow: hidden;
         }
 
-        .ext-info {
-            flex: 1;
+        .ext-icon img {
+            width: 100%;
+            height: 100%;
+            object-fit: contain;
+            border-radius: inherit;
         }
 
-        .ext-header {
+        .ext-icon.adblock-icon { color: #ef4444; background: rgba(239, 68, 68, 0.12); border-color: rgba(239, 68, 68, 0.25); }
+        .ext-icon.vault-icon { color: #3b82f6; background: rgba(59, 130, 246, 0.12); border-color: rgba(59, 130, 246, 0.25); }
+        .ext-icon.ai-icon { color: #a855f7; background: rgba(168, 85, 247, 0.12); border-color: rgba(168, 85, 247, 0.25); }
+        .ext-icon.stealth-icon { color: #10b981; background: rgba(16, 185, 129, 0.12); border-color: rgba(16, 185, 129, 0.25); }
+        .ext-icon.focus-icon { color: #f59e0b; background: rgba(245, 158, 11, 0.12); border-color: rgba(245, 158, 11, 0.25); }
+
+        .ext-identity {
             display: flex;
-            justify-content: space-between;
-            align-items: flex-start;
-            margin-bottom: 5px;
+            flex-direction: column;
         }
 
         .ext-name {
-            font-size: 1.1rem;
-            font-weight: 600;
+            font-size: 16px;
+            font-weight: 700;
+            color: var(--text);
+            margin: 0 0 2px 0;
         }
 
         .ext-version {
-            font-size: 0.8rem;
+            font-size: 12px;
             color: var(--text-dim);
-            margin-bottom: 10px;
+            font-weight: 500;
         }
 
         .ext-desc {
-            font-size: 0.9rem;
+            font-size: 13px;
             color: var(--text-dim);
-            line-height: 1.4;
-            margin-bottom: 15px;
-            display: -webkit-box;
-            -webkit-line-clamp: 2;
-            line-clamp: 2;
-            -webkit-box-orient: vertical;
-            overflow: hidden;
+            line-height: 1.5;
+            margin: 0;
+            font-weight: 500;
         }
 
         .ext-actions {
             display: flex;
-            justify-content: space-between;
             align-items: center;
+            justify-content: space-between;
+            padding-top: 14px;
+            border-top: 1px solid var(--border);
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+
+        .ext-tag {
+            font-size: 10.5px;
+            font-weight: 800;
+            padding: 4px 10px;
+            border-radius: 100px;
+            letter-spacing: 0.5px;
+            text-transform: uppercase;
+        }
+
+        .ext-tag.core { color: #ef4444; background: rgba(239, 68, 68, 0.12); border: 1px solid rgba(239, 68, 68, 0.25); }
+        .ext-tag.installed { color: var(--accent); background: color-mix(in srgb, var(--accent) 12%, transparent); border: 1px solid color-mix(in srgb, var(--accent) 25%, transparent); }
+
+        .ext-status {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            font-size: 12px;
+            font-weight: 700;
+            color: var(--text-dim);
+        }
+
+        .ext-status.on {
+            color: var(--accent);
+        }
+
+        .ext-status .status-dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: var(--text-dim);
+        }
+
+        .ext-status.on .status-dot {
+            background: var(--accent);
+            box-shadow: 0 0 8px color-mix(in srgb, var(--accent) 50%, transparent);
         }
 
         /* Toggle Switch */
         .switch {
             position: relative;
-            display: inline-block;
-            width: 44px;
-            height: 24px;
+            display: inline-flex;
+            align-items: center;
+            width: 46px;
+            height: 26px;
+            flex-shrink: 0;
         }
 
         .switch input {
             opacity: 0;
             width: 0;
             height: 0;
+            margin: 0;
+            position: absolute;
         }
 
         .slider {
@@ -224,57 +639,85 @@
             left: 0;
             right: 0;
             bottom: 0;
-            background-color: rgba(255,255,255,0.1);
-            border: 1px solid rgba(255,255,255,0.05);
-            transition: .3s cubic-bezier(0.16, 1, 0.3, 1);
+            background-color: rgba(0, 0, 0, 0.15);
+            transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
             border-radius: 100px;
+        }
+
+        body[data-theme="dark"] .slider {
+            background-color: rgba(255, 255, 255, 0.15);
         }
 
         .slider:before {
             position: absolute;
             content: "";
-            height: 16px;
-            width: 16px;
+            height: 20px;
+            width: 20px;
             left: 3px;
-            bottom: 3px;
-            background-color: white;
-            transition: .3s cubic-bezier(0.16, 1, 0.3, 1);
+            top: 50%;
+            transform: translateY(-50%);
+            background-color: #FFFFFF !important;
+            transition: transform 0.25s cubic-bezier(0.16, 1, 0.3, 1);
             border-radius: 50%;
+            box-shadow: 0 2px 6px rgba(0, 0, 0, 0.25);
         }
 
-        input:checked + .slider {
-            background-color: var(--accent);
+        .switch input:checked + .slider {
+            background-color: var(--accent) !important;
+        }
+
+        .switch input:checked + .slider:before {
+            transform: translate(20px, -50%);
+        }
+
+        .ext-action-btn-pill {
+            height: 32px;
+            padding: 0 14px;
+            border-radius: 100px;
+            font-size: 12px;
+            font-weight: 700;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            background: var(--card-inner);
+            border: 1px solid var(--border);
+            color: var(--text);
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .ext-action-btn-pill:hover {
+            background: var(--accent);
+            color: var(--accent-text, #111111);
             border-color: var(--accent);
-            box-shadow: 0 0 10px rgba(255,255,255,0.2);
+            transform: translateY(-1px);
         }
 
-        input:checked + .slider:before {
-            transform: translateX(18px);
-            background-color: #000;
+        .ext-action-btn-pill.danger:hover {
+            background: #ef4444;
+            color: #FFFFFF;
+            border-color: #ef4444;
         }
 
+        /* Loading Overlay */
         .loading-overlay {
             position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: rgba(0,0,0,0.8);
+            inset: 0;
+            background: rgba(0, 0, 0, 0.6);
             display: none;
             justify-content: center;
             align-items: center;
             z-index: 1000;
-            backdrop-filter: blur(5px);
+            backdrop-filter: blur(8px);
         }
 
         .loader {
-            width: 48px;
-            height: 48px;
-            border: 5px solid #FFF;
+            width: 44px;
+            height: 44px;
+            border: 4px solid rgba(255, 255, 255, 0.2);
             border-bottom-color: var(--accent);
             border-radius: 50%;
             display: inline-block;
-            box-sizing: border-box;
             animation: rotation 1s linear infinite;
         }
 
@@ -282,86 +725,246 @@
             0% { transform: rotate(0deg); }
             100% { transform: rotate(360deg); }
         }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(-6px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
     </style>
 </head>
 <body>
     <div class="loading-overlay" id="loader">
-        <div style="text-align: center;">
+        <div style="text-align: center; color: #FFFFFF;">
             <span class="loader"></span>
-            <p style="margin-top: 20px; font-weight: 600;">Installing Extension...</p>
+            <p style="margin-top: 18px; font-weight: 700; font-size: 14px;">Installing Extension...</p>
         </div>
     </div>
 
     <div class="container">
-        <header>
-            <h1>Extensions</h1>
-            <div class="search-box">
-                <i class="fas fa-search"></i>
-                <input type="text" placeholder="Search installed extensions..." id="searchExt">
+        <!-- Home-style Header Row: Title & Stats Bar -->
+        <header class="ext-header-row">
+            <div class="ext-greeting">
+                <h1 class="ext-title">Extensions & Addons</h1>
+                <div class="ext-subtitle">
+                    <i class="fas fa-quote-left motd-quote-icon"></i>
+                    <span>Power up your workspace with high-performance Chrome add-ons and built-in Ocal modules.</span>
+                </div>
+            </div>
+
+            <!-- Stats Bar -->
+            <div class="sp-stats-bar">
+                <div class="sp-stat-item">
+                    <span class="sp-dot-num" id="stat-active">5</span>
+                    <span class="sp-badge sp-badge-lime">Active</span>
+                </div>
+                <div class="sp-stat-item">
+                    <span class="sp-dot-num" id="stat-custom">0</span>
+                    <span class="sp-badge sp-badge-gray">Custom</span>
+                </div>
+                <div class="sp-stat-item">
+                    <span class="sp-dot-num" id="stat-total">5</span>
+                    <span class="sp-badge sp-badge-gray">Total</span>
+                </div>
             </div>
         </header>
 
-        <section class="install-section">
-            <i class="fab fa-chrome" style="font-size: 1.5rem; color: var(--accent);"></i>
-            <input type="text" placeholder="Enter Chrome Web Store URL or Extension ID (e.g., cpngonidonbe...)" id="extIdInput">
-            <button class="btn btn-primary" onclick="installExtension()">
-                <i class="fas fa-plus"></i> Install
-            </button>
-            <button class="btn btn-primary" onclick="loadUnpackedExtension()" style="background: rgba(255,255,255,0.1); color: var(--text);">
-                <i class="fas fa-folder-open"></i> Load Unpacked
-            </button>
+        <!-- Search & Action Section -->
+        <section class="sp-search-section">
+            <div class="sp-search-pill">
+                <div class="sp-search-logo">
+                    <i class="fas fa-puzzle-piece" style="color: var(--accent);"></i>
+                </div>
+                <input type="text" class="sp-search-input" id="searchExt" placeholder="Search installed addons or Chrome web extensions..." autocomplete="off" spellcheck="false">
+                <button class="sp-search-btn" title="Search / Clear" onclick="document.getElementById('searchExt').value=''; filterExtensions();">
+                    <i class="fas fa-magnifying-glass"></i>
+                </button>
+            </div>
+
+            <div class="ext-top-actions">
+                <button class="ext-action-pill primary" onclick="toggleDrawer()">
+                    <i class="fab fa-chrome"></i>
+                    <span>Install from Store</span>
+                </button>
+                <button class="ext-action-pill secondary" onclick="loadUnpackedExtension()">
+                    <i class="fas fa-folder-open"></i>
+                    <span>Load Unpacked</span>
+                </button>
+            </div>
         </section>
 
+        <!-- Web Store Quick-Install Drawer -->
+        <div class="ext-install-drawer" id="extInstallDrawer" style="display: none;">
+            <div class="ext-drawer-inner">
+                <div class="ext-drawer-header">
+                    <div class="ext-drawer-title-wrap">
+                        <div class="ext-drawer-icon">
+                            <i class="fab fa-chrome"></i>
+                        </div>
+                        <div>
+                            <h4 class="ext-drawer-title">Chrome Web Store Instant Installer</h4>
+                            <p class="ext-drawer-desc">Paste an extension ID or full URL from the Chrome Web Store to download and deploy immediately.</p>
+                        </div>
+                    </div>
+                    <button class="ext-drawer-close" onclick="toggleDrawer(false)"><i class="fas fa-times"></i></button>
+                </div>
+
+                <div class="ext-drawer-input-row">
+                    <div class="ext-input-pill">
+                        <i class="fas fa-link"></i>
+                        <input type="text" id="extIdInput" placeholder="Paste extension ID or web store URL (e.g., cjpalhdlnbpafiamejdnhcphjbkeiagm)...">
+                    </div>
+                    <button class="ext-install-submit-btn" onclick="installExtension()">
+                        <i class="fas fa-cloud-arrow-down"></i>
+                        <span>Deploy Addon</span>
+                    </button>
+                </div>
+
+                <!-- Popular Suggestions Chips -->
+                <div class="ext-popular-chips-wrap">
+                    <span class="ext-chips-label"><i class="fas fa-sparkles" style="color: var(--accent);"></i> Popular Addons:</span>
+                    <button class="ext-chip-btn" onclick="installPopularExt('cjpalhdlnbpafiamejdnhcphjbkeiagm')"><i class="fas fa-shield-alt"></i> uBlock Origin</button>
+                    <button class="ext-chip-btn" onclick="installPopularExt('eimadpbcbfnmbkopoojfekhnkhdbieeh')"><i class="fas fa-moon"></i> Dark Reader</button>
+                    <button class="ext-chip-btn" onclick="installPopularExt('nngceckbapebfimnlniiiahkandclblb')"><i class="fas fa-key"></i> Bitwarden</button>
+                    <button class="ext-chip-btn" onclick="installPopularExt('mnjggcdmjocbbbhaepdhchncahnbgone')"><i class="fas fa-forward"></i> SponsorBlock</button>
+                    <button class="ext-chip-btn" onclick="installPopularExt('gebbhagfogifgggkldgodflihgfeippi')"><i class="fas fa-thumbs-down"></i> Return Dislike</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Bento Grid Cards -->
         <div class="extension-grid" id="extensionGrid">
-            <!-- Extensions will be loaded here -->
+            <!-- Extensions will be rendered here -->
         </div>
     </div>
 
     <script>
         const { ipcRenderer } = require('electron');
 
+        function toggleDrawer(force) {
+            const dr = document.getElementById('extInstallDrawer');
+            if (force !== undefined) {
+                dr.style.display = force ? 'block' : 'none';
+            } else {
+                dr.style.display = dr.style.display === 'none' ? 'block' : 'none';
+            }
+        }
+
+        function installPopularExt(id) {
+            const input = document.getElementById('extIdInput');
+            if (input) input.value = id;
+            installExtension();
+        }
+
         async function loadExtensions() {
-            const extensions = await ipcRenderer.invoke('get-extensions');
+            const extensions = await ipcRenderer.invoke('get-extensions') || [];
             const grid = document.getElementById('extensionGrid');
             grid.innerHTML = '';
 
-            extensions.forEach(ext => {
+            // Core modules
+            const coreModules = [
+                { id: 'adblock', name: 'uBlock Origin', version: 'v1.74.0', desc: 'High-efficiency content filter blocking malicious ads, telemetry trackers, and popup vectors across all domains.', iconClass: 'fas fa-shield-cat adblock-icon', tag: 'CORE MODULE', enabled: true, isCore: true },
+                { id: 'vault', name: 'Asset Vault', version: 'Built-in', desc: 'Encrypted local credential store protecting account passwords, autofill tokens, and payment secrets with hardware security.', iconClass: 'fas fa-vault vault-icon', tag: 'CORE MODULE', enabled: false, isCore: true },
+                { id: 'ai', name: 'Ocal AI Assistant', version: 'Built-in', desc: 'Native browser-integrated AI agent providing full-page web summarization, smart context inspection, and automated controls.', iconClass: 'fas fa-wand-magic-sparkles ai-icon', tag: 'AI AGENT', enabled: false, isCore: true },
+                { id: 'stealth', name: 'Cyber Stealth', version: 'Built-in', desc: 'Defends against advanced browser fingerprinting by randomizing canvas, WebGL telemetry, audio buffers, and hardware signatures.', iconClass: 'fas fa-user-secret stealth-icon', tag: 'PRIVACY', enabled: false, isCore: true },
+                { id: 'focus', name: 'Ocal Focus', version: 'Built-in', desc: 'Integrated Pomodoro session timer, distraction-free site blocklist, and productivity workflow telemetry synced with Home.', iconClass: 'fas fa-clock focus-icon', tag: 'PRODUCTIVITY', enabled: false, isCore: true }
+            ];
+
+            let activeCount = 0;
+            let customCount = extensions.length;
+
+            // Render Core Modules
+            coreModules.forEach(mod => {
+                if (mod.enabled) activeCount++;
                 const card = document.createElement('div');
                 card.className = 'extension-card';
-                
-                // Get icon (try largest icon available or fallback to font-awesome)
-                let iconHtml = `<div class="ext-icon"><i class="fas fa-plugin"></i></div>`;
-                if (ext.icons) {
-                    const iconSizes = Object.keys(ext.icons).map(Number).sort((a,b) => b-a);
-                    if (iconSizes.length > 0) {
-                        const iconPath = `chrome-extension://${ext.id}/${ext.icons[iconSizes[0]]}`;
-                        // Since we are in ocal://, we might need a resolver or specific session access
-                        // For now, use a generic icon if path fails, but Electron native handles chrome-extension://
-                        iconHtml = `<div class="ext-icon"><img src="${iconPath}" style="width:100%; height:100%; border-radius:inherit;" onerror="this.src='https://icons.duckduckgo.com/ip3/${ext.id}.ico'; this.onerror=()=>{const i=document.createElement('i'); i.className='fas fa-puzzle-piece'; this.replaceWith(i);}"></div>`;
-                    }
-                }
+                card.dataset.extname = mod.name.toLowerCase();
 
                 card.innerHTML = `
-                    ${iconHtml}
-                    <div class="ext-info">
-                        <div class="ext-header">
-                            <div class="ext-name">${ext.name}</div>
-                            <label class="switch">
-                                <input type="checkbox" ${ext.enabled ? 'checked' : ''} onchange="toggleExtension('${ext.id}', this.checked)">
-                                <span class="slider"></span>
-                            </label>
+                    <div class="ext-card-header">
+                        <div class="ext-card-header-left">
+                            <div class="ext-icon ${mod.iconClass}">
+                                <i class="${mod.iconClass.split(' ')[0]} ${mod.iconClass.split(' ')[1]}"></i>
+                            </div>
+                            <div class="ext-identity">
+                                <h4 class="ext-name">${mod.name}</h4>
+                                <div class="ext-version">${mod.version}</div>
+                            </div>
                         </div>
-                        <div class="ext-version">Version ${ext.version} | ID: ${ext.id}</div>
-                        <div class="ext-desc">${ext.description || 'No description provided.'}</div>
-                        <div class="ext-actions">
-                            <span style="font-size: 0.8rem; color: var(--accent); cursor: pointer;" onclick="openStore('${ext.id}')">View in Store</span>
-                            <button class="btn btn-danger" style="padding: 6px 12px; font-size: 0.8rem;" onclick="removeExtension('${ext.id}')">
-                                <i class="fas fa-trash"></i> Remove
-                            </button>
+                        <label class="switch">
+                            <input type="checkbox" ${mod.enabled ? 'checked' : ''} onchange="this.checked ? activeCount++ : activeCount--; updateStats();">
+                            <span class="slider"></span>
+                        </label>
+                    </div>
+                    <div class="ext-desc">${mod.desc}</div>
+                    <div class="ext-actions">
+                        <span class="ext-tag core">${mod.tag}</span>
+                        <div style="display: flex; align-items: center; gap: 8px;">
+                            <span class="ext-status ${mod.enabled ? 'on' : ''}">
+                                <span class="status-dot"></span><span>${mod.enabled ? 'Active' : 'Idle'}</span>
+                            </span>
                         </div>
                     </div>
                 `;
                 grid.appendChild(card);
+            });
+
+            // Render Installed Chrome Extensions
+            extensions.forEach(ext => {
+                if (ext.enabled) activeCount++;
+                const card = document.createElement('div');
+                card.className = 'extension-card';
+                card.dataset.extname = (ext.name || '').toLowerCase();
+
+                let iconHtml = `<div class="ext-icon"><i class="fas fa-puzzle-piece"></i></div>`;
+                if (ext.icons) {
+                    const iconSizes = Object.keys(ext.icons).map(Number).sort((a,b) => b-a);
+                    if (iconSizes.length > 0) {
+                        const iconPath = `chrome-extension://${ext.id}/${ext.icons[iconSizes[0]]}`;
+                        iconHtml = `<div class="ext-icon"><img src="${iconPath}" onerror="this.src='https://icons.duckduckgo.com/ip3/${ext.id}.ico'; this.onerror=()=>{const i=document.createElement('i'); i.className='fas fa-puzzle-piece'; this.replaceWith(i);}"></div>`;
+                    }
+                }
+
+                card.innerHTML = `
+                    <div class="ext-card-header">
+                        <div class="ext-card-header-left">
+                            ${iconHtml}
+                            <div class="ext-identity">
+                                <h4 class="ext-name">${ext.name}</h4>
+                                <div class="ext-version">Version ${ext.version || '?'} &middot; ID: ${(ext.id || '').substring(0, 16)}...</div>
+                            </div>
+                        </div>
+                        <label class="switch">
+                            <input type="checkbox" ${ext.enabled ? 'checked' : ''} onchange="toggleExtension('${ext.id}', this.checked)">
+                            <span class="slider"></span>
+                        </label>
+                    </div>
+                    <div class="ext-desc">${ext.description || 'Custom Chrome Web Store extension loaded into Ocal workspace.'}</div>
+                    <div class="ext-actions">
+                        <span class="ext-tag installed">INSTALLED</span>
+                        <div style="display: flex; align-items: center; gap: 8px;">
+                            <span class="ext-status ${ext.enabled ? 'on' : ''}">
+                                <span class="status-dot"></span><span>${ext.enabled ? 'Active' : 'Disabled'}</span>
+                            </span>
+                            <button class="ext-action-btn-pill" onclick="openStore('${ext.id}')"><i class="fas fa-external-link-alt"></i> Store</button>
+                            <button class="ext-action-btn-pill danger" onclick="removeExtension('${ext.id}')"><i class="fas fa-trash"></i> Remove</button>
+                        </div>
+                    </div>
+                `;
+                grid.appendChild(card);
+            });
+
+            // Update stats
+            document.getElementById('stat-active').innerText = activeCount;
+            document.getElementById('stat-custom').innerText = customCount;
+            document.getElementById('stat-total').innerText = coreModules.length + customCount;
+        }
+
+        function filterExtensions() {
+            const query = (document.getElementById('searchExt')?.value || '').toLowerCase().trim();
+            const cards = document.querySelectorAll('.extension-card');
+            cards.forEach(card => {
+                const name = (card.dataset.extname || card.querySelector('.ext-name')?.innerText || '').toLowerCase();
+                card.style.display = !query || name.includes(query) ? 'flex' : 'none';
             });
         }
 
@@ -374,6 +977,7 @@
             try {
                 const result = await ipcRenderer.invoke('install-extension', id);
                 input.value = '';
+                toggleDrawer(false);
                 await loadExtensions();
                 alert(`Successfully installed ${result.name}!`);
             } catch (err) {
@@ -400,7 +1004,7 @@
 
         async function toggleExtension(id, enabled) {
             await ipcRenderer.invoke('toggle-extension', { id, enabled });
-            // Some extensions require a reload of views to take effect
+            await loadExtensions();
         }
 
         async function removeExtension(id) {
@@ -414,34 +1018,22 @@
             window.open(`https://chromewebstore.google.com/detail/${id}`);
         }
 
-        // Initial Load
-        loadExtensions();
-        
-        // Handle search
-        document.getElementById('searchExt').addEventListener('input', (e) => {
-            const term = e.target.value.toLowerCase();
-            const cards = document.querySelectorAll('.extension-card');
-            cards.forEach(card => {
-                const name = card.querySelector('.ext-name').textContent.toLowerCase();
-                card.style.display = name.includes(term) ? 'flex' : 'none';
-            });
-        });
+        // Search listener
+        document.getElementById('searchExt').addEventListener('input', filterExtensions);
 
+        // Apply Theme & Accent matching Home Page
         async function applyTheme() {
             try {
-                const s = await ipcRenderer.invoke('get-settings');
-                if (s.accentColor) document.documentElement.style.setProperty('--accent', s.accentColor);
-                document.documentElement.style.setProperty('--bg', s.themeMode === 'light' ? '#ffffff' : '#000000');
-                document.documentElement.style.setProperty('--card-bg', s.themeMode === 'light' ? '#f5f5f5' : '#0a0a0a');
-                document.documentElement.style.setProperty('--border', s.themeMode === 'light' ? '#e0e0e0' : '#171717');
-                document.documentElement.style.setProperty('--text', s.themeMode === 'light' ? '#111111' : '#ffffff');
-                document.documentElement.style.setProperty('--text-dim', s.themeMode === 'light' ? '#666666' : '#a3a3a3');
-                if (s.themeMode === 'light') {
-                    document.body.style.background = '#ffffff';
-                }
+                const t = localStorage.getItem('ocal-settings-theme') || 'dark';
+                document.body.setAttribute('data-theme', t);
+                document.documentElement.setAttribute('data-theme', t);
+                const a = localStorage.getItem('ocal-settings-accent') || '#15AC49';
+                document.documentElement.style.setProperty('--accent', a);
             } catch(e){}
         }
+
         applyTheme();
+        loadExtensions();
     </script>
 </body>
 </html>

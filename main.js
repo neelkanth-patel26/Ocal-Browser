@@ -1646,6 +1646,7 @@ function resolveInternalURL(url) {
     if (cleanBase === 'settings' || cleanBase === 'ocal://settings') return 'file://' + path.join(__dirname, 'settings.html');
     if (url.startsWith('ocal://settings#')) return 'file://' + path.join(__dirname, 'settings.html') + url.substring(15);
     if (url.startsWith('ocal://settings/')) return 'file://' + path.join(__dirname, 'settings.html') + '#' + url.substring(16);
+    if (cleanBase === 'extensions' || cleanBase === 'ocal://extensions') return 'file://' + path.join(__dirname, 'settings.html#extensions');
     if (cleanBase === 'file-manager' || cleanBase === 'ocal://file-manager') return 'file://' + path.join(__dirname, 'file-manager.html');
     if (cleanBase === 'ocal://music-player' || cleanBase === 'ocal://music' || cleanBase === 'music-player') {
         const qIdx = url.indexOf('?');
@@ -3262,6 +3263,7 @@ ipcMain.on('navigate-to', (e, url) => {
         if (cleanUrl === 'settings' || cleanUrl === 'ocal://settings') targetUrl = 'file://' + path.join(__dirname, 'settings.html');
         else if (cleanUrl.startsWith('ocal://settings#')) targetUrl = 'file://' + path.join(__dirname, 'settings.html') + cleanUrl.substring(15);
         else if (cleanUrl.startsWith('ocal://settings/')) targetUrl = 'file://' + path.join(__dirname, 'settings.html') + '#' + cleanUrl.substring(16);
+        else if (cleanUrl === 'extensions' || cleanUrl === 'ocal://extensions') targetUrl = 'file://' + path.join(__dirname, 'settings.html#extensions');
         else if (cleanUrl.includes('.') && !cleanUrl.includes(' ')) targetUrl = 'https://' + cleanUrl;
         else {
             const engine = userSettings.searchEngine || 'google';

@@ -982,49 +982,106 @@
                 </div>
             </div>
 
-            <!-- ── EXTENSIONS MANAGER ── -->
+            <!-- ── EXTENSIONS MANAGER (HOME PAGE STYLE) ── -->
             <section id="extensions" class="section">
-                <div class="page-header">
-                    <div class="page-eyebrow">Workspace Addons</div>
-                    <div class="page-title">Extensions Manager</div>
-                    <div class="page-desc">Deploy Chrome web store extensions and manage built-in security modules.</div>
+                <!-- Home-style Header Row: Title & Dot-Matrix Stats Bar -->
+                <div class="ext-home-header-row">
+                    <div class="ext-home-greeting">
+                        <h1 class="ext-home-title">Extensions & Addons</h1>
+                        <div class="ext-home-subtitle">
+                            <i class="fas fa-quote-left ext-quote-icon"></i>
+                            <span>Power up your workspace with high-performance Chrome add-ons and built-in Ocal modules.</span>
+                        </div>
+                    </div>
+
+                    <!-- Dot-Matrix Stats Bar matching Home Page .sp-stats-bar -->
+                    <div class="ext-stats-bar">
+                        <div class="ext-stat-item">
+                            <span class="ext-dot-num" id="ext-stat-active">5</span>
+                            <span class="ext-badge ext-badge-lime">Active</span>
+                        </div>
+                        <div class="ext-stat-item">
+                            <span class="ext-dot-num" id="ext-stat-custom">0</span>
+                            <span class="ext-badge ext-badge-gray">Custom</span>
+                        </div>
+                        <div class="ext-stat-item">
+                            <span class="ext-dot-num" id="ext-stat-total">5</span>
+                            <span class="ext-badge ext-badge-gray">Total</span>
+                        </div>
+                    </div>
                 </div>
 
                 <div class="page-body">
 
-                    <!-- Action Bar Controls -->
-                    <div class="extensions-action-bar">
-                        <div class="search-input-wrapper">
-                            <i class="fas fa-magnifying-glass"></i>
-                            <input type="text" id="ext-search-input" placeholder="Search installed addons..." oninput="filterExtSettings()">
-                        </div>
-                        <div class="action-buttons-group">
-                            <button class="btn secondary" onclick="loadUnpackedExtension()">
-                                <i class="fas fa-folder-open"></i> Load Unpacked
+                    <!-- Home-style Search Section matching .sp-search-section -->
+                    <div class="ext-search-section">
+                        <div class="ext-search-pill">
+                            <div class="ext-search-logo">
+                                <i class="fas fa-puzzle-piece" style="color: var(--accent);"></i>
+                            </div>
+                            <input type="text" class="ext-search-input" id="ext-search-input" placeholder="Search installed addons or Chrome web extensions..." autocomplete="off" spellcheck="false" oninput="filterExtSettings()">
+                            <button class="ext-search-btn" id="ext-search-clear-btn" title="Search / Clear" onclick="document.getElementById('ext-search-input').value=''; filterExtSettings();">
+                                <i class="fas fa-magnifying-glass"></i>
                             </button>
-                            <button class="btn primary" onclick="const dr = document.getElementById('ext-install-drawer'); dr.style.display = dr.style.display === 'none' ? 'block' : 'none';">
-                                <i class="fab fa-chrome"></i> Install from Store
+                        </div>
+
+                        <!-- Action Pills matching Home Page pill style -->
+                        <div class="ext-action-pills">
+                            <button class="ext-action-pill primary" onclick="const dr = document.getElementById('ext-install-drawer'); dr.style.display = dr.style.display === 'none' ? 'block' : 'none';">
+                                <i class="fab fa-chrome"></i>
+                                <span>Install from Store</span>
+                            </button>
+                            <button class="ext-action-pill secondary" onclick="loadUnpackedExtension()">
+                                <i class="fas fa-folder-open"></i>
+                                <span>Load Unpacked</span>
                             </button>
                         </div>
                     </div>
 
-                    <!-- Web Store Installer Drawer (Toggleable) -->
-                    <div class="card ext-install-drawer" id="ext-install-drawer" style="display: none;">
-                        <div class="drawer-content">
-                            <h4 class="drawer-title"><i class="fab fa-chrome" style="color: var(--accent); margin-right: 8px;"></i> Install Extension from Chrome Web Store</h4>
-                            <p class="drawer-desc">Paste a Chrome Web Store extension ID or full store URL to deploy it immediately into Ocal.</p>
-                            <div class="drawer-input-row">
-                                <input type="text" id="ext-cws-input" placeholder="Paste extension ID or web store URL (e.g., cjpalhdlnbpafiamejdnhcphjbkeiagm)...">
-                                <button class="btn primary" onclick="installExtFromSettings()"><i class="fas fa-download"></i> Install Addon</button>
+                    <!-- Web Store Quick-Install Drawer styled like Home Page cards -->
+                    <div class="ext-install-drawer sp-card-white" id="ext-install-drawer" style="display: none;">
+                        <div class="ext-drawer-inner">
+                            <div class="ext-drawer-header">
+                                <div class="ext-drawer-title-wrap">
+                                    <div class="ext-drawer-icon">
+                                        <i class="fab fa-chrome"></i>
+                                    </div>
+                                    <div>
+                                        <h4 class="ext-drawer-title">Chrome Web Store Instant Installer</h4>
+                                        <p class="ext-drawer-desc">Paste an extension ID or full URL from the Chrome Web Store to download and deploy immediately.</p>
+                                    </div>
+                                </div>
+                                <button class="ext-drawer-close" onclick="document.getElementById('ext-install-drawer').style.display='none';"><i class="fas fa-times"></i></button>
+                            </div>
+
+                            <div class="ext-drawer-input-row">
+                                <div class="ext-input-pill">
+                                    <i class="fas fa-link"></i>
+                                    <input type="text" id="ext-cws-input" placeholder="Paste extension ID or web store URL (e.g. cjpalhdlnbpafiamejdnhcphjbkeiagm)...">
+                                </div>
+                                <button class="ext-install-submit-btn" onclick="installExtFromSettings()">
+                                    <i class="fas fa-cloud-arrow-down"></i>
+                                    <span>Deploy Addon</span>
+                                </button>
+                            </div>
+
+                            <!-- Popular One-Click Suggestions Chips -->
+                            <div class="ext-popular-chips-wrap">
+                                <span class="ext-chips-label"><i class="fas fa-sparkles" style="color:var(--accent);"></i> Popular Addons:</span>
+                                <button class="ext-chip-btn" onclick="installPopularExt('cjpalhdlnbpafiamejdnhcphjbkeiagm')"><i class="fas fa-shield-alt"></i> uBlock Origin</button>
+                                <button class="ext-chip-btn" onclick="installPopularExt('eimadpbcbfnmbkopoojfekhnkhdbieeh')"><i class="fas fa-moon"></i> Dark Reader</button>
+                                <button class="ext-chip-btn" onclick="installPopularExt('nngceckbapebfimnlniiiahkandclblb')"><i class="fas fa-key"></i> Bitwarden</button>
+                                <button class="ext-chip-btn" onclick="installPopularExt('mnjggcdmjocbbbhaepdhchncahnbgone')"><i class="fas fa-forward"></i> SponsorBlock</button>
+                                <button class="ext-chip-btn" onclick="installPopularExt('gebbhagfogifgggkldgodflihgfeippi')"><i class="fas fa-thumbs-down"></i> Return Dislike</button>
                             </div>
                         </div>
                     </div>
 
-                    <!-- Extensions Bento Grid -->
+                    <!-- Extensions Bento Grid (Squircle Cards matching Home page) -->
                     <div id="ext-settings-grid" class="extensions-dashboard-grid">
 
                         <!-- uBlock Origin -->
-                        <div class="card ext-card-row" data-extname="ublock origin ad blocker" id="ext-adblock">
+                        <div class="card ext-card-row sp-card-white" data-extname="ublock origin ad blocker" id="ext-adblock">
                             <div class="ext-card-header">
                                 <div class="ext-card-header-left">
                                     <div class="ext-card-icon adblock-icon">
@@ -1032,7 +1089,7 @@
                                     </div>
                                     <div class="ext-card-identity">
                                         <h4 class="ext-card-name">uBlock Origin</h4>
-                                        <div class="ext-card-version">Built-in &middot; Core Guard</div>
+                                        <div class="ext-card-version">Built-in &middot; v1.74.0 &middot; Core Guard</div>
                                     </div>
                                 </div>
                                 <label class="ext-toggle-wrap">
@@ -1042,16 +1099,16 @@
                                 </label>
                             </div>
                             <div class="ext-card-desc">
-                                High-efficiency content filter blocking malicious ads, trackers, and popup vectors.
+                                High-efficiency content filter blocking malicious ads, telemetry trackers, and popup vectors across all domains.
                             </div>
                             <div class="ext-card-footer">
-                                <span class="ext-card-tag core">CORE</span>
-                                <span class="ext-status-indicator" id="status-adblock"><span class="status-dot"></span><span>Active</span></span>
+                                <span class="ext-card-tag core">CORE MODULE</span>
+                                <span class="ext-status-indicator on" id="status-adblock"><span class="status-dot"></span><span>Active</span></span>
                             </div>
                         </div>
 
                         <!-- Asset Vault -->
-                        <div class="card ext-card-row" data-extname="asset vault password manager" id="ext-vault">
+                        <div class="card ext-card-row sp-card-white" data-extname="asset vault password manager" id="ext-vault">
                             <div class="ext-card-header">
                                 <div class="ext-card-header-left">
                                     <div class="ext-card-icon vault-icon">
@@ -1069,16 +1126,16 @@
                                 </label>
                             </div>
                             <div class="ext-card-desc">
-                                Encrypted local storage vault for credentials, tokens, and payment methods.
+                                Encrypted local credential store protecting account passwords, autofill tokens, and payment secrets with hardware security.
                             </div>
                             <div class="ext-card-footer">
-                                <span class="ext-card-tag core">CORE</span>
+                                <span class="ext-card-tag core">CORE MODULE</span>
                                 <span class="ext-status-indicator" id="status-vault"><span class="status-dot"></span><span>Idle</span></span>
                             </div>
                         </div>
 
                         <!-- Ocal AI Assistant -->
-                        <div class="card ext-card-row" data-extname="ocal ai assistant pro" id="ext-ai">
+                        <div class="card ext-card-row sp-card-white" data-extname="ocal ai assistant pro" id="ext-ai">
                             <div class="ext-card-header">
                                 <div class="ext-card-header-left">
                                     <div class="ext-card-icon ai-icon">
@@ -1086,7 +1143,7 @@
                                     </div>
                                     <div class="ext-card-identity">
                                         <h4 class="ext-card-name">Ocal AI Assistant</h4>
-                                        <div class="ext-card-version">Built-in &middot; Neural Agent</div>
+                                        <div class="ext-card-version">Built-in &middot; Neural Agent Suite</div>
                                     </div>
                                 </div>
                                 <label class="ext-toggle-wrap">
@@ -1096,16 +1153,16 @@
                                 </label>
                             </div>
                             <div class="ext-card-desc">
-                                Intelligent page summaries, live web intelligence synthesis, and document reasoning.
+                                Native browser-integrated AI agent providing full-page web summarization, smart context inspection, and automated controls.
                             </div>
                             <div class="ext-card-footer">
-                                <span class="ext-card-tag ai">AI</span>
+                                <span class="ext-card-tag ai">AI AGENT</span>
                                 <span class="ext-status-indicator" id="status-ai"><span class="status-dot"></span><span>Idle</span></span>
                             </div>
                         </div>
 
                         <!-- Cyber Stealth -->
-                        <div class="card ext-card-row" data-extname="cyber stealth fingerprint privacy" id="ext-stealth">
+                        <div class="card ext-card-row sp-card-white" data-extname="cyber stealth fingerprint privacy" id="ext-stealth">
                             <div class="ext-card-header">
                                 <div class="ext-card-header-left">
                                     <div class="ext-card-icon stealth-icon">
@@ -1113,7 +1170,7 @@
                                     </div>
                                     <div class="ext-card-identity">
                                         <h4 class="ext-card-name">Cyber Stealth</h4>
-                                        <div class="ext-card-version">Built-in &middot; Privacy Module</div>
+                                        <div class="ext-card-version">Built-in &middot; Privacy Guard</div>
                                     </div>
                                 </div>
                                 <label class="ext-toggle-wrap">
@@ -1123,7 +1180,7 @@
                                 </label>
                             </div>
                             <div class="ext-card-desc">
-                                Browser fingerprint randomization and canvas/audio tracking spoofing.
+                                Defends against advanced browser fingerprinting by randomizing canvas, WebGL telemetry, audio buffers, and hardware signatures.
                             </div>
                             <div class="ext-card-footer">
                                 <span class="ext-card-tag privacy">PRIVACY</span>
@@ -1132,7 +1189,7 @@
                         </div>
 
                         <!-- Ocal Focus -->
-                        <div class="card ext-card-row" data-extname="ocal focus pomodoro productivity timer" id="ext-focus">
+                        <div class="card ext-card-row sp-card-white" data-extname="ocal focus pomodoro productivity timer" id="ext-focus">
                             <div class="ext-card-header">
                                 <div class="ext-card-header-left">
                                     <div class="ext-card-icon focus-icon">
@@ -1140,7 +1197,7 @@
                                     </div>
                                     <div class="ext-card-identity">
                                         <h4 class="ext-card-name">Ocal Focus</h4>
-                                        <div class="ext-card-version">Built-in &middot; Utility Module</div>
+                                        <div class="ext-card-version">Built-in &middot; Deep Work Suite</div>
                                     </div>
                                 </div>
                                 <label class="ext-toggle-wrap">
@@ -1150,10 +1207,10 @@
                                 </label>
                             </div>
                             <div class="ext-card-desc">
-                                Integrated Pomodoro session manager, site blocker, and productivity task tracker.
+                                Integrated Pomodoro session timer, distraction-free site blocklist, and productivity workflow telemetry synced with Home.
                             </div>
                             <div class="ext-card-footer">
-                                <span class="ext-card-tag utility">UTILITY</span>
+                                <span class="ext-card-tag utility">PRODUCTIVITY</span>
                                 <span class="ext-status-indicator" id="status-focus"><span class="status-dot"></span><span>Idle</span></span>
                             </div>
                         </div>
