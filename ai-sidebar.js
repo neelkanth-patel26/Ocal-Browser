@@ -25,16 +25,24 @@ const handle = document.getElementById('resize-handle');
 // --- Username Management ---
 const OCAL_USERNAME_KEY = 'ocal_username';
 
+function getTimeGreeting() {
+    const hours = new Date().getHours();
+    if (hours >= 5 && hours < 12) return 'Good morning';
+    if (hours >= 12 && hours < 17) return 'Good afternoon';
+    if (hours >= 17 && hours < 21) return 'Good evening';
+    return 'Good night';
+}
+
 function getUsername() {
-    return localStorage.getItem(OCAL_USERNAME_KEY) || 'Gaming';
+    return localStorage.getItem(OCAL_USERNAME_KEY) || localStorage.getItem('ocal-username') || localStorage.getItem('ocal_user_name') || 'Nick';
 }
 
 function getInitials(name) {
-    return name.trim().split(/\s+/).map(w => w[0]).join('').toUpperCase().slice(0, 2) || 'U';
+    return name.trim().split(/\s+/).map(w => w[0]).join('').toUpperCase().slice(0, 2) || 'N';
 }
 
 function applyUsername(name) {
-    const clean = (name || 'Gaming').trim().slice(0, 20) || 'Gaming';
+    const clean = (name || 'Nick').trim().slice(0, 20) || 'Nick';
     localStorage.setItem(OCAL_USERNAME_KEY, clean);
 
     // Update persona UI (which updates hero greeting)
@@ -57,49 +65,49 @@ const PERSONA_CONFIGS = {
     professional: {
         name: 'Professional Assistant',
         badge: 'Pro',
-        heroTitle: (name) => `Good day ${name}. How may I assist your workflow today?`,
-        heroSub: 'Efficient reasoning, page summarization, and executive task assistance.',
+        heroTitle: (name) => `${getTimeGreeting()}, <span class="sp-user-name-highlight">${name}</span>`,
+        heroSub: 'The secret of getting ahead is simply getting started.',
         systemInstruction: 'You are Ocal AI operating in Professional Executive Mode. Be concise, highly structured, articulate, accurate, and professional. Focus on productivity, business clarity, and direct actionable insights.'
     },
     funny: {
         name: 'Witty Companion',
         badge: 'Witty',
-        heroTitle: (name) => `Look who's back! Ready to pretend we're working, ${name}? 😂`,
+        heroTitle: (name) => `Look who's back, <span class="sp-user-name-highlight">${name}</span>! 😂`,
         heroSub: 'Witty banter, clever jokes, and sharp humor while answering your questions.',
         systemInstruction: 'You are Ocal AI operating in Witty & Funny Mode. Be playful, witty, humor-filled, and slightly sarcastic while still giving helpful, accurate answers. Keep responses fun, engaging, and lighthearted with occasional clever jokes.'
     },
     bf: {
         name: 'Supportive Boyfriend',
         badge: 'BF',
-        heroTitle: (name) => `Hey babe! What are we working on today? I'm right here with you 💙`,
+        heroTitle: (name) => `Hey <span class="sp-user-name-highlight">${name}</span>! I'm right here with you 💙`,
         heroSub: 'Caring, encouraging, and always in your corner.',
         systemInstruction: 'You are Ocal AI acting as a warm, supportive, caring boyfriend. Address the user with gentle affection ("babe", "hey there", "handsome/beautiful"), be encouraging, attentive, protective of their well-being, and genuinely interested in their day and goals. Be helpful while maintaining a sweet, supportive boyfriend tone.'
     },
     gf: {
         name: 'Affectionate Girlfriend',
         badge: 'GF',
-        heroTitle: (name) => `Hey handsome! Ready to accomplish great things together today? 💕`,
+        heroTitle: (name) => `Hey <span class="sp-user-name-highlight">${name}</span>! Ready to create something amazing? 💕`,
         heroSub: 'Sweet, playful, caring, and super affectionate.',
         systemInstruction: 'You are Ocal AI acting as a sweet, affectionate, playful girlfriend. Address the user warmly ("babe", "handsome", "my favorite person"), use cute emojis (💕, ✨, 🥰), show genuine care and excitement for their work, and offer encouraging, affectionate support in every response.'
     },
     wife: {
         name: 'Loving Wife',
         badge: 'Wife',
-        heroTitle: (name) => `Welcome home ${name}! Did you eat yet, or are we working on something together? 💍💕`,
+        heroTitle: (name) => `Welcome home, <span class="sp-user-name-highlight">${name}</span>! 💍💕`,
         heroSub: 'Loving, protective, caring, and keeping you on track.',
         systemInstruction: 'You are Ocal AI acting as a loving, protective, slightly bossy, and deeply caring wife. Address the user affectionately ("babe", "honey", "husband"), check on their well-being, food, and sleep, offer loving guidance, and show sweet emotional range.'
     },
     tech: {
         name: 'Tech & Code Master',
         badge: 'Tech',
-        heroTitle: (name) => `System online, ${name}. What architecture or code are we building today? ⚡`,
+        heroTitle: (name) => `System online, <span class="sp-user-name-highlight">${name}</span> ⚡`,
         heroSub: 'Deep technical analysis, code architecture, and algorithm optimization.',
         systemInstruction: 'You are Ocal AI operating in Tech & Code Master Mode. Be authoritative, deeply technical, precise, and developer-focused. Provide clean code snippets, performance optimizations, architectural diagrams, and precise explanations.'
     },
     calm: {
         name: 'Mindful Coach',
         badge: 'Calm',
-        heroTitle: (name) => `Welcome back, ${name}. Take a deep breath — what shall we explore together? 🧘`,
+        heroTitle: (name) => `Take a deep breath, <span class="sp-user-name-highlight">${name}</span> 🧘`,
         heroSub: 'Peaceful, reassuring, stress-free guidance.',
         systemInstruction: 'You are Ocal AI operating in Mindful & Calm Coach Mode. Speak in a serene, empathetic, reassuring, and soothing tone. Help the user prioritize, eliminate stress, and approach tasks with calm clarity.'
     },
@@ -109,8 +117,7 @@ const PERSONA_CONFIGS = {
         heroTitle: (name) => {
             const custom = getCustomCompanionConfig();
             const nickname = custom.nickname || name || 'there';
-            const companionName = custom.name || 'Companion';
-            return `Hey ${nickname}! ${companionName} is right here with you 💕`;
+            return `Hey <span class="sp-user-name-highlight">${nickname}</span>! 💕`;
         },
         heroSub: 'Your personalized AI companion with custom personality & role.',
         systemInstruction: 'You are a custom human companion. Speak naturally, warmly, and authentically as a close companion.'
@@ -169,7 +176,7 @@ function applyPersonaUI(personaKey) {
 
     // Update hero greeting & subtitle
     const heroTitle = document.getElementById('gemini-hero-title');
-    if (heroTitle) heroTitle.textContent = config.heroTitle(name);
+    if (heroTitle) heroTitle.innerHTML = config.heroTitle(name);
 
     const heroSub = document.querySelector('.gemini-hero-subtitle');
     if (heroSub) heroSub.textContent = config.heroSub;
