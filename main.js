@@ -9230,14 +9230,20 @@ setInterval(() => {
                 const u = v.view.webContents.getURL();
                 if (u && !isHomeURL(u) && !u.startsWith('ocal://suspended')) {
                     v.suspendedUrl = u;
-                    v.view.webContents.loadURL(`ocal://suspended?url=${encodeURIComponent(u)}`);
+                    const pageTitle = v.view.webContents.getTitle() || '';
+                    const inactiveMin = Math.max(1, Math.round(inactiveDuration / 60000));
+                    const currentTheme = userSettings.themeMode || 'dark';
+                    v.view.webContents.loadURL(`ocal://suspended?url=${encodeURIComponent(u)}&title=${encodeURIComponent(pageTitle)}&inactive=${inactiveMin}&theme=${encodeURIComponent(currentTheme)}`);
                 }
             }
             if (v.view2 && v.view2.webContents && !v.view2.webContents.isDestroyed()) {
                 const u = v.view2.webContents.getURL();
                 if (u && !isHomeURL(u) && !u.startsWith('ocal://suspended')) {
                     v.suspendedUrl2 = u;
-                    v.view2.webContents.loadURL(`ocal://suspended?url=${encodeURIComponent(u)}`);
+                    const pageTitle2 = v.view2.webContents.getTitle() || '';
+                    const inactiveMin = Math.max(1, Math.round(inactiveDuration / 60000));
+                    const currentTheme = userSettings.themeMode || 'dark';
+                    v.view2.webContents.loadURL(`ocal://suspended?url=${encodeURIComponent(u)}&title=${encodeURIComponent(pageTitle2)}&inactive=${inactiveMin}&theme=${encodeURIComponent(currentTheme)}`);
                 }
             }
             console.log(`[Memory Saver] Suspended idle tab ${v.id} (inactive for ${Math.round(inactiveDuration / 60000)} min)`);
