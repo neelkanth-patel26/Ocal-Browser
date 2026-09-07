@@ -13,12 +13,21 @@ const handle = document.getElementById('resize-handle');
 // --- Sync Browser Theme: Read accent color from localStorage and apply ---
 (function syncBrowserTheme() {
     try {
+        const theme = localStorage.getItem('ocal-settings-theme') || 'light';
+        document.documentElement.setAttribute('data-theme', theme);
+        document.body.setAttribute('data-theme', theme);
+        if (theme === 'dark') {
+            document.documentElement.style.background = '#18181B';
+            document.documentElement.style.colorScheme = 'dark';
+        } else {
+            document.documentElement.style.background = '#EDEDF0';
+            document.documentElement.style.colorScheme = 'light';
+        }
         const accent = localStorage.getItem('ocal-settings-accent');
         if (accent) {
             document.documentElement.style.setProperty('--accent', accent);
+            document.body.style.setProperty('--accent', accent);
         }
-        const theme = localStorage.getItem('ocal-settings-theme') || 'dark';
-        document.body.setAttribute('data-theme', theme);
     } catch (e) { /* ignore */ }
 })();
 
@@ -1740,21 +1749,54 @@ async function updateActiveModelBadge(s) {
     badge.style.display = 'inline-block';
 }
 
+function applySidebarTheme(s) {
+    if (!s) return;
+    const theme = s.themeMode || s.theme || localStorage.getItem('ocal-settings-theme') || 'light';
+    document.documentElement.setAttribute('data-theme', theme);
+    document.body.setAttribute('data-theme', theme);
+    if (theme === 'dark') {
+        document.documentElement.style.background = '#18181B';
+        document.documentElement.style.colorScheme = 'dark';
+    } else {
+        document.documentElement.style.background = '#EDEDF0';
+        document.documentElement.style.colorScheme = 'light';
+    }
+    try { localStorage.setItem('ocal-settings-theme', theme); } catch (e) {}
+
+    if (s.accentColor) {
+        applyAccent(s.accentColor);
+        try { localStorage.setItem('ocal-settings-accent', s.accentColor); } catch (e) {}
+    }
+}
+
 // Listen for global settings changes & IPC Events safely
 if (window.electronAPI) {
+    if (window.electronAPI.onSettingsChanged) {
+        window.electronAPI.onSettingsChanged((s) => {
+            globalSettings = s || {};
+            applySidebarTheme(s);
+            if (s) updateActiveModelBadge(s);
+        });
+    }
+
     window.electronAPI.on?.('settings-changed', (e, s) => {
-        globalSettings = s || {};
-        if (s && s.accentColor) applyAccent(s.accentColor);
-        if (s && s.themeMode) document.body.setAttribute('data-theme', s.themeMode);
-        if (s) updateActiveModelBadge(s);
+        const settings = s || e || {};
+        globalSettings = settings;
+        applySidebarTheme(settings);
+        if (settings) updateActiveModelBadge(settings);
     });
 
-    window.electronAPI.invoke?.('get-settings')?.then(s => {
-        globalSettings = s || {};
-        if (s && s.accentColor) applyAccent(s.accentColor);
-        if (s && s.themeMode) document.body.setAttribute('data-theme', s.themeMode);
-        if (s) updateActiveModelBadge(s);
-    })?.catch(err => console.log(err));
+    const fetchInitialSettings = () => {
+        const p = window.electronAPI.getSettings ? window.electronAPI.getSettings() : window.electronAPI.invoke?.('get-settings');
+        if (p && p.then) {
+            p.then(s => {
+                globalSettings = s || {};
+                applySidebarTheme(s);
+                if (s) updateActiveModelBadge(s);
+            }).catch(() => {});
+        }
+    };
+    fetchInitialSettings();
 
     window.electronAPI.on?.('ai-agent-action', (e, action) => {
         const actionEl = document.createElement('div');

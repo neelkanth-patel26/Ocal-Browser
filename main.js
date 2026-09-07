@@ -1311,6 +1311,9 @@ function showSidebarOverlay() {
     }
     sidebarOpen = true;
     updateViewBounds();
+    if (sidebarOverlayView && !sidebarOverlayView.webContents.isDestroyed()) {
+        sidebarOverlayView.webContents.send('settings-changed', { ...userSettings });
+    }
 }
 
 function hideSidebarOverlay() {
@@ -1335,8 +1338,9 @@ function showAiSidebar() {
     mainWindow.setTopBrowserView(aiSidebarView);
     updateViewBounds();
 
-    // Signal renderer to play entrance animation
+    // Signal renderer to play entrance animation and sync theme
     if (aiSidebarView && !aiSidebarView.webContents.isDestroyed()) {
+        aiSidebarView.webContents.send('settings-changed', { ...userSettings });
         aiSidebarView.webContents.send('sidebar-shown');
     }
 }
