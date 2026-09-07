@@ -246,6 +246,36 @@
         };
     }
 
+    // ── AI Logo Color Shifter Calculation ────────────────────────────────────
+    function calculateLogoFilter(hexColor) {
+        if (!hexColor) return 'none';
+        const cleanHex = hexColor.toLowerCase().trim();
+        const rgb = hexToRgb(cleanHex);
+        const hsl = rgbToHsl(rgb.r, rgb.g, rgb.b);
+
+        // Low saturation / monochrome / slate / white
+        if (hsl.s < 14) {
+            if (hsl.l > 75) {
+                return 'grayscale(1) brightness(1.45) contrast(1.2) drop-shadow(0 0 6px rgba(255,255,255,0.45))';
+            }
+            return 'grayscale(1) brightness(1.2) contrast(1.15)';
+        }
+
+        // Original icon.png green core is at hue ~150deg
+        const originalHue = 150;
+        const hueDelta = (hsl.h - originalHue + 360) % 360;
+
+        // Direct match for original emerald green
+        if (Math.abs(hueDelta) <= 8 || Math.abs(hueDelta - 360) <= 8) {
+            return 'none';
+        }
+
+        const satPercent = Math.max(95, Math.min(220, Math.round(hsl.s * 1.35)));
+        const brightPercent = Math.max(90, Math.min(135, Math.round(hsl.l * 1.65)));
+
+        return `hue-rotate(${hueDelta}deg) saturate(${satPercent}%) brightness(${brightPercent}%)`;
+    }
+
     // ── Apply & Sync to DOM ──────────────────────────────────────────────────
     function applyHarmonizedTheme(accentHex, themeMode, targetDoc) {
         const doc = targetDoc || document;
@@ -255,9 +285,11 @@
         const isLight = (currentTheme === 'light');
         const baseColor = accentHex || (isLight ? '#15AC49' : '#09F0A0');
 
-        // Synthesize harmonic gradients
+        // Synthesize harmonic gradients and logo color filter
         const harmony = synthesizeHarmonicGradients(baseColor);
         const contrastText = getContrastColor(baseColor);
+        const logoFilter = calculateLogoFilter(baseColor);
+        const logoGlow = `0 0 16px ${baseColor}`;
 
         // Apply CSS custom properties to documentElement & body
         const root = doc.documentElement;
@@ -276,10 +308,21 @@
             el.style.setProperty('--sp-secondary-grad', harmony.secondary);
             el.style.setProperty('--sp-orange-grad', harmony.secondary);
             el.style.setProperty('--sp-accent-grad', harmony.accentGrad);
+
+            el.style.setProperty('--logo-filter', logoFilter);
+            el.style.setProperty('--logo-glow', logoGlow);
         };
 
         setProps(root);
         if (body) setProps(body);
+
+        // Dynamically update any logo images on the page directly
+        try {
+            const logoImgs = doc.querySelectorAll('.sidebar-logo-img, .header-logo-img, .sidebar-logo-btn img, .ocal-brand-logo');
+            logoImgs.forEach(img => {
+                img.style.filter = logoFilter;
+            });
+        } catch (e) {}
 
         // Save to localStorage for instant non-flash cross-tab synchronization
         try {
@@ -288,6 +331,7 @@
             localStorage.setItem('ocal-settings-primary-grad', harmony.primary);
             localStorage.setItem('ocal-settings-secondary-grad', harmony.secondary);
             localStorage.setItem('ocal-settings-accent-grad', harmony.accentGrad);
+            localStorage.setItem('ocal-settings-logo-filter', logoFilter);
         } catch (e) {}
 
         // Dispatch notification event in the local window
@@ -298,7 +342,8 @@
                     theme: currentTheme,
                     primaryGrad: harmony.primary,
                     secondaryGrad: harmony.secondary,
-                    accentGrad: harmony.accentGrad
+                    accentGrad: harmony.accentGrad,
+                    logoFilter: logoFilter
                 }
             });
             window.dispatchEvent(event);
@@ -342,6 +387,7 @@
         hslToRgb,
         hslToHex,
         getContrastColor,
+        calculateLogoFilter,
         synthesizeHarmonicGradients,
         applyHarmonizedTheme
     };

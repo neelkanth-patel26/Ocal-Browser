@@ -2273,3 +2273,37 @@ function getEmojiSvgUrl(emoji) {
 
     if (passwordsBtn) passwordsBtn.addEventListener('click', togglePopover);
 })();
+
+// ── Real-Time Theme & Logo Color Harmonizer ────────────────────────
+(function() {
+    function syncMainAppThemeAndLogo() {
+        const theme = localStorage.getItem('ocal-settings-theme') || 'light';
+        const accent = localStorage.getItem('ocal-settings-accent') || (theme === 'light' ? '#15AC49' : '#09F0A0');
+        if (window.OcalColorHarmonizer) {
+            window.OcalColorHarmonizer.applyHarmonizedTheme(accent, theme);
+        }
+    }
+
+    syncMainAppThemeAndLogo();
+
+    window.addEventListener('storage', (e) => {
+        if (e.key === 'ocal-settings-accent' || e.key === 'ocal-settings-theme') {
+            syncMainAppThemeAndLogo();
+        }
+    });
+
+    if (window.electronAPI && window.electronAPI.onSettingsChanged) {
+        try {
+            window.electronAPI.onSettingsChanged((s) => {
+                if (s) {
+                    const theme = s.themeMode || localStorage.getItem('ocal-settings-theme') || 'light';
+                    const accent = s.accentColor || localStorage.getItem('ocal-settings-accent') || '#15AC49';
+                    if (window.OcalColorHarmonizer) {
+                        window.OcalColorHarmonizer.applyHarmonizedTheme(accent, theme);
+                    }
+                }
+            });
+        } catch (e) {}
+    }
+})();
+
