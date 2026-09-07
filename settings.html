@@ -867,111 +867,234 @@
                 </div>
             </section>
 
-            <!-- ── SYSTEM CONFIGURATION ── -->
+            <!-- ── SYSTEM CONFIGURATION (BENTO HOME PAGE STYLE) ── -->
             <section id="system" class="section">
-                <div class="page-header">
-                    <div class="page-eyebrow">Hardware & Environment</div>
-                    <div class="page-title">System Configuration</div>
-                    <div class="page-desc">Configure browser shell limits, download paths, and diagnostic behaviors.</div>
+                <!-- Home-style Header Row: Title & Stats Bar -->
+                <div class="home-settings-header-row">
+                    <div class="home-settings-greeting">
+                        <h1 class="home-settings-title">System & Hardware</h1>
+                        <div class="home-settings-subtitle">
+                            <i class="fas fa-quote-left home-quote-icon"></i>
+                            <span>Configure host shell limits, hardware acceleration, V8 sandbox, and storage engine.</span>
+                        </div>
+                    </div>
+
+                    <!-- Dot-Matrix Stats Bar matching Home Page .sp-stats-bar -->
+                    <div class="home-stats-bar">
+                        <div class="home-stat-item">
+                            <span class="home-dot-num" id="system-stat-shell">Checking...</span>
+                            <span class="home-badge home-badge-lime">Shell</span>
+                        </div>
+                        <div class="home-stat-item">
+                            <span class="home-dot-num" id="system-stat-engine">V8 Isolated</span>
+                            <span class="home-badge home-badge-gray">Engine</span>
+                        </div>
+                        <div class="home-stat-item">
+                            <span class="home-dot-num" id="system-stat-gpu">Direct3D 11</span>
+                            <span class="home-badge home-badge-gray">Hardware</span>
+                        </div>
+                    </div>
                 </div>
 
                 <div class="page-body">
-                    <div class="system-bento-grid">
+                    <div class="homepage-bento-grid system-bento-grid">
 
-                        <!-- ─── Environment & Shell Status ─── -->
-                        <div class="card system-bento-card status-card">
-                            <div class="card-header-styled">
-                                <i class="fas fa-desktop"></i>
-                                <span>Environment & Shell Status</span>
+                        <!-- ─── 1. Host Shell & Default Protocol ─── -->
+                        <div class="card homepage-bento-card system-bento-card sp-card-white">
+                            <div class="hbc-header">
+                                <div class="hbc-header-left">
+                                    <div class="hbc-icon system-shell-bg">
+                                        <i class="fas fa-desktop"></i>
+                                    </div>
+                                    <div class="hbc-identity">
+                                        <h4 class="hbc-name">Host Shell & Default Protocol</h4>
+                                        <div class="hbc-tagline">OS-level web protocol handler & sandbox isolation</div>
+                                    </div>
+                                </div>
+                                <span class="hbc-badge system-shell">HOST SHELL</span>
                             </div>
-                            <div class="diagnostics-panel" style="gap: 12px; padding: 14px 16px;">
-                                <div class="diagnostic-row-item" style="padding-bottom: 10px;">
-                                    <div class="diag-label">Host Shell Status</div>
-                                    <div style="display: flex; align-items: center; gap: 8px;">
-                                        <div id="default-browser-status" class="diag-value status-checking"
-                                            style="font-size: 11px; font-weight: 700; padding: 3px 10px; border-radius: 100px; background: rgba(255,193,7,0.12); color: #ffc107; border: 1px solid rgba(255,193,7,0.25);">
+
+                            <div class="hbc-rows">
+                                <div class="hbc-toggle-row default-browser-row">
+                                    <div class="hbc-row-info">
+                                        <h4>Default Web Browser</h4>
+                                        <p>Handle web links and default http:// protocols on this computer</p>
+                                    </div>
+                                    <div class="default-browser-actions">
+                                        <div id="default-browser-status" class="system-status-pill status-checking">
                                             Checking status...
                                         </div>
-                                        <button class="btn secondary" id="set-default-btn" style="padding: 4px 12px; font-size: 11px; border-radius: 8px; font-weight: 700;">
+                                        <button class="system-btn-action primary" id="set-default-btn">
                                             Make Default
                                         </button>
                                     </div>
                                 </div>
-                                <div class="diagnostic-row-item" style="padding-bottom: 0; border-bottom: none;">
-                                    <div class="diag-label">V8 Execution Sandbox</div>
-                                    <div class="diag-value status-active"
-                                        style="font-size: 11px; font-weight: 700; padding: 3px 10px; border-radius: 100px; background: var(--accent-dim); color: var(--accent); border: 1px solid var(--accent-border);">
-                                        Active (Isolated Thread)
+
+                                <div class="hbc-toggle-row">
+                                    <div class="hbc-row-info">
+                                        <h4>V8 Thread Isolation Engine</h4>
+                                        <p>Execute JavaScript contexts inside dedicated isolated memory threads</p>
                                     </div>
+                                    <span class="system-status-pill status-active">
+                                        <i class="fas fa-circle-check"></i> ISOLATED
+                                    </span>
+                                </div>
+
+                                <div class="hbc-toggle-row">
+                                    <div class="hbc-row-info">
+                                        <h4>Hardware Acceleration</h4>
+                                        <p>Use Direct3D GPU rasterization for ultra-smooth 120Hz canvas rendering</p>
+                                    </div>
+                                    <label class="ext-toggle-wrap">
+                                        <input type="checkbox" id="hardware-accel-toggle-cb" checked
+                                            onchange="handleHardwareAccelToggle(this.checked)">
+                                        <span class="ext-slider"></span>
+                                    </label>
                                 </div>
                             </div>
                         </div>
 
-                        <!-- ─── Operations Control ─── -->
-                        <div class="card system-bento-card operations-card">
-                            <div class="card-header-styled">
-                                <i class="fas fa-sliders"></i>
-                                <span>Operations Control</span>
+                        <!-- ─── 2. Operations & Power Management ─── -->
+                        <div class="card homepage-bento-card system-bento-card sp-card-white">
+                            <div class="hbc-header">
+                                <div class="hbc-header-left">
+                                    <div class="hbc-icon system-power-bg">
+                                        <i class="fas fa-bolt-lightning"></i>
+                                    </div>
+                                    <div class="hbc-identity">
+                                        <h4 class="hbc-name">Operations & Energy Efficiency</h4>
+                                        <div class="hbc-tagline">Session protection, tab throttling & memory purge</div>
+                                    </div>
+                                </div>
+                                <span class="hbc-badge system-power">OPERATIONS</span>
                             </div>
-                            <div class="diagnostics-panel" style="gap: 0; padding: 0;">
-                                <div class="security-toggle-row" style="padding: 12px 16px; border-bottom: 1px solid var(--chrome-border);">
-                                    <div class="row-info">
+
+                            <div class="hbc-rows">
+                                <div class="hbc-toggle-row">
+                                    <div class="hbc-row-info">
                                         <h4>Confirm Session Close</h4>
-                                        <p>Show confirmation dialog before closing window</p>
+                                        <p>Prompt confirmation dialog before closing windows with multiple tabs</p>
                                     </div>
-                                    <div class="toggle on" id="confirm-exit-toggle"></div>
+                                    <label class="ext-toggle-wrap">
+                                        <input type="checkbox" id="confirm-exit-toggle-cb" checked
+                                            onchange="handleConfirmExitToggle(this.checked)">
+                                        <span class="ext-slider"></span>
+                                    </label>
                                 </div>
-                                <div class="security-toggle-row" style="padding: 12px 16px; border-bottom: none;">
-                                    <div class="row-info">
-                                        <h4>Power Optimization</h4>
-                                        <p>Throttle background tabs to preserve battery</p>
+
+                                <div class="hbc-toggle-row">
+                                    <div class="hbc-row-info">
+                                        <h4>Energy Optimization Saver</h4>
+                                        <p>Throttle background timers and inactive tabs to extend battery life</p>
                                     </div>
-                                    <div class="toggle" id="battery-saver-toggle"></div>
+                                    <label class="ext-toggle-wrap">
+                                        <input type="checkbox" id="battery-saver-toggle-cb"
+                                            onchange="handleBatterySaverToggle(this.checked)">
+                                        <span class="ext-slider"></span>
+                                    </label>
+                                </div>
+
+                                <div class="hbc-toggle-row">
+                                    <div class="hbc-row-info">
+                                        <h4>Automatic Memory Purge</h4>
+                                        <p>Release discardable web caches when host device reaches high memory pressure</p>
+                                    </div>
+                                    <label class="ext-toggle-wrap">
+                                        <input type="checkbox" id="memory-purge-toggle-cb" checked
+                                            onchange="handleMemoryPurgeToggle(this.checked)">
+                                        <span class="ext-slider"></span>
+                                    </label>
                                 </div>
                             </div>
                         </div>
 
-                        <!-- ─── Downloads & File Handling ─── -->
-                        <div class="card system-bento-card downloads-card" style="grid-column: 1 / -1;">
-                            <div class="card-header-styled">
-                                <i class="fas fa-download"></i>
-                                <span>Downloads & File Handling</span>
+                        <!-- ─── 3. Downloads & File Handling Engine ─── -->
+                        <div class="card homepage-bento-card system-bento-card sp-card-white span-full">
+                            <div class="hbc-header">
+                                <div class="hbc-header-left">
+                                    <div class="hbc-icon system-storage-bg">
+                                        <i class="fas fa-hard-drive"></i>
+                                    </div>
+                                    <div class="hbc-identity">
+                                        <h4 class="hbc-name">Downloads & Storage Architecture</h4>
+                                        <div class="hbc-tagline">Destination storage path, file security & sandboxed renderers</div>
+                                    </div>
+                                </div>
+                                <span class="hbc-badge system-storage">STORAGE ENGINE</span>
                             </div>
-                            <div style="padding: 14px 16px; display: flex; flex-direction: column; gap: 14px;">
-                                <!-- Path Display Box -->
+
+                            <div class="system-downloads-container">
+                                <!-- Console Path Display Capsule -->
                                 <div class="downloads-console-display">
-                                    <div class="console-prompt">
-                                        <i class="fas fa-folder" style="color: var(--accent); font-size: 13px;"></i>
-                                        <span style="font-weight: 700; font-size: 12px; color: var(--text);">Default Download Directory</span>
+                                    <div class="console-prompt-left">
+                                        <div class="console-icon-wrap">
+                                            <i class="fas fa-folder-tree"></i>
+                                        </div>
+                                        <div class="console-path-info">
+                                            <div class="console-title">Default Download Directory</div>
+                                            <div class="console-path-text">
+                                                <code id="current-downloads-path">C:\Users\<span class="accent-path">neelk</span>\Downloads</code>
+                                                <span class="system-tag-badge">SYSTEM DEFAULT</span>
+                                            </div>
+                                        </div>
                                     </div>
-                                    <div class="console-output" style="margin-top: 6px;">
-                                        <span class="path-text" style="font-family: var(--font-mono); font-size: 12px;">C:\Users\<span style="color: var(--accent);">neelk</span>\Downloads</span>
-                                        <span style="font-size: 9px; font-weight: 800; padding: 2px 8px; border-radius: 6px; background: color-mix(in srgb, var(--accent) 15%, transparent); color: var(--accent); border: 1px solid color-mix(in srgb, var(--accent) 30%, transparent);">SYSTEM DEFAULT</span>
-                                    </div>
+                                    <button class="system-browse-btn" id="change-download-path-btn" onclick="handleChangeDownloadPath()">
+                                        <i class="fas fa-arrow-up-right-from-square"></i>
+                                        <span>Change Directory</span>
+                                    </button>
                                 </div>
 
                                 <!-- Accessory Toggles Grid -->
-                                <div class="downloads-toggles-grid">
-                                    <div class="accessory-card">
-                                        <div class="accessory-icon-box">
-                                            <i class="fas fa-folder-open"></i>
+                                <div class="system-accessory-grid">
+                                    <div class="system-accessory-card">
+                                        <div class="accessory-top">
+                                            <div class="accessory-icon-box">
+                                                <i class="fas fa-folder-open"></i>
+                                            </div>
+                                            <label class="ext-toggle-wrap">
+                                                <input type="checkbox" id="ask-save-toggle-cb"
+                                                    onchange="handleAskSaveToggle(this.checked)">
+                                                <span class="ext-slider"></span>
+                                            </label>
                                         </div>
                                         <div class="accessory-info">
-                                            <h4>Confirm Save Path</h4>
-                                            <p>Ask where to save each file before downloading</p>
+                                            <h4>Confirm Save Location</h4>
+                                            <p>Ask where to save each file individually before downloading begins</p>
                                         </div>
-                                        <div class="toggle" id="ask-save-toggle"></div>
                                     </div>
 
-                                    <div class="accessory-card">
-                                        <div class="accessory-icon-box">
-                                            <i class="fas fa-file-pdf"></i>
+                                    <div class="system-accessory-card">
+                                        <div class="accessory-top">
+                                            <div class="accessory-icon-box">
+                                                <i class="fas fa-file-pdf"></i>
+                                            </div>
+                                            <label class="ext-toggle-wrap">
+                                                <input type="checkbox" id="pdf-viewer-toggle-cb" checked
+                                                    onchange="handlePdfViewerToggle(this.checked)">
+                                                <span class="ext-slider"></span>
+                                            </label>
                                         </div>
                                         <div class="accessory-info">
                                             <h4>Sandboxed PDF Engine</h4>
-                                            <p>Render PDFs securely inside local viewer</p>
+                                            <p>Open and annotate PDF documents directly inside Ocal's secure native viewer</p>
                                         </div>
-                                        <div class="toggle on" id="pdf-viewer-toggle"></div>
+                                    </div>
+
+                                    <div class="system-accessory-card">
+                                        <div class="accessory-top">
+                                            <div class="accessory-icon-box">
+                                                <i class="fas fa-shield-virus"></i>
+                                            </div>
+                                            <label class="ext-toggle-wrap">
+                                                <input type="checkbox" id="download-scan-toggle-cb" checked
+                                                    onchange="handleDownloadScanToggle(this.checked)">
+                                                <span class="ext-slider"></span>
+                                            </label>
+                                        </div>
+                                        <div class="accessory-info">
+                                            <h4>Executable Sanitization</h4>
+                                            <p>Scan downloaded binaries and installer archives for suspicious payloads</p>
+                                        </div>
                                     </div>
                                 </div>
                             </div>
