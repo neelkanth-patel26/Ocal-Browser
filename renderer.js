@@ -925,6 +925,19 @@ function getSimplifiedTitle(title, url) {
     if (url.includes('games.html') || url.startsWith('ocal://games')) return 'Games';
     if (url.includes('whats-new.html') || url.startsWith('ocal://whats-new')) return "What's New";
     if (url.includes('certificate-viewer.html') || url.startsWith('ocal://certificate-viewer')) return "Certificate Explorer";
+    if (url.includes('suspended.html') || url.startsWith('ocal://suspended')) {
+        try {
+            const u = new URL(url.startsWith('file://') || url.startsWith('ocal://') ? url : 'https://' + url);
+            const targetTitle = u.searchParams.get('title');
+            if (targetTitle) return targetTitle;
+            const target = u.searchParams.get('url');
+            if (target) {
+                const domain = new URL(target).hostname;
+                return domain;
+            }
+        } catch(e) {}
+        return 'Tab Suspended';
+    }
     if (url.includes('pdf-viewer.html') || url.startsWith('ocal://pdf-viewer') || url.startsWith('ocal://pdf')) {
         try {
             const u = new URL(url);
@@ -968,8 +981,20 @@ function getTabIconHtml(tab, tintColor) {
         return `<i class="fas fa-triangle-exclamation tab-favicon" style="color: #ef4444;"></i>`;
     }
     if (tab.favicon) return `<img src="${tab.favicon}" class="tab-favicon">`;
-    const accentColor = tintColor || 'var(--accent)';
-    
+    if (url.includes('suspended.html') || url.startsWith('ocal://suspended')) {
+        try {
+            const u = new URL(url.startsWith('file://') || url.startsWith('ocal://') ? url : 'https://' + url);
+            const target = u.searchParams.get('url');
+            if (target) {
+                const domain = new URL(target).hostname;
+                if (domain && domain.includes('.')) {
+                    return `<img src="https://www.google.com/s2/favicons?domain=${domain}&sz=32" class="tab-favicon" onerror="const i=document.createElement('i'); i.className='fas fa-moon tab-favicon'; ${tintColor ? `i.style.color='${tintColor}';` : ''} this.replaceWith(i);">`;
+                }
+            }
+        } catch(e) {}
+        return `<i class="fas fa-moon tab-favicon" style="color:${accentColor}"></i>`;
+    }
+
     if (!url || url.includes('home.html')) return `<i class="fas fa-house tab-favicon" style="color:${accentColor}"></i>`;
     if (url.includes('music-player.html') || url.startsWith('ocal://music-player') || url.startsWith('ocal://music')) return `<i class="fas fa-compact-disc tab-favicon" style="color:${accentColor}"></i>`;
     if (url.includes('site-settings.html') || url.startsWith('ocal://site-settings')) return `<i class="fas fa-sliders tab-favicon" style="color:${accentColor}"></i>`;
