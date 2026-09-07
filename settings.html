@@ -1369,10 +1369,13 @@
                                     </div>
                                     <div class="hbc-identity">
                                         <h4 class="hbc-name">Password Manager & Encrypted Vault</h4>
-                                        <div class="hbc-tagline">Locally encrypted login credentials & site secrets</div>
+                                        <div class="hbc-tagline">AES-256 & Windows DPAPI encrypted &middot; Protected by Windows Authentication</div>
                                     </div>
                                 </div>
-                                <span class="hbc-badge security-vault">AES-256 VAULT</span>
+                                <div style="display: flex; align-items: center; gap: 8px;">
+                                    <span class="hbc-badge security-shield" id="vault-lock-badge"><i class="fas fa-lock"></i> WINDOWS PROTECTED</span>
+                                    <span class="hbc-badge security-vault"><i class="fas fa-shield-halved"></i> AES-256 DPAPI</span>
+                                </div>
                             </div>
 
                             <div class="vault-management-container">
@@ -1381,7 +1384,13 @@
                                         <i class="fas fa-magnifying-glass"></i>
                                         <input type="text" id="settings-passwords-search" placeholder="Search saved website accounts or usernames..." autocomplete="off">
                                     </div>
-                                    <span class="system-tag-badge" id="settings-passwords-count">0 saved logins</span>
+                                    <div style="display: flex; align-items: center; gap: 10px; flex-wrap: wrap;">
+                                        <button id="vault-auth-toggle-btn" class="system-btn-action secondary" onclick="toggleVaultAuthSession()">
+                                            <i class="fas fa-key" style="color: var(--accent);"></i>
+                                            <span id="vault-auth-status-text">Unlock with Windows</span>
+                                        </button>
+                                        <span class="system-tag-badge" id="settings-passwords-count">0 saved logins</span>
+                                    </div>
                                 </div>
 
                                 <div id="settings-passwords-list" class="vault-grid-list">

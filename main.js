@@ -6215,7 +6215,45 @@ function handleShortcuts(event, input) {
 
 // ── Password Vault & Encryption Engine ──────────────────────────
 const { safeStorage } = require('electron');
+const { execFile } = require('child_process');
 const PASSWORDS_FILE = path.join(app.getPath('userData'), 'passwords_vault.json');
+
+let lastWindowsAuthTime = 0;
+const AUTH_CACHE_DURATION_MS = 60000; // 60s grace period
+
+function promptWindowsAuthentication(promptMessage = 'Ocal Browser is trying to show passwords. Type your Windows password to allow this.') {
+    return new Promise((resolve) => {
+        if (Date.now() - lastWindowsAuthTime < AUTH_CACHE_DURATION_MS) {
+            return resolve({ success: true, cached: true });
+        }
+
+        const winauthPath = path.join(__dirname, 'bin', 'winauth.exe');
+        if (!fs.existsSync(winauthPath)) {
+            try {
+                const cscPath = 'C:\\Windows\\Microsoft.NET\\Framework64\\v4.0.30319\\csc.exe';
+                const csSource = path.join(__dirname, 'bin', 'winauth.cs');
+                if (fs.existsSync(cscPath) && fs.existsSync(csSource)) {
+                    require('child_process').execFileSync(cscPath, ['/target:winexe', `/out:${winauthPath}`, '/r:System.DirectoryServices.AccountManagement.dll', csSource]);
+                }
+            } catch (err) {
+                console.warn('[PasswordVault] Failed compiling winauth.exe:', err);
+            }
+        }
+
+        if (!fs.existsSync(winauthPath)) {
+            return resolve({ success: true, fallback: true });
+        }
+
+        execFile(winauthPath, [promptMessage, 'Windows Security - Ocal Browser'], { windowsHide: true }, (error, stdout, stderr) => {
+            if (error) {
+                console.log('[PasswordVault] Windows authentication was cancelled or failed.');
+                return resolve({ success: false, error: 'Authentication cancelled or failed' });
+            }
+            lastWindowsAuthTime = Date.now();
+            return resolve({ success: true });
+        });
+    });
+}
 
 function loadPasswordVaultRaw() {
     try {
@@ -6343,6 +6381,49 @@ function notifyPasswordStatusForActiveTab() {
 }
 
 // Password Vault IPC Handlers
+ipcMain.handle('passwords:authenticate-user', async (e, { reason } = {}) => {
+    let msg = 'Ocal Browser is trying to show passwords. Type your Windows password to allow this.';
+    if (reason === 'copy') {
+        msg = 'Ocal Browser is trying to copy passwords. Type your Windows password to allow this.';
+    } else if (reason === 'export') {
+        msg = 'Ocal Browser is trying to export passwords. Type your Windows password to allow this.';
+    }
+    return await promptWindowsAuthentication(msg);
+});
+
+ipcMain.handle('passwords:is-unlocked', () => {
+    return (Date.now() - lastWindowsAuthTime < AUTH_CACHE_DURATION_MS);
+});
+
+ipcMain.handle('passwords:lock-vault', () => {
+    lastWindowsAuthTime = 0;
+    return { success: true };
+});
+
+ipcMain.handle('passwords:reveal-password', async (e, id) => {
+    const auth = await promptWindowsAuthentication('Ocal Browser is trying to show passwords. Type your Windows password to allow this.');
+    if (!auth.success) {
+        return { success: false, error: auth.error || 'Authentication required' };
+    }
+    const vault = loadPasswordVaultRaw();
+    const cred = vault.find(c => c.id === id);
+    if (!cred) return { success: false, error: 'Credential not found' };
+    return { success: true, password: decryptSecret(cred.passwordEncrypted) };
+});
+
+ipcMain.handle('passwords:copy-password', async (e, id) => {
+    const auth = await promptWindowsAuthentication('Ocal Browser is trying to copy passwords. Type your Windows password to allow this.');
+    if (!auth.success) {
+        return { success: false, error: auth.error || 'Authentication required' };
+    }
+    const vault = loadPasswordVaultRaw();
+    const cred = vault.find(c => c.id === id);
+    if (!cred) return { success: false, error: 'Credential not found' };
+    const plainPass = decryptSecret(cred.passwordEncrypted);
+    clipboard.writeText(plainPass);
+    return { success: true };
+});
+
 ipcMain.handle('passwords:save', (e, { domain, origin, username, password }) => {
     if (!username || !password) return { success: false, error: 'Username and password required' };
     const normDomain = normalizeDomainName(domain || origin);
@@ -6401,12 +6482,14 @@ ipcMain.handle('passwords:delete', (e, id) => {
 
 ipcMain.handle('passwords:get-all', () => {
     const vault = loadPasswordVaultRaw();
+    const isUnlocked = (Date.now() - lastWindowsAuthTime < AUTH_CACHE_DURATION_MS);
     return vault.map(item => ({
         id: item.id,
         domain: item.domain,
         origin: item.origin,
         username: item.username,
-        password: decryptSecret(item.passwordEncrypted),
+        password: isUnlocked ? decryptSecret(item.passwordEncrypted) : '••••••••',
+        isEncrypted: true,
         createdAt: item.createdAt,
         updatedAt: item.updatedAt
     }));
