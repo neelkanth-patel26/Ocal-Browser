@@ -1691,7 +1691,7 @@ function resolveInternalURL(url) {
         }
         return 'file://' + path.join(__dirname, 'file-manager.html');
     }
-    if (cleanBase === 'ocal://photo-editor' || cleanBase === 'photo-editor' || cleanBase === 'ocal://image-viewer') {
+    if (cleanBase === 'ocal://photo-view' || cleanBase === 'photo-view' || cleanBase === 'ocal://photo-editor' || cleanBase === 'photo-editor' || cleanBase === 'ocal://image-viewer') {
         const qIdx = url.indexOf('?');
         return 'file://' + path.join(__dirname, 'photo-editor.html') + (qIdx !== -1 ? url.substring(qIdx) : '');
     }
@@ -1780,9 +1780,9 @@ function formatDisplayUrl(url) {
     if (!url) return '';
     let display = url;
     if (display.includes('home.html') || display === 'ocal://home') return '';
-    if (display.includes('photo-editor.html')) {
+    if (display.includes('photo-editor.html') || display.startsWith('ocal://photo-view') || display.startsWith('ocal://photo-editor')) {
         const qIdx = display.indexOf('?');
-        return 'ocal://photo-editor' + (qIdx !== -1 ? display.substring(qIdx) : '');
+        return 'ocal://photo-view' + (qIdx !== -1 ? display.substring(qIdx) : '');
     }
     if (display.includes('doc-viewer.html')) {
         const qIdx = display.indexOf('?');
