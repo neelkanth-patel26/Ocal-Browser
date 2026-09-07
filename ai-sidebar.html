@@ -337,11 +337,21 @@
         }
 
         .persona-chip.active {
-            background: var(--accent-dim) !important;
-            border-color: var(--accent) !important;
-            color: var(--accent) !important;
-            font-weight: 800;
-            box-shadow: 0 2px 8px var(--accent-glow);
+            background: var(--accent) !important;
+            border: 1px solid var(--accent) !important;
+            color: #FFFFFF !important;
+            font-weight: 800 !important;
+            box-shadow: 0 4px 14px var(--accent-glow) !important;
+            transform: translateY(-1px);
+        }
+
+        .persona-chip.active i {
+            color: #FFFFFF !important;
+            transform: scale(1.15);
+        }
+
+        .persona-chip.active span {
+            color: #FFFFFF !important;
         }
 
         /* Action Navigation Items */
@@ -406,8 +416,14 @@
         .history-item.active {
             background: var(--accent-dim) !important;
             color: var(--accent) !important;
-            font-weight: 700;
-            border-color: var(--accent-border) !important;
+            font-weight: 800 !important;
+            border: 1px solid var(--accent-border) !important;
+            box-shadow: 0 2px 8px var(--accent-glow);
+        }
+
+        .history-item.active .history-item-title {
+            color: var(--accent) !important;
+            font-weight: 800 !important;
         }
 
         .history-item-actions {
