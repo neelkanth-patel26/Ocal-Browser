@@ -2370,25 +2370,6 @@ window.saveWeatherLocation = function() {
     }
 };
 
-window.applyAccent = function(color) {
-    if (!color) return;
-    localStorage.setItem('ocal-settings-accent', color);
-    document.documentElement.style.setProperty('--accent', color);
-    document.documentElement.style.setProperty('--accent-glow', `color-mix(in srgb, ${color} 30%, transparent)`);
-    document.documentElement.style.setProperty('--accent-dim', `color-mix(in srgb, ${color} 12%, transparent)`);
-    document.documentElement.style.setProperty('--accent-border', color);
-};
-
-window.selectTabLayout = function(layout) {
-    if (window.electronAPI && window.electronAPI.updateSetting) {
-        window.electronAPI.updateSetting('tabLayout', layout);
-    }
-    const tabCards = document.querySelectorAll('.tab-choice-card');
-    tabCards.forEach(c => c.classList.toggle('active', c.dataset.value === layout));
-    const statLayout = document.getElementById('homepage-stat-layout');
-    if (statLayout) statLayout.innerText = layout === 'vertical' ? 'Vertical Arc' : 'Horizontal';
-};
-
 window.autoDetectWeatherLocation = function() {
     localStorage.removeItem('ocal-weather-loc');
     const inp = document.getElementById('settings-weather-city-input');
@@ -2429,7 +2410,17 @@ function getContrastColor(hex) {
     return lum > 140 ? '#0D0E11' : '#FFFFFF';
 }
 
-function applyAccent(color) {
+let _accentUpdateTimer = null;
+function debouncedSaveAccent(color) {
+    if (_accentUpdateTimer) clearTimeout(_accentUpdateTimer);
+    _accentUpdateTimer = setTimeout(() => {
+        if (window.electronAPI && window.electronAPI.updateSetting) {
+            window.electronAPI.updateSetting('accentColor', color);
+        }
+    }, 100);
+}
+
+window.applyAccent = function applyAccent(color, skipIpc = false) {
     if (!color) color = '#09F0A0';
     const root = document.documentElement;
     const body = document.body;
@@ -2441,12 +2432,14 @@ function applyAccent(color) {
     root.style.setProperty('--accent-text', contrast);
     root.style.setProperty('--accent-dim', dim);
     root.style.setProperty('--accent-glow', glow);
+    root.style.setProperty('--accent-border', color);
     
     if (body) {
         body.style.setProperty('--accent', color);
         body.style.setProperty('--accent-text', contrast);
         body.style.setProperty('--accent-dim', dim);
         body.style.setProperty('--accent-glow', glow);
+        body.style.setProperty('--accent-border', color);
     }
     
     try {
@@ -2455,7 +2448,11 @@ function applyAccent(color) {
 
     const dot = document.getElementById('custom-color-dot');
     if (dot) dot.style.background = color;
-}
+
+    if (!skipIpc && window.electronAPI && window.electronAPI.updateSetting) {
+        debouncedSaveAccent(color);
+    }
+};
 
 function applyTheme(theme) {
     const isDark = (theme === 'dark');
@@ -2611,9 +2608,6 @@ function renderHomepageSettings(s) {
         if (customDot) customDot.style.background = hex;
         if (statAccent) statAccent.innerText = `Custom (${hex})`;
 
-        if (window.electronAPI && window.electronAPI.updateSetting) {
-            window.electronAPI.updateSetting('accentColor', hex);
-        }
         applyAccent(hex);
     }
 
@@ -2641,9 +2635,6 @@ function renderHomepageSettings(s) {
             if (customBadge) customBadge.style.display = 'none';
             if (customPopover) customPopover.style.display = 'none';
             
-            if (window.electronAPI && window.electronAPI.updateSetting) {
-                window.electronAPI.updateSetting('accentColor', chosenColor);
-            }
             applyAccent(chosenColor);
             if (statAccent) statAccent.innerText = sw.getAttribute('title') || 'Preset';
         };
