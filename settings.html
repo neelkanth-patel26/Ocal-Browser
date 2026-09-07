@@ -1016,86 +1016,68 @@
                                         <i class="fas fa-hard-drive"></i>
                                     </div>
                                     <div class="hbc-identity">
-                                        <h4 class="hbc-name">Downloads & Storage Architecture</h4>
-                                        <div class="hbc-tagline">Destination storage path, file security & sandboxed renderers</div>
+                                        <h4 class="hbc-name">Downloads & File Handling Engine</h4>
+                                        <div class="hbc-tagline">Storage directory, PDF viewer & download security</div>
                                     </div>
                                 </div>
                                 <span class="hbc-badge system-storage">STORAGE ENGINE</span>
                             </div>
 
-                            <div class="system-downloads-container">
-                                <!-- Console Path Display Capsule -->
-                                <div class="downloads-console-display">
-                                    <div class="console-prompt-left">
-                                        <div class="console-icon-wrap">
-                                            <i class="fas fa-folder-tree"></i>
+                            <div class="hbc-rows">
+                                <!-- Default Download Directory Row -->
+                                <div class="hbc-toggle-row system-dir-row">
+                                    <div class="hbc-row-info">
+                                        <div class="system-dir-title-row">
+                                            <h4>Default Download Directory</h4>
+                                            <span class="system-tag-badge">SYSTEM DEFAULT</span>
                                         </div>
-                                        <div class="console-path-info">
-                                            <div class="console-title">Default Download Directory</div>
-                                            <div class="console-path-text">
-                                                <code id="current-downloads-path">C:\Users\<span class="accent-path">neelk</span>\Downloads</code>
-                                                <span class="system-tag-badge">SYSTEM DEFAULT</span>
-                                            </div>
+                                        <div class="system-dir-path-wrap">
+                                            <code id="current-downloads-path">C:\Users\<span class="accent-path">neelk</span>\Downloads</code>
                                         </div>
                                     </div>
-                                    <button class="system-browse-btn" id="change-download-path-btn" onclick="handleChangeDownloadPath()">
-                                        <i class="fas fa-arrow-up-right-from-square"></i>
+                                    <button class="system-btn-action secondary" id="change-download-path-btn" onclick="handleChangeDownloadPath()">
+                                        <i class="fas fa-folder-open"></i>
                                         <span>Change Directory</span>
                                     </button>
                                 </div>
 
-                                <!-- Accessory Toggles Grid -->
-                                <div class="system-accessory-grid">
-                                    <div class="system-accessory-card">
-                                        <div class="accessory-top">
-                                            <div class="accessory-icon-box">
-                                                <i class="fas fa-folder-open"></i>
-                                            </div>
-                                            <label class="ext-toggle-wrap">
-                                                <input type="checkbox" id="ask-save-toggle-cb"
-                                                    onchange="handleAskSaveToggle(this.checked)">
-                                                <span class="ext-slider"></span>
-                                            </label>
-                                        </div>
-                                        <div class="accessory-info">
-                                            <h4>Confirm Save Location</h4>
-                                            <p>Ask where to save each file individually before downloading begins</p>
-                                        </div>
+                                <!-- Confirm Save Location -->
+                                <div class="hbc-toggle-row">
+                                    <div class="hbc-row-info">
+                                        <h4>Confirm Save Location</h4>
+                                        <p>Ask where to save each file individually before downloading begins</p>
                                     </div>
+                                    <label class="ext-toggle-wrap">
+                                        <input type="checkbox" id="ask-save-toggle-cb"
+                                            onchange="handleAskSaveToggle(this.checked)">
+                                        <span class="ext-slider"></span>
+                                    </label>
+                                </div>
 
-                                    <div class="system-accessory-card">
-                                        <div class="accessory-top">
-                                            <div class="accessory-icon-box">
-                                                <i class="fas fa-file-pdf"></i>
-                                            </div>
-                                            <label class="ext-toggle-wrap">
-                                                <input type="checkbox" id="pdf-viewer-toggle-cb" checked
-                                                    onchange="handlePdfViewerToggle(this.checked)">
-                                                <span class="ext-slider"></span>
-                                            </label>
-                                        </div>
-                                        <div class="accessory-info">
-                                            <h4>Sandboxed PDF Engine</h4>
-                                            <p>Open and annotate PDF documents directly inside Ocal's secure native viewer</p>
-                                        </div>
+                                <!-- Sandboxed PDF Engine -->
+                                <div class="hbc-toggle-row">
+                                    <div class="hbc-row-info">
+                                        <h4>Sandboxed PDF Engine</h4>
+                                        <p>Open and annotate PDF documents directly inside Ocal's secure native viewer</p>
                                     </div>
+                                    <label class="ext-toggle-wrap">
+                                        <input type="checkbox" id="pdf-viewer-toggle-cb" checked
+                                            onchange="handlePdfViewerToggle(this.checked)">
+                                        <span class="ext-slider"></span>
+                                    </label>
+                                </div>
 
-                                    <div class="system-accessory-card">
-                                        <div class="accessory-top">
-                                            <div class="accessory-icon-box">
-                                                <i class="fas fa-shield-virus"></i>
-                                            </div>
-                                            <label class="ext-toggle-wrap">
-                                                <input type="checkbox" id="download-scan-toggle-cb" checked
-                                                    onchange="handleDownloadScanToggle(this.checked)">
-                                                <span class="ext-slider"></span>
-                                            </label>
-                                        </div>
-                                        <div class="accessory-info">
-                                            <h4>Executable Sanitization</h4>
-                                            <p>Scan downloaded binaries and installer archives for suspicious payloads</p>
-                                        </div>
+                                <!-- Executable Sanitization -->
+                                <div class="hbc-toggle-row">
+                                    <div class="hbc-row-info">
+                                        <h4>Executable Sanitization</h4>
+                                        <p>Scan downloaded binaries and installer archives for suspicious payloads</p>
                                     </div>
+                                    <label class="ext-toggle-wrap">
+                                        <input type="checkbox" id="download-scan-toggle-cb" checked
+                                            onchange="handleDownloadScanToggle(this.checked)">
+                                        <span class="ext-slider"></span>
+                                    </label>
                                 </div>
                             </div>
                         </div>
