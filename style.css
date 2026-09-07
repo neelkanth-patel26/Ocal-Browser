@@ -449,18 +449,19 @@ body[data-theme="dark"] .sidebar-logo-container {
   height: 24px;
   border-radius: 6px;
   object-fit: contain;
-  transition: transform 0.25s cubic-bezier(0.16, 1, 0.3, 1), filter 0.25s;
+  filter: var(--logo-filter, none);
+  transition: transform 0.25s cubic-bezier(0.16, 1, 0.3, 1), filter 0.4s ease;
 }
 
 .sidebar-logo-btn:hover {
-  background: rgba(148, 163, 184, 0.12) !important;
-  border-color: rgba(148, 163, 184, 0.2) !important;
+  background: color-mix(in srgb, var(--accent, #09f0a0) 14%, transparent) !important;
+  border-color: color-mix(in srgb, var(--accent, #09f0a0) 30%, transparent) !important;
   transform: translateY(-1px);
 }
 
 .sidebar-logo-btn:hover .sidebar-logo-img {
   transform: scale(1.12);
-  filter: drop-shadow(0 4px 12px var(--accent-glow));
+  filter: var(--logo-filter, none) drop-shadow(0 0 10px var(--accent-glow));
 }
 
 .sidebar-top-shortcuts {
