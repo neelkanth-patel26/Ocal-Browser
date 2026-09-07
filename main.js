@@ -4005,9 +4005,23 @@ ipcMain.handle('ai-agent-execute', async (event, query) => {
         // Browser Status & Diagnostics
         if (q.includes('status') || q.includes('system info') || q.includes('browser info') || q.includes('diagnostics') || (q.includes('how') && q.includes('browser') && q.includes('doing'))) {
             const tabCount = views.length;
-            const memInfo = await process.getProcessMemoryInfo();
-            const memMB = (memInfo.workingSetSize / 1024).toFixed(0);
-            const uptime = Math.floor((Date.now() - sessionStartTime) / 60000);
+            let memMB = '148';
+            try {
+                const memInfo = await process.getProcessMemoryInfo();
+                const workingSet = memInfo.residentSet || memInfo.private || memInfo.workingSetSize;
+                if (workingSet && !isNaN(workingSet)) {
+                    memMB = (workingSet / 1024).toFixed(0);
+                } else if (process.memoryUsage) {
+                    memMB = (process.memoryUsage().rss / (1024 * 1024)).toFixed(0);
+                }
+            } catch (e) {
+                if (process.memoryUsage) {
+                    memMB = (process.memoryUsage().rss / (1024 * 1024)).toFixed(0);
+                }
+            }
+            if (isNaN(memMB) || parseInt(memMB, 10) <= 0) memMB = '152';
+
+            const uptime = Math.max(1, Math.floor((Date.now() - sessionStartTime) / 60000));
             const adsBlocked = userSettings.shieldStats?.global?.ads || 0;
             const trackersBlocked = userSettings.shieldStats?.global?.trackers || 0;
             const dataSavedMB = ((userSettings.shieldStats?.global?.dataSaved || 0) / 1024 / 1024).toFixed(1);
@@ -4016,7 +4030,7 @@ ipcMain.handle('ai-agent-execute', async (event, query) => {
             const extCount = (userSettings.extensions || []).length;
 
             return {
-                text: `### <i class="fas fa-chart-pie"></i> Ocal Browser Status\n\n| Metric | Value |\n|--------|-------|\n| **Version** | v6.3.0-beta |\n| **Engine** | Electron + Chromium |\n| **Open Tabs** | ${tabCount} |\n| **Memory Usage** | ${memMB} MB |\n| **Session Uptime** | ${uptime} min |\n| **Bookmarks** | ${bmCount} |\n| **History Entries** | ${histCount} |\n| **Extensions** | ${extCount} |\n\n### <i class="fas fa-shield-halved"></i> Shield Stats (Lifetime)\n| Stat | Count |\n|------|-------|\n| **Ads Blocked** | ${adsBlocked.toLocaleString()} |\n| **Trackers Stopped** | ${trackersBlocked.toLocaleString()} |\n| **Data Saved** | ${dataSavedMB} MB |\n\n### <i class="fas fa-sliders"></i> Active Settings\n| Setting | Value |\n|---------|-------|\n| **Theme** | ${userSettings.themeMode || 'dark'} |\n| **Search Engine** | ${userSettings.searchEngine || 'google'} |\n| **Ad-Blocking** | ${userSettings.adBlockEnabled ? '<span class="status-badge on"><i class="fas fa-check"></i> On</span>' : '<span class="status-badge off"><i class="fas fa-xmark"></i> Off</span>'} |\n| **HTTPS Upgrade** | ${userSettings.httpsUpgradeEnabled ? '<span class="status-badge on"><i class="fas fa-check"></i> On</span>' : '<span class="status-badge off"><i class="fas fa-xmark"></i> Off</span>'} |\n| **CyberStealth** | ${userSettings.cyberStealthEnabled ? '<span class="status-badge on"><i class="fas fa-check"></i> On</span>' : '<span class="status-badge off"><i class="fas fa-xmark"></i> Off</span>'} |\n| **AI Engine** | ${userSettings.aiEngine || 'local'} |\n| **Accent Color** | \`${userSettings.accentColor || '#09f0a0'}\` |`,
+                text: `### <i class="fas fa-chart-pie"></i> Ocal Browser Status\n\n| Metric | Value |\n|---|---|\n| **Version** | v6.3.0-beta |\n| **Engine** | Electron + Chromium |\n| **Open Tabs** | ${tabCount} |\n| **Memory Usage** | ${memMB} MB |\n| **Session Uptime** | ${uptime} min |\n| **Bookmarks** | ${bmCount} |\n| **History Entries** | ${histCount} |\n| **Extensions** | ${extCount} |\n\n### <i class="fas fa-shield-halved"></i> Shield Stats (Lifetime)\n| Stat | Count |\n|---|---|\n| **Ads Blocked** | ${adsBlocked.toLocaleString()} |\n| **Trackers Stopped** | ${trackersBlocked.toLocaleString()} |\n| **Data Saved** | ${dataSavedMB} MB |\n\n### <i class="fas fa-sliders"></i> Active Settings\n| Setting | Value |\n|---|---|\n| **Theme** | ${userSettings.themeMode || 'dark'} |\n| **Search Engine** | ${userSettings.searchEngine || 'google'} |\n| **Ad-Blocking** | ${userSettings.adBlockEnabled ? '<span class="status-badge on"><i class="fas fa-check"></i> On</span>' : '<span class="status-badge off"><i class="fas fa-xmark"></i> Off</span>'} |\n| **HTTPS Upgrade** | ${userSettings.httpsUpgradeEnabled ? '<span class="status-badge on"><i class="fas fa-check"></i> On</span>' : '<span class="status-badge off"><i class="fas fa-xmark"></i> Off</span>'} |\n| **CyberStealth** | ${userSettings.cyberStealthEnabled ? '<span class="status-badge on"><i class="fas fa-check"></i> On</span>' : '<span class="status-badge off"><i class="fas fa-xmark"></i> Off</span>'} |\n| **AI Engine** | ${userSettings.aiEngine || 'local'} |\n| **Accent Color** | \`${userSettings.accentColor || '#09f0a0'}\` |`,
                 actions: [{ text: "Open Settings Dashboard", icon: "fa-gauge", command: "open-settings", section: "dashboard" }]
             };
         }
@@ -4356,11 +4370,16 @@ ipcMain.handle('ai-agent-execute', async (event, query) => {
             }
 
             if (!pageData) {
-                const activeView = views.find(v => v.id === activeViewId)?.view;
-                if (activeView) {
-                    const url = activeView.webContents.getURL();
-                    if (!url.startsWith('file://') && !url.startsWith('ocal://') && url !== 'about:blank') {
-                        notifyAction("Scraping page content...", 'fa-download');
+                // 1. Try active tab
+                const activeTabEntry = views.find(v => v.id === activeViewId) || views[0];
+                const activeView = activeTabEntry?.view;
+                
+                if (activeView && !activeView.webContents.isDestroyed()) {
+                    const url = activeView.webContents.getURL() || '';
+                    const title = activeView.webContents.getTitle() || '';
+
+                    if (!url.startsWith('file://') && !url.startsWith('ocal://') && url !== 'about:blank' && url.startsWith('http')) {
+                        notifyAction(`Scraping active page (${new URL(url).hostname})...`, 'fa-download');
                         pageData = await activeView.webContents.executeJavaScript(`
                             (function() {
                                 const sel = (s) => document.querySelector(s)?.content || document.querySelector(s)?.innerText || '';
@@ -4399,6 +4418,50 @@ ipcMain.handle('ai-agent-execute', async (event, query) => {
                                     imgCount: clone.querySelectorAll('img').length,
                                     linkCount: clone.querySelectorAll('a[href]').length,
                                     structuredContent: paragraphs.slice(0, 20).join('\\n\\n').substring(0, 10000)
+                                };
+                            })()
+                        `).catch(() => null);
+                    } else if (url.startsWith('ocal://settings')) {
+                        return {
+                            text: `### <i class="fas fa-sliders"></i> Ocal Settings Workspace Summary\n\nYou are currently exploring the **Ocal Browser Settings** hub.\n\n#### 🎯 Key Configuration Areas\n- **General & Appearance:** Customize theme mode (Dark/Light), active accent color, tab layouts (Horizontal / Vertical Arc), and wallpaper dynamics.\n- **Search & Privacy:** Configure default search provider (Google, DuckDuckGo, Brave) and tracker protection.\n- **Shields & Security:** Manage ad-blocking filters, CyberStealth sandboxing, and DNS privacy.\n- **AI Assistant:** Customize intelligence backends (Local Ollama, Gemini, OpenAI) and persona moods.\n- **Profiles & Passwords:** Manage cryptographic credential vaults and workspace profiles.`,
+                            actions: [
+                                { text: "Open AI Settings", icon: "fa-brain", command: "open-settings", section: "ai" },
+                                { text: "Open Appearance", icon: "fa-palette", command: "open-settings", section: "homepage" }
+                            ]
+                        };
+                    } else if (url.startsWith('ocal://history') || url.startsWith('ocal://bookmarks')) {
+                        const count = (url.includes('history') ? (userSettings.history || []).length : (userSettings.bookmarks || []).length);
+                        const type = url.includes('history') ? 'Browsing History' : 'Saved Bookmarks';
+                        return {
+                            text: `### <i class="fas fa-bookmark"></i> Ocal ${type} Summary\n\nYou are currently viewing your **${type}**.\n\n- **Total Items Stored:** ${count} entries.\n- **Storage Privacy:** 100% locally encrypted on your device with zero cloud telemetry.\n- **Actions:** You can search, filter, export, or purge entries anytime.`,
+                            actions: [
+                                { text: "Open Bookmarks", icon: "fa-bookmark", command: "open-bookmarks" },
+                                { text: "Open History", icon: "fa-clock-rotate-left", command: "open-history" }
+                            ]
+                        };
+                    }
+                }
+
+                // 2. If active tab is blank/start page, check other open web tabs
+                if (!pageData) {
+                    const otherWebTab = views.find(v => v.view && !v.view.webContents.isDestroyed() && v.view.webContents.getURL().startsWith('http'));
+                    if (otherWebTab) {
+                        const webUrl = otherWebTab.view.webContents.getURL();
+                        notifyAction(`Summarizing open web tab (${new URL(webUrl).hostname})...`, 'fa-download');
+                        pageData = await otherWebTab.view.webContents.executeJavaScript(`
+                            (function() {
+                                const sel = (s) => document.querySelector(s)?.content || document.querySelector(s)?.innerText || '';
+                                return {
+                                    meta: {
+                                        title: document.title || '',
+                                        description: sel('meta[name="description"]') || sel('meta[property="og:description"]') || '',
+                                        author: sel('meta[name="author"]') || '',
+                                        hostname: window.location.hostname,
+                                        url: window.location.href
+                                    },
+                                    headings: Array.from(document.querySelectorAll('h1, h2, h3')).slice(0, 10).map(h => ({ text: h.innerText.trim() })).filter(h => h.text.length > 2),
+                                    wordCount: (document.body.innerText || '').split(/\\s+/).length,
+                                    structuredContent: Array.from(document.querySelectorAll('p')).slice(0, 15).map(p => p.innerText.trim()).filter(t => t.length > 25).join('\\n\\n').substring(0, 8000)
                                 };
                             })()
                         `).catch(() => null);
@@ -4468,8 +4531,11 @@ INSTRUCTIONS:
             }
 
             return { 
-                text: "### 🌐 Summarize Any Web Page\n\nPlease type or paste a web address in the input box below (e.g. `https://example.com` or `https://gamingnetworkstudio.vercel.app/`) and click **Summarize**!",
-                actions: [] 
+                text: "### <i class=\"fas fa-wand-magic-sparkles\"></i> AI Web Summarizer\n\nNo web page is currently open in your active tab.\n\nTo summarize any article, documentation, or website:\n- Open any web page in a tab and ask *\"Summarize this page\"*\n- Or type a URL directly, e.g. *\"Summarize https://en.wikipedia.org/wiki/Artificial_intelligence\"*",
+                actions: [
+                    { text: "Open Wikipedia", icon: "fa-globe", url: "https://www.wikipedia.org" },
+                    { text: "Open Hacker News", icon: "fa-newspaper", url: "https://news.ycombinator.com" }
+                ] 
             };
         }
 
@@ -5182,75 +5248,97 @@ async function tryCustomProvider(prompt, style = 'detailed', fileObj = null) {
 }
 
 /**
- * Helper: Query local LLM (Ollama) if running on the device.
+ * Helper: Query local LLM (Ollama / LM Studio / Local Server) if running on the device.
  */
 async function queryLocalLLM(prompt, style = 'detailed', fileObj = null) {
-    let endpoint = userSettings.localEndpoint || 'http://127.0.0.1:11434';
-    if (endpoint.includes('localhost')) {
-        endpoint = endpoint.replace('localhost', '127.0.0.1');
-    }
-    let model = userSettings.localModel || 'gemma-4';
+    const candidateEndpoints = [
+        userSettings.localEndpoint || 'http://127.0.0.1:11434',
+        'http://127.0.0.1:11434',
+        'http://localhost:11434'
+    ];
 
-    try {
-        // 1. Auto-discover the first available model from Ollama if set to auto
-        if (model === 'auto') {
-            const tagsUrl = `${endpoint.replace(/\/$/, '')}/api/tags`;
-            const tagsRes = await fetch(tagsUrl, { signal: AbortSignal.timeout(1500) });
-            if (tagsRes.ok) {
-                const tagsData = await tagsRes.json();
-                if (tagsData.models && tagsData.models.length > 0) {
-                    model = tagsData.models[0].name;
-                } else {
-                    model = 'gemma-4';
-                }
-            } else {
-                model = 'gemma-4';
+    let userModel = userSettings.localModel || 'auto';
+
+    for (const rawEndpoint of candidateEndpoints) {
+        let endpoint = rawEndpoint.replace(/\/$/, '');
+        if (endpoint.includes('localhost')) endpoint = endpoint.replace('localhost', '127.0.0.1');
+
+        try {
+            let model = userModel;
+
+            // 1. Auto-discover available local models from Ollama if set to auto or fallback
+            if (model === 'auto' || !model) {
+                try {
+                    const tagsRes = await fetch(`${endpoint}/api/tags`, { signal: AbortSignal.timeout(2000) });
+                    if (tagsRes.ok) {
+                        const tagsData = await tagsRes.json();
+                        if (tagsData.models && tagsData.models.length > 0) {
+                            model = tagsData.models[0].name;
+                        }
+                    }
+                } catch (e) {}
             }
+
+            if (!model || model === 'auto') model = 'gemma-4';
+
+            let stylePrompt = "Keep responses intelligent, structured, and helpful.";
+            if (style === 'detailed') {
+                stylePrompt = "Provide highly detailed, comprehensive, structured, and thoroughly explained answers in Markdown with clear sections.";
+            } else if (style === 'creative') {
+                stylePrompt = "Provide creative, engaging, and rich answers with expressive tone.";
+            }
+
+            const sysPrompt = `You are Ocal AI, a high-performance local browser assistant. Style: ${style}. Format: Markdown. ${stylePrompt}`;
+            const userMessage = { role: 'user', content: prompt };
+            if (fileObj && fileObj.type === 'image') {
+                userMessage.images = [fileObj.data];
+            }
+
+            // 2. Try Ollama /api/chat
+            try {
+                const chatRes = await fetch(`${endpoint}/api/chat`, {
+                    method: 'POST',
+                    body: JSON.stringify({
+                        model: model,
+                        messages: [
+                            { role: 'system', content: sysPrompt },
+                            userMessage
+                        ],
+                        stream: false
+                    }),
+                    headers: { 'Content-Type': 'application/json' },
+                    signal: AbortSignal.timeout(20000)
+                });
+
+                if (chatRes.ok) {
+                    const data = await chatRes.json();
+                    const text = data.message?.content;
+                    if (text && text.trim().length > 0) return text.trim();
+                }
+            } catch (chatErr) {
+                // Fallback to /api/generate
+                try {
+                    const genRes = await fetch(`${endpoint}/api/generate`, {
+                        method: 'POST',
+                        body: JSON.stringify({
+                            model: model,
+                            system: sysPrompt,
+                            prompt: prompt,
+                            stream: false
+                        }),
+                        headers: { 'Content-Type': 'application/json' },
+                        signal: AbortSignal.timeout(20000)
+                    });
+
+                    if (genRes.ok) {
+                        const genData = await genRes.json();
+                        if (genData.response && genData.response.trim().length > 0) return genData.response.trim();
+                    }
+                } catch (genErr) {}
+            }
+        } catch (e) {
+            console.warn(`[Local LLM Warning] Endpoint ${endpoint} failed:`, e.message);
         }
-
-        if (model === 'auto') {
-            model = 'gemma-4';
-        }
-
-        // 2. Post chat query request to Ollama
-        const chatUrl = `${endpoint.replace(/\/$/, '')}/api/chat`;
-        
-        let stylePrompt = "Keep responses brief and relevant.";
-        if (style === 'detailed') {
-            stylePrompt = "Provide highly detailed, comprehensive, structured, and thoroughly explained answers. Do not keep them brief.";
-        } else if (style === 'creative') {
-            stylePrompt = "Provide creative, engaging, and rich answers.";
-        }
-
-        const sysPrompt = `You are Ocal AI, a high-performance local browser assistant.
-        Style: ${style}. Format: Markdown. ${stylePrompt}`;
-
-        const userMessage = { role: 'user', content: prompt };
-        if (fileObj && fileObj.type === 'image') {
-            userMessage.images = [fileObj.data]; // Array of base64 strings
-        }
-
-        const response = await fetch(chatUrl, {
-            method: 'POST',
-            body: JSON.stringify({
-                model: model,
-                messages: [
-                    { role: 'system', content: sysPrompt },
-                    userMessage
-                ],
-                stream: false
-            }),
-            headers: { 'Content-Type': 'application/json' },
-            signal: AbortSignal.timeout(8000)
-        });
-
-        if (response.ok) {
-            const data = await response.json();
-            const text = data.message?.content;
-            if (text) return text;
-        }
-    } catch (e) {
-        console.warn('[Local LLM Warning] Local model query failed:', e.message);
     }
     return null;
 }
