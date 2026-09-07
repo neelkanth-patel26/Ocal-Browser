@@ -9109,64 +9109,173 @@ body[data-theme="dark"] .hbc-palette-wrap {
     border-color: rgba(255, 255, 255, 0.06);
 }
 
-.hbc-color-swatches {
+.hbc-color-swatches-container {
     display: flex;
     align-items: center;
-    gap: 10px;
+    justify-content: space-between;
+    gap: 16px;
     flex-wrap: wrap;
+    width: 100%;
     margin-top: 4px;
 }
 
+.hbc-color-swatches {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    flex-wrap: wrap;
+}
+
 .hbc-swatch {
-    width: 32px;
-    height: 32px;
+    width: 34px;
+    height: 34px;
     border-radius: 50%;
     cursor: pointer;
     background: var(--swatch-color);
     display: flex;
     align-items: center;
     justify-content: center;
-    transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
-    border: 2px solid transparent;
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+    transition: transform 0.2s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.2s cubic-bezier(0.16, 1, 0.3, 1), border-color 0.2s ease;
+    border: 2.5px solid transparent;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.18);
     position: relative;
+    user-select: none;
 }
 
 .hbc-swatch:hover {
-    transform: scale(1.15);
+    transform: scale(1.18);
+    box-shadow: 0 4px 14px rgba(0, 0, 0, 0.25);
 }
 
 .hbc-swatch.active {
     border-color: #FFFFFF;
-    transform: scale(1.15);
-    box-shadow: 0 0 14px color-mix(in srgb, var(--swatch-color) 60%, transparent);
+    transform: scale(1.18);
+    box-shadow: 0 0 16px var(--swatch-color), 0 2px 8px rgba(0, 0, 0, 0.3);
+}
+
+body[data-theme="light"] .hbc-swatch.active {
+    border-color: #0F172A;
+    box-shadow: 0 0 14px color-mix(in srgb, var(--swatch-color) 70%, transparent), 0 2px 8px rgba(0, 0, 0, 0.12);
 }
 
 .swatch-check {
     display: none;
     font-size: 11px;
-    color: #111111;
     line-height: 1;
-}
-
-.hbc-swatch[data-color="#ffffff"] .swatch-check,
-.hbc-swatch[data-color="#e8ff47"] .swatch-check,
-.hbc-swatch[data-color="#09f0a0"] .swatch-check {
-    color: #111111;
-}
-
-.hbc-swatch[data-color="#a855f7"] .swatch-check,
-.hbc-swatch[data-color="#3b82f6"] .swatch-check,
-.hbc-swatch[data-color="#ef4444"] .swatch-check,
-.hbc-swatch[data-color="#fb923c"] .swatch-check,
-.hbc-swatch[data-color="#06b6d4"] .swatch-check {
     color: #FFFFFF;
+    pointer-events: none;
+}
+
+.hbc-swatch[data-color="#15AC49"] .swatch-check,
+.hbc-swatch[data-color="#16A34A"] .swatch-check,
+.hbc-swatch[data-color="#09F0A0"] .swatch-check,
+.hbc-swatch[data-color="#CCFF00"] .swatch-check,
+.hbc-swatch[data-dark-color="#09F0A0"] .swatch-check,
+.hbc-swatch[data-dark-color="#CCFF00"] .swatch-check {
+    color: #0D0E11;
 }
 
 .hbc-swatch.active .swatch-check {
     display: flex;
     align-items: center;
     justify-content: center;
+}
+
+/* Custom Swatch & Eyedropper */
+.hbc-swatch.custom-swatch {
+    border-radius: 12px;
+    border: 2px dashed rgba(255, 255, 255, 0.35);
+    background: var(--swatch-color, #8B5CF6);
+    cursor: pointer;
+    overflow: hidden;
+}
+
+body[data-theme="light"] .hbc-swatch.custom-swatch {
+    border-color: rgba(0, 0, 0, 0.25);
+}
+
+.hbc-swatch.custom-swatch:hover {
+    border-style: solid;
+    border-color: rgba(255, 255, 255, 0.7);
+}
+
+body[data-theme="light"] .hbc-swatch.custom-swatch:hover {
+    border-color: rgba(0, 0, 0, 0.5);
+}
+
+.hbc-swatch.custom-swatch.active {
+    border-style: solid;
+    border-color: #FFFFFF;
+}
+
+body[data-theme="light"] .hbc-swatch.custom-swatch.active {
+    border-color: #0F172A;
+}
+
+.custom-icon {
+    font-size: 12px;
+    color: #FFFFFF;
+    pointer-events: none;
+    transition: opacity 0.2s;
+}
+
+.hbc-swatch.custom-swatch.active .custom-icon {
+    display: none;
+}
+
+#custom-accent-color-picker {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    opacity: 0;
+    cursor: pointer;
+    padding: 0;
+    margin: 0;
+    border: none;
+}
+
+/* Custom Color Badge */
+.custom-color-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 6px 14px;
+    border-radius: 100px;
+    background: rgba(255, 255, 255, 0.06);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    font-family: var(--font-mono, monospace);
+    font-size: 12px;
+    font-weight: 700;
+    color: var(--text);
+    letter-spacing: 0.5px;
+    transition: all 0.2s ease;
+    animation: fadeInBadge 0.25s ease-out;
+}
+
+body[data-theme="light"] .custom-color-badge {
+    background: rgba(0, 0, 0, 0.04);
+    border-color: rgba(0, 0, 0, 0.08);
+}
+
+.custom-color-dot {
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    background: var(--accent);
+    box-shadow: 0 0 8px var(--accent-glow, rgba(0, 0, 0, 0.2));
+    flex-shrink: 0;
+}
+
+@keyframes fadeInBadge {
+    from {
+        opacity: 0;
+        transform: translateY(4px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
 }
 
 /* ── Tab Orientation Choice Cards ── */
