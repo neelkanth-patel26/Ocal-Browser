@@ -9874,6 +9874,138 @@ body[data-theme="light"] .ccp-inputs-row input[type="number"] {
     border-color: rgba(0, 0, 0, 0.1) !important;
 }
 
+/* ── AI Color Intelligence Section ── */
+.ccp-ai-section {
+    margin-top: 4px;
+    padding-top: 12px;
+    border-top: 1px solid rgba(255, 255, 255, 0.08);
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+body[data-theme="light"] .ccp-ai-section {
+    border-top-color: rgba(0, 0, 0, 0.06);
+}
+
+.ccp-ai-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+
+.ccp-ai-title {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 11.5px;
+    font-weight: 800;
+    color: var(--text);
+    letter-spacing: 0.2px;
+}
+
+.ccp-ai-title i {
+    color: var(--accent);
+    font-size: 11px;
+}
+
+.ccp-ai-mood-badge {
+    font-size: 9px;
+    font-weight: 800;
+    padding: 2px 7px;
+    border-radius: 100px;
+    background: color-mix(in srgb, var(--accent) 18%, transparent);
+    color: var(--accent);
+    border: 1px solid color-mix(in srgb, var(--accent) 35%, transparent);
+    letter-spacing: 0.4px;
+    text-transform: uppercase;
+}
+
+.ccp-ai-sub-info {
+    font-size: 10.5px;
+    font-weight: 600;
+    color: var(--text-dim);
+}
+
+.ccp-ai-suggestions-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 6px;
+    margin-top: 2px;
+}
+
+.ccp-ai-chip {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 6px 10px;
+    border-radius: 10px;
+    background: rgba(255, 255, 255, 0.04);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    cursor: pointer;
+    transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+    user-select: none;
+    position: relative;
+    overflow: hidden;
+}
+
+body[data-theme="light"] .ccp-ai-chip {
+    background: rgba(0, 0, 0, 0.03);
+    border-color: rgba(0, 0, 0, 0.06);
+}
+
+.ccp-ai-chip:hover {
+    transform: translateY(-1.5px);
+    border-color: var(--chip-c, var(--accent));
+    background: color-mix(in srgb, var(--chip-c, var(--accent)) 12%, transparent);
+    box-shadow: 0 4px 12px color-mix(in srgb, var(--chip-c, var(--accent)) 20%, transparent);
+}
+
+.ccp-aic-dot {
+    width: 14px;
+    height: 14px;
+    border-radius: 50%;
+    flex-shrink: 0;
+    box-shadow: 0 0 6px var(--chip-c);
+    border: 1.5px solid rgba(255, 255, 255, 0.5);
+}
+
+.ccp-aic-text {
+    display: flex;
+    flex-direction: column;
+    gap: 1px;
+    flex: 1;
+    min-width: 0;
+}
+
+.ccp-aic-title {
+    font-size: 11px;
+    font-weight: 700;
+    color: var(--text);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.ccp-aic-desc {
+    font-family: var(--font-mono, monospace);
+    font-size: 9.5px;
+    font-weight: 600;
+    color: var(--text-dim);
+}
+
+.ccp-aic-tag {
+    font-size: 8.5px;
+    font-weight: 800;
+    padding: 1.5px 5px;
+    border-radius: 6px;
+    background: color-mix(in srgb, var(--chip-c) 20%, transparent);
+    color: var(--chip-c);
+    text-transform: uppercase;
+    letter-spacing: 0.3px;
+    flex-shrink: 0;
+}
+
 @keyframes popoverSlideIn {
     from {
         opacity: 0;
@@ -10072,6 +10204,11 @@ body[data-theme="light"] .ai-grad-preview-wrap {
     width: 100%;
     margin-top: auto;
     gap: 10px;
+}
+
+.ai-bpc-footer.ai-bpc-footer-centered {
+    justify-content: center;
+    gap: 12px;
 }
 
 .ai-bpc-actions {
