@@ -506,15 +506,28 @@
                                         <h4>Accent Highlight Palette</h4>
                                         <p>Primary focus accent for active tabs, omnibox highlights, and interactive toggles</p>
                                     </div>
-                                    <div class="hbc-color-swatches" id="accent-swatches-row">
-                                        <div class="hbc-swatch active" data-color="#09f0a0" style="--swatch-color: #09f0a0;" title="Emerald Green"><span class="swatch-check"><i class="fas fa-check"></i></span></div>
-                                        <div class="hbc-swatch" data-color="#ffffff" style="--swatch-color: #ffffff;" title="Pure White"><span class="swatch-check"><i class="fas fa-check"></i></span></div>
-                                        <div class="hbc-swatch" data-color="#a855f7" style="--swatch-color: #a855f7;" title="Neon Purple"><span class="swatch-check"><i class="fas fa-check"></i></span></div>
-                                        <div class="hbc-swatch" data-color="#3b82f6" style="--swatch-color: #3b82f6;" title="Royal Blue"><span class="swatch-check"><i class="fas fa-check"></i></span></div>
-                                        <div class="hbc-swatch" data-color="#ef4444" style="--swatch-color: #ef4444;" title="Crimson Red"><span class="swatch-check"><i class="fas fa-check"></i></span></div>
-                                        <div class="hbc-swatch" data-color="#e8ff47" style="--swatch-color: #e8ff47;" title="Cyber Yellow"><span class="swatch-check"><i class="fas fa-check"></i></span></div>
-                                        <div class="hbc-swatch" data-color="#fb923c" style="--swatch-color: #fb923c;" title="Sunset Orange"><span class="swatch-check"><i class="fas fa-check"></i></span></div>
-                                        <div class="hbc-swatch" data-color="#06b6d4" style="--swatch-color: #06b6d4;" title="Electric Cyan"><span class="swatch-check"><i class="fas fa-check"></i></span></div>
+                                    <div class="hbc-color-swatches-container">
+                                        <div class="hbc-color-swatches" id="accent-swatches-row">
+                                            <div class="hbc-swatch active" data-color="#15AC49" data-dark-color="#09F0A0" style="--swatch-color: #15AC49;" title="Emerald Green"><span class="swatch-check"><i class="fas fa-check"></i></span></div>
+                                            <div class="hbc-swatch" data-color="#2563EB" data-dark-color="#3B82F6" style="--swatch-color: #2563EB;" title="Ocean Sapphire"><span class="swatch-check"><i class="fas fa-check"></i></span></div>
+                                            <div class="hbc-swatch" data-color="#7C3AED" data-dark-color="#A855F7" style="--swatch-color: #7C3AED;" title="Neon Violet"><span class="swatch-check"><i class="fas fa-check"></i></span></div>
+                                            <div class="hbc-swatch" data-color="#EA580C" data-dark-color="#FB923C" style="--swatch-color: #EA580C;" title="Sunset Coral"><span class="swatch-check"><i class="fas fa-check"></i></span></div>
+                                            <div class="hbc-swatch" data-color="#E11D48" data-dark-color="#F43F5E" style="--swatch-color: #E11D48;" title="Crimson Rose"><span class="swatch-check"><i class="fas fa-check"></i></span></div>
+                                            <div class="hbc-swatch" data-color="#16A34A" data-dark-color="#CCFF00" style="--swatch-color: #16A34A;" title="Cyber Lime"><span class="swatch-check"><i class="fas fa-check"></i></span></div>
+                                            <div class="hbc-swatch" data-color="#0891B2" data-dark-color="#06B6D4" style="--swatch-color: #0891B2;" title="Electric Cyan"><span class="swatch-check"><i class="fas fa-check"></i></span></div>
+                                            <div class="hbc-swatch" data-color="#0F172A" data-dark-color="#E2E8F0" style="--swatch-color: #0F172A;" title="Slate Minimal"><span class="swatch-check"><i class="fas fa-check"></i></span></div>
+                                            
+                                            <!-- Custom Color Swatch with Color Picker -->
+                                            <div class="hbc-swatch custom-swatch" id="custom-accent-swatch" style="--swatch-color: #8B5CF6;" title="Custom Color">
+                                                <i class="fas fa-eye-dropper custom-icon"></i>
+                                                <span class="swatch-check"><i class="fas fa-check"></i></span>
+                                                <input type="color" id="custom-accent-color-picker" value="#8B5CF6">
+                                            </div>
+                                        </div>
+                                        <div class="custom-color-badge" id="custom-color-badge" style="display: none;">
+                                            <span class="custom-color-dot" id="custom-color-dot"></span>
+                                            <span class="custom-color-text" id="custom-color-text">#8B5CF6</span>
+                                        </div>
                                     </div>
                                 </div>
                             </div>
