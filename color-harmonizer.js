@@ -352,6 +352,98 @@
         return harmony;
     }
 
+    // ── AI Color Intelligence & Palette Suggestion Engine ─────────────────────
+    function analyzeColorIntelligence(hexColor) {
+        if (!hexColor) hexColor = '#15AC49';
+        const cleanHex = hexColor.toString().trim();
+        const rgb = hexToRgb(cleanHex);
+        const hsl = rgbToHsl(rgb.r, rgb.g, rgb.b);
+        const H = hsl.h;
+        const S = hsl.s;
+        const L = hsl.l;
+
+        let mood = "Harmonious & Balanced";
+        let temp = "Neutral Tone";
+        let vibrancy = S > 70 ? "Ultra Vivid" : (S > 35 ? "Balanced Resonance" : "Muted Minimal");
+        let name = "Custom Shade";
+
+        if (S < 15) {
+            mood = "Minimalist Titanium Flow";
+            temp = "Obsidian Neutral";
+            name = L > 70 ? "Platinum Light" : "Obsidian Slate";
+        } else if (H >= 345 || H < 15) {
+            mood = "High-Energy & Passion Focus";
+            temp = "Warm Crimson";
+            name = "Ruby Crimson";
+        } else if (H >= 15 && H < 45) {
+            mood = "Vibrant Sunset & Alertness";
+            temp = "Warm Coral";
+            name = "Solar Tangerine";
+        } else if (H >= 45 && H < 70) {
+            mood = "Radiant Solar Optimism";
+            temp = "Warm Amber";
+            name = "Volt Amber";
+        } else if (H >= 70 && H < 165) {
+            mood = "Restorative Deep Focus";
+            temp = "Balanced Emerald";
+            name = "Emerald Neon";
+        } else if (H >= 165 && H < 205) {
+            mood = "Lucid Oceanic Clarity";
+            temp = "Cool Cyan";
+            name = "Electric Cyan";
+        } else if (H >= 205 && H < 255) {
+            mood = "Deep Cognitive Flow";
+            temp = "Cool Sapphire";
+            name = "Sapphire Azure";
+        } else if (H >= 255 && H < 315) {
+            mood = "Creative Cyberpunk Intuition";
+            temp = "Cool Violet";
+            name = "Cyber Orchid";
+        } else {
+            mood = "Vivid Velvet Radiance";
+            temp = "Warm Magenta";
+            name = "Neon Fuchsia";
+        }
+
+        // Generate 4 AI Curated Variations based on the user's chosen custom color
+        const suggestions = [
+            {
+                title: "Analogous Glow",
+                desc: "Neighbor harmonic shift",
+                color: hslToHex((H - 25 + 360) % 360, Math.min(100, S + 8), Math.max(40, Math.min(65, L))),
+                tag: "Balanced"
+            },
+            {
+                title: "Electric Neon",
+                desc: "High-vibrancy energized pop",
+                color: hslToHex(H, 100, Math.max(48, Math.min(58, L))),
+                tag: "Vibrant"
+            },
+            {
+                title: "Complementary",
+                desc: "Dynamic contrast pairing",
+                color: hslToHex((H + 145) % 360, Math.max(75, S), Math.max(42, Math.min(62, L))),
+                tag: "Contrast"
+            },
+            {
+                title: "Soft Velvet",
+                desc: "Muted luxury tone",
+                color: hslToHex(H, Math.max(28, S - 28), Math.min(76, L + 10)),
+                tag: "Subtle"
+            }
+        ];
+
+        return {
+            name,
+            mood,
+            temp,
+            vibrancy,
+            hex: cleanHex,
+            hsl,
+            suggestions
+        };
+    }
+
     // ── Auto-Initialize on script load ────────────────────────────────────────
     function initAutoSync() {
         // Initial application from storage
@@ -389,6 +481,7 @@
         getContrastColor,
         calculateLogoFilter,
         synthesizeHarmonicGradients,
+        analyzeColorIntelligence,
         applyHarmonizedTheme
     };
 

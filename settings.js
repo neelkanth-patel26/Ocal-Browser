@@ -2609,6 +2609,41 @@ function renderHomepageSettings(s) {
     let currentHsv = { h: 270, s: 0.63, v: 0.96 };
     let matchedPreset = false;
 
+    function renderAISuggestions(hex) {
+        if (!window.OcalColorHarmonizer || typeof window.OcalColorHarmonizer.analyzeColorIntelligence !== 'function') return;
+        const info = window.OcalColorHarmonizer.analyzeColorIntelligence(hex);
+        if (!info) return;
+
+        const badge = document.getElementById('ccp-ai-mood-badge');
+        const subInfo = document.getElementById('ccp-ai-sub-info');
+        const grid = document.getElementById('ccp-ai-suggestions-grid');
+
+        if (badge) badge.innerText = info.mood;
+        if (subInfo) subInfo.innerHTML = `${info.temp} &bull; ${info.vibrancy} &bull; 98% Readability`;
+
+        if (grid && Array.isArray(info.suggestions)) {
+            grid.innerHTML = info.suggestions.map(s => `
+                <div class="ccp-ai-chip" data-color="${s.color}" style="--chip-c: ${s.color};" title="Apply ${s.title}">
+                    <span class="ccp-aic-dot" style="background: ${s.color};"></span>
+                    <div class="ccp-aic-text">
+                        <span class="ccp-aic-title">${s.title}</span>
+                        <span class="ccp-aic-desc">${s.color}</span>
+                    </div>
+                    <span class="ccp-aic-tag">${s.tag}</span>
+                </div>
+            `).join('');
+
+            grid.querySelectorAll('.ccp-ai-chip').forEach(chip => {
+                chip.onclick = (e) => {
+                    e.stopPropagation();
+                    if (chip.dataset.color) {
+                        setStudioFromHex(chip.dataset.color);
+                    }
+                };
+            });
+        }
+    }
+
     function syncStudioUI(source = 'hsv') {
         const rgb = hsvToRgb(currentHsv.h, currentHsv.s, currentHsv.v);
         const hex = rgbToHex(rgb.r, rgb.g, rgb.b);
@@ -2632,6 +2667,7 @@ function renderHomepageSettings(s) {
         if (customDot) customDot.style.background = hex;
         if (statAccent) statAccent.innerText = `Custom (${hex})`;
 
+        renderAISuggestions(hex);
         applyAccent(hex);
     }
 
