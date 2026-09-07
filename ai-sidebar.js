@@ -1696,16 +1696,31 @@ function getContrastColor(color) {
 function applyAccent(color) {
     if (!color) return;
     const contrastColor = getContrastColor(color);
+
+    let grad = `linear-gradient(135deg, ${color} 0%, ${color} 100%)`;
+    if (window.OcalColorHarmonizer && typeof window.OcalColorHarmonizer.getHarmonizedGradients === 'function') {
+        const grads = window.OcalColorHarmonizer.getHarmonizedGradients(color);
+        if (grads && grads.primary) grad = grads.primary;
+    } else {
+        grad = `linear-gradient(135deg, ${color} 0%, color-mix(in srgb, ${color} 75%, #FFFFFF) 100%)`;
+    }
+
+    const glow = hexToRgba(color, 0.35);
+    const dim = hexToRgba(color, 0.12);
+    const border = hexToRgba(color, 0.25);
+
     document.documentElement.style.setProperty('--accent', color);
-    document.documentElement.style.setProperty('--accent-glow', hexToRgba(color, 0.4));
-    document.documentElement.style.setProperty('--accent-dim', hexToRgba(color, 0.12));
-    document.documentElement.style.setProperty('--accent-border', hexToRgba(color, 0.25));
+    document.documentElement.style.setProperty('--accent-gradient', grad);
+    document.documentElement.style.setProperty('--accent-glow', glow);
+    document.documentElement.style.setProperty('--accent-dim', dim);
+    document.documentElement.style.setProperty('--accent-border', border);
     document.documentElement.style.setProperty('--accent-text', contrastColor);
 
     document.body.style.setProperty('--accent', color);
-    document.body.style.setProperty('--accent-glow', hexToRgba(color, 0.4));
-    document.body.style.setProperty('--accent-dim', hexToRgba(color, 0.12));
-    document.body.style.setProperty('--accent-border', hexToRgba(color, 0.25));
+    document.body.style.setProperty('--accent-gradient', grad);
+    document.body.style.setProperty('--accent-glow', glow);
+    document.body.style.setProperty('--accent-dim', dim);
+    document.body.style.setProperty('--accent-border', border);
     document.body.style.setProperty('--accent-text', contrastColor);
 }
 

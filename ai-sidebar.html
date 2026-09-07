@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <meta http-equiv="Content-Security-Policy" content="default-src 'self' 'unsafe-inline' 'unsafe-eval' https: data:; script-src 'self' 'unsafe-inline' 'unsafe-eval' https://cdnjs.cloudflare.com https://unpkg.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com https://cdnjs.cloudflare.com https://cdn.jsdelivr.net; font-src 'self' https://fonts.gstatic.com https://cdnjs.cloudflare.com https://cdn.jsdelivr.net; connect-src 'self' https: wss: http: http://127.0.0.1:* http://localhost:*; img-src 'self' https: data: blob:; worker-src 'self' blob: https://cdnjs.cloudflare.com;">
     <title>Ocal AI</title>
+    <script src="color-harmonizer.js"></script>
     <!-- ANTI-FLASH: must be FIRST in head, before any stylesheet -->
     <script>
         (function () {
@@ -16,8 +17,19 @@
                 document.documentElement.style.background = '#EDEDF0';
                 document.documentElement.style.colorScheme = 'light';
             }
-            var a = localStorage.getItem('ocal-settings-accent');
-            if (a) document.documentElement.style.setProperty('--accent', a);
+            var a = localStorage.getItem('ocal-settings-accent') || '#09F0A0';
+            if (a) {
+                document.documentElement.style.setProperty('--accent', a);
+                if (window.OcalColorHarmonizer && typeof window.OcalColorHarmonizer.getHarmonizedGradients === 'function') {
+                    var grads = window.OcalColorHarmonizer.getHarmonizedGradients(a);
+                    if (grads && grads.primary) document.documentElement.style.setProperty('--accent-gradient', grads.primary);
+                } else {
+                    document.documentElement.style.setProperty('--accent-gradient', 'linear-gradient(135deg, ' + a + ' 0%, color-mix(in srgb, ' + a + ' 75%, #FFFFFF) 100%)');
+                }
+                document.documentElement.style.setProperty('--accent-glow', 'color-mix(in srgb, ' + a + ' 30%, transparent)');
+                document.documentElement.style.setProperty('--accent-dim', 'color-mix(in srgb, ' + a + ' 12%, transparent)');
+                document.documentElement.style.setProperty('--accent-border', 'color-mix(in srgb, ' + a + ' 25%, transparent)');
+            }
         })();
     </script>
     <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -31,12 +43,12 @@
     <style>
         /* ── Design System Tokens (Matched 1:1 with Home Page) ── */
         :root {
-            --accent: #15AC49;
-            --accent-hover: #129740;
-            --accent-gradient: linear-gradient(135deg, #15AC49 0%, #10B981 100%);
-            --accent-glow: rgba(21, 172, 73, 0.28);
-            --accent-dim: rgba(21, 172, 73, 0.1);
-            --accent-border: rgba(21, 172, 73, 0.25);
+            --accent: #09F0A0;
+            --accent-hover: #07C785;
+            --accent-gradient: linear-gradient(135deg, var(--accent) 0%, color-mix(in srgb, var(--accent) 75%, #FFFFFF) 100%);
+            --accent-glow: color-mix(in srgb, var(--accent) 30%, transparent);
+            --accent-dim: color-mix(in srgb, var(--accent) 12%, transparent);
+            --accent-border: color-mix(in srgb, var(--accent) 25%, transparent);
             --lime: #D4FC2B;
             --bg: #EDEDF0;
             --panel-bg: #FFFFFF;
@@ -153,10 +165,15 @@
             background: var(--accent);
         }
 
+        body.fullscreen-mode #resize-handle {
+            display: none !important;
+        }
+
         /* ── Dashboard Outer Layout ── */
         .ai-panel {
             flex: 1;
             height: 100%;
+            width: 100%;
             display: flex;
             flex-direction: row;
             overflow: hidden;
@@ -167,10 +184,11 @@
         }
 
         body.fullscreen-mode .ai-panel {
-            padding: 18px 24px;
-            gap: 20px;
-            max-width: 1680px;
-            margin: 0 auto;
+            padding: 14px 16px;
+            gap: 16px;
+            max-width: 100%;
+            margin: 0;
+            width: 100%;
         }
 
         /* ── Left Sidebar Bento Card ── */
