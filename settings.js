@@ -699,20 +699,23 @@ const syncReleaseCatalogWithGitHub = async (v) => {
 window.electronAPI.getAppVersion().then(v => {
     currentVer = v;
 
-    // Version chip in About hero
+    // Version chip in About hero & header
     const disp = document.getElementById('current-version-display');
-    if (disp) disp.textContent = `Version ${v} · Stable`;
+    if (disp) disp.textContent = `v${v} Stable`;
+
+    const chip = document.getElementById('current-version-chip');
+    if (chip) chip.textContent = `v${v}`;
 
     // Diag cells
     const diagVer = document.getElementById('diag-version');
-    if (diagVer) diagVer.textContent = v;
+    if (diagVer) diagVer.textContent = `Chromium v134.0`;
 
     const buildEl = document.getElementById('diag-build');
-    if (buildEl) buildEl.textContent = `v${v}`;
+    if (buildEl) buildEl.textContent = `Runtime v35.0.0`;
 
     // Build line under version chip
     const buildLine = document.getElementById('about-build-line');
-    if (buildLine) buildLine.textContent = `Ocal-${v} · Production Build`;
+    if (buildLine) buildLine.innerHTML = `<i class="fas fa-cube"></i> Production Build`;
 
     // Initialize Catalog (Live Sync)
     syncReleaseCatalogWithGitHub(v);

@@ -2386,16 +2386,34 @@
 
             <!-- ── ABOUT ── -->
             <section id="about" class="section">
-                <div class="page-header">
-                    <div class="page-eyebrow">Settings</div>
-                    <div class="page-title">About Ocal Browser</div>
-                    <div class="page-desc">System specifications, developer credits, licenses, and automatic software updates.</div>
+                <div class="page-header sp-about-header">
+                    <div class="header-text-group">
+                        <div class="page-eyebrow"><i class="fas fa-circle-info"></i> System Diagnostics & Updates</div>
+                        <div class="page-title">About Ocal Browser</div>
+                        <div class="page-desc">Core architecture, agentic intelligence core, telemetry diagnostics, and live software updates.</div>
+                    </div>
+                    <div class="sp-stats-bar about-stats-bar">
+                        <div class="sp-stat-item">
+                            <span class="sp-dot-num" id="current-version-chip">v8.9.50</span>
+                            <span class="sp-badge sp-badge-lime">Stable</span>
+                        </div>
+                        <div class="sp-stat-item">
+                            <span class="sp-dot-num">Win64</span>
+                            <span class="sp-badge sp-badge-gray">Native</span>
+                        </div>
+                        <div class="sp-stat-item">
+                            <span class="sp-dot-num">AI Core</span>
+                            <span class="sp-badge sp-badge-gray">v4</span>
+                        </div>
+                    </div>
                 </div>
+
                 <div class="page-body">
-                    <!-- Main Hero Brand Card -->
+                    <!-- Main Flagship Bento Hero Card -->
                     <div class="about-hero-card card" id="update-dashboard">
                         <div class="hero-left">
                             <div class="brand-logo-container">
+                                <div class="brand-orb-pulse"></div>
                                 <svg class="brand-logo-svg" viewBox="0 0 24 24" fill="none"
                                     xmlns="http://www.w3.org/2000/svg">
                                     <path
@@ -2408,13 +2426,13 @@
                                 </svg>
                             </div>
                             <div class="brand-details">
-                                <h3 class="brand-name">Ocal Browser</h3>
-                                <div class="brand-version-wrap">
-                                    <span class="brand-version" id="current-version-display">v7.7.00 Stable</span>
-                                    <span class="brand-build-type">64-bit Architecture</span>
-                                    <span id="about-build-line" class="brand-build-line">Production Build</span>
+                                <div class="brand-title-row">
+                                    <h3 class="brand-name">Ocal Browser</h3>
+                                    <span class="brand-version" id="current-version-display">v8.9.50 Stable</span>
+                                    <span class="brand-build-type"><i class="fas fa-microchip"></i> 64-bit Native</span>
+                                    <span id="about-build-line" class="brand-build-line"><i class="fas fa-cube"></i> Production Build</span>
                                 </div>
-                                <p class="brand-tagline">Next-generation high-performance web browser powered by an agentic intelligence core.</p>
+                                <p class="brand-tagline">Supercharged next-generation web browser engineered with agentic local intelligence, zero telemetry tracking, and hardware-accelerated rendering.</p>
                             </div>
                         </div>
 
@@ -2425,56 +2443,73 @@
                                 </div>
                                 <div class="update-status-text">
                                     <h4 id="update-status-title">Browser is up to date</h4>
-                                    <p id="update-status-desc">Latest build installed</p>
+                                    <p id="update-status-desc">Latest build installed & active</p>
                                 </div>
                             </div>
-                            <button class="btn secondary" id="update-check-btn">
-                                <i class="fas fa-arrows-rotate"></i> Check for Updates
-                            </button>
+                            <div class="hero-actions-row">
+                                <button class="btn primary update-primary-btn" id="update-check-btn">
+                                    <i class="fas fa-arrows-rotate"></i> <span>Check for Updates</span>
+                                </button>
+                                <button class="btn secondary whatsnew-quick-btn" onclick="window.electronAPI && window.electronAPI.send('new-tab', 'ocal://whats-new')">
+                                    <i class="fas fa-gift"></i> <span>What's New</span>
+                                </button>
+                            </div>
                         </div>
                     </div>
 
-                    <!-- 4-Stat Metrics Bar -->
+                    <!-- 4-Tile Bento Dot-Matrix System & Engine Metrics Grid -->
                     <div class="about-metrics-bar">
                         <div class="about-metric-card">
                             <div class="about-metric-icon"><i class="fas fa-code-branch"></i></div>
                             <div class="about-metric-info">
-                                <div class="about-metric-label">Chromium Engine</div>
-                                <div class="about-metric-value" id="diag-version">v123.0.6312.122</div>
+                                <div class="about-metric-label-row">
+                                    <span class="about-metric-label">Chromium Engine</span>
+                                    <span class="metric-pill">Core</span>
+                                </div>
+                                <div class="about-metric-value" id="diag-version">v134.0.6998.35</div>
                             </div>
                         </div>
                         <div class="about-metric-card">
                             <div class="about-metric-icon"><i class="fas fa-brain"></i></div>
                             <div class="about-metric-info">
-                                <div class="about-metric-label">Agentic Core</div>
+                                <div class="about-metric-label-row">
+                                    <span class="about-metric-label">Agentic AI Engine</span>
+                                    <span class="metric-pill">Local / Private</span>
+                                </div>
                                 <div class="about-metric-value">Ocal AI V4 Multimodal</div>
                             </div>
                         </div>
                         <div class="about-metric-card">
                             <div class="about-metric-icon"><i class="fas fa-shield-halved"></i></div>
                             <div class="about-metric-info">
-                                <div class="about-metric-label">Neural Shield</div>
-                                <div class="about-metric-value">Adblock V10 Active</div>
+                                <div class="about-metric-label-row">
+                                    <span class="about-metric-label">Neural Privacy Shield</span>
+                                    <span class="metric-pill">Zero Trackers</span>
+                                </div>
+                                <div class="about-metric-value">CyberStealth V10 Active</div>
                             </div>
                         </div>
                         <div class="about-metric-card">
-                            <div class="about-metric-icon"><i class="fas fa-laptop-code"></i></div>
+                            <div class="about-metric-icon"><i class="fas fa-bolt"></i></div>
                             <div class="about-metric-info">
-                                <div class="about-metric-label">System Build</div>
-                                <div class="about-metric-value">Win64 Native Host</div>
+                                <div class="about-metric-label-row">
+                                    <span class="about-metric-label">Electron Host</span>
+                                    <span class="metric-pill">Win64</span>
+                                </div>
+                                <div class="about-metric-value" id="diag-build">Runtime v35.0.0</div>
                             </div>
                         </div>
                     </div>
 
-                    <!-- Progress bar container -->
-                    <div id="update-info-expanded" class="card"
-                        style="display: none !important; padding: 16px 20px; margin-top: -10px; margin-bottom: 20px; border-top: none;">
+                    <!-- Update Progress Bento Capsule -->
+                    <div id="update-info-expanded" class="card update-progress-card"
+                        style="display: none !important; padding: 20px 24px; margin-top: -6px; margin-bottom: 20px;">
                         <div class="update-progress-container">
                             <div id="update-progress-wrapper" style="display: none;">
                                 <div class="update-progress-label">
-                                    <span>Downloading updates...</span>
+                                    <span class="progress-title"><i class="fas fa-cloud-arrow-down"></i> Downloading binary update...</span>
                                     <span id="update-progress-percent"
-                                        style="font-weight: 600; font-family: var(--font-mono);">0%</span>
+                                        style="font-weight: 700; font-family: 'Space Mono', monospace;">0%</span>
                                 </div>
                                 <div class="update-progress-bar">
                                     <div class="update-progress-fill" id="update-progress-fill" style="width: 0%;">
@@ -2482,87 +2517,124 @@
                                 </div>
                             </div>
                             <button class="btn primary" id="download-update-btn"
-                                style="display: none; margin-top: 12px; width: 100%; justify-content: center;">
-                                <i class="fas fa-download"></i> Download Update
+                                style="display: none; margin-top: 14px; width: 100%; justify-content: center; height: 46px; border-radius: 100px;">
+                                <i class="fas fa-download"></i> Download & Install Update
                             </button>
                         </div>
                     </div>
 
+                    <!-- Main Bento Layout Grid -->
                     <div class="about-grid">
                         <!-- Release Notes Card (Left Column) -->
                         <div class="card notes-card">
                             <div class="card-header-styled">
-                                <i class="fas fa-file-lines"></i>
-                                <span>Latest Release Notes & Changelog</span>
+                                <div class="header-left-title">
+                                    <i class="fas fa-file-lines"></i>
+                                    <span>Latest Release Notes & Changelog</span>
+                                </div>
+                                <button class="notes-expand-btn" onclick="window.electronAPI && window.electronAPI.send('new-tab', 'ocal://whats-new')" title="Open full What's New showroom">
+                                    <span>Explore What's New</span>
+                                    <i class="fas fa-arrow-up-right-from-square"></i>
+                                </button>
                             </div>
                             <div class="notes-content" id="update-notes">
                                 <div class="notes-loading">
-                                    <i class="fas fa-spinner fa-spin"></i>
-                                    <span>Loading notes...</span>
+                                    <i class="fas fa-circle-notch fa-spin"></i>
+                                    <span>Loading latest release telemetry...</span>
                                 </div>
                             </div>
                         </div>
 
-                        <!-- Right Column: Specs & Links -->
+                        <!-- Right Column: Specs & Resources -->
                         <div class="about-side-panel">
-                            <!-- Specs -->
+                            <!-- Technical Specifications -->
                             <div class="card specs-card">
                                 <div class="card-header-styled">
-                                    <i class="fas fa-microchip"></i>
-                                    <span>Technical Specifications</span>
+                                    <div class="header-left-title">
+                                        <i class="fas fa-microchip"></i>
+                                        <span>Technical Specifications</span>
+                                    </div>
+                                    <span class="specs-badge">System</span>
                                 </div>
                                 <div class="specs-list">
                                     <div class="spec-row-item">
                                         <span class="spec-label">Core Renderer</span>
-                                        <span class="spec-value">Chromium v123.0</span>
+                                        <span class="spec-value">Chromium v134.0</span>
                                     </div>
                                     <div class="spec-row-item">
                                         <span class="spec-label">JavaScript Engine</span>
-                                        <span class="spec-value">V8 v20.10.0</span>
+                                        <span class="spec-value">V8 TurboFan</span>
                                     </div>
                                     <div class="spec-row-item">
-                                        <span class="spec-label">Electron Host</span>
-                                        <span class="spec-value" id="diag-build">Runtime v29.1.0</span>
-                                    </div>
-                                    <div class="spec-row-item">
-                                        <span class="spec-label">Architecture</span>
+                                        <span class="spec-label">Host Architecture</span>
                                         <span class="spec-value">Windows x64 Native</span>
                                     </div>
                                     <div class="spec-row-item">
-                                        <span class="spec-label">Developer</span>
+                                        <span class="spec-label">Graphics Acceleration</span>
+                                        <span class="spec-value">Direct3D 11 Zero-Copy</span>
+                                    </div>
+                                    <div class="spec-row-item">
+                                        <span class="spec-label">Media & Audio DSP</span>
+                                        <span class="spec-value">Ocal Media Master</span>
+                                    </div>
+                                    <div class="spec-row-item">
+                                        <span class="spec-label">Studio Developer</span>
                                         <span class="spec-value">Gaming Network Studio</span>
                                     </div>
                                 </div>
                             </div>
 
-                            <!-- Links -->
+                            <!-- Official Developer & Ecosystem Resources -->
                             <div class="card resources-card">
                                 <div class="card-header-styled">
-                                    <i class="fas fa-compass"></i>
-                                    <span>Official Developer Resources</span>
+                                    <div class="header-left-title">
+                                        <i class="fas fa-compass"></i>
+                                        <span>Developer Ecosystem</span>
+                                    </div>
+                                    <span class="specs-badge">Links</span>
                                 </div>
                                 <div class="resources-list">
                                     <div class="resource-row-link"
                                         onclick="window.electronAPI && window.electronAPI.send('open-external','https://github.com/neelkanth-patel26/Ocal-Browser')">
                                         <div class="resource-left">
-                                            <i class="fab fa-github"></i>
-                                            <span>GitHub Repository</span>
+                                            <div class="resource-icon-box"><i class="fab fa-github"></i></div>
+                                            <div class="resource-text">
+                                                <span class="resource-name">GitHub Repository</span>
+                                                <span class="resource-desc">Open-source codebase & issues</span>
+                                            </div>
                                         </div>
                                         <i class="fas fa-arrow-up-right-from-square link-arrow"></i>
                                     </div>
                                     <div class="resource-row-link"
                                         onclick="window.electronAPI && window.electronAPI.send('open-external','https://discord.gg/RDxmXsecmc')">
                                         <div class="resource-left">
-                                            <i class="fab fa-discord" style="color: #5865f2;"></i>
-                                            <span>Developer Discord</span>
+                                            <div class="resource-icon-box discord-box"><i class="fab fa-discord"></i></div>
+                                            <div class="resource-text">
+                                                <span class="resource-name">Developer Discord</span>
+                                                <span class="resource-desc">Join our community & support</span>
+                                            </div>
                                         </div>
                                         <i class="fas fa-arrow-up-right-from-square link-arrow"></i>
                                     </div>
                                     <div class="resource-row-link"
                                         onclick="window.electronAPI && window.electronAPI.send('open-external','https://gnstudioxrage.wixstudio.com/gamingnetworkstudio')">
                                         <div class="resource-left">
-                                            <i class="fas fa-display"></i>
-                                            <span>GNS Studio Hub</span>
+                                            <div class="resource-icon-box gns-box"><i class="fas fa-display"></i></div>
+                                            <div class="resource-text">
+                                                <span class="resource-name">GNS Studio Hub</span>
+                                                <span class="resource-desc">Gaming Network Studio official portal</span>
+                                            </div>
+                                        </div>
+                                        <i class="fas fa-arrow-up-right-from-square link-arrow"></i>
+                                    </div>
+                                    <div class="resource-row-link"
+                                        onclick="window.electronAPI && window.electronAPI.send('new-tab','ocal://whats-new')">
+                                        <div class="resource-left">
+                                            <div class="resource-icon-box whatsnew-box"><i class="fas fa-gift"></i></div>
+                                            <div class="resource-text">
+                                                <span class="resource-name">What's New Center</span>
+                                                <span class="resource-desc">Feature showroom & release highlights</span>
+                                            </div>
                                         </div>
                                         <i class="fas fa-arrow-up-right-from-square link-arrow"></i>
                                     </div>
@@ -2573,9 +2645,10 @@
                         <!-- Footer Legal Info -->
                         <div class="about-footer">
                             <p class="copyright">&copy; 2026 Gaming Network Studio Media Group &middot; The Ocal Project Foundation</p>
-                            <p class="legal-disclaimer">All rights reserved. Ocal is open-source software built on top of the Chromium Project and other open-source contributions. Local anti-gravity rendering and agentic AI features operate 100% locally on your machine.</p>
+                            <p class="legal-disclaimer">All rights reserved. Ocal Browser is built on top of the Chromium Project and open-source contributions. Local anti-gravity rendering and agentic AI features operate 100% locally on your machine with zero remote data collection.</p>
                         </div>
                     </div>
+                </div>
             </section>
 
         </main>
