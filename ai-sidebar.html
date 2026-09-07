@@ -4,6 +4,19 @@
     <meta charset="UTF-8">
     <meta http-equiv="Content-Security-Policy" content="default-src 'self' 'unsafe-inline' 'unsafe-eval' https: data:; script-src 'self' 'unsafe-inline' 'unsafe-eval' https://cdnjs.cloudflare.com https://unpkg.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com https://cdnjs.cloudflare.com https://cdn.jsdelivr.net; font-src 'self' https://fonts.gstatic.com https://cdnjs.cloudflare.com https://cdn.jsdelivr.net; connect-src 'self' https: wss: http: http://127.0.0.1:* http://localhost:*; img-src 'self' https: data: blob:; worker-src 'self' blob: https://cdnjs.cloudflare.com;">
     <title>Ocal AI</title>
+    <!-- ANTI-FLASH: must be FIRST in head -->
+    <script>
+        (function () {
+            var t = localStorage.getItem('ocal-settings-theme') || 'dark';
+            document.documentElement.setAttribute('data-theme', t);
+            if (t === 'dark') {
+                document.documentElement.style.background = '#18181B';
+                document.documentElement.style.colorScheme = 'dark';
+            }
+            var a = localStorage.getItem('ocal-settings-accent');
+            if (a) document.documentElement.style.setProperty('--accent', a);
+        })();
+    </script>
     <link rel="stylesheet" href="assets/fontawesome/css/all.min.css">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -13,6 +26,7 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/github-dark.min.css">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
     <style>
+        /* ── Design System Tokens (Matched with Home Page & Settings) ── */
         :root {
             --accent: #15AC49;
             --accent-hover: #129740;
@@ -21,84 +35,92 @@
             --accent-dim: rgba(21, 172, 73, 0.09);
             --accent-border: rgba(21, 172, 73, 0.24);
             --lime: #D4FC2B;
-            --bg: #F8F9FB;
+            --bg: #EDEDF0;
             --panel-bg: #FFFFFF;
-            --border: #E5E7EB;
-            --border-subtle: #F1F3F5;
-            --hover: #F3F4F6;
-            --glass: rgba(255, 255, 255, 0.85);
+            --sidebar-bg: #F8F9FA;
+            --border: rgba(0, 0, 0, 0.06);
+            --border-subtle: rgba(0, 0, 0, 0.03);
+            --hover: rgba(0, 0, 0, 0.04);
+            --glass: rgba(255, 255, 255, 0.88);
             --glass-hover: #F8FAFC;
-            --glass-border: rgba(0, 0, 0, 0.05);
+            --glass-border: rgba(0, 0, 0, 0.06);
             --card-bg: #FFFFFF;
-            --card-border: #E5E7EB;
+            --card-border: rgba(0, 0, 0, 0.06);
             --card-hover-bg: #F8FAFC;
             --card-hover-border: var(--accent);
             --input-bg: #FFFFFF;
-            --input-border: #E2E8F0;
+            --input-border: rgba(0, 0, 0, 0.08);
             --tab-strip-bg: #F1F3F5;
-            --text: #0F172A;
-            --text-dim: #475569;
+            --text: #111111;
+            --text-dim: #555860;
             --text-muted: #94A3B8;
-            --radius: 16px;
+            --radius-sm: 10px;
+            --radius-md: 16px;
+            --radius-lg: 20px;
             --radius-pill: 100px;
             --title-font: 'Plus Jakarta Sans', sans-serif;
             --font: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
             --mono: 'Space Mono', monospace;
-            --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.05);
-            --shadow-md: 0 4px 16px -2px rgba(0, 0, 0, 0.05), 0 2px 6px -1px rgba(0, 0, 0, 0.02);
-            --shadow-lg: 0 12px 32px -4px rgba(0, 0, 0, 0.08), 0 4px 12px -2px rgba(0, 0, 0, 0.03);
-            --shadow-input: 0 12px 36px -4px rgba(0, 0, 0, 0.07), 0 4px 14px -2px rgba(0, 0, 0, 0.03);
+            --shadow-sm: 0 2px 8px rgba(0, 0, 0, 0.03);
+            --shadow-md: 0 4px 20px rgba(0, 0, 0, 0.04);
+            --shadow-lg: 0 12px 36px rgba(0, 0, 0, 0.07);
+            --shadow-input: 0 8px 30px rgba(0, 0, 0, 0.06);
         }
 
-        body[data-theme="dark"] {
+        body[data-theme="dark"],
+        html[data-theme="dark"] body {
             --bg: #18181B;
             --panel-bg: #222226;
+            --sidebar-bg: #1A1A1E;
             --border: rgba(255, 255, 255, 0.08);
-            --border-subtle: rgba(255, 255, 255, 0.05);
-            --hover: #2E2E33;
-            --glass: #222226;
+            --border-subtle: rgba(255, 255, 255, 0.04);
+            --hover: rgba(255, 255, 255, 0.06);
+            --glass: rgba(34, 34, 38, 0.92);
             --glass-hover: #2E2E33;
             --glass-border: rgba(255, 255, 255, 0.08);
-            --card-bg: #222226;
+            --card-bg: #28282D;
             --card-border: rgba(255, 255, 255, 0.08);
             --card-hover-bg: #2E2E33;
             --card-hover-border: var(--accent);
             --input-bg: #28282D;
-            --input-border: rgba(255, 255, 255, 0.1);
-            --tab-strip-bg: #222226;
+            --input-border: rgba(255, 255, 255, 0.08);
+            --tab-strip-bg: #1F1F23;
             --text: #F4F4F5;
             --text-dim: #A1A1AA;
             --text-muted: #71717A;
-            --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.3);
-            --shadow-md: 0 4px 20px -2px rgba(0, 0, 0, 0.4);
-            --shadow-lg: 0 14px 36px -4px rgba(0, 0, 0, 0.55);
-            --shadow-input: 0 14px 36px -4px rgba(0, 0, 0, 0.55);
+            --shadow-sm: 0 2px 8px rgba(0, 0, 0, 0.3);
+            --shadow-md: 0 4px 24px rgba(0, 0, 0, 0.45);
+            --shadow-lg: 0 16px 48px rgba(0, 0, 0, 0.6);
+            --shadow-input: 0 12px 36px rgba(0, 0, 0, 0.55);
         }
 
-        body[data-theme="light"] {
-            --bg: #F8F9FB;
+        body[data-theme="light"],
+        html[data-theme="light"] body {
+            --bg: #EDEDF0;
             --panel-bg: #FFFFFF;
-            --border: #E5E7EB;
-            --border-subtle: #F1F3F5;
-            --hover: #F3F4F6;
-            --glass: rgba(255, 255, 255, 0.85);
+            --sidebar-bg: #F8F9FA;
+            --border: rgba(0, 0, 0, 0.06);
+            --border-subtle: rgba(0, 0, 0, 0.03);
+            --hover: rgba(0, 0, 0, 0.04);
+            --glass: rgba(255, 255, 255, 0.88);
             --glass-hover: #F8FAFC;
-            --glass-border: rgba(0, 0, 0, 0.05);
+            --glass-border: rgba(0, 0, 0, 0.06);
             --card-bg: #FFFFFF;
-            --card-border: #E5E7EB;
+            --card-border: rgba(0, 0, 0, 0.06);
             --card-hover-bg: #F8FAFC;
             --card-hover-border: var(--accent);
             --input-bg: #FFFFFF;
-            --input-border: #E2E8F0;
-            --text: #0F172A;
-            --text-dim: #475569;
+            --input-border: rgba(0, 0, 0, 0.08);
+            --text: #111111;
+            --text-dim: #555860;
             --text-muted: #94A3B8;
         }
 
-        /* Reset & Base Elements */
+        /* ── Reset & Base Elements ── */
         *, *::before, *::after { 
             box-sizing: border-box; 
-            margin: 0; padding: 0; 
+            margin: 0; 
+            padding: 0; 
         }
         
         body {
@@ -112,7 +134,23 @@
             -webkit-font-smoothing: antialiased;
         }
 
-        /* Resize Handle */
+        /* ── Custom Scrollbars ── */
+        ::-webkit-scrollbar {
+            width: 6px;
+            height: 6px;
+        }
+        ::-webkit-scrollbar-track {
+            background: transparent;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: rgba(148, 163, 184, 0.3);
+            border-radius: 10px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: var(--accent);
+        }
+
+        /* ── Resize Handle ── */
         #resize-handle {
             width: 4px;
             height: 100%;
@@ -120,36 +158,32 @@
             background: transparent;
             z-index: 100;
             flex-shrink: 0;
-            transition: background 0.2s;
+            transition: background 0.2s ease;
         }
         #resize-handle:hover, #resize-handle.active {
             background: var(--accent);
         }
 
-        /* Panel Container matched with sidebars.html design */
+        /* ── Panel Container ── */
         .ai-panel {
             flex: 1;
-            background: var(--panel-bg) !important;
-            border: 1px solid var(--border) !important;
-            border-radius: var(--radius) !important;
+            background: var(--panel-bg);
+            border: 1px solid var(--border);
+            border-radius: var(--radius-lg);
             margin: 8px;
             display: flex;
-            flex-direction: column;
+            flex-direction: row;
             overflow: hidden;
             position: relative;
-            opacity: 1;
-            visibility: visible;
-            will-change: transform, opacity;
-            box-shadow: none !important;
+            box-shadow: var(--shadow-md);
+            transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
         }
 
         .ai-panel.animate-in {
-            visibility: visible;
-            animation: slide-right-in 0.45s cubic-bezier(0.19, 1, 0.22, 1) forwards;
+            animation: slide-right-in 0.4s cubic-bezier(0.19, 1, 0.22, 1) forwards;
         }
 
         body.closing .ai-panel {
-            visibility: visible;
             animation: slide-right-out 0.35s cubic-bezier(0.19, 1, 0.22, 1) forwards !important;
         }
 
@@ -163,1842 +197,118 @@
             to { transform: translateX(100%); opacity: 0; }
         }
 
-        /* Header Styling matching sidebars.html */
-        .ai-header {
-            height: 54px;
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            padding: 0 16px;
-            border-bottom: 1px solid var(--border);
-            flex-shrink: 0;
-            background: var(--panel-bg) !important;
-            z-index: 10;
-        }
-
-        .ai-brand {
-            display: flex;
-            align-items: center;
-            gap: 10px;
-        }
-
-        .ai-logo {
-            width: 28px;
-            height: 28px;
-            background: var(--accent-gradient) !important;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            color: #FFFFFF !important;
-            font-size: 12px;
-            border-radius: 8px;
-            font-weight: 800;
-            box-shadow: 0 2px 8px var(--accent-glow) !important;
-            flex-shrink: 0;
-        }
-
-        .ai-title-text h1 {
-            font-family: var(--title-font);
-            font-size: 14.5px;
-            font-weight: 700;
-            letter-spacing: -0.2px;
-            color: var(--text);
-        }
-
-        .model-badge {
-            font-size: 10px;
-            font-weight: 700;
-            background: rgba(16, 185, 129, 0.1) !important;
-            border: 1px solid rgba(16, 185, 129, 0.25) !important;
-            color: var(--accent) !important;
-            padding: 2px 8px;
-            border-radius: 100px;
-            white-space: nowrap;
-        }
-
-        .ai-controls {
-            display: flex;
-            gap: 4px;
-        }
-
-        .control-btn {
-            width: 30px;
-            height: 30px;
-            border-radius: 8px !important;
-            border: 1px solid transparent;
-            background: transparent;
-            color: var(--text-dim);
-            cursor: pointer;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
-            font-size: 12px;
-        }
-
-        .control-btn:hover {
-            background: var(--hover) !important;
-            color: var(--text) !important;
-            border-color: var(--border);
-        }
-
-        #close-ai:hover {
-            background: rgba(239, 68, 68, 0.12) !important;
-            color: #EF4444 !important;
-            border-color: rgba(239, 68, 68, 0.2) !important;
-        }
-
-        .ai-main-container {
-            flex: 1;
-            display: flex;
-            flex-direction: column;
-            height: 100%;
-            min-height: 0;
-            overflow: hidden;
-            background: transparent !important;
-            position: relative;
-        }
-
-        .ai-views-container {
-            flex: 1;
-            display: flex;
-            flex-direction: column;
-            min-height: 0;
-            height: 100%;
-            overflow: hidden;
-            position: relative;
-        }
-
-        /* Chat View Panel */
-        .ai-chat-view {
-            flex: 1;
-            display: flex;
-            flex-direction: column;
-            min-height: 0;
-            height: 100%;
-            z-index: 10;
-            background: transparent !important;
-            overflow: hidden;
-            position: relative;
-        }
-
-        .messages-scroll {
-            flex: 1;
-            min-height: 0;
-            overflow-y: auto;
-            padding: 16px 14px 20px 14px;
-            display: flex;
-            flex-direction: column;
-            gap: 14px;
-            scroll-behavior: smooth;
-        }
-
-        .messages-scroll::-webkit-scrollbar { width: 4px; }
-        .messages-scroll::-webkit-scrollbar-track { background: transparent; }
-        .messages-scroll::-webkit-scrollbar-thumb { 
-            background: rgba(255, 255, 255, 0.15); 
-            border-radius: 10px; 
-        }
-
-        .msg-group {
-            display: flex;
-            flex-direction: column;
-            gap: 6px;
-            max-width: 100%;
-            min-width: 0;
-            animation: slide-up 0.3s cubic-bezier(0.16, 1, 0.3, 1) forwards;
-        }
-
-        .msg-group.user { 
-            align-self: flex-end; 
-            align-items: flex-end;
-            max-width: 85%;
-            width: fit-content;
-        }
-
-        .msg-group.ai { 
-            align-self: flex-start;
-            align-items: flex-start;
-            max-width: 100%;
-            width: 100%;
-        }
-
-        /* File Attachment Card inside Chat Messages */
-        .msg-file-chip {
-            display: inline-flex;
-            align-items: center;
-            gap: 10px;
-            padding: 8px 14px;
-            border-radius: 12px;
-            background: rgba(0, 0, 0, 0.08);
-            border: 1px solid rgba(0, 0, 0, 0.12);
-            margin-bottom: 8px;
-            font-size: 12px;
-            font-weight: 700;
-            width: fit-content;
-            max-width: 100%;
-            box-sizing: border-box;
-        }
-
-        body[data-theme="dark"] .msg-file-chip {
-            background: rgba(255, 255, 255, 0.08);
-            border: 1px solid rgba(255, 255, 255, 0.15);
-            color: #FFFFFF;
-        }
-
-        .msg-file-chip i {
-            font-size: 16px;
-            color: #15AC49;
-        }
-
-        body[data-theme="dark"] .msg-file-chip i {
-            color: #D4FC2B;
-        }
-
-        .msg-file-chip .chip-name {
-            word-break: break-all;
-        }
-
-        .msg-file-chip .chip-tag {
-            font-size: 9px;
-            font-weight: 800;
-            text-transform: uppercase;
-            padding: 2px 6px;
-            border-radius: 4px;
-            background: rgba(0, 0, 0, 0.1);
-            letter-spacing: 0.5px;
-        }
-
-        body[data-theme="dark"] .msg-file-chip .chip-tag {
-            background: rgba(255, 255, 255, 0.14);
-        }
-
-        .msg-file-img-preview {
-            max-width: 220px;
-            max-height: 160px;
-            border-radius: 12px;
-            object-fit: cover;
-            margin-bottom: 8px;
-            border: 1px solid rgba(0, 0, 0, 0.1);
-            display: block;
-        }
-
-        body[data-theme="dark"] .msg-file-img-preview {
-            border-color: rgba(255, 255, 255, 0.15);
-        }
-
-        /* Agent Status Step Pills */
-        /* Agent Status Step Pills */
-        .agent-actions-row {
-            display: flex;
-            flex-wrap: wrap;
-            gap: 6px;
-            margin-bottom: 6px;
-        }
-
-        .agent-action {
-            display: inline-flex;
-            align-items: center;
-            gap: 8px;
-            padding: 6px 14px;
-            border-radius: 100px;
-            font-size: 11.5px;
-            font-weight: 600;
-            background: rgba(16, 185, 129, 0.08);
-            border: 1px solid rgba(16, 185, 129, 0.22);
-            color: var(--accent);
-            margin-bottom: 4px;
-            transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
-            width: fit-content;
-            max-width: 100%;
-            box-sizing: border-box;
-            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.02);
-        }
-
-        body[data-theme="dark"] .agent-action {
-            background: rgba(16, 185, 129, 0.12);
-            border-color: rgba(16, 185, 129, 0.28);
-            color: #10B981;
-        }
-
-        .agent-action.clickable {
-            cursor: pointer;
-            background: rgba(16, 185, 129, 0.14);
-            border-color: rgba(16, 185, 129, 0.35);
-        }
-
-        .agent-action.clickable:hover {
-            transform: translateY(-1px);
-            background: var(--accent);
-            color: #FFFFFF;
-            box-shadow: 0 4px 12px var(--accent-glow);
-        }
-
-        /* Message Header & Meta */
-        .msg-sender-header {
-            display: flex;
-            align-items: center;
-            gap: 9px;
-            margin-bottom: 6px;
-            padding-left: 2px;
-        }
-
-        .msg-avatar {
-            width: 28px;
-            height: 28px;
-            min-width: 28px;
-            border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 12px;
-            font-weight: 700;
-        }
-
-        .msg-avatar.ai-avatar {
-            background: var(--accent-gradient);
-            color: #FFFFFF;
-            box-shadow: 0 2px 10px var(--accent-glow);
-        }
-
-        .msg-sender-meta {
-            display: flex;
-            align-items: center;
-            gap: 7px;
-        }
-
-        .msg-sender-name {
-            font-family: var(--title-font);
-            font-weight: 700;
-            font-size: 13.5px;
-            color: var(--text);
-        }
-
-        .msg-persona-badge {
-            font-size: 9.5px;
-            font-weight: 800;
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
-            padding: 2px 8px;
-            border-radius: 12px;
-            background: rgba(16, 185, 129, 0.1);
-            color: var(--accent);
-            border: 1px solid rgba(16, 185, 129, 0.22);
-        }
-
-        .msg-model-tag {
-            font-size: 11px;
-            color: var(--text-muted);
-            font-weight: 500;
-        }
-
-        .msg-thinking-tag {
-            display: inline-flex;
-            align-items: center;
-            gap: 6px;
-            font-size: 11.5px;
-            font-weight: 600;
-            color: var(--accent);
-        }
-
-        .thinking-glow-dot {
-            width: 6px;
-            height: 6px;
-            border-radius: 50%;
-            background: var(--accent);
-            box-shadow: 0 0 8px var(--accent);
-            animation: pulse-dot 1.4s ease-in-out infinite;
-        }
-
-        @keyframes pulse-dot {
-            0%, 100% { opacity: 0.4; transform: scale(0.85); }
-            50% { opacity: 1; transform: scale(1.2); }
-        }
-
-        /* Message Bubbles */
-        .msg-bubble {
-            padding: 14px 18px;
-            font-size: 13.5px;
-            line-height: 1.6;
-            position: relative;
-            max-width: 100%;
-            word-break: normal;
-            overflow-wrap: break-word;
-            box-sizing: border-box;
-            transition: all 0.2s ease;
-        }
-
-        /* User Message Bubble */
-        .user .msg-bubble {
-            background: #181C24 !important;
-            border: 1px solid rgba(255, 255, 255, 0.08) !important;
-            border-radius: 18px 18px 4px 18px !important;
-            color: #FFFFFF !important;
-            font-weight: 500;
-            padding: 10px 16px !important;
-            box-shadow: 0 4px 14px rgba(0, 0, 0, 0.1) !important;
-            width: fit-content !important;
-            min-width: fit-content !important;
-            max-width: 100% !important;
-            word-break: normal !important;
-            overflow-wrap: break-word !important;
-            white-space: pre-wrap !important;
-        }
-
-        body[data-theme="light"] .user .msg-bubble {
-            background: #181C24 !important;
-            border: 1px solid rgba(0, 0, 0, 0.12) !important;
-            color: #FFFFFF !important;
-            box-shadow: 0 4px 14px rgba(0, 0, 0, 0.08) !important;
-        }
-
-        body[data-theme="dark"] .user .msg-bubble {
-            background: linear-gradient(135deg, rgba(16, 185, 129, 0.25) 0%, rgba(16, 185, 129, 0.12) 100%) !important;
-            border: 1px solid rgba(16, 185, 129, 0.35) !important;
-            color: #F8FAFC !important;
-            box-shadow: 0 4px 20px rgba(16, 185, 129, 0.14) !important;
-        }
-
-        /* AI Message Bubble */
-        .ai .msg-bubble {
-            background: #FFFFFF !important;
-            border: 1px solid rgba(0, 0, 0, 0.08) !important;
-            border-radius: 4px 18px 18px 18px !important;
-            color: #1E293B !important;
-            font-weight: 400;
-            box-shadow: 0 4px 16px rgba(0, 0, 0, 0.04), 0 1px 3px rgba(0, 0, 0, 0.02) !important;
-            line-height: 1.65;
-            padding: 14px 18px !important;
-            width: 100%;
-        }
-
-        body[data-theme="dark"] .ai .msg-bubble {
-            background: rgba(18, 22, 30, 0.85) !important;
-            border: 1px solid rgba(255, 255, 255, 0.09) !important;
-            backdrop-filter: blur(16px);
-            color: #F1F5F9 !important;
-            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.35) !important;
-        }
-
-        /* Footer Action Bar under AI Messages */
-        .msg-footer-bar {
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            margin-top: 8px;
-            padding-left: 4px;
-        }
-
-        .msg-action-btn {
-            background: var(--hover);
-            border: 1px solid var(--border);
-            border-radius: 8px;
-            padding: 4px 10px;
-            font-size: 11px;
-            font-weight: 600;
-            color: var(--text-dim);
-            cursor: pointer;
-            transition: all 0.15s ease;
-            display: inline-flex;
-            align-items: center;
-            gap: 5px;
-            font-family: inherit;
-        }
-
-        .msg-action-btn:hover {
-            background: var(--card-bg);
-            color: var(--accent);
-            border-color: var(--accent);
-            transform: translateY(-1px);
-        }
-
-        .msg-time {
-            font-size: 11px;
-            color: var(--text-muted);
-            margin-left: auto;
-        }
-
-        /* Thinking Card */
-        .thinking-card {
-            display: flex;
-            align-items: center;
-            gap: 12px;
-            padding: 14px 20px;
-            border-radius: 16px;
-            background: var(--card-bg);
-            border: 1px solid var(--border);
-            box-shadow: var(--shadow-sm);
-            width: fit-content;
-            margin-top: 4px;
-        }
-
-        .thinking-spinner-ring {
-            width: 18px;
-            height: 18px;
-            border: 2px solid rgba(16, 185, 129, 0.2);
-            border-top-color: var(--accent);
-            border-radius: 50%;
-            animation: spin-ring 0.8s linear infinite;
-        }
-
-        @keyframes spin-ring {
-            to { transform: rotate(360deg); }
-        }
-
-        .thinking-label {
-            font-size: 12.5px;
-            font-weight: 600;
-            color: var(--text-dim);
-        }
-
-        .msg-content {
-            max-width: 100%;
-            min-width: 0;
-            word-break: break-word;
-            overflow-wrap: anywhere;
-        }
-
-        /* Typography for Chat Markdown */
-        .msg-content p {
-            margin-bottom: 10px;
-            word-break: break-word;
-            overflow-wrap: anywhere;
-        }
-        .msg-content p:last-child { margin-bottom: 0; }
-        
-        .msg-content h1, .msg-content h2, .msg-content h3, .msg-content h4 {
-            font-family: var(--title-font);
-            margin: 16px 0 10px 0;
-            color: var(--text);
-            font-weight: 700;
-            display: flex;
-            align-items: center;
-            gap: 8px;
-        }
-
-        .msg-content h1 { font-size: 17px; }
-        .msg-content h2 { font-size: 15.5px; }
-        .msg-content h3 { font-size: 14.5px; }
-        .msg-content h4 { font-size: 13.5px; }
-
-        .msg-content ul, .msg-content ol {
-            margin: 10px 0 10px 20px;
-            padding: 0;
-        }
-
-        .msg-content li {
-            margin-bottom: 6px;
-            line-height: 1.6;
-            word-break: break-word;
-            overflow-wrap: anywhere;
-        }
-
-        .msg-content a {
-            color: var(--accent) !important;
-            text-decoration: none !important;
-            font-weight: 700;
-            padding: 2px 9px;
-            border-radius: 6px;
-            background: rgba(16, 185, 129, 0.1);
-            border: 1px solid rgba(16, 185, 129, 0.25);
-            display: inline-flex;
-            align-items: center;
-            gap: 4px;
-            transition: all 0.2s ease;
-            word-break: break-all;
-            max-width: 100%;
-            box-sizing: border-box;
-        }
-
-        .msg-content a:hover {
-            background: var(--accent) !important;
-            color: #FFFFFF !important;
-            box-shadow: 0 2px 8px var(--accent-glow);
-        }
-
-        /* Code & Pre Blocks Word Wrapping and Containment */
-        .msg-content pre {
-            max-width: 100% !important;
-            white-space: pre-wrap !important;
-            word-break: break-word !important;
-            overflow-wrap: anywhere !important;
-            overflow-x: auto !important;
-            background: #0D1117 !important;
-            border: 1px solid rgba(255, 255, 255, 0.1) !important;
-            border-radius: 12px !important;
-            padding: 0 !important;
-            margin: 12px 0 !important;
-            box-sizing: border-box !important;
-            box-shadow: 0 4px 18px rgba(0, 0, 0, 0.25) !important;
-            position: relative;
-        }
-
-        .code-header {
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            padding: 8px 14px;
-            background: rgba(255, 255, 255, 0.05);
-            border-bottom: 1px solid rgba(255, 255, 255, 0.08);
-            font-size: 11.5px;
-            font-family: var(--mono);
-            color: #94A3B8;
-        }
-
-        .code-copy-btn {
-            background: rgba(255, 255, 255, 0.08);
-            border: 1px solid rgba(255, 255, 255, 0.14);
-            color: #E2E8F0;
-            border-radius: 6px;
-            padding: 3px 8px;
-            font-size: 11px;
-            font-weight: 600;
-            cursor: pointer;
-            transition: all 0.2s ease;
-            display: inline-flex;
-            align-items: center;
-            gap: 4px;
-        }
-
-        .code-copy-btn:hover {
-            background: rgba(255, 255, 255, 0.16);
-            color: #FFFFFF;
-        }
-
-        .msg-content pre code {
-            padding: 12px 16px !important;
-            white-space: pre-wrap !important;
-            word-break: break-word !important;
-            overflow-wrap: anywhere !important;
-            display: block !important;
-            max-width: 100% !important;
-            font-family: var(--mono) !important;
-            font-size: 12px !important;
-            color: #E2E8F0 !important;
-        }
-        
-        .msg-content :not(pre) > code {
-            background: rgba(16, 185, 129, 0.1);
-            padding: 2px 7px;
-            border-radius: 6px !important;
-            color: var(--accent);
-            border: 1px solid rgba(16, 185, 129, 0.22);
-            font-weight: 600;
-            font-family: var(--mono) !important;
-            font-size: 12.5px !important;
-            word-break: break-word !important;
-        }
-
-        .msg-content table {
-            max-width: 100% !important;
-            width: 100% !important;
-            border-collapse: separate !important;
-            border-spacing: 0 !important;
-            border: 1px solid var(--border) !important;
-            border-radius: 12px !important;
-            overflow: hidden !important;
-            margin: 14px 0 !important;
-            font-size: 13px !important;
-        }
-
-        .msg-content th {
-            background: var(--hover);
-            color: var(--text);
-            font-weight: 700;
-            padding: 10px 14px;
-            text-align: left;
-            border-bottom: 1px solid var(--border);
-        }
-
-        .msg-content td {
-            padding: 10px 14px;
-            border-top: 1px solid var(--border);
-            color: var(--text);
-        }
-
-        .msg-content tr:nth-child(even) td {
-            background: rgba(0, 0, 0, 0.015);
-        }
-
-        body[data-theme="dark"] .msg-content tr:nth-child(even) td {
-            background: rgba(255, 255, 255, 0.02);
-        }
-
-        .msg-content blockquote {
-            border-left: 3px solid var(--accent);
-            background: rgba(16, 185, 129, 0.05);
-            border-radius: 0 10px 10px 0;
-            padding: 10px 16px;
-            margin: 12px 0;
-            color: var(--text-dim);
-        }
-
-        /* Collapsible Details (Document Excerpt & Thinking Process) */
-        .msg-content details {
-            border: 1px solid rgba(255, 255, 255, 0.12) !important;
-            border-radius: 10px !important;
-            background: rgba(0, 0, 0, 0.2) !important;
-            margin: 10px 0 !important;
-            overflow: hidden !important;
-            transition: all 0.2s ease;
-            max-width: 100% !important;
-            box-sizing: border-box !important;
-        }
-
-        body[data-theme="light"] .msg-content details {
-            border-color: rgba(0, 0, 0, 0.08) !important;
-            background: rgba(0, 0, 0, 0.03) !important;
-        }
-
-        .msg-content summary {
-            padding: 8px 12px !important;
-            font-size: 11.5px !important;
-            font-weight: 700 !important;
-            cursor: pointer !important;
-            user-select: none !important;
-            color: var(--text) !important;
-            display: flex !important;
-            align-items: center !important;
-            gap: 6px !important;
-            transition: color 0.2s ease, background 0.2s ease;
-            outline: none !important;
-        }
-
-        .msg-content summary:hover {
-            color: #D4FC2B !important;
-            background: rgba(212, 252, 43, 0.08) !important;
-        }
-
-        body[data-theme="light"] .msg-content summary:hover {
-            color: #15AC49 !important;
-            background: rgba(21, 172, 73, 0.08) !important;
-        }
-
-        .msg-content details[open] summary {
-            border-bottom: 1px solid rgba(255, 255, 255, 0.08) !important;
-        }
-
-        body[data-theme="light"] .msg-content details[open] summary {
-            border-bottom-color: rgba(0, 0, 0, 0.06) !important;
-        }
-
-        .msg-content details .details-body {
-            padding: 10px 12px !important;
-            box-sizing: border-box !important;
-        }
-
-        .msg-content details pre {
-            margin: 0 !important;
-            border: none !important;
-            background: transparent !important;
-            padding: 0 !important;
-        }
-
-        /* Thinking State */
-        .thinking {
-            display: flex;
-            align-items: center;
-            gap: 6px;
-            padding: 10px 14px;
-            background: #16181D;
-            border-radius: 14px !important;
-            width: fit-content;
-            border: 1px solid var(--border);
-        }
-
-        .dot {
-            width: 6px;
-            height: 6px;
-            background: #D4FC2B;
-            border-radius: 50% !important;
-            animation: pulse-ring 1.2s infinite ease-in-out;
-        }
-        .dot:nth-child(2) { animation-delay: 0.2s; }
-        .dot:nth-child(3) { animation-delay: 0.4s; }
-
-        @keyframes pulse-ring {
-            0% { transform: scale(0.8); opacity: 0.4; }
-            50% { transform: scale(1.2); opacity: 1; }
-            100% { transform: scale(0.8); opacity: 0.4; }
-        }
-
-        /* Input Zone matching sidebars.html */
-        .ai-input-wrapper {
-            padding: 10px 14px 14px 14px;
-            border-top: 1px solid var(--border);
-            display: flex;
-            flex-direction: column;
-            gap: 8px;
-            background: var(--panel-bg) !important;
-            z-index: 10;
-            flex-shrink: 0 !important;
-        }
-
-        .quick-tools {
-            display: flex;
-            gap: 6px;
-            overflow-x: auto;
-            padding: 2px 0;
-            scrollbar-width: none;
-        }
-        .quick-tools::-webkit-scrollbar { display: none; }
-
-        /* Floating Pill Chips matching sidebars.html */
-        .tool-chip {
-            padding: 5px 12px;
-            background: var(--card-bg) !important;
-            border: 1px solid var(--card-border) !important;
-            border-radius: 100px !important;
-            font-family: var(--font);
-            font-size: 11.5px;
-            font-weight: 700;
-            color: var(--text-dim) !important;
-            cursor: pointer;
-            white-space: nowrap;
-            transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
-            display: flex;
-            align-items: center;
-            gap: 5px;
-        }
-
-        .tool-chip i {
-            color: var(--accent) !important;
-            font-size: 11px;
-        }
-
-        .tool-chip:hover {
-            background: var(--card-hover-bg) !important;
-            border-color: var(--accent) !important;
-            color: var(--accent) !important;
-        }
-
-        /* Capsule Input Bar matching sidebars.html search row */
-        .input-container {
-            background: var(--input-bg) !important;
-            border: 1px solid var(--input-border) !important;
-            border-radius: 100px !important;
-            padding: 5px 6px 5px 14px;
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
-        }
-
-        .input-container:focus-within {
-            border-color: var(--accent) !important;
-            box-shadow: none !important;
-        }
-
-        #ai-query {
-            flex: 1;
-            background: transparent;
-            border: none;
-            outline: none;
-            color: var(--text) !important;
-            font-weight: 500;
-            padding: 4px 2px;
-            font-family: var(--font);
-            font-size: 13.5px;
-            resize: none;
-            max-height: 120px;
-            min-height: 22px;
-            line-height: 1.45;
-        }
-
-        #ai-query::placeholder {
-            color: var(--text-muted);
-        }
-
-        /* Send Button */
-        .send-btn {
-            width: 32px;
-            height: 32px;
-            min-width: 32px;
-            border-radius: 50% !important;
-            border: none;
-            background: var(--accent) !important;
-            color: #FFFFFF !important;
-            cursor: pointer;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
-            flex-shrink: 0;
-            font-size: 12px;
-            font-weight: 700;
-            box-shadow: none !important;
-        }
-
-        .send-btn:hover {
-            transform: scale(1.06);
-            box-shadow: none !important;
-        }
-
-        /* Navigation Tab Switcher matching sidebars.html pill tabs */
-        .ai-nav-bar {
-            display: flex;
-            gap: 4px;
-            margin: 10px 14px 4px;
-            padding: 3px;
-            background: var(--input-bg) !important;
-            border: 1px solid var(--input-border) !important;
-            border-radius: 100px !important;
-            box-shadow: none !important;
-            flex-shrink: 0;
-        }
-
-        .ai-nav-tab {
-            flex: 1;
-            height: 32px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 6px;
-            padding: 0 12px;
-            border-radius: 100px !important;
-            border: none;
-            background: transparent;
-            color: var(--text-dim);
-            font-size: 12px;
-            font-weight: 700;
-            font-family: var(--font);
-            cursor: pointer;
-            transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
-        }
-
-        .ai-nav-tab:hover:not(.active) {
-            color: var(--text);
-            background: var(--hover);
-        }
-
-        .ai-nav-tab.active {
-            background: var(--accent) !important;
-            color: #FFFFFF !important;
-            box-shadow: none !important;
-            font-weight: 800;
-        }
-
-        .ai-nav-tab.active i {
-            color: #FFFFFF !important;
-        }
-
-        /* Status Badges */
-        .status-badge {
-            display: inline-flex;
-            align-items: center;
-            gap: 4px;
-            padding: 2px 8px;
-            border-radius: 100px;
-            font-size: 10.5px;
-            font-weight: 800;
-            text-transform: uppercase;
-        }
-
-        .status-badge.on {
-            background: rgba(9, 240, 160, 0.14);
-            color: #09f0a0;
-            border: 1px solid rgba(9, 240, 160, 0.3);
-        }
-
-        .status-badge.off {
-            background: rgba(244, 63, 94, 0.14);
-            color: #f43f5e;
-            border: 1px solid rgba(244, 63, 94, 0.3);
-        }
-
-        /* High-End Markdown Table Styling */
-        .msg-content table {
-            width: 100% !important;
-            border-collapse: separate !important;
-            border-spacing: 0 !important;
-            margin: 10px 0 !important;
-            border-radius: 12px !important;
-            overflow: hidden !important;
-            border: 1px solid var(--border) !important;
-            background: rgba(255, 255, 255, 0.02) !important;
-            font-size: 12px !important;
-            display: table !important;
-        }
-
-        body[data-theme="light"] .msg-content table {
-            background: rgba(0, 0, 0, 0.02) !important;
-        }
-
-        .msg-content th {
-            background: var(--accent-dim) !important;
-            color: var(--accent) !important;
-            font-weight: 800 !important;
-            text-align: left !important;
-            padding: 8px 12px !important;
-            border-bottom: 1px solid var(--border) !important;
-            font-size: 10.5px !important;
-            text-transform: uppercase !important;
-            letter-spacing: 0.5px !important;
-        }
-
-        .msg-content td {
-            padding: 8px 12px !important;
-            border-bottom: 1px solid var(--border) !important;
-            color: var(--text) !important;
-            font-weight: 500 !important;
-        }
-
-        .msg-content tr:last-child td {
-            border-bottom: none !important;
-        }
-
-        /* Image Studio Styles matching sidebars.html */
-        .ai-image-studio-view,
-        .ai-settings-view {
-            flex: 1;
-            display: flex;
-            flex-direction: column;
-            min-height: 0;
-            z-index: 10;
-            background: transparent !important;
-        }
-
-        .studio-scroll-area {
-            flex: 1;
-            overflow-y: auto;
-            padding: 16px;
-            display: flex;
-            flex-direction: column;
-            gap: 14px;
-            scrollbar-width: none;
-        }
-        .studio-scroll-area::-webkit-scrollbar { display: none; }
-
-        .studio-card {
-            background: var(--card-bg) !important;
-            border: 1px solid var(--border, rgba(255, 255, 255, 0.08)) !important;
-            border-radius: 20px !important;
-            padding: 20px;
-            display: flex;
-            flex-direction: column;
-            gap: 14px;
-            box-shadow: none !important;
-            transition: all 0.3s ease;
-        }
-
-        .studio-row-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-            gap: 12px;
-            width: 100%;
-        }
-
-        .studio-header-badge {
-            font-size: 10px;
-            font-weight: 800;
-            letter-spacing: 0.5px;
-            padding: 4px 10px;
-            border-radius: 100px;
-            background: var(--accent-dim);
-            color: var(--accent);
-            display: flex;
-            align-items: center;
-            gap: 4px;
-            border: 1px solid var(--accent-dim);
-        }
-
-        .studio-card-header {
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            border-bottom: 1px solid var(--border, rgba(255, 255, 255, 0.06));
-            padding-bottom: 12px;
-            margin-bottom: 2px;
-        }
-
-        .studio-header-title {
-            display: flex;
-            align-items: center;
-            gap: 10px;
-        }
-
-        .studio-header-icon {
-            width: 34px;
-            height: 34px;
-            border-radius: 12px;
-            background: var(--accent-dim);
-            color: var(--accent);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 15px;
-        }
-
-        .studio-header-text {
-            display: flex;
-            flex-direction: column;
-        }
-
-        .studio-header-text h3 {
-            font-size: 14.5px;
-            font-weight: 800;
-            color: var(--text);
-            letter-spacing: -0.2px;
-            margin: 0;
-        }
-
-        .studio-header-text span {
-            font-size: 11px;
-            color: var(--text-dim);
-            font-weight: 500;
-        }
-
-        .studio-field {
-            display: flex;
-            flex-direction: column;
-            gap: 6px;
-            width: 100%;
-        }
-
-        .studio-field label {
-            font-size: 11px;
-            font-weight: 800;
-            text-transform: uppercase;
-            letter-spacing: 0.6px;
-            color: var(--text-dim);
-            display: flex;
-            align-items: center;
-            gap: 6px;
-        }
-
-        .studio-field label i {
-            color: var(--accent);
-            font-size: 11px;
-        }
-
-        .studio-select {
-            background: var(--input-bg) !important;
-            border: 1px solid var(--input-border) !important;
-            border-radius: 12px !important;
-            padding: 9px 12px;
-            color: var(--text);
-            font-size: 13px;
-            font-family: var(--font);
-            outline: none;
-            cursor: pointer;
-            transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
-        }
-
-        .studio-select:focus {
-            border-color: var(--accent) !important;
-            box-shadow: none !important;
-        }
-
-        .studio-select option {
-            background: var(--panel-bg) !important;
-            color: var(--text);
-        }
-
-        .studio-textarea {
-            background: var(--input-bg) !important;
-            border: 1px solid var(--input-border) !important;
-            border-radius: 14px !important;
-            padding: 12px 14px;
-            color: var(--text);
-            font-size: 13px;
-            font-family: var(--font);
-            outline: none;
-            resize: vertical;
-            min-height: 84px;
-            line-height: 1.5;
-            transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
-        }
-
-        .studio-textarea:focus {
-            border-color: var(--accent) !important;
-            box-shadow: none !important;
-        }
-
-        .studio-textarea::placeholder {
-            color: var(--text-muted);
-        }
-
-        .preset-chips-grid {
-            display: flex;
-            flex-wrap: wrap;
-            gap: 6px;
-        }
-
-        .preset-chip {
-            padding: 6px 14px;
-            border-radius: 100px !important;
-            background: var(--input-bg) !important;
-            border: 1px solid var(--input-border) !important;
-            color: var(--text-dim);
-            font-size: 11.5px;
-            font-weight: 700;
-            font-family: var(--font);
-            cursor: pointer;
-            display: flex;
-            align-items: center;
-            gap: 6px;
-            transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
-        }
-
-        .preset-chip i {
-            color: var(--accent);
-            font-size: 11px;
-        }
-
-        .preset-chip:hover, .preset-chip.active {
-            background: var(--accent) !important;
-            color: #FFFFFF !important;
-            border-color: var(--accent) !important;
-            box-shadow: none !important;
-        }
-
-        .preset-chip:hover i, .preset-chip.active i {
-            color: #FFFFFF !important;
-        }
-
-        .studio-submit-btn {
-            height: 44px;
-            border-radius: 100px !important;
-            background: linear-gradient(135deg, #15AC49 0%, #09f0a0 100%) !important;
-            color: #0D0E11 !important;
-            border: none;
-            font-size: 13px;
-            font-weight: 800;
-            font-family: var(--font);
-            cursor: pointer;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 8px;
-            transition: all 0.22s cubic-bezier(0.16, 1, 0.3, 1);
-            margin-top: 6px;
-            box-shadow: none !important;
-            letter-spacing: -0.2px;
-        }
-
-        .studio-submit-btn:hover {
-            transform: translateY(-2px);
-            box-shadow: none !important;
-            opacity: 0.96;
-        }
-
-        .studio-submit-btn:active {
-            transform: translateY(0);
-        }
-
-        .studio-preview-card {
-            background: var(--card-bg) !important;
-            border: 1px solid var(--card-border) !important;
-            border-radius: 18px !important;
-            padding: 16px;
-            display: flex;
-            flex-direction: column;
-            gap: 12px;
-            align-items: center;
-            box-shadow: none !important;
-        }
-
-        .studio-status {
-            font-size: 12px;
-            font-weight: 700;
-            color: var(--accent);
-            display: flex;
-            align-items: center;
-            gap: 6px;
-        }
-
-        .studio-img-wrap {
-            width: 100%;
-            max-height: 360px;
-            border-radius: 14px !important;
-            overflow: hidden;
-            border: 1px solid var(--card-border) !important;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            background: rgba(0, 0, 0, 0.2);
-        }
-
-        .studio-result-img {
-            width: 100%;
-            max-height: 360px;
-            object-fit: contain;
-            display: block;
-            border-radius: 14px;
-        }
-
-        .studio-actions {
-            display: flex;
-            gap: 8px;
-            width: 100%;
-        }
-
-        .studio-action-btn {
-            flex: 1;
-            height: 36px;
-            border-radius: 100px !important;
-            background: var(--input-bg);
-            border: 1px solid var(--input-border);
-            color: var(--text);
-            font-size: 11.5px;
-            font-weight: 700;
-            font-family: var(--font);
-            cursor: pointer;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 6px;
-            transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
-        }
-
-        .studio-action-btn:hover {
-            background: var(--accent-dim);
-            color: var(--accent);
-            border-color: var(--accent-border);
-        }
-
-        /* Custom Dropdown Styling */
-        .custom-dropdown {
-            position: relative;
-            width: 100%;
-        }
-
-        .dropdown-trigger {
-            width: 100%;
-            background: var(--input-bg) !important;
-            border: 1px solid var(--input-border) !important;
-            border-radius: 12px !important;
-            padding: 10px 14px;
-            color: var(--text) !important;
-            font-family: var(--font);
-            font-size: 13px;
-            font-weight: 600;
-            cursor: pointer;
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            gap: 10px;
-            transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
-            text-align: left;
-        }
-
-        .dropdown-trigger:hover, .dropdown-trigger:focus {
-            border-color: var(--accent) !important;
-            box-shadow: none !important;
-            outline: none;
-        }
-
-        .trigger-label {
-            display: flex;
-            align-items: center;
-            gap: 8px;
-        }
-
-        .trigger-arrow {
-            font-size: 10px;
-            color: var(--text-dim);
-            transition: transform 0.25s ease;
-        }
-
-        .custom-dropdown.open .trigger-arrow {
-            transform: rotate(180deg);
-        }
-
-        .dropdown-options {
-            position: absolute;
-            top: calc(100% + 6px);
-            left: 0;
-            width: 100%;
-            background: var(--panel-bg) !important;
-            border: 1px solid var(--border) !important;
-            border-radius: 14px !important;
-            box-shadow: none !important;
-            z-index: 1000;
-            opacity: 0;
-            visibility: hidden;
-            transform: translateY(-8px);
-            transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
-            overflow: hidden;
-            padding: 6px;
-        }
-
-        .custom-dropdown.open .dropdown-options {
-            opacity: 1;
-            visibility: visible;
-            transform: translateY(0);
-        }
-
-        .dropdown-option {
-            display: flex;
-            align-items: center;
-            gap: 12px;
-            padding: 10px 12px;
-            border-radius: 10px !important;
-            cursor: pointer;
-            transition: all 0.18s ease;
-            color: var(--text);
-        }
-
-        .dropdown-option:hover {
-            background: var(--hover) !important;
-            color: var(--text) !important;
-        }
-
-        .dropdown-option.active {
-            background: var(--accent-dim) !important;
-            color: var(--accent) !important;
-            border: 1px solid var(--accent-border) !important;
-            font-weight: 700;
-        }
-
-        .option-icon {
-            font-size: 16px;
-            width: 24px;
-            height: 24px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            flex-shrink: 0;
-        }
-
-        .option-text {
-            display: flex;
-            flex-direction: column;
-            gap: 2px;
-            min-width: 0;
-        }
-
-        .option-title {
-            font-size: 12px;
-            font-weight: 700;
-        }
-
-        .option-desc {
-            font-size: 10px;
-            color: var(--text-dim);
-            white-space: nowrap;
-            overflow: hidden;
-            text-overflow: ellipsis;
-        }
-
-        /* Advanced Settings Collapsible */
-        .advanced-settings-header {
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            cursor: pointer;
-            padding: 11px 14px;
-            background: var(--input-bg);
-            border: 1px solid var(--input-border);
-            border-radius: 12px;
-            margin-top: 4px;
-            font-size: 11.5px;
-            font-weight: 800;
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
-            color: var(--text-dim);
-            user-select: none;
-            transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
-        }
-
-        .advanced-settings-header:hover {
-            color: var(--text);
-            border-color: var(--accent);
-        }
-
-        .advanced-settings-header i {
-            color: var(--accent);
-        }
-
-        .advanced-settings-content {
-            display: flex;
-            flex-direction: column;
-            gap: 12px;
-            margin-top: 6px;
-            padding: 12px 14px;
-            background: var(--input-bg);
-            border: 1px solid var(--input-border);
-            border-radius: 12px;
-        }
-
-        .advanced-arrow {
-            transition: transform 0.2s ease;
-        }
-
-        .advanced-arrow.open {
-            transform: rotate(180deg);
-        }
-
-        /* AI Image Studio Loading Shimmer (Gemini & ChatGPT style) */
-        .loading-shimmer-canvas {
-            position: relative;
-            width: 100%;
-            aspect-ratio: var(--aspect-ratio, 1 / 1);
-            border-radius: 8px !important;
-            overflow: hidden;
-            border: 1px solid var(--card-border) !important;
-            background: #090a0f;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            margin-top: 8px;
-            box-shadow: inset 0 0 40px rgba(0, 0, 0, 0.6);
-        }
-
-        body[data-theme="light"] .loading-shimmer-canvas {
-            background: #f1f2f6;
-            box-shadow: inset 0 0 20px rgba(0, 0, 0, 0.05);
-        }
-
-        .shimmer-gradient-flow {
-            position: absolute;
-            width: 200%;
-            height: 200%;
-            background: linear-gradient(-45deg, #3b82f6, #8b5cf6, #ec4899, #10b981, #f59e0b, #3b82f6);
-            background-size: 300% 300%;
-            animation: shimmer-flow 10s ease infinite;
-            opacity: 0.9;
-        }
-
-        body[data-theme="light"] .shimmer-gradient-flow {
-            background: linear-gradient(-45deg, #a7f3d0, #fbcfe8, #c7d2fe, #fed7aa, #a7f3d0);
-            opacity: 0.95;
-        }
-
-        @keyframes shimmer-flow {
-            0% { background-position: 0% 50%; }
-            50% { background-position: 100% 50%; }
-            100% { background-position: 0% 50%; }
-        }
-
-        .shimmer-glow-overlay {
-            position: absolute;
-            inset: 0;
-            backdrop-filter: blur(25px) saturate(1.2);
-            -webkit-backdrop-filter: blur(25px) saturate(1.2);
-            background: radial-gradient(circle, rgba(0,0,0,0) 20%, rgba(20,20,25,0.4) 90%);
-        }
-
-        body[data-theme="light"] .shimmer-glow-overlay {
-            background: radial-gradient(circle, rgba(255,255,255,0) 20%, rgba(255,255,255,0.4) 90%);
-        }
-
-        .shimmer-progress-overlay {
-            position: relative;
-            z-index: 5;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            text-align: center;
-            gap: 12px;
-            padding: 20px;
-        }
-
-        .progress-spinner {
-            position: relative;
-            width: 60px;
-            height: 60px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-        }
-
-        .spinner-circle {
-            position: absolute;
-            inset: 0;
-            border: 3px solid rgba(255, 255, 255, 0.1);
-            border-top: 3px solid var(--accent);
-            border-radius: 50% !important;
-            animation: spin 1s linear infinite;
-        }
-
-        body[data-theme="light"] .spinner-circle {
-            border-color: rgba(0, 0, 0, 0.05);
-            border-top-color: var(--accent);
-        }
-
-        .painting-brush-icon {
-            font-size: 20px;
-            color: var(--text);
-            animation: paint-brush-move 2.5s ease-in-out infinite;
-        }
-
-        @keyframes paint-brush-move {
-            0% { transform: translate(0, 0) rotate(0deg); }
-            25% { transform: translate(4px, -4px) rotate(15deg); }
-            50% { transform: translate(-3px, 5px) rotate(-10deg); }
-            75% { transform: translate(5px, 3px) rotate(5deg); }
-            100% { transform: translate(0, 0) rotate(0deg); }
-        }
-
-        #shimmer-progress-percentage {
-            font-family: var(--title-font);
-            font-size: 14px;
-            font-weight: 800;
-            color: var(--text);
-            letter-spacing: -0.2px;
-        }
-
-        #shimmer-progress-subtext {
-            font-size: 10.5px;
-            color: var(--text-dim);
-            font-weight: 500;
-            max-width: 220px;
-            line-height: 1.4;
-        }
-
-        /* Smooth result animation */
-        .studio-result-img {
-            animation: reveal-image 0.6s cubic-bezier(0.16, 1, 0.3, 1) forwards;
-        }
-
-        @keyframes reveal-image {
-            from { opacity: 0; transform: scale(0.96); filter: blur(10px); }
-            to { opacity: 1; transform: scale(1); filter: blur(0); }
-        }
-
-        /* ================================================================
-           SIDEBAR DRAWER (Non-Fullscreen Mode)
-           ================================================================ */
-        body:not(.fullscreen-mode) .history-sidebar {
-            position: absolute;
-            top: 0;
-            left: 0;
-            bottom: 0;
-            width: 270px;
-            background: var(--panel-bg);
+        /* ── Col 1: Left History Sidebar (Hidden by default in narrow sidebar mode) ── */
+        .history-sidebar {
+            width: 260px;
+            min-width: 260px;
+            background: var(--sidebar-bg);
             border-right: 1px solid var(--border);
-            z-index: 100;
-            transform: translateX(-100%);
-            transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1);
-            box-shadow: none !important;
-            padding: 14px 10px;
-            display: flex;
+            display: none;
             flex-direction: column;
-            gap: 4px;
+            padding: 16px 12px 14px;
+            gap: 10px;
+            overflow: hidden;
+            flex-shrink: 0;
+            user-select: none;
         }
 
-        body:not(.fullscreen-mode) .history-sidebar.open {
-            transform: translateX(0);
-        }
-
-        /* ================================================================
-           FULLSCREEN MODE — Complete Layout & Design System
-           ================================================================ */
-        body.fullscreen-mode {
-            background-color: var(--bg) !important;
-            background-image: 
-                radial-gradient(circle at 12% 10%, rgba(21, 172, 73, 0.04) 0%, transparent 45%),
-                radial-gradient(circle at 88% 90%, rgba(59, 130, 246, 0.035) 0%, transparent 45%) !important;
-            color: var(--text) !important;
-            font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, sans-serif !important;
-            overflow: hidden !important;
-        }
-
-        body[data-theme="dark"].fullscreen-mode {
-            background-image: 
-                radial-gradient(circle at 12% 10%, rgba(21, 172, 73, 0.07) 0%, transparent 50%),
-                radial-gradient(circle at 88% 90%, rgba(168, 85, 247, 0.04) 0%, transparent 50%) !important;
-        }
-
-        /* Outer panel: full viewport, flex ROW */
-        body.fullscreen-mode .ai-panel {
-            margin: 0 !important;
-            border: none !important;
-            border-radius: 0 !important;
-            height: 100vh !important;
-            width: 100vw !important;
-            background: transparent !important;
-            display: flex !important;
-            flex-direction: row !important;
-        }
-
-        /* Hide sidebar controls not needed in fullscreen */
-        body.fullscreen-mode #resize-handle,
-        body.fullscreen-mode #close-ai,
-        body.fullscreen-mode #fullscreen-toggle,
-        body.fullscreen-mode .ai-nav-bar,
-        body.fullscreen-mode .ai-header {
-            display: none !important;
-        }
-
-        /* ---- SIDEBAR ---- */
+        .history-sidebar.open,
         body.fullscreen-mode .history-sidebar {
-            position: relative !important;
-            left: 0 !important;
-            top: 0 !important;
-            bottom: 0 !important;
-            transform: none !important;
-            box-shadow: none !important;
-            width: 264px !important;
-            min-width: 264px !important;
-            max-width: 264px !important;
-            height: 100vh !important;
-            flex-shrink: 0 !important;
-            background: var(--panel-bg) !important;
-            border-right: 1px solid var(--border) !important;
-            padding: 16px 12px 12px 12px !important;
             display: flex !important;
-            flex-direction: column !important;
-            gap: 4px !important;
-            overflow-y: auto !important;
-            z-index: 10 !important;
         }
 
-        body.fullscreen-mode .history-sidebar::-webkit-scrollbar { width: 0 !important; }
-
-        /* ---- SIDEBAR COMPONENTS ---- */
         .gemini-sidebar-top {
             display: flex;
             align-items: center;
             justify-content: space-between;
-            padding: 4px 6px 14px 6px;
+            padding: 0 4px 6px;
         }
 
         .gemini-logo {
             display: flex;
             align-items: center;
             gap: 10px;
-            font-size: 16px;
-            font-weight: 800;
-            color: var(--text);
-            letter-spacing: -0.3px;
         }
 
         .gemini-logo-icon-wrap {
-            width: 28px;
-            height: 28px;
-            border-radius: 8px;
+            width: 32px;
+            height: 32px;
+            border-radius: 10px;
             background: var(--accent-gradient);
+            color: #FFFFFF;
             display: flex;
             align-items: center;
             justify-content: center;
-            color: #FFFFFF;
             font-size: 13px;
-            box-shadow: 0 2px 8px var(--accent-glow);
+            box-shadow: 0 4px 12px var(--accent-glow);
         }
 
         .gemini-logo-text {
             display: flex;
             align-items: center;
             gap: 6px;
+            font-family: var(--title-font);
+            font-size: 15px;
+            font-weight: 800;
+            color: var(--text);
+            letter-spacing: -0.4px;
         }
 
         .sidebar-pro-pill {
             font-size: 9px;
             font-weight: 800;
-            background: var(--accent-dim);
-            color: var(--accent);
-            border: 1px solid var(--accent-border);
-            padding: 1.5px 6px;
-            border-radius: 100px;
+            background: var(--accent);
+            color: #FFFFFF;
+            padding: 2px 7px;
+            border-radius: var(--radius-pill);
             letter-spacing: 0.5px;
         }
 
+        /* Mode Switcher Pill (Home page .sp-mode-pill style) */
         .gemini-mode-pill {
             display: flex;
-            background: var(--hover);
+            background: var(--input-bg);
             border: 1px solid var(--border);
             padding: 3px;
-            border-radius: 12px;
-            margin-bottom: 8px;
+            border-radius: var(--radius-pill);
+            gap: 3px;
+            box-shadow: var(--shadow-sm);
         }
 
         .gemini-mode-btn {
             flex: 1;
-            padding: 7px 10px;
-            border-radius: 9px;
-            border: none;
-            background: transparent;
-            color: var(--text-dim);
-            font-size: 12px;
-            font-weight: 600;
-            cursor: pointer;
-            transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1) !important;
+            height: 32px;
             display: flex;
             align-items: center;
             justify-content: center;
             gap: 6px;
-            font-family: 'Plus Jakarta Sans', sans-serif;
-        }
-
-        .gemini-mode-btn i {
-            transition: transform 0.2s ease !important;
+            border-radius: var(--radius-pill);
+            border: none;
+            background: transparent;
+            color: var(--text-dim);
+            font-family: var(--font);
             font-size: 12px;
-        }
-
-        .gemini-mode-btn.active {
-            background: var(--panel-bg);
-            color: var(--accent);
             font-weight: 700;
-            box-shadow: var(--shadow-sm) !important;
-        }
-
-        .gemini-mode-btn.active i {
-            color: var(--accent);
-            transform: scale(1.08);
+            cursor: pointer;
+            transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
         }
 
         .gemini-mode-btn:hover:not(.active) {
             color: var(--text);
-        }
-
-        .gemini-nav-item {
-            display: flex;
-            align-items: center;
-            gap: 10px;
-            padding: 9px 12px;
-            border-radius: 10px;
-            color: var(--text-dim);
-            font-size: 13px;
-            font-weight: 600;
-            cursor: pointer;
-            transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1) !important;
-            background: transparent;
-            border: 1px solid transparent;
-            width: 100%;
-            text-align: left;
-            font-family: 'Plus Jakarta Sans', sans-serif;
-        }
-
-        .gemini-nav-item:hover {
             background: var(--hover);
-            color: var(--text);
-            border-color: var(--border);
-            transform: translateY(-1px);
         }
 
-        .gemini-nav-item i {
-            width: 16px;
-            font-size: 13px;
-            text-align: center;
-            color: var(--accent);
-            flex-shrink: 0;
-        }
-
-        .gemini-nav-item#new-chat-btn {
-            background: var(--accent-dim);
-            border-color: var(--accent-border);
-            color: var(--accent);
-            margin-bottom: 2px;
-        }
-
-        .gemini-nav-item#new-chat-btn:hover {
-            background: var(--accent);
-            color: #FFFFFF;
-            border-color: var(--accent);
-        }
-
-        .gemini-nav-item#new-chat-btn:hover i {
-            color: #FFFFFF;
+        .gemini-mode-btn.active {
+            background: var(--accent) !important;
+            color: #FFFFFF !important;
+            box-shadow: 0 2px 10px var(--accent-glow);
         }
 
         .gemini-section-title {
             font-size: 10px;
             font-weight: 800;
             color: var(--text-muted);
-            margin: 10px 6px 4px 6px;
+            margin: 6px 4px 2px;
             text-transform: uppercase;
             letter-spacing: 0.8px;
             display: flex;
@@ -2011,27 +321,24 @@
             display: grid;
             grid-template-columns: repeat(2, 1fr);
             gap: 6px;
-            padding: 2px 0 6px 0;
-            margin-bottom: 4px;
+            padding: 2px 0 4px;
         }
 
         .persona-chip {
             display: flex;
             align-items: center;
-            justify-content: flex-start;
             gap: 7px;
-            padding: 7px 9px;
-            border-radius: 10px;
+            padding: 7px 10px;
+            border-radius: var(--radius-sm);
             background: var(--card-bg);
             border: 1px solid var(--border);
             color: var(--text-dim);
+            font-family: var(--font);
             font-size: 11.5px;
             font-weight: 600;
             cursor: pointer;
             transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
-            font-family: 'Plus Jakarta Sans', sans-serif;
             white-space: nowrap;
-            user-select: none;
         }
 
         .persona-chip i {
@@ -2046,11 +353,7 @@
             color: var(--text);
             border-color: var(--accent-border);
             background: var(--hover);
-            transform: translateY(-1.5px);
-        }
-
-        .persona-chip:hover i {
-            transform: scale(1.15);
+            transform: translateY(-1px);
         }
 
         .persona-chip.active {
@@ -2058,35 +361,56 @@
             border-color: var(--accent) !important;
             color: var(--accent) !important;
             font-weight: 700;
-            box-shadow: 0 2px 10px var(--accent-glow) !important;
+            box-shadow: 0 2px 10px var(--accent-glow);
         }
 
-        .persona-chip.active i {
-            transform: scale(1.15);
+        /* Action Navigation Items */
+        .gemini-nav-item {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 9px 12px;
+            border-radius: var(--radius-sm);
+            background: var(--card-bg);
+            border: 1px solid var(--border);
+            color: var(--text);
+            font-family: var(--font);
+            font-size: 12.5px;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.2s ease;
         }
 
-        /* History items */
+        .gemini-nav-item i {
+            color: var(--accent);
+            font-size: 13px;
+        }
+
+        .gemini-nav-item:hover {
+            background: var(--hover);
+            border-color: var(--accent-border);
+            transform: translateY(-1px);
+        }
+
+        /* History List */
         .history-list {
             flex: 1;
             overflow-y: auto;
             padding: 2px 0;
             display: flex;
             flex-direction: column;
-            gap: 3px;
+            gap: 4px;
         }
-
-        .history-list::-webkit-scrollbar { width: 0; }
-        .history-list { scrollbar-width: none; }
 
         .history-item {
             display: flex;
             align-items: center;
             justify-content: space-between;
             padding: 8px 10px;
-            border-radius: 9px !important;
+            border-radius: var(--radius-sm);
             cursor: pointer;
             color: var(--text-dim);
-            transition: all 0.18s ease;
+            transition: all 0.2s ease;
             font-size: 12.5px;
             font-weight: 500;
             border: 1px solid transparent;
@@ -2121,29 +445,25 @@
             border: none;
             color: var(--text-muted);
             cursor: pointer;
-            padding: 3px 5px;
-            border-radius: 4px;
+            padding: 4px 6px;
+            border-radius: 6px;
             font-size: 11px;
             transition: all 0.15s ease;
         }
 
         .history-action-btn:hover {
             color: var(--text);
-            background: rgba(0,0,0,0.06);
-        }
-
-        body[data-theme="dark"] .history-action-btn:hover {
-            background: rgba(255,255,255,0.08);
+            background: var(--hover);
         }
 
         .history-action-btn.delete-btn:hover {
-            color: #ef4444;
+            color: #EF4444;
         }
 
         /* User Profile Footer */
         .gemini-user-footer {
             margin-top: auto;
-            padding: 10px 8px 4px 8px;
+            padding: 10px 4px 2px;
             border-top: 1px solid var(--border);
             display: flex;
             align-items: center;
@@ -2155,8 +475,8 @@
             align-items: center;
             gap: 10px;
             flex: 1;
-            padding: 4px;
-            border-radius: 8px;
+            padding: 5px 8px;
+            border-radius: var(--radius-sm);
             transition: background 0.15s ease;
         }
 
@@ -2198,93 +518,208 @@
 
         .gemini-user-badge {
             font-size: 10px;
-            color: var(--accent);
+            color: var(--text-muted);
             font-weight: 600;
         }
 
-        #sidebar-settings-btn {
-            width: 32px;
-            height: 32px;
-            border-radius: 8px;
-            border: 1px solid var(--border);
-            background: var(--card-bg);
-            color: var(--text-dim);
+        /* ── Col 2: Main AI Container ── */
+        .ai-main-container {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            height: 100%;
+            min-height: 0;
+            overflow: hidden;
+            background: transparent;
+            position: relative;
+        }
+
+        /* ── Header Row (Home Page Style) ── */
+        .ai-header {
+            height: 56px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0 18px;
+            border-bottom: 1px solid var(--border);
+            flex-shrink: 0;
+            background: var(--panel-bg);
+            z-index: 10;
+        }
+
+        .ai-brand {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .ai-logo {
+            width: 30px;
+            height: 30px;
+            background: var(--accent-gradient);
             display: flex;
             align-items: center;
             justify-content: center;
-            cursor: pointer;
-            transition: all 0.2s ease;
+            color: #FFFFFF;
+            font-size: 13px;
+            border-radius: 10px;
+            font-weight: 800;
+            box-shadow: 0 2px 10px var(--accent-glow);
+            flex-shrink: 0;
         }
 
-        #sidebar-settings-btn:hover {
+        .ai-title-text h1 {
+            font-family: var(--title-font);
+            font-size: 15px;
+            font-weight: 800;
+            letter-spacing: -0.4px;
+            color: var(--text);
+        }
+
+        .model-badge {
+            font-size: 10.5px;
+            font-weight: 700;
+            background: var(--accent-dim);
+            border: 1px solid var(--accent-border);
             color: var(--accent);
-            border-color: var(--accent-border);
-            transform: rotate(30deg);
+            padding: 3px 9px;
+            border-radius: var(--radius-pill);
+            white-space: nowrap;
         }
 
-        /* ---- MAIN AREA ---- */
-        body.fullscreen-mode .ai-main-container {
-            flex: 1 !important;
-            min-width: 0 !important;
-            display: flex !important;
-            flex-direction: column !important;
-            height: 100vh !important;
-            overflow: hidden !important;
-            background: transparent !important;
-            position: relative !important;
+        .ai-controls {
+            display: flex;
+            align-items: center;
+            gap: 6px;
         }
 
-        body.fullscreen-mode .ai-views-container {
-            flex: 1 !important;
-            display: flex !important;
-            flex-direction: column !important;
-            overflow: hidden !important;
-            min-height: 0 !important;
+        .control-btn {
+            width: 32px;
+            height: 32px;
+            border-radius: 10px;
+            border: 1px solid transparent;
+            background: transparent;
+            color: var(--text-dim);
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+            font-size: 13px;
         }
 
-        body.fullscreen-mode .ai-chat-view {
-            flex: 1 !important;
-            display: flex !important;
-            flex-direction: column !important;
-            overflow: hidden !important;
-            min-height: 0 !important;
-            position: relative !important;
+        .control-btn:hover {
+            background: var(--hover);
+            color: var(--text);
+            border-color: var(--border);
         }
 
-        /* Hero greeting & starter prompt cards (Sidebar Mode Default) */
+        #close-ai:hover {
+            background: rgba(239, 68, 68, 0.12);
+            color: #EF4444;
+            border-color: rgba(239, 68, 68, 0.2);
+        }
+
+        /* Navigation Tab Switcher (Sidebar Mode Pill Tabs) */
+        .ai-nav-bar {
+            display: flex;
+            gap: 4px;
+            margin: 10px 14px 4px;
+            padding: 3px;
+            background: var(--input-bg);
+            border: 1px solid var(--border);
+            border-radius: var(--radius-pill);
+            box-shadow: var(--shadow-sm);
+            flex-shrink: 0;
+        }
+
+        body.fullscreen-mode .ai-nav-bar {
+            display: none;
+        }
+
+        .ai-nav-tab {
+            flex: 1;
+            height: 32px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 6px;
+            padding: 0 12px;
+            border-radius: var(--radius-pill);
+            border: none;
+            background: transparent;
+            color: var(--text-dim);
+            font-size: 12px;
+            font-weight: 700;
+            font-family: var(--font);
+            cursor: pointer;
+            transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+
+        .ai-nav-tab:hover:not(.active) {
+            color: var(--text);
+            background: var(--hover);
+        }
+
+        .ai-nav-tab.active {
+            background: var(--accent) !important;
+            color: #FFFFFF !important;
+            font-weight: 800;
+            box-shadow: 0 2px 10px var(--accent-glow);
+        }
+
+        /* ── Views Container ── */
+        .ai-views-container {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            min-height: 0;
+            height: 100%;
+            overflow: hidden;
+            position: relative;
+        }
+
+        /* ── Chat View Panel ── */
+        .ai-chat-view {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            min-height: 0;
+            height: 100%;
+            overflow: hidden;
+            position: relative;
+        }
+
+        /* ── Hero Welcome & Starter Cards (Home Page Style) ── */
         .gemini-hero-container {
+            flex: 1;
             display: flex;
             flex-direction: column;
             align-items: center;
             justify-content: center;
-            flex: 1;
-            padding: 18px 14px;
-            max-width: 100%;
+            padding: 24px 18px;
+            text-align: center;
+            overflow-y: auto;
+            max-width: 580px;
             margin: 0 auto;
             width: 100%;
-            box-sizing: border-box;
-            animation: fadeIn 0.4s cubic-bezier(0.16, 1, 0.3, 1) forwards;
-        }
-
-        @keyframes fadeIn {
-            from { opacity: 0; transform: translateY(8px); }
-            to { opacity: 1; transform: translateY(0); }
         }
 
         .gemini-hero-badge {
             display: inline-flex;
             align-items: center;
-            gap: 6px;
-            padding: 4px 10px;
-            border-radius: 100px;
-            font-size: 10px;
-            font-weight: 700;
+            gap: 8px;
             background: var(--accent-dim);
             border: 1px solid var(--accent-border);
             color: var(--accent);
-            margin-bottom: 8px;
+            padding: 5px 14px;
+            border-radius: var(--radius-pill);
+            font-size: 11px;
+            font-weight: 800;
             letter-spacing: 0.5px;
             text-transform: uppercase;
+            margin-bottom: 14px;
+            box-shadow: var(--shadow-sm);
         }
 
         .hero-badge-dot {
@@ -2293,71 +728,63 @@
             border-radius: 50%;
             background: var(--accent);
             box-shadow: 0 0 8px var(--accent);
-            animation: pulseDot 2s infinite ease-in-out;
-        }
-
-        @keyframes pulseDot {
-            0%, 100% { opacity: 1; transform: scale(1); }
-            50% { opacity: 0.4; transform: scale(0.85); }
+            animation: pulse-dot 1.5s infinite ease-in-out;
         }
 
         .gemini-hero-title {
-            font-size: 17.5px;
-            font-weight: 700;
-            margin-bottom: 4px;
-            letter-spacing: -0.3px;
-            line-height: 1.35;
-            text-align: center;
             font-family: var(--title-font);
+            font-size: 22px;
+            font-weight: 800;
             color: var(--text);
+            letter-spacing: -0.6px;
+            line-height: 1.3;
+            margin-bottom: 6px;
         }
 
         .gemini-hero-subtitle {
-            font-size: 12px;
+            font-size: 13px;
             color: var(--text-dim);
             font-weight: 500;
-            margin-bottom: 14px;
-            text-align: center;
-            max-width: 100%;
-            line-height: 1.45;
+            line-height: 1.5;
+            margin-bottom: 22px;
+            max-width: 440px;
         }
 
         .hero-prompt-grid {
             display: grid;
             grid-template-columns: 1fr;
-            gap: 7px;
+            gap: 8px;
             width: 100%;
         }
 
         .hero-prompt-card {
-            background: var(--card-bg);
-            border: 1px solid var(--border);
-            border-radius: 12px;
-            padding: 9px 12px;
-            cursor: pointer;
             display: flex;
             align-items: center;
-            gap: 10px;
-            position: relative;
-            transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+            gap: 12px;
+            padding: 12px 14px;
+            border-radius: var(--radius-md);
+            background: var(--card-bg);
+            border: 1px solid var(--border);
+            cursor: pointer;
+            transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+            text-align: left;
             box-shadow: var(--shadow-sm);
         }
 
         .hero-prompt-card:hover {
-            border-color: var(--accent);
-            background: var(--card-bg);
             transform: translateY(-2px);
+            border-color: var(--accent);
             box-shadow: var(--shadow-md);
         }
 
         .hero-prompt-icon-wrap {
-            width: 32px;
-            height: 32px;
-            border-radius: 8px;
+            width: 36px;
+            height: 36px;
+            border-radius: 10px;
             display: flex;
             align-items: center;
             justify-content: center;
-            font-size: 13px;
+            font-size: 14px;
             flex-shrink: 0;
             transition: transform 0.2s ease;
         }
@@ -2367,35 +794,35 @@
         }
 
         .hero-prompt-icon-wrap.icon-emerald {
-            background: rgba(21, 172, 73, 0.1);
+            background: rgba(21, 172, 73, 0.12);
             color: #15AC49;
         }
 
         .hero-prompt-icon-wrap.icon-purple {
-            background: rgba(168, 85, 247, 0.1);
+            background: rgba(168, 85, 247, 0.12);
             color: #A855F7;
         }
 
         .hero-prompt-icon-wrap.icon-blue {
-            background: rgba(59, 130, 246, 0.1);
+            background: rgba(59, 130, 246, 0.12);
             color: #3B82F6;
         }
 
         .hero-prompt-icon-wrap.icon-amber {
-            background: rgba(245, 158, 11, 0.1);
+            background: rgba(245, 158, 11, 0.12);
             color: #F59E0B;
         }
 
         .hero-prompt-text {
             display: flex;
             flex-direction: column;
-            gap: 1px;
+            gap: 2px;
             flex: 1;
             min-width: 0;
         }
 
         .hero-prompt-text strong {
-            font-size: 12.5px;
+            font-size: 13px;
             font-weight: 700;
             color: var(--text);
         }
@@ -2410,298 +837,871 @@
 
         .hero-prompt-arrow {
             color: var(--text-muted);
-            font-size: 11px;
+            font-size: 12px;
             opacity: 0.6;
-            transform: translateX(0);
             transition: all 0.2s ease;
-            margin-left: 2px;
         }
 
         .hero-prompt-card:hover .hero-prompt-arrow {
             opacity: 1;
-            transform: translateX(2px);
+            transform: translateX(3px);
             color: var(--accent);
         }
 
-        /* ---- FULLSCREEN HERO OVERRIDES ---- */
+        /* ── Fullscreen Hero Layout Overrides ── */
         body.fullscreen-mode .gemini-hero-container {
-            padding: 36px 24px !important;
-            max-width: 760px !important;
+            padding: 40px 24px;
+            max-width: 820px;
         }
 
         body.fullscreen-mode .gemini-hero-badge {
-            font-size: 11px !important;
-            padding: 5px 14px !important;
-            margin-bottom: 18px !important;
+            font-size: 11.5px;
+            padding: 6px 16px;
+            margin-bottom: 20px;
         }
 
         body.fullscreen-mode .gemini-hero-title {
-            font-size: 30px !important;
-            margin-bottom: 8px !important;
-            letter-spacing: -0.7px !important;
+            font-size: 32px;
+            margin-bottom: 10px;
+            letter-spacing: -0.8px;
         }
 
         body.fullscreen-mode .gemini-hero-subtitle {
-            font-size: 14px !important;
-            margin-bottom: 28px !important;
-            max-width: 540px !important;
+            font-size: 14.5px;
+            margin-bottom: 32px;
+            max-width: 580px;
         }
 
         body.fullscreen-mode .hero-prompt-grid {
-            grid-template-columns: repeat(2, 1fr) !important;
-            gap: 12px !important;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 14px;
         }
 
         body.fullscreen-mode .hero-prompt-card {
-            padding: 14px 16px !important;
-            border-radius: 16px !important;
-            gap: 14px !important;
+            padding: 16px 18px;
+            border-radius: var(--radius-lg);
+            gap: 14px;
         }
 
         body.fullscreen-mode .hero-prompt-icon-wrap {
-            width: 38px !important;
-            height: 38px !important;
-            border-radius: 10px !important;
-            font-size: 15px !important;
+            width: 42px;
+            height: 42px;
+            border-radius: 12px;
+            font-size: 16px;
         }
 
         body.fullscreen-mode .hero-prompt-text strong {
-            font-size: 13.5px !important;
+            font-size: 14px;
         }
 
         body.fullscreen-mode .hero-prompt-text span {
-            font-size: 11.5px !important;
+            font-size: 12px;
         }
 
-        /* ---- SCROLLABLE CHAT COLUMN ---- */
-        body.fullscreen-mode .ai-chat-view > #ai-chat-messages {
-            flex: 1 !important;
-            overflow-y: auto !important;
-            scrollbar-width: none !important;
-            -ms-overflow-style: none !important;
-            padding: 32px 0 24px 0 !important;
-            display: flex !important;
-            flex-direction: column !important;
-            gap: 16px !important;
-            width: 100% !important;
-            box-sizing: border-box !important;
+        /* ── Messages Stream ── */
+        .messages-scroll {
+            flex: 1;
+            min-height: 0;
+            overflow-y: auto;
+            padding: 20px 18px 24px;
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
+            scroll-behavior: smooth;
         }
 
-        body.fullscreen-mode #ai-chat-messages::-webkit-scrollbar {
-            display: none !important;
-            width: 0 !important;
+        body.fullscreen-mode .messages-scroll {
+            padding: 36px 0 28px;
+        }
+
+        .msg-group {
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+            max-width: 100%;
+            min-width: 0;
+            animation: slide-up 0.3s cubic-bezier(0.16, 1, 0.3, 1) forwards;
         }
 
         body.fullscreen-mode .msg-group {
-            display: flex !important;
-            flex-direction: column !important;
-            width: 100% !important;
-            max-width: 860px !important;
-            margin: 0 auto !important;
-            padding: 0 24px !important;
-            box-sizing: border-box !important;
+            width: 100%;
+            max-width: 860px;
+            margin: 0 auto;
+            padding: 0 24px;
         }
 
-        body.fullscreen-mode .msg-group.user { align-items: flex-end !important; }
-        body.fullscreen-mode .msg-group.ai { align-items: flex-start !important; }
-
-        /* ---- INPUT AREA (Floating capsule) ---- */
-        body.fullscreen-mode .ai-input-wrapper {
-            flex-shrink: 0 !important;
-            position: relative !important;
-            width: 100% !important;
-            max-width: 760px !important;
-            margin: 0 auto 20px auto !important;
-            background: var(--panel-bg) !important;
-            border: 1px solid var(--border) !important;
-            border-radius: 18px !important;
-            padding: 10px 14px !important;
-            box-shadow: var(--shadow-input) !important;
-            z-index: 10 !important;
+        .msg-group.user { 
+            align-self: flex-end; 
+            align-items: flex-end;
+            max-width: 85%;
         }
 
-        body.fullscreen-mode .input-container {
-            display: flex !important;
-            align-items: center !important;
-            gap: 10px !important;
-            background: transparent !important;
-            border: none !important;
-            padding: 0 !important;
+        body.fullscreen-mode .msg-group.user {
+            align-items: flex-end;
         }
 
-        body.fullscreen-mode #ai-query {
-            background: transparent !important;
-            border: none !important;
-            color: var(--text) !important;
-            font-size: 14px !important;
-            font-family: 'Plus Jakarta Sans', sans-serif !important;
-            resize: none !important;
-            outline: none !important;
-            flex: 1 !important;
-            min-height: 22px !important;
-            max-height: 120px !important;
-            line-height: 1.5 !important;
+        .msg-group.ai { 
+            align-self: flex-start;
+            align-items: flex-start;
+            max-width: 100%;
+            width: 100%;
         }
 
-        body.fullscreen-mode #ai-query::placeholder {
-            color: var(--text-muted) !important;
+        /* Message Header & Meta */
+        .msg-sender-header {
+            display: flex;
+            align-items: center;
+            gap: 9px;
+            margin-bottom: 6px;
+            padding-left: 2px;
         }
 
-        body.fullscreen-mode .quick-tools {
-            display: flex !important;
-            flex-wrap: wrap !important;
-            gap: 6px !important;
-            margin-bottom: 8px !important;
+        .msg-sender-meta {
+            display: flex;
+            align-items: center;
+            gap: 8px;
         }
 
-        body.fullscreen-mode .tool-chip {
-            background: transparent !important;
-            border: 1px solid var(--border) !important;
-            color: var(--text-dim) !important;
-            border-radius: 100px !important;
-            padding: 4px 12px !important;
-            font-size: 11.5px !important;
-            font-weight: 600 !important;
-            cursor: pointer !important;
-            transition: all 0.18s ease !important;
-            font-family: 'Plus Jakarta Sans', sans-serif !important;
-            display: inline-flex !important;
-            align-items: center !important;
-            gap: 6px !important;
+        .msg-sender-name {
+            font-family: var(--title-font);
+            font-weight: 700;
+            font-size: 13.5px;
+            color: var(--text);
         }
 
-        body.fullscreen-mode .tool-chip:hover {
-            border-color: var(--accent) !important;
-            color: var(--accent) !important;
-            background: var(--accent-dim) !important;
-        }
-
-        body.fullscreen-mode .send-btn {
-            background: var(--accent-gradient) !important;
-            color: #FFFFFF !important;
-            border-radius: 50% !important;
-            width: 32px !important;
-            height: 32px !important;
-            min-width: 32px !important;
-            display: flex !important;
-            align-items: center !important;
-            justify-content: center !important;
-            border: none !important;
-            font-weight: 700 !important;
-            font-size: 12px !important;
-            cursor: pointer !important;
-            box-shadow: 0 2px 8px var(--accent-glow) !important;
-            transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1) !important;
-        }
-
-        body.fullscreen-mode .send-btn:hover {
-            transform: scale(1.08) !important;
-            box-shadow: 0 4px 14px var(--accent-glow) !important;
-        }
-
-        body.fullscreen-mode #ai-attach-btn {
-            color: var(--text-muted) !important;
-            background: transparent !important;
-            border: none !important;
-            font-size: 15px !important;
-            cursor: pointer !important;
-            width: 30px !important;
-            height: 30px !important;
-            border-radius: 50% !important;
-            display: flex !important;
-            align-items: center !important;
-            justify-content: center !important;
-            transition: all 0.18s ease !important;
-        }
-
-        body.fullscreen-mode #ai-attach-btn:hover {
-            color: var(--accent) !important;
-            background: var(--hover) !important;
-        }
-
-        /* Image Studio & Settings Fullscreen View Override */
-        body.fullscreen-mode #ai-image-studio-view,
-        body.fullscreen-mode #ai-settings-view {
-            flex: 1 !important;
-            width: 100% !important;
-            max-width: 860px !important;
-            margin: 0 auto !important;
-            background: transparent !important;
-            border: none !important;
-            height: 100% !important;
-            overflow-y: auto !important;
-            padding: 24px 16px 100px 16px !important;
-        }
-
-        .studio-card,
-        .studio-preview-card {
-            background: var(--card-bg) !important;
-            border: 1px solid var(--border) !important;
-            border-radius: 16px !important;
-            box-shadow: var(--shadow-sm) !important;
-            padding: 20px !important;
-        }
-
-        .studio-card-header {
-            font-size: 13px;
+        .msg-persona-badge {
+            font-size: 9.5px;
             font-weight: 800;
             text-transform: uppercase;
             letter-spacing: 0.5px;
-            border-bottom: 1px solid var(--border);
-            padding-bottom: 12px;
-            margin-bottom: 16px;
+            padding: 2px 8px;
+            border-radius: var(--radius-pill);
+            background: var(--accent-dim);
+            color: var(--accent);
+            border: 1px solid var(--accent-border);
         }
 
-        .dropdown-trigger,
-        .studio-select,
-        .studio-textarea,
-        .advanced-settings-header,
-        .advanced-settings-content {
-            background: var(--input-bg) !important;
+        .msg-model-tag {
+            font-size: 11px;
+            color: var(--text-muted);
+            font-weight: 500;
+        }
+
+        /* Message Bubbles */
+        .msg-bubble {
+            padding: 14px 18px;
+            font-size: 13.5px;
+            line-height: 1.65;
+            position: relative;
+            max-width: 100%;
+            word-break: normal;
+            overflow-wrap: break-word;
+            transition: all 0.2s ease;
+        }
+
+        /* User Message Bubble */
+        .user .msg-bubble {
+            background: #181C24 !important;
+            border: 1px solid rgba(255, 255, 255, 0.08) !important;
+            border-radius: 18px 18px 4px 18px !important;
+            color: #FFFFFF !important;
+            font-weight: 500;
+            padding: 11px 18px !important;
+            box-shadow: 0 4px 16px rgba(0, 0, 0, 0.12) !important;
+            width: fit-content !important;
+            min-width: fit-content !important;
+            max-width: 100% !important;
+            white-space: pre-wrap !important;
+        }
+
+        body[data-theme="dark"] .user .msg-bubble {
+            background: linear-gradient(135deg, rgba(21, 172, 73, 0.22) 0%, rgba(21, 172, 73, 0.1) 100%) !important;
+            border: 1px solid rgba(21, 172, 73, 0.35) !important;
+            color: #F8FAFC !important;
+            box-shadow: 0 4px 20px rgba(21, 172, 73, 0.12) !important;
+        }
+
+        /* AI Message Bubble */
+        .ai .msg-bubble {
+            background: var(--card-bg) !important;
             border: 1px solid var(--border) !important;
+            border-radius: 4px 18px 18px 18px !important;
             color: var(--text) !important;
-            border-radius: 12px !important;
-            font-weight: 500 !important;
+            font-weight: 400;
+            box-shadow: var(--shadow-sm) !important;
+            padding: 16px 20px !important;
+            width: 100%;
         }
 
-        .dropdown-trigger:hover,
-        .studio-select:focus,
-        .studio-textarea:focus,
-        .advanced-settings-header:hover {
-            border-color: var(--accent) !important;
+        /* Markdown Rendering inside AI Message */
+        .msg-content h1, .msg-content h2, .msg-content h3, .msg-content h4 {
+            font-family: var(--title-font);
+            font-weight: 700;
+            margin: 12px 0 6px;
+            color: var(--text);
+            line-height: 1.3;
+        }
+
+        .msg-content h1 { font-size: 18px; }
+        .msg-content h2 { font-size: 16px; }
+        .msg-content h3 { font-size: 14.5px; }
+
+        .msg-content p {
+            margin-bottom: 8px;
+        }
+        .msg-content p:last-child {
+            margin-bottom: 0;
+        }
+
+        .msg-content ul, .msg-content ol {
+            margin: 6px 0 8px 20px;
+        }
+        .msg-content li {
+            margin-bottom: 4px;
+        }
+
+        .msg-content code:not(pre code) {
+            font-family: var(--mono);
+            font-size: 12px;
+            padding: 2px 6px;
+            border-radius: 6px;
+            background: var(--hover);
+            border: 1px solid var(--border);
+            color: var(--accent);
+        }
+
+        .msg-content pre {
+            margin: 10px 0;
+            border-radius: var(--radius-sm);
+            overflow: hidden;
+            background: #111114 !important;
+            border: 1px solid rgba(255, 255, 255, 0.08);
+        }
+
+        .msg-content pre code {
+            font-family: var(--mono);
+            font-size: 12px;
+            line-height: 1.5;
+            padding: 14px !important;
+            display: block;
+            overflow-x: auto;
+        }
+
+        .code-block-wrapper {
+            position: relative;
+            margin: 10px 0;
+            border-radius: var(--radius-sm);
+            overflow: hidden;
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            background: #111114;
+        }
+
+        .code-block-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            background: #1A1A1E;
+            padding: 6px 12px;
+            font-size: 11px;
+            color: #94A3B8;
+            font-family: var(--mono);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+        }
+
+        .copy-code-btn {
+            background: transparent;
+            border: none;
+            color: #94A3B8;
+            cursor: pointer;
+            font-size: 11px;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            padding: 2px 6px;
+            border-radius: 4px;
+            transition: all 0.2s ease;
+        }
+
+        .copy-code-btn:hover {
+            color: #FFFFFF;
+            background: rgba(255, 255, 255, 0.1);
+        }
+
+        /* Message Action Buttons Bar */
+        .msg-footer-bar {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            margin-top: 8px;
+            padding-left: 4px;
+        }
+
+        .msg-action-btn {
+            background: var(--card-bg);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            padding: 4px 10px;
+            font-size: 11px;
+            font-weight: 600;
+            color: var(--text-dim);
+            cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+            gap: 5px;
+            transition: all 0.18s ease;
+        }
+
+        .msg-action-btn:hover {
+            background: var(--hover);
+            color: var(--text);
+            border-color: var(--accent-border);
+        }
+
+        .msg-time {
+            font-size: 10.5px;
+            color: var(--text-muted);
+            margin-left: auto;
+        }
+
+        /* ── Input Dock / Floating Omni-Pill (Home Page Style) ── */
+        .ai-input-wrapper {
+            flex-shrink: 0;
+            position: relative;
+            padding: 0 14px 14px;
+            background: transparent;
+            z-index: 10;
+        }
+
+        body.fullscreen-mode .ai-input-wrapper {
+            width: 100%;
+            max-width: 820px;
+            margin: 0 auto 20px;
+            padding: 0 24px;
+        }
+
+        /* Quick Tool Chips */
+        .quick-tools {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            margin-bottom: 8px;
+            overflow-x: auto;
+            padding-bottom: 2px;
+        }
+
+        .quick-tools::-webkit-scrollbar { height: 0; }
+
+        .tool-chip {
+            background: var(--card-bg);
+            border: 1px solid var(--border);
+            border-radius: var(--radius-pill);
+            font-family: var(--font);
+            font-size: 11.5px;
+            font-weight: 700;
+            color: var(--text-dim);
+            padding: 5px 12px;
+            cursor: pointer;
+            white-space: nowrap;
+            transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            box-shadow: var(--shadow-sm);
+        }
+
+        .tool-chip i {
+            color: var(--accent);
+            font-size: 11px;
+        }
+
+        .tool-chip:hover {
+            background: var(--hover);
+            border-color: var(--accent-border);
+            color: var(--accent);
+            transform: translateY(-1px);
+        }
+
+        /* Capsule Omni-Input Box (Matched with .sp-search-pill in home.css) */
+        .input-container {
+            background: var(--input-bg);
+            border: 1px solid var(--input-border);
+            border-radius: var(--radius-pill);
+            padding: 6px 8px 6px 16px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            box-shadow: var(--shadow-input);
+            transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+
+        .input-container:focus-within {
+            border-color: var(--accent);
+            box-shadow: 0 0 0 3px var(--accent-dim), var(--shadow-input);
+        }
+
+        #ai-query {
+            flex: 1;
+            background: transparent;
+            border: none;
+            outline: none;
+            color: var(--text);
+            font-weight: 500;
+            padding: 6px 2px;
+            font-family: var(--font);
+            font-size: 13.5px;
+            resize: none;
+            max-height: 120px;
+            min-height: 24px;
+            line-height: 1.45;
+        }
+
+        #ai-query::placeholder {
+            color: var(--text-muted);
+        }
+
+        /* Send Button */
+        .send-btn {
+            width: 36px;
+            height: 36px;
+            min-width: 36px;
+            border-radius: 50%;
+            border: none;
+            background: var(--accent);
+            color: #FFFFFF;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+            flex-shrink: 0;
+            font-size: 13px;
+            font-weight: 700;
+            box-shadow: 0 2px 10px var(--accent-glow);
+        }
+
+        .send-btn:hover {
+            transform: scale(1.08);
+            background: var(--accent-hover);
+        }
+
+        /* File Attachment Preview */
+        #ai-file-preview {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            background: var(--card-bg);
+            border: 1px solid var(--border);
+            padding: 6px 14px;
+            border-radius: var(--radius-pill);
+            font-size: 12px;
+            color: var(--text-dim);
+            margin-bottom: 8px;
+            box-shadow: var(--shadow-sm);
+        }
+
+        /* ── Image Studio View ── */
+        .ai-image-studio-view {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            overflow-y: auto;
+            padding: 16px 18px 24px;
+            background: transparent;
+        }
+
+        body.fullscreen-mode .ai-image-studio-view {
+            max-width: 860px;
+            margin: 0 auto;
+            width: 100%;
+            padding: 28px 24px;
+        }
+
+        .studio-card {
+            background: var(--card-bg);
+            border: 1px solid var(--border);
+            border-radius: var(--radius-lg);
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
+            box-shadow: var(--shadow-sm);
+        }
+
+        .studio-card-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .studio-header-title {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .studio-header-icon {
+            width: 38px;
+            height: 38px;
+            border-radius: 12px;
+            background: var(--accent-dim);
+            color: var(--accent);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 16px;
+        }
+
+        .studio-header-text h3 {
+            font-family: var(--title-font);
+            font-size: 16px;
+            font-weight: 800;
+            color: var(--text);
+            letter-spacing: -0.3px;
+        }
+
+        .studio-header-text span {
+            font-size: 12px;
+            color: var(--text-dim);
+        }
+
+        .studio-header-badge {
+            font-size: 10.5px;
+            font-weight: 800;
+            background: var(--accent);
+            color: #FFFFFF;
+            padding: 4px 10px;
+            border-radius: var(--radius-pill);
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+
+        .studio-row-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 12px;
+        }
+
+        @media (max-width: 600px) {
+            .studio-row-grid { grid-template-columns: 1fr; }
+        }
+
+        .studio-field {
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+        }
+
+        .studio-field label {
+            font-size: 11.5px;
+            font-weight: 700;
+            color: var(--text-dim);
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .studio-field label i {
+            color: var(--accent);
+        }
+
+        .studio-select, .studio-textarea {
+            width: 100%;
+            background: var(--input-bg);
+            border: 1px solid var(--input-border);
+            border-radius: var(--radius-sm);
+            padding: 10px 12px;
+            font-family: var(--font);
+            font-size: 13px;
+            color: var(--text);
+            outline: none;
+            transition: all 0.2s ease;
+        }
+
+        .studio-select:focus, .studio-textarea:focus {
+            border-color: var(--accent);
+            box-shadow: 0 0 0 3px var(--accent-dim);
+        }
+
+        /* Style Preset Chips */
+        .preset-chips-grid {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 6px;
         }
 
         .preset-chip {
-            background: var(--card-bg) !important;
-            border: 1px solid var(--border) !important;
-            color: var(--text-dim) !important;
-            border-radius: 10px !important;
-            font-weight: 600 !important;
-            padding: 7px 12px !important;
-            transition: all 0.2s ease !important;
+            padding: 6px 14px;
+            border-radius: var(--radius-pill);
+            background: var(--input-bg);
+            border: 1px solid var(--border);
+            color: var(--text-dim);
+            font-family: var(--font);
+            font-size: 12px;
+            font-weight: 600;
+            cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            transition: all 0.2s ease;
         }
 
-        .preset-chip:hover,
+        .preset-chip i {
+            color: var(--accent);
+        }
+
+        .preset-chip:hover {
+            color: var(--text);
+            border-color: var(--accent-border);
+            background: var(--hover);
+        }
+
         .preset-chip.active {
             background: var(--accent-dim) !important;
             color: var(--accent) !important;
             border-color: var(--accent) !important;
+            font-weight: 700;
         }
 
+        /* Custom Dropdown Trigger */
+        .custom-dropdown {
+            position: relative;
+            width: 100%;
+        }
+
+        .dropdown-trigger {
+            width: 100%;
+            height: 42px;
+            background: var(--input-bg);
+            border: 1px solid var(--input-border);
+            border-radius: var(--radius-sm);
+            padding: 0 14px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            color: var(--text);
+            font-family: var(--font);
+            font-size: 13px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .dropdown-trigger:hover {
+            border-color: var(--accent);
+        }
+
+        .trigger-label {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+
+        .trigger-arrow {
+            font-size: 11px;
+            color: var(--text-muted);
+            transition: transform 0.2s ease;
+        }
+
+        .custom-dropdown.open .trigger-arrow {
+            transform: rotate(180deg);
+        }
+
+        .dropdown-options {
+            display: none;
+            position: absolute;
+            top: calc(100% + 4px);
+            left: 0;
+            right: 0;
+            background: var(--card-bg);
+            border: 1px solid var(--border);
+            border-radius: var(--radius-md);
+            padding: 6px;
+            z-index: 50;
+            box-shadow: var(--shadow-lg);
+            max-height: 240px;
+            overflow-y: auto;
+            flex-direction: column;
+            gap: 2px;
+        }
+
+        .custom-dropdown.open .dropdown-options {
+            display: flex;
+        }
+
+        .dropdown-option {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 8px 12px;
+            border-radius: var(--radius-sm);
+            cursor: pointer;
+            transition: background 0.15s ease;
+        }
+
+        .dropdown-option:hover {
+            background: var(--hover);
+        }
+
+        .dropdown-option.active {
+            background: var(--accent-dim);
+            color: var(--accent);
+            font-weight: 700;
+        }
+
+        .option-icon {
+            font-size: 14px;
+            width: 20px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .option-text {
+            display: flex;
+            flex-direction: column;
+            gap: 1px;
+            min-width: 0;
+        }
+
+        .option-title {
+            font-size: 12.5px;
+            font-weight: 700;
+        }
+
+        .option-desc {
+            font-size: 11px;
+            color: var(--text-dim);
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        /* Studio Submit Button */
         .studio-submit-btn {
-            background: var(--accent-gradient) !important;
-            color: #FFFFFF !important;
-            border-radius: 12px !important;
-            font-weight: 700 !important;
-            box-shadow: 0 4px 14px var(--accent-glow) !important;
-            transition: all 0.2s ease !important;
+            height: 44px;
+            border-radius: var(--radius-pill);
+            background: var(--accent);
+            color: #FFFFFF;
+            border: none;
+            font-family: var(--font);
+            font-size: 13.5px;
+            font-weight: 800;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            box-shadow: 0 4px 16px var(--accent-glow);
+            transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
         }
 
         .studio-submit-btn:hover {
-            transform: translateY(-1px) !important;
-            box-shadow: 0 6px 20px var(--accent-glow) !important;
+            transform: translateY(-2px);
+            background: var(--accent-hover);
+            box-shadow: 0 8px 24px var(--accent-glow);
         }
 
+        /* Studio Preview & Actions */
+        .studio-preview-card {
+            background: var(--card-bg);
+            border: 1px solid var(--border);
+            border-radius: var(--radius-lg);
+            padding: 16px;
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            margin-top: 14px;
+            box-shadow: var(--shadow-sm);
+        }
+
+        .studio-status {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 13px;
+            font-weight: 700;
+            color: var(--accent);
+        }
+
+        .studio-action-btn {
+            padding: 8px 14px;
+            border-radius: var(--radius-pill);
+            border: 1px solid var(--border);
+            background: var(--input-bg);
+            color: var(--text);
+            font-family: var(--font);
+            font-size: 12px;
+            font-weight: 700;
+            cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            transition: all 0.2s ease;
+        }
+
+        .studio-action-btn:hover {
+            background: var(--hover);
+            border-color: var(--accent);
+            transform: translateY(-1px);
+        }
+
+        /* Shimmer Loading Canvas */
+        .loading-shimmer-canvas {
+            position: relative;
+            width: 100%;
+            aspect-ratio: var(--aspect-ratio, 1 / 1);
+            border-radius: var(--radius-md);
+            overflow: hidden;
+            background: #111114;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .shimmer-gradient-flow {
+            position: absolute;
+            width: 200%;
+            height: 200%;
+            background: linear-gradient(-45deg, #3B82F6, #8B5CF6, #EC4899, #10B981, #F59E0B, #3B82F6);
+            background-size: 300% 300%;
+            animation: shimmer-flow 8s ease infinite;
+            opacity: 0.85;
+        }
+
+        @keyframes shimmer-flow {
+            0% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+            100% { background-position: 0% 50%; }
+        }
+
+        .shimmer-glow-overlay {
+            position: absolute;
+            inset: 0;
+            backdrop-filter: blur(28px) saturate(1.3);
+            -webkit-backdrop-filter: blur(28px) saturate(1.3);
+            background: radial-gradient(circle, rgba(0,0,0,0) 20%, rgba(20,20,25,0.5) 90%);
+        }
+
+        .shimmer-progress-overlay {
+            position: relative;
+            z-index: 5;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+            gap: 8px;
+            padding: 20px;
+            color: #FFFFFF;
+        }
+
+        /* ── Memory Bank Tags ── */
         .memory-tag {
             display: inline-flex;
             align-items: center;
@@ -2709,7 +1709,7 @@
             background: var(--hover);
             border: 1px solid var(--border);
             padding: 5px 12px;
-            border-radius: 20px;
+            border-radius: var(--radius-pill);
             font-size: 12px;
             color: var(--text);
             margin: 3px;
@@ -2722,7 +1722,17 @@
         }
 
         .memory-tag i.fa-times:hover {
-            color: #ef4444;
+            color: #EF4444;
+        }
+
+        @keyframes pulse-dot {
+            0%, 100% { opacity: 0.4; transform: scale(0.85); }
+            50% { opacity: 1; transform: scale(1.2); }
+        }
+
+        @keyframes slide-up {
+            from { opacity: 0; transform: translateY(8px); }
+            to { opacity: 1; transform: translateY(0); }
         }
     </style>
 </head>
@@ -2739,7 +1749,7 @@
     </script>
     <div id="resize-handle"></div>
     <div class="ai-panel">
-        <!-- Col 1: Modern Left Sidebar -->
+        <!-- Col 1: Left History Sidebar -->
         <div class="history-sidebar" id="history-sidebar">
             <div class="gemini-sidebar-top">
                 <div class="gemini-logo">
@@ -2820,7 +1830,7 @@
                 </div>
                 <div id="username-edit-row" style="display: none; align-items: center; gap: 6px; flex: 1;">
                     <input type="text" id="username-input" placeholder="Your name..." maxlength="20"
-                        style="flex: 1; background: var(--card-bg); border: 1px solid var(--accent); border-radius: 8px; padding: 6px 10px; font-size: 12px; color: var(--text); outline: none; font-family: inherit;">
+                        style="flex: 1; background: var(--input-bg); border: 1px solid var(--accent); border-radius: 8px; padding: 6px 10px; font-size: 12px; color: var(--text); outline: none; font-family: inherit;">
                     <button id="username-save-btn" style="background: var(--accent); color: #FFFFFF; border: none; border-radius: 6px; padding: 6px 10px; font-size: 11px; font-weight: 700; cursor: pointer;">Save</button>
                     <button onclick="document.getElementById('username-edit-row').style.display='none'; document.getElementById('user-info-display').style.display='flex';" style="background: transparent; border: none; color: var(--text-muted); cursor: pointer; font-size: 13px;"><i class="fas fa-times"></i></button>
                 </div>
@@ -2830,9 +1840,9 @@
             </div>
         </div>
 
-        <!-- Col 2/3 Main View Wrapper -->
+        <!-- Col 2: Main AI Container -->
         <div class="ai-main-container" id="ai-main-container">
-            <!-- Header always visible in sidebar mode -->
+            <!-- Header Row -->
             <div class="ai-header">
                 <div class="ai-brand">
                     <div class="ai-logo"><i class="fas fa-wand-magic-sparkles"></i></div>
@@ -2849,7 +1859,7 @@
                 </div>
             </div>
 
-            <!-- Tab Switcher (hidden in full-screen) -->
+            <!-- Tab Switcher (Visible in sidebar mode) -->
             <div class="ai-nav-bar" id="ai-nav-bar">
                 <button class="ai-nav-tab active" id="nav-tab-chat">
                     <i class="fas fa-comments"></i> <span>Chat</span>
@@ -2859,7 +1869,7 @@
                 </button>
             </div>
 
-            <!-- Views Container (Grid in Full Screen) -->
+            <!-- Views Container -->
             <div class="ai-views-container">
                 <!-- Chat View -->
                 <div class="ai-chat-view" id="ai-chat-view">
@@ -2941,10 +1951,10 @@
                             <button class="tool-chip" id="tool-email"><i class="fas fa-paper-plane"></i> Email</button>
                             <button class="tool-chip" id="tool-help"><i class="fas fa-circle-question"></i> Help</button>
                         </div>
-                        <div id="ai-file-preview" style="display: none; align-items: center; gap: 8px; background: var(--card-bg); border: 1px solid var(--border); padding: 6px 12px; border-radius: var(--radius); font-size: 12.5px; color: var(--text-dim); margin-bottom: 8px;">
+                        <div id="ai-file-preview" style="display: none;">
                             <i id="ai-file-icon" class="fas fa-file-lines" style="color: var(--accent);"></i>
                             <span id="ai-file-name" style="flex: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-weight: 600;">filename.txt</span>
-                            <button id="ai-file-remove" class="control-btn" style="width: 20px; height: 20px; min-width: 20px; font-size: 10px; margin: 0; display: flex; align-items: center; justify-content: center;"><i class="fas fa-times"></i></button>
+                            <button id="ai-file-remove" class="control-btn" style="width: 20px; height: 20px; min-width: 20px; font-size: 10px; margin: 0;"><i class="fas fa-times"></i></button>
                         </div>
                         <div class="input-container">
                             <input type="file" id="ai-file-input" style="display: none;">
@@ -2955,403 +1965,404 @@
                     </div>
                 </div>
 
-        <!-- Image Studio View -->
-        <div class="ai-image-studio-view" id="ai-image-studio-view" style="display: none;">
-            <div class="studio-scroll-area">
-                <div class="studio-card">
-                    <div class="studio-card-header">
-                        <div class="studio-header-title">
-                            <div class="studio-header-icon"><i class="fas fa-palette"></i></div>
-                            <div class="studio-header-text">
-                                <h3>AI Image Studio</h3>
-                                <span>Generate & customize artwork</span>
+                <!-- Image Studio View -->
+                <div class="ai-image-studio-view" id="ai-image-studio-view" style="display: none;">
+                    <div class="studio-scroll-area">
+                        <div class="studio-card">
+                            <div class="studio-card-header">
+                                <div class="studio-header-title">
+                                    <div class="studio-header-icon"><i class="fas fa-palette"></i></div>
+                                    <div class="studio-header-text">
+                                        <h3>AI Image Studio</h3>
+                                        <span>Generate & customize artwork</span>
+                                    </div>
+                                </div>
+                                <div class="studio-header-badge"><i class="fas fa-wand-magic-sparkles"></i> PRO</div>
                             </div>
-                        </div>
-                        <div class="studio-header-badge"><i class="fas fa-wand-magic-sparkles"></i> PRO</div>
-                    </div>
 
-                    <!-- 2-Column Grid: Engine & Model Selectors -->
-                    <div class="studio-row-grid">
-                        <!-- Engine Selector -->
-                        <div class="studio-field">
-                            <label><i class="fas fa-microchip"></i> Generation Engine</label>
-                            <div class="custom-dropdown" id="engine-dropdown-container">
-                                <input type="hidden" id="studio-engine-select" value="local">
-                                <button type="button" class="dropdown-trigger" id="engine-dropdown-trigger">
-                                    <span class="trigger-label" id="engine-dropdown-label">
-                                        <span class="option-icon" style="color: var(--accent);"><i class="fas fa-robot"></i></span>
-                                        <span class="option-title">Local Model (Flux.1 / SDXL)</span>
-                                    </span>
-                                    <i class="fas fa-chevron-down trigger-arrow"></i>
-                                </button>
-                                <div class="dropdown-options" id="engine-dropdown-options">
-                                    <div class="dropdown-option active" data-value="local">
-                                        <span class="option-icon" style="color: var(--accent);"><i class="fas fa-robot"></i></span>
-                                        <div class="option-text">
-                                            <div class="option-title">Local Model (Flux.1 / SDXL / ComfyUI / Fooocus)</div>
-                                            <div class="option-desc">Free & Offline dynamic generation</div>
+                            <!-- 2-Column Grid: Engine & Model Selectors -->
+                            <div class="studio-row-grid">
+                                <!-- Engine Selector -->
+                                <div class="studio-field">
+                                    <label><i class="fas fa-microchip"></i> Generation Engine</label>
+                                    <div class="custom-dropdown" id="engine-dropdown-container">
+                                        <input type="hidden" id="studio-engine-select" value="local">
+                                        <button type="button" class="dropdown-trigger" id="engine-dropdown-trigger">
+                                            <span class="trigger-label" id="engine-dropdown-label">
+                                                <span class="option-icon" style="color: var(--accent);"><i class="fas fa-robot"></i></span>
+                                                <span class="option-title">Local Model (Flux.1 / SDXL)</span>
+                                            </span>
+                                            <i class="fas fa-chevron-down trigger-arrow"></i>
+                                        </button>
+                                        <div class="dropdown-options" id="engine-dropdown-options">
+                                            <div class="dropdown-option active" data-value="local">
+                                                <span class="option-icon" style="color: var(--accent);"><i class="fas fa-robot"></i></span>
+                                                <div class="option-text">
+                                                    <div class="option-title">Local Model (Flux.1 / SDXL / ComfyUI / Fooocus)</div>
+                                                    <div class="option-desc">Free & Offline dynamic generation</div>
+                                                </div>
+                                            </div>
+                                            <div class="dropdown-option" data-value="openai">
+                                                <span class="option-icon" style="color: #FF9F0A;"><i class="fas fa-bolt"></i></span>
+                                                <div class="option-text">
+                                                    <div class="option-title">ChatGPT / DALL-E 3 API</div>
+                                                    <div class="option-desc">Commercial high-fidelity cloud generation</div>
+                                                </div>
+                                            </div>
+                                            <div class="dropdown-option" data-value="gemini">
+                                                <span class="option-icon" style="color: #0A84FF;"><i class="fas fa-wand-magic-sparkles"></i></span>
+                                                <div class="option-text">
+                                                    <div class="option-title">Gemini / Google Imagen API</div>
+                                                    <div class="option-desc">Advanced cloud-based vision model suite</div>
+                                                </div>
+                                            </div>
                                         </div>
                                     </div>
-                                    <div class="dropdown-option" data-value="openai">
-                                        <span class="option-icon" style="color: #ff9f0a;"><i class="fas fa-bolt"></i></span>
-                                        <div class="option-text">
-                                            <div class="option-title">ChatGPT / DALL-E 3 API</div>
-                                            <div class="option-desc">Commercial high-fidelity cloud generation</div>
-                                        </div>
-                                    </div>
-                                    <div class="dropdown-option" data-value="gemini">
-                                        <span class="option-icon" style="color: #0a84ff;"><i class="fas fa-wand-magic-sparkles"></i></span>
-                                        <div class="option-text">
-                                            <div class="option-title">Gemini / Google Imagen API</div>
-                                            <div class="option-desc">Advanced cloud-based vision model suite</div>
+                                </div>
+
+                                <!-- Open Source Model Architecture Selector -->
+                                <div class="studio-field" id="os-model-field">
+                                    <label><i class="fas fa-brain"></i> Open Source Model</label>
+                                    <div class="custom-dropdown" id="os-model-dropdown-container">
+                                        <input type="hidden" id="studio-os-model-select" value="flux-2">
+                                        <button type="button" class="dropdown-trigger" id="os-model-dropdown-trigger">
+                                            <span class="trigger-label" id="os-model-dropdown-label">
+                                                <span class="option-icon" style="color: #34C759;"><i class="fas fa-bolt-lightning"></i></span>
+                                                <span class="option-title">FLUX.2 (Flagship)</span>
+                                            </span>
+                                            <i class="fas fa-chevron-down trigger-arrow"></i>
+                                        </button>
+                                        <div class="dropdown-options" id="os-model-dropdown-options">
+                                            <div class="dropdown-option active" data-value="flux-2">
+                                                <span class="option-icon" style="color: #34C759;"><i class="fas fa-bolt-lightning"></i></span>
+                                                <div class="option-text">
+                                                    <div class="option-title">FLUX.2 (Black Forest Labs Flagship)</div>
+                                                    <div class="option-desc">Next-gen 24B parameter photorealism & text rendering model</div>
+                                                </div>
+                                            </div>
+                                            <div class="dropdown-option" data-value="sd-3.5">
+                                                <span class="option-icon" style="color: #FF9F0A;"><i class="fas fa-layer-group"></i></span>
+                                                <div class="option-text">
+                                                    <div class="option-title">Stable Diffusion 3.5 Large (Stability AI)</div>
+                                                    <div class="option-desc">MMDiT architecture with photorealistic prompt accuracy</div>
+                                                </div>
+                                            </div>
+                                            <div class="dropdown-option" data-value="qwen-image">
+                                                <span class="option-icon" style="color: #0A84FF;"><i class="fas fa-brain"></i></span>
+                                                <div class="option-text">
+                                                    <div class="option-title">Qwen-Image / Qwen-VL (Alibaba Omni)</div>
+                                                    <div class="option-desc">Omni vision model with precise spatial layout generation</div>
+                                                </div>
+                                            </div>
+                                            <div class="dropdown-option" data-value="flux-realism">
+                                                <span class="option-icon" style="color: #30D158;"><i class="fas fa-camera"></i></span>
+                                                <div class="option-text">
+                                                    <div class="option-title">Flux 1.1 Realism Ultra (Hyper-Realistic Photo)</div>
+                                                    <div class="option-desc">Portrait tuning & lifelike human skin textures</div>
+                                                </div>
+                                            </div>
+                                            <div class="dropdown-option" data-value="flux">
+                                                <span class="option-icon" style="color: #5856D6;"><i class="fas fa-wand-magic-sparkles"></i></span>
+                                                <div class="option-text">
+                                                    <div class="option-title">Flux.1 Schnell 12B (High Speed Open Model)</div>
+                                                    <div class="option-desc">12 Billion parameter ultra-high detail open model</div>
+                                                </div>
+                                            </div>
+                                            <div class="dropdown-option" data-value="flux-candid">
+                                                <span class="option-icon" style="color: #FFD60A;"><i class="fas fa-user"></i></span>
+                                                <div class="option-text">
+                                                    <div class="option-title">Flux Candid 4K (Natural Human Portraits)</div>
+                                                    <div class="option-desc">Candid photography & natural ambient light</div>
+                                                </div>
+                                            </div>
+                                            <div class="dropdown-option" data-value="turbo">
+                                                <span class="option-icon" style="color: #FF2D55;"><i class="fas fa-bolt"></i></span>
+                                                <div class="option-text">
+                                                    <div class="option-title">SDXL RealVis V4.0 (Fast Photorealism)</div>
+                                                    <div class="option-desc">RealVisXL photorealism weights</div>
+                                                </div>
+                                            </div>
+                                            <div class="dropdown-option" data-value="flux-3d">
+                                                <span class="option-icon" style="color: #64D2FF;"><i class="fas fa-cube"></i></span>
+                                                <div class="option-text">
+                                                    <div class="option-title">Flux 3D & Cinematic Render</div>
+                                                    <div class="option-desc">Octane/Unreal Engine 5 3D digital renders</div>
+                                                </div>
+                                            </div>
+                                            <div class="dropdown-option" data-value="flux-anime">
+                                                <span class="option-icon" style="color: #AF52DE;"><i class="fas fa-paint-brush"></i></span>
+                                                <div class="option-text">
+                                                    <div class="option-title">Flux Niji V6 (Vibrant Anime & Manga)</div>
+                                                    <div class="option-desc">High quality Japanese anime & illustration style</div>
+                                                </div>
+                                            </div>
                                         </div>
                                     </div>
                                 </div>
                             </div>
-                        </div>
 
-                        <!-- Open Source Model Architecture Selector -->
-                        <div class="studio-field" id="os-model-field">
-                            <label><i class="fas fa-brain"></i> Open Source Model</label>
-                            <div class="custom-dropdown" id="os-model-dropdown-container">
-                                <input type="hidden" id="studio-os-model-select" value="flux-2">
-                                <button type="button" class="dropdown-trigger" id="os-model-dropdown-trigger">
-                                    <span class="trigger-label" id="os-model-dropdown-label">
-                                        <span class="option-icon" style="color: #34c759;"><i class="fas fa-bolt-lightning"></i></span>
-                                        <span class="option-title">FLUX.2 (Flagship)</span>
-                                    </span>
-                                    <i class="fas fa-chevron-down trigger-arrow"></i>
-                                </button>
-                                <div class="dropdown-options" id="os-model-dropdown-options">
-                                    <div class="dropdown-option active" data-value="flux-2">
-                                        <span class="option-icon" style="color: #34c759;"><i class="fas fa-bolt-lightning"></i></span>
-                                        <div class="option-text">
-                                            <div class="option-title">FLUX.2 (Black Forest Labs Flagship)</div>
-                                            <div class="option-desc">Next-gen 24B parameter photorealism & text rendering model</div>
-                                        </div>
-                                    </div>
-                                    <div class="dropdown-option" data-value="sd-3.5">
-                                        <span class="option-icon" style="color: #ff9f0a;"><i class="fas fa-layer-group"></i></span>
-                                        <div class="option-text">
-                                            <div class="option-title">Stable Diffusion 3.5 Large (Stability AI)</div>
-                                            <div class="option-desc">MMDiT architecture with photorealistic prompt accuracy</div>
-                                        </div>
-                                    </div>
-                                    <div class="dropdown-option" data-value="qwen-image">
-                                        <span class="option-icon" style="color: #0a84ff;"><i class="fas fa-brain"></i></span>
-                                        <div class="option-text">
-                                            <div class="option-title">Qwen-Image / Qwen-VL (Alibaba Omni)</div>
-                                            <div class="option-desc">Omni vision model with precise spatial layout generation</div>
-                                        </div>
-                                    </div>
-                                    <div class="dropdown-option" data-value="flux-realism">
-                                        <span class="option-icon" style="color: #30d158;"><i class="fas fa-camera"></i></span>
-                                        <div class="option-text">
-                                            <div class="option-title">Flux 1.1 Realism Ultra (Hyper-Realistic Photo)</div>
-                                            <div class="option-desc">Portrait tuning & lifelike human skin textures</div>
-                                        </div>
-                                    </div>
-                                    <div class="dropdown-option" data-value="flux">
-                                        <span class="option-icon" style="color: #5856d6;"><i class="fas fa-wand-magic-sparkles"></i></span>
-                                        <div class="option-text">
-                                            <div class="option-title">Flux.1 Schnell 12B (High Speed Open Model)</div>
-                                            <div class="option-desc">12 Billion parameter ultra-high detail open model</div>
-                                        </div>
-                                    </div>
-                                    <div class="dropdown-option" data-value="flux-candid">
-                                        <span class="option-icon" style="color: #ffd60a;"><i class="fas fa-user"></i></span>
-                                        <div class="option-text">
-                                            <div class="option-title">Flux Candid 4K (Natural Human Portraits)</div>
-                                            <div class="option-desc">Candid photography & natural ambient light</div>
-                                        </div>
-                                    </div>
-                                    <div class="dropdown-option" data-value="turbo">
-                                        <span class="option-icon" style="color: #ff2d55;"><i class="fas fa-bolt"></i></span>
-                                        <div class="option-text">
-                                            <div class="option-title">SDXL RealVis V4.0 (Fast Photorealism)</div>
-                                            <div class="option-desc">RealVisXL photorealism weights</div>
-                                        </div>
-                                    </div>
-                                    <div class="dropdown-option" data-value="flux-3d">
-                                        <span class="option-icon" style="color: #64d2ff;"><i class="fas fa-cube"></i></span>
-                                        <div class="option-text">
-                                            <div class="option-title">Flux 3D & Cinematic Render</div>
-                                            <div class="option-desc">Octane/Unreal Engine 5 3D digital renders</div>
-                                        </div>
-                                    </div>
-                                    <div class="dropdown-option" data-value="flux-anime">
-                                        <span class="option-icon" style="color: #af52de;"><i class="fas fa-paint-brush"></i></span>
-                                        <div class="option-text">
-                                            <div class="option-title">Flux Niji V6 (Vibrant Anime & Manga)</div>
-                                            <div class="option-desc">High quality Japanese anime & illustration style</div>
+                            <!-- Prompt Input -->
+                            <div class="studio-field">
+                                <label><i class="fas fa-font"></i> Image Prompt</label>
+                                <textarea id="studio-prompt-input" class="studio-textarea" placeholder="Describe the image you want to generate (e.g. A majestic glowing dragon over a neon cyberpunk city at night, 8k resolution, photorealistic)..." rows="3"></textarea>
+                            </div>
+
+                            <!-- Style Preset Chips -->
+                            <div class="studio-field">
+                                <label><i class="fas fa-wand-magic-sparkles"></i> Style Presets</label>
+                                <div class="preset-chips-grid">
+                                    <button class="preset-chip" data-style="Photorealistic, 8k resolution, ultra detailed, cinematic lighting"><i class="fas fa-camera"></i> Realistic</button>
+                                    <button class="preset-chip" data-style="Anime style, vibrant colors, detailed lineart, 4k"><i class="fas fa-paint-brush"></i> Anime</button>
+                                    <button class="preset-chip" data-style="Cyberpunk aesthetics, glowing neon, rain, 8k"><i class="fas fa-bolt"></i> Cyberpunk</button>
+                                    <button class="preset-chip" data-style="3D digital render, Octane render, smooth shading, vibrant"><i class="fas fa-cube"></i> 3D Render</button>
+                                    <button class="preset-chip" data-style="Classic oil painting, dramatic lighting, rich textures"><i class="fas fa-palette"></i> Oil Painting</button>
+                                </div>
+                            </div>
+
+                            <!-- 2-Column Grid: Aspect Ratio & Advanced Settings -->
+                            <div class="studio-row-grid">
+                                <!-- Aspect Ratio Selector -->
+                                <div class="studio-field">
+                                    <label><i class="fas fa-crop-simple"></i> Aspect Ratio</label>
+                                    <div class="custom-dropdown" id="ratio-dropdown-container">
+                                        <input type="hidden" id="studio-aspect-ratio" value="1:1">
+                                        <button type="button" class="dropdown-trigger" id="ratio-dropdown-trigger">
+                                            <span class="trigger-label" id="ratio-dropdown-label">
+                                                <span class="option-icon" style="color: var(--accent);"><i class="fas fa-square"></i></span>
+                                                <span class="option-title">Square (1:1)</span>
+                                            </span>
+                                            <i class="fas fa-chevron-down trigger-arrow"></i>
+                                        </button>
+                                        <div class="dropdown-options" id="ratio-dropdown-options">
+                                            <div class="dropdown-option active" data-value="1:1" data-w="1024" data-h="1024">
+                                                <span class="option-icon" style="color: var(--accent);"><i class="fas fa-square"></i></span>
+                                                <div class="option-text">
+                                                    <div class="option-title">Square (1:1)</div>
+                                                    <div class="option-desc">1024 x 1024 px (Social posts)</div>
+                                                </div>
+                                            </div>
+                                            <div class="dropdown-option" data-value="9:16" data-w="768" data-h="1344">
+                                                <span class="option-icon" style="color: #FF9F0A;"><i class="fas fa-mobile-screen"></i></span>
+                                                <div class="option-text">
+                                                    <div class="option-title">Portrait (9:16)</div>
+                                                    <div class="option-desc">768 x 1344 px (Mobile stories)</div>
+                                                </div>
+                                            </div>
+                                            <div class="dropdown-option" data-value="16:9" data-w="1344" data-h="768">
+                                                <span class="option-icon" style="color: #0A84FF;"><i class="fas fa-display"></i></span>
+                                                <div class="option-text">
+                                                    <div class="option-title">Landscape (16:9)</div>
+                                                    <div class="option-desc">1344 x 768 px (Widescreen displays)</div>
+                                                </div>
+                                            </div>
                                         </div>
                                     </div>
                                 </div>
-                            </div>
-                        </div>
-                    </div>
 
-                    <!-- Prompt Input -->
-                    <div class="studio-field">
-                        <label><i class="fas fa-font"></i> Image Prompt</label>
-                        <textarea id="studio-prompt-input" class="studio-textarea" placeholder="Describe the image you want to generate (e.g. A majestic glowing dragon over a neon cyberpunk city at night, 8k resolution, photorealistic)..." rows="3"></textarea>
-                    </div>
-
-                    <!-- Style Preset Chips -->
-                    <div class="studio-field">
-                        <label><i class="fas fa-wand-magic-sparkles"></i> Style Presets</label>
-                        <div class="preset-chips-grid">
-                            <button class="preset-chip" data-style="Photorealistic, 8k resolution, ultra detailed, cinematic lighting"><i class="fas fa-camera"></i> Realistic</button>
-                            <button class="preset-chip" data-style="Anime style, vibrant colors, detailed lineart, 4k"><i class="fas fa-paint-brush"></i> Anime</button>
-                            <button class="preset-chip" data-style="Cyberpunk aesthetics, glowing neon, rain, 8k"><i class="fas fa-bolt"></i> Cyberpunk</button>
-                            <button class="preset-chip" data-style="3D digital render, Octane render, smooth shading, vibrant"><i class="fas fa-cube"></i> 3D Render</button>
-                            <button class="preset-chip" data-style="Classic oil painting, dramatic lighting, rich textures"><i class="fas fa-palette"></i> Oil Painting</button>
-                        </div>
-                    </div>
-
-                    <!-- 2-Column Grid: Aspect Ratio & Advanced Settings -->
-                    <div class="studio-row-grid">
-                        <!-- Aspect Ratio Selector -->
-                        <div class="studio-field">
-                            <label><i class="fas fa-crop-simple"></i> Aspect Ratio</label>
-                            <div class="custom-dropdown" id="ratio-dropdown-container">
-                                <input type="hidden" id="studio-aspect-ratio" value="1:1">
-                                <button type="button" class="dropdown-trigger" id="ratio-dropdown-trigger">
-                                    <span class="trigger-label" id="ratio-dropdown-label">
-                                        <span class="option-icon" style="color: var(--accent);"><i class="fas fa-square"></i></span>
-                                        <span class="option-title">Square (1:1)</span>
-                                    </span>
-                                    <i class="fas fa-chevron-down trigger-arrow"></i>
-                                </button>
-                                <div class="dropdown-options" id="ratio-dropdown-options">
-                                    <div class="dropdown-option active" data-value="1:1" data-w="1024" data-h="1024">
-                                        <span class="option-icon" style="color: var(--accent);"><i class="fas fa-square"></i></span>
-                                        <div class="option-text">
-                                            <div class="option-title">Square (1:1)</div>
-                                            <div class="option-desc">1024 x 1024 px (Social posts)</div>
-                                        </div>
-                                    </div>
-                                    <div class="dropdown-option" data-value="9:16" data-w="768" data-h="1344">
-                                        <span class="option-icon" style="color: #ff9f0a;"><i class="fas fa-mobile-screen"></i></span>
-                                        <div class="option-text">
-                                            <div class="option-title">Portrait (9:16)</div>
-                                            <div class="option-desc">768 x 1344 px (Mobile stories)</div>
-                                        </div>
-                                    </div>
-                                    <div class="dropdown-option" data-value="16:9" data-w="1344" data-h="768">
-                                        <span class="option-icon" style="color: #0a84ff;"><i class="fas fa-display"></i></span>
-                                        <div class="option-text">
-                                            <div class="option-title">Landscape (16:9)</div>
-                                            <div class="option-desc">1344 x 768 px (Widescreen displays)</div>
-                                        </div>
+                                <!-- Collapsible Advanced Settings -->
+                                <div class="studio-field">
+                                    <label><i class="fas fa-sliders-h"></i> Configuration</label>
+                                    <div class="dropdown-trigger" id="advanced-settings-toggle" style="cursor: pointer;">
+                                        <span><i class="fas fa-sliders" style="color: var(--accent); margin-right: 6px;"></i> Advanced Settings</span>
+                                        <i class="fas fa-chevron-down trigger-arrow" id="advanced-arrow-icon"></i>
                                     </div>
                                 </div>
                             </div>
+
+                            <div class="advanced-settings-content" id="advanced-settings-panel" style="display: none; flex-direction: column; gap: 12px; padding: 14px; background: var(--input-bg); border: 1px solid var(--border); border-radius: var(--radius-md);">
+                                <!-- Negative Prompt -->
+                                <div class="studio-field">
+                                    <label><i class="fas fa-ban"></i> Negative Prompt</label>
+                                    <input type="text" id="studio-negative-input" class="studio-select" placeholder="blurry, low quality, deformed, extra fingers...">
+                                </div>
+
+                                <!-- HD Enhancement Toggle -->
+                                <div class="studio-field" style="flex-direction: row; align-items: center; justify-content: space-between;">
+                                    <label style="margin: 0;"><i class="fas fa-wand-magic-sparkles"></i> Auto HD Canvas Enhancement</label>
+                                    <input type="checkbox" id="studio-hd-enhance-toggle" checked style="width: 16px; height: 16px; cursor: pointer; accent-color: var(--accent);">
+                                </div>
+
+                                <!-- Seed Control -->
+                                <div class="studio-field" style="flex-direction: row; align-items: center; justify-content: space-between;">
+                                    <label style="margin: 0;"><i class="fas fa-key"></i> Lock Seed</label>
+                                    <input type="checkbox" id="studio-seed-lock" style="width: 16px; height: 16px; cursor: pointer; accent-color: var(--accent);">
+                                </div>
+                                <div class="studio-field" id="seed-input-container" style="display: none;">
+                                    <input type="number" id="studio-seed-value" class="studio-select" placeholder="Random seed (e.g. 42792)">
+                                </div>
+
+                                <!-- Watermark -->
+                                <div class="studio-field" style="flex-direction: row; align-items: center; justify-content: space-between;">
+                                    <label style="margin: 0;"><i class="fas fa-copyright"></i> Add Watermark</label>
+                                    <input type="checkbox" id="studio-watermark-toggle" checked style="width: 16px; height: 16px; cursor: pointer; accent-color: var(--accent);">
+                                </div>
+                                <div class="studio-field" id="watermark-input-container">
+                                    <input type="text" id="studio-watermark-text" class="studio-select" value="Ocal AI Studio" placeholder="Watermark text">
+                                </div>
+                            </div>
+
+                            <button id="studio-generate-btn" class="studio-submit-btn">
+                                <i class="fas fa-wand-magic-sparkles"></i> <span>Generate Image</span>
+                            </button>
                         </div>
 
-                        <!-- Collapsible Advanced Settings -->
+                        <!-- Preview Display Box -->
+                        <div class="studio-preview-card" id="studio-preview-card" style="display: none;">
+                            <div id="studio-status-indicator" class="studio-status">
+                                <i class="fas fa-spinner fa-spin"></i> <span id="studio-status-text">Synthesizing image...</span>
+                            </div>
+                            <div class="studio-img-wrap" id="studio-img-wrap" style="width: 100%; position: relative;">
+                                <!-- Gemini/ChatGPT style loading shimmer -->
+                                <div id="studio-loading-shimmer" class="loading-shimmer-canvas" style="display: none;">
+                                    <div class="shimmer-gradient-flow"></div>
+                                    <div class="shimmer-glow-overlay"></div>
+                                    <div class="shimmer-progress-overlay">
+                                        <span id="shimmer-progress-percentage" style="font-size: 14px; font-weight: 800;">Painting canvas...</span>
+                                        <span id="shimmer-progress-subtext" style="font-size: 11px; opacity: 0.8;">Denoising latent noise fields</span>
+                                    </div>
+                                </div>
+                                <img id="studio-result-img" class="studio-result-img" alt="Generated AI Artwork" style="display: none; width: 100%; border-radius: var(--radius-md);">
+                            </div>
+                            <div class="studio-actions" id="studio-actions" style="display: none; gap: 8px; flex-wrap: wrap; margin-top: 10px;">
+                                <button id="studio-enhance-btn" class="studio-action-btn"><i class="fas fa-expand"></i> HD 2x</button>
+                                <button id="studio-hdr-btn" class="studio-action-btn"><i class="fas fa-sun"></i> HDR Vibrance</button>
+                                <button id="studio-sharpen-btn" class="studio-action-btn"><i class="fas fa-wand-magic-sparkles"></i> Sharpen</button>
+                                <button id="studio-warmth-btn" class="studio-action-btn"><i class="fas fa-fire"></i> Warm Tone</button>
+                                <button id="studio-download-btn" class="studio-action-btn"><i class="fas fa-download"></i> Save</button>
+                                <button id="studio-copy-btn" class="studio-action-btn"><i class="fas fa-copy"></i> Copy Link</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Ocal AI Settings View -->
+                <div class="ai-settings-view" id="ai-settings-view" style="display: none; flex: 1; flex-direction: column; overflow-y: auto; padding: 24px; max-width: 800px; margin: 0 auto; width: 100%;">
+                    <div class="studio-card">
+                        <div class="studio-card-header">
+                            <div class="studio-header-title">
+                                <div class="studio-header-icon"><i class="fas fa-cog"></i></div>
+                                <div class="studio-header-text">
+                                    <h3>Ocal AI Settings</h3>
+                                    <span>Preferences, Model Engine & System Configuration</span>
+                                </div>
+                            </div>
+                            <button class="control-btn" id="close-settings-btn" title="Back to Chat"><i class="fas fa-times"></i></button>
+                        </div>
+
+                        <!-- AI Engine Selection -->
                         <div class="studio-field">
-                            <label><i class="fas fa-sliders-h"></i> Configuration</label>
-                            <div class="advanced-settings-header" id="advanced-settings-toggle">
-                                <span><i class="fas fa-sliders"></i> Advanced Settings</span>
-                                <i class="fas fa-chevron-down advanced-arrow" id="advanced-arrow-icon"></i>
-                            </div>
+                            <label><i class="fas fa-robot"></i> Primary LLM Engine</label>
+                            <select id="settings-llm-engine" class="studio-select">
+                                <option value="local-gemma">Local Gemma 4 (Ollama / Local Server)</option>
+                                <option value="local-llama">Local Llama 3 (Ollama)</option>
+                                <option value="cloud-gemini">Cloud Gemini 1.5 Pro</option>
+                                <option value="cloud-openai">OpenAI GPT-4o</option>
+                            </select>
                         </div>
-                    </div>
 
-                    <div class="advanced-settings-content" id="advanced-settings-panel" style="display: none;">
-                        <!-- Negative Prompt -->
+                        <!-- User Profile Username -->
                         <div class="studio-field">
-                            <label><i class="fas fa-ban"></i> Negative Prompt</label>
-                            <input type="text" id="studio-negative-input" class="studio-select" placeholder="blurry, low quality, deformed, extra fingers..." style="padding: 8px 10px;">
+                            <label><i class="fas fa-user"></i> Display Username</label>
+                            <input type="text" id="settings-username-input" class="studio-select" placeholder="Enter your display name...">
                         </div>
 
-                        <!-- HD Enhancement Toggle -->
-                        <div class="studio-field" style="flex-direction: row; align-items: center; justify-content: space-between; gap: 10px; margin-top: 4px;">
-                            <label style="margin: 0;"><i class="fas fa-wand-magic-sparkles"></i> Auto HD Canvas Enhancement</label>
-                            <input type="checkbox" id="studio-hd-enhance-toggle" checked style="width: 16px; height: 16px; cursor: pointer; accent-color: var(--accent);">
+                        <!-- Accent Color Theme -->
+                        <div class="studio-field">
+                            <label><i class="fas fa-palette"></i> Accent Theme Color</label>
+                            <div style="display: flex; gap: 10px; flex-wrap: wrap; margin-top: 4px;">
+                                <button class="accent-picker-btn active" data-color="#15AC49" style="width: 34px; height: 34px; border-radius: 50%; background: #15AC49; border: 2px solid #FFFFFF; cursor: pointer; box-shadow: 0 2px 6px rgba(0,0,0,0.2);"></button>
+                                <button class="accent-picker-btn" data-color="#06B6D4" style="width: 34px; height: 34px; border-radius: 50%; background: #06B6D4; border: 2px solid transparent; cursor: pointer;"></button>
+                                <button class="accent-picker-btn" data-color="#8B5CF6" style="width: 34px; height: 34px; border-radius: 50%; background: #8B5CF6; border: 2px solid transparent; cursor: pointer;"></button>
+                                <button class="accent-picker-btn" data-color="#F97316" style="width: 34px; height: 34px; border-radius: 50%; background: #F97316; border: 2px solid transparent; cursor: pointer;"></button>
+                                <button class="accent-picker-btn" data-color="#3B82F6" style="width: 34px; height: 34px; border-radius: 50%; background: #3B82F6; border: 2px solid transparent; cursor: pointer;"></button>
+                            </div>
                         </div>
 
-                        <!-- Seed Control -->
-                        <div class="studio-field" style="flex-direction: row; align-items: center; justify-content: space-between; gap: 10px; margin-top: 4px;">
-                            <label style="margin: 0;"><i class="fas fa-key"></i> Lock Seed</label>
-                            <input type="checkbox" id="studio-seed-lock" style="width: 16px; height: 16px; cursor: pointer; accent-color: var(--accent);">
-                        </div>
-                        <div class="studio-field" id="seed-input-container" style="display: none;">
-                            <input type="number" id="studio-seed-value" class="studio-select" placeholder="Random seed (e.g. 42792)" style="padding: 8px 10px;">
+                        <!-- AI Assistant Preferences -->
+                        <div class="studio-field">
+                            <label><i class="fas fa-sliders"></i> Features & Preferences</label>
+                            <div style="display: flex; flex-direction: column; gap: 10px; margin-top: 6px;">
+                                <label style="display: flex; align-items: center; justify-content: space-between; text-transform: none; font-size: 13px; font-weight: 600; color: var(--text); cursor: pointer;">
+                                    <span>Auto-Summarize Web Pages</span>
+                                    <input type="checkbox" id="setting-toggle-summarize" checked style="width: 18px; height: 18px; accent-color: var(--accent); cursor: pointer;">
+                                </label>
+                                <label style="display: flex; align-items: center; justify-content: space-between; text-transform: none; font-size: 13px; font-weight: 600; color: var(--text); cursor: pointer;">
+                                    <span>Enable Local Web Search Context</span>
+                                    <input type="checkbox" id="setting-toggle-search" checked style="width: 18px; height: 18px; accent-color: var(--accent); cursor: pointer;">
+                                </label>
+                                <label style="display: flex; align-items: center; justify-content: space-between; text-transform: none; font-size: 13px; font-weight: 600; color: var(--text); cursor: pointer;">
+                                    <span>Save Chat History Locally</span>
+                                    <input type="checkbox" id="setting-toggle-history" checked style="width: 18px; height: 18px; accent-color: var(--accent); cursor: pointer;">
+                                </label>
+                            </div>
                         </div>
 
-                        <!-- Watermark -->
-                        <div class="studio-field" style="flex-direction: row; align-items: center; justify-content: space-between; gap: 10px; margin-top: 4px;">
-                            <label style="margin: 0;"><i class="fas fa-copyright"></i> Add Watermark</label>
-                            <input type="checkbox" id="studio-watermark-toggle" checked style="width: 16px; height: 16px; cursor: pointer; accent-color: var(--accent);">
+                        <!-- AI Personality Mood Selector -->
+                        <div class="studio-field">
+                            <label><i class="fas fa-face-smile"></i> AI Personality Mood</label>
+                            <select id="settings-persona-select" class="studio-select">
+                                <option value="professional">💼 Professional & Concise</option>
+                                <option value="funny">😂 Witty & Funny Companion</option>
+                                <option value="bf">💙 Supportive Boyfriend (BF)</option>
+                                <option value="gf">💖 Affectionate Girlfriend (GF)</option>
+                                <option value="tech">⚡ Tech & Coding Master</option>
+                                <option value="calm">🧘 Mindful & Reassuring Coach</option>
+                                <option value="custom">🎨 Custom Human Companion</option>
+                            </select>
                         </div>
-                        <div class="studio-field" id="watermark-input-container" style="margin-top: 4px;">
-                            <input type="text" id="studio-watermark-text" class="studio-select" value="Ocal AI Studio" placeholder="Watermark text" style="padding: 8px 10px;">
+
+                        <!-- Custom AI Companion Setup Card -->
+                        <div class="studio-field" id="custom-companion-card" style="background: var(--input-bg); border: 1px solid var(--accent); border-radius: var(--radius-md); padding: 14px; margin-top: 10px;">
+                            <label style="color: var(--accent); text-transform: uppercase; font-size: 11px; font-weight: 800; letter-spacing: 0.8px;"><i class="fas fa-user-gear"></i> Custom Human Companion Setup</label>
+                            <p style="font-size: 11.5px; color: var(--text-dim); margin: 2px 0 10px 0;">Design your own personalized human AI companion:</p>
+                            
+                            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
+                                <div>
+                                    <label style="font-size: 11px;">Companion Name</label>
+                                    <input type="text" id="custom-ai-name" class="studio-select" placeholder="e.g. Sophia, Alex..." value="Ocal Companion" style="padding: 7px 10px;">
+                                </div>
+                                <div>
+                                    <label style="font-size: 11px;">Relationship Vibe</label>
+                                    <select id="custom-ai-role" class="studio-select" style="padding: 7px 10px;">
+                                        <option value="gf">Partner / Girlfriend Vibe 💕</option>
+                                        <option value="bf">Partner / Boyfriend Vibe 💙</option>
+                                        <option value="friend">Best Friend / Casual Buddy 🤗</option>
+                                        <option value="mentor">Personal Mentor / Coach 🧘</option>
+                                        <option value="tech">Coding / Tech Partner ⚡</option>
+                                    </select>
+                                </div>
+                            </div>
+
+                            <div style="margin-top: 10px;">
+                                <label style="font-size: 11px;">Call Me (Your Preferred Nickname)</label>
+                                <input type="text" id="custom-user-nickname" class="studio-select" placeholder="e.g. Babe, Alex, Captain..." value="Babe" style="padding: 7px 10px;">
+                            </div>
+
+                            <div style="margin-top: 10px;">
+                                <label style="font-size: 11px;">Custom Companion Persona & Instructions</label>
+                                <textarea id="custom-ai-bio" class="studio-select" rows="2" placeholder="e.g. Sweet, witty, caring, speaks naturally like a human friend..." style="resize: vertical; font-family: inherit; font-size: 12px; padding: 8px 10px;"></textarea>
+                            </div>
                         </div>
+
+                        <!-- Long-Term Memory Bank -->
+                        <div class="studio-field">
+                            <label><i class="fas fa-brain"></i> Long-Term Memory Bank</label>
+                            <p style="font-size: 11.5px; color: var(--text-dim); margin: 0 0 6px 0;">Facts Ocal AI remembers across all conversations:</p>
+                            <div id="memory-tags-container" style="display: flex; flex-wrap: wrap; gap: 4px; background: var(--input-bg); border: 1px solid var(--border); padding: 10px; border-radius: var(--radius-md); min-height: 48px; align-items: center;">
+                                <!-- Memory tags loaded dynamically -->
+                            </div>
+                            <div style="display: flex; gap: 8px; margin-top: 6px;">
+                                <input type="text" id="add-memory-input" class="studio-select" placeholder="Add fact to remember (e.g. 'Builds web apps with Vite')..." style="padding: 8px 10px; flex: 1;">
+                                <button id="add-memory-btn" style="background: var(--accent); color: #FFFFFF; border: none; border-radius: 8px; padding: 0 14px; font-weight: 700; cursor: pointer; font-size: 12px;"><i class="fas fa-plus"></i> Add</button>
+                            </div>
+                        </div>
+
+                        <!-- Save Button -->
+                        <button id="save-ai-settings-btn" class="studio-submit-btn" style="margin-top: 14px;">
+                            <i class="fas fa-check"></i> <span>Save & Apply Settings</span>
+                        </button>
                     </div>
-
-                    <button id="studio-generate-btn" class="studio-submit-btn">
-                        <i class="fas fa-wand-magic-sparkles"></i> <span>Generate Image</span>
-                    </button>
                 </div>
-
-                <!-- Preview Display Box -->
-                <div class="studio-preview-card" id="studio-preview-card" style="display: none;">
-                    <div id="studio-status-indicator" class="studio-status">
-                        <i class="fas fa-spinner fa-spin"></i> <span id="studio-status-text">Synthesizing image...</span>
-                    </div>
-                    <div class="studio-img-wrap" id="studio-img-wrap" style="width: 100%; position: relative;">
-                        <!-- Gemini/ChatGPT style loading shimmer -->
-                        <div id="studio-loading-shimmer" class="loading-shimmer-canvas" style="display: none;">
-                            <div class="shimmer-gradient-flow"></div>
-                            <div class="shimmer-glow-overlay"></div>
-                            <div class="shimmer-progress-overlay">
-                                <span id="shimmer-progress-percentage" style="font-size: 13.5px; font-weight: 700;">Painting canvas...</span>
-                                <span id="shimmer-progress-subtext">Denoising latent noise fields (Flux.1)</span>
-                            </div>
-                        </div>
-                        <img id="studio-result-img" class="studio-result-img" alt="Generated AI Artwork" style="display: none; width: 100%; border-radius: 8px;">
-                    </div>
-                    <div class="studio-actions" id="studio-actions" style="display: none; gap: 6px; flex-wrap: wrap; margin-top: 10px;">
-                        <button id="studio-enhance-btn" class="studio-action-btn" style="background: rgba(99, 102, 241, 0.2); color: #a5b4fc; border: 1px solid rgba(99, 102, 241, 0.4);"><i class="fas fa-expand"></i> HD 2x</button>
-                        <button id="studio-hdr-btn" class="studio-action-btn" style="background: rgba(52, 199, 89, 0.15); color: #30d158; border: 1px solid rgba(52, 199, 89, 0.3);"><i class="fas fa-sun"></i> HDR Vibrance</button>
-                        <button id="studio-sharpen-btn" class="studio-action-btn" style="background: rgba(255, 159, 10, 0.15); color: #ff9f0a; border: 1px solid rgba(255, 159, 10, 0.3);"><i class="fas fa-wand-magic-sparkles"></i> Sharpen</button>
-                        <button id="studio-warmth-btn" class="studio-action-btn" style="background: rgba(175, 82, 222, 0.15); color: #bf5af2; border: 1px solid rgba(175, 82, 222, 0.3);"><i class="fas fa-fire"></i> Warm Tone</button>
-                        <button id="studio-download-btn" class="studio-action-btn"><i class="fas fa-download"></i> Save</button>
-                        <button id="studio-copy-btn" class="studio-action-btn"><i class="fas fa-copy"></i> Copy Link</button>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Ocal AI Settings View -->
-            <div class="ai-settings-view" id="ai-settings-view" style="display: none; flex: 1; flex-direction: column; overflow-y: auto; padding: 24px; max-width: 800px; margin: 0 auto; width: 100%;">
-                <div class="studio-card">
-                    <div class="studio-card-header" style="display: flex; align-items: center; justify-content: space-between;">
-                        <div class="studio-header-title">
-                            <div class="studio-header-icon" style="background: var(--accent-dim); color: var(--accent);"><i class="fas fa-cog"></i></div>
-                            <div class="studio-header-text">
-                                <h3>Ocal AI Settings</h3>
-                                <span>Preferences, Model Engine & System Configuration</span>
-                            </div>
-                        </div>
-                        <button class="control-btn" id="close-settings-btn" title="Back to Chat" style="width: 32px; height: 32px; border-radius: 50%; border: 1px solid var(--border); background: var(--input-bg); color: var(--text); cursor: pointer;"><i class="fas fa-times"></i></button>
-                    </div>
-
-                    <!-- AI Engine Selection -->
-                    <div class="studio-field">
-                        <label><i class="fas fa-robot"></i> Primary LLM Engine</label>
-                        <select id="settings-llm-engine" class="studio-select">
-                            <option value="local-gemma">Local Gemma 4 (Ollama / Local Server)</option>
-                            <option value="local-llama">Local Llama 3 (Ollama)</option>
-                            <option value="cloud-gemini">Cloud Gemini 1.5 Pro</option>
-                            <option value="cloud-openai">OpenAI GPT-4o</option>
-                        </select>
-                    </div>
-
-                    <!-- User Profile Username -->
-                    <div class="studio-field">
-                        <label><i class="fas fa-user"></i> Display Username</label>
-                        <input type="text" id="settings-username-input" class="studio-select" placeholder="Enter your display name...">
-                    </div>
-
-                    <!-- Accent Color Theme -->
-                    <div class="studio-field">
-                        <label><i class="fas fa-palette"></i> Accent Theme Color</label>
-                        <div style="display: flex; gap: 10px; flex-wrap: wrap; margin-top: 4px;">
-                            <button class="accent-picker-btn active" data-color="#15AC49" style="width: 34px; height: 34px; border-radius: 50%; background: #15AC49; border: 2px solid #FFFFFF; cursor: pointer; box-shadow: 0 2px 6px rgba(0,0,0,0.2);"></button>
-                            <button class="accent-picker-btn" data-color="#06B6D4" style="width: 34px; height: 34px; border-radius: 50%; background: #06B6D4; border: 2px solid transparent; cursor: pointer;"></button>
-                            <button class="accent-picker-btn" data-color="#8B5CF6" style="width: 34px; height: 34px; border-radius: 50%; background: #8B5CF6; border: 2px solid transparent; cursor: pointer;"></button>
-                            <button class="accent-picker-btn" data-color="#F97316" style="width: 34px; height: 34px; border-radius: 50%; background: #F97316; border: 2px solid transparent; cursor: pointer;"></button>
-                            <button class="accent-picker-btn" data-color="#3B82F6" style="width: 34px; height: 34px; border-radius: 50%; background: #3B82F6; border: 2px solid transparent; cursor: pointer;"></button>
-                        </div>
-                    </div>
-
-                    <!-- AI Assistant Preferences -->
-                    <div class="studio-field">
-                        <label><i class="fas fa-sliders"></i> Features & Preferences</label>
-                        <div style="display: flex; flex-direction: column; gap: 10px; margin-top: 6px;">
-                            <label style="display: flex; align-items: center; justify-content: space-between; text-transform: none; font-size: 13px; font-weight: 600; color: var(--text); cursor: pointer;">
-                                <span>Auto-Summarize Web Pages</span>
-                                <input type="checkbox" id="setting-toggle-summarize" checked style="width: 18px; height: 18px; accent-color: var(--accent); cursor: pointer;">
-                            </label>
-                            <label style="display: flex; align-items: center; justify-content: space-between; text-transform: none; font-size: 13px; font-weight: 600; color: var(--text); cursor: pointer;">
-                                <span>Enable Local Web Search Context</span>
-                                <input type="checkbox" id="setting-toggle-search" checked style="width: 18px; height: 18px; accent-color: var(--accent); cursor: pointer;">
-                            </label>
-                            <label style="display: flex; align-items: center; justify-content: space-between; text-transform: none; font-size: 13px; font-weight: 600; color: var(--text); cursor: pointer;">
-                                <span>Save Chat History Locally</span>
-                                <input type="checkbox" id="setting-toggle-history" checked style="width: 18px; height: 18px; accent-color: var(--accent); cursor: pointer;">
-                            </label>
-                        </div>
-                    </div>
-
-                    <!-- AI Personality Mood Selector -->
-                    <div class="studio-field">
-                        <label><i class="fas fa-face-smile"></i> AI Personality Mood</label>
-                        <select id="settings-persona-select" class="studio-select">
-                            <option value="professional">💼 Professional & Concise</option>
-                            <option value="funny">😂 Witty & Funny Companion</option>
-                            <option value="bf">💙 Supportive Boyfriend (BF)</option>
-                            <option value="gf">💖 Affectionate Girlfriend (GF)</option>
-                            <option value="tech">⚡ Tech & Coding Master</option>
-                            <option value="calm">🧘 Mindful & Reassuring Coach</option>
-                            <option value="custom">🎨 Custom Human Companion</option>
-                        </select>
-                    </div>
-
-                    <!-- Custom AI Companion Setup Card -->
-                    <div class="studio-field" id="custom-companion-card" style="background: var(--card-bg); border: 1px solid var(--accent); border-radius: var(--radius); padding: 14px; margin-top: 10px;">
-                        <label style="color: var(--accent); text-transform: uppercase; font-size: 11px; font-weight: 800; letter-spacing: 0.8px;"><i class="fas fa-user-gear"></i> Custom Human Companion Setup</label>
-                        <p style="font-size: 11.5px; color: var(--text-dim); margin: 2px 0 10px 0;">Design your own personalized human AI companion:</p>
-                        
-                        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
-                            <div>
-                                <label style="font-size: 11px;">Companion Name</label>
-                                <input type="text" id="custom-ai-name" class="studio-select" placeholder="e.g. Sophia, Alex..." value="Ocal Companion" style="padding: 7px 10px;">
-                            </div>
-                            <div>
-                                <label style="font-size: 11px;">Relationship Vibe</label>
-                                <select id="custom-ai-role" class="studio-select" style="padding: 7px 10px;">
-                                    <option value="gf">Partner / Girlfriend Vibe 💕</option>
-                                    <option value="bf">Partner / Boyfriend Vibe 💙</option>
-                                    <option value="friend">Best Friend / Casual Buddy 🤗</option>
-                                    <option value="mentor">Personal Mentor / Coach 🧘</option>
-                                    <option value="tech">Coding / Tech Partner ⚡</option>
-                                </select>
-                            </div>
-                        </div>
-
-                        <div style="margin-top: 10px;">
-                            <label style="font-size: 11px;">Call Me (Your Preferred Nickname)</label>
-                            <input type="text" id="custom-user-nickname" class="studio-select" placeholder="e.g. Babe, Alex, Captain..." value="Babe" style="padding: 7px 10px;">
-                        </div>
-
-                        <div style="margin-top: 10px;">
-                            <label style="font-size: 11px;">Custom Companion Persona & Instructions</label>
-                            <textarea id="custom-ai-bio" class="studio-select" rows="2" placeholder="e.g. Sweet, witty, caring, speaks naturally like a human friend..." style="resize: vertical; font-family: inherit; font-size: 12px; padding: 8px 10px;"></textarea>
-                        </div>
-                    </div>
-
-                    <!-- Long-Term Memory Bank -->
-                    <div class="studio-field">
-                        <label><i class="fas fa-brain"></i> Long-Term Memory Bank</label>
-                        <p style="font-size: 11.5px; color: var(--text-dim); margin: 0 0 6px 0;">Facts Ocal AI remembers across all conversations:</p>
-                        <div id="memory-tags-container" style="display: flex; flex-wrap: wrap; gap: 4px; background: var(--card-bg); border: 1px solid var(--border); padding: 10px; border-radius: var(--radius); min-height: 48px; align-items: center;">
-                            <!-- Memory tags loaded dynamically -->
-                        </div>
-                        <div style="display: flex; gap: 8px; margin-top: 6px;">
-                            <input type="text" id="add-memory-input" class="studio-select" placeholder="Add fact to remember (e.g. 'Builds web apps with Vite')..." style="padding: 8px 10px; flex: 1;">
-                            <button id="add-memory-btn" style="background: var(--accent); color: #0D0E11; border: none; border-radius: 8px; padding: 0 14px; font-weight: 700; cursor: pointer; font-size: 12px;"><i class="fas fa-plus"></i> Add</button>
-                        </div>
-                    </div>
-
-                    <!-- Save Button -->
-                    <button id="save-ai-settings-btn" class="studio-submit-btn" style="margin-top: 14px;">
-                        <i class="fas fa-check"></i> <span>Save & Apply Settings</span>
-                    </button>
-                </div>
-            </div>
             </div> <!-- closes .ai-views-container -->
         </div> <!-- closes .ai-main-container -->
     </div> <!-- closes .ai-panel -->
