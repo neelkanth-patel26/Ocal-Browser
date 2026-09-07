@@ -994,15 +994,29 @@
         .user .msg-bubble {
             background: #111111 !important;
             border: 1px solid rgba(255, 255, 255, 0.08) !important;
-            border-radius: 20px 20px 4px 20px !important;
+            border-radius: 18px 18px 4px 18px !important;
             color: #FFFFFF !important;
             font-weight: 500;
-            padding: 12px 20px !important;
+            padding: 10px 16px !important;
             box-shadow: 0 4px 16px rgba(0, 0, 0, 0.12) !important;
             width: fit-content !important;
             min-width: fit-content !important;
             max-width: 100% !important;
-            white-space: pre-wrap !important;
+            word-break: break-word;
+            line-height: 1.5;
+        }
+
+        .user .msg-content,
+        .user .msg-content p {
+            margin: 0 !important;
+            padding: 0 !important;
+            line-height: 1.5 !important;
+            display: inline-block;
+        }
+
+        .user .msg-content p:last-child {
+            margin: 0 !important;
+            padding: 0 !important;
         }
 
         body[data-theme="dark"] .user .msg-bubble {

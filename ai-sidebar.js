@@ -526,7 +526,7 @@ function renderSessionMessages(session) {
         const contentDiv = document.createElement('div');
         contentDiv.className = 'msg-content';
         
-        contentDiv.innerHTML = renderMarkdown(msg.content, true);
+        contentDiv.innerHTML = renderMarkdown(msg.content.trim(), true).trim();
         if (!msg.isUser) {
             contentDiv.querySelectorAll('pre code').forEach((block) => {
                 hljs.highlightElement(block);
@@ -1042,7 +1042,7 @@ const renderMarkdown = (text, isFinal = true) => {
                .replace(/<blockquote>\s*<p>\[!TIP\]/gi, '<div class="alert alert-tip"><p>')
                .replace(/<blockquote>\s*<p>\[!IMPORTANT\]/gi, '<div class="alert alert-important"><p>')
                .replace(/<\/p>\s*<\/blockquote>/gi, '</p></div>');
-    return html;
+    return html.trim();
 };
 
 // QWERTY keyboard adjacent key map for realistic human typos
@@ -1266,7 +1266,7 @@ const addMessage = async (content, isUser = false, actions = []) => {
     scrollToBottom(isUser);
 
     if (isUser) {
-        contentDiv.innerHTML = renderMarkdown(content);
+        contentDiv.innerHTML = renderMarkdown(content.trim()).trim();
     } else {
         await typeMessage(contentDiv, content);
         
