@@ -517,16 +517,81 @@
                                             <div class="hbc-swatch" data-color="#0891B2" data-dark-color="#06B6D4" style="--swatch-color: #0891B2;" title="Electric Cyan"><span class="swatch-check"><i class="fas fa-check"></i></span></div>
                                             <div class="hbc-swatch" data-color="#0F172A" data-dark-color="#E2E8F0" style="--swatch-color: #0F172A;" title="Slate Minimal"><span class="swatch-check"><i class="fas fa-check"></i></span></div>
                                             
-                                            <!-- Custom Color Swatch with Color Picker -->
-                                            <div class="hbc-swatch custom-swatch" id="custom-accent-swatch" style="--swatch-color: #8B5CF6;" title="Custom Color">
+                                            <!-- Custom Color Swatch Trigger -->
+                                            <div class="hbc-swatch custom-swatch" id="custom-accent-swatch" style="--swatch-color: #8B5CF6;" title="Custom Color Studio">
                                                 <i class="fas fa-eye-dropper custom-icon"></i>
                                                 <span class="swatch-check"><i class="fas fa-check"></i></span>
-                                                <input type="color" id="custom-accent-color-picker" value="#8B5CF6">
                                             </div>
                                         </div>
                                         <div class="custom-color-badge" id="custom-color-badge" style="display: none;">
                                             <span class="custom-color-dot" id="custom-color-dot"></span>
                                             <span class="custom-color-text" id="custom-color-text">#8B5CF6</span>
+                                        </div>
+                                    </div>
+
+                                    <!-- Custom UI Color Studio Popover Card -->
+                                    <div class="custom-color-popover" id="custom-color-popover" style="display: none;">
+                                        <div class="ccp-header">
+                                            <div class="ccp-title">
+                                                <i class="fas fa-sliders-h"></i>
+                                                <span>Custom Accent Studio</span>
+                                            </div>
+                                            <button class="ccp-close-btn" id="ccp-close-btn" type="button" title="Close"><i class="fas fa-times"></i></button>
+                                        </div>
+
+                                        <!-- 2D Saturation / Value Gradient Area -->
+                                        <div class="ccp-saturation-area" id="ccp-sat-area">
+                                            <div class="ccp-sat-white"></div>
+                                            <div class="ccp-sat-black"></div>
+                                            <div class="ccp-sat-pointer" id="ccp-sat-pointer"></div>
+                                        </div>
+
+                                        <!-- Hue Track & Controls Row -->
+                                        <div class="ccp-controls-row">
+                                            <button class="ccp-eyedropper-btn" id="ccp-eyedropper-btn" type="button" title="Pick color from screen">
+                                                <i class="fas fa-eye-dropper"></i>
+                                            </button>
+                                            <div class="ccp-hue-slider-wrap">
+                                                <input type="range" class="ccp-hue-slider" id="ccp-hue-slider" min="0" max="360" value="270" step="1">
+                                            </div>
+                                            <div class="ccp-preview-swatch" id="ccp-preview-swatch" style="--preview-color: #8B5CF6;"></div>
+                                        </div>
+
+                                        <!-- Quick Palette Swatches -->
+                                        <div class="ccp-quick-palette">
+                                            <span class="ccp-chip" data-color="#FF3B30" style="--chip-c: #FF3B30;" title="Ruby Red"></span>
+                                            <span class="ccp-chip" data-color="#FF9500" style="--chip-c: #FF9500;" title="Tangerine"></span>
+                                            <span class="ccp-chip" data-color="#FFCC00" style="--chip-c: #FFCC00;" title="Cyber Gold"></span>
+                                            <span class="ccp-chip" data-color="#34C759" style="--chip-c: #34C759;" title="Mint Green"></span>
+                                            <span class="ccp-chip" data-color="#00C7BE" style="--chip-c: #00C7BE;" title="Aqua Teal"></span>
+                                            <span class="ccp-chip" data-color="#007AFF" style="--chip-c: #007AFF;" title="Electric Blue"></span>
+                                            <span class="ccp-chip" data-color="#5856D6" style="--chip-c: #5856D6;" title="Indigo"></span>
+                                            <span class="ccp-chip" data-color="#AF52DE" style="--chip-c: #AF52DE;" title="Purple"></span>
+                                            <span class="ccp-chip" data-color="#FF2D55" style="--chip-c: #FF2D55;" title="Neon Pink"></span>
+                                            <span class="ccp-chip" data-color="#FFFFFF" style="--chip-c: #FFFFFF;" title="Pure White"></span>
+                                        </div>
+
+                                        <!-- Inputs Row (HEX, R, G, B) -->
+                                        <div class="ccp-inputs-row">
+                                            <div class="ccp-input-group hex-group">
+                                                <span class="ccp-input-label">HEX</span>
+                                                <div class="ccp-hex-field">
+                                                    <span class="ccp-hash">#</span>
+                                                    <input type="text" id="ccp-hex-input" maxlength="6" value="8B5CF6" spellcheck="false">
+                                                </div>
+                                            </div>
+                                            <div class="ccp-input-group rgb-group">
+                                                <span class="ccp-input-label">R</span>
+                                                <input type="number" id="ccp-r-input" min="0" max="255" value="139">
+                                            </div>
+                                            <div class="ccp-input-group rgb-group">
+                                                <span class="ccp-input-label">G</span>
+                                                <input type="number" id="ccp-g-input" min="0" max="255" value="92">
+                                            </div>
+                                            <div class="ccp-input-group rgb-group">
+                                                <span class="ccp-input-label">B</span>
+                                                <input type="number" id="ccp-b-input" min="0" max="255" value="246">
+                                            </div>
                                         </div>
                                     </div>
                                 </div>
