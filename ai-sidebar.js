@@ -521,6 +521,20 @@ function renderSessionMessages(session) {
             group.appendChild(aiHeader);
         }
 
+        const bubble = document.createElement('div');
+        bubble.className = 'msg-bubble';
+        const contentDiv = document.createElement('div');
+        contentDiv.className = 'msg-content';
+        
+        contentDiv.innerHTML = renderMarkdown(msg.content, true);
+        if (!msg.isUser) {
+            contentDiv.querySelectorAll('pre code').forEach((block) => {
+                hljs.highlightElement(block);
+            });
+            enhanceCodeBlocks(contentDiv);
+        }
+        bubble.appendChild(contentDiv);
+
         if (msg.actions && msg.actions.length > 0) {
             const actionsRow = document.createElement('div');
             actionsRow.className = 'agent-actions-row';
@@ -535,30 +549,18 @@ function renderSessionMessages(session) {
                 }
                 actionsRow.appendChild(actionEl);
             });
-            group.appendChild(actionsRow);
+            bubble.appendChild(actionsRow);
         }
 
-        const bubble = document.createElement('div');
-        bubble.className = 'msg-bubble';
-        const contentDiv = document.createElement('div');
-        contentDiv.className = 'msg-content';
-        
-        contentDiv.innerHTML = renderMarkdown(msg.content, true);
-        if (!msg.isUser) {
-            contentDiv.querySelectorAll('pre code').forEach((block) => {
-                hljs.highlightElement(block);
-            });
-            enhanceCodeBlocks(contentDiv);
-        }
-        
-        bubble.appendChild(contentDiv);
         group.appendChild(bubble);
 
         if (!msg.isUser) {
             const footerBar = document.createElement('div');
             footerBar.className = 'msg-footer-bar';
             footerBar.innerHTML = `
-                <button class="msg-action-btn copy-msg-btn" title="Copy response"><i class="fas fa-copy"></i> <span>Copy</span></button>
+                <div class="msg-footer-actions">
+                    <button class="msg-action-btn copy-msg-btn" title="Copy response"><i class="fas fa-copy"></i> <span>Copy</span></button>
+                </div>
                 <span class="msg-time">History</span>
             `;
             const copyBtn = footerBar.querySelector('.copy-msg-btn');
@@ -1233,7 +1235,14 @@ const addMessage = async (content, isUser = false, actions = []) => {
         group.appendChild(aiHeader);
     }
 
-    // Actions (if any)
+    const bubble = document.createElement('div');
+    bubble.className = 'msg-bubble';
+    
+    const contentDiv = document.createElement('div');
+    contentDiv.className = 'msg-content';
+    bubble.appendChild(contentDiv);
+
+    // Actions (embedded cleanly in message card)
     if (actions && actions.length > 0) {
         const actionsRow = document.createElement('div');
         actionsRow.className = 'agent-actions-row';
@@ -1249,16 +1258,9 @@ const addMessage = async (content, isUser = false, actions = []) => {
             }
             actionsRow.appendChild(actionEl);
         });
-        group.appendChild(actionsRow);
+        bubble.appendChild(actionsRow);
     }
 
-    const bubble = document.createElement('div');
-    bubble.className = 'msg-bubble';
-    
-    const contentDiv = document.createElement('div');
-    contentDiv.className = 'msg-content';
-    
-    bubble.appendChild(contentDiv);
     group.appendChild(bubble);
     messagesEl.appendChild(group);
     scrollToBottom(isUser);
@@ -1272,8 +1274,10 @@ const addMessage = async (content, isUser = false, actions = []) => {
         const footerBar = document.createElement('div');
         footerBar.className = 'msg-footer-bar';
         footerBar.innerHTML = `
-            <button class="msg-action-btn copy-msg-btn" title="Copy response"><i class="fas fa-copy"></i> <span>Copy</span></button>
-            <button class="msg-action-btn speak-msg-btn" title="Read aloud"><i class="fas fa-volume-high"></i> <span>Speak</span></button>
+            <div class="msg-footer-actions">
+                <button class="msg-action-btn copy-msg-btn" title="Copy response"><i class="fas fa-copy"></i> <span>Copy</span></button>
+                <button class="msg-action-btn speak-msg-btn" title="Read aloud"><i class="fas fa-volume-high"></i> <span>Speak</span></button>
+            </div>
             <span class="msg-time">${new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</span>
         `;
         
