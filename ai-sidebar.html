@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta http-equiv="Content-Security-Policy" content="default-src 'self' 'unsafe-inline' 'unsafe-eval' https: data:; script-src 'self' 'unsafe-inline' 'unsafe-eval' https://cdnjs.cloudflare.com https://unpkg.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com https://cdnjs.cloudflare.com https://cdn.jsdelivr.net; font-src 'self' https://fonts.gstatic.com https://cdnjs.cloudflare.com https://cdn.jsdelivr.net; connect-src 'self' https: wss: http: http://127.0.0.1:* http://localhost:*; img-src 'self' https: data: blob:; worker-src 'self' blob: https://cdnjs.cloudflare.com;">
     <title>Ocal AI</title>
-    <!-- ANTI-FLASH: must be FIRST in head -->
+    <!-- ANTI-FLASH: must be FIRST in head, before any stylesheet -->
     <script>
         (function () {
             var t = localStorage.getItem('ocal-settings-theme') || 'dark';
@@ -17,98 +17,84 @@
             if (a) document.documentElement.style.setProperty('--accent', a);
         })();
     </script>
-    <link rel="stylesheet" href="assets/fontawesome/css/all.min.css">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="assets/fontawesome/css/all.min.css">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/marked/9.1.5/marked.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/github-dark.min.css">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
     <style>
-        /* ── Design System Tokens (Matched with Home Page & Settings) ── */
+        /* ── Design System Tokens (Matched 1:1 with Home Page) ── */
         :root {
             --accent: #15AC49;
             --accent-hover: #129740;
             --accent-gradient: linear-gradient(135deg, #15AC49 0%, #10B981 100%);
             --accent-glow: rgba(21, 172, 73, 0.28);
-            --accent-dim: rgba(21, 172, 73, 0.09);
-            --accent-border: rgba(21, 172, 73, 0.24);
+            --accent-dim: rgba(21, 172, 73, 0.1);
+            --accent-border: rgba(21, 172, 73, 0.25);
             --lime: #D4FC2B;
             --bg: #EDEDF0;
             --panel-bg: #FFFFFF;
-            --sidebar-bg: #F8F9FA;
+            --sidebar-bg: #FFFFFF;
             --border: rgba(0, 0, 0, 0.06);
             --border-subtle: rgba(0, 0, 0, 0.03);
             --hover: rgba(0, 0, 0, 0.04);
-            --glass: rgba(255, 255, 255, 0.88);
-            --glass-hover: #F8FAFC;
-            --glass-border: rgba(0, 0, 0, 0.06);
+            --glass: rgba(255, 255, 255, 0.9);
             --card-bg: #FFFFFF;
             --card-border: rgba(0, 0, 0, 0.06);
-            --card-hover-bg: #F8FAFC;
-            --card-hover-border: var(--accent);
             --input-bg: #FFFFFF;
             --input-border: rgba(0, 0, 0, 0.08);
-            --tab-strip-bg: #F1F3F5;
             --text: #111111;
             --text-dim: #555860;
             --text-muted: #94A3B8;
-            --radius-sm: 10px;
-            --radius-md: 16px;
-            --radius-lg: 20px;
+            --radius-sm: 12px;
+            --radius-md: 18px;
+            --radius-lg: 24px;
             --radius-pill: 100px;
             --title-font: 'Plus Jakarta Sans', sans-serif;
             --font: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
             --mono: 'Space Mono', monospace;
             --shadow-sm: 0 2px 8px rgba(0, 0, 0, 0.03);
-            --shadow-md: 0 4px 20px rgba(0, 0, 0, 0.04);
-            --shadow-lg: 0 12px 36px rgba(0, 0, 0, 0.07);
-            --shadow-input: 0 8px 30px rgba(0, 0, 0, 0.06);
+            --shadow-md: 0 4px 20px rgba(0, 0, 0, 0.03);
+            --shadow-lg: 0 12px 36px rgba(0, 0, 0, 0.06);
+            --shadow-input: 0 4px 20px rgba(0, 0, 0, 0.03);
         }
 
         body[data-theme="dark"],
         html[data-theme="dark"] body {
             --bg: #18181B;
             --panel-bg: #222226;
-            --sidebar-bg: #1A1A1E;
+            --sidebar-bg: #222226;
             --border: rgba(255, 255, 255, 0.08);
             --border-subtle: rgba(255, 255, 255, 0.04);
             --hover: rgba(255, 255, 255, 0.06);
             --glass: rgba(34, 34, 38, 0.92);
-            --glass-hover: #2E2E33;
-            --glass-border: rgba(255, 255, 255, 0.08);
             --card-bg: #28282D;
             --card-border: rgba(255, 255, 255, 0.08);
-            --card-hover-bg: #2E2E33;
-            --card-hover-border: var(--accent);
             --input-bg: #28282D;
             --input-border: rgba(255, 255, 255, 0.08);
-            --tab-strip-bg: #1F1F23;
             --text: #F4F4F5;
             --text-dim: #A1A1AA;
             --text-muted: #71717A;
             --shadow-sm: 0 2px 8px rgba(0, 0, 0, 0.3);
             --shadow-md: 0 4px 24px rgba(0, 0, 0, 0.45);
             --shadow-lg: 0 16px 48px rgba(0, 0, 0, 0.6);
-            --shadow-input: 0 12px 36px rgba(0, 0, 0, 0.55);
+            --shadow-input: 0 8px 30px rgba(0, 0, 0, 0.5);
         }
 
         body[data-theme="light"],
         html[data-theme="light"] body {
             --bg: #EDEDF0;
             --panel-bg: #FFFFFF;
-            --sidebar-bg: #F8F9FA;
+            --sidebar-bg: #FFFFFF;
             --border: rgba(0, 0, 0, 0.06);
             --border-subtle: rgba(0, 0, 0, 0.03);
             --hover: rgba(0, 0, 0, 0.04);
-            --glass: rgba(255, 255, 255, 0.88);
-            --glass-hover: #F8FAFC;
-            --glass-border: rgba(0, 0, 0, 0.06);
+            --glass: rgba(255, 255, 255, 0.9);
             --card-bg: #FFFFFF;
             --card-border: rgba(0, 0, 0, 0.06);
-            --card-hover-bg: #F8FAFC;
-            --card-hover-border: var(--accent);
             --input-bg: #FFFFFF;
             --input-border: rgba(0, 0, 0, 0.08);
             --text: #111111;
@@ -116,7 +102,7 @@
             --text-muted: #94A3B8;
         }
 
-        /* ── Reset & Base Elements ── */
+        /* ── Reset & Base ── */
         *, *::before, *::after { 
             box-sizing: border-box; 
             margin: 0; 
@@ -124,7 +110,7 @@
         }
         
         body {
-            background: transparent;
+            background: var(--bg);
             overflow: hidden;
             height: 100vh;
             width: 100vw;
@@ -143,7 +129,7 @@
             background: transparent;
         }
         ::-webkit-scrollbar-thumb {
-            background: rgba(148, 163, 184, 0.3);
+            background: rgba(148, 163, 184, 0.35);
             border-radius: 10px;
         }
         ::-webkit-scrollbar-thumb:hover {
@@ -164,51 +150,40 @@
             background: var(--accent);
         }
 
-        /* ── Panel Container ── */
+        /* ── Dashboard Outer Layout ── */
         .ai-panel {
             flex: 1;
-            background: var(--panel-bg);
-            border: 1px solid var(--border);
-            border-radius: var(--radius-lg);
-            margin: 8px;
+            height: 100%;
             display: flex;
             flex-direction: row;
             overflow: hidden;
             position: relative;
-            box-shadow: var(--shadow-md);
-            transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+            background: var(--bg);
+            padding: 12px;
+            gap: 14px;
         }
 
-        .ai-panel.animate-in {
-            animation: slide-right-in 0.4s cubic-bezier(0.19, 1, 0.22, 1) forwards;
+        body.fullscreen-mode .ai-panel {
+            padding: 18px 24px;
+            gap: 20px;
+            max-width: 1680px;
+            margin: 0 auto;
         }
 
-        body.closing .ai-panel {
-            animation: slide-right-out 0.35s cubic-bezier(0.19, 1, 0.22, 1) forwards !important;
-        }
-
-        @keyframes slide-right-in {
-            from { transform: translateX(100%); opacity: 0; }
-            to { transform: translateX(0); opacity: 1; }
-        }
-
-        @keyframes slide-right-out {
-            from { transform: translateX(0); opacity: 1; }
-            to { transform: translateX(100%); opacity: 0; }
-        }
-
-        /* ── Col 1: Left History Sidebar (Hidden by default in narrow sidebar mode) ── */
+        /* ── Left Sidebar Bento Card ── */
         .history-sidebar {
-            width: 260px;
-            min-width: 260px;
+            width: 280px;
+            min-width: 280px;
             background: var(--sidebar-bg);
-            border-right: 1px solid var(--border);
+            border: 1px solid var(--border);
+            border-radius: var(--radius-lg);
             display: none;
             flex-direction: column;
-            padding: 16px 12px 14px;
-            gap: 10px;
+            padding: 18px 16px;
+            gap: 12px;
             overflow: hidden;
             flex-shrink: 0;
+            box-shadow: var(--shadow-md);
             user-select: none;
         }
 
@@ -221,7 +196,7 @@
             display: flex;
             align-items: center;
             justify-content: space-between;
-            padding: 0 4px 6px;
+            padding-bottom: 4px;
         }
 
         .gemini-logo {
@@ -231,15 +206,15 @@
         }
 
         .gemini-logo-icon-wrap {
-            width: 32px;
-            height: 32px;
+            width: 34px;
+            height: 34px;
             border-radius: 10px;
             background: var(--accent-gradient);
             color: #FFFFFF;
             display: flex;
             align-items: center;
             justify-content: center;
-            font-size: 13px;
+            font-size: 14px;
             box-shadow: 0 4px 12px var(--accent-glow);
         }
 
@@ -248,18 +223,18 @@
             align-items: center;
             gap: 6px;
             font-family: var(--title-font);
-            font-size: 15px;
+            font-size: 16px;
             font-weight: 800;
             color: var(--text);
             letter-spacing: -0.4px;
         }
 
         .sidebar-pro-pill {
-            font-size: 9px;
+            font-size: 9.5px;
             font-weight: 800;
             background: var(--accent);
             color: #FFFFFF;
-            padding: 2px 7px;
+            padding: 2px 8px;
             border-radius: var(--radius-pill);
             letter-spacing: 0.5px;
         }
@@ -267,12 +242,11 @@
         /* Mode Switcher Pill (Home page .sp-mode-pill style) */
         .gemini-mode-pill {
             display: flex;
-            background: var(--input-bg);
-            border: 1px solid var(--border);
-            padding: 3px;
+            background: var(--bg);
+            padding: 4px;
             border-radius: var(--radius-pill);
-            gap: 3px;
-            box-shadow: var(--shadow-sm);
+            gap: 4px;
+            border: 1px solid var(--border);
         }
 
         .gemini-mode-btn {
@@ -299,16 +273,22 @@
         }
 
         .gemini-mode-btn.active {
-            background: var(--accent) !important;
+            background: #FFFFFF !important;
+            color: #111111 !important;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+            font-weight: 800;
+        }
+
+        body[data-theme="dark"] .gemini-mode-btn.active {
+            background: var(--card-bg) !important;
             color: #FFFFFF !important;
-            box-shadow: 0 2px 10px var(--accent-glow);
         }
 
         .gemini-section-title {
-            font-size: 10px;
+            font-size: 10.5px;
             font-weight: 800;
             color: var(--text-muted);
-            margin: 6px 4px 2px;
+            margin: 8px 4px 2px;
             text-transform: uppercase;
             letter-spacing: 0.8px;
             display: flex;
@@ -328,14 +308,14 @@
             display: flex;
             align-items: center;
             gap: 7px;
-            padding: 7px 10px;
+            padding: 8px 10px;
             border-radius: var(--radius-sm);
-            background: var(--card-bg);
+            background: var(--bg);
             border: 1px solid var(--border);
             color: var(--text-dim);
             font-family: var(--font);
             font-size: 11.5px;
-            font-weight: 600;
+            font-weight: 700;
             cursor: pointer;
             transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
             white-space: nowrap;
@@ -360,8 +340,8 @@
             background: var(--accent-dim) !important;
             border-color: var(--accent) !important;
             color: var(--accent) !important;
-            font-weight: 700;
-            box-shadow: 0 2px 10px var(--accent-glow);
+            font-weight: 800;
+            box-shadow: 0 2px 8px var(--accent-glow);
         }
 
         /* Action Navigation Items */
@@ -369,9 +349,9 @@
             display: flex;
             align-items: center;
             gap: 10px;
-            padding: 9px 12px;
-            border-radius: var(--radius-sm);
-            background: var(--card-bg);
+            padding: 10px 14px;
+            border-radius: var(--radius-pill);
+            background: var(--bg);
             border: 1px solid var(--border);
             color: var(--text);
             font-family: var(--font);
@@ -406,14 +386,15 @@
             display: flex;
             align-items: center;
             justify-content: space-between;
-            padding: 8px 10px;
+            padding: 9px 12px;
             border-radius: var(--radius-sm);
             cursor: pointer;
             color: var(--text-dim);
             transition: all 0.2s ease;
             font-size: 12.5px;
-            font-weight: 500;
+            font-weight: 600;
             border: 1px solid transparent;
+            background: transparent;
         }
 
         .history-item:hover {
@@ -463,7 +444,7 @@
         /* User Profile Footer */
         .gemini-user-footer {
             margin-top: auto;
-            padding: 10px 4px 2px;
+            padding: 12px 4px 2px;
             border-top: 1px solid var(--border);
             display: flex;
             align-items: center;
@@ -475,7 +456,7 @@
             align-items: center;
             gap: 10px;
             flex: 1;
-            padding: 5px 8px;
+            padding: 6px 8px;
             border-radius: var(--radius-sm);
             transition: background 0.15s ease;
         }
@@ -485,13 +466,13 @@
         }
 
         .gemini-user-avatar {
-            width: 32px;
-            height: 32px;
+            width: 34px;
+            height: 34px;
             border-radius: 10px;
             background: var(--accent-gradient);
             color: #FFFFFF;
             font-weight: 800;
-            font-size: 11px;
+            font-size: 12px;
             display: flex;
             align-items: center;
             justify-content: center;
@@ -507,7 +488,7 @@
         }
 
         .gemini-user-name {
-            font-size: 12.5px;
+            font-size: 13px;
             font-weight: 700;
             color: var(--text);
             line-height: 1.2;
@@ -517,12 +498,12 @@
         }
 
         .gemini-user-badge {
-            font-size: 10px;
+            font-size: 10.5px;
             color: var(--text-muted);
             font-weight: 600;
         }
 
-        /* ── Col 2: Main AI Container ── */
+        /* ── Col 2: Main AI Container Bento Card ── */
         .ai-main-container {
             flex: 1;
             display: flex;
@@ -530,17 +511,20 @@
             height: 100%;
             min-height: 0;
             overflow: hidden;
-            background: transparent;
+            background: var(--panel-bg);
+            border: 1px solid var(--border);
+            border-radius: var(--radius-lg);
             position: relative;
+            box-shadow: var(--shadow-md);
         }
 
-        /* ── Header Row (Home Page Style) ── */
+        /* ── Header Row (Matched with Home Page Header) ── */
         .ai-header {
-            height: 56px;
+            height: 60px;
             display: flex;
             align-items: center;
             justify-content: space-between;
-            padding: 0 18px;
+            padding: 0 22px;
             border-bottom: 1px solid var(--border);
             flex-shrink: 0;
             background: var(--panel-bg);
@@ -550,18 +534,18 @@
         .ai-brand {
             display: flex;
             align-items: center;
-            gap: 10px;
+            gap: 12px;
         }
 
         .ai-logo {
-            width: 30px;
-            height: 30px;
+            width: 32px;
+            height: 32px;
             background: var(--accent-gradient);
             display: flex;
             align-items: center;
             justify-content: center;
             color: #FFFFFF;
-            font-size: 13px;
+            font-size: 14px;
             border-radius: 10px;
             font-weight: 800;
             box-shadow: 0 2px 10px var(--accent-glow);
@@ -570,19 +554,19 @@
 
         .ai-title-text h1 {
             font-family: var(--title-font);
-            font-size: 15px;
+            font-size: 16px;
             font-weight: 800;
             letter-spacing: -0.4px;
             color: var(--text);
         }
 
         .model-badge {
-            font-size: 10.5px;
+            font-size: 11px;
             font-weight: 700;
             background: var(--accent-dim);
             border: 1px solid var(--accent-border);
             color: var(--accent);
-            padding: 3px 9px;
+            padding: 3px 10px;
             border-radius: var(--radius-pill);
             white-space: nowrap;
         }
@@ -590,15 +574,15 @@
         .ai-controls {
             display: flex;
             align-items: center;
-            gap: 6px;
+            gap: 8px;
         }
 
         .control-btn {
-            width: 32px;
-            height: 32px;
-            border-radius: 10px;
-            border: 1px solid transparent;
-            background: transparent;
+            width: 34px;
+            height: 34px;
+            border-radius: 50%;
+            border: 1px solid var(--border);
+            background: var(--bg);
             color: var(--text-dim);
             cursor: pointer;
             display: flex;
@@ -611,25 +595,25 @@
         .control-btn:hover {
             background: var(--hover);
             color: var(--text);
-            border-color: var(--border);
+            border-color: var(--accent-border);
+            transform: scale(1.05);
         }
 
         #close-ai:hover {
             background: rgba(239, 68, 68, 0.12);
             color: #EF4444;
-            border-color: rgba(239, 68, 68, 0.2);
+            border-color: rgba(239, 68, 68, 0.25);
         }
 
         /* Navigation Tab Switcher (Sidebar Mode Pill Tabs) */
         .ai-nav-bar {
             display: flex;
             gap: 4px;
-            margin: 10px 14px 4px;
-            padding: 3px;
-            background: var(--input-bg);
+            margin: 10px 18px 4px;
+            padding: 4px;
+            background: var(--bg);
             border: 1px solid var(--border);
             border-radius: var(--radius-pill);
-            box-shadow: var(--shadow-sm);
             flex-shrink: 0;
         }
 
@@ -639,12 +623,12 @@
 
         .ai-nav-tab {
             flex: 1;
-            height: 32px;
+            height: 34px;
             display: flex;
             align-items: center;
             justify-content: center;
             gap: 6px;
-            padding: 0 12px;
+            padding: 0 14px;
             border-radius: var(--radius-pill);
             border: none;
             background: transparent;
@@ -690,41 +674,41 @@
             position: relative;
         }
 
-        /* ── Hero Welcome & Starter Cards (Home Page Style) ── */
+        /* ── Hero Welcome & Bento Cards (Home Page Style) ── */
         .gemini-hero-container {
             flex: 1;
             display: flex;
             flex-direction: column;
             align-items: center;
             justify-content: center;
-            padding: 24px 18px;
+            padding: 28px 24px;
             text-align: center;
             overflow-y: auto;
-            max-width: 580px;
+            max-width: 960px;
             margin: 0 auto;
             width: 100%;
+            gap: 16px;
         }
 
         .gemini-hero-badge {
             display: inline-flex;
             align-items: center;
             gap: 8px;
-            background: var(--accent-dim);
-            border: 1px solid var(--accent-border);
-            color: var(--accent);
-            padding: 5px 14px;
+            background: var(--bg);
+            border: 1px solid var(--border);
+            color: var(--text);
+            padding: 6px 16px;
             border-radius: var(--radius-pill);
             font-size: 11px;
             font-weight: 800;
             letter-spacing: 0.5px;
             text-transform: uppercase;
-            margin-bottom: 14px;
             box-shadow: var(--shadow-sm);
         }
 
         .hero-badge-dot {
-            width: 6px;
-            height: 6px;
+            width: 7px;
+            height: 7px;
             border-radius: 50%;
             background: var(--accent);
             box-shadow: 0 0 8px var(--accent);
@@ -733,37 +717,60 @@
 
         .gemini-hero-title {
             font-family: var(--title-font);
-            font-size: 22px;
-            font-weight: 800;
+            font-size: 32px;
+            font-weight: 700;
             color: var(--text);
-            letter-spacing: -0.6px;
-            line-height: 1.3;
-            margin-bottom: 6px;
+            letter-spacing: -0.8px;
+            line-height: 1.25;
+            max-width: 760px;
         }
 
-        .gemini-hero-subtitle {
-            font-size: 13px;
+        .sp-user-name-highlight {
+            font-weight: 800;
+            color: #111111;
+        }
+
+        body[data-theme="dark"] .sp-user-name-highlight {
+            color: #FFFFFF;
+        }
+
+        .gemini-hero-subtitle-row {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 13.5px;
             color: var(--text-dim);
-            font-weight: 500;
-            line-height: 1.5;
-            margin-bottom: 22px;
-            max-width: 440px;
+            font-weight: 600;
+            margin-top: -6px;
+            margin-bottom: 12px;
         }
 
+        .motd-quote-icon {
+            color: var(--accent) !important;
+            font-size: 12px;
+        }
+
+        /* Bento 4-Cards Grid (Home Page Style) */
         .hero-prompt-grid {
             display: grid;
-            grid-template-columns: 1fr;
-            gap: 8px;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 16px;
             width: 100%;
+            max-width: 860px;
+        }
+
+        @media (max-width: 700px) {
+            .hero-prompt-grid { grid-template-columns: 1fr; }
+            .gemini-hero-title { font-size: 24px; }
         }
 
         .hero-prompt-card {
             display: flex;
             align-items: center;
-            gap: 12px;
-            padding: 12px 14px;
-            border-radius: var(--radius-md);
-            background: var(--card-bg);
+            gap: 16px;
+            padding: 16px 20px;
+            border-radius: var(--radius-lg);
+            background: var(--bg);
             border: 1px solid var(--border);
             cursor: pointer;
             transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
@@ -772,25 +779,26 @@
         }
 
         .hero-prompt-card:hover {
-            transform: translateY(-2px);
+            transform: translateY(-3px);
             border-color: var(--accent);
             box-shadow: var(--shadow-md);
+            background: var(--card-bg);
         }
 
         .hero-prompt-icon-wrap {
-            width: 36px;
-            height: 36px;
-            border-radius: 10px;
+            width: 44px;
+            height: 44px;
+            border-radius: 14px;
             display: flex;
             align-items: center;
             justify-content: center;
-            font-size: 14px;
+            font-size: 18px;
             flex-shrink: 0;
             transition: transform 0.2s ease;
         }
 
         .hero-prompt-card:hover .hero-prompt-icon-wrap {
-            transform: scale(1.08);
+            transform: scale(1.1);
         }
 
         .hero-prompt-icon-wrap.icon-emerald {
@@ -822,13 +830,13 @@
         }
 
         .hero-prompt-text strong {
-            font-size: 13px;
+            font-size: 14.5px;
             font-weight: 700;
             color: var(--text);
         }
 
         .hero-prompt-text span {
-            font-size: 11px;
+            font-size: 12px;
             color: var(--text-dim);
             white-space: nowrap;
             overflow: hidden;
@@ -837,65 +845,15 @@
 
         .hero-prompt-arrow {
             color: var(--text-muted);
-            font-size: 12px;
+            font-size: 13px;
             opacity: 0.6;
             transition: all 0.2s ease;
         }
 
         .hero-prompt-card:hover .hero-prompt-arrow {
             opacity: 1;
-            transform: translateX(3px);
+            transform: translateX(4px);
             color: var(--accent);
-        }
-
-        /* ── Fullscreen Hero Layout Overrides ── */
-        body.fullscreen-mode .gemini-hero-container {
-            padding: 40px 24px;
-            max-width: 820px;
-        }
-
-        body.fullscreen-mode .gemini-hero-badge {
-            font-size: 11.5px;
-            padding: 6px 16px;
-            margin-bottom: 20px;
-        }
-
-        body.fullscreen-mode .gemini-hero-title {
-            font-size: 32px;
-            margin-bottom: 10px;
-            letter-spacing: -0.8px;
-        }
-
-        body.fullscreen-mode .gemini-hero-subtitle {
-            font-size: 14.5px;
-            margin-bottom: 32px;
-            max-width: 580px;
-        }
-
-        body.fullscreen-mode .hero-prompt-grid {
-            grid-template-columns: repeat(2, 1fr);
-            gap: 14px;
-        }
-
-        body.fullscreen-mode .hero-prompt-card {
-            padding: 16px 18px;
-            border-radius: var(--radius-lg);
-            gap: 14px;
-        }
-
-        body.fullscreen-mode .hero-prompt-icon-wrap {
-            width: 42px;
-            height: 42px;
-            border-radius: 12px;
-            font-size: 16px;
-        }
-
-        body.fullscreen-mode .hero-prompt-text strong {
-            font-size: 14px;
-        }
-
-        body.fullscreen-mode .hero-prompt-text span {
-            font-size: 12px;
         }
 
         /* ── Messages Stream ── */
@@ -903,7 +861,7 @@
             flex: 1;
             min-height: 0;
             overflow-y: auto;
-            padding: 20px 18px 24px;
+            padding: 24px 20px;
             display: flex;
             flex-direction: column;
             gap: 16px;
@@ -925,19 +883,15 @@
 
         body.fullscreen-mode .msg-group {
             width: 100%;
-            max-width: 860px;
+            max-width: 920px;
             margin: 0 auto;
-            padding: 0 24px;
+            padding: 0 28px;
         }
 
         .msg-group.user { 
             align-self: flex-end; 
             align-items: flex-end;
             max-width: 85%;
-        }
-
-        body.fullscreen-mode .msg-group.user {
-            align-items: flex-end;
         }
 
         .msg-group.ai { 
@@ -1001,7 +955,7 @@
 
         /* User Message Bubble */
         .user .msg-bubble {
-            background: #181C24 !important;
+            background: #111111 !important;
             border: 1px solid rgba(255, 255, 255, 0.08) !important;
             border-radius: 18px 18px 4px 18px !important;
             color: #FFFFFF !important;
@@ -1023,7 +977,7 @@
 
         /* AI Message Bubble */
         .ai .msg-bubble {
-            background: var(--card-bg) !important;
+            background: var(--bg) !important;
             border: 1px solid var(--border) !important;
             border-radius: 4px 18px 18px 18px !important;
             color: var(--text) !important;
@@ -1031,100 +985,6 @@
             box-shadow: var(--shadow-sm) !important;
             padding: 16px 20px !important;
             width: 100%;
-        }
-
-        /* Markdown Rendering inside AI Message */
-        .msg-content h1, .msg-content h2, .msg-content h3, .msg-content h4 {
-            font-family: var(--title-font);
-            font-weight: 700;
-            margin: 12px 0 6px;
-            color: var(--text);
-            line-height: 1.3;
-        }
-
-        .msg-content h1 { font-size: 18px; }
-        .msg-content h2 { font-size: 16px; }
-        .msg-content h3 { font-size: 14.5px; }
-
-        .msg-content p {
-            margin-bottom: 8px;
-        }
-        .msg-content p:last-child {
-            margin-bottom: 0;
-        }
-
-        .msg-content ul, .msg-content ol {
-            margin: 6px 0 8px 20px;
-        }
-        .msg-content li {
-            margin-bottom: 4px;
-        }
-
-        .msg-content code:not(pre code) {
-            font-family: var(--mono);
-            font-size: 12px;
-            padding: 2px 6px;
-            border-radius: 6px;
-            background: var(--hover);
-            border: 1px solid var(--border);
-            color: var(--accent);
-        }
-
-        .msg-content pre {
-            margin: 10px 0;
-            border-radius: var(--radius-sm);
-            overflow: hidden;
-            background: #111114 !important;
-            border: 1px solid rgba(255, 255, 255, 0.08);
-        }
-
-        .msg-content pre code {
-            font-family: var(--mono);
-            font-size: 12px;
-            line-height: 1.5;
-            padding: 14px !important;
-            display: block;
-            overflow-x: auto;
-        }
-
-        .code-block-wrapper {
-            position: relative;
-            margin: 10px 0;
-            border-radius: var(--radius-sm);
-            overflow: hidden;
-            border: 1px solid rgba(255, 255, 255, 0.08);
-            background: #111114;
-        }
-
-        .code-block-header {
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            background: #1A1A1E;
-            padding: 6px 12px;
-            font-size: 11px;
-            color: #94A3B8;
-            font-family: var(--mono);
-            border-bottom: 1px solid rgba(255, 255, 255, 0.06);
-        }
-
-        .copy-code-btn {
-            background: transparent;
-            border: none;
-            color: #94A3B8;
-            cursor: pointer;
-            font-size: 11px;
-            display: flex;
-            align-items: center;
-            gap: 5px;
-            padding: 2px 6px;
-            border-radius: 4px;
-            transition: all 0.2s ease;
-        }
-
-        .copy-code-btn:hover {
-            color: #FFFFFF;
-            background: rgba(255, 255, 255, 0.1);
         }
 
         /* Message Action Buttons Bar */
@@ -1139,10 +999,10 @@
         .msg-action-btn {
             background: var(--card-bg);
             border: 1px solid var(--border);
-            border-radius: 8px;
-            padding: 4px 10px;
+            border-radius: var(--radius-pill);
+            padding: 4px 12px;
             font-size: 11px;
-            font-weight: 600;
+            font-weight: 700;
             color: var(--text-dim);
             cursor: pointer;
             display: inline-flex;
@@ -1157,81 +1017,82 @@
             border-color: var(--accent-border);
         }
 
-        .msg-time {
-            font-size: 10.5px;
-            color: var(--text-muted);
-            margin-left: auto;
-        }
-
-        /* ── Input Dock / Floating Omni-Pill (Home Page Style) ── */
+        /* ── Input Dock / Floating Omni-Pill (Matched with .sp-search-pill) ── */
         .ai-input-wrapper {
             flex-shrink: 0;
             position: relative;
-            padding: 0 14px 14px;
+            padding: 0 20px 18px;
             background: transparent;
             z-index: 10;
         }
 
         body.fullscreen-mode .ai-input-wrapper {
             width: 100%;
-            max-width: 820px;
-            margin: 0 auto 20px;
-            padding: 0 24px;
+            max-width: 900px;
+            margin: 0 auto 10px;
+            padding: 0 28px;
         }
 
-        /* Quick Tool Chips */
+        /* Quick Tool Chips (Home Page .sp-tile-item style) */
         .quick-tools {
             display: flex;
             align-items: center;
-            gap: 6px;
-            margin-bottom: 8px;
+            gap: 8px;
+            margin-bottom: 10px;
             overflow-x: auto;
             padding-bottom: 2px;
+            justify-content: center;
         }
 
         .quick-tools::-webkit-scrollbar { height: 0; }
 
         .tool-chip {
-            background: var(--card-bg);
+            background: var(--bg);
             border: 1px solid var(--border);
             border-radius: var(--radius-pill);
             font-family: var(--font);
-            font-size: 11.5px;
+            font-size: 12px;
             font-weight: 700;
             color: var(--text-dim);
-            padding: 5px 12px;
+            padding: 7px 16px;
             cursor: pointer;
             white-space: nowrap;
             transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
             display: flex;
             align-items: center;
-            gap: 6px;
+            gap: 7px;
             box-shadow: var(--shadow-sm);
         }
 
         .tool-chip i {
             color: var(--accent);
-            font-size: 11px;
+            font-size: 12px;
         }
 
         .tool-chip:hover {
             background: var(--hover);
             border-color: var(--accent-border);
             color: var(--accent);
-            transform: translateY(-1px);
+            transform: translateY(-2px);
         }
 
-        /* Capsule Omni-Input Box (Matched with .sp-search-pill in home.css) */
+        /* Capsule Omni-Input Box (Matched 1:1 with .sp-search-pill in home.css) */
         .input-container {
-            background: var(--input-bg);
-            border: 1px solid var(--input-border);
+            height: 52px;
+            background: #FFFFFF;
+            border: 1px solid rgba(0, 0, 0, 0.06);
             border-radius: var(--radius-pill);
-            padding: 6px 8px 6px 16px;
+            padding: 0 8px 0 18px;
             display: flex;
             align-items: center;
-            gap: 10px;
+            gap: 12px;
             box-shadow: var(--shadow-input);
             transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+
+        body[data-theme="dark"] .input-container {
+            background: #28282D;
+            border-color: rgba(255, 255, 255, 0.08);
         }
 
         .input-container:focus-within {
@@ -1245,10 +1106,10 @@
             border: none;
             outline: none;
             color: var(--text);
-            font-weight: 500;
+            font-weight: 600;
             padding: 6px 2px;
             font-family: var(--font);
-            font-size: 13.5px;
+            font-size: 14px;
             resize: none;
             max-height: 120px;
             min-height: 24px;
@@ -1266,7 +1127,7 @@
             min-width: 36px;
             border-radius: 50%;
             border: none;
-            background: var(--accent);
+            background: #111111;
             color: #FFFFFF;
             cursor: pointer;
             display: flex;
@@ -1276,12 +1137,15 @@
             flex-shrink: 0;
             font-size: 13px;
             font-weight: 700;
-            box-shadow: 0 2px 10px var(--accent-glow);
+        }
+
+        body[data-theme="dark"] .send-btn {
+            background: var(--accent);
         }
 
         .send-btn:hover {
             transform: scale(1.08);
-            background: var(--accent-hover);
+            background: var(--accent);
         }
 
         /* File Attachment Preview */
@@ -1289,7 +1153,7 @@
             display: flex;
             align-items: center;
             gap: 8px;
-            background: var(--card-bg);
+            background: var(--bg);
             border: 1px solid var(--border);
             padding: 6px 14px;
             border-radius: var(--radius-pill);
@@ -1305,22 +1169,22 @@
             display: flex;
             flex-direction: column;
             overflow-y: auto;
-            padding: 16px 18px 24px;
+            padding: 20px 24px;
             background: transparent;
         }
 
         body.fullscreen-mode .ai-image-studio-view {
-            max-width: 860px;
+            max-width: 900px;
             margin: 0 auto;
             width: 100%;
             padding: 28px 24px;
         }
 
         .studio-card {
-            background: var(--card-bg);
+            background: var(--bg);
             border: 1px solid var(--border);
             border-radius: var(--radius-lg);
-            padding: 20px;
+            padding: 22px;
             display: flex;
             flex-direction: column;
             gap: 16px;
@@ -1340,36 +1204,36 @@
         }
 
         .studio-header-icon {
-            width: 38px;
-            height: 38px;
+            width: 40px;
+            height: 40px;
             border-radius: 12px;
             background: var(--accent-dim);
             color: var(--accent);
             display: flex;
             align-items: center;
             justify-content: center;
-            font-size: 16px;
+            font-size: 17px;
         }
 
         .studio-header-text h3 {
             font-family: var(--title-font);
-            font-size: 16px;
+            font-size: 17px;
             font-weight: 800;
             color: var(--text);
             letter-spacing: -0.3px;
         }
 
         .studio-header-text span {
-            font-size: 12px;
+            font-size: 12.5px;
             color: var(--text-dim);
         }
 
         .studio-header-badge {
-            font-size: 10.5px;
+            font-size: 11px;
             font-weight: 800;
             background: var(--accent);
             color: #FFFFFF;
-            padding: 4px 10px;
+            padding: 4px 12px;
             border-radius: var(--radius-pill);
             display: flex;
             align-items: center;
@@ -1379,7 +1243,7 @@
         .studio-row-grid {
             display: grid;
             grid-template-columns: 1fr 1fr;
-            gap: 12px;
+            gap: 14px;
         }
 
         @media (max-width: 600px) {
@@ -1409,10 +1273,10 @@
 
         .studio-select, .studio-textarea {
             width: 100%;
-            background: var(--input-bg);
-            border: 1px solid var(--input-border);
+            background: var(--panel-bg);
+            border: 1px solid var(--border);
             border-radius: var(--radius-sm);
-            padding: 10px 12px;
+            padding: 10px 14px;
             font-family: var(--font);
             font-size: 13px;
             color: var(--text);
@@ -1433,14 +1297,14 @@
         }
 
         .preset-chip {
-            padding: 6px 14px;
+            padding: 7px 16px;
             border-radius: var(--radius-pill);
-            background: var(--input-bg);
+            background: var(--panel-bg);
             border: 1px solid var(--border);
             color: var(--text-dim);
             font-family: var(--font);
             font-size: 12px;
-            font-weight: 600;
+            font-weight: 700;
             cursor: pointer;
             display: inline-flex;
             align-items: center;
@@ -1462,7 +1326,7 @@
             background: var(--accent-dim) !important;
             color: var(--accent) !important;
             border-color: var(--accent) !important;
-            font-weight: 700;
+            font-weight: 800;
         }
 
         /* Custom Dropdown Trigger */
@@ -1473,9 +1337,9 @@
 
         .dropdown-trigger {
             width: 100%;
-            height: 42px;
-            background: var(--input-bg);
-            border: 1px solid var(--input-border);
+            height: 44px;
+            background: var(--panel-bg);
+            border: 1px solid var(--border);
             border-radius: var(--radius-sm);
             padding: 0 14px;
             display: flex;
@@ -1484,7 +1348,7 @@
             color: var(--text);
             font-family: var(--font);
             font-size: 13px;
-            font-weight: 600;
+            font-weight: 700;
             cursor: pointer;
             transition: all 0.2s ease;
         }
@@ -1518,7 +1382,7 @@
             top: calc(100% + 4px);
             left: 0;
             right: 0;
-            background: var(--card-bg);
+            background: var(--panel-bg);
             border: 1px solid var(--border);
             border-radius: var(--radius-md);
             padding: 6px;
@@ -1584,13 +1448,13 @@
 
         /* Studio Submit Button */
         .studio-submit-btn {
-            height: 44px;
+            height: 46px;
             border-radius: var(--radius-pill);
             background: var(--accent);
             color: #FFFFFF;
             border: none;
             font-family: var(--font);
-            font-size: 13.5px;
+            font-size: 14px;
             font-weight: 800;
             cursor: pointer;
             display: flex;
@@ -1609,10 +1473,10 @@
 
         /* Studio Preview & Actions */
         .studio-preview-card {
-            background: var(--card-bg);
+            background: var(--bg);
             border: 1px solid var(--border);
             border-radius: var(--radius-lg);
-            padding: 16px;
+            padding: 18px;
             display: flex;
             flex-direction: column;
             gap: 12px;
@@ -1630,10 +1494,10 @@
         }
 
         .studio-action-btn {
-            padding: 8px 14px;
+            padding: 8px 16px;
             border-radius: var(--radius-pill);
             border: 1px solid var(--border);
-            background: var(--input-bg);
+            background: var(--panel-bg);
             color: var(--text);
             font-family: var(--font);
             font-size: 12px;
@@ -1749,7 +1613,7 @@
     </script>
     <div id="resize-handle"></div>
     <div class="ai-panel">
-        <!-- Col 1: Left History Sidebar -->
+        <!-- Col 1: Left History Sidebar Bento Card -->
         <div class="history-sidebar" id="history-sidebar">
             <div class="gemini-sidebar-top">
                 <div class="gemini-logo">
@@ -1830,7 +1694,7 @@
                 </div>
                 <div id="username-edit-row" style="display: none; align-items: center; gap: 6px; flex: 1;">
                     <input type="text" id="username-input" placeholder="Your name..." maxlength="20"
-                        style="flex: 1; background: var(--input-bg); border: 1px solid var(--accent); border-radius: 8px; padding: 6px 10px; font-size: 12px; color: var(--text); outline: none; font-family: inherit;">
+                        style="flex: 1; background: var(--bg); border: 1px solid var(--accent); border-radius: 8px; padding: 6px 10px; font-size: 12px; color: var(--text); outline: none; font-family: inherit;">
                     <button id="username-save-btn" style="background: var(--accent); color: #FFFFFF; border: none; border-radius: 6px; padding: 6px 10px; font-size: 11px; font-weight: 700; cursor: pointer;">Save</button>
                     <button onclick="document.getElementById('username-edit-row').style.display='none'; document.getElementById('user-info-display').style.display='flex';" style="background: transparent; border: none; color: var(--text-muted); cursor: pointer; font-size: 13px;"><i class="fas fa-times"></i></button>
                 </div>
@@ -1840,7 +1704,7 @@
             </div>
         </div>
 
-        <!-- Col 2: Main AI Container -->
+        <!-- Col 2: Main AI Container Bento Card -->
         <div class="ai-main-container" id="ai-main-container">
             <!-- Header Row -->
             <div class="ai-header">
@@ -1879,8 +1743,13 @@
                             <span class="hero-badge-dot"></span>
                             <span>Ocal Intelligence Suite</span>
                         </div>
-                        <h1 class="gemini-hero-title" id="gemini-hero-title">Good day Gaming. How may I assist your workflow today?</h1>
-                        <p class="gemini-hero-subtitle">Efficient reasoning, page summarization, and executive task assistance.</p>
+                        <h1 class="gemini-hero-title" id="gemini-hero-title">
+                            Good afternoon, <span class="sp-user-name-highlight">Nick</span>
+                        </h1>
+                        <div class="gemini-hero-subtitle-row">
+                            <i class="fas fa-quote-left motd-quote-icon"></i>
+                            <span class="gemini-hero-subtitle">The secret of getting ahead is simply getting started.</span>
+                        </div>
                         <div class="hero-prompt-grid">
                             <div class="hero-prompt-card" data-prompt="Summarize the current page with key bullet points">
                                 <div class="hero-prompt-icon-wrap icon-emerald">
@@ -1959,7 +1828,7 @@
                         <div class="input-container">
                             <input type="file" id="ai-file-input" style="display: none;">
                             <button id="ai-attach-btn" class="control-btn" title="Attach file"><i class="fas fa-paperclip"></i></button>
-                            <textarea id="ai-query" placeholder="How can I assist you today?" rows="1"></textarea>
+                            <textarea id="ai-query" placeholder="Search Ocal AI or ask anything..." rows="1"></textarea>
                             <button id="ai-send" class="send-btn" title="Send message"><i class="fas fa-arrow-up"></i></button>
                         </div>
                     </div>
@@ -2169,7 +2038,7 @@
                                 </div>
                             </div>
 
-                            <div class="advanced-settings-content" id="advanced-settings-panel" style="display: none; flex-direction: column; gap: 12px; padding: 14px; background: var(--input-bg); border: 1px solid var(--border); border-radius: var(--radius-md);">
+                            <div class="advanced-settings-content" id="advanced-settings-panel" style="display: none; flex-direction: column; gap: 12px; padding: 14px; background: var(--panel-bg); border: 1px solid var(--border); border-radius: var(--radius-md);">
                                 <!-- Negative Prompt -->
                                 <div class="studio-field">
                                     <label><i class="fas fa-ban"></i> Negative Prompt</label>
@@ -2312,7 +2181,7 @@
                         </div>
 
                         <!-- Custom AI Companion Setup Card -->
-                        <div class="studio-field" id="custom-companion-card" style="background: var(--input-bg); border: 1px solid var(--accent); border-radius: var(--radius-md); padding: 14px; margin-top: 10px;">
+                        <div class="studio-field" id="custom-companion-card" style="background: var(--panel-bg); border: 1px solid var(--accent); border-radius: var(--radius-md); padding: 14px; margin-top: 10px;">
                             <label style="color: var(--accent); text-transform: uppercase; font-size: 11px; font-weight: 800; letter-spacing: 0.8px;"><i class="fas fa-user-gear"></i> Custom Human Companion Setup</label>
                             <p style="font-size: 11.5px; color: var(--text-dim); margin: 2px 0 10px 0;">Design your own personalized human AI companion:</p>
                             
@@ -2348,7 +2217,7 @@
                         <div class="studio-field">
                             <label><i class="fas fa-brain"></i> Long-Term Memory Bank</label>
                             <p style="font-size: 11.5px; color: var(--text-dim); margin: 0 0 6px 0;">Facts Ocal AI remembers across all conversations:</p>
-                            <div id="memory-tags-container" style="display: flex; flex-wrap: wrap; gap: 4px; background: var(--input-bg); border: 1px solid var(--border); padding: 10px; border-radius: var(--radius-md); min-height: 48px; align-items: center;">
+                            <div id="memory-tags-container" style="display: flex; flex-wrap: wrap; gap: 4px; background: var(--panel-bg); border: 1px solid var(--border); padding: 10px; border-radius: var(--radius-md); min-height: 48px; align-items: center;">
                                 <!-- Memory tags loaded dynamically -->
                             </div>
                             <div style="display: flex; gap: 8px; margin-top: 6px;">
