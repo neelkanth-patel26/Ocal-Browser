@@ -4911,24 +4911,9 @@ body[data-theme="light"] .profile-active-check {
     gap: 20px;
 }
 .downloads-console-display {
-    background: #060608;
-    border: 1px solid rgba(255,255,255,0.04);
     border-radius: 12px;
     padding: 16px 20px;
-    font-family: var(--font-mono);
     font-size: 12px;
-    color: #a0a0a5;
-    box-shadow: inset 0 2px 10px rgba(0,0,0,0.5);
-    position: relative;
-}
-.downloads-console-display::before {
-    content: '';
-    position: absolute;
-    inset: 0;
-    background: linear-gradient(rgba(18, 16, 16, 0) 50%, rgba(0, 0, 0, 0.25) 50%), linear-gradient(90deg, rgba(255, 0, 0, 0.06), rgba(0, 255, 0, 0.02), rgba(0, 0, 255, 0.06));
-    background-size: 100% 4px, 6px 100%;
-    pointer-events: none;
-    opacity: 0.35;
 }
 .console-prompt {
     margin-bottom: 6px;
@@ -10029,82 +10014,40 @@ body[data-theme="dark"] .system-btn-action.secondary {
     border-color: rgba(255, 255, 255, 0.08);
 }
 
-/* ── Downloads & Storage Engine Styling ── */
-.system-downloads-container {
-    display: flex;
-    flex-direction: column;
-    gap: 16px;
-    width: 100%;
-}
-
-.downloads-console-display {
-    background: #F1F3F5;
-    border: 1px solid rgba(0, 0, 0, 0.05);
-    border-radius: 18px;
-    padding: 14px 18px;
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    gap: 16px;
+/* ── Default Download Directory Row & Actions ── */
+.system-dir-row {
     flex-wrap: wrap;
-    transition: all 0.2s ease;
+    gap: 16px;
 }
 
-body[data-theme="dark"] .downloads-console-display {
-    background: #28282D;
-    border-color: rgba(255, 255, 255, 0.06);
-}
-
-.console-prompt-left {
+.system-dir-title-row {
     display: flex;
     align-items: center;
-    gap: 14px;
+    gap: 10px;
+    flex-wrap: wrap;
+    margin-bottom: 4px;
 }
 
-.console-icon-wrap {
-    width: 40px;
-    height: 40px;
-    border-radius: 12px;
-    background: color-mix(in srgb, var(--accent) 14%, transparent);
-    color: var(--accent);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 17px;
-    flex-shrink: 0;
-}
-
-.console-path-info {
-    display: flex;
-    flex-direction: column;
-    gap: 3px;
-}
-
-.console-title {
+.system-dir-title-row h4 {
     font-size: 13.5px;
     font-weight: 700;
     color: var(--text);
+    margin: 0;
 }
 
-.console-path-text {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    flex-wrap: wrap;
-}
-
-.console-path-text code {
+.system-dir-path-wrap code {
     font-family: 'JetBrains Mono', 'Space Mono', monospace;
     font-size: 12px;
     color: var(--text-dim);
     background: rgba(0, 0, 0, 0.04);
-    padding: 2px 8px;
+    padding: 3px 8px;
     border-radius: 6px;
+    display: inline-block;
 }
 
-body[data-theme="dark"] .console-path-text code {
+body[data-theme="dark"] .system-dir-path-wrap code {
     background: rgba(0, 0, 0, 0.25);
-    color: #EDEDED;
+    color: #E4E4E7;
 }
 
 .accent-path {
@@ -10113,7 +10056,7 @@ body[data-theme="dark"] .console-path-text code {
 }
 
 .system-tag-badge {
-    font-size: 9px;
+    font-size: 9.5px;
     font-weight: 800;
     padding: 2px 8px;
     border-radius: 6px;
@@ -10121,103 +10064,6 @@ body[data-theme="dark"] .console-path-text code {
     color: var(--accent);
     border: 1px solid color-mix(in srgb, var(--accent) 25%, transparent);
     letter-spacing: 0.5px;
-}
-
-.system-browse-btn {
-    padding: 8px 18px;
-    border-radius: 100px;
-    background: color-mix(in srgb, var(--accent) 14%, transparent);
-    color: var(--accent);
-    border: 1px solid color-mix(in srgb, var(--accent) 28%, transparent);
-    font-size: 12px;
-    font-weight: 700;
-    display: inline-flex;
-    align-items: center;
-    gap: 8px;
-    cursor: pointer;
-    transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
-    outline: none;
-}
-
-.system-browse-btn:hover {
-    background: var(--accent);
-    color: #111111;
-    transform: translateY(-1px);
-    box-shadow: 0 4px 14px color-mix(in srgb, var(--accent) 30%, transparent);
-}
-
-/* ── Accessory Grid ── */
-.system-accessory-grid {
-    display: grid;
-    grid-template-columns: repeat(3, 1fr);
-    gap: 14px;
-    width: 100%;
-}
-
-@media (max-width: 850px) {
-    .system-accessory-grid {
-        grid-template-columns: 1fr;
-    }
-}
-
-.system-accessory-card {
-    background: #F1F3F5;
-    border: 1px solid rgba(0, 0, 0, 0.04);
-    border-radius: 18px;
-    padding: 16px;
-    display: flex;
-    flex-direction: column;
-    gap: 12px;
-    transition: transform 0.2s cubic-bezier(0.16, 1, 0.3, 1), border-color 0.2s;
-}
-
-body[data-theme="dark"] .system-accessory-card {
-    background: #28282D;
-    border-color: rgba(255, 255, 255, 0.06);
-}
-
-.system-accessory-card:hover {
-    transform: translateY(-1px);
-    border-color: color-mix(in srgb, var(--accent) 25%, transparent);
-}
-
-.accessory-top {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    width: 100%;
-}
-
-.accessory-icon-box {
-    width: 38px;
-    height: 38px;
-    border-radius: 12px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 16px;
-    background: color-mix(in srgb, var(--text) 6%, transparent);
-    color: var(--accent);
-}
-
-.accessory-info {
-    display: flex;
-    flex-direction: column;
-    gap: 3px;
-}
-
-.accessory-info h4 {
-    font-size: 13.5px;
-    font-weight: 700;
-    color: var(--text);
-    margin: 0;
-}
-
-.accessory-info p {
-    font-size: 11.5px;
-    color: var(--text-dim);
-    margin: 0;
-    line-height: 1.4;
 }
 
 
