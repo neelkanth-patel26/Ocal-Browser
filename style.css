@@ -73,36 +73,115 @@ body[data-theme="dark"] {
   --hover: #2E2E33;
 }
 
+body[data-theme="light"] .tab-item {
+  color: #4B5563 !important;
+  background: transparent !important;
+  border: 1px solid transparent !important;
+  border-radius: 12px !important;
+  font-weight: 600 !important;
+}
+body[data-theme="light"] .tab-item:hover {
+  background: rgba(255, 255, 255, 0.75) !important;
+  border-color: rgba(0, 0, 0, 0.05) !important;
+  color: #111111 !important;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.02) !important;
+}
+body[data-theme="light"] .tab-item.active {
+  background: #FFFFFF !important;
+  color: #111111 !important;
+  border: 1px solid rgba(0, 0, 0, 0.08) !important;
+  box-shadow: 0 3px 10px rgba(0, 0, 0, 0.05), 0 1px 2px rgba(0, 0, 0, 0.02) !important;
+  font-weight: 700 !important;
+}
+body[data-theme="light"] .tab-item.active .tab-title {
+  color: #111111 !important;
+}
+body[data-theme="light"] #omnibox {
+  background: #FFFFFF !important;
+  border-color: rgba(0, 0, 0, 0.08) !important;
+  box-shadow: 0 3px 12px rgba(0, 0, 0, 0.03) !important;
+  color: #111111 !important;
+}
+body[data-theme="light"] .omnibox-input {
+  color: #111111 !important;
+}
+body[data-theme="light"] .omnibox-input::placeholder {
+  color: #6B7280 !important;
+}
+body[data-theme="light"] .nav-btn {
+  background: #FFFFFF !important;
+  border: 1px solid rgba(0, 0, 0, 0.06) !important;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.02) !important;
+  color: #374151 !important;
+}
+body[data-theme="light"] .nav-btn:hover {
+  border-color: var(--accent) !important;
+  color: var(--accent) !important;
+  transform: scale(1.04);
+}
+body[data-theme="light"] .web-folder,
+body[data-theme="light"] .bookmark-bar-item,
+body[data-theme="light"] .bookmark-bar-folder {
+  background: #FFFFFF !important;
+  color: #111111 !important;
+  border: 1px solid rgba(0, 0, 0, 0.07) !important;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.03) !important;
+}
+body[data-theme="light"] .web-folder:hover,
+body[data-theme="light"] .bookmark-bar-item:hover,
+body[data-theme="light"] .bookmark-bar-folder:hover {
+  background: var(--accent) !important;
+  color: var(--accent-text, #111111) !important;
+  border-color: var(--accent) !important;
+  box-shadow: 0 3px 10px var(--accent-glow) !important;
+  transform: translateY(-1px);
+}
+body[data-theme="light"] .new-tab-btn {
+  background: rgba(255, 255, 255, 0.6) !important;
+  border: 1px solid rgba(0, 0, 0, 0.06) !important;
+  color: #4B5563 !important;
+}
+body[data-theme="light"] .new-tab-btn:hover {
+  background: #FFFFFF !important;
+  border-color: rgba(0, 0, 0, 0.09) !important;
+  color: #111111 !important;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04) !important;
+  transform: scale(1.05) !important;
+}
+
 body[data-theme="dark"] .tab-item {
-  color: #A1A1AA !important;
-  background: #1F1F23 !important;
-  border: 1px solid rgba(255, 255, 255, 0.08) !important;
-  border-radius: 10px !important;
+  color: #9CA3AF !important;
+  background: transparent !important;
+  border: 1px solid transparent !important;
+  border-radius: 12px !important;
+  font-weight: 600 !important;
 }
 body[data-theme="dark"] .tab-item:hover {
-  background: #27272C !important;
-  border-color: rgba(255, 255, 255, 0.14) !important;
-  color: #F4F4F5 !important;
+  background: rgba(255, 255, 255, 0.06) !important;
+  border-color: rgba(255, 255, 255, 0.08) !important;
+  color: #FFFFFF !important;
 }
 body[data-theme="dark"] .tab-item.active {
-  background: #28282D !important;
+  background: #222226 !important;
   color: #FFFFFF !important;
-  border: 1px solid var(--accent-border, rgba(255, 255, 255, 0.14)) !important;
+  border: 1px solid rgba(255, 255, 255, 0.1) !important;
   box-shadow: 0 4px 14px rgba(0, 0, 0, 0.35) !important;
+  font-weight: 700 !important;
 }
 body[data-theme="dark"] .tab-item.active .tab-title {
   color: #FFFFFF !important;
 }
 body[data-theme="dark"] #omnibox {
   background: #222226 !important;
-  border-color: rgba(255, 255, 255, 0.09) !important;
+  border-color: rgba(255, 255, 255, 0.08) !important;
+  box-shadow: 0 4px 18px rgba(0, 0, 0, 0.25) !important;
   color: #FFFFFF !important;
 }
 body[data-theme="dark"] .omnibox-input {
   color: #FFFFFF !important;
 }
 body[data-theme="dark"] .omnibox-input::placeholder {
-  color: #A1A1AA !important;
+  color: #9CA3AF !important;
 }
 body[data-theme="dark"] .pretty-url .domain {
   color: #FFFFFF !important;
@@ -116,14 +195,22 @@ body[data-theme="dark"] .ctrl-btn {
 }
 body[data-theme="dark"] .nav-btn {
   background: #222226 !important;
-  border-color: rgba(255, 255, 255, 0.08) !important;
+  border: 1px solid rgba(255, 255, 255, 0.08) !important;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.2) !important;
+  color: #D1D5DB !important;
+}
+body[data-theme="dark"] .nav-btn:hover {
+  border-color: var(--accent) !important;
+  color: var(--accent) !important;
+  transform: scale(1.04);
 }
 body[data-theme="dark"] .web-folder,
 body[data-theme="dark"] .bookmark-bar-item,
 body[data-theme="dark"] .bookmark-bar-folder {
   background: #222226 !important;
-  color: #F4F4F5 !important;
+  color: #E5E7EB !important;
   border: 1px solid rgba(255, 255, 255, 0.08) !important;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.2) !important;
 }
 body[data-theme="dark"] .web-folder:hover,
 body[data-theme="dark"] .bookmark-bar-item:hover,
@@ -131,23 +218,25 @@ body[data-theme="dark"] .bookmark-bar-folder:hover {
   background: var(--accent) !important;
   color: var(--accent-text, #111111) !important;
   border-color: var(--accent) !important;
+  box-shadow: 0 3px 10px var(--accent-glow) !important;
+  transform: translateY(-1px);
 }
 body[data-theme="dark"] .bookmark-bar-folder i,
 body[data-theme="dark"] .web-folder .fa-folder {
   color: var(--accent) !important;
 }
 body[data-theme="dark"] .new-tab-btn {
-  background: #222226 !important;
-  color: #A1A1AA !important;
-  border: 1px solid rgba(255, 255, 255, 0.08) !important;
+  background: rgba(255, 255, 255, 0.05) !important;
+  color: #9CA3AF !important;
+  border: 1px solid rgba(255, 255, 255, 0.07) !important;
   box-shadow: none !important;
 }
 body[data-theme="dark"] .new-tab-btn:hover {
-  background: var(--accent) !important;
-  color: var(--accent-text, #000000) !important;
-  border-color: var(--accent) !important;
-  box-shadow: none !important;
-  transform: none !important;
+  background: #222226 !important;
+  border-color: rgba(255, 255, 255, 0.12) !important;
+  color: #FFFFFF !important;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.25) !important;
+  transform: scale(1.05) !important;
 }
 
 
@@ -982,42 +1071,44 @@ body[data-theme="light"] .tab-layout-toggle-btn:hover {
 .tab-item {
   display: flex;
   align-items: center;
-  gap: 7px;
+  gap: 8px;
   padding: 0 10px 0 12px;
-  height: calc(100% - 10px);
+  height: calc(100% - 8px);
   flex: 0 1 180px;
   width: 180px;
-  min-width: 32px;
-  max-width: 200px;
+  min-width: 34px;
+  max-width: 210px;
   font-family: var(--font-title);
   font-size: 12.5px;
-  font-weight: 500;
-  color: var(--text-dim, #94A3B8);
+  font-weight: 600;
+  color: var(--text-dim, #64748B);
   border: 1px solid transparent;
-  border-radius: 10px !important;
+  border-radius: 12px !important;
   background: transparent;
   cursor: pointer;
-  transition: background 0.15s ease, border-color 0.15s ease, color 0.15s ease;
+  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
   -webkit-app-region: no-drag !important;
   position: relative;
   overflow: hidden;
-  margin: 5px 1px;
+  margin: 4px 1.5px;
   box-sizing: border-box;
   flex-shrink: 1 !important;
 }
 body.compact-mode .tab-item { height: 28px; padding: 0 6px 0 8px; border-radius: 8px; width: 140px; min-width: 28px; max-width: 160px; }
 
 .tab-item:hover {
-  background: rgba(255, 255, 255, 0.06);
-  border-color: rgba(255, 255, 255, 0.08);
-  color: var(--text-main, #FFFFFF);
+  background: rgba(255, 255, 255, 0.65);
+  border-color: rgba(0, 0, 0, 0.05);
+  color: var(--text, #111111);
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.02);
 }
 
 .tab-item.active {
-  background: rgba(255, 255, 255, 0.1) !important;
-  border: 1px solid rgba(255, 255, 255, 0.14) !important;
-  color: #FFFFFF !important;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.25) !important;
+  background: var(--card-bg, #FFFFFF) !important;
+  border: 1px solid rgba(0, 0, 0, 0.08) !important;
+  color: var(--text, #111111) !important;
+  box-shadow: 0 3px 10px rgba(0, 0, 0, 0.05), 0 1px 2px rgba(0, 0, 0, 0.02) !important;
+  font-weight: 700 !important;
 }
 
 .tab-item.dragging { opacity: 0.35; transform: scale(0.94); }
@@ -1977,20 +2068,20 @@ body[data-theme="light"] .web-content-container {
   display: flex;
   align-items: center;
   gap: 6px;
-  padding: 4px 12px 4px 10px;
+  padding: 4px 12px;
   border-radius: 100px !important;
   font-size: 11.5px;
   font-weight: 700;
-  color: #111111 !important;
+  color: var(--text, #111111) !important;
   cursor: pointer;
   transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
   flex-shrink: 0;
   position: relative;
-  background: #FFFFFF !important;
+  background: var(--card-bg, #FFFFFF) !important;
   border: 1px solid rgba(0, 0, 0, 0.08) !important;
-  font-family: var(--font-main);
+  font-family: var(--font-title);
   line-height: 1;
-  box-shadow: 0 1px 4px rgba(0,0,0,0.04);
+  box-shadow: 0 1px 4px rgba(0,0,0,0.03);
 }
 .web-folder:hover { 
   background: var(--accent) !important; 
@@ -2010,16 +2101,16 @@ body[data-theme="light"] .web-content-container {
   border-radius: 100px !important;
   font-size: 11.5px;
   font-weight: 600;
-  color: #111111 !important;
+  color: var(--text, #111111) !important;
   cursor: pointer;
   transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
   flex-shrink: 0;
   white-space: nowrap;
-  font-family: var(--font-main);
+  font-family: var(--font-title);
   line-height: 1;
-  background: #FFFFFF !important;
+  background: var(--card-bg, #FFFFFF) !important;
   border: 1px solid rgba(0, 0, 0, 0.07) !important;
-  box-shadow: 0 1px 4px rgba(0,0,0,0.04);
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.03);
 }
 .bookmark-bar-item:hover,
 .bookmark-bar-folder:hover { 
@@ -2029,7 +2120,7 @@ body[data-theme="light"] .web-content-container {
   transform: translateY(-1px);
   box-shadow: 0 3px 10px var(--accent-glow);
 }
-.bookmark-bar-item img { width: 14px; height: 14px; border-radius: 3px; flex-shrink: 0; }
+.bookmark-bar-item img { width: 14px; height: 14px; border-radius: 4px; flex-shrink: 0; }
 .bookmark-bar-folder i { color: var(--accent) !important; font-size: 11px; opacity: 1; }
 
 /* ── Toast ─────────────────────────────────────────────────────── */
