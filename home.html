@@ -214,37 +214,86 @@
                 </div>
             </div>
 
-            <div class="sp-tiles-grid">
-                <div class="sp-tile-item" data-url="youtube.com">
-                    <div class="sp-tile-icon"><i class="fab fa-youtube"></i></div>
-                    <span class="sp-tile-label">YouTube</span>
-                </div>
-                <div class="sp-tile-item" data-url="spotify.com">
-                    <div class="sp-tile-icon"><i class="fab fa-spotify"></i></div>
-                    <span class="sp-tile-label">Spotify</span>
-                </div>
-                <div class="sp-tile-item" data-url="amazon.com">
-                    <div class="sp-tile-icon"><i class="fab fa-amazon"></i></div>
-                    <span class="sp-tile-label">Amazon</span>
-                </div>
-                <div class="sp-tile-item" data-url="discord.com">
-                    <div class="sp-tile-icon"><i class="fab fa-discord"></i></div>
-                    <span class="sp-tile-label">Discord</span>
-                </div>
-                <div class="sp-tile-item" data-url="github.com">
-                    <div class="sp-tile-icon"><i class="fab fa-github"></i></div>
-                    <span class="sp-tile-label">GitHub</span>
-                </div>
-                <div class="sp-tile-item" data-url="x.com">
-                    <div class="sp-tile-icon"><i class="fab fa-x-twitter"></i></div>
-                    <span class="sp-tile-label">Twitter / X</span>
-                </div>
-                <div class="sp-tile-item" data-url="reddit.com">
-                    <div class="sp-tile-icon"><i class="fab fa-reddit"></i></div>
-                    <span class="sp-tile-label">Reddit</span>
-                </div>
+            <div class="sp-tiles-grid" id="sp-tiles-grid">
+                <!-- Dynamically rendered and managed by home.js -->
             </div>
         </section>
+
+        <!-- Add Quick Launch Shortcut Modal Dialog -->
+        <div class="shortcut-modal-overlay" id="shortcut-modal-overlay" style="display: none;">
+            <div class="shortcut-modal-card">
+                <div class="sm-header">
+                    <div class="sm-title">
+                        <div class="sm-icon-badge"><i class="fas fa-plus"></i></div>
+                        <div class="sm-text-group">
+                            <h3>Add Quick Launch Shortcut</h3>
+                            <span>AI-powered icon detection & favicon resolution</span>
+                        </div>
+                    </div>
+                    <button class="sm-close-btn" id="shortcut-modal-close-btn" type="button" title="Close"><i class="fas fa-times"></i></button>
+                </div>
+
+                <div class="sm-body">
+                    <!-- Live Preview Card -->
+                    <div class="sm-preview-card">
+                        <div class="sm-preview-left">
+                            <div class="sm-preview-tile-icon" id="sm-preview-icon">
+                                <i class="fas fa-globe"></i>
+                            </div>
+                            <div class="sm-preview-details">
+                                <h4 id="sm-preview-title">New Shortcut</h4>
+                                <span id="sm-preview-url">https://example.com</span>
+                            </div>
+                        </div>
+                        <div class="sm-preview-badge" id="sm-preview-source-badge">
+                            <i class="fas fa-wand-magic-sparkles"></i>
+                            <span id="sm-preview-badge-text">AI Smart Icon</span>
+                        </div>
+                    </div>
+
+                    <!-- URL Input -->
+                    <div class="sm-field-group">
+                        <label for="new-shortcut-url">Website URL</label>
+                        <div class="sm-input-wrap">
+                            <i class="fas fa-link sm-input-icon"></i>
+                            <input type="text" id="new-shortcut-url" placeholder="e.g. figma.com, notion.so, or https://..." autocomplete="off" spellcheck="false">
+                        </div>
+                    </div>
+
+                    <!-- Title Input -->
+                    <div class="sm-field-group">
+                        <label for="new-shortcut-title">Display Name <span class="sm-optional">(Optional)</span></label>
+                        <div class="sm-input-wrap">
+                            <i class="fas fa-pen-to-square sm-input-icon"></i>
+                            <input type="text" id="new-shortcut-title" placeholder="Auto-detected from URL if empty" autocomplete="off">
+                        </div>
+                    </div>
+
+                    <!-- Icon Mode Choice -->
+                    <div class="sm-field-group">
+                        <label>Icon Preference</label>
+                        <div class="sm-icon-mode-grid">
+                            <button type="button" class="sm-mode-btn active" id="sm-mode-ai" data-mode="ai">
+                                <i class="fas fa-wand-magic-sparkles"></i>
+                                <span>AI Smart Icon</span>
+                            </button>
+                            <button type="button" class="sm-mode-btn" id="sm-mode-favicon" data-mode="favicon">
+                                <i class="fas fa-image"></i>
+                                <span>Website Favicon</span>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="sm-footer">
+                    <button type="button" class="sm-cancel-btn" id="shortcut-modal-cancel-btn">Cancel</button>
+                    <button type="button" class="sm-save-btn" id="shortcut-modal-save-btn">
+                        <i class="fas fa-plus"></i>
+                        <span>Add Shortcut</span>
+                    </button>
+                </div>
+            </div>
+        </div>
 
         <!-- Floating Bottom Brand & Quick Action Bar -->
         <div class="sp-bottom-bar-container">
