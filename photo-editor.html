@@ -289,55 +289,37 @@
         /* ── Center Stage Viewport Bento Card ── */
         .studio-stage-card {
             flex: 1;
-            background: var(--stage-bg);
-            border: 1px solid var(--chrome-border);
-            border-radius: var(--radius-card);
+            background: transparent;
+            border: none;
             position: relative;
             display: flex;
             align-items: center;
             justify-content: center;
             overflow: hidden;
-            box-shadow: var(--shadow-card);
+            box-shadow: none;
+            padding: 8px;
         }
 
         .canvas-viewport-wrapper {
             display: flex;
             align-items: center;
             justify-content: center;
+            width: 100%;
+            height: 100%;
             transition: transform 0.15s cubic-bezier(0.16, 1, 0.3, 1);
-            max-width: 100%;
-            max-height: 100%;
             user-select: none;
-            padding: 20px;
         }
 
         .target-photo-img {
-            border-radius: 14px;
-            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.25);
+            max-width: 100%;
+            max-height: 100%;
+            width: auto;
+            height: auto;
+            border-radius: 20px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.22);
             transition: filter 0.1s ease;
             object-fit: contain;
             display: block;
-        }
-
-        /* Dynamic Aspect Ratio Classes */
-        .target-photo-img.is-portrait {
-            height: 82vh;
-            width: auto;
-            max-width: 90vw;
-        }
-
-        .target-photo-img.is-landscape {
-            width: 86vw;
-            max-width: 92%;
-            height: auto;
-            max-height: 82vh;
-        }
-
-        .target-photo-img.is-square {
-            max-width: 82vw;
-            max-height: 82vh;
-            width: auto;
-            height: auto;
         }
 
         /* Showroom Floating Bottom HUD Bar (Home page .sp-bottom-bar-pill style) */
