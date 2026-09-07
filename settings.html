@@ -13,8 +13,9 @@
         href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@300;400;500&family=Outfit:wght@300;400;500;600;700;800&family=Inter:wght@300;400;500;600;700&display=swap"
         rel="stylesheet">
     <link rel="stylesheet" href="assets/fontawesome/css/all.min.css">
+    <script src="color-harmonizer.js"></script>
     <script>
-        /* Immediate Theme Application to prevent Flashbang */
+        /* Immediate Theme & AI Gradient Application */
         (function () {
             var t = localStorage.getItem('ocal-settings-theme') || 'dark';
             document.documentElement.setAttribute('data-theme', t);
@@ -23,6 +24,10 @@
                 document.documentElement.style.colorScheme = 'dark';
             } else {
                 document.documentElement.style.background = '#EDEDF0';
+            }
+            var a = localStorage.getItem('ocal-settings-accent');
+            if (window.OcalColorHarmonizer) {
+                window.OcalColorHarmonizer.applyHarmonizedTheme(a, t);
             }
         })();
     </script>
@@ -591,6 +596,41 @@
                                             <div class="ccp-input-group rgb-group">
                                                 <span class="ccp-input-label">B</span>
                                                 <input type="number" id="ccp-b-input" min="0" max="255" value="246">
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <!-- AI Dynamic Adaptive Gradient Studio Row -->
+                                <div class="hbc-palette-wrap ai-grad-preview-wrap">
+                                    <div class="hbc-row-info">
+                                        <div class="ai-grad-title-flex">
+                                            <h4><i class="fas fa-wand-magic-sparkles ai-sparkle-icon"></i> AI Adaptive Gradient Engine</h4>
+                                            <span class="ai-grad-live-pill"><i class="fas fa-circle-dot fa-fade"></i> LIVE MATCH</span>
+                                        </div>
+                                        <p>Smart harmonic gradients automatically synthesized to match your active theme color for Focus Flow, Weather, and dynamic system surfaces</p>
+                                    </div>
+                                    <div class="ai-grad-showcase-grid">
+                                        <div class="ai-grad-card-preview" id="ai-grad-preview-primary" style="background: var(--sp-primary-grad);">
+                                            <div class="ai-gcp-header">
+                                                <span><i class="fas fa-stopwatch"></i> Focus Flow</span>
+                                                <span class="ai-gcp-badge">Harmonic Primary</span>
+                                            </div>
+                                            <div class="ai-gcp-metric">25:00</div>
+                                            <div class="ai-gcp-footer">
+                                                <span>Analogous Arc Match</span>
+                                                <i class="fas fa-check-circle"></i>
+                                            </div>
+                                        </div>
+                                        <div class="ai-grad-card-preview" id="ai-grad-preview-secondary" style="background: var(--sp-secondary-grad);">
+                                            <div class="ai-gcp-header">
+                                                <span><i class="fas fa-cloud-sun"></i> Weather Horizon</span>
+                                                <span class="ai-gcp-badge">Harmonic Secondary</span>
+                                            </div>
+                                            <div class="ai-gcp-metric">28°C</div>
+                                            <div class="ai-gcp-footer">
+                                                <span>Triadic Balance Match</span>
+                                                <i class="fas fa-check-circle"></i>
                                             </div>
                                         </div>
                                     </div>
@@ -2707,6 +2747,7 @@
             };
         }
     </script>
+    <script src="color-harmonizer.js"></script>
     <script src="settings.js"></script>
 </body>
 

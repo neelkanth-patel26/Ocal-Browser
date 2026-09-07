@@ -1876,3 +1876,31 @@ function initNewsHubEngine() {
         }
     }, true);
 })();
+
+// ── Real-Time Theme & AI Gradient Synchronization ──────────────────
+(function() {
+    function syncHomeThemeAndGradients() {
+        const t = localStorage.getItem('ocal-settings-theme') || 'light';
+        const a = localStorage.getItem('ocal-settings-accent');
+        if (window.OcalColorHarmonizer) {
+            window.OcalColorHarmonizer.applyHarmonizedTheme(a, t);
+        }
+    }
+    window.addEventListener('storage', (e) => {
+        if (e.key === 'ocal-settings-accent' || e.key === 'ocal-settings-theme') {
+            syncHomeThemeAndGradients();
+        }
+    });
+    if (window.electronAPI && window.electronAPI.onSettingsChanged) {
+        try {
+            window.electronAPI.onSettingsChanged((s) => {
+                if (s && (s.accentColor || s.themeMode)) {
+                    if (window.OcalColorHarmonizer) {
+                        window.OcalColorHarmonizer.applyHarmonizedTheme(s.accentColor, s.themeMode);
+                    }
+                }
+            });
+        } catch (e) {}
+    }
+})();
+
