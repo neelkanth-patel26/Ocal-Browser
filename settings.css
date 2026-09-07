@@ -9896,6 +9896,126 @@ body[data-theme="light"] .ccp-inputs-row input[type="number"] {
     }
 }
 
+/* ── AI Adaptive Dynamic Gradient Studio Preview ── */
+.ai-grad-preview-wrap {
+    margin-top: 24px;
+    padding-top: 20px;
+    border-top: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+body[data-theme="light"] .ai-grad-preview-wrap {
+    border-top-color: rgba(0, 0, 0, 0.06);
+}
+
+.ai-grad-title-flex {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 4px;
+}
+
+.ai-sparkle-icon {
+    color: var(--accent, #09f0a0);
+    animation: sparkleGlow 2.5s ease-in-out infinite;
+}
+
+@keyframes sparkleGlow {
+    0%, 100% { transform: scale(1) rotate(0deg); opacity: 1; }
+    50% { transform: scale(1.15) rotate(15deg); opacity: 0.85; }
+}
+
+.ai-grad-live-pill {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    padding: 3px 9px;
+    border-radius: 100px;
+    font-size: 9.5px;
+    font-weight: 800;
+    letter-spacing: 0.6px;
+    background: color-mix(in srgb, var(--accent, #09f0a0) 18%, transparent);
+    color: var(--accent, #09f0a0);
+    border: 1px solid color-mix(in srgb, var(--accent, #09f0a0) 35%, transparent);
+}
+
+.ai-grad-showcase-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 16px;
+    margin-top: 14px;
+    width: 100%;
+}
+
+@media (max-width: 680px) {
+    .ai-grad-showcase-grid {
+        grid-template-columns: 1fr;
+    }
+}
+
+.ai-grad-card-preview {
+    border-radius: 20px;
+    padding: 16px 18px;
+    min-height: 120px;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    color: #FFFFFF !important;
+    position: relative;
+    overflow: hidden;
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.15);
+    transition: transform 0.25s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.25s, background 0.4s ease;
+    border: 1px solid rgba(255, 255, 255, 0.12);
+}
+
+.ai-grad-card-preview:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 12px 30px rgba(0, 0, 0, 0.22);
+}
+
+.ai-gcp-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    font-size: 13px;
+    font-weight: 700;
+    text-shadow: 0 1px 3px rgba(0, 0, 0, 0.3);
+}
+
+.ai-gcp-header i {
+    margin-right: 6px;
+}
+
+.ai-gcp-badge {
+    font-size: 9.5px;
+    font-weight: 800;
+    padding: 2px 8px;
+    border-radius: 100px;
+    background: rgba(0, 0, 0, 0.2);
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
+    letter-spacing: 0.4px;
+}
+
+.ai-gcp-metric {
+    font-family: var(--font-mono, monospace);
+    font-size: 28px;
+    font-weight: 700;
+    letter-spacing: -1px;
+    line-height: 1;
+    margin: 8px 0;
+    text-shadow: 0 2px 8px rgba(0, 0, 0, 0.25);
+}
+
+.ai-gcp-footer {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    font-size: 11px;
+    font-weight: 600;
+    opacity: 0.9;
+    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
+}
+
 /* ── Tab Orientation Choice Cards ── */
 .tab-orientation-picker {
     display: grid;

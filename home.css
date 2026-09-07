@@ -382,7 +382,7 @@ body[data-theme="dark"] .sp-search-submit {
     min-height: 260px;
     position: relative;
     overflow: hidden;
-    transition: transform 0.25s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.25s;
+    transition: transform 0.25s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.25s, background 0.4s ease;
 }
 
 .sp-card:hover {
@@ -417,9 +417,10 @@ body[data-theme="dark"] .sp-search-submit {
     text-shadow: none;
 }
 
-/* Gradient Card 1: Focus Flow Timer */
-.sp-card-green-grad {
-    background: linear-gradient(135deg, #F3C362 0%, #EAA24A 25%, #30BE57 65%, #15A744 100%);
+/* Gradient Card 1: Focus Flow Timer (Harmonic Primary Gradient) */
+.sp-card-green-grad,
+.sp-card-primary-grad {
+    background: var(--sp-primary-grad, var(--sp-green-grad, linear-gradient(135deg, #F3C362 0%, #EAA24A 25%, #30BE57 65%, #15A744 100%)));
     color: #FFFFFF;
 }
 
@@ -503,9 +504,10 @@ body[data-theme="dark"] .sp-search-submit {
     color: var(--accent-text, #111111) !important;
 }
 
-/* Gradient Card 2: Weather & Environment */
-.sp-card-orange-grad {
-    background: linear-gradient(135deg, #DFE9F7 0%, #F5C695 30%, #FF7A30 100%);
+/* Gradient Card 2: Weather & Environment (Harmonic Secondary Gradient) */
+.sp-card-orange-grad,
+.sp-card-secondary-grad {
+    background: var(--sp-secondary-grad, var(--sp-orange-grad, linear-gradient(135deg, #DFE9F7 0%, #F5C695 30%, #FF7A30 100%)));
     color: #FFFFFF;
 }
 

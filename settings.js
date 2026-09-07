@@ -200,6 +200,14 @@ function updateColorDots(themeMode) {
     });
 }
 
+function updateAIGradientPreviews(harmony) {
+    if (!harmony) return;
+    const p1 = document.getElementById('ai-grad-preview-primary');
+    const p2 = document.getElementById('ai-grad-preview-secondary');
+    if (p1 && harmony.primary) p1.style.background = harmony.primary;
+    if (p2 && harmony.secondary) p2.style.background = harmony.secondary;
+}
+
 function applyAccent(color) {
     if (!color) return;
     lastColor = color;
@@ -219,6 +227,12 @@ function applyAccent(color) {
     document.body.style.setProperty('--accent-border', activeAccent);
     document.body.style.setProperty('--accent-text', contrastColor);
     
+    // AI Harmonic Gradient Synthesis & Live DOM update
+    if (window.OcalColorHarmonizer) {
+        const harmony = window.OcalColorHarmonizer.applyHarmonizedTheme(activeAccent, isLight ? 'light' : 'dark');
+        updateAIGradientPreviews(harmony);
+    }
+
     localStorage.setItem('ocal-settings-accent', color);
     dots.forEach(d => d.classList.toggle('active', d.dataset.color === color));
     document.querySelectorAll('.hbc-swatch').forEach(d => d.classList.toggle('active', d.dataset.color && d.dataset.color.toLowerCase() === color.toLowerCase()));
@@ -2427,6 +2441,7 @@ window.applyAccent = function applyAccent(color, skipIpc = false) {
     if (!color) color = '#09F0A0';
     const root = document.documentElement;
     const body = document.body;
+    const isLight = (root.getAttribute('data-theme') === 'light' || body?.getAttribute('data-theme') === 'light');
     const contrast = getContrastColor(color);
     const dim = hexToRgba(color, 0.15);
     const glow = hexToRgba(color, 0.35);
@@ -2443,6 +2458,12 @@ window.applyAccent = function applyAccent(color, skipIpc = false) {
         body.style.setProperty('--accent-dim', dim);
         body.style.setProperty('--accent-glow', glow);
         body.style.setProperty('--accent-border', color);
+    }
+
+    // AI Adaptive Harmonic Gradient Generation
+    if (window.OcalColorHarmonizer) {
+        const harmony = window.OcalColorHarmonizer.applyHarmonizedTheme(color, isLight ? 'light' : 'dark');
+        updateAIGradientPreviews(harmony);
     }
     
     try {

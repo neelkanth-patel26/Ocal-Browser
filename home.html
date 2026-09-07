@@ -4,7 +4,8 @@
     <meta charset="UTF-8">
     <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline' https:; style-src 'self' 'unsafe-inline' https:; font-src 'self' https: data:; img-src 'self' data: https: blob:; connect-src 'self' https: http:;">
     <title>Ocal Home</title>
-    <!-- ANTI-FLASH: must be FIRST in head, before any stylesheet -->
+    <!-- ANTI-FLASH & AI COLOR HARMONIZER: must be FIRST in head, before any stylesheet -->
+    <script src="color-harmonizer.js"></script>
     <script>
         (function () {
             var t = localStorage.getItem('ocal-settings-theme') || 'light';
@@ -12,6 +13,10 @@
             if (t === 'dark') {
                 document.documentElement.style.background = '#0D0E11';
                 document.documentElement.style.colorScheme = 'dark';
+            }
+            var a = localStorage.getItem('ocal-settings-accent');
+            if (window.OcalColorHarmonizer) {
+                window.OcalColorHarmonizer.applyHarmonizedTheme(a, t);
             }
         })();
     </script>
@@ -28,7 +33,9 @@
             var t = localStorage.getItem('ocal-settings-theme') || 'light';
             document.body.setAttribute('data-theme', t);
             var a = localStorage.getItem('ocal-settings-accent');
-            if (a) document.documentElement.style.setProperty('--accent', a);
+            if (window.OcalColorHarmonizer) {
+                window.OcalColorHarmonizer.applyHarmonizedTheme(a, t);
+            }
         })();
     </script>
     <div class="sp-wallpaper-bg"></div>

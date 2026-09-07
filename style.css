@@ -14,6 +14,8 @@
   --sp-green: #15AC49;
   --sp-green-grad: linear-gradient(135deg, #F3C362 0%, #EAA24A 30%, #30BE57 70%, #15A744 100%);
   --sp-orange-grad: linear-gradient(135deg, #CFDFF7 0%, #F5C695 35%, #FF7A30 100%);
+  --sp-primary-grad: var(--sp-green-grad);
+  --sp-secondary-grad: var(--sp-orange-grad);
   --sp-magenta-grad: linear-gradient(135deg, #FF2D75 0%, #FF5A8D 50%, #FF8CAE 100%);
   --sp-text-main: #1A1D20;
   --sp-text-muted: #7E8492;
