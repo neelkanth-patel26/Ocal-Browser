@@ -7,11 +7,14 @@
     <!-- ANTI-FLASH: must be FIRST in head, before any stylesheet -->
     <script>
         (function () {
-            var t = localStorage.getItem('ocal-settings-theme') || 'dark';
+            var t = localStorage.getItem('ocal-settings-theme') || 'light';
             document.documentElement.setAttribute('data-theme', t);
             if (t === 'dark') {
                 document.documentElement.style.background = '#18181B';
                 document.documentElement.style.colorScheme = 'dark';
+            } else {
+                document.documentElement.style.background = '#EDEDF0';
+                document.documentElement.style.colorScheme = 'light';
             }
             var a = localStorage.getItem('ocal-settings-accent');
             if (a) document.documentElement.style.setProperty('--accent', a);
