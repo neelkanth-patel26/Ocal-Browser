@@ -1086,228 +1086,312 @@
                 </div>
             </section>
 
-            <!-- ── SECURITY & PRIVACY ── -->
+            <!-- ── SECURITY & PRIVACY (BENTO HOME PAGE STYLE) ── -->
             <section id="security" class="section">
-                <div class="page-header">
-                    <div class="page-eyebrow">Privacy & Packet Shield</div>
-                    <div class="page-title">Native Core Security</div>
-                    <div class="page-desc">Real-time packet filtering, deep sandboxing, and dynamic tracker mitigation.</div>
+                <!-- Home-style Header Row: Title & Stats Bar -->
+                <div class="home-settings-header-row">
+                    <div class="home-settings-greeting">
+                        <h1 class="home-settings-title">Security & Privacy Hub</h1>
+                        <div class="home-settings-subtitle">
+                            <i class="fas fa-quote-left home-quote-icon"></i>
+                            <span>Real-time packet filtering, encrypted DNS resolver, ad neutralization, and credential vault.</span>
+                        </div>
+                    </div>
+
+                    <!-- Dot-Matrix Stats Bar matching Home Page .sp-stats-bar -->
+                    <div class="home-stats-bar">
+                        <div class="home-stat-item">
+                            <span class="home-dot-num" id="security-stat-shield">Active</span>
+                            <span class="home-badge home-badge-lime">Protection</span>
+                        </div>
+                        <div class="home-stat-item">
+                            <span class="home-dot-num" id="security-stat-dns">DoH Secure</span>
+                            <span class="home-badge home-badge-gray">DNS</span>
+                        </div>
+                        <div class="home-stat-item">
+                            <span class="home-dot-num" id="security-stat-tier">Tier 3</span>
+                            <span class="home-badge home-badge-gray">Shield Level</span>
+                        </div>
+                    </div>
                 </div>
 
                 <div class="page-body">
-                    <div class="security-prefs-grid" style="display: flex; flex-direction: column; gap: 20px;">
+                    <div class="homepage-bento-grid security-bento-grid">
 
-                        <!-- Core Security Hero Card -->
-                        <div class="card security-hero-card">
-                            <div class="security-hero-body">
-                                <div class="shield-radar-container">
-                                    <svg width="90" height="90" viewBox="0 0 120 120" class="radar-svg" style="position: absolute; transform: rotate(-90deg);">
-                                        <circle cx="60" cy="60" r="54" style="fill: none; stroke: rgba(255,255,255,0.06); stroke-width: 4;" />
-                                        <circle cx="60" cy="60" r="54" style="fill: none; stroke: var(--accent); stroke-dasharray: 339; stroke-dashoffset: 85; stroke-width: 4; stroke-linecap: round; filter: drop-shadow(0 0 6px var(--accent-glow));" />
-                                    </svg>
-                                    <div class="radar-shield-icon">
+                        <!-- ─── 1. Live Shield Telemetry Dashboard ─── -->
+                        <div class="card homepage-bento-card security-bento-card sp-card-white span-full">
+                            <div class="hbc-header">
+                                <div class="hbc-header-left">
+                                    <div class="hbc-icon security-shield-bg">
                                         <i class="fas fa-shield-halved"></i>
                                     </div>
-                                </div>
-                                <div class="security-hero-text" style="flex: 1; min-width: 250px;">
-                                    <div class="shield-status-badge ok" id="protection-badge">
-                                        <i class="fas fa-circle-check"></i>
-                                        Maximum Protection Active
+                                    <div class="hbc-identity">
+                                        <h4 class="hbc-name">Real-Time Packet & Vector Telemetry</h4>
+                                        <div class="hbc-tagline">Deep network packet scrubbing, tracker neutralization & data savings</div>
                                     </div>
-                                    <h3 class="security-hero-title">Ocal Core Packet Engine</h3>
-                                    <p class="security-hero-desc">
-                                        Native network packet interception layers are fully operational. Deep sandboxing, tracker neutralizing engines, and telemetry sanitization are active.
-                                    </p>
+                                </div>
+                                <span class="hbc-badge security-shield" id="protection-badge"><i class="fas fa-circle-check"></i> MAXIMUM PROTECTION</span>
+                            </div>
+
+                            <div class="security-telemetry-grid">
+                                <div class="security-metric-tile">
+                                    <div class="smt-icon red-bg"><i class="fas fa-ban"></i></div>
+                                    <div class="smt-data">
+                                        <div class="smt-val" id="dash-ads">0</div>
+                                        <div class="smt-label">Neutralized Ads & Vectors</div>
+                                    </div>
+                                </div>
+                                <div class="security-metric-tile">
+                                    <div class="smt-icon green-bg"><i class="fas fa-user-shield"></i></div>
+                                    <div class="smt-data">
+                                        <div class="smt-val" id="dash-trackers">0</div>
+                                        <div class="smt-label">Blocked Trackers & Beacons</div>
+                                    </div>
+                                </div>
+                                <div class="security-metric-tile">
+                                    <div class="smt-icon blue-bg"><i class="fas fa-database"></i></div>
+                                    <div class="smt-data">
+                                        <div class="smt-val" id="dash-bandwidth">0 MB</div>
+                                        <div class="smt-label">Bandwidth Data Saved</div>
+                                    </div>
+                                </div>
+                                <div class="security-metric-tile">
+                                    <div class="smt-icon amber-bg"><i class="fas fa-bolt"></i></div>
+                                    <div class="smt-data">
+                                        <div class="smt-val" id="dash-time">0s</div>
+                                        <div class="smt-label">Page Load Time Saved</div>
+                                    </div>
                                 </div>
                             </div>
                         </div>
 
-                        <!-- Shield Statistics Grid -->
-                        <div class="security-stats-grid">
-                            <!-- Ads Blocked Card -->
-                            <div class="card security-stat-card">
-                                <div class="security-stat-header">
-                                    <span class="security-stat-label"><i class="fas fa-shield-cat" style="color: #ef4444; margin-right: 6px;"></i> Ad Blocker</span>
-                                    <i class="fas fa-ban security-stat-icon" style="color: #ef4444;"></i>
+                        <!-- ─── 2. Perimeter Safeguards ─── -->
+                        <div class="card homepage-bento-card security-bento-card sp-card-white">
+                            <div class="hbc-header">
+                                <div class="hbc-header-left">
+                                    <div class="hbc-icon security-lock-bg">
+                                        <i class="fas fa-lock"></i>
+                                    </div>
+                                    <div class="hbc-identity">
+                                        <h4 class="hbc-name">Perimeter Network Safeguards</h4>
+                                        <div class="hbc-tagline">Phishing firewall, HTTPS upgrade & fingerprint barrier</div>
+                                    </div>
                                 </div>
-                                <div class="security-stat-value" id="dash-ads">0</div>
-                                <div class="security-stat-desc">Neutralized Ads & Vectors</div>
+                                <span class="hbc-badge security-lock">PERIMETER</span>
                             </div>
 
-                            <!-- Trackers Blocked Card -->
-                            <div class="card security-stat-card">
-                                <div class="security-stat-header">
-                                    <span class="security-stat-label"><i class="fas fa-user-shield" style="color: #10b981; margin-right: 6px;"></i> Privacy Shield</span>
-                                    <i class="fas fa-eye-slash security-stat-icon" style="color: #10b981;"></i>
+                            <div class="hbc-rows">
+                                <div class="hbc-toggle-row">
+                                    <div class="hbc-row-info">
+                                        <h4>Safe Browsing Protection</h4>
+                                        <p>Intercept phishing domains, deceptive payloads, and malicious hosts</p>
+                                    </div>
+                                    <label class="ext-toggle-wrap">
+                                        <input type="checkbox" id="safe-browsing-toggle-cb" checked
+                                            onchange="toggleSecurityFeature('safeBrowsingEnabled', this.checked)">
+                                        <span class="ext-slider"></span>
+                                    </label>
                                 </div>
-                                <div class="security-stat-value" id="dash-trackers">0</div>
-                                <div class="security-stat-desc">Blocked Tracker Requests</div>
-                            </div>
 
-                            <!-- Speed Boost Card -->
-                            <div class="card security-stat-card">
-                                <div class="security-stat-header">
-                                    <span class="security-stat-label"><i class="fas fa-bolt" style="color: #f59e0b; margin-right: 6px;"></i> Speed Boost</span>
-                                    <i class="fas fa-hourglass-half security-stat-icon" style="color: #f59e0b;"></i>
+                                <div class="hbc-toggle-row">
+                                    <div class="hbc-row-info">
+                                        <h4>Strict Anti-Fingerprinting</h4>
+                                        <p>Neutralize canvas hashing, font enumeration, and device profile scraping</p>
+                                    </div>
+                                    <label class="ext-toggle-wrap">
+                                        <input type="checkbox" id="tracking-toggle-security-cb" checked
+                                            onchange="toggleSecurityFeature('trackingProtection', this.checked)">
+                                        <span class="ext-slider"></span>
+                                    </label>
                                 </div>
-                                <div class="security-stat-value" id="dash-time">0s</div>
-                                <div class="security-stat-desc">Est. Page Load Time Saved</div>
+
+                                <div class="hbc-toggle-row">
+                                    <div class="hbc-row-info">
+                                        <h4>Force HTTPS Everywhere</h4>
+                                        <p>Upgrade plain HTTP requests automatically and warn on unencrypted sites</p>
+                                    </div>
+                                    <label class="ext-toggle-wrap">
+                                        <input type="checkbox" id="https-toggle-cb" checked
+                                            onchange="toggleSecurityFeature('httpsUpgradeEnabled', this.checked)">
+                                        <span class="ext-slider"></span>
+                                    </label>
+                                </div>
                             </div>
                         </div>
 
-                        <!-- DNS & Perimeter Bento Grid -->
-                        <div class="security-bento-grid">
-
-                            <!-- DNS Routing Card -->
-                            <div class="card security-card-box">
-                                <div class="security-card-header">
-                                    <i class="fas fa-network-wired"></i>
-                                    <span>DNS Encryption Pathway</span>
-                                </div>
-                                <div class="choice-grid dns-choice-grid" id="dns-grid" style="padding: 16px 20px; display: flex; flex-direction: column; gap: 10px;">
-                                    <div class="choice-item active" data-value="auto" style="display: flex; align-items: center; gap: 14px; padding: 12px 16px; border-radius: 12px; cursor: pointer;">
-                                        <div class="choice-icon-wrap" style="width: 32px; height: 32px; border-radius: 8px; display: flex; align-items: center; justify-content: center; background: var(--accent-dim); color: var(--accent);">
-                                            <i class="fas fa-bolt"></i>
-                                        </div>
-                                        <div class="choice-details" style="display: flex; flex-direction: column; gap: 2px;">
-                                            <span class="choice-title" style="font-size: 13px; font-weight: 700; color: var(--text);">System Default</span>
-                                            <span class="choice-desc" style="font-size: 11px; color: var(--text-dim);">Use default network gateway settings</span>
-                                        </div>
+                        <!-- ─── 3. Encrypted DNS Routing ─── -->
+                        <div class="card homepage-bento-card security-bento-card sp-card-white">
+                            <div class="hbc-header">
+                                <div class="hbc-header-left">
+                                    <div class="hbc-icon security-dns-bg">
+                                        <i class="fas fa-network-wired"></i>
                                     </div>
-                                    <div class="choice-item" data-value="cloudflare" style="display: flex; align-items: center; gap: 14px; padding: 12px 16px; border-radius: 12px; cursor: pointer;">
-                                        <div class="choice-icon-wrap" style="width: 32px; height: 32px; border-radius: 8px; display: flex; align-items: center; justify-content: center; background: rgba(243,128,32,0.12); color: #f38020;">
-                                            <i class="fas fa-cloud"></i>
-                                        </div>
-                                        <div class="choice-details" style="display: flex; flex-direction: column; gap: 2px;">
-                                            <span class="choice-title" style="font-size: 13px; font-weight: 700; color: var(--text);">Cloudflare DNS (1.1.1.1)</span>
-                                            <span class="choice-desc" style="font-size: 11px; color: var(--text-dim);">Encrypted DNS resolution via Cloudflare</span>
-                                        </div>
-                                    </div>
-                                    <div class="choice-item" data-value="google" style="display: flex; align-items: center; gap: 14px; padding: 12px 16px; border-radius: 12px; cursor: pointer;">
-                                        <div class="choice-icon-wrap" style="width: 32px; height: 32px; border-radius: 8px; display: flex; align-items: center; justify-content: center; background: rgba(66,133,244,0.12); color: #4285f4;">
-                                            <i class="fab fa-google"></i>
-                                        </div>
-                                        <div class="choice-details" style="display: flex; flex-direction: column; gap: 2px;">
-                                            <span class="choice-title" style="font-size: 13px; font-weight: 700; color: var(--text);">Google Public DNS (8.8.8.8)</span>
-                                            <span class="choice-desc" style="font-size: 11px; color: var(--text-dim);">High-speed resolution via Google</span>
-                                        </div>
+                                    <div class="hbc-identity">
+                                        <h4 class="hbc-name">Encrypted DNS Pathway (DoH)</h4>
+                                        <div class="hbc-tagline">DNS-over-HTTPS cryptographic packet resolution</div>
                                     </div>
                                 </div>
+                                <span class="hbc-badge security-dns">SECURE DNS</span>
                             </div>
 
-                            <!-- Perimeter Safeguards Card -->
-                            <div class="card security-card-box">
-                                <div class="security-card-header">
-                                    <i class="fas fa-lock"></i>
-                                    <span>Perimeter Safeguards</span>
+                            <div class="choice-grid dns-choice-grid" id="dns-grid">
+                                <div class="choice-item active" data-value="default">
+                                    <div class="choice-item-left">
+                                        <div class="choice-icon-wrap default-dns-bg"><i class="fas fa-bolt"></i></div>
+                                        <div class="choice-details">
+                                            <span class="choice-title">System Default</span>
+                                            <span class="choice-desc">Use OS local network gateway resolver</span>
+                                        </div>
+                                    </div>
+                                    <div class="choice-check"><i class="fas fa-check"></i></div>
                                 </div>
-                                <div class="security-rows-container">
-                                    <div class="security-toggle-row">
-                                        <div class="row-info">
-                                            <h4>Safe Browsing Protection</h4>
-                                            <p>Blocks phishing hosts and malicious payloads dynamically.</p>
+                                <div class="choice-item" data-value="cloudflare">
+                                    <div class="choice-item-left">
+                                        <div class="choice-icon-wrap cf-dns-bg"><i class="fas fa-cloud"></i></div>
+                                        <div class="choice-details">
+                                            <span class="choice-title">Cloudflare DNS (1.1.1.1)</span>
+                                            <span class="choice-desc">Zero logging, privacy-first encrypted resolver</span>
                                         </div>
-                                        <div class="toggle on" id="safe-browsing-toggle" onclick="toggleSecurityFeature('safeBrowsingEnabled', this)"></div>
                                     </div>
-                                    <div class="security-toggle-row">
-                                        <div class="row-info">
-                                            <h4>Strict Fingerprint Protection</h4>
-                                            <p>Blocks details harvesting vectors and canvas fingerprinting.</p>
+                                    <div class="choice-check"><i class="fas fa-check"></i></div>
+                                </div>
+                                <div class="choice-item" data-value="google">
+                                    <div class="choice-item-left">
+                                        <div class="choice-icon-wrap google-dns-bg"><i class="fab fa-google"></i></div>
+                                        <div class="choice-details">
+                                            <span class="choice-title">Google Public DNS (8.8.8.8)</span>
+                                            <span class="choice-desc">Ultra-low latency global Anycast network</span>
                                         </div>
-                                        <div class="toggle on" id="tracking-toggle-security" onclick="toggleSecurityFeature('trackingProtection', this)"></div>
                                     </div>
-                                    <div class="security-toggle-row">
-                                        <div class="row-info">
-                                            <h4>Enforce Secure HTTPS Connection</h4>
-                                            <p>Force upgrade HTTP requests and warn on unencrypted sites.</p>
+                                    <div class="choice-check"><i class="fas fa-check"></i></div>
+                                </div>
+                                <div class="choice-item" data-value="quad9">
+                                    <div class="choice-item-left">
+                                        <div class="choice-icon-wrap quad9-dns-bg"><i class="fas fa-shield-cat"></i></div>
+                                        <div class="choice-details">
+                                            <span class="choice-title">Quad9 DNS (9.9.9.9)</span>
+                                            <span class="choice-desc">Threat-intelligence malicious domain blocking</span>
                                         </div>
-                                        <div class="toggle on" id="https-toggle" onclick="toggleSecurityFeature('httpsUpgradeEnabled', this)"></div>
                                     </div>
+                                    <div class="choice-check"><i class="fas fa-check"></i></div>
                                 </div>
                             </div>
-
                         </div>
 
-                        <!-- Core Modifications & Sanitizer Grid -->
-                        <div class="security-bento-grid">
-
-                            <!-- Built-in Core Modifications -->
-                            <div class="card security-card-box">
-                                <div class="security-card-header">
-                                    <i class="fas fa-screwdriver-wrench"></i>
-                                    <span>Integrated Core Powerups</span>
-                                </div>
-                                <div class="security-rows-container">
-                                    <div class="security-toggle-row" id="youtube-dislike-row">
-                                        <div class="row-info">
-                                            <h4>YouTube Dislike Restorer</h4>
-                                            <p>Restore community dislike statistics on YouTube video pages.</p>
-                                        </div>
-                                        <div class="toggle on" id="dislike-toggle-security" onclick="toggleSecurityFeature('youtubeDislikeEnabled', this)"></div>
+                        <!-- ─── 4. Built-in Core Enhancements ─── -->
+                        <div class="card homepage-bento-card security-bento-card sp-card-white">
+                            <div class="hbc-header">
+                                <div class="hbc-header-left">
+                                    <div class="hbc-icon security-tools-bg">
+                                        <i class="fas fa-screwdriver-wrench"></i>
                                     </div>
-                                    <div class="security-toggle-row" id="media-master-row">
-                                        <div class="row-info">
-                                            <h4>Media Sniffer Engine</h4>
-                                            <p>Native inspection for video streams and download endpoints.</p>
-                                        </div>
-                                        <div class="toggle on" id="media-master-toggle-security" onclick="toggleSecurityFeature('mediaMasterEnabled', this)"></div>
+                                    <div class="hbc-identity">
+                                        <h4 class="hbc-name">Integrated Core Powerups</h4>
+                                        <div class="hbc-tagline">Stream inspection & community metrics restoration</div>
                                     </div>
                                 </div>
+                                <span class="hbc-badge security-tools">POWERUPS</span>
                             </div>
 
-                            <!-- Session Data Sanitizer -->
-                            <div class="card security-card-box">
-                                <div class="security-card-header">
-                                    <i class="fas fa-trash-can" style="color: #ef4444;"></i>
-                                    <span>Privacy & Session Data Sanitizer</span>
+                            <div class="hbc-rows">
+                                <div class="hbc-toggle-row" id="youtube-dislike-row">
+                                    <div class="hbc-row-info">
+                                        <h4>YouTube Dislike Restorer</h4>
+                                        <p>Restore community dislike statistics and ratio bars on YouTube</p>
+                                    </div>
+                                    <label class="ext-toggle-wrap">
+                                        <input type="checkbox" id="dislike-toggle-security-cb" checked
+                                            onchange="toggleSecurityFeature('youtubeDislikeEnabled', this.checked)">
+                                        <span class="ext-slider"></span>
+                                    </label>
                                 </div>
-                                <div class="security-rows-container">
-                                    <div class="security-toggle-row">
-                                        <div class="row-info">
-                                            <h4>Browsing Cache & Cookies</h4>
-                                            <p>Purge cookies, site data, and history database logs.</p>
-                                        </div>
-                                        <button class="btn secondary" id="clear-data-btn" style="padding: 8px 16px; font-size: 12px; font-weight: 700; border-radius: 8px;">
-                                            <i class="fas fa-trash-can" style="color: #ef4444; margin-right: 6px;"></i> Clear Data
-                                        </button>
+
+                                <div class="hbc-toggle-row" id="media-master-row">
+                                    <div class="hbc-row-info">
+                                        <h4>Media Sniffer Engine</h4>
+                                        <p>Native network packet inspector for video streams & media endpoints</p>
                                     </div>
-                                    <div class="security-toggle-row">
-                                        <div class="row-info">
-                                            <h4>Bookmark Registry</h4>
-                                            <p>Wipe all stored bookmarks and folder trees permanently.</p>
-                                        </div>
-                                        <button class="btn danger" id="clear-bookmarks-btn" style="padding: 8px 16px; font-size: 12px; font-weight: 700; border-radius: 8px;">
-                                            <i class="fas fa-bookmark" style="margin-right: 6px;"></i> Clear Bookmarks
-                                        </button>
-                                    </div>
+                                    <label class="ext-toggle-wrap">
+                                        <input type="checkbox" id="media-master-toggle-security-cb" checked
+                                            onchange="toggleSecurityFeature('mediaMasterEnabled', this.checked)">
+                                        <span class="ext-slider"></span>
+                                    </label>
                                 </div>
                             </div>
-
                         </div>
 
-                        <!-- Password Vault & Saved Credentials Manager -->
-                        <div class="card security-card-box" style="grid-column: 1 / -1;">
-                            <div class="security-card-header">
-                                <i class="fas fa-vault" style="color: var(--accent, #09f0a0);"></i>
-                                <span>Password Manager & Encrypted Vault</span>
-                            </div>
-                            <div style="padding: 16px;">
-                                <div style="display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-bottom: 12px; flex-wrap: wrap;">
-                                    <div style="position: relative; flex: 1; min-width: 200px; max-width: 320px;">
-                                        <i class="fas fa-magnifying-glass" style="position: absolute; left: 10px; top: 10px; color: var(--text-dim, #9ca3af); font-size: 12px;"></i>
-                                        <input type="text" id="settings-passwords-search" placeholder="Search saved accounts..." style="width: 100%; padding: 8px 12px 8px 32px; background: rgba(255,255,255,0.05); border: 1px solid var(--chrome-border); border-radius: 8px; color: var(--text); font-size: 12px; outline: none;">
+                        <!-- ─── 5. Session Data Sanitizer ─── -->
+                        <div class="card homepage-bento-card security-bento-card sp-card-white">
+                            <div class="hbc-header">
+                                <div class="hbc-header-left">
+                                    <div class="hbc-icon security-trash-bg">
+                                        <i class="fas fa-trash-can"></i>
                                     </div>
-                                    <span style="font-size: 12px; color: var(--text-dim);" id="settings-passwords-count">0 saved logins</span>
+                                    <div class="hbc-identity">
+                                        <h4 class="hbc-name">Privacy & Session Data Sanitizer</h4>
+                                        <div class="hbc-tagline">Wipe site storage, history databases & bookmarks</div>
+                                    </div>
                                 </div>
-                                <div id="settings-passwords-list" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 10px; max-height: 360px; overflow-y: auto; padding-right: 4px;">
-                                    <!-- Loaded dynamically in settings.js -->
+                                <span class="hbc-badge security-trash">DATA PURGE</span>
+                            </div>
+
+                            <div class="hbc-rows">
+                                <div class="hbc-toggle-row">
+                                    <div class="hbc-row-info">
+                                        <h4>Browsing Cache & History</h4>
+                                        <p>Purge cookies, localized site caches, and navigation history database</p>
+                                    </div>
+                                    <button class="system-btn-action secondary" id="clear-data-btn">
+                                        <i class="fas fa-trash-can" style="color: #ef4444;"></i>
+                                        <span>Clear History</span>
+                                    </button>
+                                </div>
+
+                                <div class="hbc-toggle-row">
+                                    <div class="hbc-row-info">
+                                        <h4>Bookmark Registry Wipe</h4>
+                                        <p>Permanently erase all stored bookmark items and folder trees</p>
+                                    </div>
+                                    <button class="system-btn-action secondary" id="clear-bookmarks-btn" style="color: #ef4444;">
+                                        <i class="fas fa-bookmark"></i>
+                                        <span>Clear Bookmarks</span>
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- ─── 6. Password Manager & Encrypted Vault ─── -->
+                        <div class="card homepage-bento-card security-bento-card sp-card-white span-full">
+                            <div class="hbc-header">
+                                <div class="hbc-header-left">
+                                    <div class="hbc-icon security-vault-bg">
+                                        <i class="fas fa-vault"></i>
+                                    </div>
+                                    <div class="hbc-identity">
+                                        <h4 class="hbc-name">Password Manager & Encrypted Vault</h4>
+                                        <div class="hbc-tagline">Locally encrypted login credentials & site secrets</div>
+                                    </div>
+                                </div>
+                                <span class="hbc-badge security-vault">AES-256 VAULT</span>
+                            </div>
+
+                            <div class="vault-management-container">
+                                <div class="vault-search-toolbar">
+                                    <div class="vault-search-pill">
+                                        <i class="fas fa-magnifying-glass"></i>
+                                        <input type="text" id="settings-passwords-search" placeholder="Search saved website accounts or usernames..." autocomplete="off">
+                                    </div>
+                                    <span class="system-tag-badge" id="settings-passwords-count">0 saved logins</span>
+                                </div>
+
+                                <div id="settings-passwords-list" class="vault-grid-list">
+                                    <!-- Rendered dynamically by loadSettingsPasswords() in settings.js -->
                                 </div>
                             </div>
                         </div>
 
                     </div>
                 </div>
-            </section>
             </section>
 
             <!-- ── EXTENSIONS ── -->

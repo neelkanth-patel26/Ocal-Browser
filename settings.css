@@ -10066,5 +10066,379 @@ body[data-theme="dark"] .system-dir-path-wrap code {
     letter-spacing: 0.5px;
 }
 
+/* ══════════════════════════════════════════════════════════════════════════
+   SECURITY & PRIVACY BENTO REDESIGN (HOME PAGE STYLE)
+   ══════════════════════════════════════════════════════════════════════════ */
+#security .security-bento-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 20px;
+    width: 100%;
+}
+
+@media (max-width: 900px) {
+    #security .security-bento-grid {
+        grid-template-columns: 1fr;
+    }
+}
+
+.security-bento-card {
+    background: #FFFFFF;
+    border: 1px solid rgba(0, 0, 0, 0.06);
+    border-radius: 24px;
+    padding: 22px;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    gap: 18px;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.035), 0 2px 8px rgba(0, 0, 0, 0.015);
+    transition: transform 0.25s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.25s, border-color 0.25s;
+}
+
+body[data-theme="dark"] .security-bento-card {
+    background: #222226;
+    border-color: rgba(255, 255, 255, 0.08);
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.35);
+}
+
+.security-bento-card:hover {
+    transform: translateY(-2px);
+    border-color: color-mix(in srgb, var(--accent) 30%, transparent);
+}
+
+.security-bento-card.span-full {
+    grid-column: 1 / -1;
+}
+
+/* ── Security Bento Header Icons & Badges ── */
+.hbc-icon.security-shield-bg {
+    background: color-mix(in srgb, var(--accent) 14%, transparent);
+    color: var(--accent);
+    border: 1px solid color-mix(in srgb, var(--accent) 25%, transparent);
+}
+
+.hbc-icon.security-lock-bg {
+    background: rgba(59, 130, 246, 0.12);
+    color: #3b82f6;
+    border: 1px solid rgba(59, 130, 246, 0.25);
+}
+
+.hbc-icon.security-dns-bg {
+    background: rgba(168, 85, 247, 0.12);
+    color: #a855f7;
+    border: 1px solid rgba(168, 85, 247, 0.25);
+}
+
+.hbc-icon.security-tools-bg {
+    background: rgba(245, 158, 11, 0.12);
+    color: #f59e0b;
+    border: 1px solid rgba(245, 158, 11, 0.25);
+}
+
+.hbc-icon.security-trash-bg {
+    background: rgba(239, 68, 68, 0.12);
+    color: #ef4444;
+    border: 1px solid rgba(239, 68, 68, 0.25);
+}
+
+.hbc-icon.security-vault-bg {
+    background: color-mix(in srgb, var(--accent) 14%, transparent);
+    color: var(--accent);
+    border: 1px solid color-mix(in srgb, var(--accent) 25%, transparent);
+}
+
+.hbc-badge.security-shield {
+    color: var(--accent);
+    background: color-mix(in srgb, var(--accent) 12%, transparent);
+    border: 1px solid color-mix(in srgb, var(--accent) 25%, transparent);
+}
+
+.hbc-badge.security-lock {
+    color: #3b82f6;
+    background: rgba(59, 130, 246, 0.12);
+    border: 1px solid rgba(59, 130, 246, 0.25);
+}
+
+.hbc-badge.security-dns {
+    color: #a855f7;
+    background: rgba(168, 85, 247, 0.12);
+    border: 1px solid rgba(168, 85, 247, 0.25);
+}
+
+.hbc-badge.security-tools {
+    color: #f59e0b;
+    background: rgba(245, 158, 11, 0.12);
+    border: 1px solid rgba(245, 158, 11, 0.25);
+}
+
+.hbc-badge.security-trash {
+    color: #ef4444;
+    background: rgba(239, 68, 68, 0.12);
+    border: 1px solid rgba(239, 68, 68, 0.25);
+}
+
+.hbc-badge.security-vault {
+    color: var(--accent);
+    background: color-mix(in srgb, var(--accent) 12%, transparent);
+    border: 1px solid color-mix(in srgb, var(--accent) 25%, transparent);
+}
+
+/* ── 4-Tile Telemetry Dashboard Grid ── */
+.security-telemetry-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 16px;
+    width: 100%;
+}
+
+@media (max-width: 900px) {
+    .security-telemetry-grid {
+        grid-template-columns: repeat(2, 1fr);
+    }
+}
+
+.security-metric-tile {
+    background: #F1F3F5;
+    border: 1px solid rgba(0, 0, 0, 0.04);
+    border-radius: 18px;
+    padding: 16px;
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    transition: transform 0.2s cubic-bezier(0.16, 1, 0.3, 1), border-color 0.2s;
+}
+
+body[data-theme="dark"] .security-metric-tile {
+    background: #28282D;
+    border-color: rgba(255, 255, 255, 0.06);
+}
+
+.security-metric-tile:hover {
+    transform: translateY(-2px);
+    border-color: color-mix(in srgb, var(--accent) 30%, transparent);
+}
+
+.smt-icon {
+    width: 42px;
+    height: 42px;
+    border-radius: 14px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 17px;
+    flex-shrink: 0;
+}
+
+.smt-icon.red-bg {
+    background: rgba(239, 68, 68, 0.12);
+    color: #ef4444;
+    border: 1px solid rgba(239, 68, 68, 0.25);
+}
+
+.smt-icon.green-bg {
+    background: rgba(16, 185, 129, 0.12);
+    color: #10b981;
+    border: 1px solid rgba(16, 185, 129, 0.25);
+}
+
+.smt-icon.blue-bg {
+    background: rgba(59, 130, 246, 0.12);
+    color: #3b82f6;
+    border: 1px solid rgba(59, 130, 246, 0.25);
+}
+
+.smt-icon.amber-bg {
+    background: rgba(245, 158, 11, 0.12);
+    color: #f59e0b;
+    border: 1px solid rgba(245, 158, 11, 0.25);
+}
+
+.smt-data {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+}
+
+.smt-val {
+    font-family: 'Space Mono', 'JetBrains Mono', monospace;
+    font-size: 20px;
+    font-weight: 800;
+    color: var(--text);
+    line-height: 1.2;
+}
+
+.smt-label {
+    font-size: 11px;
+    color: var(--text-dim);
+    font-weight: 600;
+}
+
+/* ── DNS Choice Grid ── */
+.dns-choice-grid {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    width: 100%;
+}
+
+.dns-choice-grid .choice-item {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 12px 16px;
+    border-radius: 16px;
+    background: #F1F3F5;
+    border: 1px solid rgba(0, 0, 0, 0.04);
+    cursor: pointer;
+    transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+body[data-theme="dark"] .dns-choice-grid .choice-item {
+    background: #28282D;
+    border-color: rgba(255, 255, 255, 0.06);
+}
+
+.dns-choice-grid .choice-item:hover {
+    transform: translateY(-1px);
+    border-color: color-mix(in srgb, var(--accent) 30%, transparent);
+}
+
+.dns-choice-grid .choice-item.active {
+    border-color: var(--accent);
+    background: color-mix(in srgb, var(--accent) 8%, var(--card-bg));
+    box-shadow: 0 0 14px color-mix(in srgb, var(--accent) 18%, transparent);
+}
+
+.choice-item-left {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+}
+
+.choice-icon-wrap {
+    width: 36px;
+    height: 36px;
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 16px;
+    flex-shrink: 0;
+}
+
+.choice-icon-wrap.default-dns-bg {
+    background: color-mix(in srgb, var(--accent) 14%, transparent);
+    color: var(--accent);
+}
+
+.choice-icon-wrap.cf-dns-bg {
+    background: rgba(243, 128, 32, 0.14);
+    color: #f38020;
+}
+
+.choice-icon-wrap.google-dns-bg {
+    background: rgba(66, 133, 244, 0.14);
+    color: #4285f4;
+}
+
+.choice-icon-wrap.quad9-dns-bg {
+    background: rgba(168, 85, 247, 0.14);
+    color: #a855f7;
+}
+
+.choice-details {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+}
+
+.choice-title {
+    font-size: 13.5px;
+    font-weight: 700;
+    color: var(--text);
+}
+
+.choice-desc {
+    font-size: 11.5px;
+    color: var(--text-dim);
+}
+
+.choice-check {
+    width: 22px;
+    height: 22px;
+    border-radius: 50%;
+    background: transparent;
+    border: 2px solid var(--chrome-border);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 10px;
+    color: transparent;
+    transition: all 0.2s ease;
+}
+
+.dns-choice-grid .choice-item.active .choice-check {
+    background: var(--accent);
+    border-color: var(--accent);
+    color: #111111;
+}
+
+/* ── Vault Management Styling ── */
+.vault-management-container {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+    width: 100%;
+}
+
+.vault-search-toolbar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 14px;
+    flex-wrap: wrap;
+}
+
+.vault-search-pill {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    background: #F1F3F5;
+    border: 1px solid rgba(0, 0, 0, 0.05);
+    border-radius: 100px;
+    padding: 8px 16px;
+    flex: 1;
+    max-width: 380px;
+    min-width: 240px;
+}
+
+body[data-theme="dark"] .vault-search-pill {
+    background: #28282D;
+    border-color: rgba(255, 255, 255, 0.06);
+}
+
+.vault-search-pill i {
+    color: var(--text-dim);
+    font-size: 13px;
+}
+
+.vault-search-pill input {
+    background: transparent;
+    border: none;
+    outline: none;
+    color: var(--text);
+    font-size: 12.5px;
+    width: 100%;
+}
+
+.vault-grid-list {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+    gap: 14px;
+    max-height: 420px;
+    overflow-y: auto;
+    padding-right: 4px;
+}
+
 
 
