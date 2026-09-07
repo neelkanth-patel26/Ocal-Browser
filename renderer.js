@@ -980,6 +980,7 @@ function getTabIconHtml(tab, tintColor) {
     if (url.includes('security-warning.html') || url.startsWith('ocal://security-warning')) {
         return `<i class="fas fa-triangle-exclamation tab-favicon" style="color: #ef4444;"></i>`;
     }
+    const accentColor = tintColor || 'var(--accent)';
     if (tab.favicon) return `<img src="${tab.favicon}" class="tab-favicon">`;
     if (url.includes('suspended.html') || url.startsWith('ocal://suspended')) {
         try {
