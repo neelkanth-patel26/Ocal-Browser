@@ -9167,11 +9167,11 @@ body[data-theme="light"] .hbc-swatch.active {
 }
 
 .hbc-swatch[data-color="#15AC49"] .swatch-check,
-.hbc-swatch[data-color="#16A34A"] .swatch-check,
+.hbc-swatch[data-color="#D97706"] .swatch-check,
 .hbc-swatch[data-color="#09F0A0"] .swatch-check,
-.hbc-swatch[data-color="#CCFF00"] .swatch-check,
+.hbc-swatch[data-color="#FACC15"] .swatch-check,
 .hbc-swatch[data-dark-color="#09F0A0"] .swatch-check,
-.hbc-swatch[data-dark-color="#CCFF00"] .swatch-check {
+.hbc-swatch[data-dark-color="#FACC15"] .swatch-check {
     color: #0D0E11;
 }
 
