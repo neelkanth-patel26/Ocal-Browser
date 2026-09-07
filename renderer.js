@@ -700,9 +700,9 @@ function formatDisplayUrl(url) {
     if (display.includes('home.html') || display === 'ocal://home') return '';
     
     // Convert local file URL paths to clean ocal:// internal scheme URLs
-    if (display.includes('photo-editor.html') || (display.startsWith('file://') && display.includes('photo-editor'))) {
+    if (display.includes('photo-editor.html') || (display.startsWith('file://') && display.includes('photo-editor')) || display.startsWith('ocal://photo-editor') || display.startsWith('ocal://photo-view')) {
         const qIdx = display.indexOf('?');
-        return 'ocal://photo-editor' + (qIdx !== -1 ? display.substring(qIdx) : '');
+        return 'ocal://photo-view' + (qIdx !== -1 ? display.substring(qIdx) : '');
     }
     if (display.includes('doc-viewer.html') || (display.startsWith('file://') && display.includes('doc-viewer'))) {
         const qIdx = display.indexOf('?');
@@ -833,6 +833,17 @@ function formatDisplayUrl(url) {
         } catch(e) {}
         return 'ocal://certificate-viewer';
     }
+    if (url.includes('photo-editor.html') || url.startsWith('ocal://photo-view') || url.startsWith('ocal://photo-editor') || url.startsWith('ocal://image-viewer')) {
+        try {
+            const u = new URL(url.startsWith('file://') || url.startsWith('ocal://') ? url : 'http://' + url);
+            const fileParam = u.searchParams.get('file');
+            if (fileParam) {
+                const fileName = decodeURIComponent(fileParam.split('/').pop().split('\\').pop().split('?')[0]);
+                return `ocal://photo-view / ${fileName}`;
+            }
+        } catch(e) {}
+        return 'ocal://photo-view';
+    }
     if (url.includes('pdf-viewer.html') || url.startsWith('ocal://pdf-viewer') || url.startsWith('ocal://pdf')) {
         try {
             const u = new URL(url);
@@ -885,6 +896,17 @@ function formatDisplayUrl(url) {
 function getSimplifiedTitle(title, url) {
     if (!title) return 'New Tab';
     if (!url || url.includes('home.html') || url.startsWith('ocal://home')) return 'Home';
+    if (url.includes('photo-editor.html') || url.startsWith('ocal://photo-view') || url.startsWith('ocal://photo-editor') || url.startsWith('ocal://image-viewer')) {
+        try {
+            const u = new URL(url);
+            const fileParam = u.searchParams.get('file');
+            if (fileParam) {
+                const fileName = decodeURIComponent(fileParam.split('/').pop().split('\\').pop().split('?')[0]);
+                return fileName || 'Photo View';
+            }
+        } catch(e) {}
+        return 'Photo View';
+    }
     if (url.includes('ai-sidebar.html') || url.startsWith('ocal://ai-sidebar') || url.startsWith('ocal://ai')) return 'Ocal AI';
     if (url.includes('site-settings.html') || url.startsWith('ocal://site-settings')) {
         try {
