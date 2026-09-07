@@ -2488,6 +2488,53 @@ window.handleThemeToggle = function(checked) {
     applyTheme(theme);
 };
 
+function hsvToRgb(h, s, v) {
+    let f = (n, k = (n + h / 60) % 6) => v - v * s * Math.max(Math.min(k, 4 - k, 1), 0);
+    return {
+        r: Math.round(f(5) * 255),
+        g: Math.round(f(3) * 255),
+        b: Math.round(f(1) * 255)
+    };
+}
+
+function rgbToHsv(r, g, b) {
+    r /= 255; g /= 255; b /= 255;
+    let max = Math.max(r, g, b), min = Math.min(r, g, b);
+    let h = 0, s = 0, v = max;
+    let d = max - min;
+    s = max === 0 ? 0 : d / max;
+    if (max !== min) {
+        switch (max) {
+            case r: h = (g - b) / d + (g < b ? 6 : 0); break;
+            case g: h = (b - r) / d + 2; break;
+            case b: h = (r - g) / d + 4; break;
+        }
+        h /= 6;
+    }
+    return { h: Math.round(h * 360), s, v };
+}
+
+function rgbToHex(r, g, b) {
+    const toH = c => {
+        const h = Math.max(0, Math.min(255, Math.round(c))).toString(16);
+        return h.length === 1 ? '0' + h : h;
+    };
+    return `#${toH(r)}${toH(g)}${toH(b)}`.toUpperCase();
+}
+
+function hexToRgb(hex) {
+    if (!hex) return { r: 139, g: 92, b: 246 };
+    let c = hex.replace('#', '');
+    if (c.length === 3) c = c.split('').map(x => x + x).join('');
+    const num = parseInt(c, 16);
+    if (isNaN(num)) return { r: 139, g: 92, b: 246 };
+    return {
+        r: (num >> 16) & 255,
+        g: (num >> 8) & 255,
+        b: num & 255
+    };
+}
+
 function renderHomepageSettings(s) {
     if (!s) return;
 
@@ -2521,13 +2568,60 @@ function renderHomepageSettings(s) {
 
     const statAccent = document.getElementById('homepage-stat-accent');
     const customSwatch = document.getElementById('custom-accent-swatch');
-    const customPicker = document.getElementById('custom-accent-color-picker');
+    const customPopover = document.getElementById('custom-color-popover');
+    const ccpCloseBtn = document.getElementById('ccp-close-btn');
+    const satArea = document.getElementById('ccp-sat-area');
+    const satPointer = document.getElementById('ccp-sat-pointer');
+    const hueSlider = document.getElementById('ccp-hue-slider');
+    const previewSwatch = document.getElementById('ccp-preview-swatch');
+    const eyedropperBtn = document.getElementById('ccp-eyedropper-btn');
+    const hexInput = document.getElementById('ccp-hex-input');
+    const rInput = document.getElementById('ccp-r-input');
+    const gInput = document.getElementById('ccp-g-input');
+    const bInput = document.getElementById('ccp-b-input');
     const customBadge = document.getElementById('custom-color-badge');
     const customText = document.getElementById('custom-color-text');
     const customDot = document.getElementById('custom-color-dot');
     const presetSwatches = document.querySelectorAll('.hbc-swatch:not(.custom-swatch)');
+    const paletteChips = document.querySelectorAll('.ccp-chip');
 
+    let currentHsv = { h: 270, s: 0.63, v: 0.96 };
     let matchedPreset = false;
+
+    function syncStudioUI(source = 'hsv') {
+        const rgb = hsvToRgb(currentHsv.h, currentHsv.s, currentHsv.v);
+        const hex = rgbToHex(rgb.r, rgb.g, rgb.b);
+
+        if (satArea) satArea.style.backgroundColor = `hsl(${currentHsv.h}, 100%, 50%)`;
+        if (satPointer) {
+            satPointer.style.left = `${currentHsv.s * 100}%`;
+            satPointer.style.top = `${(1 - currentHsv.v) * 100}%`;
+        }
+        if (hueSlider && source !== 'slider') hueSlider.value = currentHsv.h;
+        if (previewSwatch) previewSwatch.style.setProperty('--preview-color', hex);
+        if (customSwatch) customSwatch.style.setProperty('--swatch-color', hex);
+
+        if (hexInput && source !== 'hex') hexInput.value = hex.replace('#', '');
+        if (rInput && source !== 'rgb') rInput.value = rgb.r;
+        if (gInput && source !== 'rgb') gInput.value = rgb.g;
+        if (bInput && source !== 'rgb') bInput.value = rgb.b;
+
+        if (customBadge) customBadge.style.display = 'inline-flex';
+        if (customText) customText.innerText = hex;
+        if (customDot) customDot.style.background = hex;
+        if (statAccent) statAccent.innerText = `Custom (${hex})`;
+
+        if (window.electronAPI && window.electronAPI.updateSetting) {
+            window.electronAPI.updateSetting('accentColor', hex);
+        }
+        applyAccent(hex);
+    }
+
+    function setStudioFromHex(hex) {
+        const rgb = hexToRgb(hex);
+        currentHsv = rgbToHsv(rgb.r, rgb.g, rgb.b);
+        syncStudioUI('hex');
+    }
 
     presetSwatches.forEach(sw => {
         const lightColor = (sw.dataset.color || '').toUpperCase();
@@ -2545,6 +2639,7 @@ function renderHomepageSettings(s) {
             presetSwatches.forEach(s2 => s2.classList.toggle('active', s2 === sw));
             if (customSwatch) customSwatch.classList.remove('active');
             if (customBadge) customBadge.style.display = 'none';
+            if (customPopover) customPopover.style.display = 'none';
             
             if (window.electronAPI && window.electronAPI.updateSetting) {
                 window.electronAPI.updateSetting('accentColor', chosenColor);
@@ -2554,40 +2649,129 @@ function renderHomepageSettings(s) {
         };
     });
 
-    // Custom Color Handling
-    if (!matchedPreset && customSwatch && customPicker) {
+    // Custom Color Handling Initialization
+    if (!matchedPreset && customSwatch) {
         customSwatch.classList.add('active');
         customSwatch.style.setProperty('--swatch-color', currentAccent);
-        customPicker.value = currentAccent.length === 7 ? currentAccent : '#8B5CF6';
-        if (customBadge) customBadge.style.display = 'inline-flex';
-        if (customText) customText.innerText = currentAccent;
-        if (customDot) customDot.style.background = currentAccent;
-        if (statAccent) statAccent.innerText = `Custom (${currentAccent})`;
+        setStudioFromHex(currentAccent);
     } else if (customBadge) {
         customBadge.style.display = 'none';
     }
 
-    if (customPicker && customSwatch) {
-        const handleCustomColorChange = (hex) => {
-            const upper = hex.toUpperCase();
-            customSwatch.style.setProperty('--swatch-color', upper);
+    // Custom Swatch Trigger & Popover Toggle
+    if (customSwatch && customPopover) {
+        customSwatch.onclick = () => {
             presetSwatches.forEach(s2 => s2.classList.remove('active'));
             customSwatch.classList.add('active');
-            
-            if (customBadge) customBadge.style.display = 'inline-flex';
-            if (customText) customText.innerText = upper;
-            if (customDot) customDot.style.background = upper;
-            if (statAccent) statAccent.innerText = `Custom (${upper})`;
-
-            if (window.electronAPI && window.electronAPI.updateSetting) {
-                window.electronAPI.updateSetting('accentColor', upper);
+            const isHidden = (customPopover.style.display === 'none' || !customPopover.style.display);
+            customPopover.style.display = isHidden ? 'flex' : 'none';
+            if (isHidden) {
+                const activeCustom = localStorage.getItem('ocal-settings-accent') || '#8B5CF6';
+                setStudioFromHex(activeCustom);
             }
-            applyAccent(upper);
+        };
+    }
+
+    if (ccpCloseBtn && customPopover) {
+        ccpCloseBtn.onclick = (e) => {
+            e.stopPropagation();
+            customPopover.style.display = 'none';
+        };
+    }
+
+    // 2D Saturation / Value Canvas Dragging
+    if (satArea) {
+        const handleSatMove = (e) => {
+            const rect = satArea.getBoundingClientRect();
+            const clientX = e.touches ? e.touches[0].clientX : e.clientX;
+            const clientY = e.touches ? e.touches[0].clientY : e.clientY;
+            let x = (clientX - rect.left) / rect.width;
+            let y = (clientY - rect.top) / rect.height;
+            x = Math.max(0, Math.min(1, x));
+            y = Math.max(0, Math.min(1, y));
+            currentHsv.s = x;
+            currentHsv.v = 1 - y;
+            syncStudioUI('sat');
         };
 
-        customPicker.oninput = (e) => handleCustomColorChange(e.target.value);
-        customPicker.onchange = (e) => handleCustomColorChange(e.target.value);
+        let isDragging = false;
+        satArea.onmousedown = (e) => {
+            isDragging = true;
+            handleSatMove(e);
+            const onMouseMove = (ev) => { if (isDragging) handleSatMove(ev); };
+            const onMouseUp = () => {
+                isDragging = false;
+                window.removeEventListener('mousemove', onMouseMove);
+                window.removeEventListener('mouseup', onMouseUp);
+            };
+            window.addEventListener('mousemove', onMouseMove);
+            window.addEventListener('mouseup', onMouseUp);
+        };
+
+        satArea.ontouchstart = (e) => handleSatMove(e);
+        satArea.ontouchmove = (e) => {
+            e.preventDefault();
+            handleSatMove(e);
+        };
     }
+
+    // Hue Slider
+    if (hueSlider) {
+        hueSlider.oninput = (e) => {
+            currentHsv.h = parseInt(e.target.value, 10);
+            syncStudioUI('slider');
+        };
+    }
+
+    // Eyedropper API
+    if (eyedropperBtn) {
+        eyedropperBtn.onclick = async () => {
+            if (window.EyeDropper) {
+                try {
+                    const eyeDropper = new window.EyeDropper();
+                    const result = await eyeDropper.open();
+                    if (result && result.sRGBHex) {
+                        setStudioFromHex(result.sRGBHex);
+                    }
+                } catch (err) {
+                    console.log('EyeDropper cancelled or dismissed');
+                }
+            } else {
+                const hexVal = prompt('Enter color HEX (e.g. #09F0A0):', hexInput ? '#' + hexInput.value : '#8B5CF6');
+                if (hexVal) setStudioFromHex(hexVal);
+            }
+        };
+    }
+
+    // Quick Palette Chips
+    paletteChips.forEach(chip => {
+        chip.onclick = () => {
+            const chipColor = chip.dataset.color;
+            if (chipColor) setStudioFromHex(chipColor);
+        };
+    });
+
+    // Inputs: HEX and RGB
+    if (hexInput) {
+        hexInput.oninput = (e) => {
+            let val = e.target.value.replace(/[^0-9A-Fa-f]/g, '');
+            if (val.length === 3 || val.length === 6) {
+                setStudioFromHex('#' + val);
+            }
+        };
+    }
+
+    const handleRgbInput = () => {
+        const r = Math.max(0, Math.min(255, parseInt(rInput.value, 10) || 0));
+        const g = Math.max(0, Math.min(255, parseInt(gInput.value, 10) || 0));
+        const b = Math.max(0, Math.min(255, parseInt(bInput.value, 10) || 0));
+        currentHsv = rgbToHsv(r, g, b);
+        syncStudioUI('rgb');
+    };
+
+    if (rInput) rInput.oninput = handleRgbInput;
+    if (gInput) gInput.oninput = handleRgbInput;
+    if (bInput) bInput.oninput = handleRgbInput;
 
     // Compact mode
     const compactCb = document.getElementById('compact-toggle-cb');
