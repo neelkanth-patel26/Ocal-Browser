@@ -427,7 +427,7 @@
 
                         <!-- Quick-Fill Preset Chips -->
                         <div class="custom-presets-wrap">
-                            <span class="custom-presets-label"><i class="fas fa-sparkles" style="color:var(--accent);"></i> Popular Custom Presets:</span>
+                            <span class="custom-presets-label"><i class="fas fa-wand-magic-sparkles" style="color:var(--accent);"></i> Popular Custom Presets:</span>
                             <button class="custom-chip-btn" onclick="setCustomPreset('https://kagi.com/search?q=%s', 'Kagi')"><i class="fas fa-magnifying-glass"></i> Kagi</button>
                             <button class="custom-chip-btn" onclick="setCustomPreset('https://searx.be/search?q=%s', 'SearXNG')"><i class="fas fa-shield"></i> SearXNG</button>
                             <button class="custom-chip-btn" onclick="setCustomPreset('https://www.ecosia.org/search?q=%s', 'Ecosia')"><i class="fas fa-tree"></i> Ecosia</button>
@@ -1299,7 +1299,7 @@
 
                             <!-- Popular One-Click Suggestions Chips -->
                             <div class="ext-popular-chips-wrap">
-                                <span class="ext-chips-label"><i class="fas fa-sparkles" style="color:var(--accent);"></i> Popular Addons:</span>
+                                <span class="ext-chips-label"><i class="fas fa-wand-magic-sparkles" style="color:var(--accent);"></i> Popular Addons:</span>
                                 <button class="ext-chip-btn" onclick="installPopularExt('cjpalhdlnbpafiamejdnhcphjbkeiagm')"><i class="fas fa-shield-alt"></i> uBlock Origin</button>
                                 <button class="ext-chip-btn" onclick="installPopularExt('eimadpbcbfnmbkopoojfekhnkhdbieeh')"><i class="fas fa-moon"></i> Dark Reader</button>
                                 <button class="ext-chip-btn" onclick="installPopularExt('nngceckbapebfimnlniiiahkandclblb')"><i class="fas fa-key"></i> Bitwarden</button>
@@ -1739,7 +1739,7 @@
                         <div class="ai-preview-pill-wrap">
                             <div class="ai-preview-pill">
                                 <div class="ai-preview-icon" id="ai-preview-icon">
-                                    <i class="fas fa-sparkles"></i>
+                                    <i class="fas fa-wand-magic-sparkles"></i>
                                 </div>
                                 <input type="text" id="ai-preview-input" placeholder="Ask Ocal AI anything (e.g. Summarize active page, explain quantum computing)..." autocomplete="off" spellcheck="false" onkeydown="if(event.key==='Enter') testAIPrompt();">
                                 <button class="ai-preview-send-btn" title="Send to Ocal AI" onclick="testAIPrompt();">
@@ -1790,7 +1790,9 @@
                                 <div class="ai-provider-card" data-value="gemini" onclick="selectAIEngine('gemini')">
                                     <div class="apc-top">
                                         <div class="apc-icon gemini">
-                                            <i class="fas fa-sparkles"></i>
+                                            <svg width="22" height="22" viewBox="0 0 24 24" fill="currentColor">
+                                                <path d="M12 2C12 7.52 7.52 12 2 12C7.52 12 12 16.48 12 22C12 16.48 16.48 12 22 12C16.48 12 12 7.52 12 2Z"/>
+                                            </svg>
                                         </div>
                                         <div class="apc-radio">
                                             <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round">
