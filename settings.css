@@ -9034,6 +9034,13 @@ body[data-theme="dark"] .homepage-bento-card {
     border-radius: 100px;
     letter-spacing: 0.5px;
     text-transform: uppercase;
+    width: auto;
+    max-width: fit-content;
+    white-space: nowrap;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
 }
 
 .hbc-badge.visual {
@@ -9054,10 +9061,13 @@ body[data-theme="dark"] .homepage-bento-card {
     border: 1px solid rgba(168, 85, 247, 0.25);
 }
 
-.hbc-badge.sidebar {
+.hbc-badge.sidebar,
+.hbc-badge.sidebar-dock {
     color: #10b981;
     background: rgba(16, 185, 129, 0.12);
     border: 1px solid rgba(16, 185, 129, 0.25);
+    width: auto;
+    max-width: fit-content;
 }
 
 .hbc-badge.weather {
