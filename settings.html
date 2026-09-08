@@ -1720,7 +1720,12 @@
                                         <div class="hbc-tagline">Deep network packet scrubbing, tracker neutralization & data savings</div>
                                     </div>
                                 </div>
-                                <span class="hbc-badge security-shield" id="protection-badge"><i class="fas fa-circle-check"></i> MAXIMUM PROTECTION</span>
+                                <div style="display: flex; align-items: center; gap: 8px;">
+                                    <button class="btn btn-secondary btn-sm" onclick="resetShieldStats()" title="Reset Telemetry Statistics" style="padding: 5px 12px; font-size: 11px; border-radius: 8px; cursor: pointer; border: 1px solid var(--border); background: var(--bg-card); color: var(--text-muted); display: inline-flex; align-items: center; gap: 5px;">
+                                        <i class="fas fa-rotate-left"></i> Reset Stats
+                                    </button>
+                                    <span class="hbc-badge security-shield" id="protection-badge"><i class="fas fa-circle-check"></i> MAXIMUM PROTECTION</span>
+                                </div>
                             </div>
 
                             <div class="security-telemetry-grid">

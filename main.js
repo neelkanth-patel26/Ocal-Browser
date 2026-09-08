@@ -478,6 +478,11 @@ if (!userSettings.shieldStats.global) {
         dataSaved: userSettings.shieldStats.dataSaved || 0
     };
 }
+if (userSettings.shieldStats.global.ads > 5000) {
+    // Reset corrupted/runaway legacy counter from previous ERR_ABORTED bug
+    userSettings.shieldStats.global = { ads: 0, trackers: 0, dataSaved: 0 };
+    userSettings.shieldStats.history = [];
+}
 if (!userSettings.shieldStats.history) userSettings.shieldStats.history = [];
 
 // Non-persistent page stats: Map<webContentsId, { ads, trackers }>
@@ -889,22 +894,6 @@ function applyShieldSettings() {
             callback({});
         };
 
-        const masterOnErrorOccurred = (details) => {
-            if (details.error === 'net::ERR_BLOCKED_BY_CLIENT' || details.error === 'net::ERR_ABORTED') {
-                const url = details.url ? details.url.toLowerCase() : '';
-                const wcId = details.webContentsId;
-                if (!wcId) return;
-
-                const trackerKeywords = [
-                    'pixel', 'tracker', 'telemetry', 'analytics', 'metrics', 'collect', 'collectors',
-                    'tag-manager', 'googletagmanager', 'doubleclick', 'scorecardresearch',
-                    'quantserve', 'taboola', 'outbrain', 'beacon', 'stat-collector', 'log-event'
-                ];
-                const isTracker = trackerKeywords.some(kw => url.includes(kw));
-                updateTabShieldStats(wcId, isTracker ? 'trackers' : 'ads');
-            }
-        };
-
         const masterOnBeforeSendHeaders = (details, callback) => {
             const headers = details.requestHeaders || {};
             headers['Accept-Language'] = 'en-US,en;q=0.9';
@@ -933,7 +922,6 @@ function applyShieldSettings() {
 
         [ses, sesGoogle].forEach(s => {
             s.webRequest.onBeforeRequest({ urls: ['*://*/*'] }, masterOnBeforeRequest);
-            s.webRequest.onErrorOccurred({ urls: ['*://*/*'] }, masterOnErrorOccurred);
             s.webRequest.onBeforeSendHeaders({ urls: ['*://*/*'] }, masterOnBeforeSendHeaders);
             s.webRequest.onHeadersReceived({ urls: ['*://*/*'] }, masterOnHeadersReceived);
         });
@@ -6566,6 +6554,18 @@ ipcMain.handle('get-shield-stats', (e, tabId) => {
         sessionStartTime,
         isYouTube
     };
+});
+
+ipcMain.handle('reset-shield-stats', () => {
+    userSettings.shieldStats = {
+        global: { ads: 0, trackers: 0, dataSaved: 0 },
+        sessionStartTime: Date.now(),
+        history: [{ t: Date.now(), v: 0 }]
+    };
+    tabShieldStats.clear();
+    saveSettings(userSettings);
+    broadcastShieldStats();
+    return { success: true, stats: userSettings.shieldStats };
 });
 
 ipcMain.on('pip-control', (e, { action, value }) => {
