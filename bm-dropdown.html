@@ -4,26 +4,43 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com https://cdnjs.cloudflare.com https://cdn.jsdelivr.net; font-src 'self' https://fonts.gstatic.com https://cdnjs.cloudflare.com https://cdn.jsdelivr.net; img-src 'self' data: https:;">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="assets/fontawesome/css/all.min.css">
+    <script src="color-harmonizer.js"></script>
+    <script>
+        (function () {
+            var t = localStorage.getItem('ocal-settings-theme') || 'dark';
+            document.documentElement.setAttribute('data-theme', t);
+            var a = localStorage.getItem('ocal-settings-accent');
+            if (window.OcalColorHarmonizer) {
+                window.OcalColorHarmonizer.applyHarmonizedTheme(a, t);
+            }
+        })();
+    </script>
     <style>
-        /* ── Design Tokens ─────────────────────────── */
+        /* ── Design Tokens matching Home Page ─────────────────────────── */
         :root {
-            --accent: #09f0a0;
-            --accent-dim: rgba(9, 240, 160, 0.12);
-            --accent-glow: rgba(9, 240, 160, 0.25);
+            --accent: #15AC49;
+            --accent-dim: rgba(21, 172, 73, 0.12);
+            --accent-glow: rgba(21, 172, 73, 0.25);
+            --accent-border: rgba(21, 172, 73, 0.3);
+            --accent-text: #FFFFFF;
             --bg: #222226;
             --bg-surface: #28282D;
             --border: rgba(255, 255, 255, 0.08);
-            --border-hover: rgba(255, 255, 255, 0.14);
+            --border-hover: rgba(255, 255, 255, 0.16);
             --text-main: #F4F4F5;
             --text-dim: #A1A1AA;
             --text-muted: #71717A;
-            --radius: 12px;
-            --font: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, sans-serif;
+            --radius: 20px;
+            --font-main: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, sans-serif;
+            --font-mono: 'Space Mono', monospace;
         }
 
         /* ── Light Theme ─────────────────────────── */
-        body[data-theme="light"] {
+        body[data-theme="light"], html[data-theme="light"] {
             --bg: #FFFFFF;
             --bg-surface: #F4F4F6;
             --border: rgba(0, 0, 0, 0.08);
@@ -33,57 +50,24 @@
             --text-muted: #94A3B8;
         }
 
-        body[data-theme="light"] .dropdown-container {
-            box-shadow: none !important;
-        }
-
-        body[data-theme="light"] .favicon-wrap {
-            background: rgba(0, 0, 0, 0.04) !important;
-            border-color: rgba(0, 0, 0, 0.07) !important;
-        }
-
-        body[data-theme="light"] .bm-domain {
-            color: #94A3B8;
-        }
-
-        body[data-theme="light"] .dropdown-header {
-            border-bottom-color: rgba(0, 0, 0, 0.06) !important;
-        }
-
-        body[data-theme="light"] .menu-option:hover {
-            background: var(--accent-dim) !important;
-        }
-
-        body[data-theme="light"] .menu-option:hover .bm-title {
-            color: var(--accent) !important;
-        }
-
-        body[data-theme="light"] .menu-option:hover .bm-domain {
-            color: #475569 !important;
-        }
-
-        body[data-theme="light"] .menu-option:hover .nav-arrow {
-            color: var(--accent) !important;
-        }
-
-        /* ── Base ─────────────────────────── */
         * { margin: 0; padding: 0; box-sizing: border-box; }
 
         html { overflow: hidden !important; }
 
         body {
             margin: 0;
-            padding: 10px;
-            font-family: var(--font);
+            padding: 8px;
+            font-family: var(--font-main);
             background: transparent;
             overflow: hidden !important;
+            -webkit-font-smoothing: antialiased;
         }
 
         /* ── Dropdown Container ─────────────────────────── */
         .dropdown-container {
             width: fit-content;
-            min-width: 220px;
-            max-width: 320px;
+            min-width: 240px;
+            max-width: 340px;
             max-height: 420px;
             background: var(--bg);
             border: 1px solid var(--border);
@@ -92,9 +76,13 @@
             overflow-x: hidden;
             display: flex;
             flex-direction: column;
-            padding: 5px;
+            padding: 6px;
             box-shadow: none !important;
-            animation: containerIn 0.18s cubic-bezier(0.16, 1, 0.3, 1);
+            animation: containerIn 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+
+        body[data-theme="light"] .dropdown-container {
+            box-shadow: none !important;
         }
 
         @keyframes containerIn {
@@ -106,7 +94,7 @@
         .dropdown-header {
             display: flex;
             align-items: center;
-            gap: 7px;
+            gap: 8px;
             padding: 6px 10px 8px;
             border-bottom: 1px solid var(--border);
             margin-bottom: 4px;
@@ -114,37 +102,39 @@
         }
 
         .header-icon-wrap {
-            width: 20px;
-            height: 20px;
+            width: 22px;
+            height: 22px;
             border-radius: 6px;
             background: var(--accent-dim);
-            border: 1px solid color-mix(in srgb, var(--accent) 30%, transparent);
+            border: 1px solid var(--accent-border);
             display: flex;
             align-items: center;
             justify-content: center;
         }
 
         .header-icon {
-            font-size: 9px;
+            font-size: 10px;
             color: var(--accent) !important;
         }
 
         .header-label {
             font-size: 10.5px;
             font-weight: 800;
-            letter-spacing: 0.5px;
+            letter-spacing: 0.6px;
             text-transform: uppercase;
             color: var(--text-main);
+            font-family: var(--font-main);
         }
 
         .header-count {
             margin-left: auto;
-            font-size: 9.5px;
+            font-size: 10px;
             font-weight: 700;
-            color: var(--text-muted);
-            background: var(--bg-surface);
-            border: 1px solid var(--border);
-            padding: 1px 6px;
+            font-family: var(--font-mono);
+            color: var(--accent);
+            background: var(--accent-dim);
+            border: 1px solid var(--accent-border);
+            padding: 1px 7px;
             border-radius: 100px;
         }
 
@@ -152,16 +142,17 @@
         .menu-option {
             display: flex;
             align-items: center;
-            gap: 8px;
-            padding: 7px 8px;
-            border-radius: 8px;
+            gap: 10px;
+            padding: 8px 10px;
+            border-radius: 12px;
             cursor: pointer;
             color: var(--text-main);
-            font-size: 12px;
+            font-size: 12.5px;
             font-weight: 600;
-            transition: all 0.15s cubic-bezier(0.16, 1, 0.3, 1);
+            transition: all 0.18s cubic-bezier(0.16, 1, 0.3, 1);
             position: relative;
             animation: itemSlideIn 0.2s cubic-bezier(0.16, 1, 0.3, 1) both;
+            border: 1px solid transparent;
         }
 
         @keyframes itemSlideIn {
@@ -171,7 +162,8 @@
 
         .menu-option:hover {
             background: var(--accent-dim);
-            border-radius: 8px;
+            border-color: var(--accent-border);
+            transform: translateX(2px);
         }
 
         .menu-option:hover .bm-title {
@@ -184,8 +176,8 @@
 
         /* ── Favicon Badge ─────────────────────────── */
         .favicon-wrap {
-            width: 26px;
-            height: 26px;
+            width: 28px;
+            height: 28px;
             border-radius: 8px;
             background: var(--bg-surface);
             border: 1px solid var(--border);
@@ -193,13 +185,14 @@
             align-items: center;
             justify-content: center;
             flex-shrink: 0;
-            transition: all 0.15s ease;
+            transition: all 0.18s ease;
             overflow: hidden;
         }
 
         .menu-option:hover .favicon-wrap {
-            background: var(--accent-dim);
-            border-color: color-mix(in srgb, var(--accent) 40%, transparent);
+            background: var(--bg);
+            border-color: var(--accent);
+            box-shadow: 0 0 8px var(--accent-glow);
         }
 
         .favicon-wrap img {
@@ -237,7 +230,7 @@
             line-height: 1.3;
             font-weight: 700;
             color: var(--text-main);
-            font-size: 12px;
+            font-size: 12.5px;
             transition: color 0.15s ease;
         }
 
@@ -247,6 +240,7 @@
             overflow: hidden;
             text-overflow: ellipsis;
             white-space: nowrap;
+            font-family: var(--font-mono);
             font-weight: 500;
             transition: color 0.15s ease;
         }
@@ -261,7 +255,7 @@
             color: var(--text-muted);
             opacity: 0;
             transform: translateX(-4px);
-            transition: all 0.15s ease;
+            transition: all 0.18s ease;
             flex-shrink: 0;
         }
 
@@ -273,21 +267,21 @@
 
         /* ── Empty State ─────────────────────────── */
         .empty-state {
-            padding: 20px 16px;
+            padding: 24px 16px;
             text-align: center;
             display: flex;
             flex-direction: column;
             align-items: center;
-            gap: 8px;
+            gap: 10px;
             animation: itemSlideIn 0.25s cubic-bezier(0.16, 1, 0.3, 1) both;
         }
 
         .empty-icon-wrap {
-            width: 38px;
-            height: 38px;
-            border-radius: 11px;
-            background: var(--bg-surface);
-            border: 1px solid var(--border);
+            width: 42px;
+            height: 42px;
+            border-radius: 12px;
+            background: var(--accent-dim);
+            border: 1px solid var(--accent-border);
             display: flex;
             align-items: center;
             justify-content: center;
@@ -295,12 +289,12 @@
         }
 
         .empty-state i {
-            font-size: 16px;
-            color: var(--text-muted);
+            font-size: 18px;
+            color: var(--accent);
         }
 
         .empty-state .empty-title {
-            font-size: 12.5px;
+            font-size: 13px;
             font-weight: 800;
             color: var(--text-main);
         }
@@ -316,11 +310,12 @@
             display: inline-block;
             background: var(--bg-surface);
             border: 1px solid var(--border);
-            border-radius: 5px;
+            border-radius: 6px;
             padding: 1px 6px;
             font-size: 10px;
             font-weight: 700;
-            color: var(--text-dim);
+            font-family: var(--font-mono);
+            color: var(--accent);
         }
 
         /* ── Scrollbar ─────────────────────────── */
@@ -338,7 +333,17 @@
         }
     </style>
 </head>
-<body>
+<body data-theme="dark">
+    <script>
+        (function () {
+            const t = localStorage.getItem('ocal-settings-theme') || 'dark';
+            document.body.setAttribute('data-theme', t);
+            var a = localStorage.getItem('ocal-settings-accent');
+            if (window.OcalColorHarmonizer) {
+                window.OcalColorHarmonizer.applyHarmonizedTheme(a, t);
+            }
+        })();
+    </script>
     <div class="dropdown-container" id="menu-container"></div>
     <script src="bm-dropdown.js"></script>
 </body>

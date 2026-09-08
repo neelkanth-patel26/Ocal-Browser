@@ -4,44 +4,51 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Volume Booster</title>
+    <!-- ANTI-FLASH & COLOR HARMONIZER -->
+    <script src="color-harmonizer.js"></script>
+    <script>
+        (function () {
+            var t = localStorage.getItem('ocal-settings-theme') || 'dark';
+            document.documentElement.setAttribute('data-theme', t);
+            var a = localStorage.getItem('ocal-settings-accent');
+            if (window.OcalColorHarmonizer) {
+                window.OcalColorHarmonizer.applyHarmonizedTheme(a, t);
+            }
+        })();
+    </script>
     <link rel="stylesheet" href="assets/fontawesome/css/all.min.css">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
     <style>
         :root {
             --accent: #15AC49;
             --accent-glow: rgba(21, 172, 73, 0.25);
             --accent-dim: rgba(21, 172, 73, 0.12);
-            --bg-glass: #222226;
-            --border-glass: rgba(255, 255, 255, 0.08);
-            --card-bg: #28282D;
-            --card-border: rgba(255, 255, 255, 0.08);
-            --card-hover-bg: #2E2E33;
-            --text-primary: #F4F4F5;
-            --text-secondary: #A1A1AA;
-            --radius: 18px;
-            --font-main: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, sans-serif;
-        }
-
-        body[data-theme="light"], body {
+            --accent-text: #FFFFFF;
             --bg-glass: #FFFFFF;
             --border-glass: rgba(0, 0, 0, 0.08);
-            --card-bg: #F8FAFC;
+            --card-bg: #F4F4F6;
             --card-border: rgba(0, 0, 0, 0.06);
-            --card-hover-bg: #F1F5F9;
-            --text-primary: #0F172A;
-            --text-secondary: #64748B;
+            --card-hover-bg: #EAEBED;
+            --text-primary: #111111;
+            --text-secondary: #555860;
+            --text-muted: #7E8492;
+            --font-main: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, sans-serif;
+            --font-mono: 'Space Mono', monospace;
+            --radius: 20px;
         }
 
-        body[data-theme="dark"] {
-            --bg-glass: #222226;
+        [data-theme="dark"], body[data-theme="dark"] {
+            --bg-glass: #16181D;
             --border-glass: rgba(255, 255, 255, 0.08);
-            --card-bg: #28282D;
-            --card-border: rgba(255, 255, 255, 0.08);
-            --card-hover-bg: #2E2E33;
-            --text-primary: #F4F4F5;
-            --text-secondary: #A1A1AA;
+            --card-bg: #1F222A;
+            --card-border: rgba(255, 255, 255, 0.06);
+            --card-hover-bg: #272B35;
+            --text-primary: #FFFFFF;
+            --text-secondary: #9CA3AF;
+            --text-muted: #6B7280;
+            color-scheme: dark;
         }
 
         * {
@@ -61,7 +68,7 @@
             display: flex;
             align-items: flex-start;
             justify-content: flex-start;
-            padding: 8px;
+            padding: 6px;
             -webkit-font-smoothing: antialiased;
         }
 
@@ -76,16 +83,18 @@
             position: relative;
             background: var(--bg-glass);
             border: 1px solid var(--border-glass);
-            padding: 16px;
+            padding: 14px;
             display: flex;
             flex-direction: column;
-            gap: 14px;
-            width: 290px;
+            gap: 12px;
+            width: 270px;
             z-index: 2;
             opacity: 1;
-            transform: none;
-            pointer-events: all;
             border-radius: var(--radius);
+            box-shadow: none !important;
+        }
+
+        [data-theme="dark"] .volume-boost-card {
             box-shadow: none !important;
         }
 
@@ -94,19 +103,19 @@
             display: flex;
             align-items: center;
             justify-content: space-between;
-            padding-bottom: 10px;
+            padding-bottom: 8px;
             border-bottom: 1px solid var(--border-glass);
         }
 
         .brand-box {
             display: flex;
             align-items: center;
-            gap: 10px;
+            gap: 9px;
         }
 
         .vb-icon-badge {
-            width: 32px;
-            height: 32px;
+            width: 30px;
+            height: 30px;
             background: var(--accent-dim);
             border: 1px solid var(--accent);
             border-radius: 10px;
@@ -115,13 +124,12 @@
             justify-content: center;
             color: var(--accent);
             font-size: 13px;
-            transition: all 0.2s ease;
         }
 
         .vb-title {
             font-size: 12px;
             font-weight: 800;
-            letter-spacing: 0.6px;
+            letter-spacing: 0.5px;
             text-transform: uppercase;
             color: var(--text-primary);
         }
@@ -133,8 +141,8 @@
         }
 
         .header-btn {
-            width: 28px;
-            height: 28px;
+            width: 26px;
+            height: 26px;
             border-radius: 50%;
             background: var(--card-bg);
             border: 1px solid var(--card-border);
@@ -145,20 +153,21 @@
             align-items: center;
             justify-content: center;
             transition: all 0.2s ease;
+            outline: none;
         }
 
         .header-btn:hover {
             background: var(--accent-dim);
             color: var(--accent);
             border-color: var(--accent);
-            transform: scale(1.05);
+            transform: scale(1.08);
         }
 
         /* Display Dashboard */
         .vb-display {
             background: var(--card-bg);
             border: 1px solid var(--card-border);
-            padding: 14px 16px;
+            padding: 12px 14px;
             border-radius: 14px;
             display: flex;
             align-items: center;
@@ -166,24 +175,21 @@
         }
 
         .vb-percentage {
-            font-size: 32px;
-            font-weight: 800;
-            color: var(--text-primary);
-            letter-spacing: -1.2px;
-            font-family: var(--font-main);
+            font-family: var(--font-mono);
+            font-size: 30px;
+            font-weight: 700;
+            color: var(--accent);
+            letter-spacing: -1px;
             line-height: 1;
         }
 
-        body[data-theme="dark"] .vb-percentage {
-            color: var(--accent) !important;
-        }
-
         .level-badge {
-            font-size: 10px;
-            font-weight: 800;
-            letter-spacing: 0.6px;
+            font-family: var(--font-mono);
+            font-size: 9.5px;
+            font-weight: 700;
+            letter-spacing: 0.5px;
             text-transform: uppercase;
-            padding: 5px 10px;
+            padding: 4px 10px;
             border-radius: 100px;
             background: var(--accent-dim);
             color: var(--accent);
@@ -202,7 +208,7 @@
             display: inline-block;
         }
 
-        /* Slider */
+        /* Slider Area */
         .slider-section {
             display: flex;
             flex-direction: column;
@@ -212,7 +218,7 @@
         .vb-slider-track {
             position: relative;
             width: 100%;
-            height: 20px;
+            height: 18px;
             display: flex;
             align-items: center;
         }
@@ -222,33 +228,23 @@
             height: 6px;
             -webkit-appearance: none;
             appearance: none;
-            background: rgba(148, 163, 184, 0.2);
+            background: rgba(148, 163, 184, 0.25);
             border-radius: 100px;
             outline: none;
             cursor: pointer;
-            position: relative;
-            z-index: 2;
             transition: all 0.2s ease;
-        }
-
-        body[data-theme="light"] .vb-slider {
-            background: #E2E8F0;
         }
 
         .vb-slider::-webkit-slider-thumb {
             -webkit-appearance: none;
-            width: 16px;
-            height: 16px;
+            width: 15px;
+            height: 15px;
             border-radius: 50%;
             background: var(--accent);
+            box-shadow: none !important;
             cursor: pointer;
             transition: transform 0.15s ease;
             border: 2px solid #FFFFFF;
-            box-shadow: none !important;
-        }
-
-        body[data-theme="dark"] .vb-slider::-webkit-slider-thumb {
-            border-color: #16181D;
         }
 
         .vb-slider::-webkit-slider-thumb:hover {
@@ -258,10 +254,10 @@
         .vb-labels {
             display: flex;
             justify-content: space-between;
-            font-size: 9.5px;
+            font-size: 9px;
             font-weight: 700;
-            color: var(--text-secondary);
-            font-family: var(--font-main);
+            color: var(--text-muted);
+            font-family: var(--font-mono);
             padding: 0 2px;
         }
 
@@ -273,19 +269,20 @@
         }
 
         .vb-preset {
-            height: 34px;
-            border-radius: 12px !important;
+            height: 32px;
+            border-radius: 10px;
             background: var(--card-bg);
             border: 1px solid var(--card-border);
             color: var(--text-primary);
-            font-size: 11px;
+            font-size: 10.5px;
             font-weight: 700;
-            font-family: var(--font-main);
+            font-family: var(--font-mono);
             cursor: pointer;
             display: flex;
             align-items: center;
             justify-content: center;
             transition: all 0.2s ease;
+            outline: none;
         }
 
         .vb-preset:hover {
@@ -296,7 +293,7 @@
 
         .vb-preset.active {
             background: var(--accent) !important;
-            color: #FFFFFF !important;
+            color: var(--accent-text) !important;
             border-color: var(--accent) !important;
             box-shadow: none !important;
             font-weight: 800;
@@ -307,32 +304,8 @@
     <script>
         (function () {
             const t = localStorage.getItem('ocal-settings-theme') || 'dark';
-            const a = localStorage.getItem('ocal-settings-accent') || '#15AC49';
             document.body.setAttribute('data-theme', t);
-            if (a) {
-                document.documentElement.style.setProperty('--accent', a);
-                const r = parseInt(a.slice(1,3), 16) || 21;
-                const g = parseInt(a.slice(3,5), 16) || 172;
-                const b = parseInt(a.slice(5,7), 16) || 73;
-                document.documentElement.style.setProperty('--accent-glow', `rgba(${r}, ${g}, ${b}, 0.25)`);
-                document.documentElement.style.setProperty('--accent-dim', `rgba(${r}, ${g}, ${b}, 0.12)`);
-            }
         })();
-        if (window.electronAPI && window.electronAPI.onSettingsChanged) {
-            window.electronAPI.onSettingsChanged((s) => {
-                if (!s) return;
-                document.body.setAttribute('data-theme', s.themeMode || 'dark');
-                if (s.accentColor) {
-                    const a = s.accentColor;
-                    document.documentElement.style.setProperty('--accent', a);
-                    const r = parseInt(a.slice(1,3), 16) || 21;
-                    const g = parseInt(a.slice(3,5), 16) || 172;
-                    const b = parseInt(a.slice(5,7), 16) || 73;
-                    document.documentElement.style.setProperty('--accent-glow', `rgba(${r}, ${g}, ${b}, 0.25)`);
-                    document.documentElement.style.setProperty('--accent-dim', `rgba(${r}, ${g}, ${b}, 0.12)`);
-                }
-            });
-        }
     </script>
     <div class="popup-overlay" id="popup-overlay"></div>
 
@@ -355,7 +328,7 @@
 
         <div class="slider-section">
             <div class="vb-slider-track">
-                <input type="range" class="vb-slider" id="vb-range" min="100" max="500" value="100" step="5">
+                <input type="range" class="vb-slider" id="vb-range" min="100" max="500" value="100" step="5" aria-label="Volume Boost">
             </div>
             <div class="vb-labels">
                 <span>100%</span>

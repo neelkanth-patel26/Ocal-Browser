@@ -708,151 +708,88 @@ class FocusTimer {
 }
 new FocusTimer();
 
-// ── Precise Weather Engine ──
-const weatherIconMap = {
-    '113': 'fa-sun', '116': 'fa-cloud-sun', '119': 'fa-cloud', '122': 'fa-cloud',
-    '143': 'fa-smog', '176': 'fa-cloud-rain', '182': 'fa-cloud-meatball',
-    '200': 'fa-cloud-bolt', '227': 'fa-snowflake', '230': 'fa-wind',
-    '248': 'fa-smog', '260': 'fa-smog', '263': 'fa-cloud-showers-water',
-    '266': 'fa-cloud-showers-heavy', '296': 'fa-cloud-rain', '299': 'fa-cloud-showers-heavy',
-    '302': 'fa-cloud-showers-heavy', '308': 'fa-cloud-showers-heavy',
-    '311': 'fa-cloud-rain', '353': 'fa-cloud-showers-water', '389': 'fa-cloud-bolt'
-};
+// ── Global Weather Integration Bridge ──
+function updateWeather() {
+    const savedLoc = localStorage.getItem('ocal-weather-loc');
+    if (window.loadGlobalWeather) {
+        window.loadGlobalWeather(savedLoc || '');
+    }
+}
 
-async function updateWeather() {
-    // Original Sidebar elements
-    const tempEl = document.getElementById('weather-temp');
-    const cityEl = document.getElementById('weather-city');
-    const iconEl = document.querySelector('.weather-panel .weather-icon');
-    const condEl = document.getElementById('weather-condition');
-    const humEl = document.getElementById('weather-humidity');
-    const windEl = document.getElementById('weather-wind');
-    const feelsEl = document.getElementById('weather-feels');
-    const locInput = document.getElementById('location-input');
-
-    // Elegant Floating elements
-    const fTempEl = document.getElementById('floating-weather-temp');
-    const fCityEl = document.getElementById('floating-weather-city');
-    const fIconEl = document.getElementById('floating-weather-icon');
-    const fLocInput = document.getElementById('floating-location-input');
-
-    const fetchWeather = async (locStr = '') => {
-        try {
-            const response = await fetch(`https://wttr.in/${locStr}?format=j1`);
-            const data = await response.json();
-            const current = data.current_condition[0];
-            const city = data.nearest_area[0].areaName[0].value;
-            const code = current.weatherCode;
-            const desc = current.weatherDesc[0].value;
-
-            // Update sidebar elements
-            if (tempEl) tempEl.textContent = `${current.temp_C} °C`;
-            if (cityEl) cityEl.textContent = city.toUpperCase();
-            if (condEl) condEl.textContent = desc.toUpperCase();
-            if (humEl) humEl.textContent = `${current.humidity}%`;
-            if (windEl) windEl.textContent = `${current.windspeedKmph} KM/H`;
-            if (feelsEl) feelsEl.textContent = `${current.FeelsLikeC} °C`;
-            if (iconEl && weatherIconMap[code]) {
-                iconEl.className = `fas ${weatherIconMap[code]} weather-icon`;
-            }
-
-            // Update floating elements
-            if (fTempEl) fTempEl.textContent = `${current.temp_C} °C`;
-            if (fCityEl) {
-                fCityEl.innerHTML = `${city.toUpperCase()} <i class="fas fa-pencil edit-icon-floating"></i>`;
-            }
-            if (fIconEl && weatherIconMap[code]) {
-                fIconEl.className = `fas ${weatherIconMap[code]} weather-icon`;
-            }
-        } catch (e) { 
-            console.warn('Weather fetch failed.', e); 
-            if (condEl) condEl.textContent = 'OFFLINE';
-            if (fCityEl) fCityEl.innerHTML = `OFFLINE <i class="fas fa-pencil edit-icon-floating"></i>`;
-        }
+// Sidebar Location Toggle
+const cityTrigger = document.getElementById('city-trigger');
+const locInput = document.getElementById('location-input');
+const cityEl = document.getElementById('weather-city');
+if (cityTrigger && locInput) {
+    cityTrigger.onclick = () => {
+        cityTrigger.style.display = 'none';
+        locInput.style.display = 'block';
+        locInput.value = cityEl ? cityEl.textContent : '';
+        locInput.focus();
+        locInput.select();
     };
 
-    // Sidebar Location Toggle
-    const cityTrigger = document.getElementById('city-trigger');
-    if (cityTrigger && locInput) {
-        cityTrigger.onclick = () => {
-            cityTrigger.style.display = 'none';
-            locInput.style.display = 'block';
-            locInput.value = cityEl ? cityEl.textContent : '';
-            locInput.focus();
-            locInput.select();
-        };
+    const submitLoc = () => {
+        const newLoc = locInput.value.trim();
+        if (newLoc) {
+            if (cityEl) cityEl.textContent = 'SEARCHING...';
+            localStorage.setItem('ocal-weather-loc', newLoc);
+            if (window.loadGlobalWeather) window.loadGlobalWeather(newLoc);
+        } else {
+            localStorage.removeItem('ocal-weather-loc');
+            if (window.loadGlobalWeather) window.loadGlobalWeather('');
+        }
+        cityTrigger.style.display = 'flex';
+        locInput.style.display = 'none';
+    };
 
-        const submitLoc = () => {
-            const newLoc = locInput.value.trim();
-            if (newLoc) {
-                if (cityEl) cityEl.textContent = 'SEARCHING...';
-                localStorage.setItem('ocal-weather-loc', newLoc);
-                fetchWeather(newLoc);
-            } else {
-                localStorage.removeItem('ocal-weather-loc');
-                updateWeather(); // Re-run auto-detect
-            }
+    locInput.onkeydown = (e) => {
+        if (e.key === 'Enter') submitLoc();
+        if (e.key === 'Escape') {
             cityTrigger.style.display = 'flex';
             locInput.style.display = 'none';
-        };
+        }
+    };
+    locInput.onblur = submitLoc;
+}
 
-        locInput.onkeydown = (e) => {
-            if (e.key === 'Enter') submitLoc();
-            if (e.key === 'Escape') {
-                cityTrigger.style.display = 'flex';
-                locInput.style.display = 'none';
-            }
-        };
-        locInput.onblur = submitLoc;
-    }
+// Elegant Floating Location Toggle
+const fCityEl = document.getElementById('floating-weather-city');
+const fLocInput = document.getElementById('floating-location-input');
+if (fCityEl && fLocInput) {
+    fCityEl.onclick = () => {
+        fCityEl.style.display = 'none';
+        fLocInput.style.display = 'block';
+        
+        // Extract city text only, removing any icon HTML or extra spaces
+        const currentCity = fCityEl.innerText.trim();
+        fLocInput.value = currentCity;
+        fLocInput.focus();
+        fLocInput.select();
+    };
 
-    // Elegant Floating Location Toggle
-    if (fCityEl && fLocInput) {
-        fCityEl.onclick = () => {
-            fCityEl.style.display = 'none';
-            fLocInput.style.display = 'block';
-            
-            // Extract city text only, removing any icon HTML or extra spaces
-            const currentCity = fCityEl.innerText.trim();
-            fLocInput.value = currentCity;
-            fLocInput.focus();
-            fLocInput.select();
-        };
+    const submitFloatingLoc = () => {
+        const newLoc = fLocInput.value.trim();
+        if (newLoc) {
+            if (fCityEl) fCityEl.innerHTML = `SEARCHING... <i class="fas fa-pencil edit-icon-floating"></i>`;
+            localStorage.setItem('ocal-weather-loc', newLoc);
+            if (window.loadGlobalWeather) window.loadGlobalWeather(newLoc);
+        } else {
+            localStorage.removeItem('ocal-weather-loc');
+            if (window.loadGlobalWeather) window.loadGlobalWeather('');
+        }
+        fCityEl.style.display = 'block';
+        fLocInput.style.display = 'none';
+    };
 
-        const submitFloatingLoc = () => {
-            const newLoc = fLocInput.value.trim();
-            if (newLoc) {
-                if (fCityEl) fCityEl.innerHTML = `SEARCHING... <i class="fas fa-pencil edit-icon-floating"></i>`;
-                localStorage.setItem('ocal-weather-loc', newLoc);
-                fetchWeather(newLoc);
-            } else {
-                localStorage.removeItem('ocal-weather-loc');
-                updateWeather(); // Re-run auto-detect
-            }
+    fLocInput.onkeydown = (e) => {
+        if (e.key === 'Enter') submitFloatingLoc();
+        if (e.key === 'Escape') {
             fCityEl.style.display = 'block';
             fLocInput.style.display = 'none';
-        };
-
-        fLocInput.onkeydown = (e) => {
-            if (e.key === 'Enter') submitFloatingLoc();
-            if (e.key === 'Escape') {
-                fCityEl.style.display = 'block';
-                fLocInput.style.display = 'none';
-            }
-        };
-        fLocInput.onblur = submitFloatingLoc;
-    }
-
-    const savedLoc = localStorage.getItem('ocal-weather-loc');
-    if (savedLoc) {
-        fetchWeather(savedLoc);
-    } else if ("geolocation" in navigator) {
-        navigator.geolocation.getCurrentPosition(
-            pos => fetchWeather(`${pos.coords.latitude},${pos.coords.longitude}`),
-            () => fetchWeather(),
-            { timeout: 10000 }
-        );
-    } else { fetchWeather(); }
+        }
+    };
+    fLocInput.onblur = submitFloatingLoc;
 }
 updateWeather();
 setInterval(updateWeather, 30 * 60 * 1000);
@@ -1405,8 +1342,36 @@ function initNewsHubEngine() {
     const newsCloseBtn = document.getElementById('news-close-btn');
     const newsRefreshBtn = document.getElementById('news-refresh-btn');
     const citySearchInput = document.getElementById('weather-city-search-input');
+    const searchClearBtn = document.getElementById('weather-search-clear-btn');
+    const unitBtn = document.getElementById('weather-unit-btn');
+    const unitText = document.getElementById('weather-unit-text');
+    const tabHourly = document.getElementById('tab-hourly-forecast');
+    const tabDaily = document.getElementById('tab-daily-forecast');
+    const hourlySlider = document.getElementById('weather-hourly-slider');
+    const dailyGrid = document.getElementById('weather-daily-grid');
+    const forecastSubtitle = document.getElementById('wh-forecast-subtitle');
 
     if (!newsModalOverlay) return;
+
+    // Unit state: 'C' or 'F'
+    let currentUnit = localStorage.getItem('ocal-weather-unit') || 'C';
+    if (unitText) unitText.textContent = `°${currentUnit}`;
+
+    function formatTemperature(celsius) {
+        if (celsius === undefined || celsius === null || isNaN(celsius)) return '--°';
+        if (currentUnit === 'F') {
+            return `${Math.round(celsius * 9 / 5 + 32)}°F`;
+        }
+        return `${Math.round(celsius)}°C`;
+    }
+
+    function formatSpeed(kmh) {
+        if (kmh === undefined || kmh === null || isNaN(kmh)) return '-- km/h';
+        if (currentUnit === 'F') {
+            return `${Math.round(kmh * 0.621371)} mph`;
+        }
+        return `${Math.round(kmh)} km/h`;
+    }
 
     // Check opt-out setting
     const checkOptOut = () => {
@@ -1434,374 +1399,482 @@ function initNewsHubEngine() {
     window.addEventListener('storage', checkOptOut);
     window.addEventListener('focus', checkOptOut);
 
-    let currentWeatherLat = 23.0225;
-    let currentWeatherLon = 72.5714;
     let currentCityName = localStorage.getItem('ocal-weather-loc') || localStorage.getItem('ocal-settings-weather-location') || 'Ahmedabad';
+    let lastFetchedWeather = null;
 
-    // Weather WMO Code mapping helper (Monochrome FontAwesome Icons)
-    function getWmoWeatherDetails(code, isDay = 1) {
-        const mapping = {
-            0: { text: isDay ? 'Clear Sky' : 'Clear Night', icon: isDay ? '<i class="fas fa-sun"></i>' : '<i class="fas fa-moon"></i>' },
-            1: { text: 'Mainly Clear', icon: isDay ? '<i class="fas fa-cloud-sun"></i>' : '<i class="fas fa-cloud-moon"></i>' },
-            2: { text: 'Partly Cloudy', icon: isDay ? '<i class="fas fa-cloud-sun"></i>' : '<i class="fas fa-cloud-moon"></i>' },
-            3: { text: 'Overcast', icon: '<i class="fas fa-cloud"></i>' },
-            45: { text: 'Foggy', icon: '<i class="fas fa-smog"></i>' },
-            48: { text: 'Rime Fog', icon: '<i class="fas fa-smog"></i>' },
-            51: { text: 'Light Drizzle', icon: '<i class="fas fa-cloud-rain"></i>' },
-            53: { text: 'Moderate Drizzle', icon: '<i class="fas fa-cloud-rain"></i>' },
-            55: { text: 'Dense Drizzle', icon: '<i class="fas fa-cloud-showers-heavy"></i>' },
-            61: { text: 'Slight Rain', icon: '<i class="fas fa-cloud-rain"></i>' },
-            63: { text: 'Moderate Rain', icon: '<i class="fas fa-cloud-showers-heavy"></i>' },
-            65: { text: 'Heavy Rain', icon: '<i class="fas fa-cloud-showers-water"></i>' },
-            71: { text: 'Slight Snow', icon: '<i class="fas fa-snowflake"></i>' },
-            73: { text: 'Moderate Snow', icon: '<i class="fas fa-snowflake"></i>' },
-            75: { text: 'Heavy Snow', icon: '<i class="fas fa-snowflake"></i>' },
-            80: { text: 'Slight Rain Showers', icon: '<i class="fas fa-cloud-sun-rain"></i>' },
-            81: { text: 'Moderate Rain Showers', icon: '<i class="fas fa-cloud-showers-heavy"></i>' },
-            82: { text: 'Violent Rain Showers', icon: '<i class="fas fa-cloud-showers-water"></i>' },
-            95: { text: 'Thunderstorm', icon: '<i class="fas fa-bolt"></i>' },
-            96: { text: 'Thunderstorm & Hail', icon: '<i class="fas fa-cloud-bolt"></i>' },
-            99: { text: 'Heavy Thunderstorm', icon: '<i class="fas fa-cloud-bolt"></i>' }
-        };
-        return mapping[code] || { text: 'Partly Cloudy', icon: isDay ? '<i class="fas fa-cloud-sun"></i>' : '<i class="fas fa-cloud-moon"></i>' };
-    }
-
-    async function loadWeatherHubData(locationQuery) {
-        const statusSub = document.getElementById('weather-modal-status-sub');
-        if (statusSub) {
-            statusSub.innerHTML = `<i class="fas fa-spinner fa-spin" style="color: var(--accent, #09f0a0); margin-right: 6px;"></i> Fetching telemetry for ${locationQuery}...`;
-        }
-
-        try {
-            const geoRes = await fetch(`https://geocoding-api.open-meteo.com/v1/search?name=${encodeURIComponent(locationQuery)}&count=1&language=en&format=json`);
-            if (geoRes.ok) {
-                const geoData = await geoRes.json();
-                if (geoData && geoData.results && geoData.results.length > 0) {
-                    const loc = geoData.results[0];
-                    currentWeatherLat = loc.latitude;
-                    currentWeatherLon = loc.longitude;
-                    currentCityName = `${loc.name}${loc.country ? ', ' + loc.country : ''}`;
-                }
-            }
-
-            const forecastUrl = `https://api.open-meteo.com/v1/forecast?latitude=${currentWeatherLat}&longitude=${currentWeatherLon}&current=temperature_2m,relative_humidity_2m,apparent_temperature,is_day,precipitation,rain,showers,snowfall,weather_code,cloud_cover,pressure_msl,surface_pressure,wind_speed_10m,wind_direction_10m,wind_gusts_10m&hourly=temperature_2m,relative_humidity_2m,dew_point_2m,apparent_temperature,precipitation_probability,precipitation,weather_code,pressure_msl,surface_pressure,cloud_cover,visibility,wind_speed_10m,wind_direction_10m,uv_index&daily=weather_code,temperature_2m_max,temperature_2m_min,apparent_temperature_max,apparent_temperature_min,sunrise,sunset,uv_index_max,precipitation_sum&timezone=auto`;
-            
-            const forecastRes = await fetch(forecastUrl);
-            if (!forecastRes.ok) return;
-            const weather = await forecastRes.json();
-
-            const cur = weather.current || {};
-            const daily = weather.daily || {};
-            const hourly = weather.hourly || {};
-            const wDetails = getWmoWeatherDetails(cur.weather_code ?? 0, cur.is_day ?? 1);
-
-            const modalTitle = document.getElementById('weather-modal-location-title');
-            const cityEl = document.getElementById('wh-city-name');
-            const tempEl = document.getElementById('wh-main-temp');
-            const iconEl = document.getElementById('wh-main-icon');
-            const condEl = document.getElementById('wh-main-condition');
-            const highEl = document.getElementById('wh-high-temp');
-            const lowEl = document.getElementById('wh-low-temp');
-            const feelsEl = document.getElementById('wh-feels-like');
-
-            if (modalTitle) modalTitle.textContent = `Weather in ${currentCityName}`;
-            if (cityEl) cityEl.textContent = currentCityName;
-            if (tempEl) tempEl.textContent = `${Math.round(cur.temperature_2m)}°C`;
-            if (iconEl) iconEl.innerHTML = wDetails.icon;
-            if (condEl) condEl.textContent = wDetails.text;
-            if (highEl) highEl.textContent = `${Math.round(daily.temperature_2m_max?.[0] ?? cur.temperature_2m)}°C`;
-            if (lowEl) lowEl.textContent = `${Math.round(daily.temperature_2m_min?.[0] ?? cur.temperature_2m)}°C`;
-            if (feelsEl) feelsEl.textContent = `${Math.round(cur.apparent_temperature ?? cur.temperature_2m)}°C`;
-
-            if (statusSub) {
-                statusSub.innerHTML = `<i class="fas fa-signal" style="color: var(--accent, #09f0a0); margin-right: 6px;"></i> Meteorological telemetry active &bull; ${currentCityName}`;
-            }
-        } catch (e) {
-            console.warn('Weather telemetry load error:', e);
-            if (statusSub) statusSub.innerHTML = `<i class="fas fa-circle-exclamation" style="color: #ef4444; margin-right: 6px;"></i> Meteorological connection error for ${locationQuery}`;
+    // Comprehensive WMO Weather Mapping (World Meteorological Organization standards)
+    function getWeatherDetails(code, conditionDesc = '', isDay = 1) {
+        const c = parseInt(code, 10);
+        switch (c) {
+            case 0: return { text: isDay ? 'Clear Sky' : 'Clear Night', icon: isDay ? '<i class="fas fa-sun"></i>' : '<i class="fas fa-moon"></i>', faClass: isDay ? 'fa-sun' : 'fa-moon' };
+            case 1: return { text: isDay ? 'Mainly Clear' : 'Mostly Clear', icon: isDay ? '<i class="fas fa-cloud-sun"></i>' : '<i class="fas fa-cloud-moon"></i>', faClass: isDay ? 'fa-cloud-sun' : 'fa-cloud-moon' };
+            case 2: return { text: 'Partly Cloudy', icon: isDay ? '<i class="fas fa-cloud-sun"></i>' : '<i class="fas fa-cloud-moon"></i>', faClass: isDay ? 'fa-cloud-sun' : 'fa-cloud-moon' };
+            case 3: return { text: 'Overcast', icon: '<i class="fas fa-cloud"></i>', faClass: 'fa-cloud' };
+            case 45: case 48: return { text: 'Fog / Mist', icon: '<i class="fas fa-smog"></i>', faClass: 'fa-smog' };
+            case 51: case 53: case 55: return { text: 'Drizzle', icon: '<i class="fas fa-cloud-rain"></i>', faClass: 'fa-cloud-rain' };
+            case 56: case 57: return { text: 'Freezing Drizzle', icon: '<i class="fas fa-snowflake"></i>', faClass: 'fa-snowflake' };
+            case 61: return { text: 'Light Rain', icon: '<i class="fas fa-cloud-rain"></i>', faClass: 'fa-cloud-rain' };
+            case 63: return { text: 'Moderate Rain', icon: '<i class="fas fa-cloud-showers-heavy"></i>', faClass: 'fa-cloud-showers-heavy' };
+            case 65: return { text: 'Heavy Rain', icon: '<i class="fas fa-cloud-showers-water"></i>', faClass: 'fa-cloud-showers-water' };
+            case 66: case 67: return { text: 'Freezing Rain', icon: '<i class="fas fa-snowflake"></i>', faClass: 'fa-snowflake' };
+            case 71: case 73: case 75: case 77: return { text: 'Snowfall', icon: '<i class="fas fa-snowflake"></i>', faClass: 'fa-snowflake' };
+            case 80: case 81: case 82: return { text: 'Rain Showers', icon: '<i class="fas fa-cloud-showers-heavy"></i>', faClass: 'fa-cloud-showers-heavy' };
+            case 85: case 86: return { text: 'Snow Showers', icon: '<i class="fas fa-snowflake"></i>', faClass: 'fa-snowflake' };
+            case 95: return { text: 'Thunderstorm', icon: '<i class="fas fa-bolt"></i>', faClass: 'fa-bolt' };
+            case 96: case 99: return { text: 'Thunderstorm with Hail', icon: '<i class="fas fa-cloud-bolt"></i>', faClass: 'fa-cloud-bolt' };
+            default: return { text: conditionDesc || (isDay ? 'Partly Cloudy' : 'Clear Night'), icon: isDay ? '<i class="fas fa-cloud-sun"></i>' : '<i class="fas fa-cloud-moon"></i>', faClass: isDay ? 'fa-cloud-sun' : 'fa-cloud-moon' };
         }
     }
 
-    if (newsTriggerBtn && newsModalOverlay) {
-        newsTriggerBtn.onclick = () => {
-            newsModalOverlay.style.display = 'flex';
-            document.body.style.overflow = 'hidden';
-            loadWeatherHubData(currentCityName);
-        };
-    }
+    function renderWeatherData(weather) {
+        if (!weather) return;
+        lastFetchedWeather = weather;
 
-    if (newsCloseBtn && newsModalOverlay) {
-        newsCloseBtn.onclick = () => {
-            newsModalOverlay.style.display = 'none';
-            document.body.style.overflow = '';
-        };
-    }
+        const cur = weather.current || {};
+        const today = weather.today || {};
+        const hourly = weather.hourly || [];
+        const daily = weather.daily || [];
+        const isDay = cur.isDay ?? (new Date().getHours() >= 6 && new Date().getHours() < 19 ? 1 : 0);
+        const wDetails = getWeatherDetails(cur.weatherCode, cur.conditionText, isDay);
 
-    if (newsModalOverlay) {
-        newsModalOverlay.onclick = (e) => {
-            if (e.target === newsModalOverlay) {
-                newsModalOverlay.style.display = 'none';
-                document.body.style.overflow = '';
-            }
-        };
-    }
+        const modalTitle = document.getElementById('weather-modal-location-title');
+        const cityEl = document.getElementById('wh-city-name');
+        const daytimeTag = document.getElementById('wh-hero-daytime');
+        const tempEl = document.getElementById('wh-main-temp');
+        const iconEl = document.getElementById('wh-main-icon');
+        const condEl = document.getElementById('wh-main-condition');
+        const highEl = document.getElementById('wh-high-temp');
+        const lowEl = document.getElementById('wh-low-temp');
+        const feelsEl = document.getElementById('wh-feels-like');
 
-    if (newsRefreshBtn) {
-        newsRefreshBtn.onclick = () => {
-            loadWeatherHubData(currentCityName);
-        };
-    }
+        if (modalTitle) modalTitle.textContent = `Weather in ${weather.cityName || currentCityName}`;
+        if (cityEl) cityEl.textContent = weather.cityName || currentCityName;
+        if (daytimeTag) daytimeTag.textContent = isDay ? 'DAYTIME' : 'NIGHTTIME';
+        if (tempEl) tempEl.textContent = formatTemperature(cur.temp);
+        if (iconEl) iconEl.innerHTML = wDetails.icon;
+        if (condEl) condEl.textContent = wDetails.text;
+        if (highEl) highEl.textContent = formatTemperature(today.high ?? cur.temp);
+        if (lowEl) lowEl.textContent = formatTemperature(today.low ?? cur.temp);
+        if (feelsEl) feelsEl.textContent = formatTemperature(cur.feelsLike ?? cur.temp);
 
-    if (citySearchInput) {
-        citySearchInput.onkeydown = (e) => {
-            if (e.key === 'Enter' && citySearchInput.value.trim()) {
-                loadWeatherHubData(citySearchInput.value.trim());
-            }
-        };
-    }
+        // 10 Detailed Meteorological Metrics
+        const humEl = document.getElementById('wd-humidity');
+        const windEl = document.getElementById('wd-wind');
+        const uvEl = document.getElementById('wd-uv');
+        const pressEl = document.getElementById('wd-pressure');
+        const visEl = document.getElementById('wd-visibility');
+        const dewEl = document.getElementById('wd-dew');
+        const srEl = document.getElementById('wd-sunrise');
+        const ssEl = document.getElementById('wd-sunset');
+        const cloudEl = document.getElementById('wd-cloud');
+        const gustEl = document.getElementById('wd-gusts');
 
-    loadWeatherHubData(currentCityName);
-}
-
-function initNewsHubEngine() {
-    const newsTriggerBtn = document.getElementById('news-trigger-btn');
-    const newsModalOverlay = document.getElementById('news-modal-overlay');
-    const newsCloseBtn = document.getElementById('news-close-btn');
-    const newsRefreshBtn = document.getElementById('news-refresh-btn');
-    const citySearchInput = document.getElementById('weather-city-search-input');
-
-    if (!newsModalOverlay) return;
-
-    // Check opt-out setting
-    const checkOptOut = () => {
-        if (!newsTriggerBtn) return;
+        if (humEl) humEl.textContent = `${Math.round(cur.humidity ?? 0)}%`;
+        if (windEl) windEl.textContent = formatSpeed(cur.windSpeed ?? 0);
         
-        const updateVisibility = (isEnabled) => {
-            newsTriggerBtn.style.setProperty('display', isEnabled ? 'inline-flex' : 'none', 'important');
-        };
+        const uvVal = cur.uvIndex ?? 0;
+        let uvLevel = 'Low';
+        if (uvVal > 8) uvLevel = 'Very High';
+        else if (uvVal > 5) uvLevel = 'High';
+        else if (uvVal > 2) uvLevel = 'Moderate';
+        if (uvEl) uvEl.textContent = `${uvVal} (${uvLevel})`;
 
-        if (window.electronAPI && window.electronAPI.getSettings) {
-            window.electronAPI.getSettings().then(s => {
-                const isEnabled = (s && s.showNewsHub !== undefined) ? (s.showNewsHub !== false) : (localStorage.getItem('ocal-show-news') !== 'false');
-                updateVisibility(isEnabled);
-            }).catch(() => {
-                const isEnabled = localStorage.getItem('ocal-show-news') !== 'false';
-                updateVisibility(isEnabled);
+        if (pressEl) pressEl.textContent = `${Math.round(cur.pressure ?? 1013)} hPa`;
+        
+        const visKm = cur.visibility ?? 10;
+        if (visEl) visEl.textContent = currentUnit === 'F' ? `${(visKm * 0.621371).toFixed(1)} mi` : `${visKm} km`;
+        
+        if (dewEl) dewEl.textContent = formatTemperature(today.dewPoint ?? cur.temp);
+        if (srEl) srEl.textContent = today.sunrise || '06:00 AM';
+        if (ssEl) ssEl.textContent = today.sunset || '06:50 PM';
+        if (cloudEl) cloudEl.textContent = `${Math.round(cur.cloudCover ?? 0)}%`;
+        if (gustEl) gustEl.textContent = formatSpeed(today.windGusts ?? cur.windSpeed ?? 0);
+
+        // Synchronize Home Page Widgets
+        const homeCity = document.getElementById('weather-city');
+        const homeTemp = document.getElementById('weather-temp');
+        const homeCond = document.getElementById('weather-condition');
+        const homeHum = document.getElementById('weather-humidity');
+        const homeWind = document.getElementById('weather-wind');
+        const homeFeels = document.getElementById('weather-feels');
+        const floatCity = document.getElementById('floating-weather-city');
+        const floatTemp = document.getElementById('floating-weather-temp');
+        const floatIcon = document.getElementById('floating-weather-icon');
+
+        const shortCityName = (weather.cityName || currentCityName).split(',')[0].trim();
+        if (homeCity) homeCity.textContent = shortCityName;
+        if (homeTemp) homeTemp.textContent = formatTemperature(cur.temp);
+        if (homeCond) homeCond.innerHTML = `${wDetails.icon} <span>${wDetails.text}</span>`;
+        if (homeHum) homeHum.textContent = `${Math.round(cur.humidity ?? 0)}%`;
+        if (homeWind) homeWind.textContent = formatSpeed(cur.windSpeed).toUpperCase();
+        if (homeFeels) homeFeels.textContent = formatTemperature(cur.feelsLike);
+
+        if (floatCity) floatCity.innerHTML = `${shortCityName} <i class="fa-solid fa-location-dot edit-icon-floating"></i>`;
+        if (floatTemp) floatTemp.textContent = formatTemperature(cur.temp);
+        if (floatIcon) floatIcon.className = `fas ${wDetails.faClass || 'fa-cloud-sun'} weather-icon`;
+
+        // Render 24-Hour Hourly Timeline
+        if (hourlySlider && hourly.length > 0) {
+            let hourlyHtml = '';
+            hourly.forEach((h, idx) => {
+                const details = getWeatherDetails(h.weatherCode, h.conditionText, h.isDay);
+                hourlyHtml += `
+                    <div class="wh-hourly-card ${idx === 0 ? 'now-card' : ''}">
+                        <span class="wh-hourly-time">${h.time}</span>
+                        <span class="wh-hourly-icon">${details.icon}</span>
+                        <span class="wh-hourly-temp">${formatTemperature(h.temp)}</span>
+                        <span class="wh-hourly-pop"><i class="fas fa-droplet" style="font-size: 9.5px;"></i> ${h.pop}%</span>
+                        <span class="wh-hourly-wind"><i class="fas fa-wind" style="font-size: 9px;"></i> ${formatSpeed(h.wind)}</span>
+                    </div>
+                `;
             });
-        } else {
-            const isEnabled = localStorage.getItem('ocal-show-news') !== 'false';
-            updateVisibility(isEnabled);
-        }
-    };
-
-    checkOptOut();
-    window.addEventListener('storage', checkOptOut);
-    window.addEventListener('focus', checkOptOut);
-
-    let currentWeatherLat = 23.0225;
-    let currentWeatherLon = 72.5714;
-    let currentCityName = localStorage.getItem('ocal-weather-loc') || localStorage.getItem('ocal-settings-weather-location') || 'Ahmedabad';
-
-    // Weather WMO Code mapping helper (Monochrome FontAwesome Icons)
-    function getWmoWeatherDetails(code, isDay = 1) {
-        const mapping = {
-            0: { text: isDay ? 'Clear Sky' : 'Clear Night', icon: isDay ? '<i class="fas fa-sun"></i>' : '<i class="fas fa-moon"></i>' },
-            1: { text: 'Mainly Clear', icon: isDay ? '<i class="fas fa-cloud-sun"></i>' : '<i class="fas fa-cloud-moon"></i>' },
-            2: { text: 'Partly Cloudy', icon: isDay ? '<i class="fas fa-cloud-sun"></i>' : '<i class="fas fa-cloud-moon"></i>' },
-            3: { text: 'Overcast', icon: '<i class="fas fa-cloud"></i>' },
-            45: { text: 'Foggy', icon: '<i class="fas fa-smog"></i>' },
-            48: { text: 'Rime Fog', icon: '<i class="fas fa-smog"></i>' },
-            51: { text: 'Light Drizzle', icon: '<i class="fas fa-cloud-rain"></i>' },
-            53: { text: 'Moderate Drizzle', icon: '<i class="fas fa-cloud-rain"></i>' },
-            55: { text: 'Dense Drizzle', icon: '<i class="fas fa-cloud-showers-heavy"></i>' },
-            61: { text: 'Slight Rain', icon: '<i class="fas fa-cloud-rain"></i>' },
-            63: { text: 'Moderate Rain', icon: '<i class="fas fa-cloud-showers-heavy"></i>' },
-            65: { text: 'Heavy Rain', icon: '<i class="fas fa-cloud-showers-water"></i>' },
-            71: { text: 'Slight Snow', icon: '<i class="fas fa-snowflake"></i>' },
-            73: { text: 'Moderate Snow', icon: '<i class="fas fa-snowflake"></i>' },
-            75: { text: 'Heavy Snow', icon: '<i class="fas fa-snowflake"></i>' },
-            80: { text: 'Slight Rain Showers', icon: '<i class="fas fa-cloud-sun-rain"></i>' },
-            81: { text: 'Moderate Rain Showers', icon: '<i class="fas fa-cloud-showers-heavy"></i>' },
-            82: { text: 'Violent Rain Showers', icon: '<i class="fas fa-cloud-showers-water"></i>' },
-            95: { text: 'Thunderstorm', icon: '<i class="fas fa-bolt"></i>' },
-            96: { text: 'Thunderstorm & Hail', icon: '<i class="fas fa-cloud-bolt"></i>' },
-            99: { text: 'Heavy Thunderstorm', icon: '<i class="fas fa-cloud-bolt"></i>' }
-        };
-        return mapping[code] || { text: 'Partly Cloudy', icon: isDay ? '<i class="fas fa-cloud-sun"></i>' : '<i class="fas fa-cloud-moon"></i>' };
-    }
-
-    async function loadWeatherHubData(locationQuery) {
-        const statusSub = document.getElementById('weather-modal-status-sub');
-        if (statusSub) {
-            statusSub.innerHTML = `<i class="fas fa-spinner fa-spin" style="color: var(--accent, #09f0a0); margin-right: 6px;"></i> Fetching telemetry for ${locationQuery}...`;
+            hourlySlider.innerHTML = hourlyHtml;
         }
 
-        try {
-            const geoRes = await fetch(`https://geocoding-api.open-meteo.com/v1/search?name=${encodeURIComponent(locationQuery)}&count=1&language=en&format=json`);
-            if (geoRes.ok) {
-                const geoData = await geoRes.json();
-                if (geoData && geoData.results && geoData.results.length > 0) {
-                    const loc = geoData.results[0];
-                    currentWeatherLat = loc.latitude;
-                    currentWeatherLon = loc.longitude;
-                    currentCityName = `${loc.name}${loc.country ? ', ' + loc.country : ''}`;
-                }
-            }
-
-            const forecastUrl = `https://api.open-meteo.com/v1/forecast?latitude=${currentWeatherLat}&longitude=${currentWeatherLon}&current=temperature_2m,relative_humidity_2m,apparent_temperature,is_day,precipitation,rain,showers,snowfall,weather_code,cloud_cover,pressure_msl,surface_pressure,wind_speed_10m,wind_direction_10m,wind_gusts_10m&hourly=temperature_2m,relative_humidity_2m,dew_point_2m,apparent_temperature,precipitation_probability,precipitation,weather_code,pressure_msl,surface_pressure,cloud_cover,visibility,wind_speed_10m,wind_direction_10m,uv_index&daily=weather_code,temperature_2m_max,temperature_2m_min,apparent_temperature_max,apparent_temperature_min,sunrise,sunset,uv_index_max,precipitation_sum&timezone=auto`;
-            
-            const forecastRes = await fetch(forecastUrl);
-            if (!forecastRes.ok) return;
-            const weather = await forecastRes.json();
-
-            const cur = weather.current || {};
-            const daily = weather.daily || {};
-            const hourly = weather.hourly || {};
-            const wDetails = getWmoWeatherDetails(cur.weather_code ?? 0, cur.is_day ?? 1);
-
-            const modalTitle = document.getElementById('weather-modal-location-title');
-            const cityEl = document.getElementById('wh-city-name');
-            const tempEl = document.getElementById('wh-main-temp');
-            const iconEl = document.getElementById('wh-main-icon');
-            const condEl = document.getElementById('wh-main-condition');
-            const highEl = document.getElementById('wh-high-temp');
-            const lowEl = document.getElementById('wh-low-temp');
-            const feelsEl = document.getElementById('wh-feels-like');
-
-            if (modalTitle) modalTitle.textContent = `Weather in ${currentCityName}`;
-            if (cityEl) cityEl.textContent = currentCityName;
-            if (tempEl) tempEl.textContent = `${Math.round(cur.temperature_2m)}°C`;
-            if (iconEl) iconEl.innerHTML = wDetails.icon;
-            if (condEl) condEl.textContent = wDetails.text;
-            if (highEl) highEl.textContent = `${Math.round(daily.temperature_2m_max?.[0] ?? cur.temperature_2m)}°C`;
-            if (lowEl) lowEl.textContent = `${Math.round(daily.temperature_2m_min?.[0] ?? cur.temperature_2m)}°C`;
-            if (feelsEl) feelsEl.textContent = `${Math.round(cur.apparent_temperature ?? cur.temperature_2m)}°C`;
-
-            const humEl = document.getElementById('wd-humidity');
-            const windEl = document.getElementById('wd-wind');
-            const uvEl = document.getElementById('wd-uv');
-            const pressEl = document.getElementById('wd-pressure');
-            const visEl = document.getElementById('wd-visibility');
-            const dewEl = document.getElementById('wd-dew');
-            const srEl = document.getElementById('wd-sunrise');
-            const ssEl = document.getElementById('wd-sunset');
-            const cloudEl = document.getElementById('wd-cloud');
-            const gustEl = document.getElementById('wd-gusts');
-
-            if (humEl) humEl.textContent = `${cur.relative_humidity_2m ?? '--'}%`;
-            if (windEl) windEl.textContent = `${Math.round(cur.wind_speed_10m ?? 0)} km/h`;
-            
-            const uvMax = daily.uv_index_max?.[0] ?? 4;
-            let uvLevel = 'Low';
-            if (uvMax > 8) uvLevel = 'Very High';
-            else if (uvMax > 5) uvLevel = 'High';
-            else if (uvMax > 2) uvLevel = 'Moderate';
-            if (uvEl) uvEl.textContent = `${uvMax.toFixed(1)} (${uvLevel})`;
-
-            if (pressEl) pressEl.textContent = `${Math.round(cur.pressure_msl ?? 1013)} hPa`;
-            
-            const visKm = ((hourly.visibility?.[0] ?? 10000) / 1000).toFixed(1);
-            if (visEl) visEl.textContent = `${visKm} km`;
-            
-            if (dewEl) dewEl.textContent = `${Math.round(hourly.dew_point_2m?.[0] ?? 18)}°C`;
-            
-            const srTime = daily.sunrise?.[0] ? new Date(daily.sunrise[0]).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : '06:00 AM';
-            const ssTime = daily.sunset?.[0] ? new Date(daily.sunset[0]).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : '07:00 PM';
-            if (srEl) srEl.textContent = srTime;
-            if (ssEl) ssEl.textContent = ssTime;
-            
-            if (cloudEl) cloudEl.textContent = `${cur.cloud_cover ?? 0}%`;
-            if (gustEl) gustEl.textContent = `${Math.round(cur.wind_gusts_10m ?? cur.wind_speed_10m ?? 0)} km/h`;
-
-            const homeCity = document.getElementById('weather-city');
-            const homeTemp = document.getElementById('weather-temp');
-            const homeCond = document.getElementById('weather-condition');
-            const homeHum = document.getElementById('weather-humidity');
-            const homeWind = document.getElementById('weather-wind');
-            const homeFeels = document.getElementById('weather-feels');
-
-            if (homeCity) homeCity.textContent = currentCityName.split(',')[0];
-            if (homeTemp) homeTemp.textContent = `${Math.round(cur.temperature_2m)}°C`;
-            if (homeCond) homeCond.innerHTML = `${wDetails.icon} <span>${wDetails.text}</span>`;
-            if (homeHum) homeHum.textContent = `${cur.relative_humidity_2m}%`;
-            if (homeWind) homeWind.textContent = `${Math.round(cur.wind_speed_10m)} KM/H`;
-            if (homeFeels) homeFeels.textContent = `${Math.round(cur.apparent_temperature)}°C`;
-
-            const hourlySlider = document.getElementById('weather-hourly-slider');
-            if (hourlySlider && hourly.time) {
-                let hourlyHtml = '';
-                const nowHourIdx = new Date().getHours();
-                
-                for (let i = 0; i < 24; i++) {
-                    const idx = (nowHourIdx + i) % hourly.time.length;
-                    const timeStr = new Date(hourly.time[idx]).toLocaleTimeString([], { hour: 'numeric', hour12: true });
-                    const temp = Math.round(hourly.temperature_2m[idx]);
-                    const code = hourly.weather_code[idx];
-                    const pop = hourly.precipitation_probability ? hourly.precipitation_probability[idx] : 0;
-                    const wind = Math.round(hourly.wind_speed_10m[idx]);
-                    const details = getWmoWeatherDetails(code, (i + nowHourIdx) % 24 >= 6 && (i + nowHourIdx) % 24 <= 18 ? 1 : 0);
-
-                    hourlyHtml += `
-                        <div class="wh-hourly-card ${i === 0 ? 'now-card' : ''}">
-                            <span class="wh-hourly-time">${i === 0 ? 'Now' : timeStr}</span>
-                            <span class="wh-hourly-icon">${details.icon}</span>
-                            <span class="wh-hourly-temp">${temp}°C</span>
-                            <span class="wh-hourly-pop"><i class="fas fa-droplet" style="font-size: 10px;"></i> ${pop}%</span>
-                            <span class="wh-hourly-wind"><i class="fas fa-wind" style="font-size: 9px;"></i> ${wind} km/h</span>
+        // Render Multi-Day Forecast Grid
+        if (dailyGrid && daily.length > 0) {
+            let dailyHtml = '';
+            daily.forEach((d, idx) => {
+                const details = getWeatherDetails(d.weatherCode, d.conditionText, 1);
+                dailyHtml += `
+                    <div class="wh-daily-card ${idx === 0 ? 'today-card' : ''}">
+                        <span class="wh-daily-day">${d.day}</span>
+                        <span class="wh-daily-date">${d.date}</span>
+                        <span class="wh-daily-icon">${details.icon}</span>
+                        <div class="wh-daily-temp-range">
+                            <span class="wh-daily-high">${formatTemperature(d.high)}</span>
+                            <span class="wh-daily-low">${formatTemperature(d.low)}</span>
                         </div>
-                    `;
-                }
-                hourlySlider.innerHTML = hourlyHtml;
-            }
-
-            if (statusSub) {
-                statusSub.innerHTML = `<i class="fas fa-signal" style="color: var(--accent, #09f0a0); margin-right: 6px;"></i> Meteorological telemetry active &bull; ${currentCityName}`;
-            }
-
-        } catch (e) {
-            console.warn('Weather telemetry load error:', e);
-            if (statusSub) statusSub.innerHTML = `<i class="fas fa-circle-exclamation" style="color: #ef4444; margin-right: 6px;"></i> Meteorological connection error for ${locationQuery}`;
+                        <span class="wh-daily-pop"><i class="fas fa-droplet" style="font-size: 9px;"></i> ${d.pop}</span>
+                    </div>
+                `;
+            });
+            dailyGrid.innerHTML = dailyHtml;
         }
     }
 
-    if (newsTriggerBtn && newsModalOverlay) {
-        newsTriggerBtn.onclick = () => {
-            newsModalOverlay.style.display = 'flex';
-            document.body.style.overflow = 'hidden';
-            loadWeatherHubData(currentCityName);
-        };
+    async function loadWeatherHubData(locationQuery) {
+        const query = (typeof locationQuery === 'string' ? locationQuery.trim() : '') || currentCityName || '';
+        const statusSub = document.getElementById('weather-modal-status-sub');
+        if (statusSub) {
+            statusSub.innerHTML = `<i class="fas fa-spinner fa-spin" style="color: var(--accent); margin-right: 6px;"></i> Fetching live meteorological telemetry...`;
+        }
+
+        let lat = null, lon = null, resolvedName = query;
+
+        try {
+            // 1. Resolve Coordinates & City Name Worldwide
+            if (typeof locationQuery === 'object' && locationQuery && locationQuery.latitude) {
+                lat = locationQuery.latitude;
+                lon = locationQuery.longitude;
+                resolvedName = locationQuery.name || `${lat.toFixed(2)}, ${lon.toFixed(2)}`;
+            } else if (!query || query.toLowerCase() === 'auto') {
+                // Auto Detect via IP Geolocation or Navigator
+                try {
+                    const ipRes = await fetch('https://get.geojs.io/v1/ip/geo.json');
+                    if (ipRes.ok) {
+                        const ipData = await ipRes.json();
+                        lat = parseFloat(ipData.latitude);
+                        lon = parseFloat(ipData.longitude);
+                        resolvedName = `${ipData.city || 'Your Location'}${ipData.country ? ', ' + ipData.country : ''}`;
+                    }
+                } catch (e) {
+                    console.warn('[Weather Engine] IP auto-locate fallback:', e);
+                }
+            } else if (/^-?\d+(\.\d+)?,\s*-?\d+(\.\d+)?$/.test(query)) {
+                // Coordinates format: "lat,lon"
+                const parts = query.split(',');
+                lat = parseFloat(parts[0]);
+                lon = parseFloat(parts[1]);
+                resolvedName = `${lat.toFixed(2)}, ${lon.toFixed(2)}`;
+            } else {
+                // Search City anywhere in the world via Open-Meteo Global Geocoding API
+                const geoUrl = `https://geocoding-api.open-meteo.com/v1/search?name=${encodeURIComponent(query)}&count=1&language=en&format=json`;
+                const geoRes = await fetch(geoUrl);
+                if (geoRes.ok) {
+                    const geoData = await geoRes.json();
+                    if (geoData && geoData.results && geoData.results.length > 0) {
+                        const first = geoData.results[0];
+                        lat = first.latitude;
+                        lon = first.longitude;
+                        resolvedName = `${first.name}${first.admin1 ? ', ' + first.admin1 : ''}${first.country ? ', ' + first.country : ''}`;
+                    }
+                }
+            }
+
+            // Fallback default if geocoding didn't locate
+            if (lat === null || lon === null) {
+                lat = 23.0225; // Default coordinates
+                lon = 72.5714;
+                resolvedName = resolvedName || 'Ahmedabad, India';
+            }
+
+            currentCityName = resolvedName;
+            localStorage.setItem('ocal-weather-loc', currentCityName);
+
+            // 2. High-Accuracy Global Weather Forecast from Open-Meteo
+            const forecastUrl = `https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&current=temperature_2m,relative_humidity_2m,apparent_temperature,is_day,precipitation,rain,showers,snowfall,weather_code,cloud_cover,pressure_msl,surface_pressure,wind_speed_10m,wind_direction_10m,wind_gusts_10m&hourly=temperature_2m,relative_humidity_2m,dew_point_2m,apparent_temperature,precipitation_probability,precipitation,weather_code,pressure_msl,visibility,wind_speed_10m,uv_index&daily=weather_code,temperature_2m_max,temperature_2m_min,apparent_temperature_max,apparent_temperature_min,sunrise,sunset,uv_index_max,precipitation_sum,precipitation_probability_max,wind_speed_10m_max&timezone=auto`;
+            
+            const omRes = await fetch(forecastUrl);
+            if (omRes.ok) {
+                const omData = await omRes.json();
+                const cur = omData.current || {};
+                const daily = omData.daily || {};
+                const hourly = omData.hourly || {};
+
+                // Build 12-hour hourly forecast timeline
+                const hourlyList = [];
+                const nowHour = new Date().getHours();
+                const totalHours = hourly.time?.length || 24;
+                for (let i = 0; i < 12; i++) {
+                    const idx = (nowHour + i) % totalHours;
+                    const timeStr = i === 0 ? 'Now' : new Date(hourly.time[idx]).toLocaleTimeString([], { hour: 'numeric', hour12: true });
+                    hourlyList.push({
+                        time: timeStr,
+                        temp: hourly.temperature_2m ? hourly.temperature_2m[idx] : cur.temperature_2m,
+                        pop: hourly.precipitation_probability ? (hourly.precipitation_probability[idx] || 0) : 0,
+                        wind: hourly.wind_speed_10m ? hourly.wind_speed_10m[idx] : cur.wind_speed_10m,
+                        weatherCode: hourly.weather_code ? hourly.weather_code[idx] : cur.weather_code,
+                        conditionText: '',
+                        isDay: (nowHour + i) % 24 >= 6 && (nowHour + i) % 24 < 19 ? 1 : 0
+                    });
+                }
+
+                // Build 7-day extended synoptic daily forecast
+                const daysOfWeek = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+                const dailyList = (daily.time || []).slice(0, 7).map((t, d) => {
+                    const dateObj = new Date(t);
+                    const dayName = d === 0 ? 'Today' : (d === 1 ? 'Tomorrow' : daysOfWeek[dateObj.getDay()]);
+                    const precipProb = daily.precipitation_probability_max ? daily.precipitation_probability_max[d] : null;
+                    const precipSum = daily.precipitation_sum ? daily.precipitation_sum[d] : null;
+                    let popStr = '0%';
+                    if (precipProb !== null && precipProb > 0) popStr = `${precipProb}%`;
+                    else if (precipSum !== null && precipSum > 0) popStr = `${precipSum.toFixed(1)} mm`;
+
+                    return {
+                        day: dayName,
+                        date: dateObj.toLocaleDateString([], { month: 'short', day: 'numeric' }),
+                        high: daily.temperature_2m_max ? daily.temperature_2m_max[d] : cur.temperature_2m,
+                        low: daily.temperature_2m_min ? daily.temperature_2m_min[d] : cur.temperature_2m,
+                        pop: popStr,
+                        weatherCode: daily.weather_code ? daily.weather_code[d] : cur.weather_code,
+                        conditionText: ''
+                    };
+                });
+
+                // Format Sunrise & Sunset
+                let sunriseStr = '06:00 AM';
+                let sunsetStr = '06:50 PM';
+                if (daily.sunrise && daily.sunrise[0]) {
+                    sunriseStr = new Date(daily.sunrise[0]).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+                }
+                if (daily.sunset && daily.sunset[0]) {
+                    sunsetStr = new Date(daily.sunset[0]).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+                }
+
+                const normalizedWeather = {
+                    cityName: resolvedName,
+                    current: {
+                        temp: cur.temperature_2m,
+                        feelsLike: cur.apparent_temperature ?? cur.temperature_2m,
+                        humidity: cur.relative_humidity_2m ?? 50,
+                        windSpeed: cur.wind_speed_10m ?? 0,
+                        pressure: cur.pressure_msl ?? cur.surface_pressure ?? 1013,
+                        visibility: hourly.visibility ? (hourly.visibility[0] / 1000).toFixed(1) : 10,
+                        uvIndex: daily.uv_index_max ? daily.uv_index_max[0] : 0,
+                        cloudCover: cur.cloud_cover ?? 0,
+                        weatherCode: cur.weather_code ?? 0,
+                        conditionText: '',
+                        isDay: cur.is_day ?? 1
+                    },
+                    today: {
+                        high: daily.temperature_2m_max ? daily.temperature_2m_max[0] : cur.temperature_2m,
+                        low: daily.temperature_2m_min ? daily.temperature_2m_min[0] : cur.temperature_2m,
+                        dewPoint: hourly.dew_point_2m ? hourly.dew_point_2m[0] : 20,
+                        windGusts: cur.wind_gusts_10m ?? cur.wind_speed_10m ?? 0,
+                        sunrise: sunriseStr,
+                        sunset: sunsetStr
+                    },
+                    hourly: hourlyList,
+                    daily: dailyList
+                };
+
+                renderWeatherData(normalizedWeather);
+                if (statusSub) {
+                    statusSub.innerHTML = `<i class="fas fa-signal" style="color: var(--accent); margin-right: 6px;"></i> Meteorological telemetry active &bull; ${resolvedName}`;
+                }
+                return;
+            }
+            throw new Error('Open-Meteo returned error status: ' + omRes.status);
+        } catch (err) {
+            console.warn('[Weather Hub] API error:', err);
+            if (statusSub) {
+                statusSub.innerHTML = `<i class="fas fa-triangle-exclamation" style="color: #ef4444; margin-right: 6px;"></i> Telemetry offline. Check network connection.`;
+            }
+        }
     }
 
-    if (newsCloseBtn && newsModalOverlay) {
-        newsCloseBtn.onclick = () => {
-            newsModalOverlay.style.display = 'none';
-            document.body.style.overflow = '';
-        };
+    // Expose global weather loader for other components
+    window.loadGlobalWeather = (q) => loadWeatherHubData(q);
+
+    // Modal open / close handlers
+    function openWeatherModal() {
+        newsModalOverlay.style.display = 'flex';
+        newsModalOverlay.offsetHeight;
+        newsModalOverlay.classList.add('active');
+        document.body.style.overflow = 'hidden';
+        if (citySearchInput) {
+            citySearchInput.value = '';
+            if (searchClearBtn) searchClearBtn.style.display = 'none';
+            const dropdown = document.getElementById('weather-search-dropdown');
+            if (dropdown) dropdown.style.display = 'none';
+        }
     }
 
-    if (newsModalOverlay) {
-        newsModalOverlay.onclick = (e) => {
-            if (e.target === newsModalOverlay) {
+    function closeWeatherModal() {
+        newsModalOverlay.classList.remove('active');
+        const dropdown = document.getElementById('weather-search-dropdown');
+        if (dropdown) dropdown.style.display = 'none';
+        setTimeout(() => {
+            if (!newsModalOverlay.classList.contains('active')) {
                 newsModalOverlay.style.display = 'none';
                 document.body.style.overflow = '';
             }
-        };
+        }, 250);
     }
+
+    if (newsTriggerBtn) newsTriggerBtn.onclick = openWeatherModal;
+    if (newsCloseBtn) newsCloseBtn.onclick = closeWeatherModal;
+    
+    // Also attach to home page weather widgets to open the weather modal on click
+    const spWeatherCard = document.querySelector('.sp-weather-card');
+    if (spWeatherCard) {
+        spWeatherCard.style.cursor = 'pointer';
+        spWeatherCard.onclick = openWeatherModal;
+    }
+    const floatingWeather = document.getElementById('floating-weather');
+    if (floatingWeather) {
+        floatingWeather.style.cursor = 'pointer';
+        floatingWeather.onclick = openWeatherModal;
+    }
+
+    newsModalOverlay.onclick = (e) => {
+        if (e.target === newsModalOverlay) {
+            closeWeatherModal();
+        }
+    };
 
     if (newsRefreshBtn) {
         newsRefreshBtn.onclick = () => {
-            loadWeatherHubData(currentCityName);
+            const icon = newsRefreshBtn.querySelector('i');
+            if (icon) icon.classList.add('fa-spin');
+            loadWeatherHubData(currentCityName).finally(() => {
+                setTimeout(() => {
+                    if (icon) icon.classList.remove('fa-spin');
+                }, 500);
+            });
         };
     }
 
+    // Interactive Search Autocomplete with Live Dropdown for any city globally
+    let searchDebounceTimer = null;
+    const searchDropdown = document.getElementById('weather-search-dropdown');
+
     if (citySearchInput) {
+        citySearchInput.oninput = () => {
+            const q = citySearchInput.value.trim();
+            if (searchClearBtn) searchClearBtn.style.display = q ? 'flex' : 'none';
+
+            clearTimeout(searchDebounceTimer);
+            if (!q || q.length < 2) {
+                if (searchDropdown) searchDropdown.style.display = 'none';
+                return;
+            }
+
+            searchDebounceTimer = setTimeout(async () => {
+                try {
+                    const geoUrl = `https://geocoding-api.open-meteo.com/v1/search?name=${encodeURIComponent(q)}&count=6&language=en&format=json`;
+                    const res = await fetch(geoUrl);
+                    if (res.ok) {
+                        const data = await res.json();
+                        if (data && data.results && data.results.length > 0 && searchDropdown) {
+                            searchDropdown.innerHTML = data.results.map(r => `
+                                <div class="weather-dropdown-item" data-lat="${r.latitude}" data-lon="${r.longitude}" data-name="${r.name}${r.admin1 ? ', ' + r.admin1 : ''}${r.country ? ', ' + r.country : ''}">
+                                    <span class="city-name"><i class="fas fa-location-dot" style="margin-right: 6px; color: var(--accent);"></i> ${r.name}${r.admin1 ? ', ' + r.admin1 : ''}</span>
+                                    <span class="country-name">${r.country || ''}</span>
+                                </div>
+                            `).join('');
+                            searchDropdown.style.display = 'block';
+
+                            searchDropdown.querySelectorAll('.weather-dropdown-item').forEach(item => {
+                                item.onclick = () => {
+                                    const lat = parseFloat(item.getAttribute('data-lat'));
+                                    const lon = parseFloat(item.getAttribute('data-lon'));
+                                    const name = item.getAttribute('data-name');
+                                    searchDropdown.style.display = 'none';
+                                    citySearchInput.value = name;
+                                    loadWeatherHubData({ latitude: lat, longitude: lon, name: name });
+                                };
+                            });
+                            return;
+                        }
+                    }
+                } catch (e) {
+                    console.warn('Geocoding autocomplete failed:', e);
+                }
+                if (searchDropdown) searchDropdown.style.display = 'none';
+            }, 250);
+        };
+
         citySearchInput.onkeydown = (e) => {
             if (e.key === 'Enter' && citySearchInput.value.trim()) {
+                if (searchDropdown) searchDropdown.style.display = 'none';
                 loadWeatherHubData(citySearchInput.value.trim());
             }
         };
     }
 
+    if (searchClearBtn) {
+        searchClearBtn.onclick = () => {
+            citySearchInput.value = '';
+            searchClearBtn.style.display = 'none';
+            if (searchDropdown) searchDropdown.style.display = 'none';
+            citySearchInput.focus();
+        };
+    }
+
+    // Toggle °C / °F
+    if (unitBtn) {
+        unitBtn.onclick = () => {
+            currentUnit = currentUnit === 'C' ? 'F' : 'C';
+            localStorage.setItem('ocal-weather-unit', currentUnit);
+            if (unitText) unitText.textContent = `°${currentUnit}`;
+            if (lastFetchedWeather) {
+                renderWeatherData(lastFetchedWeather);
+            }
+        };
+    }
+
+    // Hourly / Daily Forecast Tabs
+    if (tabHourly && tabDaily && hourlySlider && dailyGrid) {
+        tabHourly.onclick = () => {
+            tabHourly.classList.add('active');
+            tabDaily.classList.remove('active');
+            hourlySlider.style.display = 'flex';
+            dailyGrid.style.display = 'none';
+            if (forecastSubtitle) forecastSubtitle.textContent = 'Hourly Temperature, Precipitation & Wind Telemetry';
+        };
+
+        tabDaily.onclick = () => {
+            tabDaily.classList.add('active');
+            tabHourly.classList.remove('active');
+            hourlySlider.style.display = 'none';
+            dailyGrid.style.display = 'grid';
+            if (forecastSubtitle) forecastSubtitle.textContent = '7-Day Synoptic Weather & Temperature Range Outlook';
+        };
+    }
+
+    // Initial weather load
     loadWeatherHubData(currentCityName);
 }
 

@@ -64,6 +64,11 @@ app.commandLine.appendSwitch('enable-fast-unload');
 app.commandLine.appendSwitch('disable-background-timer-throttling');
 // Prevent backgrounding of renderers
 app.commandLine.appendSwitch('disable-renderer-backgrounding');
+// Fast TCP & DNS Acceleration
+app.commandLine.appendSwitch('enable-tcp-fast-open');
+app.commandLine.appendSwitch('enable-async-dns');
+app.commandLine.appendSwitch('dns-prefetch-disable', 'false');
+app.commandLine.appendSwitch('enable-resource-load-scheduler');
 
 // Disable the default Electron menu bar on Windows/Linux to prevent UI shifting
 Menu.setApplicationMenu(null);
@@ -142,9 +147,83 @@ function loadSettings() {
 
 function saveSettings(settings) {
     try {
+        if (settings) {
+            const curId = settings.currentProfileId || 'default';
+            if (!settings.profilesData) settings.profilesData = {};
+            settings.profilesData[curId] = {
+                bookmarks: settings.bookmarks || [],
+                folders: settings.folders || [],
+                history: settings.history || [],
+                accentColor: settings.accentColor,
+                accentColorDark: settings.accentColorDark,
+                accentColorLight: settings.accentColorLight,
+                themeMode: settings.themeMode,
+                searchEngine: settings.searchEngine,
+                customSearchUrl: settings.customSearchUrl
+            };
+        }
         fs.writeFileSync(settingsPath, JSON.stringify(settings, null, 2));
     } catch (e) {
         console.error('Failed to save settings:', e);
+    }
+}
+
+function getProfilePartition(profileId = null) {
+    const pid = profileId || (userSettings && userSettings.currentProfileId) || 'default';
+    return `persist:profile_${pid}`;
+}
+
+function saveCurrentProfileData() {
+    if (!userSettings) return;
+    const curId = userSettings.currentProfileId || 'default';
+    if (!userSettings.profilesData) userSettings.profilesData = {};
+    userSettings.profilesData[curId] = {
+        bookmarks: JSON.parse(JSON.stringify(userSettings.bookmarks || [])),
+        folders: JSON.parse(JSON.stringify(userSettings.folders || [])),
+        history: JSON.parse(JSON.stringify(userSettings.history || [])),
+        accentColor: userSettings.accentColor,
+        accentColorDark: userSettings.accentColorDark,
+        accentColorLight: userSettings.accentColorLight,
+        themeMode: userSettings.themeMode,
+        searchEngine: userSettings.searchEngine,
+        customSearchUrl: userSettings.customSearchUrl
+    };
+}
+
+function loadProfileData(profileId) {
+    if (!userSettings) return;
+    if (!userSettings.profilesData) userSettings.profilesData = {};
+    const data = userSettings.profilesData[profileId];
+    if (data) {
+        userSettings.bookmarks = Array.isArray(data.bookmarks) ? JSON.parse(JSON.stringify(data.bookmarks)) : [];
+        userSettings.folders = Array.isArray(data.folders) ? JSON.parse(JSON.stringify(data.folders)) : [];
+        userSettings.history = Array.isArray(data.history) ? JSON.parse(JSON.stringify(data.history)) : [];
+        if (data.accentColorDark) userSettings.accentColorDark = data.accentColorDark;
+        if (data.accentColorLight) userSettings.accentColorLight = data.accentColorLight;
+        if (data.themeMode) userSettings.themeMode = data.themeMode;
+        if (data.accentColor) userSettings.accentColor = data.accentColor;
+        else userSettings.accentColor = userSettings.themeMode === 'light' ? userSettings.accentColorLight : userSettings.accentColorDark;
+        if (data.searchEngine) userSettings.searchEngine = data.searchEngine;
+        if (data.customSearchUrl) userSettings.customSearchUrl = data.customSearchUrl;
+    } else {
+        const prof = (userSettings.profiles || []).find(p => p.id === profileId);
+        const col = (prof && prof.color) ? prof.color : (userSettings.accentColor || '#09f0a0');
+        userSettings.profilesData[profileId] = {
+            bookmarks: [],
+            folders: [],
+            history: [],
+            accentColor: col,
+            accentColorDark: col,
+            accentColorLight: '#058f60',
+            themeMode: userSettings.themeMode || 'dark',
+            searchEngine: userSettings.searchEngine || 'google',
+            customSearchUrl: userSettings.customSearchUrl || 'https://www.google.com/search?q=%s'
+        };
+        userSettings.bookmarks = [];
+        userSettings.folders = [];
+        userSettings.history = [];
+        userSettings.accentColor = col;
+        userSettings.accentColorDark = col;
     }
 }
 
@@ -258,9 +337,39 @@ let userSettings = loadSettings() || {
     openaiApiKey: '',
     customEndpoint: '',
     customModel: '',
-    customApiKey: ''
+    customApiKey: '',
+    ambientSound: {
+        enabled: false,
+        track: 'Ocal.mp3',
+        volume: 0.35,
+        smartDucking: true,
+        duckVolume: 0.0
+    },
+    pageEffect: {
+        enabled: false,
+        effect: 'none',
+        intensity: 1.0,
+        global: true
+    }
 };
 
+if (!userSettings.ambientSound) {
+    userSettings.ambientSound = {
+        enabled: false,
+        track: 'Ocal.mp3',
+        volume: 0.35,
+        smartDucking: true,
+        duckVolume: 0.0
+    };
+}
+if (!userSettings.pageEffect) {
+    userSettings.pageEffect = {
+        enabled: false,
+        effect: 'none',
+        intensity: 1.0,
+        global: true
+    };
+}
 if (!userSettings.bookmarks) userSettings.bookmarks = [];
 if (!userSettings.tabLayout) userSettings.tabLayout = 'horizontal';
 if (userSettings.verticalTabsCollapsed === undefined) userSettings.verticalTabsCollapsed = false;
@@ -273,9 +382,29 @@ if (!userSettings.customModel) userSettings.customModel = '';
 if (!userSettings.customApiKey) userSettings.customApiKey = '';
 if (!userSettings.folders) userSettings.folders = [];
 if (!userSettings.history) userSettings.history = [];
-if (!userSettings.downloads) userSettings.downloads = [];
 if (!userSettings.currentProfileId) userSettings.currentProfileId = 'default';
-if (!userSettings.bookmarkBarMode) userSettings.bookmarkBarMode = 'auto';
+if (!userSettings.profiles || !Array.isArray(userSettings.profiles) || userSettings.profiles.length === 0) {
+    userSettings.profiles = [{ id: 'default', name: 'Personal', icon: 'fa-user', color: '#09f0a0' }];
+}
+userSettings.profiles.forEach(p => {
+    if (!p.color) p.color = p.id === 'default' ? (userSettings.accentColor || '#09f0a0') : '#09f0a0';
+});
+if (!userSettings.profilesData) {
+    userSettings.profilesData = {};
+}
+if (!userSettings.profilesData['default']) {
+    userSettings.profilesData['default'] = {
+        bookmarks: userSettings.bookmarks || [],
+        folders: userSettings.folders || [],
+        history: userSettings.history || [],
+        accentColor: userSettings.accentColor || '#09f0a0',
+        accentColorDark: userSettings.accentColorDark || '#09f0a0',
+        accentColorLight: userSettings.accentColorLight || '#058f60',
+        themeMode: userSettings.themeMode || 'dark',
+        searchEngine: userSettings.searchEngine || 'google',
+        customSearchUrl: userSettings.customSearchUrl || 'https://www.google.com/search?q=%s'
+    };
+}
 if (!userSettings.homeLayout) userSettings.homeLayout = 'center';
 if (!userSettings.homeTileSize) userSettings.homeTileSize = 80;
 if (!userSettings.sitePermissions) userSettings.sitePermissions = {};
@@ -579,6 +708,146 @@ let lastYOffset = 96;
 let lastWSidebar = 44;
 if (!userSettings.sitePermissions) userSettings.sitePermissions = {};
 
+// ══════════════════════════════════════════════════════════════════════════════
+// ── OCAL TURBO-SHIELD: HIGH-PERFORMANCE ADBLOCK & PAGE ACCELERATOR ENGINE ────
+// ══════════════════════════════════════════════════════════════════════════════
+
+const ADBLOCK_DOMAINS = new Set([
+    // Google Ad Services & DoubleClick
+    'doubleclick.net', 'googleadservices.com', 'partner.googleadservices.com', 'googlesyndication.com',
+    'adservice.google.com', 'pagead2.googlesyndication.com', 'pagead2.googleadservices.com',
+    'adservice.google.ca', 'adservice.google.co.uk', 'adservice.google.de', 'adservice.google.co.in',
+    'adservice.google.fr', 'adservice.google.com.au', 'adservice.google.com.br', 'adservice.google.es',
+    'adservice.google.it', 'adservice.google.co.jp', 'adservice.google.ru', 'adservice.google.com.tw',
+    
+    // Major Ad Networks & Global Ad Exchanges
+    'criteo.com', 'criteo.net', 'adnxs.com', 'ib.adnxs.com', 'taboola.com', 'outbrain.com',
+    'amazon-adsystem.com', 'aax.amazon-adsystem.com', 'adroll.com', 'rubiconproject.com',
+    'openx.net', 'casalemedia.com', 'smartadserver.com', 'adtech.de', 'advertising.com',
+    'adzerk.net', 'zedo.com', 'revcontent.com', 'mgid.com', 'media.net', 'bidswitch.net',
+    'sharethrough.com', 'exponential.com', 'inmobi.com', 'moatads.com', 'serving-sys.com',
+    'flashtalking.com', 'stickyadstv.com', 'spotxchange.com', 'yieldmo.com', 'sonobi.com',
+    'triplelift.com', 'teads.tv', 'adcolony.com', 'applovin.com', 'vungle.com', 'chartboost.com',
+    'ironsrc.com', 'infolinks.com', 'chitika.net', 'bidvertiser.com', 'adclick.g.doubleclick.net',
+    'pubmatic.com', 'ads.pubmatic.com', 'indexexchange.com', 'contextweb.com', 'sovrn.com',
+    'lijit.com', 'undertone.com', 'adform.net', 'adkernel.com', 'yieldlab.net', 'e-planning.net',
+    'distroscale.com', 'gumgum.com', 'kargo.com', 'seedtag.com', 'unruly.co', 'connatix.com',
+    'playwire.com', 'snack-media.com', 'buysellads.com', 'carbonads.net', 'propellerads.com',
+    'popads.net', 'popcash.net', 'exoclick.com', 'juicyads.com', 'adsterra.com', 'trafficfactory.biz',
+    'trafficjunky.com', 'hilltopads.net', 'clickadu.com', 'richpush.com', 'pushassist.com',
+    'adblade.com', 'adbuffs.com', 'adbutler.com', 'adcash.com', 'adcovery.com', 'adf.ly',
+    
+    // Trackers, Web Beacons & Invasive Telemetry
+    'scorecardresearch.com', 'sb.scorecardresearch.com', 'quantserve.com', 'pixel.quantserve.com',
+    'analytics.tiktok.com', 'connect.facebook.net', 'facebook.net', 'clarity.ms', 'c.clarity.ms',
+    'hotjar.com', 'static.hotjar.com', 'script.hotjar.com', 'yandex.ru', 'mc.yandex.ru',
+    'crazyegg.com', 'script.crazyegg.com', 'mouseflow.com', 'fullstory.com', 'rs.fullstory.com',
+    'segment.io', 'cdn.segment.io', 'mixpanel.com', 'api.mixpanel.com', 'amplitude.com',
+    'api.amplitude.com', 'branch.io', 'app.link', 'appsflyer.com', 'adjust.com', 'app.adjust.com',
+    'kochava.com', 'optimizely.com', 'cdn.optimizely.com', 'vwo.com', 'dev.visualwebsiteoptimizer.com',
+    'parsely.com', 'srv.pixel.parsely.com', 'chartbeat.com', 'static.chartbeat.com',
+    'statcounter.com', 'histats.com', 'clicky.com', 'static.getclicky.com', 'newrelic.com',
+    'bam.nr-data.net', 'js-agent.newrelic.com', 'inspectlet.com', 'luckyorange.com',
+    'pingdom.net', 'sentry.io', 'browser.sentry-cdn.com',
+    
+    // Cryptominers & Badware
+    'coinhive.com', 'crypto-loot.com', 'webminepool.com', 'monerominer.rocks', 'coinimp.com',
+    'minr.pw', 'coin-have.com', 'coinhave.com'
+]);
+
+const ADBLOCK_PATH_REGEX = /(\/pagead\/|\/adservice\/|\/ads\/ga\.js|\/google-analytics\.com\/(analytics|gtag\/js)|\/fbevents\.js|\/hotjar-|\/clarity\.js|\/outbrain\.js|\/taboola_loader\.js|\/ad\.js|\/ads\.js|\/adsystem\.js|\/popunder\.js|\/monetization\.js|\/advertisement\.js|\/tracking\.js|\/telemetry\.js|\/beacon\.min\.js|\/pixel\.gif|\/collect\?v=|\/event-collector)/i;
+
+const TRACKING_PARAMS = new Set([
+    'utm_source', 'utm_medium', 'utm_campaign', 'utm_term', 'utm_content',
+    'fbclid', 'gclid', 'msclkid', 'mc_eid', 'dclid', 'yclid', 'zanpid',
+    '_hsenc', '_hsmi', 'mkt_tok', 'igshid', 'si', 'ref_src'
+]);
+
+function cleanTrackingParameters(rawUrl) {
+    if (!rawUrl || !rawUrl.includes('?') || rawUrl.startsWith('ocal://') || rawUrl.startsWith('file://')) return rawUrl;
+    try {
+        const parsed = new URL(rawUrl);
+        let hasModified = false;
+        for (const param of TRACKING_PARAMS) {
+            if (parsed.searchParams.has(param)) {
+                parsed.searchParams.delete(param);
+                hasModified = true;
+            }
+        }
+        return hasModified ? parsed.toString() : rawUrl;
+    } catch (e) {
+        return rawUrl;
+    }
+}
+
+const YOUTUBE_AD_PATTERNS = [
+    'youtube.com/pagead', 'youtube.com/ptracking', 'youtube.com/api/stats/ads',
+    'youtube.com/api/stats/qoe?adformat=', 'youtube.com/get_midroll_info',
+    /googlevideo\.com\/videoplayback\?.*ad_v2/,
+    /googlevideo\.com\/videoplayback\?.*ctier=a/,
+    /googlevideo\.com\/videoplayback\?.*adfilter/,
+    /googlevideo\.com\/videoplayback\?.*oad=/,
+    /googlevideo\.com\/initplayback\?.*oad=/,
+    /youtube\.com\/get_video_info\?.*ad_v2/
+];
+
+function isAdOrTrackerUrl(rawUrl) {
+    if (!rawUrl || typeof rawUrl !== 'string') return null;
+    if (rawUrl.startsWith('ocal://') || rawUrl.startsWith('file://') || rawUrl.startsWith('chrome-extension://') || rawUrl.startsWith('devtools://')) {
+        return null;
+    }
+
+    try {
+        const parsed = new URL(rawUrl);
+        const hostname = parsed.hostname.toLowerCase();
+        const pathname = parsed.pathname;
+
+        // Never block core first-party services on their primary domain
+        if (hostname.endsWith('.google.com') || hostname === 'google.com') {
+            if (hostname.includes('mail.') || hostname.includes('drive.') || hostname.includes('docs.') || hostname.includes('maps.') || hostname.includes('play.') || hostname.includes('accounts.')) {
+                return null;
+            }
+        }
+        if (hostname.endsWith('github.com') || hostname.endsWith('microsoft.com') || hostname.endsWith('apple.com') || hostname.endsWith('cloudflare.com') || hostname.endsWith('cdnjs.cloudflare.com') || hostname.endsWith('jsdelivr.net') || hostname.endsWith('unpkg.com')) {
+            return null;
+        }
+
+        // Essential YouTube video stream chunks
+        if (hostname.endsWith('googlevideo.com') && pathname.includes('/videoplayback') && !rawUrl.includes('ctier=a') && !rawUrl.includes('ad_v2') && !rawUrl.includes('oad=')) {
+            return null;
+        }
+
+        // 1. YouTube specific ad streams
+        if (hostname.includes('youtube.com') || hostname.includes('googlevideo.com')) {
+            const isYtAd = YOUTUBE_AD_PATTERNS.some(p => p instanceof RegExp ? p.test(rawUrl) : rawUrl.includes(p));
+            if (isYtAd) return 'ads';
+        }
+
+        // 2. Exact domain matching in ADBLOCK_DOMAINS
+        if (ADBLOCK_DOMAINS.has(hostname)) {
+            const isTracker = hostname.includes('analytic') || hostname.includes('pixel') || hostname.includes('clarity') || hostname.includes('hotjar') || hostname.includes('segment') || hostname.includes('sentry') || hostname.includes('telemetry') || hostname.includes('track');
+            return isTracker ? 'trackers' : 'ads';
+        }
+
+        // 3. Suffix / Subdomain matching
+        for (const adDomain of ADBLOCK_DOMAINS) {
+            if (hostname.endsWith('.' + adDomain)) {
+                const isTracker = adDomain.includes('analytic') || adDomain.includes('pixel') || adDomain.includes('clarity') || adDomain.includes('hotjar') || adDomain.includes('segment') || adDomain.includes('sentry') || adDomain.includes('telemetry') || adDomain.includes('track');
+                return isTracker ? 'trackers' : 'ads';
+            }
+        }
+
+        // 4. Path & script signature check
+        if (ADBLOCK_PATH_REGEX.test(rawUrl)) {
+            return 'ads';
+        }
+
+        return null;
+    } catch (e) {
+        return null;
+    }
+}
+
 function applyShieldSettings() {
     setTimeout(() => {
         if (global._shieldInterceptorsRegistered) return;
@@ -587,48 +856,45 @@ function applyShieldSettings() {
         const ses = session.defaultSession;
         const sesGoogle = session.fromPartition('persist:google_login');
 
-        // Precompile regexes for high-performance network intercepting
-        const PRECOMPILED_AD_PATTERNS = [
-            'doubleclick.net', 'googleadservices.com', 'partner.googleadservices.com',
-            'googlesyndication.com', 'adservice.google.com', 'pagead2.googlesyndication.com',
-            'youtube.com/pagead', 'youtube.com/ptracking', 'youtube.com/api/stats/ads',
-            'youtube.com/api/stats/qoe?adformat=', 'youtube.com/get_midroll_info',
-            /googlevideo\.com\/videoplayback\?.*ad_v2/,
-            /googlevideo\.com\/videoplayback\?.*ctier=a/,
-            /googlevideo\.com\/videoplayback\?.*adfilter/,
-            /googlevideo\.com\/videoplayback\?.*oad=/,
-            /googlevideo\.com\/initplayback\?.*oad=/,
-            /youtube\.com\/get_video_info\?.*ad_v2/,
-            'youtube.com/api/stats/ads'
-        ];
-
         const masterOnBeforeRequest = (details, callback) => {
-            if (!details.url) { callback({}); return; }
-            const url = details.url.toLowerCase();
-            const wcId = details.webContentsId;
+            const { url, resourceType, webContentsId } = details;
+            if (!url) return callback({});
 
-            const isNeuralAd = PRECOMPILED_AD_PATTERNS.some(p => {
-                if (p instanceof RegExp) return p.test(url);
-                return url.includes(p);
-            });
+            // 1. HTTPS Upgrade for mainFrame navigation
+            if (userSettings.httpsUpgradeEnabled && resourceType === 'mainFrame' && url.startsWith('http://')) {
+                try {
+                    const upgradeUrl = new URL(url);
+                    upgradeUrl.protocol = 'https:';
+                    return callback({ redirectURL: upgradeUrl.toString() });
+                } catch (e) {}
+            }
 
-            if (isNeuralAd) {
-                if (wcId) updateTabShieldStats(wcId, 'ads');
-                callback({ cancel: true });
-                return;
+            // 2. Outgoing Tracking Parameter Stripper (Accelerates navigation & protects privacy)
+            if (resourceType === 'mainFrame' && url.includes('?')) {
+                const cleaned = cleanTrackingParameters(url);
+                if (cleaned !== url) {
+                    return callback({ redirectURL: cleaned });
+                }
+            }
+
+            // 3. Native Turbo-Shield AdBlock & Tracker Blocker
+            if (userSettings.adBlockEnabled !== false) {
+                const blockType = isAdOrTrackerUrl(url);
+                if (blockType) {
+                    if (webContentsId) updateTabShieldStats(webContentsId, blockType);
+                    return callback({ cancel: true });
+                }
             }
 
             callback({});
         };
 
         const masterOnErrorOccurred = (details) => {
-            // Passive Tracking: If a request failed/was blocked by an extension, track it.
             if (details.error === 'net::ERR_BLOCKED_BY_CLIENT' || details.error === 'net::ERR_ABORTED') {
-                const url = details.url.toLowerCase();
+                const url = details.url ? details.url.toLowerCase() : '';
                 const wcId = details.webContentsId;
                 if (!wcId) return;
 
-                // Better heuristic for ad vs tracker
                 const trackerKeywords = [
                     'pixel', 'tracker', 'telemetry', 'analytics', 'metrics', 'collect', 'collectors',
                     'tag-manager', 'googletagmanager', 'doubleclick', 'scorecardresearch',
@@ -641,20 +907,16 @@ function applyShieldSettings() {
 
         const masterOnBeforeSendHeaders = (details, callback) => {
             const headers = details.requestHeaders || {};
-            const url = details.url.toLowerCase();
-            const isVideo = url.includes('googlevideo.com');
-
-            // Force Regional Masking Headers
             headers['Accept-Language'] = 'en-US,en;q=0.9';
-            // Legacy X-Forwarded-For removed to allow actual VPN nodes to handle masking
             callback({ requestHeaders: headers });
         };
 
         const masterOnHeadersReceived = (details, callback) => {
             const headers = details.responseHeaders || {};
-            // Inject Secure Content-Security-Policy to resolve Electron warnings 
-            // and protect against XSS, while allowing uBlock and internal resources.
-            if (!headers['content-security-policy'] && !headers['Content-Security-Policy']) {
+            const url = details.url || '';
+
+            // Apply internal CSP only to ocal:// pages
+            if (url.startsWith('ocal://') && !headers['content-security-policy'] && !headers['Content-Security-Policy']) {
                 headers['Content-Security-Policy'] = [
                     "default-src 'self' 'unsafe-inline' 'unsafe-eval' data: blob: ocal: *; " +
                     "script-src 'self' 'unsafe-inline' 'unsafe-eval' data: blob: https:; " +
@@ -676,7 +938,7 @@ function applyShieldSettings() {
             s.webRequest.onHeadersReceived({ urls: ['*://*/*'] }, masterOnHeadersReceived);
         });
 
-        console.log('Ocal Shield: Active (Stats Tracking & Fast-Fail Enabled)');
+        console.log('Ocal Turbo-Shield: Active (High-Speed Ad & Tracker Blocking + Page Acceleration)');
     }, 500);
 }
 
@@ -851,17 +1113,7 @@ function setupSecurityHeadersFix() {
 }
 
 function setupSecurityHandlers() {
-    const ses = session.defaultSession;
-
-    // HTTPS Upgrade
-    ses.webRequest.onBeforeRequest({ urls: ['http://*/*'] }, (details, callback) => {
-        if (userSettings.httpsUpgradeEnabled && details.resourceType === 'mainFrame') {
-            const url = new URL(details.url);
-            url.protocol = 'https:';
-            return callback({ redirectURL: url.toString() });
-        }
-        callback({});
-    });
+    // Handled in applyShieldSettings (masterOnBeforeRequest)
 }
 
 function getAppIconPath() {
@@ -1134,12 +1386,36 @@ app.on('web-contents-created', (event, contents) => {
 
     contents.setUserAgent(desktopUA);
 
+    function checkAndBroadcastAudioActivity() {
+        let hasAudibleAudio = false;
+        views.forEach(v => {
+            try {
+                if (v.view && v.view.webContents && !v.view.webContents.isDestroyed()) {
+                    if (v.view.webContents.isCurrentlyAudible()) {
+                        hasAudibleAudio = true;
+                    }
+                }
+                if (v.view2 && v.view2.webContents && !v.view2.webContents.isDestroyed()) {
+                    if (v.view2.webContents.isCurrentlyAudible()) {
+                        hasAudibleAudio = true;
+                    }
+                }
+            } catch (e) {}
+        });
+        if (mainWindow && !mainWindow.isDestroyed()) {
+            mainWindow.webContents.send('global-audio-activity-changed', { hasAudibleAudio });
+        }
+    }
+
     contents.on('audible-status-changed', (event, isAudible) => {
-        const entry = views.find(v => v.view.webContents === contents);
+        const entry = views.find(v => v.view.webContents === contents || (v.view2 && v.view2.webContents === contents));
         if (entry) {
             entry.audible = isAudible;
-            mainWindow.webContents.send('tab-audio-status-changed', { id: entry.id, isAudible });
+            if (mainWindow && !mainWindow.isDestroyed()) {
+                mainWindow.webContents.send('tab-audio-status-changed', { id: entry.id, isAudible });
+            }
         }
+        checkAndBroadcastAudioActivity();
     });
 
     // Robust URL Sync for all events (including back/forward)
@@ -1734,6 +2010,7 @@ function createNewTab(url = null) {
     const view = new BrowserView({
         webPreferences: {
             preload: path.join(__dirname, 'preload.js'),
+            partition: getProfilePartition(),
             contextIsolation: true,
             nodeIntegration: false,
             sandbox: false,
@@ -1956,7 +2233,21 @@ function setupViewEvents(tabId, view, side = 'left') {
         }
     });
 
-    // Inject Robust YouTube AdShield fallback & Battery Saver
+    // Inject Robust YouTube Enhancer (AdShield + Dislike Recovery) & Battery Saver
+    const injectYouTubeEnhancers = () => {
+        const url = webContents.getURL() || '';
+        if (url.includes('youtube.com') && (userSettings.adBlockEnabled !== false || userSettings.youtubeDislikeEnabled !== false)) {
+            const adShieldPath = path.join(__dirname, 'youtube-ad-remover.js');
+            if (fs.existsSync(adShieldPath)) {
+                const script = fs.readFileSync(adShieldPath, 'utf8');
+                webContents.executeJavaScript(script).catch(() => { });
+                console.log(`[YouTube Enhancer] DOM Injected into ${url} (Ad-Shield + Dislike Recovery)`);
+            }
+        }
+    };
+
+    webContents.on('dom-ready', injectYouTubeEnhancers);
+
     webContents.on('did-finish-load', () => {
         const url = webContents.getURL();
 
@@ -1971,14 +2262,7 @@ function setupViewEvents(tabId, view, side = 'left') {
             `);
         }
 
-        if (url.includes('youtube.com') && userSettings.adBlockEnabled !== false) {
-            const adShieldPath = path.join(__dirname, 'youtube-ad-remover.js');
-            if (fs.existsSync(adShieldPath)) {
-                const script = fs.readFileSync(adShieldPath, 'utf8');
-                webContents.executeJavaScript(script).catch(() => { });
-                console.log(`[YouTube Enhancer] DOM Injected into ${url} (Ad-Shield + Dislike Recovery)`);
-            }
-        }
+        injectYouTubeEnhancers();
 
         if (userSettings.cyberStealthEnabled) {
             applyCyberStealth(webContents);
@@ -2187,26 +2471,95 @@ function setupViewEvents(tabId, view, side = 'left') {
             mainWindow.webContents.send('load-progress', { id: tabId, progress: 0 });
         }
     });
+
+    // ── Tab Audio & Media Detection for Smart Ambient Sound Ducking ──
+    webContents.on('audible-status-changed', (event, isAudible) => {
+        const entry = views.find(v => v.id === tabId);
+        if (entry) {
+            if (side === 'left') entry.audible = isAudible;
+            else entry.audible2 = isAudible;
+        }
+        if (mainWindow && !mainWindow.isDestroyed()) {
+            mainWindow.webContents.send('tab-audio-status-changed', { id: tabId, isAudible });
+        }
+        broadcastTabs();
+    });
+
+    webContents.on('media-started-playing', () => {
+        const entry = views.find(v => v.id === tabId);
+        if (entry) {
+            if (side === 'left') entry.isPlayingMedia = true;
+            else entry.isPlayingMedia2 = true;
+        }
+        if (mainWindow && !mainWindow.isDestroyed()) {
+            mainWindow.webContents.send('tab-audio-status-changed', { id: tabId, isAudible: true });
+            mainWindow.webContents.send('tab-media-status-changed', { id: tabId, isPlaying: true });
+        }
+        broadcastTabs();
+    });
+
+    webContents.on('media-paused', () => {
+        const entry = views.find(v => v.id === tabId);
+        if (entry) {
+            if (side === 'left') entry.isPlayingMedia = false;
+            else entry.isPlayingMedia2 = false;
+        }
+        const stillAudible = !webContents.isDestroyed() && webContents.isCurrentlyAudible();
+        if (mainWindow && !mainWindow.isDestroyed()) {
+            if (!stillAudible) {
+                mainWindow.webContents.send('tab-audio-status-changed', { id: tabId, isAudible: false });
+            }
+            mainWindow.webContents.send('tab-media-status-changed', { id: tabId, isPlaying: false });
+        }
+        broadcastTabs();
+    });
 }
+
+// Periodic Active Audio Auditor to ensure ambient sound ducking never misses any tab sound
+setInterval(() => {
+    try {
+        if (!mainWindow || mainWindow.isDestroyed()) return;
+        views.forEach(v => {
+            if (v.view && !v.view.webContents.isDestroyed()) {
+                const isAudible = v.view.webContents.isCurrentlyAudible() || !!v.isPlayingMedia;
+                if (v.audible !== isAudible) {
+                    v.audible = isAudible;
+                    mainWindow.webContents.send('tab-audio-status-changed', { id: v.id, isAudible });
+                }
+            }
+            if (v.isSplit && v.view2 && !v.view2.webContents.isDestroyed()) {
+                const isAudible2 = v.view2.webContents.isCurrentlyAudible() || !!v.isPlayingMedia2;
+                if (v.audible2 !== isAudible2) {
+                    v.audible2 = isAudible2;
+                    mainWindow.webContents.send('tab-audio-status-changed', { id: v.id, isAudible: isAudible2 });
+                }
+            }
+        });
+    } catch (e) {}
+}, 500);
 
 function broadcastTabs() {
     if (!mainWindow || mainWindow.isDestroyed()) return;
-    const tabData = views.map(v => ({
-        id: v.id,
-        title: v.view.webContents.isDestroyed() ? 'Ocal Home' : (v.view.webContents.getTitle() || 'Ocal Home'),
-        url: v.view.webContents.isDestroyed() ? '' : v.view.webContents.getURL(),
-        favicon: v.favicon || null,
-        groupId: v.groupId || null,
-        audible: v.view.webContents.isDestroyed() ? false : v.view.webContents.isCurrentlyAudible(),
-        isSplit: !!v.isSplit,
-        splitDirection: v.splitDirection || 'horizontal',
-        focusedSide: v.focusedSide || 'left',
-        title2: (v.isSplit && v.view2 && !v.view2.webContents.isDestroyed()) ? (v.view2.webContents.getTitle() || 'Ocal Home') : '',
-        url2: (v.isSplit && v.view2 && !v.view2.webContents.isDestroyed()) ? v.view2.webContents.getURL() : '',
-        emoji: v.emoji || null,
-        emoji2: v.emoji2 || null,
-        favicon2: (v.isSplit && v.view2) ? (v.favicon2 || null) : null
-    }));
+    const tabData = views.map(v => {
+        const isAudibleLeft = (v.view && !v.view.webContents.isDestroyed()) ? (v.view.webContents.isCurrentlyAudible() || !!v.isPlayingMedia || !!v.audible) : false;
+        const isAudibleRight = (v.isSplit && v.view2 && !v.view2.webContents.isDestroyed()) ? (v.view2.webContents.isCurrentlyAudible() || !!v.isPlayingMedia2 || !!v.audible2) : false;
+        return {
+            id: v.id,
+            title: v.view.webContents.isDestroyed() ? 'Ocal Home' : (v.view.webContents.getTitle() || 'Ocal Home'),
+            url: v.view.webContents.isDestroyed() ? '' : v.view.webContents.getURL(),
+            favicon: v.favicon || null,
+            groupId: v.groupId || null,
+            audible: isAudibleLeft || isAudibleRight,
+            isSplit: !!v.isSplit,
+            splitDirection: v.splitDirection || 'horizontal',
+            focusedSide: v.focusedSide || 'left',
+            title2: (v.isSplit && v.view2 && !v.view2.webContents.isDestroyed()) ? (v.view2.webContents.getTitle() || 'Ocal Home') : '',
+            url2: (v.isSplit && v.view2 && !v.view2.webContents.isDestroyed()) ? v.view2.webContents.getURL() : '',
+            emoji: v.emoji || null,
+            emoji2: v.emoji2 || null,
+            favicon2: (v.isSplit && v.view2) ? (v.favicon2 || null) : null
+        };
+    });
     mainWindow.webContents.send('tabs-changed', {
         tabs: tabData,
         activeTabId: activeViewId,
@@ -2683,6 +3036,7 @@ ipcMain.on('restore-last-closed-split-tab', () => {
     const view = new BrowserView({
         webPreferences: {
             preload: path.join(__dirname, 'preload.js'),
+            partition: getProfilePartition(),
             contextIsolation: true,
             nodeIntegration: false,
             sandbox: false,
@@ -2693,6 +3047,7 @@ ipcMain.on('restore-last-closed-split-tab', () => {
     const view2 = new BrowserView({
         webPreferences: {
             preload: path.join(__dirname, 'preload.js'),
+            partition: getProfilePartition(),
             contextIsolation: true,
             nodeIntegration: false,
             sandbox: false,
@@ -2936,6 +3291,7 @@ ipcMain.on('toggle-split-screen', () => {
         const view2 = new BrowserView({
             webPreferences: {
                 preload: path.join(__dirname, 'preload.js'),
+                partition: getProfilePartition(),
                 contextIsolation: true,
                 nodeIntegration: false,
                 sandbox: false,
@@ -2976,6 +3332,7 @@ ipcMain.on('split-with-url', (e, { targetUrl }) => {
         const view2 = new BrowserView({
             webPreferences: {
                 preload: path.join(__dirname, 'preload.js'),
+                partition: getProfilePartition(),
                 contextIsolation: true,
                 nodeIntegration: false,
                 sandbox: false,
@@ -3155,6 +3512,7 @@ ipcMain.on('drop-tab-to-split', (e, direction) => {
         const view2 = new BrowserView({
             webPreferences: {
                 preload: path.join(__dirname, 'preload.js'),
+                partition: getProfilePartition(),
                 contextIsolation: true,
                 nodeIntegration: false,
                 sandbox: false,
@@ -3211,6 +3569,7 @@ ipcMain.on('merge-tabs-to-split', (e, { sourceTabId, targetTabId }) => {
         const view2 = new BrowserView({
             webPreferences: {
                 preload: path.join(__dirname, 'preload.js'),
+                partition: getProfilePartition(),
                 contextIsolation: true,
                 nodeIntegration: false,
                 sandbox: false,
@@ -3408,8 +3767,331 @@ const AI_SITE_MAP = {
     'netflix': 'https://www.netflix.com',
     'gmail': 'https://mail.google.com',
     'google': 'https://www.google.com',
-    'github': 'https://www.github.com'
+    'github': 'https://www.github.com',
+    'reddit': 'https://www.reddit.com',
+    'wikipedia': 'https://www.wikipedia.org',
+    'chatgpt': 'https://chatgpt.com',
+    'discord': 'https://discord.com',
+    'spotify': 'https://open.spotify.com',
+    'twitch': 'https://www.twitch.tv',
+    'amazon': 'https://www.amazon.com',
+    'linkedin': 'https://www.linkedin.com',
+    'bing': 'https://www.bing.com',
+    'duckduckgo': 'https://duckduckgo.com',
+    'maps': 'https://maps.google.com',
+    'translate': 'https://translate.google.com'
 };
+
+/**
+ * Centralized Browser Action Executor
+ * Executes any browser automation task across all models and UI triggers.
+ */
+async function executeBrowserAction(action) {
+    if (!action) return { success: false };
+    const cmd = action.command || action.type;
+    const p = action.params || action;
+
+    try {
+        switch (cmd) {
+            case 'open-tab':
+            case 'new-tab': {
+                let url = p.url || p.targetUrl || 'home.html';
+                if (!url.startsWith('http://') && !url.startsWith('https://') && !url.startsWith('ocal://') && !url.endsWith('.html')) {
+                    if (url.includes('.') && !url.includes(' ')) {
+                        url = 'https://' + url;
+                    } else if (AI_SITE_MAP[url.toLowerCase()]) {
+                        url = AI_SITE_MAP[url.toLowerCase()];
+                    } else {
+                        url = `https://www.google.com/search?q=${encodeURIComponent(url)}`;
+                    }
+                }
+                createNewTab(url);
+                return { success: true, message: `Opened new tab: ${url}` };
+            }
+            case 'close-tab': {
+                if (p.tabId) {
+                    closeTab(p.tabId);
+                } else if (p.index !== undefined && p.index !== null) {
+                    const idx = parseInt(p.index, 10) - 1;
+                    if (views[idx]) closeTab(views[idx].id);
+                } else if (activeViewId) {
+                    closeTab(activeViewId);
+                }
+                return { success: true, message: 'Closed tab' };
+            }
+            case 'close-other-tabs': {
+                const toClose = views.filter(v => v.id !== activeViewId).map(v => v.id);
+                toClose.forEach(id => closeTab(id));
+                return { success: true, message: `Closed ${toClose.length} other tabs` };
+            }
+            case 'switch-tab': {
+                if (p.tabId) {
+                    switchTab(p.tabId);
+                } else if (p.index !== undefined && p.index !== null) {
+                    const idx = parseInt(p.index, 10) - 1;
+                    if (views[idx]) switchTab(views[idx].id);
+                } else if (p.query) {
+                    const qLower = p.query.toLowerCase();
+                    const match = views.find(v => {
+                        const title = v.view?.webContents?.getTitle()?.toLowerCase() || '';
+                        const url = v.view?.webContents?.getURL()?.toLowerCase() || '';
+                        return title.includes(qLower) || url.includes(qLower);
+                    });
+                    if (match) switchTab(match.id);
+                }
+                return { success: true, message: 'Switched tab' };
+            }
+            case 'next-tab': {
+                const curIdx = views.findIndex(v => v.id === activeViewId);
+                if (curIdx !== -1 && views.length > 1) {
+                    const nextIdx = (curIdx + 1) % views.length;
+                    switchTab(views[nextIdx].id);
+                }
+                return { success: true, message: 'Switched to next tab' };
+            }
+            case 'prev-tab':
+            case 'previous-tab': {
+                const curIdx = views.findIndex(v => v.id === activeViewId);
+                if (curIdx !== -1 && views.length > 1) {
+                    const prevIdx = (curIdx - 1 + views.length) % views.length;
+                    switchTab(views[prevIdx].id);
+                }
+                return { success: true, message: 'Switched to previous tab' };
+            }
+            case 'duplicate-tab': {
+                const activeTab = views.find(v => v.id === activeViewId);
+                if (activeTab?.view) {
+                    const url = activeTab.view.webContents.getURL();
+                    createNewTab(url);
+                }
+                return { success: true, message: 'Duplicated active tab' };
+            }
+            case 'reload-tab': {
+                const activeTab = views.find(v => v.id === activeViewId);
+                if (activeTab?.view) {
+                    if (p.hard) activeTab.view.webContents.reloadIgnoringCache();
+                    else activeTab.view.webContents.reload();
+                }
+                return { success: true, message: 'Reloaded page' };
+            }
+            case 'go-back': {
+                const activeTab = views.find(v => v.id === activeViewId);
+                if (activeTab?.view && activeTab.view.webContents.canGoBack()) {
+                    activeTab.view.webContents.goBack();
+                }
+                return { success: true, message: 'Navigated back' };
+            }
+            case 'go-forward': {
+                const activeTab = views.find(v => v.id === activeViewId);
+                if (activeTab?.view && activeTab.view.webContents.canGoForward()) {
+                    activeTab.view.webContents.goForward();
+                }
+                return { success: true, message: 'Navigated forward' };
+            }
+            case 'pin-tab': {
+                const activeTab = views.find(v => v.id === activeViewId);
+                if (activeTab) {
+                    activeTab.pinned = p.pinned !== undefined ? p.pinned : !activeTab.pinned;
+                    broadcastTabs();
+                }
+                return { success: true, message: 'Toggled tab pin' };
+            }
+            case 'mute-tab': {
+                const activeTab = views.find(v => v.id === activeViewId);
+                if (activeTab?.view) {
+                    activeTab.view.webContents.setAudioMuted(true);
+                }
+                return { success: true, message: 'Muted tab audio' };
+            }
+            case 'unmute-tab': {
+                const activeTab = views.find(v => v.id === activeViewId);
+                if (activeTab?.view) {
+                    activeTab.view.webContents.setAudioMuted(false);
+                }
+                return { success: true, message: 'Unmuted tab audio' };
+            }
+            case 'split-view':
+            case 'split-with-url': {
+                let targetUrl = p.url || p.targetUrl || 'home.html';
+                if (!targetUrl.startsWith('http://') && !targetUrl.startsWith('https://') && !targetUrl.startsWith('ocal://') && !targetUrl.endsWith('.html')) {
+                    if (AI_SITE_MAP[targetUrl.toLowerCase()]) targetUrl = AI_SITE_MAP[targetUrl.toLowerCase()];
+                    else if (targetUrl.includes('.') && !targetUrl.includes(' ')) targetUrl = 'https://' + targetUrl;
+                    else targetUrl = `https://www.google.com/search?q=${encodeURIComponent(targetUrl)}`;
+                }
+                ipcMain.emit('split-with-url', null, { targetUrl });
+                return { success: true, message: `Split screen with ${targetUrl}` };
+            }
+            case 'close-split': {
+                if (activeViewId) {
+                    ipcMain.emit('close-split', null, { id: activeViewId });
+                }
+                return { success: true, message: 'Closed split pane' };
+            }
+            case 'swap-split-panes': {
+                if (activeViewId) {
+                    ipcMain.emit('swap-split-panes', null, { id: activeViewId });
+                }
+                return { success: true, message: 'Swapped split panes' };
+            }
+            case 'bookmark-current': {
+                const activeTab = views.find(v => v.id === activeViewId);
+                if (activeTab?.view) {
+                    const currentUrl = activeTab.view.webContents.getURL();
+                    const currentTitle = activeTab.view.webContents.getTitle() || 'Bookmarked Page';
+                    if (currentUrl && !currentUrl.startsWith('ocal://') && !currentUrl.startsWith('file://')) {
+                        if (!userSettings.bookmarks) userSettings.bookmarks = [];
+                        const exists = userSettings.bookmarks.some(b => b.url === currentUrl);
+                        if (!exists) {
+                            userSettings.bookmarks.unshift({
+                                title: currentTitle,
+                                url: currentUrl,
+                                favicon: `https://www.google.com/s2/favicons?domain=${new URL(currentUrl).hostname}&sz=32`,
+                                createdAt: Date.now()
+                            });
+                            saveSettings(userSettings);
+                            broadcastSettings();
+                        }
+                    }
+                }
+                return { success: true, message: 'Bookmarked current page' };
+            }
+            case 'open-bookmarks': {
+                createNewTab('ocal://bookmarks');
+                return { success: true, message: 'Opened Bookmarks' };
+            }
+            case 'open-history': {
+                createNewTab('ocal://history');
+                return { success: true, message: 'Opened History' };
+            }
+            case 'open-downloads': {
+                createNewTab('ocal://downloads');
+                return { success: true, message: 'Opened Downloads' };
+            }
+            case 'open-extensions': {
+                createNewTab('ocal://extensions');
+                return { success: true, message: 'Opened Extensions' };
+            }
+            case 'open-file-manager': {
+                createNewTab('ocal://file-manager');
+                return { success: true, message: 'Opened File Manager' };
+            }
+            case 'open-passwords': {
+                createNewTab('ocal://passwords');
+                return { success: true, message: 'Opened Passwords Vault' };
+            }
+            case 'open-whats-new': {
+                createNewTab('ocal://whats-new');
+                return { success: true, message: 'Opened What\'s New' };
+            }
+            case 'open-settings': {
+                createNewTab(`ocal://settings#${p.section || 'general'}`);
+                return { success: true, message: `Opened Settings (${p.section || 'general'})` };
+            }
+            case 'clear-history': {
+                userSettings.history = [];
+                saveSettings(userSettings);
+                broadcastSettings();
+                return { success: true, message: 'Cleared browsing history' };
+            }
+            case 'set-theme': {
+                userSettings.themeMode = p.theme || 'dark';
+                saveSettings(userSettings);
+                broadcastSettings();
+                return { success: true, message: `Switched theme to ${p.theme}` };
+            }
+            case 'set-accent': {
+                userSettings.accentColor = p.color || '#09f0a0';
+                saveSettings(userSettings);
+                broadcastSettings();
+                return { success: true, message: `Updated accent color to ${p.color}` };
+            }
+            case 'set-search-engine': {
+                userSettings.searchEngine = p.engine || 'google';
+                saveSettings(userSettings);
+                broadcastSettings();
+                return { success: true, message: `Set search engine to ${p.engine}` };
+            }
+            case 'take-screenshot': {
+                const activeView = views.find(v => v.id === activeViewId)?.view;
+                if (activeView) {
+                    const img = await activeView.webContents.capturePage();
+                    const downloadsDir = app.getPath('downloads');
+                    const filePath = path.join(downloadsDir, `Ocal_Screenshot_${Date.now()}.png`);
+                    fs.writeFileSync(filePath, img.toPNG());
+                    shell.showItemInFolder(filePath);
+                    return { success: true, filePath, message: `Screenshot saved to ${filePath}` };
+                }
+                return { success: false, message: 'No active tab for screenshot' };
+            }
+            case 'zoom-in': {
+                const activeView = views.find(v => v.id === activeViewId)?.view;
+                if (activeView) {
+                    const current = activeView.webContents.getZoomFactor();
+                    activeView.webContents.setZoomFactor(Math.min(current + 0.1, 3.0));
+                }
+                return { success: true, message: 'Zoomed in' };
+            }
+            case 'zoom-out': {
+                const activeView = views.find(v => v.id === activeViewId)?.view;
+                if (activeView) {
+                    const current = activeView.webContents.getZoomFactor();
+                    activeView.webContents.setZoomFactor(Math.max(current - 0.1, 0.3));
+                }
+                return { success: true, message: 'Zoomed out' };
+            }
+            case 'zoom-reset': {
+                const activeView = views.find(v => v.id === activeViewId)?.view;
+                if (activeView) {
+                    activeView.webContents.setZoomFactor(1.0);
+                }
+                return { success: true, message: 'Reset zoom level' };
+            }
+            case 'volume-boost': {
+                const activeView = views.find(v => v.id === activeViewId)?.view;
+                if (activeView) {
+                    const boostMultiplier = p.multiplier || 2.5;
+                    await activeView.webContents.executeJavaScript(`
+                        (function() {
+                            const mediaEls = Array.from(document.querySelectorAll('video, audio'));
+                            mediaEls.forEach(v => {
+                                if (!window._ocalAudioCtx) {
+                                    const AudioContext = window.AudioContext || window.webkitAudioContext;
+                                    window._ocalAudioCtx = new AudioContext();
+                                    window._ocalGain = window._ocalAudioCtx.createGain();
+                                    const source = window._ocalAudioCtx.createMediaElementSource(v);
+                                    source.connect(window._ocalGain);
+                                    window._ocalGain.connect(window._ocalAudioCtx.destination);
+                                }
+                                if (window._ocalGain) {
+                                    window._ocalGain.gain.value = ${boostMultiplier};
+                                }
+                            });
+                        })()
+                    `).catch(() => {});
+                }
+                return { success: true, message: 'Boosted media volume' };
+            }
+            case 'toggle-fullscreen': {
+                if (mainWindow) {
+                    mainWindow.setFullScreen(!mainWindow.isFullScreen());
+                }
+                return { success: true, message: 'Toggled fullscreen' };
+            }
+            case 'toggle-sidebar': {
+                const current = userSettings.sidebarMode || 'visible';
+                userSettings.sidebarMode = current === 'visible' ? 'hidden' : 'visible';
+                saveSettings(userSettings);
+                broadcastSettings();
+                return { success: true, message: `Sidebar set to ${userSettings.sidebarMode}` };
+            }
+            default:
+                return { success: false, message: `Unknown command: ${cmd}` };
+        }
+    } catch (err) {
+        console.error(`[Browser Action Error: ${cmd}]`, err);
+        return { success: false, error: err.message };
+    }
+}
 
 ipcMain.handle('ai-agent-execute', async (event, query) => {
     let prompt = '';
@@ -3467,21 +4149,66 @@ ipcMain.handle('ai-agent-execute', async (event, query) => {
 
         const sysInstruction = PERSONA_INSTRUCTIONS[personaKey] || PERSONA_INSTRUCTIONS.professional;
         let memoryHeader = memoryList.length > 0 ? `\n\n[Remembered User Context & Facts:\n- ${memoryList.join('\n- ')}]` : '';
-        let fullLLMPrompt = `[System Instructions: ${sysInstruction}\n- Respond naturally like a real human being in character.\n- NEVER use AI clichés like "I did some digging", "As an AI language model", raw citation numbers like [1], or IPA phonetics guides.\n- Keep tone organic, articulate, clear, and engaging.\n- RULE: In professional, tech, calm, and funny modes, you MUST NEVER address the user as "babe" or romantic pet names.\n- If the user asks for a story, write a creative story.\n- If the user is rude or swears, react authentically in character. If they apologize, forgive them warmly.]${memoryHeader}\n\nUser Query: ${promptText}`;
+        
+        const toolGuideline = `\n[BROWSER AGENT TOOL CALLING]:
+You have full browser control capabilities. When the user asks you to perform a browser action, append [ACTION:{"command":"<command>","params":{...}}] to your response.
+Supported Commands:
+- open-tab (params: {"url": "https://..."})
+- close-tab (params: {})
+- close-other-tabs (params: {})
+- switch-tab (params: {"index": 1, "query": "..."})
+- split-view (params: {"url": "https://..."})
+- close-split (params: {})
+- swap-split-panes (params: {})
+- duplicate-tab (params: {})
+- reload-tab (params: {})
+- go-back (params: {}), go-forward (params: {})
+- bookmark-current (params: {})
+- take-screenshot (params: {})
+- zoom-in (params: {}), zoom-out (params: {}), zoom-reset (params: {})
+- volume-boost (params: {"multiplier": 2.5})
+- set-theme (params: {"theme": "dark"|"light"})
+- set-accent (params: {"color": "#09f0a0"})
+- set-search-engine (params: {"engine": "google"|"duckduckgo"|"brave"|"bing"})
+- open-bookmarks, open-history, open-downloads, open-extensions, open-file-manager, open-passwords, open-whats-new, open-settings (params: {"section": "general"|"search"|"homepage"|"security"|"ai"})
+- clear-history (params: {})`;
+
+        let fullLLMPrompt = `[System Instructions: ${sysInstruction}\n${toolGuideline}\n- Respond naturally like a real human being in character.\n- NEVER use AI clichés like "I did some digging", "As an AI language model", raw citation numbers like [1], or IPA phonetics guides.\n- Keep tone organic, articulate, clear, and engaging.\n- Format code, tables, and answers in clean Markdown.\n- RULE: In professional, tech, calm, and funny modes, you MUST NEVER address the user as "babe" or romantic pet names.]${memoryHeader}\n\nUser Query: ${promptText}`;
 
         let finalPrompt = fullLLMPrompt;
         if (fileObj && fileObj.type === 'text' && fileObj.data) {
             finalPrompt = `[ATTACHED DOCUMENT - File Name: "${fileObj.name}"]:\n\n${fileObj.data}\n\n[USER INSTRUCTION]:\n${fullLLMPrompt}`;
         }
+        
+        let rawAnswer = null;
         if (activeEngine === 'gemini') {
-            return await tryGemini(finalPrompt, userSettings.aiApiKey, customStyle, fileObj);
+            rawAnswer = await tryGemini(finalPrompt, userSettings.aiApiKey, customStyle, fileObj);
         } else if (activeEngine === 'openai') {
-            return await tryOpenAI(finalPrompt, customStyle, fileObj);
+            rawAnswer = await tryOpenAI(finalPrompt, customStyle, fileObj);
         } else if (activeEngine === 'custom') {
-            return await tryCustomProvider(finalPrompt, customStyle, fileObj);
+            rawAnswer = await tryCustomProvider(finalPrompt, customStyle, fileObj);
         } else {
-            return await queryLocalLLM(finalPrompt, customStyle, fileObj);
+            rawAnswer = await queryLocalLLM(finalPrompt, customStyle, fileObj);
         }
+
+        if (rawAnswer) {
+            // Parse and execute any [ACTION:...] emitted by the model
+            rawAnswer = rawAnswer.replace(/\[ACTION:\s*(\{.*?\})\s*\]/gi, (match, jsonStr) => {
+                try {
+                    const actionObj = JSON.parse(jsonStr);
+                    executeBrowserAction(actionObj);
+                    if (actionObj.command === 'open-tab') actions.push({ text: `Open ${actionObj.params?.url || 'Tab'}`, icon: 'fa-globe', url: actionObj.params?.url });
+                    else if (actionObj.command === 'split-view') actions.push({ text: 'Split Screen Active', icon: 'fa-table-columns' });
+                    else if (actionObj.command === 'bookmark-current') actions.push({ text: 'Bookmarked', icon: 'fa-bookmark', command: 'open-bookmarks' });
+                    else if (actionObj.command === 'take-screenshot') actions.push({ text: 'Screenshot Captured', icon: 'fa-camera' });
+                    else if (actionObj.command === 'set-theme') actions.push({ text: 'Theme Changed', icon: 'fa-palette' });
+                    else actions.push({ text: actionObj.command.replace(/-/g, ' '), icon: 'fa-bolt', command: actionObj.command });
+                } catch(e) {}
+                return '';
+            }).trim();
+        }
+
+        return rawAnswer;
     };
 
     try {
@@ -3489,17 +4216,13 @@ ipcMain.handle('ai-agent-execute', async (event, query) => {
         
         // 1. Theme switching (Dark / Light / Auto)
         if (/(?:dark\s*mode|dark\s*theme|darkmode)/i.test(q) && /(?:switch|enable|turn\s*on|set|change|use|activate|make)/i.test(q)) {
-            userSettings.themeMode = 'dark';
-            saveSettings(userSettings);
-            broadcastSettings();
+            await executeBrowserAction({ command: 'set-theme', theme: 'dark' });
             notifyAction('Switching to Dark Mode...', 'fa-moon');
             return { text: `Done! I've switched Ocal to **Dark Mode** 🌙.\n\nAll browser panels and tabs are now using the sleek dark theme.`, actions: [{ text: "Theme Settings", icon: "fa-palette", command: "open-settings", section: "general" }] };
         }
 
         if (/(?:light\s*mode|light\s*theme|lightmode)/i.test(q) && /(?:switch|enable|turn\s*on|set|change|use|activate|make)/i.test(q)) {
-            userSettings.themeMode = 'light';
-            saveSettings(userSettings);
-            broadcastSettings();
+            await executeBrowserAction({ command: 'set-theme', theme: 'light' });
             notifyAction('Switching to Light Mode...', 'fa-sun');
             return { text: `Done! I've switched Ocal to **Light Mode** ☀️.\n\nThe showroom bright aesthetic is now applied across all windows.`, actions: [{ text: "Theme Settings", icon: "fa-palette", command: "open-settings", section: "general" }] };
         }
@@ -3538,9 +4261,7 @@ ipcMain.handle('ai-agent-execute', async (event, query) => {
             }
 
             if (newColor) {
-                userSettings.accentColor = newColor;
-                saveSettings(userSettings);
-                broadcastSettings();
+                await executeBrowserAction({ command: 'set-accent', color: newColor });
                 notifyAction(`Accent color → ${newColor}`, 'fa-palette');
                 return { text: `Done! I've updated your accent color to **${newColor}** 🎨.\n\nAll buttons, glows, highlights, and active tabs have been synchronized immediately.`, actions: [] };
             } else {
@@ -3559,9 +4280,7 @@ ipcMain.handle('ai-agent-execute', async (event, query) => {
                 if (q.includes(name)) { newEngine = val; break; }
             }
             if (newEngine) {
-                userSettings.searchEngine = newEngine;
-                saveSettings(userSettings);
-                broadcastSettings();
+                await executeBrowserAction({ command: 'set-search-engine', engine: newEngine });
                 notifyAction(`Search engine → ${newEngine}`, 'fa-magnifying-glass');
                 const title = newEngine.charAt(0).toUpperCase() + newEngine.slice(1);
                 return { text: `Done! Your default search engine is now set to **${title}** 🔍.\n\nAll address bar queries will now route through ${title}.`, actions: [] };
@@ -3570,7 +4289,159 @@ ipcMain.handle('ai-agent-execute', async (event, query) => {
             }
         }
 
-        // 4. Ad-Blocking & Shields Control
+        // 4. Split Screen / Split View Automation
+        if (q.includes('split') && (q.includes('screen') || q.includes('view') || q.includes('tab') || q.includes('pane') || q.includes('close') || q.includes('swap') || q.includes('with'))) {
+            if (q.includes('close') || q.includes('exit') || q.includes('disable') || q.includes('off')) {
+                await executeBrowserAction({ command: 'close-split' });
+                notifyAction('Closing split view...', 'fa-table-columns');
+                return { text: "Split view has been **closed** 📑. Active tab is now full width.", actions: [] };
+            } else if (q.includes('swap')) {
+                await executeBrowserAction({ command: 'swap-split-panes' });
+                notifyAction('Swapping split panes...', 'fa-arrow-right-arrow-left');
+                return { text: "Swapped left and right split panes 🔄.", actions: [] };
+            } else {
+                let splitTarget = 'home.html';
+                const siteMatch = q.match(/(?:split\s+(?:screen|view|tab)?\s+(?:with|to|and)?\s+)([a-zA-Z0-9.\-_:\/]+)/i);
+                if (siteMatch && siteMatch[1]) {
+                    const rawTarget = siteMatch[1].toLowerCase();
+                    if (AI_SITE_MAP[rawTarget]) splitTarget = AI_SITE_MAP[rawTarget];
+                    else if (rawTarget.includes('.') && !rawTarget.includes(' ')) splitTarget = rawTarget.startsWith('http') ? rawTarget : 'https://' + rawTarget;
+                    else splitTarget = `https://www.google.com/search?q=${encodeURIComponent(rawTarget)}`;
+                }
+                await executeBrowserAction({ command: 'split-view', url: splitTarget });
+                notifyAction(`Split view active (${splitTarget})...`, 'fa-table-columns');
+                return { 
+                    text: `### 📑 Split View Activated!\n\nI've split your screen side-by-side with **${splitTarget}**.\n\nYou can say *"swap split"* to flip sides, or *"close split"* to restore full view.`, 
+                    actions: [
+                        { text: "Swap Panes", icon: "fa-arrow-right-arrow-left", command: "swap-split-panes" },
+                        { text: "Close Split", icon: "fa-xmark", command: "close-split" }
+                    ] 
+                };
+            }
+        }
+
+        // 5. Screenshot Capture Automation
+        if (q.includes('screenshot') || q.includes('capture page') || q.includes('screen capture') || (q.includes('capture') && q.includes('screen'))) {
+            notifyAction('Capturing high-resolution screenshot...', 'fa-camera');
+            const res = await executeBrowserAction({ command: 'take-screenshot' });
+            if (res.success) {
+                return {
+                    text: `### 📸 Screenshot Captured Successfully!\n\nYour screenshot has been saved to your **Downloads** folder:\n\`${res.filePath}\`\n\nI've revealed it in your file explorer.`,
+                    actions: [{ text: "Open File Manager", icon: "fa-folder", command: "open-file-manager" }]
+                };
+            }
+        }
+
+        // 6. Audio Volume Boost Automation
+        if (q.includes('volume') || (q.includes('sound') && (q.includes('boost') || q.includes('increase') || q.includes('louder') || q.includes('up')))) {
+            let mult = 2.5;
+            if (q.includes('max') || q.includes('300') || q.includes('3x')) mult = 3.0;
+            else if (q.includes('200') || q.includes('2x')) mult = 2.0;
+            else if (q.includes('reset') || q.includes('normal') || q.includes('100') || q.includes('1x')) mult = 1.0;
+            
+            await executeBrowserAction({ command: 'volume-boost', multiplier: mult });
+            notifyAction(`Media Volume Boost: ${(mult * 100).toFixed(0)}%`, 'fa-volume-high');
+            return {
+                text: `🔊 **Volume Boost Applied!**\n\nActive tab media audio gain is now set to **${(mult * 100).toFixed(0)}%**.\n\nEnjoy loud, clear, high-fidelity sound without system distortion.`,
+                actions: [{ text: "Reset Volume (100%)", icon: "fa-volume-low", command: "volume-boost", multiplier: 1.0 }]
+            };
+        }
+
+        // 7. Zoom Controls
+        if (q.includes('zoom') && (q.includes('in') || q.includes('out') || q.includes('reset') || q.includes('100'))) {
+            if (q.includes('in') || q.includes('plus') || q.includes('bigger')) {
+                await executeBrowserAction({ command: 'zoom-in' });
+                notifyAction('Zooming in...', 'fa-magnifying-glass-plus');
+                return { text: "Zoomed in on active page (+10%) 🔍.", actions: [] };
+            } else if (q.includes('out') || q.includes('minus') || q.includes('smaller')) {
+                await executeBrowserAction({ command: 'zoom-out' });
+                notifyAction('Zooming out...', 'fa-magnifying-glass-minus');
+                return { text: "Zoomed out on active page (-10%) 🔎.", actions: [] };
+            } else {
+                await executeBrowserAction({ command: 'zoom-reset' });
+                notifyAction('Resetting zoom...', 'fa-rotate-left');
+                return { text: "Page zoom reset to 100% 🔍.", actions: [] };
+            }
+        }
+
+        // 8. Navigation & Tab Switching
+        if (q.includes('switch to tab') || q.includes('go to tab') || (q.includes('tab') && (q.includes('next') || q.includes('prev') || q.includes('previous')))) {
+            if (q.includes('next')) {
+                await executeBrowserAction({ command: 'next-tab' });
+                return { text: "Switched to next tab ➡️.", actions: [] };
+            } else if (q.includes('prev')) {
+                await executeBrowserAction({ command: 'prev-tab' });
+                return { text: "Switched to previous tab ⬅️.", actions: [] };
+            } else {
+                const numMatch = q.match(/tab\s+(\d+)/i);
+                if (numMatch) {
+                    const idx = parseInt(numMatch[1], 10);
+                    await executeBrowserAction({ command: 'switch-tab', index: idx });
+                    return { text: `Switched to **Tab ${idx}** 📑.`, actions: [] };
+                }
+                const nameMatch = q.match(/(?:switch|go)\s+to\s+(?:the\s+)?([a-zA-Z0-9\s]+?)(?:\s+tab|$)/i);
+                if (nameMatch) {
+                    await executeBrowserAction({ command: 'switch-tab', query: nameMatch[1].trim() });
+                    return { text: `Switched to tab matching **"${nameMatch[1].trim()}"** 📑.`, actions: [] };
+                }
+            }
+        }
+
+        // 9. Fullscreen Toggle
+        if (q.includes('fullscreen') || q.includes('full screen')) {
+            await executeBrowserAction({ command: 'toggle-fullscreen' });
+            return { text: "Toggled browser **Full Screen Mode** 🖥️.", actions: [] };
+        }
+
+        // 10. Passwords, Extensions, Downloads, File Manager Shortcuts
+        if (q.includes('password') || q.includes('vault')) {
+            await executeBrowserAction({ command: 'open-passwords' });
+            return { text: "Opened your **Encrypted Passwords Vault** 🔐.", actions: [{ text: "Passwords", icon: "fa-key", command: "open-passwords" }] };
+        }
+        if (q.includes('download') && (q.includes('open') || q.includes('show') || q.includes('list') || q.includes('history'))) {
+            await executeBrowserAction({ command: 'open-downloads' });
+            return { text: "Opened **Downloads Manager** 📥.", actions: [{ text: "Downloads", icon: "fa-download", command: "open-downloads" }] };
+        }
+        if (q.includes('extension') && (q.includes('open') || q.includes('manage') || q.includes('show') || q.includes('list'))) {
+            await executeBrowserAction({ command: 'open-extensions' });
+            return { text: "Opened **Extensions Hub** 🧩.", actions: [{ text: "Extensions", icon: "fa-puzzle-piece", command: "open-extensions" }] };
+        }
+        if (q.includes('file manager') || q.includes('files') || q.includes('pdf manager') || q.includes('document library')) {
+            await executeBrowserAction({ command: 'open-file-manager' });
+            return { text: "Opened **Ocal File & Media Hub** 📂.", actions: [{ text: "File Manager", icon: "fa-folder-open", command: "open-file-manager" }] };
+        }
+        if (q.includes('whats new') || q.includes("what's new") || q.includes('changelog') || q.includes('release notes')) {
+            await executeBrowserAction({ command: 'open-whats-new' });
+            return { text: "Opened **What's New in Ocal** 🇮🇳✨.", actions: [{ text: "What's New", icon: "fa-sparkles", command: "open-whats-new" }] };
+        }
+
+        // 11. Local Model Switching via Command
+        const localModelMatch = prompt.match(/(?:switch|use|change|set)\s+(?:local\s+model|local\s+ai|model)\s+(?:to\s+)?([a-zA-Z0-9_.\-:]+)/i);
+        if (localModelMatch || (q.includes('model') && (q.includes('deepseek') || q.includes('llama') || q.includes('qwen') || q.includes('gemma') || q.includes('mistral') || q.includes('phi')))) {
+            let targetModel = localModelMatch ? localModelMatch[1].toLowerCase() : null;
+            if (!targetModel) {
+                if (q.includes('deepseek')) targetModel = 'deepseek-r1';
+                else if (q.includes('llama3.3') || q.includes('llama 3.3')) targetModel = 'llama3.3';
+                else if (q.includes('llama3.2') || q.includes('llama 3.2') || q.includes('llama3')) targetModel = 'llama3.2';
+                else if (q.includes('qwen')) targetModel = 'qwen2.5';
+                else if (q.includes('gemma')) targetModel = 'gemma-4';
+                else if (q.includes('phi')) targetModel = 'phi4';
+                else if (q.includes('mistral')) targetModel = 'mistral';
+            }
+            if (targetModel) {
+                userSettings.localModel = targetModel;
+                userSettings.aiEngine = 'local';
+                saveSettings(userSettings);
+                broadcastSettings();
+                notifyAction(`Local model → ${targetModel}`, 'fa-robot');
+                return {
+                    text: `Done! Local AI model is now set to **${targetModel}** 🤖.\n\nAll subsequent prompts and tasks will execute on this local model.`,
+                    actions: [{ text: "AI Settings", icon: "fa-robot", command: "open-settings", section: "ai" }]
+                };
+            }
+        }
+
+        // 12. Ad-Blocking & Shields Control
         if ((q.includes('ad') || q.includes('shield') || q.includes('tracker')) && (q.includes('block') || q.includes('protection') || q.includes('filter'))) {
             if (q.includes('disable') || q.includes('turn off') || q.includes('off') || q.includes('deactivate')) {
                 userSettings.adBlockEnabled = false;
@@ -3592,7 +4463,7 @@ ipcMain.handle('ai-agent-execute', async (event, query) => {
             }
         }
 
-        // 5. CyberStealth & Anti-Fingerprinting
+        // 13. CyberStealth & Anti-Fingerprinting
         if (q.includes('stealth') || q.includes('cyber stealth') || q.includes('cyberstealth') || q.includes('fingerprint')) {
             if (q.includes('enable') || q.includes('turn on') || q.includes('on') || q.includes('activate')) {
                 userSettings.cyberStealthEnabled = true;
@@ -3610,7 +4481,7 @@ ipcMain.handle('ai-agent-execute', async (event, query) => {
             }
         }
 
-        // 6. HTTPS Upgrade Toggle
+        // 14. HTTPS Upgrade Toggle
         if (q.includes('https') && (q.includes('upgrade') || q.includes('force') || q.includes('strict') || q.includes('secure'))) {
             if (q.includes('disable') || q.includes('off')) {
                 userSettings.httpsUpgradeEnabled = false;
@@ -3622,7 +4493,7 @@ ipcMain.handle('ai-agent-execute', async (event, query) => {
             return { text: `Automatic HTTPS Upgrade is now **${userSettings.httpsUpgradeEnabled ? 'enabled ✅ (all HTTP requests upgraded to HTTPS)' : 'disabled ❌'}**.`, actions: [] };
         }
 
-        // 7. Safe Browsing & Safe Search
+        // 15. Safe Browsing & Safe Search
         if (q.includes('safe browsing') || q.includes('safe search')) {
             if (q.includes('disable') || q.includes('off')) {
                 userSettings.safeBrowsingEnabled = false;
@@ -3636,7 +4507,7 @@ ipcMain.handle('ai-agent-execute', async (event, query) => {
             return { text: `Safe Browsing & Security Protection is now **${userSettings.safeBrowsingEnabled ? 'enabled ✅' : 'disabled'}**.`, actions: [] };
         }
 
-        // 8. Sidebar Mode (Visible / Hidden / Auto-hide)
+        // 16. Sidebar Mode (Visible / Hidden / Auto-hide)
         if (q.includes('sidebar') && (q.includes('hide') || q.includes('show') || q.includes('auto') || q.includes('visible') || q.includes('toggle'))) {
             if (q.includes('hide') || q.includes('hidden') || q.includes('off')) {
                 userSettings.sidebarMode = 'hidden';
@@ -3656,7 +4527,7 @@ ipcMain.handle('ai-agent-execute', async (event, query) => {
             }
         }
 
-        // 9. Bookmark Bar Mode (Always / Never / Auto)
+        // 17. Bookmark Bar Mode (Always / Never / Auto)
         if (q.includes('bookmark') && q.includes('bar') && (q.includes('show') || q.includes('hide') || q.includes('always') || q.includes('never') || q.includes('auto') || q.includes('on') || q.includes('off'))) {
             if (q.includes('hide') || q.includes('never') || q.includes('off')) {
                 userSettings.bookmarkBarMode = 'never';
@@ -3670,7 +4541,7 @@ ipcMain.handle('ai-agent-execute', async (event, query) => {
             return { text: `Bookmark Bar mode updated to **${userSettings.bookmarkBarMode.toUpperCase()}** 🔖.`, actions: [] };
         }
 
-        // 10. Home Layout & Dashboard Style
+        // 18. Home Layout & Dashboard Style
         if (q.includes('home layout') || q.includes('homepage layout') || (q.includes('home') && (q.includes('minimal') || q.includes('widgets') || q.includes('compact') || q.includes('center')))) {
             let layout = 'center';
             if (q.includes('minimal')) layout = 'minimal';
@@ -3682,7 +4553,7 @@ ipcMain.handle('ai-agent-execute', async (event, query) => {
             return { text: `New Tab Home layout set to **${layout.toUpperCase()}** 🏠.`, actions: [] };
         }
 
-        // 11. Performance: Battery Saver & Memory Saver
+        // 19. Performance: Battery Saver & Memory Saver
         if (q.includes('battery') && (q.includes('saver') || q.includes('save') || q.includes('mode'))) {
             userSettings.batterySaver = !(q.includes('disable') || q.includes('off'));
             saveSettings(userSettings);
@@ -3697,7 +4568,7 @@ ipcMain.handle('ai-agent-execute', async (event, query) => {
             return { text: `Memory Saver is now **${userSettings.memorySaver ? 'enabled ⚡' : 'disabled'}**. Inactive tabs will be automatically discarded from RAM.`, actions: [] };
         }
 
-        // 12. AI Engine Switching via Command
+        // 20. AI Engine Switching via Command
         if (q.includes('ai engine') || (q.includes('switch ai to') || q.includes('use gemini') || q.includes('use local ai') || q.includes('use openai') || q.includes('use chatgpt'))) {
             if (q.includes('gemini')) userSettings.aiEngine = 'gemini';
             else if (q.includes('openai') || q.includes('chatgpt')) userSettings.aiEngine = 'openai';
@@ -3708,63 +4579,33 @@ ipcMain.handle('ai-agent-execute', async (event, query) => {
             return { text: `AI engine switched to **${userSettings.aiEngine.toUpperCase()}** 🤖.`, actions: [{ text: "AI Settings", icon: "fa-robot", command: "open-settings", section: "ai" }] };
         }
 
-        // 13. Direct Browser Actions: Bookmark active page
+        // 21. Direct Browser Actions: Bookmark active page
         if ((q.includes('bookmark') || q.includes('favorite')) && (q.includes('this') || q.includes('page') || q.includes('current') || q.includes('save'))) {
-            const activeTab = views.find(v => v.id === activeViewId);
-            if (activeTab && activeTab.view) {
-                const currentUrl = activeTab.view.webContents.getURL();
-                const currentTitle = activeTab.view.webContents.getTitle() || 'Bookmarked Page';
-                if (currentUrl && !currentUrl.startsWith('ocal://') && !currentUrl.startsWith('file://')) {
-                    if (!userSettings.bookmarks) userSettings.bookmarks = [];
-                    const exists = userSettings.bookmarks.some(b => b.url === currentUrl);
-                    if (!exists) {
-                        userSettings.bookmarks.unshift({
-                            title: currentTitle,
-                            url: currentUrl,
-                            favicon: `https://www.google.com/s2/favicons?domain=${new URL(currentUrl).hostname}&sz=32`,
-                            createdAt: Date.now()
-                        });
-                        saveSettings(userSettings);
-                        broadcastSettings();
-                        notifyAction('Page Bookmarked', 'fa-bookmark');
-                        return { text: `Done! I've bookmarked **"${currentTitle}"** for you 🔖.`, actions: [{ text: "View Bookmarks", icon: "fa-bookmark", url: "ocal://bookmarks" }] };
-                    } else {
-                        return { text: `This page (**${currentTitle}**) is already in your bookmarks! ⭐`, actions: [] };
-                    }
-                }
-            }
+            await executeBrowserAction({ command: 'bookmark-current' });
+            notifyAction('Page Bookmarked', 'fa-bookmark');
+            return { text: `Done! I've bookmarked this active page for you 🔖.`, actions: [{ text: "View Bookmarks", icon: "fa-bookmark", url: "ocal://bookmarks" }] };
         }
 
-        // 14. Reload / Refresh Tab
+        // 22. Reload / Refresh Tab
         if (q === 'reload' || q === 'refresh' || q.includes('reload page') || q.includes('refresh tab') || q.includes('reload this page')) {
-            const activeTab = views.find(v => v.id === activeViewId);
-            if (activeTab && activeTab.view) {
-                activeTab.view.webContents.reload();
-                notifyAction('Reloading Page...', 'fa-rotate-right');
-                return { text: "I've reloaded the active page for you 🔄.", actions: [] };
-            }
+            await executeBrowserAction({ command: 'reload-tab' });
+            notifyAction('Reloading Page...', 'fa-rotate-right');
+            return { text: "I've reloaded the active page for you 🔄.", actions: [] };
         }
 
-        // 15. Mute / Unmute Tab Audio
+        // 23. Mute / Unmute Tab Audio
         if (q.includes('mute') || q.includes('unmute') || q.includes('silence')) {
-            const activeTab = views.find(v => v.id === activeViewId);
-            if (activeTab && activeTab.view) {
-                const shouldMute = !q.includes('unmute');
-                activeTab.view.webContents.setAudioMuted(shouldMute);
-                notifyAction(shouldMute ? 'Tab Audio Muted' : 'Tab Audio Unmuted', shouldMute ? 'fa-volume-xmark' : 'fa-volume-high');
-                return { text: `Active tab audio is now **${shouldMute ? 'muted 🔇' : 'unmuted 🔊'}**.`, actions: [] };
-            }
+            const shouldMute = !q.includes('unmute');
+            await executeBrowserAction({ command: shouldMute ? 'mute-tab' : 'unmute-tab' });
+            notifyAction(shouldMute ? 'Tab Audio Muted' : 'Tab Audio Unmuted', shouldMute ? 'fa-volume-xmark' : 'fa-volume-high');
+            return { text: `Active tab audio is now **${shouldMute ? 'muted 🔇' : 'unmuted 🔊'}**.`, actions: [] };
         }
 
-        // 16. Duplicate Active Tab
+        // 24. Duplicate Active Tab
         if (q.includes('duplicate') && (q.includes('tab') || q.includes('page'))) {
-            const activeTab = views.find(v => v.id === activeViewId);
-            if (activeTab && activeTab.view) {
-                const url = activeTab.view.webContents.getURL();
-                createNewTab(url);
-                notifyAction('Duplicating Tab...', 'fa-clone');
-                return { text: `Duplicated active tab: **${url}** 📑.`, actions: [] };
-            }
+            await executeBrowserAction({ command: 'duplicate-tab' });
+            notifyAction('Duplicating Tab...', 'fa-clone');
+            return { text: `Duplicated active tab 📑.`, actions: [] };
         }
 
         // ─── 2. ADVANCED HUMAN-LIKE CONVERSATIONAL ENGINE (FALLBACK) ───────────────────
@@ -5254,87 +6095,142 @@ async function queryLocalLLM(prompt, style = 'detailed', fileObj = null) {
     const candidateEndpoints = [
         userSettings.localEndpoint || 'http://127.0.0.1:11434',
         'http://127.0.0.1:11434',
-        'http://localhost:11434'
+        'http://localhost:11434',
+        'http://127.0.0.1:1234/v1',
+        'http://localhost:1234/v1',
+        'http://127.0.0.1:8080/v1',
+        'http://127.0.0.1:5001/v1',
+        'http://127.0.0.1:8000/v1'
     ];
 
+    const endpoints = [...new Set(candidateEndpoints)];
     let userModel = userSettings.localModel || 'auto';
 
-    for (const rawEndpoint of candidateEndpoints) {
+    let stylePrompt = "Keep responses intelligent, structured, and helpful.";
+    if (style === 'detailed') {
+        stylePrompt = "Provide highly detailed, comprehensive, structured, and thoroughly explained answers in Markdown with clear sections, bullet points, and code blocks.";
+    } else if (style === 'creative') {
+        stylePrompt = "Provide creative, engaging, and rich answers with expressive tone.";
+    }
+
+    const sysPrompt = `You are Ocal AI, a high-performance browser assistant with native browser automation tools.
+Format: Clean Markdown with headers, lists, and code blocks.
+${stylePrompt}`;
+
+    for (const rawEndpoint of endpoints) {
         let endpoint = rawEndpoint.replace(/\/$/, '');
         if (endpoint.includes('localhost')) endpoint = endpoint.replace('localhost', '127.0.0.1');
 
         try {
-            let model = userModel;
+            const isOpenAICompat = endpoint.includes('/v1') || endpoint.includes(':1234') || endpoint.includes(':8080') || endpoint.includes(':5001') || endpoint.includes(':8000');
 
-            // 1. Auto-discover available local models from Ollama if set to auto or fallback
-            if (model === 'auto' || !model) {
-                try {
-                    const tagsRes = await fetch(`${endpoint}/api/tags`, { signal: AbortSignal.timeout(2000) });
-                    if (tagsRes.ok) {
-                        const tagsData = await tagsRes.json();
-                        if (tagsData.models && tagsData.models.length > 0) {
-                            model = tagsData.models[0].name;
+            if (isOpenAICompat) {
+                const baseV1 = endpoint.endsWith('/v1') ? endpoint : `${endpoint}/v1`;
+                let model = userModel === 'auto' ? '' : userModel;
+                if (!model) {
+                    try {
+                        const mRes = await fetch(`${baseV1}/models`, { signal: AbortSignal.timeout(2000) });
+                        if (mRes.ok) {
+                            const mData = await mRes.json();
+                            if (mData.data && mData.data.length > 0) model = mData.data[0].id;
                         }
-                    }
-                } catch (e) {}
-            }
+                    } catch (e) {}
+                }
+                if (!model) model = 'default';
 
-            if (!model || model === 'auto') model = 'gemma-4';
+                const messages = [
+                    { role: 'system', content: sysPrompt },
+                    { role: 'user', content: prompt }
+                ];
+                if (fileObj && fileObj.type === 'image') {
+                    messages[1] = {
+                        role: 'user',
+                        content: [
+                            { type: 'text', text: prompt },
+                            { type: 'image_url', image_url: { url: `data:${fileObj.mimeType};base64,${fileObj.data}` } }
+                        ]
+                    };
+                }
 
-            let stylePrompt = "Keep responses intelligent, structured, and helpful.";
-            if (style === 'detailed') {
-                stylePrompt = "Provide highly detailed, comprehensive, structured, and thoroughly explained answers in Markdown with clear sections.";
-            } else if (style === 'creative') {
-                stylePrompt = "Provide creative, engaging, and rich answers with expressive tone.";
-            }
-
-            const sysPrompt = `You are Ocal AI, a high-performance local browser assistant. Style: ${style}. Format: Markdown. ${stylePrompt}`;
-            const userMessage = { role: 'user', content: prompt };
-            if (fileObj && fileObj.type === 'image') {
-                userMessage.images = [fileObj.data];
-            }
-
-            // 2. Try Ollama /api/chat
-            try {
-                const chatRes = await fetch(`${endpoint}/api/chat`, {
+                const chatRes = await fetch(`${baseV1}/chat/completions`, {
                     method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({
                         model: model,
-                        messages: [
-                            { role: 'system', content: sysPrompt },
-                            userMessage
-                        ],
-                        stream: false
+                        messages: messages,
+                        temperature: 0.7
                     }),
-                    headers: { 'Content-Type': 'application/json' },
-                    signal: AbortSignal.timeout(20000)
+                    signal: AbortSignal.timeout(30000)
                 });
 
                 if (chatRes.ok) {
-                    const data = await chatRes.json();
-                    const text = data.message?.content;
+                    const cData = await chatRes.json();
+                    const text = cData.choices?.[0]?.message?.content;
                     if (text && text.trim().length > 0) return text.trim();
                 }
-            } catch (chatErr) {
-                // Fallback to /api/generate
+            } else {
+                // Ollama Native API
+                let model = userModel;
+                if (model === 'auto' || !model) {
+                    try {
+                        const tagsRes = await fetch(`${endpoint}/api/tags`, { signal: AbortSignal.timeout(2000) });
+                        if (tagsRes.ok) {
+                            const tagsData = await tagsRes.json();
+                            if (tagsData.models && tagsData.models.length > 0) {
+                                model = tagsData.models[0].name;
+                            }
+                        }
+                    } catch (e) {}
+                }
+
+                if (!model || model === 'auto') model = 'deepseek-r1:latest';
+
+                const userMessage = { role: 'user', content: prompt };
+                if (fileObj && fileObj.type === 'image') {
+                    userMessage.images = [fileObj.data];
+                }
+
                 try {
-                    const genRes = await fetch(`${endpoint}/api/generate`, {
+                    const chatRes = await fetch(`${endpoint}/api/chat`, {
                         method: 'POST',
                         body: JSON.stringify({
                             model: model,
-                            system: sysPrompt,
-                            prompt: prompt,
+                            messages: [
+                                { role: 'system', content: sysPrompt },
+                                userMessage
+                            ],
                             stream: false
                         }),
                         headers: { 'Content-Type': 'application/json' },
-                        signal: AbortSignal.timeout(20000)
+                        signal: AbortSignal.timeout(30000)
                     });
 
-                    if (genRes.ok) {
-                        const genData = await genRes.json();
-                        if (genData.response && genData.response.trim().length > 0) return genData.response.trim();
+                    if (chatRes.ok) {
+                        const data = await chatRes.json();
+                        const text = data.message?.content;
+                        if (text && text.trim().length > 0) return text.trim();
                     }
-                } catch (genErr) {}
+                } catch (chatErr) {
+                    // Fallback to /api/generate
+                    try {
+                        const genRes = await fetch(`${endpoint}/api/generate`, {
+                            method: 'POST',
+                            body: JSON.stringify({
+                                model: model,
+                                system: sysPrompt,
+                                prompt: prompt,
+                                stream: false
+                            }),
+                            headers: { 'Content-Type': 'application/json' },
+                            signal: AbortSignal.timeout(30000)
+                        });
+
+                        if (genRes.ok) {
+                            const genData = await genRes.json();
+                            if (genData.response && genData.response.trim().length > 0) return genData.response.trim();
+                        }
+                    } catch (genErr) {}
+                }
             }
         } catch (e) {
             console.warn(`[Local LLM Warning] Endpoint ${endpoint} failed:`, e.message);
@@ -5397,10 +6293,6 @@ async function tryGemini(prompt, apiKey, style = 'detailed', fileObj = null) {
     return null;
 }
 
-/**
- * Helper: Perform a background web research for Local AI.
- * Uses a simulated "Headless Search" pattern to extract snippets.
- */
 /**
  * Helper: Decode HTML/XML entities in text.
  */
@@ -5505,7 +6397,6 @@ async function researchWeb(query) {
         const html = await response.text();
         const snippets = [];
 
-        // Extract using regex, try to associate with google search URL as fallback link
         const matches = html.matchAll(/<div class="VwiC3b y67Nj fOa9pe[^>]*><span>(.*?)<\/span>/g);
         for (const match of matches) {
             if (snippets.length >= 4) break;
@@ -5550,11 +6441,95 @@ ipcMain.handle('ai-summarize-page', async (e) => (await ipcMain.emit('ai-agent-e
 ipcMain.handle('ai-search-web', async (e, q) => (await ipcMain.emit('ai-agent-execute', e, `search for ${q}`)).text);
 ipcMain.handle('ai-chat-query', async (e, q) => (await ipcMain.emit('ai-agent-execute', e, q)).text);
 
+// Local model scanning & management IPC
+ipcMain.handle('get-local-models', async () => {
+    const discovered = [];
+    const endpointsToProbe = [
+        { url: userSettings.localEndpoint || 'http://127.0.0.1:11434', type: 'ollama' },
+        { url: 'http://127.0.0.1:11434', type: 'ollama' },
+        { url: 'http://127.0.0.1:1234', type: 'lmstudio' },
+        { url: 'http://127.0.0.1:8080', type: 'openai' },
+        { url: 'http://127.0.0.1:5001', type: 'openai' }
+    ];
 
-ipcMain.on('execute-agent-command', (event, action) => {
+    const seenUrls = new Set();
+    for (const ep of endpointsToProbe) {
+        if (seenUrls.has(ep.url)) continue;
+        seenUrls.add(ep.url);
+
+        if (ep.type === 'ollama') {
+            try {
+                const res = await fetch(`${ep.url}/api/tags`, { signal: AbortSignal.timeout(1500) });
+                if (res.ok) {
+                    const data = await res.json();
+                    if (data.models && Array.isArray(data.models)) {
+                        data.models.forEach(m => {
+                            discovered.push({
+                                name: m.name,
+                                id: m.name,
+                                size: m.size ? `${(m.size / (1024 * 1024 * 1024)).toFixed(1)} GB` : 'Local',
+                                source: 'Ollama',
+                                endpoint: ep.url,
+                                running: true
+                            });
+                        });
+                    }
+                }
+            } catch (e) {}
+        } else {
+            try {
+                const v1Url = ep.url.endsWith('/v1') ? `${ep.url}/models` : `${ep.url}/v1/models`;
+                const res = await fetch(v1Url, { signal: AbortSignal.timeout(1500) });
+                if (res.ok) {
+                    const data = await res.json();
+                    if (data.data && Array.isArray(data.data)) {
+                        data.data.forEach(m => {
+                            discovered.push({
+                                name: m.id || m.name,
+                                id: m.id || m.name,
+                                size: 'Local',
+                                source: ep.type === 'lmstudio' ? 'LM Studio' : 'LocalAI',
+                                endpoint: ep.url,
+                                running: true
+                            });
+                        });
+                    }
+                }
+            } catch (e) {}
+        }
+    }
+
+    return {
+        models: discovered,
+        activeModel: userSettings.localModel || 'auto',
+        activeEndpoint: userSettings.localEndpoint || 'http://127.0.0.1:11434'
+    };
+});
+
+ipcMain.handle('set-local-model', (event, { model, endpoint }) => {
+    if (model !== undefined) userSettings.localModel = model;
+    if (endpoint !== undefined) userSettings.localEndpoint = endpoint;
+    saveSettings(userSettings);
+    broadcastSettings();
+    return { success: true, localModel: userSettings.localModel, localEndpoint: userSettings.localEndpoint };
+});
+
+ipcMain.on('execute-agent-command', async (event, action) => {
+    if (!action) return;
     if (action.command === 'open-settings') {
         createNewTab(`ocal://settings#${action.section || 'general'}`);
         return;
+    }
+    if (action.url && !action.command) {
+        createNewTab(action.url);
+        return;
+    }
+
+    // Execute via centralized browser action executor
+    try {
+        await executeBrowserAction(action);
+    } catch (e) {
+        console.error('[execute-agent-command error]', e);
     }
 
     const activeTab = views.find(v => v.id === activeViewId);
@@ -6313,37 +7288,80 @@ const PASSWORDS_FILE = path.join(app.getPath('userData'), 'passwords_vault.json'
 let lastWindowsAuthTime = 0;
 const AUTH_CACHE_DURATION_MS = 60000; // 60s grace period
 
-function promptWindowsAuthentication(promptMessage = 'Ocal Browser is trying to show passwords. Type your Windows password to allow this.') {
+function promptWindowsAuthentication(promptMessage = 'Ocal Browser is trying to show passwords. Verify your Windows identity to allow this.') {
     return new Promise((resolve) => {
         if (Date.now() - lastWindowsAuthTime < AUTH_CACHE_DURATION_MS) {
             return resolve({ success: true, cached: true });
         }
 
-        const winauthPath = path.join(__dirname, 'bin', 'winauth.exe');
-        if (!fs.existsSync(winauthPath)) {
-            try {
-                const cscPath = 'C:\\Windows\\Microsoft.NET\\Framework64\\v4.0.30319\\csc.exe';
-                const csSource = path.join(__dirname, 'bin', 'winauth.cs');
-                if (fs.existsSync(cscPath) && fs.existsSync(csSource)) {
-                    require('child_process').execFileSync(cscPath, ['/target:winexe', `/out:${winauthPath}`, '/r:System.DirectoryServices.AccountManagement.dll', csSource]);
+        let parentHwnd = '0';
+        try {
+            if (mainWindow && !mainWindow.isDestroyed()) {
+                const handle = mainWindow.getNativeWindowHandle();
+                if (handle && handle.length >= 8 && process.arch === 'x64') {
+                    parentHwnd = handle.readBigInt64LE(0).toString();
+                } else if (handle && handle.length >= 4) {
+                    parentHwnd = handle.readInt32LE(0).toString();
                 }
-            } catch (err) {
-                console.warn('[PasswordVault] Failed compiling winauth.exe:', err);
             }
+        } catch (e) {}
+
+        const psScript = path.join(__dirname, 'bin', 'winauth.ps1');
+        if (fs.existsSync(psScript)) {
+            const args = [
+                '-NoProfile',
+                '-NonInteractive',
+                '-ExecutionPolicy', 'Bypass',
+                '-WindowStyle', 'Hidden',
+                '-File', psScript,
+                '-Prompt', promptMessage,
+                '-Hwnd', parentHwnd
+            ];
+            execFile('powershell.exe', args, { windowsHide: true }, (error, stdout, stderr) => {
+                const out = (stdout || '').trim();
+                if (!error && out.includes('SUCCESS')) {
+                    lastWindowsAuthTime = Date.now();
+                    return resolve({ success: true });
+                }
+                if (out.includes('CANCELLED') || (error && error.code === 1)) {
+                    console.log('[PasswordVault] Windows authentication was cancelled or rejected.');
+                    return resolve({ success: false, error: 'Authentication cancelled or failed' });
+                }
+                // If PowerShell had an unexpected system issue, try the compiled winauth.exe fallback
+                tryWinauthExeFallback(promptMessage, parentHwnd, resolve);
+            });
+            return;
         }
 
-        if (!fs.existsSync(winauthPath)) {
-            return resolve({ success: true, fallback: true });
-        }
+        tryWinauthExeFallback(promptMessage, parentHwnd, resolve);
+    });
+}
 
-        execFile(winauthPath, [promptMessage, 'Windows Security - Ocal Browser'], { windowsHide: true }, (error, stdout, stderr) => {
-            if (error) {
-                console.log('[PasswordVault] Windows authentication was cancelled or failed.');
-                return resolve({ success: false, error: 'Authentication cancelled or failed' });
+function tryWinauthExeFallback(promptMessage, parentHwnd, resolve) {
+    const winauthPath = path.join(__dirname, 'bin', 'winauth.exe');
+    if (!fs.existsSync(winauthPath)) {
+        try {
+            const cscPath = 'C:\\Windows\\Microsoft.NET\\Framework64\\v4.0.30319\\csc.exe';
+            const csSource = path.join(__dirname, 'bin', 'winauth.cs');
+            if (fs.existsSync(cscPath) && fs.existsSync(csSource)) {
+                require('child_process').execFileSync(cscPath, ['/target:winexe', `/out:${winauthPath}`, '/r:System.DirectoryServices.AccountManagement.dll', csSource]);
             }
-            lastWindowsAuthTime = Date.now();
-            return resolve({ success: true });
-        });
+        } catch (err) {
+            console.warn('[PasswordVault] Failed compiling winauth.exe:', err);
+        }
+    }
+
+    if (!fs.existsSync(winauthPath)) {
+        return resolve({ success: true, fallback: true });
+    }
+
+    execFile(winauthPath, [promptMessage, 'Windows Security - Ocal Browser', String(parentHwnd || '0')], { windowsHide: true }, (error, stdout, stderr) => {
+        if (error) {
+            console.log('[PasswordVault] Windows authentication was cancelled or failed.');
+            return resolve({ success: false, error: 'Authentication cancelled or failed' });
+        }
+        lastWindowsAuthTime = Date.now();
+        return resolve({ success: true });
     });
 }
 
@@ -6548,6 +7566,40 @@ ipcMain.handle('passwords:save', (e, { domain, origin, username, password }) => 
     return { success: true };
 });
 
+ipcMain.handle('passwords:get-for-autofill', (e, domainOrUrl) => {
+    const normDomain = normalizeDomainName(domainOrUrl);
+    if (!normDomain) return [];
+    const vault = loadPasswordVaultRaw();
+    const matches = vault.filter(item => item.domain === normDomain);
+
+    // Return account overview without exposing decrypted plaintext passwords
+    return matches.map(item => ({
+        id: item.id,
+        domain: item.domain,
+        origin: item.origin,
+        username: item.username,
+        updatedAt: item.updatedAt
+    }));
+});
+
+ipcMain.handle('passwords:request-autofill', async (e, { id, username, domain }) => {
+    const promptMsg = `Ocal Browser is trying to autofill saved credentials for ${username || 'your account'} on ${domain || 'this website'}. Verify your Windows identity to allow this.`;
+    const auth = await promptWindowsAuthentication(promptMsg);
+    if (!auth.success) {
+        return { success: false, error: auth.error || 'Authentication cancelled' };
+    }
+
+    const vault = loadPasswordVaultRaw();
+    const cred = vault.find(c => c.id === id);
+    if (!cred) return { success: false, error: 'Credential not found' };
+
+    return {
+        success: true,
+        username: cred.username,
+        password: decryptSecret(cred.passwordEncrypted)
+    };
+});
+
 ipcMain.handle('passwords:get-for-domain', (e, domainOrUrl) => {
     const normDomain = normalizeDomainName(domainOrUrl);
     if (!normDomain) return [];
@@ -6623,6 +7675,76 @@ ipcMain.handle('get-settings', () => {
 });
 ipcMain.handle('get-app-version', () => app.getVersion());
 ipcMain.handle('get-downloads', () => downloads);
+
+ipcMain.handle('get-ambient-tracks', async () => {
+    try {
+        const musicDir = path.join(__dirname, 'music');
+        if (!fs.existsSync(musicDir)) {
+            fs.mkdirSync(musicDir, { recursive: true });
+        }
+        const files = fs.readdirSync(musicDir);
+        const audioExtensions = ['.mp3', '.wav', '.ogg', '.m4a', '.flac', '.aac'];
+        const tracks = files
+            .filter(f => audioExtensions.includes(path.extname(f).toLowerCase()))
+            .map(f => {
+                const ext = path.extname(f);
+                const baseName = path.basename(f, ext);
+                let displayName = baseName;
+                if (f === 'Ocal.mp3') displayName = 'Ocal Theme';
+                else if (f === 'ocal [usesuno.com].mp3') displayName = 'Ocal Suno Beats';
+                else if (f === 'ocal [usesuno.com] (1).mp3') displayName = 'Ocal Suno Chill';
+                else if (f === 'ocal [usesuno.com] (2).mp3') displayName = 'Ocal Suno Focus';
+                else {
+                    displayName = baseName
+                        .replace(/\[.*?\]/g, '')
+                        .replace(/[_-]/g, ' ')
+                        .replace(/\s+/g, ' ')
+                        .trim();
+                    if (!displayName) displayName = baseName;
+                }
+                return {
+                    id: f,
+                    fileName: f,
+                    name: displayName,
+                    path: path.join(musicDir, f),
+                    relativePath: `music/${f}`
+                };
+            });
+        return tracks;
+    } catch (err) {
+        console.error('[Ambient Tracks] Error listing tracks:', err);
+        return [];
+    }
+});
+
+ipcMain.handle('select-custom-ambient-file', async () => {
+    try {
+        const result = await dialog.showOpenDialog(mainWindow, {
+            title: 'Select Ambient Audio File',
+            filters: [
+                { name: 'Audio Files', extensions: ['mp3', 'wav', 'ogg', 'm4a', 'flac', 'aac'] }
+            ],
+            properties: ['openFile']
+        });
+        if (result.canceled || result.filePaths.length === 0) return null;
+        const sourcePath = result.filePaths[0];
+        const fileName = path.basename(sourcePath);
+        const musicDir = path.join(__dirname, 'music');
+        if (!fs.existsSync(musicDir)) fs.mkdirSync(musicDir, { recursive: true });
+        const destPath = path.join(musicDir, fileName);
+        fs.copyFileSync(sourcePath, destPath);
+        return {
+            id: fileName,
+            fileName: fileName,
+            name: path.basename(fileName, path.extname(fileName)).replace(/[_-]/g, ' '),
+            path: destPath,
+            relativePath: `music/${fileName}`
+        };
+    } catch (err) {
+        console.error('[Select Ambient File Error]', err);
+        return null;
+    }
+});
 function isNewerVersion(latest, current) {
     const l = latest.split('.').map(Number);
     const c = current.split('.').map(Number);
@@ -6734,7 +7856,28 @@ ipcMain.handle('check-for-update', async () => {
     });
 });
 ipcMain.handle('download-update', async (event) => {
-    const downloadWithRetry = async (url, dest, retries = 3) => {
+    const broadcastProgress = (data) => {
+        try {
+            if (event && event.sender && !event.sender.isDestroyed()) {
+                event.sender.send('update-download-progress', data);
+            }
+            if (mainWindow && !mainWindow.isDestroyed()) {
+                mainWindow.webContents.send('update-download-progress', data);
+            }
+            if (Array.isArray(views)) {
+                views.forEach(v => {
+                    if (v.view && !v.view.webContents.isDestroyed()) {
+                        v.view.webContents.send('update-download-progress', data);
+                    }
+                    if (v.view2 && !v.view2.webContents.isDestroyed()) {
+                        v.view2.webContents.send('update-download-progress', data);
+                    }
+                });
+            }
+        } catch (e) {}
+    };
+
+    const downloadWithRetry = async (url, dest, knownSize = 0, retries = 3) => {
         const { net } = require('electron');
         return new Promise((resolve, reject) => {
             const attempt = (remaining) => {
@@ -6750,25 +7893,45 @@ ipcMain.handle('download-update', async (event) => {
                         return reject(new Error(`Download failed with status ${response.statusCode}`));
                     }
 
-                    const totalBytes = parseInt(response.headers['content-length'], 10);
+                    const rawLen = response.headers['content-length'] || (Array.isArray(response.headers['content-length']) ? response.headers['content-length'][0] : null);
+                    let totalBytes = parseInt(rawLen, 10);
+                    if (isNaN(totalBytes) || totalBytes <= 0) {
+                        totalBytes = knownSize || 0;
+                    }
+
                     let receivedBytes = 0;
+                    let lastBroadcastTime = 0;
                     const fileStream = fs.createWriteStream(dest);
 
                     response.on('data', (chunk) => {
                         receivedBytes += chunk.length;
                         fileStream.write(chunk);
-                        const progress = Math.round((receivedBytes / totalBytes) * 100);
-                        if (mainWindow) {
-                            mainWindow.webContents.send('update-download-progress', {
+
+                        const now = Date.now();
+                        if (now - lastBroadcastTime > 80 || (totalBytes > 0 && receivedBytes >= totalBytes)) {
+                            lastBroadcastTime = now;
+                            let progress = 0;
+                            if (totalBytes > 0) {
+                                progress = Math.min(100, Math.round((receivedBytes / totalBytes) * 100));
+                            } else {
+                                progress = Math.min(95, Math.round((receivedBytes / (50 * 1024 * 1024)) * 100));
+                            }
+
+                            broadcastProgress({
                                 percent: progress,
                                 loaded: (receivedBytes / (1024 * 1024)).toFixed(1),
-                                total: (totalBytes / (1024 * 1024)).toFixed(1)
+                                total: totalBytes > 0 ? (totalBytes / (1024 * 1024)).toFixed(1) : '?'
                             });
                         }
                     });
 
                     response.on('end', () => {
                         fileStream.end();
+                        broadcastProgress({
+                            percent: 100,
+                            loaded: (receivedBytes / (1024 * 1024)).toFixed(1),
+                            total: (receivedBytes / (1024 * 1024)).toFixed(1)
+                        });
                         resolve(dest);
                     });
                 });
@@ -6809,7 +7972,7 @@ ipcMain.handle('download-update', async (event) => {
                             if (!asset) return reject(new Error('No compatible installer found.'));
 
                             const tempPath = path.join(app.getPath('temp'), asset.name);
-                            resolve(await downloadWithRetry(asset.browser_download_url, tempPath));
+                            resolve(await downloadWithRetry(asset.browser_download_url, tempPath, asset.size || 0));
                         } catch (e) { reject(e); }
                     } else { reject(new Error(`API Status ${response.statusCode}`)); }
                 });
@@ -8798,30 +9961,53 @@ ipcMain.on('set-dns-provider', (e, provider) => {
 
 // ── Profile Management APIs ────────────────────────────────────────────────
 ipcMain.on('switch-profile', (e, profileId) => {
-    const profile = userSettings.profiles.find(p => p.id === profileId);
+    const profile = (userSettings.profiles || []).find(p => p.id === profileId);
     if (!profile) return;
 
+    // 1. Save data for current profile
+    saveCurrentProfileData();
+
+    // 2. Switch active profile ID
     userSettings.currentProfileId = profileId;
+
+    // 3. Load bookmarks, folders, history, accent colors for new profile
+    loadProfileData(profileId);
+
+    // 4. Save and broadcast updates across all renderer views
     saveSettings(userSettings);
     broadcastSettings();
+    broadcastBookmarks();
+    broadcastHistory();
 
-    // In a full implementation, we would reload all views with a new session partition.
-    // For now, we update the UI state.
     if (mainWindow) {
         mainWindow.webContents.send('show-modal', {
             title: 'Identity Switched',
-            message: `Now browsing as ${profile.name}.`,
+            message: `Now browsing as ${profile.name}. Bookmarks, history, and logins are isolated.`,
             type: 'success'
         });
     }
 });
 
-ipcMain.handle('create-profile', (e, { name, icon }) => {
+ipcMain.handle('create-profile', (e, { name, icon, color }) => {
     const id = 'profile_' + Date.now();
-    const newProfile = { id, name, icon };
+    const profileColor = color || '#09f0a0';
+    const newProfile = { id, name: name || 'New Profile', icon: icon || 'fa-user', color: profileColor };
 
     if (!userSettings.profiles) userSettings.profiles = [];
     userSettings.profiles.push(newProfile);
+
+    if (!userSettings.profilesData) userSettings.profilesData = {};
+    userSettings.profilesData[id] = {
+        bookmarks: [],
+        folders: [],
+        history: [],
+        accentColor: profileColor,
+        accentColorDark: profileColor,
+        accentColorLight: '#058f60',
+        themeMode: userSettings.themeMode || 'dark',
+        searchEngine: 'google',
+        customSearchUrl: 'https://www.google.com/search?q=%s'
+    };
 
     saveSettings(userSettings);
     broadcastSettings();
@@ -8830,22 +10016,78 @@ ipcMain.handle('create-profile', (e, { name, icon }) => {
 
 ipcMain.on('delete-profile', (e, profileId) => {
     if (profileId === 'default') return; // Cannot delete primary
+
+    // Clear session cookies/cache for that profile partition
+    try {
+        const ses = session.fromPartition('persist:profile_' + profileId);
+        if (ses) {
+            ses.clearStorageData().catch(() => {});
+        }
+    } catch (err) { }
+
     if (userSettings.currentProfileId === profileId) {
         userSettings.currentProfileId = 'default';
+        loadProfileData('default');
     }
 
-    userSettings.profiles = userSettings.profiles.filter(p => p.id !== profileId);
+    if (userSettings.profilesData) {
+        delete userSettings.profilesData[profileId];
+    }
+
+    userSettings.profiles = (userSettings.profiles || []).filter(p => p.id !== profileId);
     saveSettings(userSettings);
     broadcastSettings();
+    broadcastBookmarks();
+    broadcastHistory();
 });
 
-ipcMain.on('edit-profile', (e, { id, name, icon }) => {
-    const profile = userSettings.profiles.find(p => p.id === id);
+ipcMain.on('edit-profile', (e, { id, name, icon, color }) => {
+    const profile = (userSettings.profiles || []).find(p => p.id === id);
     if (profile) {
-        profile.name = name;
-        profile.icon = icon;
+        if (name) profile.name = name;
+        if (icon) profile.icon = icon;
+        if (color) {
+            profile.color = color;
+            if (userSettings.profilesData && userSettings.profilesData[id]) {
+                userSettings.profilesData[id].accentColor = color;
+                userSettings.profilesData[id].accentColorDark = color;
+            }
+            if (userSettings.currentProfileId === id) {
+                userSettings.accentColor = color;
+                userSettings.accentColorDark = color;
+            }
+        }
         saveSettings(userSettings);
         broadcastSettings();
+    }
+});
+
+ipcMain.on('clear-profile-data', async (e, profileId) => {
+    const targetId = profileId || userSettings.currentProfileId || 'default';
+    try {
+        const ses = session.fromPartition('persist:profile_' + targetId);
+        if (ses) {
+            await ses.clearStorageData();
+        }
+    } catch (err) { }
+
+    if (userSettings.profilesData && userSettings.profilesData[targetId]) {
+        userSettings.profilesData[targetId].history = [];
+    }
+    if (userSettings.currentProfileId === targetId) {
+        userSettings.history = [];
+        broadcastHistory();
+    }
+
+    saveSettings(userSettings);
+    broadcastSettings();
+
+    if (mainWindow) {
+        mainWindow.webContents.send('show-modal', {
+            title: 'Profile Data Cleared',
+            message: `Session cookies, storage, and history cleared for this profile.`,
+            type: 'success'
+        });
     }
 });
 
@@ -9046,6 +10288,9 @@ function broadcastSettings() {
     views.forEach(v => {
         if (v.view && !v.view.webContents.isDestroyed()) {
             v.view.webContents.send('settings-changed', settingsToSend);
+        }
+        if (v.isSplit && v.view2 && !v.view2.webContents.isDestroyed()) {
+            v.view2.webContents.send('settings-changed', settingsToSend);
         }
     });
     // Notify all popups and dropdown panels

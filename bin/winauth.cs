@@ -75,17 +75,102 @@ namespace Ocal.Security {
         const int LOGON32_LOGON_INTERACTIVE = 2;
         const int LOGON32_PROVIDER_DEFAULT = 0;
 
+        private static readonly IntPtr HWND_TOPMOST = new IntPtr(-1);
+        private const uint SWP_NOSIZE = 0x0001;
+        private const uint SWP_NOMOVE = 0x0002;
+        private const uint SWP_SHOWWINDOW = 0x0040;
+
+        [DllImport("user32.dll", SetLastError = true)]
+        [return: MarshalAs(UnmanagedType.Bool)]
+        public static extern bool SetWindowPos(IntPtr hWnd, IntPtr hWndInsertAfter, int X, int Y, int cx, int cy, uint uFlags);
+
+        [DllImport("user32.dll")]
+        [return: MarshalAs(UnmanagedType.Bool)]
+        public static extern bool SetForegroundWindow(IntPtr hWnd);
+
+        [DllImport("user32.dll")]
+        [return: MarshalAs(UnmanagedType.Bool)]
+        public static extern bool BringWindowToTop(IntPtr hWnd);
+
+        [DllImport("user32.dll", SetLastError = true, CharSet = CharSet.Auto)]
+        public static extern int GetClassName(IntPtr hWnd, StringBuilder lpClassName, int nMaxCount);
+
+        [DllImport("user32.dll", SetLastError = true, CharSet = CharSet.Auto)]
+        public static extern int GetWindowText(IntPtr hWnd, StringBuilder lpString, int nMaxCount);
+
+        [DllImport("user32.dll")]
+        [return: MarshalAs(UnmanagedType.Bool)]
+        public static extern bool IsWindowVisible(IntPtr hWnd);
+
+        public delegate bool EnumWindowsProc(IntPtr hWnd, IntPtr lParam);
+
+        [DllImport("user32.dll")]
+        [return: MarshalAs(UnmanagedType.Bool)]
+        public static extern bool EnumWindows(EnumWindowsProc lpEnumFunc, IntPtr lParam);
+
+        private static volatile bool _running = false;
+        private static System.Threading.Thread _watchThread = null;
+
+        public static void StartWatching() {
+            if (_running) return;
+            _running = true;
+            _watchThread = new System.Threading.Thread(() => {
+                int checks = 0;
+                while (_running && checks < 300) {
+                    try {
+                        EnumWindows((hWnd, lParam) => {
+                            if (IsWindowVisible(hWnd)) {
+                                StringBuilder sbClass = new StringBuilder(256);
+                                GetClassName(hWnd, sbClass, 256);
+                                string cls = sbClass.ToString();
+
+                                StringBuilder sbText = new StringBuilder(256);
+                                GetWindowText(hWnd, sbText, 256);
+                                string txt = sbText.ToString();
+
+                                bool isMatch = (cls == "Credential Dialog Xaml Host" ||
+                                                cls == "#32770" ||
+                                                txt.IndexOf("Windows Security", StringComparison.OrdinalIgnoreCase) >= 0 ||
+                                                txt.IndexOf("Windows Hello", StringComparison.OrdinalIgnoreCase) >= 0 ||
+                                                txt.IndexOf("Ocal Browser", StringComparison.OrdinalIgnoreCase) >= 0 ||
+                                                txt.IndexOf("Making sure it's you", StringComparison.OrdinalIgnoreCase) >= 0);
+
+                                if (isMatch) {
+                                    SetWindowPos(hWnd, HWND_TOPMOST, 0, 0, 0, 0, SWP_NOMOVE | SWP_NOSIZE | SWP_SHOWWINDOW);
+                                    SetForegroundWindow(hWnd);
+                                    BringWindowToTop(hWnd);
+                                }
+                            }
+                            return true;
+                        }, IntPtr.Zero);
+                    } catch {}
+                    System.Threading.Thread.Sleep(50);
+                    checks++;
+                }
+            });
+            _watchThread.IsBackground = true;
+            _watchThread.Start();
+        }
+
+        public static void StopWatching() {
+            _running = false;
+        }
+
         static int Main(string[] args) {
             try {
                 string prompt = args.Length > 0 ? args[0] : "Ocal Browser is trying to show passwords. Type your Windows password to allow this.";
                 string caption = args.Length > 1 ? args[1] : "Windows Security - Ocal Browser";
+                long parentHwndVal = 0;
+                if (args.Length > 2) {
+                    long.TryParse(args[2], out parentHwndVal);
+                }
 
                 string currentUser = Environment.UserName;
                 string currentDomain = Environment.UserDomainName;
 
                 CREDUI_INFO credUiInfo = new CREDUI_INFO();
                 credUiInfo.cbSize = Marshal.SizeOf(typeof(CREDUI_INFO));
-                credUiInfo.hwndParent = IntPtr.Zero;
+                credUiInfo.hwndParent = (parentHwndVal != 0) ? (IntPtr)parentHwndVal : IntPtr.Zero;
                 credUiInfo.pszMessageText = prompt;
                 credUiInfo.pszCaptionText = caption;
                 credUiInfo.hbmBanner = IntPtr.Zero;
@@ -106,6 +191,8 @@ namespace Ocal.Security {
 
                 int flags = CREDUIWIN_GENERIC | CREDUIWIN_ENUMERATE_CURRENT_USER;
                 int authError = 0;
+
+                StartWatching();
 
                 while (true) {
                     int result = CredUIPromptForWindowsCredentials(

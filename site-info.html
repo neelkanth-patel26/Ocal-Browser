@@ -2,57 +2,60 @@
 <html>
 <head>
     <meta charset="UTF-8">
-    <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' https://cdnjs.cloudflare.com https://unpkg.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com https://cdnjs.cloudflare.com https://cdn.jsdelivr.net; font-src 'self' https://fonts.gstatic.com https://cdnjs.cloudflare.com https://cdn.jsdelivr.net; img-src 'self' data: https:; connect-src 'self' https://suggestqueries.google.com https://api.github.com https://cdnjs.cloudflare.com https://unpkg.com;">
+    <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline' https://cdnjs.cloudflare.com https://unpkg.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com https://cdnjs.cloudflare.com https://cdn.jsdelivr.net; font-src 'self' https://fonts.gstatic.com https://cdnjs.cloudflare.com https://cdn.jsdelivr.net; img-src 'self' data: https:; connect-src 'self' https://suggestqueries.google.com https://api.github.com https://cdnjs.cloudflare.com https://unpkg.com;">
+    <title>Site Information</title>
+    <!-- ANTI-FLASH & COLOR HARMONIZER -->
+    <script src="color-harmonizer.js"></script>
+    <script>
+        (function () {
+            var t = localStorage.getItem('ocal-settings-theme') || 'dark';
+            document.documentElement.setAttribute('data-theme', t);
+            var a = localStorage.getItem('ocal-settings-accent');
+            if (window.OcalColorHarmonizer) {
+                window.OcalColorHarmonizer.applyHarmonizedTheme(a, t);
+            }
+        })();
+    </script>
     <link rel="stylesheet" href="assets/fontawesome/css/all.min.css">
-    <link rel="stylesheet" href="assets/fonts/geist-fonts.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
     <style>
-        @import url('./assets/fonts/geist-fonts.css');
-
         :root {
-            --bg: #121316;
-            --popup-bg: rgba(22, 24, 29, 0.95);
-            --border: rgba(255, 255, 255, 0.09);
             --accent: #15AC49;
             --accent-glow: rgba(21, 172, 73, 0.25);
             --accent-dim: rgba(21, 172, 73, 0.12);
-            --accent-border: var(--accent);
-            --card-bg: rgba(255, 255, 255, 0.04);
+            --accent-text: #FFFFFF;
+            --bg-glass: #FFFFFF;
+            --border-glass: rgba(0, 0, 0, 0.08);
+            --card-bg: #F4F4F6;
+            --card-border: rgba(0, 0, 0, 0.06);
+            --card-hover-bg: #EAEBED;
+            --text-primary: #111111;
+            --text-secondary: #555860;
+            --text-muted: #7E8492;
+            --font-main: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, sans-serif;
+            --font-mono: 'Space Mono', monospace;
+            --radius: 20px;
+        }
+
+        [data-theme="dark"], body[data-theme="dark"] {
+            --bg-glass: #16181D;
+            --border-glass: rgba(255, 255, 255, 0.08);
+            --card-bg: #1F222A;
             --card-border: rgba(255, 255, 255, 0.06);
-            --card-hover-bg: rgba(255, 255, 255, 0.08);
-            --card-hover-border: var(--accent);
+            --card-hover-bg: #272B35;
             --text-primary: #FFFFFF;
             --text-secondary: #9CA3AF;
-            --font-main: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, sans-serif;
-        }
-
-        body[data-theme="light"], body {
-            --bg: #F4F5F7;
-            --popup-bg: rgba(255, 255, 255, 0.96);
-            --border: rgba(0, 0, 0, 0.08);
-            --card-bg: #FFFFFF;
-            --card-border: rgba(0, 0, 0, 0.06);
-            --card-hover-bg: #F8FAFC;
-            --card-hover-border: var(--accent);
-            --text-primary: #111111;
-            --text-secondary: #64748B;
-        }
-
-        body[data-theme="dark"] {
-            --bg: #18181B;
-            --popup-bg: #222226;
-            --border: rgba(255, 255, 255, 0.08);
-            --card-bg: #28282D;
-            --card-border: rgba(255, 255, 255, 0.08);
-            --card-hover-bg: #2E2E33;
-            --card-hover-border: var(--accent);
-            --text-primary: #F4F4F5;
-            --text-secondary: #A1A1AA;
+            --text-muted: #6B7280;
+            color-scheme: dark;
         }
 
         * { 
             box-sizing: border-box; 
             margin: 0; 
             padding: 0;
+            user-select: none;
         }
 
         html, body {
@@ -66,22 +69,28 @@
         }
 
         body {
-            padding: 0;
-            box-sizing: border-box;
+            padding: 6px;
+            display: flex;
+            align-items: flex-start;
+            justify-content: flex-start;
         }
 
         .site-info-popup {
             position: relative;
-            background: var(--popup-bg);
-            border: 1px solid var(--border);
-            padding: 16px;
+            background: var(--bg-glass);
+            border: 1px solid var(--border-glass);
+            padding: 14px;
             display: flex;
             flex-direction: column;
             width: 100%;
             height: 100%;
-            border-radius: 20px;
+            border-radius: var(--radius);
             box-shadow: none !important;
             overflow: hidden;
+        }
+
+        [data-theme="dark"] .site-info-popup {
+            box-shadow: none !important;
         }
 
         .screen {
@@ -89,7 +98,7 @@
             flex-direction: column;
             width: 100%;
             height: 100%;
-            gap: 12px;
+            gap: 10px;
             overflow: hidden;
         }
 
@@ -97,9 +106,10 @@
             display: flex; 
         }
 
+        /* Header */
         .sip-header { 
-            padding-bottom: 12px; 
-            border-bottom: 1px solid var(--border);
+            padding-bottom: 8px; 
+            border-bottom: 1px solid var(--border-glass);
             display: flex; 
             align-items: center; 
             justify-content: space-between; 
@@ -109,23 +119,25 @@
         .sip-header-left { 
             display: flex; 
             align-items: center; 
-            gap: 10px; 
+            gap: 8px; 
         }
         
         .sip-title { 
-            font-size: 13px; 
-            font-weight: 700; 
+            font-size: 13.5px; 
+            font-weight: 800; 
             color: var(--text-primary); 
             white-space: nowrap; 
             overflow: hidden; 
             text-overflow: ellipsis;
-            max-width: 200px;
+            max-width: 210px;
             letter-spacing: -0.2px;
         }
 
         .sip-domain { 
             font-size: 10px; 
-            color: var(--text-secondary); 
+            font-weight: 600;
+            color: var(--text-muted); 
+            font-family: var(--font-mono);
             margin-top: 1px; 
         }
         
@@ -133,8 +145,8 @@
             width: 26px; 
             height: 26px; 
             border-radius: 50%;
-            background: rgba(0, 0, 0, 0.04); 
-            border: 1px solid var(--border);
+            background: var(--card-bg); 
+            border: 1px solid var(--card-border);
             color: var(--text-secondary); 
             cursor: pointer;
             display: flex; 
@@ -142,61 +154,41 @@
             justify-content: center;
             font-size: 11px; 
             transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
-        }
-
-        body[data-theme="dark"] .sip-back-btn,
-        body[data-theme="dark"] .sip-close {
-            background: rgba(255, 255, 255, 0.06);
+            outline: none;
         }
 
         .sip-back-btn:hover, .sip-close:hover {
-            background: var(--accent);
-            color: #FFFFFF;
+            background: var(--accent-dim);
+            color: var(--accent);
             border-color: var(--accent);
-            transform: scale(1.05);
+            transform: scale(1.08);
         }
         
-        /* Smooth Scrollable Container */
+        /* Content Area */
         .sip-content { 
             flex: 1; 
             display: flex; 
             flex-direction: column; 
-            gap: 10px; 
+            gap: 8px; 
             overflow-y: auto;
-            padding-right: 4px;
-            scrollbar-width: thin;
+            padding-right: 2px;
         }
 
-        .sip-content::-webkit-scrollbar {
-            width: 4px;
-        }
-        .sip-content::-webkit-scrollbar-track {
-            background: transparent;
-        }
-        .sip-content::-webkit-scrollbar-thumb {
-            background: rgba(100, 116, 139, 0.3);
-            border-radius: 10px;
-        }
-        .sip-content::-webkit-scrollbar-thumb:hover {
-            background: var(--accent);
-        }
-        
         .sip-row { 
-            padding: 12px 14px; 
+            padding: 10px 12px; 
             border-radius: 14px; 
             background: var(--card-bg);
             border: 1px solid var(--card-border);
             display: flex; 
             align-items: center; 
-            gap: 12px; 
+            gap: 10px; 
             cursor: pointer; 
             transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1); 
         }
 
         .sip-row:hover {
             background: var(--card-hover-bg);
-            border-color: var(--card-hover-border);
-            transform: translateY(-1px);
+            border-color: var(--accent);
         }
         
         .sip-row-icon {
@@ -204,19 +196,18 @@
             height: 32px; 
             border-radius: 10px;
             background: var(--accent-dim); 
-            border: 1px solid var(--accent-glow);
+            border: 1px solid var(--accent);
             display: flex; 
             align-items: center; 
             justify-content: center;
             font-size: 13px; 
             color: var(--accent); 
             flex-shrink: 0;
-            transition: all 0.2s ease;
         }
 
         .sip-row-icon.insecure {
-            background: rgba(239, 68, 68, 0.15) !important;
-            border-color: rgba(239, 68, 68, 0.3) !important;
+            background: rgba(239, 68, 68, 0.12) !important;
+            border-color: #EF4444 !important;
             color: #EF4444 !important;
         }
 
@@ -240,30 +231,29 @@
 
         .sip-arrow { 
             font-size: 10px; 
-            color: var(--text-secondary); 
-            opacity: 0.6; 
+            color: var(--text-muted); 
             flex-shrink: 0; 
         }
 
         .sip-separator { 
             height: 1px; 
-            background: var(--border); 
-            margin: 6px 0; 
+            background: var(--border-glass); 
+            margin: 2px 0; 
             flex-shrink: 0;
         }
         
         .sip-permissions { 
             display: flex; 
             flex-direction: column; 
-            gap: 8px; 
+            gap: 6px; 
         }
 
         .sip-perm-item { 
             display: flex; 
             align-items: center; 
             justify-content: space-between; 
-            padding: 10px 12px; 
-            border-radius: 12px;
+            padding: 8px 12px; 
+            border-radius: 14px;
             background: var(--card-bg);
             border: 1px solid var(--card-border);
             transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
@@ -271,15 +261,15 @@
 
         .sip-perm-item:hover {
             background: var(--card-hover-bg);
-            border-color: var(--card-hover-border);
+            border-color: var(--accent);
         }
 
         .sip-perm-label { 
             display: flex; 
             align-items: center; 
-            gap: 10px; 
-            font-size: 12px; 
-            font-weight: 600; 
+            gap: 9px; 
+            font-size: 11.5px; 
+            font-weight: 700; 
             color: var(--text-primary); 
         }
 
@@ -287,18 +277,14 @@
             width: 28px; 
             height: 28px; 
             border-radius: 8px;
-            background: rgba(0, 0, 0, 0.04); 
-            border: 1px solid var(--border);
+            background: var(--bg-glass); 
+            border: 1px solid var(--border-glass);
             display: flex; 
             align-items: center; 
             justify-content: center;
             font-size: 12px; 
             color: var(--text-primary); 
             flex-shrink: 0;
-        }
-
-        body[data-theme="dark"] .sip-perm-label i {
-            background: rgba(255, 255, 255, 0.05);
         }
 
         /* Modern Toggle Switches */
@@ -308,27 +294,26 @@
             width: 36px;
             height: 20px;
             flex-shrink: 0;
-            background: rgba(100, 116, 139, 0.25);
+            background: rgba(148, 163, 184, 0.3);
             transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
             border-radius: 100px;
             cursor: pointer;
-            border: 1px solid var(--border);
         }
 
         .sip-toggle-dot {
             position: absolute;
             height: 14px;
             width: 14px;
-            left: 2px;
-            top: 2px;
+            left: 3px;
+            top: 3px;
             background: #FFFFFF;
             transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
             border-radius: 50%;
+            box-shadow: none !important;
         }
 
         .sip-toggle.on {
             background: var(--accent) !important;
-            border-color: var(--accent) !important;
         }
 
         .sip-toggle.on .sip-toggle-dot {
@@ -339,33 +324,32 @@
         .sip-footer { 
             display: flex; 
             flex-direction: column; 
-            gap: 8px; 
+            gap: 6px; 
         }
 
         .sip-footer-item { 
-            padding: 10px 12px; 
+            padding: 9px 12px; 
             display: flex; 
             align-items: center; 
             gap: 10px; 
             cursor: pointer; 
             transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1); 
-            border-radius: 12px; 
+            border-radius: 14px; 
             background: var(--card-bg);
             border: 1px solid var(--card-border);
         }
 
         .sip-footer-item:hover {
             background: var(--card-hover-bg);
-            border-color: var(--card-hover-border);
-            transform: translateY(-1px);
+            border-color: var(--accent);
         }
 
         .sip-footer-item i.fas {
             width: 28px; 
             height: 28px; 
             border-radius: 8px;
-            background: rgba(0, 0, 0, 0.04); 
-            border: 1px solid var(--border);
+            background: var(--bg-glass); 
+            border: 1px solid var(--border-glass);
             display: flex; 
             align-items: center; 
             justify-content: center;
@@ -374,14 +358,10 @@
             flex-shrink: 0;
         }
 
-        body[data-theme="dark"] .sip-footer-item i.fas {
-            background: rgba(255, 255, 255, 0.05);
-        }
-
         .sip-footer-label { 
             flex: 1; 
-            font-size: 12px; 
-            font-weight: 600; 
+            font-size: 11.5px; 
+            font-weight: 700; 
             color: var(--text-primary); 
         }
         
@@ -392,27 +372,27 @@
             cursor: pointer;
             width: 100%; 
             text-align: center; 
-            padding: 10px;
-            font-size: 11px; 
-            font-weight: 700; 
-            color: #ef4444;
+            padding: 8px 12px;
+            font-size: 10.5px; 
+            font-weight: 800; 
+            color: #EF4444;
             transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
             border-radius: 12px;
             font-family: inherit;
             text-transform: uppercase;
-            letter-spacing: 0.5px;
-            margin-top: 4px;
-            margin-bottom: 2px;
+            letter-spacing: 0.6px;
+            margin: 2px 0;
+            outline: none;
         }
 
         .sip-reset-btn:hover {
-            background: #ef4444;
-            border-color: #ef4444;
+            background: #EF4444;
+            border-color: #EF4444;
             color: #FFFFFF;
         }
 
         .sip-btn {
-            padding: 8px 18px;
+            padding: 7px 16px;
             border-radius: 100px;
             font-size: 11px;
             font-weight: 800;
@@ -425,11 +405,13 @@
             justify-content: center;
             text-transform: uppercase;
             letter-spacing: 0.5px;
+            outline: none;
         }
 
         .sip-btn.primary {
             background: var(--accent);
-            color: #FFFFFF;
+            color: var(--accent-text);
+            box-shadow: none !important;
         }
 
         .sip-btn.primary:hover {
@@ -447,7 +429,7 @@
         .security-desc a { 
             color: var(--accent); 
             text-decoration: none; 
-            font-weight: 600;
+            font-weight: 700;
         }
 
         .security-desc a:hover { 
@@ -462,13 +444,13 @@
             gap: 10px;
             background: var(--card-bg);
             border: 1px solid var(--card-border);
-            border-radius: 10px;
+            border-radius: 12px;
             transition: all 0.2s ease;
         }
 
         .cookie-item:hover {
             background: var(--card-hover-bg);
-            border-color: var(--card-hover-border);
+            border-color: var(--accent);
         }
 
         .cookie-favicon { 
@@ -480,9 +462,10 @@
 
         .cookie-domain { 
             flex: 1; 
-            font-size: 12px; 
-            font-weight: 600; 
+            font-size: 11.5px; 
+            font-weight: 700; 
             color: var(--text-primary); 
+            font-family: var(--font-mono);
             white-space: nowrap; 
             overflow: hidden; 
             text-overflow: ellipsis; 
@@ -498,30 +481,36 @@
             cursor: pointer; 
             transition: all 0.2s ease; 
             border-radius: 6px;
-            border: 1px solid var(--border); 
+            border: 1px solid var(--border-glass); 
             background: transparent;
             font-size: 10px;
         }
 
         .cookie-action:hover { 
             background: rgba(239, 68, 68, 0.15); 
-            color: #ef4444; 
-            border-color: #ef4444; 
+            color: #EF4444; 
+            border-color: #EF4444; 
         }
     </style>
 </head>
-<body>
+<body data-theme="dark">
+    <script>
+        (function () {
+            const t = localStorage.getItem('ocal-settings-theme') || 'dark';
+            document.body.setAttribute('data-theme', t);
+        })();
+    </script>
     <div class="site-info-popup">
         <!-- Main Screen -->
         <div class="screen active" id="main-screen">
             <div class="sip-header">
-                <div class="sip-title" id="site-title-display">www.youtube.com</div>
-                <button class="sip-close" id="sip-close-btn-main"><i class="fas fa-times"></i></button>
+                <div class="sip-title" id="site-title-display">www.google.com</div>
+                <button class="sip-close" id="sip-close-btn-main" title="Close"><i class="fas fa-times"></i></button>
             </div>
             
             <div class="sip-content">
                 <div class="sip-row" id="go-to-security">
-                    <i class="fas fa-shield-halved sip-row-icon secure"></i>
+                    <div class="sip-row-icon secure"><i class="fas fa-shield-halved"></i></div>
                     <div class="sip-row-text">
                         <div class="sip-row-title">Connection is secure</div>
                         <div class="sip-row-desc">Your info is private as it is sent to this site.</div>
@@ -569,18 +558,18 @@
         <div class="screen" id="security-screen">
             <div class="sip-header">
                 <div class="sip-header-left">
-                    <button class="sip-back-btn" id="back-sec-to-main"><i class="fas fa-arrow-left"></i></button>
+                    <button class="sip-back-btn" id="back-sec-to-main" title="Back"><i class="fas fa-arrow-left"></i></button>
                     <div>
                         <div class="sip-title">Security</div>
-                        <div class="sip-domain" id="sec-domain-display">youtube.com</div>
+                        <div class="sip-domain" id="sec-domain-display">google.com</div>
                     </div>
                 </div>
-                <button class="sip-close"><i class="fas fa-times"></i></button>
+                <button class="sip-close" title="Close"><i class="fas fa-times"></i></button>
             </div>
             
             <div class="sip-content">
                 <div class="sip-row" style="cursor: default;">
-                    <i class="fas fa-shield-halved sip-row-icon secure"></i>
+                    <div class="sip-row-icon secure"><i class="fas fa-shield-halved"></i></div>
                     <div class="sip-row-text">
                         <div class="sip-row-title">Secure Connection</div>
                         <div class="sip-row-desc">Your passwords and private numbers remain confidential when transmitted to this host.</div>
@@ -601,18 +590,18 @@
         <div class="screen" id="cookies-screen">
             <div class="sip-header">
                 <div class="sip-header-left">
-                    <button class="sip-back-btn" id="back-cook-to-main"><i class="fas fa-arrow-left"></i></button>
+                    <button class="sip-back-btn" id="back-cook-to-main" title="Back"><i class="fas fa-arrow-left"></i></button>
                     <div>
                         <div class="sip-title">On-device site data</div>
-                        <div class="sip-domain" id="cookies-domain-display">youtube.com</div>
+                        <div class="sip-domain" id="cookies-domain-display">google.com</div>
                     </div>
                 </div>
-                <button class="sip-close"><i class="fas fa-times"></i></button>
+                <button class="sip-close" title="Close"><i class="fas fa-times"></i></button>
             </div>
             
             <div class="sip-content">
                 <div class="security-desc">
-                    Sites store data locally to preserve your active state (such as logins or preferences). <a href="#" id="manage-data-link">Manage site data</a>
+                    Sites store data locally to preserve your active state. <a href="#" id="manage-data-link">Manage site data</a>
                 </div>
                 
                 <div class="security-desc" style="padding-top:0; font-weight: 700; color: var(--text-primary);">
@@ -624,7 +613,7 @@
                 </div>
             </div>
 
-            <div style="padding-top: 10px; border-top: 1px solid var(--border); display: flex; justify-content: flex-end; flex-shrink: 0;">
+            <div style="padding-top: 8px; border-top: 1px solid var(--border-glass); display: flex; justify-content: flex-end; flex-shrink: 0;">
                 <button class="sip-btn primary" id="cookies-done-btn">Done</button>
             </div>
         </div>

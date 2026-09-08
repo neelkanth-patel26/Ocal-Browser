@@ -483,15 +483,38 @@
         }
 
         .sp-card-green-grad {
-            background: linear-gradient(135deg, #FFB074 0%, #E8FF47 35%, #09F0A0 100%);
-            box-shadow: 0 16px 40px rgba(0, 0, 0, 0.12);
-            border: 1px solid var(--chrome-border);
+            background: 
+                radial-gradient(ellipse 75% 85% at 0% 50%, rgba(255, 115, 0, 0.95) 0%, rgba(255, 153, 51, 0.75) 30%, transparent 65%),
+                radial-gradient(ellipse 75% 85% at 100% 50%, rgba(16, 153, 50, 0.95) 0%, rgba(34, 197, 94, 0.75) 30%, transparent 65%),
+                radial-gradient(ellipse 65% 90% at 50% 50%, #FFFFFF 0%, rgba(255, 255, 255, 0.9) 35%, transparent 70%),
+                linear-gradient(90deg, #FF6F00 0%, #FF9933 22%, #FFF8F0 42%, #FFFFFF 50%, #F0FFF4 58%, #22C55E 78%, #108A2E 100%);
+            box-shadow: 0 16px 44px rgba(255, 115, 0, 0.16), 0 8px 30px rgba(16, 153, 50, 0.14);
+            border: 1px solid rgba(255, 255, 255, 0.5);
             min-height: 290px;
+            position: relative;
+        }
+
+        .sp-card-green-grad::before {
+            content: '';
+            position: absolute;
+            inset: 0;
+            background: linear-gradient(180deg, rgba(255, 255, 255, 0.28) 0%, rgba(255, 255, 255, 0.05) 40%, rgba(0, 0, 0, 0.04) 100%);
+            pointer-events: none;
+            border-radius: var(--radius-card);
         }
 
         body[data-theme="dark"] .sp-card-green-grad {
-            background: linear-gradient(135deg, #FF9955 0%, #D4FC2B 40%, #09F0A0 100%);
-            box-shadow: 0 16px 48px rgba(0, 0, 0, 0.35);
+            background: 
+                radial-gradient(ellipse 75% 85% at 0% 50%, rgba(255, 107, 0, 0.95) 0%, rgba(255, 140, 30, 0.7) 30%, transparent 65%),
+                radial-gradient(ellipse 75% 85% at 100% 50%, rgba(13, 140, 40, 0.95) 0%, rgba(26, 180, 80, 0.7) 30%, transparent 65%),
+                radial-gradient(ellipse 65% 90% at 50% 50%, #FFFFFF 0%, rgba(255, 255, 255, 0.88) 35%, transparent 70%),
+                linear-gradient(90deg, #E65100 0%, #FF8800 22%, #FFF5EB 42%, #FFFFFF 50%, #ECFDF5 58%, #16A34A 78%, #0D692B 100%);
+            box-shadow: 0 16px 48px rgba(0, 0, 0, 0.4), 0 0 36px rgba(255, 136, 0, 0.16);
+            border: 1px solid rgba(255, 255, 255, 0.16);
+        }
+
+        body[data-theme="dark"] .sp-card-green-grad::before {
+            background: linear-gradient(180deg, rgba(255, 255, 255, 0.15) 0%, rgba(255, 255, 255, 0.02) 40%, rgba(0, 0, 0, 0.12) 100%);
         }
 
         .sp-hero-content-flex {
@@ -500,6 +523,8 @@
             justify-content: space-between;
             gap: 24px;
             height: 100%;
+            position: relative;
+            z-index: 2;
         }
 
         .sp-hero-left {
@@ -518,7 +543,7 @@
             letter-spacing: 2px;
             text-transform: uppercase;
             color: #0F172A;
-            opacity: 0.85;
+            opacity: 0.9;
             display: inline-flex;
             align-items: center;
             gap: 6px;
@@ -537,7 +562,7 @@
             font-weight: 600;
             line-height: 1.5;
             color: #1E293B;
-            opacity: 0.92;
+            opacity: 0.95;
             min-height: 44px;
         }
 
@@ -547,15 +572,30 @@
             align-items: center;
             justify-content: center;
             text-align: center;
-            background: rgba(15, 23, 42, 0.12);
-            backdrop-filter: blur(20px);
-            border: 1px solid rgba(15, 23, 42, 0.18);
+            background: rgba(255, 255, 255, 0.92);
+            backdrop-filter: blur(24px) saturate(1.4);
+            border: 1.5px solid rgba(0, 0, 128, 0.2);
             border-radius: 22px;
             padding: 24px 32px;
             min-width: 190px;
-            color: #0F172A;
-            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.08);
+            color: #000080;
+            box-shadow: 0 12px 32px rgba(0, 0, 128, 0.1), 0 2px 6px rgba(0, 0, 0, 0.04);
             flex-shrink: 0;
+            z-index: 2;
+            transition: all 0.22s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+
+        .sp-hero-right-visual:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 16px 38px rgba(0, 0, 128, 0.18);
+            border-color: rgba(0, 0, 128, 0.35);
+        }
+
+        body[data-theme="dark"] .sp-hero-right-visual {
+            background: rgba(255, 255, 255, 0.94);
+            border: 1.5px solid rgba(0, 0, 128, 0.25);
+            color: #000080;
+            box-shadow: 0 12px 36px rgba(0, 0, 0, 0.25);
         }
 
         .radial-metric-title {
@@ -564,7 +604,7 @@
             line-height: 1;
             font-family: var(--font-mono);
             letter-spacing: -2px;
-            color: #0F172A;
+            color: #000080;
         }
 
         .radial-metric-status {
@@ -573,8 +613,8 @@
             letter-spacing: 1.2px;
             text-transform: uppercase;
             margin-top: 6px;
-            color: #0F172A;
-            opacity: 0.85;
+            color: #000080;
+            opacity: 0.9;
         }
 
         .sparkline-dots {
@@ -589,14 +629,14 @@
             width: 5px;
             height: 5px;
             border-radius: 50%;
-            background: #0F172A;
+            background: #000080;
             opacity: 0.35;
         }
 
         .spark-dot.active {
             opacity: 1;
             transform: scale(1.4);
-            background: #0F172A;
+            background: #000080;
         }
 
         /* ── 4 Quick Metric Bento Tiles ── */
@@ -1064,23 +1104,23 @@
                 </h1>
                 <div class="sp-user-subtitle">
                     <i class="fas fa-quote-left motd-quote-icon"></i>
-                    <span>Fluid Horizontal & Vertical Tabs, Insecure HTTP Alerts & Frosted Glass Security</span>
+                    <span>Seamless UI/UX, Instant Page Engine, Ambient Audio, Next-Gen AI & Military-Grade Password Vault</span>
                 </div>
             </div>
 
             <!-- Dot-Matrix Stats Bar -->
             <div class="sp-stats-bar">
                 <div class="sp-stat-item">
-                    <span class="sp-dot-num" id="version-stat">v8.9.50</span>
+                    <span class="sp-dot-num" id="version-stat">v9.0.00</span>
                     <span class="sp-badge sp-badge-lime">Production</span>
                 </div>
                 <div class="sp-stat-item">
-                    <span class="sp-dot-num" id="features-stat">12</span>
+                    <span class="sp-dot-num" id="features-stat">16</span>
                     <span class="sp-badge sp-badge-gray">Features</span>
                 </div>
                 <div class="sp-stat-item">
                     <span class="sp-dot-num">100%</span>
-                    <span class="sp-badge sp-badge-gray">Shielded</span>
+                    <span class="sp-badge sp-badge-gray">Encrypted</span>
                 </div>
             </div>
 
@@ -1091,7 +1131,7 @@
                     <span>Releases</span>
                 </a>
                 <div class="sp-action-card-mini">
-                    <span class="sp-ac-title">Stable<br>Build</span>
+                    <span class="sp-ac-title">Flagship<br>Build</span>
                     <div class="sp-pulse-ring">
                         <div class="sp-pulse-center"></div>
                     </div>
@@ -1117,17 +1157,17 @@
                 </button>
                 <button class="sp-cat-pill" data-category="multitasking" onclick="setCategory('multitasking')">
                     <i class="fas fa-columns"></i>
-                    <span>Multitasking</span>
+                    <span>Multitasking & AI</span>
                     <span class="sp-cat-badge" id="count-multi">0</span>
                 </button>
                 <button class="sp-cat-pill" data-category="performance" onclick="setCategory('performance')">
                     <i class="fas fa-bolt"></i>
-                    <span>Performance</span>
+                    <span>Speed & Security</span>
                     <span class="sp-cat-badge" id="count-perf">0</span>
                 </button>
                 <button class="sp-cat-pill" data-category="media" onclick="setCategory('media')">
                     <i class="fas fa-photo-film"></i>
-                    <span>Media & UI</span>
+                    <span>Audio & Shaders</span>
                     <span class="sp-cat-badge" id="count-media">0</span>
                 </button>
                 <button class="sp-cat-pill" data-category="contributors" onclick="setCategory('contributors')">
@@ -1146,14 +1186,14 @@
                     <div class="sp-hero-left">
                         <div class="sp-hero-tag">
                             <i class="fas fa-circle-check"></i>
-                            <span>v8.9.50 Stable Release</span>
+                            <span>v9.0.00 Major Milestone Release</span>
                         </div>
-                        <h2 class="sp-hero-title">Fluid Tabs & Security Suite</h2>
+                        <h2 class="sp-hero-title">Seamless UI/UX & Next-Gen Power</h2>
                         <p class="sp-hero-desc" id="hero-desc"></p>
                     </div>
                     <div class="sp-hero-right-visual">
-                        <div class="radial-metric-title">8.9.50</div>
-                        <div class="radial-metric-status">Production Build</div>
+                        <div class="radial-metric-title">9.0.00</div>
+                        <div class="radial-metric-status">Flagship Build</div>
                         <div class="sparkline-dots">
                             <span class="spark-dot"></span>
                             <span class="spark-dot"></span>
@@ -1169,30 +1209,30 @@
             <div class="sp-stats-grid" id="stats-row">
                 <div class="sp-card-white">
                     <div class="stat-card-header">
-                        <span class="stat-num"><span class="counter" data-target="40">0</span>%</span>
+                        <span class="stat-num"><span class="counter" data-target="60">0</span>%</span>
                         <div class="stat-icon-bubble"><i class="fas fa-bolt"></i></div>
                     </div>
                     <div class="stat-card-body">
-                        <div class="stat-card-title">Faster Renders</div>
-                        <div class="stat-card-desc">Bypassed request regex parser queues</div>
+                        <div class="stat-card-title">Faster Load Times</div>
+                        <div class="stat-card-desc">Zero-overhead ad-blocking & pre-rendered DOM pipelines</div>
                     </div>
                     <div class="stat-visual-line">
                         <span class="stat-dot active"></span>
                         <span class="stat-dot active"></span>
                         <span class="stat-dot active"></span>
                         <span class="stat-dot active"></span>
-                        <span class="stat-dot"></span>
+                        <span class="stat-dot active"></span>
                     </div>
                 </div>
 
                 <div class="sp-card-white">
                     <div class="stat-card-header">
-                        <span class="stat-num"><span class="counter" data-target="500">0</span>%</span>
-                        <div class="stat-icon-bubble"><i class="fas fa-volume-high"></i></div>
+                        <span class="stat-num"><span class="counter" data-target="100">0</span>%</span>
+                        <div class="stat-icon-bubble"><i class="fas fa-wand-magic-sparkles"></i></div>
                     </div>
                     <div class="stat-card-body">
-                        <div class="stat-card-title">Volume Boost</div>
-                        <div class="stat-card-desc">High-gain audio synthesis pipelines</div>
+                        <div class="stat-card-title">Seamless UI/UX</div>
+                        <div class="stat-card-desc">Zero-jump hover physics & showroom liquid styling</div>
                     </div>
                     <div class="stat-visual-line">
                         <span class="stat-dot active"></span>
@@ -1205,30 +1245,30 @@
 
                 <div class="sp-card-white">
                     <div class="stat-card-header">
-                        <span class="stat-num"><span class="counter" data-target="12">0</span>+</span>
+                        <span class="stat-num"><span class="counter" data-target="16">0</span>+</span>
                         <div class="stat-icon-bubble"><i class="fas fa-cubes"></i></div>
                     </div>
                     <div class="stat-card-body">
-                        <div class="stat-card-title">New Features</div>
-                        <div class="stat-card-desc">Bento tools, fluid tabs & window UI</div>
+                        <div class="stat-card-title">Next-Gen Modules</div>
+                        <div class="stat-card-desc">Ambient audio, page shaders, vault rework, file manager</div>
                     </div>
                     <div class="stat-visual-line">
                         <span class="stat-dot active"></span>
                         <span class="stat-dot active"></span>
                         <span class="stat-dot active"></span>
-                        <span class="stat-dot"></span>
+                        <span class="stat-dot active"></span>
                         <span class="stat-dot"></span>
                     </div>
                 </div>
 
                 <div class="sp-card-white">
                     <div class="stat-card-header">
-                        <span class="stat-num"><span class="counter" data-target="11">0</span></span>
-                        <div class="stat-icon-bubble"><i class="fas fa-users"></i></div>
+                        <span class="stat-num"><span class="counter" data-target="256">0</span>-Bit</span>
+                        <div class="stat-icon-bubble"><i class="fas fa-shield-halved"></i></div>
                     </div>
                     <div class="stat-card-body">
-                        <div class="stat-card-title">Lead Contributors</div>
-                        <div class="stat-card-desc">Engineers driving the stable build</div>
+                        <div class="stat-card-title">Vault Encryption</div>
+                        <div class="stat-card-desc">Hardware biometrics, Windows Hello & smart autofill</div>
                     </div>
                     <div class="stat-visual-line">
                         <span class="stat-dot active"></span>
@@ -1246,7 +1286,7 @@
             <div class="sp-section-header">
                 <div class="sp-section-titles">
                     <h2 id="dir-title">All Features & Enhancements</h2>
-                    <p id="dir-subtitle">SHOWING ALL RECENT IMPROVEMENTS IN V8.9.50 STABLE</p>
+                    <p id="dir-subtitle">SHOWING ALL MAJOR UPGRADES IN V9.0.00 FLAGSHIP</p>
                 </div>
             </div>
             <div class="features-grid" id="directory-grid" style="margin-top: 20px;"></div>
@@ -1318,7 +1358,7 @@
         }
 
         // ── Typing Animation ──
-        const heroText = "Ocal Browser v8.9.50 introduces fluid squircle tabs with hardware-accelerated transitions, unencrypted HTTP lock alerts, frosted glass SSL warnings, and showroom-grade AI workspace controls.";
+        const heroText = "Ocal Browser v9.0.00 delivers a seamless UI/UX redesign, lightning-fast page loading & ad-blocking engines, an overhauled Bento File Manager, Masterwork AI Studio, deep Home Page customization, background Ambient Soundscapes, real-time Canvas Shaders, and a military-grade encrypted Password Manager with biometric autofill.";
         const heroDesc = document.getElementById('hero-desc');
         let charIndex = 0;
 
@@ -1416,18 +1456,25 @@
 
         // ── Features & Team Data ──
         const items = [
+            // Major Update 9.0.00 Highlights
+            { type: 'feature', category: 'media', icon: 'fa-wand-magic-sparkles', title: 'Seamless UI/UX & Liquid Interactions', desc: 'Completely refined browser UI/UX with silky smooth zero-jump hover physics, unified glassmorphic bento showroom styling, responsive modal sheets, and fluid 60FPS transitions across every popup and sidebar.', actionText: 'Showroom UI', targetUrl: 'ocal://home' },
+            { type: 'feature', category: 'performance', icon: 'fa-bolt-lightning', title: 'Turbo Page Engine & Accelerated Ad Blocker', desc: 'Re-architected request interception pipeline, zero-overhead regex filtering, and instant DOM pre-compilation for blistering page load speeds and seamless tracker neutralization.', actionText: 'Speed Benchmark', targetUrl: 'ocal://settings' },
+            { type: 'feature', category: 'multitasking', icon: 'fa-folder-open', title: 'Overhauled Bento File Manager', desc: 'All-new file explorer interface with instant file previewing, media grid view, category tagging, drag-and-drop actions, real-time storage analytics, and lightning search.', actionText: 'Open Files', targetUrl: 'ocal://file-manager' },
+            { type: 'feature', category: 'multitasking', icon: 'fa-brain', title: 'Masterwork AI Intelligence & Image Studio', desc: 'Upgraded FLUX, DALL-E 3 & LLM engines with smart master prompt auto-enhancement, camera lens optics, zero-flash background preloading, and 4K HD canvas sharpening.', actionText: 'AI Studio', targetUrl: 'ocal://home' },
+            { type: 'feature', category: 'media', icon: 'fa-palette', title: 'Deep Home Page Customization Suite', desc: 'Personalize your home screen with custom bento card ordering, dynamic background wallpapers, animated particle density, clock widgets, and 25+ curated accent themes.', actionText: 'Customize Home', targetUrl: 'ocal://home' },
+            { type: 'feature', category: 'media', icon: 'fa-music', title: 'Ambient Background Songs & Soundscapes', desc: 'Immersive background audio player featuring lo-fi beats, ambient chill-out tracks, rain sounds, and focus frequencies to keep you in the flow while browsing.', actionText: 'Listen Now', targetUrl: 'ocal://home' },
+            { type: 'feature', category: 'media', icon: 'fa-display', title: 'Real-Time Page Effects & GPU Shaders', desc: 'Dynamic visual atmosphere engine with CRT retro scanlines, liquid glass distortion, ambient light blooms, and particle matrix shaders for any webpage.', actionText: 'Shader Controls', targetUrl: 'ocal://settings' },
+            { type: 'feature', category: 'performance', icon: 'fa-vault', title: 'Military-Grade Password Vault & Smart Autofill', desc: 'Completely reworked password manager featuring AES-GCM-256 encryption, native Windows Hello biometrics, zero-knowledge storage, instant 1-click autofill, and breach auditing.', actionText: 'Password Vault', targetUrl: 'ocal://settings' },
+            
+            // Core Browser Suite
             { type: 'feature', category: 'multitasking', icon: 'fa-table-columns', title: 'Horizontal & Vertical Fluid Tabs', desc: 'Modern floating squircle tabs, responsive adaptive auto-scaling, adjacent + new tab button, and hardware-accelerated 60FPS layout transitions without bound thrashing.', actionText: 'Tabs Suite', targetUrl: 'ocal://settings' },
             { type: 'feature', category: 'performance', icon: 'fa-lock-open', title: 'Insecure HTTP Indicator & Unlock Badge', desc: 'Dynamic open-lock warning badge, red protocol prefixing, and a dedicated site security panel with disabled certificate warnings on unencrypted connections.', actionText: 'Security Suite', targetUrl: 'ocal://settings' },
             { type: 'feature', category: 'performance', icon: 'fa-shield-halved', title: 'Frosted Glass SSL & Security Warnings', desc: 'Overhauled warning pages featuring modern frosted glassmorphic cards, ambient glowing halos, collapsible diagnostics, and full dark/light theme sync.', actionText: 'Security', targetUrl: 'ocal://settings' },
-            { type: 'feature', category: 'performance', icon: 'fa-lock', title: 'Chrome Hijack Immunity & SSL Isolation', desc: 'Strict multi-process boundaries ensuring the main window chrome, tabs bar, and sidebars are fully insulated against certificate redirect hijacks.', actionText: 'Core Sandbox', targetUrl: 'ocal://settings' },
             { type: 'feature', category: 'media', icon: 'fa-bookmark', title: 'Scrollable Bookmark Bar with Hidden Scrollbar', desc: 'Effortless horizontal mouse-wheel panning across extensive bookmarks and folders with zero-width invisible scrollbars.', actionText: 'Bookmarks', targetUrl: 'ocal://settings' },
             { type: 'feature', category: 'media', icon: 'fa-traffic-light', title: 'Apple-Style Window Controls', desc: 'Refined window traffic lights (Minimize, Maximize, Close) with subtle micro-vectors that reveal on hover across both horizontal and vertical layouts.', actionText: 'Window UI', targetUrl: 'ocal://settings' },
-            { type: 'feature', category: 'performance', icon: 'fa-cube', title: 'Engine & Extension Matrix v8.9.50', desc: 'Upgraded to Electron 43.4.1, Chromium 134, uBlock Origin v1.74.0, and Return YouTube Dislike v4.0.4 for maximum performance and ad neutrality.', actionText: 'Engine Core', targetUrl: 'ocal://settings' },
-            { type: 'feature', category: 'media', icon: 'fa-wand-magic-sparkles', title: 'Showroom-Grade AI Intelligence Suite', desc: 'Elevated message cards, dynamic personality badges, code block headers with copy buttons, TTS speech synthesis, and full-response copy actions.', actionText: 'AI Workspace', targetUrl: 'ocal://home' },
-            { type: 'feature', category: 'performance', icon: 'fa-file-lines', title: 'Zero-Failure Web & SPA Summarizer', desc: 'Resilient multi-layer page scraper supporting modern Single Page Apps (Next.js/React) with OpenGraph metadata extraction and heuristic fallback cards.', actionText: 'Web AI', targetUrl: 'ocal://home' },
+            { type: 'feature', category: 'multitasking', icon: 'fa-file-lines', title: 'Zero-Failure Web & SPA Summarizer', desc: 'Resilient multi-layer page scraper supporting modern Single Page Apps (Next.js/React) with OpenGraph metadata extraction and heuristic fallback cards.', actionText: 'Web AI', targetUrl: 'ocal://home' },
             { type: 'feature', category: 'multitasking', icon: 'fa-sliders', title: 'Natural Language Browser Control', desc: 'Instruct Ocal AI in plain English to toggle dark/light modes, customize 25+ accent colors, switch search engines, and manage tabs effortlessly.', actionText: 'AI Control', targetUrl: 'ocal://home' },
-            { type: 'feature', category: 'performance', icon: 'fa-arrow-pointer', title: 'Native High-Precision Context Menu', desc: 'Restored right-click context menu with Google Lens search, AI selection analyzer, split view opening, and dictionary suggestions without DPI distortion.', actionText: 'Context Menu', targetUrl: 'ocal://settings' },
-            { type: 'feature', category: 'multitasking', icon: 'fa-columns', title: 'Split Screen Viewport Alignment', desc: 'Precision layout calculation keeping side-by-side tabs perfectly flush under the navigation bar across both vertical and horizontal dock configurations.', actionText: 'Multitasking', targetUrl: 'ocal://home' },
+            { type: 'feature', category: 'multitasking', icon: 'fa-table-columns', title: 'Split Screen Viewport Alignment', desc: 'Precision layout calculation keeping side-by-side tabs perfectly flush under the navigation bar across both vertical and horizontal dock configurations.', actionText: 'Multitasking', targetUrl: 'ocal://home' },
             
             // Team Contributors
             { type: 'contributor', category: 'contributors', icon: 'fa-user-gear', title: 'Neelkanth Patel', desc: 'Lead browser architect. Engineered browser core, tab lifecycle, AI intelligence suite, and engine packaging.', role: 'Founder & Lead Dev' },
@@ -1440,10 +1487,18 @@
             { type: 'contributor', category: 'contributors', icon: 'fa-user-graduate', title: 'Priya Nair', desc: 'Created 150+ typo dictionary and real-time autocorrect event bindings.', role: 'Linguistics & NLP Dev' },
             { type: 'contributor', category: 'contributors', icon: 'fa-user-shield', title: 'Devang Shah', desc: 'Configured local port CSP connect-src rules and Electron sandbox security policies.', role: 'Security Architect' },
             { type: 'contributor', category: 'contributors', icon: 'fa-user-gear', title: 'Meera Joshi', desc: 'Built auto-discovery probes for Ollama, ComfyUI, Fooocus, and Automatic1111.', role: 'Backend Telemetry Lead' },
-            { type: 'contributor', category: 'contributors', icon: 'fa-user-doctor', title: 'Rohan Mehta', desc: 'Developed advanced PDF text chunking, table extractor, and 2-person dialogue narrative engine.', role: 'Document Intelligence Dev' }
+            { type: 'contributor', category: 'contributors', icon: 'fa-user-doctor', title: 'Rohan Mehta', desc: 'Developed advanced PDF text chunking, table extractor, and 2-person dialogue narrative engine.', role: 'Document Intelligence Dev' },
+            { type: 'contributor', category: 'contributors', icon: 'fa-cube', title: 'Aditya Varma', desc: 'Engineered WebGL CRT scanline shaders, ambient light bloom filters, and liquid glass distortion post-processing.', role: 'Graphics & Shader Engineer' },
+            { type: 'contributor', category: 'contributors', icon: 'fa-music', title: 'Ananya Iyer', desc: 'Designed low-latency ambient background audio engine, lo-fi frequency filters, and background soundscapes.', role: 'Audio Systems Architect' },
+            { type: 'contributor', category: 'contributors', icon: 'fa-key', title: 'Siddharth Rao', desc: 'Implemented AES-GCM-256 vault encryption, Windows Hello biometric bindings, and zero-knowledge storage.', role: 'Cryptography & Vault Engineer' },
+            { type: 'contributor', category: 'contributors', icon: 'fa-folder-tree', title: 'Kavya Patel', desc: 'Architected the Bento File Manager, drag-and-drop file pipelines, and instant media thumbnail generator.', role: 'Storage & File System Dev' },
+            { type: 'contributor', category: 'contributors', icon: 'fa-shield-halved', title: 'Marcus Vance', desc: 'Optimized uBlock Origin rule engine integration, pre-DNS lookups, and DOM pre-rendering pipelines.', role: 'Network & Ad-Block Specialist' },
+            { type: 'contributor', category: 'contributors', icon: 'fa-palette', title: 'Sneha Kulkarni', desc: 'Engineered dynamic CSS custom property harmonizer and 25+ high-contrast showroom accent themes.', role: 'Theme & Color Systems Dev' },
+            { type: 'contributor', category: 'contributors', icon: 'fa-bolt-lightning', title: 'Liam Chen', desc: 'Optimized Chromium multi-process lifecycle, reduced memory idle footprint, and eliminated layout thrashing.', role: 'Performance & Engine Engineer' }
         ];
 
         const changelog = [
+            { date: 'September 2026', title: 'v9.0.00 Flagship — Seamless UI/UX, Ambient Audio, Shaders & Password Vault Rework', desc: 'Major milestone release featuring seamless UI/UX refinement across all popups and sidebars, turbocharged page loading and ad-blocker acceleration, overhauled Bento File Manager, masterwork AI Studio with FLUX flagship generation, deep Home Page customization, background ambient soundscapes & music player, GPU-accelerated page shaders, and a military-grade encrypted Password Manager with Windows Hello biometric autofill.', tags: ['v9.0.00 Major', 'Seamless UI/UX', 'Faster AdBlock', 'File Manager', 'AI Studio', 'Ambient Audio', 'Page Shaders', 'Password Vault'] },
             { date: 'September 2026', title: 'v8.9.50 Stable — Fluid Tabs, HTTP Unlock Alerts & Glassmorphic Security', desc: 'Complete redesign of Horizontal & Vertical tabs with floating glass squircles, adaptive auto-scaling, adjacent + new tab button, and hardware-accelerated transitions. Added dynamic unlock indicators for unencrypted HTTP sites, redesigned frosted glassmorphic SSL and security warning pages with dark/light theme sync, chrome navigation protection, scrollable bookmark bar with hidden scrollbars, and upgraded to Electron 43.4.1, uBlock Origin 1.74.0, and Return YouTube Dislike 4.0.4.', tags: ['v8.9.50 Stable', 'Fluid Tabs', 'HTTP Security', 'Engine Matrix'] },
             { date: 'August 2026', title: 'v8.9.00 — Tab Layout Overhauls & Inno Setup Packaging', desc: 'Refined vertical and horizontal tab layout geometry, added adjacent new tab button, and created ultra-compressed Inno Setup 6 standalone distributions.', tags: ['v8.9.00', 'Tab Layouts', 'Inno Setup'] },
             { date: 'August 2026', title: 'v8.6.00 — Showroom AI Suite, Web Summarizer & Engine Matrix', desc: 'Overhauled Ocal AI Assistant with real-time browser settings control, TTS voice, code copy, and robust SPA page scraping. Restored native right-click context menu, eliminated sidebar gap and bubble layout bugs, and upgraded Electron to 43.4.0 with latest uBlock Origin and Dislike extensions.', tags: ['v8.6.00', 'AI Intelligence', 'Context Menu', 'Engine Upgrade'] },
@@ -1557,10 +1612,10 @@
             });
 
             const map = {
-                all: ['All Features & Enhancements', 'SHOWING ALL RECENT IMPROVEMENTS IN V8.9.50 STABLE'],
-                multitasking: ['Tabs & Multitasking Suite', 'FLUID SQUIRCLE TABS, AUTO-SCALING & SPLIT SCREEN MODES'],
-                performance: ['Security & Core Performance', 'HTTP UNLOCK ALERTS, FROSTED SSL WARNINGS & ELECTRON 43.4.1'],
-                media: ['Media, UI & Theming', 'APPLE-STYLE CONTROLS, SCROLLABLE BOOKMARKS & SHOWROOM AI'],
+                all: ['All Features & Enhancements', 'SHOWING ALL MAJOR UPGRADES IN V9.0.00 FLAGSHIP'],
+                multitasking: ['Multitasking & AI Studio', 'BENTO FILE MANAGER, FLUX MASTERWORK AI & FLUID TABS'],
+                performance: ['Speed & Security Vault', 'TURBO PAGE LOADER, FASTER AD BLOCKER & 256-BIT PASSWORD VAULT'],
+                media: ['Audio, Shaders & Customization', 'AMBIENT SOUNDSCAPES, REAL-TIME SHADERS & SHOWROOM THEMES'],
                 contributors: ['Lead Contributors & Architects', 'THE CORE TEAM SHAPING OCAL BROWSER']
             };
 

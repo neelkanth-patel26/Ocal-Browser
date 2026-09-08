@@ -1366,7 +1366,12 @@
             background: var(--hover);
             border-color: var(--accent-border);
             color: var(--accent);
-            transform: translateY(-2px);
+            transform: none;
+            box-shadow: 0 2px 8px var(--accent-dim);
+        }
+
+        .tool-chip:active {
+            transform: scale(0.98);
         }
 
         /* Capsule Omni-Input Box (Matched 1:1 with .sp-search-pill in home.css) */
@@ -1676,7 +1681,6 @@
             color: var(--text);
             border-color: var(--accent);
             background: #FFFFFF;
-            transform: translateY(-2px);
             box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
         }
 
@@ -1855,98 +1859,352 @@
             box-shadow: 0 8px 26px var(--accent-glow);
         }
 
-        /* Studio Preview & Actions */
+        /* ── Studio Preview & Actions (Matched with Home Page .sp-card-white) ── */
         .studio-preview-card {
-            background: var(--bg);
-            border: 1px solid var(--border);
+            background: #FFFFFF;
+            border: 1px solid rgba(0, 0, 0, 0.06);
             border-radius: var(--radius-lg);
-            padding: 18px;
+            padding: 20px;
             display: flex;
             flex-direction: column;
-            gap: 12px;
+            gap: 14px;
             margin-top: 14px;
-            box-shadow: var(--shadow-sm);
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.035), 0 2px 8px rgba(0, 0, 0, 0.015);
+            transition: all 0.3s ease;
         }
 
+        body[data-theme="dark"] .studio-preview-card {
+            background: #28282D;
+            border-color: rgba(255, 255, 255, 0.08);
+            box-shadow: 0 12px 36px rgba(0, 0, 0, 0.4);
+        }
+
+        /* Studio Status Pill (Matching Home Page .sp-timeline-pill & .sp-badge-lime) */
         .studio-status {
-            display: flex;
+            display: inline-flex;
             align-items: center;
             gap: 8px;
-            font-size: 13px;
+            padding: 7px 16px;
+            border-radius: var(--radius-pill);
+            background: #F4F4F6;
+            border: 1px solid rgba(0, 0, 0, 0.06);
+            font-size: 12px;
             font-weight: 700;
             color: var(--accent);
+            width: fit-content;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.02);
+        }
+
+        body[data-theme="dark"] .studio-status {
+            background: #1E1E22;
+            border-color: rgba(255, 255, 255, 0.08);
+            box-shadow: none;
         }
 
         .studio-action-btn {
-            padding: 8px 16px;
+            padding: 9px 18px;
             border-radius: var(--radius-pill);
-            border: 1px solid var(--border);
-            background: var(--panel-bg);
-            color: var(--text);
+            border: 1px solid rgba(0, 0, 0, 0.06);
+            background: #F4F4F6;
+            color: #111111;
             font-family: var(--font);
             font-size: 12px;
             font-weight: 700;
             cursor: pointer;
             display: inline-flex;
             align-items: center;
-            gap: 6px;
-            transition: all 0.2s ease;
+            gap: 7px;
+            transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+            box-shadow: 0 2px 6px rgba(0, 0, 0, 0.02);
+        }
+
+        body[data-theme="dark"] .studio-action-btn {
+            background: #1E1E22;
+            border-color: rgba(255, 255, 255, 0.08);
+            color: #FFFFFF;
         }
 
         .studio-action-btn:hover {
-            background: var(--hover);
+            background: #FFFFFF;
             border-color: var(--accent);
-            transform: translateY(-1px);
+            color: var(--accent);
+            transform: none;
+            box-shadow: 0 4px 14px rgba(0, 0, 0, 0.06);
         }
 
-        /* Shimmer Loading Canvas */
+        body[data-theme="dark"] .studio-action-btn:hover {
+            background: #2E2E33;
+            border-color: var(--accent);
+            color: var(--accent);
+        }
+
+        /* ── Modern High-Tech Shimmer Loading Canvas (Matched with Home Page Style) ── */
         .loading-shimmer-canvas {
             position: relative;
             width: 100%;
             aspect-ratio: var(--aspect-ratio, 1 / 1);
             border-radius: var(--radius-md);
             overflow: hidden;
-            background: #111114;
+            background: #F4F4F6;
             display: flex;
             align-items: center;
             justify-content: center;
+            border: 1px solid rgba(0, 0, 0, 0.06);
+            box-shadow: inset 0 2px 10px rgba(0, 0, 0, 0.03);
+            transition: all 0.3s ease;
         }
 
-        .shimmer-gradient-flow {
-            position: absolute;
-            width: 200%;
-            height: 200%;
-            background: linear-gradient(-45deg, #3B82F6, #8B5CF6, #EC4899, #10B981, #F59E0B, #3B82F6);
-            background-size: 300% 300%;
-            animation: shimmer-flow 8s ease infinite;
-            opacity: 0.85;
+        body[data-theme="dark"] .loading-shimmer-canvas {
+            background: #18181B;
+            border-color: rgba(255, 255, 255, 0.08);
+            box-shadow: inset 0 2px 14px rgba(0, 0, 0, 0.4);
         }
 
-        @keyframes shimmer-flow {
-            0% { background-position: 0% 50%; }
-            50% { background-position: 100% 50%; }
-            100% { background-position: 0% 50%; }
-        }
-
-        .shimmer-glow-overlay {
+        /* High-Tech Grid Matrix Background */
+        .shimmer-grid-matrix {
             position: absolute;
             inset: 0;
-            backdrop-filter: blur(28px) saturate(1.3);
-            -webkit-backdrop-filter: blur(28px) saturate(1.3);
-            background: radial-gradient(circle, rgba(0,0,0,0) 20%, rgba(20,20,25,0.5) 90%);
+            background-image: radial-gradient(circle, rgba(0, 0, 0, 0.06) 1.2px, transparent 1.2px);
+            background-size: 20px 20px;
+            opacity: 0.6;
+            mask-image: radial-gradient(circle at center, black 50%, transparent 90%);
+            -webkit-mask-image: radial-gradient(circle at center, black 50%, transparent 90%);
         }
 
-        .shimmer-progress-overlay {
+        body[data-theme="dark"] .shimmer-grid-matrix {
+            background-image: radial-gradient(circle, rgba(255, 255, 255, 0.08) 1.2px, transparent 1.2px);
+        }
+
+        /* Dual Ambient Gradient Energy Orbs (Soft Harmonious Accent Glow) */
+        .shimmer-ambient-orb {
+            position: absolute;
+            border-radius: 50%;
+            filter: blur(50px);
+            pointer-events: none;
+        }
+
+        .shimmer-ambient-orb.orb-1 {
+            width: 190px;
+            height: 190px;
+            background: var(--accent, #15AC49);
+            top: 10%;
+            left: 10%;
+            opacity: 0.14;
+            animation: orb-float-1 9s ease-in-out infinite alternate;
+        }
+
+        .shimmer-ambient-orb.orb-2 {
+            width: 170px;
+            height: 170px;
+            background: var(--accent-gradient, #06B6D4);
+            bottom: 12%;
+            right: 12%;
+            opacity: 0.10;
+            animation: orb-float-2 11s ease-in-out infinite alternate;
+        }
+
+        body[data-theme="dark"] .shimmer-ambient-orb.orb-1 { opacity: 0.22; }
+        body[data-theme="dark"] .shimmer-ambient-orb.orb-2 { opacity: 0.16; }
+
+        @keyframes orb-float-1 {
+            0% { transform: translate(0, 0) scale(1); }
+            50% { transform: translate(30px, 24px) scale(1.1); }
+            100% { transform: translate(15px, 45px) scale(0.95); }
+        }
+
+        @keyframes orb-float-2 {
+            0% { transform: translate(0, 0) scale(1); }
+            50% { transform: translate(-25px, -20px) scale(1.15); }
+            100% { transform: translate(-10px, -35px) scale(0.9); }
+        }
+
+        /* Laser Scanline */
+        .shimmer-scanline {
+            position: absolute;
+            left: 0;
+            right: 0;
+            height: 2px;
+            background: linear-gradient(90deg, transparent, var(--accent, #15AC49), transparent);
+            box-shadow: 0 0 12px var(--accent, #15AC49);
+            opacity: 0.45;
+            animation: scanline-sweep 3.5s cubic-bezier(0.4, 0, 0.2, 1) infinite;
+            z-index: 2;
+        }
+
+        @keyframes scanline-sweep {
+            0% { top: -5%; opacity: 0; }
+            15% { opacity: 0.6; }
+            85% { opacity: 0.6; }
+            100% { top: 105%; opacity: 0; }
+        }
+
+        /* Center Floating Bento Card (1:1 Matched with Home Page Cards) */
+        .shimmer-floating-bento {
             position: relative;
-            z-index: 5;
+            z-index: 10;
+            width: 88%;
+            max-width: 320px;
+            background: #FFFFFF;
+            border: 1px solid rgba(0, 0, 0, 0.08);
+            border-radius: 24px;
+            padding: 24px 22px;
             display: flex;
             flex-direction: column;
             align-items: center;
-            justify-content: center;
             text-align: center;
-            gap: 8px;
-            padding: 20px;
+            box-shadow: 0 16px 40px rgba(0, 0, 0, 0.07), 0 2px 8px rgba(0, 0, 0, 0.02);
+            animation: bento-hover-breathe 4s ease-in-out infinite alternate;
+        }
+
+        body[data-theme="dark"] .shimmer-floating-bento {
+            background: #28282D;
+            border-color: rgba(255, 255, 255, 0.08);
+            box-shadow: 0 20px 50px rgba(0, 0, 0, 0.5), 0 0 24px var(--accent-glow);
+        }
+
+        @keyframes bento-hover-breathe {
+            0% { transform: translateY(0); }
+            100% { transform: translateY(-2px); }
+        }
+
+        /* Animated Core Spinner & Icon */
+        .shimmer-core-loader {
+            position: relative;
+            width: 48px;
+            height: 48px;
+            margin-bottom: 14px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .shimmer-core-spinner {
+            position: absolute;
+            inset: 0;
+            border-radius: 50%;
+            border: 2.5px solid rgba(0, 0, 0, 0.06);
+            border-top-color: var(--accent, #15AC49);
+            border-right-color: var(--accent, #15AC49);
+            animation: core-spin 1.1s cubic-bezier(0.5, 0, 0.5, 1) infinite;
+        }
+
+        body[data-theme="dark"] .shimmer-core-spinner {
+            border-color: rgba(255, 255, 255, 0.08);
+            border-top-color: var(--accent, #15AC49);
+            border-right-color: rgba(255, 255, 255, 0.8);
+        }
+
+        @keyframes core-spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .shimmer-core-center {
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            background: var(--accent-gradient, linear-gradient(135deg, #15AC49, #06B6D4));
             color: #FFFFFF;
+            font-size: 13px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 2px 10px var(--accent-glow);
+        }
+
+        .shimmer-text-block {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 6px;
+            width: 100%;
+        }
+
+        .shimmer-stage-title {
+            font-family: var(--font, 'Plus Jakarta Sans', sans-serif);
+            font-size: 14.5px;
+            font-weight: 800;
+            color: #111111;
+            letter-spacing: -0.3px;
+            line-height: 1.3;
+        }
+
+        body[data-theme="dark"] .shimmer-stage-title {
+            color: #FFFFFF;
+        }
+
+        .shimmer-chip-pill {
+            display: inline-flex;
+            align-items: center;
+            padding: 4px 14px;
+            border-radius: var(--radius-pill);
+            background: #EDEDF0;
+            border: 1px solid rgba(0, 0, 0, 0.06);
+            font-size: 11.5px;
+            font-weight: 600;
+            color: #4B5563;
+            max-width: 90%;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+
+        body[data-theme="dark"] .shimmer-chip-pill {
+            background: #1E1E22;
+            border-color: rgba(255, 255, 255, 0.08);
+            color: #9CA3AF;
+        }
+
+        /* Progress Bar Track & Fill */
+        .shimmer-progress-track {
+            width: 100%;
+            height: 6px;
+            background: #E5E7EB;
+            border-radius: var(--radius-pill);
+            overflow: hidden;
+            margin-top: 16px;
+            position: relative;
+        }
+
+        body[data-theme="dark"] .shimmer-progress-track {
+            background: rgba(255, 255, 255, 0.1);
+        }
+
+        .shimmer-progress-fill {
+            height: 100%;
+            width: 0%;
+            background: var(--accent-gradient, linear-gradient(90deg, #15AC49, #06B6D4));
+            box-shadow: 0 0 10px var(--accent-glow);
+            border-radius: var(--radius-pill);
+            transition: width 0.25s ease-out;
+        }
+
+        .shimmer-meta-footer {
+            width: 100%;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-top: 8px;
+            font-size: 11px;
+            font-weight: 700;
+            color: #6B7280;
+        }
+
+        body[data-theme="dark"] .shimmer-meta-footer {
+            color: #9CA3AF;
+        }
+
+        .shimmer-percent-counter {
+            color: var(--accent, #15AC49);
+            font-weight: 800;
+            font-size: 12px;
+            font-family: 'Space Mono', monospace, var(--font);
+        }
+
+        .shimmer-engine-tag {
+            display: inline-flex;
+            align-items: center;
+            gap: 5px;
         }
 
         /* ── Memory Bank Tags ── */
@@ -2465,13 +2723,28 @@
                                 <i class="fas fa-spinner fa-spin"></i> <span id="studio-status-text">Synthesizing image...</span>
                             </div>
                             <div class="studio-img-wrap" id="studio-img-wrap" style="width: 100%; position: relative;">
-                                <!-- Gemini/ChatGPT style loading shimmer -->
+                                <!-- High-Tech Neural Diffusion Loading Canvas matching Home Page Style -->
                                 <div id="studio-loading-shimmer" class="loading-shimmer-canvas" style="display: none;">
-                                    <div class="shimmer-gradient-flow"></div>
-                                    <div class="shimmer-glow-overlay"></div>
-                                    <div class="shimmer-progress-overlay">
-                                        <span id="shimmer-progress-percentage" style="font-size: 14px; font-weight: 800;">Painting canvas...</span>
-                                        <span id="shimmer-progress-subtext" style="font-size: 11px; opacity: 0.8;">Denoising latent noise fields</span>
+                                    <div class="shimmer-grid-matrix"></div>
+                                    <div class="shimmer-ambient-orb orb-1"></div>
+                                    <div class="shimmer-ambient-orb orb-2"></div>
+                                    <div class="shimmer-scanline"></div>
+                                    <div class="shimmer-floating-bento">
+                                        <div class="shimmer-core-loader">
+                                            <div class="shimmer-core-spinner"></div>
+                                            <div class="shimmer-core-center"><i class="fas fa-wand-magic-sparkles"></i></div>
+                                        </div>
+                                        <div class="shimmer-text-block">
+                                            <div id="shimmer-progress-percentage" class="shimmer-stage-title">Synthesizing Latent Diffusion...</div>
+                                            <div class="shimmer-chip-pill"><span id="shimmer-progress-subtext">Denoising Latent Noise Fields</span></div>
+                                        </div>
+                                        <div class="shimmer-progress-track">
+                                            <div id="shimmer-progress-bar-fill" class="shimmer-progress-fill"></div>
+                                        </div>
+                                        <div class="shimmer-meta-footer">
+                                            <span id="shimmer-progress-percent-num" class="shimmer-percent-counter">0%</span>
+                                            <span class="shimmer-engine-tag"><i class="fas fa-microchip"></i> Neural Core Active</span>
+                                        </div>
                                     </div>
                                 </div>
                                 <img id="studio-result-img" class="studio-result-img" alt="Generated AI Artwork" style="display: none; width: 100%; border-radius: var(--radius-md);">
@@ -2506,8 +2779,13 @@
                         <div class="studio-field">
                             <label><i class="fas fa-robot"></i> Primary LLM Engine</label>
                             <select id="settings-llm-engine" class="studio-select">
-                                <option value="local-gemma">Local Gemma 4 (Ollama / Local Server)</option>
-                                <option value="local-llama">Local Llama 3 (Ollama)</option>
+                                <option value="local-deepseek">DeepSeek R1 Reasoning (Local / Ollama / LM Studio)</option>
+                                <option value="local-llama33">Meta Llama 3.3 70B / 8B (Local)</option>
+                                <option value="local-qwen">Qwen 2.5 (Alibaba Open Weight)</option>
+                                <option value="local-gemma">Google DeepMind Gemma 4 / Gemma 2</option>
+                                <option value="local-phi4">Microsoft Phi-4 (14B Reasoning)</option>
+                                <option value="local-mistral">Mistral 7B / NeMo (Mistral AI)</option>
+                                <option value="local-auto">Auto-Detect Active Local Model</option>
                                 <option value="cloud-gemini">Cloud Gemini 1.5 Pro</option>
                                 <option value="cloud-openai">OpenAI GPT-4o</option>
                             </select>
