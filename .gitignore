@@ -10,6 +10,8 @@ dist-builder/
 !settings.js
 !color-harmonizer.js
 !ai-sidebar.js
+!preload.js
+!volume-booster.js
 publish-release.ps1
 update-release.ps1
 upload-release.ps1
