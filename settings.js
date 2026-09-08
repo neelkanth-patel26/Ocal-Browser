@@ -2081,39 +2081,33 @@ function renderSecuritySettings(s) {
     updateProtectionLevel(s);
 }
 
-// Dashboard Telemetry Simulation
-function startDashboardTelemetry() {
-    setInterval(() => {
-        const dashboardEl = document.getElementById('dashboard');
-        if (dashboardEl && dashboardEl.classList.contains('active')) {
-            const mem = (Math.random() * 0.5 + 1.2).toFixed(1);
-            const memBar = document.getElementById('memory-bar');
-            if (memBar) {
-                memBar.style.width = `${(mem / 8) * 100}%`;
-                document.getElementById('memory-value').innerText = `${mem} GB`;
-            }
-
-            // Simulate neutralized ads increasing
-            const ads = document.getElementById('dash-ads');
-            if (ads) {
-                const current = parseInt(ads.innerText);
-                if (Math.random() > 0.8) ads.innerText = current + 1;
-            }
-
-            // Animate clock/uptime ring
-            const ring = document.getElementById('time-ring');
-            if (ring) {
-                const uptime = Math.floor((Date.now() - window.sessionStart) / 1000 / 60);
-                document.getElementById('dash-time').innerText = `${uptime}m`;
-                const offset = 389 - (Math.min(uptime, 60) / 60) * 389;
-                ring.style.strokeDashoffset = offset;
-            }
+// Reset Shield Telemetry
+window.resetShieldStats = async () => {
+    try {
+        if (window.electronAPI && window.electronAPI.invoke) {
+            await window.electronAPI.invoke('reset-shield-stats');
+        } else if (window.electronAPI && window.electronAPI.resetShieldStats) {
+            await window.electronAPI.resetShieldStats();
         }
-    }, 3000);
-}
+        updateShieldDashboard({
+            global: { ads: 0, trackers: 0, dataSaved: 0 },
+            sessionStartTime: Date.now(),
+            history: []
+        });
+        const adsEl = document.getElementById('dash-ads');
+        if (adsEl) adsEl.innerText = '0';
+        const trackersEl = document.getElementById('dash-trackers');
+        if (trackersEl) trackersEl.innerText = '0';
+        const bandwidthEl = document.getElementById('dash-bandwidth');
+        if (bandwidthEl) bandwidthEl.innerText = '0 MB';
+        const timeEl = document.getElementById('dash-time');
+        if (timeEl) timeEl.innerText = '0s';
+    } catch (e) {
+        console.error('Failed to reset shield stats:', e);
+    }
+};
 
 window.sessionStart = Date.now();
-document.addEventListener('DOMContentLoaded', startDashboardTelemetry);
 
 // Update Management
 window.checkForUpdates = () => {
