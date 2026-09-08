@@ -4,13 +4,18 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>File Manager | Ocal Browser</title>
-    <!-- ANTI-FLASH: before any stylesheet -->
+    <!-- ANTI-FLASH & COLOR HARMONIZER -->
+    <script src="color-harmonizer.js"></script>
     <script>
         (function () {
             var t = localStorage.getItem('ocal-settings-theme') || 'dark';
             document.documentElement.setAttribute('data-theme', t);
-            document.documentElement.style.background = t === 'dark' ? '#0D0E11' : '#EDEDF0';
+            document.documentElement.style.background = t === 'dark' ? '#18181B' : '#EDEDF0';
             if (t === 'dark') document.documentElement.style.colorScheme = 'dark';
+            var a = localStorage.getItem('ocal-settings-accent');
+            if (window.OcalColorHarmonizer) {
+                window.OcalColorHarmonizer.applyHarmonizedTheme(a, t);
+            }
         })();
     </script>
     <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -20,11 +25,15 @@
     <link rel="stylesheet" href="file-manager.css">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
 </head>
-<body class="pro-studio">
+<body class="pro-studio" data-theme="dark">
     <script>
         (function () {
             const t = localStorage.getItem('ocal-settings-theme') || 'dark';
             document.body.setAttribute('data-theme', t);
+            var a = localStorage.getItem('ocal-settings-accent');
+            if (window.OcalColorHarmonizer) {
+                window.OcalColorHarmonizer.applyHarmonizedTheme(a, t);
+            }
         })();
     </script>
     <div class="app-container">
@@ -36,8 +45,8 @@
                         <i class="fas fa-folder-open brand-icon"></i>
                     </div>
                     <div class="brand-text">
-                        <span class="brand-eyebrow">LOCAL FILES</span>
-                        <span class="brand-name">File Manager</span>
+                        <span class="brand-eyebrow">LOCAL STORAGE</span>
+                        <span class="brand-name">File Studio</span>
                     </div>
                 </div>
             </div>
@@ -60,15 +69,15 @@
                 </div>
                 
                 <div class="nav-section">
-                    <div class="section-title">Media</div>
+                    <div class="section-title">Media Library</div>
                     <button class="nav-item" data-folder="pictures"><i class="fas fa-image"></i> <span>Pictures</span></button>
                     <button class="nav-item" data-folder="videos"><i class="fas fa-video"></i> <span>Videos</span></button>
-                    <button class="nav-item" data-folder="music"><i class="fas fa-music"></i> <span>Music</span></button>
+                    <button class="nav-item" data-folder="music"><i class="fas fa-music"></i> <span>Music Studio</span></button>
                 </div>
 
                 <div class="nav-section">
-                    <div class="section-title"><i class="fas fa-computer" style="font-size: 11px; margin-right: 4px;"></i> This PC</div>
-                    <div id="drives-list" style="display: flex; flex-direction: column; gap: 2px;"></div>
+                    <div class="section-title"><i class="fas fa-computer" style="font-size: 11px; margin-right: 4px;"></i> Drives & Storage</div>
+                    <div id="drives-list" class="drives-list"></div>
                 </div>
             </nav>
 
@@ -76,30 +85,49 @@
                 <div class="security-cluster">
                     <div class="security-badge">
                         <i class="fas fa-shield-halved"></i>
-                        <span>Secure Local Storage</span>
+                        <span>Zero-Cloud Local Privacy</span>
                     </div>
-                    <p>All file indexing and processing happens locally on your computer.</p>
+                    <p>All indexing, DSP audio enhancements, and image processing execute 100% on your machine.</p>
                 </div>
             </div>
         </aside>
 
-        <!-- Dynamic Content Area -->
+        <!-- Dynamic Main Content Area -->
         <main class="main-content">
+            <!-- Sleek Top Header matching Home Page -->
             <header class="content-header">
-                <div class="header-main-info">
-                    <div class="page-eyebrow">Local Files</div>
-                    <h1 class="page-title">All PDF Files</h1>
-                    <div class="breadcrumbs" id="breadcrumbs">
-                        <span class="breadcrumb-item">This PC</span>
+                <div class="header-left-cluster">
+                    <div class="location-heading-group">
+                        <div class="page-eyebrow">Local Explorer</div>
+                        <h1 class="page-title" id="page-title">Home</h1>
+                    </div>
+                </div>
+
+                <!-- Dot-Matrix Stats Bar -->
+                <div class="fm-stats-bar">
+                    <div class="fm-stat-item">
+                        <span class="fm-dot-num" id="stat-items-count">0</span>
+                        <span class="fm-stat-lbl">ITEMS</span>
+                    </div>
+                    <div class="fm-stat-divider"></div>
+                    <div class="fm-stat-item">
+                        <span class="fm-dot-num" id="stat-selected-count">0</span>
+                        <span class="fm-stat-lbl">SELECTED</span>
+                    </div>
+                    <div class="fm-stat-divider"></div>
+                    <div class="fm-stat-item">
+                        <span class="fm-dot-num" id="stat-mode-badge">GRID</span>
+                        <span class="fm-stat-lbl">VIEW</span>
                     </div>
                 </div>
                 
                 <div class="header-actions">
                     <div class="search-box">
-                        <i class="fas fa-magnifying-glass"></i>
-                        <input type="text" id="file-search" placeholder="Search files...">
+                        <i class="fas fa-magnifying-glass search-icon"></i>
+                        <input type="text" id="file-search" placeholder="Search files & folders..." autocomplete="off" spellcheck="false">
+                        <button class="search-clear-btn" id="search-clear-btn" style="display:none;"><i class="fas fa-xmark"></i></button>
                     </div>
-                    <button class="preview-toggle-btn active" id="toggle-previews-btn" title="Toggle PDF & Photo Previews">
+                    <button class="preview-toggle-btn active" id="toggle-previews-btn" title="Toggle Live Previews">
                         <i class="fas fa-eye"></i>
                         <span>Previews ON</span>
                     </button>
@@ -107,15 +135,45 @@
                         <button class="view-btn active" id="view-grid" title="Grid View"><i class="fas fa-grip"></i></button>
                         <button class="view-btn" id="view-list" title="List View"><i class="fas fa-list"></i></button>
                     </div>
+                    <button class="fm-action-icon-btn" id="refresh-dir-btn" title="Refresh Directory">
+                        <i class="fas fa-rotate-right"></i>
+                    </button>
                 </div>
             </header>
 
+            <!-- Navigation Bar: Breadcrumbs & Quick Category Filters -->
+            <div class="navigation-bar">
+                <div class="breadcrumbs-container">
+                    <button class="nav-back-btn" id="nav-back-btn" title="Up to Parent Folder">
+                        <i class="fas fa-arrow-up"></i>
+                    </button>
+                    <div class="breadcrumbs" id="breadcrumbs">
+                        <span class="breadcrumb-item">This PC</span>
+                    </div>
+                    <button class="copy-path-btn" id="copy-path-btn" title="Copy Full Path">
+                        <i class="fas fa-copy"></i>
+                    </button>
+                </div>
+
+                <!-- Category Quick Filter Pills -->
+                <div class="category-filter-pills" id="category-filter-pills">
+                    <button class="filter-pill active" data-cat="all"><i class="fas fa-layer-group"></i> All Files</button>
+                    <button class="filter-pill" data-cat="pdfs"><i class="fas fa-file-pdf"></i> PDFs</button>
+                    <button class="filter-pill" data-cat="images"><i class="fas fa-image"></i> Images</button>
+                    <button class="filter-pill" data-cat="audio"><i class="fas fa-music"></i> Audio</button>
+                    <button class="filter-pill" data-cat="videos"><i class="fas fa-video"></i> Videos</button>
+                    <button class="filter-pill" data-cat="docs"><i class="fas fa-file-lines"></i> Documents</button>
+                    <button class="filter-pill" data-cat="folders"><i class="fas fa-folder"></i> Folders</button>
+                </div>
+            </div>
+
+            <!-- Explorer Body -->
             <div class="explorer-body">
                 <div class="explorer-content">
                     <div id="file-grid" class="file-grid">
                         <div class="loading-state">
                             <i class="fas fa-circle-notch fa-spin"></i>
-                            <span>Searching files...</span>
+                            <span>Loading files...</span>
                         </div>
                     </div>
                 </div>
@@ -123,8 +181,11 @@
                 <!-- Docked Right Preview Inspector Panel (Zero Gaps) -->
                 <aside id="preview-inspector" class="preview-inspector" style="display: none;">
                     <div class="inspector-header">
-                        <span class="inspector-title">File Details</span>
-                        <button class="inspector-close" id="inspector-close-btn"><i class="fas fa-xmark"></i></button>
+                        <div class="inspector-title-cluster">
+                            <i class="fas fa-circle-info" style="color: var(--accent);"></i>
+                            <span class="inspector-title">Inspector</span>
+                        </div>
+                        <button class="inspector-close" id="inspector-close-btn" title="Close Inspector"><i class="fas fa-xmark"></i></button>
                     </div>
                     <div class="inspector-body">
                         <div class="inspector-preview-box" id="inspector-preview-box"></div>
@@ -146,11 +207,11 @@
             
             <footer class="content-footer" id="status-bar">
                 <div class="status-left">
-                    <i class="fas fa-file-pdf"></i>
+                    <i class="fas fa-hard-drive"></i>
                     <span id="item-count">0 files found</span>
                 </div>
                 <div class="status-right">
-                    <span class="path-label">Path:</span>
+                    <span class="path-label">Location:</span>
                     <span class="path-display" id="current-path">This PC</span>
                 </div>
             </footer>
@@ -166,10 +227,10 @@
         <div class="media-modal-card">
             <div class="media-modal-header">
                 <div class="media-modal-title">
-                    <i id="media-modal-icon" class="fas fa-circle-play"></i>
-                    <span id="media-modal-name">Playing Media</span>
+                    <div class="media-icon-badge"><i id="media-modal-icon" class="fas fa-music"></i></div>
+                    <span id="media-modal-name">1.mp3</span>
                 </div>
-                <button class="media-modal-close" id="media-modal-close"><i class="fas fa-xmark"></i></button>
+                <button class="media-modal-close" id="media-modal-close" title="Close Player"><i class="fas fa-xmark"></i></button>
             </div>
             
             <div class="media-modal-body" id="media-modal-body"></div>
@@ -205,7 +266,9 @@
                         </div>
                         <div class="fx-control-group">
                             <label>Spatial Depth:</label>
-                            <input type="range" id="fx-surround-width" min="0" max="1" value="0.7" step="0.05">
+                            <div class="slider-rail-wrap">
+                                <input type="range" id="fx-surround-width" min="0" max="1" value="0.7" step="0.05" aria-label="Spatial Depth">
+                            </div>
                         </div>
                     </div>
 
@@ -217,7 +280,9 @@
                         </div>
                         <div class="fx-control-group">
                             <label>Vocal & Highs Exciter:</label>
-                            <input type="range" id="fx-highs-slider" min="0" max="12" value="4" step="1">
+                            <div class="slider-rail-wrap">
+                                <input type="range" id="fx-highs-slider" min="0" max="12" value="4" step="1" aria-label="Vocal Exciter">
+                            </div>
                         </div>
                     </div>
 
@@ -225,14 +290,16 @@
                     <div class="enhancer-panel" id="panel-bass" style="display: none;">
                         <div class="fx-control-group">
                             <label>Sub-Bass Punch (60Hz):</label>
-                            <input type="range" id="fx-bass-slider" min="0" max="15" value="6" step="1">
+                            <div class="slider-rail-wrap">
+                                <input type="range" id="fx-bass-slider" min="0" max="15" value="6" step="1" aria-label="Bass Boost">
+                            </div>
                         </div>
                     </div>
 
                     <!-- 10-Band EQ Panel -->
                     <div class="enhancer-panel" id="panel-eq" style="display: none; flex-direction: column; gap: 10px;">
                         <div class="eq-presets-row">
-                            <span class="eq-preset-label">Presets:</span>
+                            <span class="eq-preset-label"><i class="fas fa-wand-magic-sparkles"></i> Presets:</span>
                             <button class="eq-preset-btn active" data-preset="flat">Flat</button>
                             <button class="eq-preset-btn" data-preset="bass">Bass</button>
                             <button class="eq-preset-btn" data-preset="vocal">Vocal</button>
@@ -255,20 +322,24 @@
                     </div>
                 </div>
 
+                <!-- Time & Seek Row -->
                 <div class="media-time-row">
                     <span id="media-time-current">0:00</span>
                     <div class="media-seek-container">
-                        <input type="range" id="media-seek-bar" min="0" max="100" value="0" step="0.1">
+                        <input type="range" id="media-seek-bar" min="0" max="100" value="0" step="0.1" aria-label="Seek track">
                     </div>
                     <span id="media-time-duration">0:00</span>
                 </div>
                 
+                <!-- Buttons Row -->
                 <div class="media-buttons-row">
                     <div class="media-vol-group">
                         <button class="media-ctrl-btn" id="media-mute-btn" title="Mute/Unmute">
                             <i class="fas fa-volume-high"></i>
                         </button>
-                        <input type="range" id="media-vol-bar" min="0" max="1" value="1" step="0.05">
+                        <div class="media-vol-slider-wrap">
+                            <input type="range" id="media-vol-bar" min="0" max="1" value="1" step="0.05" aria-label="Volume">
+                        </div>
                     </div>
 
                     <div class="media-main-ctrls">
@@ -304,7 +375,7 @@
                 <div class="editor-title-cluster">
                     <i class="fas fa-image" style="color: var(--accent);"></i>
                     <span id="editor-filename" class="editor-filename">image.jpg</span>
-                    <span id="editor-meta" class="editor-meta-badge">IMAGE VIEWER & EDITOR</span>
+                    <span id="editor-meta" class="editor-meta-badge">STUDIO PHOTO VIEWER</span>
                 </div>
                 <div class="editor-header-actions">
                     <button id="editor-save-btn" class="editor-btn primary" title="Save / Export Image">

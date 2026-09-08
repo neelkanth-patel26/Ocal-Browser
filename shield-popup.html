@@ -4,6 +4,18 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Ocal Shield</title>
+    <!-- ANTI-FLASH & COLOR HARMONIZER -->
+    <script src="color-harmonizer.js"></script>
+    <script>
+        (function () {
+            var t = localStorage.getItem('ocal-settings-theme') || 'dark';
+            document.documentElement.setAttribute('data-theme', t);
+            var a = localStorage.getItem('ocal-settings-accent');
+            if (window.OcalColorHarmonizer) {
+                window.OcalColorHarmonizer.applyHarmonizedTheme(a, t);
+            }
+        })();
+    </script>
     <link rel="stylesheet" href="assets/fontawesome/css/all.min.css">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -11,38 +23,32 @@
     <style>
         :root {
             --accent: #15AC49;
-            --accent-glow: rgba(21, 172, 73, 0.3);
-            --lime: #D4FC2B;
-            --bg-glass: #16181D;
-            --border-glass: rgba(255, 255, 255, 0.08);
-            --card-bg: #20242D;
-            --card-border: rgba(255, 255, 255, 0.06);
-            --card-hover-bg: #2A2E3B;
-            --text-primary: #FFFFFF;
-            --text-secondary: #9CA3AF;
-            --radius: 16px;
-            --font-main: 'Plus Jakarta Sans', sans-serif;
-            --font-mono: 'Space Mono', monospace;
-        }
-
-        body[data-theme="light"], body {
+            --accent-glow: rgba(21, 172, 73, 0.25);
+            --accent-dim: rgba(21, 172, 73, 0.12);
+            --accent-text: #FFFFFF;
             --bg-glass: #FFFFFF;
-            --border-glass: rgba(0, 0, 0, 0.06);
+            --border-glass: rgba(0, 0, 0, 0.08);
             --card-bg: #F4F4F6;
-            --card-border: rgba(0, 0, 0, 0.04);
+            --card-border: rgba(0, 0, 0, 0.06);
             --card-hover-bg: #EAEBED;
             --text-primary: #111111;
-            --text-secondary: #475569;
+            --text-secondary: #555860;
+            --text-muted: #7E8492;
+            --font-main: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, sans-serif;
+            --font-mono: 'Space Mono', monospace;
+            --radius: 20px;
         }
 
-        body[data-theme="dark"] {
-            --bg-glass: #222226;
+        [data-theme="dark"], body[data-theme="dark"] {
+            --bg-glass: #16181D;
             --border-glass: rgba(255, 255, 255, 0.08);
-            --card-bg: #28282D;
-            --card-border: rgba(255, 255, 255, 0.08);
-            --card-hover-bg: #2E2E33;
-            --text-primary: #F4F4F5;
-            --text-secondary: #A1A1AA;
+            --card-bg: #1F222A;
+            --card-border: rgba(255, 255, 255, 0.06);
+            --card-hover-bg: #272B35;
+            --text-primary: #FFFFFF;
+            --text-secondary: #9CA3AF;
+            --text-muted: #6B7280;
+            color-scheme: dark;
         }
 
         * {
@@ -62,7 +68,7 @@
             display: flex;
             align-items: flex-start;
             justify-content: flex-start;
-            padding: 8px;
+            padding: 6px;
             -webkit-font-smoothing: antialiased;
         }
 
@@ -77,19 +83,22 @@
             position: relative;
             background: var(--bg-glass);
             border: 1px solid var(--border-glass);
-            padding: 12px;
+            padding: 14px;
             display: flex;
             flex-direction: column;
             gap: 10px;
-            width: 260px;
+            width: 270px;
             z-index: 2;
             opacity: 1;
-            transform: none;
-            pointer-events: all;
             border-radius: var(--radius);
             box-shadow: none !important;
         }
 
+        [data-theme="dark"] .shield-card {
+            box-shadow: none !important;
+        }
+
+        /* Header */
         .header {
             display: flex;
             align-items: center;
@@ -101,56 +110,59 @@
         .brand-box {
             display: flex;
             align-items: center;
-            gap: 8px;
+            gap: 9px;
         }
 
         .shield-icon-badge {
-            width: 26px;
-            height: 26px;
-            background: rgba(21, 172, 73, 0.15);
+            width: 30px;
+            height: 30px;
+            background: var(--accent-dim);
             border: 1px solid var(--accent);
-            border-radius: 8px;
+            border-radius: 10px;
             display: flex;
             align-items: center;
             justify-content: center;
             color: var(--accent);
-            font-size: 12px;
+            font-size: 13px;
         }
 
         .header h2 {
-            font-size: 13px;
+            font-size: 13.5px;
             font-weight: 800;
             letter-spacing: -0.2px;
             color: var(--text-primary);
         }
 
         .status-badge {
-            font-size: 9px;
-            font-weight: 800;
-            color: var(--accent-text, #111111) !important;
+            font-family: var(--font-mono);
+            font-size: 9.5px;
+            font-weight: 700;
+            color: var(--accent-text) !important;
             background: var(--accent) !important;
-            padding: 3px 8px;
+            padding: 3px 9px;
             border-radius: 100px;
             text-transform: uppercase;
             letter-spacing: 0.5px;
+            box-shadow: none !important;
         }
 
         /* Stats Dashboard */
         .stats-dashboard {
             background: var(--card-bg);
             border: 1px solid var(--card-border);
-            padding: 10px 12px;
-            border-radius: 12px;
+            padding: 12px 14px;
+            border-radius: 14px;
             display: flex;
             flex-direction: column;
             gap: 8px;
         }
 
         .section-label {
-            font-size: 8px;
-            font-weight: 800;
-            letter-spacing: 1px;
-            color: var(--text-secondary);
+            font-family: var(--font-mono);
+            font-size: 8.5px;
+            font-weight: 700;
+            letter-spacing: 0.8px;
+            color: var(--text-muted);
             text-transform: uppercase;
         }
 
@@ -158,6 +170,7 @@
             display: flex;
             justify-content: space-between;
             align-items: center;
+            padding: 2px 0;
         }
 
         .stat-group {
@@ -167,17 +180,14 @@
 
         .stat-value-big {
             font-family: var(--font-mono);
-            font-size: 20px;
+            font-size: 22px;
             font-weight: 700;
-            color: var(--accent) !important;
-            line-height: 1;
-        }
-
-        body[data-theme="dark"] .stat-value-big {
-            color: var(--accent) !important;
+            color: var(--accent);
+            line-height: 1.1;
         }
 
         .stat-label-sub {
+            font-family: var(--font-mono);
             font-size: 8px;
             font-weight: 700;
             color: var(--text-secondary);
@@ -188,21 +198,22 @@
 
         .stat-divider {
             width: 1px;
-            height: 24px;
+            height: 28px;
             background: var(--border-glass);
         }
 
         .stat-row-mini {
             display: flex;
             justify-content: space-between;
-            font-size: 10px;
+            font-size: 10.5px;
             color: var(--text-secondary);
             font-weight: 600;
+            padding-top: 2px;
         }
 
         .stat-row-mini span:last-child {
             color: var(--text-primary);
-            font-weight: 800;
+            font-weight: 700;
             font-family: var(--font-mono);
         }
 
@@ -217,60 +228,60 @@
             display: flex;
             align-items: center;
             justify-content: space-between;
-            padding: 8px 10px;
+            padding: 9px 12px;
             background: var(--card-bg);
             border: 1px solid var(--card-border);
-            border-radius: 12px;
+            border-radius: 14px;
             transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
         }
 
         .toggle-item:hover {
             background: var(--card-hover-bg);
-            border-color: rgba(255, 255, 255, 0.12);
+            border-color: var(--accent);
         }
 
         .toggle-info {
             display: flex;
             flex-direction: column;
-            gap: 1px;
+            gap: 2px;
         }
 
         .toggle-title {
             font-size: 11px;
             font-weight: 800;
             color: var(--text-primary);
-            letter-spacing: 0.2px;
+            letter-spacing: 0.3px;
             text-transform: uppercase;
         }
 
         .toggle-desc {
-            font-size: 9.5px;
+            font-size: 10px;
             font-weight: 500;
             color: var(--text-secondary);
         }
 
-        /* Switches */
+        /* iOS-Style Switches */
         .switch {
             position: relative;
             display: inline-block;
-            width: 34px;
-            height: 18px;
+            width: 36px;
+            height: 20px;
             flex-shrink: 0;
         }
 
-        .switch input { opacity: 0; width: 0; height: 0; }
+        .switch input {
+            opacity: 0;
+            width: 0;
+            height: 0;
+        }
 
         .slider {
             position: absolute;
             cursor: pointer;
             inset: 0;
-            background: rgba(255, 255, 255, 0.15);
+            background: rgba(148, 163, 184, 0.3);
             transition: 0.25s cubic-bezier(0.16, 1, 0.3, 1);
             border-radius: 100px;
-        }
-
-        body[data-theme="light"] .slider {
-            background: rgba(0, 0, 0, 0.12);
         }
 
         .slider:before {
@@ -278,12 +289,12 @@
             content: "";
             height: 14px;
             width: 14px;
-            left: 2px;
-            bottom: 2px;
+            left: 3px;
+            bottom: 3px;
             background: #FFFFFF;
             transition: 0.2s cubic-bezier(0.16, 1, 0.3, 1);
             border-radius: 50%;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+            box-shadow: none !important;
         }
 
         input:checked + .slider {
@@ -292,7 +303,7 @@
 
         input:checked + .slider:before {
             transform: translateX(16px);
-            background: var(--accent-text, #111111) !important;
+            background: #FFFFFF !important;
         }
     </style>
 </head>
@@ -311,29 +322,29 @@
                 <div class="shield-icon-badge"><i class="fas fa-shield-halved"></i></div>
                 <h2>Ocal Shield</h2>
             </div>
-            <span class="status-badge">Active</span>
+            <span class="status-badge">ACTIVE</span>
         </div>
 
         <div class="stats-dashboard">
             <div class="section-label">Impact on this page</div>
             <div class="stats-row">
                 <div class="stat-group">
-                    <span class="stat-value-big" id="stat-page-ads">0</span>
+                    <span class="stat-value-big" id="page-ads">0</span>
                     <span class="stat-label-sub">Ads Blocked</span>
                 </div>
                 <div class="stat-divider"></div>
                 <div class="stat-group">
-                    <span class="stat-value-big" id="stat-page-time">0.0s</span>
+                    <span class="stat-value-big" id="page-time">0.0s</span>
                     <span class="stat-label-sub">Time Saved</span>
                 </div>
             </div>
             <div class="stat-row-mini">
                 <span>Lifetime Blocked:</span>
-                <span id="stat-life-ads">1,304</span>
+                <span id="ads-blocked">1,304</span>
             </div>
             <div class="stat-row-mini">
                 <span>Total Trackers:</span>
-                <span id="stat-life-trackers">266</span>
+                <span id="trackers-blocked">266</span>
             </div>
         </div>
 
@@ -344,7 +355,7 @@
                     <span class="toggle-desc">Remove intrusive ads</span>
                 </div>
                 <label class="switch">
-                    <input type="checkbox" id="toggle-adblock" checked>
+                    <input type="checkbox" id="adblock-toggle" checked>
                     <span class="slider"></span>
                 </label>
             </div>
@@ -355,7 +366,7 @@
                     <span class="toggle-desc">Block cross-site tracking</span>
                 </div>
                 <label class="switch">
-                    <input type="checkbox" id="toggle-privacy" checked>
+                    <input type="checkbox" id="privacy-toggle" checked>
                     <span class="slider"></span>
                 </label>
             </div>
@@ -366,7 +377,7 @@
                     <span class="toggle-desc">Restore dislike counts</span>
                 </div>
                 <label class="switch">
-                    <input type="checkbox" id="toggle-dislikes" checked>
+                    <input type="checkbox" id="dislike-toggle" checked>
                     <span class="slider"></span>
                 </label>
             </div>

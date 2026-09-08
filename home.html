@@ -329,21 +329,27 @@
             <!-- Header Toolbar -->
             <div class="news-modal-header">
                 <div class="news-header-left">
-                    <div class="news-header-icon" style="background: var(--accent-dim); color: var(--accent);"><i class="fas fa-cloud-sun-rain"></i></div>
-                    <div style="display: flex; flex-direction: column; gap: 4px;">
-                        <div style="display: flex; align-items: center; gap: 10px;">
-                            <h3 class="news-modal-title" id="weather-modal-location-title" style="margin: 0; font-size: 17px; font-weight: 800; line-height: 1.2; color: var(--text);">Live Weather & Satellite Radar</h3>
-                            <a href="https://open-meteo.com/" target="_blank" class="weather-source-badge" title="Open Meteorological Telemetry Source Data (Open-Meteo API)"><i class="fas fa-database"></i> Source: Open-Meteo <i class="fas fa-arrow-up-right-from-square" style="font-size: 9px; margin-left: 2px;"></i></a>
+                    <div class="news-header-icon"><i class="fas fa-cloud-sun"></i></div>
+                    <div class="news-header-text-group">
+                        <div class="news-header-title-row">
+                            <h3 class="news-modal-title" id="weather-modal-location-title">Live Weather & Telemetry</h3>
+                            <span class="wh-live-badge"><span class="wh-pulse-dot"></span> LIVE</span>
+                            <a href="https://open-meteo.com/" target="_blank" class="weather-source-badge" title="Live Global Meteorological Telemetry (Open-Meteo Worldwide Network)"><i class="fas fa-satellite"></i> Open-Meteo <i class="fas fa-arrow-up-right-from-square" style="font-size: 8.5px; margin-left: 2px;"></i></a>
                         </div>
-                        <p class="news-modal-sub" id="weather-modal-status-sub" style="margin: 0; font-size: 11.5px; font-weight: 600; color: var(--text-dim);"><i class="fas fa-signal" style="color: var(--accent); margin-right: 6px;"></i> Meteorological telemetry active &bull; Live Telemetry Sync</p>
+                        <p class="news-modal-sub" id="weather-modal-status-sub"><i class="fas fa-signal"></i> Meteorological telemetry active &bull; Live Sync</p>
                     </div>
                 </div>
                 
                 <div class="news-header-actions">
-                    <div class="news-search-wrapper">
-                        <i class="fas fa-location-dot search-icon" style="color: var(--accent, #09f0a0);"></i>
-                        <input type="text" id="weather-city-search-input" placeholder="Search city (e.g., London, Tokyo, NYC)..." autocomplete="off">
+                    <div class="news-search-wrapper" style="position: relative;">
+                        <i class="fas fa-location-dot search-icon"></i>
+                        <input type="text" id="weather-city-search-input" placeholder="Search any city worldwide (e.g., London, Tokyo, NYC)..." autocomplete="off" spellcheck="false">
+                        <button class="weather-search-clear-btn" id="weather-search-clear-btn" title="Clear search" style="display: none;"><i class="fas fa-xmark"></i></button>
+                        <div class="weather-search-dropdown" id="weather-search-dropdown" style="display: none;"></div>
                     </div>
+                    <button class="weather-unit-btn" id="weather-unit-btn" title="Toggle °C / °F">
+                        <span id="weather-unit-text">°C</span>
+                    </button>
                     <button class="news-refresh-btn" id="news-refresh-btn" title="Refresh Live Weather">
                         <i class="fas fa-rotate-right"></i>
                     </button>
@@ -356,119 +362,135 @@
             <!-- Weather Hub Scrollable Container -->
             <div class="weather-modal-body" id="weather-modal-body">
                 
-                <!-- Section 1: Hero Overview & Detailed 10-Metric Dashboard -->
-                <div class="weather-hero-row">
-                    <!-- Hero Main Temperature Panel -->
-                    <div class="weather-hero-main-card">
-                        <div class="wh-location-badge">
-                            <i class="fas fa-location-arrow"></i> <span id="wh-city-name">Loading...</span>
-                        </div>
-                        <div class="wh-temp-big-wrap">
-                            <span class="wh-weather-icon" id="wh-main-icon">☀️</span>
-                            <span class="wh-temp-big" id="wh-main-temp">--°</span>
-                        </div>
-                        <h2 class="wh-condition-title" id="wh-main-condition">Fetching Telemetry...</h2>
-                        <div class="wh-high-low-row">
-                            <span>High: <strong id="wh-high-temp">--°</strong></span>
-                            <span class="wh-divider">&bull;</span>
-                            <span>Low: <strong id="wh-low-temp">--°</strong></span>
-                            <span class="wh-divider">&bull;</span>
-                            <span>Feels Like: <strong id="wh-feels-like">--°</strong></span>
-                        </div>
-                    </div>
+                <!-- Section 1: Hero Overview & Detailed 10-Metric Dashboard (Independently Scrollable Top) -->
+                <div class="weather-top-scroll-section" id="weather-top-scroll-section">
+                    <div class="weather-hero-row">
+                        <!-- Hero Main Temperature Panel -->
+                        <div class="weather-hero-main-card">
+                            <div class="wh-hero-top-row">
+                                <div class="wh-location-badge">
+                                    <i class="fas fa-location-arrow"></i> <span id="wh-city-name">Loading...</span>
+                                </div>
+                                <span class="wh-hero-tag" id="wh-hero-daytime">DAYTIME</span>
+                            </div>
+                            
+                            <div class="wh-temp-big-wrap">
+                                <div class="wh-weather-icon-glow" id="wh-main-icon-box">
+                                    <span class="wh-weather-icon" id="wh-main-icon">☀️</span>
+                                </div>
+                                <div class="wh-temp-group">
+                                    <span class="wh-temp-big" id="wh-main-temp">--°</span>
+                                    <span class="wh-condition-title" id="wh-main-condition">Fetching Telemetry...</span>
+                                </div>
+                            </div>
 
-                    <!-- Detailed Meteorological Metrics Grid (10 Details) -->
-                    <div class="weather-details-grid">
-                        <div class="w-detail-card">
-                            <i class="fas fa-droplet icon-humidity"></i>
-                            <div class="w-detail-info">
-                                <span class="w-detail-label">Humidity</span>
-                                <span class="w-detail-val" id="wd-humidity">--%</span>
+                            <div class="wh-high-low-row">
+                                <div class="wh-hl-chip"><i class="fas fa-arrow-up" style="color: #ef4444;"></i> High: <strong id="wh-high-temp">--°</strong></div>
+                                <div class="wh-hl-chip"><i class="fas fa-arrow-down" style="color: #3b82f6;"></i> Low: <strong id="wh-low-temp">--°</strong></div>
+                                <div class="wh-hl-chip"><i class="fas fa-user"></i> Feels: <strong id="wh-feels-like">--°</strong></div>
                             </div>
                         </div>
 
-                        <div class="w-detail-card">
-                            <i class="fas fa-wind icon-wind"></i>
-                            <div class="w-detail-info">
-                                <span class="w-detail-label">Wind Speed</span>
-                                <span class="w-detail-val" id="wd-wind">-- km/h</span>
+                        <!-- Detailed Meteorological Metrics Grid (10 Details) -->
+                        <div class="weather-details-grid">
+                            <div class="w-detail-card">
+                                <div class="w-detail-icon-wrap"><i class="fas fa-droplet"></i></div>
+                                <div class="w-detail-info">
+                                    <span class="w-detail-label">Humidity</span>
+                                    <span class="w-detail-val" id="wd-humidity">--%</span>
+                                </div>
                             </div>
-                        </div>
 
-                        <div class="w-detail-card">
-                            <i class="fas fa-sun icon-uv"></i>
-                            <div class="w-detail-info">
-                                <span class="w-detail-label">UV Index</span>
-                                <span class="w-detail-val" id="wd-uv">-- (Low)</span>
+                            <div class="w-detail-card">
+                                <div class="w-detail-icon-wrap"><i class="fas fa-wind"></i></div>
+                                <div class="w-detail-info">
+                                    <span class="w-detail-label">Wind Speed</span>
+                                    <span class="w-detail-val" id="wd-wind">-- km/h</span>
+                                </div>
                             </div>
-                        </div>
 
-                        <div class="w-detail-card">
-                            <i class="fas fa-gauge-high icon-pressure"></i>
-                            <div class="w-detail-info">
-                                <span class="w-detail-label">Pressure</span>
-                                <span class="w-detail-val" id="wd-pressure">-- hPa</span>
+                            <div class="w-detail-card">
+                                <div class="w-detail-icon-wrap"><i class="fas fa-sun"></i></div>
+                                <div class="w-detail-info">
+                                    <span class="w-detail-label">UV Index</span>
+                                    <span class="w-detail-val" id="wd-uv">-- (Low)</span>
+                                </div>
                             </div>
-                        </div>
 
-                        <div class="w-detail-card">
-                            <i class="fas fa-eye icon-visibility"></i>
-                            <div class="w-detail-info">
-                                <span class="w-detail-label">Visibility</span>
-                                <span class="w-detail-val" id="wd-visibility">-- km</span>
+                            <div class="w-detail-card">
+                                <div class="w-detail-icon-wrap"><i class="fas fa-gauge-high"></i></div>
+                                <div class="w-detail-info">
+                                    <span class="w-detail-label">Pressure</span>
+                                    <span class="w-detail-val" id="wd-pressure">-- hPa</span>
+                                </div>
                             </div>
-                        </div>
 
-                        <div class="w-detail-card">
-                            <i class="fas fa-temperature-low icon-dew"></i>
-                            <div class="w-detail-info">
-                                <span class="w-detail-label">Dew Point</span>
-                                <span class="w-detail-val" id="wd-dew">--°C</span>
+                            <div class="w-detail-card">
+                                <div class="w-detail-icon-wrap"><i class="fas fa-eye"></i></div>
+                                <div class="w-detail-info">
+                                    <span class="w-detail-label">Visibility</span>
+                                    <span class="w-detail-val" id="wd-visibility">-- km</span>
+                                </div>
                             </div>
-                        </div>
 
-                        <div class="w-detail-card">
-                            <i class="fas fa-sun icon-sunrise"></i>
-                            <div class="w-detail-info">
-                                <span class="w-detail-label">Sunrise</span>
-                                <span class="w-detail-val" id="wd-sunrise">--:-- AM</span>
+                            <div class="w-detail-card">
+                                <div class="w-detail-icon-wrap"><i class="fas fa-temperature-low"></i></div>
+                                <div class="w-detail-info">
+                                    <span class="w-detail-label">Dew Point</span>
+                                    <span class="w-detail-val" id="wd-dew">--°</span>
+                                </div>
                             </div>
-                        </div>
 
-                        <div class="w-detail-card">
-                            <i class="fas fa-moon icon-sunset"></i>
-                            <div class="w-detail-info">
-                                <span class="w-detail-label">Sunset</span>
-                                <span class="w-detail-val" id="wd-sunset">--:-- PM</span>
+                            <div class="w-detail-card">
+                                <div class="w-detail-icon-wrap"><i class="fas fa-sun"></i></div>
+                                <div class="w-detail-info">
+                                    <span class="w-detail-label">Sunrise</span>
+                                    <span class="w-detail-val" id="wd-sunrise">--:-- AM</span>
+                                </div>
                             </div>
-                        </div>
 
-                        <div class="w-detail-card">
-                            <i class="fas fa-cloud icon-cloud"></i>
-                            <div class="w-detail-info">
-                                <span class="w-detail-label">Cloud Cover</span>
-                                <span class="w-detail-val" id="wd-cloud">--%</span>
+                            <div class="w-detail-card">
+                                <div class="w-detail-icon-wrap"><i class="fas fa-moon"></i></div>
+                                <div class="w-detail-info">
+                                    <span class="w-detail-label">Sunset</span>
+                                    <span class="w-detail-val" id="wd-sunset">--:-- PM</span>
+                                </div>
                             </div>
-                        </div>
 
-                        <div class="w-detail-card">
-                            <i class="fas fa-fan icon-gusts"></i>
-                            <div class="w-detail-info">
-                                <span class="w-detail-label">Wind Gusts</span>
-                                <span class="w-detail-val" id="wd-gusts">-- km/h</span>
+                            <div class="w-detail-card">
+                                <div class="w-detail-icon-wrap"><i class="fas fa-cloud"></i></div>
+                                <div class="w-detail-info">
+                                    <span class="w-detail-label">Cloud Cover</span>
+                                    <span class="w-detail-val" id="wd-cloud">--%</span>
+                                </div>
+                            </div>
+
+                            <div class="w-detail-card">
+                                <div class="w-detail-icon-wrap"><i class="fas fa-fan"></i></div>
+                                <div class="w-detail-info">
+                                    <span class="w-detail-label">Wind Gusts</span>
+                                    <span class="w-detail-val" id="wd-gusts">-- km/h</span>
+                                </div>
                             </div>
                         </div>
                     </div>
                 </div>
 
-                <!-- Section 2: 24-Hour Hourly Detailed Weather Forecast Section -->
-                <div class="weather-hourly-section">
+                <!-- Section 2: 24-Hour & 7-Day Forecast Section -->
+                <div class="weather-forecast-section">
                     <div class="weather-section-title-bar">
-                        <h4><i class="far fa-clock" style="color: var(--accent, #09f0a0); margin-right: 8px;"></i> 24-Hour Detailed Hourly Forecast</h4>
-                        <span class="wh-sub-tag">Hourly Temperature, Precipitation & Wind Telemetry</span>
+                        <div class="weather-forecast-tabs">
+                            <button class="weather-forecast-tab active" id="tab-hourly-forecast"><i class="far fa-clock"></i> 24-Hour Hourly</button>
+                            <button class="weather-forecast-tab" id="tab-daily-forecast"><i class="far fa-calendar-days"></i> 7-Day Extended</button>
+                        </div>
+                        <span class="wh-sub-tag" id="wh-forecast-subtitle">Hourly Temperature, Precipitation & Wind Telemetry</span>
                     </div>
 
                     <div class="weather-hourly-slider" id="weather-hourly-slider">
+                        <!-- Populated dynamically by home.js -->
+                    </div>
+
+                    <div class="weather-daily-grid" id="weather-daily-grid" style="display: none;">
                         <!-- Populated dynamically by home.js -->
                     </div>
                 </div>

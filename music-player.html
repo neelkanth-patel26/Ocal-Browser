@@ -3,115 +3,246 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Ocal AI Music Player</title>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@500;700&display=swap" rel="stylesheet">
+    <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline' https:; style-src 'self' 'unsafe-inline' https:; font-src 'self' https: data:; img-src 'self' data: https: blob:; connect-src 'self' https: http:;">
+    <title>Music Studio | Ocal Browser</title>
+    <!-- ANTI-FLASH & AI COLOR HARMONIZER: must be FIRST in head, before any stylesheet -->
+    <script src="color-harmonizer.js"></script>
+    <script>
+        (function () {
+            var t = localStorage.getItem('ocal-settings-theme') || 'dark';
+            document.documentElement.setAttribute('data-theme', t);
+            if (t === 'dark') {
+                document.documentElement.style.background = '#0D0E11';
+                document.documentElement.style.colorScheme = 'dark';
+            } else {
+                document.documentElement.style.background = '#EDEDF0';
+            }
+            var a = localStorage.getItem('ocal-settings-accent');
+            if (window.OcalColorHarmonizer) {
+                window.OcalColorHarmonizer.applyHarmonizedTheme(a, t);
+            }
+        })();
+    </script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="assets/fontawesome/css/all.min.css">
     <link rel="stylesheet" href="music-player.css">
 </head>
 <body data-theme="dark">
+    <script>
+        (function () {
+            var t = localStorage.getItem('ocal-settings-theme') || 'dark';
+            document.body.setAttribute('data-theme', t);
+            var a = localStorage.getItem('ocal-settings-accent');
+            if (window.OcalColorHarmonizer) {
+                window.OcalColorHarmonizer.applyHarmonizedTheme(a, t);
+            }
+        })();
+    </script>
+
     <div class="music-app-container">
-        <!-- Main Studio Body -->
-        <div class="music-studio-body">
-            <!-- Left Stage: Hero Player & Web Audio Spectrum -->
-            <main class="hero-player-stage">
-                <div class="stage-top-bar">
-                    <div class="header-brand">
-                        <div class="brand-icon"><i class="fas fa-compact-disc"></i></div>
-                        <span class="brand-title">Ocal AI Music Player</span>
+        <!-- Top Header Row matching Home Page -->
+        <header class="sp-header-row">
+            <div class="sp-user-greeting">
+                <div class="header-brand-cluster">
+                    <div class="brand-shell">
+                        <i class="fas fa-compact-disc brand-icon"></i>
                     </div>
-                    <div class="system-scan-badge" id="system-scan-badge">
-                        <i class="fas fa-wand-magic-sparkles"></i>
-                        <span id="scan-status-text">AI Scanning Music...</span>
+                    <div class="brand-text">
+                        <span class="brand-eyebrow">HI-RES AUDIO ENGINE</span>
+                        <h1 class="sp-user-name">
+                            <span class="sp-welcome-prefix">Studio </span>
+                            <span id="music-header-title">Music Player</span>
+                        </h1>
                     </div>
                 </div>
-                <!-- Main Hero Turntable Card -->
-                <div class="hero-turntable-card">
+                <div class="sp-user-subtitle" id="music-scan-status">
+                    <i class="fas fa-wand-magic-sparkles motd-quote-icon"></i>
+                    <span id="scan-status-text">AI Scanning Library...</span>
+                </div>
+            </div>
+
+            <!-- Dot-Matrix Stats Bar -->
+            <div class="sp-stats-bar">
+                <div class="sp-stat-item">
+                    <span class="sp-dot-num" id="music-stat-count">0</span>
+                    <span class="sp-badge sp-badge-lime">Tracks</span>
+                </div>
+                <div class="sp-stat-item">
+                    <span class="sp-dot-num" id="music-stat-dsp">3D</span>
+                    <span class="sp-badge sp-badge-gray">Spatial</span>
+                </div>
+                <div class="sp-stat-item">
+                    <span class="sp-dot-num" id="music-stat-eq">10B</span>
+                    <span class="sp-badge sp-badge-gray">Equalizer</span>
+                </div>
+            </div>
+
+            <!-- Top Action Live Pulse Card -->
+            <div class="sp-top-actions">
+                <button class="sp-fx-toggle-pill" id="fx-panel-toggle-btn" title="Toggle Pro Studio Audio DSP Suite">
+                    <i class="fas fa-sliders"></i>
+                    <span>Studio DSP</span>
+                    <span class="fx-active-dot"></span>
+                </button>
+
+                <div class="sp-action-card sp-connect-tracker-mini">
+                    <div class="sp-ac-left">
+                        <span class="sp-ac-title">DSP Studio<br>Master</span>
+                    </div>
+                    <div class="sp-pulse-ring">
+                        <div class="sp-pulse-center"></div>
+                    </div>
+                </div>
+            </div>
+        </header>
+
+        <!-- Main Workspace: Stage + Sidebar -->
+        <div class="music-workspace-layout">
+            <!-- Left Hero Stage -->
+            <main class="hero-player-stage">
+                
+                <!-- Main Hero Turntable Card (Frosted 28px Elevation) -->
+                <div class="sp-card hero-turntable-card">
+                    <!-- Top Badge Cluster -->
+                    <div class="turntable-card-header">
+                        <div class="audio-fidelity-pill">
+                            <i class="fas fa-bolt"></i>
+                            <span>32-BIT LOSSLESS DSP</span>
+                        </div>
+                        <div class="track-format-tag" id="track-format-tag">MASTER</div>
+                    </div>
+
+                    <!-- Spinning Vinyl Turntable Stage -->
                     <div class="hero-art-container">
                         <div class="spinning-vinyl-art" id="vinyl-art">
+                            <div class="vinyl-groove-ring ring-1"></div>
+                            <div class="vinyl-groove-ring ring-2"></div>
                             <div class="vinyl-center-pin">
-                                <i class="fas fa-music"></i>
+                                <div class="center-hole"></div>
+                                <i class="fas fa-music pin-icon"></i>
                             </div>
                         </div>
                     </div>
 
+                    <!-- Track Metadata -->
                     <div class="track-meta-block">
-                        <h1 class="now-playing-title" id="now-playing-title">No Track Selected</h1>
-                        <p class="now-playing-sub" id="now-playing-sub">Scan system music library or select a song</p>
+                        <h2 class="now-playing-title" id="now-playing-title">No Track Selected</h2>
+                        <p class="now-playing-sub" id="now-playing-sub">Select a track from the library to begin playback</p>
                     </div>
 
-                    <!-- Audio Controls Bar -->
+                    <!-- Live High-Framerate Canvas Visualizer -->
+                    <div class="canvas-visualizer-wrap">
+                        <canvas id="studio-spectrum-canvas" width="600" height="70"></canvas>
+                    </div>
+
+                    <!-- Hero Controls Box -->
                     <div class="hero-controls-box">
+                        <!-- Seek Row -->
                         <div class="hero-seek-row">
-                            <span id="player-time-cur">0:00</span>
+                            <span class="time-digit" id="player-time-cur">0:00</span>
                             <div class="hero-seek-track">
-                                <input type="range" id="player-seek-bar" min="0" max="100" value="0" step="0.1">
+                                <input type="range" id="player-seek-bar" min="0" max="100" value="0" step="0.1" aria-label="Seek track">
                             </div>
-                            <span id="player-time-dur">0:00</span>
+                            <span class="time-digit" id="player-time-dur">0:00</span>
                         </div>
 
+                        <!-- Buttons Row -->
                         <div class="hero-buttons-row">
+                            <!-- Volume Section -->
                             <div class="player-vol-box">
-                                <button class="player-icon-btn" id="player-mute-btn" title="Mute/Unmute"><i class="fas fa-volume-high"></i></button>
-                                <input type="range" id="player-vol-bar" min="0" max="1" value="1" step="0.05">
+                                <button class="player-icon-btn" id="player-mute-btn" title="Mute/Unmute">
+                                    <i class="fas fa-volume-high"></i>
+                                </button>
+                                <div class="vol-slider-wrap">
+                                    <input type="range" id="player-vol-bar" min="0" max="1" value="1" step="0.05" aria-label="Volume">
+                                </div>
                             </div>
 
+                            <!-- Main Playback Controls -->
                             <div class="player-main-ctrls">
-                                <button class="player-icon-btn" id="player-shuffle-btn" title="Shuffle"><i class="fas fa-shuffle"></i></button>
-                                <button class="player-icon-btn" id="player-prev-btn" title="Previous Track"><i class="fas fa-backward-step"></i></button>
-                                <button class="player-play-btn" id="player-play-btn" title="Play/Pause"><i class="fas fa-play"></i></button>
-                                <button class="player-icon-btn" id="player-next-btn" title="Next Track"><i class="fas fa-forward-step"></i></button>
-                                <button class="player-icon-btn" id="player-repeat-btn" title="Repeat"><i class="fas fa-repeat"></i></button>
+                                <button class="player-icon-btn" id="player-shuffle-btn" title="Shuffle Playback">
+                                    <i class="fas fa-shuffle"></i>
+                                </button>
+                                <button class="player-icon-btn ctrl-nav-btn" id="player-prev-btn" title="Previous Track">
+                                    <i class="fas fa-backward-step"></i>
+                                </button>
+                                <button class="player-play-btn" id="player-play-btn" title="Play/Pause">
+                                    <i class="fas fa-play"></i>
+                                </button>
+                                <button class="player-icon-btn ctrl-nav-btn" id="player-next-btn" title="Next Track">
+                                    <i class="fas fa-forward-step"></i>
+                                </button>
+                                <button class="player-icon-btn" id="player-repeat-btn" title="Repeat Track">
+                                    <i class="fas fa-repeat"></i>
+                                </button>
                             </div>
 
-                            <div class="player-fx-toggle-box">
-                                <button class="fx-panel-toggle-btn" id="fx-panel-toggle-btn"><i class="fas fa-sliders"></i> Audio FX</button>
+                            <!-- Right Quick DSP Action -->
+                            <div class="player-right-action">
+                                <span class="dsp-rate-badge" id="dsp-rate-badge">48 kHz</span>
                             </div>
                         </div>
                     </div>
                 </div>
 
-                <!-- Studio Audio FX Panel (10-Band EQ + 3D Surround + Enhancer) -->
-                <div class="studio-fx-card" id="studio-fx-card" style="display: none;">
+                <!-- Pro Studio Audio DSP Suite (Collapsible Glass Card) -->
+                <div class="sp-card studio-fx-card" id="studio-fx-card" style="display: none;">
                     <div class="fx-card-header">
                         <div class="fx-header-title">
-                            <i class="fas fa-sliders"></i>
-                            <span>Pro Studio DSP Suite</span>
+                            <div class="fx-icon-pill"><i class="fas fa-sliders"></i></div>
+                            <div>
+                                <h3 class="fx-title-text">Pro Studio DSP Suite</h3>
+                                <p class="fx-sub-text">Acoustic Equalizer & 3D Spatial Master</p>
+                            </div>
                         </div>
-                        <button class="fx-card-close" id="fx-card-close" title="Close FX Studio"><i class="fas fa-xmark"></i></button>
+                        <button class="fx-card-close" id="fx-card-close" title="Close DSP Suite">
+                            <i class="fas fa-xmark"></i>
+                        </button>
                     </div>
 
+                    <!-- DSP Tabs Bar -->
                     <div class="fx-tabs-row">
-                        <button class="fx-tab-btn active" id="tab-btn-eq"><i class="fas fa-chart-simple"></i> 10-Band EQ</button>
-                        <button class="fx-tab-btn" id="tab-btn-3d"><i class="fas fa-arrows-spin"></i> 3D Surround</button>
-                        <button class="fx-tab-btn" id="tab-btn-bass"><i class="fas fa-drum"></i> Bass & Enhancer</button>
+                        <button class="fx-tab-btn active" id="tab-btn-eq">
+                            <i class="fas fa-chart-simple"></i> 10-Band EQ
+                        </button>
+                        <button class="fx-tab-btn" id="tab-btn-3d">
+                            <i class="fas fa-arrows-spin"></i> 3D Spatial
+                        </button>
+                        <button class="fx-tab-btn" id="tab-btn-bass">
+                            <i class="fas fa-drum"></i> Bass & Exciter
+                        </button>
                     </div>
 
-                    <!-- 10-Band Vertical EQ Console -->
+                    <!-- Tab 1: 10-Band Graphic Equalizer -->
                     <div class="fx-section-panel" id="section-eq" style="display: flex;">
                         <div class="eq-preset-bar">
-                            <span class="preset-title"><i class="fas fa-wand-magic-sparkles"></i> Presets:</span>
-                            <button class="preset-pill active" data-preset="flat">Flat</button>
-                            <button class="preset-pill" data-preset="bass">Bass Boost</button>
-                            <button class="preset-pill" data-preset="vocal">Vocal Exciter</button>
-                            <button class="preset-pill" data-preset="rock">Rock</button>
-                            <button class="preset-pill" data-preset="pop">Pop</button>
-                            <button class="preset-pill" data-preset="electronic">Electronic</button>
+                            <span class="preset-label"><i class="fas fa-wand-magic-sparkles"></i> Presets:</span>
+                            <div class="preset-pills-wrap">
+                                <button class="preset-pill active" data-preset="flat">Flat</button>
+                                <button class="preset-pill" data-preset="bass">Bass Boost</button>
+                                <button class="preset-pill" data-preset="vocal">Vocal Exciter</button>
+                                <button class="preset-pill" data-preset="rock">Rock</button>
+                                <button class="preset-pill" data-preset="pop">Pop</button>
+                                <button class="preset-pill" data-preset="electronic">Electronic</button>
+                            </div>
                         </div>
                         <div class="vertical-eq-console">
-                            <div class="v-eq-col"><span class="v-lbl">32Hz</span><input type="range" class="v-eq-slider" data-freq="32" min="-12" max="12" value="0" orient="vertical"><span class="v-val">0dB</span></div>
-                            <div class="v-eq-col"><span class="v-lbl">64Hz</span><input type="range" class="v-eq-slider" data-freq="64" min="-12" max="12" value="4" orient="vertical"><span class="v-val">+4dB</span></div>
-                            <div class="v-eq-col"><span class="v-lbl">125Hz</span><input type="range" class="v-eq-slider" data-freq="125" min="-12" max="12" value="3" orient="vertical"><span class="v-val">+3dB</span></div>
-                            <div class="v-eq-col"><span class="v-lbl">250Hz</span><input type="range" class="v-eq-slider" data-freq="250" min="-12" max="12" value="0" orient="vertical"><span class="v-val">0dB</span></div>
-                            <div class="v-eq-col"><span class="v-lbl">500Hz</span><input type="range" class="v-eq-slider" data-freq="500" min="-12" max="12" value="-1" orient="vertical"><span class="v-val">-1dB</span></div>
-                            <div class="v-eq-col"><span class="v-lbl">1kHz</span><input type="range" class="v-eq-slider" data-freq="1000" min="-12" max="12" value="0" orient="vertical"><span class="v-val">0dB</span></div>
-                            <div class="v-eq-col"><span class="v-lbl">2kHz</span><input type="range" class="v-eq-slider" data-freq="2000" min="-12" max="12" value="2" orient="vertical"><span class="v-val">+2dB</span></div>
-                            <div class="v-eq-col"><span class="v-lbl">4kHz</span><input type="range" class="v-eq-slider" data-freq="4000" min="-12" max="12" value="3" orient="vertical"><span class="v-val">+3dB</span></div>
-                            <div class="v-eq-col"><span class="v-lbl">8kHz</span><input type="range" class="v-eq-slider" data-freq="8000" min="-12" max="12" value="4" orient="vertical"><span class="v-val">+4dB</span></div>
-                            <div class="v-eq-col"><span class="v-lbl">16kHz</span><input type="range" class="v-eq-slider" data-freq="16000" min="-12" max="12" value="3" orient="vertical"><span class="v-val">+3dB</span></div>
+                            <div class="v-eq-col"><span class="v-lbl">32Hz</span><div class="slider-track-wrap"><input type="range" class="v-eq-slider" data-freq="32" min="-12" max="12" value="0" orient="vertical"></div><span class="v-val">0dB</span></div>
+                            <div class="v-eq-col"><span class="v-lbl">64Hz</span><div class="slider-track-wrap"><input type="range" class="v-eq-slider" data-freq="64" min="-12" max="12" value="4" orient="vertical"></div><span class="v-val">+4dB</span></div>
+                            <div class="v-eq-col"><span class="v-lbl">125Hz</span><div class="slider-track-wrap"><input type="range" class="v-eq-slider" data-freq="125" min="-12" max="12" value="3" orient="vertical"></div><span class="v-val">+3dB</span></div>
+                            <div class="v-eq-col"><span class="v-lbl">250Hz</span><div class="slider-track-wrap"><input type="range" class="v-eq-slider" data-freq="250" min="-12" max="12" value="0" orient="vertical"></div><span class="v-val">0dB</span></div>
+                            <div class="v-eq-col"><span class="v-lbl">500Hz</span><div class="slider-track-wrap"><input type="range" class="v-eq-slider" data-freq="500" min="-12" max="12" value="-1" orient="vertical"></div><span class="v-val">-1dB</span></div>
+                            <div class="v-eq-col"><span class="v-lbl">1kHz</span><div class="slider-track-wrap"><input type="range" class="v-eq-slider" data-freq="1000" min="-12" max="12" value="0" orient="vertical"></div><span class="v-val">0dB</span></div>
+                            <div class="v-eq-col"><span class="v-lbl">2kHz</span><div class="slider-track-wrap"><input type="range" class="v-eq-slider" data-freq="2000" min="-12" max="12" value="2" orient="vertical"></div><span class="v-val">+2dB</span></div>
+                            <div class="v-eq-col"><span class="v-lbl">4kHz</span><div class="slider-track-wrap"><input type="range" class="v-eq-slider" data-freq="4000" min="-12" max="12" value="3" orient="vertical"></div><span class="v-val">+3dB</span></div>
+                            <div class="v-eq-col"><span class="v-lbl">8kHz</span><div class="slider-track-wrap"><input type="range" class="v-eq-slider" data-freq="8000" min="-12" max="12" value="4" orient="vertical"></div><span class="v-val">+4dB</span></div>
+                            <div class="v-eq-col"><span class="v-lbl">16kHz</span><div class="slider-track-wrap"><input type="range" class="v-eq-slider" data-freq="16000" min="-12" max="12" value="3" orient="vertical"></div><span class="v-val">+3dB</span></div>
                         </div>
                     </div>
 
-                    <!-- 3D Surround Spatial Panel -->
+                    <!-- Tab 2: 3D Surround Spatial Acoustics -->
                     <div class="fx-section-panel" id="section-3d" style="display: none;">
                         <div class="spatial-card-box">
                             <div class="spatial-meta-info">
@@ -119,8 +250,8 @@
                                     <i class="fas fa-arrows-spin"></i>
                                 </div>
                                 <div class="spatial-meta-text">
-                                    <div class="spatial-card-title">3D Spatial Acoustics</div>
-                                    <div class="spatial-card-sub">HRTF binaural spatial panning & 360° soundstage</div>
+                                    <div class="spatial-card-title">3D Spatial Binaural Acoustics</div>
+                                    <div class="spatial-card-sub">HRTF head-related transfer function & 360° orbiting audio stage</div>
                                 </div>
                             </div>
 
@@ -139,7 +270,7 @@
                         </div>
                     </div>
 
-                    <!-- Bass & Enhancer Panel -->
+                    <!-- Tab 3: Bass & Enhancer -->
                     <div class="fx-section-panel" id="section-bass" style="display: none;">
                         <div class="enhancer-card-grid">
                             <div class="enhancer-box">
@@ -152,7 +283,7 @@
 
                             <div class="enhancer-box">
                                 <div class="enhancer-header">
-                                    <span class="enhancer-title"><i class="fas fa-wand-magic-sparkles"></i> Vocal Highs Exciter</span>
+                                    <span class="enhancer-title"><i class="fas fa-wand-magic-sparkles"></i> Vocal Highs Exciter (8kHz)</span>
                                     <span class="enhancer-val-badge" id="app-highs-val">+4 dB</span>
                                 </div>
                                 <input type="range" id="app-highs-slider" class="enhancer-slider" min="0" max="12" value="4" step="1">
@@ -163,31 +294,34 @@
             </main>
 
             <!-- Right Sidebar: AI Smart Music Library & System Playlist -->
-            <aside class="playlist-sidebar">
+            <aside class="playlist-sidebar sp-card">
+                <!-- Sidebar Header -->
                 <div class="playlist-sidebar-header">
                     <div class="playlist-title-cluster">
-                        <i class="fas fa-wand-magic-sparkles" style="color: var(--accent);"></i>
-                        <span class="sidebar-title">AI Smart Music Library</span>
+                        <div class="pl-brand-icon"><i class="fas fa-wand-magic-sparkles"></i></div>
+                        <div>
+                            <span class="sidebar-title">Smart Library</span>
+                            <span class="sidebar-sub">AI Deduplicated</span>
+                        </div>
                     </div>
-                    <span class="playlist-count-badge" id="playlist-count-badge">0 songs</span>
+                    <span class="playlist-count-badge" id="playlist-count-badge">0 tracks</span>
                 </div>
 
-                <!-- Playlist Search Bar -->
-                <div class="playlist-search-box">
-                    <i class="fas fa-magnifying-glass"></i>
-                    <input type="text" id="playlist-search-input" placeholder="Search music library...">
+                <!-- Playlist Search Bar (Pill style matching Home) -->
+                <div class="sp-search-pill playlist-search-pill">
+                    <i class="fas fa-magnifying-glass search-icon"></i>
+                    <input type="text" class="sp-search-input" id="playlist-search-input" placeholder="Search tracks, artists..." autocomplete="off">
                 </div>
 
-                <!-- Smart Category Tabs -->
+                <!-- Smart Category Filter Tabs -->
                 <div class="smart-tabs-row">
                     <button class="smart-tab active" data-filter="all"><i class="fas fa-music"></i> All</button>
-                    <button class="smart-tab" data-filter="favorites"><i class="fas fa-heart"></i> Favorites</button>
                     <button class="smart-tab" data-filter="energy"><i class="fas fa-bolt"></i> Energy</button>
                     <button class="smart-tab" data-filter="chill"><i class="fas fa-cloud-moon"></i> Chill</button>
                     
                     <div class="custom-fx-dropdown" id="more-categories-dropdown">
                         <button class="smart-tab" id="more-categories-trigger">
-                            <i class="fas fa-ellipsis"></i> More <i class="fas fa-chevron-down" style="font-size:8px;"></i>
+                            <i class="fas fa-ellipsis"></i> More <i class="fas fa-chevron-down" style="font-size:8px; margin-left: 2px;"></i>
                         </button>
                         <div class="fx-dropdown-menu" id="more-categories-menu" style="right: 0; left: auto; top: calc(100% + 4px);">
                             <div class="fx-dropdown-item" data-filter="acoustic"><i class="fas fa-guitar"></i> Acoustic & Vocals</div>
@@ -197,11 +331,11 @@
                     </div>
                 </div>
 
-                <!-- Track List Container -->
+                <!-- Scrollable Track List Container -->
                 <div class="playlist-tracks-container" id="playlist-tracks-container">
                     <div class="loading-state">
                         <i class="fas fa-circle-notch fa-spin"></i>
-                        <span>Scanning system for music...</span>
+                        <span>Scanning system for master tracks...</span>
                     </div>
                 </div>
             </aside>

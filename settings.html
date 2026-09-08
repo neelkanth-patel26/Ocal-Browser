@@ -10,7 +10,7 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link
-        href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@300;400;500&family=Outfit:wght@300;400;500;600;700;800&family=Inter:wght@300;400;500;600;700&display=swap"
+        href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=Space+Mono:ital,wght@0,400;0,700;1,400&family=JetBrains+Mono:wght@300;400;500&family=Outfit:wght@300;400;500;600;700;800&family=Inter:wght@300;400;500;600;700&display=swap"
         rel="stylesheet">
     <link rel="stylesheet" href="assets/fontawesome/css/all.min.css">
     <script src="color-harmonizer.js"></script>
@@ -83,6 +83,10 @@
                 <div class="nav-item" data-section="system">
                     <div class="nav-item-icon"><i class="fas fa-sliders"></i></div>
                     <span>System</span>
+                </div>
+                <div class="nav-item" data-section="specials">
+                    <div class="nav-item-icon"><i class="fas fa-wand-magic-sparkles"></i></div>
+                    <span>Specials</span>
                 </div>
                 <div class="nav-item" data-section="security">
                     <div class="nav-item-icon"><i class="fas fa-shield-halved"></i></div>
@@ -914,44 +918,90 @@
                 </div>
             </section>
 
-            <!-- ── PROFILES HUB ── -->
+            <!-- ── PROFILES & IDENTITY REGISTRY (HOME PAGE BENTO STYLE) ── -->
             <section id="profiles" class="section">
-                <div class="page-header">
-                    <div class="page-eyebrow">Identity Registry</div>
-                    <div class="page-title">Profiles Manager</div>
-                    <div class="page-desc">Manage sandboxed user sessions, isolated caches, and multi-identity credentials.</div>
+                <!-- Home-style Header Row: Title & Stats Bar -->
+                <div class="home-settings-header-row">
+                    <div class="home-settings-greeting">
+                        <h1 class="home-settings-title">Identity & Profile Nodes</h1>
+                        <div class="home-settings-subtitle">
+                            <i class="fas fa-quote-left home-quote-icon"></i>
+                            <span>Manage isolated browsing sessions, sandboxed login cookies, and profile-scoped bookmarks.</span>
+                        </div>
+                    </div>
+
+                    <!-- Dot-Matrix Stats Bar matching Home Page .sp-stats-bar -->
+                    <div class="home-stats-bar">
+                        <div class="home-stat-item">
+                            <span class="home-dot-num" id="profile-stat-count">1</span>
+                            <span class="home-badge home-badge-lime">Profiles</span>
+                        </div>
+                        <div class="home-stat-item">
+                            <span class="home-dot-num" id="profile-stat-partition">persist:default</span>
+                            <span class="home-badge home-badge-gray">Partition</span>
+                        </div>
+                        <div class="home-stat-item">
+                            <span class="home-dot-num" id="profile-stat-bookmarks">0</span>
+                            <span class="home-badge home-badge-gray">Bookmarks</span>
+                        </div>
+                    </div>
+
+                    <!-- Top Action Tracker Mini Card matching Home Page .sp-top-actions -->
+                    <div class="sp-top-actions">
+                        <div class="sp-action-card sp-connect-tracker-mini">
+                            <div class="sp-ac-left">
+                                <span class="sp-ac-title">Isolation<br>Active</span>
+                            </div>
+                            <div class="sp-pulse-ring">
+                                <div class="sp-pulse-center"></div>
+                            </div>
+                        </div>
+                    </div>
                 </div>
 
                 <div class="page-body">
-                    <div class="profiles-hub-container">
+                    <!-- Active Profile Hero Spotlight Card (matching .sp-card-green-grad from Home Page) -->
+                    <div id="profile-active-spotlight" class="sp-card sp-card-primary-grad sp-profile-hero-card">
+                        <!-- Populated dynamically by settings.js -->
+                    </div>
 
-                        <!-- Left Column: Active Nodes & Profiles -->
-                        <div class="profiles-main-pane">
-                            <div class="section-card-header" style="margin-bottom: 16px; display: flex; align-items: center; justify-content: space-between;">
-                                <div>
-                                    <h4 class="mono-label" style="font-size: 13px; font-weight: 800; color: var(--accent); margin: 0 0 2px 0;">
-                                        <i class="fas fa-network-wired" style="margin-right: 6px;"></i> Session Node Registry
-                                    </h4>
-                                    <p class="mono-label-small" style="font-size: 12px; color: var(--text-dim); margin: 0;">
-                                        Select an identity node below to switch your active browser workspace.
-                                    </p>
-                                </div>
-                            </div>
-
-                            <div id="profile-grid" class="profiles-grid-layout">
-                                <!-- Rendered dynamically by settings.js -->
-                            </div>
+                    <!-- Section Title for Profile Nodes Grid -->
+                    <div class="profiles-section-divider">
+                        <div class="psd-left">
+                            <i class="fas fa-cubes"></i>
+                            <span>Workspace Identity Nodes</span>
+                            <span class="psd-counter-badge" id="profiles-count-badge">1 Node</span>
                         </div>
+                        <button type="button" class="sp-news-trigger-btn" onclick="window.createProfilePrompt()" style="cursor:pointer;" title="Launch a new isolated profile">
+                            <i class="fas fa-plus"></i>
+                            <span>New Profile</span>
+                        </button>
+                    </div>
 
-                        <!-- Right Column: Data Import & Security Sandboxing -->
-                        <div class="profiles-side-pane">
+                    <!-- Profile Nodes Bento Grid -->
+                    <div id="profile-grid" class="homepage-bento-grid profile-bento-grid">
+                        <!-- Rendered dynamically by settings.js -->
+                    </div>
 
-                            <!-- External Identity Import Card -->
-                            <div class="card import-registry-card sp-card-white">
-                                <div class="profiles-card-header">
-                                    <i class="fas fa-file-import"></i>
-                                    <span>External Data Import</span>
+                    <!-- Lower Bento Grid: Data Import & Security Isolation -->
+                    <div class="homepage-bento-grid profiles-secondary-bento">
+
+                        <!-- External Identity Import Card -->
+                        <div class="card homepage-bento-card sp-card-white">
+                            <div class="hbc-header">
+                                <div class="hbc-header-left">
+                                    <div class="hbc-icon theme-bg">
+                                        <i class="fas fa-file-import"></i>
+                                    </div>
+                                    <div class="hbc-identity">
+                                        <h4 class="hbc-name">External Data Ingestion</h4>
+                                        <div class="hbc-tagline">Import bookmarks, history, and logins into active profile</div>
+                                    </div>
                                 </div>
+                                <span class="hbc-badge system-shell">DATA SYNC</span>
+                            </div>
+
+                            <div class="hbc-rows">
                                 <div class="import-rows-list">
                                     <div class="import-row-item" id="import-chrome-btn">
                                         <div class="import-left">
@@ -960,7 +1010,7 @@
                                             </div>
                                             <div class="import-details">
                                                 <h4>Google Chrome</h4>
-                                                <p>Bookmarks, settings, history</p>
+                                                <p>Bookmarks, settings, and browsing logs</p>
                                             </div>
                                         </div>
                                         <i class="fas fa-chevron-right import-arrow"></i>
@@ -972,7 +1022,7 @@
                                             </div>
                                             <div class="import-details">
                                                 <h4>Microsoft Edge</h4>
-                                                <p>Bookmarks, settings, cache</p>
+                                                <p>Bookmarks, settings, and cache</p>
                                             </div>
                                         </div>
                                         <i class="fas fa-chevron-right import-arrow"></i>
@@ -984,7 +1034,7 @@
                                             </div>
                                             <div class="import-details">
                                                 <h4>HTML Bookmarks</h4>
-                                                <p>Manual bookmarks import</p>
+                                                <p>Netscape Bookmark Format file import</p>
                                             </div>
                                         </div>
                                         <i class="fas fa-chevron-right import-arrow"></i>
@@ -992,38 +1042,48 @@
                                 </div>
                                 <div id="import-status" class="import-status-notification" style="display: none;"></div>
                             </div>
+                        </div>
 
-                            <!-- Security Sandboxing Card -->
-                            <div class="card data-isolation-info-card sp-card-white">
-                                <div class="profiles-card-header">
-                                    <i class="fas fa-shield-halved"></i>
-                                    <span>Node Isolation Envelopes</span>
+                        <!-- Security Sandboxing Card -->
+                        <div class="card homepage-bento-card sp-card-white">
+                            <div class="hbc-header">
+                                <div class="hbc-header-left">
+                                    <div class="hbc-icon workspace-bg">
+                                        <i class="fas fa-shield-halved"></i>
+                                    </div>
+                                    <div class="hbc-identity">
+                                        <h4 class="hbc-name">Node Isolation Envelopes</h4>
+                                        <div class="hbc-tagline">Hardware-backed sandbox and partition storage boundaries</div>
+                                    </div>
                                 </div>
+                                <span class="hbc-badge system-sec">SANDBOXED</span>
+                            </div>
+
+                            <div class="hbc-rows">
                                 <div class="sandbox-features-list">
                                     <div class="sandbox-feature-item">
                                         <div class="feature-icon"><i class="fas fa-cookie-bite"></i></div>
                                         <div class="feature-info">
                                             <h4>Isolated Storage & Cookies</h4>
-                                            <p>Sessions, tokens, and storage do not leak across nodes.</p>
+                                            <p>Sessions, tokens, and localStorage do not leak across nodes.</p>
                                         </div>
                                     </div>
                                     <div class="sandbox-feature-item">
                                         <div class="feature-icon"><i class="fas fa-clock-rotate-left"></i></div>
                                         <div class="feature-info">
-                                            <h4>Independent History</h4>
-                                            <p>Browsing and search logs are stored in separate DB engines.</p>
+                                            <h4>Independent History Engine</h4>
+                                            <p>Browsing and search queries are stored in isolated profile stores.</p>
                                         </div>
                                     </div>
                                     <div class="sandbox-feature-item">
                                         <div class="feature-icon"><i class="fas fa-user-lock"></i></div>
                                         <div class="feature-info">
-                                            <h4>Multi-Identity Vault</h4>
-                                            <p>Each profile operates with independent localStorage & credentials.</p>
+                                            <h4>Scoped Bookmarks & Themes</h4>
+                                            <p>Each profile operates with customized accent themes and bookmark trees.</p>
                                         </div>
                                     </div>
                                 </div>
                             </div>
-
                         </div>
 
                     </div>
@@ -1241,6 +1301,373 @@
                                             onchange="handleDownloadScanToggle(this.checked)">
                                         <span class="ext-slider"></span>
                                     </label>
+                                </div>
+                            </div>
+                        </div>
+
+                    </div>
+                </div>
+            </section>
+
+            <!-- ── SPECIALS (AMBIENT SOUND & FOCUS SUITE - HOME PAGE STYLE) ── -->
+            <section id="specials" class="section">
+                <!-- Home-style Header Row: Title, Subtitle & Dot-Matrix Stats Bar -->
+                <div class="home-settings-header-row sp-header-row">
+                    <div class="home-settings-greeting sp-user-greeting">
+                        <h1 class="home-settings-title sp-user-name">
+                            <span class="sp-welcome-prefix">Studio &amp; </span>Specials Suite
+                        </h1>
+                        <div class="home-settings-subtitle sp-user-subtitle motd-clickable">
+                            <i class="fas fa-quote-left motd-quote-icon"></i>
+                            <span>Immersive Lo-Fi acoustics, smart background ducking, and real-time GPU screen shader filters.</span>
+                        </div>
+                    </div>
+
+                    <!-- Dot-Matrix Stats Bar matching Home Page .sp-stats-bar -->
+                    <div class="home-stats-bar sp-stats-bar">
+                        <div class="home-stat-item sp-stat-item">
+                            <span class="home-dot-num sp-dot-num" id="specials-stat-state">Ready</span>
+                            <span class="sp-badge sp-badge-lime" id="specials-stat-state-badge">Audio</span>
+                        </div>
+                        <div class="home-stat-item sp-stat-item">
+                            <span class="home-dot-num sp-dot-num" id="specials-stat-track" style="font-size: 14px; max-width: 140px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">Ocal Theme</span>
+                            <span class="sp-badge sp-badge-gray">Track</span>
+                        </div>
+                        <div class="home-stat-item sp-stat-item">
+                            <span class="home-dot-num sp-dot-num" id="specials-stat-fx">Clean</span>
+                            <span class="sp-badge sp-badge-gray">Shader</span>
+                        </div>
+                        <div class="home-stat-item sp-stat-item">
+                            <span class="home-dot-num sp-dot-num" id="specials-stat-vol">35%</span>
+                            <span class="sp-badge sp-badge-gray">Volume</span>
+                        </div>
+                    </div>
+
+                    <!-- Right Action Mini Card matching Home Page -->
+                    <div class="sp-top-actions">
+                        <div class="sp-action-card sp-connect-tracker-mini specials-pulse-card" id="specials-pulse-card">
+                            <div class="sp-ac-left">
+                                <span class="sp-ac-title">Studio Engine<br>Active</span>
+                            </div>
+                            <div class="sp-pulse-ring" id="specials-pulse-ring">
+                                <div class="sp-pulse-center"></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="page-body">
+                    <!-- Info / Feature Announcement Pill matching Home Page Search/Timeline Pill -->
+                    <div class="sp-search-section specials-banner-row">
+                        <div class="sp-timeline-pill specials-engine-pill">
+                            <i class="fas fa-wand-magic-sparkles"></i>
+                            <div class="sp-tp-text">
+                                <span class="sp-tp-title">Hardware-Accelerated Audio &amp; WebGL Engine</span>
+                                <span class="sp-tp-sub">Zero-lag shader compositor with automatic YouTube media ducking</span>
+                            </div>
+                        </div>
+                        <div class="specials-quick-actions">
+                            <button class="sp-news-trigger-btn" type="button" onclick="handleAmbientSoundToggle(!localAmbientState.enabled)" title="Toggle Ambient Audio Loop">
+                                <i class="fas fa-headphones-simple"></i>
+                                <span>Quick Play</span>
+                                <span class="news-live-pulse" id="specials-live-pulse">LIVE</span>
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Bento Grid of Specials Cards (Hero Studio Cards matching Home Page) -->
+                    <div class="homepage-bento-grid specials-bento-grid">
+
+                        <!-- ─── 1. Ambient Audio & Focus Studio Card (Hero Bento Card) ─── -->
+                        <div class="card homepage-bento-card specials-bento-card sp-card sp-card-white span-full ambient-studio-card" id="ambient-sound-card">
+                            <div class="hbc-header sp-card-header-flex">
+                                <div class="hbc-header-left">
+                                    <div class="hbc-icon ambient-music-bg">
+                                        <i class="fas fa-headphones-simple"></i>
+                                    </div>
+                                    <div class="hbc-identity">
+                                        <h4 class="hbc-name">Ambient Sound &amp; Focus Studio</h4>
+                                        <div class="hbc-tagline">Dynamic Lo-Fi &amp; background soundtracks with smart YouTube/media ducking</div>
+                                    </div>
+                                </div>
+                                <div class="ambient-header-actions">
+                                    <div class="audio-equalizer-bars" id="ambient-equalizer-bars" title="Equalizer">
+                                        <span class="eq-bar eq-1"></span>
+                                        <span class="eq-bar eq-2"></span>
+                                        <span class="eq-bar eq-3"></span>
+                                        <span class="eq-bar eq-4"></span>
+                                    </div>
+                                    <span class="hbc-badge ambient-badge" id="ambient-status-badge"><i class="fas fa-music"></i> AMBIENT STUDIO</span>
+                                    <label class="ext-toggle-wrap ambient-master-toggle">
+                                        <input type="checkbox" id="ambient-sound-toggle-cb" onchange="handleAmbientSoundToggle(this.checked)">
+                                        <span class="ext-slider"></span>
+                                    </label>
+                                </div>
+                            </div>
+
+                            <div class="ambient-studio-body" id="ambient-studio-body">
+                                
+                                <!-- Hero Player Deck (Vinyl Disc & Controls) -->
+                                <div class="ambient-hero-player-deck">
+                                    <div class="ambient-vinyl-wrap">
+                                        <div class="ambient-vinyl-disc" id="ambient-vinyl-disc">
+                                            <div class="vinyl-groove"></div>
+                                            <div class="vinyl-center-label">
+                                                <i class="fas fa-compact-disc"></i>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="ambient-player-meta">
+                                        <div class="ambient-meta-track-badge">
+                                            <i class="fas fa-circle-play"></i> NOW LOOPING
+                                        </div>
+                                        <h3 class="ambient-hero-track-title" id="ambient-hero-track-title">Ocal Theme</h3>
+                                        <span class="ambient-hero-track-sub" id="ambient-hero-track-sub">High Fidelity Studio Audio &bull; Seamless Loop Engine</span>
+                                        <div class="ambient-player-controls-row">
+                                            <button class="ambient-ctrl-btn" type="button" onclick="handleAmbientPrevTrack()" title="Previous Track">
+                                                <i class="fas fa-backward-step"></i>
+                                            </button>
+                                            <button class="ambient-ctrl-btn hero-play" id="ambient-hero-play-btn" type="button" onclick="handleAmbientSoundToggle(!localAmbientState.enabled)" title="Play / Pause">
+                                                <i class="fas fa-play" id="ambient-hero-play-icon"></i>
+                                            </button>
+                                            <button class="ambient-ctrl-btn" type="button" onclick="handleAmbientNextTrack()" title="Next Track">
+                                                <i class="fas fa-forward-step"></i>
+                                            </button>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <!-- Sound Track Selection Grid -->
+                                <div class="ambient-section-wrap">
+                                    <div class="ambient-label-row">
+                                        <span class="ambient-label"><i class="fas fa-compact-disc"></i> Sound Library</span>
+                                        <button class="system-btn-action secondary mini" id="ambient-add-custom-btn" onclick="handleImportCustomAmbientTrack()">
+                                            <i class="fas fa-plus"></i>
+                                            <span>Add Audio File</span>
+                                        </button>
+                                    </div>
+                                    <div class="ambient-tracks-grid" id="ambient-tracks-grid">
+                                        <!-- Injected dynamically via settings.js -->
+                                    </div>
+                                </div>
+
+                                <!-- Volume & Loudness Customization -->
+                                <div class="ambient-section-wrap">
+                                    <div class="ambient-label-row">
+                                        <span class="ambient-label"><i class="fas fa-volume-high"></i> Playback Volume &amp; Loudness</span>
+                                        <span class="ambient-volume-val-badge" id="ambient-volume-val-label">Balanced (35%)</span>
+                                    </div>
+                                    <div class="ambient-slider-container">
+                                        <div class="ambient-slider-labels">
+                                            <span><i class="fas fa-volume-low"></i> Soft (5%)</span>
+                                            <span><i class="fas fa-volume-down"></i> Balanced (40%)</span>
+                                            <span><i class="fas fa-volume-high"></i> Loud (100%)</span>
+                                        </div>
+                                        <div class="ambient-range-wrap">
+                                            <input type="range" id="ambient-volume-slider" min="0" max="100" step="1" value="35" oninput="handleAmbientVolumeInput(this.value)" onchange="handleAmbientVolumeChange(this.value)">
+                                        </div>
+                                        <div class="specials-preset-pills-row">
+                                            <button type="button" class="specials-preset-pill" onclick="handleAmbientVolumePreset(0)"><i class="fas fa-volume-xmark"></i> Mute</button>
+                                            <button type="button" class="specials-preset-pill" onclick="handleAmbientVolumePreset(20)">20% Soft</button>
+                                            <button type="button" class="specials-preset-pill" onclick="handleAmbientVolumePreset(40)">40% Balanced</button>
+                                            <button type="button" class="specials-preset-pill" onclick="handleAmbientVolumePreset(70)">70% Energetic</button>
+                                            <button type="button" class="specials-preset-pill" onclick="handleAmbientVolumePreset(100)">100% Max</button>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <!-- Smart Ducking & Mute Options -->
+                                <div class="hbc-rows ambient-options-rows">
+                                    <div class="hbc-toggle-row">
+                                        <div class="hbc-row-info">
+                                            <h4>Smart Media Ducking &amp; Auto-Mute</h4>
+                                            <p>Smoothly fade out and mute ambient sound whenever YouTube, Spotify, video, or music plays in any tab</p>
+                                        </div>
+                                        <label class="ext-toggle-wrap">
+                                            <input type="checkbox" id="ambient-ducking-toggle-cb" checked onchange="handleAmbientDuckingToggle(this.checked)">
+                                            <span class="ext-slider"></span>
+                                        </label>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- ─── 2. Page Effects & Visual Shaders Bento Card (Hero Bento Card) ─── -->
+                        <div class="card homepage-bento-card specials-bento-card sp-card sp-card-white span-full page-fx-studio-card" id="page-fx-card">
+                            <div class="hbc-header sp-card-header-flex">
+                                <div class="hbc-header-left">
+                                    <div class="hbc-icon page-fx-magic-bg">
+                                        <i class="fas fa-wand-magic-sparkles"></i>
+                                    </div>
+                                    <div class="hbc-identity">
+                                        <h4 class="hbc-name">Page Effects &amp; Visual Shaders</h4>
+                                        <div class="hbc-tagline">Real-time screen filters: Screen Broken, Cyberpunk Glitch, B/W Noir, System CRT Wave, &amp; Matrix</div>
+                                    </div>
+                                </div>
+                                <div class="ambient-header-actions">
+                                    <span class="hbc-badge fx-badge" id="fx-status-badge"><i class="fas fa-sparkles"></i> PAGE FX</span>
+                                    <label class="ext-toggle-wrap fx-master-toggle">
+                                        <input type="checkbox" id="page-fx-toggle-cb" onchange="handlePageFXToggle(this.checked)">
+                                        <span class="ext-slider"></span>
+                                    </label>
+                                </div>
+                            </div>
+                            <div class="page-fx-studio-body" id="page-fx-studio-body">
+                                <!-- Shader Presets Choice Grid -->
+                                <div class="ambient-section-wrap">
+                                    <div class="ambient-label-row">
+                                        <span class="ambient-label"><i class="fas fa-palette"></i> Select Page Effect Preset</span>
+                                        <span class="ambient-volume-val-badge" id="fx-active-name-tag">Effect: Clean / None</span>
+                                    </div>
+
+                                    <div class="page-fx-presets-grid" id="page-fx-presets-grid">
+                                        <!-- None / Normal -->
+                                        <div class="fx-preset-card active" data-effect="none" onclick="handlePageFXSelect('none')">
+                                            <div class="fx-card-icon-box none-bg"><i class="fas fa-ban"></i></div>
+                                            <div class="fx-card-details">
+                                                <h4>Clean / None</h4>
+                                                <p>Standard pristine web rendering with zero filters</p>
+                                            </div>
+                                            <span class="fx-select-check"><i class="fas fa-check"></i></span>
+                                        </div>
+
+                                        <!-- Screen Broken -->
+                                        <div class="fx-preset-card" data-effect="screen-broken" onclick="handlePageFXSelect('screen-broken')">
+                                            <div class="fx-card-icon-box broken-bg"><i class="fas fa-burst"></i></div>
+                                            <div class="fx-card-details">
+                                                <h4>Screen Broken</h4>
+                                                <p>Hyper-realistic shattered glass spiderweb fractures &amp; crack refraction</p>
+                                            </div>
+                                            <span class="fx-select-check"><i class="fas fa-check"></i></span>
+                                        </div>
+
+                                        <!-- Cyberpunk Glitch -->
+                                        <div class="fx-preset-card" data-effect="glitch" onclick="handlePageFXSelect('glitch')">
+                                            <div class="fx-card-icon-box glitch-bg"><i class="fas fa-bolt"></i></div>
+                                            <div class="fx-card-details">
+                                                <h4>Cyberpunk Glitch</h4>
+                                                <p>RGB chromatic aberration, slice displacement &amp; scanline jitter</p>
+                                            </div>
+                                            <span class="fx-select-check"><i class="fas fa-check"></i></span>
+                                        </div>
+
+                                        <!-- B/W Noir -->
+                                        <div class="fx-preset-card" data-effect="bw" onclick="handlePageFXSelect('bw')">
+                                            <div class="fx-card-icon-box bw-bg"><i class="fas fa-film"></i></div>
+                                            <div class="fx-card-details">
+                                                <h4>B/W Noir &amp; Grain</h4>
+                                                <p>High-contrast cinematic monochrome with vintage silver film grain</p>
+                                            </div>
+                                            <span class="fx-select-check"><i class="fas fa-check"></i></span>
+                                        </div>
+
+                                        <!-- System Wave / CRT -->
+                                        <div class="fx-preset-card" data-effect="system-wave" onclick="handlePageFXSelect('system-wave')">
+                                            <div class="fx-card-icon-box crt-bg"><i class="fas fa-tv"></i></div>
+                                            <div class="fx-card-details">
+                                                <h4>System Wave (CRT)</h4>
+                                                <p>Retro synthwave scanlines, phosphor glow &amp; sinusoidal wave sweep</p>
+                                            </div>
+                                            <span class="fx-select-check"><i class="fas fa-check"></i></span>
+                                        </div>
+
+                                        <!-- Matrix Code Rain -->
+                                        <div class="fx-preset-card" data-effect="matrix" onclick="handlePageFXSelect('matrix')">
+                                            <div class="fx-card-icon-box matrix-bg"><i class="fas fa-terminal"></i></div>
+                                            <div class="fx-card-details">
+                                                <h4>Matrix Terminal</h4>
+                                                <p>Phosphor green digital code streams and cyberpunk terminal glow</p>
+                                            </div>
+                                            <span class="fx-select-check"><i class="fas fa-check"></i></span>
+                                        </div>
+
+                                        <!-- Night Vision -->
+                                        <div class="fx-preset-card" data-effect="night-vision" onclick="handlePageFXSelect('night-vision')">
+                                            <div class="fx-card-icon-box night-bg"><i class="fas fa-crosshairs"></i></div>
+                                            <div class="fx-card-details">
+                                                <h4>Night Vision HUD</h4>
+                                                <p>High-gain green phosphor optics with circular vignette &amp; reticle</p>
+                                            </div>
+                                            <span class="fx-select-check"><i class="fas fa-check"></i></span>
+                                        </div>
+
+                                        <!-- Thermal Heatmap -->
+                                        <div class="fx-preset-card" data-effect="thermal" onclick="handlePageFXSelect('thermal')">
+                                            <div class="fx-card-icon-box thermal-bg"><i class="fas fa-fire-flame-curved"></i></div>
+                                            <div class="fx-card-details">
+                                                <h4>Thermal Infrared</h4>
+                                                <p>Inverted spectrum infrared heatmap &amp; chromatic temperature shifts</p>
+                                            </div>
+                                            <span class="fx-select-check"><i class="fas fa-check"></i></span>
+                                        </div>
+
+                                        <!-- Vaporwave Neon -->
+                                        <div class="fx-preset-card" data-effect="vaporwave" onclick="handlePageFXSelect('vaporwave')">
+                                            <div class="fx-card-icon-box vapor-bg"><i class="fas fa-palette"></i></div>
+                                            <div class="fx-card-details">
+                                                <h4>Vaporwave Sunset</h4>
+                                                <p>Dreamy cyan &amp; magenta neon palette wash with 80s arcade bloom</p>
+                                            </div>
+                                            <span class="fx-select-check"><i class="fas fa-check"></i></span>
+                                        </div>
+
+                                        <!-- Vintage Sepia -->
+                                        <div class="fx-preset-card" data-effect="sepia" onclick="handlePageFXSelect('sepia')">
+                                            <div class="fx-card-icon-box sepia-bg"><i class="fas fa-scroll"></i></div>
+                                            <div class="fx-card-details">
+                                                <h4>Vintage Parchment</h4>
+                                                <p>Warm aged sepia tones, paper texture, and antique novel softness</p>
+                                            </div>
+                                            <span class="fx-select-check"><i class="fas fa-check"></i></span>
+                                        </div>
+
+                                        <!-- Spectral Invert -->
+                                        <div class="fx-preset-card" data-effect="invert" onclick="handlePageFXSelect('invert')">
+                                            <div class="fx-card-icon-box invert-bg"><i class="fas fa-circle-half-stroke"></i></div>
+                                            <div class="fx-card-details">
+                                                <h4>Dark Solarize Invert</h4>
+                                                <p>High-contrast negative spectral color inversion</p>
+                                            </div>
+                                            <span class="fx-select-check"><i class="fas fa-check"></i></span>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <!-- Shader Intensity Slider -->
+                                <div class="ambient-section-wrap">
+                                    <div class="ambient-label-row">
+                                        <span class="ambient-label"><i class="fas fa-sliders"></i> Shader Intensity &amp; Distortion Strength</span>
+                                        <span class="ambient-volume-val-badge" id="fx-intensity-val-label">100% (Full FX)</span>
+                                    </div>
+                                    <div class="ambient-slider-container">
+                                        <div class="ambient-slider-labels">
+                                            <span>Subtle (25%)</span>
+                                            <span>Moderate (60%)</span>
+                                            <span>Maximum / Vivid (100%)</span>
+                                        </div>
+                                        <div class="ambient-range-wrap">
+                                            <input type="range" id="fx-intensity-slider" min="20" max="100" step="5" value="100" oninput="handlePageFXIntensityInput(this.value)" onchange="handlePageFXIntensityChange(this.value)">
+                                        </div>
+                                        <div class="specials-preset-pills-row">
+                                            <button type="button" class="specials-preset-pill" onclick="handlePageFXIntensityPreset(25)">25% Subtle</button>
+                                            <button type="button" class="specials-preset-pill" onclick="handlePageFXIntensityPreset(60)">60% Moderate</button>
+                                            <button type="button" class="specials-preset-pill" onclick="handlePageFXIntensityPreset(100)">100% Full FX</button>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <!-- Scope & Global Application Rows -->
+                                <div class="hbc-rows ambient-options-rows">
+                                    <div class="hbc-toggle-row">
+                                        <div class="hbc-row-info">
+                                            <h4>Apply Across All Browser Tabs &amp; Web Views</h4>
+                                            <p>Automatically render active shader effect across all websites, YouTube, and browser views in real time</p>
+                                        </div>
+                                        <label class="ext-toggle-wrap">
+                                            <input type="checkbox" id="fx-global-toggle-cb" checked onchange="handlePageFXGlobalToggle(this.checked)">
+                                            <span class="ext-slider"></span>
+                                        </label>
+                                    </div>
                                 </div>
                             </div>
                         </div>
@@ -2479,7 +2906,7 @@
                     </div>
                     <div class="sp-stats-bar about-stats-bar">
                         <div class="sp-stat-item">
-                            <span class="sp-dot-num" id="current-version-chip">v8.9.50</span>
+                            <span class="sp-dot-num" id="current-version-chip">v9.0.00</span>
                             <span class="sp-badge sp-badge-lime">Stable</span>
                         </div>
                         <div class="sp-stat-item">
@@ -2513,7 +2940,7 @@
                             <div class="brand-details">
                                 <div class="brand-title-row">
                                     <h3 class="brand-name">Ocal Browser</h3>
-                                    <span class="brand-version" id="current-version-display">v8.9.50 Stable</span>
+                                    <span class="brand-version" id="current-version-display">v9.0.00 Stable</span>
                                     <span class="brand-build-type"><i class="fas fa-microchip"></i> 64-bit Native</span>
                                     <span id="about-build-line" class="brand-build-line"><i class="fas fa-cube"></i> Production Build</span>
                                 </div>
@@ -2740,10 +3167,8 @@
     </div>
 
     <!-- Premium Studio Modal Overlay -->
-    <div id="studio-modal-overlay"
-        style="display:none; position:fixed; inset:0; background:rgba(0,0,0,0.4); backdrop-filter:blur(12px); z-index:1000; align-items:center; justify-content:center; opacity:0; transition:0.3s cubic-bezier(0.16, 1, 0.3, 1);">
-        <div id="studio-modal"
-            style="width:100%; max-width:440px; background: var(--glass); border:1px solid var(--glass-border); border-radius:28px; padding:32px; box-shadow:0 30px 60px rgba(0,0,0,0.2); transform:scale(0.9) translateY(20px); transition:0.4s cubic-bezier(0.16, 1, 0.3, 1); backdrop-filter:blur(32px) saturate(180%);">
+    <div id="studio-modal-overlay">
+        <div id="studio-modal">
             <!-- Content injected via settings.js -->
         </div>
     </div>
@@ -2769,6 +3194,13 @@
                 getAppVersion: () => Promise.resolve('4.3.09-beta'),
                 checkDefaultBrowser: () => Promise.resolve(false),
                 setAsDefaultBrowser: () => Promise.resolve(true),
+                getAmbientTracks: () => Promise.resolve([
+                    { id: 'Ocal.mp3', fileName: 'Ocal.mp3', name: 'Ocal Theme' },
+                    { id: 'ocal [usesuno.com].mp3', fileName: 'ocal [usesuno.com].mp3', name: 'Ocal Suno Beats' },
+                    { id: 'ocal [usesuno.com] (1).mp3', fileName: 'ocal [usesuno.com] (1).mp3', name: 'Ocal Suno Chill' },
+                    { id: 'ocal [usesuno.com] (2).mp3', fileName: 'ocal [usesuno.com] (2).mp3', name: 'Ocal Suno Focus' }
+                ]),
+                selectCustomAmbientFile: () => Promise.resolve(null),
                 updateSetting: (key, val) => {
                     console.log('Mock updateSetting:', key, val);
                     if (key === 'themeMode') applyTheme(val);

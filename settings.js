@@ -31,6 +31,7 @@ function showSection(id) {
         if (id === 'homepage') displayName = 'Home Page';
         else if (id === 'ai') displayName = 'AI Assistant';
         else if (id === 'whatsnew') displayName = "What's New";
+        else if (id === 'specials') displayName = "Specials & Ambient";
         pathSpan.textContent = `settings / ${displayName}`;
     }
 
@@ -415,73 +416,218 @@ if (shieldCard) {
     };
 }
 
+const PROFILE_PALETTE = [
+    { name: 'Emerald', color: '#09f0a0' },
+    { name: 'Cyan', color: '#00e5ff' },
+    { name: 'Violet', color: '#a855f7' },
+    { name: 'Rose', color: '#ff007f' },
+    { name: 'Amber', color: '#ff9100' },
+    { name: 'Crimson', color: '#ff4d4d' },
+    { name: 'Slate', color: '#64748b' }
+];
+
 function renderProfiles(s) {
+    if (!s) return;
+    window.currentSettings = s;
     const grid = document.getElementById('profile-grid');
+    const spotlight = document.getElementById('profile-active-spotlight');
     if (!grid) return;
-        let html = (s.profiles || []).map((p, index) => {
-        const isActive = (s.currentProfileId || 'default') === p.id;
-        return `
-        <div class="choice-item profile-card ${isActive ? 'active' : ''}" 
-             onclick="window.electronAPI.switchProfile('${p.id}')">
-            
-            <div class="profile-avatar-container">
-                <div class="profile-avatar-wrap ${isActive ? 'active' : ''}">
-                    <i class="fas ${p.icon || 'fa-user'}"></i>
+
+    const profiles = s.profiles || [];
+    const profilesData = s.profilesData || {};
+    const curId = s.currentProfileId || 'default';
+    const activeProf = profiles.find(p => p.id === curId) || profiles[0] || { id: 'default', name: 'Personal', icon: 'fa-user', color: '#09f0a0' };
+
+    const activeBookmarks = (s.bookmarks || []);
+    const activeHistory = (s.history || []);
+    const activeColor = activeProf.color || s.accentColor || '#09f0a0';
+
+    // 1. Update Dot-Matrix Stats Bar & Badges
+    const statCount = document.getElementById('profile-stat-count');
+    const statPartition = document.getElementById('profile-stat-partition');
+    const statBookmarks = document.getElementById('profile-stat-bookmarks');
+    const countBadge = document.getElementById('profiles-count-badge');
+
+    if (statCount) statCount.textContent = profiles.length.toString();
+    if (statPartition) statPartition.textContent = `persist:profile_${curId}`;
+    if (countBadge) countBadge.textContent = `${profiles.length} Node${profiles.length === 1 ? '' : 's'}`;
+
+    if (statBookmarks) {
+        let totalBm = 0;
+        profiles.forEach(p => {
+            const pData = profilesData[p.id];
+            if (p.id === curId) totalBm += activeBookmarks.length;
+            else if (pData && Array.isArray(pData.bookmarks)) totalBm += pData.bookmarks.length;
+        });
+        statBookmarks.textContent = totalBm.toString();
+    }
+
+    // 2. Render Active Profile Hero Spotlight Card (Home Page .sp-card-green-grad style)
+    if (spotlight) {
+        const safeActiveName = (activeProf.name || 'Personal').replace(/'/g, "\\'");
+        const spotlightHtml = `
+            <div class="sp-profile-spotlight-content">
+                <div class="sp-profile-left">
+                    <div class="sp-profile-avatar-giant">
+                        <i class="fas ${activeProf.icon || 'fa-user'}"></i>
+                        <div class="sp-pulse-ring">
+                            <div class="sp-pulse-center"></div>
+                        </div>
+                    </div>
+                    <div class="sp-profile-info-block">
+                        <div class="sp-profile-badge-row">
+                            <span class="sp-badge sp-badge-lime">ACTIVE IDENTITY NODE</span>
+                            <span class="sp-profile-partition-tag"><i class="fas fa-cube"></i> persist:profile_${activeProf.id}</span>
+                        </div>
+                        <h2 class="sp-profile-active-title">${activeProf.name}</h2>
+                        <p class="sp-profile-active-desc">Sandboxed session envelope with isolated cookies, localStorage, and scoped bookmarks.</p>
+                    </div>
                 </div>
-                ${isActive ? '<div class="profile-active-check"><i class="fas fa-check"></i></div>' : ''}
+
+                <div class="sp-profile-metrics-bar">
+                    <div class="sp-profile-metric-item">
+                        <div class="sp-dot-num sp-metric-num">${activeBookmarks.length}</div>
+                        <span class="sp-metric-label">Bookmarks</span>
+                    </div>
+                    <div class="sp-profile-metric-divider"></div>
+                    <div class="sp-profile-metric-item">
+                        <div class="sp-dot-num sp-metric-num">${activeHistory.length}</div>
+                        <span class="sp-metric-label">History Logs</span>
+                    </div>
+                    <div class="sp-profile-metric-divider"></div>
+                    <div class="sp-profile-actions-stack">
+                        <button type="button" class="sp-btn-hero primary" onclick="event.stopPropagation(); window.editProfilePrompt('${activeProf.id}')">
+                            <i class="fas fa-pen"></i> <span>Edit Profile</span>
+                        </button>
+                        <button type="button" class="sp-btn-hero secondary" onclick="event.stopPropagation(); window.clearProfilePrompt('${activeProf.id}', '${safeActiveName}')">
+                            <i class="fas fa-broom"></i> <span>Clear Cache</span>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        `;
+        if (spotlight.dataset.lastProfId !== activeProf.id || spotlight.innerHTML.length < 50) {
+            spotlight.innerHTML = spotlightHtml;
+            spotlight.dataset.lastProfId = activeProf.id;
+        }
+    }
+
+    // 3. Render Profile Nodes Bento Grid (Home Page Bento Cards - Wide Rectangle)
+    let html = profiles.map((p) => {
+        const isActive = curId === p.id;
+        const pData = profilesData[p.id] || {};
+        const pBookmarks = isActive ? activeBookmarks : (pData.bookmarks || []);
+        const pHistory = isActive ? activeHistory : (pData.history || []);
+        const pColor = p.color || (isActive ? activeColor : '#09f0a0');
+        const safeName = (p.name || 'Profile').replace(/'/g, "\\'");
+
+        return `
+        <div class="profile-node-card ${isActive ? 'is-active' : ''}" 
+             style="--node-accent: ${pColor}; cursor: ${isActive ? 'default' : 'pointer'};"
+             ${isActive ? '' : `onclick="window.switchProfile('${p.id}')"`}>
+            
+            <div class="node-top-bar">
+                <div class="node-identity-left">
+                    <div class="node-avatar-box" style="background: color-mix(in srgb, ${pColor} 14%, transparent); color: ${pColor}; border: 1px solid color-mix(in srgb, ${pColor} 28%, transparent);">
+                        <i class="fas ${p.icon || 'fa-user'}"></i>
+                    </div>
+                    <div class="node-identity-section">
+                        <h4 class="node-profile-title" title="${p.name}">${p.name}</h4>
+                        <div class="node-profile-subtitle">
+                            ${isActive ? '<span class="node-status-text active">Active Workspace Node</span>' : '<span class="node-status-text">Isolated Sandbox Node</span>'}
+                        </div>
+                    </div>
+                </div>
+                <div class="node-top-badges">
+                    ${isActive ? '<span class="node-active-pill"><span class="node-live-dot"></span> ACTIVE</span>' : '<span class="node-standby-pill">ISOLATED</span>'}
+                    <span class="profile-meta-pill partition-pill" title="Partition Isolation: persist:profile_${p.id}">
+                        <i class="fas fa-cube"></i> persist:${p.id}
+                    </span>
+                </div>
             </div>
 
-            <div class="profile-details-wrap">
-                <h4 class="profile-name-title">
-                    ${p.name}
-                    ${isActive ? '<span class="profile-active-pill">ACTIVE</span>' : ''}
-                </h4>
-                <p class="profile-subtitle">
-                    ${isActive ? 'Active node session' : 'Isolated sandboxed node'}
-                </p>
+            <div class="profile-node-pills">
+                <span class="profile-meta-pill">
+                    <i class="fas fa-bookmark"></i> ${pBookmarks.length} Bookmarks
+                </span>
+                <span class="profile-meta-pill">
+                    <i class="fas fa-clock-rotate-left"></i> ${pHistory.length} History Logs
+                </span>
+                <span class="profile-meta-pill">
+                    <i class="fas fa-shield-halved"></i> Sandboxed
+                </span>
             </div>
 
-            <div class="profile-actions-row" onclick="event.stopPropagation();">
-                <button class="btn secondary edit-btn" onclick="editProfilePrompt('${p.id}')">
-                    <i class="fas fa-pen"></i>
-                    <span>Edit</span>
-                </button>
-                ${p.id !== 'default' ? `
-                <button class="btn secondary delete-btn" onclick="deleteProfile('${p.id}', '${p.name}')">
-                    <i class="fas fa-trash"></i>
-                    <span>Delete</span>
-                </button>` : ''}
+            <div class="profile-node-footer">
+                ${!isActive ? `
+                <button type="button" class="node-action-btn switch-btn" onclick="event.stopPropagation(); window.switchProfile('${p.id}')" title="Switch to this identity">
+                    <i class="fas fa-right-to-bracket"></i> <span>Switch Node</span>
+                </button>` : `
+                <button type="button" class="node-action-btn active-state-btn" disabled>
+                    <i class="fas fa-check"></i> <span>Current Node</span>
+                </button>`}
+                
+                <div class="node-utility-btns">
+                    <button type="button" class="node-mini-btn" onclick="event.stopPropagation(); window.editProfilePrompt('${p.id}')" title="Edit Profile Details">
+                        <i class="fas fa-pen"></i>
+                    </button>
+                    <button type="button" class="node-mini-btn" onclick="event.stopPropagation(); window.clearProfilePrompt('${p.id}', '${safeName}')" title="Clear Cookies & Cache">
+                        <i class="fas fa-broom"></i>
+                    </button>
+                    ${p.id !== 'default' ? `
+                    <button type="button" class="node-mini-btn danger" onclick="event.stopPropagation(); window.deleteProfile('${p.id}', '${safeName}')" title="Terminate Node">
+                        <i class="fas fa-trash"></i>
+                    </button>` : ''}
+                </div>
             </div>
         </div>
     `;
     }).join('');
 
-    // Append the dashed "+ Create New Node" card
+    // Append the dashed "+ Create New Profile" Bento card (Wide Landscape Rectangle)
     html += `
-        <div class="choice-item add-profile-card" onclick="createProfilePrompt()">
-            <div class="add-avatar-circle">
-                <i class="fas fa-plus"></i>
-            </div>
-            <div class="add-profile-details">
-                <span class="add-profile-title">Create New Node</span>
-                <span class="add-profile-desc">Launch isolated workspace</span>
+        <div class="add-profile-bento-card" onclick="window.createProfilePrompt()">
+            <div class="add-node-content-horizontal">
+                <div class="add-avatar-circle">
+                    <i class="fas fa-plus"></i>
+                </div>
+                <div class="add-node-text-wrap">
+                    <h4 class="add-node-title">Create New Profile</h4>
+                    <p class="add-node-desc">Launch an isolated session node with independent login credentials and bookmarks.</p>
+                </div>
+                <button type="button" class="btn primary add-node-btn" onclick="event.stopPropagation(); window.createProfilePrompt()">
+                    <i class="fas fa-plus"></i> <span>New Identity</span>
+                </button>
             </div>
         </div>
     `;
 
-    grid.innerHTML = html;
+    const profileStateKey = `${curId}_${profiles.map(p => `${p.id}:${p.name}:${p.icon}:${p.color}`).join('|')}`;
+    if (grid.dataset.stateKey !== profileStateKey || grid.innerHTML.length < 50) {
+        grid.innerHTML = html;
+        grid.dataset.stateKey = profileStateKey;
+    }
 }
+
+window.switchProfile = function(id) {
+    if (window.electronAPI && window.electronAPI.switchProfile) {
+        window.electronAPI.switchProfile(id);
+        if (window.currentSettings) {
+            window.currentSettings.currentProfileId = id;
+            renderProfiles(window.currentSettings);
+        }
+    } else {
+        console.log('Switch profile to:', id);
+    }
+};
+
 function showModal(contentHtml) {
     const overlay = document.getElementById('studio-modal-overlay');
     const modal = document.getElementById('studio-modal');
     if (!overlay || !modal) return;
     
     modal.innerHTML = contentHtml;
-    overlay.style.display = 'flex';
-    setTimeout(() => {
-        overlay.style.opacity = '1';
-        modal.style.transform = 'scale(1) translateY(0)';
-    }, 10);
+    overlay.classList.add('active');
 }
 
 function closeModal() {
@@ -489,11 +635,11 @@ function closeModal() {
     const modal = document.getElementById('studio-modal');
     if (!overlay || !modal) return;
     
-    overlay.style.opacity = '0';
-    modal.style.transform = 'scale(0.98) translateY(10px)';
+    overlay.classList.remove('active');
     setTimeout(() => {
-        overlay.style.display = 'none';
-        modal.innerHTML = '';
+        if (!overlay.classList.contains('active')) {
+            modal.innerHTML = '';
+        }
     }, 200);
 }
 
@@ -504,97 +650,227 @@ document.getElementById('studio-modal-overlay')?.addEventListener('click', (e) =
 
 const PROFILE_ICONS = ['fa-user', 'fa-user-ninja', 'fa-user-astronaut', 'fa-user-secret', 'fa-user-tie', 'fa-ghost', 'fa-robot', 'fa-skull', 'fa-crown', 'fa-eye'];
 
-function createProfilePrompt() {
-    let selectedIcon = 'fa-user';
-    
-    const content = `
-        <h3 style="margin:0 0 8px 0; color:var(--text); font-size:22px; font-weight:850; letter-spacing:-0.5px;">New User Profile</h3>
-        <p style="color:var(--text-dim); font-size:13px; margin-bottom:28px;">Profiles allow you to maintain separate workspaces with isolated sandboxes.</p>
-        
-        <div style="margin-bottom:24px;">
-            <label style="display:block; font-size:10px; font-weight:900; color:var(--text-muted); text-transform:uppercase; letter-spacing:1.5px; margin-bottom:12px;">Profile Alias</label>
-            <input type="text" id="new-profile-name" placeholder="Work, Guest, Secondary..." style="width:100%; background:var(--glass-hover); border:1px solid var(--glass-border); border-radius: var(--radius-sm); padding:14px 18px; color:var(--text); font-family: 'Geist Mono', monospace; font-size:14px; outline:none; transition:0.3s;" onfocus="this.style.borderColor='var(--accent)';">
-        </div>
-        
-        <div style="margin-bottom:32px;">
-            <label style="display:block; font-size:10px; font-weight:900; color:var(--text-muted); text-transform:uppercase; letter-spacing:1.5px; margin-bottom:12px;">Visual Signature</label>
-            <div style="display:grid; grid-template-columns: repeat(5, 1fr); gap:12px;" id="icon-selector">
-                ${PROFILE_ICONS.map(icon => `
-                    <div class="icon-chip ${icon === 'fa-user' ? 'active' : ''}" onclick="selectProfileIcon(this, '${icon}')" style="aspect-ratio:1; border-radius: var(--radius-sm); border:1px solid var(--glass-border); background:var(--glass); display:flex; align-items:center; justify-content:center; color:var(--text-dim); cursor:pointer; transition:0.3s;">
-                        <i class="fas ${icon}"></i>
-                    </div>
-                `).join('')}
-            </div>
-        </div>
-        
-        <div style="display:flex; gap:12px; justify-content:flex-end;">
-            <button class="btn secondary" onclick="closeModal()" style="padding:12px 24px; font-size:12px; font-weight:800; letter-spacing:0.5px; border-radius: var(--radius-sm);">CANCEL</button>
-            <button class="btn primary" onclick="confirmCreateProfile()" style="padding:12px 32px; font-size:12px; font-weight:800; letter-spacing:0.5px; border-radius: var(--radius-sm);">CREATE IDENTITY</button>
-        </div>
-        
-        <style>
-            .icon-chip.active { border-color: var(--accent); color: var(--accent); background: rgba(255,255,255,0.08); box-shadow: none; }
-            .icon-chip:hover:not(.active) { background: rgba(255,255,255,0.06); border-color: rgba(255,255,255,0.15); color: #fff; }
-        </style>
-    `;
-    
-    showModal(content);
-    window._selectedProfileIcon = 'fa-user';
-}
+// Live Preview Helper for Profile Modals
+window.updateProfileModalPreview = function() {
+    const nameInput = document.getElementById('new-profile-name') || document.getElementById('edit-profile-name');
+    const titleEl = document.getElementById('sm-preview-profile-title');
+    const iconWrapperEl = document.getElementById('sm-preview-profile-icon');
+    const color = window._selectedProfileColor || '#09f0a0';
+    const icon = window._selectedProfileIcon || 'fa-user';
+
+    if (titleEl && nameInput) {
+        titleEl.textContent = nameInput.value.trim() || 'New Profile';
+    }
+    if (iconWrapperEl) {
+        iconWrapperEl.innerHTML = `<i class="fas ${icon}"></i>`;
+        iconWrapperEl.style.background = `color-mix(in srgb, ${color} 14%, transparent)`;
+        iconWrapperEl.style.color = color;
+        iconWrapperEl.style.border = `1px solid color-mix(in srgb, ${color} 28%, transparent)`;
+    }
+};
+
+window.selectProfileColor = (el, color) => {
+    document.querySelectorAll('.profile-color-chip').forEach(c => c.classList.remove('active'));
+    el.classList.add('active');
+    window._selectedProfileColor = color;
+    window.updateProfileModalPreview();
+};
 
 window.selectProfileIcon = (el, icon) => {
     document.querySelectorAll('.icon-chip').forEach(c => c.classList.remove('active'));
     el.classList.add('active');
     window._selectedProfileIcon = icon;
+    window.updateProfileModalPreview();
 };
+
+function createProfilePrompt() {
+    window._selectedProfileIcon = 'fa-user';
+    window._selectedProfileColor = '#09f0a0';
+
+    const content = `
+        <div class="sm-modal-wrap">
+            <div class="sm-header">
+                <div class="sm-title">
+                    <div class="sm-icon-badge"><i class="fas fa-user-plus"></i></div>
+                    <div class="sm-text-group">
+                        <h3>Create User Profile</h3>
+                        <span>Isolated sandbox session & scoped bookmarks</span>
+                    </div>
+                </div>
+                <button type="button" class="sm-close-btn" onclick="window.closeModal()" title="Close"><i class="fas fa-times"></i></button>
+            </div>
+
+            <div class="sm-body">
+                <!-- Live Interactive Preview Card matching Home Page -->
+                <div class="sm-preview-card">
+                    <div class="sm-preview-left">
+                        <div class="sm-preview-tile-icon" id="sm-preview-profile-icon" style="background: color-mix(in srgb, #09f0a0 14%, transparent); color: #09f0a0; border: 1px solid color-mix(in srgb, #09f0a0 28%, transparent);">
+                            <i class="fas fa-user"></i>
+                        </div>
+                        <div class="sm-preview-details">
+                            <h4 id="sm-preview-profile-title">New Profile</h4>
+                            <span>persist:profile_[auto]</span>
+                        </div>
+                    </div>
+                    <div class="sm-preview-badge">
+                        <i class="fas fa-shield-halved"></i>
+                        <span>SANDBOXED</span>
+                    </div>
+                </div>
+
+                <!-- Profile Name Input -->
+                <div class="sm-field-group">
+                    <label for="new-profile-name">Profile Alias / Workspace</label>
+                    <div class="sm-input-wrap">
+                        <i class="fas fa-pen-to-square sm-input-icon"></i>
+                        <input type="text" id="new-profile-name" placeholder="e.g. Work, Personal, Gaming..." autocomplete="off" spellcheck="false" oninput="window.updateProfileModalPreview()">
+                    </div>
+                </div>
+
+                <!-- Accent Color Swatches -->
+                <div class="sm-field-group">
+                    <label>Accent Color</label>
+                    <div class="profile-color-selector-grid" id="profile-color-selector">
+                        ${PROFILE_PALETTE.map(pal => `
+                            <div class="profile-color-chip ${pal.color === '#09f0a0' ? 'active' : ''}" 
+                                 onclick="window.selectProfileColor(this, '${pal.color}')" 
+                                 style="background:${pal.color};" 
+                                 title="${pal.name}"></div>
+                        `).join('')}
+                    </div>
+                </div>
+
+                <!-- Profile Avatar Icon Grid -->
+                <div class="sm-field-group">
+                    <label>Profile Avatar Icon</label>
+                    <div class="icon-selector-grid" id="icon-selector">
+                        ${PROFILE_ICONS.map(icon => `
+                            <div class="icon-chip ${icon === 'fa-user' ? 'active' : ''}" onclick="window.selectProfileIcon(this, '${icon}')">
+                                <i class="fas ${icon}"></i>
+                            </div>
+                        `).join('')}
+                    </div>
+                </div>
+            </div>
+
+            <div class="sm-footer">
+                <button type="button" class="sm-cancel-btn" onclick="window.closeModal()">Cancel</button>
+                <button type="button" class="sm-save-btn" onclick="window.confirmCreateProfile()">
+                    <i class="fas fa-plus"></i>
+                    <span>Create Profile</span>
+                </button>
+            </div>
+        </div>
+    `;
+    
+    showModal(content);
+}
 
 async function confirmCreateProfile() {
     const nameInput = document.getElementById('new-profile-name');
-    const name = nameInput.value.trim() || 'New Profile';
+    const name = (nameInput && nameInput.value.trim()) ? nameInput.value.trim() : 'New Profile';
     const icon = window._selectedProfileIcon || 'fa-user';
+    const color = window._selectedProfileColor || '#09f0a0';
     
     closeModal();
     if (window.electronAPI && window.electronAPI.createProfile) {
-        await window.electronAPI.createProfile({ name, icon });
+        await window.electronAPI.createProfile({ name, icon, color });
+        if (window.electronAPI.getSettings) {
+            const s = await window.electronAPI.getSettings();
+            if (s) {
+                window.currentSettings = s;
+                renderProfiles(s);
+            }
+        }
     }
 }
 
 async function editProfilePrompt(id) {
-    if (!window.currentSettings) return;
-    const profile = window.currentSettings.profiles.find(p => p.id === id);
-    if (!profile) return;
+    if (!window.currentSettings) {
+        if (window.electronAPI && window.electronAPI.getSettings) {
+            window.currentSettings = await window.electronAPI.getSettings();
+        }
+    }
+    const profiles = (window.currentSettings && window.currentSettings.profiles) || [{ id: 'default', name: 'Personal', icon: 'fa-user', color: '#09f0a0' }];
+    const profile = profiles.find(p => p.id === id) || profiles[0] || { id, name: 'Personal', icon: 'fa-user', color: '#09f0a0' };
     
     window._selectedProfileIcon = profile.icon || 'fa-user';
+    window._selectedProfileColor = profile.color || '#09f0a0';
     
     const content = `
-        <h3 style="margin:0 0 8px 0; color:var(--text); font-size:22px; font-weight:850; letter-spacing:-0.5px;">Modify Identity</h3>
-        <p style="color:var(--text-dim); font-size:13px; margin-bottom:28px;">Update the visual and descriptive signature of this alias.</p>
-        
-        <div style="margin-bottom:24px;">
-            <label style="display:block; font-size:10px; font-weight:900; color:var(--text-muted); text-transform:uppercase; letter-spacing:1.5px; margin-bottom:12px;">Identity Name</label>
-            <input type="text" id="edit-profile-name" value="${profile.name}" style="width:100%; background:var(--glass-hover); border:1px solid var(--glass-border); border-radius: var(--radius-sm); padding:14px 18px; color:var(--text); font-family: 'Geist Mono', monospace; font-size:14px; outline:none; transition:0.3s;" onfocus="this.style.borderColor='var(--accent)';">
-        </div>
-        
-        <div style="margin-bottom:32px;">
-            <label style="display:block; font-size:10px; font-weight:900; color:var(--text-muted); text-transform:uppercase; letter-spacing:1.5px; margin-bottom:12px;">Profile Icon</label>
-            <div style="display:grid; grid-template-columns: repeat(5, 1fr); gap:12px;" id="icon-selector">
-                ${PROFILE_ICONS.map(icon => `
-                    <div class="icon-chip ${icon === window._selectedProfileIcon ? 'active' : ''}" onclick="selectProfileIcon(this, '${icon}')" style="aspect-ratio:1; border-radius: var(--radius-sm); border:1px solid var(--glass-border); background:var(--glass); display:flex; align-items:center; justify-content:center; color:var(--text-dim); cursor:pointer; transition:0.3s;">
-                        <i class="fas ${icon}"></i>
+        <div class="sm-modal-wrap">
+            <div class="sm-header">
+                <div class="sm-title">
+                    <div class="sm-icon-badge"><i class="fas fa-user-pen"></i></div>
+                    <div class="sm-text-group">
+                        <h3>Modify Profile Node</h3>
+                        <span>Update identity parameters & visual theme</span>
                     </div>
-                `).join('')}
+                </div>
+                <button type="button" class="sm-close-btn" onclick="window.closeModal()" title="Close"><i class="fas fa-times"></i></button>
+            </div>
+
+            <div class="sm-body">
+                <!-- Live Interactive Preview Card matching Home Page -->
+                <div class="sm-preview-card">
+                    <div class="sm-preview-left">
+                        <div class="sm-preview-tile-icon" id="sm-preview-profile-icon" style="background: color-mix(in srgb, ${window._selectedProfileColor} 14%, transparent); color: ${window._selectedProfileColor}; border: 1px solid color-mix(in srgb, ${window._selectedProfileColor} 28%, transparent);">
+                            <i class="fas ${window._selectedProfileIcon}"></i>
+                        </div>
+                        <div class="sm-preview-details">
+                            <h4 id="sm-preview-profile-title">${profile.name}</h4>
+                            <span>persist:profile_${id}</span>
+                        </div>
+                    </div>
+                    <div class="sm-preview-badge">
+                        <i class="fas fa-cube"></i>
+                        <span>NODE ${id}</span>
+                    </div>
+                </div>
+
+                <!-- Profile Name Input -->
+                <div class="sm-field-group">
+                    <label for="edit-profile-name">Profile Alias / Workspace</label>
+                    <div class="sm-input-wrap">
+                        <i class="fas fa-pen-to-square sm-input-icon"></i>
+                        <input type="text" id="edit-profile-name" value="${profile.name}" autocomplete="off" spellcheck="false" oninput="window.updateProfileModalPreview()">
+                    </div>
+                </div>
+
+                <!-- Accent Color Swatches -->
+                <div class="sm-field-group">
+                    <label>Accent Color</label>
+                    <div class="profile-color-selector-grid" id="profile-color-selector">
+                        ${PROFILE_PALETTE.map(pal => `
+                            <div class="profile-color-chip ${pal.color === (profile.color || '#09f0a0') ? 'active' : ''}" 
+                                 onclick="window.selectProfileColor(this, '${pal.color}')" 
+                                 style="background:${pal.color};" 
+                                 title="${pal.name}"></div>
+                        `).join('')}
+                    </div>
+                </div>
+
+                <!-- Profile Avatar Icon Grid -->
+                <div class="sm-field-group">
+                    <label>Profile Avatar Icon</label>
+                    <div class="icon-selector-grid" id="icon-selector">
+                        ${PROFILE_ICONS.map(icon => `
+                            <div class="icon-chip ${icon === window._selectedProfileIcon ? 'active' : ''}" onclick="window.selectProfileIcon(this, '${icon}')">
+                                <i class="fas ${icon}"></i>
+                            </div>
+                        `).join('')}
+                    </div>
+                </div>
+            </div>
+
+            <div class="sm-footer">
+                <button type="button" class="sm-cancel-btn" onclick="window.closeModal()">Cancel</button>
+                <button type="button" class="sm-save-btn" onclick="window.confirmEditProfile('${id}')">
+                    <i class="fas fa-check"></i>
+                    <span>Save Changes</span>
+                </button>
             </div>
         </div>
-        
-        <div style="display:flex; gap:12px; justify-content:flex-end;">
-            <button class="btn secondary" onclick="closeModal()" style="padding:12px 24px; font-size:12px; font-weight:800; letter-spacing:0.5px;">CANCEL</button>
-            <button class="btn primary" onclick="confirmEditProfile('${id}')" style="padding:12px 32px; font-size:12px; font-weight:800; letter-spacing:0.5px;">SAVE CHANGES</button>
-        </div>
-        
-        <style>
-            .icon-chip.active { border-color: var(--accent); color: var(--accent); background: var(--accent-dim); box-shadow: none ; }
-            .icon-chip:hover:not(.active) { background: var(--glass-hover); border-color: var(--accent-border); color: var(--text); }
-        </style>
     `;
     
     showModal(content);
@@ -602,23 +878,92 @@ async function editProfilePrompt(id) {
 
 async function confirmEditProfile(id) {
     const nameInput = document.getElementById('edit-profile-name');
-    const name = nameInput.value.trim() || 'Profile';
+    const name = (nameInput && nameInput.value.trim()) ? nameInput.value.trim() : 'Profile';
     const icon = window._selectedProfileIcon || 'fa-user';
+    const color = window._selectedProfileColor || '#09f0a0';
     
     closeModal();
     if (window.electronAPI && window.electronAPI.editProfile) {
-        window.electronAPI.editProfile({ id, name, icon });
+        window.electronAPI.editProfile({ id, name, icon, color });
+        if (window.currentSettings && window.currentSettings.profiles) {
+            const p = window.currentSettings.profiles.find(x => x.id === id);
+            if (p) {
+                p.name = name;
+                p.icon = icon;
+                p.color = color;
+                renderProfiles(window.currentSettings);
+            }
+        }
+    }
+}
+
+async function clearProfilePrompt(id, name) {
+    const content = `
+        <div class="sm-modal-wrap">
+            <div class="sm-header">
+                <div class="sm-title">
+                    <div class="sm-icon-badge warning"><i class="fas fa-broom"></i></div>
+                    <div class="sm-text-group">
+                        <h3>Clear Profile Storage</h3>
+                        <span>Flush isolated cache and session cookies</span>
+                    </div>
+                </div>
+                <button type="button" class="sm-close-btn" onclick="window.closeModal()" title="Close"><i class="fas fa-times"></i></button>
+            </div>
+
+            <div class="sm-body">
+                <p style="color:var(--text-dim); font-size:13px; line-height:1.5; margin:0;">
+                    This will clear all session tokens, cookies, and browsing logs for <strong>${name}</strong> (partition: <code>persist:profile_${id}</code>). Saved bookmarks and node configurations will be preserved.
+                </p>
+            </div>
+
+            <div class="sm-footer">
+                <button type="button" class="sm-cancel-btn" onclick="window.closeModal()">Cancel</button>
+                <button type="button" class="sm-save-btn" onclick="window.confirmClearProfile('${id}')">
+                    <i class="fas fa-broom"></i>
+                    <span>Clear Storage</span>
+                </button>
+            </div>
+        </div>
+    `;
+    
+    showModal(content);
+}
+
+async function confirmClearProfile(id) {
+    closeModal();
+    if (window.electronAPI && window.electronAPI.clearProfileData) {
+        window.electronAPI.clearProfileData(id);
     }
 }
 
 async function deleteProfile(id, name) {
     const content = `
-        <h3 style="margin:0 0 8px 0; color:#ef4444; font-size:22px; font-weight:850; letter-spacing:-0.5px;">Terminate Identity?</h3>
-        <p style="color:var(--text-dim); font-size:14px; margin-bottom:28px;">This will permanently delete the <strong>${name}</strong> workspace and all localized site data, cookies, and history.</p>
-        
-        <div style="display:flex; gap:12px; justify-content:flex-end;">
-            <button class="btn secondary" onclick="closeModal()" style="padding:12px 24px; font-size:12px; font-weight:800; letter-spacing:0.5px;">CANCEL</button>
-            <button class="btn primary" onclick="confirmDeleteProfile('${id}')" style="padding:12px 32px; font-size:12px; font-weight:800; letter-spacing:0.5px; background:#ef4444; border-color:#ef4444;">DELETE PERMANENTLY</button>
+        <div class="sm-modal-wrap">
+            <div class="sm-header">
+                <div class="sm-title">
+                    <div class="sm-icon-badge danger"><i class="fas fa-triangle-exclamation"></i></div>
+                    <div class="sm-text-group">
+                        <h3>Terminate Profile Node?</h3>
+                        <span>Permanent identity & partition deletion</span>
+                    </div>
+                </div>
+                <button type="button" class="sm-close-btn" onclick="window.closeModal()" title="Close"><i class="fas fa-times"></i></button>
+            </div>
+
+            <div class="sm-body">
+                <p style="color:var(--text-dim); font-size:13px; line-height:1.5; margin:0;">
+                    This action is irreversible. It will permanently delete the <strong>${name}</strong> workspace and wipe all localized cookies, history, and profile bookmarks.
+                </p>
+            </div>
+
+            <div class="sm-footer">
+                <button type="button" class="sm-cancel-btn" onclick="window.closeModal()">Cancel</button>
+                <button type="button" class="sm-save-btn danger" onclick="window.confirmDeleteProfile('${id}')">
+                    <i class="fas fa-trash"></i>
+                    <span>Delete Permanently</span>
+                </button>
+            </div>
         </div>
     `;
     
@@ -629,8 +974,24 @@ function confirmDeleteProfile(id) {
     closeModal();
     if (window.electronAPI && window.electronAPI.deleteProfile) {
         window.electronAPI.deleteProfile(id);
+        if (window.currentSettings && window.currentSettings.profiles) {
+            window.currentSettings.profiles = window.currentSettings.profiles.filter(x => x.id !== id);
+            renderProfiles(window.currentSettings);
+        }
     }
 }
+
+// Explicitly bind all modal and action functions to window
+window.showModal = showModal;
+window.closeModal = closeModal;
+window.createProfilePrompt = createProfilePrompt;
+window.confirmCreateProfile = confirmCreateProfile;
+window.editProfilePrompt = editProfilePrompt;
+window.confirmEditProfile = confirmEditProfile;
+window.clearProfilePrompt = clearProfilePrompt;
+window.confirmClearProfile = confirmClearProfile;
+window.deleteProfile = deleteProfile;
+window.confirmDeleteProfile = confirmDeleteProfile;
 
 // History Clear
 const clearBtn = document.getElementById('clear-data-btn');
@@ -866,38 +1227,55 @@ function showUpdateInfo(latest) {
 
     downloadBtn.onclick = async () => {
         downloadBtn.disabled = true;
-        downloadBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> PREPARING...';
+        downloadBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> CONNECTING...';
         
         const progWrapper = document.getElementById('update-progress-wrapper');
+        const fill = document.getElementById('update-progress-fill');
+        const pText = document.getElementById('update-progress-percent');
         if (progWrapper) progWrapper.style.display = 'block';
+        if (fill) fill.style.width = '2%';
+        if (pText) pText.innerText = '0%';
         
         try {
             const path = await window.electronAPI.downloadUpdate();
             
-            const fill = document.getElementById('update-progress-fill');
-            const pText = document.getElementById('update-progress-percent');
             if (fill) fill.style.width = '100%';
-            if (pText) pText.innerText = '100%';
+            if (pText) pText.innerText = '100% (Ready to Install)';
             
-            downloadBtn.innerHTML = 'RESTART & DEPLOY <i class="fas fa-power-off"></i>';
-            downloadBtn.style.background = '#10b981';
+            downloadBtn.innerHTML = 'RESTART TO UPDATE <i class="fas fa-power-off"></i>';
+            downloadBtn.style.background = 'var(--accent)';
             downloadBtn.disabled = false;
             downloadBtn.onclick = () => window.electronAPI.applyUpdate(path);
         } catch(err) {
-            downloadBtn.innerText = 'DEPLOYMENT FAILED'; downloadBtn.disabled = false;
+            downloadBtn.innerHTML = '<i class="fas fa-triangle-exclamation"></i> DOWNLOAD FAILED';
+            downloadBtn.disabled = false;
+            if (pText) pText.innerText = 'Download failed';
         }
     };
 }
 
-window.electronAPI.onUpdateProgress(data => {
-    const fill = document.getElementById('update-progress-fill');
-    const pText = document.getElementById('update-progress-percent');
-    const p = Math.round(data.percent || 0);
-    
-    if (fill) fill.style.width = p + '%';
-    if (pText) pText.innerText = p + '%';
-    if (downloadBtn) downloadBtn.innerHTML = `<i class="fas fa-download"></i> Downloading... ${p}%`;
-});
+if (window.electronAPI && window.electronAPI.onUpdateProgress) {
+    window.electronAPI.onUpdateProgress(data => {
+        const progWrapper = document.getElementById('update-progress-wrapper');
+        const fill = document.getElementById('update-progress-fill');
+        const pText = document.getElementById('update-progress-percent');
+        const p = Math.max(0, Math.min(100, Math.round(data.percent || 0)));
+        
+        if (progWrapper) progWrapper.style.display = 'block';
+        if (fill) fill.style.width = Math.max(2, p) + '%';
+        if (pText) {
+            if (data.loaded && data.total && data.total !== '?') {
+                pText.innerText = `${p}% (${data.loaded} MB / ${data.total} MB)`;
+            } else {
+                pText.innerText = `${p}%`;
+            }
+        }
+        const dlBtn = document.getElementById('download-update-btn');
+        if (dlBtn && dlBtn.disabled) {
+            dlBtn.innerHTML = `<i class="fas fa-cloud-arrow-down fa-bounce"></i> DOWNLOADING... ${p}%`;
+        }
+    });
+}
 
 // Initialize Settings
 window.electronAPI.getSettings().then(s => {
@@ -1189,44 +1567,65 @@ window.electronAPI.getSettings().then(s => {
     const localModelSelect = document.getElementById('local-model-select');
     const localEndpointInp = document.getElementById('local-endpoint-input');
 
+    const STANDARD_MODELS = [
+        { id: 'deepseek-r1:latest', label: 'DeepSeek R1 Reasoning (Latest)' },
+        { id: 'llama3.3:latest', label: 'Meta Llama 3.3 70B / 8B' },
+        { id: 'llama3.2:latest', label: 'Meta Llama 3.2 (Vision & Fast)' },
+        { id: 'qwen2.5:latest', label: 'Qwen 2.5 (Alibaba Open Weight)' },
+        { id: 'gemma-4:latest', label: 'Google DeepMind Gemma 4' },
+        { id: 'gemma2:latest', label: 'Google Gemma 2 (9B / 27B)' },
+        { id: 'mistral:latest', label: 'Mistral 7B / NeMo (Mistral AI)' },
+        { id: 'phi4:latest', label: 'Microsoft Phi-4 (14B Reasoning)' }
+    ];
+
     async function fetchOllamaModels(endpoint) {
         if (!localModelSelect) return;
-        localModelSelect.innerHTML = '<option value="auto">Auto-detect (Heuristics)</option>';
+        localModelSelect.innerHTML = '<option value="auto">Auto-detect (Active Local Server)</option>';
+
+        const addedModelIds = new Set();
+
+        // 1. First probe live local endpoint(s) for installed models
         try {
-            const url = `${endpoint.replace(/\/$/, '')}/api/tags`;
-            const res = await fetch(url);
-            if (res.ok) {
-                const data = await res.json();
-                if (data.models && Array.isArray(data.models)) {
-                    let hasGemma4 = false;
-                    data.models.forEach(model => {
+            if (window.electronAPI?.invoke) {
+                const res = await window.electronAPI.invoke('get-local-models');
+                if (res && res.models && res.models.length > 0) {
+                    res.models.forEach(m => {
                         const opt = document.createElement('option');
-                        opt.value = model.name;
-                        opt.textContent = model.name;
+                        opt.value = m.name;
+                        opt.textContent = `⚡ [Installed] ${m.name} (${m.source} - ${m.size})`;
                         localModelSelect.appendChild(opt);
-                        if (model.name === 'gemma-4' || model.name.startsWith('gemma-4:')) {
-                            hasGemma4 = true;
-                        }
+                        addedModelIds.add(m.name);
                     });
-                    // Always ensure gemma-4 is in the options list
-                    if (!hasGemma4) {
-                        const opt = document.createElement('option');
-                        opt.value = 'gemma-4';
-                        opt.textContent = 'gemma-4';
-                        localModelSelect.appendChild(opt);
+                }
+            } else {
+                const url = `${endpoint.replace(/\/$/, '')}/api/tags`;
+                const res = await fetch(url, { signal: AbortSignal.timeout(1500) });
+                if (res.ok) {
+                    const data = await res.json();
+                    if (data.models && Array.isArray(data.models)) {
+                        data.models.forEach(model => {
+                            const opt = document.createElement('option');
+                            opt.value = model.name;
+                            opt.textContent = `⚡ [Installed] ${model.name}`;
+                            localModelSelect.appendChild(opt);
+                            addedModelIds.add(model.name);
+                        });
                     }
-                    localModelSelect.value = s.localModel || 'gemma-4';
                 }
             }
-        } catch (e) {
-            console.warn('Ollama not running or inaccessible:', e.message);
-            // Add gemma-4 as a selectable option even if Ollama is offline
-            const opt = document.createElement('option');
-            opt.value = 'gemma-4';
-            opt.textContent = 'gemma-4';
-            localModelSelect.appendChild(opt);
-            localModelSelect.value = s.localModel || 'gemma-4';
-        }
+        } catch (e) {}
+
+        // 2. Add standard modern model suite options
+        STANDARD_MODELS.forEach(m => {
+            if (!addedModelIds.has(m.id)) {
+                const opt = document.createElement('option');
+                opt.value = m.id;
+                opt.textContent = m.label;
+                localModelSelect.appendChild(opt);
+            }
+        });
+
+        localModelSelect.value = s.localModel || 'auto';
     }
 
     if (localModelSelect) {
@@ -3117,4 +3516,420 @@ function renderSystemSettings(s) {
         const pathEl = document.getElementById('current-downloads-path');
         if (pathEl) pathEl.innerHTML = `<code>${s.downloadPath}</code>`;
     }
+
+    // Ambient Sound Studio
+    renderAmbientSoundSettings(s);
+
+    // Page Effects Studio
+    renderPageFXSettings(s);
+}
+
+// ── Ambient Sound & Focus Studio Handlers ────────────────────────────────
+let currentAmbientTracks = [];
+let localAmbientState = {
+    enabled: false,
+    track: 'Ocal.mp3',
+    volume: 0.35,
+    smartDucking: true,
+    duckVolume: 0.0
+};
+
+function getVolumeDescription(percent) {
+    if (percent <= 0) return 'Muted (0%)';
+    if (percent <= 15) return `Whisper Soft (${percent}%)`;
+    if (percent <= 35) return `Soft & Relaxed (${percent}%)`;
+    if (percent <= 65) return `Balanced Focus (${percent}%)`;
+    if (percent <= 85) return `Energetic (${percent}%)`;
+    return `Full Immersion (${percent}%)`;
+}
+
+window.handleAmbientSoundToggle = function(checked) {
+    localAmbientState.enabled = checked;
+    syncAmbientSettings();
+    updateAmbientUIState();
+};
+
+window.handleAmbientTrackSelect = function(trackFileName) {
+    localAmbientState.track = trackFileName;
+    localAmbientState.enabled = true;
+    syncAmbientSettings();
+    renderAmbientTracks();
+    updateAmbientUIState();
+};
+
+window.handleAmbientVolumeInput = function(val) {
+    const num = parseInt(val, 10);
+    const labelEl = document.getElementById('ambient-volume-val-label');
+    if (labelEl) labelEl.textContent = getVolumeDescription(num);
+    const statVol = document.getElementById('specials-stat-vol');
+    if (statVol) statVol.textContent = `${num}%`;
+    localAmbientState.volume = Math.max(0, Math.min(1, num / 100));
+    syncAmbientSettings();
+};
+
+window.handleAmbientVolumeChange = function(val) {
+    const num = parseInt(val, 10);
+    localAmbientState.volume = Math.max(0, Math.min(1, num / 100));
+    syncAmbientSettings();
+};
+
+window.handleAmbientVolumePreset = function(pct) {
+    const slider = document.getElementById('ambient-volume-slider');
+    if (slider) slider.value = pct;
+    window.handleAmbientVolumeInput(pct);
+    window.handleAmbientVolumeChange(pct);
+};
+
+window.handleAmbientDuckingToggle = function(checked) {
+    localAmbientState.smartDucking = checked;
+    syncAmbientSettings();
+};
+
+window.handleImportCustomAmbientTrack = async function() {
+    if (window.electronAPI && window.electronAPI.selectCustomAmbientFile) {
+        try {
+            const newTrack = await window.electronAPI.selectCustomAmbientFile();
+            if (newTrack) {
+                if (!currentAmbientTracks.some(t => t.id === newTrack.id || t.fileName === newTrack.fileName)) {
+                    currentAmbientTracks.push(newTrack);
+                }
+                localAmbientState.track = newTrack.fileName;
+                localAmbientState.enabled = true;
+                syncAmbientSettings();
+                renderAmbientTracks();
+                updateAmbientUIState();
+            }
+        } catch (err) {
+            console.error('[Ambient] Failed to import track:', err);
+        }
+    }
+};
+
+function syncAmbientSettings() {
+    if (window.electronAPI && window.electronAPI.updateSetting) {
+        window.electronAPI.updateSetting('ambientSound', { ...localAmbientState });
+    }
+}
+
+function updateAmbientUIState() {
+    const card = document.getElementById('ambient-sound-card');
+    const toggleCb = document.getElementById('ambient-sound-toggle-cb');
+    const badge = document.getElementById('ambient-status-badge');
+    const statState = document.getElementById('specials-stat-state');
+    const statStateBadge = document.getElementById('specials-stat-state-badge');
+    const statTrack = document.getElementById('specials-stat-track');
+    const statVol = document.getElementById('specials-stat-vol');
+    
+    // Vinyl, Equalizer, Pulse, and Hero Deck elements
+    const vinylDisc = document.getElementById('ambient-vinyl-disc');
+    const eqBars = document.getElementById('ambient-equalizer-bars');
+    const pulseCard = document.getElementById('specials-pulse-card');
+    const heroTitle = document.getElementById('ambient-hero-track-title');
+    const heroPlayIcon = document.getElementById('ambient-hero-play-icon');
+
+    if (toggleCb) toggleCb.checked = localAmbientState.enabled;
+    if (card) {
+        card.classList.toggle('ambient-active', localAmbientState.enabled);
+    }
+    if (badge) {
+        if (localAmbientState.enabled) {
+            badge.innerHTML = '<i class="fas fa-wave-square"></i> PLAYING LOOP';
+            badge.classList.add('badge-playing');
+        } else {
+            badge.innerHTML = '<i class="fas fa-music"></i> AMBIENT STUDIO';
+            badge.classList.remove('badge-playing');
+        }
+    }
+    if (statState) {
+        statState.textContent = localAmbientState.enabled ? 'Playing' : 'Ready';
+        statState.style.color = localAmbientState.enabled ? 'var(--accent)' : 'inherit';
+    }
+    if (statStateBadge) {
+        statStateBadge.className = localAmbientState.enabled ? 'sp-badge sp-badge-lime' : 'sp-badge sp-badge-gray';
+    }
+    const found = currentAmbientTracks.find(t => t.fileName === localAmbientState.track || t.id === localAmbientState.track);
+    const trackName = found ? (found.name || found.fileName) : (localAmbientState.track || 'Ocal Theme');
+    if (statTrack) {
+        statTrack.textContent = trackName;
+    }
+    if (heroTitle) {
+        heroTitle.textContent = trackName;
+    }
+    if (statVol) {
+        statVol.textContent = `${Math.round(localAmbientState.volume * 100)}%`;
+    }
+
+    if (vinylDisc) {
+        vinylDisc.classList.toggle('spinning', localAmbientState.enabled);
+    }
+    if (eqBars) {
+        eqBars.classList.toggle('active', localAmbientState.enabled);
+    }
+    if (heroPlayIcon) {
+        heroPlayIcon.className = localAmbientState.enabled ? 'fas fa-pause' : 'fas fa-play';
+    }
+    if (pulseCard) {
+        const isRunning = localAmbientState.enabled || (localPageFXState && localPageFXState.enabled && localPageFXState.effect !== 'none');
+        pulseCard.style.opacity = isRunning ? '1' : '0.7';
+    }
+}
+
+window.handleAmbientNextTrack = function() {
+    if (!currentAmbientTracks || currentAmbientTracks.length === 0) return;
+    let idx = currentAmbientTracks.findIndex(t => t.fileName === localAmbientState.track || t.id === localAmbientState.track);
+    idx = (idx + 1) % currentAmbientTracks.length;
+    handleAmbientTrackSelect(currentAmbientTracks[idx].fileName || currentAmbientTracks[idx].id);
+};
+
+window.handleAmbientPrevTrack = function() {
+    if (!currentAmbientTracks || currentAmbientTracks.length === 0) return;
+    let idx = currentAmbientTracks.findIndex(t => t.fileName === localAmbientState.track || t.id === localAmbientState.track);
+    idx = (idx - 1 + currentAmbientTracks.length) % currentAmbientTracks.length;
+    handleAmbientTrackSelect(currentAmbientTracks[idx].fileName || currentAmbientTracks[idx].id);
+};
+
+window.handleAmbientVolumePreset = function(percent) {
+    const slider = document.getElementById('ambient-volume-slider');
+    if (slider) slider.value = percent;
+    handleAmbientVolumeInput(percent);
+    handleAmbientVolumeChange(percent);
+};
+
+window.handlePageFXIntensityPreset = function(percent) {
+    const slider = document.getElementById('fx-intensity-slider');
+    if (slider) slider.value = percent;
+    handlePageFXIntensityInput(percent);
+    handlePageFXIntensityChange(percent);
+};
+
+function renderAmbientTracks() {
+    const grid = document.getElementById('ambient-tracks-grid');
+    if (!grid) return;
+
+    if (!currentAmbientTracks || currentAmbientTracks.length === 0) {
+        currentAmbientTracks = [
+            { id: 'Ocal.mp3', fileName: 'Ocal.mp3', name: 'Ocal Theme' },
+            { id: 'ocal [usesuno.com].mp3', fileName: 'ocal [usesuno.com].mp3', name: 'Ocal Suno Beats' },
+            { id: 'ocal [usesuno.com] (1).mp3', fileName: 'ocal [usesuno.com] (1).mp3', name: 'Ocal Suno Chill' },
+            { id: 'ocal [usesuno.com] (2).mp3', fileName: 'ocal [usesuno.com] (2).mp3', name: 'Ocal Suno Focus' }
+        ];
+    }
+
+    grid.innerHTML = currentAmbientTracks.map((t, idx) => {
+        const isSelected = (t.fileName === localAmbientState.track || t.id === localAmbientState.track);
+        return `
+            <div class="ambient-track-card ${isSelected ? 'selected' : ''}" data-track-index="${idx}">
+                <div class="atc-icon-wrap">
+                    <i class="fas ${isSelected ? 'fa-circle-play' : 'fa-music'}"></i>
+                </div>
+                <div class="atc-info">
+                    <span class="atc-title">${t.name || t.fileName}</span>
+                    <span class="atc-sub">${isSelected ? 'Active Loop Track' : 'Click to select & loop'}</span>
+                </div>
+                ${isSelected ? '<span class="atc-active-pill"><i class="fas fa-check"></i></span>' : ''}
+            </div>
+        `;
+    }).join('');
+
+    // Safe direct click binding
+    grid.querySelectorAll('.ambient-track-card').forEach(card => {
+        const idx = parseInt(card.dataset.trackIndex, 10);
+        const track = currentAmbientTracks[idx];
+        if (track) {
+            card.onclick = () => handleAmbientTrackSelect(track.fileName || track.id);
+        }
+    });
+}
+
+async function renderAmbientSoundSettings(s) {
+    if (!s) return;
+    if (s.ambientSound) {
+        localAmbientState = {
+            enabled: s.ambientSound.enabled === true,
+            track: s.ambientSound.track || 'Ocal.mp3',
+            volume: typeof s.ambientSound.volume === 'number' ? s.ambientSound.volume : 0.35,
+            smartDucking: s.ambientSound.smartDucking !== false,
+            duckVolume: 0.0
+        };
+    }
+
+    // Load available tracks from main process
+    if (window.electronAPI && window.electronAPI.getAmbientTracks) {
+        try {
+            const tracks = await window.electronAPI.getAmbientTracks();
+            if (Array.isArray(tracks) && tracks.length > 0) {
+                currentAmbientTracks = tracks;
+            }
+        } catch (e) {}
+    }
+
+    renderAmbientTracks();
+    updateAmbientUIState();
+
+    // Volume Slider & Label
+    const volPercent = Math.round(localAmbientState.volume * 100);
+    const slider = document.getElementById('ambient-volume-slider');
+    if (slider) slider.value = volPercent;
+    const labelEl = document.getElementById('ambient-volume-val-label');
+    if (labelEl) labelEl.textContent = getVolumeDescription(volPercent);
+
+    // Smart ducking checkbox
+    const duckingCb = document.getElementById('ambient-ducking-toggle-cb');
+    if (duckingCb) duckingCb.checked = localAmbientState.smartDucking;
+}
+
+// ── Page Effects & Visual Shaders Studio Handlers ───────────────────────
+let localPageFXState = {
+    enabled: false,
+    effect: 'none',
+    intensity: 1.0,
+    global: true
+};
+
+const PAGE_FX_NAMES = {
+    'none': 'Clean / None',
+    'screen-broken': 'Screen Broken (Glass Crack)',
+    'glitch': 'Cyberpunk Glitch (RGB Split)',
+    'bw': 'B/W Noir & Film Grain',
+    'system-wave': 'System Wave (Retro CRT)',
+    'matrix': 'Matrix Digital Rain',
+    'night-vision': 'Night Vision HUD',
+    'thermal': 'Thermal Infrared Heatmap',
+    'vaporwave': 'Vaporwave Sunset Neon',
+    'sepia': 'Vintage Parchment',
+    'invert': 'Dark Solarize Invert'
+};
+
+window.handlePageFXToggle = function(checked) {
+    localPageFXState.enabled = checked;
+    if (checked && localPageFXState.effect === 'none') {
+        localPageFXState.effect = 'screen-broken';
+    }
+    syncPageFXSettings();
+    updatePageFXUI();
+};
+
+window.handlePageFXSelect = function(effectId) {
+    localPageFXState.effect = effectId;
+    if (effectId !== 'none') {
+        localPageFXState.enabled = true;
+    }
+    syncPageFXSettings();
+    updatePageFXUI();
+};
+
+window.handlePageFXIntensityInput = function(val) {
+    const num = parseInt(val, 10);
+    const labelEl = document.getElementById('fx-intensity-val-label');
+    if (labelEl) labelEl.textContent = `${num}% (${num > 75 ? 'Full FX' : num > 40 ? 'Moderate' : 'Subtle'})`;
+    localPageFXState.intensity = Math.max(0.1, Math.min(1, num / 100));
+    syncPageFXSettings();
+    updatePageFXPreview();
+};
+
+window.handlePageFXIntensityChange = function(val) {
+    const num = parseInt(val, 10);
+    localPageFXState.intensity = Math.max(0.1, Math.min(1, num / 100));
+    syncPageFXSettings();
+    updatePageFXPreview();
+};
+
+window.handlePageFXIntensityPreset = function(pct) {
+    const slider = document.getElementById('fx-intensity-slider');
+    if (slider) slider.value = pct;
+    window.handlePageFXIntensityInput(pct);
+    window.handlePageFXIntensityChange(pct);
+};
+
+window.handlePageFXGlobalToggle = function(checked) {
+    localPageFXState.global = checked;
+    syncPageFXSettings();
+};
+
+function syncPageFXSettings() {
+    if (window.electronAPI && window.electronAPI.updateSetting) {
+        window.electronAPI.updateSetting('pageEffect', { ...localPageFXState });
+    }
+}
+
+function updatePageFXUI() {
+    const card = document.getElementById('page-fx-card');
+    const toggleCb = document.getElementById('page-fx-toggle-cb');
+    const badge = document.getElementById('fx-status-badge');
+    const statFx = document.getElementById('specials-stat-fx');
+    const nameTag = document.getElementById('fx-active-name-tag');
+    const cards = document.querySelectorAll('.fx-preset-card');
+
+    if (toggleCb) toggleCb.checked = localPageFXState.enabled;
+    if (card) {
+        card.classList.toggle('fx-active', localPageFXState.enabled);
+    }
+    if (badge) {
+        if (localPageFXState.enabled && localPageFXState.effect !== 'none') {
+            badge.innerHTML = '<i class="fas fa-wand-magic-sparkles"></i> SHADER ACTIVE';
+            badge.classList.add('badge-active');
+        } else {
+            badge.innerHTML = '<i class="fas fa-sparkles"></i> PAGE FX';
+            badge.classList.remove('badge-active');
+        }
+    }
+    if (statFx) {
+        const effectName = localPageFXState.enabled ? (PAGE_FX_NAMES[localPageFXState.effect] || 'Active') : 'Clean';
+        statFx.textContent = effectName.split(' ')[0];
+        statFx.style.color = localPageFXState.enabled ? 'var(--accent)' : 'inherit';
+    }
+    if (nameTag) {
+        const displayName = localPageFXState.enabled ? (PAGE_FX_NAMES[localPageFXState.effect] || localPageFXState.effect) : 'Clean / None';
+        nameTag.textContent = `Effect: ${displayName}`;
+    }
+
+    // Highlight active preset card
+    cards.forEach(c => {
+        const eff = c.dataset.effect;
+        const isActive = localPageFXState.enabled ? (eff === localPageFXState.effect) : (eff === 'none');
+        c.classList.toggle('active', isActive);
+    });
+
+    updatePageFXPreview();
+}
+
+function updatePageFXPreview() {
+    const layer = document.getElementById('fx-preview-shader-layer');
+    if (!layer) return;
+
+    // Reset classes
+    layer.className = 'fx-preview-shader-layer';
+    layer.style.opacity = localPageFXState.enabled ? `${localPageFXState.intensity}` : '0';
+
+    if (localPageFXState.enabled && localPageFXState.effect !== 'none') {
+        const shaderClass = `fx-shader-${localPageFXState.effect}`;
+        layer.classList.add(shaderClass);
+    }
+}
+
+function renderPageFXSettings(s) {
+    if (!s) return;
+    if (s.pageEffect) {
+        localPageFXState = {
+            enabled: s.pageEffect.enabled === true,
+            effect: s.pageEffect.effect || 'none',
+            intensity: typeof s.pageEffect.intensity === 'number' ? s.pageEffect.intensity : 1.0,
+            global: s.pageEffect.global !== false
+        };
+    }
+
+    updatePageFXUI();
+
+    // Slider
+    const intensitySlider = document.getElementById('fx-intensity-slider');
+    if (intensitySlider) {
+        const pct = Math.round(localPageFXState.intensity * 100);
+        intensitySlider.value = pct;
+        const labelEl = document.getElementById('fx-intensity-val-label');
+        if (labelEl) labelEl.textContent = `${pct}% (${pct > 75 ? 'Full FX' : pct > 40 ? 'Moderate' : 'Subtle'})`;
+    }
+
+    // Global toggle
+    const globalCb = document.getElementById('fx-global-toggle-cb');
+    if (globalCb) globalCb.checked = localPageFXState.global;
 }

@@ -1289,13 +1289,24 @@ document.addEventListener('DOMContentLoaded', () => {
     const mnBtn  = document.getElementById('burger-menu-btn');
     const dlBtn  = document.getElementById('download-icon-btn');
     const extBtn = document.getElementById('extensions-toolbar-btn');
+    const fmBtn  = document.getElementById('file-manager-btn');
 
     if (aiBtn) aiBtn.onclick = () => window.electronAPI.send('toggle-ai-sidebar');
+    if (extBtn) {
+        extBtn.onclick = (e) => {
+            e.stopPropagation();
+            const rect = extBtn.getBoundingClientRect();
+            window.electronAPI.send('show-extensions-dropdown', {
+                x: rect.left,
+                y: rect.top + rect.height,
+                width: rect.width
+            });
+        };
+    }
     if (bmBtn) bmBtn.onclick = () => { window.electronAPI.send('toggle-sidebar', true); window.electronAPI.send('switch-sidebar-tab', 'bookmarks'); };
     if (hiBtn) hiBtn.onclick = () => { window.electronAPI.send('toggle-sidebar', true); window.electronAPI.send('switch-sidebar-tab', 'history'); };
-    const fmBtn = document.getElementById('file-manager-btn');
     if (fmBtn) fmBtn.onclick = () => window.electronAPI.navigateTo('ocal://file-manager');
-    if (mnBtn) mnBtn.onclick = () => window.electronAPI.send('toggle-sidebar', true);
+    if (mnBtn) mnBtn.onclick = () => window.electronAPI.send('open-settings');
     
     // ── Split Screen Helper Popover & Active Pill UI Logic ─────────
     const splitBtn = document.getElementById('split-screen-btn');

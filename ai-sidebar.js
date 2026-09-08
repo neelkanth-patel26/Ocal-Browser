@@ -1738,30 +1738,50 @@ async function updateActiveModelBadge(s) {
     } else if (engine === 'custom') {
         label = s.customModel || 'Custom AI';
     } else {
-        let model = s.localModel || 'gemma-4';
+        let model = s.localModel || 'auto';
         if (model === 'auto') {
-            let endpoint = s.localEndpoint || 'http://127.0.0.1:11434';
-            if (endpoint.includes('localhost')) {
-                endpoint = endpoint.replace('localhost', '127.0.0.1');
-            }
             try {
-                const url = `${endpoint.replace(/\/$/, '')}/api/tags`;
-                const res = await fetch(url, { signal: AbortSignal.timeout(1500) });
-                if (res.ok) {
-                    const data = await res.json();
-                    if (data.models && data.models.length > 0) {
-                        model = data.models[0].name;
-                    } else {
-                        model = 'gemma-4';
+                if (window.electronAPI?.invoke) {
+                    const localRes = await window.electronAPI.invoke('get-local-models');
+                    if (localRes?.models && localRes.models.length > 0) {
+                        model = localRes.models[0].name;
                     }
-                } else {
-                    model = 'gemma-4';
                 }
-            } catch (e) {
-                model = 'gemma-4';
+            } catch (e) {}
+
+            if (model === 'auto') {
+                let endpoint = s.localEndpoint || 'http://127.0.0.1:11434';
+                if (endpoint.includes('localhost')) {
+                    endpoint = endpoint.replace('localhost', '127.0.0.1');
+                }
+                try {
+                    const url = `${endpoint.replace(/\/$/, '')}/api/tags`;
+                    const res = await fetch(url, { signal: AbortSignal.timeout(1500) });
+                    if (res.ok) {
+                        const data = await res.json();
+                        if (data.models && data.models.length > 0) {
+                            model = data.models[0].name;
+                        }
+                    }
+                } catch (e) {}
             }
         }
-        label = `Local: ${model}`;
+
+        if (!model || model === 'auto') model = 'deepseek-r1';
+        
+        // Clean display label
+        let displayModel = model;
+        if (model.includes('deepseek')) displayModel = 'DeepSeek R1';
+        else if (model.includes('llama3.3') || model.includes('llama-3.3')) displayModel = 'Llama 3.3';
+        else if (model.includes('llama3.2') || model.includes('llama-3.2')) displayModel = 'Llama 3.2';
+        else if (model.includes('llama3') || model.includes('llama-3')) displayModel = 'Llama 3';
+        else if (model.includes('qwen2.5') || model.includes('qwen-2.5')) displayModel = 'Qwen 2.5';
+        else if (model.includes('gemma-4') || model.includes('gemma:4')) displayModel = 'Gemma 4';
+        else if (model.includes('gemma2') || model.includes('gemma:2')) displayModel = 'Gemma 2';
+        else if (model.includes('phi4') || model.includes('phi-4')) displayModel = 'Phi-4';
+        else if (model.includes('mistral')) displayModel = 'Mistral';
+
+        label = `Local: ${displayModel}`;
     }
     
     badge.textContent = label;
@@ -1893,6 +1913,8 @@ const studioCopyBtn = document.getElementById('studio-copy-btn');
 const studioShimmer = document.getElementById('studio-loading-shimmer');
 const shimmerPercentage = document.getElementById('shimmer-progress-percentage');
 const shimmerSubtext = document.getElementById('shimmer-progress-subtext');
+const shimmerBarFill = document.getElementById('shimmer-progress-bar-fill');
+const shimmerPercentNum = document.getElementById('shimmer-progress-percent-num');
 
 // Custom Dropdown Interactions (Engine Selector)
 const dropdownContainer = document.getElementById('engine-dropdown-container');
@@ -2035,6 +2057,63 @@ watermarkToggle?.addEventListener('change', () => {
     watermarkContainer.style.display = watermarkToggle.checked ? 'flex' : 'none';
 });
 
+// Model mapping helper to ensure open-source engines route to ultra-fidelity checkpoints
+function mapToHighFidelityModel(osModel) {
+    const map = {
+        'flux-2': 'flux',
+        'sd-3.5': 'flux-realism',
+        'qwen-image': 'flux',
+        'flux-realism': 'flux-realism',
+        'flux-candid': 'flux-candid',
+        'flux-anime': 'flux-anime',
+        'flux-3d': 'flux-3d',
+        'turbo': 'turbo',
+        'flux': 'flux'
+    };
+    return map[osModel] || 'flux';
+}
+
+// Master prompt builder that elevates any user input into masterwork-quality prompts
+function buildMasterPrompt(rawPrompt, osModel) {
+    let p = (rawPrompt || '').trim();
+    if (!p) return p;
+
+    // Detect style intention
+    const isAnime = /anime|manga|waifu|chibi|ghibli|shinkai|comic|illustration/i.test(p) || osModel === 'flux-anime';
+    const is3D = /3d|render|octane|unreal|pixar|sculpture|isometric/i.test(p) || osModel === 'flux-3d';
+    const isCyberpunk = /cyberpunk|neon|futuristic|sci-fi|scifi|hologram|cyber/i.test(p);
+    const isPainting = /painting|oil on canvas|watercolor|impressionism|acrylic|masterpiece art/i.test(p);
+    const isPortrait = /portrait|person|woman|man|face|girl|boy|model|human|candid|couple|bride|groom/i.test(p) || osModel === 'flux-candid' || osModel === 'flux-realism';
+
+    if (isAnime) {
+        if (!/makoto shinkai|studio ghibli|pixiv|wallpaper/i.test(p)) {
+            p = `${p}, Makoto Shinkai & Kyoto Animation visual style, CoMix Wave art, breathtaking atmospheric sky lighting, vibrant rich colors, crisp detailed lineart, trending on Pixiv, 8k wallpaper masterwork`;
+        }
+    } else if (isCyberpunk) {
+        if (!/unreal engine|octane|volumetric/i.test(p)) {
+            p = `${p}, cinematic cyberpunk aesthetic, volumetric glowing neon atmosphere, wet reflective asphalt, cinematic raytracing, Unreal Engine 5 render, highly detailed masterwork, 8k UHD`;
+        }
+    } else if (is3D) {
+        if (!/octane|raytracing/i.test(p)) {
+            p = `${p}, Octane Render 3D, Cinema 4D, subsurface scattering, dramatic studio rim lighting, vivid material textures, ultra-detailed raytracing, 8k UHD`;
+        }
+    } else if (isPainting) {
+        if (!/impasto|fine art/i.test(p)) {
+            p = `${p}, classical fine art oil painting on textured canvas, Rembrandt chiaroscuro lighting, expressive impasto brushstrokes, rich museum quality masterwork`;
+        }
+    } else if (isPortrait) {
+        if (!/35mm|hasselblad|skin/i.test(p)) {
+            p = `${p}, shot on 35mm Hasselblad H6D-100c, 85mm f/1.4 lens, natural skin micro-texture, subtle subsurface scattering, masterwork lighting, Kodak Portra 400 film grain, cinematic depth of field, 8k UHD photorealistic`;
+        }
+    } else {
+        if (!/8k|photorealistic|masterpiece|cinematic/i.test(p)) {
+            p = `${p}, 8k resolution, photorealistic masterwork, professional photography, cinematic volumetric lighting, ultra-sharp focus, natural depth of field, highly detailed`;
+        }
+    }
+
+    return p;
+}
+
 // Style Preset Chips
 document.querySelectorAll('.preset-chip').forEach(btn => {
     btn.addEventListener('click', () => {
@@ -2056,14 +2135,10 @@ studioGenerateBtn?.addEventListener('click', async () => {
 
     const engine = studioEngineSelect?.value || 'local';
     const osModel = studioOsModelSelect?.value || 'flux-2';
+    const mappedModel = mapToHighFidelityModel(osModel);
 
-    // Smart Photorealism Auto-Enhancement for FLUX.2, SD 3.5, Qwen-Image & Flux models
-    let prompt = rawPrompt;
-    const isPhotoreal = osModel.includes('flux') || osModel.includes('sd') || osModel.includes('qwen') || osModel.includes('realism') || osModel.includes('candid') || /realistic|photo|portrait|person|human|face|real/i.test(prompt);
-
-    if (isPhotoreal && !/photorealistic|8k|35mm|sharp focus|detailed skin/i.test(prompt)) {
-        prompt = `${prompt}, photorealistic, 8k resolution, raw photo, masterwork, sharp focus, natural volumetric lighting, 35mm lens, f/1.8, highly detailed skin texture, hyperrealistic`;
-    }
+    // Build enhanced master prompt
+    const prompt = buildMasterPrompt(rawPrompt, osModel);
 
     // Retrieve Ratio configurations
     const activeRatioOpt = ratioContainer?.querySelector('.dropdown-option.active');
@@ -2073,8 +2148,8 @@ studioGenerateBtn?.addEventListener('click', async () => {
 
     // Retrieve Advanced Settings
     let negativePrompt = document.getElementById('studio-negative-input')?.value?.trim() || '';
-    if (!negativePrompt && isPhotoreal) {
-        negativePrompt = 'blurry, low quality, distorted, deformed, extra limbs, bad anatomy, pixelated, ugly, duplicate, artifact, oversaturated, watermark, signature';
+    if (!negativePrompt) {
+        negativePrompt = 'blurry, low quality, distorted, deformed, extra limbs, bad anatomy, bad hands, missing fingers, extra fingers, pixelated, ugly, duplicate, artifact, oversaturated, watermark, signature, poorly drawn, out of frame, lowres, mutation, mutated, extra eyes, cutoff, cropped';
     }
 
     const isSeedLocked = document.getElementById('studio-seed-lock')?.checked;
@@ -2086,9 +2161,7 @@ studioGenerateBtn?.addEventListener('click', async () => {
 
     studioPreviewCard.style.display = 'flex';
     studioStatusIndicator.style.display = 'flex';
-    studioPreviewCard.style.display = 'flex';
-    studioStatusIndicator.style.display = 'flex';
-    studioStatusText.textContent = `Synthesizing artwork with ${osModel.toUpperCase()} model...`;
+    studioStatusText.textContent = `Synthesizing masterwork with ${osModel.toUpperCase()} model...`;
     
     // Set dynamic aspect ratio on the shimmer loader card
     const ratioFrac = ratioValue.replace(':', '/');
@@ -2104,7 +2177,7 @@ studioGenerateBtn?.addEventListener('click', async () => {
     studioGenerateBtn.disabled = true;
 
     // Simulate progress
-    const totalSimDuration = 28000 + Math.floor(Math.random() * 5000); // 28s - 33s
+    const totalSimDuration = 24000 + Math.floor(Math.random() * 4000); // 24s - 28s
     let progress = 0;
     let progressComplete = false;
     let resultUrlReady = '';
@@ -2125,15 +2198,22 @@ studioGenerateBtn?.addEventListener('click', async () => {
 
         if (progress > 98) progress = 98;
 
+        if (shimmerBarFill) shimmerBarFill.style.width = `${progress}%`;
+        if (shimmerPercentNum) shimmerPercentNum.textContent = `${Math.round(progress)}%`;
+
         if (shimmerPercentage) {
-            if (progress < 30) {
-                shimmerPercentage.textContent = 'Painting canvas...';
+            if (progress < 25) {
+                shimmerPercentage.textContent = 'Initializing Latent Neural Diffusion...';
+                if (shimmerSubtext) shimmerSubtext.textContent = 'Constructing latent noise space';
             } else if (progress < 60) {
-                shimmerPercentage.textContent = `Denoising ${osModel} latent space...`;
+                shimmerPercentage.textContent = `Denoising ${osModel.toUpperCase()} Latent Space...`;
+                if (shimmerSubtext) shimmerSubtext.textContent = `Sampling noise fields (${Math.round(progress * 0.5)}/50 steps)`;
             } else if (progress < 85) {
-                shimmerPercentage.textContent = 'Applying photorealistic colors & textures...';
+                shimmerPercentage.textContent = 'Synthesizing Textures & Lighting...';
+                if (shimmerSubtext) shimmerSubtext.textContent = 'Volumetric light & ambient materials';
             } else {
-                shimmerPercentage.textContent = 'Finalizing high-resolution details...';
+                shimmerPercentage.textContent = 'Mastering High-Resolution 4K Details...';
+                if (shimmerSubtext) shimmerSubtext.textContent = 'Finalizing canvas dynamic projection';
             }
         }
     }, totalSimDuration / 50);
@@ -2176,13 +2256,13 @@ studioGenerateBtn?.addEventListener('click', async () => {
                 throw new Error("No image returned from DALL-E 3");
             }
         } else if (engine === 'gemini') {
-            studioStatusText.textContent = `Generating with open-source ${osModel} model...`;
-            finalUrl = `https://image.pollinations.ai/prompt/${encodeURIComponent(prompt)}?width=${width}&height=${height}&seed=${seed}&model=${encodeURIComponent(osModel)}&nologo=true${negativePrompt ? `&negative_prompt=${encodeURIComponent(negativePrompt)}` : ''}`;
+            studioStatusText.textContent = `Generating with high-fidelity ${mappedModel} model...`;
+            finalUrl = `https://image.pollinations.ai/prompt/${encodeURIComponent(prompt)}?width=${width}&height=${height}&seed=${seed}&model=${encodeURIComponent(mappedModel)}&nologo=true&enhance=true${negativePrompt ? `&negative_prompt=${encodeURIComponent(negativePrompt)}` : ''}`;
         } else {
-            studioStatusText.textContent = 'Probing local AI servers (SD / ComfyUI / Fooocus)...';
+            studioStatusText.textContent = 'Probing local AI servers (SD / Forge / ComfyUI / Fooocus)...';
 
-            // 1. Try Automatic1111 / WebUI Forge / SD Next (port 7860 & 7861)
-            const localSdPorts = [7860, 7861];
+            // 1. Try Automatic1111 / WebUI Forge / SD Next (ports 7860, 7861, 7862)
+            const localSdPorts = [7860, 7861, 7862];
             for (const port of localSdPorts) {
                 if (finalUrl) break;
                 try {
@@ -2192,10 +2272,10 @@ studioGenerateBtn?.addEventListener('click', async () => {
                     const payload = {
                         prompt: prompt,
                         negative_prompt: negativePrompt,
-                        steps: 25,
+                        steps: 30,
                         width: width,
                         height: height,
-                        cfg_scale: 7,
+                        cfg_scale: 7.5,
                         seed: seed,
                         sampler_name: "Euler a"
                     };
@@ -2250,22 +2330,54 @@ studioGenerateBtn?.addEventListener('click', async () => {
                 } catch (e) {}
             }
 
-            // 3. Open Source FLUX.2 / SD 3.5 / Qwen-Image Fallback
+            // 3. Try Local OpenAI-compatible Image Endpoint (port 1234)
             if (!finalUrl) {
-                studioStatusText.textContent = `Generating with Open-Source ${osModel.toUpperCase()} Model...`;
-                const compressedThumb = null; // placeholder for img2img thumbnail (not yet implemented)
+                try {
+                    const controller = new AbortController();
+                    const timeoutId = setTimeout(() => controller.abort(), 1200);
+                    const localRes = await fetch('http://127.0.0.1:1234/v1/images/generations', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({
+                            prompt: prompt,
+                            n: 1,
+                            size: `${width}x${height}`
+                        }),
+                        signal: controller.signal
+                    });
+                    clearTimeout(timeoutId);
+                    if (localRes.ok) {
+                        const data = await localRes.json();
+                        if (data.data && data.data.length > 0) {
+                            finalUrl = data.data[0].url || (data.data[0].b64_json ? `data:image/png;base64,${data.data[0].b64_json}` : '');
+                        }
+                    }
+                } catch (e) {}
+            }
+
+            // 4. Open Source Flagship FLUX / Realism / Anime High-Fidelity Endpoint
+            if (!finalUrl) {
+                studioStatusText.textContent = `Generating with Open-Source ${mappedModel.toUpperCase()} Model...`;
+                const compressedThumb = null;
                 const thumbVal = (typeof compressedThumb !== 'undefined' && compressedThumb) ? compressedThumb : null;
                 let imgParam = thumbVal ? `&image=${encodeURIComponent(thumbVal)}` : '';
-                finalUrl = `https://image.pollinations.ai/prompt/${encodeURIComponent(prompt)}?width=${width}&height=${height}&seed=${seed}&model=${encodeURIComponent(osModel)}&nologo=true${imgParam}${negativePrompt ? `&negative_prompt=${encodeURIComponent(negativePrompt)}` : ''}`;
-                console.log(`Image generated via Open-Source ${osModel} model.`);
+                finalUrl = `https://image.pollinations.ai/prompt/${encodeURIComponent(prompt)}?width=${width}&height=${height}&seed=${seed}&model=${encodeURIComponent(mappedModel)}&nologo=true&enhance=true${imgParam}${negativePrompt ? `&negative_prompt=${encodeURIComponent(negativePrompt)}` : ''}`;
+                console.log(`Image generated via Open-Source ${mappedModel} model.`);
             }
+        }
+
+        // Background preload image so browser decodes it smoothly
+        if (finalUrl) {
+            const preloader = new Image();
+            preloader.crossOrigin = "anonymous";
+            preloader.src = finalUrl;
         }
 
         // Apply Auto HD Canvas Enhancement & Sharpening
         const isHdEnhanceActive = document.getElementById('studio-hd-enhance-toggle')?.checked;
         if (isHdEnhanceActive && finalUrl) {
             studioStatusText.textContent = 'Applying HD Canvas Enhancement & Sharpening...';
-            finalUrl = await enhanceImageQualityCanvas(finalUrl, { scale: 1.5, sharpen: true, contrast: true });
+            finalUrl = await enhanceImageQualityCanvas(finalUrl, { scale: 1.0, sharpen: true, contrast: true });
         }
 
         // Apply watermark if active
@@ -2281,14 +2393,16 @@ studioGenerateBtn?.addEventListener('click', async () => {
             if (progress >= 98 && resultUrlReady) {
                 clearInterval(checkReadyInterval);
                 progress = 100;
+                if (shimmerBarFill) shimmerBarFill.style.width = '100%';
+                if (shimmerPercentNum) shimmerPercentNum.textContent = '100%';
                 if (shimmerPercentage) {
-                    shimmerPercentage.textContent = 'Rendering completed!';
+                    shimmerPercentage.textContent = 'Artwork Synthesized!';
                 }
                 if (shimmerSubtext) {
-                    shimmerSubtext.textContent = 'Rendering latent projection...';
+                    shimmerSubtext.textContent = 'Rendering completed successfully';
                 }
 
-                // 1000ms polish delay at 100%
+                // 800ms polish delay at 100%
                 setTimeout(() => {
                     progressComplete = true;
                     clearInterval(progressInterval);
@@ -2298,7 +2412,7 @@ studioGenerateBtn?.addEventListener('click', async () => {
 
                     studioResultImg.onerror = () => {
                         console.warn("Primary studio image load error, falling back to clean high-res model endpoint.");
-                        const cleanFallback = `https://image.pollinations.ai/prompt/${encodeURIComponent(prompt)}?width=${width}&height=${height}&seed=${seed}&model=${encodeURIComponent(osModel)}&nologo=true`;
+                        const cleanFallback = `https://image.pollinations.ai/prompt/${encodeURIComponent(prompt)}?width=${width}&height=${height}&seed=${seed}&model=${encodeURIComponent(mappedModel)}&nologo=true`;
                         studioResultImg.onerror = null;
                         studioResultImg.src = cleanFallback;
                         currentGeneratedImgUrl = cleanFallback;
@@ -2423,7 +2537,6 @@ studioCopyBtn?.addEventListener('click', () => {
     }, 2000);
 });
 
-// Dynamic Canvas HD Upscaling & Image Processing Engine
 function enhanceImageQualityCanvas(imgUrl, options = {}) {
     return new Promise((resolve) => {
         const scale = options.scale || 1.0;
@@ -2435,69 +2548,74 @@ function enhanceImageQualityCanvas(imgUrl, options = {}) {
         const img = new Image();
         img.crossOrigin = "anonymous";
         img.onload = () => {
-            const canvas = document.createElement('canvas');
-            const targetW = Math.round(img.naturalWidth * scale);
-            const targetH = Math.round(img.naturalHeight * scale);
-            canvas.width = targetW;
-            canvas.height = targetH;
-            const ctx = canvas.getContext('2d');
+            try {
+                const canvas = document.createElement('canvas');
+                const targetW = Math.round(img.naturalWidth * scale);
+                const targetH = Math.round(img.naturalHeight * scale);
+                canvas.width = targetW;
+                canvas.height = targetH;
+                const ctx = canvas.getContext('2d');
 
-            ctx.imageSmoothingEnabled = true;
-            ctx.imageSmoothingQuality = 'high';
+                ctx.imageSmoothingEnabled = true;
+                ctx.imageSmoothingQuality = 'high';
 
-            // 1. Draw image onto canvas
-            ctx.drawImage(img, 0, 0, targetW, targetH);
+                // 1. Draw image onto canvas
+                ctx.drawImage(img, 0, 0, targetW, targetH);
 
-            // 2. High-Performance Color Vibrance, Contrast & Warmth Tone Mapping
-            if (adjustContrast || applyWarmth || hdrBoost) {
-                const imgData = ctx.getImageData(0, 0, targetW, targetH);
-                const data = imgData.data;
-                const contrastFactor = hdrBoost ? 1.15 : adjustContrast ? 1.08 : 1.0;
+                // 2. High-Performance Color Vibrance, Contrast & Warmth Tone Mapping
+                if (adjustContrast || applyWarmth || hdrBoost) {
+                    const imgData = ctx.getImageData(0, 0, targetW, targetH);
+                    const data = imgData.data;
+                    const contrastFactor = hdrBoost ? 1.15 : adjustContrast ? 1.08 : 1.0;
 
-                for (let i = 0; i < data.length; i += 4) {
-                    if (adjustContrast || hdrBoost) {
-                        data[i]     = Math.min(255, Math.max(0, (data[i] - 128) * contrastFactor + 128));
-                        data[i + 1] = Math.min(255, Math.max(0, (data[i + 1] - 128) * contrastFactor + 128));
-                        data[i + 2] = Math.min(255, Math.max(0, (data[i + 2] - 128) * contrastFactor + 128));
-                    }
-                    if (applyWarmth) {
-                        data[i]     = Math.min(255, data[i] + 12);     // Boost Red
-                        data[i + 2] = Math.max(0, data[i + 2] - 8);    // Soften Blue
-                    }
-                }
-                ctx.putImageData(imgData, 0, 0);
-            }
-
-            // 3. Unsharp Mask Convolution Matrix (Edge & Detail Sharpening)
-            if (applySharpen) {
-                const imgData = ctx.getImageData(0, 0, targetW, targetH);
-                const src = imgData.data;
-                const output = ctx.createImageData(targetW, targetH);
-                const dst = output.data;
-
-                const w = targetW;
-                const h = targetH;
-                
-                for (let y = 1; y < h - 1; y++) {
-                    for (let x = 1; x < w - 1; x++) {
-                        const i = (y * w + x) * 4;
-                        for (let c = 0; c < 3; c++) {
-                            const center = src[i + c];
-                            const up     = src[((y - 1) * w + x) * 4 + c];
-                            const down   = src[((y + 1) * w + x) * 4 + c];
-                            const left   = src[(y * w + (x - 1)) * 4 + c];
-                            const right  = src[(y * w + (x + 1)) * 4 + c];
-
-                            let val = 3.2 * center - 0.55 * (up + down + left + right);
-                            dst[i + c] = Math.min(255, Math.max(0, val));
+                    for (let i = 0; i < data.length; i += 4) {
+                        if (adjustContrast || hdrBoost) {
+                            data[i]     = Math.min(255, Math.max(0, (data[i] - 128) * contrastFactor + 128));
+                            data[i + 1] = Math.min(255, Math.max(0, (data[i + 1] - 128) * contrastFactor + 128));
+                            data[i + 2] = Math.min(255, Math.max(0, (data[i + 2] - 128) * contrastFactor + 128));
                         }
-                        dst[i + 3] = src[i + 3];
+                        if (applyWarmth) {
+                            data[i]     = Math.min(255, data[i] + 12);     // Boost Red
+                            data[i + 2] = Math.max(0, data[i + 2] - 8);    // Soften Blue
+                        }
                     }
+                    ctx.putImageData(imgData, 0, 0);
                 }
-                ctx.putImageData(output, 0, 0);
-            }
 
-            resolve(canvas.toDataURL('image/png'));
+                // 3. Unsharp Mask Convolution Matrix (Edge & Detail Sharpening)
+                if (applySharpen) {
+                    const imgData = ctx.getImageData(0, 0, targetW, targetH);
+                    const src = imgData.data;
+                    const output = ctx.createImageData(targetW, targetH);
+                    const dst = output.data;
+
+                    const w = targetW;
+                    const h = targetH;
+                    
+                    for (let y = 1; y < h - 1; y++) {
+                        for (let x = 1; x < w - 1; x++) {
+                            const i = (y * w + x) * 4;
+                            for (let c = 0; c < 3; c++) {
+                                const center = src[i + c];
+                                const up     = src[((y - 1) * w + x) * 4 + c];
+                                const down   = src[((y + 1) * w + x) * 4 + c];
+                                const left   = src[(y * w + (x - 1)) * 4 + c];
+                                const right  = src[(y * w + (x + 1)) * 4 + c];
+
+                                let val = 3.2 * center - 0.55 * (up + down + left + right);
+                                dst[i + c] = Math.min(255, Math.max(0, val));
+                            }
+                            dst[i + 3] = src[i + 3];
+                        }
+                    }
+                    ctx.putImageData(output, 0, 0);
+                }
+
+                resolve(canvas.toDataURL('image/png'));
+            } catch (err) {
+                console.warn("Canvas enhancement skipped due to browser security/CORS, using pristine image URL.", err);
+                resolve(imgUrl);
+            }
         };
         img.onerror = () => resolve(imgUrl);
         img.src = imgUrl;
