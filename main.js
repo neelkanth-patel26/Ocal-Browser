@@ -1229,17 +1229,19 @@ function createMainWindow() {
     });
 
     mainWindow.on('close', (e) => {
-        if (!isQuitting) {
-            if (userSettings.confirmExit !== false) {
-                e.preventDefault();
-                showSidebarOverlay();
-                if (sidebarOverlayView) {
-                    mainWindow.setTopBrowserView(sidebarOverlayView);
-                    sidebarOverlayView.webContents.send('show-exit-modal');
-                }
-            } else {
-                isQuitting = true;
+        isQuitting = true;
+        try {
+            if (pipWindow && !pipWindow.isDestroyed()) {
+                pipWindow.destroy();
+                pipWindow = null;
             }
+        } catch (err) {}
+    });
+
+    mainWindow.on('closed', () => {
+        mainWindow = null;
+        if (process.platform !== 'darwin') {
+            app.quit();
         }
     });
 }
@@ -2946,8 +2948,11 @@ function handleCloseTabRequest(id) {
 function executeCloseTab(id) {
     try {
         if (views.length === 1) {
+            isQuitting = true;
             if (mainWindow && !mainWindow.isDestroyed()) {
                 mainWindow.close();
+            } else {
+                app.quit();
             }
             return;
         }
@@ -3689,7 +3694,14 @@ ipcMain.on('bypass-security', (event, domain, url) => {
 
 ipcMain.on('window-minimize', () => mainWindow.minimize());
 ipcMain.on('window-maximize', () => { if (mainWindow.isMaximized()) mainWindow.unmaximize(); else mainWindow.maximize(); });
-ipcMain.on('window-close', () => mainWindow.close());
+ipcMain.on('window-close', () => {
+    isQuitting = true;
+    if (mainWindow && !mainWindow.isDestroyed()) {
+        mainWindow.close();
+    } else {
+        app.quit();
+    }
+});
 
 ipcMain.on('window-toggle-pin', () => {
     isAlwaysOnTop = !isAlwaysOnTop;
