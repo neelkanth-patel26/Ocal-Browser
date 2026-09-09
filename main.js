@@ -2362,6 +2362,8 @@ function setupViewEvents(tabId, view, side = 'left') {
             if (tabEntry) {
                 if (side === 'left') {
                     tabEntry.url = url;
+                } else {
+                    tabEntry.url2 = url;
                 }
                 broadcastTabs();
                 updateViewBounds(url);
@@ -2371,9 +2373,16 @@ function setupViewEvents(tabId, view, side = 'left') {
 
     webContents.on('did-navigate', (event, url) => {
         updateHistory(view, url);
+        const title = webContents.getTitle();
         const tabEntry = views.find(v => v.id === tabId);
         if (tabEntry) {
-            if (side === 'left') tabEntry.url = url;
+            if (side === 'left') {
+                tabEntry.url = url;
+                if (title) tabEntry.title = title;
+            } else {
+                tabEntry.url2 = url;
+                if (title) tabEntry.title2 = title;
+            }
         }
 
         if (tabShieldStats.has(webContents.id)) {
@@ -2388,8 +2397,9 @@ function setupViewEvents(tabId, view, side = 'left') {
         if (currentActive && currentActive.id === tabId && currentActive.focusedSide === side) {
             mainWindow.webContents.send('url-updated', {
                 id: tabId,
+                side,
                 url: formatDisplayUrl(url),
-                title: url.includes('home.html') ? 'Ocal Home' : webContents.getTitle(),
+                title: url.includes('home.html') ? 'Ocal Home' : (title || webContents.getTitle()),
                 favicon: currentActive.favicon || null
             });
             notifyPasswordStatusForActiveTab();
@@ -2400,9 +2410,16 @@ function setupViewEvents(tabId, view, side = 'left') {
 
     webContents.on('did-navigate-in-page', (event, url) => {
         updateHistory(view, url);
+        const title = webContents.getTitle();
         const tabEntry = views.find(v => v.id === tabId);
         if (tabEntry) {
-            if (side === 'left') tabEntry.url = url;
+            if (side === 'left') {
+                tabEntry.url = url;
+                if (title) tabEntry.title = title;
+            } else {
+                tabEntry.url2 = url;
+                if (title) tabEntry.title2 = title;
+            }
         }
         broadcastTabs();
         updateViewBounds(url);
@@ -2411,8 +2428,9 @@ function setupViewEvents(tabId, view, side = 'left') {
         if (currentActive && currentActive.id === tabId && currentActive.focusedSide === side) {
             mainWindow.webContents.send('url-updated', {
                 id: tabId,
+                side,
                 url: formatDisplayUrl(url),
-                title: url.includes('home.html') ? 'Ocal Home' : webContents.getTitle(),
+                title: url.includes('home.html') ? 'Ocal Home' : (title || webContents.getTitle()),
                 favicon: currentActive.favicon || null
             });
             notifyPasswordStatusForActiveTab();
@@ -2421,9 +2439,21 @@ function setupViewEvents(tabId, view, side = 'left') {
 
     webContents.on('page-title-updated', (event, title) => {
         const url = webContents.getURL();
-        const currentActive = views.find(v => v.id === activeViewId);
-        if (currentActive && currentActive.id === tabId && currentActive.focusedSide === side) {
-            mainWindow.webContents.send('title-updated', { id: tabId, title: url.includes('home.html') ? 'Ocal Home' : title });
+        const tabEntry = views.find(v => v.id === tabId);
+        if (tabEntry) {
+            if (side === 'left') {
+                tabEntry.title = title;
+            } else {
+                tabEntry.title2 = title;
+            }
+        }
+        broadcastTabs();
+        if (mainWindow && !mainWindow.isDestroyed()) {
+            mainWindow.webContents.send('title-updated', { 
+                id: tabId, 
+                side,
+                title: url.includes('home.html') ? 'Ocal Home' : title 
+            });
         }
     });
 
@@ -2533,18 +2563,43 @@ function broadcastTabs() {
     const tabData = views.map(v => {
         const isAudibleLeft = (v.view && !v.view.webContents.isDestroyed()) ? (v.view.webContents.isCurrentlyAudible() || !!v.isPlayingMedia || !!v.audible) : false;
         const isAudibleRight = (v.isSplit && v.view2 && !v.view2.webContents.isDestroyed()) ? (v.view2.webContents.isCurrentlyAudible() || !!v.isPlayingMedia2 || !!v.audible2) : false;
+
+        let url1 = v.url;
+        if (url1 === undefined && v.view && !v.view.webContents.isDestroyed()) {
+            url1 = v.view.webContents.getURL();
+        }
+        let title1 = v.title;
+        if (!title1 && v.view && !v.view.webContents.isDestroyed()) {
+            title1 = v.view.webContents.getTitle();
+        }
+        if (!title1) {
+            title1 = (url1 && (url1.includes('home.html') || url1.startsWith('ocal://home') || !url1)) ? 'Ocal Home' : 'Tab';
+        }
+
+        let url2 = v.url2;
+        if (url2 === undefined && v.isSplit && v.view2 && !v.view2.webContents.isDestroyed()) {
+            url2 = v.view2.webContents.getURL();
+        }
+        let title2 = v.title2;
+        if (!title2 && v.isSplit && v.view2 && !v.view2.webContents.isDestroyed()) {
+            title2 = v.view2.webContents.getTitle();
+        }
+        if (v.isSplit && !title2) {
+            title2 = (url2 && (url2.includes('home.html') || url2.startsWith('ocal://home') || !url2)) ? 'Ocal Home' : 'Tab';
+        }
+
         return {
             id: v.id,
-            title: v.view.webContents.isDestroyed() ? 'Ocal Home' : (v.view.webContents.getTitle() || 'Ocal Home'),
-            url: v.view.webContents.isDestroyed() ? '' : v.view.webContents.getURL(),
+            title: title1,
+            url: url1 || '',
             favicon: v.favicon || null,
             groupId: v.groupId || null,
             audible: isAudibleLeft || isAudibleRight,
             isSplit: !!v.isSplit,
             splitDirection: v.splitDirection || 'horizontal',
             focusedSide: v.focusedSide || 'left',
-            title2: (v.isSplit && v.view2 && !v.view2.webContents.isDestroyed()) ? (v.view2.webContents.getTitle() || 'Ocal Home') : '',
-            url2: (v.isSplit && v.view2 && !v.view2.webContents.isDestroyed()) ? v.view2.webContents.getURL() : '',
+            title2: (v.isSplit && v.view2) ? (title2 || 'Ocal Home') : '',
+            url2: (v.isSplit && v.view2) ? (url2 || '') : '',
             emoji: v.emoji || null,
             emoji2: v.emoji2 || null,
             favicon2: (v.isSplit && v.view2) ? (v.favicon2 || null) : null

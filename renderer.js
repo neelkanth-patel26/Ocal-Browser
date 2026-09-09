@@ -664,9 +664,15 @@ window.electronAPI.onTabsChanged((data) => {
 window.electronAPI.onUpdateURL((data) => {
     const tab = tabs.find(t => t.id === data.id);
     if (tab) { 
-        tab.url = data.url; 
-        tab.title = data.title;
-        if (data.favicon) tab.favicon = data.favicon;
+        if (data.side === 'right' && tab.isSplit) {
+            tab.url2 = data.url;
+            if (data.title) tab.title2 = data.title;
+            if (data.favicon) tab.favicon2 = data.favicon;
+        } else {
+            tab.url = data.url; 
+            if (data.title) tab.title = data.title;
+            if (data.favicon) tab.favicon = data.favicon;
+        }
     }
     if (data.id === activeTabId && addressInput) {
         syncOmnibox(data.url);
@@ -951,14 +957,40 @@ function getSimplifiedTitle(title, url) {
         return 'PDF Viewer';
     }
     
-    let t = title;
+    let t = title || '';
     if (t.toLowerCase().endsWith('.html')) {
         t = t.replace(/\.html$/i, '').replace(/[-_]/g, ' ');
         t = t.charAt(0).toUpperCase() + t.slice(1);
     }
     
-    t = t.split(' - ')[0].split(' | ')[0].split(' – ')[0].trim();
-    return t || title;
+    // Split by standard web title separators: " - ", " | ", " – ", " • ", " : "
+    const parts = t.split(/\s*[-|–—•:]\s*/).map(p => p.trim()).filter(Boolean);
+    if (parts.length > 1) {
+        // If the first part is a generic page name (e.g. "Home", "Feed", "Dashboard"), prefer the brand part
+        if (/^(home|welcome|dashboard|main|feed|explore|index|start)$/i.test(parts[0])) {
+            t = parts[parts.length - 1]; // e.g. "Home - Spotify" -> "Spotify"
+        } else {
+            t = parts[0];
+        }
+    } else if (parts.length === 1) {
+        t = parts[0];
+    }
+    
+    // If title is just generic "Home" or "Ocal Home" but URL is an actual site (e.g. Spotify), derive clean site brand
+    if ((/^(home|ocal home|index|new tab)$/i.test(t.trim()) || !t.trim()) && url && !url.startsWith('ocal://') && !url.includes('home.html')) {
+        try {
+            const host = new URL(url.startsWith('http') ? url : 'https://' + url).hostname.replace(/^www\./, '');
+            const hostParts = host.split('.');
+            if (hostParts.length >= 2) {
+                const brand = hostParts[hostParts.length - 2];
+                if (brand && brand.length > 1) {
+                    return brand.charAt(0).toUpperCase() + brand.slice(1);
+                }
+            }
+        } catch(e) {}
+    }
+
+    return t.trim() || title || 'Tab';
 }
 
 function getTabIconHtml(tab, tintColor) {
@@ -1140,8 +1172,14 @@ function updateOmniboxIcon(url) {
 
 window.electronAPI.onUpdateTitle((data) => {
     const tab = tabs.find(t => t.id === data.id);
-    if (tab) tab.title = data.title;
-    renderTabs();
+    if (tab) {
+        if (data.side === 'right' && tab.isSplit) {
+            tab.title2 = data.title;
+        } else {
+            tab.title = data.title;
+        }
+        renderTabs();
+    }
 });
 
 // ── Navigation ─────────────────────────────────────────────────────────────
