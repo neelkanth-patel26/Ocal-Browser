@@ -73,10 +73,16 @@ let activeVideo = null;
 let isSeeking = false;
 let audioCtx = null;
 let audioSourceNode = null;
+let preampNode = null;
 let bassNode = null;
+let punchNode = null;
 let highsNode = null;
-let pannerNode = null;
+let airNode = null;
 let eqNodes = [];
+let pannerNode = null;
+let compressorNode = null;
+let analyserNode = null;
+let visualizerAnimFrame = null;
 let spatial8dTimer = null;
 let spatial8dAngle = 0;
 let surroundMode = 'cinema';
@@ -625,25 +631,43 @@ function ensureAudioContext() {
 }
 
 function initAudioDspPipeline() {
-    if (!activeAudio || !audioCtx || audioSourceNode) return;
+    if (!activeAudio || !audioCtx) return;
 
     try {
         audioSourceNode = audioCtx.createMediaElementSource(activeAudio);
 
-        // 1. Bass Boost Node
+        // 1. Preamp Node (clean headroom boost)
+        preampNode = audioCtx.createGain();
+        preampNode.gain.value = 1.15;
+
+        // 2. Dual-Stage Sub-Bass & Punch Filter
         bassNode = audioCtx.createBiquadFilter();
         bassNode.type = 'lowshelf';
         bassNode.frequency.value = 60;
-        bassNode.gain.value = parseFloat(document.getElementById('fx-bass-slider')?.value || 6);
+        const bassVal = parseFloat(document.getElementById('fx-bass-slider')?.value || 6);
+        bassNode.gain.value = bassVal;
 
-        // 2. Highs / Vocal Clarity Exciter
+        punchNode = audioCtx.createBiquadFilter();
+        punchNode.type = 'peaking';
+        punchNode.frequency.value = 110;
+        punchNode.Q.value = 1.2;
+        punchNode.gain.value = bassVal * 0.6;
+
+        // 3. Dual-Stage Vocal & Highs Air Exciter
         highsNode = audioCtx.createBiquadFilter();
         highsNode.type = 'highshelf';
-        highsNode.frequency.value = 3500;
+        highsNode.frequency.value = 3600;
         const clarityOn = document.getElementById('fx-clarity-toggle')?.classList.contains('active');
-        highsNode.gain.value = clarityOn ? parseFloat(document.getElementById('fx-highs-slider')?.value || 4) : 0;
+        const highsVal = parseFloat(document.getElementById('fx-highs-slider')?.value || 4);
+        highsNode.gain.value = clarityOn ? highsVal : 0;
 
-        // 3. 10-Band EQ Nodes
+        airNode = audioCtx.createBiquadFilter();
+        airNode.type = 'peaking';
+        airNode.frequency.value = 10500;
+        airNode.Q.value = 1.1;
+        airNode.gain.value = clarityOn ? highsVal * 0.7 : 0;
+
+        // 4. 10-Band Graphic EQ Nodes
         const freqs = [32, 64, 125, 250, 500, 1000, 2000, 4000, 8000, 16000];
         eqNodes = freqs.map(freq => {
             const filter = audioCtx.createBiquadFilter();
@@ -655,17 +679,38 @@ function initAudioDspPipeline() {
             return filter;
         });
 
-        // 4. Stereo Panner Node
+        // 5. Stereo Panner Node (Spatial & 3D)
         pannerNode = audioCtx.createStereoPanner();
         pannerNode.pan.value = 0;
 
-        // Connect audio graph
+        // 6. Studio Mastering Compressor (glues mix, enhances loudness & punch)
+        compressorNode = audioCtx.createDynamicsCompressor();
+        compressorNode.threshold.value = -16;
+        compressorNode.knee.value = 24;
+        compressorNode.ratio.value = 3.5;
+        compressorNode.attack.value = 0.003;
+        compressorNode.release.value = 0.22;
+
+        // 7. Live Real-Time Beat Analyser Node
+        analyserNode = audioCtx.createAnalyser();
+        analyserNode.fftSize = 64;
+
+        // Connect graph
         let prev = audioSourceNode;
+        prev.connect(preampNode);
+        prev = preampNode;
+
         prev.connect(bassNode);
         prev = bassNode;
 
+        prev.connect(punchNode);
+        prev = punchNode;
+
         prev.connect(highsNode);
         prev = highsNode;
+
+        prev.connect(airNode);
+        prev = airNode;
 
         eqNodes.forEach(node => {
             prev.connect(node);
@@ -673,9 +718,61 @@ function initAudioDspPipeline() {
         });
 
         prev.connect(pannerNode);
-        pannerNode.connect(audioCtx.destination);
+        pannerNode.connect(compressorNode);
+        compressorNode.connect(analyserNode);
+        analyserNode.connect(audioCtx.destination);
+
+        startBeatVisualizer();
     } catch (err) {
         console.warn('Web Audio DSP graph connection fallback:', err);
+    }
+}
+
+function startBeatVisualizer() {
+    stopBeatVisualizer();
+    if (!analyserNode) return;
+    const dataArray = new Uint8Array(analyserNode.frequencyBinCount);
+
+    const tick = () => {
+        if (!activeAudio || activeAudio.paused || !analyserNode) {
+            const vinyl = document.getElementById('spinning-vinyl');
+            if (vinyl) {
+                vinyl.style.boxShadow = '';
+                vinyl.style.transform = '';
+            }
+            return;
+        }
+
+        analyserNode.getByteFrequencyData(dataArray);
+        let bassSum = 0;
+        for (let i = 0; i < 4; i++) {
+            bassSum += dataArray[i] || 0;
+        }
+        const bassLevel = (bassSum / 4) / 255;
+
+        const vinyl = document.getElementById('spinning-vinyl');
+        if (vinyl) {
+            const glowSize = 35 + bassLevel * 45;
+            const scale = 1 + bassLevel * 0.04;
+            vinyl.style.boxShadow = `0 14px 40px rgba(0, 0, 0, 0.45), 0 0 ${glowSize}px var(--accent-glow)`;
+            vinyl.style.transform = `scale(${scale})`;
+        }
+
+        visualizerAnimFrame = requestAnimationFrame(tick);
+    };
+
+    visualizerAnimFrame = requestAnimationFrame(tick);
+}
+
+function stopBeatVisualizer() {
+    if (visualizerAnimFrame) {
+        cancelAnimationFrame(visualizerAnimFrame);
+        visualizerAnimFrame = null;
+    }
+    const vinyl = document.getElementById('spinning-vinyl');
+    if (vinyl) {
+        vinyl.style.boxShadow = '';
+        vinyl.style.transform = '';
     }
 }
 
@@ -810,6 +907,7 @@ function openVideoStudio(item) {
 
 function stopCurrentMedia() {
     stopSpatial8d();
+    stopBeatVisualizer();
     if (activeAudio) {
         activeAudio.pause();
         activeAudio.src = '';
@@ -1053,15 +1151,17 @@ function initMediaStudioControls() {
             clarityToggle.classList.toggle('active');
             const isOn = clarityToggle.classList.contains('active');
             clarityToggle.innerText = isOn ? 'ON' : 'OFF';
-            if (highsNode) {
-                highsNode.gain.value = isOn ? parseFloat(highsSlider?.value || 4) : 0;
-            }
+            const val = parseFloat(highsSlider?.value || 4);
+            if (highsNode) highsNode.gain.value = isOn ? val : 0;
+            if (airNode) airNode.gain.value = isOn ? val * 0.7 : 0;
         };
     }
     if (highsSlider) {
         highsSlider.oninput = () => {
-            if (highsNode && clarityToggle?.classList.contains('active')) {
-                highsNode.gain.value = parseFloat(highsSlider.value);
+            const val = parseFloat(highsSlider.value);
+            if (clarityToggle?.classList.contains('active')) {
+                if (highsNode) highsNode.gain.value = val;
+                if (airNode) airNode.gain.value = val * 0.7;
             }
         };
     }
@@ -1070,9 +1170,9 @@ function initMediaStudioControls() {
     const bassSlider = document.getElementById('fx-bass-slider');
     if (bassSlider) {
         bassSlider.oninput = () => {
-            if (bassNode) {
-                bassNode.gain.value = parseFloat(bassSlider.value);
-            }
+            const val = parseFloat(bassSlider.value);
+            if (bassNode) bassNode.gain.value = val;
+            if (punchNode) punchNode.gain.value = val * 0.6;
         };
     }
 
