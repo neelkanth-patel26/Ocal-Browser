@@ -51,7 +51,59 @@
       ],
       "icon": "icon.ico"
     },
+    "protocols": [
+      {
+        "name": "HTTP URL",
+        "schemes": ["http"]
+      },
+      {
+        "name": "HTTPS URL",
+        "schemes": ["https"]
+      },
+      {
+        "name": "Ocal Protocol",
+        "schemes": ["ocal"]
+      }
+    ],
     "fileAssociations": [
+      {
+        "ext": "html",
+        "name": "HTML Document",
+        "description": "Hypertext Markup Language",
+        "icon": "icon.ico",
+        "role": "Viewer"
+      },
+      {
+        "ext": "htm",
+        "name": "HTML Document",
+        "description": "Hypertext Markup Language",
+        "icon": "icon.ico",
+        "role": "Viewer"
+      },
+      {
+        "ext": "shtml",
+        "name": "Server Side HTML Document",
+        "icon": "icon.ico",
+        "role": "Viewer"
+      },
+      {
+        "ext": "xhtml",
+        "name": "XHTML Document",
+        "icon": "icon.ico",
+        "role": "Viewer"
+      },
+      {
+        "ext": "svg",
+        "name": "Scalable Vector Graphics",
+        "icon": "icon.ico",
+        "role": "Viewer"
+      },
+      {
+        "ext": "webp",
+        "name": "WebP Image",
+        "icon": "icon.ico",
+        "role": "Viewer"
+      },
       {
         "ext": "pdf",
         "name": "PDF Document",
