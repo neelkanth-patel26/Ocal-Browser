@@ -379,40 +379,75 @@ function renderCurrentFiles() {
         return a.name.localeCompare(b.name, undefined, { numeric: true, sensitivity: 'base' });
     });
 
+    if (isListView) {
+        const header = document.createElement('div');
+        header.className = 'list-table-header';
+        header.innerHTML = `
+            <div class="sortable col-name">Name</div>
+            <div class="col-date">Date Modified</div>
+            <div class="col-type">Type</div>
+            <div class="col-size">Size</div>
+            <div class="col-actions">Actions</div>
+        `;
+        fileGrid.appendChild(header);
+    }
+
     sorted.forEach(item => {
         const el = document.createElement('div');
-        el.className = `file-item ${selectedItems.has(item.path) ? 'selected' : ''}`;
         el.dataset.path = item.path;
 
         const iconInfo = getFileIcon(item);
-        const sizeStr = item.isDirectory ? '--' : formatBytes(item.size);
+        const sizeStr = item.isDirectory ? (isListView ? '--' : 'Folder') : formatBytes(item.size);
         const dateStr = item.mtime ? new Date(item.mtime).toLocaleDateString() : '--';
         const isImg = isImageFile(item.name);
+        const typeLabel = item.isDirectory ? 'DIR' : getFileTypeLabel(item.name);
+        const safePath = item.path.replace(/\\/g, '\\\\').replace(/'/g, "\\'");
 
-        let previewHtml = '';
-        if (showPreviews && isImg && !item.isDirectory) {
-            const fileUrl = 'file:///' + item.path.replace(/\\/g, '/');
-            previewHtml = `
-                <div class="file-icon file-thumb-wrap">
-                    <img src="${fileUrl}" class="file-thumb-img" onerror="this.parentElement.innerHTML='<i class=\\'${iconInfo.icon}\\'></i>'" alt="">
+        if (isListView) {
+            el.className = `file-item list-row ${selectedItems.has(item.path) ? 'selected' : ''}`;
+            el.innerHTML = `
+                <div class="col-name">
+                    <div class="file-icon-mini" style="color: ${iconInfo.color || 'inherit'}">
+                        <i class="${iconInfo.icon}"></i>
+                    </div>
+                    <span class="file-name-text" title="${escapeHtml(item.name)}">${escapeHtml(item.name)}</span>
+                </div>
+                <div class="col-date">${dateStr}</div>
+                <div class="col-type"><span class="file-type-pill">${escapeHtml(typeLabel)}</span></div>
+                <div class="col-size">${sizeStr}</div>
+                <div class="col-actions">
+                    <button class="list-action-btn" title="Open" onclick="event.stopPropagation(); window.handleOpenItem('${safePath}', ${item.isDirectory})"><i class="fas fa-arrow-up-right-from-square"></i></button>
+                    <button class="list-action-btn" title="Copy Path" onclick="event.stopPropagation(); window.handleCopyPath('${safePath}')"><i class="fas fa-copy"></i></button>
                 </div>
             `;
         } else {
-            previewHtml = `
-                <div class="file-icon" style="color: ${iconInfo.color || 'inherit'}">
-                    <i class="${iconInfo.icon}"></i>
+            el.className = `file-item grid-card ${selectedItems.has(item.path) ? 'selected' : ''}`;
+
+            let previewContent = '';
+            if (showPreviews && isImg && !item.isDirectory) {
+                const fileUrl = 'file:///' + item.path.replace(/\\/g, '/');
+                previewContent = `<img src="${fileUrl}" class="file-preview-img" onerror="this.parentElement.innerHTML='<div class=\\'file-icon\\' style=\\'color:${iconInfo.color}\\'><i class=\\'${iconInfo.icon}\\'></i></div>'" alt="">`;
+            } else {
+                previewContent = `<div class="file-icon" style="color: ${iconInfo.color || 'inherit'}"><i class="${iconInfo.icon}"></i></div>`;
+            }
+
+            el.innerHTML = `
+                <div class="file-preview-container">
+                    ${previewContent}
+                </div>
+                <div class="file-details">
+                    <div class="file-name" title="${escapeHtml(item.name)}">${escapeHtml(item.name)}</div>
+                    <div class="file-meta-row">
+                        <span class="file-type-pill">${escapeHtml(typeLabel)}</span>
+                        <span class="meta-size">${sizeStr}</span>
+                    </div>
+                </div>
+                <div class="file-card-actions">
+                    <button class="card-action-btn" title="Open" onclick="event.stopPropagation(); window.handleOpenItem('${safePath}', ${item.isDirectory})"><i class="fas fa-arrow-up-right-from-square"></i></button>
+                    <button class="card-action-btn" title="Copy Path" onclick="event.stopPropagation(); window.handleCopyPath('${safePath}')"><i class="fas fa-copy"></i></button>
                 </div>
             `;
         }
-
-        el.innerHTML = `
-            ${previewHtml}
-            <div class="file-name" title="${escapeHtml(item.name)}">${escapeHtml(item.name)}</div>
-            <div class="file-meta-list">
-                <span class="meta-size">${sizeStr}</span>
-                <span class="meta-date">${dateStr}</span>
-            </div>
-        `;
 
         // Click handler -> Selection & Inspector
         el.onclick = (e) => {
@@ -624,6 +659,7 @@ function setViewMode(isList) {
     if (gridBtn) gridBtn.classList.toggle('active', !isList);
     if (listBtn) listBtn.classList.toggle('active', isList);
     if (statModeBadge) statModeBadge.innerText = isList ? 'LIST' : 'GRID';
+    renderCurrentFiles();
 }
 window.setViewMode = setViewMode;
 

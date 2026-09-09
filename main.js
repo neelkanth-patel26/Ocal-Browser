@@ -8931,103 +8931,13 @@ ipcMain.handle('get-system-folders', () => {
 ipcMain.handle('get-system-drives', async () => {
     const drives = [];
     if (process.platform === 'win32') {
-        try {
-            const psCode = `
-$ProgressPreference = 'SilentlyContinue'
-$ErrorActionPreference = 'SilentlyContinue'
-
-$s = New-Object -ComObject Shell.Application
-foreach ($i in $s.NameSpace(17).Items()) {
-    [Console]::WriteLine("ITEM:" + $i.Name + " ::: " + $i.Path)
-}
-
-Get-PnpDevice -Class WPD -PresentOnly | ForEach-Object {
-    [Console]::WriteLine("WPD:" + $_.FriendlyName + " ::: " + $_.InstanceId)
-}
-`;
-            const buf = Buffer.from(psCode, 'utf16le').toString('base64');
-            const out = child_process.execSync('powershell -NoProfile -EncodedCommand ' + buf, { encoding: 'utf8', timeout: 5000 });
-            const lines = out.split('\n').map(l => l.trim()).filter(l => l.length > 0 && !l.startsWith('#<') && !l.startsWith('<'));
-
-            lines.forEach(line => {
-                if (line.startsWith('ITEM:')) {
-                    const clean = line.replace('ITEM:', '');
-                    const parts = clean.split(' ::: ');
-                    const name = parts[0];
-                    const pathStr = parts[1] || '';
-
-                    if (!name) return;
-
-                    const match = name.match(/([A-Z]:)/i) || pathStr.match(/([A-Z]:)/i);
-                    if (match) {
-                        const devId = match[1].toUpperCase();
-                        const drivePath = `${devId}\\`;
-                        if (fs.existsSync(drivePath)) {
-                            const displayName = name.includes('(') ? name : (devId === 'C:' ? 'Local Disk (C:)' : `${name} (${devId})`);
-                            if (!drives.some(d => d.letter === devId[0])) {
-                                drives.push({
-                                    name: displayName,
-                                    path: drivePath,
-                                    letter: devId[0],
-                                    isMobile: false,
-                                    isDirectory: true
-                                });
-                            }
-                        }
-                    } else {
-                        if (!drives.some(d => d.name === name)) {
-                            drives.push({
-                                name: name,
-                                path: pathStr || name,
-                                isMobile: true,
-                                isDirectory: true
-                            });
-                        }
-                    }
-                }
-            });
-        } catch (e) {
-            console.warn('[Disk & MTP Device Analyzer] Shell.Application fallback:', e);
-        }
-
-        if (!drives.some(d => !d.isMobile)) {
-            try {
-                const out = child_process.execSync('wmic logicaldisk get DeviceID,VolumeName,Description', { encoding: 'utf8', timeout: 3000 });
-                const lines = out.split('\n').map(l => l.trim()).filter(l => l.length > 0);
-                
-                for (let i = 1; i < lines.length; i++) {
-                    const line = lines[i];
-                    const match = line.match(/([A-Z]:)/i);
-                    if (match) {
-                        const devId = match[1].toUpperCase();
-                        const drivePath = `${devId}\\`;
-                        if (fs.existsSync(drivePath) && !drives.some(d => d.letter === devId[0])) {
-                            let volName = '';
-                            const parts = line.split(/\s{2,}/);
-                            if (parts.length >= 3) volName = parts[2].trim();
-                            const displayName = volName ? `${volName} (${devId})` : (devId === 'C:' ? 'Local Disk (C:)' : `Partition (${devId})`);
-                            drives.push({
-                                name: displayName,
-                                path: drivePath,
-                                letter: devId[0],
-                                isMobile: false,
-                                isDirectory: true
-                            });
-                        }
-                    }
-                }
-            } catch (e) {}
-        }
-    }
-
-    if (drives.length === 0) {
-        const letters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ';
+        const letters = 'CDEFGHIJKLMNOPQRSTUVWXYZAB';
         for (const char of letters) {
             const drivePath = `${char}:\\`;
             try {
                 if (fs.existsSync(drivePath)) {
                     drives.push({
-                        name: char === 'C' ? 'Local Disk (C:)' : `Partition (${char}:)`,
+                        name: char === 'C' ? 'Local Disk (C:)' : `Drive (${char}:)`,
                         path: drivePath,
                         letter: char,
                         isMobile: false,
