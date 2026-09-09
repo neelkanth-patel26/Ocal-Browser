@@ -9044,6 +9044,79 @@ ipcMain.handle('analyze-system-files', async () => {
     return allPdfs.sort((a, b) => b.mtime - a.mtime).slice(0, 500);
 });
 
+ipcMain.handle('scan-system-audio', async () => {
+    const audioExts = new Set(['.mp3', '.wav', '.flac', '.ogg', '.m4a', '.aac', '.wma', '.opus', '.aiff', '.mid']);
+    const scannedTracks = [];
+    const seenPaths = new Set();
+
+    const rootDirs = [];
+    try { if (app.getPath('music')) rootDirs.push(app.getPath('music')); } catch (e) {}
+    try { if (app.getPath('downloads')) rootDirs.push(app.getPath('downloads')); } catch (e) {}
+    try { if (app.getPath('desktop')) rootDirs.push(app.getPath('desktop')); } catch (e) {}
+    try { if (app.getPath('documents')) rootDirs.push(app.getPath('documents')); } catch (e) {}
+
+    // Check workspace music folder
+    const localMusic = path.join(__dirname, 'music');
+    if (fs.existsSync(localMusic)) rootDirs.push(localMusic);
+
+    function scanDir(dir, depth = 0) {
+        if (depth > 4) return;
+        try {
+            if (!fs.existsSync(dir)) return;
+            const entries = fs.readdirSync(dir, { withFileTypes: true });
+            for (const dirent of entries) {
+                if (dirent.name.startsWith('.')) continue;
+                const fullPath = path.join(dir, dirent.name);
+                if (seenPaths.has(fullPath.toLowerCase())) continue;
+
+                if (dirent.isDirectory()) {
+                    const skipDirs = ['node_modules', 'appdata', 'windows', 'program files', '$recycle.bin', '.git', 'temp'];
+                    if (!skipDirs.includes(dirent.name.toLowerCase())) {
+                        scanDir(fullPath, depth + 1);
+                    }
+                } else if (dirent.isFile()) {
+                    const ext = path.extname(dirent.name).toLowerCase();
+                    if (audioExts.has(ext)) {
+                        seenPaths.add(fullPath.toLowerCase());
+                        try {
+                            const stat = fs.statSync(fullPath);
+                            const cleanTitle = path.basename(dirent.name, ext).replace(/^\d+[\s\-_.]*/, '').trim();
+                            const parentDir = path.basename(dir);
+
+                            let category = 'all';
+                            const lowerName = dirent.name.toLowerCase();
+                            if (lowerName.includes('chill') || lowerName.includes('relax') || lowerName.includes('lofi') || lowerName.includes('ambient') || lowerName.includes('sleep') || lowerName.includes('piano') || lowerName.includes('slow')) {
+                                category = 'chill';
+                            } else if (lowerName.includes('rock') || lowerName.includes('edm') || lowerName.includes('beat') || lowerName.includes('dance') || lowerName.includes('workout') || lowerName.includes('energy') || lowerName.includes('fast') || lowerName.includes('bass')) {
+                                category = 'energy';
+                            } else if (lowerName.includes('acoustic') || lowerName.includes('guitar') || lowerName.includes('unplugged') || lowerName.includes('vocal')) {
+                                category = 'acoustic';
+                            }
+
+                            scannedTracks.push({
+                                name: dirent.name,
+                                title: cleanTitle || dirent.name,
+                                artist: (parentDir && !['Music', 'Downloads', 'Desktop', 'Documents'].includes(parentDir)) ? parentDir : 'Local Master',
+                                path: fullPath,
+                                size: stat.size,
+                                mtime: stat.mtime,
+                                format: ext.replace('.', '').toUpperCase(),
+                                category: category
+                            });
+                        } catch (e) {}
+                    }
+                }
+            }
+        } catch (e) {}
+    }
+
+    for (const dir of rootDirs) {
+        scanDir(dir, 0);
+    }
+
+    return scannedTracks.sort((a, b) => (new Date(b.mtime).getTime()) - (new Date(a.mtime).getTime()));
+});
+
 ipcMain.handle('open-system-item', async (event, fullPath) => {
     return await shell.openPath(fullPath);
 });
