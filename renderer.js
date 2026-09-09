@@ -1805,6 +1805,41 @@ function applyGlobalSettings(s) {
     }
     if (pStatus) pStatus.style.display = 'none';
     if (aiBtn) aiBtn.style.display = s.aiAssistantEnabled ? 'flex' : 'none';
+
+    // ── Global Ambient Audio Sync ──
+    syncGlobalAmbientSound(s.ambientSound);
+}
+
+let globalAmbientAudio = null;
+
+function syncGlobalAmbientSound(ambient) {
+    if (!ambient || !ambient.enabled) {
+        if (globalAmbientAudio) {
+            globalAmbientAudio.pause();
+        }
+        return;
+    }
+
+    const trackFile = ambient.track || 'Ocal.mp3';
+    const trackSrc = 'music/' + encodeURIComponent(trackFile);
+
+    if (!globalAmbientAudio) {
+        globalAmbientAudio = new Audio();
+        globalAmbientAudio.loop = true;
+    }
+
+    if (globalAmbientAudio.getAttribute('data-current-track') !== trackFile) {
+        globalAmbientAudio.setAttribute('data-current-track', trackFile);
+        globalAmbientAudio.src = trackSrc;
+        globalAmbientAudio.load();
+    }
+
+    const targetVol = typeof ambient.volume === 'number' ? ambient.volume : 0.35;
+    globalAmbientAudio.volume = Math.max(0, Math.min(1, targetVol));
+
+    if (globalAmbientAudio.paused) {
+        globalAmbientAudio.play().catch(e => console.warn('[Ambient] Global playback policy:', e));
+    }
 }
 
 window.electronAPI.on('toggle-sidebar', (e, open) => {

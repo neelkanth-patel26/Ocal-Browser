@@ -3520,6 +3520,7 @@ function renderSystemSettings(s) {
 
 // ── Ambient Sound & Focus Studio Handlers ────────────────────────────────
 let currentAmbientTracks = [];
+let localAmbientAudio = null;
 let localAmbientState = {
     enabled: false,
     track: 'Ocal.mp3',
@@ -3527,6 +3528,33 @@ let localAmbientState = {
     smartDucking: true,
     duckVolume: 0.0
 };
+
+function playLocalAmbientSound() {
+    if (!localAmbientState.enabled) {
+        if (localAmbientAudio) {
+            localAmbientAudio.pause();
+        }
+        return;
+    }
+
+    if (!localAmbientState.track) localAmbientState.track = 'Ocal.mp3';
+    const trackFile = localAmbientState.track;
+    const targetSrc = 'music/' + encodeURIComponent(trackFile);
+
+    if (!localAmbientAudio) {
+        localAmbientAudio = new Audio();
+        localAmbientAudio.loop = true;
+    }
+
+    if (localAmbientAudio.getAttribute('data-current-track') !== trackFile) {
+        localAmbientAudio.setAttribute('data-current-track', trackFile);
+        localAmbientAudio.src = targetSrc;
+        localAmbientAudio.load();
+    }
+
+    localAmbientAudio.volume = Math.max(0, Math.min(1, localAmbientState.volume));
+    localAmbientAudio.play().catch(e => console.warn('[Ambient Settings] Playback error:', e));
+}
 
 function getVolumeDescription(percent) {
     if (percent <= 0) return 'Muted (0%)';
@@ -3539,6 +3567,7 @@ function getVolumeDescription(percent) {
 
 window.handleAmbientSoundToggle = function(checked) {
     localAmbientState.enabled = checked;
+    playLocalAmbientSound();
     syncAmbientSettings();
     updateAmbientUIState();
 };
@@ -3546,8 +3575,32 @@ window.handleAmbientSoundToggle = function(checked) {
 window.handleAmbientTrackSelect = function(trackFileName) {
     localAmbientState.track = trackFileName;
     localAmbientState.enabled = true;
+    playLocalAmbientSound();
     syncAmbientSettings();
-    renderAmbientTracks();
+
+    // In-place card selection update to eliminate DOM rebuilding & click glitches
+    const grid = document.getElementById('ambient-tracks-grid');
+    if (grid) {
+        grid.querySelectorAll('.ambient-track-card').forEach((card, idx) => {
+            const t = currentAmbientTracks[idx];
+            const isSelected = (t && (t.fileName === localAmbientState.track || t.id === localAmbientState.track));
+            card.classList.toggle('selected', isSelected);
+            const icon = card.querySelector('.atc-icon-wrap i');
+            if (icon) icon.className = `fas ${isSelected ? 'fa-circle-play' : 'fa-music'}`;
+            const sub = card.querySelector('.atc-sub');
+            if (sub) sub.textContent = isSelected ? 'Active Loop Track' : 'Click to select & loop';
+            let pill = card.querySelector('.atc-active-pill');
+            if (isSelected && !pill) {
+                const newPill = document.createElement('span');
+                newPill.className = 'atc-active-pill';
+                newPill.innerHTML = '<i class="fas fa-check"></i>';
+                card.appendChild(newPill);
+            } else if (!isSelected && pill) {
+                pill.remove();
+            }
+        });
+    }
+
     updateAmbientUIState();
 };
 
@@ -3558,12 +3611,14 @@ window.handleAmbientVolumeInput = function(val) {
     const statVol = document.getElementById('specials-stat-vol');
     if (statVol) statVol.textContent = `${num}%`;
     localAmbientState.volume = Math.max(0, Math.min(1, num / 100));
+    if (localAmbientAudio) localAmbientAudio.volume = localAmbientState.volume;
     syncAmbientSettings();
 };
 
 window.handleAmbientVolumeChange = function(val) {
     const num = parseInt(val, 10);
     localAmbientState.volume = Math.max(0, Math.min(1, num / 100));
+    if (localAmbientAudio) localAmbientAudio.volume = localAmbientState.volume;
     syncAmbientSettings();
 };
 
@@ -3589,6 +3644,7 @@ window.handleImportCustomAmbientTrack = async function() {
                 }
                 localAmbientState.track = newTrack.fileName;
                 localAmbientState.enabled = true;
+                playLocalAmbientSound();
                 syncAmbientSettings();
                 renderAmbientTracks();
                 updateAmbientUIState();
@@ -3725,12 +3781,16 @@ function renderAmbientTracks() {
         `;
     }).join('');
 
-    // Safe direct click binding
+    // Direct click binding with stopPropagation to avoid parent form triggers
     grid.querySelectorAll('.ambient-track-card').forEach(card => {
         const idx = parseInt(card.dataset.trackIndex, 10);
         const track = currentAmbientTracks[idx];
         if (track) {
-            card.onclick = () => handleAmbientTrackSelect(track.fileName || track.id);
+            card.onclick = (e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                handleAmbientTrackSelect(track.fileName || track.id);
+            };
         }
     });
 }
@@ -3758,6 +3818,8 @@ async function renderAmbientSoundSettings(s) {
     }
 
     renderAmbientTracks();
+    updateAmbientUIState();
+    playLocalAmbientSound();
     updateAmbientUIState();
 
     // Volume Slider & Label
