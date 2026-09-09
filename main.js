@@ -2075,19 +2075,24 @@ function formatDisplayUrl(url) {
 
 function setActiveSplitSide(tabId, side) {
     const entry = views.find(v => v.id === tabId);
-    if (entry && entry.isSplit && entry.focusedSide !== side) {
-        entry.focusedSide = side;
-        const activeWc = side === 'left' ? entry.view.webContents : entry.view2.webContents;
+    if (entry && entry.isSplit) {
+        if (entry.focusedSide !== side) {
+            entry.focusedSide = side;
+            broadcastTabs();
+        }
+        const activeWc = side === 'left' ? (entry.view ? entry.view.webContents : null) : (entry.view2 ? entry.view2.webContents : null);
         if (activeWc && !activeWc.isDestroyed() && mainWindow && !mainWindow.isDestroyed()) {
             const url = activeWc.getURL();
             const title = activeWc.getTitle();
             mainWindow.webContents.send('url-updated', {
                 id: tabId,
+                side,
                 url: formatDisplayUrl(url),
                 title: url.includes('home.html') ? 'Ocal Home' : title,
-                favicon: entry.favicon || null
+                favicon: (side === 'left' ? entry.favicon : entry.favicon2) || null
             });
             mainWindow.webContents.send('split-side-focused', { tabId, side });
+            notifyPasswordStatusForActiveTab();
         }
     }
 }
