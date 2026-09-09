@@ -26,12 +26,32 @@ const inspectorSize = document.getElementById('inspector-size');
 const inspectorDate = document.getElementById('inspector-date');
 const inspectorPath = document.getElementById('inspector-path');
 
+// Media Modal Elements
 const mediaPlayerModal = document.getElementById('media-player-modal');
 const mediaModalBackdrop = document.getElementById('media-modal-backdrop');
 const mediaModalClose = document.getElementById('media-modal-close');
 const mediaModalName = document.getElementById('media-modal-name');
 const mediaModalIcon = document.getElementById('media-modal-icon');
 const mediaModalBody = document.getElementById('media-modal-body');
+const audioEnhancerToolbar = document.getElementById('audio-enhancer-toolbar');
+
+const mediaTimeCurrent = document.getElementById('media-time-current');
+const mediaTimeDuration = document.getElementById('media-time-duration');
+const mediaSeekBar = document.getElementById('media-seek-bar');
+const mediaPlayBtn = document.getElementById('media-play-btn');
+const mediaMuteBtn = document.getElementById('media-mute-btn');
+const mediaVolBar = document.getElementById('media-vol-bar');
+const mediaRewBtn = document.getElementById('media-rew-btn');
+const mediaFwdBtn = document.getElementById('media-fwd-btn');
+const mediaFsBtn = document.getElementById('media-fs-btn');
+const mediaOpenTabBtn = document.getElementById('media-open-tab-btn');
+
+// Photo Editor Modal Elements
+const photoEditorModal = document.getElementById('photo-editor-modal');
+const editorFilename = document.getElementById('editor-filename');
+const editorImgTarget = document.getElementById('editor-img-target');
+const editorCloseBtn = document.getElementById('editor-close-btn');
+const editorSaveBtn = document.getElementById('editor-save-btn');
 
 let currentPath = '';
 let currentItems = [];
@@ -44,6 +64,27 @@ let activeCategory = 'all';
 let currentInspectedItem = null;
 let sortField = 'name';
 let sortAsc = true;
+
+// Active Media State
+let currentMediaItem = null;
+let currentMediaType = null; // 'audio' or 'video'
+let activeAudio = null;
+let activeVideo = null;
+let isSeeking = false;
+let audioCtx = null;
+let audioSourceNode = null;
+let bassNode = null;
+let highsNode = null;
+let pannerNode = null;
+let eqNodes = [];
+let spatial8dTimer = null;
+let spatial8dAngle = 0;
+let surroundMode = 'cinema';
+
+// Photo Editor State
+let currentPhotoItem = null;
+let photoTransform = { rotate: 0, flipH: 1, flipV: 1, scale: 1 };
+let photoFilters = { brightness: 100, contrast: 100, saturation: 100, sepia: 0, blur: 0 };
 
 // Helper to apply accent color dynamically
 function applyAccent(accentColor) {
@@ -59,9 +100,9 @@ function applyAccent(accentColor) {
         return `rgba(${r}, ${g}, ${b}, ${alpha})`;
     };
     
-    document.documentElement.style.setProperty('--accent-glow', hexToRgba(accentColor, 0.25));
+    document.documentElement.style.setProperty('--accent-glow', hexToRgba(accentColor, 0.28));
     document.documentElement.style.setProperty('--accent-dim', hexToRgba(accentColor, 0.12));
-    document.documentElement.style.setProperty('--accent-border', hexToRgba(accentColor, 0.3));
+    document.documentElement.style.setProperty('--accent-border', hexToRgba(accentColor, 0.35));
 }
 
 // ── Initialization ─────────────────────────────────────────────────────────
@@ -95,7 +136,6 @@ document.addEventListener('DOMContentLoaded', async () => {
         console.error('Failed to load system folders:', e);
     }
 
-    // Render drives in sidebar
     renderDrivesList();
 
     // 3. Setup Sidebar Nav
@@ -187,6 +227,10 @@ document.addEventListener('DOMContentLoaded', async () => {
     // 6. Global Click Handlers (Context Menu & Selection)
     document.addEventListener('click', (event) => {
         if (contextMenu) contextMenu.style.display = 'none';
+        const dropdownMenu = document.getElementById('surround-dropdown-menu');
+        if (dropdownMenu && !event.target.closest('#custom-surround-dropdown')) {
+            dropdownMenu.classList.remove('open');
+        }
         if (!event.target.closest('.file-item') && !event.target.closest('#preview-inspector')) {
             clearSelection();
         }
@@ -200,19 +244,13 @@ document.addEventListener('DOMContentLoaded', async () => {
     }
     if (inspectorOpenBtn) {
         inspectorOpenBtn.onclick = () => {
-            if (currentInspectedItem) {
-                openItem(currentInspectedItem);
-            }
+            if (currentInspectedItem) openItem(currentInspectedItem);
         };
     }
 
-    // Media modal handlers
-    if (mediaModalClose) {
-        mediaModalClose.onclick = closeMediaModal;
-    }
-    if (mediaModalBackdrop) {
-        mediaModalBackdrop.onclick = closeMediaModal;
-    }
+    // Initialize Media Controls & Photo Studio
+    initMediaStudioControls();
+    initPhotoEditorControls();
 
     // 7. Initial Load: Open Home or Downloads folder
     const initialDir = systemFolders.home || systemFolders.downloads || systemFolders.desktop || 'C:\\';
@@ -334,10 +372,8 @@ function renderCurrentFiles() {
     const query = fileSearch ? fileSearch.value.trim().toLowerCase() : '';
 
     const filtered = currentItems.filter(item => {
-        // Search query
         if (query && !item.name.toLowerCase().includes(query)) return false;
 
-        // Category filter
         if (activeCategory === 'all') return true;
         if (activeCategory === 'folders') return item.isDirectory;
         if (item.isDirectory) return false;
@@ -359,7 +395,6 @@ function renderCurrentFiles() {
         }
     });
 
-    // Update dot matrix counters
     if (statItemsCount) statItemsCount.innerText = filtered.length;
     if (itemCountEl) itemCountEl.innerText = `${filtered.length} items`;
     updateSelectedCount();
@@ -374,7 +409,7 @@ function renderCurrentFiles() {
         return;
     }
 
-    // Sort items based on sortField and sortAsc
+    // Sort items
     const sorted = [...filtered].sort((a, b) => {
         if (a.isDirectory && !b.isDirectory) return -1;
         if (!a.isDirectory && b.isDirectory) return 1;
@@ -469,7 +504,6 @@ function renderCurrentFiles() {
             `;
         }
 
-        // Click handler -> Selection & Inspector
         el.onclick = (e) => {
             e.stopPropagation();
             if (!e.ctrlKey && !e.shiftKey) clearSelection();
@@ -477,13 +511,11 @@ function renderCurrentFiles() {
             inspectItem(item);
         };
 
-        // Double click handler -> Navigate or Open
         el.ondblclick = (e) => {
             e.stopPropagation();
             openItem(item);
         };
 
-        // Context menu handler
         el.oncontextmenu = (e) => {
             e.preventDefault();
             e.stopPropagation();
@@ -533,18 +565,13 @@ function inspectItem(item) {
         const fileUrl = 'file:///' + item.path.replace(/\\/g, '/');
 
         if (item.isDirectory) {
-            inspectorPreviewBox.innerHTML = `<i class="fas fa-folder" style="font-size: 48px; color: var(--accent);"></i>`;
+            inspectorPreviewBox.innerHTML = `<i class="fas fa-folder" style="font-size: 48px; color: #F59E0B;"></i>`;
         } else if (isImageFile(item.name)) {
             inspectorPreviewBox.innerHTML = `<img src="${fileUrl}" style="max-width:100%; max-height:100%; object-fit:contain; border-radius:8px;" alt="">`;
         } else if (['mp4', 'webm', 'mov'].includes(ext)) {
-            inspectorPreviewBox.innerHTML = `<video src="${fileUrl}" controls style="max-width:100%; max-height:100%; border-radius:8px;"></video>`;
-        } else if (['mp3', 'wav', 'ogg', 'flac'].includes(ext)) {
-            inspectorPreviewBox.innerHTML = `
-                <div style="display:flex; flex-direction:column; align-items:center; gap:8px;">
-                    <i class="fas fa-music" style="font-size:36px; color:var(--accent);"></i>
-                    <audio src="${fileUrl}" controls style="width:100%; max-width:200px; height:32px;"></audio>
-                </div>
-            `;
+            inspectorPreviewBox.innerHTML = `<i class="fas fa-file-video" style="font-size: 48px; color: #8B5CF6;"></i>`;
+        } else if (['mp3', 'wav', 'ogg', 'flac', 'm4a'].includes(ext)) {
+            inspectorPreviewBox.innerHTML = `<i class="fas fa-file-audio" style="font-size: 48px; color: #10B981;"></i>`;
         } else if (ext === 'pdf') {
             inspectorPreviewBox.innerHTML = `<i class="fas fa-file-pdf" style="font-size: 48px; color: #EF4444;"></i>`;
         } else {
@@ -554,7 +581,7 @@ function inspectItem(item) {
     }
 }
 
-// ── Open Item Actions ──────────────────────────────────────────────────────
+// ── Open Item Router ───────────────────────────────────────────────────────
 function openItem(item) {
     if (item.isDirectory) {
         navigateTo(item.path);
@@ -571,8 +598,12 @@ function openItem(item) {
         } else if (window.electronAPI && window.electronAPI.navigateTo) {
             window.electronAPI.navigateTo(targetUrl);
         }
-    } else if (['mp3', 'wav', 'flac', 'ogg', 'm4a', 'aac', 'mp4', 'webm', 'mov'].includes(ext)) {
-        openMediaModal(item);
+    } else if (['mp3', 'wav', 'flac', 'ogg', 'm4a', 'aac', 'wma'].includes(ext)) {
+        openAudioStudio(item);
+    } else if (['mp4', 'webm', 'mov', 'mkv', 'avi'].includes(ext)) {
+        openVideoStudio(item);
+    } else if (isImageFile(item.name)) {
+        openPhotoStudio(item);
     } else {
         if (window.electronAPI && window.electronAPI.invoke) {
             window.electronAPI.invoke('open-system-item', item.path);
@@ -580,38 +611,675 @@ function openItem(item) {
     }
 }
 
-// ── Media Modal ────────────────────────────────────────────────────────────
-function openMediaModal(item) {
-    if (!mediaPlayerModal) return;
-    const ext = getExtension(item.name);
-    const isVideo = ['mp4', 'webm', 'mov', 'mkv'].includes(ext);
+// ── AUDIO STUDIO & WEB AUDIO DSP ENGINE ────────────────────────────────────
+function ensureAudioContext() {
+    if (!audioCtx) {
+        const AudioContextClass = window.AudioContext || window.webkitAudioContext;
+        if (AudioContextClass) {
+            audioCtx = new AudioContextClass();
+        }
+    }
+    if (audioCtx && audioCtx.state === 'suspended') {
+        audioCtx.resume();
+    }
+}
+
+function initAudioDspPipeline() {
+    if (!activeAudio || !audioCtx || audioSourceNode) return;
+
+    try {
+        audioSourceNode = audioCtx.createMediaElementSource(activeAudio);
+
+        // 1. Bass Boost Node
+        bassNode = audioCtx.createBiquadFilter();
+        bassNode.type = 'lowshelf';
+        bassNode.frequency.value = 60;
+        bassNode.gain.value = parseFloat(document.getElementById('fx-bass-slider')?.value || 6);
+
+        // 2. Highs / Vocal Clarity Exciter
+        highsNode = audioCtx.createBiquadFilter();
+        highsNode.type = 'highshelf';
+        highsNode.frequency.value = 3500;
+        const clarityOn = document.getElementById('fx-clarity-toggle')?.classList.contains('active');
+        highsNode.gain.value = clarityOn ? parseFloat(document.getElementById('fx-highs-slider')?.value || 4) : 0;
+
+        // 3. 10-Band EQ Nodes
+        const freqs = [32, 64, 125, 250, 500, 1000, 2000, 4000, 8000, 16000];
+        eqNodes = freqs.map(freq => {
+            const filter = audioCtx.createBiquadFilter();
+            filter.type = 'peaking';
+            filter.frequency.value = freq;
+            filter.Q.value = 1.4;
+            const slider = document.querySelector(`.eq-slider[data-freq="${freq}"]`);
+            filter.gain.value = slider ? parseFloat(slider.value) : 0;
+            return filter;
+        });
+
+        // 4. Stereo Panner Node
+        pannerNode = audioCtx.createStereoPanner();
+        pannerNode.pan.value = 0;
+
+        // Connect audio graph
+        let prev = audioSourceNode;
+        prev.connect(bassNode);
+        prev = bassNode;
+
+        prev.connect(highsNode);
+        prev = highsNode;
+
+        eqNodes.forEach(node => {
+            prev.connect(node);
+            prev = node;
+        });
+
+        prev.connect(pannerNode);
+        pannerNode.connect(audioCtx.destination);
+    } catch (err) {
+        console.warn('Web Audio DSP graph connection fallback:', err);
+    }
+}
+
+function openAudioStudio(item) {
+    stopCurrentMedia();
+    currentMediaItem = item;
+    currentMediaType = 'audio';
+
+    ensureAudioContext();
+
     const fileUrl = 'file:///' + item.path.replace(/\\/g, '/');
 
     if (mediaModalName) mediaModalName.innerText = item.name;
-    if (mediaModalIcon) mediaModalIcon.className = `fas ${isVideo ? 'fa-video' : 'fa-music'}`;
+    if (mediaModalIcon) mediaModalIcon.className = 'fas fa-music';
+    if (audioEnhancerToolbar) audioEnhancerToolbar.style.display = 'block';
+    if (mediaFsBtn) mediaFsBtn.style.display = 'none';
 
-    if (mediaModalBody) {
-        if (isVideo) {
-            mediaModalBody.innerHTML = `<video src="${fileUrl}" controls autoplay style="width:100%; max-height:460px; border-radius:12px; outline:none; background:#000;"></video>`;
-        } else {
-            mediaModalBody.innerHTML = `
-                <div style="display:flex; flex-direction:column; align-items:center; gap:16px; padding:20px;">
-                    <div style="width:90px; height:90px; border-radius:50%; background:var(--accent-dim); display:flex; align-items:center; justify-content:center; color:var(--accent); font-size:36px; box-shadow:0 0 24px var(--accent-glow);">
-                        <i class="fas fa-music"></i>
-                    </div>
-                    <audio src="${fileUrl}" controls autoplay style="width:100%; max-width:360px; outline:none;"></audio>
+    // Turntable Vinyl Stage
+    mediaModalBody.innerHTML = `
+        <div class="audio-art-stage">
+            <div class="spinning-vinyl-art" id="spinning-vinyl">
+                <div class="vinyl-groove-ring ring-1"></div>
+                <div class="vinyl-groove-ring ring-2"></div>
+                <div class="vinyl-center-pin">
+                    <div class="center-hole"></div>
+                    <i class="fas fa-music pin-icon"></i>
                 </div>
-            `;
+            </div>
+            <div class="audio-track-info">
+                <span class="audio-track-title">${escapeHtml(item.name.replace(/\.[^/.]+$/, ''))}</span>
+                <span class="audio-track-sub">Local Audio Studio • Enhanced 3D DSP</span>
+            </div>
+        </div>
+    `;
+
+    // Create audio element
+    activeAudio = new Audio(fileUrl);
+    activeAudio.crossOrigin = 'anonymous';
+
+    // Attach Web Audio DSP
+    initAudioDspPipeline();
+
+    // Wire events
+    activeAudio.addEventListener('loadedmetadata', () => {
+        if (mediaTimeDuration) mediaTimeDuration.innerText = formatTime(activeAudio.duration || 0);
+    });
+
+    activeAudio.addEventListener('timeupdate', () => {
+        if (!isSeeking && activeAudio && activeAudio.duration) {
+            const progress = (activeAudio.currentTime / activeAudio.duration) * 100;
+            if (mediaSeekBar) mediaSeekBar.value = progress;
+            if (mediaTimeCurrent) mediaTimeCurrent.innerText = formatTime(activeAudio.currentTime);
+            if (mediaTimeDuration) mediaTimeDuration.innerText = formatTime(activeAudio.duration);
         }
-    }
+    });
+
+    activeAudio.addEventListener('ended', () => {
+        updatePlayBtnState(false);
+    });
+
+    activeAudio.addEventListener('play', () => {
+        updatePlayBtnState(true);
+        startSpatial8d();
+    });
+
+    activeAudio.addEventListener('pause', () => {
+        updatePlayBtnState(false);
+        stopSpatial8d();
+    });
+
+    // Start playback
+    activeAudio.play().then(() => {
+        updatePlayBtnState(true);
+    }).catch(err => {
+        console.warn('Audio auto-play policy:', err);
+        updatePlayBtnState(false);
+    });
 
     mediaPlayerModal.style.display = 'flex';
 }
 
-function closeMediaModal() {
-    if (mediaPlayerModal) {
-        mediaPlayerModal.style.display = 'none';
-        if (mediaModalBody) mediaModalBody.innerHTML = '';
+function openVideoStudio(item) {
+    stopCurrentMedia();
+    currentMediaItem = item;
+    currentMediaType = 'video';
+
+    const fileUrl = 'file:///' + item.path.replace(/\\/g, '/');
+
+    if (mediaModalName) mediaModalName.innerText = item.name;
+    if (mediaModalIcon) mediaModalIcon.className = 'fas fa-video';
+    if (audioEnhancerToolbar) audioEnhancerToolbar.style.display = 'none';
+    if (mediaFsBtn) mediaFsBtn.style.display = 'flex';
+
+    mediaModalBody.innerHTML = `
+        <video id="active-video-player" src="${fileUrl}" style="width:100%; max-height:420px; border-radius:14px; background:#000; outline:none;"></video>
+    `;
+
+    activeVideo = document.getElementById('active-video-player');
+
+    activeVideo.addEventListener('loadedmetadata', () => {
+        if (mediaTimeDuration) mediaTimeDuration.innerText = formatTime(activeVideo.duration || 0);
+    });
+
+    activeVideo.addEventListener('timeupdate', () => {
+        if (!isSeeking && activeVideo && activeVideo.duration) {
+            const progress = (activeVideo.currentTime / activeVideo.duration) * 100;
+            if (mediaSeekBar) mediaSeekBar.value = progress;
+            if (mediaTimeCurrent) mediaTimeCurrent.innerText = formatTime(activeVideo.currentTime);
+            if (mediaTimeDuration) mediaTimeDuration.innerText = formatTime(activeVideo.duration);
+        }
+    });
+
+    activeVideo.addEventListener('ended', () => {
+        updatePlayBtnState(false);
+    });
+
+    activeVideo.addEventListener('play', () => {
+        updatePlayBtnState(true);
+    });
+
+    activeVideo.addEventListener('pause', () => {
+        updatePlayBtnState(false);
+    });
+
+    activeVideo.play().then(() => {
+        updatePlayBtnState(true);
+    }).catch(() => {
+        updatePlayBtnState(false);
+    });
+
+    mediaPlayerModal.style.display = 'flex';
+}
+
+function stopCurrentMedia() {
+    stopSpatial8d();
+    if (activeAudio) {
+        activeAudio.pause();
+        activeAudio.src = '';
+        activeAudio = null;
+    }
+    if (activeVideo) {
+        activeVideo.pause();
+        activeVideo.src = '';
+        activeVideo = null;
+    }
+    updatePlayBtnState(false);
+    if (mediaSeekBar) mediaSeekBar.value = 0;
+    if (mediaTimeCurrent) mediaTimeCurrent.innerText = '0:00';
+    if (mediaTimeDuration) mediaTimeDuration.innerText = '0:00';
+}
+
+function updatePlayBtnState(isPlaying) {
+    if (mediaPlayBtn) {
+        mediaPlayBtn.innerHTML = `<i class="fas fa-${isPlaying ? 'pause' : 'play'}"></i>`;
+    }
+    const vinyl = document.getElementById('spinning-vinyl');
+    if (vinyl) {
+        vinyl.style.animationPlayState = isPlaying ? 'running' : 'paused';
+    }
+}
+
+function toggleMediaPlay() {
+    ensureAudioContext();
+    if (currentMediaType === 'audio' && activeAudio) {
+        if (activeAudio.paused) {
+            activeAudio.play();
+        } else {
+            activeAudio.pause();
+        }
+    } else if (currentMediaType === 'video' && activeVideo) {
+        if (activeVideo.paused) {
+            activeVideo.play();
+        } else {
+            activeVideo.pause();
+        }
+    }
+}
+
+function startSpatial8d() {
+    if (surroundMode !== 'spatial8d') return;
+    stopSpatial8d();
+    spatial8dTimer = setInterval(() => {
+        if (pannerNode && audioCtx) {
+            spatial8dAngle += 0.04;
+            const depth = parseFloat(document.getElementById('fx-surround-width')?.value || 0.7);
+            pannerNode.pan.value = Math.sin(spatial8dAngle) * depth;
+        }
+    }, 40);
+}
+
+function stopSpatial8d() {
+    if (spatial8dTimer) {
+        clearInterval(spatial8dTimer);
+        spatial8dTimer = null;
+    }
+    if (pannerNode) pannerNode.pan.value = 0;
+}
+
+// ── Initialize Media Controls ──────────────────────────────────────────────
+function initMediaStudioControls() {
+    if (mediaPlayBtn) mediaPlayBtn.onclick = toggleMediaPlay;
+
+    if (mediaModalClose) {
+        mediaModalClose.onclick = () => {
+            stopCurrentMedia();
+            mediaPlayerModal.style.display = 'none';
+        };
+    }
+
+    if (mediaModalBackdrop) {
+        mediaModalBackdrop.onclick = () => {
+            stopCurrentMedia();
+            mediaPlayerModal.style.display = 'none';
+        };
+    }
+
+    // Seek Bar
+    if (mediaSeekBar) {
+        mediaSeekBar.oninput = () => {
+            isSeeking = true;
+            const target = activeAudio || activeVideo;
+            if (target && target.duration) {
+                const time = (mediaSeekBar.value / 100) * target.duration;
+                if (mediaTimeCurrent) mediaTimeCurrent.innerText = formatTime(time);
+            }
+        };
+
+        mediaSeekBar.onchange = () => {
+            const target = activeAudio || activeVideo;
+            if (target && target.duration) {
+                target.currentTime = (mediaSeekBar.value / 100) * target.duration;
+            }
+            isSeeking = false;
+        };
+    }
+
+    // Volume Slider & Mute
+    if (mediaVolBar) {
+        mediaVolBar.oninput = () => {
+            const val = parseFloat(mediaVolBar.value);
+            if (activeAudio) activeAudio.volume = val;
+            if (activeVideo) activeVideo.volume = val;
+            updateVolumeIcon(val);
+        };
+    }
+
+    if (mediaMuteBtn) {
+        mediaMuteBtn.onclick = () => {
+            const target = activeAudio || activeVideo;
+            if (!target) return;
+            if (target.volume > 0) {
+                target.dataset.prevVol = target.volume;
+                target.volume = 0;
+                if (mediaVolBar) mediaVolBar.value = 0;
+                updateVolumeIcon(0);
+            } else {
+                const prev = parseFloat(target.dataset.prevVol || 1);
+                target.volume = prev;
+                if (mediaVolBar) mediaVolBar.value = prev;
+                updateVolumeIcon(prev);
+            }
+        };
+    }
+
+    function updateVolumeIcon(vol) {
+        if (!mediaMuteBtn) return;
+        if (vol === 0) {
+            mediaMuteBtn.innerHTML = '<i class="fas fa-volume-xmark"></i>';
+        } else if (vol < 0.5) {
+            mediaMuteBtn.innerHTML = '<i class="fas fa-volume-low"></i>';
+        } else {
+            mediaMuteBtn.innerHTML = '<i class="fas fa-volume-high"></i>';
+        }
+    }
+
+    // Rewind 10s & Forward 10s
+    if (mediaRewBtn) {
+        mediaRewBtn.onclick = () => {
+            const target = activeAudio || activeVideo;
+            if (target) target.currentTime = Math.max(0, target.currentTime - 10);
+        };
+    }
+
+    if (mediaFwdBtn) {
+        mediaFwdBtn.onclick = () => {
+            const target = activeAudio || activeVideo;
+            if (target && target.duration) target.currentTime = Math.min(target.duration, target.currentTime + 10);
+        };
+    }
+
+    // Open in Tab
+    if (mediaOpenTabBtn) {
+        mediaOpenTabBtn.onclick = () => {
+            if (currentMediaItem) {
+                const fileUrl = 'file:///' + currentMediaItem.path.replace(/\\/g, '/');
+                if (window.electronAPI && window.electronAPI.newTab) {
+                    window.electronAPI.newTab(fileUrl);
+                }
+            }
+        };
+    }
+
+    // Fullscreen for video
+    if (mediaFsBtn) {
+        mediaFsBtn.onclick = () => {
+            if (activeVideo) {
+                if (activeVideo.requestFullscreen) activeVideo.requestFullscreen();
+            }
+        };
+    }
+
+    // Audio FX Tab Switching
+    const tabs = [
+        { btn: 'enhancer-tab-3d', panel: 'panel-3d' },
+        { btn: 'enhancer-tab-clarity', panel: 'panel-clarity' },
+        { btn: 'enhancer-tab-bass', panel: 'panel-bass' },
+        { btn: 'enhancer-tab-eq', panel: 'panel-eq' }
+    ];
+
+    tabs.forEach(({ btn, panel }) => {
+        const tabEl = document.getElementById(btn);
+        if (tabEl) {
+            tabEl.onclick = () => {
+                document.querySelectorAll('.enhancer-pill-btn').forEach(b => b.classList.remove('active'));
+                document.querySelectorAll('.enhancer-panel').forEach(p => p.style.display = 'none');
+                tabEl.classList.add('active');
+                const panelEl = document.getElementById(panel);
+                if (panelEl) panelEl.style.display = (panel === 'panel-eq' ? 'flex' : 'flex');
+            };
+        }
+    });
+
+    // Surround Dropdown
+    const trigger = document.getElementById('surround-dropdown-trigger');
+    const menu = document.getElementById('surround-dropdown-menu');
+    if (trigger && menu) {
+        trigger.onclick = (e) => {
+            e.stopPropagation();
+            menu.classList.toggle('open');
+        };
+
+        menu.querySelectorAll('.fx-dropdown-item').forEach(item => {
+            item.onclick = (e) => {
+                e.stopPropagation();
+                menu.querySelectorAll('.fx-dropdown-item').forEach(i => i.classList.remove('active'));
+                item.classList.add('active');
+                surroundMode = item.getAttribute('data-value') || 'cinema';
+                const currentVal = document.getElementById('surround-current-val');
+                if (currentVal) currentVal.innerHTML = item.innerHTML;
+                menu.classList.remove('open');
+
+                if (surroundMode === 'spatial8d') {
+                    startSpatial8d();
+                } else {
+                    stopSpatial8d();
+                }
+            };
+        });
+    }
+
+    // Spatial Depth Slider
+    const surroundWidthSlider = document.getElementById('fx-surround-width');
+    if (surroundWidthSlider) {
+        surroundWidthSlider.oninput = () => {
+            if (pannerNode && surroundMode !== 'spatial8d') {
+                pannerNode.pan.value = (parseFloat(surroundWidthSlider.value) - 0.5) * 0.4;
+            }
+        };
+    }
+
+    // Clarity Toggle & Slider
+    const clarityToggle = document.getElementById('fx-clarity-toggle');
+    const highsSlider = document.getElementById('fx-highs-slider');
+    if (clarityToggle) {
+        clarityToggle.onclick = () => {
+            clarityToggle.classList.toggle('active');
+            const isOn = clarityToggle.classList.contains('active');
+            clarityToggle.innerText = isOn ? 'ON' : 'OFF';
+            if (highsNode) {
+                highsNode.gain.value = isOn ? parseFloat(highsSlider?.value || 4) : 0;
+            }
+        };
+    }
+    if (highsSlider) {
+        highsSlider.oninput = () => {
+            if (highsNode && clarityToggle?.classList.contains('active')) {
+                highsNode.gain.value = parseFloat(highsSlider.value);
+            }
+        };
+    }
+
+    // Bass Boost Slider
+    const bassSlider = document.getElementById('fx-bass-slider');
+    if (bassSlider) {
+        bassSlider.oninput = () => {
+            if (bassNode) {
+                bassNode.gain.value = parseFloat(bassSlider.value);
+            }
+        };
+    }
+
+    // 10-Band EQ Presets
+    const eqPresets = {
+        flat: [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+        bass: [6, 5, 3, 1, 0, 0, 0, 0, 0, 0],
+        vocal: [-2, -1, 0, 2, 4, 4, 3, 1, 0, -1],
+        rock: [5, 3, 1, 0, -1, 0, 2, 3, 4, 4],
+        pop: [-1, 1, 3, 4, 4, 3, 1, -1, 2, 3],
+        electronic: [5, 4, 1, 0, -2, 2, 1, 2, 4, 5]
+    };
+
+    document.querySelectorAll('.eq-preset-btn').forEach(btn => {
+        btn.onclick = () => {
+            document.querySelectorAll('.eq-preset-btn').forEach(b => b.classList.remove('active'));
+            btn.classList.add('active');
+            const presetName = btn.getAttribute('data-preset');
+            const values = eqPresets[presetName] || eqPresets.flat;
+
+            document.querySelectorAll('.eq-slider').forEach((slider, idx) => {
+                const val = values[idx] || 0;
+                slider.value = val;
+                const valLabel = slider.parentElement?.querySelector('.eq-val');
+                if (valLabel) valLabel.innerText = (val > 0 ? '+' : '') + val;
+                if (eqNodes[idx]) eqNodes[idx].gain.value = val;
+            });
+        };
+    });
+
+    // EQ Sliders Drag
+    document.querySelectorAll('.eq-slider').forEach((slider, idx) => {
+        slider.oninput = () => {
+            const val = parseFloat(slider.value);
+            const valLabel = slider.parentElement?.querySelector('.eq-val');
+            if (valLabel) valLabel.innerText = (val > 0 ? '+' : '') + val;
+            if (eqNodes[idx]) eqNodes[idx].gain.value = val;
+        };
+    });
+}
+
+// ── PHOTO STUDIO & VIEWER ──────────────────────────────────────────────────
+function openPhotoStudio(item) {
+    currentPhotoItem = item;
+    const fileUrl = 'file:///' + item.path.replace(/\\/g, '/');
+
+    photoTransform = { rotate: 0, flipH: 1, flipV: 1, scale: 1 };
+    photoFilters = { brightness: 100, contrast: 100, saturation: 100, sepia: 0, blur: 0 };
+
+    if (editorFilename) editorFilename.innerText = item.name;
+    if (editorImgTarget) {
+        editorImgTarget.src = fileUrl;
+        applyPhotoTransforms();
+    }
+
+    // Reset sliders in UI
+    const bSlider = document.getElementById('slider-brightness');
+    const cSlider = document.getElementById('slider-contrast');
+    const sSlider = document.getElementById('slider-saturation');
+    const sepSlider = document.getElementById('slider-sepia');
+    const blurSlider = document.getElementById('slider-blur');
+
+    if (bSlider) bSlider.value = 100;
+    if (cSlider) cSlider.value = 100;
+    if (sSlider) sSlider.value = 100;
+    if (sepSlider) sepSlider.value = 0;
+    if (blurSlider) blurSlider.value = 0;
+
+    document.querySelectorAll('.editor-chip').forEach(c => c.classList.remove('active'));
+    document.querySelector('.editor-chip[data-preset="normal"]')?.classList.add('active');
+
+    if (photoEditorModal) photoEditorModal.style.display = 'flex';
+}
+
+function applyPhotoTransforms() {
+    if (!editorImgTarget) return;
+    const { rotate, flipH, flipV, scale } = photoTransform;
+    const { brightness, contrast, saturation, sepia, blur } = photoFilters;
+
+    editorImgTarget.style.transform = `scale(${scale}) scaleX(${flipH}) scaleY(${flipV}) rotate(${rotate}deg)`;
+    editorImgTarget.style.filter = `brightness(${brightness}%) contrast(${contrast}%) saturate(${saturation}%) sepia(${sepia}%) blur(${blur}px)`;
+}
+
+function initPhotoEditorControls() {
+    if (editorCloseBtn) {
+        editorCloseBtn.onclick = () => {
+            if (photoEditorModal) photoEditorModal.style.display = 'none';
+        };
+    }
+
+    if (editorSaveBtn) {
+        editorSaveBtn.onclick = () => {
+            if (currentPhotoItem) {
+                const fileUrl = 'file:///' + currentPhotoItem.path.replace(/\\/g, '/');
+                if (window.electronAPI && window.electronAPI.newTab) {
+                    window.electronAPI.newTab(fileUrl);
+                }
+            }
+        };
+    }
+
+    // Rotate Left & Right
+    document.getElementById('tool-rotate-left')?.addEventListener('click', () => {
+        photoTransform.rotate = (photoTransform.rotate - 90) % 360;
+        applyPhotoTransforms();
+    });
+
+    document.getElementById('tool-rotate-right')?.addEventListener('click', () => {
+        photoTransform.rotate = (photoTransform.rotate + 90) % 360;
+        applyPhotoTransforms();
+    });
+
+    // Flip Horizontal & Vertical
+    document.getElementById('tool-flip-h')?.addEventListener('click', () => {
+        photoTransform.flipH *= -1;
+        applyPhotoTransforms();
+    });
+
+    document.getElementById('tool-flip-v')?.addEventListener('click', () => {
+        photoTransform.flipV *= -1;
+        applyPhotoTransforms();
+    });
+
+    // Zoom
+    document.getElementById('tool-zoom-in')?.addEventListener('click', () => {
+        photoTransform.scale = Math.min(3, photoTransform.scale + 0.25);
+        applyPhotoTransforms();
+    });
+
+    document.getElementById('tool-zoom-out')?.addEventListener('click', () => {
+        photoTransform.scale = Math.max(0.25, photoTransform.scale - 0.25);
+        applyPhotoTransforms();
+    });
+
+    document.getElementById('tool-fit')?.addEventListener('click', () => {
+        photoTransform.scale = 1;
+        applyPhotoTransforms();
+    });
+
+    document.getElementById('tool-reset')?.addEventListener('click', () => {
+        photoTransform = { rotate: 0, flipH: 1, flipV: 1, scale: 1 };
+        photoFilters = { brightness: 100, contrast: 100, saturation: 100, sepia: 0, blur: 0 };
+        applyPhotoTransforms();
+    });
+
+    // Photo Presets
+    const presets = {
+        normal: { brightness: 100, contrast: 100, saturation: 100, sepia: 0, blur: 0 },
+        vivid: { brightness: 110, contrast: 125, saturation: 140, sepia: 0, blur: 0 },
+        bw: { brightness: 105, contrast: 120, saturation: 0, sepia: 0, blur: 0 },
+        sepia: { brightness: 95, contrast: 110, saturation: 80, sepia: 75, blur: 0 },
+        cyber: { brightness: 115, contrast: 135, saturation: 180, sepia: 0, blur: 0 },
+        warm: { brightness: 105, contrast: 105, saturation: 120, sepia: 30, blur: 0 }
+    };
+
+    document.querySelectorAll('.editor-chip').forEach(chip => {
+        chip.onclick = () => {
+            document.querySelectorAll('.editor-chip').forEach(c => c.classList.remove('active'));
+            chip.classList.add('active');
+            const p = presets[chip.getAttribute('data-preset')] || presets.normal;
+            photoFilters = { ...p };
+            applyPhotoTransforms();
+        };
+    });
+
+    // Sliders
+    const bSlider = document.getElementById('slider-brightness');
+    const cSlider = document.getElementById('slider-contrast');
+    const sSlider = document.getElementById('slider-saturation');
+    const sepSlider = document.getElementById('slider-sepia');
+    const blurSlider = document.getElementById('slider-blur');
+
+    if (bSlider) {
+        bSlider.oninput = () => {
+            photoFilters.brightness = bSlider.value;
+            document.getElementById('val-brightness').innerText = bSlider.value + '%';
+            applyPhotoTransforms();
+        };
+    }
+    if (cSlider) {
+        cSlider.oninput = () => {
+            photoFilters.contrast = cSlider.value;
+            document.getElementById('val-contrast').innerText = cSlider.value + '%';
+            applyPhotoTransforms();
+        };
+    }
+    if (sSlider) {
+        sSlider.oninput = () => {
+            photoFilters.saturation = sSlider.value;
+            document.getElementById('val-saturation').innerText = sSlider.value + '%';
+            applyPhotoTransforms();
+        };
+    }
+    if (sepSlider) {
+        sepSlider.oninput = () => {
+            photoFilters.sepia = sepSlider.value;
+            document.getElementById('val-sepia').innerText = sepSlider.value + '%';
+            applyPhotoTransforms();
+        };
+    }
+    if (blurSlider) {
+        blurSlider.oninput = () => {
+            photoFilters.blur = blurSlider.value;
+            document.getElementById('val-blur').innerText = blurSlider.value + 'px';
+            applyPhotoTransforms();
+        };
     }
 }
 
@@ -625,18 +1293,18 @@ function showContextMenu(e, item) {
     const safePath = item.path.replace(/\\/g, '\\\\').replace(/'/g, "\\'");
 
     contextMenu.innerHTML = `
-        <div class="menu-item" onclick="handleOpenItem('${safePath}', ${item.isDirectory})">
+        <div class="context-menu-item" onclick="handleOpenItem('${safePath}', ${item.isDirectory})">
             <i class="fas fa-arrow-up-right-from-square"></i> Open
         </div>
-        <div class="menu-item" onclick="handleCopyPath('${safePath}')">
+        <div class="context-menu-item" onclick="handleCopyPath('${safePath}')">
             <i class="fas fa-copy"></i> Copy Path
         </div>
         ${!item.isDirectory ? `
-        <div class="menu-item" onclick="handleOpenFolder('${safePath}')">
+        <div class="context-menu-item" onclick="handleOpenFolder('${safePath}')">
             <i class="fas fa-folder-open"></i> Show in Folder
         </div>` : ''}
-        <div class="menu-divider"></div>
-        <div class="menu-item danger" onclick="handleDeleteItem('${safePath}')">
+        <div class="menu-divider" style="height:1px; background:var(--border-color); margin:4px 0;"></div>
+        <div class="context-menu-item danger" style="color:#EF4444;" onclick="handleDeleteItem('${safePath}')">
             <i class="fas fa-trash"></i> Move to Trash
         </div>
     `;
@@ -726,7 +1394,9 @@ function getFileIcon(item) {
         case 'wav':
         case 'flac':
         case 'ogg':
-        case 'm4a': return { icon: 'fas fa-file-audio', color: '#10B981' };
+        case 'm4a':
+        case 'aac':
+        case 'wma': return { icon: 'fas fa-file-audio', color: '#10B981' };
         case 'zip':
         case 'rar':
         case '7z':
@@ -771,6 +1441,13 @@ function formatBytes(bytes) {
     const sizes = ['B', 'KB', 'MB', 'GB', 'TB'];
     const i = Math.floor(Math.log(bytes) / Math.log(k));
     return parseFloat((bytes / Math.pow(k, i)).toFixed(1)) + ' ' + sizes[i];
+}
+
+function formatTime(seconds) {
+    if (isNaN(seconds) || seconds < 0) return '0:00';
+    const m = Math.floor(seconds / 60);
+    const s = Math.floor(seconds % 60);
+    return `${m}:${s < 10 ? '0' : ''}${s}`;
 }
 
 function escapeHtml(str) {
