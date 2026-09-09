@@ -319,8 +319,10 @@ function renderTabs() {
         
         if (tab.isSplit) {
             el.classList.add('split-tab');
-                        const active1 = (tab.id === activeTabId && tab.focusedSide === 'left') ? 'active' : '';
-            const active2 = (tab.id === activeTabId && tab.focusedSide === 'right') ? 'active' : '';
+            const activeSide = tab.focusedSide || 'left';
+            const isTabActive = tab.id === activeTabId;
+            const active1 = (isTabActive && activeSide === 'left') ? 'active' : '';
+            const active2 = (isTabActive && activeSide === 'right') ? 'active' : '';
             
             const fakeTab1 = { url: tab.url, favicon: tab.favicon, emoji: tab.emoji };
             const fakeTab2 = { url: tab.url2, favicon: tab.favicon2, emoji: tab.emoji2 };
@@ -331,23 +333,24 @@ function renderTabs() {
             const title2 = getSimplifiedTitle(tab.title2, tab.url2);
 
             el.innerHTML = `
-                <div class="sub-tab-half ${active1}" data-side="left">
+                <div class="sub-tab-half ${active1}" data-side="left" title="${title1}">
                     ${iconHtml1}
                     <span class="sub-title">${title1}</span>
                 </div>
                 <div class="sub-tab-divider"></div>
-                <div class="sub-tab-half ${active2}" data-side="right">
+                <div class="sub-tab-half ${active2}" data-side="right" title="${title2}">
                     ${iconHtml2}
                     <span class="sub-title">${title2}</span>
                 </div>
 
-                <i class="fas fa-times tab-close" data-id="${tab.id}"></i>
+                <i class="fas fa-times tab-close" data-id="${tab.id}" title="Close split workspace"></i>
             `;
 
             el.querySelectorAll('.sub-tab-half').forEach(half => {
                 half.onclick = (e) => {
                     e.stopPropagation();
                     const side = half.getAttribute('data-side');
+                    tab.focusedSide = side;
                     window.electronAPI.send('focus-split-side', { tabId: tab.id, side });
                     if (activeTabId !== tab.id) {
                         activeTabId = tab.id;
@@ -696,6 +699,22 @@ window.electronAPI.on('tab-audio-status-changed', (e, { id, isAudible }) => {
     const tab = tabs.find(t => t.id === id);
     if (tab) {
         tab.audible = isAudible;
+        renderTabs();
+    }
+});
+
+window.electronAPI.on('split-side-focused', (e, { tabId, side }) => {
+    const tab = tabs.find(t => t.id === tabId);
+    if (tab) {
+        tab.focusedSide = side;
+        const splitActivePill = document.getElementById('split-active-pill');
+        if (splitActivePill) {
+            splitActivePill.style.display = (tab.id === activeTabId && tab.isSplit) ? 'inline-flex' : 'none';
+            const label = document.getElementById('split-active-label');
+            if (label && tab.id === activeTabId) {
+                label.textContent = side === 'right' ? 'Split: Right Side' : 'Split: Left Side';
+            }
+        }
         renderTabs();
     }
 });

@@ -2885,78 +2885,106 @@ body[data-theme="light"] #sidebar-app-close-btn:hover {
   color: #ef4444;
 }
 
-/* ── Split Tab styling (Opera Style) ───────────────────────── */
+/* ── Split Tab styling (Dual Bento Pill) ───────────────────────── */
 .tab-item.split-tab {
   display: flex !important;
   flex-direction: row !important;
   align-items: center !important;
-  flex: 0 1 300px;
-  max-width: 300px;
-  min-width: 160px;
+  flex: 0 1 320px !important;
+  max-width: 360px !important;
+  min-width: 220px !important;
+  height: 32px !important;
   background: var(--card-bg, #16181D) !important;
   border: 1px solid var(--chrome-border, rgba(255, 255, 255, 0.08)) !important;
-  border-radius: 100px !important;
-  padding: 3px 6px;
-  gap: 4px;
-  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.3) !important;
+  border-radius: 12px !important;
+  padding: 2px 4px !important;
+  gap: 2px !important;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2) !important;
+  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1) !important;
 }
 
 body[data-theme="light"] .tab-item.split-tab {
   background: #FFFFFF !important;
   border: 1px solid rgba(0, 0, 0, 0.08) !important;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04) !important;
+  box-shadow: 0 1px 6px rgba(0, 0, 0, 0.04) !important;
+}
+
+.tab-item.split-tab.active {
+  border-color: rgba(255, 255, 255, 0.16) !important;
+  background: rgba(255, 255, 255, 0.05) !important;
+}
+
+body[data-theme="light"] .tab-item.split-tab.active {
+  border-color: rgba(0, 0, 0, 0.12) !important;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06) !important;
+}
+
+body.compact-mode .tab-item.split-tab {
+  height: 26px !important;
+  min-width: 190px !important;
+  border-radius: 9px !important;
 }
 
 .tab-item.split-tab .sub-tab-half {
-  flex: 1;
-  display: flex;
-  align-items: center;
-  gap: 6px;
-  padding: 3px 10px;
-  height: 100%;
-  border-radius: 100px !important;
-  transition: all 0.22s cubic-bezier(0.16, 1, 0.3, 1);
+  flex: 1 1 0 !important;
+  min-width: 0 !important;
+  height: 26px !important;
+  display: flex !important;
+  align-items: center !important;
+  gap: 6px !important;
+  padding: 0 8px !important;
+  border-radius: 8px !important;
+  transition: all 0.18s cubic-bezier(0.16, 1, 0.3, 1) !important;
   color: var(--text-dim, #A0A5B1) !important;
-  font-weight: 600;
-  position: relative;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-  font-size: 11px;
+  font-weight: 500 !important;
+  position: relative !important;
+  font-size: 11.5px !important;
+  cursor: pointer !important;
+  border: 1px solid transparent !important;
+  user-select: none !important;
+}
+
+body.compact-mode .tab-item.split-tab .sub-tab-half {
+  height: 22px !important;
+  font-size: 10.5px !important;
+  padding: 0 6px !important;
+  border-radius: 7px !important;
 }
 
 body[data-theme="light"] .tab-item.split-tab .sub-tab-half {
-  color: #475569 !important;
+  color: #64748B !important;
 }
 
-.tab-item.split-tab .sub-tab-half:hover {
-  background: rgba(255, 255, 255, 0.08) !important;
+.tab-item.split-tab .sub-tab-half:hover:not(.active) {
+  background: rgba(255, 255, 255, 0.07) !important;
   color: var(--text, #F0F2F5) !important;
 }
 
-body[data-theme="light"] .tab-item.split-tab .sub-tab-half:hover {
-  background: rgba(0, 0, 0, 0.05) !important;
-  color: #111111 !important;
+body[data-theme="light"] .tab-item.split-tab .sub-tab-half:hover:not(.active) {
+  background: rgba(0, 0, 0, 0.04) !important;
+  color: #0F172A !important;
 }
 
+/* ── Split Tab Active Side Highlight ── */
 .tab-item.split-tab .sub-tab-half.active {
-  background: var(--accent-dim, rgba(212, 252, 43, 0.15)) !important;
+  background: color-mix(in srgb, var(--accent, #D4FC2B) 18%, rgba(255, 255, 255, 0.03)) !important;
   color: var(--accent, #D4FC2B) !important;
-  font-weight: 700 !important;
-  border: 1px solid var(--accent-glow, rgba(212, 252, 43, 0.3)) !important;
-  box-shadow: 0 2px 8px var(--accent-glow, rgba(212, 252, 43, 0.2)) !important;
+  font-weight: 600 !important;
+  border: 1px solid color-mix(in srgb, var(--accent, #D4FC2B) 35%, transparent) !important;
+  box-shadow: 0 1px 6px color-mix(in srgb, var(--accent, #D4FC2B) 15%, transparent) !important;
 }
 
 body[data-theme="light"] .tab-item.split-tab .sub-tab-half.active {
-  background: var(--accent-dim, rgba(21, 172, 73, 0.12)) !important;
+  background: color-mix(in srgb, var(--accent, #15AC49) 12%, #FFFFFF) !important;
   color: var(--accent, #15AC49) !important;
-  border: 1px solid var(--accent-glow, rgba(21, 172, 73, 0.25)) !important;
-  box-shadow: none !important;
+  font-weight: 600 !important;
+  border: 1px solid color-mix(in srgb, var(--accent, #15AC49) 30%, transparent) !important;
+  box-shadow: 0 1px 4px color-mix(in srgb, var(--accent, #15AC49) 10%, transparent) !important;
 }
 
 .tab-item.split-tab .sub-tab-half.active .sub-title {
   color: var(--accent, #D4FC2B) !important;
-  font-weight: 700 !important;
+  font-weight: 600 !important;
 }
 
 body[data-theme="light"] .tab-item.split-tab .sub-tab-half.active .sub-title {
@@ -2975,37 +3003,42 @@ body[data-theme="light"] .tab-item.split-tab .sub-tab-half.active i.tab-favicon 
   width: 14px;
   height: 14px;
   flex-shrink: 0;
+  border-radius: 3px;
 }
 
 .tab-item.split-tab .sub-tab-half .sub-title {
-  font-size: 11px;
+  font-size: 11.5px;
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
-  font-weight: 600;
+  font-weight: inherit;
   color: inherit;
+  flex: 1;
+  min-width: 0;
 }
 
 .tab-item.split-tab .sub-tab-divider {
   width: 1px;
-  height: 14px;
-  background: rgba(255, 255, 255, 0.12) !important;
-  margin: 0 2px;
+  height: 16px;
+  background: rgba(255, 255, 255, 0.1) !important;
+  margin: 0 1px;
   flex-shrink: 0;
 }
 
 body[data-theme="light"] .tab-item.split-tab .sub-tab-divider {
-  background: rgba(0, 0, 0, 0.1) !important;
+  background: rgba(0, 0, 0, 0.08) !important;
 }
 
 .tab-item.split-tab .tab-close {
-  margin-right: 6px;
+  margin-left: 2px;
+  margin-right: 4px;
   opacity: 0;
   pointer-events: none;
   font-size: 11px;
   align-self: center;
   color: var(--text-dim, #A0A5B1) !important;
-  transition: opacity 0.16s ease;
+  transition: all 0.16s ease;
+  cursor: pointer;
 }
 
 .tab-item.split-tab:hover .tab-close {
@@ -3020,6 +3053,7 @@ body[data-theme="light"] .tab-item.split-tab .tab-close {
 .tab-item.split-tab .tab-close:hover {
   opacity: 1;
   color: #ef4444 !important;
+  transform: scale(1.15);
 }
 
 /* Tab Emoji Inline Styling & Spring Hover Animation */
