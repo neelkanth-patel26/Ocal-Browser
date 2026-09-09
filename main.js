@@ -8195,7 +8195,8 @@ ipcMain.on('hide-passwords-popover', () => {
 });
 
 ipcMain.on('show-bm-dropdown', (e, { x, y, bookmarks, folderId }) => {
-    if (!bmDropdownView || !mainWindow) return;
+    if (!bmDropdownView) createBMDropdownView();
+    if (!bmDropdownView || !mainWindow || mainWindow.isDestroyed()) return;
 
     // Toggle logic: if clicking the same folder, just hide it
     if (activeBMFolderId === folderId) {
@@ -8206,16 +8207,18 @@ ipcMain.on('show-bm-dropdown', (e, { x, y, bookmarks, folderId }) => {
 
     hidePopups();
     activeBMFolderId = folderId;
-    mainWindow.addBrowserView(bmDropdownView);
+    if (!mainWindow.getBrowserViews().includes(bmDropdownView)) {
+        mainWindow.addBrowserView(bmDropdownView);
+    }
 
     const zoom = getOptimalZoomFactor();
     const winOffset = getWinOffset();
     // Initial safe size, will be refined by dropdown-resize IPC
     bmDropdownView.setBounds({
-        x: Math.round(x + winOffset) - 15,
-        y: Math.round(y + winOffset),
-        width: Math.round(360 * zoom),
-        height: Math.round(530 * zoom)
+        x: Math.max(10, Math.round(x + winOffset) - 10),
+        y: Math.round(y + winOffset) + 4,
+        width: Math.round(300 * zoom),
+        height: Math.round(360 * zoom)
     });
     bmDropdownView.webContents.send('show-bm-dropdown', { bookmarks });
     mainWindow.setTopBrowserView(bmDropdownView);
