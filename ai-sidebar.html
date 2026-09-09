@@ -169,7 +169,7 @@
             display: none !important;
         }
 
-        /* ── Dashboard Outer Layout ── */
+        /* ── Dashboard Outer Layout & Smooth Fluid Animation ── */
         .ai-panel {
             flex: 1;
             height: 100%;
@@ -181,6 +181,25 @@
             background: var(--bg);
             padding: 12px;
             gap: 14px;
+            box-sizing: border-box;
+            opacity: 0;
+            transform: translateX(42px) scale(0.985);
+            transition: transform 0.35s cubic-bezier(0.16, 1, 0.3, 1),
+                        opacity 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+            will-change: transform, opacity;
+        }
+
+        .ai-panel.animate-in {
+            opacity: 1;
+            transform: translateX(0) scale(1);
+        }
+
+        body.closing .ai-panel {
+            opacity: 0 !important;
+            transform: translateX(50px) scale(0.98) !important;
+            transition: transform 0.28s cubic-bezier(0.4, 0, 1, 1),
+                        opacity 0.24s cubic-bezier(0.4, 0, 1, 1) !important;
+            pointer-events: none !important;
         }
 
         body.fullscreen-mode .ai-panel {

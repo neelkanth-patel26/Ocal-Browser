@@ -1847,12 +1847,14 @@ if (window.electronAPI) {
 
     window.electronAPI.on?.('start-sidebar-exit', () => {
         document.body.classList.add('closing');
+        const panel = document.querySelector('.ai-panel');
+        if (panel) panel.classList.remove('animate-in');
         setTimeout(() => {
             window.electronAPI.send?.('sidebar-exit-complete');
-        }, 450);
+        }, 280);
     });
 
-    window.electronAPI.on?.('sidebar-shown', () => {
+    const triggerEntranceAnimation = () => {
         document.body.classList.remove('closing');
         const panel = document.querySelector('.ai-panel');
         if (panel) {
@@ -1863,7 +1865,16 @@ if (window.electronAPI) {
                 });
             });
         }
-    });
+    };
+
+    window.electronAPI.on?.('sidebar-shown', triggerEntranceAnimation);
+
+    // Also trigger entrance on initial document load
+    if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', triggerEntranceAnimation);
+    } else {
+        triggerEntranceAnimation();
+    }
 }
 
 // Intercept all link clicks inside the messages container to open them in a new browser tab
