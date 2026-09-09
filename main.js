@@ -1584,7 +1584,7 @@ function showSidebarOverlay() {
         sidebarOverlayView.webContents.send('settings-changed', { ...userSettings });
         sidebarOverlayView.webContents.send('bookmarks-changed', {
             bookmarks: userSettings.bookmarks || [],
-            folders: userSettings.bookmarkFolders || []
+            folders: userSettings.folders || []
         });
         sidebarOverlayView.webContents.send('download-updated', userSettings.downloads || []);
     }
@@ -3783,10 +3783,19 @@ ipcMain.on('toggle-sidebar', (e, open) => {
     sidebarOpen = (open === undefined) ? !sidebarOpen : open;
     if (sidebarOpen) {
         showSidebarOverlay();
-        if (sidebarOverlayView) sidebarOverlayView.webContents.send('toggle-sidebar', true);
+        if (sidebarOverlayView && !sidebarOverlayView.webContents.isDestroyed()) {
+            sidebarOverlayView.webContents.send('toggle-sidebar', true);
+            sidebarOverlayView.webContents.send('bookmarks-changed', {
+                bookmarks: userSettings.bookmarks || [],
+                folders: userSettings.folders || []
+            });
+            sidebarOverlayView.webContents.send('download-updated', userSettings.downloads || []);
+        }
     } else {
-        if (sidebarOverlayView) sidebarOverlayView.webContents.send('toggle-sidebar', false);
-        hideSidebarOverlay(); // This line is now redundant as the overlay will hide itself based on the message
+        if (sidebarOverlayView && !sidebarOverlayView.webContents.isDestroyed()) {
+            sidebarOverlayView.webContents.send('toggle-sidebar', false);
+        }
+        hideSidebarOverlay();
     }
 });
 
@@ -6715,6 +6724,11 @@ ipcMain.on('switch-sidebar-tab', (e, tab) => {
     if (sidebarOverlayView && !sidebarOverlayView.webContents.isDestroyed()) {
         sidebarOverlayView.webContents.send('toggle-sidebar', true);
         sidebarOverlayView.webContents.send('switch-tab-sidebar', tab);
+        sidebarOverlayView.webContents.send('bookmarks-changed', {
+            bookmarks: userSettings.bookmarks || [],
+            folders: userSettings.folders || []
+        });
+        sidebarOverlayView.webContents.send('download-updated', userSettings.downloads || []);
     }
 });
 ipcMain.on('close-all-sidebars', () => closeOverlays());
