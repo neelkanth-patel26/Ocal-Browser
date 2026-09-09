@@ -645,15 +645,6 @@ window.electronAPI.onTabsChanged((data) => {
         splitBtn.classList.toggle('active', active ? !!active.isSplit : false);
     }
     
-    const splitActivePill = document.getElementById('split-active-pill');
-    if (splitActivePill) {
-        splitActivePill.style.display = (active && active.isSplit) ? 'inline-flex' : 'none';
-        const label = document.getElementById('split-active-label');
-        if (label && active) {
-            label.textContent = active.focusedSide === 'right' ? 'Split: Right Side' : 'Split: Left Side';
-        }
-    }
-
     if (active && addressInput) {
         syncOmnibox(active.url);
         updatePageTimeChip(active.id);
@@ -707,14 +698,6 @@ window.electronAPI.on('split-side-focused', (e, { tabId, side }) => {
     const tab = tabs.find(t => t.id === tabId);
     if (tab) {
         tab.focusedSide = side;
-        const splitActivePill = document.getElementById('split-active-pill');
-        if (splitActivePill) {
-            splitActivePill.style.display = (tab.id === activeTabId && tab.isSplit) ? 'inline-flex' : 'none';
-            const label = document.getElementById('split-active-label');
-            if (label && tab.id === activeTabId) {
-                label.textContent = side === 'right' ? 'Split: Right Side' : 'Split: Left Side';
-            }
-        }
         renderTabs();
     }
 });
@@ -1365,11 +1348,10 @@ document.addEventListener('DOMContentLoaded', () => {
     if (fmBtn) fmBtn.onclick = () => window.electronAPI.navigateTo('ocal://file-manager');
     if (mnBtn) mnBtn.onclick = () => window.electronAPI.send('open-settings');
     
-    // ── Split Screen Helper Popover & Active Pill UI Logic ─────────
+    // ── Split Screen Helper Popover UI Logic ─────────────────────────
     const splitBtn = document.getElementById('split-screen-btn');
     const splitHelperPopover = document.getElementById('split-helper-popover');
     const splitHelperClose = document.getElementById('split-helper-close');
-    const splitActivePill = document.getElementById('split-active-pill');
 
     function toggleSplitHelperPopover(show) {
         if (!splitHelperPopover) return;
@@ -1383,9 +1365,8 @@ document.addEventListener('DOMContentLoaded', () => {
                 footerActions.style.display = (active && active.isSplit) ? 'flex' : 'none';
             }
             
-            const targetBtn = splitActivePill && splitActivePill.style.display !== 'none' ? splitActivePill : splitBtn;
-            if (targetBtn) {
-                const rect = targetBtn.getBoundingClientRect();
+            if (splitBtn) {
+                const rect = splitBtn.getBoundingClientRect();
                 splitHelperPopover.style.top = `${rect.bottom + 8}px`;
                 splitHelperPopover.style.right = `${Math.max(10, window.innerWidth - rect.right - 20)}px`;
             }
@@ -1402,19 +1383,12 @@ document.addEventListener('DOMContentLoaded', () => {
         };
     }
 
-    if (splitActivePill) {
-        splitActivePill.onclick = (e) => {
-            e.stopPropagation();
-            window.electronAPI.send('toggle-split-screen');
-        };
-    }
-
     if (splitHelperClose) {
         splitHelperClose.onclick = () => toggleSplitHelperPopover(false);
     }
 
     document.addEventListener('click', (e) => {
-        if (splitHelperPopover && !splitHelperPopover.contains(e.target) && e.target !== splitBtn && e.target !== splitActivePill) {
+        if (splitHelperPopover && !splitHelperPopover.contains(e.target) && e.target !== splitBtn) {
             toggleSplitHelperPopover(false);
         }
     });
