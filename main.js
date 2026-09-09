@@ -1545,6 +1545,7 @@ function broadcastToSidebars(channel, data) {
 }
 
 function createSidebarOverlay() {
+    if (sidebarOverlayView && !sidebarOverlayView.webContents.isDestroyed()) return;
     sidebarOverlayView = new BrowserView({
         webPreferences: { preload: path.join(__dirname, 'preload.js'), contextIsolation: true, nodeIntegration: false, devTools: false, webviewTag: true },
     });
@@ -1570,15 +1571,22 @@ function createAiSidebar() {
 }
 
 function showSidebarOverlay() {
-    if (!sidebarOverlayView || !mainWindow) return;
+    if (!sidebarOverlayView) createSidebarOverlay();
+    if (!sidebarOverlayView || !mainWindow || mainWindow.isDestroyed()) return;
     if (aiSidebarOpen) hideAiSidebar();
     if (!mainWindow.getBrowserViews().includes(sidebarOverlayView)) {
         mainWindow.addBrowserView(sidebarOverlayView);
     }
     sidebarOpen = true;
+    mainWindow.setTopBrowserView(sidebarOverlayView);
     updateViewBounds();
     if (sidebarOverlayView && !sidebarOverlayView.webContents.isDestroyed()) {
         sidebarOverlayView.webContents.send('settings-changed', { ...userSettings });
+        sidebarOverlayView.webContents.send('bookmarks-changed', {
+            bookmarks: userSettings.bookmarks || [],
+            folders: userSettings.bookmarkFolders || []
+        });
+        sidebarOverlayView.webContents.send('download-updated', userSettings.downloads || []);
     }
 }
 
