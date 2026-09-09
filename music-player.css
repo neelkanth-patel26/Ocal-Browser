@@ -859,6 +859,7 @@ input[type="range"]::-webkit-slider-thumb:hover {
 }
 
 .v-eq-slider {
+    appearance: slider-vertical;
     -webkit-appearance: slider-vertical;
     writing-mode: bt-lr;
     width: 6px;
