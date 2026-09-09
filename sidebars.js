@@ -974,7 +974,7 @@ if (window.electronAPI && window.electronAPI.getSettings) {
             currentSettings = s;
             historyItems = s.history || [];
             bookmarks = s.bookmarks || [];
-            folders = s.bookmarkFolders || [];
+            folders = s.folders || s.bookmarkFolders || [];
             const isLight = s.themeMode === 'light';
             document.body.setAttribute('data-theme', s.themeMode || 'dark');
             if (s.accentColor) {
@@ -985,6 +985,15 @@ if (window.electronAPI && window.electronAPI.getSettings) {
                 document.documentElement.style.setProperty('--accent-border', hexToRgba(activeAccent, 0.28));
             }
             render();
+        }
+    }).catch(() => {});
+}
+if (window.electronAPI && window.electronAPI.invoke) {
+    window.electronAPI.invoke('get-bookmarks').then(data => {
+        if (data) {
+            if (Array.isArray(data.bookmarks)) bookmarks = data.bookmarks;
+            if (Array.isArray(data.folders)) folders = data.folders;
+            if (currentTab === 'bookmarks') render();
         }
     }).catch(() => {});
 }
