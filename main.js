@@ -3817,13 +3817,116 @@ ipcMain.on('stop-ai-resize', () => {
     mainWindow.webContents.send('ai-resize-stopped');
 });
 
+function registerWindowsDefaultBrowserRegistry() {
+    if (process.platform !== 'win32') return;
+
+    try {
+        const appPath = process.execPath;
+        const iconPath = path.join(__dirname, 'icon.ico');
+        const iconTarget = fs.existsSync(iconPath) ? `${iconPath}` : `${appPath},0`;
+        const appExeName = path.basename(appPath);
+
+        const appCommand = `\\"${appPath}\\" -- \\"%1\\"`;
+        const appOpen = `\\"${appPath}\\"`;
+
+        const regCommands = [
+            // 1. ProgId OcalHTML
+            `reg add "HKCU\\Software\\Classes\\OcalHTML" /ve /d "Ocal HTML Document" /f`,
+            `reg add "HKCU\\Software\\Classes\\OcalHTML" /v "FriendlyTypeName" /d "Ocal HTML Document" /f`,
+            `reg add "HKCU\\Software\\Classes\\OcalHTML" /v "URL Protocol" /d "" /f`,
+            `reg add "HKCU\\Software\\Classes\\OcalHTML" /v "AppUserModelId" /d "com.ocal.browser.v2" /f`,
+            `reg add "HKCU\\Software\\Classes\\OcalHTML\\DefaultIcon" /ve /d "${iconTarget}" /f`,
+            `reg add "HKCU\\Software\\Classes\\OcalHTML\\shell\\open\\command" /ve /d "${appCommand}" /f`,
+
+            // 2. ProgId OcalPDF
+            `reg add "HKCU\\Software\\Classes\\OcalPDF" /ve /d "Ocal PDF Document" /f`,
+            `reg add "HKCU\\Software\\Classes\\OcalPDF" /v "FriendlyTypeName" /d "Ocal PDF Document" /f`,
+            `reg add "HKCU\\Software\\Classes\\OcalPDF" /v "AppUserModelId" /d "com.ocal.browser.v2" /f`,
+            `reg add "HKCU\\Software\\Classes\\OcalPDF\\DefaultIcon" /ve /d "${iconTarget}" /f`,
+            `reg add "HKCU\\Software\\Classes\\OcalPDF\\shell\\open\\command" /ve /d "${appCommand}" /f`,
+
+            // 3. StartMenuInternet registration
+            `reg add "HKCU\\Software\\Clients\\StartMenuInternet\\OcalBrowser" /ve /d "Ocal Browser" /f`,
+            `reg add "HKCU\\Software\\Clients\\StartMenuInternet\\OcalBrowser\\DefaultIcon" /ve /d "${iconTarget}" /f`,
+            `reg add "HKCU\\Software\\Clients\\StartMenuInternet\\OcalBrowser\\InstallInfo" /v "IconsVisible" /t REG_DWORD /d 1 /f`,
+            `reg add "HKCU\\Software\\Clients\\StartMenuInternet\\OcalBrowser\\shell\\open\\command" /ve /d "${appOpen}" /f`,
+
+            // 4. Capabilities
+            `reg add "HKCU\\Software\\Clients\\StartMenuInternet\\OcalBrowser\\Capabilities" /v "ApplicationName" /d "Ocal Browser" /f`,
+            `reg add "HKCU\\Software\\Clients\\StartMenuInternet\\OcalBrowser\\Capabilities" /v "ApplicationIcon" /d "${iconTarget}" /f`,
+            `reg add "HKCU\\Software\\Clients\\StartMenuInternet\\OcalBrowser\\Capabilities" /v "ApplicationDescription" /d "Ocal Browser is a modern, ultra-fast, and secure web browser powered by intelligent AI." /f`,
+            `reg add "HKCU\\Software\\Clients\\StartMenuInternet\\OcalBrowser\\Capabilities\\StartMenu" /v "StartMenuInternet" /d "OcalBrowser" /f`,
+
+            // 5. Capabilities FileAssociations
+            `reg add "HKCU\\Software\\Clients\\StartMenuInternet\\OcalBrowser\\Capabilities\\FileAssociations" /v ".htm" /d "OcalHTML" /f`,
+            `reg add "HKCU\\Software\\Clients\\StartMenuInternet\\OcalBrowser\\Capabilities\\FileAssociations" /v ".html" /d "OcalHTML" /f`,
+            `reg add "HKCU\\Software\\Clients\\StartMenuInternet\\OcalBrowser\\Capabilities\\FileAssociations" /v ".shtml" /d "OcalHTML" /f`,
+            `reg add "HKCU\\Software\\Clients\\StartMenuInternet\\OcalBrowser\\Capabilities\\FileAssociations" /v ".xht" /d "OcalHTML" /f`,
+            `reg add "HKCU\\Software\\Clients\\StartMenuInternet\\OcalBrowser\\Capabilities\\FileAssociations" /v ".xhtml" /d "OcalHTML" /f`,
+            `reg add "HKCU\\Software\\Clients\\StartMenuInternet\\OcalBrowser\\Capabilities\\FileAssociations" /v ".svg" /d "OcalHTML" /f`,
+            `reg add "HKCU\\Software\\Clients\\StartMenuInternet\\OcalBrowser\\Capabilities\\FileAssociations" /v ".webp" /d "OcalHTML" /f`,
+            `reg add "HKCU\\Software\\Clients\\StartMenuInternet\\OcalBrowser\\Capabilities\\FileAssociations" /v ".pdf" /d "OcalPDF" /f`,
+
+            // 6. Capabilities URLAssociations
+            `reg add "HKCU\\Software\\Clients\\StartMenuInternet\\OcalBrowser\\Capabilities\\UrlAssociations" /v "http" /d "OcalHTML" /f`,
+            `reg add "HKCU\\Software\\Clients\\StartMenuInternet\\OcalBrowser\\Capabilities\\UrlAssociations" /v "https" /d "OcalHTML" /f`,
+            `reg add "HKCU\\Software\\Clients\\StartMenuInternet\\OcalBrowser\\Capabilities\\UrlAssociations" /v "ftp" /d "OcalHTML" /f`,
+            `reg add "HKCU\\Software\\Clients\\StartMenuInternet\\OcalBrowser\\Capabilities\\UrlAssociations" /v "ocal" /d "OcalHTML" /f`,
+
+            // 7. RegisteredApplications Link
+            `reg add "HKCU\\Software\\RegisteredApplications" /v "OcalBrowser" /d "Software\\Clients\\StartMenuInternet\\OcalBrowser\\Capabilities" /f`,
+
+            // 8. Applications entry for executable
+            `reg add "HKCU\\Software\\Classes\\Applications\\${appExeName}" /ve /d "Ocal Browser" /f`,
+            `reg add "HKCU\\Software\\Classes\\Applications\\${appExeName}" /v "FriendlyAppName" /d "Ocal Browser" /f`,
+            `reg add "HKCU\\Software\\Classes\\Applications\\${appExeName}" /v "SupportedProtocols" /d "http;https;ftp;ocal" /f`,
+            `reg add "HKCU\\Software\\Classes\\Applications\\${appExeName}\\shell\\open\\command" /ve /d "${appCommand}" /f`
+        ];
+
+        const { exec } = require('child_process');
+        regCommands.forEach(cmd => {
+            try {
+                exec(cmd, { windowsHide: true }, () => {});
+            } catch (e) {}
+        });
+
+        if (app.setAsDefaultProtocolClient) {
+            app.setAsDefaultProtocolClient('http');
+            app.setAsDefaultProtocolClient('https');
+            app.setAsDefaultProtocolClient('ocal');
+        }
+    } catch (err) {
+        console.warn('[Register Windows Default Browser Error]', err);
+    }
+}
+
 ipcMain.handle('check-default-browser', () => {
-    return app.isDefaultProtocolClient('http');
+    if (app.isDefaultProtocolClient) {
+        return app.isDefaultProtocolClient('http') || app.isDefaultProtocolClient('https');
+    }
+    return false;
 });
 
-ipcMain.handle('set-as-default-browser', () => {
-    const isDefault = app.setAsDefaultProtocolClient('http');
-    app.setAsDefaultProtocolClient('https');
+ipcMain.handle('set-as-default-browser', async () => {
+    registerWindowsDefaultBrowserRegistry();
+    let isDefault = false;
+    if (app.setAsDefaultProtocolClient) {
+        app.setAsDefaultProtocolClient('http');
+        app.setAsDefaultProtocolClient('https');
+        app.setAsDefaultProtocolClient('ocal');
+        isDefault = app.isDefaultProtocolClient('http');
+    }
+
+    if (process.platform === 'win32') {
+        try {
+            await shell.openExternal('ms-settings:defaultapps?registeredAppMachine=OcalBrowser');
+        } catch (e) {
+            try {
+                await shell.openExternal('ms-settings:defaultapps');
+            } catch (e2) {}
+        }
+    }
+
     return isDefault;
 });
 
@@ -8579,6 +8682,8 @@ app.whenReady().then(async () => {
 
     setupGoogleLoginPartition();
 
+    // 3. Register Ocal Browser in Windows Registry as a recognized system web browser
+    registerWindowsDefaultBrowserRegistry();
 
     createMainWindow();
 
