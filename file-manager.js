@@ -1068,8 +1068,17 @@ function initMediaStudioControls() {
         mediaOpenTabBtn.onclick = () => {
             if (currentMediaItem) {
                 const fileUrl = 'file:///' + currentMediaItem.path.replace(/\\/g, '/');
+                const ext = getExtension(currentMediaItem.name);
+                let targetUrl = fileUrl;
+                if (['mp3', 'wav', 'flac', 'ogg', 'm4a', 'aac', 'wma'].includes(ext)) {
+                    targetUrl = `ocal://music-player?song=${encodeURIComponent(fileUrl)}`;
+                } else if (isImageFile(currentMediaItem.name)) {
+                    targetUrl = `ocal://photo-view?file=${encodeURIComponent(fileUrl)}`;
+                } else if (ext === 'pdf') {
+                    targetUrl = `ocal://pdf-viewer?file=${encodeURIComponent(fileUrl)}`;
+                }
                 if (window.electronAPI && window.electronAPI.newTab) {
-                    window.electronAPI.newTab(fileUrl);
+                    window.electronAPI.newTab(targetUrl);
                 }
             }
         };
