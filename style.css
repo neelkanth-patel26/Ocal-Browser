@@ -1077,10 +1077,9 @@ body[data-theme="light"] .tab-layout-toggle-btn:hover {
   gap: 8px;
   padding: 0 10px 0 12px;
   height: calc(100% - 8px);
-  flex: 0 1 180px;
-  width: 180px;
-  min-width: 34px;
-  max-width: 210px;
+  flex: 1 1 190px;
+  min-width: 48px;
+  max-width: 240px;
   font-family: var(--font-title);
   font-size: 12.5px;
   font-weight: 600;
@@ -1199,8 +1198,9 @@ body[data-theme="dark"] .tab-favicon.tab-emoji-img {
   margin: 0 !important;
   padding: 0 !important;
 }
-.tab-item:hover .tab-close { 
-  opacity: 0.7; 
+.tab-item:hover .tab-close,
+.tab-item.active .tab-close { 
+  opacity: 0.75; 
   pointer-events: auto;
 }
 .tab-close:hover { 

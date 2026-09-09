@@ -799,7 +799,12 @@ function updatePrettyUrl(url) {
         const urlObj = new URL(rawUrl);
         const isHttp = urlObj.protocol === 'http:';
         const protocol = urlObj.protocol + '//';
-        const domain = urlObj.hostname || (urlObj.protocol === 'file:' ? 'Local File' : '');
+        if (urlObj.protocol === 'file:') {
+            const decodedPath = decodeURIComponent(urlObj.pathname).replace(/^\/([A-Za-z]:)/, '$1');
+            prettyEl.innerHTML = `<span class="protocol">file:///</span><span class="path">${decodedPath}</span>`;
+            return;
+        }
+        const domain = urlObj.hostname || '';
         const path = urlObj.pathname + urlObj.search + urlObj.hash;
         
         prettyEl.innerHTML = `<span class="protocol ${isHttp ? 'insecure' : ''}">${protocol}</span>${domain ? `<span class="domain">${domain}</span>` : ''}<span class="path">${path === '/' || path === '///' ? '' : path}</span>`;
