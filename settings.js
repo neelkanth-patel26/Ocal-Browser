@@ -3520,7 +3520,6 @@ function renderSystemSettings(s) {
 
 // ── Ambient Sound & Focus Studio Handlers ────────────────────────────────
 let currentAmbientTracks = [];
-let localAmbientAudio = null;
 let localAmbientState = {
     enabled: false,
     track: 'Ocal.mp3',
@@ -3528,33 +3527,6 @@ let localAmbientState = {
     smartDucking: true,
     duckVolume: 0.0
 };
-
-function playLocalAmbientSound() {
-    if (!localAmbientState.enabled) {
-        if (localAmbientAudio) {
-            localAmbientAudio.pause();
-        }
-        return;
-    }
-
-    if (!localAmbientState.track) localAmbientState.track = 'Ocal.mp3';
-    const trackFile = localAmbientState.track;
-    const targetSrc = 'music/' + encodeURIComponent(trackFile);
-
-    if (!localAmbientAudio) {
-        localAmbientAudio = new Audio();
-        localAmbientAudio.loop = true;
-    }
-
-    if (localAmbientAudio.getAttribute('data-current-track') !== trackFile) {
-        localAmbientAudio.setAttribute('data-current-track', trackFile);
-        localAmbientAudio.src = targetSrc;
-        localAmbientAudio.load();
-    }
-
-    localAmbientAudio.volume = Math.max(0, Math.min(1, localAmbientState.volume));
-    localAmbientAudio.play().catch(e => console.warn('[Ambient Settings] Playback error:', e));
-}
 
 function getVolumeDescription(percent) {
     if (percent <= 0) return 'Muted (0%)';
@@ -3567,7 +3539,6 @@ function getVolumeDescription(percent) {
 
 window.handleAmbientSoundToggle = function(checked) {
     localAmbientState.enabled = checked;
-    playLocalAmbientSound();
     syncAmbientSettings();
     updateAmbientUIState();
 };
@@ -3575,7 +3546,6 @@ window.handleAmbientSoundToggle = function(checked) {
 window.handleAmbientTrackSelect = function(trackFileName) {
     localAmbientState.track = trackFileName;
     localAmbientState.enabled = true;
-    playLocalAmbientSound();
     syncAmbientSettings();
 
     // In-place card selection update to eliminate DOM rebuilding & click glitches
@@ -3611,14 +3581,12 @@ window.handleAmbientVolumeInput = function(val) {
     const statVol = document.getElementById('specials-stat-vol');
     if (statVol) statVol.textContent = `${num}%`;
     localAmbientState.volume = Math.max(0, Math.min(1, num / 100));
-    if (localAmbientAudio) localAmbientAudio.volume = localAmbientState.volume;
     syncAmbientSettings();
 };
 
 window.handleAmbientVolumeChange = function(val) {
     const num = parseInt(val, 10);
     localAmbientState.volume = Math.max(0, Math.min(1, num / 100));
-    if (localAmbientAudio) localAmbientAudio.volume = localAmbientState.volume;
     syncAmbientSettings();
 };
 
@@ -3644,7 +3612,6 @@ window.handleImportCustomAmbientTrack = async function() {
                 }
                 localAmbientState.track = newTrack.fileName;
                 localAmbientState.enabled = true;
-                playLocalAmbientSound();
                 syncAmbientSettings();
                 renderAmbientTracks();
                 updateAmbientUIState();
@@ -3818,8 +3785,6 @@ async function renderAmbientSoundSettings(s) {
     }
 
     renderAmbientTracks();
-    updateAmbientUIState();
-    playLocalAmbientSound();
     updateAmbientUIState();
 
     // Volume Slider & Label
