@@ -867,6 +867,7 @@ body[data-theme="dark"] .category-icon-box {
     text-overflow: ellipsis;
     display: -webkit-box;
     -webkit-line-clamp: 2;
+    line-clamp: 2;
     -webkit-box-orient: vertical;
     word-break: break-word;
 }
@@ -1802,6 +1803,7 @@ body[data-theme="light"] .fx-dropdown-item:hover {
 }
 
 .eq-slider {
+    appearance: slider-vertical;
     -webkit-appearance: slider-vertical;
     writing-mode: bt-lr;
     width: 6px;
