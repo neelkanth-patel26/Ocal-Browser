@@ -42,6 +42,8 @@ let showPreviews = true;
 let selectedItems = new Set();
 let activeCategory = 'all';
 let currentInspectedItem = null;
+let sortField = 'name';
+let sortAsc = true;
 
 // Helper to apply accent color dynamically
 function applyAccent(accentColor) {
@@ -372,21 +374,39 @@ function renderCurrentFiles() {
         return;
     }
 
-    // Sort: directories first, then alphabetical
+    // Sort items based on sortField and sortAsc
     const sorted = [...filtered].sort((a, b) => {
         if (a.isDirectory && !b.isDirectory) return -1;
         if (!a.isDirectory && b.isDirectory) return 1;
-        return a.name.localeCompare(b.name, undefined, { numeric: true, sensitivity: 'base' });
+
+        let res = 0;
+        if (sortField === 'name') {
+            res = a.name.localeCompare(b.name, undefined, { numeric: true, sensitivity: 'base' });
+        } else if (sortField === 'date') {
+            res = (new Date(a.mtime || 0).getTime()) - (new Date(b.mtime || 0).getTime());
+        } else if (sortField === 'type') {
+            const extA = getExtension(a.name);
+            const extB = getExtension(b.name);
+            res = extA.localeCompare(extB);
+        } else if (sortField === 'size') {
+            res = (a.size || 0) - (b.size || 0);
+        }
+        return sortAsc ? res : -res;
     });
 
     if (isListView) {
+        const getSortIcon = (field) => {
+            if (sortField !== field) return '<i class="fas fa-sort" style="opacity:0.35; margin-left:4px; font-size:10px;"></i>';
+            return `<i class="fas fa-chevron-${sortAsc ? 'up' : 'down'}" style="color:var(--accent); margin-left:4px; font-size:10px;"></i>`;
+        };
+
         const header = document.createElement('div');
         header.className = 'list-table-header';
         header.innerHTML = `
-            <div class="sortable col-name">Name</div>
-            <div class="col-date">Date Modified</div>
-            <div class="col-type">Type</div>
-            <div class="col-size">Size</div>
+            <div class="sortable col-name" onclick="toggleSort('name')">Name ${getSortIcon('name')}</div>
+            <div class="sortable col-date" onclick="toggleSort('date')">Date Modified ${getSortIcon('date')}</div>
+            <div class="sortable col-type" onclick="toggleSort('type')">Type ${getSortIcon('type')}</div>
+            <div class="sortable col-size" onclick="toggleSort('size')">Size ${getSortIcon('size')}</div>
             <div class="col-actions">Actions</div>
         `;
         fileGrid.appendChild(header);
@@ -662,6 +682,16 @@ function setViewMode(isList) {
     renderCurrentFiles();
 }
 window.setViewMode = setViewMode;
+
+window.toggleSort = (field) => {
+    if (sortField === field) {
+        sortAsc = !sortAsc;
+    } else {
+        sortField = field;
+        sortAsc = true;
+    }
+    renderCurrentFiles();
+};
 
 function getExtension(filename) {
     if (!filename || !filename.includes('.')) return '';
