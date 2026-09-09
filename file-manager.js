@@ -700,13 +700,12 @@ function openAudioStudio(item) {
                 <div class="vinyl-groove-ring ring-1"></div>
                 <div class="vinyl-groove-ring ring-2"></div>
                 <div class="vinyl-center-pin">
-                    <div class="center-hole"></div>
-                    <i class="fas fa-music pin-icon"></i>
+                    <i class="fas fa-compact-disc"></i>
                 </div>
             </div>
             <div class="audio-track-info">
                 <span class="audio-track-title">${escapeHtml(item.name.replace(/\.[^/.]+$/, ''))}</span>
-                <span class="audio-track-sub">Local Audio Studio • Enhanced 3D DSP</span>
+                <span class="audio-track-sub">Local Audio Studio • 3D DSP Active</span>
             </div>
         </div>
     `;

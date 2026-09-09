@@ -1351,18 +1351,18 @@ body[data-theme="dark"] .file-item.list-row:hover {
 .media-modal-backdrop {
     position: absolute;
     inset: 0;
-    background: rgba(0, 0, 0, 0.75);
-    backdrop-filter: blur(14px);
+    background: rgba(0, 0, 0, 0.7);
+    backdrop-filter: blur(16px);
 }
 
 .media-modal-card {
     position: relative;
     width: 92%;
-    max-width: 680px;
-    background: #16181D;
+    max-width: 650px;
+    background: #18191E;
     border: 1px solid rgba(255, 255, 255, 0.08);
     border-radius: 28px;
-    box-shadow: 0 24px 60px rgba(0, 0, 0, 0.6);
+    box-shadow: 0 28px 70px rgba(0, 0, 0, 0.6);
     color: #FFFFFF;
     overflow: hidden;
     display: flex;
@@ -1373,7 +1373,7 @@ body[data-theme="dark"] .file-item.list-row:hover {
 body[data-theme="light"] .media-modal-card {
     background: #FFFFFF;
     border-color: rgba(0, 0, 0, 0.08);
-    box-shadow: 0 24px 60px rgba(0, 0, 0, 0.15);
+    box-shadow: 0 28px 70px rgba(0, 0, 0, 0.12);
     color: #111111;
 }
 
@@ -1381,7 +1381,7 @@ body[data-theme="light"] .media-modal-card {
     display: flex;
     align-items: center;
     justify-content: space-between;
-    padding: 18px 24px;
+    padding: 16px 24px;
     border-bottom: 1px solid rgba(255, 255, 255, 0.08);
 }
 
@@ -1392,11 +1392,19 @@ body[data-theme="light"] .media-modal-header {
 .media-modal-title {
     display: flex;
     align-items: center;
-    gap: 10px;
-    font-size: 15px;
+    gap: 12px;
+    font-size: 14.5px;
     font-weight: 800;
     color: var(--text-main, #FFFFFF);
     letter-spacing: -0.2px;
+    min-width: 0;
+}
+
+.media-modal-title span {
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    max-width: 480px;
 }
 
 .media-icon-badge {
@@ -1410,6 +1418,7 @@ body[data-theme="light"] .media-modal-header {
     align-items: center;
     justify-content: center;
     font-size: 13px;
+    flex-shrink: 0;
 }
 
 .media-modal-close {
@@ -1426,6 +1435,7 @@ body[data-theme="light"] .media-modal-header {
     font-size: 13px;
     transition: all 0.2s ease;
     outline: none;
+    flex-shrink: 0;
 }
 
 body[data-theme="light"] .media-modal-close {
@@ -1441,15 +1451,15 @@ body[data-theme="light"] .media-modal-close {
 }
 
 .media-modal-body {
-    padding: 28px 24px 16px;
+    padding: 30px 24px 20px;
     display: flex;
     align-items: center;
     justify-content: center;
-    background: #0D0E11;
+    background: radial-gradient(circle at 50% 40%, rgba(21, 172, 73, 0.1) 0%, transparent 70%), #101115;
 }
 
 body[data-theme="light"] .media-modal-body {
-    background: #F8F9FA;
+    background: radial-gradient(circle at 50% 40%, var(--accent-dim) 0%, transparent 70%), #F9FAFC;
 }
 
 .audio-art-stage {
@@ -1457,21 +1467,21 @@ body[data-theme="light"] .media-modal-body {
     flex-direction: column;
     align-items: center;
     text-align: center;
-    gap: 14px;
+    gap: 16px;
 }
 
 /* Spinning Vinyl Turntable Disc */
 .spinning-vinyl-art {
-    width: 130px;
-    height: 130px;
+    width: 136px;
+    height: 136px;
     border-radius: 50%;
-    background: radial-gradient(circle, #1a1b20 0%, #111216 45%, #08080a 70%, #000000 100%);
-    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.4), inset 0 0 0 2px rgba(255, 255, 255, 0.06);
+    background: radial-gradient(circle, #24262E 0%, #17181F 45%, #0F1014 70%, #08080A 100%);
+    box-shadow: 0 14px 40px rgba(0, 0, 0, 0.45), 0 0 35px var(--accent-glow);
     position: relative;
     display: flex;
     align-items: center;
     justify-content: center;
-    animation: spinVinyl 12s linear infinite;
+    animation: spinVinyl 10s linear infinite;
     animation-play-state: paused;
 }
 
@@ -1483,75 +1493,73 @@ body[data-theme="light"] .media-modal-body {
 .vinyl-groove-ring {
     position: absolute;
     border-radius: 50%;
-    border: 1px dashed rgba(255, 255, 255, 0.08);
+    border: 1px dashed rgba(255, 255, 255, 0.1);
     pointer-events: none;
 }
 
 .vinyl-groove-ring.ring-1 {
-    width: 100px;
-    height: 100px;
-    border-color: rgba(255, 255, 255, 0.05);
+    width: 104px;
+    height: 104px;
+    border-color: rgba(255, 255, 255, 0.06);
 }
 
 .vinyl-groove-ring.ring-2 {
-    width: 75px;
-    height: 75px;
-    border-color: rgba(255, 255, 255, 0.07);
+    width: 78px;
+    height: 78px;
+    border-color: rgba(255, 255, 255, 0.08);
 }
 
 .vinyl-center-pin {
-    width: 46px;
-    height: 46px;
+    width: 48px;
+    height: 48px;
     border-radius: 50%;
     background: var(--accent);
-    box-shadow: 0 0 16px var(--accent-glow), inset 0 2px 4px rgba(255, 255, 255, 0.4);
+    box-shadow: 0 0 18px var(--accent-glow), inset 0 2px 4px rgba(255, 255, 255, 0.35);
     display: flex;
     align-items: center;
     justify-content: center;
     position: relative;
-    color: var(--accent-text, #FFFFFF);
+    color: #FFFFFF;
+    border: 2px solid rgba(255, 255, 255, 0.25);
 }
 
-.center-hole {
-    width: 10px;
-    height: 10px;
-    border-radius: 50%;
-    background: #000000;
-    box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.8), 0 0 0 2px rgba(255, 255, 255, 0.2);
-    position: absolute;
-}
-
-.pin-icon {
-    font-size: 13px;
-    opacity: 0.85;
+.vinyl-center-pin i {
+    font-size: 15px;
+    color: #FFFFFF;
+    text-shadow: 0 1px 3px rgba(0, 0, 0, 0.4);
 }
 
 .audio-track-info {
     display: flex;
     flex-direction: column;
-    gap: 3px;
+    gap: 4px;
 }
 
 .audio-track-title {
-    font-size: 16px;
+    font-size: 17px;
     font-weight: 800;
     color: var(--text-main, #FFFFFF);
     letter-spacing: -0.3px;
+    max-width: 440px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
 }
 
 .audio-track-sub {
     font-size: 12px;
-    font-weight: 500;
-    color: var(--text-muted, #7E8492);
+    font-weight: 600;
+    color: var(--accent);
+    letter-spacing: 0.2px;
 }
 
 /* Audio FX Toolbar */
 .audio-enhancer-toolbar {
-    padding: 16px 24px;
+    padding: 14px 24px;
     border-top: 1px solid rgba(255, 255, 255, 0.08);
     display: flex;
     flex-direction: column;
-    gap: 12px;
+    gap: 10px;
 }
 
 body[data-theme="light"] .audio-enhancer-toolbar {
@@ -1567,16 +1575,18 @@ body[data-theme="light"] .audio-enhancer-toolbar {
 
 .enhancer-label {
     font-size: 11.5px;
-    font-weight: 700;
+    font-weight: 800;
     color: var(--text-muted, #7E8492);
     margin-right: 2px;
     display: flex;
     align-items: center;
     gap: 5px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
 }
 
 .enhancer-pill-btn {
-    padding: 5px 13px;
+    padding: 6px 14px;
     border-radius: 100px;
     border: 1px solid rgba(255, 255, 255, 0.08);
     background: rgba(255, 255, 255, 0.04);
@@ -1611,7 +1621,7 @@ body[data-theme="light"] .enhancer-pill-btn {
 }
 
 .enhancer-panel {
-    padding: 12px 16px;
+    padding: 10px 16px;
     border-radius: 16px;
     background: rgba(255, 255, 255, 0.03);
     border: 1px solid rgba(255, 255, 255, 0.06);
@@ -1660,7 +1670,7 @@ body[data-theme="light"] .enhancer-panel {
     align-items: center;
     gap: 8px;
     outline: none;
-    transition: border-color 0.2s;
+    transition: all 0.2s;
 }
 
 body[data-theme="light"] .fx-dropdown-trigger {
@@ -1732,18 +1742,20 @@ body[data-theme="light"] .fx-dropdown-item:hover {
     padding: 4px 12px;
     border-radius: 100px;
     border: 1px solid var(--border-color);
-    background: var(--card-bg-subtle);
+    background: rgba(255, 255, 255, 0.05);
     color: var(--text-main);
     font-size: 10.5px;
     font-weight: 800;
     cursor: pointer;
     outline: none;
+    transition: all 0.2s;
 }
 
 .fx-toggle-btn.active {
     background: var(--accent);
-    color: var(--accent-text);
+    color: #FFFFFF;
     border-color: var(--accent);
+    box-shadow: 0 0 10px var(--accent-glow);
 }
 
 /* 10-Band EQ Controls */
@@ -1767,7 +1779,7 @@ body[data-theme="light"] .fx-dropdown-item:hover {
     padding: 3px 10px;
     border-radius: 100px;
     border: 1px solid var(--border-color);
-    background: var(--card-bg-subtle);
+    background: rgba(255, 255, 255, 0.04);
     color: var(--text-dim);
     font-size: 10.5px;
     font-weight: 700;
@@ -1783,7 +1795,7 @@ body[data-theme="light"] .fx-dropdown-item:hover {
 
 .eq-preset-btn.active {
     background: var(--accent);
-    color: var(--accent-text);
+    color: #FFFFFF;
     border-color: var(--accent);
 }
 
@@ -1827,6 +1839,44 @@ body[data-theme="light"] .fx-dropdown-item:hover {
     cursor: pointer;
 }
 
+/* ── Custom Range Slider Styling in Modal ───────────────────────────────── */
+.media-player-modal input[type="range"]:not(.eq-slider) {
+    -webkit-appearance: none;
+    appearance: none;
+    width: 100%;
+    height: 6px;
+    background: rgba(148, 163, 184, 0.25);
+    border-radius: 10px;
+    outline: none;
+    cursor: pointer;
+}
+
+body[data-theme="dark"] .media-player-modal input[type="range"]:not(.eq-slider) {
+    background: rgba(255, 255, 255, 0.12);
+}
+
+.media-player-modal input[type="range"]:not(.eq-slider)::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    appearance: none;
+    width: 16px;
+    height: 16px;
+    border-radius: 50%;
+    background: var(--accent);
+    border: 2px solid #FFFFFF;
+    box-shadow: 0 2px 8px var(--accent-glow);
+    cursor: pointer;
+    transition: transform 0.15s ease, box-shadow 0.15s ease;
+}
+
+body[data-theme="dark"] .media-player-modal input[type="range"]:not(.eq-slider)::-webkit-slider-thumb {
+    border-color: #222226;
+}
+
+.media-player-modal input[type="range"]:not(.eq-slider)::-webkit-slider-thumb:hover {
+    transform: scale(1.25);
+    box-shadow: 0 0 14px var(--accent-glow);
+}
+
 /* Media Controls Bar */
 .custom-media-controls {
     display: flex;
@@ -1837,7 +1887,7 @@ body[data-theme="light"] .fx-dropdown-item:hover {
     display: flex;
     align-items: center;
     gap: 14px;
-    padding: 8px 24px;
+    padding: 6px 24px;
     font-family: var(--font-mono);
     font-size: 11.5px;
     font-weight: 700;
@@ -1854,7 +1904,7 @@ body[data-theme="light"] .fx-dropdown-item:hover {
     display: flex;
     align-items: center;
     justify-content: space-between;
-    padding: 10px 24px 20px;
+    padding: 8px 24px 18px;
 }
 
 .media-vol-group {
@@ -1873,15 +1923,15 @@ body[data-theme="light"] .fx-dropdown-item:hover {
 .media-main-ctrls {
     display: flex;
     align-items: center;
-    gap: 12px;
+    gap: 14px;
 }
 
 .media-ctrl-btn {
-    width: 38px;
-    height: 38px;
+    width: 40px;
+    height: 40px;
     border-radius: 50%;
     border: 1px solid var(--border-color);
-    background: var(--card-bg-subtle);
+    background: var(--card-hover-bg);
     color: var(--text-main);
     display: flex;
     align-items: center;
@@ -1900,25 +1950,25 @@ body[data-theme="light"] .fx-dropdown-item:hover {
 }
 
 .media-play-btn {
-    width: 52px;
-    height: 52px;
+    width: 56px;
+    height: 56px;
     border-radius: 50%;
     border: none;
     background: var(--accent);
-    color: var(--accent-text, #FFFFFF);
+    color: #FFFFFF;
     display: flex;
     align-items: center;
     justify-content: center;
     cursor: pointer;
-    font-size: 17px;
-    box-shadow: 0 6px 20px var(--accent-glow);
+    font-size: 18px;
+    box-shadow: 0 6px 22px var(--accent-glow);
     transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
     outline: none;
 }
 
 .media-play-btn:hover {
     transform: scale(1.1);
-    box-shadow: 0 8px 26px var(--accent-glow);
+    box-shadow: 0 10px 30px var(--accent-glow);
 }
 
 .media-right-group {
@@ -1932,7 +1982,7 @@ body[data-theme="light"] .fx-dropdown-item:hover {
     padding: 8px 16px;
     border-radius: 100px;
     border: 1px solid var(--border-color);
-    background: var(--card-bg-subtle);
+    background: var(--card-hover-bg);
     color: var(--text-main);
     font-family: inherit;
     font-size: 11.5px;
@@ -1948,6 +1998,7 @@ body[data-theme="light"] .fx-dropdown-item:hover {
 .media-modal-btn:hover {
     border-color: var(--accent);
     color: var(--accent);
+    background: var(--accent-dim);
     transform: translateY(-1px);
 }
 
