@@ -3563,28 +3563,6 @@ body[data-theme="light"] .sh-opt-icon {
   color: #ef4444;
 }
 
-/* Split Active Pill in Toolbar */
-.split-active-pill {
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
-  padding: 4px 10px;
-  background: var(--accent-dim);
-  border: 1px solid color-mix(in srgb, var(--accent) 35%, transparent);
-  border-radius: 100px;
-  color: var(--accent);
-  font-size: 11px;
-  font-weight: 700;
-  cursor: pointer;
-  transition: all 0.2s ease;
-  margin-right: 6px;
-  -webkit-app-region: no-drag !important;
-}
-
-.split-active-pill:hover {
-  background: color-mix(in srgb, var(--accent) 25%, transparent);
-  transform: scale(1.04);
-}
 
 /* ── Password Vault & Topbar Key Badge ── */
 .passwords-badge {
