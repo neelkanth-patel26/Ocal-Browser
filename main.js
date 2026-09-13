@@ -90,13 +90,34 @@ function setupInteractionDismissal(contents) {
 }
 
 function getArgumentURL(argv) {
-    // Arguments are typically: [executable, ...flags, targetFileOrURL]
-    // We look for the first argument that isn't a flag and might be a path/URL
+    if (!argv || !Array.isArray(argv)) return null;
+    const appDir = path.resolve(__dirname).toLowerCase();
+    const cwdDir = process.cwd().toLowerCase();
+
     const candidate = argv.find((arg, i) => {
-        if (i === 0 || arg.startsWith('-') || arg.startsWith('--')) return false;
-        // Exclude common dev-mode arguments like '.' or './'
+        if (!arg || i === 0 || arg.startsWith('-') || arg.startsWith('--')) return false;
+        // Exclude common dev-mode arguments like '.' or './' or app directory
         if (arg === '.' || arg === './' || arg === '.\\') return false;
-        return true;
+
+        try {
+            const resolved = path.resolve(arg).toLowerCase();
+            if (resolved === appDir || resolved === cwdDir || resolved.endsWith('main.js') || resolved.endsWith('electron.exe')) {
+                return false;
+            }
+        } catch (e) {}
+
+        // Accept recognized URL protocols
+        if (/^(https?|ocal|file|ftp):\/\//i.test(arg)) return true;
+
+        // Check for local file path (must actually exist and be a file, not a directory)
+        if (/^[a-zA-Z]:[/\\]/.test(arg) || arg.startsWith('/') || arg.startsWith('\\\\')) {
+            try {
+                if (fs.existsSync(arg) && fs.statSync(arg).isFile()) {
+                    return true;
+                }
+            } catch (e) {}
+        }
+        return false;
     });
 
     if (!candidate) return null;
@@ -1739,6 +1760,10 @@ function hidePopups() {
     if (extensionDropdownView && mainWindow && mainWindow.getBrowserViews().includes(extensionDropdownView)) {
         mainWindow.removeBrowserView(extensionDropdownView);
     }
+    if (extensionPopupWindow && !extensionPopupWindow.isDestroyed()) {
+        extensionPopupWindow.close();
+        extensionPopupWindow = null;
+    }
     if (siteInfoView && mainWindow && mainWindow.getBrowserViews().includes(siteInfoView)) {
         mainWindow.removeBrowserView(siteInfoView);
     }
@@ -1924,7 +1949,8 @@ function resolveInternalURL(url) {
     if (cleanBase === 'settings' || cleanBase === 'ocal://settings') return 'file://' + path.join(__dirname, 'settings.html');
     if (url.startsWith('ocal://settings#')) return 'file://' + path.join(__dirname, 'settings.html') + url.substring(15);
     if (url.startsWith('ocal://settings/')) return 'file://' + path.join(__dirname, 'settings.html') + '#' + url.substring(16);
-    if (cleanBase === 'extensions' || cleanBase === 'ocal://extensions') return 'file://' + path.join(__dirname, 'settings.html#extensions');
+    if (cleanBase === 'extensions' || cleanBase === 'ocal://extensions') return 'file://' + path.join(__dirname, 'extensions.html');
+    if (cleanBase === 'store' || cleanBase === 'ocal://store' || cleanBase === 'ocal://webstore' || cleanBase === 'ocal://extension-store') return 'file://' + path.join(__dirname, 'extension-store.html');
     if (cleanBase === 'file-manager' || cleanBase === 'ocal://file-manager') return 'file://' + path.join(__dirname, 'file-manager.html');
     if (cleanBase === 'ocal://music-player' || cleanBase === 'ocal://music' || cleanBase === 'music-player') {
         const qIdx = url.indexOf('?');
@@ -1989,7 +2015,7 @@ function resolveInternalURL(url) {
 function normalizeDocumentUrl(url) {
     if (!url) return url;
     try {
-        if (url.startsWith('ocal://') || url.startsWith('http://') || url.startsWith('https://') || url.startsWith('file://')) return url;
+        if (url.startsWith('ocal://') || url.startsWith('http://') || url.startsWith('https://') || url.startsWith('file://') || url.startsWith('chrome-extension://')) return url;
 
         // Check for local drive path (e.g., C:/... or D:\...)
         const isLocalDrive = /^[a-zA-Z]:[/\\]/.test(url);
@@ -2018,6 +2044,7 @@ function createNewTab(url = null) {
     view.setBackgroundColor(userSettings.themeMode === 'light' ? '#EDEDF0' : '#0D0E11');
     view.webContents.setUserAgent(OCAL_USER_AGENT);
     setupViewEvents(id, view, 'left');
+    ensureSessionExtensions(view.webContents.session);
 
     views.push({ id, view, isSplit: false, splitDirection: 'horizontal', focusedSide: 'left', lastActiveTime: Date.now() });
 
@@ -2053,6 +2080,7 @@ function createNewTab(url = null) {
 
 function formatDisplayUrl(url) {
     if (!url) return '';
+    if (url.startsWith('chrome-extension://')) return url;
     let display = url;
     if (display.includes('home.html') || display === 'ocal://home') return '';
     if (display.includes('photo-editor.html') || display.startsWith('ocal://photo-view') || display.startsWith('ocal://photo-editor')) {
@@ -2073,6 +2101,12 @@ function formatDisplayUrl(url) {
     if (display.includes('music-player.html')) {
         const qIdx = display.indexOf('?');
         return 'ocal://music-player' + (qIdx !== -1 ? display.substring(qIdx) : '');
+    }
+    if (display.includes('extension-store.html') || display.startsWith('ocal://store') || display.startsWith('ocal://webstore') || display.startsWith('ocal://extension-store')) {
+        return 'ocal://store';
+    }
+    if (display.includes('extensions.html') || display.startsWith('ocal://extensions')) {
+        return 'ocal://extensions';
     }
     if (display.includes('settings.html')) {
         const hIdx = display.indexOf('#');
@@ -3683,7 +3717,7 @@ ipcMain.on('navigate-to', (e, url) => {
         targetUrl = 'file:///' + cleanUrl.replace(/\\/g, '/');
     }
 
-    if (!targetUrl.startsWith('http://') && !targetUrl.startsWith('https://') && !targetUrl.startsWith('file://') && !targetUrl.startsWith('ocal://')) {
+    if (!targetUrl.startsWith('http://') && !targetUrl.startsWith('https://') && !targetUrl.startsWith('file://') && !targetUrl.startsWith('ocal://') && !targetUrl.startsWith('chrome-extension://')) {
         if (cleanUrl === 'settings' || cleanUrl === 'ocal://settings') targetUrl = 'file://' + path.join(__dirname, 'settings.html');
         else if (cleanUrl.startsWith('ocal://settings#')) targetUrl = 'file://' + path.join(__dirname, 'settings.html') + cleanUrl.substring(15);
         else if (cleanUrl.startsWith('ocal://settings/')) targetUrl = 'file://' + path.join(__dirname, 'settings.html') + '#' + cleanUrl.substring(16);
@@ -3820,6 +3854,17 @@ ipcMain.on('stop-ai-resize', () => {
 function registerWindowsDefaultBrowserRegistry() {
     if (process.platform !== 'win32') return;
 
+    // In development mode (npm start), NEVER overwrite system registry associations (.html, .pdf, StartMenuInternet)
+    // with raw node_modules\electron\dist\electron.exe!
+    if (!app.isPackaged) {
+        try {
+            if (app.setAsDefaultProtocolClient) {
+                app.setAsDefaultProtocolClient('ocal', process.execPath, [path.resolve(__dirname)]);
+            }
+        } catch (e) {}
+        return;
+    }
+
     try {
         const appPath = process.execPath;
         const iconPath = path.join(__dirname, 'icon.ico');
@@ -3911,10 +3956,14 @@ ipcMain.handle('set-as-default-browser', async () => {
     registerWindowsDefaultBrowserRegistry();
     let isDefault = false;
     if (app.setAsDefaultProtocolClient) {
-        app.setAsDefaultProtocolClient('http');
-        app.setAsDefaultProtocolClient('https');
-        app.setAsDefaultProtocolClient('ocal');
-        isDefault = app.isDefaultProtocolClient('http');
+        if (!app.isPackaged) {
+            app.setAsDefaultProtocolClient('ocal', process.execPath, [path.resolve(__dirname)]);
+        } else {
+            app.setAsDefaultProtocolClient('http');
+            app.setAsDefaultProtocolClient('https');
+            app.setAsDefaultProtocolClient('ocal');
+            isDefault = app.isDefaultProtocolClient('http');
+        }
     }
 
     if (process.platform === 'win32') {
@@ -8541,15 +8590,19 @@ ipcMain.on('show-extensions-dropdown', (e, { x, y, width }) => {
     mainWindow.addBrowserView(extensionDropdownView);
     // Align to the right of the button
     const zoom = getOptimalZoomFactor();
-    const popupWidth = Math.round(280 * zoom);
+    const popupWidth = Math.round(320 * zoom);
     const winOffset = getWinOffset();
+    const winBounds = mainWindow.getContentBounds ? mainWindow.getContentBounds() : mainWindow.getBounds();
     let targetX = x + width - popupWidth;
+    if (winBounds && winBounds.width) {
+        targetX = Math.max(10, Math.min(targetX, winBounds.width - popupWidth - 20));
+    }
 
     extensionDropdownView.setBounds({
         x: Math.round(targetX + winOffset) - 15,
         y: Math.round(y + 10 + winOffset),
         width: popupWidth + 30,
-        height: Math.round(400 * zoom)
+        height: Math.round(480 * zoom)
     });
     mainWindow.setTopBrowserView(extensionDropdownView);
     extensionDropdownView.webContents.send('refresh-extensions');
@@ -9699,6 +9752,30 @@ function getLocalizedExtensionString(str, extensionPath, manifest = {}) {
     });
 }
 
+function extractExtensionId(input) {
+    if (!input || typeof input !== 'string') return null;
+    const clean = input.trim();
+    // Chrome extension IDs are 32 chars in the alphabet a-p
+    const match = clean.match(/([a-p]{32})/i);
+    return match ? match[1].toLowerCase() : null;
+}
+
+function getActiveExtensionSessions() {
+    const sessions = [
+        session.defaultSession,
+        session.fromPartition('persist:google_login'),
+        session.fromPartition(getProfilePartition())
+    ];
+    if (userSettings && Array.isArray(userSettings.profiles)) {
+        userSettings.profiles.forEach(p => {
+            if (p && p.id) {
+                sessions.push(session.fromPartition(`persist:profile_${p.id}`));
+            }
+        });
+    }
+    return Array.from(new Set(sessions));
+}
+
 function resolveExtensionMetadata(ext) {
     if (!ext || !ext.id) return ext;
     const extPath = ext.isLocal ? ext.localPath : path.join(app.getPath('userData'), 'extensions-data', ext.id);
@@ -9709,12 +9786,84 @@ function resolveExtensionMetadata(ext) {
                 const manifest = JSON.parse(fs.readFileSync(manifestPath, 'utf8'));
                 ext.name = getLocalizedExtensionString(manifest.name || ext.name, extPath, manifest);
                 ext.description = getLocalizedExtensionString(manifest.description || ext.description || '', extPath, manifest);
+                ext.version = manifest.version || ext.version || '1.0';
+                ext.manifest_version = manifest.manifest_version || 2;
+
+                // Extract popup action
+                const popup = (manifest.action && manifest.action.default_popup) ||
+                              (manifest.browser_action && manifest.browser_action.default_popup) ||
+                              (manifest.page_action && manifest.page_action.default_popup) || '';
+                ext.popup = popup ? popup.replace(/^\//, '') : '';
+                ext.hasPopup = Boolean(ext.popup);
+
+                // Extract options page
+                const optionsPage = (manifest.options_ui && manifest.options_ui.page) || manifest.options_page || '';
+                ext.optionsPage = optionsPage ? optionsPage.replace(/^\//, '') : '';
+                ext.hasOptions = Boolean(ext.optionsPage);
+
+                // Read and extract best available icon as Base64 Data URI
+                if (!ext.iconData) {
+                    const iconCandidates = [];
+                    if (manifest.icons) {
+                        for (const size of ['128', '64', '48', '32', '16']) {
+                            if (manifest.icons[size]) iconCandidates.push(manifest.icons[size]);
+                        }
+                    }
+                    const actionIcons = (manifest.action && manifest.action.default_icon) || (manifest.browser_action && manifest.browser_action.default_icon);
+                    if (typeof actionIcons === 'string') iconCandidates.push(actionIcons);
+                    else if (actionIcons && typeof actionIcons === 'object') {
+                        for (const size of ['128', '64', '48', '32', '16']) {
+                            if (actionIcons[size]) iconCandidates.push(actionIcons[size]);
+                        }
+                    }
+
+                    for (const relIcon of iconCandidates) {
+                        const iconFullPath = path.join(extPath, relIcon);
+                        if (fs.existsSync(iconFullPath)) {
+                            try {
+                                const extName = path.extname(iconFullPath).toLowerCase();
+                                const mimeType = extName === '.svg' ? 'image/svg+xml' : 'image/png';
+                                ext.iconData = `data:${mimeType};base64,` + fs.readFileSync(iconFullPath).toString('base64');
+                                break;
+                            } catch (e) {}
+                        }
+                    }
+                }
             }
         } catch (e) {
             console.error(`Error resolving metadata for extension ${ext.id}:`, e);
         }
     }
+    ext.pinned = Boolean(ext.pinned);
     return ext;
+}
+
+// Download helper with automatic redirect following and Chrome User-Agent
+function downloadBufferFromUrl(url) {
+    const https = require('https');
+    return new Promise((resolve, reject) => {
+        const fetchUrl = (currentUrl, redirectsCount = 0) => {
+            if (redirectsCount > 10) return reject(new Error('Too many redirects while downloading extension'));
+            const req = https.get(currentUrl, {
+                headers: {
+                    'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/130.0.0.0 Safari/537.36'
+                }
+            }, (res) => {
+                if (res.statusCode >= 300 && res.statusCode < 400 && res.headers.location) {
+                    return fetchUrl(res.headers.location, redirectsCount + 1);
+                }
+                if (res.statusCode !== 200) {
+                    return reject(new Error(`Failed to download extension: HTTP ${res.statusCode}`));
+                }
+                const chunks = [];
+                res.on('data', chunk => chunks.push(chunk));
+                res.on('end', () => resolve(Buffer.concat(chunks)));
+                res.on('error', reject);
+            });
+            req.on('error', reject);
+        };
+        fetchUrl(url);
+    });
 }
 
 // ── Chrome Extension Management Engine ──────────────────────────────────────
@@ -9725,132 +9874,281 @@ class ExtensionManager {
         this.loaded = new Map();
     }
 
+    patchExtensionForCompatibility(extPath) {
+        if (!extPath || !fs.existsSync(extPath)) return;
+        try {
+            const shimSource = path.join(__dirname, 'chrome-compat-shim.js');
+            const shimDest = path.join(extPath, 'chrome-compat-shim.js');
+            if (fs.existsSync(shimSource)) {
+                try { fs.copyFileSync(shimSource, shimDest); } catch (e) {}
+            }
+
+            const manifestPath = path.join(extPath, 'manifest.json');
+            if (!fs.existsSync(manifestPath)) return;
+
+            let manifest;
+            try {
+                manifest = JSON.parse(fs.readFileSync(manifestPath, 'utf8'));
+            } catch (e) {
+                return;
+            }
+
+            let manifestModified = false;
+
+            // 1. Service Worker in MV3
+            if (manifest.background && manifest.background.service_worker) {
+                const swFile = path.join(extPath, manifest.background.service_worker);
+                if (fs.existsSync(swFile)) {
+                    try {
+                        let swContent = fs.readFileSync(swFile, 'utf8');
+                        if (!swContent.includes('chrome-compat-shim.js')) {
+                            swContent = `/* __OCAL_COMPAT_SHIM__ */\ntry { importScripts('chrome-compat-shim.js'); } catch (e) {}\n` + swContent;
+                            fs.writeFileSync(swFile, swContent, 'utf8');
+                            console.log(`[ExtensionCompat] Injected compatibility shim into service worker: ${manifest.background.service_worker}`);
+                        }
+                    } catch (err) {
+                        console.warn('[ExtensionCompat] Service worker patch error:', err.message);
+                    }
+                }
+            }
+
+            // 2. Background Scripts in MV2
+            if (manifest.background && Array.isArray(manifest.background.scripts)) {
+                if (!manifest.background.scripts.includes('chrome-compat-shim.js')) {
+                    manifest.background.scripts.unshift('chrome-compat-shim.js');
+                    manifestModified = true;
+                }
+            }
+
+            // 3. Content Scripts
+            if (Array.isArray(manifest.content_scripts)) {
+                manifest.content_scripts.forEach(cs => {
+                    if (Array.isArray(cs.js) && !cs.js.includes('chrome-compat-shim.js')) {
+                        cs.js.unshift('chrome-compat-shim.js');
+                        manifestModified = true;
+                    }
+                });
+            }
+
+            // 4. Action / Browser Action Popups
+            const popup = (manifest.action && manifest.action.default_popup) ||
+                          (manifest.browser_action && manifest.browser_action.default_popup) ||
+                          (manifest.page_action && manifest.page_action.default_popup);
+            if (popup) {
+                const popupFile = path.join(extPath, popup.replace(/^\//, ''));
+                if (fs.existsSync(popupFile)) {
+                    try {
+                        let html = fs.readFileSync(popupFile, 'utf8');
+                        if (!html.includes('chrome-compat-shim.js')) {
+                            if (html.includes('<head>')) {
+                                html = html.replace('<head>', '<head>\n<script src="chrome-compat-shim.js"></script>');
+                            } else if (html.includes('<html>')) {
+                                html = html.replace('<html>', '<html>\n<head><script src="chrome-compat-shim.js"></script></head>');
+                            } else {
+                                html = '<script src="chrome-compat-shim.js"></script>\n' + html;
+                            }
+                            fs.writeFileSync(popupFile, html, 'utf8');
+                            console.log(`[ExtensionCompat] Injected compatibility shim into popup: ${popup}`);
+                        }
+                    } catch (e) {}
+                }
+            }
+
+            if (manifestModified) {
+                fs.writeFileSync(manifestPath, JSON.stringify(manifest, null, 2), 'utf8');
+                console.log(`[ExtensionCompat] Updated manifest for compatibility: ${manifest.name || extPath}`);
+            }
+        } catch (err) {
+            console.warn(`[ExtensionCompat] Error patching extension at ${extPath}:`, err.message);
+        }
+    }
+
     async loadAll() {
+        const targetSessions = getActiveExtensionSessions();
+        for (const ses of targetSessions) {
+            await this.loadAllForSession(ses);
+        }
+    }
+
+    async loadAllForSession(ses) {
+        if (!ses || (ses.isDestroyed && ses.isDestroyed())) return;
         if (!userSettings.extensions) userSettings.extensions = [];
         const activeExtensions = userSettings.extensions.filter(e => e.enabled);
-        const targetSessions = [
-            session.defaultSession,
-            session.fromPartition('persist:google_login')
-        ];
 
         for (const ext of activeExtensions) {
             try {
                 const extPath = ext.isLocal ? ext.localPath : path.join(this.extensionsPath, ext.id);
                 if (fs.existsSync(extPath)) {
-                    for (const ses of targetSessions) {
-                        const loaded = await ses.loadExtension(extPath);
-                        this.loaded.set(ext.id + '_' + ses.getStoragePath(), loaded);
-                    }
-                    console.log(`Loaded extension: ${ext.name} (${ext.id}) into all sessions.`);
+                    this.patchExtensionForCompatibility(extPath);
+                    await ses.loadExtension(extPath, { allowFileAccess: true });
+                    console.log(`[ExtensionManager] Loaded ${ext.name} (${ext.id}) in session ${ses.getStoragePath() || 'profile'}`);
                 }
             } catch (err) {
-                console.error(`Failed to load extension ${ext.id}:`, err);
+                if (!err.message || !err.message.includes('already loaded')) {
+                    console.error(`[ExtensionManager] Failed to load extension ${ext.id}:`, err.message);
+                }
             }
         }
 
+        // Load built-in security modules into the session
         if (userSettings.ocalFocusEnabled) {
             try {
                 const focusPath = path.join(__dirname, 'ocal-focus-extension');
                 if (fs.existsSync(focusPath)) {
-                    for (const ses of targetSessions) {
-                        await ses.loadExtension(focusPath);
-                    }
-                    console.log('Loaded native module: Ocal Focus (Global)');
+                    this.patchExtensionForCompatibility(focusPath);
+                    await ses.loadExtension(focusPath, { allowFileAccess: true });
                 }
-            } catch (err) { console.error('Failed to load Ocal Focus:', err); }
+            } catch (e) {}
         }
-
         if (userSettings.adBlockEnabled !== false) {
             try {
                 const ublockPath = path.join(__dirname, 'ublock-origin-extension', 'uBlock0.chromium');
                 if (fs.existsSync(ublockPath)) {
-                    for (const ses of targetSessions) {
-                        await ses.loadExtension(ublockPath);
-                    }
-                    console.log('Loaded native module: uBlock Origin (Global)');
+                    this.patchExtensionForCompatibility(ublockPath);
+                    await ses.loadExtension(ublockPath, { allowFileAccess: true });
                 }
-            } catch (err) { console.error('Failed to load uBlock Origin:', err); }
+            } catch (e) {}
         }
         if (userSettings.youtubeDislikeEnabled !== false) {
             try {
                 const dislikePath = path.join(__dirname, 'return-youtube-dislike-extension');
                 if (fs.existsSync(dislikePath)) {
-                    for (const ses of targetSessions) {
-                        await ses.loadExtension(dislikePath);
-                    }
-                    console.log('Loaded native module: Return YouTube Dislike (Global)');
+                    this.patchExtensionForCompatibility(dislikePath);
+                    await ses.loadExtension(dislikePath, { allowFileAccess: true });
                 }
-            } catch (err) { console.error('Failed to load Return YouTube Dislike:', err); }
+            } catch (e) {}
         }
-
         if (userSettings.mediaMasterEnabled !== false) {
             try {
                 const mediaPath = path.join(__dirname, 'ocal-media-master-extension');
                 if (fs.existsSync(mediaPath)) {
-                    for (const ses of targetSessions) {
-                        await ses.loadExtension(mediaPath);
-                    }
-                    console.log('Loaded native module: Ocal Media Master (Global)');
+                    this.patchExtensionForCompatibility(mediaPath);
+                    await ses.loadExtension(mediaPath, { allowFileAccess: true });
                 }
-            } catch (err) { console.error('Failed to load Ocal Media Master:', err); }
+            } catch (e) {}
         }
     }
-    async downloadAndInstall(id) {
-        // Strip out the full url if provided
-        const extensionId = id.includes('/') ? id.split('/').pop().split('?')[0] : id;
-        const downloadUrl = `https://clients2.google.com/service/update2/crx?response=redirect&prodversion=110.0.0.0&acceptformat=crx2,crx3&x=id%3D${extensionId}%26installsource%3Dondemand%26uc`;
+
+    async downloadAndInstall(idOrUrl) {
+        const extensionId = extractExtensionId(idOrUrl);
+        if (!extensionId) {
+            throw new Error('Invalid Chrome Web Store Extension ID or URL.');
+        }
+
         const tempPath = path.join(app.getPath('temp'), `${extensionId}.crx`);
         const targetPath = path.join(this.extensionsPath, extensionId);
 
         try {
-            // 1. Download .crx
-            const response = await net.fetch(downloadUrl);
-            const buffer = Buffer.from(await response.arrayBuffer());
-            fs.writeFileSync(tempPath, buffer);
+            console.log(`[ExtensionManager] Installing ${extensionId} for Chrome Extension Engine...`);
 
-            // 2. Strip CRX header (adm-zip needs help with CRX structure)
-            const zipBuffer = this.stripCrxHeader(buffer);
+            // Special fallback for uBlock Origin MV2: use bundled version if Web Store blocks MV2
+            if (extensionId === 'cjpalhdlnbpafiamejdnhcphjbkeiagm') {
+                const bundledUblock = path.join(__dirname, 'ublock-origin-extension', 'uBlock0.chromium');
+                if (fs.existsSync(bundledUblock)) {
+                    if (fs.existsSync(targetPath)) fs.rmSync(targetPath, { recursive: true, force: true });
+                    fs.cpSync(bundledUblock, targetPath, { recursive: true });
+                }
+            }
 
-            // 3. Extract to userData
-            const zip = new AdmZip(zipBuffer);
-            if (fs.existsSync(targetPath)) fs.rmSync(targetPath, { recursive: true, force: true });
-            fs.mkdirSync(targetPath, { recursive: true });
-            zip.extractAllTo(targetPath, true);
+            if (!fs.existsSync(targetPath) || !fs.existsSync(path.join(targetPath, 'manifest.json'))) {
+                const chromeVersion = process.versions.chrome || '130.0.0.0';
+                const versionCandidates = [chromeVersion, '132.0.0.0', '120.0.6099.130', '114.0.5735.199'];
+                let buffer = null;
+                let lastErr = null;
 
-            // 4. Load info from manifest
-            const manifest = JSON.parse(fs.readFileSync(path.join(targetPath, 'manifest.json'), 'utf8'));
+                for (const ver of versionCandidates) {
+                    try {
+                        const downloadUrl = `https://clients2.google.com/service/update2/crx?response=redirect&os=win&arch=x86-64&os_arch=x86-64&nacl_arch=x86-64&prod=chromecrx&prodchannel=&prodversion=${ver}&lang=en-US&acceptformat=crx3,crx2&x=id%3D${extensionId}%26installsource%3Dondemand%26uc`;
+                        buffer = await downloadBufferFromUrl(downloadUrl);
+                        if (buffer && buffer.length >= 100) break;
+                    } catch (err) {
+                        lastErr = err;
+                    }
+                }
+
+                if (!buffer || buffer.length < 100) {
+                    throw lastErr || new Error('Downloaded extension payload is empty or blocked by Google.');
+                }
+                fs.writeFileSync(tempPath, buffer);
+
+                // 2. Strip CRX header
+                const zipBuffer = this.stripCrxHeader(buffer);
+
+                // 3. Extract to userData
+                const zip = new AdmZip(zipBuffer);
+                if (fs.existsSync(targetPath)) fs.rmSync(targetPath, { recursive: true, force: true });
+                fs.mkdirSync(targetPath, { recursive: true });
+                zip.extractAllTo(targetPath, true);
+            }
+
+            // 4. Patch with universal compatibility layer
+            this.patchExtensionForCompatibility(targetPath);
+
+            // 5. Load info from manifest
+            const manifestPath = path.join(targetPath, 'manifest.json');
+            if (!fs.existsSync(manifestPath)) {
+                throw new Error('Extracted extension package is missing manifest.json');
+            }
+            const manifest = JSON.parse(fs.readFileSync(manifestPath, 'utf8'));
+
+            const popup = (manifest.action && manifest.action.default_popup) ||
+                          (manifest.browser_action && manifest.browser_action.default_popup) ||
+                          (manifest.page_action && manifest.page_action.default_popup) || '';
+            const optionsPage = (manifest.options_ui && manifest.options_ui.page) || manifest.options_page || '';
+
             const extensionInfo = {
                 id: extensionId,
-                name: getLocalizedExtensionString(manifest.name, targetPath, manifest),
-                version: manifest.version,
+                name: getLocalizedExtensionString(manifest.name || 'Chrome Extension', targetPath, manifest),
+                version: manifest.version || '1.0',
                 description: getLocalizedExtensionString(manifest.description || '', targetPath, manifest),
                 enabled: true,
+                pinned: true, // Automatically pin newly installed extension to toolbar for convenience
+                popup: popup ? popup.replace(/^\//, '') : '',
+                hasPopup: Boolean(popup),
+                optionsPage: optionsPage ? optionsPage.replace(/^\//, '') : '',
                 icons: manifest.icons || {}
             };
+
+            // Read icon base64
+            resolveExtensionMetadata(extensionInfo);
 
             // 5. Register in settings
             if (!userSettings.extensions) userSettings.extensions = [];
             const existingIdx = userSettings.extensions.findIndex(e => e.id === extensionId);
-            if (existingIdx > -1) userSettings.extensions[existingIdx] = extensionInfo;
-            else userSettings.extensions.push(extensionInfo);
+            if (existingIdx > -1) {
+                userSettings.extensions[existingIdx] = { ...userSettings.extensions[existingIdx], ...extensionInfo };
+            } else {
+                userSettings.extensions.push(extensionInfo);
+            }
             saveSettings(userSettings);
 
-            // 6. Load into session
-            const loaded = await session.defaultSession.loadExtension(targetPath);
-            this.loaded.set(extensionId, loaded);
+            // 6. Load into all active sessions
+            const targetSessions = getActiveExtensionSessions();
+            for (const ses of targetSessions) {
+                try {
+                    await ses.loadExtension(targetPath, { allowFileAccess: true });
+                } catch (e) {
+                    if (!e.message || !e.message.includes('already loaded')) {
+                        console.warn(`[ExtensionManager] Session load warning for ${extensionId}:`, e.message);
+                    }
+                }
+            }
 
+            broadcastExtensions();
             return extensionInfo;
         } catch (err) {
-            console.error('Extension installation failed:', err);
+            console.error('[ExtensionManager] Installation failed:', err);
             throw err;
         } finally {
-            if (fs.existsSync(tempPath)) fs.unlinkSync(tempPath);
+            if (fs.existsSync(tempPath)) {
+                try { fs.unlinkSync(tempPath); } catch (e) {}
+            }
         }
     }
 
     stripCrxHeader(buffer) {
         const magic = buffer.toString('utf8', 0, 4);
-        if (magic !== 'Cr24') return buffer; // Not a CRX file
+        if (magic !== 'Cr24') return buffer; // Already a raw zip
         const version = buffer.readUInt32LE(4);
         let offset;
         if (version === 2) {
@@ -9866,20 +10164,130 @@ class ExtensionManager {
         return buffer.slice(offset);
     }
 
+    async fetchExtensionData(idOrUrl) {
+        const extensionId = extractExtensionId(idOrUrl);
+        if (!extensionId) {
+            throw new Error('Invalid Chrome Extension ID or URL');
+        }
+
+        // Check if already installed locally
+        const localExt = (userSettings.extensions || []).find(e => e.id === extensionId);
+        if (localExt) {
+            const resolved = resolveExtensionMetadata({ ...localExt });
+            return {
+                ...resolved,
+                isInstalled: true
+            };
+        }
+
+        const chromeVersion = process.versions.chrome || '130.0.0.0';
+        const downloadUrl = `https://clients2.google.com/service/update2/crx?response=redirect&os=win&arch=x86-64&os_arch=x86-64&nacl_arch=x86-64&prod=chromecrx&prodchannel=&prodversion=${chromeVersion}&lang=en-US&acceptformat=crx3,crx2&x=id%3D${extensionId}%26installsource%3Dondemand%26uc`;
+
+        console.log(`[ExtensionManager] Grabbing data for ${extensionId} from Google...`);
+        const buffer = await downloadBufferFromUrl(downloadUrl);
+        if (!buffer || buffer.length < 100) {
+            throw new Error('Could not download extension package from Google.');
+        }
+
+        const zipBuffer = this.stripCrxHeader(buffer);
+        const zip = new AdmZip(zipBuffer);
+
+        const manifestEntry = zip.getEntry('manifest.json');
+        if (!manifestEntry) {
+            throw new Error('manifest.json not found in extension package');
+        }
+
+        const manifest = JSON.parse(manifestEntry.getData().toString('utf8'));
+
+        // Extract localized messages if available
+        let localeMsgs = {};
+        const localeCandidates = ['_locales/en/messages.json', '_locales/en_US/messages.json', '_locales/en_GB/messages.json'];
+        for (const locPath of localeCandidates) {
+            const locEntry = zip.getEntry(locPath);
+            if (locEntry) {
+                try {
+                    localeMsgs = JSON.parse(locEntry.getData().toString('utf8'));
+                    break;
+                } catch(e) {}
+            }
+        }
+        if (Object.keys(localeMsgs).length === 0) {
+            const anyLoc = zip.getEntries().find(e => e.entryName.startsWith('_locales/') && e.entryName.endsWith('messages.json'));
+            if (anyLoc) {
+                try { localeMsgs = JSON.parse(anyLoc.getData().toString('utf8')); } catch(e) {}
+            }
+        }
+
+        function localize(str) {
+            if (!str || typeof str !== 'string') return '';
+            if (str.startsWith('__MSG_') && str.endsWith('__')) {
+                const key = str.slice(6, -2);
+                if (localeMsgs[key] && localeMsgs[key].message) return localeMsgs[key].message;
+            }
+            return str;
+        }
+
+        const name = localize(manifest.name) || 'Chrome Extension';
+        const description = localize(manifest.description) || '';
+        const version = manifest.version || '1.0';
+
+        // Extract highest resolution icon as data URI
+        let iconData = null;
+        const iconCandidates = [];
+        if (manifest.icons) {
+            for (const s of ['128', '96', '64', '48', '32', '16']) {
+                if (manifest.icons[s]) iconCandidates.push(manifest.icons[s].replace(/^\//, ''));
+            }
+        }
+        const actionIcons = (manifest.action && manifest.action.default_icon) || (manifest.browser_action && manifest.browser_action.default_icon);
+        if (typeof actionIcons === 'string') iconCandidates.push(actionIcons.replace(/^\//, ''));
+        else if (actionIcons && typeof actionIcons === 'object') {
+            for (const s of ['128', '96', '64', '48', '32', '16']) {
+                if (actionIcons[s]) iconCandidates.push(actionIcons[s].replace(/^\//, ''));
+            }
+        }
+
+        for (const relIcon of iconCandidates) {
+            const iconEntry = zip.getEntry(relIcon) || zip.getEntries().find(e => e.entryName.toLowerCase() === relIcon.toLowerCase());
+            if (iconEntry) {
+                const extName = relIcon.split('.').pop().toLowerCase();
+                const mime = extName === 'svg' ? 'image/svg+xml' : 'image/png';
+                iconData = `data:${mime};base64,` + iconEntry.getData().toString('base64');
+                break;
+            }
+        }
+
+        const size = (buffer.length / (1024 * 1024)).toFixed(2) + ' MB';
+        const popup = (manifest.action && manifest.action.default_popup) ||
+                      (manifest.browser_action && manifest.browser_action.default_popup) ||
+                      (manifest.page_action && manifest.page_action.default_popup) || '';
+
+        return {
+            id: extensionId,
+            name,
+            description,
+            version,
+            iconData,
+            author: manifest.author || (manifest.homepage_url ? new URL(manifest.homepage_url).hostname : 'Chrome Web Store Publisher'),
+            permissions: manifest.permissions || [],
+            manifest_version: manifest.manifest_version || 3,
+            size,
+            hasPopup: Boolean(popup),
+            isInstalled: false
+        };
+    }
+
     async remove(id) {
         try {
             const targetPath = path.join(this.extensionsPath, id);
             if (fs.existsSync(targetPath)) fs.rmSync(targetPath, { recursive: true, force: true });
 
-            userSettings.extensions = userSettings.extensions.filter(e => e.id !== id);
+            userSettings.extensions = (userSettings.extensions || []).filter(e => e.id !== id);
             saveSettings(userSettings);
-
-            // Note: Native Electron loadExtension doesn't always support easy 'unload'
-            // We usually inform the user to restart or handle it by refreshing views.
-            this.loaded.delete(id);
+            broadcastExtensions();
             return true;
         } catch (err) {
-            console.error('Failed to remove extension:', err);
+            console.error('[ExtensionManager] Failed to remove extension:', err);
             return false;
         }
     }
@@ -9887,8 +10295,440 @@ class ExtensionManager {
 
 const extensionManager = new ExtensionManager();
 
+// Extension Popup Window Manager
+let extensionPopupWindow = null;
+
+async function showExtensionPopup(extId, anchorBounds) {
+    if (!extId) return;
+
+    const ses = session.fromPartition(getProfilePartition());
+    await ensureSessionExtensions(ses);
+
+    // Check if it's a built-in security module with a popup
+    if (extId === 'ad-blocker') {
+        const ublockPath = path.join(__dirname, 'ublock-origin-extension', 'uBlock0.chromium');
+        if (fs.existsSync(ublockPath)) {
+            const loaded = ses.getAllExtensions().find(e => e.name && e.name.toLowerCase().includes('ublock'));
+            if (loaded) {
+                return openExtensionWindow(loaded.id, 'popup-fenix.html', anchorBounds, 'uBlock Origin');
+            }
+        }
+    } else if (extId === 'dislike-recovery') {
+        const rydPath = path.join(__dirname, 'return-youtube-dislike-extension');
+        if (fs.existsSync(rydPath)) {
+            const loaded = ses.getAllExtensions().find(e => e.name && e.name.toLowerCase().includes('dislike'));
+            if (loaded) {
+                return openExtensionWindow(loaded.id, 'popup.html', anchorBounds, 'Return YouTube Dislike');
+            }
+        }
+    }
+
+    const rawExt = (userSettings.extensions || []).find(e => e.id === extId);
+    if (!rawExt) return;
+    const resolved = resolveExtensionMetadata({ ...rawExt });
+
+    if (!resolved.enabled) {
+        if (mainWindow && !mainWindow.isDestroyed()) {
+            mainWindow.webContents.send('show-toast', {
+                message: `${resolved.name} is currently disabled.`,
+                icon: 'fa-pause-circle'
+            });
+        }
+        return;
+    }
+
+    // Resolve the actual extension ID registered in the session
+    const extPath = resolved.isLocal ? resolved.localPath : path.join(app.getPath('userData'), 'extensions-data', resolved.id);
+    let loaded = ses.getAllExtensions().find(e => e.id === resolved.id || (e.path && path.resolve(e.path) === path.resolve(extPath)));
+    if (!loaded && fs.existsSync(extPath)) {
+        try {
+            loaded = await ses.loadExtension(extPath, { allowFileAccess: true });
+        } catch (err) {
+            console.error('[ExtensionManager] Error loading extension into session on popup demand:', err);
+        }
+    }
+    const runtimeId = loaded ? loaded.id : resolved.id;
+
+    if (resolved.popup) {
+        openExtensionWindow(runtimeId, resolved.popup, anchorBounds, resolved.name);
+    } else {
+        // Dispatch click to extension background context or service worker
+        try {
+            const { webContents } = require('electron');
+            if (webContents && typeof webContents.getAllWebContents === 'function') {
+                webContents.getAllWebContents().forEach(wc => {
+                    try {
+                        if (!wc.isDestroyed() && wc.getURL().includes(runtimeId)) {
+                            wc.executeJavaScript(`
+                                if (typeof chrome !== 'undefined') {
+                                    const currentTab = { id: 1, active: true, url: window.location.href };
+                                    if (chrome.action && chrome.action.onClicked && chrome.action.onClicked._dispatch) {
+                                        chrome.action.onClicked._dispatch(currentTab);
+                                    }
+                                    if (chrome.browserAction && chrome.browserAction.onClicked && chrome.browserAction.onClicked._dispatch) {
+                                        chrome.browserAction.onClicked._dispatch(currentTab);
+                                    }
+                                    if (chrome.pageAction && chrome.pageAction.onClicked && chrome.pageAction.onClicked._dispatch) {
+                                        chrome.pageAction.onClicked._dispatch(currentTab);
+                                    }
+                                }
+                            `).catch(() => {});
+                        }
+                    } catch (e) {}
+                });
+            }
+        } catch (err) {}
+
+        if (resolved.optionsPage) {
+            createNewTab(`chrome-extension://${runtimeId}/${resolved.optionsPage.replace(/^\//, '')}`);
+        } else {
+            if (mainWindow && !mainWindow.isDestroyed()) {
+                mainWindow.webContents.send('show-toast', {
+                    message: `${resolved.name} is active.`,
+                    icon: 'fa-circle-check'
+                });
+            }
+        }
+    }
+}
+
+function openExtensionWindow(extensionId, popupPath, anchorBounds, title = 'Extension') {
+    if (extensionPopupWindow && !extensionPopupWindow.isDestroyed()) {
+        const prevId = extensionPopupWindow.extensionId;
+        try { extensionPopupWindow.close(); } catch(e) {}
+        extensionPopupWindow = null;
+        if (prevId === extensionId) return;
+    }
+
+    const cleanPopup = popupPath.replace(/^\//, '');
+    const popupUrl = `chrome-extension://${extensionId}/${cleanPopup}`;
+
+    const [mainX, mainY] = mainWindow.getPosition();
+    const mainBounds = mainWindow.getBounds();
+    const primaryDisplay = screen.getDisplayMatching(mainBounds) || screen.getPrimaryDisplay();
+    const { x: scrX, y: scrY, width: screenW, height: screenH } = primaryDisplay.workArea;
+
+    // Initial default dimensions - will adapt dynamically to match content
+    let currentWidth = 300;
+    let currentHeight = 360;
+
+    let posX = Math.round(mainX + (anchorBounds ? (anchorBounds.x - currentWidth + (anchorBounds.width || 30)) : (mainBounds.width - currentWidth - 20)));
+    let posY = Math.round(mainY + (anchorBounds ? (anchorBounds.y + (anchorBounds.height || 36) + 6) : 75));
+
+    if (posX + currentWidth > scrX + screenW - 12) posX = scrX + screenW - currentWidth - 12;
+    if (posY + currentHeight > scrY + screenH - 12) posY = scrY + screenH - currentHeight - 12;
+    if (posX < scrX + 12) posX = scrX + 12;
+    if (posY < scrY + 12) posY = scrY + 12;
+
+    extensionPopupWindow = new BrowserWindow({
+        width: currentWidth,
+        height: currentHeight,
+        x: posX,
+        y: posY,
+        frame: false,
+        resizable: false,
+        show: false,
+        alwaysOnTop: true,
+        skipTaskbar: true,
+        backgroundColor: (userSettings && userSettings.themeMode === 'light') ? '#FFFFFF' : '#1A1D24',
+        parent: mainWindow,
+        hasShadow: true,
+        roundedCorners: true,
+        webPreferences: {
+            partition: getProfilePartition(),
+            nodeIntegration: false,
+            contextIsolation: true,
+            sandbox: false,
+            devTools: true
+        }
+    });
+
+    extensionPopupWindow.extensionId = extensionId;
+
+    extensionPopupWindow.webContents.setWindowOpenHandler(({ url }) => {
+        createNewTab(url);
+        if (extensionPopupWindow && !extensionPopupWindow.isDestroyed()) {
+            try { extensionPopupWindow.close(); } catch(e) {}
+            extensionPopupWindow = null;
+        }
+        return { action: 'deny' };
+    });
+
+    // Dynamic Sizing & Styling Engine conforming to Chrome Extension popup standards
+    const adjustBoundsToContent = async () => {
+        if (!extensionPopupWindow || extensionPopupWindow.isDestroyed()) return;
+        try {
+            const size = await extensionPopupWindow.webContents.executeJavaScript(`
+                (() => {
+                    const body = document.body;
+                    const html = document.documentElement;
+                    if (!body || !html) return null;
+
+                    const parsePx = (v) => {
+                        if (!v || typeof v !== 'string') return 0;
+                        const m = v.match(/^([0-9.]+)px$/);
+                        return m ? Math.round(parseFloat(m[1])) : 0;
+                    };
+
+                    // 1. Check declared CSS rules for body or html in stylesheets
+                    let declaredW = parsePx(body.style.width) || parsePx(html.style.width);
+                    let declaredH = parsePx(body.style.height) || parsePx(html.style.height);
+
+                    try {
+                        for (const sheet of document.styleSheets) {
+                            try {
+                                const rules = sheet.cssRules || sheet.rules;
+                                if (!rules) continue;
+                                for (const rule of rules) {
+                                    if (rule.selectorText) {
+                                        const sel = rule.selectorText.trim();
+                                        let isTarget = false;
+                                        try {
+                                            if (body.matches(sel) || html.matches(sel)) isTarget = true;
+                                        } catch (e) {
+                                            const parts = sel.split(',').map(s => s.trim());
+                                            isTarget = parts.some(p => p === 'body' || p === 'html' || p.endsWith(' body') || p.endsWith(' html'));
+                                        }
+                                        if (isTarget) {
+                                            const w = parsePx(rule.style.width) || parsePx(rule.style.minWidth);
+                                            const h = parsePx(rule.style.height) || parsePx(rule.style.minHeight);
+                                            if (w > 50) declaredW = w;
+                                            if (h > 50) declaredH = h;
+                                        }
+                                    }
+                                }
+                            } catch (e) {}
+                        }
+                    } catch (e) {}
+
+                    // 2. Check main container elements (.popup, #app, #root, .main-container, etc.)
+                    let containerW = 0;
+                    let containerH = 0;
+                    const candidateSelectors = ['.popup', '.main-container', '#app', '#root', '[class*="popup"]', '[class*="container"]'];
+                    for (const sel of candidateSelectors) {
+                        const el = document.querySelector(sel);
+                        if (el) {
+                            const cs = window.getComputedStyle(el);
+                            const w = parsePx(el.style.width) || parsePx(cs.width) || el.offsetWidth;
+                            const h = parsePx(el.style.height) || parsePx(cs.height) || el.offsetHeight || el.scrollHeight;
+                            if (w > 50 && (containerW === 0 || w < containerW)) containerW = Math.round(w);
+                            if (h > 50 && h > containerH) containerH = Math.round(h);
+                        }
+                    }
+
+                    // 3. Evaluate intrinsic width
+                    let w = declaredW;
+                    if (!w) {
+                        if (body.offsetWidth > 50 && body.offsetWidth < (html.clientWidth - 4)) {
+                            w = body.offsetWidth;
+                        } else if (containerW > 50 && containerW < (html.clientWidth - 4)) {
+                            w = containerW;
+                        } else {
+                            let maxChildW = 0;
+                            for (const child of body.children) {
+                                if (child.tagName === 'SCRIPT' || child.tagName === 'STYLE' || child.tagName === 'NOSCRIPT') continue;
+                                const cs = window.getComputedStyle(child);
+                                if (cs.position === 'fixed' || cs.display === 'none') continue;
+                                const cw = child.offsetWidth || Math.round(child.getBoundingClientRect().width);
+                                if (cw > maxChildW) maxChildW = cw;
+                            }
+                            w = containerW || maxChildW || body.offsetWidth || 350;
+                        }
+                    }
+
+                    // 4. Evaluate intrinsic height
+                    let h = declaredH;
+                    if (!h) {
+                        let maxChildH = 0;
+                        for (const child of body.children) {
+                            if (child.tagName === 'SCRIPT' || child.tagName === 'STYLE' || child.tagName === 'NOSCRIPT') continue;
+                            const cs = window.getComputedStyle(child);
+                            if (cs.position === 'fixed' || cs.display === 'none') continue;
+                            const ch = Math.max(child.offsetHeight, child.scrollHeight, Math.round(child.getBoundingClientRect().height));
+                            if (ch > maxChildH) maxChildH = ch;
+                        }
+                        h = Math.max(containerH, maxChildH, body.scrollHeight, html.scrollHeight, body.offsetHeight);
+                    }
+
+                    return { width: Math.round(w), height: Math.round(h) };
+                })()
+            `);
+
+            if (size && size.width > 50 && size.height > 50) {
+                // Constraints conforming to Chrome Web Extension specifications
+                const finalW = Math.min(800, Math.max(180, Math.round(size.width)));
+                const finalH = Math.min(620, Math.max(80, Math.round(size.height)));
+
+                let targetX = Math.round(mainX + (anchorBounds ? (anchorBounds.x - finalW + (anchorBounds.width || 30)) : (mainBounds.width - finalW - 20)));
+                let targetY = Math.round(mainY + (anchorBounds ? (anchorBounds.y + (anchorBounds.height || 36) + 6) : 75));
+
+                if (targetX + finalW > scrX + screenW - 12) targetX = scrX + screenW - finalW - 12;
+                if (targetY + finalH > scrY + screenH - 12) targetY = scrY + screenH - finalH - 12;
+                if (targetX < scrX + 12) targetX = scrX + 12;
+                if (targetY < scrY + 12) targetY = scrY + 12;
+
+                const curBounds = extensionPopupWindow.getBounds();
+                if (Math.abs(curBounds.width - finalW) > 2 || Math.abs(curBounds.height - finalH) > 2 || Math.abs(curBounds.x - targetX) > 2) {
+                    extensionPopupWindow.setBounds({
+                        x: targetX,
+                        y: targetY,
+                        width: finalW,
+                        height: finalH
+                    });
+                }
+            }
+        } catch (e) {}
+    };
+
+    const attachContentObserver = async () => {
+        if (!extensionPopupWindow || extensionPopupWindow.isDestroyed()) return;
+        try {
+            await extensionPopupWindow.webContents.executeJavaScript(`
+                (() => {
+                    if (window.__ocalPopupObserverInstalled) return;
+                    window.__ocalPopupObserverInstalled = true;
+
+                    // Inject elegant scrollbar styles matching browser theme
+                    if (!document.getElementById('__ocal_popup_style')) {
+                        const style = document.createElement('style');
+                        style.id = '__ocal_popup_style';
+                        const isLightMode = ${userSettings && userSettings.themeMode === 'light'};
+                        const thumbBg = isLightMode ? 'rgba(0, 0, 0, 0.2)' : 'rgba(255, 255, 255, 0.22)';
+                        const thumbHover = isLightMode ? 'rgba(0, 0, 0, 0.35)' : 'rgba(255, 255, 255, 0.4)';
+                        style.textContent = \`
+                            html, body {
+                                overflow-x: hidden !important;
+                                scrollbar-width: thin !important;
+                            }
+                            ::-webkit-scrollbar {
+                                width: 6px !important;
+                                height: 6px !important;
+                            }
+                            ::-webkit-scrollbar-track {
+                                background: transparent !important;
+                            }
+                            ::-webkit-scrollbar-thumb {
+                                background: \${thumbBg} !important;
+                                border-radius: 999px !important;
+                            }
+                            ::-webkit-scrollbar-thumb:hover {
+                                background: \${thumbHover} !important;
+                            }
+                        \`;
+                        document.head.appendChild(style);
+                    }
+
+                    let debounceTimer = null;
+                    const triggerResize = () => {
+                        clearTimeout(debounceTimer);
+                        debounceTimer = setTimeout(() => {
+                            console.log('__OCAL_EXT_POPUP_RESIZE__');
+                        }, 40);
+                    };
+
+                    if (window.ResizeObserver) {
+                        const ro = new ResizeObserver(triggerResize);
+                        ro.observe(document.documentElement);
+                        if (document.body) ro.observe(document.body);
+                        const rootEl = document.querySelector('.popup, #app, #root, [class*="popup"]');
+                        if (rootEl) ro.observe(rootEl);
+                    }
+                    const mo = new MutationObserver(triggerResize);
+                    mo.observe(document.documentElement, { childList: true, subtree: true, attributes: true });
+                })()
+            `);
+        } catch (e) {}
+    };
+
+    extensionPopupWindow.webContents.on('console-message', (event) => {
+        if (event && event.message === '__OCAL_EXT_POPUP_RESIZE__') {
+            adjustBoundsToContent();
+        }
+    });
+
+    extensionPopupWindow.webContents.once('dom-ready', async () => {
+        await attachContentObserver();
+        await adjustBoundsToContent();
+    });
+
+    extensionPopupWindow.webContents.on('did-finish-load', async () => {
+        await attachContentObserver();
+        await adjustBoundsToContent();
+        setTimeout(adjustBoundsToContent, 100);
+        setTimeout(adjustBoundsToContent, 250);
+        setTimeout(adjustBoundsToContent, 500);
+    });
+
+    // Register blur only after show to prevent premature dismissal on startup
+    extensionPopupWindow.once('ready-to-show', async () => {
+        if (extensionPopupWindow && !extensionPopupWindow.isDestroyed()) {
+            try { await adjustBoundsToContent(); } catch (e) {}
+            if (extensionPopupWindow && !extensionPopupWindow.isDestroyed()) {
+                extensionPopupWindow.show();
+                extensionPopupWindow.focus();
+                setTimeout(() => {
+                    if (extensionPopupWindow && !extensionPopupWindow.isDestroyed()) {
+                        extensionPopupWindow.on('blur', () => {
+                            if (extensionPopupWindow && !extensionPopupWindow.isDestroyed()) {
+                                try { extensionPopupWindow.close(); } catch(e) {}
+                                extensionPopupWindow = null;
+                            }
+                        });
+                    }
+                }, 350);
+            }
+        }
+    });
+
+    extensionPopupWindow.loadURL(popupUrl).then(() => {
+        if (extensionPopupWindow && !extensionPopupWindow.isDestroyed() && !extensionPopupWindow.isVisible()) {
+            extensionPopupWindow.show();
+            extensionPopupWindow.focus();
+        }
+    }).catch(err => {
+        console.error('[ExtensionManager] Failed to load extension popup URL in window:', popupUrl, err);
+        if (extensionPopupWindow && !extensionPopupWindow.isDestroyed()) {
+            try { extensionPopupWindow.close(); } catch(e) {}
+            extensionPopupWindow = null;
+        }
+        createNewTab(popupUrl);
+    });
+}
+
+function broadcastExtensions() {
+    const list = (userSettings.extensions || []).map(ext => resolveExtensionMetadata({ ...ext }));
+    try {
+        const { webContents } = require('electron');
+        if (webContents && typeof webContents.getAllWebContents === 'function') {
+            webContents.getAllWebContents().forEach(wc => {
+                if (!wc.isDestroyed()) {
+                    try { wc.send('extensions-updated', list); } catch (e) {}
+                }
+            });
+        }
+    } catch (err) {}
+    if (extensionDropdownView && !extensionDropdownView.webContents.isDestroyed()) {
+        extensionDropdownView.webContents.send('refresh-extensions', list);
+    }
+}
+
+async function ensureSessionExtensions(ses) {
+    if (!ses) return;
+    if (ses._extensionsInitialized) return;
+    ses._extensionsInitialized = true;
+    try {
+        await extensionManager.loadAllForSession(ses);
+    } catch (e) {
+        console.error('[ExtensionManager] Error initializing session extensions:', e);
+    }
+}
+
 ipcMain.handle('install-extension', async (e, id) => {
     return await extensionManager.downloadAndInstall(id);
+});
+
+ipcMain.handle('fetch-extension-info', async (e, id) => {
+    return await extensionManager.fetchExtensionData(id);
 });
 
 ipcMain.handle('load-unpacked-extension', async (e) => {
@@ -9908,7 +10748,6 @@ ipcMain.handle('load-unpacked-extension', async (e) => {
 
         const manifest = JSON.parse(fs.readFileSync(manifestPath, 'utf8'));
 
-        // Ensure critical arrays are initialized
         if (!userSettings.bookmarks) userSettings.bookmarks = [];
         if (!userSettings.folders) userSettings.folders = [];
         if (!userSettings.history) userSettings.history = [];
@@ -9916,16 +10755,27 @@ ipcMain.handle('load-unpacked-extension', async (e) => {
 
         const extensionId = require('crypto').createHash('md5').update(dirPath).digest('hex');
 
+        const popup = (manifest.action && manifest.action.default_popup) ||
+                      (manifest.browser_action && manifest.browser_action.default_popup) ||
+                      (manifest.page_action && manifest.page_action.default_popup) || '';
+        const optionsPage = (manifest.options_ui && manifest.options_ui.page) || manifest.options_page || '';
+
         const extensionInfo = {
             id: extensionId,
             name: getLocalizedExtensionString(manifest.name, dirPath, manifest),
             version: manifest.version,
             description: getLocalizedExtensionString(manifest.description || 'Unpacked Extension', dirPath, manifest),
             enabled: true,
+            pinned: true,
+            popup: popup ? popup.replace(/^\//, '') : '',
+            hasPopup: Boolean(popup),
+            optionsPage: optionsPage ? optionsPage.replace(/^\//, '') : '',
             icons: manifest.icons || {},
             isLocal: true,
             localPath: dirPath
         };
+
+        resolveExtensionMetadata(extensionInfo);
 
         if (!userSettings.extensions) userSettings.extensions = [];
         const existingIdx = userSettings.extensions.findIndex(ext => ext.id === extensionId);
@@ -9934,9 +10784,15 @@ ipcMain.handle('load-unpacked-extension', async (e) => {
 
         saveSettings(userSettings);
 
-        const loaded = await session.defaultSession.loadExtension(dirPath);
-        extensionManager.loaded.set(extensionId, loaded);
+        extensionManager.patchExtensionForCompatibility(dirPath);
+        const targetSessions = getActiveExtensionSessions();
+        for (const ses of targetSessions) {
+            try {
+                await ses.loadExtension(dirPath, { allowFileAccess: true });
+            } catch (e) {}
+        }
 
+        broadcastExtensions();
         return extensionInfo;
     } catch (err) {
         console.error('Local extension error:', err);
@@ -9952,8 +10808,8 @@ ipcMain.handle('get-all-extensions', () => {
     const native = [
         { id: 'ai-assistant', name: 'Ocal AI Assistant', desc: 'AI-powered productivity and browsing assistant.', enabled: userSettings.aiAssistantEnabled, type: 'native', icon: 'fa-wand-magic-sparkles' },
         { id: 'cyber-stealth', name: 'Cyber Stealth', desc: 'Fingerprint protection and cross-request anonymity.', enabled: userSettings.cyberStealthEnabled, type: 'native', icon: 'fa-user-secret' },
-        { id: 'ad-blocker', name: 'uBlock Origin', desc: 'An efficient ad blocker. Easy on CPU and memory.', enabled: userSettings.adBlockEnabled, type: 'native', icon: 'fa-shield-halved' },
-        { id: 'dislike-recovery', name: 'Return YouTube Dislike', desc: 'Standalone extension to restore dislike counts on YouTube.', enabled: userSettings.youtubeDislikeEnabled, type: 'native', icon: 'fa-thumbs-down' },
+        { id: 'ad-blocker', name: 'uBlock Origin', desc: 'An efficient ad blocker. Easy on CPU and memory.', enabled: userSettings.adBlockEnabled, type: 'native', icon: 'fa-shield-halved', hasPopup: true },
+        { id: 'dislike-recovery', name: 'Return YouTube Dislike', desc: 'Standalone extension to restore dislike counts on YouTube.', enabled: userSettings.youtubeDislikeEnabled, type: 'native', icon: 'fa-thumbs-down', hasPopup: true },
         { id: 'media-master', name: 'Ocal Media Master', desc: 'Professional video and image downloader for all sites.', enabled: userSettings.mediaMasterEnabled, type: 'native', icon: 'fa-download' },
         { id: 'asset-vault', name: 'Asset Vault', desc: 'High-performance local resource caching.', enabled: userSettings.assetVaultEnabled, type: 'native', icon: 'fa-vault' }
     ];
@@ -9962,6 +10818,23 @@ ipcMain.handle('get-all-extensions', () => {
         type: 'marketplace'
     }));
     return [...native, ...marketplace];
+});
+
+ipcMain.handle('toggle-pin-extension', (e, id) => {
+    if (!userSettings.extensions) userSettings.extensions = [];
+    const ext = userSettings.extensions.find(x => x.id === id);
+    if (ext) {
+        ext.pinned = !ext.pinned;
+        saveSettings(userSettings);
+        broadcastExtensions();
+        return ext.pinned;
+    }
+    return false;
+});
+
+ipcMain.on('open-extension-popup', async (e, { id, bounds }) => {
+    hidePopups();
+    await showExtensionPopup(id, bounds);
 });
 
 ipcMain.handle('toggle-native-extension', (e, { id, enabled }) => {
@@ -9974,6 +10847,7 @@ ipcMain.handle('toggle-native-extension', (e, { id, enabled }) => {
 
     saveSettings(userSettings);
     broadcastSettings(userSettings);
+    broadcastExtensions();
     return true;
 });
 
@@ -9982,34 +10856,51 @@ ipcMain.handle('remove-extension', async (e, id) => {
 });
 
 ipcMain.handle('toggle-extension', async (e, { id, enabled }) => {
-    const ext = userSettings.extensions.find(x => x.id === id);
+    const ext = (userSettings.extensions || []).find(x => x.id === id);
     if (ext) {
         ext.enabled = enabled;
         saveSettings(userSettings);
-        // Note: Enabling/Disabling in session often requires a reload
+        if (enabled) {
+            const extPath = ext.isLocal ? ext.localPath : path.join(extensionManager.extensionsPath, ext.id);
+            if (fs.existsSync(extPath)) {
+                for (const ses of getActiveExtensionSessions()) {
+                    try { await ses.loadExtension(extPath, { allowFileAccess: true }); } catch (err) {}
+                }
+            }
+        }
+        broadcastExtensions();
         return true;
     }
     return false;
 });
 
-ipcMain.on('install-extension-from-store', (e, id) => {
-    extensionManager.downloadAndInstall(id).then(() => {
-        if (mainWindow) {
+ipcMain.on('install-extension-from-store', async (e, id) => {
+    try {
+        const info = await extensionManager.downloadAndInstall(id);
+        if (mainWindow && !mainWindow.isDestroyed()) {
+            mainWindow.webContents.send('show-toast', {
+                message: `✓ Installed ${info.name || 'extension'}!`,
+                icon: 'fa-puzzle-piece'
+            });
             mainWindow.webContents.send('show-modal', {
                 title: 'Success',
-                message: `Extension ${id} installed successfully!`,
+                message: `Extension ${info.name || id} installed successfully!`,
                 type: 'success'
             });
         }
-    }).catch(err => {
-        if (mainWindow) {
+    } catch (err) {
+        if (mainWindow && !mainWindow.isDestroyed()) {
+            mainWindow.webContents.send('show-toast', {
+                message: `Failed to install extension: ${err.message}`,
+                icon: 'fa-triangle-exclamation'
+            });
             mainWindow.webContents.send('show-modal', {
                 title: 'Installation Failed',
                 message: `Failed to install extension: ${err.message}`,
                 type: 'error'
             });
         }
-    });
+    }
 });
 
 async function createPipWindow(contents) {
@@ -10522,6 +11413,42 @@ setInterval(async () => {
     }
 }, 3000);
 
+function isLocalPageContents(contents, props) {
+    if (!contents || contents.isDestroyed()) return true;
+
+    // 1. Internal application views and shell windows
+    if (mainWindow && contents === mainWindow.webContents) return true;
+    if (typeof sidebarOverlayView !== 'undefined' && sidebarOverlayView && !sidebarOverlayView.webContents.isDestroyed() && contents === sidebarOverlayView.webContents) return true;
+    if (typeof aiSidebarView !== 'undefined' && aiSidebarView && !aiSidebarView.webContents.isDestroyed() && contents === aiSidebarView.webContents) return true;
+    if (typeof downloadsView !== 'undefined' && downloadsView && !downloadsView.webContents.isDestroyed() && contents === downloadsView.webContents) return true;
+    if (typeof welcomeView !== 'undefined' && welcomeView && !welcomeView.webContents.isDestroyed() && contents === welcomeView.webContents) return true;
+    if (typeof webAppView !== 'undefined' && webAppView && !webAppView.webContents.isDestroyed() && contents === webAppView.webContents) return true;
+
+    // 2. URL inspection from contents and context menu props
+    let url = '';
+    try {
+        url = (contents.getURL ? contents.getURL() : '') || (props && (props.pageURL || props.frameURL)) || '';
+    } catch (err) {}
+
+    url = (url || '').toLowerCase().trim();
+    if (!url) return true;
+
+    // 3. Match all local / internal schemes and file paths
+    if (
+        url.startsWith('ocal://') ||
+        url.startsWith('file://') ||
+        url.startsWith('chrome://') ||
+        url.startsWith('chrome-extension://') ||
+        url.startsWith('about:') ||
+        url.startsWith('data:') ||
+        /^[a-z]:[/\\]/i.test(url)
+    ) {
+        return true;
+    }
+
+    return false;
+}
+
 function setupContextMenu(contents) {
     if (!contents || contents.isDestroyed()) return;
     if (contents._hasOcalContextMenu) return;
@@ -10529,6 +11456,7 @@ function setupContextMenu(contents) {
 
     contents.on('context-menu', (e, props) => {
         if (!contents || contents.isDestroyed()) return;
+        const isLocal = isLocalPageContents(contents, props);
         const menu = new Menu();
 
         // 1. Spelling Corrections (Shown at top when right-clicking misspelled words)
@@ -10629,25 +11557,34 @@ function setupContextMenu(contents) {
             menu.append(new MenuItem({ label: 'Reload', click: () => { try { contents.reload(); } catch(e){} } }));
             menu.append(new MenuItem({ type: 'separator' }));
             menu.append(new MenuItem({ label: 'Print...', click: () => { try { contents.print(); } catch (err) {} } }));
-            menu.append(new MenuItem({ label: 'View Page Source', click: () => {
-                const currentUrl = contents.getURL();
-                if (currentUrl && !currentUrl.startsWith('ocal://') && !currentUrl.startsWith('file://')) {
-                    createNewTab('view-source:' + currentUrl);
-                }
-            } }));
-            menu.append(new MenuItem({ type: 'separator' }));
+            
+            // View Page Source: only on remote web pages, completely removed on local/internal pages
+            if (!isLocal) {
+                menu.append(new MenuItem({ 
+                    label: 'View Page Source', 
+                    click: () => {
+                        const currentUrl = contents.getURL();
+                        if (currentUrl && !currentUrl.startsWith('ocal://') && !currentUrl.startsWith('file://')) {
+                            createNewTab('view-source:' + currentUrl);
+                        }
+                    } 
+                }));
+            }
         }
 
-        // 7. Inspect Element
-        menu.append(new MenuItem({ 
-            label: 'Inspect Element', 
-            click: () => { 
-                try { 
-                    contents.inspectElement(props.x, props.y); 
-                    if (!contents.isDevToolsOpened()) contents.openDevTools();
-                } catch(err){} 
-            } 
-        }));
+        // 7. Inspect Element - only on remote web pages, completely removed on all local/internal pages
+        if (!isLocal) {
+            menu.append(new MenuItem({ type: 'separator' }));
+            menu.append(new MenuItem({ 
+                label: 'Inspect Element', 
+                click: () => { 
+                    try { 
+                        contents.inspectElement(props.x, props.y); 
+                        if (!contents.isDevToolsOpened()) contents.openDevTools();
+                    } catch(err){} 
+                } 
+            }));
+        }
 
         const targetWindow = BrowserWindow.fromWebContents(contents) || mainWindow || BrowserWindow.getFocusedWindow();
         try {
