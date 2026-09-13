@@ -1,3 +1,8 @@
+// ── Universal Chrome Extension Compatibility Polyfill ─────────────────────────
+try {
+    require('./chrome-compat-shim.js');
+} catch (e) {}
+
 // ── Neural Shield V10: Deep Metadata Interceptor (Secondary & Sidebar Scrubbing) ──
 (function() {
     console.log('[Neural Shield] Initializing Deep Interceptor V10...');
@@ -230,10 +235,13 @@ contextBridge.exposeInMainWorld('electronAPI', {
 
   // Extensions
   installExtension: (id)   => ipcRenderer.invoke('install-extension', id),
+  fetchExtensionInfo: (id) => ipcRenderer.invoke('fetch-extension-info', id),
   loadUnpackedExtension: () => ipcRenderer.invoke('load-unpacked-extension'),
   getExtensions:    ()     => ipcRenderer.invoke('get-extensions'),
   removeExtension:  (id)   => ipcRenderer.invoke('remove-extension', id),
   toggleExtension:  (id, enabled) => ipcRenderer.invoke('toggle-extension', { id, enabled }),
+  togglePinExtension: (id) => ipcRenderer.invoke('toggle-pin-extension', id),
+  openExtensionPopup: (id, bounds) => ipcRenderer.send('open-extension-popup', { id, bounds }),
   
   // Profiles
   switchProfile: (id)      => ipcRenderer.send('switch-profile', id),
@@ -247,6 +255,9 @@ contextBridge.exposeInMainWorld('electronAPI', {
   onUpdateURL:         (cb) => ipcRenderer.on('url-updated',           (e, d)    => cb(d)),
   onUpdateTitle:       (cb) => ipcRenderer.on('title-updated',         (e, d)    => cb(d)),
   onSettingsChanged:   (cb) => ipcRenderer.on('settings-changed',      (e, s)    => cb(s)),
+  onExtensionsChanged: (cb) => ipcRenderer.on('extensions-updated',    (e, d)    => cb(d)),
+  onRefreshExtensions: (cb) => ipcRenderer.on('refresh-extensions',    (e, d)    => cb(d)),
+  onShowToast:         (cb) => ipcRenderer.on('show-toast',            (e, d)    => cb(d)),
 
   // Both renderer and sidebars use bookmarks-changed; renderer gets full object
   onBookmarksUpdated:  (cb) => ipcRenderer.on('bookmarks-changed',     (e, d)    => cb(d)),
@@ -269,69 +280,306 @@ contextBridge.exposeInMainWorld('electronAPI', {
   print: () => ipcRenderer.send('print-document')
 });
 
-// ── Chrome Web Store Bypass & Injection ──────────────────────────────────────────
-if (window.location.hostname === 'chromewebstore.google.com') {
-    const injectStoreButton = () => {
+// ── Chrome Web Store Smart Injection & Downloader Engine ──────────────────────────
+if (window.location.hostname.includes('chromewebstore.google.com') || window.location.hostname.includes('chrome.google.com')) {
+    const getStoreExtensionId = () => {
         const url = window.location.href;
-        const match = url.match(/\/detail\/.*?\/([a-z]{32})/);
-        if (!match) return;
-        const extensionId = match[1];
+        const match = url.match(/\/detail\/(?:[^\/]+\/)?([a-p]{32})/i) || url.match(/([a-p]{32})(?:[\?\/]|$)/i);
+        return match ? match[1].toLowerCase() : null;
+    };
 
-        // Targets for the "Add to Chrome" area in the new 2024+ layout
-        // We look for the main action button container
+    function getCwsContrastTextColor(hex) {
+        if (!hex || typeof hex !== 'string') return '#ffffff';
+        hex = hex.replace('#', '');
+        if (hex.length === 3) hex = hex.split('').map(c => c + c).join('');
+        if (hex.length !== 6) return '#ffffff';
+        const r = parseInt(hex.substring(0, 2), 16) || 0;
+        const g = parseInt(hex.substring(2, 4), 16) || 0;
+        const b = parseInt(hex.substring(4, 6), 16) || 0;
+        const yiq = (r * 299 + g * 587 + b * 114) / 1000;
+        return yiq >= 145 ? '#0d1117' : '#ffffff';
+    }
+
+    function getCwsModeAccent(color, isLight) {
+        if (!color) return isLight ? '#058f60' : '#09f0a0';
+        if (!isLight) return color;
+        const hex = color.toLowerCase();
+        if (hex === '#09f0a0' || hex === '#00ffaa' || hex.includes('f0a0')) return '#058f60';
+        if (hex === '#ff007f' || hex === '#ff00aa' || hex.includes('ff007') || hex.includes('ff00a')) return '#d81b60';
+        if (hex === '#00e5ff' || hex === '#00ffff' || hex.includes('00e5') || hex.includes('00f0')) return '#0288d1';
+        if (hex === '#ff9100' || hex === '#ffaa00' || hex.includes('ff91') || hex.includes('ffaa')) return '#d97706';
+        if (hex === '#8b5cf6' || hex === '#a855f7' || hex === '#9333ea' || hex.includes('8b5c') || hex.includes('a855')) return '#6d28d9';
+        if (hex === '#ff4d4d' || hex === '#ff3333' || hex.includes('ff4d') || hex.includes('ff33')) return '#dc2626';
+        if (hex === '#ffffff' || hex === '#f4f4f5' || hex === '#e8e8e8' || hex.includes('fff')) return '#0f172a';
+        return color;
+    }
+
+    let _cwsCachedSettings = null;
+    let _cwsInstalledExtensions = [];
+
+    const getCwsSettings = async () => {
+        if (_cwsCachedSettings) return _cwsCachedSettings;
+        try {
+            _cwsCachedSettings = await ipcRenderer.invoke('get-settings');
+        } catch (e) {}
+        return _cwsCachedSettings || { themeMode: 'dark', accentColor: '#09f0a0' };
+    };
+
+    const getCwsInstalledExtensions = async () => {
+        try {
+            const exts = await ipcRenderer.invoke('get-extensions');
+            if (Array.isArray(exts)) _cwsInstalledExtensions = exts;
+        } catch (e) {}
+        return _cwsInstalledExtensions;
+    };
+
+    const computeThemeValues = (s) => {
+        const isLight = s && s.themeMode === 'light';
+        const rawAccent = (s && s.accentColor) || (isLight ? '#058f60' : '#09f0a0');
+        const accent = getCwsModeAccent(rawAccent, isLight);
+        const contrast = getCwsContrastTextColor(accent);
+
+        return {
+            isLight,
+            accent,
+            contrast,
+            bannerBg: isLight ? 'rgba(255, 255, 255, 0.96)' : 'rgba(18, 20, 26, 0.95)',
+            bannerBorder: isLight ? 'rgba(0, 0, 0, 0.08)' : 'rgba(255, 255, 255, 0.12)',
+            bannerShadow: isLight 
+                ? `0 14px 36px rgba(0, 0, 0, 0.12), 0 2px 6px rgba(0, 0, 0, 0.04), 0 0 0 1px color-mix(in srgb, ${accent} 25%, transparent)`
+                : `0 16px 36px rgba(0, 0, 0, 0.55), 0 0 0 1px color-mix(in srgb, ${accent} 25%, transparent)`,
+            titleColor: isLight ? '#0f172a' : '#ffffff',
+            subtitleColor: isLight ? '#64748b' : '#9ca3af',
+            iconBg: `linear-gradient(135deg, ${accent} 0%, color-mix(in srgb, ${accent} 78%, #000) 100%)`,
+            iconShadow: `0 2px 8px color-mix(in srgb, ${accent} 30%, transparent)`,
+            btnBg: `linear-gradient(135deg, ${accent} 0%, color-mix(in srgb, ${accent} 85%, #000) 100%)`,
+            btnShadow: `0 4px 14px color-mix(in srgb, ${accent} 35%, transparent)`,
+            btnInstalledBg: `color-mix(in srgb, ${accent} 78%, #000)`,
+            installedBadgeBg: isLight ? 'rgba(0, 0, 0, 0.06)' : 'rgba(255, 255, 255, 0.08)'
+        };
+    };
+
+    const applyThemeToCwsElements = (t) => {
+        let style = document.getElementById('ocal-cws-styles');
+        if (!style) {
+            style = document.createElement('style');
+            style.id = 'ocal-cws-styles';
+            document.head.appendChild(style);
+        }
+        style.textContent = `
+            @keyframes ocalSlideUp {
+                from { transform: translateY(30px); opacity: 0; }
+                to { transform: translateY(0); opacity: 1; }
+            }
+            .ocal-cws-btn {
+                transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1) !important;
+            }
+            .ocal-cws-btn:hover:not(:disabled) {
+                transform: translateY(-1px) scale(1.02) !important;
+                filter: brightness(1.08) !important;
+                box-shadow: 0 6px 20px color-mix(in srgb, ${t.accent} 45%, transparent) !important;
+            }
+            .ocal-cws-btn:active:not(:disabled) {
+                transform: scale(0.98) !important;
+            }
+        `;
+
+        const banner = document.getElementById('ocal-cws-banner');
+        if (banner) {
+            banner.style.background = t.bannerBg;
+            banner.style.borderColor = t.bannerBorder;
+            banner.style.boxShadow = t.bannerShadow;
+
+            const iconEl = banner.querySelector('#ocal-cws-banner-icon');
+            if (iconEl) {
+                iconEl.style.background = t.iconBg;
+                iconEl.style.color = t.contrast;
+                iconEl.style.boxShadow = t.iconShadow;
+            }
+            const titleEl = banner.querySelector('#ocal-cws-banner-title');
+            if (titleEl) titleEl.style.color = t.titleColor;
+            const idEl = banner.querySelector('#ocal-cws-banner-id');
+            if (idEl) idEl.style.color = t.subtitleColor;
+
+            const installBtn = document.getElementById('ocal-cws-install-btn');
+            if (installBtn && !installBtn.disabled) {
+                installBtn.style.background = t.btnBg;
+                installBtn.style.color = t.contrast;
+                installBtn.style.boxShadow = t.btnShadow;
+            } else if (installBtn && installBtn.disabled) {
+                installBtn.style.background = t.btnInstalledBg;
+                installBtn.style.color = t.contrast;
+            }
+        }
+
+        const nativeBtn = document.querySelector('.ocal-native-install-btn');
+        if (nativeBtn && !nativeBtn.disabled) {
+            nativeBtn.style.background = t.btnBg;
+            nativeBtn.style.color = t.contrast;
+            nativeBtn.style.boxShadow = t.btnShadow;
+        } else if (nativeBtn && nativeBtn.disabled) {
+            nativeBtn.style.background = t.btnInstalledBg;
+            nativeBtn.style.color = t.contrast;
+        }
+    };
+
+    try {
+        ipcRenderer.on('settings-changed', (e, s) => {
+            if (s) {
+                _cwsCachedSettings = s;
+                applyThemeToCwsElements(computeThemeValues(s));
+            }
+        });
+    } catch (e) {}
+
+    const injectStoreButton = async () => {
+        const extensionId = getStoreExtensionId();
+        if (!extensionId) return;
+
+        const s = await getCwsSettings();
+        const t = computeThemeValues(s);
+        const installedList = await getCwsInstalledExtensions();
+        const isInstalled = (installedList || []).some(ext => ext.id && ext.id.toLowerCase() === extensionId.toLowerCase());
+
+        // 1. Check or build floating banner
+        let banner = document.getElementById('ocal-cws-banner');
+        if (!banner) {
+            banner = document.createElement('div');
+            banner.id = 'ocal-cws-banner';
+            banner.style.cssText = `
+                position: fixed;
+                bottom: 24px;
+                right: 24px;
+                z-index: 2147483647;
+                background: ${t.bannerBg};
+                backdrop-filter: blur(16px);
+                -webkit-backdrop-filter: blur(16px);
+                border: 1px solid ${t.bannerBorder};
+                border-radius: 16px;
+                padding: 12px 18px;
+                display: flex;
+                align-items: center;
+                gap: 14px;
+                box-shadow: ${t.bannerShadow};
+                font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+                animation: ocalSlideUp 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+            `;
+
+            banner.innerHTML = `
+                <div style="display: flex; align-items: center; gap: 10px;">
+                    <div id="ocal-cws-banner-icon" style="width: 34px; height: 34px; border-radius: 10px; background: ${t.iconBg}; display: flex; align-items: center; justify-content: center; color: ${t.contrast}; font-size: 16px; box-shadow: ${t.iconShadow};">
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M19.439 7.85c0-1.57.802-2.5 1.561-2.5.76 0 1.561.93 1.561 2.5 0 1.57-.802 2.5-1.561 2.5-.76 0-1.561-.93-1.561-2.5z"/><path d="M14 4c0-1.57.802-2.5 1.561-2.5.76 0 1.561.93 1.561 2.5 0 1.57-.802 2.5-1.561 2.5-.76 0-1.561-.93-1.561-2.5z"/><path d="M4 14c-1.57 0-2.5-.802-2.5-1.561 0-.76.93-1.561 2.5-1.561 1.57 0 2.5.802 2.5 1.561 0 .76-.93 1.561-2.5 1.561z"/><path d="M4 19.439c-1.57 0-2.5-.802-2.5-1.561 0-.76.93-1.561 2.5-1.561 1.57 0 2.5.802 2.5 1.561 0 .76-.93 1.561-2.5 1.561z"/><rect x="4" y="4" width="16" height="16" rx="2"/></svg>
+                    </div>
+                    <div>
+                        <div id="ocal-cws-banner-title" style="font-size: 12px; font-weight: 700; color: ${t.titleColor}; letter-spacing: -0.2px;">Ocal Browser</div>
+                        <div id="ocal-cws-banner-id" style="font-size: 10px; color: ${t.subtitleColor}; font-family: monospace;">ID: ${extensionId.substring(0, 12)}...</div>
+                    </div>
+                </div>
+                <button id="ocal-cws-install-btn" class="ocal-cws-btn" style="
+                    background: ${isInstalled ? t.btnInstalledBg : t.btnBg};
+                    color: ${t.contrast};
+                    border: none;
+                    padding: 9px 18px;
+                    border-radius: 999px;
+                    font-size: 12.5px;
+                    font-weight: 700;
+                    cursor: ${isInstalled ? 'default' : 'pointer'};
+                    display: inline-flex;
+                    align-items: center;
+                    gap: 7px;
+                    box-shadow: ${isInstalled ? 'none' : t.btnShadow};
+                " ${isInstalled ? 'disabled' : ''}>
+                    <span>${isInstalled ? '✓ Installed' : 'Add to Ocal'}</span>
+                </button>
+            `;
+            document.body.appendChild(banner);
+
+            const installBtn = document.getElementById('ocal-cws-install-btn');
+            if (installBtn && !isInstalled) {
+                installBtn.onclick = (e) => {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    installBtn.disabled = true;
+                    installBtn.innerHTML = `
+                        <svg class="spin" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" style="animation: ocalSpin 1s linear infinite;"><circle cx="12" cy="12" r="10" stroke-opacity="0.25"/><path d="M12 2a10 10 0 0 1 10 10"/></svg>
+                        <span>Installing...</span>
+                    `;
+                    installBtn.style.opacity = '0.85';
+                    ipcRenderer.send('install-extension-from-store', extensionId);
+                    setTimeout(() => {
+                        installBtn.innerHTML = `<span>✓ Installed</span>`;
+                        installBtn.style.background = t.btnInstalledBg;
+                        installBtn.style.color = t.contrast;
+                        installBtn.style.boxShadow = 'none';
+                        installBtn.style.opacity = '1';
+                        installBtn.style.cursor = 'default';
+                        _cwsInstalledExtensions.push({ id: extensionId });
+                    }, 2500);
+                };
+            }
+        }
+
+        applyThemeToCwsElements(t);
+
+        // 2. Also inject button directly into native button bar if found
         const selectors = [
-            '.TnAL7c', // Primary button container
-            'button[aria-label*="Chrome"]', // Any button with Chrome in label
-            '.fK6v9d', // Sidebar action area
-            '.header-container' // Fallback
+            '.TnAL7c',
+            'button[aria-label*="Chrome"]',
+            '.fK6v9d',
+            '.header-container'
         ];
 
         let target = null;
         for (const selector of selectors) {
             const el = document.querySelector(selector);
-            if (el && !el.querySelector('.ocal-install-btn')) {
+            if (el && !el.querySelector('.ocal-native-install-btn')) {
                 target = el;
                 break;
             }
         }
 
-        if (target) {
+        if (target && !target.querySelector('.ocal-native-install-btn')) {
             const btn = document.createElement('button');
-            btn.className = 'ocal-install-btn';
-            btn.innerHTML = `
-                <i class="fas fa-puzzle-piece" style="margin-right: 8px;"></i>
-                Add to Ocal
-            `;
+            btn.className = 'ocal-native-install-btn ocal-cws-btn';
+            btn.innerHTML = isInstalled ? '✓ Installed into Ocal' : 'Add to Ocal';
+            btn.disabled = isInstalled;
             btn.style.cssText = `
-                background: linear-gradient(135deg, #a855f7 0%, #7e22ce 100%);
-                color: white;
+                background: ${isInstalled ? t.btnInstalledBg : t.btnBg};
+                color: ${t.contrast};
                 border: none;
                 padding: 10px 24px;
                 border-radius: 9999px;
-                font-weight: 600;
-                font-family: 'Outfit', 'Inter', sans-serif;
-                cursor: pointer;
-                transition: 0.3s;
+                font-weight: 700;
+                cursor: ${isInstalled ? 'default' : 'pointer'};
                 margin-left: 10px;
-                font-size: 14px;
-                display: flex;
+                font-size: 13.5px;
+                display: inline-flex;
                 align-items: center;
-                box-shadow: 0 4px 15px rgba(168, 85, 247, 0.3);
+                box-shadow: ${isInstalled ? 'none' : t.btnShadow};
                 z-index: 10000;
                 position: relative;
             `;
-            
-            btn.onmouseover = () => btn.style.transform = 'translateY(-2px)';
-            btn.onmouseout = () => btn.style.transform = 'translateY(0)';
-            btn.onclick = (e) => {
-                e.preventDefault();
-                e.stopPropagation();
-                btn.innerHTML = '<i class="fas fa-circle-notch fa-spin" style="margin-right: 8px;"></i> Installing...';
-                btn.style.opacity = '0.8';
-                ipcRenderer.send('install-extension-from-store', extensionId);
-            };
 
-            // If we found the native button, we might want to hide it or place ours next to it
+            if (!isInstalled) {
+                btn.onclick = (e) => {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    btn.disabled = true;
+                    btn.innerHTML = 'Installing...';
+                    btn.style.opacity = '0.8';
+                    ipcRenderer.send('install-extension-from-store', extensionId);
+                    setTimeout(() => {
+                        btn.innerHTML = '✓ Installed into Ocal';
+                        btn.style.background = t.btnInstalledBg;
+                        btn.style.color = t.contrast;
+                        btn.style.boxShadow = 'none';
+                        btn.style.opacity = '1';
+                        btn.style.cursor = 'default';
+                        _cwsInstalledExtensions.push({ id: extensionId });
+                    }, 2500);
+                };
+            }
+
             const nativeBtn = target.querySelector('button');
             if (nativeBtn) {
                 target.insertBefore(btn, nativeBtn.nextSibling);
@@ -343,11 +591,17 @@ if (window.location.hostname === 'chromewebstore.google.com') {
 
     // Run on changes (SPA navigation)
     const observer = new MutationObserver(() => injectStoreButton());
-    observer.observe(document.body, { childList: true, subtree: true });
-    
+    if (document.body) {
+        observer.observe(document.body, { childList: true, subtree: true });
+    } else {
+        document.addEventListener('DOMContentLoaded', () => {
+            observer.observe(document.body, { childList: true, subtree: true });
+        });
+    }
+
     // Initial run
     window.addEventListener('load', injectStoreButton);
-    setInterval(injectStoreButton, 2000); // Fail-safe for rapid SPA navigation
+    setInterval(injectStoreButton, 2000);
 }
 
 // ── YouTube Dislike Restoration ────────────────────────────────────────────────

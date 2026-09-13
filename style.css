@@ -2012,6 +2012,151 @@ body[data-theme="light"] .tool-btn:hover {
   box-shadow: 0 2px 8px var(--accent-glow) !important;
 }
 
+/* ── Extensions Topbar Capsule System ─────────────────────────────── */
+.extensions-capsule {
+  display: inline-flex;
+  align-items: center;
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 100px;
+  padding: 2px 3px;
+  gap: 2px;
+  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+  box-shadow: none !important;
+  flex-shrink: 0;
+}
+
+body[data-theme="light"] .extensions-capsule {
+  background: rgba(0, 0, 0, 0.035);
+  border-color: rgba(0, 0, 0, 0.07);
+  box-shadow: none !important;
+}
+
+.extensions-capsule:hover {
+  background: rgba(255, 255, 255, 0.08);
+  border-color: rgba(255, 255, 255, 0.14);
+}
+
+body[data-theme="light"] .extensions-capsule:hover {
+  background: rgba(0, 0, 0, 0.06);
+  border-color: rgba(0, 0, 0, 0.1);
+}
+
+.pinned-extensions-bar {
+  display: inline-flex;
+  align-items: center;
+  gap: 2px;
+}
+
+.pinned-extensions-bar:not(:empty) {
+  padding-right: 4px;
+  margin-right: 2px;
+  border-right: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+body[data-theme="light"] .pinned-extensions-bar:not(:empty) {
+  border-right-color: rgba(0, 0, 0, 0.08);
+}
+
+.pinned-ext-btn {
+  width: 28px;
+  height: 28px;
+  min-width: 28px;
+  padding: 0;
+  border-radius: 50% !important;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background: transparent;
+  border: 1px solid transparent;
+  cursor: pointer;
+  outline: none;
+  transition: all 0.18s cubic-bezier(0.16, 1, 0.3, 1);
+  position: relative;
+}
+
+.pinned-ext-btn:hover {
+  background: rgba(255, 255, 255, 0.12) !important;
+  border-color: rgba(255, 255, 255, 0.18) !important;
+  transform: translateY(-1px) scale(1.05);
+}
+
+body[data-theme="light"] .pinned-ext-btn:hover {
+  background: rgba(0, 0, 0, 0.07) !important;
+  border-color: rgba(0, 0, 0, 0.1) !important;
+}
+
+.pinned-ext-btn:active {
+  transform: scale(0.95);
+}
+
+.pinned-ext-icon {
+  width: 17px;
+  height: 17px;
+  border-radius: 4px;
+  object-fit: contain;
+  pointer-events: none;
+  user-select: none;
+  display: block;
+}
+
+.pinned-ext-overflow-badge {
+  width: auto !important;
+  min-width: 26px !important;
+  height: 26px !important;
+  padding: 0 6px !important;
+  border-radius: 100px !important;
+  background: rgba(255, 255, 255, 0.08) !important;
+  border: 1px solid rgba(255, 255, 255, 0.12) !important;
+  color: var(--text-primary, #FFFFFF) !important;
+  font-family: var(--font-title, sans-serif);
+  font-size: 11px;
+  font-weight: 800;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.18s ease;
+}
+
+body[data-theme="light"] .pinned-ext-overflow-badge {
+  background: rgba(0, 0, 0, 0.06) !important;
+  border-color: rgba(0, 0, 0, 0.1) !important;
+  color: #111111 !important;
+}
+
+.pinned-ext-overflow-badge:hover {
+  background: var(--accent) !important;
+  color: var(--accent-text, #111111) !important;
+  border-color: var(--accent) !important;
+  transform: translateY(-1px) scale(1.05);
+}
+
+.tool-btn.extension-hub-btn {
+  width: 28px !important;
+  height: 28px !important;
+  min-width: 28px !important;
+  border-radius: 50% !important;
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  font-size: 13px !important;
+  color: var(--text-secondary, #9CA3AF) !important;
+  background: transparent !important;
+  border: 1px solid transparent !important;
+  padding: 0 !important;
+}
+
+.tool-btn.extension-hub-btn:hover {
+  background: rgba(255, 255, 255, 0.12) !important;
+  color: var(--text-primary, #FFFFFF) !important;
+}
+
+body[data-theme="light"] .tool-btn.extension-hub-btn:hover {
+  background: rgba(0, 0, 0, 0.07) !important;
+  color: #111111 !important;
+}
+
 #split-screen-btn:hover i {
   text-shadow: none !important;
 }

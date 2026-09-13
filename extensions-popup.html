@@ -10,8 +10,11 @@
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
     <style>
         :root {
-            --accent: #15AC49;
-            --accent-glow: rgba(21, 172, 73, 0.3);
+            --accent: #09F0A0;
+            --accent-glow: rgba(9, 240, 160, 0.3);
+            --accent-dim: rgba(9, 240, 160, 0.15);
+            --accent-border: rgba(9, 240, 160, 0.3);
+            --accent-text: #0d1117;
             --lime: #D4FC2B;
             --bg-glass: #16181D;
             --border-glass: rgba(255, 255, 255, 0.08);
@@ -70,11 +73,11 @@
             position: relative;
             background: var(--bg-glass);
             border: 1px solid var(--border-glass);
-            padding: 12px;
+            padding: 14px;
             display: flex;
             flex-direction: column;
             gap: 10px;
-            width: 260px;
+            width: 300px;
             border-radius: var(--radius);
             box-shadow: none !important;
         }
@@ -92,6 +95,52 @@
             font-weight: 800;
             color: var(--text-primary);
             letter-spacing: -0.2px;
+        }
+
+        .count-badge {
+            background: var(--card-bg);
+            border: 1px solid var(--card-border);
+            color: var(--accent);
+            font-size: 9px;
+            font-weight: 800;
+            padding: 1px 6px;
+            border-radius: 10px;
+        }
+
+        .ext-search-box {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            background: var(--card-bg);
+            border: 1px solid var(--card-border);
+            border-radius: 10px;
+            padding: 5px 9px;
+            transition: all 0.2s ease;
+        }
+
+        .ext-search-box:focus-within {
+            border-color: var(--accent);
+            box-shadow: 0 0 0 2px var(--accent-glow);
+        }
+
+        .ext-search-box i {
+            font-size: 11px;
+            color: var(--text-secondary);
+        }
+
+        .ext-search-input {
+            flex: 1;
+            background: transparent;
+            border: none;
+            outline: none;
+            color: var(--text-primary);
+            font-size: 11px;
+            font-family: var(--font-main);
+        }
+
+        .ext-search-input::placeholder {
+            color: var(--text-secondary);
+            opacity: 0.7;
         }
 
         .manage-link {
@@ -112,16 +161,16 @@
         }
 
         .list-section-label {
-            font-size: 8px;
+            font-size: 8.5px;
             font-weight: 800;
             text-transform: uppercase;
             letter-spacing: 1.2px;
             color: var(--text-secondary);
-            margin-top: 1px;
+            margin-top: 2px;
         }
 
         .ext-list {
-            max-height: 320px;
+            max-height: 330px;
             overflow-y: auto;
             display: flex;
             flex-direction: column;
@@ -151,14 +200,19 @@
             width: 28px;
             height: 28px;
             border-radius: 8px;
-            background: var(--accent-dim);
-            border: 1px solid var(--accent-border);
+            background: var(--accent-dim, rgba(21, 172, 73, 0.15));
+            border: 1px solid var(--accent-border, rgba(21, 172, 73, 0.3));
             display: flex;
             align-items: center;
             justify-content: center;
             color: var(--accent);
             font-size: 12px;
             flex-shrink: 0;
+            transition: transform 0.15s ease;
+        }
+
+        .ext-icon-wrapper:hover {
+            transform: scale(1.08);
         }
 
         .ext-info {
@@ -187,12 +241,37 @@
             text-overflow: ellipsis;
         }
 
+        .icon-btn-pill {
+            background: transparent;
+            border: none;
+            color: var(--text-secondary);
+            cursor: pointer;
+            width: 22px;
+            height: 22px;
+            border-radius: 6px;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 11px;
+            transition: all 0.2s ease;
+        }
+
+        .icon-btn-pill:hover {
+            color: var(--accent);
+            background: rgba(255, 255, 255, 0.08);
+            transform: scale(1.1);
+        }
+
+        .icon-btn-pill.pinned {
+            color: var(--accent) !important;
+        }
+
         /* Switches */
         .switch {
             position: relative;
             display: inline-block;
-            width: 34px;
-            height: 18px;
+            width: 32px;
+            height: 17px;
             flex-shrink: 0;
         }
 
@@ -214,8 +293,8 @@
         .slider:before {
             position: absolute;
             content: "";
-            height: 14px;
-            width: 14px;
+            height: 13px;
+            width: 13px;
             left: 2px;
             bottom: 2px;
             background: #FFFFFF;
@@ -229,8 +308,39 @@
         }
 
         input:checked + .slider:before {
-            transform: translateX(16px);
+            transform: translateX(15px);
             background: var(--accent-text, #111111) !important;
+        }
+
+        .store-footer {
+            padding-top: 8px;
+            border-top: 1px solid var(--border-glass);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .store-footer button {
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid var(--border-glass);
+            color: var(--text-primary);
+            padding: 6px 14px;
+            border-radius: 100px;
+            font-size: 10px;
+            font-weight: 700;
+            font-family: var(--font-main);
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            transition: all 0.2s ease;
+        }
+
+        .store-footer button:hover {
+            background: var(--accent);
+            color: var(--accent-text, #111111);
+            border-color: var(--accent);
+            transform: translateY(-1px);
         }
     </style>
 </head>
@@ -239,18 +349,41 @@
         (function () {
             const t = localStorage.getItem('ocal-settings-theme') || 'dark';
             document.body.setAttribute('data-theme', t);
+            document.documentElement.setAttribute('data-theme', t);
+            const a = localStorage.getItem('ocal-settings-accent') || '#09F0A0';
+            document.documentElement.style.setProperty('--accent', a);
+            document.documentElement.style.setProperty('--accent-glow', `color-mix(in srgb, ${a} 30%, transparent)`);
+            document.documentElement.style.setProperty('--accent-dim', `color-mix(in srgb, ${a} 15%, transparent)`);
+            document.documentElement.style.setProperty('--accent-border', `color-mix(in srgb, ${a} 35%, transparent)`);
+            document.body.style.setProperty('--accent', a);
+            document.body.style.setProperty('--accent-glow', `color-mix(in srgb, ${a} 30%, transparent)`);
+            document.body.style.setProperty('--accent-dim', `color-mix(in srgb, ${a} 15%, transparent)`);
+            document.body.style.setProperty('--accent-border', `color-mix(in srgb, ${a} 35%, transparent)`);
         })();
     </script>
     <div class="popup-container">
         <div class="header">
-            <h3>Extensions Hub</h3>
+            <div style="display: flex; align-items: center; gap: 6px;">
+                <h3>Extensions</h3>
+                <span class="count-badge" id="ext-count-badge">0</span>
+            </div>
             <span class="manage-link" id="btn-manage-ext">Manage <i class="fas fa-arrow-right"></i></span>
         </div>
 
-        <div class="list-section-label">Ocal Security Modules</div>
+        <div class="ext-search-box" id="ext-search-container" style="display: none;">
+            <i class="fas fa-magnifying-glass"></i>
+            <input type="text" class="ext-search-input" id="ext-search-input" placeholder="Search installed extensions..." autocomplete="off">
+        </div>
 
         <div class="ext-list" id="ext-list">
             <!-- Items rendered dynamically by JS -->
+        </div>
+
+        <div class="store-footer">
+            <button id="btn-open-store">
+                <i class="fas fa-bag-shopping"></i>
+                <span>Get Chrome Extensions</span>
+            </button>
         </div>
     </div>
 

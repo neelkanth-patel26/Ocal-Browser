@@ -544,6 +544,12 @@ function getHistoricalIcon(url, title = '', storedIcon = '') {
     const u = String(url || '').toLowerCase();
     
     // 1. Internal Ocal Settings/System Pages
+    if (u.includes('extension-store.html') || u.includes('ocal://store') || u.includes('ocal://webstore')) {
+        return `<div class="hist-favicon" style="background:var(--accent-dim);color:var(--accent);display:flex;align-items:center;justify-content:center;"><i class="fas fa-store" style="font-size:11px"></i></div>`;
+    }
+    if (u.includes('extensions.html') || u.includes('ocal://extensions')) {
+        return `<div class="hist-favicon" style="background:var(--accent-dim);color:var(--accent);display:flex;align-items:center;justify-content:center;"><i class="fas fa-puzzle-piece" style="font-size:11px"></i></div>`;
+    }
     if (u.includes('settings.html') || u.includes('ocal://settings')) {
         return `<div class="hist-favicon" style="background:var(--accent-dim);color:var(--accent);display:flex;align-items:center;justify-content:center;"><i class="fas fa-gear" style="font-size:11px"></i></div>`;
     }

@@ -96,6 +96,11 @@
                     <div class="nav-item-icon"><i class="fas fa-puzzle-piece"></i></div>
                     <span>Extensions</span>
                 </div>
+                <div class="nav-item store-nav-link" data-section="store" title="Open Ocal Extension Store">
+                    <div class="nav-item-icon" style="color: #4285f4;"><i class="fas fa-store"></i></div>
+                    <span>Web Store</span>
+                    <i class="fas fa-arrow-up-right-from-square" style="font-size: 10px; margin-left: auto; opacity: 0.55;"></i>
+                </div>
                 <div class="nav-item" data-section="shortcuts">
                     <div class="nav-item-icon"><i class="fas fa-keyboard"></i></div>
                     <span>Shortcuts</span>
@@ -2052,11 +2057,15 @@
 
                         <!-- Action Pills matching Home Page pill style -->
                         <div class="ext-action-pills">
-                            <button class="ext-action-pill primary" onclick="const dr = document.getElementById('ext-install-drawer'); dr.style.display = dr.style.display === 'none' ? 'block' : 'none';">
-                                <i class="fab fa-chrome"></i>
-                                <span>Install from Store</span>
+                            <button class="ext-action-pill primary" onclick="openExtensionStore()" title="Browse Ocal Extension Store">
+                                <i class="fas fa-store"></i>
+                                <span>Browse Web Store</span>
                             </button>
-                            <button class="ext-action-pill secondary" onclick="loadUnpackedExtension()">
+                            <button class="ext-action-pill secondary" onclick="const dr = document.getElementById('ext-install-drawer'); dr.style.display = dr.style.display === 'none' ? 'block' : 'none';" title="Direct install by ID or URL">
+                                <i class="fab fa-chrome"></i>
+                                <span>Install by ID</span>
+                            </button>
+                            <button class="ext-action-pill secondary" onclick="loadUnpackedExtension()" title="Load unpacked extension folder">
                                 <i class="fas fa-folder-open"></i>
                                 <span>Load Unpacked</span>
                             </button>
@@ -2073,7 +2082,7 @@
                                     </div>
                                     <div>
                                         <h4 class="ext-drawer-title">Chrome Web Store Instant Installer</h4>
-                                        <p class="ext-drawer-desc">Paste an extension ID or full URL from the Chrome Web Store to download and deploy immediately.</p>
+                                        <p class="ext-drawer-desc">Paste an extension ID or full URL from the Chrome Web Store, or <a href="javascript:void(0)" onclick="openExtensionStore()" style="color:var(--accent); text-decoration:underline; font-weight:600;">browse the Web Store directly</a>.</p>
                                     </div>
                                 </div>
                                 <button class="ext-drawer-close" onclick="document.getElementById('ext-install-drawer').style.display='none';"><i class="fas fa-times"></i></button>
@@ -2098,6 +2107,7 @@
                                 <button class="ext-chip-btn" onclick="installPopularExt('nngceckbapebfimnlniiiahkandclblb')"><i class="fas fa-key"></i> Bitwarden</button>
                                 <button class="ext-chip-btn" onclick="installPopularExt('mnjggcdmjocbbbhaepdhchncahnbgone')"><i class="fas fa-forward"></i> SponsorBlock</button>
                                 <button class="ext-chip-btn" onclick="installPopularExt('gebbhagfogifgggkldgodflihgfeippi')"><i class="fas fa-thumbs-down"></i> Return Dislike</button>
+                                <button class="ext-chip-btn" onclick="openExtensionStore()" style="background: rgba(66,133,244,0.12); color: #4285f4; border-color: rgba(66,133,244,0.3); font-weight: 600;"><i class="fas fa-store"></i> Web Store &rarr;</button>
                             </div>
                         </div>
                     </div>
@@ -2106,7 +2116,7 @@
                     <div id="ext-settings-grid" class="extensions-dashboard-grid">
 
                         <!-- uBlock Origin -->
-                        <div class="card ext-card-row sp-card-white" data-extname="ublock origin ad blocker" id="ext-adblock">
+                        <div class="ext-card-row sp-card-white" data-extname="ublock origin ad blocker" id="ext-adblock">
                             <div class="ext-card-header">
                                 <div class="ext-card-header-left">
                                     <div class="ext-card-icon adblock-icon">
@@ -2133,7 +2143,7 @@
                         </div>
 
                         <!-- Asset Vault -->
-                        <div class="card ext-card-row sp-card-white" data-extname="asset vault password manager" id="ext-vault">
+                        <div class="ext-card-row sp-card-white" data-extname="asset vault password manager" id="ext-vault">
                             <div class="ext-card-header">
                                 <div class="ext-card-header-left">
                                     <div class="ext-card-icon vault-icon">
@@ -2160,7 +2170,7 @@
                         </div>
 
                         <!-- Ocal AI Assistant -->
-                        <div class="card ext-card-row sp-card-white" data-extname="ocal ai assistant pro" id="ext-ai">
+                        <div class="ext-card-row sp-card-white" data-extname="ocal ai assistant pro" id="ext-ai">
                             <div class="ext-card-header">
                                 <div class="ext-card-header-left">
                                     <div class="ext-card-icon ai-icon">
@@ -2187,7 +2197,7 @@
                         </div>
 
                         <!-- Cyber Stealth -->
-                        <div class="card ext-card-row sp-card-white" data-extname="cyber stealth fingerprint privacy" id="ext-stealth">
+                        <div class="ext-card-row sp-card-white" data-extname="cyber stealth fingerprint privacy" id="ext-stealth">
                             <div class="ext-card-header">
                                 <div class="ext-card-header-left">
                                     <div class="ext-card-icon stealth-icon">
@@ -2214,7 +2224,7 @@
                         </div>
 
                         <!-- Ocal Focus -->
-                        <div class="card ext-card-row sp-card-white" data-extname="ocal focus pomodoro productivity timer" id="ext-focus">
+                        <div class="ext-card-row sp-card-white" data-extname="ocal focus pomodoro productivity timer" id="ext-focus">
                             <div class="ext-card-header">
                                 <div class="ext-card-header-left">
                                     <div class="ext-card-icon focus-icon">
@@ -2242,6 +2252,23 @@
 
                         <!-- Dynamically loaded extensions will be appended here by renderExtensions() -->
 
+                    </div>
+
+                    <!-- Store Discovery Callout Banner -->
+                    <div class="ext-store-callout-card sp-card-white" onclick="openExtensionStore()" title="Explore all extensions in Ocal Web Store">
+                        <div class="ext-store-callout-left">
+                            <div class="ext-store-callout-icon">
+                                <i class="fas fa-store"></i>
+                            </div>
+                            <div class="ext-store-callout-texts">
+                                <h4 class="ext-store-callout-title">Explore More Extensions in Web Store</h4>
+                                <p class="ext-store-callout-desc">Discover curated productivity tools, privacy shields, ad blockers, themes, and developer utilities with seamless 1-click install.</p>
+                            </div>
+                        </div>
+                        <button class="ext-action-pill primary ext-store-callout-btn" tabindex="-1">
+                            <span>Open Store</span>
+                            <i class="fas fa-arrow-up-right-from-square" style="font-size: 11px;"></i>
+                        </button>
                     </div>
                 </div>
             </section>

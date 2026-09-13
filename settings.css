@@ -426,7 +426,7 @@ body[data-theme="dark"] .version-status-card {
 }
 
 /* ── Cards and Rows (Superpower Pill Container Architecture) ───────────── */
-.card, .studio-card, .pref-module, .ext-card-row, .profile-card, .add-profile-card, .verified-source-card {
+.card, .studio-card, .pref-module, .profile-card, .add-profile-card, .verified-source-card {
     background: var(--card-bg) !important;
     border: 1px solid var(--chrome-border) !important;
     border-radius: 28px !important;
@@ -438,7 +438,7 @@ body[data-theme="dark"] .version-status-card {
     transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1) !important;
 }
 
-.card:hover, .studio-card:hover, .pref-module:hover, .ext-card-row:hover, .profile-card:hover, .add-profile-card:hover, .verified-source-card:hover {
+.card:not(.ext-card-row):hover, .studio-card:hover, .pref-module:hover, .profile-card:hover, .add-profile-card:hover, .verified-source-card:hover {
     transform: translateY(-2px) !important;
     box-shadow: 0 12px 32px rgba(0, 0, 0, 0.15) !important;
     border-color: rgba(255, 255, 255, 0.15) !important;
@@ -447,17 +447,15 @@ body[data-theme="dark"] .version-status-card {
 body[data-theme="light"] .card, 
 body[data-theme="light"] .studio-card, 
 body[data-theme="light"] .pref-module, 
-body[data-theme="light"] .ext-card-row, 
 body[data-theme="light"] .profile-card, 
 body[data-theme="light"] .add-profile-card, 
 body[data-theme="light"] .verified-source-card {
     box-shadow: 0 4px 20px rgba(0, 0, 0, 0.04) !important;
 }
 
-body[data-theme="light"] .card:hover, 
+body[data-theme="light"] .card:not(.ext-card-row):hover, 
 body[data-theme="light"] .studio-card:hover, 
 body[data-theme="light"] .pref-module:hover, 
-body[data-theme="light"] .ext-card-row:hover, 
 body[data-theme="light"] .profile-card:hover, 
 body[data-theme="light"] .add-profile-card:hover, 
 body[data-theme="light"] .verified-source-card:hover {
@@ -1031,8 +1029,8 @@ body[data-theme="light"] textarea:focus {
 
 #ext-settings-grid {
     display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)) !important;
-    gap: 16px !important;
+    grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)) !important;
+    gap: 18px !important;
 }
 
 .ext-card-row {
@@ -5682,23 +5680,23 @@ body[data-theme="light"] .profile-active-check {
     background-color: rgba(120, 120, 128, 0.28);
     border-radius: 20px;
     transition: .25s cubic-bezier(0.16, 1, 0.3, 1);
-    border: 1px solid var(--chrome-border);
+    border: none !important;
 }
 .ext-slider:before {
     position: absolute;
     content: "";
     height: 14px;
     width: 14px;
-    left: 2px;
-    bottom: 2px;
+    left: 3px;
+    bottom: 3px;
     background-color: white;
     border-radius: 50%;
     transition: .25s cubic-bezier(0.16, 1, 0.3, 1);
     box-shadow: 0 1px 3px rgba(0,0,0,0.15);
 }
 .ext-toggle-wrap input:checked + .ext-slider {
-    background-color: var(--accent);
-    border-color: var(--accent);
+    background-color: var(--accent) !important;
+    border: none !important;
 }
 .ext-toggle-wrap input:checked + .ext-slider:before {
     transform: translateX(16px);
@@ -8811,7 +8809,8 @@ body[data-theme="dark"] .ext-chip-btn {
     gap: 14px;
     min-height: 170px;
     box-shadow: 0 10px 30px rgba(0, 0, 0, 0.035), 0 2px 8px rgba(0, 0, 0, 0.015) !important;
-    transition: transform 0.25s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.25s, border-color 0.25s !important;
+    transform: none !important;
+    transition: box-shadow 0.2s ease, border-color 0.2s ease !important;
     box-sizing: border-box;
 }
 
@@ -8819,16 +8818,19 @@ body[data-theme="dark"] .ext-card-row {
     background: #222226 !important;
     border-color: rgba(255, 255, 255, 0.08) !important;
     box-shadow: 0 10px 30px rgba(0, 0, 0, 0.35) !important;
+    transform: none !important;
 }
 
 .ext-card-row:hover {
-    transform: translateY(-3px) !important;
-    border-color: color-mix(in srgb, var(--accent) 35%, transparent) !important;
-    box-shadow: 0 16px 36px rgba(0, 0, 0, 0.08) !important;
+    transform: none !important;
+    border-color: color-mix(in srgb, var(--accent) 45%, transparent) !important;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.06), 0 2px 8px rgba(0, 0, 0, 0.02) !important;
 }
 
 body[data-theme="dark"] .ext-card-row:hover {
-    box-shadow: 0 16px 40px rgba(0, 0, 0, 0.45) !important;
+    transform: none !important;
+    border-color: color-mix(in srgb, var(--accent) 55%, transparent) !important;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.4) !important;
 }
 
 .ext-card-header {
@@ -8841,13 +8843,32 @@ body[data-theme="dark"] .ext-card-row:hover {
 .ext-card-header-left {
     display: flex !important;
     align-items: center !important;
-    gap: 14px !important;
+    gap: 12px !important;
+    flex: 1 !important;
+    min-width: 0 !important;
+    overflow: hidden !important;
+}
+
+.ext-card-identity {
+    display: flex;
+    flex-direction: column;
+    min-width: 0;
+    flex: 1;
+    overflow: hidden;
+}
+
+.ext-card-meta-row {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    min-width: 0;
+    margin-top: 2px;
 }
 
 .ext-card-icon {
     width: 48px;
     height: 48px;
-    border-radius: 16px;
+    border-radius: 14px;
     display: flex;
     align-items: center;
     justify-content: center;
@@ -8861,14 +8882,29 @@ body[data-theme="dark"] .ext-card-row:hover {
 .ext-card-icon.ai-icon { color: #a855f7; background: rgba(168, 85, 247, 0.12); border: 1px solid rgba(168, 85, 247, 0.25); }
 .ext-card-icon.stealth-icon { color: #10b981; background: rgba(16, 185, 129, 0.12); border: 1px solid rgba(16, 185, 129, 0.25); }
 .ext-card-icon.focus-icon { color: #f59e0b; background: rgba(245, 158, 11, 0.12); border: 1px solid rgba(245, 158, 11, 0.25); }
-.ext-card-icon.dynamic-icon { color: var(--accent); background: color-mix(in srgb, var(--accent) 14%, transparent); border: 1px solid color-mix(in srgb, var(--accent) 25%, transparent); }
+.ext-card-icon.dynamic-icon {
+    background: #FFFFFF;
+    border: 1px solid rgba(0, 0, 0, 0.08);
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+    color: #475569;
+}
+
+body[data-theme="dark"] .ext-card-icon.dynamic-icon {
+    background: #1F2228;
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+    color: #E2E8F0;
+}
 
 .ext-card-name {
     font-family: var(--font-title);
-    font-size: 16px;
+    font-size: 15px;
     font-weight: 700;
     color: #111111;
     margin: 0 0 2px 0;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
 }
 
 body[data-theme="dark"] .ext-card-name {
@@ -8876,10 +8912,13 @@ body[data-theme="dark"] .ext-card-name {
 }
 
 .ext-card-version {
-    font-size: 12px;
+    font-size: 11.5px;
     color: #6B7280;
     font-weight: 500;
     margin: 0;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
 }
 
 body[data-theme="dark"] .ext-card-version {
@@ -8887,11 +8926,17 @@ body[data-theme="dark"] .ext-card-version {
 }
 
 .ext-card-desc {
-    font-size: 13px;
+    font-size: 12.5px;
     color: #4B5563;
     line-height: 1.5;
-    margin: 0;
+    margin: 12px 0 16px 0;
     font-weight: 500;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    min-height: 38px;
 }
 
 body[data-theme="dark"] .ext-card-desc {
@@ -8899,34 +8944,109 @@ body[data-theme="dark"] .ext-card-desc {
 }
 
 .ext-card-footer {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    padding-top: 14px;
-    border-top: 1px solid rgba(0, 0, 0, 0.05);
-    flex-wrap: wrap;
-    gap: 10px;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: space-between !important;
+    padding-top: 14px !important;
+    border-top: 1px solid rgba(0, 0, 0, 0.06) !important;
+    flex-wrap: nowrap !important;
+    gap: 8px !important;
 }
 
 body[data-theme="dark"] .ext-card-footer {
-    border-color: rgba(255, 255, 255, 0.06);
+    border-color: rgba(255, 255, 255, 0.06) !important;
 }
 
 .ext-card-tag {
     font-family: var(--font-title);
-    font-size: 10.5px;
+    font-size: 9.5px;
     font-weight: 800;
-    padding: 4px 10px;
-    border-radius: 100px;
+    padding: 2px 7px;
+    border-radius: 6px;
     letter-spacing: 0.5px;
     text-transform: uppercase;
+    display: inline-flex;
+    align-items: center;
+    line-height: 1.3;
+    flex-shrink: 0;
 }
 
 .ext-card-tag.core { color: #ef4444; background: rgba(239, 68, 68, 0.12); border: 1px solid rgba(239, 68, 68, 0.25); }
 .ext-card-tag.ai { color: #a855f7; background: rgba(168, 85, 247, 0.12); border: 1px solid rgba(168, 85, 247, 0.25); }
 .ext-card-tag.privacy { color: #10b981; background: rgba(16, 185, 129, 0.12); border: 1px solid rgba(16, 185, 129, 0.25); }
 .ext-card-tag.utility { color: #f59e0b; background: rgba(245, 158, 11, 0.12); border: 1px solid rgba(245, 158, 11, 0.25); }
-.ext-card-tag.installed { color: var(--accent); background: color-mix(in srgb, var(--accent) 12%, transparent); border: 1px solid color-mix(in srgb, var(--accent) 25%, transparent); }
+.ext-card-tag.installed { color: #0284c7; background: rgba(2, 132, 199, 0.1); border: 1px solid rgba(2, 132, 199, 0.22); }
+.ext-card-tag.unpacked { color: #d97706; background: rgba(217, 119, 6, 0.1); border: 1px solid rgba(217, 119, 6, 0.22); }
+
+.ext-card-actions {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    flex-shrink: 0;
+    margin-left: auto;
+}
+
+.ext-action-icon-btn {
+    width: 32px;
+    height: 32px;
+    border-radius: 9px;
+    border: 1px solid rgba(0, 0, 0, 0.08);
+    background: rgba(0, 0, 0, 0.03);
+    color: #4B5563;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    font-size: 12px;
+    transition: background-color 0.15s ease, border-color 0.15s ease, color 0.15s ease;
+    position: relative;
+    transform: none !important;
+    user-select: none;
+    -webkit-user-select: none;
+}
+
+.ext-action-icon-btn i {
+    pointer-events: none !important;
+}
+
+body[data-theme="dark"] .ext-action-icon-btn {
+    border-color: rgba(255, 255, 255, 0.08);
+    background: rgba(255, 255, 255, 0.05);
+    color: #9CA3AF;
+    transform: none !important;
+}
+
+.ext-action-icon-btn:hover {
+    border-color: rgba(0, 0, 0, 0.16);
+    background: rgba(0, 0, 0, 0.07);
+    color: #111827;
+    transform: none !important;
+}
+
+body[data-theme="dark"] .ext-action-icon-btn:hover {
+    border-color: rgba(255, 255, 255, 0.16);
+    background: rgba(255, 255, 255, 0.1);
+    color: #F9FAFB;
+    transform: none !important;
+}
+
+.ext-action-icon-btn.active {
+    background: rgba(16, 185, 129, 0.12) !important;
+    border-color: rgba(16, 185, 129, 0.35) !important;
+    color: #10b981 !important;
+}
+
+body[data-theme="dark"] .ext-action-icon-btn.active {
+    background: rgba(16, 185, 129, 0.18) !important;
+    border-color: rgba(16, 185, 129, 0.45) !important;
+    color: #34d399 !important;
+}
+
+.ext-action-icon-btn.danger:hover {
+    border-color: rgba(239, 68, 68, 0.4) !important;
+    color: #EF4444 !important;
+    background: rgba(239, 68, 68, 0.12) !important;
+}
 
 .ext-status-indicator {
     display: flex;
@@ -8935,6 +9055,7 @@ body[data-theme="dark"] .ext-card-footer {
     font-size: 12px;
     font-weight: 700;
     color: #6B7280;
+    flex-shrink: 0;
 }
 
 body[data-theme="dark"] .ext-status-indicator {
@@ -8942,7 +9063,7 @@ body[data-theme="dark"] .ext-status-indicator {
 }
 
 .ext-status-indicator.on {
-    color: var(--accent, #15AC49);
+    color: #10b981 !important;
 }
 
 .ext-status-indicator .status-dot {
@@ -8950,11 +9071,12 @@ body[data-theme="dark"] .ext-status-indicator {
     height: 8px;
     border-radius: 50%;
     background: #9CA3AF;
+    transition: all 0.2s ease;
 }
 
 .ext-status-indicator.on .status-dot {
-    background: var(--accent, #15AC49);
-    box-shadow: 0 0 8px color-mix(in srgb, var(--accent) 50%, transparent);
+    background: #10b981 !important;
+    box-shadow: 0 0 8px rgba(16, 185, 129, 0.55) !important;
 }
 
 /* Custom Toggle Switch for Extensions */
@@ -8989,10 +9111,14 @@ body[data-theme="dark"] .ext-status-indicator {
     transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
     border-radius: 100px;
     box-sizing: border-box;
+    border: none !important;
+    outline: none !important;
 }
 
 body[data-theme="dark"] .ext-slider {
     background-color: rgba(255, 255, 255, 0.15);
+    border: none !important;
+    outline: none !important;
 }
 
 .ext-slider:before {
@@ -9008,10 +9134,13 @@ body[data-theme="dark"] .ext-slider {
     border-radius: 50%;
     box-shadow: 0 2px 6px rgba(0, 0, 0, 0.25);
     box-sizing: border-box;
+    border: none !important;
 }
 
 .ext-toggle-wrap input:checked + .ext-slider {
-    background-color: var(--accent) !important;
+    background-color: #10b981 !important;
+    border: none !important;
+    outline: none !important;
 }
 
 .ext-toggle-wrap input:checked + .ext-slider:before {
@@ -9051,6 +9180,104 @@ body[data-theme="dark"] .ext-action-btn-pill {
     background: #ef4444;
     color: #FFFFFF;
     border-color: #ef4444;
+}
+
+.ext-action-btn-pill.active,
+.ext-action-btn-pill.pinned {
+    background: var(--accent) !important;
+    color: var(--accent-text, #111111) !important;
+    border-color: var(--accent) !important;
+}
+
+.ext-card-icon img {
+    width: 28px;
+    height: 28px;
+    object-fit: contain;
+    border-radius: 6px;
+    display: block;
+}
+
+/* Web Store Navigation Link in Sidebar */
+.nav-item.store-nav-link {
+    color: #4285f4;
+}
+.nav-item.store-nav-link:hover {
+    color: #1a73e8;
+    background: rgba(66, 133, 244, 0.08) !important;
+    border-color: rgba(66, 133, 244, 0.25) !important;
+}
+body[data-theme="dark"] .nav-item.store-nav-link {
+    color: #8ab4f8;
+}
+body[data-theme="dark"] .nav-item.store-nav-link:hover {
+    color: #c2e7ff;
+    background: rgba(66, 133, 244, 0.15) !important;
+    border-color: rgba(66, 133, 244, 0.35) !important;
+}
+
+/* Extensions Store Discovery Callout Banner */
+.ext-store-callout-card {
+    background: #FFFFFF !important;
+    border: 1.5px dashed rgba(66, 133, 244, 0.35) !important;
+    border-radius: 22px !important;
+    padding: 20px 24px !important;
+    margin-top: 24px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 20px;
+    cursor: pointer;
+    box-shadow: 0 4px 16px rgba(66, 133, 244, 0.06) !important;
+    transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1) !important;
+}
+body[data-theme="dark"] .ext-store-callout-card {
+    background: #222226 !important;
+    border-color: rgba(66, 133, 244, 0.35) !important;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3) !important;
+}
+.ext-store-callout-card:hover {
+    transform: translateY(-2px);
+    border-color: #4285f4 !important;
+    box-shadow: 0 8px 28px rgba(66, 133, 244, 0.18) !important;
+}
+.ext-store-callout-left {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+}
+.ext-store-callout-icon {
+    width: 46px;
+    height: 46px;
+    border-radius: 14px;
+    background: #4285f4;
+    color: #ffffff;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 20px;
+    box-shadow: 0 6px 16px rgba(66, 133, 244, 0.35);
+    flex-shrink: 0;
+}
+.ext-store-callout-texts {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+.ext-store-callout-title {
+    font-size: 15px;
+    font-weight: 700;
+    color: var(--text);
+    margin: 0;
+}
+.ext-store-callout-desc {
+    font-size: 12.5px;
+    color: var(--text-muted);
+    margin: 0;
+    line-height: 1.4;
+}
+.ext-store-callout-btn {
+    pointer-events: none;
+    flex-shrink: 0;
 }
 
 /* ── Redesigned Security & Privacy Section ── */

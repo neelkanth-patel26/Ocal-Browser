@@ -24,6 +24,10 @@ function showSection(id) {
         history.replaceState(null, null, `#${id}`);
     }
 
+    if (id === 'extensions' && typeof window.renderExtensions === 'function') {
+        window.renderExtensions();
+    }
+
     // Dynamic settings path updates
     const pathSpan = document.querySelector('.settings-address-bar .path');
     if (pathSpan) {
@@ -47,6 +51,10 @@ navItems.forEach(item => {
     item.onclick = async () => {
         if (item.dataset.section === 'whatsnew') {
             window.electronAPI.newTab('ocal://whats-new');
+            return;
+        }
+        if (item.dataset.section === 'store') {
+            openExtensionStore();
             return;
         }
         if (item.classList.contains('active')) return;
@@ -1862,20 +1870,158 @@ function updateProtectionLevel(s) {
 }
 
 // Extensions Management
+function escapeHtml(str) {
+    if (!str) return '';
+    return String(str)
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;')
+        .replace(/'/g, '&#039;');
+}
+
+function escapeJs(str) {
+    if (!str) return '';
+    return String(str).replace(/\\/g, '\\\\').replace(/'/g, "\\'").replace(/"/g, '\\"');
+}
+
 window.loadUnpackedExtension = async () => {
     try {
         const result = await window.electronAPI.loadUnpackedExtension();
         if (result) {
-            alert(`Successfully loaded local extension: ${result.name}`);
-            window.electronAPI.getSettings().then(st => renderExtensions(st));
+            if (window.electronAPI.getSettings) {
+                window.electronAPI.getSettings().then(st => renderExtensions(st));
+            }
         }
     } catch (err) {
         alert('Failed to load unpacked extension. Ensure it contains a valid manifest.json.');
     }
 };
 
-function renderExtensions(s = null) {
-    if (!s) return;
+window.toggleExtState = async function(id, enabled) {
+    try {
+        // Optimistic in-place DOM update without destroying elements
+        const card = document.getElementById('ext-card-' + id);
+        if (card) {
+            const input = card.querySelector('.ext-toggle-input');
+            if (input) input.checked = !!enabled;
+            const statusIndicator = card.querySelector('.ext-status-indicator');
+            if (statusIndicator) {
+                statusIndicator.className = 'ext-status-indicator ' + (enabled ? 'on' : 'off');
+                statusIndicator.innerHTML = `<span class="status-dot"></span><span>${enabled ? 'Active' : 'Disabled'}</span>`;
+            }
+            if (enabled) card.classList.add('is-active');
+            else card.classList.remove('is-active');
+        }
+
+        if (window.electronAPI && window.electronAPI.toggleExtension) {
+            await window.electronAPI.toggleExtension(id, enabled);
+        }
+    } catch (err) {
+        console.error('Failed to toggle extension state:', err);
+    }
+};
+
+window.togglePinExt = async function(id) {
+    try {
+        // Optimistic in-place pin update
+        const card = document.getElementById('ext-card-' + id);
+        if (card) {
+            const pinBtn = card.querySelector('.ext-pin-btn');
+            if (pinBtn) {
+                const nowActive = pinBtn.classList.toggle('active');
+                pinBtn.title = nowActive ? 'Unpin from Toolbar' : 'Pin to Toolbar';
+            }
+        }
+
+        if (window.electronAPI && window.electronAPI.togglePinExtension) {
+            await window.electronAPI.togglePinExtension(id);
+        }
+    } catch (err) {
+        console.error('Failed to toggle pin extension:', err);
+    }
+};
+
+window.openExtPopup = function(id, btnEl) {
+    if (window.electronAPI && window.electronAPI.openExtensionPopup) {
+        let bounds = null;
+        if (btnEl && typeof btnEl.getBoundingClientRect === 'function') {
+            const rect = btnEl.getBoundingClientRect();
+            bounds = {
+                x: Math.round(rect.left),
+                y: Math.round(rect.top),
+                width: Math.round(rect.width),
+                height: Math.round(rect.height)
+            };
+        }
+        window.electronAPI.openExtensionPopup(id, bounds);
+    }
+};
+
+window.removeExtFromSettings = function(id, name) {
+    const displayName = name || 'this extension';
+    const content = `
+        <div class="sm-modal-wrap">
+            <div class="sm-header">
+                <div class="sm-title">
+                    <div class="sm-icon-badge danger"><i class="fas fa-trash"></i></div>
+                    <div class="sm-text-group">
+                        <h3>Uninstall Extension?</h3>
+                        <span>Remove from Ocal workspace</span>
+                    </div>
+                </div>
+                <button type="button" class="sm-close-btn" onclick="window.closeModal()" title="Close"><i class="fas fa-times"></i></button>
+            </div>
+
+            <div class="sm-body">
+                <p style="color:var(--text); font-size:13.5px; line-height:1.5; margin:0;">
+                    Are you sure you want to uninstall and remove <strong>"${escapeHtml(displayName)}"</strong>?
+                </p>
+                <div style="background: var(--card-inner, rgba(0,0,0,0.03)); border: 1px solid var(--chrome-border, rgba(0,0,0,0.08)); border-radius: 14px; padding: 12px 16px; font-size: 12px; color: var(--text-dim); display: flex; align-items: center; gap: 10px;">
+                    <i class="fas fa-circle-info" style="color: #0284c7; font-size: 14px; flex-shrink: 0;"></i>
+                    <span>This extension and its local configuration will be permanently detached from all active browser profiles.</span>
+                </div>
+            </div>
+
+            <div class="sm-footer">
+                <button type="button" class="sm-cancel-btn" onclick="window.closeModal()">Cancel</button>
+                <button type="button" class="sm-save-btn danger" onclick="window.confirmRemoveExt('${escapeJs(id)}')">
+                    <i class="fas fa-trash"></i>
+                    <span>Uninstall</span>
+                </button>
+            </div>
+        </div>
+    `;
+    showModal(content);
+};
+
+window.confirmRemoveExt = async function(id) {
+    closeModal();
+    try {
+        if (window.electronAPI && window.electronAPI.removeExtension) {
+            await window.electronAPI.removeExtension(id);
+        }
+        if (window.electronAPI && window.electronAPI.getSettings) {
+            const st = await window.electronAPI.getSettings();
+            renderExtensions(st);
+        }
+    } catch (err) {
+        console.error('Failed to remove extension:', err);
+    }
+};
+
+async function renderExtensions(s = null) {
+    if (!s) {
+        if (window.electronAPI && typeof window.electronAPI.getSettings === 'function') {
+            try {
+                s = await window.electronAPI.getSettings();
+            } catch (e) {
+                return;
+            }
+        } else {
+            return;
+        }
+    }
 
     const builtins = [
         { id: 'adblock',  key: 'adBlockEnabled',     toggleId: 'toggle-adblock',  defaultOn: true },
@@ -1906,57 +2052,118 @@ function renderExtensions(s = null) {
         }
     });
 
-    // Dynamic (installed) extensions
+    // Dynamic (installed) extensions from Store or Unpacked
     const grid = document.getElementById('ext-settings-grid');
     let dynamicActive = 0;
-    const customCount = (s.extensions && Array.isArray(s.extensions)) ? s.extensions.length : 0;
+    const extensionsList = (s.extensions && Array.isArray(s.extensions)) ? s.extensions : [];
+    const customCount = extensionsList.length;
 
     if (grid) {
-        grid.querySelectorAll('.dynamic-ext').forEach(el => el.remove());
+        const validIds = new Set(extensionsList.map(x => x.id));
 
-        if (s.extensions && s.extensions.length > 0) {
-            s.extensions.forEach(ext => {
+        // Remove any dynamic cards that were uninstalled
+        grid.querySelectorAll('.dynamic-ext').forEach(el => {
+            const elId = el.dataset.extid;
+            if (!validIds.has(elId)) {
+                el.remove();
+            }
+        });
+
+        if (extensionsList.length > 0) {
+            extensionsList.forEach(ext => {
                 if (ext.enabled) dynamicActive++;
-                const el = document.createElement('div');
-                el.className = 'card ext-card-row sp-card-white dynamic-ext' + (ext.enabled ? ' is-active' : '');
-                el.dataset.extname = (ext.name || '').toLowerCase();
-                
                 const statusIndicatorClass = ext.enabled ? 'on' : 'off';
                 const statusText = ext.enabled ? 'Active' : 'Disabled';
-                const tagText = ext.isLocal ? 'LOCAL' : 'INSTALLED';
+                const tagText = ext.isLocal ? 'UNPACKED' : 'STORE';
+                const iconSrc = ext.iconData || ext.icon || '';
+                const iconHtml = iconSrc
+                    ? `<img src="${iconSrc}" alt="${escapeHtml(ext.name)}" style="width:30px; height:30px; object-fit:contain; border-radius:7px; display:block;">`
+                    : `<i class="fas fa-puzzle-piece" style="font-size: 18px; color: #64748B;"></i>`;
 
-                el.innerHTML = `
-                    <div class="ext-card-header">
-                        <div class="ext-card-header-left">
-                            <div class="ext-card-icon dynamic-icon">
-                                <i class="fas fa-puzzle-piece"></i>
+                let el = document.getElementById('ext-card-' + ext.id);
+                if (el) {
+                    // Update in-place to prevent hover loss or click interruption
+                    el.className = 'ext-card-row sp-card-white dynamic-ext' + (ext.enabled ? ' is-active' : '');
+                    el.dataset.extname = ((ext.name || '') + ' ' + (ext.description || '')).toLowerCase();
+
+                    const toggleInput = el.querySelector('.ext-toggle-input');
+                    if (toggleInput && toggleInput.checked !== !!ext.enabled) {
+                        toggleInput.checked = !!ext.enabled;
+                    }
+
+                    const statusIndicator = el.querySelector('.ext-status-indicator');
+                    if (statusIndicator) {
+                        statusIndicator.className = `ext-status-indicator ${statusIndicatorClass}`;
+                        statusIndicator.innerHTML = `<span class="status-dot"></span><span>${statusText}</span>`;
+                    }
+
+                    const pinBtn = el.querySelector('.ext-pin-btn');
+                    if (pinBtn) {
+                        pinBtn.className = `ext-action-icon-btn ext-pin-btn ${ext.pinned ? 'active' : ''}`;
+                        pinBtn.title = ext.pinned ? 'Unpin from Toolbar' : 'Pin to Toolbar';
+                    }
+                } else {
+                    // Create new card
+                    el = document.createElement('div');
+                    el.id = 'ext-card-' + ext.id;
+                    el.dataset.extid = ext.id;
+                    el.className = 'ext-card-row sp-card-white dynamic-ext' + (ext.enabled ? ' is-active' : '');
+                    el.dataset.extname = ((ext.name || '') + ' ' + (ext.description || '')).toLowerCase();
+
+                    el.innerHTML = `
+                        <div class="ext-card-header">
+                            <div class="ext-card-header-left">
+                                <div class="ext-card-icon dynamic-icon">
+                                    ${iconHtml}
+                                </div>
+                                <div class="ext-card-identity">
+                                    <h4 class="ext-card-name" title="${escapeHtml(ext.name || '')}">${escapeHtml(ext.name || 'Extension')}</h4>
+                                    <div class="ext-card-meta-row">
+                                        <span class="ext-card-tag ${ext.isLocal ? 'unpacked' : 'installed'}">${tagText}</span>
+                                        <span class="ext-card-version" title="Extension ID: ${escapeHtml(ext.id || '')}">v${escapeHtml(ext.version || '1.0')}</span>
+                                    </div>
+                                </div>
                             </div>
-                            <div class="ext-card-identity">
-                                <h4 class="ext-card-name">${ext.name}</h4>
-                                <div class="ext-card-version">Version ${ext.version || '?'} &middot; ID: ${(ext.id || '').substring(0, 16)}...</div>
-                            </div>
+                            <label class="ext-toggle-wrap" title="${ext.enabled ? 'Disable Extension' : 'Enable Extension'}">
+                                <input type="checkbox" class="ext-toggle-input" ${ext.enabled ? 'checked' : ''}
+                                    onchange="toggleExtState('${escapeJs(ext.id)}', this.checked)">
+                                <span class="ext-slider"></span>
+                            </label>
                         </div>
-                        <label class="ext-toggle-wrap">
-                            <input type="checkbox" ${ext.enabled ? 'checked' : ''}
-                                onchange="window.electronAPI.toggleExtension('${ext.id}', this.checked); setTimeout(() => window.electronAPI.getSettings().then(st => renderExtensions(st)), 100);">
-                            <span class="ext-slider"></span>
-                        </label>
-                    </div>
-                    <div class="ext-card-desc">
-                        ${ext.description || 'Custom Chrome Web Store extension loaded into Ocal workspace.'}
-                    </div>
-                    <div class="ext-card-footer">
-                        <span class="ext-card-tag installed">${tagText}</span>
-                        <div style="display: flex; align-items: center; gap: 8px;">
+                        <div class="ext-card-desc" title="${escapeHtml(ext.description || '')}">
+                            ${escapeHtml(ext.description || 'Custom Chrome Web Store extension loaded into Ocal workspace.')}
+                        </div>
+                        <div class="ext-card-footer">
                             <span class="ext-status-indicator ${statusIndicatorClass}">
                                 <span class="status-dot"></span><span>${statusText}</span>
                             </span>
-                            ${!ext.isLocal ? `<button class="ext-action-btn-pill" onclick="window.open('https://chromewebstore.google.com/detail/${ext.id}')"><i class="fas fa-external-link-alt"></i> Store</button>` : ''}
-                            <button class="ext-action-btn-pill danger" onclick="window.electronAPI.removeExtension('${ext.id}').then(() => window.electronAPI.getSettings().then(st => renderExtensions(st)))"><i class="fas fa-trash"></i> Remove</button>
+                            <div class="ext-card-actions">
+                                ${ext.hasPopup ? `
+                                    <button class="ext-action-icon-btn" onclick="openExtPopup('${escapeJs(ext.id)}', this)" title="Launch Extension Popup">
+                                        <i class="fas fa-arrow-up-right-from-square"></i>
+                                    </button>
+                                ` : ''}
+                                ${ext.optionsPage ? `
+                                    <button class="ext-action-icon-btn" onclick="window.electronAPI.newTab ? window.electronAPI.newTab('chrome-extension://${escapeJs(ext.id)}/${escapeJs(ext.optionsPage)}') : window.open('chrome-extension://${escapeJs(ext.id)}/${escapeJs(ext.optionsPage)}')" title="Extension Options">
+                                        <i class="fas fa-gear"></i>
+                                    </button>
+                                ` : ''}
+                                <button class="ext-action-icon-btn ext-pin-btn ${ext.pinned ? 'active' : ''}" onclick="togglePinExt('${escapeJs(ext.id)}')" title="${ext.pinned ? 'Unpin from Toolbar' : 'Pin to Toolbar'}">
+                                    <i class="fas fa-thumbtack"></i>
+                                </button>
+                                ${!ext.isLocal ? `
+                                    <button class="ext-action-icon-btn" onclick="window.electronAPI.newTab ? window.electronAPI.newTab('https://chromewebstore.google.com/detail/${escapeJs(ext.id)}') : window.open('https://chromewebstore.google.com/detail/${escapeJs(ext.id)}')" title="View on Chrome Web Store">
+                                        <i class="fas fa-store"></i>
+                                    </button>
+                                ` : ''}
+                                <button class="ext-action-icon-btn danger" onclick="removeExtFromSettings('${escapeJs(ext.id)}', '${escapeJs(ext.name)}')" title="Uninstall Extension">
+                                    <i class="fas fa-trash"></i>
+                                </button>
+                            </div>
                         </div>
-                    </div>
-                `;
-                grid.appendChild(el);
+                    `;
+                    grid.appendChild(el);
+                }
             });
         }
     }
@@ -1973,6 +2180,19 @@ function renderExtensions(s = null) {
 
     if (window.filterExtSettings) window.filterExtSettings();
 }
+
+window.renderExtensions = renderExtensions;
+
+window.openExtensionStore = function() {
+    if (window.electronAPI && typeof window.electronAPI.newTab === 'function') {
+        window.electronAPI.newTab('ocal://store');
+    } else if (window.electronAPI && typeof window.electronAPI.send === 'function') {
+        window.electronAPI.send('new-tab', 'ocal://store');
+    } else {
+        window.location.href = 'extension-store.html';
+    }
+};
+window.openWebStore = window.openExtensionStore;
 
 window.installPopularExt = function(id) {
     const input = document.getElementById('ext-cws-input');
@@ -3953,4 +4173,30 @@ function renderPageFXSettings(s) {
     // Global toggle
     const globalCb = document.getElementById('fx-global-toggle-cb');
     if (globalCb) globalCb.checked = localPageFXState.global;
+}
+
+// ── Extension Store Live Synchronization & Hash Routing ──────────
+if (window.electronAPI && typeof window.electronAPI.onExtensionsChanged === 'function') {
+    window.electronAPI.onExtensionsChanged(() => {
+        if (window.electronAPI && typeof window.electronAPI.getSettings === 'function') {
+            window.electronAPI.getSettings().then(st => {
+                if (typeof renderExtensions === 'function') {
+                    renderExtensions(st);
+                }
+            });
+        }
+    });
+}
+
+function handleExtensionHashRouting() {
+    const hash = (window.location.hash || '').replace(/^#/, '').toLowerCase().trim();
+    if (hash === 'extensions' || hash === 'extension' || hash === 'addons') {
+        if (typeof showSection === 'function') {
+            showSection('extensions');
+        }
+    }
+}
+window.addEventListener('hashchange', handleExtensionHashRouting);
+if (window.location.hash) {
+    setTimeout(handleExtensionHashRouting, 50);
 }

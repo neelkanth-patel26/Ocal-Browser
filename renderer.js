@@ -730,6 +730,15 @@ function formatDisplayUrl(url) {
     if (display.includes('ai-sidebar.html') || (display.startsWith('file://') && display.includes('ai-sidebar')) || display.startsWith('ocal://ai')) {
         return 'ocal://ai';
     }
+    if (display.includes('extension-store.html') || (display.startsWith('file://') && display.includes('extension-store')) || display.startsWith('ocal://store') || display.startsWith('ocal://webstore') || display.startsWith('ocal://extension-store')) {
+        return 'ocal://store';
+    }
+    if (display.startsWith('chrome-extension://')) {
+        return display;
+    }
+    if (display.includes('extensions.html') || (display.startsWith('file://') && display.includes('extensions.html')) || display.startsWith('ocal://extensions')) {
+        return 'ocal://extensions';
+    }
     if (display.includes('settings.html') || display.startsWith('ocal://settings')) {
         let sec = '';
         if (display.includes('#')) {
@@ -754,7 +763,7 @@ function syncOmnibox(url) {
     const identityBtn = document.getElementById('identity-btn');
     
     if (identityBtn) {
-        if (isHome || url.startsWith('ocal://') || url.startsWith('file://')) {
+        if (isHome || url.startsWith('ocal://') || url.startsWith('file://') || url.startsWith('chrome-extension://')) {
             identityBtn.style.display = 'none';
         } else {
             identityBtn.style.display = 'flex';
@@ -781,6 +790,15 @@ function updatePrettyUrl(url) {
     if (!prettyEl) return;
     if (!url) { prettyEl.innerHTML = ''; return; }
 
+    if (url.startsWith('chrome-extension://')) {
+        const afterScheme = url.replace('chrome-extension://', '');
+        const slashIdx = afterScheme.indexOf('/');
+        const extId = slashIdx !== -1 ? afterScheme.substring(0, slashIdx) : afterScheme;
+        const extPath = slashIdx !== -1 ? afterScheme.substring(slashIdx) : '';
+        prettyEl.innerHTML = `<span class="protocol">chrome-extension://</span><span class="domain">${extId}</span><span class="path">${extPath}</span>`;
+        return;
+    }
+
     if (url.startsWith('ocal://')) {
         const parts = url.split(' / ');
         if (parts.length > 1) {
@@ -793,7 +811,7 @@ function updatePrettyUrl(url) {
 
     try {
         let rawUrl = url;
-        if (!rawUrl.startsWith('http://') && !rawUrl.startsWith('https://') && !rawUrl.startsWith('file://') && !rawUrl.startsWith('ocal://')) {
+        if (!rawUrl.startsWith('http://') && !rawUrl.startsWith('https://') && !rawUrl.startsWith('file://') && !rawUrl.startsWith('ocal://') && !rawUrl.startsWith('chrome-extension://')) {
             rawUrl = 'https://' + rawUrl;
         }
         const urlObj = new URL(rawUrl);
@@ -823,6 +841,7 @@ function updateHeartStatus(url) {
 
 function formatDisplayUrl(url) {
     if (!url) return '';
+    if (url.startsWith('chrome-extension://')) return url;
     if (url.includes('home.html')) return '';
     if (url.includes('settings.html') || url.startsWith('ocal://settings')) {
         try {
@@ -880,6 +899,12 @@ function formatDisplayUrl(url) {
         } catch(e) {}
         return 'ocal://music';
     }
+    if (url.includes('extension-store.html') || (url.startsWith('file://') && url.includes('extension-store')) || url.startsWith('ocal://store') || url.startsWith('ocal://webstore') || url.startsWith('ocal://extension-store')) {
+        return 'ocal://store';
+    }
+    if (url.includes('extensions.html') || (url.startsWith('file://') && url.includes('extensions.html')) || url.startsWith('ocal://extensions')) {
+        return 'ocal://extensions';
+    }
     if (url.includes('ai-sidebar.html') || url.startsWith('ocal://ai-sidebar') || url.startsWith('ocal://ai')) return 'ocal://ai';
     if (url.includes('games.html')) return 'ocal://games';
     if (url.includes('snake.html')) return 'ocal://snake';
@@ -932,6 +957,8 @@ function getSimplifiedTitle(title, url) {
     if (url.includes('ssl-warning.html') || url.startsWith('ocal://ssl-warning')) return 'Privacy Error';
     if (url.includes('security-warning.html') || url.startsWith('ocal://security-warning')) return 'Security Warning';
     if (url.includes('music-player.html') || url.startsWith('ocal://music-player') || url.startsWith('ocal://music')) return 'Ocal AI Music Player';
+    if (url.includes('extension-store.html') || url.startsWith('ocal://store') || url.startsWith('ocal://webstore') || url.startsWith('ocal://extension-store')) return 'Ocal Web Store';
+    if (url.includes('extensions.html') || url.startsWith('ocal://extensions')) return 'Extensions';
     if (url.includes('settings.html') || url.startsWith('ocal://settings')) return 'Settings';
     if (url.includes('downloads.html') || url.startsWith('ocal://downloads')) return 'Downloads';
     if (url.includes('bookmarks.html') || url.startsWith('ocal://bookmarks')) return 'Bookmarks';
@@ -1099,6 +1126,14 @@ function updateOmniboxIcon(url) {
     }
     if (url && (url.includes('music-player.html') || url.startsWith('ocal://music-player') || url.startsWith('ocal://music'))) {
         iconContainer.innerHTML = '<i class="fas fa-compact-disc" style="color:var(--accent)"></i>';
+        return;
+    }
+    if (url && (url.includes('extension-store.html') || url.startsWith('ocal://store') || url.startsWith('ocal://webstore') || url.startsWith('ocal://extension-store'))) {
+        iconContainer.innerHTML = '<i class="fas fa-store" style="color:var(--accent)"></i>';
+        return;
+    }
+    if (url && (url.includes('extensions.html') || url.startsWith('ocal://extensions'))) {
+        iconContainer.innerHTML = '<i class="fas fa-puzzle-piece" style="color:var(--accent)"></i>';
         return;
     }
     if (url && (url.includes('settings.html') || url.startsWith('ocal://settings'))) {
@@ -2387,5 +2422,98 @@ function getEmojiSvgUrl(emoji) {
             });
         } catch (e) {}
     }
+
+    // ── Pinned Extensions Toolbar Bar ──────────────────────────────────────────
+    async function renderPinnedExtensions() {
+        const bar = document.getElementById('pinned-extensions-bar');
+        if (!bar || !window.electronAPI || !window.electronAPI.getExtensions) return;
+
+        try {
+            const list = await window.electronAPI.getExtensions();
+            bar.innerHTML = '';
+            const pinnedList = (list || []).filter(ext => ext.enabled && ext.pinned);
+
+            if (pinnedList.length === 0) {
+                bar.style.display = 'none';
+                return;
+            }
+
+            bar.style.display = 'inline-flex';
+
+            // Limit visible icons in topbar to 2 for a clean, compact layout
+            const MAX_PINNED_VISIBLE = 2;
+            const visibleExtensions = pinnedList.slice(0, MAX_PINNED_VISIBLE);
+            const overflowCount = pinnedList.length - MAX_PINNED_VISIBLE;
+
+            visibleExtensions.forEach(ext => {
+                const btn = document.createElement('button');
+                btn.className = 'pinned-ext-btn';
+                btn.title = `${ext.name || 'Extension'}${ext.hasPopup ? ' (Click to open popup)' : (ext.hasOptions ? ' (Click to open options)' : '')}`;
+                btn.dataset.extId = ext.id;
+
+                if (ext.iconData) {
+                    btn.innerHTML = `<img src="${ext.iconData}" class="pinned-ext-icon" alt="" onerror="this.onerror=null;this.parentElement.innerHTML='<i class=\\'fas fa-puzzle-piece\\' style=\\'font-size: 13px; color: var(--accent);\\'></i>';">`;
+                } else {
+                    btn.innerHTML = `<i class="fas fa-puzzle-piece" style="font-size: 13px; color: var(--accent);"></i>`;
+                }
+
+                btn.onclick = (e) => {
+                    e.stopPropagation();
+                    const rect = btn.getBoundingClientRect();
+                    window.electronAPI.openExtensionPopup(ext.id, {
+                        x: rect.left,
+                        y: rect.top,
+                        width: rect.width,
+                        height: rect.height
+                    });
+                };
+
+                btn.oncontextmenu = (e) => {
+                    e.preventDefault();
+                    if (confirm(`Unpin "${ext.name}" from toolbar?`)) {
+                        window.electronAPI.togglePinExtension(ext.id).then(() => renderPinnedExtensions());
+                    }
+                };
+
+                bar.appendChild(btn);
+            });
+
+            // Overflow badge for extra extensions
+            if (overflowCount > 0) {
+                const overflowBtn = document.createElement('button');
+                overflowBtn.className = 'pinned-ext-btn pinned-ext-overflow-badge';
+                overflowBtn.title = `${overflowCount} more extension${overflowCount > 1 ? 's' : ''} installed - Click to view compact list`;
+                overflowBtn.innerHTML = `<span>+${overflowCount}</span>`;
+                overflowBtn.onclick = (e) => {
+                    e.stopPropagation();
+                    const rect = overflowBtn.getBoundingClientRect();
+                    window.electronAPI.send('show-extensions-dropdown', {
+                        x: rect.left,
+                        y: rect.bottom,
+                        width: rect.width
+                    });
+                };
+                bar.appendChild(overflowBtn);
+            }
+        } catch (err) {
+            console.error('Error rendering pinned extensions:', err);
+        }
+    }
+
+    if (window.electronAPI) {
+        if (window.electronAPI.onExtensionsChanged) {
+            window.electronAPI.onExtensionsChanged(() => renderPinnedExtensions());
+        }
+        if (window.electronAPI.onShowToast) {
+            window.electronAPI.onShowToast((data) => {
+                if (data && data.message && typeof showToast === 'function') {
+                    showToast(data.message, data.icon || 'fa-puzzle-piece');
+                }
+            });
+        }
+    }
+
+    // Initial render of pinned extensions
+    setTimeout(renderPinnedExtensions, 400);
 })();
 
