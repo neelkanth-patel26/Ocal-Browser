@@ -134,6 +134,8 @@ input, textarea, select, [contenteditable="true"] {
     height: 24px;
     border-radius: 6px;
     object-fit: contain;
+    filter: var(--logo-filter, none);
+    transition: transform 0.25s cubic-bezier(0.16, 1, 0.3, 1), filter 0.35s ease;
 }
 
 .header-logo-text {
@@ -8933,6 +8935,7 @@ body[data-theme="dark"] .ext-card-version {
     font-weight: 500;
     display: -webkit-box;
     -webkit-line-clamp: 2;
+    line-clamp: 2;
     -webkit-box-orient: vertical;
     overflow: hidden;
     text-overflow: ellipsis;
@@ -14052,5 +14055,165 @@ body[data-theme="dark"] .specials-preset-pill {
     background: var(--accent, #15AC49);
     color: var(--accent-text, #111111);
     border-color: var(--accent, #15AC49);
+    transform: translateY(-1px);
+}
+
+/* ── Dynamic App Icon & Theme Color Calibration ── */
+.icon-calibration-box {
+    margin-top: 18px;
+    padding: 20px;
+    border-radius: 16px;
+    background: color-mix(in srgb, var(--card-bg, #ffffff) 90%, var(--accent) 10%);
+    border: 1px solid color-mix(in srgb, var(--chrome-border, rgba(0,0,0,0.08)) 80%, var(--accent) 20%);
+    display: flex;
+    flex-direction: column;
+    gap: 18px;
+    transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+body[data-theme="dark"] .icon-calibration-box {
+    background: rgba(255, 255, 255, 0.03);
+    border-color: rgba(255, 255, 255, 0.08);
+}
+
+.icon-preview-display {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+    padding-bottom: 14px;
+    border-bottom: 1px solid color-mix(in srgb, var(--chrome-border, rgba(0,0,0,0.06)) 85%, var(--accent) 15%);
+}
+
+.icon-preview-card {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+}
+
+.icon-preview-card .ocal-logo-preview {
+    width: 44px;
+    height: 44px;
+    border-radius: 12px;
+    object-fit: contain;
+    filter: var(--logo-filter, none);
+    box-shadow: 0 4px 14px -2px var(--accent-glow, rgba(0,0,0,0.15));
+    transition: transform 0.25s cubic-bezier(0.16, 1, 0.3, 1), filter 0.3s ease;
+}
+
+.icon-preview-card:hover .ocal-logo-preview {
+    transform: scale(1.08) rotate(3deg);
+}
+
+.icon-preview-meta {
+    display: flex;
+    flex-direction: column;
+}
+
+.icon-preview-title {
+    font-family: var(--font-title);
+    font-size: 15px;
+    font-weight: 700;
+    color: var(--text);
+    letter-spacing: -0.2px;
+}
+
+.icon-preview-subtitle {
+    font-size: 12px;
+    color: var(--accent, #15AC49);
+    font-weight: 600;
+}
+
+.icon-sync-toggle-group {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.icon-sync-label {
+    font-size: 12.5px;
+    font-weight: 600;
+    color: var(--text);
+}
+
+.icon-sliders-grid {
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+}
+
+.icon-slider-row {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+}
+
+.icon-slider-label {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-size: 12.5px;
+    font-weight: 600;
+    color: var(--text-dim);
+}
+
+.icon-slider-val {
+    font-family: var(--font-mono, monospace);
+    font-size: 12px;
+    font-weight: 700;
+    color: var(--accent);
+}
+
+.icon-slider-row input[type="range"] {
+    -webkit-appearance: none;
+    appearance: none;
+    width: 100%;
+    height: 6px;
+    border-radius: 6px;
+    background: color-mix(in srgb, var(--text) 12%, transparent);
+    outline: none;
+    transition: background 0.2s ease;
+}
+
+.icon-slider-row input[type="range"]::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    appearance: none;
+    width: 16px;
+    height: 16px;
+    border-radius: 50%;
+    background: var(--accent);
+    cursor: pointer;
+    box-shadow: 0 2px 6px var(--accent-glow);
+    transition: transform 0.15s ease;
+}
+
+.icon-slider-row input[type="range"]::-webkit-slider-thumb:hover {
+    transform: scale(1.25);
+}
+
+.icon-calibration-actions {
+    display: flex;
+    justify-content: flex-end;
+    margin-top: 4px;
+}
+
+.icon-reset-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 6px 14px;
+    border-radius: 8px;
+    font-size: 12px;
+    font-weight: 600;
+    background: color-mix(in srgb, var(--text) 5%, transparent);
+    border: 1px solid var(--chrome-border, rgba(0,0,0,0.08));
+    color: var(--text-dim);
+    cursor: pointer;
+    transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.icon-reset-btn:hover {
+    background: color-mix(in srgb, var(--text) 10%, transparent);
+    color: var(--text);
     transform: translateY(-1px);
 }

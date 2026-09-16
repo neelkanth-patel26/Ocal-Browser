@@ -1,7 +1,7 @@
 {
   "name": "ocal",
   "productName": "Ocal Browser",
-  "version": "9.0.01",
+  "version": "9.1.03",
   "description": "Ocal Browser - Fast, Secure, and Agentic.",
   "main": "main.js",
   "author": "Gaming Network Studio Media Group",
@@ -12,7 +12,8 @@
     "publish": "electron-forge publish",
     "build-exe": "electron-builder --win portable",
     "build-premium": "electron-builder --win nsis",
-    "build-inno": "powershell -ExecutionPolicy Bypass -File build-dist.ps1"
+    "build-inno": "powershell -ExecutionPolicy Bypass -File build-dist.ps1",
+    "build-store": "powershell -ExecutionPolicy Bypass -File build-store.ps1"
   },
   "keywords": [],
   "license": "ISC",
@@ -123,6 +124,17 @@
       "installerHeaderIcon": "icon.ico",
       "runAfterFinish": true,
       "shortcutName": "Ocal"
+    },
+    "appx": {
+      "applicationId": "OcalBrowser",
+      "identityName": "GamingNetworkStudioMediaGroup.OcalBrowser",
+      "publisher": "CN=00000000-0000-0000-0000-000000000000",
+      "publisherDisplayName": "Gaming Network Studio Media Group",
+      "displayName": "Ocal Browser",
+      "backgroundColor": "#0c0d12",
+      "languages": ["en-US"],
+      "showNameOnTiles": true,
+      "setBuildNumber": true
     }
   }
 }

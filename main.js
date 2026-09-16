@@ -11,7 +11,7 @@ if (typeof electron === 'string' || !electron.app) {
 const {
     app, BrowserWindow, BrowserView, webContents, ipcMain, dialog,
     shell, session, Menu, MenuItem, clipboard, protocol, net,
-    powerMonitor, Notification, screen
+    powerMonitor, Notification, screen, nativeImage
 } = electron;
 
 // Explicitly set application name for OS / Task Manager identification
@@ -1125,16 +1125,35 @@ function setupSecurityHandlers() {
     // Handled in applyShieldSettings (masterOnBeforeRequest)
 }
 
-function getAppIconPath() {
-    const customPath = path.join(process.resourcesPath, '..', 'icon.ico');
-    if (fs.existsSync(customPath)) {
-        return customPath;
+function getAppIcon() {
+    const icoPath = path.join(__dirname, 'icon.ico');
+    const pngPath = path.join(__dirname, 'icon.png');
+    if (process.platform === 'win32' && fs.existsSync(icoPath)) {
+        try {
+            const img = nativeImage.createFromPath(icoPath);
+            if (!img.isEmpty()) return img;
+        } catch (e) {}
     }
-    return path.join(__dirname, 'icon.ico');
+    if (fs.existsSync(pngPath)) {
+        try {
+            const img = nativeImage.createFromPath(pngPath);
+            if (!img.isEmpty()) return img;
+        } catch (e) {}
+    }
+    return null;
+}
+
+function getAppIconPath() {
+    const icoPath = path.join(__dirname, 'icon.ico');
+    if (fs.existsSync(icoPath)) return icoPath;
+    const pngPath = path.join(__dirname, 'icon.png');
+    if (fs.existsSync(pngPath)) return pngPath;
+    return icoPath;
 }
 
 function createMainWindow() {
-
+    const appIcon = getAppIcon();
+    const appIconPath = getAppIconPath();
 
     mainWindow = new BrowserWindow({
         width: 1350,
@@ -1142,7 +1161,7 @@ function createMainWindow() {
         minWidth: 450,
         minHeight: 500,
         title: 'Ocal Browser',
-        icon: getAppIconPath(),
+        icon: appIcon || appIconPath,
         frame: false,
         transparent: false,
         backgroundColor: userSettings.themeMode === 'light' ? '#ffffff' : '#0c0c0e', // Dynamic background to match theme and prevent flashbang
@@ -1157,6 +1176,15 @@ function createMainWindow() {
             nodeIntegration: false,
             devTools: false
         },
+    });
+
+    if (appIcon && !appIcon.isEmpty()) {
+        try { mainWindow.setIcon(appIcon); } catch (e) {}
+    }
+    mainWindow.once('ready-to-show', () => {
+        if (appIcon && !appIcon.isEmpty()) {
+            try { mainWindow.setIcon(appIcon); } catch (e) {}
+        }
     });
 
     mainWindow.loadFile('index.html');
@@ -3854,24 +3882,26 @@ ipcMain.on('stop-ai-resize', () => {
 function registerWindowsDefaultBrowserRegistry() {
     if (process.platform !== 'win32') return;
 
-    // In development mode (npm start), NEVER overwrite system registry associations (.html, .pdf, StartMenuInternet)
-    // with raw node_modules\electron\dist\electron.exe!
-    if (!app.isPackaged) {
-        try {
-            if (app.setAsDefaultProtocolClient) {
-                app.setAsDefaultProtocolClient('ocal', process.execPath, [path.resolve(__dirname)]);
-            }
-        } catch (e) {}
-        return;
-    }
-
     try {
-        const appPath = process.execPath;
+        let appPath = process.execPath;
+        if (!app.isPackaged) {
+            const builtExe = path.join(__dirname, 'dist-builder', 'win-unpacked', 'Ocal Browser.exe');
+            const installedExe = path.join(process.env.LOCALAPPDATA || '', 'Programs', 'Ocal Browser', 'Ocal Browser.exe');
+            if (fs.existsSync(builtExe)) {
+                appPath = builtExe;
+            } else if (fs.existsSync(installedExe)) {
+                appPath = installedExe;
+            }
+        }
+
         const iconPath = path.join(__dirname, 'icon.ico');
-        const iconTarget = fs.existsSync(iconPath) ? `${iconPath}` : `${appPath},0`;
+        const pdfIconPath = path.join(__dirname, 'pdf-icon.ico');
+        const iconTarget = fs.existsSync(iconPath) ? `${iconPath},0` : `${appPath},0`;
+        const pdfIconTarget = fs.existsSync(pdfIconPath) ? `${pdfIconPath},0` : iconTarget;
         const appExeName = path.basename(appPath);
 
         const appCommand = `\\"${appPath}\\" -- \\"%1\\"`;
+        const appPdfCommand = `\\"${appPath}\\" \\"%1\\"`;
         const appOpen = `\\"${appPath}\\"`;
 
         const regCommands = [
@@ -3884,11 +3914,11 @@ function registerWindowsDefaultBrowserRegistry() {
             `reg add "HKCU\\Software\\Classes\\OcalHTML\\shell\\open\\command" /ve /d "${appCommand}" /f`,
 
             // 2. ProgId OcalPDF
-            `reg add "HKCU\\Software\\Classes\\OcalPDF" /ve /d "Ocal PDF Document" /f`,
-            `reg add "HKCU\\Software\\Classes\\OcalPDF" /v "FriendlyTypeName" /d "Ocal PDF Document" /f`,
-            `reg add "HKCU\\Software\\Classes\\OcalPDF" /v "AppUserModelId" /d "com.ocal.browser.v2" /f`,
-            `reg add "HKCU\\Software\\Classes\\OcalPDF\\DefaultIcon" /ve /d "${iconTarget}" /f`,
-            `reg add "HKCU\\Software\\Classes\\OcalPDF\\shell\\open\\command" /ve /d "${appCommand}" /f`,
+            `reg add "HKCU\\Software\\Classes\\Ocal.PDF" /ve /d "Ocal PDF Document" /f`,
+            `reg add "HKCU\\Software\\Classes\\Ocal.PDF" /v "FriendlyTypeName" /d "Ocal PDF Document" /f`,
+            `reg add "HKCU\\Software\\Classes\\Ocal.PDF" /v "AppUserModelId" /d "com.ocal.browser.v2" /f`,
+            `reg add "HKCU\\Software\\Classes\\Ocal.PDF\\DefaultIcon" /ve /d "${pdfIconTarget}" /f`,
+            `reg add "HKCU\\Software\\Classes\\Ocal.PDF\\shell\\open\\command" /ve /d "${appPdfCommand}" /f`,
 
             // 3. StartMenuInternet registration
             `reg add "HKCU\\Software\\Clients\\StartMenuInternet\\OcalBrowser" /ve /d "Ocal Browser" /f`,
@@ -5100,7 +5130,7 @@ Supported Commands:
             const extCount = (userSettings.extensions || []).length;
 
             return {
-                text: `### <i class="fas fa-chart-pie"></i> Ocal Browser Status\n\n| Metric | Value |\n|---|---|\n| **Version** | v6.3.0-beta |\n| **Engine** | Electron + Chromium |\n| **Open Tabs** | ${tabCount} |\n| **Memory Usage** | ${memMB} MB |\n| **Session Uptime** | ${uptime} min |\n| **Bookmarks** | ${bmCount} |\n| **History Entries** | ${histCount} |\n| **Extensions** | ${extCount} |\n\n### <i class="fas fa-shield-halved"></i> Shield Stats (Lifetime)\n| Stat | Count |\n|---|---|\n| **Ads Blocked** | ${adsBlocked.toLocaleString()} |\n| **Trackers Stopped** | ${trackersBlocked.toLocaleString()} |\n| **Data Saved** | ${dataSavedMB} MB |\n\n### <i class="fas fa-sliders"></i> Active Settings\n| Setting | Value |\n|---|---|\n| **Theme** | ${userSettings.themeMode || 'dark'} |\n| **Search Engine** | ${userSettings.searchEngine || 'google'} |\n| **Ad-Blocking** | ${userSettings.adBlockEnabled ? '<span class="status-badge on"><i class="fas fa-check"></i> On</span>' : '<span class="status-badge off"><i class="fas fa-xmark"></i> Off</span>'} |\n| **HTTPS Upgrade** | ${userSettings.httpsUpgradeEnabled ? '<span class="status-badge on"><i class="fas fa-check"></i> On</span>' : '<span class="status-badge off"><i class="fas fa-xmark"></i> Off</span>'} |\n| **CyberStealth** | ${userSettings.cyberStealthEnabled ? '<span class="status-badge on"><i class="fas fa-check"></i> On</span>' : '<span class="status-badge off"><i class="fas fa-xmark"></i> Off</span>'} |\n| **AI Engine** | ${userSettings.aiEngine || 'local'} |\n| **Accent Color** | \`${userSettings.accentColor || '#09f0a0'}\` |`,
+                text: `### <i class="fas fa-chart-pie"></i> Ocal Browser Status\n\n| Metric | Value |\n|---|---|\n| **Version** | v9.1.03 |\n| **Engine** | Electron + Chromium |\n| **Open Tabs** | ${tabCount} |\n| **Memory Usage** | ${memMB} MB |\n| **Session Uptime** | ${uptime} min |\n| **Bookmarks** | ${bmCount} |\n| **History Entries** | ${histCount} |\n| **Extensions** | ${extCount} |\n\n### <i class="fas fa-shield-halved"></i> Shield Stats (Lifetime)\n| Stat | Count |\n|---|---|\n| **Ads Blocked** | ${adsBlocked.toLocaleString()} |\n| **Trackers Stopped** | ${trackersBlocked.toLocaleString()} |\n| **Data Saved** | ${dataSavedMB} MB |\n\n### <i class="fas fa-sliders"></i> Active Settings\n| Setting | Value |\n|---|---|\n| **Theme** | ${userSettings.themeMode || 'dark'} |\n| **Search Engine** | ${userSettings.searchEngine || 'google'} |\n| **Ad-Blocking** | ${userSettings.adBlockEnabled ? '<span class="status-badge on"><i class="fas fa-check"></i> On</span>' : '<span class="status-badge off"><i class="fas fa-xmark"></i> Off</span>'} |\n| **HTTPS Upgrade** | ${userSettings.httpsUpgradeEnabled ? '<span class="status-badge on"><i class="fas fa-check"></i> On</span>' : '<span class="status-badge off"><i class="fas fa-xmark"></i> Off</span>'} |\n| **CyberStealth** | ${userSettings.cyberStealthEnabled ? '<span class="status-badge on"><i class="fas fa-check"></i> On</span>' : '<span class="status-badge off"><i class="fas fa-xmark"></i> Off</span>'} |\n| **AI Engine** | ${userSettings.aiEngine || 'local'} |\n| **Accent Color** | \`${userSettings.accentColor || '#09f0a0'}\` |`,
                 actions: [{ text: "Open Settings Dashboard", icon: "fa-gauge", command: "open-settings", section: "dashboard" }]
             };
         }
@@ -5133,9 +5163,19 @@ Supported Commands:
             if (bms.length === 0) {
                 return { text: "You don't have any bookmarks yet. Say *\"bookmark this page\"* or press **Ctrl+D** to save pages!", actions: [] };
             }
-            const list = bms.slice(0, 15).map((b, i) => `${i + 1}. **${b.title || 'Untitled'}** — \`${b.url.substring(0, 50)}${b.url.length > 50 ? '...' : ''}\``).join('\n');
+            const list = bms.slice(0, 15).map((b, i) => {
+                let domain = '';
+                try {
+                    const u = new URL(b.url);
+                    domain = u.hostname.replace(/^www\./, '');
+                } catch {
+                    domain = b.url.substring(0, 28);
+                }
+                const cleanTitle = (b.title || domain || 'Saved Bookmark').replace(/[*_`]/g, '').trim();
+                return `${i + 1}. [**${cleanTitle}**](${b.url}) \`${domain}\``;
+            }).join('\n');
             return {
-                text: `### <i class="fas fa-bookmark"></i> Your Bookmarks (${bms.length} total)\n\n${list}${bms.length > 15 ? `\n\n*...and ${bms.length - 15} more.*` : ''}\n\n> [!TIP]\n> Say *"open bookmark [name]"* to jump directly to any saved site.`,
+                text: `### <i class="fas fa-bookmark"></i> Your Bookmarks (${bms.length} total)\n\n${list}${bms.length > 15 ? `\n\n*...and ${bms.length - 15} more in manager.*` : ''}\n\n> [!TIP]\n> Click any bookmark to jump directly to the site, or open your manager below.`,
                 actions: [{ text: "Open Bookmarks Manager", icon: "fa-bookmark", url: "ocal://bookmarks" }]
             };
         }

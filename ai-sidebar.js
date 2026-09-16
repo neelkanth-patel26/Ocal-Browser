@@ -1036,6 +1036,18 @@ const renderMarkdown = (text, isFinal = true) => {
         return `<details class="thinking-details"><summary><i class="fas fa-brain"></i> Expand Thinking Process</summary><div class="details-body">\n\n${thinkContent.trim()}\n\n</div></details>`;
     });
 
+    // Format bookmark patterns: "1. Title — `https://...`" or "1. **Title** — `https://...`" into clean pill items
+    processedText = processedText.replace(/^(\d+\.\s+)(.*?)\s*—\s*`?(https?:\/\/[^\s`]+)`?/gm, (match, num, title, url) => {
+        let domain = '';
+        try {
+            domain = new URL(url).hostname.replace(/^www\./, '');
+        } catch {
+            domain = url.substring(0, 20);
+        }
+        const cleanTitle = title.replace(/[*_`]/g, '').trim();
+        return `${num}[**${cleanTitle}**](${url}) \`${domain}\``;
+    });
+
     let html = marked.parse(processedText);
     // GFM Alert Parsing (Post-process)
     html = html.replace(/<blockquote>\s*<p>\[!NOTE\]/gi, '<div class="alert alert-note"><p>')
@@ -1659,6 +1671,17 @@ toolStatus?.addEventListener('click', () => handleSend("Show browser status"));
 toolSettings?.addEventListener('click', () => openSettingsView());
 toolBookmarks?.addEventListener('click', () => handleSend("List my bookmarks"));
 toolHelp?.addEventListener('click', () => handleSend("What can you do?"));
+
+// Smooth mouse wheel horizontal scrolling for quick-tools
+const quickToolsContainer = document.querySelector('.quick-tools');
+if (quickToolsContainer) {
+    quickToolsContainer.addEventListener('wheel', (e) => {
+        if (e.deltaY !== 0) {
+            e.preventDefault();
+            quickToolsContainer.scrollLeft += e.deltaY;
+        }
+    }, { passive: false });
+}
 
 // Resize Logic
 if (handle) {
