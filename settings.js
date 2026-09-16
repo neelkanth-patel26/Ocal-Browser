@@ -3122,6 +3122,118 @@ window.handleThemeToggle = function(checked) {
     applyTheme(theme);
 };
 
+// ── Dynamic Icon & Logo Color Calibration ───────────────────────────────
+window.handleIconSyncToggle = function(enabled) {
+    try {
+        localStorage.setItem('ocal-icon-sync-theme', enabled ? 'true' : 'false');
+    } catch (e) {}
+    
+    const slidersContainer = document.getElementById('icon-sliders-container');
+    if (slidersContainer) {
+        slidersContainer.style.opacity = enabled ? '1' : '0.45';
+        slidersContainer.style.pointerEvents = enabled ? 'auto' : 'none';
+    }
+
+    refreshIconCalibration();
+};
+
+window.handleIconHueAdjust = function(val) {
+    const num = Number(val) || 0;
+    const valLabel = document.getElementById('icon-hue-val');
+    if (valLabel) valLabel.innerText = (num >= 0 ? `+${num}°` : `${num}°`);
+    try {
+        localStorage.setItem('ocal-icon-hue-adjust', num.toString());
+    } catch (e) {}
+    refreshIconCalibration();
+};
+
+window.handleIconSatAdjust = function(val) {
+    const num = Number(val) || 100;
+    const valLabel = document.getElementById('icon-sat-val');
+    if (valLabel) valLabel.innerText = `${num}%`;
+    try {
+        localStorage.setItem('ocal-icon-sat-adjust', num.toString());
+    } catch (e) {}
+    refreshIconCalibration();
+};
+
+window.resetIconCalibration = function() {
+    try {
+        localStorage.setItem('ocal-icon-sync-theme', 'true');
+        localStorage.setItem('ocal-icon-hue-adjust', '0');
+        localStorage.setItem('ocal-icon-sat-adjust', '100');
+    } catch (e) {}
+
+    const syncCb = document.getElementById('icon-sync-toggle-cb');
+    if (syncCb) syncCb.checked = true;
+
+    const hueSlider = document.getElementById('icon-hue-slider');
+    if (hueSlider) hueSlider.value = 0;
+    const hueVal = document.getElementById('icon-hue-val');
+    if (hueVal) hueVal.innerText = '0°';
+
+    const satSlider = document.getElementById('icon-sat-slider');
+    if (satSlider) satSlider.value = 100;
+    const satVal = document.getElementById('icon-sat-val');
+    if (satVal) satVal.innerText = '100%';
+
+    const slidersContainer = document.getElementById('icon-sliders-container');
+    if (slidersContainer) {
+        slidersContainer.style.opacity = '1';
+        slidersContainer.style.pointerEvents = 'auto';
+    }
+
+    refreshIconCalibration();
+};
+
+function refreshIconCalibration() {
+    const activeColor = localStorage.getItem('ocal-settings-accent') || 
+        getComputedStyle(document.documentElement).getPropertyValue('--accent').trim() || '#15AC49';
+    
+    if (window.OcalColorHarmonizer) {
+        const filter = window.OcalColorHarmonizer.calculateLogoFilter(activeColor);
+        document.documentElement.style.setProperty('--logo-filter', filter);
+        if (document.body) document.body.style.setProperty('--logo-filter', filter);
+        window.OcalColorHarmonizer.updateLogoElements(document, filter);
+        try {
+            localStorage.setItem('ocal-settings-logo-filter', filter);
+        } catch (e) {}
+    }
+
+    const previewName = document.getElementById('icon-preview-color-name');
+    if (previewName) {
+        const syncEnabled = (localStorage.getItem('ocal-icon-sync-theme') !== 'false');
+        previewName.innerText = syncEnabled ? 'Harmonized with Theme' : 'Brand Original';
+    }
+}
+
+function initIconCalibrationUI() {
+    try {
+        const sync = (localStorage.getItem('ocal-icon-sync-theme') !== 'false');
+        const syncCb = document.getElementById('icon-sync-toggle-cb');
+        if (syncCb) syncCb.checked = sync;
+
+        const hue = localStorage.getItem('ocal-icon-hue-adjust') || '0';
+        const hueSlider = document.getElementById('icon-hue-slider');
+        if (hueSlider) hueSlider.value = hue;
+        const hueVal = document.getElementById('icon-hue-val');
+        if (hueVal) hueVal.innerText = (Number(hue) >= 0 ? `+${hue}°` : `${hue}°`);
+
+        const sat = localStorage.getItem('ocal-icon-sat-adjust') || '100';
+        const satSlider = document.getElementById('icon-sat-slider');
+        if (satSlider) satSlider.value = sat;
+        const satVal = document.getElementById('icon-sat-val');
+        if (satVal) satVal.innerText = `${sat}%`;
+
+        const slidersContainer = document.getElementById('icon-sliders-container');
+        if (slidersContainer) {
+            slidersContainer.style.opacity = sync ? '1' : '0.45';
+            slidersContainer.style.pointerEvents = sync ? 'auto' : 'none';
+        }
+    } catch (e) {}
+    refreshIconCalibration();
+}
+
 function hsvToRgb(h, s, v) {
     let f = (n, k = (n + h / 60) % 6) => v - v * s * Math.max(Math.min(k, 4 - k, 1), 0);
     return {
@@ -4200,3 +4312,11 @@ window.addEventListener('hashchange', handleExtensionHashRouting);
 if (window.location.hash) {
     setTimeout(handleExtensionHashRouting, 50);
 }
+
+// ── Initialize Dynamic Icon Calibration & Listen to Harmonization ─────────
+try {
+    initIconCalibrationUI();
+    window.addEventListener('ocal-theme-harmonized', () => {
+        refreshIconCalibration();
+    });
+} catch (e) {}

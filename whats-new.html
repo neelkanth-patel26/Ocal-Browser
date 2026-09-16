@@ -1111,11 +1111,11 @@
             <!-- Dot-Matrix Stats Bar -->
             <div class="sp-stats-bar">
                 <div class="sp-stat-item">
-                    <span class="sp-dot-num" id="version-stat">v9.0.01</span>
+                    <span class="sp-dot-num" id="version-stat">v9.1.03</span>
                     <span class="sp-badge sp-badge-lime">Production</span>
                 </div>
                 <div class="sp-stat-item">
-                    <span class="sp-dot-num" id="features-stat">16</span>
+                    <span class="sp-dot-num" id="features-stat">22</span>
                     <span class="sp-badge sp-badge-gray">Features</span>
                 </div>
                 <div class="sp-stat-item">
@@ -1155,6 +1155,11 @@
                     <span>All Features</span>
                     <span class="sp-cat-badge" id="count-all">0</span>
                 </button>
+                <button class="sp-cat-pill" data-category="extensions" onclick="setCategory('extensions')">
+                    <i class="fas fa-puzzle-piece"></i>
+                    <span>Extensions & Store</span>
+                    <span class="sp-cat-badge" id="count-ext">0</span>
+                </button>
                 <button class="sp-cat-pill" data-category="multitasking" onclick="setCategory('multitasking')">
                     <i class="fas fa-columns"></i>
                     <span>Multitasking & AI</span>
@@ -1167,7 +1172,7 @@
                 </button>
                 <button class="sp-cat-pill" data-category="media" onclick="setCategory('media')">
                     <i class="fas fa-photo-film"></i>
-                    <span>Audio & Shaders</span>
+                    <span>Better UI & Audio</span>
                     <span class="sp-cat-badge" id="count-media">0</span>
                 </button>
                 <button class="sp-cat-pill" data-category="contributors" onclick="setCategory('contributors')">
@@ -1186,13 +1191,13 @@
                     <div class="sp-hero-left">
                         <div class="sp-hero-tag">
                             <i class="fas fa-circle-check"></i>
-                            <span>v9.0.01 Stable Release</span>
+                            <span>v9.1.03 Stable Release</span>
                         </div>
-                        <h2 class="sp-hero-title">Seamless UI/UX & Next-Gen Power</h2>
+                        <h2 class="sp-hero-title">Google Extensions, Better UI & Bug Fixes</h2>
                         <p class="sp-hero-desc" id="hero-desc"></p>
                     </div>
                     <div class="sp-hero-right-visual">
-                        <div class="radial-metric-title">9.0.01</div>
+                        <div class="radial-metric-title">9.1.03</div>
                         <div class="radial-metric-status">Flagship Build</div>
                         <div class="sparkline-dots">
                             <span class="spark-dot"></span>
@@ -1231,8 +1236,8 @@
                         <div class="stat-icon-bubble"><i class="fas fa-wand-magic-sparkles"></i></div>
                     </div>
                     <div class="stat-card-body">
-                        <div class="stat-card-title">Seamless UI/UX</div>
-                        <div class="stat-card-desc">Zero-jump hover physics & showroom liquid styling</div>
+                        <div class="stat-card-title">Better UI & Smooth UX</div>
+                        <div class="stat-card-desc">Zero-jitter hover physics, clean shadowless cards & modals</div>
                     </div>
                     <div class="stat-visual-line">
                         <span class="stat-dot active"></span>
@@ -1245,19 +1250,19 @@
 
                 <div class="sp-card-white">
                     <div class="stat-card-header">
-                        <span class="stat-num"><span class="counter" data-target="16">0</span>+</span>
-                        <div class="stat-icon-bubble"><i class="fas fa-cubes"></i></div>
+                        <span class="stat-num"><span class="counter" data-target="22">0</span>+</span>
+                        <div class="stat-icon-bubble"><i class="fas fa-puzzle-piece"></i></div>
                     </div>
                     <div class="stat-card-body">
-                        <div class="stat-card-title">Next-Gen Modules</div>
-                        <div class="stat-card-desc">Ambient audio, page shaders, vault rework, file manager</div>
+                        <div class="stat-card-title">Chrome Extension Support</div>
+                        <div class="stat-card-desc">Universal polyfills, topbar capsule, dynamic popup sizing</div>
                     </div>
                     <div class="stat-visual-line">
                         <span class="stat-dot active"></span>
                         <span class="stat-dot active"></span>
                         <span class="stat-dot active"></span>
                         <span class="stat-dot active"></span>
-                        <span class="stat-dot"></span>
+                        <span class="stat-dot active"></span>
                     </div>
                 </div>
 
@@ -1286,7 +1291,7 @@
             <div class="sp-section-header">
                 <div class="sp-section-titles">
                     <h2 id="dir-title">All Features & Enhancements</h2>
-                    <p id="dir-subtitle">SHOWING ALL MAJOR UPGRADES IN V9.0.01 FLAGSHIP</p>
+                    <p id="dir-subtitle">SHOWING ALL MAJOR UPGRADES IN V9.1.03 STABLE</p>
                 </div>
             </div>
             <div class="features-grid" id="directory-grid" style="margin-top: 20px;"></div>
@@ -1358,7 +1363,7 @@
         }
 
         // ── Typing Animation ──
-        const heroText = "Ocal Browser v9.0.01 delivers accurate real-time telemetry metrics, a seamless UI/UX redesign, lightning-fast page loading & ad-blocking engines, an overhauled Bento File Manager, Masterwork AI Studio, deep Home Page customization, background Ambient Soundscapes, real-time Canvas Shaders, and a military-grade encrypted Password Manager with biometric autofill.";
+        const heroText = "Ocal Browser v9.1.03 introduces universal Google Chrome extension support with intelligent runtime polyfills, an overhauled topbar Extension Capsule with instant search, deep theme mode & accent color synchronization, sleek shadowless UI aesthetics, and comprehensive stability bug fixes.";
         const heroDesc = document.getElementById('hero-desc');
         let charIndex = 0;
 
@@ -1456,8 +1461,72 @@
 
         // ── Features & Team Data ──
         const items = [
-            // Major Update 9.0.00 Highlights
-            { type: 'feature', category: 'media', icon: 'fa-wand-magic-sparkles', title: 'Seamless UI/UX & Liquid Interactions', desc: 'Completely refined browser UI/UX with silky smooth zero-jump hover physics, unified glassmorphic bento showroom styling, responsive modal sheets, and fluid 60FPS transitions across every popup and sidebar.', actionText: 'Showroom UI', targetUrl: 'ocal://home' },
+            // ══ Major Update 9.1.03 Highlights ══
+            { 
+                type: 'feature', 
+                category: 'extensions', 
+                icon: 'fa-puzzle-piece', 
+                title: 'Google Chrome Extension Support (Beta)', 
+                desc: 'Run popular Google Chrome Web Store extensions directly inside Ocal with universal runtime polyfills for chrome.windows, chrome.storage.sync/local, chrome.action, chrome.scripting, chrome.tabs, and chrome.runtime. Actively expanding compatibility across the Chrome ecosystem (works with most popular extensions, while complex multi-process extensions are continually being added).', 
+                actionText: 'Browse Store', 
+                targetUrl: 'ocal://store' 
+            },
+            { 
+                type: 'feature', 
+                category: 'extensions', 
+                icon: 'fa-cubes-stacked', 
+                title: 'Compact Topbar Extension Capsule', 
+                desc: 'A modern, unobtrusive extension capsule in the top navigation bar that intelligently caps visible icons to 2, bundling excess addons into an interactive +N overflow counter badge and a quick-search extensions hub dropdown.', 
+                actionText: 'Manage Addons', 
+                targetUrl: 'ocal://settings' 
+            },
+            { 
+                type: 'feature', 
+                category: 'extensions', 
+                icon: 'fa-arrows-to-dot', 
+                title: 'Dynamic Popup Auto-Sizing Engine', 
+                desc: 'Adaptive bounding and auto-sizing engine for extension popups that dynamically analyzes stylesheet rules and DOM container dimensions in real time, eliminating letterboxing, horizontal gaps, and vertical clipping.', 
+                actionText: 'Try Popups', 
+                targetUrl: 'ocal://settings' 
+            },
+            { 
+                type: 'feature', 
+                category: 'extensions', 
+                icon: 'fa-cloud-arrow-down', 
+                title: 'Chrome Web Store 1-Click Injection Banner', 
+                desc: 'Smart floating installation banner and native toolbar button injected directly into chromewebstore.google.com, with automatic installation detection and live theme mode & accent color synchronization.', 
+                actionText: 'Web Store', 
+                targetUrl: 'https://chromewebstore.google.com' 
+            },
+            { 
+                type: 'feature', 
+                category: 'media', 
+                icon: 'fa-wand-magic-sparkles', 
+                title: 'Better UI: Shadowless Showroom & Zero-Jitter Cards', 
+                desc: 'Comprehensive visual overhaul eliminating heavy drop-shadow artifacts across all popups and dropdowns. Extension cards now feature zero-jitter hover physics, crisp neutral squircle icons, and in-place state toggling without reload flicker.', 
+                actionText: 'Showroom UI', 
+                targetUrl: 'ocal://home' 
+            },
+            { 
+                type: 'feature', 
+                category: 'media', 
+                icon: 'fa-palette', 
+                title: 'Theme Mode & Accent Color Synchronization', 
+                desc: 'Seamless end-to-end visual harmony: dark/light modes and custom accent palettes now dynamically propagate to all internal pages, floating Chrome Web Store install banners, extension hub menus, and popup frames.', 
+                actionText: 'Theme Settings', 
+                targetUrl: 'ocal://settings' 
+            },
+            { 
+                type: 'feature', 
+                category: 'performance', 
+                icon: 'fa-shield-halved', 
+                title: 'Local Pages Context Menu Hardening & Stability', 
+                desc: 'Streamlined right-click context menus across all internal and local pages (ocal://*, file://*, chrome://*), cleanly removing developer inspection tools. Includes critical fixes for background worker storage and development launcher paths.', 
+                actionText: 'Security Suite', 
+                targetUrl: 'ocal://settings' 
+            },
+
+            // ══ Platform & Multi-Module Suite ══
             { type: 'feature', category: 'performance', icon: 'fa-bolt-lightning', title: 'Turbo Page Engine & Accelerated Ad Blocker', desc: 'Re-architected request interception pipeline, zero-overhead regex filtering, and instant DOM pre-compilation for blistering page load speeds and seamless tracker neutralization.', actionText: 'Speed Benchmark', targetUrl: 'ocal://settings' },
             { type: 'feature', category: 'multitasking', icon: 'fa-folder-open', title: 'Overhauled Bento File Manager', desc: 'All-new file explorer interface with instant file previewing, media grid view, category tagging, drag-and-drop actions, real-time storage analytics, and lightning search.', actionText: 'Open Files', targetUrl: 'ocal://file-manager' },
             { type: 'feature', category: 'multitasking', icon: 'fa-brain', title: 'Masterwork AI Intelligence & Image Studio', desc: 'Upgraded FLUX, DALL-E 3 & LLM engines with smart master prompt auto-enhancement, camera lens optics, zero-flash background preloading, and 4K HD canvas sharpening.', actionText: 'AI Studio', targetUrl: 'ocal://home' },
@@ -1498,6 +1567,12 @@
         ];
 
         const changelog = [
+            { 
+                date: 'September 2026', 
+                title: 'v9.1.03 Stable — Google Chrome Extensions, Better UI & Bug Fixes', 
+                desc: 'Major feature update introducing Google Chrome extension compatibility via universal runtime polyfills (chrome.windows, chrome.storage.sync/session, chrome.action, chrome.tabs, chrome.runtime, chrome.scripting). Features a compact topbar Extension Capsule with smart overflow counting and instant search, theme mode & accent color synchronization across all overlays, dynamic popup auto-sizing engine, refined shadowless UI with zero-jitter cards, custom confirmation modals, and hardened local page context menus.', 
+                tags: ['v9.1.03 Stable', 'Chrome Extensions', 'Better UI', 'Extension Capsule', 'Bug Fixes', 'Theme Sync'] 
+            },
             { date: 'September 2026', title: 'v9.0.01 Stable — Telemetry Accuracy & Reset Controls', desc: 'Resolved runaway ad neutralization counters by stripping extraneous abort-status request hooks and eliminating synthetic timer loops. Added 1-click Reset Stats control in Security settings and polished password autofill listeners.', tags: ['v9.0.01 Stable', 'Telemetry Fix', 'AdBlock', 'Autofill'] },
             { date: 'September 2026', title: 'v9.0.00 Flagship — Seamless UI/UX, Ambient Audio, Shaders & Password Vault Rework', desc: 'Major milestone release featuring seamless UI/UX refinement across all popups and sidebars, turbocharged page loading and ad-blocker acceleration, overhauled Bento File Manager, masterwork AI Studio with FLUX flagship generation, deep Home Page customization, background ambient soundscapes & music player, GPU-accelerated page shaders, and a military-grade encrypted Password Manager with Windows Hello biometric autofill.', tags: ['v9.0.00 Major', 'Seamless UI/UX', 'Faster AdBlock', 'File Manager', 'AI Studio', 'Ambient Audio', 'Page Shaders', 'Password Vault'] },
             { date: 'September 2026', title: 'v8.9.50 Stable — Fluid Tabs, HTTP Unlock Alerts & Glassmorphic Security', desc: 'Complete redesign of Horizontal & Vertical tabs with floating glass squircles, adaptive auto-scaling, adjacent + new tab button, and hardware-accelerated transitions. Added dynamic unlock indicators for unencrypted HTTP sites, redesigned frosted glassmorphic SSL and security warning pages with dark/light theme sync, chrome navigation protection, scrollable bookmark bar with hidden scrollbars, and upgraded to Electron 43.4.1, uBlock Origin 1.74.0, and Return YouTube Dislike 4.0.4.', tags: ['v8.9.50 Stable', 'Fluid Tabs', 'HTTP Security', 'Engine Matrix'] },
@@ -1531,6 +1606,8 @@
 
             // Update Counts
             document.getElementById('count-all').textContent = items.filter(i => i.type === 'feature').length;
+            const countExt = document.getElementById('count-ext');
+            if (countExt) countExt.textContent = items.filter(i => i.category === 'extensions').length;
             document.getElementById('count-multi').textContent = items.filter(i => i.category === 'multitasking').length;
             document.getElementById('count-perf').textContent = items.filter(i => i.category === 'performance').length;
             document.getElementById('count-media').textContent = items.filter(i => i.category === 'media').length;
@@ -1558,7 +1635,7 @@
                 };
 
                 const footLeft = item.type === 'contributor' ? item.role : item.actionText;
-                const catLabel = item.type === 'contributor' ? 'Contributor' : item.category;
+                const catLabel = item.type === 'contributor' ? 'Contributor' : (item.category === 'extensions' ? 'Extensions' : item.category);
 
                 card.innerHTML = `
                     <div class="card-top">
@@ -1613,10 +1690,11 @@
             });
 
             const map = {
-                all: ['All Features & Enhancements', 'SHOWING ALL MAJOR UPGRADES IN V9.0.01 FLAGSHIP'],
+                all: ['All Features & Enhancements', 'SHOWING ALL MAJOR UPGRADES IN V9.1.03 STABLE'],
+                extensions: ['Google Extensions & Store', 'UNIVERSAL CHROME EXTENSIONS ENGINE, TOPBAR CAPSULE & POPUPS'],
                 multitasking: ['Multitasking & AI Studio', 'BENTO FILE MANAGER, FLUX MASTERWORK AI & FLUID TABS'],
                 performance: ['Speed & Security Vault', 'TURBO PAGE LOADER, FASTER AD BLOCKER & 256-BIT PASSWORD VAULT'],
-                media: ['Audio, Shaders & Customization', 'AMBIENT SOUNDSCAPES, REAL-TIME SHADERS & SHOWROOM THEMES'],
+                media: ['Better UI, Audio & Shaders', 'REFINED SHADOWLESS UI, AMBIENT SOUNDSCAPES & SHOWROOM THEMES'],
                 contributors: ['Lead Contributors & Architects', 'THE CORE TEAM SHAPING OCAL BROWSER']
             };
 

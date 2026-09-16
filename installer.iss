@@ -1,14 +1,15 @@
 ; ============================================================
 ;  Ocal Browser - Inno Setup 6 Installer
-;  Version  : 9.0.01  (Stable)
+;  Version  : 9.1.03  (Stable)
 ;  Builder  : Gaming Network Studio Media Group
 ;  Compiler : Inno Setup 6
 ; ============================================================
 
 [Setup]
+AppId={{E482C748-0C05-4BE7-B15E-D2C2AEB8718E}
 AppName=Ocal Browser
-AppVersion=9.0.01
-AppVerName=Ocal Browser 9.0.01
+AppVersion=9.1.03
+AppVerName=Ocal Browser 9.1.03
 AppPublisher=Gaming Network Studio Media Group
 AppPublisherURL=https://github.com/neelkanth-patel26/Ocal-Browser
 AppSupportURL=https://github.com/neelkanth-patel26/Ocal-Browser/issues
@@ -17,28 +18,29 @@ AppCopyright=Copyright (C) 2026 Gaming Network Studio Media Group
 DefaultDirName={autopf}\Ocal
 DefaultGroupName=Ocal
 OutputDir=dist-inno
-OutputBaseFilename=Ocal-9.0.01-Setup
+OutputBaseFilename=Ocal-9.1.03-Setup
 SetupIconFile=icon.ico
 Compression=lzma2/ultra64
 SolidCompression=yes
 DiskSpanning=no
-PrivilegesRequired=admin
-ArchitecturesAllowed=x64
-ArchitecturesInstallIn64BitMode=x64
+PrivilegesRequired=lowest
+PrivilegesRequiredOverridesAllowed=dialog commandline
+ArchitecturesAllowed=x64compatible
+ArchitecturesInstallIn64BitMode=x64compatible
 LicenseFile=license.txt
 MinVersion=10.0.17763
 UninstallDisplayIcon={app}\icon.ico
-UninstallDisplayName=Ocal Browser 9.0.01
-VersionInfoVersion=9.0.1.0
+UninstallDisplayName=Ocal Browser
+VersionInfoVersion=9.1.3.0
 VersionInfoCompany=Gaming Network Studio Media Group
 VersionInfoDescription=Ocal Browser Installer
 VersionInfoProductName=Ocal Browser
-VersionInfoProductVersion=9.0.01
+VersionInfoProductVersion=9.1.03
 WizardStyle=modern
-WizardResizable=no
 ShowLanguageDialog=no
-CloseApplications=yes
-CloseApplicationsFilter=Ocal Browser.exe
+CloseApplications=no
+RestartIfNeededByRun=no
+UsedUserAreasWarning=no
 
 ; ── Catalog / Component Selection ──────────────────────────
 [Types]
@@ -61,7 +63,7 @@ InstallingCore=Installing Ocal Browser core files...
 InstallingPDF=Registering PDF viewer association...
 
 LaunchAfterInstall=Launch Ocal Browser now
-ReleaseNotes=View release notes for v9.0.01
+ReleaseNotes=View release notes for v9.1.03
 
 ; ── File Catalog ────────────────────────────────────────────
 [InstallDelete]
@@ -86,63 +88,85 @@ Name: "{autodesktop}\Ocal Browser";    Filename: "{app}\Ocal Browser.exe"; Tasks
 ; ── Registry ────────────────────────────────────────────────
 [Registry]
 ; PDF file association
-Root: HKCR; Subkey: ".pdf";                          ValueType: string; ValueName: "";                ValueData: "Ocal.PDF";                                    Flags: uninsdeletevalue;  Components: pdfviewer
-Root: HKCR; Subkey: "Ocal.PDF";                      ValueType: string; ValueName: "";                ValueData: "Ocal PDF Document";                           Flags: uninsdeletekey;    Components: pdfviewer
-Root: HKCR; Subkey: "Ocal.PDF\DefaultIcon";          ValueType: string; ValueName: "";                ValueData: "{app}\pdf-icon.ico,0";                        Flags: uninsdeletekey;    Components: pdfviewer
-Root: HKCR; Subkey: "Ocal.PDF\shell\open\command";   ValueType: string; ValueName: "";                ValueData: """{app}\Ocal Browser.exe"" ""%1""";                   Flags: uninsdeletekey;    Components: pdfviewer
-Root: HKCR; Subkey: "Ocal.PDF\shell\open";           ValueType: string; ValueName: "FriendlyAppName"; ValueData: "Ocal Browser";                                Flags: uninsdeletekey;    Components: pdfviewer
+Root: HKA; Subkey: "Software\Classes\.pdf";                          ValueType: string; ValueName: "";                ValueData: "Ocal.PDF";                                    Flags: uninsdeletevalue;  Components: pdfviewer
+Root: HKA; Subkey: "Software\Classes\Ocal.PDF";                      ValueType: string; ValueName: "";                ValueData: "Ocal PDF Document";                           Flags: uninsdeletekey;    Components: pdfviewer
+Root: HKA; Subkey: "Software\Classes\Ocal.PDF\DefaultIcon";          ValueType: string; ValueName: "";                ValueData: "{app}\pdf-icon.ico,0";                        Flags: uninsdeletekey;    Components: pdfviewer
+Root: HKA; Subkey: "Software\Classes\Ocal.PDF\shell\open\command";   ValueType: string; ValueName: "";                ValueData: """{app}\Ocal Browser.exe"" ""%1""";           Flags: uninsdeletekey;    Components: pdfviewer
+Root: HKA; Subkey: "Software\Classes\Ocal.PDF\shell\open";           ValueType: string; ValueName: "FriendlyAppName"; ValueData: "Ocal Browser";                                Flags: uninsdeletekey;    Components: pdfviewer
 
 ; HTML & Web File Associations
-Root: HKCR; Subkey: ".htm";                          ValueType: string; ValueName: "";                ValueData: "OcalHTML";                                    Flags: uninsdeletevalue
-Root: HKCR; Subkey: ".html";                         ValueType: string; ValueName: "";                ValueData: "OcalHTML";                                    Flags: uninsdeletevalue
-Root: HKCR; Subkey: ".shtml";                        ValueType: string; ValueName: "";                ValueData: "OcalHTML";                                    Flags: uninsdeletevalue
-Root: HKCR; Subkey: ".xht";                          ValueType: string; ValueName: "";                ValueData: "OcalHTML";                                    Flags: uninsdeletevalue
-Root: HKCR; Subkey: ".xhtml";                        ValueType: string; ValueName: "";                ValueData: "OcalHTML";                                    Flags: uninsdeletevalue
-Root: HKCR; Subkey: ".svg";                          ValueType: string; ValueName: "";                ValueData: "OcalHTML";                                    Flags: uninsdeletevalue
-Root: HKCR; Subkey: ".webp";                         ValueType: string; ValueName: "";                ValueData: "OcalHTML";                                    Flags: uninsdeletevalue
+Root: HKA; Subkey: "Software\Classes\.htm";                          ValueType: string; ValueName: "";                ValueData: "OcalHTML";                                    Flags: uninsdeletevalue
+Root: HKA; Subkey: "Software\Classes\.html";                         ValueType: string; ValueName: "";                ValueData: "OcalHTML";                                    Flags: uninsdeletevalue
+Root: HKA; Subkey: "Software\Classes\.shtml";                        ValueType: string; ValueName: "";                ValueData: "OcalHTML";                                    Flags: uninsdeletevalue
+Root: HKA; Subkey: "Software\Classes\.xht";                          ValueType: string; ValueName: "";                ValueData: "OcalHTML";                                    Flags: uninsdeletevalue
+Root: HKA; Subkey: "Software\Classes\.xhtml";                        ValueType: string; ValueName: "";                ValueData: "OcalHTML";                                    Flags: uninsdeletevalue
+Root: HKA; Subkey: "Software\Classes\.svg";                          ValueType: string; ValueName: "";                ValueData: "OcalHTML";                                    Flags: uninsdeletevalue
+Root: HKA; Subkey: "Software\Classes\.webp";                         ValueType: string; ValueName: "";                ValueData: "OcalHTML";                                    Flags: uninsdeletevalue
 
-Root: HKCR; Subkey: "OcalHTML";                      ValueType: string; ValueName: "";                ValueData: "Ocal HTML Document";                           Flags: uninsdeletekey
-Root: HKCR; Subkey: "OcalHTML";                      ValueType: string; ValueName: "FriendlyTypeName"; ValueData: "Ocal HTML Document";                         Flags: uninsdeletekey
-Root: HKCR; Subkey: "OcalHTML";                      ValueType: string; ValueName: "AppUserModelId";  ValueData: "com.ocal.browser.v2";                         Flags: uninsdeletekey
-Root: HKCR; Subkey: "OcalHTML\DefaultIcon";          ValueType: string; ValueName: "";                ValueData: "{app}\icon.ico,0";                            Flags: uninsdeletekey
-Root: HKCR; Subkey: "OcalHTML\shell\open\command";   ValueType: string; ValueName: "";                ValueData: """{app}\Ocal Browser.exe"" -- ""%1""";         Flags: uninsdeletekey
-Root: HKCR; Subkey: "OcalHTML\shell\open";           ValueType: string; ValueName: "FriendlyAppName"; ValueData: "Ocal Browser";                                Flags: uninsdeletekey
+Root: HKA; Subkey: "Software\Classes\OcalHTML";                      ValueType: string; ValueName: "";                ValueData: "Ocal HTML Document";                           Flags: uninsdeletekey
+Root: HKA; Subkey: "Software\Classes\OcalHTML";                      ValueType: string; ValueName: "FriendlyTypeName"; ValueData: "Ocal HTML Document";                         Flags: uninsdeletekey
+Root: HKA; Subkey: "Software\Classes\OcalHTML";                      ValueType: string; ValueName: "AppUserModelId";  ValueData: "com.ocal.browser.v2";                         Flags: uninsdeletekey
+Root: HKA; Subkey: "Software\Classes\OcalHTML\DefaultIcon";          ValueType: string; ValueName: "";                ValueData: "{app}\icon.ico,0";                            Flags: uninsdeletekey
+Root: HKA; Subkey: "Software\Classes\OcalHTML\shell\open\command";   ValueType: string; ValueName: "";                ValueData: """{app}\Ocal Browser.exe"" -- ""%1""";         Flags: uninsdeletekey
+Root: HKA; Subkey: "Software\Classes\OcalHTML\shell\open";           ValueType: string; ValueName: "FriendlyAppName"; ValueData: "Ocal Browser";                                Flags: uninsdeletekey
 
 ; Protocols
-Root: HKCR; Subkey: "ocal";                          ValueType: string; ValueName: "";                ValueData: "URL:Ocal Protocol";                           Flags: uninsdeletekey
-Root: HKCR; Subkey: "ocal";                          ValueType: string; ValueName: "URL Protocol";    ValueData: "";                                            Flags: uninsdeletekey
-Root: HKCR; Subkey: "ocal\shell\open\command";       ValueType: string; ValueName: "";                ValueData: """{app}\Ocal Browser.exe"" -- ""%1""";         Flags: uninsdeletekey
+Root: HKA; Subkey: "Software\Classes\ocal";                          ValueType: string; ValueName: "";                ValueData: "URL:Ocal Protocol";                           Flags: uninsdeletekey
+Root: HKA; Subkey: "Software\Classes\ocal";                          ValueType: string; ValueName: "URL Protocol";    ValueData: "";                                            Flags: uninsdeletekey
+Root: HKA; Subkey: "Software\Classes\ocal\shell\open\command";       ValueType: string; ValueName: "";                ValueData: """{app}\Ocal Browser.exe"" -- ""%1""";         Flags: uninsdeletekey
 
-; Windows Default Programs registration
-Root: HKLM; Subkey: "Software\Clients\StartMenuInternet\OcalBrowser";                                        ValueType: string; ValueName: "";                      ValueData: "Ocal Browser";                                                                               Flags: uninsdeletekey
-Root: HKLM; Subkey: "Software\Clients\StartMenuInternet\OcalBrowser\DefaultIcon";                            ValueType: string; ValueName: "";                      ValueData: "{app}\icon.ico,0";                                                                           Flags: uninsdeletekey
-Root: HKLM; Subkey: "Software\Clients\StartMenuInternet\OcalBrowser\InstallInfo";                            ValueType: dword;  ValueName: "IconsVisible";          ValueData: "1";                                                                                          Flags: uninsdeletekey
-Root: HKLM; Subkey: "Software\Clients\StartMenuInternet\OcalBrowser\shell\open\command";                   ValueType: string; ValueName: "";                      ValueData: """{app}\Ocal Browser.exe""";                                                                 Flags: uninsdeletekey
-Root: HKLM; Subkey: "Software\Clients\StartMenuInternet\OcalBrowser\Capabilities";                           ValueType: string; ValueName: "ApplicationName";       ValueData: "Ocal Browser";                                                                               Flags: uninsdeletekey
-Root: HKLM; Subkey: "Software\Clients\StartMenuInternet\OcalBrowser\Capabilities";                           ValueType: string; ValueName: "ApplicationIcon";       ValueData: "{app}\icon.ico,0";                                                                           Flags: uninsdeletekey
-Root: HKLM; Subkey: "Software\Clients\StartMenuInternet\OcalBrowser\Capabilities";                           ValueType: string; ValueName: "ApplicationDescription";ValueData: "Ocal Browser is a modern, ultra-fast, and secure web browser powered by intelligent AI.";   Flags: uninsdeletekey
-Root: HKLM; Subkey: "Software\Clients\StartMenuInternet\OcalBrowser\Capabilities\StartMenu";                 ValueType: string; ValueName: "StartMenuInternet";     ValueData: "OcalBrowser";                                                                                Flags: uninsdeletekey
-Root: HKLM; Subkey: "Software\Clients\StartMenuInternet\OcalBrowser\Capabilities\FileAssociations";         ValueType: string; ValueName: ".htm";                  ValueData: "OcalHTML";                                                                                   Flags: uninsdeletekey
-Root: HKLM; Subkey: "Software\Clients\StartMenuInternet\OcalBrowser\Capabilities\FileAssociations";         ValueType: string; ValueName: ".html";                 ValueData: "OcalHTML";                                                                                   Flags: uninsdeletekey
-Root: HKLM; Subkey: "Software\Clients\StartMenuInternet\OcalBrowser\Capabilities\FileAssociations";         ValueType: string; ValueName: ".shtml";                ValueData: "OcalHTML";                                                                                   Flags: uninsdeletekey
-Root: HKLM; Subkey: "Software\Clients\StartMenuInternet\OcalBrowser\Capabilities\FileAssociations";         ValueType: string; ValueName: ".xht";                  ValueData: "OcalHTML";                                                                                   Flags: uninsdeletekey
-Root: HKLM; Subkey: "Software\Clients\StartMenuInternet\OcalBrowser\Capabilities\FileAssociations";         ValueType: string; ValueName: ".xhtml";                ValueData: "OcalHTML";                                                                                   Flags: uninsdeletekey
-Root: HKLM; Subkey: "Software\Clients\StartMenuInternet\OcalBrowser\Capabilities\FileAssociations";         ValueType: string; ValueName: ".svg";                  ValueData: "OcalHTML";                                                                                   Flags: uninsdeletekey
-Root: HKLM; Subkey: "Software\Clients\StartMenuInternet\OcalBrowser\Capabilities\FileAssociations";         ValueType: string; ValueName: ".webp";                 ValueData: "OcalHTML";                                                                                   Flags: uninsdeletekey
-Root: HKLM; Subkey: "Software\Clients\StartMenuInternet\OcalBrowser\Capabilities\FileAssociations";         ValueType: string; ValueName: ".pdf";                  ValueData: "Ocal.PDF";                                                                                   Flags: uninsdeletekey
-Root: HKLM; Subkey: "Software\Clients\StartMenuInternet\OcalBrowser\Capabilities\URLAssociations";          ValueType: string; ValueName: "http";                  ValueData: "OcalHTML";                                                                                   Flags: uninsdeletekey
-Root: HKLM; Subkey: "Software\Clients\StartMenuInternet\OcalBrowser\Capabilities\URLAssociations";          ValueType: string; ValueName: "https";                 ValueData: "OcalHTML";                                                                                   Flags: uninsdeletekey
-Root: HKLM; Subkey: "Software\Clients\StartMenuInternet\OcalBrowser\Capabilities\URLAssociations";          ValueType: string; ValueName: "ftp";                   ValueData: "OcalHTML";                                                                                   Flags: uninsdeletekey
-Root: HKLM; Subkey: "Software\Clients\StartMenuInternet\OcalBrowser\Capabilities\URLAssociations";          ValueType: string; ValueName: "ocal";                  ValueData: "OcalHTML";                                                                                   Flags: uninsdeletekey
-Root: HKLM; Subkey: "Software\RegisteredApplications";                                                       ValueType: string; ValueName: "OcalBrowser";          ValueData: "Software\Clients\StartMenuInternet\OcalBrowser\Capabilities";                                Flags: uninsdeletevalue
+; Windows Default Programs registration (HKLM when elevated + HKCU for complete Windows Settings visibility)
+Root: HKLM; Subkey: "Software\Clients\StartMenuInternet\OcalBrowser";                                        ValueType: string; ValueName: "";                      ValueData: "Ocal Browser";                                                                               Flags: uninsdeletekey;   Check: IsAdminInstallMode
+Root: HKLM; Subkey: "Software\Clients\StartMenuInternet\OcalBrowser\DefaultIcon";                            ValueType: string; ValueName: "";                      ValueData: "{app}\icon.ico,0";                                                                           Flags: uninsdeletekey;   Check: IsAdminInstallMode
+Root: HKLM; Subkey: "Software\Clients\StartMenuInternet\OcalBrowser\InstallInfo";                            ValueType: dword;  ValueName: "IconsVisible";          ValueData: "1";                                                                                          Flags: uninsdeletekey;   Check: IsAdminInstallMode
+Root: HKLM; Subkey: "Software\Clients\StartMenuInternet\OcalBrowser\shell\open\command";                   ValueType: string; ValueName: "";                      ValueData: """{app}\Ocal Browser.exe""";                                                                 Flags: uninsdeletekey;   Check: IsAdminInstallMode
+Root: HKLM; Subkey: "Software\Clients\StartMenuInternet\OcalBrowser\Capabilities";                           ValueType: string; ValueName: "ApplicationName";       ValueData: "Ocal Browser";                                                                               Flags: uninsdeletekey;   Check: IsAdminInstallMode
+Root: HKLM; Subkey: "Software\Clients\StartMenuInternet\OcalBrowser\Capabilities";                           ValueType: string; ValueName: "ApplicationIcon";       ValueData: "{app}\icon.ico,0";                                                                           Flags: uninsdeletekey;   Check: IsAdminInstallMode
+Root: HKLM; Subkey: "Software\Clients\StartMenuInternet\OcalBrowser\Capabilities";                           ValueType: string; ValueName: "ApplicationDescription";ValueData: "Ocal Browser is a modern, ultra-fast, and secure web browser powered by intelligent AI.";   Flags: uninsdeletekey;   Check: IsAdminInstallMode
+Root: HKLM; Subkey: "Software\Clients\StartMenuInternet\OcalBrowser\Capabilities\StartMenu";                 ValueType: string; ValueName: "StartMenuInternet";     ValueData: "OcalBrowser";                                                                                Flags: uninsdeletekey;   Check: IsAdminInstallMode
+Root: HKLM; Subkey: "Software\Clients\StartMenuInternet\OcalBrowser\Capabilities\FileAssociations";         ValueType: string; ValueName: ".htm";                  ValueData: "OcalHTML";                                                                                   Flags: uninsdeletekey;   Check: IsAdminInstallMode
+Root: HKLM; Subkey: "Software\Clients\StartMenuInternet\OcalBrowser\Capabilities\FileAssociations";         ValueType: string; ValueName: ".html";                 ValueData: "OcalHTML";                                                                                   Flags: uninsdeletekey;   Check: IsAdminInstallMode
+Root: HKLM; Subkey: "Software\Clients\StartMenuInternet\OcalBrowser\Capabilities\FileAssociations";         ValueType: string; ValueName: ".shtml";                ValueData: "OcalHTML";                                                                                   Flags: uninsdeletekey;   Check: IsAdminInstallMode
+Root: HKLM; Subkey: "Software\Clients\StartMenuInternet\OcalBrowser\Capabilities\FileAssociations";         ValueType: string; ValueName: ".xht";                  ValueData: "OcalHTML";                                                                                   Flags: uninsdeletekey;   Check: IsAdminInstallMode
+Root: HKLM; Subkey: "Software\Clients\StartMenuInternet\OcalBrowser\Capabilities\FileAssociations";         ValueType: string; ValueName: ".xhtml";                ValueData: "OcalHTML";                                                                                   Flags: uninsdeletekey;   Check: IsAdminInstallMode
+Root: HKLM; Subkey: "Software\Clients\StartMenuInternet\OcalBrowser\Capabilities\FileAssociations";         ValueType: string; ValueName: ".svg";                  ValueData: "OcalHTML";                                                                                   Flags: uninsdeletekey;   Check: IsAdminInstallMode
+Root: HKLM; Subkey: "Software\Clients\StartMenuInternet\OcalBrowser\Capabilities\FileAssociations";         ValueType: string; ValueName: ".webp";                 ValueData: "OcalHTML";                                                                                   Flags: uninsdeletekey;   Check: IsAdminInstallMode
+Root: HKLM; Subkey: "Software\Clients\StartMenuInternet\OcalBrowser\Capabilities\FileAssociations";         ValueType: string; ValueName: ".pdf";                  ValueData: "Ocal.PDF";                                                                                   Flags: uninsdeletekey;   Check: IsAdminInstallMode
+Root: HKLM; Subkey: "Software\Clients\StartMenuInternet\OcalBrowser\Capabilities\URLAssociations";          ValueType: string; ValueName: "http";                  ValueData: "OcalHTML";                                                                                   Flags: uninsdeletekey;   Check: IsAdminInstallMode
+Root: HKLM; Subkey: "Software\Clients\StartMenuInternet\OcalBrowser\Capabilities\URLAssociations";          ValueType: string; ValueName: "https";                 ValueData: "OcalHTML";                                                                                   Flags: uninsdeletekey;   Check: IsAdminInstallMode
+Root: HKLM; Subkey: "Software\Clients\StartMenuInternet\OcalBrowser\Capabilities\URLAssociations";          ValueType: string; ValueName: "ftp";                   ValueData: "OcalHTML";                                                                                   Flags: uninsdeletekey;   Check: IsAdminInstallMode
+Root: HKLM; Subkey: "Software\Clients\StartMenuInternet\OcalBrowser\Capabilities\URLAssociations";          ValueType: string; ValueName: "ocal";                  ValueData: "OcalHTML";                                                                                   Flags: uninsdeletekey;   Check: IsAdminInstallMode
+Root: HKLM; Subkey: "Software\RegisteredApplications";                                                       ValueType: string; ValueName: "OcalBrowser";          ValueData: "Software\Clients\StartMenuInternet\OcalBrowser\Capabilities";                                Flags: uninsdeletevalue; Check: IsAdminInstallMode
+
+Root: HKCU; Subkey: "Software\Clients\StartMenuInternet\OcalBrowser";                                        ValueType: string; ValueName: "";                      ValueData: "Ocal Browser";                                                                               Flags: uninsdeletekey
+Root: HKCU; Subkey: "Software\Clients\StartMenuInternet\OcalBrowser\DefaultIcon";                            ValueType: string; ValueName: "";                      ValueData: "{app}\icon.ico,0";                                                                           Flags: uninsdeletekey
+Root: HKCU; Subkey: "Software\Clients\StartMenuInternet\OcalBrowser\InstallInfo";                            ValueType: dword;  ValueName: "IconsVisible";          ValueData: "1";                                                                                          Flags: uninsdeletekey
+Root: HKCU; Subkey: "Software\Clients\StartMenuInternet\OcalBrowser\shell\open\command";                   ValueType: string; ValueName: "";                      ValueData: """{app}\Ocal Browser.exe""";                                                                 Flags: uninsdeletekey
+Root: HKCU; Subkey: "Software\Clients\StartMenuInternet\OcalBrowser\Capabilities";                           ValueType: string; ValueName: "ApplicationName";       ValueData: "Ocal Browser";                                                                               Flags: uninsdeletekey
+Root: HKCU; Subkey: "Software\Clients\StartMenuInternet\OcalBrowser\Capabilities";                           ValueType: string; ValueName: "ApplicationIcon";       ValueData: "{app}\icon.ico,0";                                                                           Flags: uninsdeletekey
+Root: HKCU; Subkey: "Software\Clients\StartMenuInternet\OcalBrowser\Capabilities";                           ValueType: string; ValueName: "ApplicationDescription";ValueData: "Ocal Browser is a modern, ultra-fast, and secure web browser powered by intelligent AI.";   Flags: uninsdeletekey
+Root: HKCU; Subkey: "Software\Clients\StartMenuInternet\OcalBrowser\Capabilities\StartMenu";                 ValueType: string; ValueName: "StartMenuInternet";     ValueData: "OcalBrowser";                                                                                Flags: uninsdeletekey
+Root: HKCU; Subkey: "Software\Clients\StartMenuInternet\OcalBrowser\Capabilities\FileAssociations";         ValueType: string; ValueName: ".htm";                  ValueData: "OcalHTML";                                                                                   Flags: uninsdeletekey
+Root: HKCU; Subkey: "Software\Clients\StartMenuInternet\OcalBrowser\Capabilities\FileAssociations";         ValueType: string; ValueName: ".html";                 ValueData: "OcalHTML";                                                                                   Flags: uninsdeletekey
+Root: HKCU; Subkey: "Software\Clients\StartMenuInternet\OcalBrowser\Capabilities\FileAssociations";         ValueType: string; ValueName: ".shtml";                ValueData: "OcalHTML";                                                                                   Flags: uninsdeletekey
+Root: HKCU; Subkey: "Software\Clients\StartMenuInternet\OcalBrowser\Capabilities\FileAssociations";         ValueType: string; ValueName: ".xht";                  ValueData: "OcalHTML";                                                                                   Flags: uninsdeletekey
+Root: HKCU; Subkey: "Software\Clients\StartMenuInternet\OcalBrowser\Capabilities\FileAssociations";         ValueType: string; ValueName: ".xhtml";                ValueData: "OcalHTML";                                                                                   Flags: uninsdeletekey
+Root: HKCU; Subkey: "Software\Clients\StartMenuInternet\OcalBrowser\Capabilities\FileAssociations";         ValueType: string; ValueName: ".svg";                  ValueData: "OcalHTML";                                                                                   Flags: uninsdeletekey
+Root: HKCU; Subkey: "Software\Clients\StartMenuInternet\OcalBrowser\Capabilities\FileAssociations";         ValueType: string; ValueName: ".webp";                 ValueData: "OcalHTML";                                                                                   Flags: uninsdeletekey
+Root: HKCU; Subkey: "Software\Clients\StartMenuInternet\OcalBrowser\Capabilities\FileAssociations";         ValueType: string; ValueName: ".pdf";                  ValueData: "Ocal.PDF";                                                                                   Flags: uninsdeletekey
+Root: HKCU; Subkey: "Software\Clients\StartMenuInternet\OcalBrowser\Capabilities\URLAssociations";          ValueType: string; ValueName: "http";                  ValueData: "OcalHTML";                                                                                   Flags: uninsdeletekey
+Root: HKCU; Subkey: "Software\Clients\StartMenuInternet\OcalBrowser\Capabilities\URLAssociations";          ValueType: string; ValueName: "https";                 ValueData: "OcalHTML";                                                                                   Flags: uninsdeletekey
+Root: HKCU; Subkey: "Software\Clients\StartMenuInternet\OcalBrowser\Capabilities\URLAssociations";          ValueType: string; ValueName: "ftp";                   ValueData: "OcalHTML";                                                                                   Flags: uninsdeletekey
+Root: HKCU; Subkey: "Software\Clients\StartMenuInternet\OcalBrowser\Capabilities\URLAssociations";          ValueType: string; ValueName: "ocal";                  ValueData: "OcalHTML";                                                                                   Flags: uninsdeletekey
+Root: HKCU; Subkey: "Software\RegisteredApplications";                                                       ValueType: string; ValueName: "OcalBrowser";          ValueData: "Software\Clients\StartMenuInternet\OcalBrowser\Capabilities";                                Flags: uninsdeletevalue
 
 ; App registration for Add/Remove Programs detail
-Root: HKLM; Subkey: "Software\OcalBrowser"; ValueType: string; ValueName: "Version";      ValueData: "9.0.01";                                              Flags: uninsdeletekey
-Root: HKLM; Subkey: "Software\OcalBrowser"; ValueType: string; ValueName: "InstallPath"; ValueData: "{app}";                                                  Flags: uninsdeletekey
+Root: HKA; Subkey: "Software\OcalBrowser"; ValueType: string; ValueName: "Version";      ValueData: "9.1.03"; Flags: uninsdeletekey
+Root: HKA; Subkey: "Software\OcalBrowser"; ValueType: string; ValueName: "InstallPath";  ValueData: "{app}";  Flags: uninsdeletekey
 
 ; ── Post-Install Run ────────────────────────────────────────
 [Run]
 Filename: "{app}\Ocal Browser.exe"; Parameters: "--install";      Description: "{cm:LaunchAfterInstall}";  Flags: nowait postinstall skipifsilent
-Filename: "https://github.com/neelkanth-patel26/Ocal-Browser/releases/tag/v9.0.01"; Description: "{cm:ReleaseNotes}"; Flags: shellexec postinstall skipifsilent unchecked
+Filename: "https://github.com/neelkanth-patel26/Ocal-Browser/releases/tag/v9.1.03"; Description: "{cm:ReleaseNotes}"; Flags: shellexec postinstall skipifsilent unchecked
 
 

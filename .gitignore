@@ -25,3 +25,5 @@ return-youtube-dislike-extension/
 ocal-focus-extension/
 startup_log.txt
 startup_final.log
+scratch/
+dist-store/
