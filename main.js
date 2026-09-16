@@ -30,6 +30,7 @@ protocol.registerSchemesAsPrivileged([
     { scheme: 'ocal', privileges: { standard: true, secure: true, supportFetchAPI: true, corsEnabled: true } }
 ]);
 const path = require('path');
+const fs = require('fs');
 const tabMediaMap = new Map(); // Stores detected media per tab ID
 const AdmZip = require('adm-zip');
 const fetch = require('cross-fetch').default || require('cross-fetch');
