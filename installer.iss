@@ -90,9 +90,17 @@ Name: "{autodesktop}\Ocal Browser";    Filename: "{app}\Ocal Browser.exe"; Tasks
 ; PDF file association
 Root: HKA; Subkey: "Software\Classes\.pdf";                          ValueType: string; ValueName: "";                ValueData: "Ocal.PDF";                                    Flags: uninsdeletevalue;  Components: pdfviewer
 Root: HKA; Subkey: "Software\Classes\Ocal.PDF";                      ValueType: string; ValueName: "";                ValueData: "Ocal PDF Document";                           Flags: uninsdeletekey;    Components: pdfviewer
+Root: HKA; Subkey: "Software\Classes\Ocal.PDF";                      ValueType: string; ValueName: "FriendlyTypeName"; ValueData: "Ocal PDF Document";                         Flags: uninsdeletekey;    Components: pdfviewer
+Root: HKA; Subkey: "Software\Classes\Ocal.PDF";                      ValueType: string; ValueName: "FriendlyAppName"; ValueData: "Ocal Browser";                                Flags: uninsdeletekey;    Components: pdfviewer
+Root: HKA; Subkey: "Software\Classes\Ocal.PDF";                      ValueType: string; ValueName: "AppUserModelId";  ValueData: "com.ocal.browser.v2";                         Flags: uninsdeletekey;    Components: pdfviewer
 Root: HKA; Subkey: "Software\Classes\Ocal.PDF\DefaultIcon";          ValueType: string; ValueName: "";                ValueData: "{app}\pdf-icon.ico,0";                        Flags: uninsdeletekey;    Components: pdfviewer
-Root: HKA; Subkey: "Software\Classes\Ocal.PDF\shell\open\command";   ValueType: string; ValueName: "";                ValueData: """{app}\Ocal Browser.exe"" ""%1""";           Flags: uninsdeletekey;    Components: pdfviewer
+Root: HKA; Subkey: "Software\Classes\Ocal.PDF\Application";          ValueType: string; ValueName: "ApplicationName"; ValueData: "Ocal Browser";                                Flags: uninsdeletekey;    Components: pdfviewer
+Root: HKA; Subkey: "Software\Classes\Ocal.PDF\Application";          ValueType: string; ValueName: "ApplicationIcon"; ValueData: "{app}\icon.ico,0";                            Flags: uninsdeletekey;    Components: pdfviewer
+Root: HKA; Subkey: "Software\Classes\Ocal.PDF\Application";          ValueType: string; ValueName: "ApplicationCompany"; ValueData: "Gaming Network Studio Media Group";       Flags: uninsdeletekey;    Components: pdfviewer
+Root: HKA; Subkey: "Software\Classes\Ocal.PDF\Application";          ValueType: string; ValueName: "ApplicationDescription"; ValueData: "Ocal Browser PDF Document";            Flags: uninsdeletekey;    Components: pdfviewer
+Root: HKA; Subkey: "Software\Classes\Ocal.PDF\Application";          ValueType: string; ValueName: "AppUserModelId";  ValueData: "com.ocal.browser.v2";                         Flags: uninsdeletekey;    Components: pdfviewer
 Root: HKA; Subkey: "Software\Classes\Ocal.PDF\shell\open";           ValueType: string; ValueName: "FriendlyAppName"; ValueData: "Ocal Browser";                                Flags: uninsdeletekey;    Components: pdfviewer
+Root: HKA; Subkey: "Software\Classes\Ocal.PDF\shell\open\command";   ValueType: string; ValueName: "";                ValueData: """{app}\Ocal Browser.exe"" ""%1""";           Flags: uninsdeletekey;    Components: pdfviewer
 
 ; HTML & Web File Associations
 Root: HKA; Subkey: "Software\Classes\.htm";                          ValueType: string; ValueName: "";                ValueData: "OcalHTML";                                    Flags: uninsdeletevalue
@@ -105,15 +113,37 @@ Root: HKA; Subkey: "Software\Classes\.webp";                         ValueType: 
 
 Root: HKA; Subkey: "Software\Classes\OcalHTML";                      ValueType: string; ValueName: "";                ValueData: "Ocal HTML Document";                           Flags: uninsdeletekey
 Root: HKA; Subkey: "Software\Classes\OcalHTML";                      ValueType: string; ValueName: "FriendlyTypeName"; ValueData: "Ocal HTML Document";                         Flags: uninsdeletekey
+Root: HKA; Subkey: "Software\Classes\OcalHTML";                      ValueType: string; ValueName: "FriendlyAppName"; ValueData: "Ocal Browser";                                Flags: uninsdeletekey
 Root: HKA; Subkey: "Software\Classes\OcalHTML";                      ValueType: string; ValueName: "AppUserModelId";  ValueData: "com.ocal.browser.v2";                         Flags: uninsdeletekey
 Root: HKA; Subkey: "Software\Classes\OcalHTML\DefaultIcon";          ValueType: string; ValueName: "";                ValueData: "{app}\icon.ico,0";                            Flags: uninsdeletekey
-Root: HKA; Subkey: "Software\Classes\OcalHTML\shell\open\command";   ValueType: string; ValueName: "";                ValueData: """{app}\Ocal Browser.exe"" -- ""%1""";         Flags: uninsdeletekey
+Root: HKA; Subkey: "Software\Classes\OcalHTML\Application";          ValueType: string; ValueName: "ApplicationName"; ValueData: "Ocal Browser";                                Flags: uninsdeletekey
+Root: HKA; Subkey: "Software\Classes\OcalHTML\Application";          ValueType: string; ValueName: "ApplicationIcon"; ValueData: "{app}\icon.ico,0";                            Flags: uninsdeletekey
+Root: HKA; Subkey: "Software\Classes\OcalHTML\Application";          ValueType: string; ValueName: "ApplicationCompany"; ValueData: "Gaming Network Studio Media Group";       Flags: uninsdeletekey
+Root: HKA; Subkey: "Software\Classes\OcalHTML\Application";          ValueType: string; ValueName: "AppUserModelId";  ValueData: "com.ocal.browser.v2";                         Flags: uninsdeletekey
 Root: HKA; Subkey: "Software\Classes\OcalHTML\shell\open";           ValueType: string; ValueName: "FriendlyAppName"; ValueData: "Ocal Browser";                                Flags: uninsdeletekey
+Root: HKA; Subkey: "Software\Classes\OcalHTML\shell\open\command";   ValueType: string; ValueName: "";                ValueData: """{app}\Ocal Browser.exe"" -- ""%1""";         Flags: uninsdeletekey
 
 ; Protocols
 Root: HKA; Subkey: "Software\Classes\ocal";                          ValueType: string; ValueName: "";                ValueData: "URL:Ocal Protocol";                           Flags: uninsdeletekey
 Root: HKA; Subkey: "Software\Classes\ocal";                          ValueType: string; ValueName: "URL Protocol";    ValueData: "";                                            Flags: uninsdeletekey
 Root: HKA; Subkey: "Software\Classes\ocal\shell\open\command";       ValueType: string; ValueName: "";                ValueData: """{app}\Ocal Browser.exe"" -- ""%1""";         Flags: uninsdeletekey
+
+; Applications registration
+Root: HKA; Subkey: "Software\Classes\Applications\Ocal Browser.exe";                          ValueType: string; ValueName: "";                      ValueData: "Ocal Browser";                                Flags: uninsdeletekey
+Root: HKA; Subkey: "Software\Classes\Applications\Ocal Browser.exe";                          ValueType: string; ValueName: "FriendlyAppName";        ValueData: "Ocal Browser";                                Flags: uninsdeletekey
+Root: HKA; Subkey: "Software\Classes\Applications\Ocal Browser.exe";                          ValueType: string; ValueName: "ApplicationCompany";      ValueData: "Gaming Network Studio Media Group";           Flags: uninsdeletekey
+Root: HKA; Subkey: "Software\Classes\Applications\Ocal Browser.exe";                          ValueType: string; ValueName: "SupportedProtocols";      ValueData: "http;https;ftp;ocal";                         Flags: uninsdeletekey
+Root: HKA; Subkey: "Software\Classes\Applications\Ocal Browser.exe\DefaultIcon";              ValueType: string; ValueName: "";                      ValueData: "{app}\icon.ico,0";                            Flags: uninsdeletekey
+Root: HKA; Subkey: "Software\Classes\Applications\Ocal Browser.exe\SupportedTypes";          ValueType: string; ValueName: ".pdf";                  ValueData: "";                                            Flags: uninsdeletekey
+Root: HKA; Subkey: "Software\Classes\Applications\Ocal Browser.exe\SupportedTypes";          ValueType: string; ValueName: ".htm";                  ValueData: "";                                            Flags: uninsdeletekey
+Root: HKA; Subkey: "Software\Classes\Applications\Ocal Browser.exe\SupportedTypes";          ValueType: string; ValueName: ".html";                 ValueData: "";                                            Flags: uninsdeletekey
+Root: HKA; Subkey: "Software\Classes\Applications\Ocal Browser.exe\shell\open";               ValueType: string; ValueName: "FriendlyAppName";        ValueData: "Ocal Browser";                                Flags: uninsdeletekey
+Root: HKA; Subkey: "Software\Classes\Applications\Ocal Browser.exe\shell\open\command";       ValueType: string; ValueName: "";                      ValueData: """{app}\Ocal Browser.exe"" -- ""%1""";         Flags: uninsdeletekey
+
+; AppUserModelId registration
+Root: HKA; Subkey: "Software\Classes\AppUserModelId\com.ocal.browser.v2";                     ValueType: string; ValueName: "DisplayName";            ValueData: "Ocal Browser";                                Flags: uninsdeletekey
+Root: HKA; Subkey: "Software\Classes\AppUserModelId\com.ocal.browser.v2";                     ValueType: string; ValueName: "IconUri";                ValueData: "{app}\icon.ico";                              Flags: uninsdeletekey
+Root: HKA; Subkey: "Software\Classes\AppUserModelId\com.ocal.browser.v2";                     ValueType: dword;  ValueName: "ShowInSettings";         ValueData: "1";                                           Flags: uninsdeletekey
 
 ; Windows Default Programs registration (HKLM when elevated + HKCU for complete Windows Settings visibility)
 Root: HKLM; Subkey: "Software\Clients\StartMenuInternet\OcalBrowser";                                        ValueType: string; ValueName: "";                      ValueData: "Ocal Browser";                                                                               Flags: uninsdeletekey;   Check: IsAdminInstallMode
