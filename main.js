@@ -3887,7 +3887,7 @@ function registerWindowsDefaultBrowserRegistry() {
         let appPath = process.execPath;
         if (!app.isPackaged) {
             const builtExe = path.join(__dirname, 'dist-builder', 'win-unpacked', 'Ocal Browser.exe');
-            const installedExe = path.join(process.env.LOCALAPPDATA || '', 'Programs', 'Ocal Browser', 'Ocal Browser.exe');
+            const installedExe = path.join(process.env.LOCALAPPDATA || '', 'Programs', 'Ocal', 'Ocal Browser.exe');
             if (fs.existsSync(builtExe)) {
                 appPath = builtExe;
             } else if (fs.existsSync(installedExe)) {
@@ -3895,8 +3895,18 @@ function registerWindowsDefaultBrowserRegistry() {
             }
         }
 
-        const iconPath = path.join(__dirname, 'icon.ico');
-        const pdfIconPath = path.join(__dirname, 'pdf-icon.ico');
+        // Always resolve icons to real filesystem paths (never inside app.asar)
+        let iconDir = app.isPackaged ? path.dirname(process.execPath) : __dirname;
+        let iconPath = path.join(iconDir, 'icon.ico');
+        let pdfIconPath = path.join(iconDir, 'pdf-icon.ico');
+        if (!fs.existsSync(pdfIconPath)) {
+            const installedDir = path.join(process.env.LOCALAPPDATA || '', 'Programs', 'Ocal');
+            if (fs.existsSync(path.join(installedDir, 'pdf-icon.ico'))) {
+                pdfIconPath = path.join(installedDir, 'pdf-icon.ico');
+                iconPath = path.join(installedDir, 'icon.ico');
+            }
+        }
+
         const iconTarget = fs.existsSync(iconPath) ? `${iconPath},0` : `${appPath},0`;
         const pdfIconTarget = fs.existsSync(pdfIconPath) ? `${pdfIconPath},0` : iconTarget;
         const appExeName = path.basename(appPath);
@@ -3909,16 +3919,29 @@ function registerWindowsDefaultBrowserRegistry() {
             // 1. ProgId OcalHTML
             `reg add "HKCU\\Software\\Classes\\OcalHTML" /ve /d "Ocal HTML Document" /f`,
             `reg add "HKCU\\Software\\Classes\\OcalHTML" /v "FriendlyTypeName" /d "Ocal HTML Document" /f`,
+            `reg add "HKCU\\Software\\Classes\\OcalHTML" /v "FriendlyAppName" /d "Ocal Browser" /f`,
             `reg add "HKCU\\Software\\Classes\\OcalHTML" /v "URL Protocol" /d "" /f`,
             `reg add "HKCU\\Software\\Classes\\OcalHTML" /v "AppUserModelId" /d "com.ocal.browser.v2" /f`,
             `reg add "HKCU\\Software\\Classes\\OcalHTML\\DefaultIcon" /ve /d "${iconTarget}" /f`,
+            `reg add "HKCU\\Software\\Classes\\OcalHTML\\Application" /v "ApplicationName" /d "Ocal Browser" /f`,
+            `reg add "HKCU\\Software\\Classes\\OcalHTML\\Application" /v "ApplicationIcon" /d "${iconTarget}" /f`,
+            `reg add "HKCU\\Software\\Classes\\OcalHTML\\Application" /v "ApplicationCompany" /d "Gaming Network Studio Media Group" /f`,
+            `reg add "HKCU\\Software\\Classes\\OcalHTML\\Application" /v "AppUserModelId" /d "com.ocal.browser.v2" /f`,
+            `reg add "HKCU\\Software\\Classes\\OcalHTML\\shell\\open" /v "FriendlyAppName" /d "Ocal Browser" /f`,
             `reg add "HKCU\\Software\\Classes\\OcalHTML\\shell\\open\\command" /ve /d "${appCommand}" /f`,
 
             // 2. ProgId OcalPDF
             `reg add "HKCU\\Software\\Classes\\Ocal.PDF" /ve /d "Ocal PDF Document" /f`,
             `reg add "HKCU\\Software\\Classes\\Ocal.PDF" /v "FriendlyTypeName" /d "Ocal PDF Document" /f`,
+            `reg add "HKCU\\Software\\Classes\\Ocal.PDF" /v "FriendlyAppName" /d "Ocal Browser" /f`,
             `reg add "HKCU\\Software\\Classes\\Ocal.PDF" /v "AppUserModelId" /d "com.ocal.browser.v2" /f`,
             `reg add "HKCU\\Software\\Classes\\Ocal.PDF\\DefaultIcon" /ve /d "${pdfIconTarget}" /f`,
+            `reg add "HKCU\\Software\\Classes\\Ocal.PDF\\Application" /v "ApplicationName" /d "Ocal Browser" /f`,
+            `reg add "HKCU\\Software\\Classes\\Ocal.PDF\\Application" /v "ApplicationIcon" /d "${iconTarget}" /f`,
+            `reg add "HKCU\\Software\\Classes\\Ocal.PDF\\Application" /v "ApplicationCompany" /d "Gaming Network Studio Media Group" /f`,
+            `reg add "HKCU\\Software\\Classes\\Ocal.PDF\\Application" /v "ApplicationDescription" /d "Ocal Browser PDF Document" /f`,
+            `reg add "HKCU\\Software\\Classes\\Ocal.PDF\\Application" /v "AppUserModelId" /d "com.ocal.browser.v2" /f`,
+            `reg add "HKCU\\Software\\Classes\\Ocal.PDF\\shell\\open" /v "FriendlyAppName" /d "Ocal Browser" /f`,
             `reg add "HKCU\\Software\\Classes\\Ocal.PDF\\shell\\open\\command" /ve /d "${appPdfCommand}" /f`,
 
             // 3. StartMenuInternet registration
@@ -3941,7 +3964,7 @@ function registerWindowsDefaultBrowserRegistry() {
             `reg add "HKCU\\Software\\Clients\\StartMenuInternet\\OcalBrowser\\Capabilities\\FileAssociations" /v ".xhtml" /d "OcalHTML" /f`,
             `reg add "HKCU\\Software\\Clients\\StartMenuInternet\\OcalBrowser\\Capabilities\\FileAssociations" /v ".svg" /d "OcalHTML" /f`,
             `reg add "HKCU\\Software\\Clients\\StartMenuInternet\\OcalBrowser\\Capabilities\\FileAssociations" /v ".webp" /d "OcalHTML" /f`,
-            `reg add "HKCU\\Software\\Clients\\StartMenuInternet\\OcalBrowser\\Capabilities\\FileAssociations" /v ".pdf" /d "OcalPDF" /f`,
+            `reg add "HKCU\\Software\\Clients\\StartMenuInternet\\OcalBrowser\\Capabilities\\FileAssociations" /v ".pdf" /d "Ocal.PDF" /f`,
 
             // 6. Capabilities URLAssociations
             `reg add "HKCU\\Software\\Clients\\StartMenuInternet\\OcalBrowser\\Capabilities\\UrlAssociations" /v "http" /d "OcalHTML" /f`,
@@ -3955,8 +3978,23 @@ function registerWindowsDefaultBrowserRegistry() {
             // 8. Applications entry for executable
             `reg add "HKCU\\Software\\Classes\\Applications\\${appExeName}" /ve /d "Ocal Browser" /f`,
             `reg add "HKCU\\Software\\Classes\\Applications\\${appExeName}" /v "FriendlyAppName" /d "Ocal Browser" /f`,
+            `reg add "HKCU\\Software\\Classes\\Applications\\${appExeName}" /v "ApplicationCompany" /d "Gaming Network Studio Media Group" /f`,
             `reg add "HKCU\\Software\\Classes\\Applications\\${appExeName}" /v "SupportedProtocols" /d "http;https;ftp;ocal" /f`,
-            `reg add "HKCU\\Software\\Classes\\Applications\\${appExeName}\\shell\\open\\command" /ve /d "${appCommand}" /f`
+            `reg add "HKCU\\Software\\Classes\\Applications\\${appExeName}\\DefaultIcon" /ve /d "${iconTarget}" /f`,
+            `reg add "HKCU\\Software\\Classes\\Applications\\${appExeName}\\SupportedTypes" /v ".pdf" /d "" /f`,
+            `reg add "HKCU\\Software\\Classes\\Applications\\${appExeName}\\SupportedTypes" /v ".htm" /d "" /f`,
+            `reg add "HKCU\\Software\\Classes\\Applications\\${appExeName}\\SupportedTypes" /v ".html" /d "" /f`,
+            `reg add "HKCU\\Software\\Classes\\Applications\\${appExeName}\\shell\\open" /v "FriendlyAppName" /d "Ocal Browser" /f`,
+            `reg add "HKCU\\Software\\Classes\\Applications\\${appExeName}\\shell\\open\\command" /ve /d "${appCommand}" /f`,
+
+            // 9. AppUserModelId
+            `reg add "HKCU\\Software\\Classes\\AppUserModelId\\com.ocal.browser.v2" /v "DisplayName" /d "Ocal Browser" /f`,
+            `reg add "HKCU\\Software\\Classes\\AppUserModelId\\com.ocal.browser.v2" /v "IconUri" /d "${iconPath}" /f`,
+            `reg add "HKCU\\Software\\Classes\\AppUserModelId\\com.ocal.browser.v2" /v "ShowInSettings" /t REG_DWORD /d 1 /f`,
+
+            // 10. MuiCache
+            `reg add "HKCU\\Software\\Classes\\Local Settings\\Software\\Microsoft\\Windows\\Shell\\MuiCache" /v "${appPath}.FriendlyAppName" /d "Ocal Browser" /f`,
+            `reg add "HKCU\\Software\\Classes\\Local Settings\\Software\\Microsoft\\Windows\\Shell\\MuiCache" /v "${appPath}.ApplicationCompany" /d "Gaming Network Studio Media Group" /f`
         ];
 
         const { exec } = require('child_process');

@@ -1,70 +1,152 @@
+import winreg
 import os
-import subprocess
 
-exe_path = r'C:\Project\Gaming Network\Software\Brower\dist-builder\win-unpacked\Ocal Browser.exe'
-if not os.path.exists(exe_path):
-    exe_path = os.path.expandvars(r'%LOCALAPPDATA%\Programs\Ocal Browser\Ocal Browser.exe')
+# App paths
+app_dir = r"C:\Users\neelk\AppData\Local\Programs\Ocal"
+exe_path = os.path.join(app_dir, "Ocal Browser.exe")
+icon_path = os.path.join(app_dir, "icon.ico") + ",0"
+pdf_icon_path = os.path.join(app_dir, "pdf-icon.ico") + ",0"
+open_cmd = f'"{exe_path}" -- "%1"'
+open_pdf_cmd = f'"{exe_path}" "%1"'
 
-icon_path = r'C:\Project\Gaming Network\Software\Brower\icon.ico'
-pdf_icon_path = r'C:\Project\Gaming Network\Software\Brower\pdf-icon.ico'
+def set_key(root, subkey, values):
+    key = winreg.CreateKey(root, subkey)
+    for name, val, val_type in values:
+        if name == "":
+            winreg.SetValue(root, subkey, val_type, val)
+        else:
+            winreg.SetValueEx(key, name, 0, val_type, val)
+    winreg.CloseKey(key)
 
-cmds = [
-    # ProgId OcalHTML
-    ['reg', 'add', r'HKCU\Software\Classes\OcalHTML', '/ve', '/d', 'Ocal HTML Document', '/f'],
-    ['reg', 'add', r'HKCU\Software\Classes\OcalHTML', '/v', 'FriendlyTypeName', '/d', 'Ocal HTML Document', '/f'],
-    ['reg', 'add', r'HKCU\Software\Classes\OcalHTML', '/v', 'URL Protocol', '/d', '', '/f'],
-    ['reg', 'add', r'HKCU\Software\Classes\OcalHTML', '/v', 'AppUserModelId', '/d', 'com.ocal.browser.v2', '/f'],
-    ['reg', 'add', r'HKCU\Software\Classes\OcalHTML\DefaultIcon', '/ve', '/d', f'{icon_path},0', '/f'],
-    ['reg', 'add', r'HKCU\Software\Classes\OcalHTML\shell\open\command', '/ve', '/d', f'"{exe_path}" -- "%1"', '/f'],
+print("Configuring Ocal registry entries...")
 
-    # ProgId OcalPDF
-    ['reg', 'add', r'HKCU\Software\Classes\Ocal.PDF', '/ve', '/d', 'Ocal PDF Document', '/f'],
-    ['reg', 'add', r'HKCU\Software\Classes\Ocal.PDF', '/v', 'FriendlyTypeName', '/d', 'Ocal PDF Document', '/f'],
-    ['reg', 'add', r'HKCU\Software\Classes\Ocal.PDF', '/v', 'AppUserModelId', '/d', 'com.ocal.browser.v2', '/f'],
-    ['reg', 'add', r'HKCU\Software\Classes\Ocal.PDF\DefaultIcon', '/ve', '/d', f'{pdf_icon_path},0', '/f'],
-    ['reg', 'add', r'HKCU\Software\Classes\Ocal.PDF\shell\open\command', '/ve', '/d', f'"{exe_path}" "%1"', '/f'],
+# 1. Ocal.PDF ProgID
+set_key(winreg.HKEY_CURRENT_USER, r"Software\Classes\Ocal.PDF", [
+    ("", "Ocal PDF Document", winreg.REG_SZ),
+    ("FriendlyTypeName", "Ocal PDF Document", winreg.REG_SZ),
+    ("FriendlyAppName", "Ocal Browser", winreg.REG_SZ),
+    ("AppUserModelId", "com.ocal.browser.v2", winreg.REG_SZ),
+])
+set_key(winreg.HKEY_CURRENT_USER, r"Software\Classes\Ocal.PDF\DefaultIcon", [
+    ("", pdf_icon_path, winreg.REG_SZ)
+])
+set_key(winreg.HKEY_CURRENT_USER, r"Software\Classes\Ocal.PDF\Application", [
+    ("ApplicationName", "Ocal Browser", winreg.REG_SZ),
+    ("ApplicationIcon", icon_path, winreg.REG_SZ),
+    ("ApplicationCompany", "Gaming Network Studio Media Group", winreg.REG_SZ),
+    ("ApplicationDescription", "Ocal Browser PDF Document", winreg.REG_SZ),
+    ("AppUserModelId", "com.ocal.browser.v2", winreg.REG_SZ),
+])
+set_key(winreg.HKEY_CURRENT_USER, r"Software\Classes\Ocal.PDF\shell\open", [
+    ("FriendlyAppName", "Ocal Browser", winreg.REG_SZ)
+])
+set_key(winreg.HKEY_CURRENT_USER, r"Software\Classes\Ocal.PDF\shell\open\command", [
+    ("", open_pdf_cmd, winreg.REG_SZ)
+])
 
-    # StartMenuInternet
-    ['reg', 'add', r'HKCU\Software\Clients\StartMenuInternet\OcalBrowser', '/ve', '/d', 'Ocal Browser', '/f'],
-    ['reg', 'add', r'HKCU\Software\Clients\StartMenuInternet\OcalBrowser\DefaultIcon', '/ve', '/d', f'{icon_path},0', '/f'],
-    ['reg', 'add', r'HKCU\Software\Clients\StartMenuInternet\OcalBrowser\InstallInfo', '/v', 'IconsVisible', '/t', 'REG_DWORD', '/d', '1', '/f'],
-    ['reg', 'add', r'HKCU\Software\Clients\StartMenuInternet\OcalBrowser\shell\open\command', '/ve', '/d', f'"{exe_path}"', '/f'],
+# 2. OcalHTML ProgID
+set_key(winreg.HKEY_CURRENT_USER, r"Software\Classes\OcalHTML", [
+    ("", "Ocal HTML Document", winreg.REG_SZ),
+    ("FriendlyTypeName", "Ocal HTML Document", winreg.REG_SZ),
+    ("FriendlyAppName", "Ocal Browser", winreg.REG_SZ),
+    ("URL Protocol", "", winreg.REG_SZ),
+    ("AppUserModelId", "com.ocal.browser.v2", winreg.REG_SZ),
+])
+set_key(winreg.HKEY_CURRENT_USER, r"Software\Classes\OcalHTML\DefaultIcon", [
+    ("", icon_path, winreg.REG_SZ)
+])
+set_key(winreg.HKEY_CURRENT_USER, r"Software\Classes\OcalHTML\Application", [
+    ("ApplicationName", "Ocal Browser", winreg.REG_SZ),
+    ("ApplicationIcon", icon_path, winreg.REG_SZ),
+    ("ApplicationCompany", "Gaming Network Studio Media Group", winreg.REG_SZ),
+    ("ApplicationDescription", "Ocal Browser is a modern, ultra-fast, and secure web browser.", winreg.REG_SZ),
+    ("AppUserModelId", "com.ocal.browser.v2", winreg.REG_SZ),
+])
+set_key(winreg.HKEY_CURRENT_USER, r"Software\Classes\OcalHTML\shell\open", [
+    ("FriendlyAppName", "Ocal Browser", winreg.REG_SZ)
+])
+set_key(winreg.HKEY_CURRENT_USER, r"Software\Classes\OcalHTML\shell\open\command", [
+    ("", open_cmd, winreg.REG_SZ)
+])
 
-    # Capabilities
-    ['reg', 'add', r'HKCU\Software\Clients\StartMenuInternet\OcalBrowser\Capabilities', '/v', 'ApplicationName', '/d', 'Ocal Browser', '/f'],
-    ['reg', 'add', r'HKCU\Software\Clients\StartMenuInternet\OcalBrowser\Capabilities', '/v', 'ApplicationIcon', '/d', f'{icon_path},0', '/f'],
-    ['reg', 'add', r'HKCU\Software\Clients\StartMenuInternet\OcalBrowser\Capabilities', '/v', 'ApplicationDescription', '/d', 'Ocal Browser is a modern, ultra-fast, and secure web browser powered by intelligent AI.', '/f'],
-    ['reg', 'add', r'HKCU\Software\Clients\StartMenuInternet\OcalBrowser\Capabilities\StartMenu', '/v', 'StartMenuInternet', '/d', 'OcalBrowser', '/f'],
+# 3. StartMenuInternet
+set_key(winreg.HKEY_CURRENT_USER, r"Software\Clients\StartMenuInternet\OcalBrowser", [
+    ("", "Ocal Browser", winreg.REG_SZ)
+])
+set_key(winreg.HKEY_CURRENT_USER, r"Software\Clients\StartMenuInternet\OcalBrowser\DefaultIcon", [
+    ("", icon_path, winreg.REG_SZ)
+])
+set_key(winreg.HKEY_CURRENT_USER, r"Software\Clients\StartMenuInternet\OcalBrowser\InstallInfo", [
+    ("IconsVisible", 1, winreg.REG_DWORD)
+])
+set_key(winreg.HKEY_CURRENT_USER, r"Software\Clients\StartMenuInternet\OcalBrowser\shell\open\command", [
+    ("", f'"{exe_path}"', winreg.REG_SZ)
+])
 
-    # FileAssociations
-    ['reg', 'add', r'HKCU\Software\Clients\StartMenuInternet\OcalBrowser\Capabilities\FileAssociations', '/v', '.htm', '/d', 'OcalHTML', '/f'],
-    ['reg', 'add', r'HKCU\Software\Clients\StartMenuInternet\OcalBrowser\Capabilities\FileAssociations', '/v', '.html', '/d', 'OcalHTML', '/f'],
-    ['reg', 'add', r'HKCU\Software\Clients\StartMenuInternet\OcalBrowser\Capabilities\FileAssociations', '/v', '.shtml', '/d', 'OcalHTML', '/f'],
-    ['reg', 'add', r'HKCU\Software\Clients\StartMenuInternet\OcalBrowser\Capabilities\FileAssociations', '/v', '.xht', '/d', 'OcalHTML', '/f'],
-    ['reg', 'add', r'HKCU\Software\Clients\StartMenuInternet\OcalBrowser\Capabilities\FileAssociations', '/v', '.xhtml', '/d', 'OcalHTML', '/f'],
-    ['reg', 'add', r'HKCU\Software\Clients\StartMenuInternet\OcalBrowser\Capabilities\FileAssociations', '/v', '.svg', '/d', 'OcalHTML', '/f'],
-    ['reg', 'add', r'HKCU\Software\Clients\StartMenuInternet\OcalBrowser\Capabilities\FileAssociations', '/v', '.webp', '/d', 'OcalHTML', '/f'],
-    ['reg', 'add', r'HKCU\Software\Clients\StartMenuInternet\OcalBrowser\Capabilities\FileAssociations', '/v', '.pdf', '/d', 'Ocal.PDF', '/f'],
+# 4. Capabilities
+set_key(winreg.HKEY_CURRENT_USER, r"Software\Clients\StartMenuInternet\OcalBrowser\Capabilities", [
+    ("ApplicationName", "Ocal Browser", winreg.REG_SZ),
+    ("ApplicationIcon", icon_path, winreg.REG_SZ),
+    ("ApplicationDescription", "Ocal Browser is a modern, ultra-fast, and secure web browser powered by intelligent AI.", winreg.REG_SZ),
+])
+set_key(winreg.HKEY_CURRENT_USER, r"Software\Clients\StartMenuInternet\OcalBrowser\Capabilities\StartMenu", [
+    ("StartMenuInternet", "OcalBrowser", winreg.REG_SZ)
+])
+set_key(winreg.HKEY_CURRENT_USER, r"Software\Clients\StartMenuInternet\OcalBrowser\Capabilities\FileAssociations", [
+    (".htm", "OcalHTML", winreg.REG_SZ),
+    (".html", "OcalHTML", winreg.REG_SZ),
+    (".shtml", "OcalHTML", winreg.REG_SZ),
+    (".xht", "OcalHTML", winreg.REG_SZ),
+    (".xhtml", "OcalHTML", winreg.REG_SZ),
+    (".svg", "OcalHTML", winreg.REG_SZ),
+    (".webp", "OcalHTML", winreg.REG_SZ),
+    (".pdf", "Ocal.PDF", winreg.REG_SZ),
+])
+set_key(winreg.HKEY_CURRENT_USER, r"Software\Clients\StartMenuInternet\OcalBrowser\Capabilities\UrlAssociations", [
+    ("http", "OcalHTML", winreg.REG_SZ),
+    ("https", "OcalHTML", winreg.REG_SZ),
+    ("ftp", "OcalHTML", winreg.REG_SZ),
+    ("ocal", "OcalHTML", winreg.REG_SZ),
+])
 
-    # UrlAssociations
-    ['reg', 'add', r'HKCU\Software\Clients\StartMenuInternet\OcalBrowser\Capabilities\UrlAssociations', '/v', 'http', '/d', 'OcalHTML', '/f'],
-    ['reg', 'add', r'HKCU\Software\Clients\StartMenuInternet\OcalBrowser\Capabilities\UrlAssociations', '/v', 'https', '/d', 'OcalHTML', '/f'],
-    ['reg', 'add', r'HKCU\Software\Clients\StartMenuInternet\OcalBrowser\Capabilities\UrlAssociations', '/v', 'ftp', '/d', 'OcalHTML', '/f'],
-    ['reg', 'add', r'HKCU\Software\Clients\StartMenuInternet\OcalBrowser\Capabilities\UrlAssociations', '/v', 'ocal', '/d', 'OcalHTML', '/f'],
+# 5. RegisteredApplications
+set_key(winreg.HKEY_CURRENT_USER, r"Software\RegisteredApplications", [
+    ("OcalBrowser", r"Software\Clients\StartMenuInternet\OcalBrowser\Capabilities", winreg.REG_SZ)
+])
 
-    # RegisteredApplications
-    ['reg', 'add', r'HKCU\Software\RegisteredApplications', '/v', 'OcalBrowser', '/d', r'Software\Clients\StartMenuInternet\OcalBrowser\Capabilities', '/f'],
+# 6. Applications\Ocal Browser.exe
+set_key(winreg.HKEY_CURRENT_USER, r"Software\Classes\Applications\Ocal Browser.exe", [
+    ("", "Ocal Browser", winreg.REG_SZ),
+    ("FriendlyAppName", "Ocal Browser", winreg.REG_SZ),
+    ("ApplicationCompany", "Gaming Network Studio Media Group", winreg.REG_SZ),
+    ("SupportedProtocols", "http;https;ftp;ocal", winreg.REG_SZ),
+])
+set_key(winreg.HKEY_CURRENT_USER, r"Software\Classes\Applications\Ocal Browser.exe\DefaultIcon", [
+    ("", icon_path, winreg.REG_SZ)
+])
+set_key(winreg.HKEY_CURRENT_USER, r"Software\Classes\Applications\Ocal Browser.exe\SupportedTypes", [
+    (".pdf", "", winreg.REG_SZ),
+    (".htm", "", winreg.REG_SZ),
+    (".html", "", winreg.REG_SZ),
+])
+set_key(winreg.HKEY_CURRENT_USER, r"Software\Classes\Applications\Ocal Browser.exe\shell\open", [
+    ("FriendlyAppName", "Ocal Browser", winreg.REG_SZ)
+])
+set_key(winreg.HKEY_CURRENT_USER, r"Software\Classes\Applications\Ocal Browser.exe\shell\open\command", [
+    ("", open_cmd, winreg.REG_SZ)
+])
 
-    # Applications
-    ['reg', 'add', r'HKCU\Software\Classes\Applications\Ocal Browser.exe', '/ve', '/d', 'Ocal Browser', '/f'],
-    ['reg', 'add', r'HKCU\Software\Classes\Applications\Ocal Browser.exe', '/v', 'FriendlyAppName', '/d', 'Ocal Browser', '/f'],
-    ['reg', 'add', r'HKCU\Software\Classes\Applications\Ocal Browser.exe', '/v', 'SupportedProtocols', '/d', 'http;https;ftp;ocal', '/f'],
-    ['reg', 'add', r'HKCU\Software\Classes\Applications\Ocal Browser.exe\shell\open\command', '/ve', '/d', f'"{exe_path}" -- "%1"', '/f']
-]
+# 7. AppUserModelId
+set_key(winreg.HKEY_CURRENT_USER, r"Software\Classes\AppUserModelId\com.ocal.browser.v2", [
+    ("DisplayName", "Ocal Browser", winreg.REG_SZ),
+    ("IconUri", os.path.join(app_dir, "icon.ico"), winreg.REG_SZ),
+    ("ShowInSettings", 1, winreg.REG_DWORD),
+])
 
-for cmd in cmds:
-    res = subprocess.run(cmd, capture_output=True, text=True)
-    if res.returncode != 0:
-        print('Error running:', cmd, res.stderr)
+# 8. MuiCache
+set_key(winreg.HKEY_CURRENT_USER, r"Software\Classes\Local Settings\Software\Microsoft\Windows\Shell\MuiCache", [
+    (f"{exe_path}.FriendlyAppName", "Ocal Browser", winreg.REG_SZ),
+    (f"{exe_path}.ApplicationCompany", "Gaming Network Studio Media Group", winreg.REG_SZ),
+])
 
-print('Ocal Browser successfully registered in Windows Settings (Default Apps)!')
+print("All registry keys applied successfully via Python winreg!")
