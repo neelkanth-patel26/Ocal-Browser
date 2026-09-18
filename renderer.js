@@ -177,34 +177,49 @@ window.electronAPI.on('load-progress', (e, { id, progress }) => {
 // ── Tab Rendering ──────────────────────────────────────────────────────────
 function renderTabs() {
     tabList.innerHTML = '';
-    const processedGroups = new Set();
+    const groupContainers = new Map();
 
     tabs.forEach((tab, index) => {
-        // If tab is in a group and we haven't rendered the group header yet
-        if (tab.groupId && !processedGroups.has(tab.groupId)) {
-            const group = tabGroups.find(g => g.id === tab.groupId);
-            if (group) {
+        let parentContainer = tabList;
+
+        // If tab is in a group, setup or retrieve its group container
+        if (tab.groupId) {
+            const group = tabGroups.find(g => g.id === tab.groupId) || { id: tab.groupId, color: '#a855f7', name: '', collapsed: false };
+
+            if (!groupContainers.has(tab.groupId)) {
+                const groupContainer = document.createElement('div');
+                groupContainer.className = 'tab-group-container' + (group.collapsed ? ' collapsed' : '');
+                groupContainer.style.setProperty('--group-color', group.color || '#a855f7');
+                groupContainer.dataset.groupId = group.id;
+
                 const header = document.createElement('div');
                 header.className = 'tab-group-header' + (!group.name ? ' no-name' : '') + (group.collapsed ? ' collapsed' : '');
-                header.style.setProperty('--group-color', group.color);
-                const groupTitle = group.name ? group.name : 'Group';
+                header.style.setProperty('--group-color', group.color || '#a855f7');
+                const groupTitle = group.name || 'Tab Group';
+                header.title = `${groupTitle} (Click to toggle collapse, right-click for options)`;
+                const tabCount = tabs.filter(t => t.groupId === group.id).length;
                 header.innerHTML = `
-                    <div class="tab-group-dot" style="background: ${group.color};"></div>
-                    <span class="tab-group-name" style="color: ${group.color};">${groupTitle}</span>
+                    <div class="tab-group-pill-indicator" style="background: ${group.color || '#a855f7'};"></div>
+                    ${group.name ? `<span class="tab-group-name">${group.name}</span>` : ''}
+                    ${group.collapsed ? `<span class="tab-group-collapsed-badge">${tabCount}</span>` : ''}
                 `;
-                header.title = `${groupTitle} (Click to toggle collapse)`;
-                header.onclick = () => window.electronAPI.send('toggle-group-collapse', group.id);
-                
+
+                header.onclick = (e) => {
+                    e.stopPropagation();
+                    window.electronAPI.send('toggle-group-collapse', group.id);
+                };
+
                 header.ondragover = (e) => {
                     const tabIndex = parseInt(e.dataTransfer.getData('tab-index'));
                     const tab = tabs[tabIndex];
-                    if (tab && tab.isSplit) return; // Disallow split tab inside group
+                    if (tab && tab.isSplit) return;
                     e.preventDefault();
                     header.classList.add('drag-over');
                 };
                 header.ondragleave = () => header.classList.remove('drag-over');
                 header.ondrop = (e) => {
                     e.preventDefault();
+                    e.stopPropagation();
                     header.classList.remove('drag-over');
                     const tabIndex = parseInt(e.dataTransfer.getData('tab-index'));
                     const tab = tabs[tabIndex];
@@ -219,6 +234,7 @@ function renderTabs() {
 
                 header.oncontextmenu = (e) => {
                     e.preventDefault();
+                    e.stopPropagation();
                     const rect = header.getBoundingClientRect();
                     window.electronAPI.send('open-tab-group-popup', { 
                         groupId: group.id, 
@@ -226,9 +242,37 @@ function renderTabs() {
                         y: rect.bottom + 5 
                     });
                 };
-                tabList.appendChild(header);
-                processedGroups.add(tab.groupId);
+
+                groupContainer.ondragover = (e) => {
+                    const tabIndex = parseInt(e.dataTransfer.getData('tab-index'));
+                    const tab = tabs[tabIndex];
+                    if (tab && tab.isSplit) return;
+                    e.preventDefault();
+                    groupContainer.classList.add('drag-over');
+                };
+                groupContainer.ondragleave = (e) => {
+                    if (!groupContainer.contains(e.relatedTarget)) {
+                        groupContainer.classList.remove('drag-over');
+                    }
+                };
+                groupContainer.ondrop = (e) => {
+                    groupContainer.classList.remove('drag-over');
+                    const tabIndex = parseInt(e.dataTransfer.getData('tab-index'));
+                    const tab = tabs[tabIndex];
+                    if (tab && tab.isSplit) return;
+                    if (tab && tab.id && tab.groupId !== group.id) {
+                        e.preventDefault();
+                        e.stopPropagation();
+                        window.electronAPI.send('add-to-group', { tabId: tab.id, groupId: group.id });
+                    }
+                };
+
+                groupContainer.appendChild(header);
+                tabList.appendChild(groupContainer);
+                groupContainers.set(tab.groupId, groupContainer);
             }
+
+            parentContainer = groupContainers.get(tab.groupId);
         }
 
         const group = tab.groupId ? tabGroups.find(g => g.id === tab.groupId) : null;
@@ -273,6 +317,7 @@ function renderTabs() {
 
         el.ondrop = (e) => {
             e.preventDefault();
+            e.stopPropagation();
             el.classList.remove('drag-over', 'group-target');
             const fromIndex = parseInt(e.dataTransfer.getData('tab-index'));
             const toIndex = index;
@@ -365,7 +410,7 @@ function renderTabs() {
             const simplifiedTitle = getSimplifiedTitle(tab.title, tab.url);
             el.innerHTML = `
                 ${iconHtml}
-                <span class="tab-title" style="${group ? `color: ${group.color}; opacity: 0.9;` : ''}">${simplifiedTitle}</span>
+                <span class="tab-title">${simplifiedTitle}</span>
                 ${tab.audible ? '<i class="fas fa-volume-high tab-audio-icon"></i>' : ''}
                 <div class="tab-split-zone" data-target-id="${tab.id}" title="Drop here to split tab">
                     <i class="fas fa-columns"></i>
@@ -407,7 +452,7 @@ function renderTabs() {
             updatePageTimeChip(tab.id);
             updateMediaMasterIcon(tab.id);
         };
-        tabList.appendChild(el);
+        parentContainer.appendChild(el);
     });
 
     document.querySelectorAll('.tab-close').forEach(btn => {
@@ -1063,11 +1108,17 @@ function getTabIconHtml(tab, tintColor) {
     }
 
     if (!url || url.includes('home.html')) return `<i class="fas fa-house tab-favicon" style="color:${accentColor}"></i>`;
+    if (url.includes('extension-store.html') || url.startsWith('ocal://store') || url.startsWith('ocal://webstore') || url.startsWith('ocal://extension-store')) {
+        return `<i class="fas fa-bag-shopping tab-favicon" style="color:${accentColor}"></i>`;
+    }
+    if (url.includes('extensions.html') || url.startsWith('ocal://extensions')) return `<i class="fas fa-puzzle-piece tab-favicon" style="color:${accentColor}"></i>`;
     if (url.includes('music-player.html') || url.startsWith('ocal://music-player') || url.startsWith('ocal://music')) return `<i class="fas fa-compact-disc tab-favicon" style="color:${accentColor}"></i>`;
     if (url.includes('site-settings.html') || url.startsWith('ocal://site-settings')) return `<i class="fas fa-sliders tab-favicon" style="color:${accentColor}"></i>`;
     if (url.includes('settings.html')) return `<i class="fas fa-gear tab-favicon" style="color:${accentColor}"></i>`;
     if (url.includes('pdf-viewer.html') || url.endsWith('.pdf') || url.startsWith('ocal://pdf-viewer') || url.startsWith('ocal://pdf')) return `<i class="fas fa-file-pdf tab-favicon" style="color:${accentColor}"></i>`;
     if (url.includes('file-manager.html') || url.startsWith('ocal://file-manager')) return `<i class="fas fa-folder-tree tab-favicon" style="color:${accentColor}"></i>`;
+    if (url.includes('downloads.html') || url.startsWith('ocal://downloads')) return `<i class="fas fa-arrow-down-to-bracket tab-favicon" style="color:${accentColor}"></i>`;
+    if (url.includes('whats-new.html') || url.startsWith('ocal://whats-new')) return `<i class="fas fa-sparkles tab-favicon" style="color:${accentColor}"></i>`;
     if (url.includes('game.html') || url.includes('games.html') || url.includes('snake.html') || url.includes('tetris.html') || url.startsWith('ocal://games') || url.startsWith('ocal://snake') || url.startsWith('ocal://tetris') || url.startsWith('ocal://runner') || url.startsWith('ocal://game')) {
         return `<i class="fas fa-gamepad tab-favicon" style="color:${accentColor}"></i>`;
     }
@@ -1129,7 +1180,7 @@ function updateOmniboxIcon(url) {
         return;
     }
     if (url && (url.includes('extension-store.html') || url.startsWith('ocal://store') || url.startsWith('ocal://webstore') || url.startsWith('ocal://extension-store'))) {
-        iconContainer.innerHTML = '<i class="fas fa-store" style="color:var(--accent)"></i>';
+        iconContainer.innerHTML = '<i class="fas fa-bag-shopping" style="color:var(--accent)"></i>';
         return;
     }
     if (url && (url.includes('extensions.html') || url.startsWith('ocal://extensions'))) {

@@ -223,7 +223,7 @@
             gap: 12px;
             overflow: hidden;
             flex-shrink: 0;
-            box-shadow: var(--shadow-md);
+            box-shadow: none !important;
             user-select: none;
         }
 
@@ -255,7 +255,7 @@
             align-items: center;
             justify-content: center;
             font-size: 14px;
-            box-shadow: 0 4px 12px var(--accent-glow);
+            box-shadow: none !important;
         }
 
         .gemini-logo-text {
@@ -381,8 +381,8 @@
             border: 1px solid var(--accent) !important;
             color: #FFFFFF !important;
             font-weight: 800 !important;
-            box-shadow: 0 4px 14px var(--accent-glow) !important;
-            transform: translateY(-1px);
+            box-shadow: none !important;
+            transform: none !important;
         }
 
         .persona-chip.active i {
@@ -458,7 +458,7 @@
             color: var(--accent) !important;
             font-weight: 800 !important;
             border: 1px solid var(--accent-border) !important;
-            box-shadow: 0 2px 8px var(--accent-glow);
+            box-shadow: none !important;
         }
 
         .history-item.active .history-item-title {
@@ -571,7 +571,7 @@
             border: 1px solid var(--border);
             border-radius: var(--radius-lg);
             position: relative;
-            box-shadow: var(--shadow-md);
+            box-shadow: none !important;
         }
 
         /* ── Header Row (Matched with Home Page Header) ── */
@@ -604,7 +604,7 @@
             font-size: 14px;
             border-radius: 10px;
             font-weight: 800;
-            box-shadow: 0 2px 10px var(--accent-glow);
+            box-shadow: none !important;
             flex-shrink: 0;
         }
 
@@ -1017,7 +1017,7 @@
             color: #FFFFFF !important;
             font-weight: 500;
             padding: 10px 16px !important;
-            box-shadow: 0 4px 16px rgba(0, 0, 0, 0.12) !important;
+            box-shadow: none !important;
             width: fit-content !important;
             min-width: fit-content !important;
             max-width: 100% !important;
@@ -1042,7 +1042,7 @@
             background: linear-gradient(135deg, color-mix(in srgb, var(--accent) 24%, #1f2937) 0%, color-mix(in srgb, var(--accent) 12%, #111827) 100%) !important;
             border: 1px solid color-mix(in srgb, var(--accent) 35%, transparent) !important;
             color: #F8FAFC !important;
-            box-shadow: 0 4px 20px color-mix(in srgb, var(--accent) 15%, transparent) !important;
+            box-shadow: none !important;
         }
 
         /* AI Message Bubble */
@@ -1052,15 +1052,231 @@
             border-radius: 4px 22px 22px 22px !important;
             color: var(--text) !important;
             font-weight: 400;
-            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.04) !important;
+            box-shadow: none !important;
             padding: 18px 22px !important;
-            width: 100%;
+            width: 100% !important;
+            max-width: 100% !important;
+            box-sizing: border-box !important;
+            overflow: hidden !important;
+            word-break: break-word;
+            overflow-wrap: break-word;
         }
 
         body[data-theme="dark"] .ai .msg-bubble {
             background: #202024 !important;
             border-color: rgba(255, 255, 255, 0.07) !important;
-            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.35) !important;
+            box-shadow: none !important;
+        }
+
+        /* ── Sleek Integrated Code Blocks ── */
+        .msg-content pre {
+            position: relative !important;
+            display: flex !important;
+            flex-direction: column !important;
+            background: #0d1117 !important;
+            border: 1px solid rgba(255, 255, 255, 0.12) !important;
+            border-radius: 12px !important;
+            margin: 14px 0 !important;
+            padding: 0 !important;
+            overflow: hidden !important;
+            box-shadow: none !important;
+            font-size: 12.5px !important;
+            max-width: 100% !important;
+            width: 100% !important;
+            box-sizing: border-box !important;
+            white-space: normal !important;
+        }
+
+        body[data-theme="light"] .msg-content pre {
+            background: #16181d !important;
+            border-color: rgba(0, 0, 0, 0.15) !important;
+        }
+
+        .code-header {
+            display: flex !important;
+            justify-content: space-between !important;
+            align-items: center !important;
+            background: #161b22 !important;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.08) !important;
+            padding: 8px 14px !important;
+            font-family: var(--mono, 'Space Mono', monospace) !important;
+            white-space: normal !important;
+            user-select: none !important;
+            box-sizing: border-box !important;
+            width: 100% !important;
+            border-top-left-radius: 11px !important;
+            border-top-right-radius: 11px !important;
+            flex-shrink: 0 !important;
+        }
+
+        .code-lang {
+            font-size: 11.5px !important;
+            font-weight: 600 !important;
+            color: #8b949e !important;
+            display: inline-flex !important;
+            align-items: center !important;
+            gap: 6px !important;
+            text-transform: lowercase !important;
+            letter-spacing: 0.2px !important;
+        }
+
+        .code-lang i {
+            color: var(--accent, #09F0A0) !important;
+            font-size: 11px !important;
+        }
+
+        .code-copy-btn {
+            display: inline-flex !important;
+            align-items: center !important;
+            gap: 6px !important;
+            background: rgba(255, 255, 255, 0.06) !important;
+            border: 1px solid rgba(255, 255, 255, 0.12) !important;
+            color: #c9d1d9 !important;
+            padding: 4px 10px !important;
+            border-radius: 6px !important;
+            font-size: 11px !important;
+            font-weight: 500 !important;
+            font-family: var(--title-font, sans-serif) !important;
+            cursor: pointer !important;
+            transition: all 0.18s ease !important;
+            line-height: 1.2 !important;
+        }
+
+        .code-copy-btn:hover {
+            background: rgba(255, 255, 255, 0.15) !important;
+            color: #ffffff !important;
+            border-color: rgba(255, 255, 255, 0.24) !important;
+            transform: translateY(-1px) !important;
+        }
+
+        .code-copy-btn:active {
+            transform: translateY(0) scale(0.96) !important;
+        }
+
+        .msg-content pre code {
+            display: block !important;
+            padding: 14px 16px !important;
+            background: transparent !important;
+            color: #e6edf3 !important;
+            font-family: var(--mono, 'Space Mono', 'Consolas', monospace) !important;
+            font-size: 12.5px !important;
+            line-height: 1.65 !important;
+            overflow-x: auto !important;
+            white-space: pre !important;
+            border: none !important;
+            border-radius: 0 !important;
+            scrollbar-width: thin !important;
+            box-sizing: border-box !important;
+            width: 100% !important;
+        }
+
+        /* ── Simple Pill Thinking State (No Gradient) ── */
+        .thinking-group {
+            animation: thinkingFadeIn 0.18s ease-out forwards;
+            margin-bottom: 6px;
+        }
+
+        @keyframes thinkingFadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(3px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .thinking-pill {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            padding: 6px 14px;
+            background: var(--card-bg, #FFFFFF);
+            border: 1px solid var(--border, rgba(0, 0, 0, 0.08));
+            border-radius: 9999px;
+            box-shadow: none !important;
+            width: fit-content;
+            user-select: none;
+        }
+
+        body[data-theme="dark"] .thinking-pill {
+            background: #1e1e24;
+            border-color: rgba(255, 255, 255, 0.09);
+            box-shadow: none !important;
+        }
+
+        .thinking-pulse-dot {
+            width: 7px;
+            height: 7px;
+            border-radius: 50%;
+            background: var(--accent, #09F0A0);
+            display: inline-block;
+            flex-shrink: 0;
+            animation: simplePulse 1.4s ease-in-out infinite;
+        }
+
+        @keyframes simplePulse {
+            0%, 100% {
+                transform: scale(0.85);
+                opacity: 0.5;
+            }
+            50% {
+                transform: scale(1.15);
+                opacity: 1;
+            }
+        }
+
+        .thinking-text {
+            font-size: 13px;
+            font-weight: 600;
+            font-family: var(--title-font, 'Plus Jakarta Sans', sans-serif);
+            color: var(--text, #18181B);
+            letter-spacing: -0.2px;
+            line-height: 1;
+        }
+
+        body[data-theme="dark"] .thinking-text {
+            color: #F4F4F5;
+        }
+
+        .thinking-dots {
+            display: inline-flex;
+            align-items: center;
+            gap: 3px;
+            margin-left: 1px;
+        }
+
+        .thinking-dots .dot {
+            width: 3.5px;
+            height: 3.5px;
+            border-radius: 50%;
+            background: var(--accent, #09F0A0);
+            display: inline-block;
+            animation: simpleDotBounce 1.2s ease-in-out infinite both;
+        }
+
+        .thinking-dots .dot:nth-child(1) {
+            animation-delay: 0s;
+        }
+
+        .thinking-dots .dot:nth-child(2) {
+            animation-delay: 0.2s;
+        }
+
+        .thinking-dots .dot:nth-child(3) {
+            animation-delay: 0.4s;
+        }
+
+        @keyframes simpleDotBounce {
+            0%, 80%, 100% {
+                transform: translateY(0);
+                opacity: 0.35;
+            }
+            40% {
+                transform: translateY(-3px);
+                opacity: 1;
+            }
         }
 
         /* ── Rich Markdown & Typography Inside Response ── */
@@ -1114,39 +1330,44 @@
             filter: brightness(1.2);
         }
 
-        /* ── Modern Interactive Ordered List Cards (Bookmarks & Numbered Items) ── */
+        /* ── Modern Natural Ordered List (Numbered Items) ── */
         .msg-content ol {
             list-style: none;
             counter-reset: ocal-counter;
             padding: 0;
-            margin: 12px 0;
+            margin: 10px 0 14px 0;
             display: flex;
             flex-direction: column;
-            gap: 6px;
+            gap: 8px;
+            width: 100%;
+            max-width: 100%;
+            box-sizing: border-box;
         }
 
         .msg-content ol > li {
             counter-increment: ocal-counter;
             position: relative;
             display: flex;
-            align-items: center;
-            gap: 8px;
-            padding: 4px 10px 4px 6px;
-            background: rgba(0, 0, 0, 0.025);
+            align-items: flex-start;
+            gap: 10px;
+            padding: 8px 12px;
+            background: rgba(0, 0, 0, 0.02);
             border: 1px solid var(--border);
-            border-radius: var(--radius-pill, 100px);
-            font-size: 12.5px;
-            height: 36px;
-            min-height: 36px;
+            border-radius: 10px;
+            font-size: 13px;
+            line-height: 1.55;
             box-sizing: border-box;
             color: var(--text);
-            white-space: nowrap;
-            overflow: hidden;
+            white-space: normal;
+            word-break: break-word;
+            overflow-wrap: break-word;
+            width: 100%;
+            max-width: 100%;
             transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
         }
 
         body[data-theme="dark"] .msg-content ol > li {
-            background: rgba(255, 255, 255, 0.03);
+            background: rgba(255, 255, 255, 0.025);
             border-color: rgba(255, 255, 255, 0.07);
         }
 
@@ -1155,36 +1376,30 @@
             display: inline-flex;
             align-items: center;
             justify-content: center;
-            width: 24px;
-            height: 24px;
-            min-width: 24px;
+            width: 22px;
+            height: 22px;
+            min-width: 22px;
             background: color-mix(in srgb, var(--accent) 14%, transparent);
             color: var(--accent);
             border: 1px solid color-mix(in srgb, var(--accent) 28%, transparent);
             border-radius: 50%;
             font-size: 11px;
-            font-weight: 800;
+            font-weight: 700;
             font-family: var(--title-font);
             flex-shrink: 0;
+            margin-top: 1px;
         }
 
         .msg-content ol > li:hover {
             background: var(--hover);
             border-color: var(--accent-border);
-            transform: translateX(3px);
-            box-shadow: 0 2px 8px var(--accent-dim);
         }
 
         .msg-content ol > li a,
         .msg-content ol > li strong,
         .msg-content ol > li b {
-            flex: 1 1 auto;
-            min-width: 0;
-            overflow: hidden;
-            text-overflow: ellipsis;
-            white-space: nowrap;
             font-weight: 700;
-            font-size: 12.5px;
+            font-size: 13px;
         }
 
         /* ── Modern Unordered Bullet List ── */
@@ -1238,19 +1453,6 @@
             color: var(--text-dim);
         }
 
-        .msg-content ol > li :not(pre) > code {
-            margin-left: auto;
-            flex-shrink: 0;
-            max-width: 130px;
-            font-size: 10px;
-            padding: 2px 8px;
-            border-radius: 100px;
-            white-space: nowrap;
-            overflow: hidden;
-            text-overflow: ellipsis;
-            opacity: 0.85;
-            letter-spacing: -0.2px;
-        }
 
         .msg-content blockquote {
             margin: 12px 0;
@@ -1266,14 +1468,19 @@
         /* ── Bento Tables Inside AI Messages ── */
         .msg-content table {
             width: 100%;
+            max-width: 100%;
+            display: block;
+            overflow-x: auto;
             border-collapse: separate;
             border-spacing: 0;
             margin: 14px 0;
-            border-radius: 14px;
-            overflow: hidden;
+            border-radius: 12px;
             background: rgba(0, 0, 0, 0.02);
             border: 1px solid var(--border);
             font-size: 12.5px;
+            box-sizing: border-box;
+            scrollbar-width: thin;
+            -webkit-overflow-scrolling: touch;
         }
 
         body[data-theme="dark"] .msg-content table {
@@ -1288,9 +1495,13 @@
             font-size: 11px;
             text-transform: uppercase;
             letter-spacing: 0.6px;
-            padding: 9px 14px;
+            padding: 10px 14px;
             text-align: left;
             border-bottom: 1px solid var(--border);
+            white-space: normal;
+            word-break: break-word;
+            overflow-wrap: break-word;
+            vertical-align: top;
         }
 
         body[data-theme="dark"] .msg-content th {
@@ -1298,10 +1509,14 @@
         }
 
         .msg-content td {
-            padding: 9px 14px;
+            padding: 10px 14px;
             color: var(--text);
             border-bottom: 1px solid var(--border-subtle);
             line-height: 1.5;
+            white-space: normal;
+            word-break: break-word;
+            overflow-wrap: break-word;
+            vertical-align: top;
         }
 
         .msg-content tr:last-child td {
@@ -1642,7 +1857,85 @@
             font-size: 12px;
             color: var(--text-dim);
             margin-bottom: 8px;
-            box-shadow: var(--shadow-sm);
+            box-shadow: none !important;
+        }
+
+        /* Active Document in Memory Pill */
+        .active-doc-bar {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 8px;
+            background: color-mix(in srgb, var(--accent) 10%, var(--bg));
+            border: 1px solid var(--accent-border);
+            padding: 6px 12px;
+            border-radius: var(--radius-pill);
+            font-size: 11.5px;
+            color: var(--text);
+            margin-bottom: 8px;
+            box-shadow: none !important;
+            user-select: none;
+            animation: docPillFadeIn 0.2s ease-out;
+        }
+
+        @keyframes docPillFadeIn {
+            from { opacity: 0; transform: translateY(-4px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .active-doc-info {
+            display: flex;
+            align-items: center;
+            gap: 7px;
+            min-width: 0;
+            flex: 1;
+        }
+
+        .active-doc-info i {
+            color: var(--accent);
+            font-size: 12px;
+            flex-shrink: 0;
+        }
+
+        .active-doc-name {
+            font-weight: 700;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+
+        .active-doc-status {
+            font-size: 9.5px;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.3px;
+            color: var(--accent);
+            background: color-mix(in srgb, var(--accent) 18%, transparent);
+            padding: 1.5px 6px;
+            border-radius: 4px;
+            flex-shrink: 0;
+            display: inline-flex;
+            align-items: center;
+            gap: 3px;
+        }
+
+        .active-doc-clear-btn {
+            background: transparent;
+            border: none;
+            color: var(--text-muted);
+            cursor: pointer;
+            font-size: 11px;
+            padding: 2px 5px;
+            border-radius: 4px;
+            transition: all 0.15s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .active-doc-clear-btn:hover {
+            color: #EF4444;
+            background: rgba(239, 68, 68, 0.12);
         }
 
         /* ── Image Studio View ── */
@@ -2646,13 +2939,23 @@
                             <button class="tool-chip" id="tool-email"><i class="fas fa-paper-plane"></i> Email</button>
                             <button class="tool-chip" id="tool-help"><i class="fas fa-circle-question"></i> Help</button>
                         </div>
+                        <div id="ai-active-doc-bar" class="active-doc-bar" style="display: none;">
+                            <div class="active-doc-info">
+                                <i id="ai-active-doc-icon" class="fas fa-file-pdf"></i>
+                                <span id="ai-active-doc-name" class="active-doc-name">document.pdf</span>
+                                <span class="active-doc-status"><i class="fas fa-brain"></i> Memory</span>
+                            </div>
+                            <button id="ai-active-doc-clear" class="active-doc-clear-btn" title="Remove document from memory">
+                                <i class="fas fa-times"></i>
+                            </button>
+                        </div>
                         <div id="ai-file-preview" style="display: none;">
                             <i id="ai-file-icon" class="fas fa-file-lines" style="color: var(--accent);"></i>
                             <span id="ai-file-name" style="flex: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-weight: 600;">filename.txt</span>
                             <button id="ai-file-remove" class="control-btn" style="width: 20px; height: 20px; min-width: 20px; font-size: 10px; margin: 0;"><i class="fas fa-times"></i></button>
                         </div>
                         <div class="input-container">
-                            <input type="file" id="ai-file-input" style="display: none;">
+                            <input type="file" id="ai-file-input" accept=".pdf,.doc,.docx,.txt,.md,.markdown,.rtf,.csv,.tsv,.json,.log,.js,.ts,.jsx,.tsx,.py,.java,.cpp,.c,.cs,.go,.rs,.sql,.html,.css,image/*" style="display: none;">
                             <button id="ai-attach-btn" class="control-btn" title="Attach file"><i class="fas fa-paperclip"></i></button>
                             <textarea id="ai-query" placeholder="Search Ocal AI or ask anything..." rows="1"></textarea>
                             <button id="ai-send" class="send-btn" title="Send message"><i class="fas fa-arrow-up"></i></button>

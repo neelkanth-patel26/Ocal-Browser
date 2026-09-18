@@ -12,7 +12,7 @@
             var t = localStorage.getItem('ocal-settings-theme') || 'light';
             document.documentElement.setAttribute('data-theme', t);
             if (t === 'dark') {
-                document.documentElement.style.background = '#0D0E11';
+                document.documentElement.style.background = '#18181B';
                 document.documentElement.style.colorScheme = 'dark';
             }
         })();
@@ -54,18 +54,18 @@
 
         html[data-theme="dark"],
         body[data-theme="dark"] {
-            --bg: #0D0E11;
-            --card-bg: #16181D;
-            --sp-card-white: #1B1D23;
+            --bg: #18181B;
+            --card-bg: #222226;
+            --sp-card-white: #222226;
             --chrome-border: rgba(255, 255, 255, 0.08);
             --chrome-border-subtle: rgba(255, 255, 255, 0.05);
-            --text: #FFFFFF;
-            --text-dim: #9CA3AF;
-            --text-muted: #6B7280;
+            --text: #F4F4F5;
+            --text-dim: #A1A1AA;
+            --text-muted: #71717A;
             --accent: #09F0A0;
             --accent-dim: rgba(9, 240, 160, 0.12);
             --accent-glow: rgba(9, 240, 160, 0.25);
-            --accent-text: #0D0E11;
+            --accent-text: #18181B;
             --shadow-sm: 0 4px 20px rgba(0, 0, 0, 0.3);
             --shadow-card: 0 12px 36px rgba(0, 0, 0, 0.35), 0 2px 8px rgba(0, 0, 0, 0.2);
             color-scheme: dark;
@@ -286,14 +286,14 @@
             justify-content: space-between;
             gap: 14px;
             box-shadow: 0 6px 20px rgba(21, 172, 73, 0.25);
-            color: #0D0E11;
+            color: #18181B;
         }
 
         .sp-ac-title {
             font-size: 11px;
             font-weight: 800;
             line-height: 1.25;
-            color: #0D0E11;
+            color: #18181B;
             text-transform: uppercase;
             letter-spacing: 0.5px;
         }
@@ -302,7 +302,7 @@
             width: 22px;
             height: 22px;
             border-radius: 50%;
-            border: 2px solid rgba(13, 14, 17, 0.4);
+            border: 2px solid rgba(24, 24, 27, 0.4);
             display: flex;
             align-items: center;
             justify-content: center;
@@ -312,7 +312,7 @@
             width: 7px;
             height: 7px;
             border-radius: 50%;
-            background: #0D0E11;
+            background: #18181B;
             animation: pulseDot 1.8s infinite;
         }
 
@@ -483,13 +483,19 @@
         }
 
         .sp-card-green-grad {
-            background: 
-                radial-gradient(ellipse 75% 85% at 0% 50%, rgba(255, 115, 0, 0.95) 0%, rgba(255, 153, 51, 0.75) 30%, transparent 65%),
-                radial-gradient(ellipse 75% 85% at 100% 50%, rgba(16, 153, 50, 0.95) 0%, rgba(34, 197, 94, 0.75) 30%, transparent 65%),
-                radial-gradient(ellipse 65% 90% at 50% 50%, #FFFFFF 0%, rgba(255, 255, 255, 0.9) 35%, transparent 70%),
-                linear-gradient(90deg, #FF6F00 0%, #FF9933 22%, #FFF8F0 42%, #FFFFFF 50%, #F0FFF4 58%, #22C55E 78%, #108A2E 100%);
-            box-shadow: 0 16px 44px rgba(255, 115, 0, 0.16), 0 8px 30px rgba(16, 153, 50, 0.14);
-            border: 1px solid rgba(255, 255, 255, 0.5);
+            background: linear-gradient(112deg, 
+                #FF671F 0%, 
+                #FF7A26 18%, 
+                #FF9645 32%, 
+                #FFF6ED 45%, 
+                #FFFFFF 50%, 
+                #EDFBF1 55%, 
+                #22C55E 70%, 
+                #138808 85%, 
+                #046A38 100%
+            );
+            box-shadow: 0 16px 44px rgba(255, 103, 31, 0.2), 0 8px 30px rgba(4, 106, 56, 0.18);
+            border: none;
             min-height: 290px;
             position: relative;
         }
@@ -498,23 +504,29 @@
             content: '';
             position: absolute;
             inset: 0;
-            background: linear-gradient(180deg, rgba(255, 255, 255, 0.28) 0%, rgba(255, 255, 255, 0.05) 40%, rgba(0, 0, 0, 0.04) 100%);
+            background: linear-gradient(180deg, rgba(255, 255, 255, 0.22) 0%, rgba(255, 255, 255, 0.04) 40%, rgba(0, 0, 0, 0.04) 100%);
             pointer-events: none;
             border-radius: var(--radius-card);
         }
 
         body[data-theme="dark"] .sp-card-green-grad {
-            background: 
-                radial-gradient(ellipse 75% 85% at 0% 50%, rgba(255, 107, 0, 0.95) 0%, rgba(255, 140, 30, 0.7) 30%, transparent 65%),
-                radial-gradient(ellipse 75% 85% at 100% 50%, rgba(13, 140, 40, 0.95) 0%, rgba(26, 180, 80, 0.7) 30%, transparent 65%),
-                radial-gradient(ellipse 65% 90% at 50% 50%, #FFFFFF 0%, rgba(255, 255, 255, 0.88) 35%, transparent 70%),
-                linear-gradient(90deg, #E65100 0%, #FF8800 22%, #FFF5EB 42%, #FFFFFF 50%, #ECFDF5 58%, #16A34A 78%, #0D692B 100%);
-            box-shadow: 0 16px 48px rgba(0, 0, 0, 0.4), 0 0 36px rgba(255, 136, 0, 0.16);
-            border: 1px solid rgba(255, 255, 255, 0.16);
+            background: linear-gradient(112deg, 
+                #FF671F 0%, 
+                #FF7A26 18%, 
+                #FF9645 32%, 
+                #FFF6ED 45%, 
+                #FFFFFF 50%, 
+                #EDFBF1 55%, 
+                #22C55E 70%, 
+                #138808 85%, 
+                #046A38 100%
+            );
+            box-shadow: 0 18px 48px rgba(0, 0, 0, 0.45), 0 0 32px rgba(255, 103, 31, 0.12);
+            border: none;
         }
 
         body[data-theme="dark"] .sp-card-green-grad::before {
-            background: linear-gradient(180deg, rgba(255, 255, 255, 0.15) 0%, rgba(255, 255, 255, 0.02) 40%, rgba(0, 0, 0, 0.12) 100%);
+            background: linear-gradient(180deg, rgba(255, 255, 255, 0.16) 0%, rgba(255, 255, 255, 0.02) 40%, rgba(0, 0, 0, 0.08) 100%);
         }
 
         .sp-hero-content-flex {
@@ -572,14 +584,14 @@
             align-items: center;
             justify-content: center;
             text-align: center;
-            background: rgba(255, 255, 255, 0.92);
+            background: rgba(255, 255, 255, 0.95);
             backdrop-filter: blur(24px) saturate(1.4);
-            border: 1.5px solid rgba(0, 0, 128, 0.2);
-            border-radius: 22px;
-            padding: 24px 32px;
+            border: none;
+            border-radius: 24px;
+            padding: 22px 30px;
             min-width: 190px;
             color: #000080;
-            box-shadow: 0 12px 32px rgba(0, 0, 128, 0.1), 0 2px 6px rgba(0, 0, 0, 0.04);
+            box-shadow: 0 16px 36px rgba(0, 0, 80, 0.12), 0 2px 8px rgba(0, 0, 0, 0.04);
             flex-shrink: 0;
             z-index: 2;
             transition: all 0.22s cubic-bezier(0.16, 1, 0.3, 1);
@@ -587,15 +599,14 @@
 
         .sp-hero-right-visual:hover {
             transform: translateY(-2px);
-            box-shadow: 0 16px 38px rgba(0, 0, 128, 0.18);
-            border-color: rgba(0, 0, 128, 0.35);
+            box-shadow: 0 20px 42px rgba(0, 0, 80, 0.18);
         }
 
         body[data-theme="dark"] .sp-hero-right-visual {
-            background: rgba(255, 255, 255, 0.94);
-            border: 1.5px solid rgba(0, 0, 128, 0.25);
+            background: rgba(255, 255, 255, 0.96);
+            border: none;
             color: #000080;
-            box-shadow: 0 12px 36px rgba(0, 0, 0, 0.25);
+            box-shadow: 0 16px 40px rgba(0, 0, 0, 0.28);
         }
 
         .radial-metric-title {
@@ -1111,7 +1122,7 @@
             <!-- Dot-Matrix Stats Bar -->
             <div class="sp-stats-bar">
                 <div class="sp-stat-item">
-                    <span class="sp-dot-num" id="version-stat">v9.1.03</span>
+                    <span class="sp-dot-num" id="version-stat">v9.1.05</span>
                     <span class="sp-badge sp-badge-lime">Production</span>
                 </div>
                 <div class="sp-stat-item">
@@ -1191,13 +1202,13 @@
                     <div class="sp-hero-left">
                         <div class="sp-hero-tag">
                             <i class="fas fa-circle-check"></i>
-                            <span>v9.1.03 Stable Release</span>
+                            <span>v9.1.05 Stable Release</span>
                         </div>
                         <h2 class="sp-hero-title">Google Extensions, Better UI & Bug Fixes</h2>
                         <p class="sp-hero-desc" id="hero-desc"></p>
                     </div>
                     <div class="sp-hero-right-visual">
-                        <div class="radial-metric-title">9.1.03</div>
+                        <div class="radial-metric-title">9.1.05</div>
                         <div class="radial-metric-status">Flagship Build</div>
                         <div class="sparkline-dots">
                             <span class="spark-dot"></span>
@@ -1291,7 +1302,7 @@
             <div class="sp-section-header">
                 <div class="sp-section-titles">
                     <h2 id="dir-title">All Features & Enhancements</h2>
-                    <p id="dir-subtitle">SHOWING ALL MAJOR UPGRADES IN V9.1.03 STABLE</p>
+                    <p id="dir-subtitle">SHOWING ALL MAJOR UPGRADES IN V9.1.05 STABLE</p>
                 </div>
             </div>
             <div class="features-grid" id="directory-grid" style="margin-top: 20px;"></div>
@@ -1363,7 +1374,7 @@
         }
 
         // ── Typing Animation ──
-        const heroText = "Ocal Browser v9.1.03 introduces universal Google Chrome extension support with intelligent runtime polyfills, an overhauled topbar Extension Capsule with instant search, deep theme mode & accent color synchronization, sleek shadowless UI aesthetics, and comprehensive stability bug fixes.";
+        const heroText = "Ocal Browser v9.1.05 introduces universal Google Chrome extension support with intelligent runtime polyfills, an overhauled topbar Extension Capsule with instant search, deep theme mode & accent color synchronization, sleek shadowless UI aesthetics, and comprehensive stability bug fixes.";
         const heroDesc = document.getElementById('hero-desc');
         let charIndex = 0;
 
@@ -1461,7 +1472,7 @@
 
         // ── Features & Team Data ──
         const items = [
-            // ══ Major Update 9.1.03 Highlights ══
+            // ══ Major Update 9.1.05 Highlights ══
             { 
                 type: 'feature', 
                 category: 'extensions', 
@@ -1569,9 +1580,9 @@
         const changelog = [
             { 
                 date: 'September 2026', 
-                title: 'v9.1.03 Stable — Google Chrome Extensions, Better UI & Bug Fixes', 
+                title: 'v9.1.05 Stable — Google Chrome Extensions, Better UI & Bug Fixes', 
                 desc: 'Major feature update introducing Google Chrome extension compatibility via universal runtime polyfills (chrome.windows, chrome.storage.sync/session, chrome.action, chrome.tabs, chrome.runtime, chrome.scripting). Features a compact topbar Extension Capsule with smart overflow counting and instant search, theme mode & accent color synchronization across all overlays, dynamic popup auto-sizing engine, refined shadowless UI with zero-jitter cards, custom confirmation modals, and hardened local page context menus.', 
-                tags: ['v9.1.03 Stable', 'Chrome Extensions', 'Better UI', 'Extension Capsule', 'Bug Fixes', 'Theme Sync'] 
+                tags: ['v9.1.05 Stable', 'Chrome Extensions', 'Better UI', 'Extension Capsule', 'Bug Fixes', 'Theme Sync'] 
             },
             { date: 'September 2026', title: 'v9.0.01 Stable — Telemetry Accuracy & Reset Controls', desc: 'Resolved runaway ad neutralization counters by stripping extraneous abort-status request hooks and eliminating synthetic timer loops. Added 1-click Reset Stats control in Security settings and polished password autofill listeners.', tags: ['v9.0.01 Stable', 'Telemetry Fix', 'AdBlock', 'Autofill'] },
             { date: 'September 2026', title: 'v9.0.00 Flagship — Seamless UI/UX, Ambient Audio, Shaders & Password Vault Rework', desc: 'Major milestone release featuring seamless UI/UX refinement across all popups and sidebars, turbocharged page loading and ad-blocker acceleration, overhauled Bento File Manager, masterwork AI Studio with FLUX flagship generation, deep Home Page customization, background ambient soundscapes & music player, GPU-accelerated page shaders, and a military-grade encrypted Password Manager with Windows Hello biometric autofill.', tags: ['v9.0.00 Major', 'Seamless UI/UX', 'Faster AdBlock', 'File Manager', 'AI Studio', 'Ambient Audio', 'Page Shaders', 'Password Vault'] },
@@ -1690,7 +1701,7 @@
             });
 
             const map = {
-                all: ['All Features & Enhancements', 'SHOWING ALL MAJOR UPGRADES IN V9.1.03 STABLE'],
+                all: ['All Features & Enhancements', 'SHOWING ALL MAJOR UPGRADES IN V9.1.05 STABLE'],
                 extensions: ['Google Extensions & Store', 'UNIVERSAL CHROME EXTENSIONS ENGINE, TOPBAR CAPSULE & POPUPS'],
                 multitasking: ['Multitasking & AI Studio', 'BENTO FILE MANAGER, FLUX MASTERWORK AI & FLUID TABS'],
                 performance: ['Speed & Security Vault', 'TURBO PAGE LOADER, FASTER AD BLOCKER & 256-BIT PASSWORD VAULT'],

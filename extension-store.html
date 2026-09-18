@@ -27,12 +27,63 @@
     <link rel="stylesheet" href="home.css">
     <style>
         /* ── Store Specific Layout Enhancements matching Home Page ── */
+        .store-brand-header {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+        }
+        .store-brand-icon-box {
+            width: 52px;
+            height: 52px;
+            border-radius: 18px;
+            background: color-mix(in srgb, var(--accent) 15%, transparent);
+            border: 1.5px solid color-mix(in srgb, var(--accent) 32%, transparent);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 24px;
+            color: var(--accent);
+            box-shadow: 0 8px 24px color-mix(in srgb, var(--accent) 22%, transparent);
+            flex-shrink: 0;
+            transition: transform 0.25s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.25s;
+        }
+        .store-brand-icon-box:hover {
+            transform: scale(1.08) rotate(-4deg);
+            box-shadow: 0 12px 32px color-mix(in srgb, var(--accent) 40%, transparent);
+        }
+        .store-brand-titles {
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+        }
+
+        /* ── Search Bar Store Badge ── */
+        .store-search-badge {
+            width: 32px;
+            height: 32px;
+            border-radius: 10px;
+            background: color-mix(in srgb, var(--accent) 15%, transparent);
+            border: 1px solid color-mix(in srgb, var(--accent) 28%, transparent);
+            color: var(--accent);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 14px;
+            transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+        .sp-search-pill:focus-within .store-search-badge {
+            background: var(--accent);
+            color: var(--accent-text, #111111);
+            transform: scale(1.1) rotate(-4deg);
+            box-shadow: 0 4px 14px color-mix(in srgb, var(--accent) 40%, transparent);
+        }
+
         .store-cat-bar {
             display: flex;
             align-items: center;
             gap: 10px;
             overflow-x: auto;
-            padding: 4px 0 8px;
+            padding: 6px 0 10px;
             scrollbar-width: none;
         }
         .store-cat-bar::-webkit-scrollbar {
@@ -40,7 +91,7 @@
         }
 
         .cat-pill {
-            height: 38px;
+            height: 40px;
             padding: 0 18px;
             border-radius: 100px;
             font-size: 13px;
@@ -54,19 +105,20 @@
             cursor: pointer;
             white-space: nowrap;
             box-shadow: 0 2px 8px rgba(0, 0, 0, 0.02);
-            transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+            transition: all 0.22s cubic-bezier(0.16, 1, 0.3, 1);
             user-select: none;
         }
         html[data-theme="dark"] .cat-pill {
-            background: #222226;
+            background: #202025;
             color: #9CA3AF;
             border-color: rgba(255, 255, 255, 0.08);
             box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
         }
         .cat-pill:hover {
             transform: translateY(-2px);
-            color: #111111;
+            color: var(--accent);
             border-color: color-mix(in srgb, var(--accent) 40%, transparent);
+            box-shadow: 0 6px 16px color-mix(in srgb, var(--accent) 15%, transparent);
         }
         html[data-theme="dark"] .cat-pill:hover {
             color: #FFFFFF;
@@ -76,7 +128,8 @@
             background: var(--accent) !important;
             color: var(--accent-text, #111111) !important;
             border-color: var(--accent) !important;
-            box-shadow: 0 4px 14px color-mix(in srgb, var(--accent) 35%, transparent) !important;
+            box-shadow: 0 4px 16px color-mix(in srgb, var(--accent) 35%, transparent) !important;
+            transform: translateY(-1px);
         }
 
         /* ── Sideload Input Row inside Hero Bento Card ── */
@@ -236,6 +289,14 @@
             width: 100%;
             height: 100%;
         }
+        .ext-card-icon .real-ext-icon,
+        .ext-card-icon img {
+            width: 100%;
+            height: 100%;
+            object-fit: contain;
+            border-radius: 12px;
+            display: block;
+        }
         .ext-card-meta {
             flex: 1;
             min-width: 0;
@@ -383,48 +444,185 @@
         }
 
         /* ── Spotlight Hero Layout in Bento Card ── */
+        #heroSpotlight {
+            background: linear-gradient(135deg, 
+                color-mix(in srgb, var(--accent) 26%, #181920) 0%, 
+                color-mix(in srgb, var(--accent) 12%, #111216) 45%, 
+                #0C0D11 100%) !important;
+            border: 1px solid color-mix(in srgb, var(--accent) 32%, rgba(255, 255, 255, 0.08)) !important;
+            box-shadow: 0 16px 40px color-mix(in srgb, var(--accent) 16%, transparent), 0 4px 12px rgba(0, 0, 0, 0.3) !important;
+            color: #FFFFFF !important;
+            position: relative;
+            overflow: hidden;
+        }
+        html[data-theme="light"] #heroSpotlight {
+            background: linear-gradient(135deg, 
+                color-mix(in srgb, var(--accent) 14%, #FFFFFF) 0%, 
+                color-mix(in srgb, var(--accent) 6%, #F8F9FA) 50%, 
+                #FFFFFF 100%) !important;
+            border: 1px solid color-mix(in srgb, var(--accent) 26%, rgba(0, 0, 0, 0.08)) !important;
+            box-shadow: 0 16px 40px color-mix(in srgb, var(--accent) 12%, transparent), 0 4px 14px rgba(0, 0, 0, 0.04) !important;
+            color: #111111 !important;
+        }
+        #heroSpotlight::after {
+            content: '';
+            position: absolute;
+            right: -25px;
+            top: -25px;
+            width: 150px;
+            height: 150px;
+            border-radius: 50%;
+            background: var(--accent);
+            opacity: 0.16;
+            filter: blur(40px);
+            pointer-events: none;
+        }
+        #heroSpotlight .sp-card-title {
+            color: #FFFFFF !important;
+            text-shadow: none !important;
+            font-size: 15px !important;
+            font-weight: 800 !important;
+            display: flex !important;
+            align-items: center !important;
+            gap: 8px !important;
+        }
+        #heroSpotlight .sp-card-title i {
+            color: var(--accent) !important;
+        }
+        html[data-theme="light"] #heroSpotlight .sp-card-title {
+            color: #111111 !important;
+            text-shadow: none !important;
+        }
+        html[data-theme="light"] #heroSpotlight .sp-card-title i {
+            color: var(--accent) !important;
+        }
+        #heroSpotlight .sp-badge-lime {
+            background: var(--accent) !important;
+            color: var(--accent-text, #ffffff) !important;
+            font-size: 11px !important;
+            font-weight: 800 !important;
+            padding: 4px 12px !important;
+            border-radius: 100px !important;
+            box-shadow: 0 2px 8px color-mix(in srgb, var(--accent) 35%, transparent) !important;
+        }
         .store-spotlight-body {
             display: flex;
             align-items: center;
             justify-content: space-between;
             gap: 16px;
             margin-top: 10px;
+            position: relative;
+            z-index: 1;
         }
         .store-spotlight-left {
             display: flex;
-            align-items: center;
+            align-items: flex-start;
             gap: 14px;
         }
         .store-spotlight-icon {
             width: 52px;
             height: 52px;
             border-radius: 16px;
-            background: rgba(0, 0, 0, 0.08);
+            background: color-mix(in srgb, var(--accent) 18%, transparent) !important;
+            border: 1.5px solid color-mix(in srgb, var(--accent) 35%, transparent) !important;
             display: flex;
             align-items: center;
             justify-content: center;
             font-size: 24px;
-            color: #111111;
+            color: var(--accent) !important;
+            box-shadow: 0 4px 16px color-mix(in srgb, var(--accent) 22%, transparent);
+            flex-shrink: 0;
+            transition: transform 0.2s;
+            overflow: hidden;
         }
-        html[data-theme="dark"] .store-spotlight-icon {
-            background: rgba(255, 255, 255, 0.1);
-            color: #FFFFFF;
+        .store-spotlight-icon:hover {
+            transform: scale(1.08) rotate(-4deg);
+        }
+        .store-spotlight-icon img,
+        .store-spotlight-icon .real-ext-icon {
+            width: 100%;
+            height: 100%;
+            object-fit: contain;
+            border-radius: 14px;
+            display: block;
         }
         .store-spotlight-title {
-            font-size: 16px;
-            font-weight: 800;
-            color: #111111;
-        }
-        html[data-theme="dark"] .store-spotlight-title {
+            font-size: 17px !important;
+            font-weight: 800 !important;
             color: #FFFFFF;
+            line-height: 1.25;
+        }
+        html[data-theme="light"] .store-spotlight-title {
+            color: #111111 !important;
         }
         .store-spotlight-desc {
-            font-size: 12px;
-            color: rgba(0, 0, 0, 0.7);
-            margin-top: 2px;
+            font-size: 12.5px !important;
+            line-height: 1.45;
+            color: rgba(255, 255, 255, 0.78);
+            margin-top: 3px;
         }
-        html[data-theme="dark"] .store-spotlight-desc {
-            color: rgba(255, 255, 255, 0.75);
+        html[data-theme="light"] .store-spotlight-desc {
+            color: #4B5563 !important;
+        }
+        .store-spotlight-footer {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 12px;
+            margin-top: 14px;
+            padding-top: 12px;
+            border-top: 1px solid rgba(0, 0, 0, 0.06);
+            position: relative;
+            z-index: 1;
+        }
+        html[data-theme="dark"] .store-spotlight-footer {
+            border-top-color: rgba(255, 255, 255, 0.08);
+        }
+        .store-spotlight-tags {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            flex-wrap: wrap;
+        }
+        .spotlight-tag {
+            font-size: 11px;
+            font-weight: 700;
+            padding: 3px 9px;
+            border-radius: 100px;
+            background: rgba(0, 0, 0, 0.05);
+            color: #4B5563;
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+        }
+        html[data-theme="dark"] .spotlight-tag {
+            background: rgba(255, 255, 255, 0.08);
+            color: #9CA3AF;
+        }
+        .spotlight-tag i {
+            color: #10B981;
+            font-size: 10px;
+        }
+        #heroSpotlight .btn-card-install {
+            height: 38px;
+            padding: 0 20px;
+            font-size: 13px;
+            font-weight: 700;
+            border-radius: 100px;
+            background: var(--accent) !important;
+            color: var(--accent-text, #ffffff) !important;
+            border: none;
+            cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            box-shadow: 0 4px 14px color-mix(in srgb, var(--accent) 35%, transparent) !important;
+            transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+            flex-shrink: 0;
+        }
+        #heroSpotlight .btn-card-install:hover {
+            transform: translateY(-2px) scale(1.03);
+            box-shadow: 0 6px 20px color-mix(in srgb, var(--accent) 50%, transparent) !important;
         }
 
         /* ── Extension Detail Modal Overlay (Home Page Modal Style) ── */
@@ -506,10 +704,25 @@
             border-radius: 18px;
             overflow: hidden;
             flex-shrink: 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: rgba(0, 0, 0, 0.03);
+        }
+        html[data-theme="dark"] .modal-ext-icon {
+            background: rgba(255, 255, 255, 0.05);
         }
         .modal-ext-icon svg {
             width: 100%;
             height: 100%;
+        }
+        .modal-ext-icon img,
+        .modal-ext-icon .real-ext-icon {
+            width: 100%;
+            height: 100%;
+            object-fit: contain;
+            border-radius: 16px;
+            display: block;
         }
         .modal-ext-title {
             font-size: 20px;
@@ -653,13 +866,20 @@
         <!-- Header Row: Title & Dot-Matrix Stats Bar -->
         <header class="sp-header-row">
             <div class="sp-user-greeting">
-                <h1 class="sp-user-name">
-                    <span class="sp-welcome-prefix">Web Store /</span>
-                    <span id="store-title-text">Chrome Extensions</span>
-                </h1>
-                <div class="sp-user-subtitle">
-                    <i class="fas fa-quote-left motd-quote-icon"></i>
-                    <span>Power up your browser with verified add-ons, ad blockers, and productivity suites.</span>
+                <div class="store-brand-header">
+                    <div class="store-brand-icon-box">
+                        <i class="fas fa-bag-shopping"></i>
+                    </div>
+                    <div class="store-brand-titles">
+                        <h1 class="sp-user-name">
+                            <span class="sp-welcome-prefix">Web Store /</span>
+                            <span id="store-title-text">Chrome Extensions</span>
+                        </h1>
+                        <div class="sp-user-subtitle">
+                            <i class="fas fa-shield-halved" style="color: var(--accent); font-size: 12px; margin-right: 4px;"></i>
+                            <span>Power up your browser with verified add-ons, ad blockers, and productivity suites.</span>
+                        </div>
+                    </div>
                 </div>
             </div>
 
@@ -682,11 +902,11 @@
             <!-- Right Action Cards matching Home Page -->
             <div class="sp-top-actions">
                 <button class="sp-news-trigger-btn" onclick="openMyExtensions()" title="Manage installed extensions in Settings">
-                    <i class="fas fa-puzzle-piece"></i>
+                    <i class="fas fa-puzzle-piece" style="color: var(--accent);"></i>
                     <span>My Extensions</span>
                 </button>
                 <button class="sp-news-trigger-btn" id="btnCustomInstallModal" title="Sideload extension by ID or URL">
-                    <i class="fab fa-chrome" style="color:var(--accent);"></i>
+                    <i class="fas fa-cloud-arrow-down" style="color: var(--accent);"></i>
                     <span>Sideload CRX</span>
                 </button>
             </div>
@@ -696,12 +916,9 @@
         <section class="sp-search-section">
             <div class="sp-search-pill">
                 <div class="sp-search-logo" id="search-engine-logo">
-                    <svg width="20" height="20" viewBox="0 0 24 24">
-                        <path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="#4285F4"/>
-                        <path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98 1.06-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853"/>
-                        <path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l3.66-2.84z" fill="#FBBC05"/>
-                        <path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" fill="#EA4335"/>
-                    </svg>
+                    <div class="store-search-badge">
+                        <i class="fas fa-bag-shopping"></i>
+                    </div>
                 </div>
                 <input type="text" class="sp-search-input" id="storeSearchInput" placeholder="Search extensions by name, feature, or keyword (Press '/' to focus)..." autocomplete="off" spellcheck="false">
                 <button class="sp-search-btn" id="storeSearchBtn" title="Search"><i class="fas fa-magnifying-glass"></i></button>
@@ -720,8 +937,8 @@
         <!-- Bento Hero Section matching Home Page .sp-hero-cards-grid -->
         <section class="sp-hero-cards-grid" style="grid-template-columns: 1.2fr 1.2fr 0.9fr;">
 
-            <!-- Bento Card 1: Featured Spotlight (Gradient Accent Card) -->
-            <div class="sp-card sp-card-green-grad" id="heroSpotlight">
+            <!-- Bento Card 1: Featured Spotlight (Harmonized Bento Card) -->
+            <div class="sp-card" id="heroSpotlight">
                 <div class="sp-card-header-flex">
                     <span class="sp-card-title"><i class="fas fa-wand-magic-sparkles"></i> Featured Spotlight</span>
                     <span class="sp-badge sp-badge-lime">Editors' Choice</span>
@@ -729,7 +946,7 @@
                 <div class="store-spotlight-body">
                     <div class="store-spotlight-left">
                         <div class="store-spotlight-icon">
-                            <i class="fas fa-moon"></i>
+                            <img src="assets/extension-icons/eimadpbcbfnmbkopoojfekhnkhdbieeh.png" alt="Dark Reader" class="real-ext-icon">
                         </div>
                         <div>
                             <div class="store-spotlight-title" id="heroTitle">Dark Reader</div>
@@ -743,8 +960,12 @@
                         </div>
                     </div>
                 </div>
-                <div style="margin-top: 14px; display: flex; align-items: center; justify-content: flex-end;">
-                    <button class="btn-card-install" id="heroInstallBtn" data-ext-id="eimadpbcbfnmbkopoojfekhnkhdbieeh" style="height: 38px; padding: 0 20px; font-size: 13px;">
+                <div class="store-spotlight-footer">
+                    <div class="store-spotlight-tags">
+                        <span class="spotlight-tag"><i class="fas fa-check"></i> Verified</span>
+                        <span class="spotlight-tag">Open Source</span>
+                    </div>
+                    <button class="btn-card-install" id="heroInstallBtn" data-ext-id="eimadpbcbfnmbkopoojfekhnkhdbieeh">
                         <i class="fas fa-plus"></i>
                         <span>Add to Ocal Browser</span>
                     </button>

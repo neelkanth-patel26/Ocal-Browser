@@ -170,43 +170,46 @@ dots.forEach(dot => {
         applyAccent(c);
     };
 });
+// ── Theme & Accent Styling System ─────────────────────────────────────────
 function getContrastColor(hex) {
-    if (!hex || hex.length < 7) return '#000000';
-    const r = parseInt(hex.substring(1, 3), 16);
-    const g = parseInt(hex.substring(3, 5), 16);
-    const b = parseInt(hex.substring(5, 7), 16);
-    const luma = 0.2126 * r + 0.7152 * g + 0.0722 * b;
-    return luma > 128 ? '#000000' : '#ffffff';
+    if (!hex) return '#FFFFFF';
+    let c = hex.replace('#', '');
+    if (c.length === 3) c = c.split('').map(x => x + x).join('');
+    const num = parseInt(c, 16);
+    if (isNaN(num)) return '#FFFFFF';
+    const r = (num >> 16) & 255;
+    const g = (num >> 8) & 255;
+    const b = num & 255;
+    const lum = 0.2126 * r + 0.7152 * g + 0.0722 * b;
+    return lum > 140 ? '#0D0E11' : '#FFFFFF';
 }
 
-let lastColor = null;
-
-function getModeAccent(color, isLight) {
-    if (!color) return isLight ? '#058f60' : '#09f0a0';
-    if (!isLight) return color;
-    const hex = color.toLowerCase();
-    if (hex === '#09f0a0' || hex === '#00ffaa' || hex.includes('f0a0')) return '#058f60';
-    if (hex === '#ff007f' || hex === '#ff00aa' || hex.includes('ff007') || hex.includes('ff00a')) return '#d81b60';
-    if (hex === '#00e5ff' || hex === '#00ffff' || hex === '#3b82f6' || hex.includes('00e5') || hex.includes('00f0') || hex.includes('3b82')) return '#0288d1';
-    if (hex === '#ff9100' || hex === '#ffaa00' || hex === '#e8ff47' || hex.includes('ff91') || hex.includes('ffaa') || hex.includes('e8ff')) return '#d97706';
-    if (hex === '#8b5cf6' || hex === '#a855f7' || hex === '#9333ea' || hex === '#7b1fa2' || hex.includes('8b5c') || hex.includes('a855') || hex.includes('7b1f')) return '#6d28d9';
-    if (hex === '#ff4d4d' || hex === '#ff3333' || hex === '#ef4444' || hex === '#ef5350' || hex.includes('ff4d') || hex.includes('ff33') || hex.includes('ef44') || hex.includes('ef53')) return '#dc2626';
-    if (hex === '#ffffff' || hex === '#f4f4f5' || hex === '#e8e8e8' || hex.includes('fff')) return '#0f172a';
-    return color;
+function hexToRgba(hex, alpha = 1) {
+    if (!hex) return `rgba(9, 240, 160, ${alpha})`;
+    let c = hex.replace('#', '');
+    if (c.length === 3) c = c.split('').map(x => x + x).join('');
+    const num = parseInt(c, 16);
+    if (isNaN(num)) return `rgba(9, 240, 160, ${alpha})`;
+    const r = (num >> 16) & 255;
+    const g = (num >> 8) & 255;
+    const b = num & 255;
+    return `rgba(${r}, ${g}, ${b}, ${alpha})`;
 }
 
-function updateColorDots(themeMode) {
-    const isLight = themeMode === 'light';
-    const darkColors = ['#09f0a0', '#ffffff', '#a855f7', '#3b82f6', '#ef4444', '#e8ff47'];
-    const lightColors = ['#058f60', '#0f172a', '#6d28d9', '#0288d1', '#dc2626', '#d97706'];
-    
-    dots.forEach((dot, index) => {
-        const color = isLight ? lightColors[index] : darkColors[index];
-        if (color) {
-            dot.style.background = color;
-            dot.dataset.color = color;
+let _accentUpdateTimer = null;
+function debouncedSaveAccent(color, immediate = false) {
+    if (_accentUpdateTimer) clearTimeout(_accentUpdateTimer);
+    if (immediate) {
+        if (window.electronAPI && window.electronAPI.updateSetting) {
+            window.electronAPI.updateSetting('accentColor', color);
         }
-    });
+        return;
+    }
+    _accentUpdateTimer = setTimeout(() => {
+        if (window.electronAPI && window.electronAPI.updateSetting) {
+            window.electronAPI.updateSetting('accentColor', color);
+        }
+    }, 50);
 }
 
 function updateAIGradientPreviews(harmony) {
@@ -217,60 +220,111 @@ function updateAIGradientPreviews(harmony) {
     if (p2 && harmony.secondary) p2.style.background = harmony.secondary;
 }
 
-function applyAccent(color) {
-    if (!color) return;
-    lastColor = color;
-    const isLight = document.body.getAttribute('data-theme') === 'light';
-    const activeAccent = getModeAccent(color, isLight);
+function applyAccent(color, skipIpc = false, immediateIpc = false) {
+    if (!color) color = '#09F0A0';
+    const root = document.documentElement;
+    const body = document.body;
+    const isLight = (root.getAttribute('data-theme') === 'light' || (body && body.getAttribute('data-theme') === 'light'));
+    const activeAccent = color.trim();
     const contrastColor = getContrastColor(activeAccent);
-    
-    document.documentElement.style.setProperty('--accent', activeAccent);
-    document.documentElement.style.setProperty('--accent-glow', `color-mix(in srgb, ${activeAccent} 30%, transparent)`);
-    document.documentElement.style.setProperty('--accent-dim', `color-mix(in srgb, ${activeAccent} 12%, transparent)`);
-    document.documentElement.style.setProperty('--accent-border', activeAccent);
-    document.documentElement.style.setProperty('--accent-text', contrastColor);
+    const dim = hexToRgba(activeAccent, 0.15);
+    const glow = hexToRgba(activeAccent, 0.35);
 
-    document.body.style.setProperty('--accent', activeAccent);
-    document.body.style.setProperty('--accent-glow', `color-mix(in srgb, ${activeAccent} 30%, transparent)`);
-    document.body.style.setProperty('--accent-dim', `color-mix(in srgb, ${activeAccent} 12%, transparent)`);
-    document.body.style.setProperty('--accent-border', activeAccent);
-    document.body.style.setProperty('--accent-text', contrastColor);
-    
-    // AI Harmonic Gradient Synthesis & Live DOM update
+    [root, body].forEach(el => {
+        if (!el) return;
+        el.style.setProperty('--accent', activeAccent);
+        el.style.setProperty('--accent-glow', glow);
+        el.style.setProperty('--accent-dim', dim);
+        el.style.setProperty('--accent-border', activeAccent);
+        el.style.setProperty('--accent-text', contrastColor);
+    });
+
     if (window.OcalColorHarmonizer) {
         const harmony = window.OcalColorHarmonizer.applyHarmonizedTheme(activeAccent, isLight ? 'light' : 'dark');
         updateAIGradientPreviews(harmony);
     }
 
-    localStorage.setItem('ocal-settings-accent', color);
-    dots.forEach(d => d.classList.toggle('active', d.dataset.color === color));
-    document.querySelectorAll('.hbc-swatch').forEach(d => d.classList.toggle('active', d.dataset.color && d.dataset.color.toLowerCase() === color.toLowerCase()));
-    const statAccent = document.getElementById('homepage-stat-accent');
-    if (statAccent) {
-        const accentNames = {
-            '#09f0a0': 'Emerald',
-            '#ffffff': 'White',
-            '#a855f7': 'Purple',
-            '#3b82f6': 'Blue',
-            '#ef4444': 'Crimson',
-            '#e8ff47': 'Yellow',
-            '#fb923c': 'Orange',
-            '#06b6d4': 'Cyan'
-        };
-        statAccent.innerText = accentNames[color.toLowerCase()] || 'Custom';
+    try {
+        localStorage.setItem('ocal-settings-accent', activeAccent);
+    } catch (e) {}
+
+    const upper = activeAccent.toUpperCase();
+    let hasMatchedPreset = false;
+    document.querySelectorAll('.hbc-swatch:not(.custom-swatch)').forEach(sw => {
+        const cLight = (sw.dataset.color || '').toUpperCase();
+        const cDark = (sw.dataset.darkColor || '').toUpperCase();
+        const isMatch = (upper === cLight || upper === cDark);
+        sw.classList.toggle('active', isMatch);
+        if (isMatch) {
+            hasMatchedPreset = true;
+            const statAccent = document.getElementById('homepage-stat-accent');
+            if (statAccent) statAccent.innerText = sw.getAttribute('title') || 'Preset';
+        }
+    });
+
+    const customSw = document.getElementById('custom-accent-swatch');
+    const customBadge = document.getElementById('custom-color-badge');
+    const customText = document.getElementById('custom-color-text');
+    const customDot = document.getElementById('custom-color-dot');
+    if (customSw) {
+        customSw.classList.toggle('active', !hasMatchedPreset);
+        if (!hasMatchedPreset) {
+            customSw.style.setProperty('--swatch-color', activeAccent);
+            if (customBadge) customBadge.style.display = 'inline-flex';
+            if (customText) customText.innerText = activeAccent;
+            if (customDot) customDot.style.background = activeAccent;
+            const statAccent = document.getElementById('homepage-stat-accent');
+            if (statAccent) statAccent.innerText = `Custom (${activeAccent})`;
+        } else {
+            if (customBadge) customBadge.style.display = 'none';
+        }
+    }
+
+    // Sync legacy color dots if present
+    document.querySelectorAll('.color-dot').forEach(d => {
+        d.classList.toggle('active', (d.dataset.color || '').toUpperCase() === upper);
+    });
+
+    if (!skipIpc && window.electronAPI && window.electronAPI.updateSetting) {
+        debouncedSaveAccent(activeAccent, immediateIpc);
     }
 }
+window.applyAccent = applyAccent;
 
 function applyTheme(theme) {
-    document.body.setAttribute('data-theme', theme);
-    localStorage.setItem('ocal-settings-theme', theme);
-    updateColorDots(theme);
-    if (lastColor) applyAccent(lastColor);
-    const statTheme = document.getElementById('homepage-stat-theme');
-    if (statTheme) statTheme.innerText = theme === 'dark' ? 'Dark' : 'Light';
+    const isDark = (theme === 'dark');
+    document.documentElement.setAttribute('data-theme', theme);
+    if (document.body) document.body.setAttribute('data-theme', theme);
+    try {
+        localStorage.setItem('ocal-settings-theme', theme);
+    } catch (e) {}
+
     const themeCb = document.getElementById('theme-mode-toggle-cb');
-    if (themeCb) themeCb.checked = (theme === 'dark');
+    if (themeCb) themeCb.checked = isDark;
+    const statTheme = document.getElementById('homepage-stat-theme');
+    if (statTheme) statTheme.innerText = isDark ? 'Dark' : 'Light';
+
+    // Update preset swatches display color according to active theme
+    const swatches = document.querySelectorAll('.hbc-swatch:not(.custom-swatch)');
+    swatches.forEach(sw => {
+        const swatchColor = isDark ? (sw.dataset.darkColor || sw.dataset.color) : (sw.dataset.color || sw.dataset.darkColor);
+        if (swatchColor) {
+            sw.style.setProperty('--swatch-color', swatchColor);
+        }
+    });
+
+    const activeSwatch = document.querySelector('.hbc-swatch.active:not(.custom-swatch)');
+    if (activeSwatch) {
+        const newColor = isDark ? (activeSwatch.dataset.darkColor || activeSwatch.dataset.color) : (activeSwatch.dataset.color || activeSwatch.dataset.darkColor);
+        if (newColor) {
+            applyAccent(newColor);
+        }
+    } else {
+        const currentAccent = localStorage.getItem('ocal-settings-accent') || '#09F0A0';
+        applyAccent(currentAccent, true);
+    }
 }
+window.applyTheme = applyTheme;
 
 
 // Home Page Controls
@@ -1290,7 +1344,7 @@ window.electronAPI.getSettings().then(s => {
     if (s.themeMode) applyTheme(s.themeMode);
     else localStorage.setItem('ocal-settings-theme', 'dark'); // Default fallback
     
-    if (s.accentColor) applyAccent(s.accentColor);
+    if (s.accentColor) applyAccent(s.accentColor, true);
     renderHomepageSettings(s);
     renderAISettings(s);
     renderSystemSettings(s);
@@ -1501,38 +1555,77 @@ window.electronAPI.getSettings().then(s => {
     renderSearchSettings(s);
     setupSearchEngineCardListeners();
     
-    // AI Assistant Settings
+    // AI Assistant Settings Helper: Real-time sync on input, paste, change, blur
+    function bindLiveSettingInput(inputEl, settingKey) {
+        if (!inputEl) return;
+        if (inputEl._boundLiveSetting) return;
+        inputEl._boundLiveSetting = true;
+
+        const save = () => {
+            const val = (inputEl.value || '').trim();
+            if (window.currentSettings) {
+                window.currentSettings[settingKey] = val;
+            }
+            if (window.electronAPI && window.electronAPI.updateSetting) {
+                window.electronAPI.updateSetting(settingKey, val);
+            }
+            const pill = inputEl.closest('.ai-secure-pill') || inputEl.closest('.ai-input-pill');
+            if (pill) {
+                pill.style.borderColor = 'var(--accent-color, #09f0a0)';
+                pill.style.boxShadow = '0 0 8px rgba(9, 240, 160, 0.35)';
+                clearTimeout(pill._glowTimer);
+                pill._glowTimer = setTimeout(() => {
+                    pill.style.borderColor = '';
+                    pill.style.boxShadow = '';
+                }, 1200);
+            }
+        };
+
+        inputEl.addEventListener('input', save);
+        inputEl.addEventListener('change', save);
+        inputEl.addEventListener('paste', () => {
+            setTimeout(save, 20);
+        });
+        inputEl.addEventListener('blur', save);
+        inputEl.addEventListener('keydown', (e) => {
+            if (e.key === 'Enter') {
+                save();
+                inputEl.blur();
+            }
+        });
+    }
+
     const aiKeyInp = document.getElementById('ai-api-key-input');
     if (aiKeyInp) {
         aiKeyInp.value = s.aiApiKey || '';
-        aiKeyInp.onchange = () => window.electronAPI.updateSetting('aiApiKey', aiKeyInp.value);
+        bindLiveSettingInput(aiKeyInp, 'aiApiKey');
     }
 
     const openaiKeyInp = document.getElementById('openai-api-key-input');
     if (openaiKeyInp) {
         openaiKeyInp.value = s.openaiApiKey || '';
-        openaiKeyInp.onchange = () => window.electronAPI.updateSetting('openaiApiKey', openaiKeyInp.value);
+        bindLiveSettingInput(openaiKeyInp, 'openaiApiKey');
     }
 
     const customEndpointInp = document.getElementById('custom-endpoint-input');
     if (customEndpointInp) {
         customEndpointInp.value = s.customEndpoint || '';
-        customEndpointInp.onchange = () => window.electronAPI.updateSetting('customEndpoint', customEndpointInp.value);
+        bindLiveSettingInput(customEndpointInp, 'customEndpoint');
     }
 
     const customModelInp = document.getElementById('custom-model-input');
     if (customModelInp) {
         customModelInp.value = s.customModel || '';
-        customModelInp.onchange = () => window.electronAPI.updateSetting('customModel', customModelInp.value);
+        bindLiveSettingInput(customModelInp, 'customModel');
     }
 
     const customKeyInp = document.getElementById('custom-key-input');
     if (customKeyInp) {
         customKeyInp.value = s.customApiKey || '';
-        customKeyInp.onchange = () => window.electronAPI.updateSetting('customApiKey', customKeyInp.value);
+        bindLiveSettingInput(customKeyInp, 'customApiKey');
     }
 
-    function updateAISettingsVisibility(engine) {
+    window.updateAISettingsVisibility = function(engine) {
         const geminiRow = document.getElementById('gemini-key-row');
         const openaiKeyRow = document.getElementById('openai-key-row');
         const customEndpointRow = document.getElementById('custom-endpoint-row');
@@ -1553,12 +1646,12 @@ window.electronAPI.getSettings().then(s => {
         if (customKeyRow) customKeyRow.style.setProperty('display', isCustom ? 'flex' : 'none', 'important');
         if (localModelRow) localModelRow.style.setProperty('display', isLocal ? 'flex' : 'none', 'important');
         if (localEndpointRow) localEndpointRow.style.setProperty('display', isLocal ? 'flex' : 'none', 'important');
-    }
+    };
 
     const activeEngine = s.aiEngine || 'local';
     setGridValue('ai-engine-grid', activeEngine);
     initGridSelector('ai-engine-grid', 'aiEngine');
-    updateAISettingsVisibility(activeEngine);
+    window.updateAISettingsVisibility(activeEngine);
 
     const aiEngineGrid = document.getElementById('ai-engine-grid');
     if (aiEngineGrid) {
@@ -1566,7 +1659,7 @@ window.electronAPI.getSettings().then(s => {
             const originalClick = item.onclick;
             item.onclick = () => {
                 if (originalClick) originalClick();
-                updateAISettingsVisibility(item.dataset.value);
+                window.updateAISettingsVisibility(item.dataset.value);
             };
         });
     }
@@ -2354,7 +2447,7 @@ window.checkForUpdates = () => {
 
 window.electronAPI.onSettingsChanged(s => {
     window.currentSettings = s;
-    if (s.accentColor) applyAccent(s.accentColor);
+    if (s.accentColor) applyAccent(s.accentColor, true);
     if (s.themeMode) {
         applyTheme(s.themeMode);
         const themeToggle = document.getElementById('theme-mode-toggle');
@@ -3015,104 +3108,7 @@ window.autoDetectWeatherLocation = function() {
     }
 };
 
-function hexToRgba(hex, alpha = 1) {
-    if (!hex) return `rgba(9, 240, 160, ${alpha})`;
-    let c = hex.replace('#', '');
-    if (c.length === 3) c = c.split('').map(x => x + x).join('');
-    const num = parseInt(c, 16);
-    if (isNaN(num)) return `rgba(9, 240, 160, ${alpha})`;
-    const r = (num >> 16) & 255;
-    const g = (num >> 8) & 255;
-    const b = num & 255;
-    return `rgba(${r}, ${g}, ${b}, ${alpha})`;
-}
-
-function getContrastColor(hex) {
-    if (!hex) return '#FFFFFF';
-    let c = hex.replace('#', '');
-    if (c.length === 3) c = c.split('').map(x => x + x).join('');
-    const num = parseInt(c, 16);
-    if (isNaN(num)) return '#FFFFFF';
-    const r = (num >> 16) & 255;
-    const g = (num >> 8) & 255;
-    const b = num & 255;
-    const lum = 0.2126 * r + 0.7152 * g + 0.0722 * b;
-    return lum > 140 ? '#0D0E11' : '#FFFFFF';
-}
-
-let _accentUpdateTimer = null;
-function debouncedSaveAccent(color) {
-    if (_accentUpdateTimer) clearTimeout(_accentUpdateTimer);
-    _accentUpdateTimer = setTimeout(() => {
-        if (window.electronAPI && window.electronAPI.updateSetting) {
-            window.electronAPI.updateSetting('accentColor', color);
-        }
-    }, 100);
-}
-
-window.applyAccent = function applyAccent(color, skipIpc = false) {
-    if (!color) color = '#09F0A0';
-    const root = document.documentElement;
-    const body = document.body;
-    const isLight = (root.getAttribute('data-theme') === 'light' || body?.getAttribute('data-theme') === 'light');
-    const contrast = getContrastColor(color);
-    const dim = hexToRgba(color, 0.15);
-    const glow = hexToRgba(color, 0.35);
-
-    root.style.setProperty('--accent', color);
-    root.style.setProperty('--accent-text', contrast);
-    root.style.setProperty('--accent-dim', dim);
-    root.style.setProperty('--accent-glow', glow);
-    root.style.setProperty('--accent-border', color);
-    
-    if (body) {
-        body.style.setProperty('--accent', color);
-        body.style.setProperty('--accent-text', contrast);
-        body.style.setProperty('--accent-dim', dim);
-        body.style.setProperty('--accent-glow', glow);
-        body.style.setProperty('--accent-border', color);
-    }
-
-    // AI Adaptive Harmonic Gradient Generation
-    if (window.OcalColorHarmonizer) {
-        const harmony = window.OcalColorHarmonizer.applyHarmonizedTheme(color, isLight ? 'light' : 'dark');
-        updateAIGradientPreviews(harmony);
-    }
-    
-    try {
-        localStorage.setItem('ocal-settings-accent', color);
-    } catch (e) {}
-
-    const dot = document.getElementById('custom-color-dot');
-    if (dot) dot.style.background = color;
-
-    if (!skipIpc && window.electronAPI && window.electronAPI.updateSetting) {
-        debouncedSaveAccent(color);
-    }
-};
-
-function applyTheme(theme) {
-    const isDark = (theme === 'dark');
-    document.documentElement.setAttribute('data-theme', theme);
-    document.body.setAttribute('data-theme', theme);
-    try {
-        localStorage.setItem('ocal-settings-theme', theme);
-    } catch (e) {}
-
-    const themeCb = document.getElementById('theme-mode-toggle-cb');
-    if (themeCb) themeCb.checked = isDark;
-    const statTheme = document.getElementById('homepage-stat-theme');
-    if (statTheme) statTheme.innerText = isDark ? 'Dark' : 'Light';
-
-    // Update preset swatches display color according to active theme
-    const swatches = document.querySelectorAll('.hbc-swatch:not(.custom-swatch)');
-    swatches.forEach(sw => {
-        const swatchColor = isDark ? (sw.dataset.darkColor || sw.dataset.color) : (sw.dataset.color || sw.dataset.darkColor);
-        if (swatchColor) {
-            sw.style.setProperty('--swatch-color', swatchColor);
-        }
-    });
-}
+// ── Theme Mode Toggle ──────────────────────────────────────────────────
 
 window.handleThemeToggle = function(checked) {
     const theme = checked ? 'dark' : 'light';
@@ -3369,7 +3365,7 @@ function renderHomepageSettings(s) {
         }
     }
 
-    function syncStudioUI(source = 'hsv') {
+    function syncStudioUI(source = 'hsv', skipIpc = false) {
         const rgb = hsvToRgb(currentHsv.h, currentHsv.s, currentHsv.v);
         const hex = rgbToHex(rgb.r, rgb.g, rgb.b);
 
@@ -3393,13 +3389,13 @@ function renderHomepageSettings(s) {
         if (statAccent) statAccent.innerText = `Custom (${hex})`;
 
         renderAISuggestions(hex);
-        applyAccent(hex);
+        applyAccent(hex, skipIpc);
     }
 
-    function setStudioFromHex(hex) {
+    function setStudioFromHex(hex, skipIpc = false) {
         const rgb = hexToRgb(hex);
         currentHsv = rgbToHsv(rgb.r, rgb.g, rgb.b);
-        syncStudioUI('hex');
+        syncStudioUI('hex', skipIpc);
     }
 
     presetSwatches.forEach(sw => {
@@ -3414,13 +3410,14 @@ function renderHomepageSettings(s) {
         }
 
         sw.onclick = () => {
-            const chosenColor = isDark ? (sw.dataset.darkColor || sw.dataset.color) : (sw.dataset.color || sw.dataset.darkColor);
+            const isDarkNow = (document.documentElement.getAttribute('data-theme') === 'dark' || (document.body && document.body.getAttribute('data-theme') === 'dark'));
+            const chosenColor = isDarkNow ? (sw.dataset.darkColor || sw.dataset.color) : (sw.dataset.color || sw.dataset.darkColor);
             presetSwatches.forEach(s2 => s2.classList.toggle('active', s2 === sw));
             if (customSwatch) customSwatch.classList.remove('active');
             if (customBadge) customBadge.style.display = 'none';
             if (customPopover) customPopover.style.display = 'none';
             
-            applyAccent(chosenColor);
+            applyAccent(chosenColor, false, true);
             if (statAccent) statAccent.innerText = sw.getAttribute('title') || 'Preset';
         };
     });
@@ -3429,7 +3426,7 @@ function renderHomepageSettings(s) {
     if (!matchedPreset && customSwatch) {
         customSwatch.classList.add('active');
         customSwatch.style.setProperty('--swatch-color', currentAccent);
-        setStudioFromHex(currentAccent);
+        setStudioFromHex(currentAccent, true);
     } else if (customBadge) {
         customBadge.style.display = 'none';
     }
@@ -3441,10 +3438,11 @@ function renderHomepageSettings(s) {
             customSwatch.classList.add('active');
             const isHidden = (customPopover.style.display === 'none' || !customPopover.style.display);
             customPopover.style.display = isHidden ? 'flex' : 'none';
+            const activeCustom = localStorage.getItem('ocal-settings-accent') || '#8B5CF6';
             if (isHidden) {
-                const activeCustom = localStorage.getItem('ocal-settings-accent') || '#8B5CF6';
-                setStudioFromHex(activeCustom);
+                setStudioFromHex(activeCustom, true);
             }
+            applyAccent(activeCustom, false, true);
         };
     }
 
@@ -3604,11 +3602,21 @@ function renderHomepageSettings(s) {
 // OCAL AI ASSISTANT HOME-STYLE HANDLERS
 // ══════════════════════════════════════════════════════════════════════════
 window.selectAIEngine = function(engine) {
+    // Flush any pending API keys before switching engines
+    const activeKeyInp = document.getElementById('ai-api-key-input');
+    if (activeKeyInp && activeKeyInp.value) {
+        window.electronAPI.updateSetting('aiApiKey', activeKeyInp.value.trim());
+    }
+    const activeOpenAIInp = document.getElementById('openai-api-key-input');
+    if (activeOpenAIInp && activeOpenAIInp.value) {
+        window.electronAPI.updateSetting('openaiApiKey', activeOpenAIInp.value.trim());
+    }
+
     window.electronAPI.updateSetting('aiEngine', engine);
     const cards = document.querySelectorAll('.ai-provider-card');
     cards.forEach(c => c.classList.toggle('active', c.dataset.value === engine));
-    if (typeof updateAISettingsVisibility === 'function') {
-        updateAISettingsVisibility(engine);
+    if (typeof window.updateAISettingsVisibility === 'function') {
+        window.updateAISettingsVisibility(engine);
     }
     updateAIStats();
 };
@@ -3668,28 +3676,30 @@ function renderAISettings(s) {
     const engine = s.aiEngine || 'local';
     const cards = document.querySelectorAll('.ai-provider-card');
     cards.forEach(c => c.classList.toggle('active', c.dataset.value === engine));
-    if (typeof updateAISettingsVisibility === 'function') {
-        updateAISettingsVisibility(engine);
+    if (typeof window.updateAISettingsVisibility === 'function') {
+        window.updateAISettingsVisibility(engine);
     }
 
+    // Helper to safely bind and preserve active typing
+    const syncInput = (id, settingKey, fallback = '') => {
+        const inp = document.getElementById(id);
+        if (!inp) return;
+        if (typeof bindLiveSettingInput === 'function') {
+            bindLiveSettingInput(inp, settingKey);
+        }
+        // CRITICAL: Never overwrite if user is currently focused/typing in this field!
+        if (s[settingKey] !== undefined && document.activeElement !== inp) {
+            inp.value = s[settingKey] || fallback;
+        }
+    };
+
     // API Keys and inputs
-    const geminiInp = document.getElementById('ai-api-key-input');
-    if (geminiInp && s.aiApiKey !== undefined) geminiInp.value = s.aiApiKey || '';
-
-    const openaiInp = document.getElementById('openai-api-key-input');
-    if (openaiInp && s.openaiApiKey !== undefined) openaiInp.value = s.openaiApiKey || '';
-
-    const customEndInp = document.getElementById('custom-endpoint-input');
-    if (customEndInp && s.customEndpoint !== undefined) customEndInp.value = s.customEndpoint || '';
-
-    const customModInp = document.getElementById('custom-model-input');
-    if (customModInp && s.customModel !== undefined) customModInp.value = s.customModel || '';
-
-    const customKeyInp = document.getElementById('custom-key-input');
-    if (customKeyInp && s.customApiKey !== undefined) customKeyInp.value = s.customApiKey || '';
-
-    const localEndInp = document.getElementById('local-endpoint-input');
-    if (localEndInp && s.localEndpoint !== undefined) localEndInp.value = s.localEndpoint || 'http://localhost:11434';
+    syncInput('ai-api-key-input', 'aiApiKey');
+    syncInput('openai-api-key-input', 'openaiApiKey');
+    syncInput('custom-endpoint-input', 'customEndpoint');
+    syncInput('custom-model-input', 'customModel');
+    syncInput('custom-key-input', 'customApiKey');
+    syncInput('local-endpoint-input', 'localEndpoint', 'http://localhost:11434');
 
     // Toggles
     const agencyCb = document.getElementById('ai-agency-toggle-cb');

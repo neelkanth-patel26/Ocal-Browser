@@ -388,6 +388,10 @@ function saveChatSessions() {
 
 // Create a new session
 function createNewChatSession(isInitial = false) {
+    attachedFile = null;
+    if (fileInput) fileInput.value = '';
+    if (filePreview) filePreview.style.display = 'none';
+
     const id = 'chat_' + Date.now();
     const newSession = {
         id: id,
@@ -410,6 +414,9 @@ function createNewChatSession(isInitial = false) {
 function selectChatSession(id) {
     const session = chatSessions.find(s => s.id === id);
     if (!session) return;
+    attachedFile = null;
+    if (fileInput) fileInput.value = '';
+    if (filePreview) filePreview.style.display = 'none';
     currentSessionId = id;
     currentSession = session;
     localStorage.setItem('ocal_current_chat_id', id);
@@ -492,6 +499,9 @@ function renderHistorySidebar() {
 
 // Re-render past message nodes instantly without typing
 function renderSessionMessages(session) {
+    if (typeof updateActiveDocUI === 'function') {
+        updateActiveDocUI();
+    }
     const heroContainer = document.getElementById('gemini-hero-container');
 
     messagesEl.innerHTML = ''; // Clear current screen
@@ -592,6 +602,45 @@ const fileNameEl = document.getElementById('ai-file-name');
 const fileIconEl = document.getElementById('ai-file-icon');
 const fileRemoveBtn = document.getElementById('ai-file-remove');
 
+// Active Document in Memory UI Elements
+const activeDocBar = document.getElementById('ai-active-doc-bar');
+const activeDocIcon = document.getElementById('ai-active-doc-icon');
+const activeDocName = document.getElementById('ai-active-doc-name');
+const activeDocClearBtn = document.getElementById('ai-active-doc-clear');
+
+function getDocIconClass(fileName) {
+    const lower = (fileName || '').toLowerCase();
+    if (lower.endsWith('.pdf')) return 'fas fa-file-pdf';
+    if (lower.endsWith('.docx') || lower.endsWith('.doc')) return 'fas fa-file-word';
+    if (['.js', '.ts', '.jsx', '.tsx', '.py', '.cpp', '.c', '.h', '.hpp', '.cs', '.java', '.go', '.rs', '.sh', '.bat', '.ps1', '.yaml', '.yml', '.xml', '.sql', '.ini', '.conf', '.json', '.html', '.css'].some(ext => lower.endsWith(ext))) {
+        return 'fas fa-file-code';
+    }
+    if (['.png', '.jpg', '.jpeg', '.webp', '.gif', '.svg', '.bmp'].some(ext => lower.endsWith(ext))) {
+        return 'fas fa-file-image';
+    }
+    return 'fas fa-file-lines';
+}
+
+function updateActiveDocUI() {
+    if (!activeDocBar) return;
+    const doc = currentSession?.activeDocument;
+    if (doc && doc.name) {
+        if (activeDocName) activeDocName.textContent = doc.name;
+        if (activeDocIcon) activeDocIcon.className = getDocIconClass(doc.name);
+        activeDocBar.style.display = 'flex';
+    } else {
+        activeDocBar.style.display = 'none';
+    }
+}
+
+activeDocClearBtn?.addEventListener('click', () => {
+    if (currentSession) {
+        currentSession.activeDocument = null;
+        saveChatSessions();
+    }
+    updateActiveDocUI();
+});
+
 attachBtn?.addEventListener('click', () => fileInput?.click());
 
 if (typeof pdfjsLib !== 'undefined') {
@@ -605,23 +654,36 @@ async function extractTextFromPdf(arrayBuffer) {
     for (let i = 1; i <= pdf.numPages; i++) {
         const page = await pdf.getPage(i);
         const textContent = await page.getTextContent();
-        const pageText = textContent.items.map(item => item.str).join(' ');
-        fullText += `--- Page ${i} ---\n${pageText}\n\n`;
+        let lastY = null;
+        let pageStr = '';
+        for (const item of textContent.items) {
+            if (lastY !== null && Math.abs(item.transform[5] - lastY) > 5) {
+                pageStr += '\n';
+            } else if (pageStr.length > 0 && !pageStr.endsWith(' ') && !pageStr.endsWith('\n')) {
+                pageStr += ' ';
+            }
+            pageStr += item.str;
+            lastY = item.transform[5];
+        }
+        fullText += `[Page ${i} of ${pdf.numPages}]\n${pageStr.trim()}\n\n`;
     }
-    return fullText;
+    return fullText.trim();
 }
 
 fileInput?.addEventListener('change', (e) => {
     const file = e.target.files[0];
     if (!file) return;
 
+    const lowerName = file.name.toLowerCase();
     const isImage = file.type.startsWith('image/');
-    const isPdf = file.type === 'application/pdf' || file.name.toLowerCase().endsWith('.pdf');
+    const isPdf = file.type === 'application/pdf' || lowerName.endsWith('.pdf');
+    const isDocx = lowerName.endsWith('.docx');
+    const isDoc = lowerName.endsWith('.doc');
     const isText = file.type.startsWith('text/') || 
-                   ['.js', '.ts', '.jsx', '.tsx', '.json', '.html', '.css', '.py', '.cpp', '.c', '.h', '.hpp', '.cs', '.java', '.go', '.rs', '.sh', '.bat', '.ps1', '.yaml', '.yml', '.xml', '.sql', '.ini', '.conf', '.log', '.md'].some(ext => file.name.toLowerCase().endsWith(ext));
+                   ['.txt', '.md', '.markdown', '.rtf', '.csv', '.tsv', '.json', '.log', '.js', '.ts', '.jsx', '.tsx', '.py', '.cpp', '.c', '.h', '.hpp', '.cs', '.java', '.go', '.rs', '.sh', '.bat', '.ps1', '.yaml', '.yml', '.xml', '.sql', '.ini', '.conf', '.html', '.css'].some(ext => lowerName.endsWith(ext));
 
-    if (!isImage && !isPdf && !isText) {
-        addMessage(`⚠️ **Error:** Unsupported file format. Please attach text/code files, PDFs, or images.`, false);
+    if (!isImage && !isPdf && !isDocx && !isDoc && !isText) {
+        addMessage(`⚠️ **Unsupported file format:** "${file.name}". Please attach PDF, Word (.docx), text, code, or image files.`, false);
         if (fileInput) fileInput.value = '';
         return;
     }
@@ -633,7 +695,7 @@ fileInput?.addEventListener('change', (e) => {
         if (isImage) {
             attachedFile = {
                 name: file.name,
-                mimeType: file.type,
+                mimeType: file.type || 'image/png',
                 type: 'image',
                 data: result.split(',')[1] // Base64 payload without prefix
             };
@@ -647,9 +709,12 @@ fileInput?.addEventListener('change', (e) => {
                 filePreview.style.display = 'flex';
                 
                 const pdfText = await extractTextFromPdf(result);
+                if (!pdfText || !pdfText.trim()) {
+                    throw new Error("No readable text found in this PDF (it may contain scanned image pages).");
+                }
                 attachedFile = {
                     name: file.name,
-                    mimeType: file.type,
+                    mimeType: file.type || 'application/pdf',
                     type: 'text',
                     data: pdfText
                 };
@@ -663,14 +728,55 @@ fileInput?.addEventListener('change', (e) => {
                 filePreview.style.display = 'none';
                 await addMessage(`⚠️ **Error parsing PDF:** ${err.message}`, false);
             }
+        } else if (isDocx) {
+            try {
+                fileNameEl.textContent = "Parsing Word document...";
+                fileIconEl.className = 'fas fa-spinner fa-spin';
+                filePreview.style.display = 'flex';
+
+                const arrayBuffer = result;
+                const bytes = new Uint8Array(arrayBuffer);
+                let binary = '';
+                for (let i = 0; i < bytes.byteLength; i++) {
+                    binary += String.fromCharCode(bytes[i]);
+                }
+                const base64Data = btoa(binary);
+
+                const parsed = window.electronAPI && window.electronAPI.invoke
+                    ? await window.electronAPI.invoke('ai-parse-document', {
+                        name: file.name,
+                        data: base64Data,
+                        mimeType: file.type
+                    })
+                    : null;
+
+                if (parsed && parsed.success && parsed.text) {
+                    attachedFile = {
+                        name: file.name,
+                        mimeType: file.type || 'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+                        type: 'text',
+                        data: parsed.text
+                    };
+                    fileIconEl.className = 'fas fa-file-word';
+                    fileNameEl.textContent = file.name;
+                } else {
+                    throw new Error(parsed?.error || "Could not read Word document content.");
+                }
+            } catch (err) {
+                console.error("Word Doc Parsing Error:", err);
+                attachedFile = null;
+                if (fileInput) fileInput.value = '';
+                filePreview.style.display = 'none';
+                await addMessage(`⚠️ **Error reading Word document:** ${err.message}`, false);
+            }
         } else {
             attachedFile = {
                 name: file.name,
-                mimeType: file.type,
+                mimeType: file.type || 'text/plain',
                 type: 'text',
                 data: result // Plain text content
             };
-            fileIconEl.className = 'fas fa-file-lines';
+            fileIconEl.className = getDocIconClass(file.name);
             fileNameEl.textContent = file.name;
             filePreview.style.display = 'flex';
         }
@@ -678,7 +784,7 @@ fileInput?.addEventListener('change', (e) => {
 
     if (isImage) {
         reader.readAsDataURL(file);
-    } else if (isPdf) {
+    } else if (isPdf || isDocx) {
         reader.readAsArrayBuffer(file);
     } else {
         reader.readAsText(file);
@@ -700,6 +806,29 @@ hljs.configure({ ignoreUnescapedHTML: true });
 
 // Configure Marked (Standard V9+ Parsing)
 const renderer = new marked.Renderer();
+
+// Global Helper: 1-Click Code Block Copy
+window.copyCodeFromBlock = function(btn) {
+    if (!btn) return;
+    const pre = btn.closest('pre');
+    if (!pre) return;
+    const codeEl = pre.querySelector('code');
+    const textToCopy = codeEl ? codeEl.innerText : pre.innerText;
+    navigator.clipboard.writeText(textToCopy).then(() => {
+        btn.innerHTML = '<i class="fas fa-check" style="color: #10B981;"></i> Copied!';
+        setTimeout(() => {
+            btn.innerHTML = '<i class="fas fa-copy"></i> Copy';
+        }, 2000);
+    });
+};
+
+// Native code block renderer for Marked: guarantees .code-header is always baked into the pre block
+renderer.code = function(code, infostring, escaped) {
+    const lang = (infostring || '').trim().split(/\s+/)[0] || 'code';
+    const cleanLang = lang.replace(/[^a-zA-Z0-9_-]/g, '') || 'code';
+    const escapedCode = escaped ? code : code.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+    return `<pre><div class="code-header"><span class="code-lang"><i class="fas fa-code"></i> ${cleanLang}</span><button class="code-copy-btn" title="Copy code" onclick="window.copyCodeFromBlock(this)"><i class="fas fa-copy"></i> Copy</button></div><code class="language-${cleanLang} hljs">${escapedCode}</code></pre>`;
+};
 
 // Custom image renderer to load pollinations.ai or sd:// images with a pulsing overlay loader
 renderer.image = function(href, title, text) {
@@ -1180,31 +1309,29 @@ const typeMessage = async (container, text, speed = 12) => {
 // Helper: Enhance Code Blocks with Language Badge & Copy Button
 const enhanceCodeBlocks = (container) => {
     container.querySelectorAll('pre').forEach(pre => {
-        if (pre.querySelector('.code-header')) return;
+        let header = pre.querySelector('.code-header');
         const codeEl = pre.querySelector('code');
         let lang = 'code';
         if (codeEl) {
             const classMatch = (codeEl.className || '').match(/language-([a-zA-Z0-9_-]+)/i);
             if (classMatch) lang = classMatch[1];
         }
-        const header = document.createElement('div');
-        header.className = 'code-header';
-        header.innerHTML = `
-            <span class="code-lang"><i class="fas fa-code"></i> ${lang}</span>
-            <button class="code-copy-btn" title="Copy code"><i class="fas fa-copy"></i> Copy</button>
-        `;
+        if (!header) {
+            header = document.createElement('div');
+            header.className = 'code-header';
+            header.innerHTML = `
+                <span class="code-lang"><i class="fas fa-code"></i> ${lang}</span>
+                <button class="code-copy-btn" title="Copy code" onclick="window.copyCodeFromBlock(this)"><i class="fas fa-copy"></i> Copy</button>
+            `;
+            pre.insertBefore(header, pre.firstChild);
+        }
         const copyBtn = header.querySelector('.code-copy-btn');
-        copyBtn.onclick = (e) => {
-            e.stopPropagation();
-            const textToCopy = codeEl ? codeEl.innerText : pre.innerText;
-            navigator.clipboard.writeText(textToCopy).then(() => {
-                copyBtn.innerHTML = '<i class="fas fa-check" style="color: #10B981;"></i> Copied!';
-                setTimeout(() => {
-                    copyBtn.innerHTML = '<i class="fas fa-copy"></i> Copy';
-                }, 2000);
-            });
-        };
-        pre.insertBefore(header, pre.firstChild);
+        if (copyBtn) {
+            copyBtn.onclick = (e) => {
+                e.stopPropagation();
+                window.copyCodeFromBlock(copyBtn);
+            };
+        }
     });
 };
 
@@ -1233,9 +1360,19 @@ const addMessage = async (content, isUser = false, actions = []) => {
         const aiHeader = document.createElement('div');
         aiHeader.className = 'msg-sender-header';
         const personaCfg = PERSONA_CONFIGS[getPersona()] || PERSONA_CONFIGS.professional;
-        const modelName = (globalSettings?.localModel && globalSettings.localModel !== 'auto') 
-            ? globalSettings.localModel 
-            : (globalSettings?.aiEngine === 'gemini' ? 'Gemini 1.5' : (globalSettings?.aiEngine === 'openai' ? 'ChatGPT' : 'Ocal Core'));
+        const currentEngine = globalSettings?.aiEngine || 'local';
+        let modelName = 'Ocal Core';
+        if (currentEngine === 'gemini') {
+            modelName = 'Gemini 2.5 Flash';
+        } else if (currentEngine === 'openai') {
+            modelName = 'ChatGPT';
+        } else if (currentEngine === 'custom') {
+            modelName = globalSettings?.customModel || 'Custom API';
+        } else {
+            modelName = (globalSettings?.localModel && globalSettings.localModel !== 'auto') 
+                ? globalSettings.localModel 
+                : 'Ollama Local';
+        }
         
         aiHeader.innerHTML = `
             <div class="msg-sender-meta">
@@ -1340,16 +1477,36 @@ const showThinking = () => {
     const group = document.createElement('div');
     group.className = 'msg-group ai thinking-group';
     const personaCfg = PERSONA_CONFIGS[getPersona()] || PERSONA_CONFIGS.professional;
+    const currentEngine = globalSettings?.aiEngine || 'local';
+    let modelName = 'Ocal Core';
+    if (currentEngine === 'gemini') {
+        modelName = 'Gemini 2.5 Flash';
+    } else if (currentEngine === 'openai') {
+        modelName = 'ChatGPT';
+    } else if (currentEngine === 'custom') {
+        modelName = globalSettings?.customModel || 'Custom API';
+    } else {
+        modelName = (globalSettings?.localModel && globalSettings.localModel !== 'auto') 
+            ? globalSettings.localModel 
+            : 'Ollama Local';
+    }
+
     group.innerHTML = `
         <div class="msg-sender-header">
             <div class="msg-sender-meta">
                 <span class="msg-sender-name">Ocal AI</span>
-                <span class="msg-thinking-tag"><span class="thinking-glow-dot"></span> Thinking...</span>
+                <span class="msg-persona-badge">${personaCfg.badge}</span>
+                <span class="msg-model-tag">${modelName}</span>
             </div>
         </div>
-        <div class="thinking-card">
-            <div class="thinking-spinner-ring"></div>
-            <span class="thinking-label">Synthesizing insights & reasoning...</span>
+        <div class="thinking-pill">
+            <span class="thinking-pulse-dot"></span>
+            <span class="thinking-text">Thinking</span>
+            <span class="thinking-dots">
+                <span class="dot"></span>
+                <span class="dot"></span>
+                <span class="dot"></span>
+            </span>
         </div>
     `;
     messagesEl.appendChild(group);
@@ -1367,40 +1524,64 @@ const hideThinking = () => {
 // Main Handler
 const handleSend = async (customQuery = null) => {
     let q = (customQuery || queryEl.value).trim();
-    if (!q && !attachedFile) return;
+    if (!q && !attachedFile && !currentSession?.activeDocument) return;
 
     if (!customQuery) {
         queryEl.value = '';
         queryEl.style.height = 'auto';
     }
 
+    // If new file attached in this turn, store as active document in current session
+    const isNewFileAttached = !!attachedFile;
+    if (isNewFileAttached && currentSession) {
+        currentSession.activeDocument = attachedFile;
+        saveChatSessions();
+        updateActiveDocUI();
+    }
+
+    // Effective active document for context (either newly attached or retained in memory)
+    const effectiveDoc = attachedFile || currentSession?.activeDocument || null;
+
     // Auto-rename chat session on first user message
     if (currentSession && currentSession.messages.length === 0) {
-        currentSession.title = q.length > 25 ? q.substring(0, 22) + '...' : q;
+        const titleSource = q || (effectiveDoc ? effectiveDoc.name : 'New Chat');
+        currentSession.title = titleSource.length > 25 ? titleSource.substring(0, 22) + '...' : titleSource;
         saveChatSessions();
     }
 
     let userBubbleText = q;
-    if (attachedFile) {
+    if (isNewFileAttached && effectiveDoc) {
         let fileMarkup = '';
-        if (attachedFile.type === 'image') {
-            fileMarkup = `<img src="data:${attachedFile.mimeType};base64,${attachedFile.data}" class="msg-file-img-preview" alt="${attachedFile.name}">\n\n`;
+        if (effectiveDoc.type === 'image') {
+            fileMarkup = `<img src="data:${effectiveDoc.mimeType};base64,${effectiveDoc.data}" class="msg-file-img-preview" alt="${effectiveDoc.name}">\n\n`;
         } else {
-            fileMarkup = `[File: **${attachedFile.name}**]\n\n`;
+            const iconClass = getDocIconClass(effectiveDoc.name);
+            fileMarkup = `<div class="active-doc-pill" style="display:inline-flex;margin-bottom:8px;padding:4px 10px;background:color-mix(in srgb,var(--accent) 12%,transparent);border:1px solid var(--accent-border);border-radius:12px;font-size:11.5px;"><i class="${iconClass}" style="color:var(--accent);margin-right:6px;"></i> <b>${effectiveDoc.name}</b></div>\n\n`;
         }
         
         if (!q) {
-            q = "Analyze this file";
-            userBubbleText = `${fileMarkup}Analyze attached file`;
+            q = `Please analyze the uploaded document "${effectiveDoc.name}" completely and thoroughly. Provide a comprehensive breakdown covering all main sections, key takeaways, summary of findings, and important details.`;
+            userBubbleText = `${fileMarkup}Analyze this document completely`;
         } else {
             userBubbleText = `${fileMarkup}${q}`;
         }
+    } else if (!q && effectiveDoc) {
+        q = `Please analyze "${effectiveDoc.name}" and provide a summary of its key points and insights.`;
+        userBubbleText = `Analyze active document: ${effectiveDoc.name}`;
     }
 
     await addMessage(userBubbleText, true);
     showThinking();
 
-    // Prepare payload with clean query string and persona metadata
+    // Prepare multi-turn conversation history (last 10 messages) for LLM memory
+    const historyList = (currentSession?.messages || [])
+        .slice(-10)
+        .map(m => ({
+            role: m.isUser ? 'user' : 'assistant',
+            content: m.content
+        }));
+
+    // Prepare payload with clean query string, persona metadata, history, and active document
     const personaKey = getPersona();
     const memoryFacts = getMemories();
     const customConfig = getCustomCompanionConfig();
@@ -1411,10 +1592,11 @@ const handleSend = async (customQuery = null) => {
         memory: memoryFacts,
         customConfig: customConfig,
         username: getUsername(),
-        file: attachedFile
+        history: historyList,
+        file: effectiveDoc
     };
 
-    // Reset file preview & state
+    // Reset pending file preview (document stays preserved in active session memory)
     attachedFile = null;
     if (fileInput) fileInput.value = '';
     if (filePreview) filePreview.style.display = 'none';
