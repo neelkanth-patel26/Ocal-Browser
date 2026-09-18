@@ -902,6 +902,24 @@
         }
     }
 
+    function closeDetailModal() {
+        if (!detailModal) return;
+        detailModal.classList.remove('active');
+        document.documentElement.classList.remove('modal-open');
+        document.body.classList.remove('modal-open');
+    }
+
+    function formatDescription(desc) {
+        if (!desc) return '';
+        return desc.split('\n').map(line => {
+            const trimmed = line.trim();
+            if (trimmed.startsWith('•') || trimmed.startsWith('-')) {
+                return `<div class="modal-feature-bullet"><i class="fas fa-circle-check"></i> <span>${trimmed.replace(/^[•\-]\s*/, '')}</span></div>`;
+            }
+            return trimmed ? `<p class="modal-desc-p">${trimmed}</p>` : '<div style="height: 6px;"></div>';
+        }).join('');
+    }
+
     // ── Detail Modal ─────────────────────────────────────────────────────────
     function openDetailModal(ext) {
         if (!detailModal || !modalBody) return;
@@ -915,31 +933,34 @@
                 </div>
                 <div class="modal-ext-main">
                     <h2 class="modal-ext-title">${ext.name}</h2>
-                    <div style="display: flex; align-items: center; gap: 12px; font-size: 13px; color: var(--text-secondary);">
+                    <div class="modal-ext-byline">
                         <span>Offered by <strong>${ext.author}</strong></span>
                         ${ext.verified ? '<i class="fas fa-certificate author-verified" title="Verified Publisher"></i>' : ''}
                         <span>&bull;</span>
-                        <span style="text-transform: capitalize;">${ext.category}</span>
+                        <span class="modal-cat-badge">${ext.category}</span>
                     </div>
-                    <div style="display: flex; align-items: center; gap: 16px; margin-top: 6px; font-size: 13px;">
-                        <div style="display: flex; align-items: center; gap: 4px; color: var(--star-color); font-weight: 700;">
+                    <div class="modal-ext-stats">
+                        <div class="modal-stars-wrap">
                             ${renderStars(ext.rating)}
-                            <span style="color: var(--text-primary); margin-left: 4px;">${ext.rating}</span>
-                            <span style="color: var(--text-dim); font-weight: 500;">(${ext.reviews} ratings)</span>
+                            <span class="modal-rating-val">${ext.rating}</span>
+                            <span class="modal-rating-count">(${ext.reviews} ratings)</span>
                         </div>
-                        <div style="color: var(--text-dim);">&bull;</div>
-                        <div style="font-weight: 600; color: var(--text-primary);">${ext.users} users</div>
+                        <div class="modal-users-chip">
+                            <i class="fas fa-user-group"></i> ${ext.users} users
+                        </div>
                     </div>
                 </div>
-                <div style="display: flex; align-items: center; gap: 8px;">
-                    <button class="btn-store-action secondary" id="modalVerifyGoogleBtn" style="padding: 10px 18px; font-size: 13px; background: rgba(66, 133, 244, 0.08); color: #4285f4; border: 1px solid rgba(66, 133, 244, 0.25);">
-                        <i class="fas fa-satellite-dish"></i>
-                        <span>Grab Live Google Data</span>
-                    </button>
-                    <button class="btn-store-action primary" id="modalInstallBtn" style="padding: 10px 24px; font-size: 13.5px;">
-                        ${isInstalled ? '<i class="fas fa-check"></i> Manage in Settings' : '<i class="fas fa-download"></i> Add to Ocal'}
-                    </button>
-                </div>
+            </div>
+
+            <!-- Action Bar -->
+            <div class="modal-action-bar">
+                <button class="btn-modal-install ${isInstalled ? 'installed' : ''}" id="modalInstallBtn">
+                    ${isInstalled ? '<i class="fas fa-check"></i> Manage in Settings' : '<i class="fas fa-plus"></i> Add to Ocal'}
+                </button>
+                <button class="btn-modal-google" id="modalVerifyGoogleBtn" title="Fetch live extension metadata from Google Chrome Web Store">
+                    <i class="fas fa-satellite-dish"></i>
+                    <span>Sync Live Data</span>
+                </button>
             </div>
 
             <!-- Screenshot Preview Carousel -->
@@ -948,30 +969,42 @@
             </div>
 
             <!-- Overview Description -->
-            <div>
-                <h4 style="font-size: 15px; font-weight: 800; margin-bottom: 8px;">Overview</h4>
-                <div style="font-size: 13.5px; line-height: 1.6; color: var(--text-secondary); white-space: pre-line;">
-                    ${ext.fullDesc || ext.desc}
+            <div class="modal-overview-wrap">
+                <h4 class="modal-section-heading"><i class="fas fa-circle-info"></i> Overview</h4>
+                <div class="modal-desc-body">
+                    ${formatDescription(ext.fullDesc || ext.desc)}
                 </div>
             </div>
 
             <!-- Specifications Grid -->
             <div class="modal-spec-grid">
-                <div class="spec-item">
-                    <span class="spec-label">Version</span>
-                    <span class="spec-val">${ext.version}</span>
+                <div class="spec-card">
+                    <div class="spec-icon"><i class="fas fa-code-branch"></i></div>
+                    <div class="spec-meta">
+                        <span class="spec-label">Version</span>
+                        <span class="spec-val">${ext.version}</span>
+                    </div>
                 </div>
-                <div class="spec-item">
-                    <span class="spec-label">Size</span>
-                    <span class="spec-val">${ext.size}</span>
+                <div class="spec-card">
+                    <div class="spec-icon"><i class="fas fa-file-zipper"></i></div>
+                    <div class="spec-meta">
+                        <span class="spec-label">Package Size</span>
+                        <span class="spec-val">${ext.size}</span>
+                    </div>
                 </div>
-                <div class="spec-item">
-                    <span class="spec-label">Last Updated</span>
-                    <span class="spec-val">${ext.updated}</span>
+                <div class="spec-card">
+                    <div class="spec-icon"><i class="fas fa-calendar-check"></i></div>
+                    <div class="spec-meta">
+                        <span class="spec-label">Last Updated</span>
+                        <span class="spec-val">${ext.updated}</span>
+                    </div>
                 </div>
-                <div class="spec-item">
-                    <span class="spec-label">Extension ID</span>
-                    <span class="spec-val" style="font-family: monospace; font-size: 11px;">${ext.id.substring(0, 16)}...</span>
+                <div class="spec-card">
+                    <div class="spec-icon"><i class="fas fa-fingerprint"></i></div>
+                    <div class="spec-meta">
+                        <span class="spec-label">Extension ID</span>
+                        <span class="spec-val font-mono" title="${ext.id}">${ext.id.substring(0, 14)}...</span>
+                    </div>
                 </div>
             </div>
         `;
@@ -998,7 +1031,7 @@
                 if (data && detailModal.classList.contains('active')) {
                     const iconEl = modalBody.querySelector('.modal-ext-icon');
                     if (iconEl && data.iconData) {
-                        iconEl.innerHTML = `<img src="${data.iconData}" style="width:100%;height:100%;object-fit:contain;" alt="${data.name}">`;
+                        iconEl.innerHTML = `<img src="${data.iconData}" class="real-ext-icon modal-real-icon" alt="${data.name}">`;
                     }
                     const titleEl = modalBody.querySelector('.modal-ext-title');
                     if (titleEl && data.name) titleEl.innerText = data.name;
@@ -1016,16 +1049,23 @@
             };
         }
 
+        // Lock background scroll and display modal in true viewport center
+        document.documentElement.classList.add('modal-open');
+        document.body.classList.add('modal-open');
         detailModal.classList.add('active');
+
+        // Reset scroll position inside modal card
+        const card = detailModal.querySelector('.store-modal-card');
+        if (card) card.scrollTop = 0;
     }
 
     if (modalCloseBtn) {
-        modalCloseBtn.onclick = () => detailModal.classList.remove('active');
+        modalCloseBtn.onclick = closeDetailModal;
     }
 
     if (detailModal) {
         detailModal.onclick = (e) => {
-            if (e.target === detailModal) detailModal.classList.remove('active');
+            if (e.target === detailModal) closeDetailModal();
         };
     }
 
@@ -1070,9 +1110,7 @@
                 searchInput.select();
             }
             if (e.key === 'Escape') {
-                if (detailModal && detailModal.classList.contains('active')) {
-                    detailModal.classList.remove('active');
-                }
+                closeDetailModal();
             }
         });
     }
