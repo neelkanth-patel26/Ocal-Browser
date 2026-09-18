@@ -1,6 +1,16 @@
 # Ocal Browser Premium Build Script
 # This script automates the full Electron build and Inno Setup compilation process.
 
+[CmdletBinding()]
+[System.Diagnostics.CodeAnalysis.SuppressMessageAttribute('PSAvoidUsingPlainTextForPassword', 'Password')]
+param (
+    [string]$PfxPath,
+    [System.Diagnostics.CodeAnalysis.SuppressMessageAttribute('PSAvoidUsingPlainTextForPassword', 'Password')]
+    [object]$Password,
+    [string]$Thumbprint,
+    [switch]$Sign
+)
+
 $ErrorActionPreference = "Stop"
 
 $version = (Get-Content package.json | ConvertFrom-Json).version
@@ -78,7 +88,37 @@ if (-not $isccPath) {
     if ($LASTEXITCODE -ne 0) { throw "Inno Setup compilation failed." }
 }
 
+# 3b. Code Signing (SHA-256 + RFC 3161 Timestamp)
+$setupFile = Get-ChildItem "dist-inno\Ocal-*-Setup.exe" -ErrorAction SilentlyContinue | Sort-Object LastWriteTime -Descending | Select-Object -First 1
+if ($setupFile) {
+    if ($PfxPath -or $Thumbprint -or $Sign -or (Test-Path "certificate.pfx") -or $env:CSC_LINK) {
+        Write-Host ""
+        Write-Host "[3b/4] Signing installer with SHA-256 Authenticode..." -ForegroundColor Yellow
+        $signScript = Join-Path $PSScriptRoot "scripts\sign-installer.ps1"
+        if (Test-Path $signScript) {
+            $signArgs = @("-ExecutionPolicy", "Bypass", "-File", $signScript, "-FilePath", $setupFile.FullName)
+            if ($PfxPath) { $signArgs += @("-PfxPath", $PfxPath) }
+            if ($Password) {
+                $plainPassword = if ($Password -is [System.Security.SecureString]) {
+                    [System.Net.NetworkCredential]::new('', $Password).Password
+                } else {
+                    [string]$Password
+                }
+                $signArgs += @("-Password", $plainPassword)
+            }
+            if ($Thumbprint) { $signArgs += @("-Thumbprint", $Thumbprint) }
+            & powershell $signArgs
+        }
+    } else {
+        Write-Host ""
+        Write-Host "[NOTICE] Installer compiled without digital signature." -ForegroundColor Gray
+        Write-Host "To sign with SHA-256: .\scripts\sign-installer.ps1 -PfxPath 'cert.pfx' -Password 'pass'" -ForegroundColor Gray
+        Write-Host "For Microsoft Store without a certificate: npm run build-store (MSIX is signed by Microsoft free)" -ForegroundColor Cyan
+    }
+}
+
 # 4. Final Summary
+Write-Host ""
 Write-Host "[4/4] Build Complete!" -ForegroundColor Green
 $setupFile = Get-ChildItem "dist-inno\Ocal-*-Setup.exe" -ErrorAction SilentlyContinue
 if ($setupFile) {

@@ -644,6 +644,27 @@
         }
     ];
 
+    // Ensure every extension has its authentic iconUrl mapped
+    EXTENSIONS_CATALOG.forEach(ext => {
+        if (!ext.iconUrl) {
+            ext.iconUrl = `assets/extension-icons/${ext.id}.png`;
+        }
+    });
+
+    function renderExtIcon(ext, extraClass = '') {
+        const iconSrc = ext.iconUrl || `assets/extension-icons/${ext.id}.png`;
+        return `
+            <img src="${iconSrc}" 
+                 alt="${ext.name}" 
+                 class="real-ext-icon ${extraClass}" 
+                 loading="lazy" 
+                 onerror="this.style.display='none'; if(this.nextElementSibling) this.nextElementSibling.style.display='flex';">
+            <div class="svg-fallback-icon" style="display:none; width:100%; height:100%;">
+                ${ext.iconSvg}
+            </div>
+        `;
+    }
+
     let installedIds = new Set();
     let currentCategory = 'all';
     let searchQuery = '';
@@ -760,7 +781,7 @@
             card.innerHTML = `
                 <div class="ext-card-header">
                     <div class="ext-card-icon">
-                        ${ext.iconSvg}
+                        ${renderExtIcon(ext)}
                     </div>
                     <div class="ext-card-meta">
                         <div class="ext-card-title" title="${ext.name}">${ext.name}</div>
@@ -890,7 +911,7 @@
         modalBody.innerHTML = `
             <div class="modal-ext-hero">
                 <div class="modal-ext-icon">
-                    ${ext.iconSvg}
+                    ${renderExtIcon(ext, 'modal-real-icon')}
                 </div>
                 <div class="modal-ext-main">
                     <h2 class="modal-ext-title">${ext.name}</h2>
@@ -1016,6 +1037,11 @@
         const heroPreview = document.getElementById('heroPreview');
         if (heroPreview) {
             heroPreview.innerHTML = featured.screenshotSvg;
+        }
+
+        const heroSpotlightIcon = document.querySelector('#heroSpotlight .store-spotlight-icon');
+        if (heroSpotlightIcon) {
+            heroSpotlightIcon.innerHTML = `<img src="${featured.iconUrl || 'assets/extension-icons/' + featured.id + '.png'}" alt="${featured.name}" class="real-ext-icon">`;
         }
 
         if (heroInstallBtn) {

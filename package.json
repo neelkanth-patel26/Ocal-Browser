@@ -1,7 +1,7 @@
 {
   "name": "ocal",
   "productName": "Ocal Browser",
-  "version": "9.1.03",
+  "version": "9.1.05",
   "description": "Ocal Browser - Fast, Secure, and Agentic.",
   "main": "main.js",
   "author": "Gaming Network Studio Media Group",
@@ -13,6 +13,7 @@
     "build-exe": "electron-builder --win portable",
     "build-premium": "electron-builder --win nsis",
     "build-inno": "powershell -ExecutionPolicy Bypass -File build-dist.ps1",
+    "sign-installer": "powershell -ExecutionPolicy Bypass -File scripts/sign-installer.ps1",
     "build-store": "powershell -ExecutionPolicy Bypass -File build-store.ps1"
   },
   "keywords": [],
@@ -123,7 +124,9 @@
       "uninstallerIcon": "icon.ico",
       "installerHeaderIcon": "icon.ico",
       "runAfterFinish": true,
-      "shortcutName": "Ocal"
+      "shortcutName": "Ocal",
+      "deleteAppDataOnUninstall": true,
+      "include": "build/installer.nsh"
     },
     "appx": {
       "applicationId": "OcalBrowser",

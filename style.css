@@ -797,11 +797,6 @@ body[data-theme="light"] .tab-group-name {
   color: #111111 !important;
 }
 
-body[data-theme="light"] .tab-group-header {
-  background: color-mix(in srgb, var(--group-color, #e0e0e0) 25%, #FFFFFF) !important;
-  border: 1px solid rgba(0,0,0,0.05) !important;
-}
-
 body[data-theme="light"] .sidebar-nav-btn {
   color: #111111 !important;
 }
@@ -1223,137 +1218,255 @@ body[data-theme="dark"] .tab-favicon.tab-emoji-img {
   50% { opacity: 0.5; }
 }
 
-/* ── Tab Groups ────────────────────────────────────────────────── */
+/* ── Tab Groups (Modern Unified Capsule & Vertical Indicator) ── */
+.tab-group-container {
+  display: inline-flex;
+  align-items: center;
+  height: calc(100% - 8px);
+  margin: 4px 2px;
+  background: #1C1C20 !important;
+  border: 1px solid rgba(255, 255, 255, 0.08) !important;
+  border-radius: 12px !important;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.22);
+  overflow: hidden;
+  position: relative;
+  flex-shrink: 0;
+  -webkit-app-region: no-drag;
+  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+  box-sizing: border-box;
+}
+
+body.compact-mode .tab-group-container {
+  height: 28px;
+  margin: 3px 1.5px;
+  border-radius: 8px !important;
+}
+
+.tab-group-container.drag-over {
+  border-color: var(--group-color, #a855f7) !important;
+  box-shadow: 0 0 12px color-mix(in srgb, var(--group-color, #a855f7) 40%, transparent);
+}
+
+/* Group Header / Left Indicator Capsule */
 .tab-group-header {
   display: flex;
   align-items: center;
-  gap: 7px;
-  padding: 0 12px 0 10px;
-  height: calc(100% - 10px);
-  margin: 5px 4px 5px 2px;
-  background: color-mix(in srgb, var(--group-color, #a855f7) 18%, transparent) !important;
-  border: 1px solid color-mix(in srgb, var(--group-color, #a855f7) 40%, transparent) !important;
-  border-radius: 100px !important;
+  justify-content: center;
+  height: 100%;
+  padding: 0 6px 0 8px;
   cursor: pointer;
   -webkit-app-region: no-drag;
   flex-shrink: 0;
-  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1) !important;
-  box-shadow: 0 2px 8px color-mix(in srgb, var(--group-color, #a855f7) 15%, transparent);
-}
-body.compact-mode .tab-group-header { height: 28px; padding: 0 10px 0 8px; border-radius: 100px; gap: 6px; }
-.tab-group-header:hover { 
-  background: color-mix(in srgb, var(--group-color, #a855f7) 28%, transparent) !important;
-  border-color: var(--group-color, #a855f7) !important;
-  transform: translateY(-1px);
-}
-.tab-group-header:active { transform: scale(0.96); }
-.tab-group-header.drag-over { 
-  border-color: var(--accent) !important; 
-  background: var(--accent-dim) !important; 
+  background: transparent !important;
+  border: none !important;
+  border-radius: 0 !important;
+  box-shadow: none !important;
+  transition: background 0.15s ease, transform 0.1s ease;
+  user-select: none;
+  gap: 6px;
 }
 
-.tab-group-dot {
-  width: 8px;
-  height: 8px;
-  border-radius: 50% !important;
-  background: var(--group-color, #a855f7) !important;
-  box-shadow: 0 0 8px var(--group-color, #a855f7) !important;
+body.compact-mode .tab-group-header {
+  padding: 0 5px 0 6px;
+  gap: 5px;
+}
+
+.tab-group-header:hover {
+  background: rgba(255, 255, 255, 0.05) !important;
+}
+
+.tab-group-header:active {
+  transform: scale(0.96);
+}
+
+.tab-group-header.drag-over {
+  background: color-mix(in srgb, var(--group-color, #a855f7) 20%, transparent) !important;
+}
+
+/* The vertical pill indicator matching the user screenshot */
+.tab-group-pill-indicator {
+  width: 4px;
+  height: 18px;
+  border-radius: 9999px !important;
+  background: var(--group-color, #7C3AED) !important;
+  box-shadow: 0 0 10px color-mix(in srgb, var(--group-color, #7C3AED) 75%, transparent);
   flex-shrink: 0;
+  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
+body.compact-mode .tab-group-pill-indicator {
+  width: 3.5px;
+  height: 14px;
+}
+
+.tab-group-header:hover .tab-group-pill-indicator {
+  box-shadow: 0 0 14px var(--group-color, #7C3AED);
+  transform: scaleY(1.08);
+}
+
+/* Optional Group Name */
 .tab-group-name {
-  font-size: 11px;
-  font-weight: 800;
-  color: var(--group-color, #a855f7) !important;
-  max-width: 120px;
+  font-size: 11.5px;
+  font-weight: 700;
+  color: #FFFFFF !important;
+  max-width: 110px;
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
-  text-transform: uppercase;
-  letter-spacing: 0.6px;
+  letter-spacing: 0.2px;
 }
 
-/* ── Visually Cohesive Grouped Tabs ── */
+body.compact-mode .tab-group-name {
+  font-size: 10.5px;
+  max-width: 90px;
+}
+
+/* Collapsed badge counter */
+.tab-group-collapsed-badge {
+  font-size: 10px;
+  font-weight: 700;
+  color: #FFFFFF;
+  background: rgba(255, 255, 255, 0.12);
+  padding: 1px 5px;
+  border-radius: 9999px;
+  line-height: 1.2;
+}
+
+/* ── Grouped Tab Items Inside the Capsule ── */
 .tab-item.grouped {
-  margin: 4px 1px;
-  background: color-mix(in srgb, var(--group-color, #a855f7) 14%, rgba(255, 255, 255, 0.04)) !important;
-  border: 1.5px solid color-mix(in srgb, var(--group-color, #a855f7) 45%, transparent) !important;
-  border-radius: 8px !important;
-  transition: all 0.15s cubic-bezier(0.16, 1, 0.3, 1) !important;
+  height: 100% !important;
+  margin: 0 !important;
+  border: none !important;
+  border-radius: 0 !important;
+  background: transparent !important;
+  box-shadow: none !important;
+  position: relative;
+  flex: 0 1 200px;
+  min-width: 44px;
+  max-width: 220px;
+  padding: 0 10px 0 10px !important;
+  color: #94A3B8 !important;
+  transition: background 0.15s ease, color 0.15s ease !important;
+}
+
+body.compact-mode .tab-item.grouped {
+  height: 100% !important;
+  padding: 0 8px 0 8px !important;
+  min-width: 32px;
+  max-width: 150px;
+  flex: 0 1 140px;
+}
+
+/* Subtle Hairline Vertical Divider between grouped tabs */
+.tab-item.grouped:not(:last-child)::after {
+  content: '';
+  position: absolute;
+  right: 0;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 1px;
+  height: 16px;
+  background: rgba(255, 255, 255, 0.12);
+  pointer-events: none;
+  z-index: 2;
+  transition: opacity 0.15s ease;
+}
+
+body.compact-mode .tab-item.grouped:not(:last-child)::after {
+  height: 13px;
 }
 
 .tab-item.grouped:hover {
-  background: color-mix(in srgb, var(--group-color, #a855f7) 24%, rgba(255, 255, 255, 0.08)) !important;
-  border-color: var(--group-color, #a855f7) !important;
-  color: #FFFFFF !important;
+  background: rgba(255, 255, 255, 0.04) !important;
+  color: #F1F5F9 !important;
 }
 
+.tab-item.grouped .tab-title {
+  color: inherit !important;
+  font-weight: 500 !important;
+}
+
+/* Active Grouped Tab - Clean Elevated Pill Inside Capsule */
 .tab-item.grouped.active {
-  background: color-mix(in srgb, var(--group-color, #a855f7) 25%, #181B20) !important;
-  border: 1.5px solid var(--group-color, #a855f7) !important;
+  background: rgba(255, 255, 255, 0.09) !important;
   color: #FFFFFF !important;
-  box-shadow: 0 4px 14px color-mix(in srgb, var(--group-color, #a855f7) 30%, transparent) !important;
+  border-radius: 8px !important;
+  margin: 3px 2px !important;
+  height: calc(100% - 6px) !important;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.25) !important;
+}
+
+body.compact-mode .tab-item.grouped.active {
+  margin: 2px 2px !important;
+  height: calc(100% - 4px) !important;
+  border-radius: 6px !important;
 }
 
 .tab-item.grouped.active .tab-title {
   color: #FFFFFF !important;
-  font-weight: 700 !important;
-  opacity: 1 !important;
+  font-weight: 600 !important;
 }
 
-body[data-theme="dark"] .tab-item.grouped {
-  background: color-mix(in srgb, var(--group-color, #a855f7) 16%, rgba(255, 255, 255, 0.04)) !important;
-  border: 1.5px solid color-mix(in srgb, var(--group-color, #a855f7) 50%, transparent) !important;
+.tab-item.grouped.active::after {
+  display: none !important;
 }
 
-body[data-theme="dark"] .tab-item.grouped:hover {
-  background: color-mix(in srgb, var(--group-color, #a855f7) 26%, rgba(255, 255, 255, 0.08)) !important;
-  border-color: var(--group-color, #a855f7) !important;
+/* Hide divider right before active tab */
+.tab-item.grouped:has(+ .tab-item.grouped.active)::after {
+  opacity: 0;
 }
 
-body[data-theme="dark"] .tab-item.grouped.active {
-  background: color-mix(in srgb, var(--group-color, #a855f7) 25%, #181B20) !important;
-  border: 1.5px solid var(--group-color, #a855f7) !important;
-  color: #FFFFFF !important;
-  box-shadow: 0 4px 14px color-mix(in srgb, var(--group-color, #a855f7) 35%, transparent) !important;
+/* Collapsed state */
+.tab-group-container.collapsed .tab-item.grouped {
+  display: none !important;
 }
 
-body[data-theme="dark"] .tab-item.grouped.active .tab-title {
-  color: #FFFFFF !important;
-  font-weight: 700 !important;
+.tab-group-container.collapsed .tab-group-header {
+  padding: 0 10px 0 10px;
+}
+
+/* ── Light Mode Tab Groups ────────────────────────────────────────── */
+body[data-theme="light"] .tab-group-container {
+  background: #EAECEF !important;
+  border: 1px solid rgba(0, 0, 0, 0.08) !important;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.04);
+}
+
+body[data-theme="light"] .tab-group-header:hover {
+  background: rgba(0, 0, 0, 0.05) !important;
+}
+
+body[data-theme="light"] .tab-group-name {
+  color: #0F172A !important;
+}
+
+body[data-theme="light"] .tab-group-collapsed-badge {
+  background: rgba(0, 0, 0, 0.08);
+  color: #0F172A;
 }
 
 body[data-theme="light"] .tab-item.grouped {
-  background: color-mix(in srgb, var(--group-color, #a855f7) 12%, rgba(0, 0, 0, 0.03)) !important;
-  border: 1.5px solid color-mix(in srgb, var(--group-color, #a855f7) 40%, transparent) !important;
+  color: #475569 !important;
+}
+
+body[data-theme="light"] .tab-item.grouped:not(:last-child)::after {
+  background: rgba(0, 0, 0, 0.12);
+}
+
+body[data-theme="light"] .tab-item.grouped:hover {
+  background: rgba(0, 0, 0, 0.04) !important;
+  color: #0F172A !important;
 }
 
 body[data-theme="light"] .tab-item.grouped.active {
   background: #FFFFFF !important;
-  border: 1.5px solid var(--group-color, #a855f7) !important;
-  color: #111111 !important;
-  box-shadow: 0 4px 14px color-mix(in srgb, var(--group-color, #a855f7) 20%, transparent) !important;
+  color: #0F172A !important;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.08) !important;
 }
 
 body[data-theme="light"] .tab-item.grouped.active .tab-title {
-  color: #111111 !important;
-  font-weight: 700 !important;
-}
-
-.tab-item.grouped.collapsed { display: none !important; }
-
-/* ── Light Mode Tab Group Header ── */
-body[data-theme="light"] .tab-group-header {
-  background: color-mix(in srgb, var(--group-color, #a855f7) 14%, rgba(0, 0, 0, 0.02)) !important;
-  border: 1px solid color-mix(in srgb, var(--group-color, #a855f7) 30%, transparent) !important;
-  box-shadow: 0 2px 6px color-mix(in srgb, var(--group-color, #a855f7) 10%, transparent);
-}
-body[data-theme="light"] .tab-group-header:hover {
-  background: color-mix(in srgb, var(--group-color, #a855f7) 22%, rgba(0, 0, 0, 0.02)) !important;
-  border-color: var(--group-color, #a855f7) !important;
-}
-body[data-theme="light"] .tab-group-dot {
-  box-shadow: 0 0 6px color-mix(in srgb, var(--group-color, #a855f7) 40%, transparent) !important;
+  color: #0F172A !important;
+  font-weight: 600 !important;
 }
 
 /* + new tab button */
