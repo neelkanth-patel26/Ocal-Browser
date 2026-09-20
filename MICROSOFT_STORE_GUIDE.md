@@ -23,34 +23,39 @@ Microsoft Partner Center allows submitting traditional Win32 installers directly
    ```bash
    npm run build-inno
    ```
-   This generates: `dist-inno\Ocal-9.1.03-Setup.exe`.
+   This generates: `dist-inno\Ocal-9.1.05-Setup.exe`.
 
 2. **Host the Installer**:
-   Upload `Ocal-9.1.03-Setup.exe` to a public URL (e.g., GitHub Releases, your CDN, or website).
+   Upload `Ocal-9.1.05-Setup.exe` to a permanent public direct-download URL.
+   - **GitHub Release Verified Direct Link**:
+     `https://github.com/neelkanth-patel26/Ocal-Browser/releases/download/v9.1.05/Ocal-9.1.05-Setup.exe`
 
 3. **In Microsoft Partner Center**:
-   - Create a new app under **Apps and Games**.
-   - Choose **Windows EXE or MSI app**.
-   - Fill in:
-     - **Installer URL (Download URL)**: Direct download link to your hosted `Ocal-9.1.03-Setup.exe`
-     - **Silent Install Parameters**: `/VERYSILENT /SUPPRESSMSGBOXES /NORESTART /SP-`
-     - **Silent Uninstall Parameters**: `/VERYSILENT /SUPPRESSMSGBOXES /NORESTART`
-     - **Package or Product Name in Add/Remove Programs**: `Ocal Browser`
-     - **Publisher Name in Add/Remove Programs**: `Gaming Network Studio Media Group`
-     - **Install return codes (Exit codes)**: `0` for success
-   - Complete Store listing (screenshots, descriptions, logos).
+   - Create or edit your submission under **Apps and Games** > **Ocal Browser** > **Packages / Installer details**.
+   - **Architecture**: Select **`x64` ONLY** (or `x64` and `x86`).
+     > [!CRITICAL]
+     > **DO NOT select `ARM64` or `Neutral`** for an x64 Win32 EXE installer!
+     > On Qualcomm Snapdragon ARM64 devices (like Microsoft Surface Laptop), selecting `ARM64` causes the Store to expect a native ARM64 binary. Selecting `x64` enables Windows 11's built-in **Prism x64 emulation**, allowing Ocal Browser to install and run perfectly.
+   - **Installer URL (Download URL)**:
+     `https://github.com/neelkanth-patel26/Ocal-Browser/releases/download/v9.1.05/Ocal-9.1.05-Setup.exe`
+   - **Silent Install Parameters**: `/VERYSILENT /SUPPRESSMSGBOXES /NORESTART /SP-`
+   - **Silent Uninstall Parameters**: `/VERYSILENT /SUPPRESSMSGBOXES /NORESTART`
+   - **Package or Product Name in Add/Remove Programs**: `Ocal Browser`
+   - **Publisher Name in Add/Remove Programs**: `Gaming Network Studio Media Group`
+   - **Install return codes (Exit codes)**: `0` for success
    - Submit for certification.
 
 ### 📋 Partner Center Ingestion Checks Reference
 
-When Partner Center runs automated tests on your installer, it performs 3 main checks:
+When Partner Center runs automated tests on your installer, it performs key checks:
 
 | Partner Center Check | Why it Failed Previously | How We Fixed It |
 | :--- | :--- | :--- |
+| **10.3.4 App Is Testable** (`Unsupported 16-Bit Application` on Microsoft Surface Laptop) | **Root Cause 1**: The release tag `v9.1.05` was initially created without the attached `Ocal-9.1.05-Setup.exe` binary. The download URL returned an HTTP 404 HTML page. When Windows saves an HTML error page as an `.exe` and attempts to execute it, the OS cannot read a PE header and throws `"Unsupported 16-Bit Application"`.<br>**Root Cause 2**: If `ARM64` was checked in Partner Center, the ARM64 Surface Laptop rejected non-native execution without emulation flags. | **1.** Streamed and uploaded the complete 152 MB binary (`Ocal-9.1.05-Setup.exe`) to GitHub Release `v9.1.05`. Validated direct streaming with HTTP 200 and authentic `MZ` PE header.<br>**2.** Configured Inno Setup with `ArchitecturesInstallIn64BitMode=x64compatible` and specified `x64` architecture in Partner Center for clean Prism emulation on Snapdragon Surface Laptops. |
 | **Silent install check** | The installer requested administrative elevation (`PrivilegesRequired=admin`) and was missing `/SP- /SUPPRESSMSGBOXES`, which popped up prompts in Microsoft's headless VM. | Configured `PrivilegesRequired=lowest` with dual-mode fallback, set `CloseApplications=no`, and added `/SP- /SUPPRESSMSGBOXES` flags. Returns exit code `0`. |
 | **Entry in add or remove programs** | The silent installer was failing before writing registry keys, or the name did not match (`Ocal Browser 9.1.03` vs `Ocal Browser`). | Set a permanent `AppId`, configured `UninstallDisplayName=Ocal Browser`, and `AppPublisher=Gaming Network Studio Media Group` in `HKA`. |
 | **Bundleware check** | Automated scanner could not inspect the installed entry because the silent installation aborted. | By passing the silent install and registering cleanly under `Ocal Browser`, the bundleware scanner now identifies the app and validates no unlisted software is bundled. |
-| **Code signing check** (`Package should be signed with SHA256 or higher algorithm`) | The hosted `.exe` installer at your download URL was unsigned (`Code signing type: Unsigned`). Microsoft Store requires all Win32 `.exe`/`.msi` installers submitted via URL to be digitally signed with a valid Authenticode certificate using SHA-256. | **Option 1**: Sign `dist-inno\Ocal-9.1.03-Setup.exe` using `npm run sign-installer` (or provide a `.pfx` certificate) and re-upload to your Vercel URL.<br>**Option 2 (Free & Recommended)**: Use **Method 2 (MSIX / AppX)** below (`npm run build-store`). Microsoft signs MSIX packages **for free** during store ingestion, eliminating the need to buy an expensive certificate! |
+| **Code signing check** (`Package should be signed with SHA256 or higher algorithm`) | The hosted `.exe` installer at your download URL was unsigned (`Code signing type: Unsigned`). | Sign `dist-inno\Ocal-9.1.05-Setup.exe` using `npm run sign-installer` (with your Authenticode `.pfx` certificate) or use a direct URL with valid signature. |
 
 ---
 

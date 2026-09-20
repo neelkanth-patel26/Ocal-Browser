@@ -1,4 +1,8 @@
-$token = $env:GH_TOKEN
+param (
+    [string]$Token = $env:GH_TOKEN
+)
+
+$token = $Token
 $owner = "neelkanth-patel26"
 $repo = "Ocal-Browser"
 
