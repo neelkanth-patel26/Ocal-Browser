@@ -2,6 +2,7 @@ node_modules
 out/
 dist-inno/
 dist-builder/
+*.md
 *.log
 *.js
 !main.js
@@ -10,6 +11,7 @@ dist-builder/
 !settings.js
 !color-harmonizer.js
 !ai-sidebar.js
+!libraries-dev-fx.js
 !preload.js
 !volume-booster.js
 !extensions-popup.js
@@ -27,3 +29,4 @@ startup_log.txt
 startup_final.log
 scratch/
 dist-store/
+.agents/

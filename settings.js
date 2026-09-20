@@ -3073,6 +3073,7 @@ window.selectSidebarAppWidth = function(width) {
 window.saveWeatherLocation = function() {
     const inp = document.getElementById('settings-weather-city-input');
     const btn = document.getElementById('save-weather-city-btn');
+    const disp = document.getElementById('settings-weather-active-city-display');
     if (!inp) return;
     const newLoc = inp.value.trim();
     if (newLoc) {
@@ -3080,6 +3081,7 @@ window.saveWeatherLocation = function() {
         if (window.electronAPI && window.electronAPI.updateSetting) {
             window.electronAPI.updateSetting('weatherLocation', newLoc);
         }
+        if (disp) disp.textContent = `Synced: ${newLoc}`;
         if (btn) {
             const original = btn.innerHTML;
             btn.innerHTML = `<i class="fas fa-check"></i><span>Saved!</span>`;
@@ -3090,6 +3092,7 @@ window.saveWeatherLocation = function() {
         if (window.electronAPI && window.electronAPI.updateSetting) {
             window.electronAPI.updateSetting('weatherLocation', '');
         }
+        if (disp) disp.textContent = 'Synced with Home Dashboard (Auto GPS)';
     }
 };
 
@@ -3100,11 +3103,21 @@ window.autoDetectWeatherLocation = function() {
     if (window.electronAPI && window.electronAPI.updateSetting) {
         window.electronAPI.updateSetting('weatherLocation', '');
     }
+    const disp = document.getElementById('settings-weather-active-city-display');
+    if (disp) disp.textContent = 'Synced with Home Dashboard (Auto GPS)';
     const btn = document.getElementById('auto-weather-city-btn');
     if (btn) {
         const orig = btn.innerHTML;
         btn.innerHTML = `<i class="fas fa-check"></i><span>Auto Set</span>`;
         setTimeout(() => { btn.innerHTML = orig; }, 1800);
+    }
+};
+
+window.setQuickWeatherCity = function(cityName) {
+    const inp = document.getElementById('settings-weather-city-input');
+    if (inp) {
+        inp.value = cityName;
+        window.saveWeatherLocation();
     }
 };
 
@@ -3137,6 +3150,22 @@ window.handleIconHueAdjust = function(val) {
     const num = Number(val) || 0;
     const valLabel = document.getElementById('icon-hue-val');
     if (valLabel) valLabel.innerText = (num >= 0 ? `+${num}°` : `${num}°`);
+
+    const hueSlider = document.getElementById('icon-hue-slider');
+    if (hueSlider && Number(hueSlider.value) !== num) {
+        hueSlider.value = num;
+    }
+
+    const segPills = document.querySelectorAll('#icon-tone-segmented .segmented-pill');
+    segPills.forEach(pill => {
+        const pillHue = Number(pill.getAttribute('data-hue'));
+        if (pillHue === num) {
+            pill.classList.add('active');
+        } else {
+            pill.classList.remove('active');
+        }
+    });
+
     try {
         localStorage.setItem('ocal-icon-hue-adjust', num.toString());
     } catch (e) {}
@@ -3172,6 +3201,12 @@ window.resetIconCalibration = function() {
     if (satSlider) satSlider.value = 100;
     const satVal = document.getElementById('icon-sat-val');
     if (satVal) satVal.innerText = '100%';
+
+    const segPills = document.querySelectorAll('#icon-tone-segmented .segmented-pill');
+    segPills.forEach(pill => {
+        if (Number(pill.getAttribute('data-hue')) === 0) pill.classList.add('active');
+        else pill.classList.remove('active');
+    });
 
     const slidersContainer = document.getElementById('icon-sliders-container');
     if (slidersContainer) {
@@ -3214,6 +3249,12 @@ function initIconCalibrationUI() {
         if (hueSlider) hueSlider.value = hue;
         const hueVal = document.getElementById('icon-hue-val');
         if (hueVal) hueVal.innerText = (Number(hue) >= 0 ? `+${hue}°` : `${hue}°`);
+
+        const segPills = document.querySelectorAll('#icon-tone-segmented .segmented-pill');
+        segPills.forEach(pill => {
+            if (Number(pill.getAttribute('data-hue')) === Number(hue)) pill.classList.add('active');
+            else pill.classList.remove('active');
+        });
 
         const sat = localStorage.getItem('ocal-icon-sat-adjust') || '100';
         const satSlider = document.getElementById('icon-sat-slider');
@@ -3593,8 +3634,13 @@ function renderHomepageSettings(s) {
 
     // Weather Location
     const weatherInp = document.getElementById('settings-weather-city-input');
+    const weatherDisp = document.getElementById('settings-weather-active-city-display');
+    const curSavedLoc = localStorage.getItem('ocal-weather-loc') || s.weatherLocation || '';
     if (weatherInp) {
-        weatherInp.value = localStorage.getItem('ocal-weather-loc') || s.weatherLocation || '';
+        weatherInp.value = curSavedLoc;
+    }
+    if (weatherDisp) {
+        weatherDisp.textContent = curSavedLoc ? `Synced: ${curSavedLoc}` : 'Synced with Home Dashboard (Auto GPS)';
     }
 }
 

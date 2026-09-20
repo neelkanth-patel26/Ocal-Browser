@@ -20,6 +20,12 @@ app.setName('Ocal Browser');
 app.name = 'Ocal Browser';
 if (process.platform === 'win32') {
     app.setAppUserModelId('com.ocal.browser.v2');
+    try {
+        const electronLnk = path.join(process.env.APPDATA || '', 'Microsoft', 'Windows', 'Start Menu', 'Programs', 'Electron.lnk');
+        if (fs.existsSync(electronLnk)) {
+            try { fs.unlinkSync(electronLnk); } catch (e) {}
+        }
+    } catch (e) {}
 }
 
 // Disable deprecation warnings in the console (silences punycode and setPreloads from 3rd-party libs)
@@ -53,8 +59,6 @@ app.commandLine.appendSwitch('enable-experimental-web-platform-features');
 // ── Web Loading & Rendering Speed Optimizations ──
 // Enable GPU Rasterization (speeds up page painting/scrolling)
 app.commandLine.appendSwitch('enable-gpu-rasterization');
-// Enable Zero Copy for GPU memory rasterization
-app.commandLine.appendSwitch('enable-zero-copy');
 // Enable Parallel Downloading (faster file/media loading)
 app.commandLine.appendSwitch('enable-parallel-downloading');
 // Optimize JavaScript engine heap memory limit for heavy web apps
@@ -65,11 +69,9 @@ app.commandLine.appendSwitch('enable-fast-unload');
 app.commandLine.appendSwitch('disable-background-timer-throttling');
 // Prevent backgrounding of renderers
 app.commandLine.appendSwitch('disable-renderer-backgrounding');
-// Fast TCP & DNS Acceleration
+// Fast TCP Acceleration & DNS Prefetch
 app.commandLine.appendSwitch('enable-tcp-fast-open');
-app.commandLine.appendSwitch('enable-async-dns');
 app.commandLine.appendSwitch('dns-prefetch-disable', 'false');
-app.commandLine.appendSwitch('enable-resource-load-scheduler');
 
 // Disable the default Electron menu bar on Windows/Linux to prevent UI shifting
 Menu.setApplicationMenu(null);
@@ -80,12 +82,45 @@ app.userAgentFallback = OCAL_USER_AGENT;
 // Single Instance Lock
 const gotTheLock = app.requestSingleInstanceLock();
 
+// GPU / Child Process Recovery Handling
+app.on('child-process-gone', (event, details) => {
+    if (details.type === 'GPU') {
+        console.warn(`[GPU Engine] GPU process exited (${details.reason}, code: ${details.exitCode}). Chromium is automatically recovering.`);
+    }
+});
+
+
+function hasAnyOpenOverlay() {
+    if (typeof sidebarOpen !== 'undefined' && sidebarOpen) return true;
+    if (typeof aiSidebarOpen !== 'undefined' && aiSidebarOpen) return true;
+    if (typeof webAppOpen !== 'undefined' && webAppOpen) return true;
+    if (typeof mainWindow !== 'undefined' && mainWindow && !mainWindow.isDestroyed()) {
+        const attachedViews = mainWindow.getBrowserViews();
+        if (typeof sidebarOverlayView !== 'undefined' && sidebarOverlayView && attachedViews.includes(sidebarOverlayView)) return true;
+        if (typeof aiSidebarView !== 'undefined' && aiSidebarView && attachedViews.includes(aiSidebarView)) return true;
+        if (typeof webAppView !== 'undefined' && webAppView && attachedViews.includes(webAppView)) return true;
+        if (typeof suggestionsView !== 'undefined' && suggestionsView && attachedViews.includes(suggestionsView)) return true;
+        if (typeof shieldPopupView !== 'undefined' && shieldPopupView && attachedViews.includes(shieldPopupView)) return true;
+        if (typeof passwordsPopupView !== 'undefined' && passwordsPopupView && attachedViews.includes(passwordsPopupView)) return true;
+        if (typeof bmDropdownView !== 'undefined' && bmDropdownView && attachedViews.includes(bmDropdownView)) return true;
+        if (typeof extensionDropdownView !== 'undefined' && extensionDropdownView && attachedViews.includes(extensionDropdownView)) return true;
+        if (typeof siteInfoView !== 'undefined' && siteInfoView && attachedViews.includes(siteInfoView)) return true;
+        if (typeof volumeBoostView !== 'undefined' && volumeBoostView && attachedViews.includes(volumeBoostView)) return true;
+        if (typeof mediaMasterView !== 'undefined' && mediaMasterView && attachedViews.includes(mediaMasterView)) return true;
+        if (typeof tabgroupView !== 'undefined' && tabgroupView && attachedViews.includes(tabgroupView)) return true;
+        if (typeof tabContextView !== 'undefined' && tabContextView && attachedViews.includes(tabContextView)) return true;
+        if (typeof downloadsView !== 'undefined' && downloadsView && attachedViews.includes(downloadsView)) return true;
+    }
+    return false;
+}
 
 function setupInteractionDismissal(contents) {
     if (!contents) return;
     contents.on('before-input-event', (event, input) => {
         if (input.type === 'mouseDown' || input.type === 'touchStart') {
-            closeOverlays();
+            if (hasAnyOpenOverlay()) {
+                closeOverlays();
+            }
         }
     });
 }
@@ -546,23 +581,27 @@ function updateTabShieldStats(wcId, type) {
     }
 }
 
+let _broadcastShieldTimer = null;
 function broadcastShieldStats(wcId = null) {
-    if (!mainWindow || mainWindow.isDestroyed()) return;
-    const globalStats = userSettings.shieldStats.global;
+    if (_broadcastShieldTimer) return;
+    _broadcastShieldTimer = setTimeout(() => {
+        _broadcastShieldTimer = null;
+        if (!mainWindow || mainWindow.isDestroyed()) return;
+        const globalStats = userSettings.shieldStats ? userSettings.shieldStats.global : null;
 
-    // We send to everyone so the dashboard and popups stay in sync
-    BrowserWindow.getAllWindows().forEach(bw => {
-        try {
-            if (bw.isDestroyed()) return;
-            const pageStats = wcId ? tabShieldStats.get(wcId) : null;
-            bw.webContents.send('shield-stats-updated', {
-                global: globalStats,
-                page: pageStats,
-                webContentsId: wcId,
-                sessionStartTime
-            });
-        } catch (e) { }
-    });
+        BrowserWindow.getAllWindows().forEach(bw => {
+            try {
+                if (bw.isDestroyed()) return;
+                const pageStats = wcId ? tabShieldStats.get(wcId) : null;
+                bw.webContents.send('shield-stats-updated', {
+                    global: globalStats,
+                    page: pageStats,
+                    webContentsId: wcId,
+                    sessionStartTime
+                });
+            } catch (e) { }
+        });
+    }, 500);
 }
 
 
@@ -817,6 +856,10 @@ const YOUTUBE_AD_PATTERNS = [
     /youtube\.com\/get_video_info\?.*ad_v2/
 ];
 
+function isTrackerDomain(d) {
+    return d.includes('analytic') || d.includes('pixel') || d.includes('clarity') || d.includes('hotjar') || d.includes('segment') || d.includes('sentry') || d.includes('telemetry') || d.includes('track');
+}
+
 function isAdOrTrackerUrl(rawUrl) {
     if (!rawUrl || typeof rawUrl !== 'string') return null;
     if (rawUrl.startsWith('ocal://') || rawUrl.startsWith('file://') || rawUrl.startsWith('chrome-extension://') || rawUrl.startsWith('devtools://')) {
@@ -845,21 +888,26 @@ function isAdOrTrackerUrl(rawUrl) {
 
         // 1. YouTube specific ad streams
         if (hostname.includes('youtube.com') || hostname.includes('googlevideo.com')) {
-            const isYtAd = YOUTUBE_AD_PATTERNS.some(p => p instanceof RegExp ? p.test(rawUrl) : rawUrl.includes(p));
-            if (isYtAd) return 'ads';
+            for (let i = 0; i < YOUTUBE_AD_PATTERNS.length; i++) {
+                const p = YOUTUBE_AD_PATTERNS[i];
+                if (typeof p === 'string' ? rawUrl.includes(p) : p.test(rawUrl)) return 'ads';
+            }
         }
 
-        // 2. Exact domain matching in ADBLOCK_DOMAINS
+        // 2. Exact domain matching in ADBLOCK_DOMAINS (O(1))
         if (ADBLOCK_DOMAINS.has(hostname)) {
-            const isTracker = hostname.includes('analytic') || hostname.includes('pixel') || hostname.includes('clarity') || hostname.includes('hotjar') || hostname.includes('segment') || hostname.includes('sentry') || hostname.includes('telemetry') || hostname.includes('track');
-            return isTracker ? 'trackers' : 'ads';
+            return isTrackerDomain(hostname) ? 'trackers' : 'ads';
         }
 
-        // 3. Suffix / Subdomain matching
-        for (const adDomain of ADBLOCK_DOMAINS) {
-            if (hostname.endsWith('.' + adDomain)) {
-                const isTracker = adDomain.includes('analytic') || adDomain.includes('pixel') || adDomain.includes('clarity') || adDomain.includes('hotjar') || adDomain.includes('segment') || adDomain.includes('sentry') || adDomain.includes('telemetry') || adDomain.includes('track');
-                return isTracker ? 'trackers' : 'ads';
+        // 3. Fast subdomain matching via dot splits (O(1))
+        const dotIdx = hostname.indexOf('.');
+        if (dotIdx !== -1) {
+            const parts = hostname.split('.');
+            for (let i = 1; i < parts.length - 1; i++) {
+                const sub = parts.slice(i).join('.');
+                if (ADBLOCK_DOMAINS.has(sub)) {
+                    return isTrackerDomain(sub) ? 'trackers' : 'ads';
+                }
             }
         }
 
@@ -875,58 +923,73 @@ function isAdOrTrackerUrl(rawUrl) {
 }
 
 function applyShieldSettings() {
-    setTimeout(() => {
-        if (global._shieldInterceptorsRegistered) return;
-        global._shieldInterceptorsRegistered = true;
+    if (global._shieldInterceptorsRegistered) return;
+    global._shieldInterceptorsRegistered = true;
 
-        const ses = session.defaultSession;
-        const sesGoogle = session.fromPartition('persist:google_login');
+    const masterOnBeforeRequest = (details, callback) => {
+        const { url, resourceType, webContentsId } = details;
+        if (!url) return callback({});
 
-        const masterOnBeforeRequest = (details, callback) => {
-            const { url, resourceType, webContentsId } = details;
-            if (!url) return callback({});
+        // 1. HTTPS Upgrade for mainFrame navigation
+        if (userSettings.httpsUpgradeEnabled && resourceType === 'mainFrame' && url.startsWith('http://')) {
+            try {
+                const upgradeUrl = new URL(url);
+                upgradeUrl.protocol = 'https:';
+                return callback({ redirectURL: upgradeUrl.toString() });
+            } catch (e) {}
+        }
 
-            // 1. HTTPS Upgrade for mainFrame navigation
-            if (userSettings.httpsUpgradeEnabled && resourceType === 'mainFrame' && url.startsWith('http://')) {
-                try {
-                    const upgradeUrl = new URL(url);
-                    upgradeUrl.protocol = 'https:';
-                    return callback({ redirectURL: upgradeUrl.toString() });
-                } catch (e) {}
+        // 2. Outgoing Tracking Parameter Stripper (Accelerates navigation & protects privacy)
+        if (resourceType === 'mainFrame' && url.includes('?')) {
+            const cleaned = cleanTrackingParameters(url);
+            if (cleaned !== url) {
+                return callback({ redirectURL: cleaned });
             }
+        }
 
-            // 2. Outgoing Tracking Parameter Stripper (Accelerates navigation & protects privacy)
-            if (resourceType === 'mainFrame' && url.includes('?')) {
-                const cleaned = cleanTrackingParameters(url);
-                if (cleaned !== url) {
-                    return callback({ redirectURL: cleaned });
-                }
+        // 3. Native Turbo-Shield AdBlock & Tracker Blocker
+        if (userSettings.adBlockEnabled !== false) {
+            const blockType = isAdOrTrackerUrl(url);
+            if (blockType) {
+                if (webContentsId) updateTabShieldStats(webContentsId, blockType);
+                return callback({ cancel: true });
             }
+        }
 
-            // 3. Native Turbo-Shield AdBlock & Tracker Blocker
-            if (userSettings.adBlockEnabled !== false) {
-                const blockType = isAdOrTrackerUrl(url);
-                if (blockType) {
-                    if (webContentsId) updateTabShieldStats(webContentsId, blockType);
-                    return callback({ cancel: true });
-                }
+        callback({});
+    };
+
+    const masterOnBeforeSendHeaders = (details, callback) => {
+        const headers = details.requestHeaders || {};
+        const url = details.url || '';
+
+        headers['Accept-Language'] = 'en-US,en;q=0.9';
+
+        // Strip Electron detection headers across all sessions
+        delete headers['X-Requested-With'];
+        delete headers['X-Electron-Id'];
+        delete headers['X-Electron-Version'];
+
+        // YouTube stealth headers
+        if (url.includes('youtube.com') && !url.includes('googlevideo.com')) {
+            if (!headers['Sec-Ch-Ua']) {
+                headers['Sec-Ch-Ua'] = '"Chromium";v="134", "Not:A-Brand";v="99"';
+                headers['Sec-Ch-Ua-Mobile'] = '?0';
+                headers['Sec-Ch-Ua-Platform'] = '"Windows"';
             }
+        }
 
-            callback({});
-        };
+        callback({ requestHeaders: headers });
+    };
 
-        const masterOnBeforeSendHeaders = (details, callback) => {
-            const headers = details.requestHeaders || {};
-            headers['Accept-Language'] = 'en-US,en;q=0.9';
-            callback({ requestHeaders: headers });
-        };
+    const masterOnHeadersReceived = (details, callback) => {
+        const headers = details.responseHeaders || {};
+        const url = details.url || '';
+        const resourceType = details.resourceType || '';
 
-        const masterOnHeadersReceived = (details, callback) => {
-            const headers = details.responseHeaders || {};
-            const url = details.url || '';
-
-            // Apply internal CSP only to ocal:// pages
-            if (url.startsWith('ocal://') && !headers['content-security-policy'] && !headers['Content-Security-Policy']) {
+        // Apply internal CSP only to ocal:// pages
+        if (url.startsWith('ocal://')) {
+            if (!headers['content-security-policy'] && !headers['Content-Security-Policy']) {
                 headers['Content-Security-Policy'] = [
                     "default-src 'self' 'unsafe-inline' 'unsafe-eval' data: blob: ocal: *; " +
                     "script-src 'self' 'unsafe-inline' 'unsafe-eval' data: blob: https:; " +
@@ -938,17 +1001,61 @@ function applyShieldSettings() {
                     "worker-src 'self' blob:;"
                 ];
             }
-            callback({ responseHeaders: headers });
-        };
+            return callback({ responseHeaders: headers });
+        }
 
-        [ses, sesGoogle].forEach(s => {
+        // Subresources (images, scripts, styles, media) don't need header stripping - return immediately
+        if (resourceType !== 'mainFrame' && resourceType !== 'subFrame') {
+            return callback({ responseHeaders: headers });
+        }
+
+        // YouTube specifically needs its headers preserved to avoid 403s on videoplayback
+        if (url.includes('googlevideo.com') || url.includes('youtube.com')) {
+            return callback({ responseHeaders: headers });
+        }
+
+        // Only strip if CSP headers actually exist in response
+        const hasCsp = headers['content-security-policy'] || headers['Content-Security-Policy'] ||
+                       headers['content-security-policy-report-only'] || headers['Content-Security-Policy-Report-Only'] ||
+                       headers['require-trusted-types-for'] || headers['trusted-types'];
+
+        if (!hasCsp) {
+            return callback({ responseHeaders: headers });
+        }
+
+        const headersToStrip = [
+            'content-security-policy',
+            'content-security-policy-report-only',
+            'require-trusted-types-for',
+            'trusted-types'
+        ];
+
+        const filteredHeaders = {};
+        for (const key of Object.keys(headers)) {
+            if (!headersToStrip.includes(key.toLowerCase())) {
+                filteredHeaders[key] = headers[key];
+            }
+        }
+
+        callback({ responseHeaders: filteredHeaders });
+    };
+
+    const targetSessions = typeof getActiveExtensionSessions === 'function'
+        ? getActiveExtensionSessions()
+        : [session.defaultSession, session.fromPartition('persist:google_login'), session.fromPartition(getProfilePartition())];
+
+    targetSessions.forEach(s => {
+        try {
+            s.setUserAgent(OCAL_USER_AGENT);
             s.webRequest.onBeforeRequest({ urls: ['*://*/*'] }, masterOnBeforeRequest);
             s.webRequest.onBeforeSendHeaders({ urls: ['*://*/*'] }, masterOnBeforeSendHeaders);
             s.webRequest.onHeadersReceived({ urls: ['*://*/*'] }, masterOnHeadersReceived);
-        });
+        } catch (e) {
+            console.warn('[Shield] Error attaching webRequest interceptors:', e);
+        }
+    });
 
-        console.log('Ocal Turbo-Shield: Active (High-Speed Ad & Tracker Blocking + Page Acceleration)');
-    }, 500);
+    console.log('Ocal Turbo-Shield: Active (Unified High-Speed Engine across all active sessions)');
 }
 
 function setupSessionHandlers() {
@@ -1055,70 +1162,7 @@ function applyCyberStealth(webContents) {
 }
 
 function setupSecurityHeadersFix() {
-    const ses = session.defaultSession;
-    const googleSes = session.fromPartition('persist:google_login');
-
-    const stealthFilter = (details, callback) => {
-        const { requestHeaders, url } = details;
-
-        // Prevent 403 Forbidden on GoogleVideo / YouTube by ensuring Referer/Origin integrity
-        const isYouTube = url.includes('youtube.com');
-        const isVideo = url.includes('googlevideo.com');
-
-        if (isYouTube && !isVideo) {
-            // ONLY modify if absolutely necessary, don't overwrite if uBlock already handled it
-            if (!requestHeaders['Sec-Ch-Ua']) {
-                requestHeaders['Sec-Ch-Ua'] = '"Chromium";v="134", "Not:A-Brand";v="99"';
-                requestHeaders['Sec-Ch-Ua-Mobile'] = '?0';
-                requestHeaders['Sec-Ch-Ua-Platform'] = '"Windows"';
-            }
-
-            // Clean suspicious headers that trigger YouTube ad-block detection
-            delete requestHeaders['X-Requested-With'];
-            delete requestHeaders['X-Electron-Id'];
-        }
-
-        callback({ requestHeaders });
-    };
-
-    const filterHeaders = (details, callback) => {
-        const { responseHeaders, url } = details;
-
-        // Don't strip headers for our internal ocal:// pages
-        if (url.startsWith('ocal://')) {
-            return callback({ responseHeaders });
-        }
-
-        const headersToStrip = [
-            'content-security-policy',
-            'content-security-policy-report-only',
-            'require-trusted-types-for',
-            'trusted-types'
-        ];
-
-        // YouTube specifically needs its headers preserved to avoid 403s on videoplayback
-        if (url.includes('googlevideo.com') || url.includes('youtube.com')) {
-            return callback({ responseHeaders });
-        }
-
-        // Case-insensitive filtering
-        const filteredHeaders = {};
-        for (const key of Object.keys(responseHeaders)) {
-            if (!headersToStrip.includes(key.toLowerCase())) {
-                filteredHeaders[key] = responseHeaders[key];
-            }
-        }
-
-        callback({ responseHeaders: filteredHeaders });
-    };
-
-    ses.webRequest.onHeadersReceived({ urls: ['*://*/*'] }, filterHeaders);
-    googleSes.webRequest.onHeadersReceived({ urls: ['*://*/*'] }, filterHeaders);
-
-    ses.webRequest.onBeforeSendHeaders({ urls: ['*://*/*'] }, stealthFilter);
-    googleSes.webRequest.onBeforeSendHeaders({ urls: ['*://*/*'] }, stealthFilter);
-
-    console.log('[Stealth Hub] Proactive Header Policy and YouTube bypass active.');
+    // Header policy, stealth sanitization, and YouTube stream bypass are unified into applyShieldSettings()
 }
 
 function setupSecurityHandlers() {
@@ -1161,7 +1205,7 @@ function createMainWindow() {
         minWidth: 450,
         minHeight: 500,
         title: 'Ocal Browser',
-        icon: appIcon || appIconPath,
+        icon: process.platform === 'win32' ? appIconPath : (appIcon || appIconPath),
         frame: false,
         transparent: false,
         backgroundColor: userSettings.themeMode === 'light' ? '#ffffff' : '#0c0c0e', // Dynamic background to match theme and prevent flashbang
@@ -1178,11 +1222,15 @@ function createMainWindow() {
         },
     });
 
-    if (appIcon && !appIcon.isEmpty()) {
+    if (process.platform === 'win32' && appIconPath) {
+        try { mainWindow.setIcon(appIconPath); } catch (e) {}
+    } else if (appIcon && !appIcon.isEmpty()) {
         try { mainWindow.setIcon(appIcon); } catch (e) {}
     }
     mainWindow.once('ready-to-show', () => {
-        if (appIcon && !appIcon.isEmpty()) {
+        if (process.platform === 'win32' && appIconPath) {
+            try { mainWindow.setIcon(appIconPath); } catch (e) {}
+        } else if (appIcon && !appIcon.isEmpty()) {
             try { mainWindow.setIcon(appIcon); } catch (e) {}
         }
     });
@@ -1386,20 +1434,6 @@ app.on('certificate-error', (event, webContents, url, error, certificate, callba
 });
 
 function setupCompatibilityHandler() {
-    const registerStealthHandler = (ses) => {
-        ses.setUserAgent(OCAL_USER_AGENT);
-        ses.webRequest.onBeforeSendHeaders((details, callback) => {
-            const { requestHeaders } = details;
-            delete requestHeaders['X-Electron-Id'];
-            delete requestHeaders['X-Requested-With'];
-            delete requestHeaders['X-Electron-Version'];
-            callback({ requestHeaders });
-        });
-    };
-
-    registerStealthHandler(session.defaultSession);
-    registerStealthHandler(session.fromPartition('persist:google_login'));
-
     session.defaultSession.setPermissionRequestHandler((webContents, permission, callback) => {
         if (['display-capture', 'media', 'fullscreen'].includes(permission)) callback(true);
         else callback(false);
@@ -1407,11 +1441,11 @@ function setupCompatibilityHandler() {
 }
 
 app.on('web-contents-created', (event, contents) => {
-    // Console logging redirection
+    // Only log actual errors or internal messages to prevent stdout I/O from stalling the event loop
     contents.on('console-message', (e, level, message, line, sourceId) => {
-        const levelNames = ['DEBUG', 'INFO', 'WARN', 'ERROR'];
-        const levelName = levelNames[level] || 'LOG';
-        console.log(`[CONSOLE][${levelName}][${contents.getType()}] ${message} (${path.basename(sourceId || '')}:${line})`);
+        if (level >= 3) {
+            console.error(`[CONSOLE][ERROR][${contents.getType()}] ${message} (${path.basename(sourceId || '')}:${line})`);
+        }
         
         if (message.startsWith('SIGNAL_INIT ')) {
             try {
@@ -1640,12 +1674,15 @@ function showSidebarOverlay() {
 }
 
 function hideSidebarOverlay() {
+    if (!sidebarOpen && (!sidebarOverlayView || !mainWindow || mainWindow.isDestroyed() || !mainWindow.getBrowserViews().includes(sidebarOverlayView))) {
+        return;
+    }
+    sidebarOpen = false;
     if (sidebarOverlayView && !sidebarOverlayView.webContents.isDestroyed() && mainWindow && !mainWindow.isDestroyed()) {
         if (mainWindow.getBrowserViews().includes(sidebarOverlayView)) {
             mainWindow.removeBrowserView(sidebarOverlayView);
         }
     }
-    sidebarOpen = false;
     updateViewBounds();
 }
 
@@ -1669,23 +1706,15 @@ function showAiSidebar() {
 }
 
 function hideAiSidebar() {
-    if (aiSidebarView && !aiSidebarView.webContents.isDestroyed()) {
-        if (mainWindow && !mainWindow.isDestroyed() && mainWindow.getBrowserViews().includes(aiSidebarView)) {
-            // Initiate exit animation instead of immediate removal
-            aiSidebarView.webContents.send('start-sidebar-exit');
-
-            // Safety timeout: remove after 600ms if renderer doesn't respond
-            setTimeout(() => {
-                if (aiSidebarView && !aiSidebarView.webContents.isDestroyed() &&
-                    mainWindow && !mainWindow.isDestroyed() &&
-                    mainWindow.getBrowserViews().includes(aiSidebarView) && aiSidebarOpen === false) {
-                    mainWindow.removeBrowserView(aiSidebarView);
-                    updateViewBounds();
-                }
-            }, 600);
-        }
+    if (!aiSidebarOpen && (!aiSidebarView || !mainWindow || mainWindow.isDestroyed() || !mainWindow.getBrowserViews().includes(aiSidebarView))) {
+        return;
     }
     aiSidebarOpen = false;
+    if (aiSidebarView && !aiSidebarView.webContents.isDestroyed() && mainWindow && !mainWindow.isDestroyed()) {
+        if (mainWindow.getBrowserViews().includes(aiSidebarView)) {
+            mainWindow.removeBrowserView(aiSidebarView);
+        }
+    }
     updateViewBounds();
 }
 
@@ -1722,50 +1751,67 @@ function createTabContextView() {
 }
 
 function closeOverlays() {
-    sidebarOpen = false;
-    aiSidebarOpen = false;
-    hideSidebarOverlay();
-    hideAiSidebar();
-    hideSuggestions();
+    if (!hasAnyOpenOverlay()) return;
 
-    if (tabgroupView && !tabgroupView.webContents.isDestroyed() && mainWindow && !mainWindow.isDestroyed()) {
-        if (mainWindow.getBrowserViews().includes(tabgroupView)) {
-            mainWindow.removeBrowserView(tabgroupView);
+    let needsBoundsUpdate = false;
+
+    if (sidebarOpen || (sidebarOverlayView && mainWindow && !mainWindow.isDestroyed() && mainWindow.getBrowserViews().includes(sidebarOverlayView))) {
+        sidebarOpen = false;
+        if (sidebarOverlayView && !sidebarOverlayView.webContents.isDestroyed() && mainWindow && !mainWindow.isDestroyed()) {
+            if (mainWindow.getBrowserViews().includes(sidebarOverlayView)) {
+                mainWindow.removeBrowserView(sidebarOverlayView);
+            }
         }
+        needsBoundsUpdate = true;
     }
-    if (tabContextView && !tabContextView.webContents.isDestroyed() && mainWindow && !mainWindow.isDestroyed()) {
-        if (mainWindow.getBrowserViews().includes(tabContextView)) {
-            mainWindow.removeBrowserView(tabContextView);
+
+    if (aiSidebarOpen || (aiSidebarView && mainWindow && !mainWindow.isDestroyed() && mainWindow.getBrowserViews().includes(aiSidebarView))) {
+        aiSidebarOpen = false;
+        if (aiSidebarView && !aiSidebarView.webContents.isDestroyed() && mainWindow && !mainWindow.isDestroyed()) {
+            if (mainWindow.getBrowserViews().includes(aiSidebarView)) {
+                mainWindow.removeBrowserView(aiSidebarView);
+            }
         }
+        needsBoundsUpdate = true;
     }
-    if (shieldPopupView && !shieldPopupView.webContents.isDestroyed() && mainWindow && !mainWindow.isDestroyed()) {
-        if (mainWindow.getBrowserViews().includes(shieldPopupView)) {
-            mainWindow.removeBrowserView(shieldPopupView);
-        }
+
+    if (webAppOpen) {
+        hideWebApp();
+        needsBoundsUpdate = true;
     }
-    if (bmDropdownView && !bmDropdownView.webContents.isDestroyed() && mainWindow && !mainWindow.isDestroyed()) {
-        if (mainWindow.getBrowserViews().includes(bmDropdownView)) {
-            mainWindow.removeBrowserView(bmDropdownView);
-        }
+
+    if (mainWindow && !mainWindow.isDestroyed()) {
+        const toRemove = [
+            suggestionsView, shieldPopupView, passwordsPopupView, bmDropdownView,
+            extensionDropdownView, siteInfoView, volumeBoostView, mediaMasterView,
+            tabgroupView, tabContextView, downloadsView
+        ];
+        toRemove.forEach(v => {
+            if (v && !v.webContents.isDestroyed() && mainWindow.getBrowserViews().includes(v)) {
+                mainWindow.removeBrowserView(v);
+            }
+        });
     }
-    if (extensionDropdownView && !extensionDropdownView.webContents.isDestroyed() && mainWindow && !mainWindow.isDestroyed()) {
-        if (mainWindow.getBrowserViews().includes(extensionDropdownView)) {
-            mainWindow.removeBrowserView(extensionDropdownView);
-        }
+
+    if (typeof extensionPopupWindow !== 'undefined' && extensionPopupWindow && !extensionPopupWindow.isDestroyed()) {
+        try { extensionPopupWindow.close(); } catch (e) {}
+        extensionPopupWindow = null;
     }
-    if (siteInfoView && !siteInfoView.webContents.isDestroyed() && mainWindow && !mainWindow.isDestroyed()) {
-        if (mainWindow.getBrowserViews().includes(siteInfoView)) {
-            mainWindow.removeBrowserView(siteInfoView);
-        }
-    }
-    if (volumeBoostView && !volumeBoostView.webContents.isDestroyed() && mainWindow && !mainWindow.isDestroyed()) {
-        if (mainWindow.getBrowserViews().includes(volumeBoostView)) {
-            mainWindow.removeBrowserView(volumeBoostView);
-        }
-    }
+
     activeBMFolderId = null;
-    hideDownloadsPopup();
-    hideWebApp();
+
+    if (needsBoundsUpdate) {
+        updateViewBounds();
+    }
+
+    // Always restore active tab BrowserView to top priority for immediate click responsiveness
+    const activeViewEntry = views.find(v => v.id === activeViewId);
+    if (activeViewEntry && activeViewEntry.view && !activeViewEntry.view.webContents.isDestroyed() && mainWindow && !mainWindow.isDestroyed()) {
+        if (mainWindow.getBrowserViews().includes(activeViewEntry.view)) {
+            mainWindow.setTopBrowserView(activeViewEntry.view);
+        }
+    }
+
     if (mainWindow && !mainWindow.isDestroyed() && !mainWindow.webContents.isDestroyed()) {
         mainWindow.webContents.send('sidebars-closed');
     }
@@ -1773,32 +1819,6 @@ function closeOverlays() {
 
 function hidePopups() {
     closeOverlays();
-    if (suggestionsView && mainWindow && mainWindow.getBrowserViews().includes(suggestionsView)) {
-        mainWindow.removeBrowserView(suggestionsView);
-    }
-    if (shieldPopupView && mainWindow && mainWindow.getBrowserViews().includes(shieldPopupView)) {
-        mainWindow.removeBrowserView(shieldPopupView);
-    }
-    if (passwordsPopupView && mainWindow && mainWindow.getBrowserViews().includes(passwordsPopupView)) {
-        mainWindow.removeBrowserView(passwordsPopupView);
-    }
-    if (bmDropdownView && mainWindow && mainWindow.getBrowserViews().includes(bmDropdownView)) {
-        mainWindow.removeBrowserView(bmDropdownView);
-    }
-    if (extensionDropdownView && mainWindow && mainWindow.getBrowserViews().includes(extensionDropdownView)) {
-        mainWindow.removeBrowserView(extensionDropdownView);
-    }
-    if (extensionPopupWindow && !extensionPopupWindow.isDestroyed()) {
-        extensionPopupWindow.close();
-        extensionPopupWindow = null;
-    }
-    if (siteInfoView && mainWindow && mainWindow.getBrowserViews().includes(siteInfoView)) {
-        mainWindow.removeBrowserView(siteInfoView);
-    }
-    if (volumeBoostView && mainWindow && mainWindow.getBrowserViews().includes(volumeBoostView)) {
-        mainWindow.removeBrowserView(volumeBoostView);
-    }
-    activeBMFolderId = null;
 }
 
 function createBMDropdownView() {
@@ -1965,8 +1985,73 @@ function showWelcomeWizard() {
     setupContextMenu(welcomeView.webContents);
 }
 
+function resolveExtensionRuntimeUrl(url) {
+    if (!url || typeof url !== 'string') return url;
+    if (!url.startsWith('chrome-extension://')) return url;
+
+    try {
+        const parsed = new URL(url);
+        const host = parsed.hostname || parsed.host;
+        if (!host) return url;
+
+        const targetSessions = typeof getActiveExtensionSessions === 'function'
+            ? getActiveExtensionSessions()
+            : [session.defaultSession];
+
+        let allExts = [];
+        for (const ses of targetSessions) {
+            if (ses && !ses.isDestroyed()) {
+                const exts = (ses.getAllExtensions ? ses.getAllExtensions() : (ses.extensions?.getAllExtensions ? ses.extensions.getAllExtensions() : []));
+                if (Array.isArray(exts)) {
+                    allExts.push(...exts);
+                }
+            }
+        }
+
+        if (allExts.some(e => e.id === host)) {
+            return url;
+        }
+
+        let matchedExt = null;
+        const lowerHost = host.toLowerCase();
+
+        if (lowerHost === 'cjpalhdlnbpafiamejdnhcphjbkeiagm' || lowerHost === 'ad-blocker' || lowerHost === 'ublock' || lowerHost === 'ublock0' || lowerHost === 'ublock-origin') {
+            matchedExt = allExts.find(e => e.name && e.name.toLowerCase().includes('ublock'));
+        } else if (lowerHost === 'gebbhagfogifgggkldgodflihgfeippi' || lowerHost === 'dislike-recovery' || lowerHost === 'dislike' || lowerHost === 'return-youtube-dislike') {
+            matchedExt = allExts.find(e => e.name && e.name.toLowerCase().includes('dislike'));
+        } else if (lowerHost === 'ocal-focus' || lowerHost === 'focus') {
+            matchedExt = allExts.find(e => e.name && e.name.toLowerCase().includes('focus'));
+        } else if (lowerHost === 'media-master' || lowerHost === 'ocal-media-master') {
+            matchedExt = allExts.find(e => e.name && e.name.toLowerCase().includes('media'));
+        }
+
+        if (!matchedExt && typeof userSettings !== 'undefined' && Array.isArray(userSettings.extensions)) {
+            const settingExt = userSettings.extensions.find(e => e.id === host || (e.name && e.name.toLowerCase() === lowerHost));
+            if (settingExt) {
+                matchedExt = allExts.find(e => e.id === settingExt.id || (settingExt.name && e.name && e.name.toLowerCase() === settingExt.name.toLowerCase()));
+            }
+        }
+
+        if (!matchedExt) {
+            matchedExt = allExts.find(e => e.name && e.name.toLowerCase().replace(/[^a-z0-9]/g, '') === lowerHost);
+        }
+
+        if (matchedExt && matchedExt.id) {
+            return url.replace(`chrome-extension://${host}`, `chrome-extension://${matchedExt.id}`);
+        }
+    } catch (err) {
+        console.warn('[resolveExtensionRuntimeUrl] Error resolving extension URL:', err);
+    }
+
+    return url;
+}
+
 function resolveInternalURL(url) {
     if (!url) return url;
+
+    if (url.startsWith('chrome-extension://')) {
+        return resolveExtensionRuntimeUrl(url);
+    }
 
     // Strip query and hash for path matching
     const basePart = url.split(/[?#]/)[0];
@@ -2395,9 +2480,8 @@ function setupViewEvents(tabId, view, side = 'left') {
         return { action: 'deny' };
     });
 
-    // Auto-hide overlays & split screen side focus
+    // Split screen side focus & shortcut handling
     webContents.on('before-input-event', (event, input) => {
-        if (input.type === 'mouseDown') closeOverlays();
         if (input.type === 'mouseDown' || input.type === 'keyDown') {
             setActiveSplitSide(tabId, side);
         }
@@ -2917,7 +3001,7 @@ function updateViewBounds(forcedUrl = null) {
     });
 
     // 1. Stack AI Sidebar (on the right)
-    if (aiSidebarView && aiSidebarView.webContents && !aiSidebarView.webContents.isDestroyed() && mainWindow.getBrowserViews().includes(aiSidebarView)) {
+    if (aiSidebarOpen && aiSidebarView && aiSidebarView.webContents && !aiSidebarView.webContents.isDestroyed() && mainWindow.getBrowserViews().includes(aiSidebarView)) {
         const scaledAiSidebarWidth = Math.round(aiSidebarWidth * zoom);
         aiSidebarView.setBounds({
             x: Math.round(width - scaledAiSidebarWidth - winOffset),
@@ -2929,7 +3013,7 @@ function updateViewBounds(forcedUrl = null) {
     }
 
     // 2. Stack Sidebar Overlay (on the left, covering the whole window for backdrop)
-    if (sidebarOverlayView && sidebarOverlayView.webContents && !sidebarOverlayView.webContents.isDestroyed() && mainWindow.getBrowserViews().includes(sidebarOverlayView)) {
+    if (sidebarOpen && sidebarOverlayView && sidebarOverlayView.webContents && !sidebarOverlayView.webContents.isDestroyed() && mainWindow.getBrowserViews().includes(sidebarOverlayView)) {
         sidebarOverlayView.setBounds({
             x: Math.round(wSidebarTotal + winOffset),
             y: Math.round(yOffset + winOffset),
@@ -4395,6 +4479,8 @@ ipcMain.handle('ai-agent-execute', async (event, query) => {
     let customConfig = {};
     let rawUsername = 'Gaming';
 
+    let historyList = [];
+
     if (query && typeof query === 'object') {
         prompt = query.query || 'Analyze this file';
         fileObj = query.file;
@@ -4402,6 +4488,7 @@ ipcMain.handle('ai-agent-execute', async (event, query) => {
         memoryList = query.memory || [];
         customConfig = query.customConfig || {};
         rawUsername = query.username || userSettings.userName || 'Gaming';
+        historyList = Array.isArray(query.history) ? query.history : [];
     } else {
         prompt = query || '';
     }
@@ -4470,22 +4557,79 @@ Supported Commands:
         let fullLLMPrompt = `[System Instructions: ${sysInstruction}\n${toolGuideline}\n- Respond naturally like a real human being in character.\n- NEVER use AI clichés like "I did some digging", "As an AI language model", raw citation numbers like [1], or IPA phonetics guides.\n- Keep tone organic, articulate, clear, and engaging.\n- Format code, tables, and answers in clean Markdown.\n- RULE: In professional, tech, calm, and funny modes, you MUST NEVER address the user as "babe" or romantic pet names.]${memoryHeader}\n\nUser Query: ${promptText}`;
 
         let finalPrompt = fullLLMPrompt;
-        if (fileObj && fileObj.type === 'text' && fileObj.data) {
+        // Inject document if present and not already embedded in promptText
+        if (fileObj && fileObj.type === 'text' && fileObj.data && !promptText.includes('[ATTACHED DOCUMENT') && !promptText.includes('[User attached')) {
             finalPrompt = `[ATTACHED DOCUMENT - File Name: "${fileObj.name}"]:\n\n${fileObj.data}\n\n[USER INSTRUCTION]:\n${fullLLMPrompt}`;
         }
         
         let rawAnswer = null;
         if (activeEngine === 'gemini') {
-            rawAnswer = await tryGemini(finalPrompt, userSettings.aiApiKey, customStyle, fileObj);
+            if (userSettings.aiApiKey && userSettings.aiApiKey.trim().length > 14) {
+                rawAnswer = await tryGemini(finalPrompt, userSettings.aiApiKey, customStyle, fileObj);
+            }
         } else if (activeEngine === 'openai') {
-            rawAnswer = await tryOpenAI(finalPrompt, customStyle, fileObj);
+            if (userSettings.openaiApiKey && userSettings.openaiApiKey.trim().length > 14) {
+                rawAnswer = await tryOpenAI(finalPrompt, customStyle, fileObj);
+            }
         } else if (activeEngine === 'custom') {
             rawAnswer = await tryCustomProvider(finalPrompt, customStyle, fileObj);
         } else {
             rawAnswer = await queryLocalLLM(finalPrompt, customStyle, fileObj);
         }
 
+        // Guaranteed fallback to high-performance zero-config online LLM if active engine returned null
+        if (!rawAnswer) {
+            rawAnswer = await queryOnlineFreeLLM(finalPrompt, customStyle, fileObj, historyList);
+        }
+
         if (rawAnswer) {
+            let candidateJson = rawAnswer.trim();
+            if (candidateJson.startsWith('```json') && candidateJson.endsWith('```')) {
+                candidateJson = candidateJson.replace(/^```json\s*/i, '').replace(/```$/, '').trim();
+            } else if (candidateJson.startsWith('```') && candidateJson.endsWith('```')) {
+                candidateJson = candidateJson.replace(/^```\s*/, '').replace(/```$/, '').trim();
+            }
+
+            if (candidateJson.startsWith('{') && candidateJson.endsWith('}')) {
+                try {
+                    const parsed = JSON.parse(candidateJson);
+                    if (parsed && typeof parsed === 'object') {
+                        // 1. Process any tool_calls array
+                        if (Array.isArray(parsed.tool_calls) && parsed.tool_calls.length > 0) {
+                            for (const tc of parsed.tool_calls) {
+                                const fn = tc.function || tc;
+                                const cmd = fn.name || fn.command;
+                                let args = fn.arguments || fn.params || {};
+                                if (typeof args === 'string') {
+                                    try { args = JSON.parse(args); } catch(e) {}
+                                }
+                                if (cmd) {
+                                    executeBrowserAction({ command: cmd, ...args });
+                                    actions.push({ text: cmd.replace(/-/g, ' '), icon: 'fa-bolt', command: cmd });
+                                }
+                            }
+                        }
+
+                        // 2. Check if reasoning indicates image generation intent
+                        const reasoning = (parsed.reasoning || '').toLowerCase();
+                        const content = (parsed.content || '').trim();
+
+                        if (!content && (reasoning.includes('generate an image') || reasoning.includes('create an image') || reasoning.includes('image of') || reasoning.includes('user wants to generate an image') || reasoning.includes('user wants an image'))) {
+                            let cleanImgPrompt = prompt.replace(/\b(generate|genrate|generat|gen|create|make|draw|paint)\s+(?:me\s+|us\s+|for\s+me\s+|for\s+us\s+)?(?:an?\s+|the\s+)?(?:image|picture|drawing|painting|photo|portrait|scene|canvas)?(?:\s+of)?/i, '').trim();
+                            cleanImgPrompt = cleanImgPrompt.replace(/^(a|an|the|of)\s+/i, '').trim();
+                            if (!cleanImgPrompt) cleanImgPrompt = 'a high performance concept car';
+                            rawAnswer = `Here is the artwork synthesized for **"${cleanImgPrompt}"**:\n\n![Generated Image](sd://${encodeURIComponent(cleanImgPrompt)}?model=flux-2)\n\n> ⚡ **Engine:** FLUX.2 Flagship *(Open-Source High Fidelity)*`;
+                        } else if (content) {
+                            rawAnswer = content;
+                        } else if (parsed.reasoning) {
+                            rawAnswer = parsed.reasoning;
+                        }
+                    }
+                } catch(e) {
+                    // Not valid JSON, keep rawAnswer
+                }
+            }
+
             // Parse and execute any [ACTION:...] emitted by the model
             rawAnswer = rawAnswer.replace(/\[ACTION:\s*(\{.*?\})\s*\]/gi, (match, jsonStr) => {
                 try {
@@ -5103,10 +5247,16 @@ Supported Commands:
             return { text: greetingText, actions: [] };
         }
 
-        // Image Generation Intercept
+        // Image Generation Intercept (Typo-Resilient & Phrasing-Aware)
         const isImageGen = 
-            /\b(?:gen|generate|create|make|draw|paint)\b.*\b(?:image|picture|drawing|painting|photo|portrait|scene|canvas)\b/i.test(q) ||
-            /\b(?:image|picture|drawing|painting|photo|portrait|scene|canvas)\b.*\b(?:gen|generate|create|make|draw|paint)\b/i.test(q);
+            // 1. Generation verb + Image noun anywhere: "genrate me a image of a car", "generate an image", "create a picture", "make a photo", "render a wallpaper"
+            /\b(?:gen|genr|genrate|generat|generte|genarate|genereate|generate|generating|generation|create|creating|make|making|draw|drow|paint|painting|sketch|sketching|render|rendering|illustrate|illustrating|synthesize|produce)\b.*\b(?:image|imager|images|img|imgs|pic|pics|picture|pictures|photo|photos|photograph|portrait|portraiture|scene|scenes|canvas|wallpaper|wallpapers|artwork|artworks|illustration|illustrations)\b/i.test(q) ||
+            // 2. Image noun + Generation verb: "imager gen", "image generation", "pic maker", "photo generator"
+            /\b(?:image|imager|images|img|imgs|pic|pics|picture|pictures|photo|photos|portrait|scene|canvas|wallpaper|artwork)\b.*\b(?:gen|genr|genrate|generat|generte|generate|creating|create|make|draw|drow|paint|render|sketch)\b/i.test(q) ||
+            // 3. Direct noun phrase: "image of a car", "picture of a sunset", "photo of tokyo", "wallpaper of space"
+            /^(?:(?:show|get|give|display)\s+(?:me\s+)?(?:an?\s+|the\s+)?)?(?:image|picture|photo|pic|wallpaper|artwork|illustration)\s+(?:of|showing|depicting|with)\b/i.test(q) ||
+            // 4. Direct artistic action: "draw a car", "draw me a car", "paint a landscape", "sketch an anime character"
+            /^(?:can\s+you\s+|please\s+)?(?:draw|drow|paint|sketch|render|illustrate)\s+(?:me\s+|us\s+|for\s+me\s+)?(?:a\s+|an\s+|the\s+)/i.test(q);
 
         if (isImageGen) {
             let modelName = 'FLUX.2 Flagship';
@@ -5125,9 +5275,20 @@ Supported Commands:
 
             notifyAction(`Synthesizing artwork with ${modelName}...`, 'fa-wand-magic-sparkles');
             
-            let imgPrompt = prompt.replace(/\b(generate|gen|create|make|draw|paint)\s+(?:me\s+|us\s+|for\s+me\s+|for\s+us\s+)?(?:an?\s+|the\s+)?(?:image|picture|drawing|painting|photo|portrait|scene|canvas)?(?:\s+of)?/i, '').trim();
-            imgPrompt = imgPrompt.replace(/^(a|an|the)\s+/i, '');
-            if (!imgPrompt) imgPrompt = 'a futuristic glass city with glowing neon lights';
+            let imgPrompt = prompt;
+            // Strip leading conversational polite phrases
+            imgPrompt = imgPrompt.replace(/^(?:please|can\s+you\s+(?:please\s+)?|could\s+you\s+(?:please\s+)?|i\s+want\s+(?:you\s+to\s+)?|kindly)\s+/i, '');
+            // Strip action verbs and image nouns (including typos like "genrate me a image of")
+            imgPrompt = imgPrompt.replace(/\b(?:generate|genrate|generat|generte|genarate|genereate|gen|creating|create|make|draw|drow|paint|sketch|render|illustrate|synthesize|show|give|display)\s+(?:me\s+|us\s+|for\s+me\s+|for\s+us\s+)?(?:an?\s+|the\s+)?(?:image|imager|images|img|imgs|picture|pictures|pic|pics|photo|photos|photograph|portrait|scene|canvas|wallpaper|artwork|art|illustration)?(?:\s+(?:of|showing|depicting|with))?\s*/i, '');
+            // Strip standalone "image of", "picture of", etc. if at start
+            imgPrompt = imgPrompt.replace(/^(?:an?\s+|the\s+)?(?:image|imager|images|img|imgs|picture|pictures|pic|pics|photo|photos|photograph|portrait|scene|canvas|wallpaper|artwork|art|illustration)\s+(?:of|showing|depicting|with)?\s*/i, '');
+            // Strip trailing "imager gen", "image gen"
+            imgPrompt = imgPrompt.replace(/\s+\b(?:image|imager|img|pic|picture)\s+(?:gen|generation|maker|creator)\b.*$/i, '');
+            imgPrompt = imgPrompt.replace(/^\b(?:image|imager|img|pic|picture)\s+(?:gen|generation)\s+/i, '');
+            // Strip leading articles and prepositions
+            imgPrompt = imgPrompt.replace(/^(?:a|an|the|of|showing|with)\s+/i, '');
+            imgPrompt = imgPrompt.trim();
+            if (!imgPrompt) imgPrompt = 'a futuristic sports car with glowing neon accents';
 
             const imageUrl = `sd://${encodeURIComponent(imgPrompt)}?model=${modelKey}`;
 
@@ -5687,29 +5848,95 @@ INSTRUCTIONS:
         // Phase 4: General Assistant (Direct Sidebar Answer with Environment Context)
         const tabContext = `[Environment Context] Open Tabs: ${views.length} (${views.map(v => v.view.webContents.getTitle()).join(', ')}).`;
 
-        let finalPrompt = prompt;
-        if (fileObj && fileObj.type === 'text') {
-            const isPdf = fileObj.name.toLowerCase().endsWith('.pdf');
-            if (isPdf) {
-                finalPrompt = `[User attached a PDF Document named "${fileObj.name}"].
-Here is the extracted text content from the PDF:
+        // Check if query is an internet search, comparison, factual inquiry, or live information request
+        const isSearchIntent = !fileObj && (
+            /\b(?:search|latest|news|weather|score|stock|price|who is|who was|what is|what are|when was|where is|vs|versus|compare|difference between|google|find web|release date|election|president|prime minister|ceo|founder|cost|salary|worth|net worth)\b/i.test(q)
+            || q.includes(' vs ') 
+            || q.includes(' versus ')
+            || /^(who|what|when|where|why|which|how)\b/i.test(q)
+        );
+
+        if (isSearchIntent) {
+            notifyAction("Searching the internet for live info...", 'fa-earth-americas');
+            const snippets = await researchWeb(prompt);
+
+            if (snippets && snippets.length > 0) {
+                notifyAction("Synthesizing live internet response...", 'fa-wand-magic-sparkles');
+                const snippetText = snippets.map((s, idx) => `[Source ${idx + 1}: ${s.title} (${s.url})]:\n${s.snippet}`).join('\n\n');
+
+                const searchPrompt = `[Live Internet Search Data]:
 =========================================
-${fileObj.data}
+${snippetText}
 =========================================
 
-User query regarding this PDF: ${prompt}`;
-            } else {
-                finalPrompt = `[User attached a text file named "${fileObj.name}"]:
-\`\`\`
-${fileObj.data}
-\`\`\`
+User Question: ${prompt}
 
-User query regarding this file: ${prompt}`;
+[Answering Guidelines]:
+- Provide an intelligent, comprehensive, and well-structured answer in clean Markdown using both the live internet search data and your knowledge.
+- If comparing entities (like Modi vs Rahul Gandhi), format with clear comparative headings, markdown tables, key contrasts, and balanced perspectives.
+- Do NOT output bracket citation numbers like [1] or [note 1].
+- Be articulate, highly capable, and informative.`;
+
+                let searchAnswer = await queryActiveLLM(searchPrompt, style);
+                if (!searchAnswer) {
+                    searchAnswer = await queryOnlineFreeLLM(searchPrompt, style);
+                }
+
+                if (searchAnswer && searchAnswer.trim().length > 0) {
+                    // Construct reference pills HTML (Sleek pill style with favicons)
+                    let referencePillsHtml = `\n\n<div class="ref-pills-container" style="display: flex; flex-wrap: wrap; gap: 6px; margin-top: 10px;">`;
+                    snippets.forEach(s => {
+                        let domain = s.title || 'Source';
+                        let faviconUrl = `https://www.google.com/s2/favicons?sz=32&domain=${domain}`;
+                        if (s.url) {
+                            referencePillsHtml += `<a href="${s.url}" class="msg-ref-pill"><img src="${faviconUrl}" style="width: 12px; height: 12px; border-radius: 2px; vertical-align: middle; margin-right: 4px; pointer-events: none;" /> ${domain}</a>`;
+                        } else {
+                            referencePillsHtml += `<span class="msg-ref-pill"><img src="${faviconUrl}" style="width: 12px; height: 12px; border-radius: 2px; vertical-align: middle; margin-right: 4px;" /> ${domain}</span>`;
+                        }
+                    });
+                    referencePillsHtml += `</div>\n`;
+
+                    const searchUrl = `https://www.google.com/search?q=${encodeURIComponent(prompt)}`;
+                    return {
+                        text: `${searchAnswer.trim()}${referencePillsHtml}`,
+                        actions: [...actions, { text: "Open Search Results", icon: "fa-external-link-alt", url: searchUrl }]
+                    };
+                }
             }
         }
 
+        let finalPrompt = prompt;
+        if (fileObj && fileObj.type === 'text') {
+            const isPdf = fileObj.name.toLowerCase().endsWith('.pdf');
+            const docLabel = isPdf ? `PDF Document "${fileObj.name}"` : `Document "${fileObj.name}"`;
+            finalPrompt = `[ATTACHED DOCUMENT - ${docLabel}]:
+=========================================
+${fileObj.data}
+=========================================
+
+[USER QUERY REGARDING THIS DOCUMENT]:
+${prompt}
+
+[ANALYSIS & ANSWERING INSTRUCTIONS]:
+- Focus directly on answering the user's specific query about this document in clean Markdown.
+- If the user asks what the document is (e.g. "what its", "what is this"), explain its exact title, purpose, candidate/party names, registration IDs, and official context.
+- If the user asks where or how it is used (e.g. "wher it's use", "usage", "purpose"), explain practical procedures (such as counseling, document verification, college reporting, admission confirmation, exam hall entry).
+- If the user asks for specific values (dates, roll numbers, application number, contact details, fees), extract and present them clearly.`;
+        }
+
         const directAnswer = await queryActiveLLM(`${tabContext}\n\nQuery: ${finalPrompt}`, style);
-        if (directAnswer) return { text: directAnswer, actions };
+        if (directAnswer) {
+            if (fileObj && fileObj.type === 'text') {
+                if (!actions.some(a => a.text.includes('Purpose') || a.text.includes('Usage'))) {
+                    actions.push(
+                        { text: "Document Purpose", icon: "fa-circle-info", prompt: "What is the primary purpose of this document and what are its key details?" },
+                        { text: "Where It's Used", icon: "fa-compass", prompt: "Where and how is this document used in practice? Explain the exact steps." },
+                        { text: "Key Dates & IDs", icon: "fa-id-card", prompt: "Extract all important dates, reference numbers, and contact details from this document." }
+                    );
+                }
+            }
+            return { text: directAnswer, actions };
+        }
 
         // If a file is attached and LLM did not return a response, provide direct local document analysis
         if (fileObj) {
@@ -5819,12 +6046,74 @@ User query regarding this file: ${prompt}`;
                 // ── Key paragraphs for narrative ──
                 const keyParas = lines.filter(l => l.length > 28 && !/^[-•*#\d]/.test(l)).slice(0, 6);
 
+                // Check specific question intent for offline document answering
+                const isAskingUsage = /(?:where|use|used|usage|purpose|what\s*(?:is\s*it\s*)?for|why\s*(?:do\s*i\s*)?need)/i.test(prompt);
+                const isAskingWhat = /(?:what\s*(?:is|its|it's)|who|explain|tell\s*me\s*about|summary|overview)/i.test(prompt);
+                const isAskingDates = /(?:date|when|dob|birth|deadline|schedule)/i.test(prompt);
+                const isAskingIds = /(?:id|number|application|roll|enrollment|reg|reference)/i.test(prompt);
+                const isAskingContact = /(?:phone|contact|mobile|call|email|helpline|website)/i.test(prompt);
+
                 // ── Build Conversational Persona Narrative ──
-                // The persona "reads through" the doc and tells you what they found — like two friends talking
                 const buildNarrative = () => {
                     const parts = [];
 
-                    // What type is the doc?
+                    if (isAskingUsage) {
+                        parts.push(`### 🎯 Where & How This Document is Used\n\nBased on your document **"${fileObj.name}"** (classified as a **${docType}**):`);
+                        if (docScores.academic >= 3 || lc.includes('acpc') || lc.includes('ddcet') || lc.includes('admission')) {
+                            parts.push(`1. **ACPC / Admission Counseling & Verification**:\n   Presented during document verification at designated Help Centers or uploaded on the official ACPC admission portal (\`www.acpc.gujarat.gov.in\`) to verify candidate eligibility for Diploma-to-Degree (DDCET) engineering/pharmacy seats.\n\n2. **Proof of Examination Registration**:\n   Serves as your primary legal receipt confirming your application has been submitted and registered (Application ID: **${refIds[0] || 'on file'}**).\n\n3. **Reporting at Allotted Institute**:\n   Required at the time of final college seat allotment and physical joining at the allocated institute.\n\n4. **Official Reference & Grievances**:\n   Used whenever contacting the helpline (${phones[0] || 'official helpline'}) or logging into the ACPC candidate portal.`);
+                        } else if (docScores.invoice >= 3) {
+                            parts.push(`1. **Accounting & Tax Filing**: Used for business expense reconciliation, GST/VAT input tax credit, and financial auditing.\n2. **Payment Confirmation & Reimbursement**: Submitted to employers or accounting departments as proof of purchase and payment verification.\n3. **Warranty & Vendor Support**: Serves as proof of purchase date (${datesFound[0] || 'on invoice'}) when claiming warranties or support.`);
+                        } else if (docScores.resume >= 3) {
+                            parts.push(`1. **Job Applications**: Submitted to employers, recruiters, and HR portals for candidate screening.\n2. **Interview Evaluation**: Referenced during technical and behavioral interviews.\n3. **Professional Background Checks**: Used to verify past employment history, education, and credentials.`);
+                        } else {
+                            parts.push(`1. **Official Record Keeping**: Retained as primary reference documentation.\n2. **Administrative Verification**: Presented to regulatory or governing bodies.\n3. **Compliance & Inquiries**: Cited during future inquiries using reference numbers like **${refIds[0] || 'listed'}**.`);
+                        }
+                        return parts.join('\n\n');
+                    }
+
+                    if (isAskingWhat) {
+                        parts.push(`### 📄 Document Overview: ${fileObj.name}\n\nThis document is an official **${docType}** titled **"${fileObj.name}"**.`);
+                        if (refIds.length > 0) parts.push(`- **Key Reference / IDs:** ${[...new Set(refIds)].slice(0, 3).join(' · ')}`);
+                        if (datesFound.length > 0) parts.push(`- **Important Dates:** ${datesFound.slice(0, 3).join(', ')}`);
+                        if (phones.length > 0) parts.push(`- **Contact / Helpline:** ${phones[0]}`);
+                        if (urls.length > 0) parts.push(`- **Official Portal:** ${urls[0]}`);
+                        if (keyParas.length > 0) {
+                            parts.push(`\n**Primary Details:**\n> ${keyParas.slice(0, 2).join('\n> ')}`);
+                        }
+                        return parts.join('\n\n');
+                    }
+
+                    if (isAskingDates) {
+                        parts.push(`### 📅 Dates Found in "${fileObj.name}"`);
+                        if (datesFound.length > 0) {
+                            datesFound.forEach(d => parts.push(`- **${d}**`));
+                        } else if (allYears.length > 0) {
+                            parts.push(`Years mentioned: ${[...new Set(allYears)].join(', ')}`);
+                        } else {
+                            parts.push(`No explicit standard date formats were detected in the document.`);
+                        }
+                        return parts.join('\n\n');
+                    }
+
+                    if (isAskingIds) {
+                        parts.push(`### 🆔 Identifiers & Reference Numbers`);
+                        if (refIds.length > 0) {
+                            refIds.forEach(id => parts.push(`- **${id}**`));
+                        } else {
+                            parts.push(`No explicit reference or application IDs were recognized.`);
+                        }
+                        return parts.join('\n\n');
+                    }
+
+                    if (isAskingContact) {
+                        parts.push(`### 📞 Contact & Communication Channels`);
+                        if (phones.length > 0) phones.forEach(p => parts.push(`- **Phone / Helpline:** ${p}`));
+                        if (emails.length > 0) emails.forEach(e => parts.push(`- **Email:** ${e}`));
+                        if (urls.length > 0) urls.forEach(u => parts.push(`- **Website:** ${u}`));
+                        return parts.join('\n\n');
+                    }
+
+                    // Default persona-based overview
                     const docTypeLines = {
                         gf:           `Okay so babe, I just read through this — it looks like it's a **${docType}**! 💕`,
                         wife:         `Alright ${nickname}, I went through this carefully — it's a **${docType}**. 💍`,
@@ -5836,7 +6125,6 @@ User query regarding this file: ${prompt}`;
                     };
                     parts.push(docTypeLines[personaKey] || docTypeLines.professional);
 
-                    // Talk through what was found — naturally
                     const findings = [];
                     if (refIds.length > 0) findings.push(`reference/ID numbers like **${[...new Set(refIds)].slice(0,2).join('** and **')}**`);
                     if (amounts.length > 0) findings.push(`financial figures — **${[...new Set(amounts)].slice(0,2).join(', ')}**`);
@@ -5859,33 +6147,12 @@ User query regarding this file: ${prompt}`;
                         parts.push(findingLines[personaKey] || findingLines.professional);
                     }
 
-                    // What's the overall content about?
                     if (keyParas.length > 0) {
                         const firstPara = keyParas[0].length > 160 ? keyParas[0].slice(0, 160) + '...' : keyParas[0];
-                        const contentLines = {
-                            gf:           `The main content says something like: *"${firstPara}"* — does that sound right to you babe?`,
-                            wife:         `The main content reads: *"${firstPara}"* — Let me know if this matches what you were expecting ${nickname}.`,
-                            bf:           `Main content: *"${firstPara}"* — does that cover what you needed?`,
-                            funny:        `And the star of the show — the actual content says: *"${firstPara}"* 📜 Gripping stuff!`,
-                            tech:         `Primary content excerpt: \`${firstPara}\``,
-                            calm:         `The document's core content reads: *"${firstPara}"* — quite informative 🌿`,
-                            professional: `Primary content: "${firstPara}"`
-                        };
-                        parts.push(contentLines[personaKey] || contentLines.professional);
+                        parts.push(`Primary content: "${firstPara}"`);
                     }
 
-                    // Persona follow-up question — keeps the conversation going
-                    const followUps = {
-                        gf:           `\n\nIs this what you were looking for ${nickname}? 🥰 Tell me what you need and I'll help you figure it out! Just ask me anything about this doc and I'm on it! 💕`,
-                        wife:         `\n\nIs there something specific you need from this ${nickname}? 💍 I can help you find any detail, summarize a section, or explain anything in here!`,
-                        bf:           `\n\nNeed me to dig deeper into anything ${nickname}? 💙 Just ask and I'll break down whatever section you need!`,
-                        funny:        `\n\nSo, what do you need from this masterpiece of a document? 😂 I'm ready to help you decode any part of it!`,
-                        tech:         `\n\n> Ready for follow-up queries on this document. What specifically do you need extracted or explained?`,
-                        calm:         `\n\nWhat would you like to know more about ${nickname}? 🌿 I'm here to go through it with you, at your pace.`,
-                        professional: `\n\nPlease specify if you require further extraction, a section summary, or a specific data point from this document.`
-                    };
-                    parts.push(followUps[personaKey] || followUps.professional);
-
+                    parts.push(`Please specify if you require further extraction, a section summary, or a specific question answered from this document.`);
                     return parts.join('\n\n');
                 };
 
@@ -5976,91 +6243,60 @@ User query regarding this file: ${prompt}`;
             }
         }
 
-        // Check if query is an explicit web search requirement (e.g. weather, latest news, live scores)
-        const isExplicitSearch = /\b(?:search|latest|news|weather|score|stock|price|who is|what is the date|find web|google)\b/i.test(q);
+        // Check if query is an explicit casual greeting (e.g. "hi", "hello", "hey")
+        const isGreetingOnly = /^(hi|hello|hey|greetings|hola|good\s+(morning|afternoon|evening|day))\b/i.test(q.trim()) && q.trim().split(/\s+/).length <= 4;
 
-        if (!isExplicitSearch) {
-            let fallbackText = "";
+        if (isGreetingOnly) {
+            let greetingText = "";
             switch (personaKey) {
                 case 'gf':
-                    fallbackText = "I'm right here with you babe! 💕 Tell me more, or let me know how I can help you today!";
+                    greetingText = "I'm right here with you babe! 💕 Tell me more, or let me know how I can help you today!";
                     break;
                 case 'bf':
-                    fallbackText = "I'm always here in your corner babe! 💙 What shall we work on together next?";
+                    greetingText = "I'm always here in your corner babe! 💙 What shall we work on together next?";
                     break;
                 case 'funny':
-                    fallbackText = "Haha, I like how you think! 😂 What's our next move?";
+                    greetingText = "Haha, I like how you think! 😂 What's our next move?";
                     break;
                 case 'tech':
-                    fallbackText = "Copy that. ⚡ Standing by for system commands, code tasks, or architectural queries.";
+                    greetingText = "Copy that. ⚡ Standing by for system commands, code tasks, or architectural queries.";
                     break;
                 case 'calm':
-                    fallbackText = "I hear you 🧘 Everything is smooth and under control. What would you like to explore next?";
+                    greetingText = "I hear you 🧘 Everything is smooth and under control. What would you like to explore next?";
                     break;
                 default:
-                    fallbackText = "I'm here to assist you! Feel free to ask a question, summarize a page, or adjust browser settings.";
+                    greetingText = "I'm here to assist you! Feel free to ask any question, search the web, summarize a page, or adjust browser settings.";
                     break;
             }
-            return { text: fallbackText, actions };
+            return { text: greetingText, actions };
         }
 
-        // Final Fallback: Live Web Intelligence (Only for explicit web search queries)
+        // Live Web Intelligence Fallback: Search the internet for answers and sources
         notifyAction("Researching live web data...", 'fa-earth-americas');
         const snippets = await researchWeb(prompt);
 
         if (snippets && snippets.length > 0) {
             notifyAction("Synthesizing search results...", 'fa-wand-magic-sparkles');
 
-            const nickname = customConfig.nickname || 'Babe';
-
-            // ── Random angle pool — rotates each call so answers feel fresh ──
-            const angleVariations = [
-                `Focus on giving a quick, punchy summary of the most interesting fact first.`,
-                `Start with the most recent or surprising piece of information.`,
-                `Lead with the key person or entity involved and what makes them notable.`,
-                `Open with context — who, what, where — then the key detail.`,
-                `Highlight what's most relevant to someone hearing about this for the first time.`,
-                `Give the answer as if you're excitedly sharing breaking news.`,
-                `Focus on the timeline — when did key things happen and what changed?`
-            ];
-            const randomAngle = angleVariations[Math.floor(Math.random() * angleVariations.length)];
-
-            // ── Persona voice definitions (each sounds distinctly human) ──
-            const personaVoices = {
-                gf: `You are a sweet, affectionate girlfriend texting your partner. Write like you're genuinely interested in sharing what you found — warm, human, loving, and conversational. NEVER sound like a textbook or an AI report. Use "babe", call them "${nickname}", use natural flowing sentences. No raw bracket citations, no IPA phonetics. ${randomAngle}`,
-                wife: `You are a caring, organized wife sharing information with your partner. Write warmly, naturally, and clearly — call them "${nickname}" or "honey". Sound like a real caring spouse, not a report. ${randomAngle}`,
-                bf: `You are a cool, supportive boyfriend texting back. Write like a casual direct text — encouraging and friendly. Call them "${nickname}". Keep it completely natural. ${randomAngle}`,
-                funny: `You are a witty, clever friend who just looked this up. Deliver the facts with natural humor, self-aware jokes, and playful charm. Make it feel like a real friend sharing news. ${randomAngle}`,
-                tech: `You are a sharp, authoritative tech expert. Synthesize key information into clear, confident, articulate prose. ${randomAngle}`,
-                calm: `You are a mindful, gentle guide. Explain this softly and clearly — like a calm trusted friend in warm flowing prose. ${randomAngle}`,
-                professional: `You are a concise executive assistant. Summarize in clear, direct, professional sentences. Business-appropriate. ${randomAngle}`
-            };
-
-            const voiceInstruction = personaVoices[personaKey] || personaVoices.professional;
-
-            // Clean snippet text of any Wikipedia brackets or IPA phonetics
-            const shuffledSnippets = [...snippets].sort(() => Math.random() - 0.5);
-            const rawSnippetText = shuffledSnippets.map(s => s.snippet).join(' ').replace(/\s+/g, ' ').trim();
+            const rawSnippetText = snippets.map(s => s.snippet).join(' ').replace(/\s+/g, ' ').trim();
             const allSnippetText = cleanWebSnippetText(rawSnippetText);
 
-            const synthesisPrompt = `${voiceInstruction}
+            const synthesisPrompt = `You are Ocal AI, a high-performance browser assistant.
+User asked: "${prompt}"
 
-STRICT HUMAN-LIKE RULES — follow these exactly:
-- REWRITE completely in your own natural words. Never copy textbook sentences or encyclopedic quotes verbatim.
-- NEVER include bracket citation numbers like [1], [4][5], [note 1], or IPA phonetic guides e.g. (pronounced: /.../).
-- No section headers (no "Core Summary", no "Detailed Explanation", no markdown H2/H3 tags).
-- Write as an organic, natural reply to "${nickname}" — like a real human would speak or text.
-- Maximum 3-4 clear, engaging sentences. Be accurate, smooth, and human.
-- Output ONLY your final persona reply. No preamble or meta-commentary.
+Factual live research data from the internet:
+${allSnippetText.slice(0, 2000)}
 
-The question asked: "${prompt}"
-
-Factual research data (rewrite in your own words):
-${allSnippetText.slice(0, 1400)}
-
-Your natural ${personaKey || 'assistant'} reply:`;
+Instructions:
+- Provide an articulate, highly capable, and well-structured answer in clean Markdown using the live research data.
+- If comparing entities, provide backgrounds, key differences, achievements, and balanced perspectives.
+- Do NOT output bracket citation numbers like [1] or [note 1].
+- Be articulate, highly capable, and direct.`;
             
-            const synthesis = await queryActiveLLM(synthesisPrompt, style);
+            let synthesis = await queryActiveLLM(synthesisPrompt, style);
+            if (!synthesis) {
+                synthesis = await queryOnlineFreeLLM(synthesisPrompt, style);
+            }
 
             // Construct reference pills HTML (Sleek pill style with favicons)
             let referencePillsHtml = `\n\n<div class="ref-pills-container" style="display: flex; flex-wrap: wrap; gap: 6px; margin-top: 10px;">`;
@@ -6075,7 +6311,7 @@ Your natural ${personaKey || 'assistant'} reply:`;
             });
             referencePillsHtml += `</div>\n`;
 
-            if (synthesis && synthesis.trim().length > 20) {
+            if (synthesis && synthesis.trim().length > 10) {
                 const cleanSynthesis = cleanWebSnippetText(synthesis.trim());
                 const searchUrl = `https://www.google.com/search?q=${encodeURIComponent(prompt)}`;
                 return {
@@ -6083,101 +6319,13 @@ Your natural ${personaKey || 'assistant'} reply:`;
                     actions: [...actions, { text: "Open Search Results", icon: "fa-external-link-alt", url: searchUrl }]
                 };
             }
-
-            // ── Heuristic Fallback: persona-biased sentence selection ──
-            const personaSentenceWeights = {
-                gf:   { human: 4, emotion: 3, factual: 1, date: 0 },
-                wife: { human: 3, emotion: 2, factual: 3, date: 1 },
-                bf:   { human: 2, emotion: 1, factual: 4, date: 2 },
-                funny:{ human: 1, emotion: 0, factual: 2, date: 0, unusual: 5 },
-                tech: { human: 0, emotion: 0, factual: 5, date: 4 },
-                calm: { human: 4, emotion: 4, factual: 2, date: 0 },
-                professional: { human: 1, emotion: 0, factual: 5, date: 3 }
-            };
-
-            const weights = personaSentenceWeights[personaKey] || personaSentenceWeights.professional;
-
-            const scoreSentence = (text) => {
-                const t = text.toLowerCase();
-                let score = 0;
-                if (/\b(born|family|personal|grew up|young|childhood|leader|known for|career)\b/.test(t)) score += weights.human || 0;
-                if (/\b(celebrated|loved|appreciated|proud|victory|achievement|historic|remarkable)\b/.test(t)) score += weights.emotion || 0;
-                if (/\b(is|was|has|serves|elected|appointed|prime minister|president|minister|party|government|parliament)\b/.test(t)) score += weights.factual || 0;
-                if (/\b(\d{4}|since|term|third|consecutive|sworn|june|july|august|election)\b/.test(t)) score += weights.date || 0;
-                if (/\b(however|but|although|surprisingly|despite|yet|unlike|interesting)\b/.test(t)) score += weights.unusual || 0;
-                score += Math.random() * 0.8;
-                return score;
-            };
-
-            const seen = new Set();
-            const candidates = [];
-            snippets.forEach(s => {
-                const cleanedSnippet = cleanWebSnippetText(s.snippet || '');
-                cleanedSnippet.split(/(?<=[.!?])\s+/).forEach(part => {
-                    const clean = part.trim();
-                    if (clean.length < 35 || clean.length > 280) return;
-                    if (/^(\d{2}\s\w+|pm india|website)/i.test(clean)) return;
-                    const key = clean.toLowerCase().slice(0, 50);
-                    if (!seen.has(key)) {
-                        seen.add(key);
-                        candidates.push({ text: clean, score: scoreSentence(clean) });
-                    }
-                });
-            });
-
-            candidates.sort((a, b) => b.score - a.score);
-            const topFacts = candidates.slice(0, 2).map(c => c.text).join(' ');
-
-            // Clean, natural wrappers per persona without robotic textbook boilerplate
-            const personaFallbackWrap = {
-                gf:   [
-                    (f) => `Here's what I found for you, babe! 💕 ${f} Let me know if you want to know more!`,
-                    (f) => `I looked into that for you ${nickname}! 💕 ${f} Want me to check anything else?`,
-                    (f) => `So babe! 💕 ${f} Hope that helps!`
-                ],
-                wife: [
-                    (f) => `Here are the details, honey! 💍 ${f} Let me know if you need anything else!`,
-                    (f) => `I looked into it for you ${nickname}! 💍 ${f} Hope that helps!`
-                ],
-                bf:   [
-                    (f) => `Here's what I found, babe! 💙 ${f} Let me know if you need more details!`,
-                    (f) => `Got you covered ${nickname}! 💙 ${f} Want me to check further?`
-                ],
-                funny:[
-                    (f) => `Here's the scoop! 😂 ${f} Pretty neat, right?`,
-                    (f) => `Looked that up for you! 📰 ${f} Knowledge delivered! 😎`
-                ],
-                tech: [
-                    (f) => `⚡ ${f}`,
-                    (f) => `Summary: ${f}`
-                ],
-                calm: [
-                    (f) => `Here is what I found for you 🧘 — ${f}`,
-                    (f) => `Sharing what I discovered 🌿 — ${f}`
-                ],
-                professional: [
-                    (f) => `Here is the summary: ${f}`,
-                    (f) => `Key finding: ${f}`
-                ]
-            };
-
-            const wrapPool = personaFallbackWrap[personaKey] || personaFallbackWrap.professional;
-            const wrapFn = wrapPool[Math.floor(Math.random() * wrapPool.length)];
-            let fallbackSynthesis = wrapFn(topFacts);
-            fallbackSynthesis += referencePillsHtml;
-
-            const searchUrl = `https://www.google.com/search?q=${encodeURIComponent(prompt)}`;
-            return {
-                text: fallbackSynthesis,
-                actions: [...actions, { text: "Open Search Results", icon: "fa-external-link-alt", url: searchUrl }]
-            };
         }
 
-        // Search Fallback if no snippets found
+        // Search Fallback if no snippets or models could answer
         const searchUrl = `https://www.google.com/search?q=${encodeURIComponent(prompt)}`;
         return { 
-            text: `I couldn't reach any AI models and was unable to fetch web snippets for **"${prompt}"**.\n\nWould you like to search the web in a new tab?`, 
-            actions: [...actions, { text: "Search in New Tab", icon: "fa-search", url: searchUrl }] 
+            text: `I couldn't reach any AI models or web snippets for **"${prompt}"** at this moment.\n\nWould you like to search Google in a new tab?`, 
+            actions: [...actions, { text: "Search Google", icon: "fa-search", url: searchUrl }] 
         };
 
     } catch (err) {
@@ -6263,6 +6411,85 @@ async function professionalizeEmail(notes, subject, apiKey, context = {}) {
 }
 
 /**
+ * Helper: Query high-performance online zero-config LLM (Pollinations AI)
+ * Always available, free, no API key required. Fast responses with OpenAI, Qwen, Mistral, Gemma.
+ */
+async function queryOnlineFreeLLM(prompt, style = 'detailed', fileObj = null, history = []) {
+    try {
+        let stylePrompt = "Keep responses intelligent, structured, and helpful.";
+        if (style === 'detailed') {
+            stylePrompt = "Provide highly detailed, comprehensive, structured, and thoroughly explained answers in Markdown with clear sections, bullet points, and code blocks.";
+        } else if (style === 'creative') {
+            stylePrompt = "Provide creative, engaging, and rich answers.";
+        }
+
+        const sysPrompt = `You are Ocal AI, a high-performance browser AI assistant.
+Respond accurately, helpfully, and articulately in clean Markdown.
+When an attached document is provided, analyze it thoroughly and answer the user's specific questions directly (identifying what the document is, its purpose, where and how it is used, key entities, dates, and instructions).
+${stylePrompt}`;
+
+        const messages = [
+            { role: 'system', content: sysPrompt }
+        ];
+
+        // Include conversation history if available
+        if (Array.isArray(history) && history.length > 0) {
+            const cleanHistory = history.slice(-6).map(m => {
+                let text = typeof m.content === 'string' ? m.content.replace(/<[^>]*>/g, '').trim() : '';
+                return {
+                    role: m.role === 'user' ? 'user' : 'assistant',
+                    content: text
+                };
+            }).filter(m => m.content && m.content.length > 0);
+            messages.push(...cleanHistory);
+        }
+
+        messages.push({ role: 'user', content: prompt });
+
+        const candidateModels = ['openai', 'qwen', 'mistral'];
+        for (const model of candidateModels) {
+            try {
+                const res = await fetch('https://text.pollinations.ai/', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        messages: messages,
+                        model: model,
+                        temperature: 0.7
+                    }),
+                    signal: AbortSignal.timeout(18000)
+                });
+
+                if (res.ok) {
+                    const text = await res.text();
+                    if (text && text.trim().length > 0 && !text.includes('<!DOCTYPE html>')) {
+                        return text.trim();
+                    }
+                }
+            } catch (err) {
+                console.warn(`[Pollinations ${model} POST failed]:`, err.message);
+            }
+        }
+
+        // Secondary GET fallback
+        try {
+            const encoded = encodeURIComponent(prompt.slice(0, 1000));
+            const getRes = await fetch(`https://text.pollinations.ai/${encoded}?model=openai`, {
+                signal: AbortSignal.timeout(10000)
+            });
+            if (getRes.ok) {
+                const getText = await getRes.text();
+                if (getText && getText.trim().length > 0 && !getText.includes('<!DOCTYPE html>')) {
+                    return getText.trim();
+                }
+            }
+        } catch (getErr) {}
+    } catch (e) {
+        console.warn('[Online Free LLM Error]:', e.message);
+    }
+    return null;
+}
+
 /**
  * Helper: Query OpenAI (ChatGPT)
  */
@@ -6540,6 +6767,13 @@ ${stylePrompt}`;
             console.warn(`[Local LLM Warning] Endpoint ${endpoint} failed:`, e.message);
         }
     }
+
+    // If local Ollama/LMStudio server is not running or all candidate ports failed, fall back to online free LLM
+    try {
+        const fallbackAns = await queryOnlineFreeLLM(prompt, style, fileObj);
+        if (fallbackAns) return fallbackAns;
+    } catch (e) {}
+
     return null;
 }
 
@@ -6547,6 +6781,7 @@ ${stylePrompt}`;
  * Helper: Refined Gemini fetch logic with model fallback loop.
  */
 async function tryGemini(prompt, apiKey, style = 'detailed', fileObj = null) {
+    if (!apiKey || typeof apiKey !== 'string' || apiKey.trim().length < 15) return null;
     const modelsToTry = ['gemini-1.5-flash', 'gemini-1.5-pro', 'gemini-pro', 'gemini-flash-latest'];
     for (const model of modelsToTry) {
         try {
@@ -6579,19 +6814,26 @@ async function tryGemini(prompt, apiKey, style = 'detailed', fileObj = null) {
             const response = await fetch(apiUrl, {
                 method: 'POST',
                 body: JSON.stringify({ contents: [contents] }),
-                headers: { 'Content-Type': 'application/json' }
+                headers: { 'Content-Type': 'application/json' },
+                signal: AbortSignal.timeout(20000)
             });
 
             const resultData = await response.json();
             if (resultData.error) {
+                // If caller is unregistered or API key is invalid, bail out immediately - do NOT loop through remaining models
+                if (resultData.error.code === 400 || resultData.error.code === 403 || resultData.error.status === 'PERMISSION_DENIED' ||
+                    (resultData.error.message && (resultData.error.message.includes('API key') || resultData.error.message.includes('unregistered')))) {
+                    console.warn(`[Gemini API Warning] ${model}:`, resultData.error.message);
+                    return null;
+                }
                 console.warn(`[Gemini API Warning] ${model}:`, resultData.error.message);
-                continue; // Try next model on error (High demand, quota, etc.)
+                continue; // Try next model on transient error
             }
             const aiText = resultData.candidates?.[0]?.content?.parts?.[0]?.text;
             if (aiText) return aiText;
         } catch (err) {
             console.warn(`[Gemini Fallback] ${model} failed:`, err.message);
-            continue; // Continue to next model regardless of error type
+            continue;
         }
     }
     return null;
@@ -9995,6 +10237,27 @@ class ExtensionManager {
                 }
             }
 
+            // 2b. Background HTML Page in MV2
+            if (manifest.background && manifest.background.page) {
+                const bgPageFile = path.join(extPath, manifest.background.page.replace(/^\//, ''));
+                if (fs.existsSync(bgPageFile)) {
+                    try {
+                        let html = fs.readFileSync(bgPageFile, 'utf8');
+                        if (!html.includes('chrome-compat-shim.js')) {
+                            if (html.includes('<head>')) {
+                                html = html.replace('<head>', '<head>\n<script src="chrome-compat-shim.js"></script>');
+                            } else if (html.includes('<html>')) {
+                                html = html.replace('<html>', '<html>\n<head><script src="chrome-compat-shim.js"></script></head>');
+                            } else {
+                                html = '<script src="chrome-compat-shim.js"></script>\n' + html;
+                            }
+                            fs.writeFileSync(bgPageFile, html, 'utf8');
+                            console.log(`[ExtensionCompat] Injected compatibility shim into background page: ${manifest.background.page}`);
+                        }
+                    } catch (e) {}
+                }
+            }
+
             // 3. Content Scripts
             if (Array.isArray(manifest.content_scripts)) {
                 manifest.content_scripts.forEach(cs => {
@@ -10478,17 +10741,23 @@ function openExtensionWindow(extensionId, popupPath, anchorBounds, title = 'Exte
     const cleanPopup = popupPath.replace(/^\//, '');
     const popupUrl = `chrome-extension://${extensionId}/${cleanPopup}`;
 
-    const [mainX, mainY] = mainWindow.getPosition();
-    const mainBounds = mainWindow.getBounds();
-    const primaryDisplay = screen.getDisplayMatching(mainBounds) || screen.getPrimaryDisplay();
+    const contentBounds = (mainWindow && !mainWindow.isDestroyed() && mainWindow.getContentBounds)
+        ? mainWindow.getContentBounds()
+        : (mainWindow && !mainWindow.isDestroyed() ? mainWindow.getBounds() : { x: 0, y: 0, width: 1280, height: 800 });
+    const mainX = contentBounds.x;
+    const mainY = contentBounds.y;
+    const primaryDisplay = screen.getDisplayMatching(contentBounds) || screen.getPrimaryDisplay();
     const { x: scrX, y: scrY, width: screenW, height: screenH } = primaryDisplay.workArea;
 
     // Initial default dimensions - will adapt dynamically to match content
-    let currentWidth = 300;
-    let currentHeight = 360;
+    let currentWidth = 360;
+    let currentHeight = 480;
 
-    let posX = Math.round(mainX + (anchorBounds ? (anchorBounds.x - currentWidth + (anchorBounds.width || 30)) : (mainBounds.width - currentWidth - 20)));
-    let posY = Math.round(mainY + (anchorBounds ? (anchorBounds.y + (anchorBounds.height || 36) + 6) : 75));
+    // Elegant floating gap below toolbar button (prevents overlap, looks premium)
+    const popupVerticalGap = 14;
+
+    let posX = Math.round(mainX + (anchorBounds ? (anchorBounds.x - currentWidth + (anchorBounds.width || 30)) : (contentBounds.width - currentWidth - 20)));
+    let posY = Math.round(mainY + (anchorBounds ? (anchorBounds.y + (anchorBounds.height || 36) + popupVerticalGap) : 88));
 
     if (posX + currentWidth > scrX + screenW - 12) posX = scrX + screenW - currentWidth - 12;
     if (posY + currentHeight > scrY + screenH - 12) posY = scrY + screenH - currentHeight - 12;
@@ -10505,6 +10774,7 @@ function openExtensionWindow(extensionId, popupPath, anchorBounds, title = 'Exte
         show: false,
         alwaysOnTop: true,
         skipTaskbar: true,
+        icon: getAppIconPath(),
         backgroundColor: (userSettings && userSettings.themeMode === 'light') ? '#FFFFFF' : '#1A1D24',
         parent: mainWindow,
         hasShadow: true,
@@ -10535,20 +10805,23 @@ function openExtensionWindow(extensionId, popupPath, anchorBounds, title = 'Exte
         try {
             const size = await extensionPopupWindow.webContents.executeJavaScript(`
                 (() => {
-                    const body = document.body;
                     const html = document.documentElement;
-                    if (!body || !html) return null;
+                    const body = document.body;
+                    if (!html || !body) return null;
 
                     const parsePx = (v) => {
                         if (!v || typeof v !== 'string') return 0;
-                        const m = v.match(/^([0-9.]+)px$/);
+                        const m = v.trim().match(/^([0-9.]+)px$/);
                         return m ? Math.round(parseFloat(m[1])) : 0;
                     };
 
-                    // 1. Check declared CSS rules for body or html in stylesheets
-                    let declaredW = parsePx(body.style.width) || parsePx(html.style.width);
-                    let declaredH = parsePx(body.style.height) || parsePx(html.style.height);
+                    // 1. Check direct declared styles on html and body (inline style attributes)
+                    let explicitW = parsePx(html.style.width) || parsePx(body.style.width) ||
+                                    parsePx(html.style.minWidth) || parsePx(body.style.minWidth);
+                    let explicitH = parsePx(html.style.height) || parsePx(body.style.height) ||
+                                    parsePx(html.style.minHeight) || parsePx(body.style.minHeight);
 
+                    // 2. Check CSS stylesheets for html, body, :root rules
                     try {
                         for (const sheet of document.styleSheets) {
                             try {
@@ -10556,19 +10829,12 @@ function openExtensionWindow(extensionId, popupPath, anchorBounds, title = 'Exte
                                 if (!rules) continue;
                                 for (const rule of rules) {
                                     if (rule.selectorText) {
-                                        const sel = rule.selectorText.trim();
-                                        let isTarget = false;
-                                        try {
-                                            if (body.matches(sel) || html.matches(sel)) isTarget = true;
-                                        } catch (e) {
-                                            const parts = sel.split(',').map(s => s.trim());
-                                            isTarget = parts.some(p => p === 'body' || p === 'html' || p.endsWith(' body') || p.endsWith(' html'));
-                                        }
-                                        if (isTarget) {
+                                        const sel = rule.selectorText.trim().toLowerCase();
+                                        if (sel === 'html' || sel === 'body' || sel === ':root' || sel === 'html, body' || sel === 'body, html') {
                                             const w = parsePx(rule.style.width) || parsePx(rule.style.minWidth);
                                             const h = parsePx(rule.style.height) || parsePx(rule.style.minHeight);
-                                            if (w > 50) declaredW = w;
-                                            if (h > 50) declaredH = h;
+                                            if (w > 50 && !explicitW) explicitW = w;
+                                            if (h > 50 && !explicitH) explicitH = h;
                                         }
                                     }
                                 }
@@ -10576,66 +10842,83 @@ function openExtensionWindow(extensionId, popupPath, anchorBounds, title = 'Exte
                         }
                     } catch (e) {}
 
-                    // 2. Check main container elements (.popup, #app, #root, .main-container, etc.)
-                    let containerW = 0;
-                    let containerH = 0;
-                    const candidateSelectors = ['.popup', '.main-container', '#app', '#root', '[class*="popup"]', '[class*="container"]'];
-                    for (const sel of candidateSelectors) {
-                        const el = document.querySelector(sel);
-                        if (el) {
+                    // 3. Inspect main container / root elements
+                    let rootW = 0;
+                    let rootH = 0;
+                    const rootCandidates = [
+                        document.getElementById('root'),
+                        document.getElementById('app'),
+                        document.querySelector('main'),
+                        document.querySelector('[class*="popup"]'),
+                        document.querySelector('[id*="popup"]'),
+                        document.querySelector('[class*="container"]'),
+                        document.querySelector('[id*="container"]'),
+                        body.firstElementChild
+                    ].filter(Boolean);
+
+                    for (const el of rootCandidates) {
+                        if (el && el !== body && el !== html) {
                             const cs = window.getComputedStyle(el);
-                            const w = parsePx(el.style.width) || parsePx(cs.width) || el.offsetWidth;
-                            const h = parsePx(el.style.height) || parsePx(cs.height) || el.offsetHeight || el.scrollHeight;
-                            if (w > 50 && (containerW === 0 || w < containerW)) containerW = Math.round(w);
-                            if (h > 50 && h > containerH) containerH = Math.round(h);
+                            if (cs.display === 'none') continue;
+                            const r = el.getBoundingClientRect();
+                            const w = parsePx(el.style.width) || parsePx(cs.width) || Math.round(r.width) || el.scrollWidth;
+                            const h = parsePx(el.style.height) || parsePx(cs.height) || Math.round(r.height) || el.scrollHeight;
+                            if (w > 50 && w > rootW) rootW = w;
+                            if (h > 50 && h > rootH) rootH = h;
                         }
                     }
 
-                    // 3. Evaluate intrinsic width
-                    let w = declaredW;
-                    if (!w) {
-                        if (body.offsetWidth > 50 && body.offsetWidth < (html.clientWidth - 4)) {
-                            w = body.offsetWidth;
-                        } else if (containerW > 50 && containerW < (html.clientWidth - 4)) {
-                            w = containerW;
-                        } else {
-                            let maxChildW = 0;
-                            for (const child of body.children) {
-                                if (child.tagName === 'SCRIPT' || child.tagName === 'STYLE' || child.tagName === 'NOSCRIPT') continue;
-                                const cs = window.getComputedStyle(child);
-                                if (cs.position === 'fixed' || cs.display === 'none') continue;
-                                const cw = child.offsetWidth || Math.round(child.getBoundingClientRect().width);
-                                if (cw > maxChildW) maxChildW = cw;
-                            }
-                            w = containerW || maxChildW || body.offsetWidth || 350;
-                        }
+                    // 4. Measure visible child elements bounding box
+                    let maxChildRight = 0;
+                    let maxChildBottom = 0;
+                    const bodyRect = body.getBoundingClientRect();
+
+                    for (const child of body.children) {
+                        if (['SCRIPT', 'STYLE', 'NOSCRIPT', 'TEMPLATE'].includes(child.tagName)) continue;
+                        const cs = window.getComputedStyle(child);
+                        if (cs.display === 'none' || cs.visibility === 'hidden') continue;
+                        const r = child.getBoundingClientRect();
+                        const right = Math.round(r.right - bodyRect.left);
+                        const bottom = Math.round(r.bottom - bodyRect.top);
+                        if (right > maxChildRight) maxChildRight = right;
+                        if (bottom > maxChildBottom) maxChildBottom = bottom;
                     }
 
-                    // 4. Evaluate intrinsic height
-                    let h = declaredH;
-                    if (!h) {
-                        let maxChildH = 0;
-                        for (const child of body.children) {
-                            if (child.tagName === 'SCRIPT' || child.tagName === 'STYLE' || child.tagName === 'NOSCRIPT') continue;
-                            const cs = window.getComputedStyle(child);
-                            if (cs.position === 'fixed' || cs.display === 'none') continue;
-                            const ch = Math.max(child.offsetHeight, child.scrollHeight, Math.round(child.getBoundingClientRect().height));
-                            if (ch > maxChildH) maxChildH = ch;
-                        }
-                        h = Math.max(containerH, maxChildH, body.scrollHeight, html.scrollHeight, body.offsetHeight);
+                    // 5. Compute scroll dimensions
+                    const scrollW = Math.max(body.scrollWidth, html.scrollWidth);
+                    const scrollH = Math.max(body.scrollHeight, html.scrollHeight);
+
+                    // 6. Synthesize final dimensions:
+                    let finalW = explicitW || rootW || maxChildRight || scrollW || 360;
+                    let finalH = explicitH || rootH || maxChildBottom || scrollH || 480;
+
+                    if (explicitW > 50) {
+                        finalW = Math.max(explicitW, maxChildRight);
+                    }
+                    if (explicitH > 50) {
+                        finalH = Math.max(explicitH, maxChildBottom);
                     }
 
-                    return { width: Math.round(w), height: Math.round(h) };
+                    // Chrome specifications: min 200x100, max 800x600
+                    finalW = Math.min(800, Math.max(200, Math.round(finalW)));
+                    finalH = Math.min(600, Math.max(100, Math.round(finalH)));
+
+                    return { width: finalW, height: finalH };
                 })()
             `);
 
             if (size && size.width > 50 && size.height > 50) {
-                // Constraints conforming to Chrome Web Extension specifications
-                const finalW = Math.min(800, Math.max(180, Math.round(size.width)));
-                const finalH = Math.min(620, Math.max(80, Math.round(size.height)));
+                const finalW = Math.min(800, Math.max(200, Math.round(size.width)));
+                const finalH = Math.min(600, Math.max(100, Math.round(size.height)));
 
-                let targetX = Math.round(mainX + (anchorBounds ? (anchorBounds.x - finalW + (anchorBounds.width || 30)) : (mainBounds.width - finalW - 20)));
-                let targetY = Math.round(mainY + (anchorBounds ? (anchorBounds.y + (anchorBounds.height || 36) + 6) : 75));
+                const curContent = (mainWindow && !mainWindow.isDestroyed() && mainWindow.getContentBounds)
+                    ? mainWindow.getContentBounds()
+                    : contentBounds;
+                const curMainX = curContent.x;
+                const curMainY = curContent.y;
+
+                let targetX = Math.round(curMainX + (anchorBounds ? (anchorBounds.x - finalW + (anchorBounds.width || 30)) : (curContent.width - finalW - 20)));
+                let targetY = Math.round(curMainY + (anchorBounds ? (anchorBounds.y + (anchorBounds.height || 36) + popupVerticalGap) : 88));
 
                 if (targetX + finalW > scrX + screenW - 12) targetX = scrX + screenW - finalW - 12;
                 if (targetY + finalH > scrY + screenH - 12) targetY = scrY + screenH - finalH - 12;
@@ -10663,7 +10946,7 @@ function openExtensionWindow(extensionId, popupPath, anchorBounds, title = 'Exte
                     if (window.__ocalPopupObserverInstalled) return;
                     window.__ocalPopupObserverInstalled = true;
 
-                    // Inject elegant scrollbar styles matching browser theme
+                    // Inject elegant custom scrollbar styles matching browser theme
                     if (!document.getElementById('__ocal_popup_style')) {
                         const style = document.createElement('style');
                         style.id = '__ocal_popup_style';
@@ -10671,8 +10954,7 @@ function openExtensionWindow(extensionId, popupPath, anchorBounds, title = 'Exte
                         const thumbBg = isLightMode ? 'rgba(0, 0, 0, 0.2)' : 'rgba(255, 255, 255, 0.22)';
                         const thumbHover = isLightMode ? 'rgba(0, 0, 0, 0.35)' : 'rgba(255, 255, 255, 0.4)';
                         style.textContent = \`
-                            html, body {
-                                overflow-x: hidden !important;
+                            html {
                                 scrollbar-width: thin !important;
                             }
                             ::-webkit-scrollbar {
@@ -10698,14 +10980,14 @@ function openExtensionWindow(extensionId, popupPath, anchorBounds, title = 'Exte
                         clearTimeout(debounceTimer);
                         debounceTimer = setTimeout(() => {
                             console.log('__OCAL_EXT_POPUP_RESIZE__');
-                        }, 40);
+                        }, 30);
                     };
 
                     if (window.ResizeObserver) {
                         const ro = new ResizeObserver(triggerResize);
                         ro.observe(document.documentElement);
                         if (document.body) ro.observe(document.body);
-                        const rootEl = document.querySelector('.popup, #app, #root, [class*="popup"]');
+                        const rootEl = document.getElementById('root') || document.getElementById('app') || document.querySelector('[class*="popup"]');
                         if (rootEl) ro.observe(rootEl);
                     }
                     const mo = new MutationObserver(triggerResize);
@@ -10729,9 +11011,10 @@ function openExtensionWindow(extensionId, popupPath, anchorBounds, title = 'Exte
     extensionPopupWindow.webContents.on('did-finish-load', async () => {
         await attachContentObserver();
         await adjustBoundsToContent();
-        setTimeout(adjustBoundsToContent, 100);
-        setTimeout(adjustBoundsToContent, 250);
-        setTimeout(adjustBoundsToContent, 500);
+        setTimeout(adjustBoundsToContent, 80);
+        setTimeout(adjustBoundsToContent, 200);
+        setTimeout(adjustBoundsToContent, 450);
+        setTimeout(adjustBoundsToContent, 800);
     });
 
     // Register blur only after show to prevent premature dismissal on startup
@@ -10757,8 +11040,12 @@ function openExtensionWindow(extensionId, popupPath, anchorBounds, title = 'Exte
 
     extensionPopupWindow.loadURL(popupUrl).then(() => {
         if (extensionPopupWindow && !extensionPopupWindow.isDestroyed() && !extensionPopupWindow.isVisible()) {
-            extensionPopupWindow.show();
-            extensionPopupWindow.focus();
+            adjustBoundsToContent().then(() => {
+                if (extensionPopupWindow && !extensionPopupWindow.isDestroyed()) {
+                    extensionPopupWindow.show();
+                    extensionPopupWindow.focus();
+                }
+            });
         }
     }).catch(err => {
         console.error('[ExtensionManager] Failed to load extension popup URL in window:', popupUrl, err);

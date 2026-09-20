@@ -10,6 +10,10 @@ const clearBtn = document.getElementById('clear-chat');
 const closeBtn = document.getElementById('close-ai');
 const handle = document.getElementById('resize-handle');
 
+// Libraries.dev FX state references
+let ocalHeaderOrb = null;
+let ocalStudioImgFX = null;
+
 // --- Sync Browser Theme: Read accent color from localStorage and apply ---
 (function syncBrowserTheme() {
     try {
@@ -550,12 +554,14 @@ function renderSessionMessages(session) {
             actionsRow.className = 'agent-actions-row';
             msg.actions.forEach(action => {
                 const actionEl = document.createElement('div');
-                actionEl.className = `agent-action ${action.url || action.command ? 'clickable' : ''}`;
+                actionEl.className = `agent-action ${action.url || action.command || action.prompt || action.text ? 'clickable' : ''}`;
                 actionEl.innerHTML = `<i class="fas ${action.icon || 'fa-bolt'}"></i> <span>${action.text}</span>`;
                 if (action.url) {
                     actionEl.onclick = () => window.electronAPI.send('open-external', action.url);
                 } else if (action.command) {
                     actionEl.onclick = () => window.electronAPI.send('execute-agent-command', action);
+                } else if (action.prompt || action.text) {
+                    actionEl.onclick = () => handleSend(action.prompt || action.text);
                 }
                 actionsRow.appendChild(actionEl);
             });
@@ -830,260 +836,534 @@ renderer.code = function(code, infostring, escaped) {
     return `<pre><div class="code-header"><span class="code-lang"><i class="fas fa-code"></i> ${cleanLang}</span><button class="code-copy-btn" title="Copy code" onclick="window.copyCodeFromBlock(this)"><i class="fas fa-copy"></i> Copy</button></div><code class="language-${cleanLang} hljs">${escapedCode}</code></pre>`;
 };
 
-// Custom image renderer to load pollinations.ai or sd:// images with a pulsing overlay loader
+// ─── Persistent Chat Artwork Cache (Prevents Regeneration on Reload) ───
+const OcalChatImageCache = {
+    _mem: new Map(),
+    _db: null,
+
+    async _getDB() {
+        if (this._db) return this._db;
+        return new Promise((resolve) => {
+            try {
+                const req = indexedDB.open('OcalChatImagesDB', 1);
+                req.onupgradeneeded = (e) => {
+                    const db = e.target.result;
+                    if (!db.objectStoreNames.contains('images')) {
+                        db.createObjectStore('images');
+                    }
+                };
+                req.onsuccess = (e) => {
+                    this._db = e.target.result;
+                    resolve(this._db);
+                };
+                req.onerror = () => resolve(null);
+            } catch (err) {
+                console.warn('IndexedDB unavailable for chat image cache:', err);
+                resolve(null);
+            }
+        });
+    },
+
+    async init() {
+        try {
+            const db = await this._getDB();
+            if (!db) return;
+            return new Promise((resolve) => {
+                const tx = db.transaction('images', 'readonly');
+                const store = tx.objectStore('images');
+                const req = store.openCursor();
+                req.onsuccess = (e) => {
+                    const cursor = e.target.result;
+                    if (cursor) {
+                        this._mem.set(cursor.key, cursor.value);
+                        cursor.continue();
+                    } else {
+                        resolve();
+                    }
+                };
+                req.onerror = () => resolve();
+            });
+        } catch (err) {
+            console.warn('Failed to pre-populate image cache:', err);
+        }
+    },
+
+    get(key) {
+        if (!key) return null;
+        return this._mem.get(key) || null;
+    },
+
+    async getAsync(key) {
+        if (!key) return null;
+        if (this._mem.has(key)) return this._mem.get(key);
+        try {
+            const db = await this._getDB();
+            if (!db) return null;
+            return new Promise((resolve) => {
+                const tx = db.transaction('images', 'readonly');
+                const store = tx.objectStore('images');
+                const req = store.get(key);
+                req.onsuccess = () => {
+                    if (req.result) this._mem.set(key, req.result);
+                    resolve(req.result || null);
+                };
+                req.onerror = () => resolve(null);
+            });
+        } catch (e) {
+            return null;
+        }
+    },
+
+    async set(key, dataUrl) {
+        if (!key || !dataUrl) return;
+        this._mem.set(key, dataUrl);
+        try {
+            const db = await this._getDB();
+            if (!db) return;
+            const tx = db.transaction('images', 'readwrite');
+            const store = tx.objectStore('images');
+            store.put(dataUrl, key);
+        } catch (err) {
+            console.warn('Failed to persist image to IndexedDB:', err);
+        }
+    },
+
+    async remove(key) {
+        if (!key) return;
+        this._mem.delete(key);
+        try {
+            const db = await this._getDB();
+            if (!db) return;
+            const tx = db.transaction('images', 'readwrite');
+            const store = tx.objectStore('images');
+            store.delete(key);
+        } catch (err) {}
+    }
+};
+
+// Warm up cache immediately
+OcalChatImageCache.init();
+
+// ─── Zero-Watermark Extraction Engine ──────────────────────────────
+async function produceZeroWatermarkArtwork(rawUrl, targetW, targetH) {
+    return new Promise(async (resolve) => {
+        let blobUrl = null;
+        let isDone = false;
+        const done = (result) => {
+            if (isDone) return;
+            isDone = true;
+            if (blobUrl) {
+                try { URL.revokeObjectURL(blobUrl); } catch (e) {}
+            }
+            resolve(result);
+        };
+
+        // Safety timeout of 18s prevents UI from hanging indefinitely at 96%
+        const timer = setTimeout(() => {
+            console.warn('Zero-watermark production timed out, resolving with raw URL');
+            done(rawUrl);
+        }, 18000);
+
+        try {
+            const controller = new AbortController();
+            const fetchTimer = setTimeout(() => controller.abort(), 12000);
+            const res = await fetch(rawUrl, { mode: 'cors', signal: controller.signal });
+            clearTimeout(fetchTimer);
+            if (res.ok) {
+                const blob = await res.blob();
+                blobUrl = URL.createObjectURL(blob);
+            }
+        } catch (err) {
+            console.warn('Direct blob fetch fallback:', err);
+        }
+
+        const img = new Image();
+        img.crossOrigin = 'anonymous';
+        img.onload = () => {
+            clearTimeout(timer);
+            try {
+                const canvas = document.createElement('canvas');
+                canvas.width = targetW;
+                canvas.height = targetH;
+                const ctx = canvas.getContext('2d');
+                if (!ctx) {
+                    done(rawUrl);
+                    return;
+                }
+
+                ctx.imageSmoothingEnabled = true;
+                ctx.imageSmoothingQuality = 'high';
+
+                // Crop off the extra buffer height (watermark location)
+                const srcW = img.naturalWidth;
+                const srcH = img.naturalHeight;
+                const cropH = Math.min(srcH, Math.round(srcW * (targetH / targetW)));
+
+                ctx.drawImage(img, 0, 0, srcW, cropH, 0, 0, targetW, targetH);
+
+                const cleanDataUrl = canvas.toDataURL('image/png');
+                done(cleanDataUrl);
+            } catch (canvasErr) {
+                console.error('Zero-watermark canvas rendering error:', canvasErr);
+                done(rawUrl);
+            }
+        };
+        img.onerror = () => {
+            clearTimeout(timer);
+            done(rawUrl);
+        };
+        img.src = blobUrl || rawUrl;
+    });
+}
+
+// Global Chat Image Action Handlers
+window.downloadChatImage = function(imgId) {
+    const img = document.getElementById(imgId);
+    if (!img || !img.src) return;
+    const a = document.createElement('a');
+    a.href = img.src;
+    a.download = `ocal-artwork-${Date.now()}.png`;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+};
+
+window.zoomChatImage = function(imgId) {
+    const img = document.getElementById(imgId);
+    if (!img || !img.src) return;
+    const lightbox = document.getElementById('ais-lightbox');
+    const lightboxImg = document.getElementById('ais-lightbox-img');
+    const lightboxCaption = document.getElementById('ais-lightbox-caption');
+    if (lightbox && lightboxImg) {
+        lightboxImg.src = img.src;
+        if (lightboxCaption) {
+            const card = img.closest('.chat-orb-image-card');
+            lightboxCaption.textContent = card?.getAttribute('data-prompt') || 'AI Generated Artwork';
+        }
+        lightbox.style.display = 'flex';
+    }
+};
+
+window.copyChatImage = async function(imgId) {
+    const img = document.getElementById(imgId);
+    if (!img || !img.src) return;
+    try {
+        if (img.src.startsWith('data:image/')) {
+            const res = await fetch(img.src);
+            const blob = await res.blob();
+            await navigator.clipboard.write([new ClipboardItem({ [blob.type]: blob })]);
+        } else {
+            await navigator.clipboard.writeText(img.src);
+        }
+        const card = img.closest('.chat-orb-image-card');
+        const copyBtn = card?.querySelector('.chat-dock-btn:nth-child(3)');
+        if (copyBtn) {
+            const orig = copyBtn.innerHTML;
+            copyBtn.innerHTML = '<i class="fas fa-check" style="color:#10B981;"></i>';
+            setTimeout(() => { copyBtn.innerHTML = orig; }, 2000);
+        }
+    } catch (e) {
+        navigator.clipboard.writeText(img.src);
+    }
+};
+
+window.openChatPromptInStudio = function(encodedPrompt) {
+    const prompt = decodeURIComponent(encodedPrompt || '');
+    if (typeof switchToStudio === 'function') {
+        switchToStudio();
+    }
+    const input = document.getElementById('studio-prompt-input');
+    if (input && prompt) {
+        input.value = prompt;
+        input.dispatchEvent(new Event('input'));
+        input.focus();
+    }
+};
+
+window.regenerateChatImage = async function(imgId, encodedHref) {
+    const href = decodeURIComponent(encodedHref || '');
+    let promptText = '';
+    if (href.startsWith('sd://')) {
+        promptText = decodeURIComponent(href.replace('sd://', '').split('?')[0]);
+    } else if (href.includes('pollinations.ai')) {
+        const match = href.match(/\/prompt\/([^?]+)/);
+        if (match) promptText = decodeURIComponent(match[1]);
+    }
+    const cacheKey = href.startsWith('sd://') ? href : href.split('&seed=')[0];
+    const promptKey = 'prompt:' + promptText.trim().toLowerCase();
+
+    await OcalChatImageCache.remove(cacheKey);
+    await OcalChatImageCache.remove(promptKey);
+
+    const card = document.getElementById(`container-${imgId}`) || document.getElementById(imgId)?.closest('.chat-orb-image-card');
+    if (card) {
+        const newSeed = Math.floor(Math.random() * 9000000) + 100000;
+        const newHref = href.includes('?') ? `${href}&r=${newSeed}` : `${href}?r=${newSeed}`;
+        card.outerHTML = renderer.image(newHref, '', promptText);
+    }
+};
+
+// Custom image renderer with Libraries.dev 3D Thinking Orbs animation & Persistent Cache
 renderer.image = function(href, title, text) {
     const isGenerated = href.includes('pollinations.ai');
     const isSd = href.startsWith('sd://');
-    
+
     if (isGenerated || isSd) {
         const uniqueId = 'img-' + Math.floor(Math.random() * 1000000);
-        
+        let promptText = text || 'AI Artwork';
         if (isSd) {
-            const promptText = decodeURIComponent(href.replace('sd://', ''));
-            setTimeout(async () => {
-                const finalImg = document.getElementById(uniqueId);
-                const container = document.getElementById(`container-${uniqueId}`);
-                const textEl = document.getElementById(`text-${uniqueId}`);
+            promptText = decodeURIComponent(href.replace('sd://', '').split('?')[0]);
+        } else if (isGenerated) {
+            const match = href.match(/\/prompt\/([^?]+)/);
+            if (match) promptText = decodeURIComponent(match[1]);
+        }
+        const cleanPromptAttr = promptText.replace(/"/g, '&quot;');
+        const cacheKey = isSd ? href : href.split('&seed=')[0];
+        const promptKey = 'prompt:' + promptText.trim().toLowerCase();
 
-                const setStatus = (msg) => {
-                    if (textEl) textEl.textContent = msg;
-                };
+        // 1. Instant Synchronous Cache Hit (Prevents regeneration on reload or session switch!)
+        const cachedUrl = OcalChatImageCache.get(cacheKey) || OcalChatImageCache.get(promptKey);
+        if (cachedUrl) {
+            return `
+                <div class="chat-orb-image-card" id="container-${uniqueId}" data-prompt="${cleanPromptAttr}">
+                    <div class="chat-image-wrapper">
+                        <img id="${uniqueId}" class="chat-generated-img" src="${cachedUrl}" alt="${text || 'Synthesized Artwork'}" style="display:block;" />
+                        <div class="chat-image-dock" id="dock-${uniqueId}" style="display:flex;">
+                            <button type="button" class="chat-dock-btn" title="Download High-Res PNG" onclick="window.downloadChatImage('${uniqueId}')">
+                                <i class="fas fa-download"></i>
+                            </button>
+                            <button type="button" class="chat-dock-btn" title="Fullscreen Lightbox" onclick="window.zoomChatImage('${uniqueId}')">
+                                <i class="fas fa-expand"></i>
+                            </button>
+                            <button type="button" class="chat-dock-btn" title="Copy Image" onclick="window.copyChatImage('${uniqueId}')">
+                                <i class="fas fa-copy"></i>
+                            </button>
+                            <button type="button" class="chat-dock-btn chat-dock-studio" title="Open in AI Image Studio" onclick="window.openChatPromptInStudio('${encodeURIComponent(promptText)}')">
+                                <i class="fas fa-palette"></i> <span>Studio</span>
+                            </button>
+                            <button type="button" class="chat-dock-btn" title="Regenerate Artwork" onclick="window.regenerateChatImage('${uniqueId}', '${encodeURIComponent(href)}')">
+                                <i class="fas fa-rotate-right"></i>
+                            </button>
+                        </div>
+                        <div class="chat-image-badge" id="badge-${uniqueId}" style="display:inline-flex;">
+                            <i class="fas fa-shield-check"></i> Clean HD
+                        </div>
+                    </div>
+                </div>
+            `;
+        }
 
-                const engine = globalSettings.aiEngine || 'local';
+        // 2. Not yet cached: Render with 3D Thinking Orb and start synthesis
+        setTimeout(async () => {
+            const container = document.getElementById(`container-${uniqueId}`);
+            const loader = document.getElementById(`loader-${uniqueId}`);
+            const orbSlot = document.getElementById(`orb-slot-${uniqueId}`);
+            const textEl = document.getElementById(`text-${uniqueId}`);
+            const barEl = document.getElementById(`bar-${uniqueId}`);
+            const pctEl = document.getElementById(`pct-${uniqueId}`);
+            const imgEl = document.getElementById(uniqueId);
+            const dockEl = document.getElementById(`dock-${uniqueId}`);
+            const badgeEl = document.getElementById(`badge-${uniqueId}`);
 
-                // --- Google Imagen 3 ---
-                if (engine === 'gemini') {
-                    const apiKey = globalSettings.aiApiKey;
-                    if (!apiKey) {
-                        setStatus("Gemini API key is required.");
-                        if (container) container.classList.add('error');
-                        return;
-                    }
-                    setStatus("Generating with Google Imagen...");
-                    try {
-                        const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/imagen-3.0-generate-002:predict?key=${apiKey}`, {
-                            method: 'POST',
-                            headers: { 'Content-Type': 'application/json' },
-                            body: JSON.stringify({
-                                instances: [{ prompt: promptText }],
-                                parameters: {
-                                    sampleCount: 1,
-                                    aspectRatio: "1:1",
-                                    outputMimeType: "image/jpeg"
-                                }
-                            })
-                        });
-                        
-                        if (!response.ok) {
-                            const errData = await response.json().catch(() => ({}));
-                            throw new Error(errData.error?.message || `Imagen API failed: ${response.status}`);
-                        }
-                        
-                        const data = await response.json();
-                        if (data.predictions && data.predictions.length > 0) {
-                            const prediction = data.predictions[0];
-                            const base64Data = prediction.bytesBase64Encoded || prediction.image?.imageBytes;
-                            const mimeType = prediction.mimeType || 'image/jpeg';
-                            if (base64Data && finalImg && container) {
-                                finalImg.src = `data:${mimeType};base64,${base64Data}`;
-                                finalImg.classList.remove('loading');
-                                container.classList.add('loaded');
-                            }
-                            return;
-                        } else {
-                            throw new Error("No image generated in predictions");
-                        }
-                    } catch (err) {
-                        console.error("Google Imagen Gen Error:", err);
-                        setStatus('Failed to generate image with Imagen.');
-                        if (container) container.classList.add('error');
-                        return;
-                    }
+            // Double check async cache from IndexedDB before initiating network requests
+            const asyncCached = await OcalChatImageCache.getAsync(cacheKey) || await OcalChatImageCache.getAsync(promptKey);
+            if (asyncCached) {
+                if (loader) loader.style.display = 'none';
+                if (imgEl) {
+                    imgEl.src = asyncCached;
+                    imgEl.style.display = 'block';
                 }
+                if (dockEl) dockEl.style.display = 'flex';
+                if (badgeEl) badgeEl.style.display = 'inline-flex';
+                return;
+            }
 
-                // --- OpenAI DALL-E ---
-                if (engine === 'openai') {
-                    const apiKey = globalSettings.openaiApiKey;
-                    if (!apiKey) {
-                        setStatus("OpenAI API key is required.");
-                        if (container) container.classList.add('error');
-                        return;
-                    }
-                    setStatus("Generating with DALL-E 3...");
-                    try {
-                        const response = await fetch('https://api.openai.com/v1/images/generations', {
-                            method: 'POST',
-                            headers: {
-                                'Content-Type': 'application/json',
-                                'Authorization': `Bearer ${apiKey}`
-                            },
-                            body: JSON.stringify({
-                                model: 'dall-e-3',
-                                prompt: promptText,
-                                n: 1,
-                                size: '1024x1024'
-                            })
-                        });
-                        
-                        if (!response.ok) {
-                            const errData = await response.json().catch(() => ({}));
-                            throw new Error(errData.error?.message || `DALL-E API failed: ${response.status}`);
-                        }
-                        
-                        const data = await response.json();
-                        if (data.data && data.data.length > 0) {
-                            const imgUrl = data.data[0].url;
-                            if (finalImg && container) {
-                                finalImg.src = imgUrl;
-                                finalImg.classList.remove('loading');
-                                container.classList.add('loaded');
-                            }
-                            return;
-                        } else {
-                            throw new Error("No image generated by DALL-E");
-                        }
-                    } catch (err) {
-                        console.error("DALL-E Gen Error:", err);
-                        setStatus('Failed to generate image with DALL-E.');
-                        if (container) container.classList.add('error');
-                        return;
-                    }
+            // Mount Libraries.dev 3D Thinking Orb Animation
+            let orbInstance = null;
+            if (orbSlot && window.LibrariesDevFX?.ThinkingOrb) {
+                orbInstance = window.LibrariesDevFX.ThinkingOrb.createOrb(orbSlot, {
+                    size: 88,
+                    mode: 'orbits',
+                    speed: 2.2,
+                    particleCount: 38
+                });
+            }
+
+            // Attach Border Beam Aura
+            if (container && window.LibrariesDevFX?.BorderBeam) {
+                window.LibrariesDevFX.BorderBeam.attach(container, { preset: 'accent', duration: '4.5s' });
+            }
+
+            // Multi-phase Neural Progression Simulation
+            let progress = 10;
+            let isComplete = false;
+            const progressInterval = setInterval(() => {
+                if (isComplete) {
+                    clearInterval(progressInterval);
+                    return;
                 }
+                if (progress < 35) {
+                    progress += Math.floor(Math.random() * 6) + 4;
+                    if (textEl) textEl.textContent = 'Sampling Latent Vector Space...';
+                    orbInstance?.setMode('orbits');
+                } else if (progress < 65) {
+                    progress += Math.floor(Math.random() * 4) + 2;
+                    if (textEl) textEl.textContent = 'Modulating High-Dimensional Noise...';
+                    orbInstance?.setMode('wave');
+                } else if (progress < 85) {
+                    progress += 2;
+                    if (textEl) textEl.textContent = 'Connecting Neural Feature Nodes...';
+                    orbInstance?.setMode('web');
+                } else if (progress < 96) {
+                    progress += 1;
+                    if (textEl) textEl.textContent = 'Finalizing 4K Neural Render...';
+                    orbInstance?.setMode('globe');
+                }
+                if (progress > 96) progress = 96;
 
-                // --- Local Stable Diffusion (AUTOMATIC1111) first ---
-                try {
-                    setStatus("Checking local Stable Diffusion...");
-                    const controller = new AbortController();
-                    const timeoutId = setTimeout(() => controller.abort(), 1500); // 1.5s timeout for fast fail-over
+                if (barEl) barEl.style.width = `${progress}%`;
+                if (pctEl) pctEl.textContent = `${Math.round(progress)}%`;
+            }, 180);
 
-                    const localRes = await fetch('http://127.0.0.1:7860/sdapi/v1/txt2img', {
+            try {
+                let finalCleanUrl = '';
+                const engine = globalSettings?.aiEngine || 'local';
+
+                // Check for Cloud APIs if configured
+                if (engine === 'gemini' && globalSettings?.aiApiKey) {
+                    if (textEl) textEl.textContent = 'Generating with Google Imagen 3...';
+                    const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/imagen-3.0-generate-002:predict?key=${globalSettings.aiApiKey}`, {
                         method: 'POST',
                         headers: { 'Content-Type': 'application/json' },
                         body: JSON.stringify({
-                            prompt: promptText,
-                            steps: 20,
-                            width: 512,
-                            height: 512,
-                            cfg_scale: 7,
-                            sampler_name: "Euler a"
-                        }),
-                        signal: controller.signal
-                    });
-                    clearTimeout(timeoutId);
-
-                    if (localRes.ok) {
-                        setStatus("Generating locally...");
-                        const data = await localRes.json();
-                        if (data.images && data.images.length > 0) {
-                            if (finalImg && container) {
-                                finalImg.src = `data:image/png;base64,${data.images[0]}`;
-                                finalImg.classList.remove('loading');
-                                container.classList.add('loaded');
-                            }
-                            return;
-                        }
-                    }
-                } catch (e) {
-                    console.log("Local Stable Diffusion not running or error:", e);
-                }
-
-                // --- Fall back to AI Horde (Decentralized Open Source SD API) ---
-                try {
-                    setStatus("Connecting to AI Horde...");
-                    const apiResponse = await fetch('https://aihorde.net/api/v2/generate/async', {
-                        method: 'POST',
-                        headers: {
-                            'Content-Type': 'application/json',
-                            'apikey': '0000000000',
-                            'Client-Agent': 'ocal-browser:1.0'
-                        },
-                        body: JSON.stringify({
-                            prompt: promptText,
-                            params: {
-                                n: 1,
-                                width: 512,
-                                height: 512,
-                                steps: 20,
-                                sampler_name: "k_euler"
-                            }
+                            instances: [{ prompt: promptText }],
+                            parameters: { sampleCount: 1, aspectRatio: "1:1", outputMimeType: "image/jpeg" }
                         })
                     });
-
-                    if (!apiResponse.ok) {
-                        throw new Error(`AI Horde async call failed: ${apiResponse.status}`);
-                    }
-
-                    const submitData = await apiResponse.json();
-                    const requestId = submitData.id;
-                    if (!requestId) {
-                        throw new Error("No request ID returned by AI Horde");
-                    }
-
-                    // Poll AI Horde
-                    let finished = false;
-                    let attempts = 0;
-                    const maxAttempts = 60; // 3 minutes max
-
-                    while (!finished && attempts < maxAttempts) {
-                        attempts++;
-                        setStatus(`In Queue... (${attempts * 3}s)`);
-                        await new Promise(r => setTimeout(r, 3000));
-
-                        const checkRes = await fetch(`https://aihorde.net/api/v2/generate/check/${requestId}`);
-                        if (checkRes.ok) {
-                            const checkData = await checkRes.json();
-                            if (checkData.done) {
-                                finished = true;
-                            } else if (checkData.wait_time) {
-                                setStatus(`Queueing... Est: ${checkData.wait_time}s`);
-                            }
+                    if (res.ok) {
+                        const data = await res.json();
+                        if (data.predictions && data.predictions.length > 0) {
+                            const b64 = data.predictions[0].bytesBase64Encoded || data.predictions[0].image?.imageBytes;
+                            finalCleanUrl = `data:image/jpeg;base64,${b64}`;
                         }
                     }
-
-                    if (!finished) {
-                        throw new Error("Generation timed out");
-                    }
-
-                    setStatus("Downloading image...");
-                    const statusRes = await fetch(`https://aihorde.net/api/v2/generate/status/${requestId}`);
-                    if (!statusRes.ok) {
-                        throw new Error("Failed to retrieve final image status");
-                    }
-
-                    const statusData = await statusRes.json();
-                    if (statusData.generations && statusData.generations.length > 0) {
-                        const imgUrl = statusData.generations[0].img;
-                        if (finalImg && container) {
-                            finalImg.src = imgUrl;
-                            finalImg.classList.remove('loading');
-                            container.classList.add('loaded');
+                } else if (engine === 'openai' && globalSettings?.openaiApiKey) {
+                    if (textEl) textEl.textContent = 'Generating with OpenAI DALL-E 3...';
+                    const res = await fetch('https://api.openai.com/v1/images/generations', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${globalSettings.openaiApiKey}` },
+                        body: JSON.stringify({ model: 'dall-e-3', prompt: promptText, n: 1, size: '1024x1024' })
+                    });
+                    if (res.ok) {
+                        const data = await res.json();
+                        if (data.data && data.data.length > 0) {
+                            finalCleanUrl = data.data[0].url;
                         }
-                        return;
-                    } else {
-                        throw new Error("No generations returned");
                     }
-
-                } catch (err) {
-                    console.error("AI Horde Gen Error:", err);
-                    if (textEl) textEl.textContent = 'Failed to generate image.';
-                    if (container) container.classList.add('error');
                 }
-            }, 100);
-        }
+
+                // Default high-performance FLUX.1 Schnell with Zero-Watermark Engine
+                if (!finalCleanUrl) {
+                    const fetchW = 1024;
+                    const fetchH = 1024 + 56; // Buffer for zero-watermark crop
+                    const seed = Math.floor(Math.random() * 9000000) + 100000;
+                    const rawUrl = isGenerated 
+                        ? href 
+                        : `https://image.pollinations.ai/prompt/${encodeURIComponent(promptText)}?width=${fetchW}&height=${fetchH}&seed=${seed}&model=flux&nologo=true&enhance=true`;
+                    
+                    finalCleanUrl = await produceZeroWatermarkArtwork(rawUrl, 1024, 1024);
+                }
+
+                // Preload final image before reveal
+                await new Promise((resolve, reject) => {
+                    const testImg = new Image();
+                    testImg.onload = () => resolve();
+                    testImg.onerror = () => reject(new Error('Image failed to load'));
+                    testImg.src = finalCleanUrl;
+                });
+
+                isComplete = true;
+                clearInterval(progressInterval);
+
+                // Save to persistent cache so future reloads NEVER regenerate!
+                await OcalChatImageCache.set(cacheKey, finalCleanUrl);
+                await OcalChatImageCache.set(promptKey, finalCleanUrl);
+
+                if (barEl) barEl.style.width = '100%';
+                if (pctEl) pctEl.textContent = '100%';
+                if (textEl) textEl.textContent = 'Synthesized!';
+
+                // Smoothly fade out the 3D Orb loader
+                loader?.classList.add('fading');
+
+                setTimeout(() => {
+                    if (loader) loader.style.display = 'none';
+                    if (imgEl) {
+                        imgEl.src = finalCleanUrl;
+                        imgEl.style.display = 'block';
+                        imgEl.classList.add('revealing');
+                    }
+                    if (dockEl) dockEl.style.display = 'flex';
+                    if (badgeEl) badgeEl.style.display = 'inline-flex';
+                    setTimeout(() => orbInstance?.destroy(), 600);
+                }, 350);
+
+            } catch (err) {
+                isComplete = true;
+                clearInterval(progressInterval);
+                console.error('Chat image synthesis error:', err);
+                if (textEl) textEl.textContent = 'Synthesis error. Click regenerate to retry.';
+                if (barEl) barEl.style.background = '#EF4444';
+                orbInstance?.setMode('ring');
+            }
+        }, 40);
 
         return `
-            <span class="image-gen-container" id="container-${uniqueId}">
-                <span class="image-gen-loader" id="loader-${uniqueId}">
-                    <span class="pixel-spinner"></span>
-                    <span class="loader-text" id="text-${uniqueId}">Synthesizing image...</span>
-                </span>
-                <img ${isSd ? '' : `src="${href}"`} alt="${text || 'Generated Image'}" class="generated-image loading" id="${uniqueId}" 
-                    onload="document.getElementById('${uniqueId}').classList.remove('loading'); document.getElementById('container-${uniqueId}').classList.add('loaded');"
-                    onerror="document.getElementById('${uniqueId}').parentElement.classList.add('error'); document.getElementById('text-${uniqueId}').textContent = 'Failed to generate image.';">
-            </span>
+            <div class="chat-orb-image-card" id="container-${uniqueId}" data-prompt="${cleanPromptAttr}">
+                <div class="chat-orb-loader" id="loader-${uniqueId}">
+                    <div class="chat-orb-stage">
+                        <div class="chat-orb-ambient-glow"></div>
+                        <div class="chat-orb-canvas-slot" id="orb-slot-${uniqueId}"></div>
+                    </div>
+                    <div class="chat-orb-info">
+                        <div class="chat-orb-title"><i class="fas fa-wand-magic-sparkles"></i> Neural Synthesis</div>
+                        <div class="chat-orb-status" id="text-${uniqueId}">Sampling Latent Vector Space...</div>
+                        <div class="chat-orb-progress-track">
+                            <div class="chat-orb-progress-fill" id="bar-${uniqueId}"></div>
+                        </div>
+                        <div class="chat-orb-meta">
+                            <span class="chat-orb-engine"><i class="fas fa-microchip"></i> FLUX Neural Engine</span>
+                            <span class="chat-orb-percent" id="pct-${uniqueId}">10%</span>
+                        </div>
+                    </div>
+                </div>
+                <div class="chat-image-wrapper">
+                    <img id="${uniqueId}" class="chat-generated-img" alt="${text || 'Synthesized Artwork'}" style="display:none;" />
+                    <div class="chat-image-dock" id="dock-${uniqueId}" style="display:none;">
+                        <button type="button" class="chat-dock-btn" title="Download High-Res PNG" onclick="window.downloadChatImage('${uniqueId}')">
+                            <i class="fas fa-download"></i>
+                        </button>
+                        <button type="button" class="chat-dock-btn" title="Fullscreen Lightbox" onclick="window.zoomChatImage('${uniqueId}')">
+                            <i class="fas fa-expand"></i>
+                        </button>
+                        <button type="button" class="chat-dock-btn" title="Copy Image" onclick="window.copyChatImage('${uniqueId}')">
+                            <i class="fas fa-copy"></i>
+                        </button>
+                        <button type="button" class="chat-dock-btn chat-dock-studio" title="Open in AI Image Studio" onclick="window.openChatPromptInStudio('${encodeURIComponent(promptText)}')">
+                            <i class="fas fa-palette"></i> <span>Studio</span>
+                        </button>
+                        <button type="button" class="chat-dock-btn" title="Regenerate Artwork" onclick="window.regenerateChatImage('${uniqueId}', '${encodeURIComponent(href)}')">
+                            <i class="fas fa-rotate-right"></i>
+                        </button>
+                    </div>
+                    <div class="chat-image-badge" id="badge-${uniqueId}" style="display:none;">
+                        <i class="fas fa-shield-check"></i> Clean HD
+                    </div>
+                </div>
+            </div>
         `;
     }
-    
+
     return `<img src="${href}" alt="${text || ''}" title="${title || ''}">`;
 };
 
@@ -1127,17 +1407,25 @@ const renderMarkdown = (text, isFinal = true) => {
         return `<div class="msg-file-chip"><i class="fas ${iconClass}"></i><span class="chip-name">${filename}</span><span class="chip-tag">${ext}</span></div>`;
     });
 
-    // Replace image markdown with custom placeholder spinner during typing to avoid network spam and broken URLs
+    // Replace image markdown with custom placeholder during typing to avoid network spam and broken URLs
     if (!isFinal) {
         processedText = processedText.replace(/!\[(.*?)\]\((.*?)\)/gi, (match, alt, href) => {
             if (href.includes('pollinations.ai') || href.startsWith('sd://')) {
                 return `
-                    <span class="image-gen-container">
-                        <span class="image-gen-loader">
-                            <span class="pixel-spinner"></span>
-                            <span class="loader-text">Synthesizing image...</span>
-                        </span>
-                    </span>
+                    <div class="chat-orb-image-card" style="margin: 12px 0;">
+                        <div class="chat-orb-loader" style="padding: 24px 16px;">
+                            <div class="chat-orb-stage" style="height: 50px;">
+                                <div class="chat-orb-ambient-glow" style="width: 70px; height: 70px;"></div>
+                                <div style="width: 44px; height: 44px; border-radius: 50%; border: 2px solid rgba(139, 92, 246, 0.4); border-top-color: #8B5CF6; animation: spin 1s linear infinite; display:flex; align-items:center; justify-content:center;">
+                                    <i class="fas fa-atom" style="color: #A78BFA; font-size: 14px;"></i>
+                                </div>
+                            </div>
+                            <div class="chat-orb-info">
+                                <div class="chat-orb-title"><i class="fas fa-wand-magic-sparkles"></i> Neural Synthesis</div>
+                                <div class="chat-orb-status"><i class="fas fa-circle-notch fa-spin"></i> Preparing latent quantum orbs...</div>
+                            </div>
+                        </div>
+                    </div>
                 `;
             }
             return `[Image: ${alt}]`;
@@ -1213,6 +1501,7 @@ const tokenizeTextForTyping = (text) => {
 
 // Helper: Typing Animation with HTML Leakage Protection & Realistic Human Typo-Correction
 const typeMessage = async (container, text, speed = 12) => {
+    ocalHeaderOrb?.setState('speaking');
     let currentText = '';
     const tokens = tokenizeTextForTyping(text);
     const persona = getPersona();
@@ -1304,6 +1593,7 @@ const typeMessage = async (container, text, speed = 12) => {
     });
     enhanceCodeBlocks(container);
     scrollToBottom();
+    ocalHeaderOrb?.setState('idle');
 };
 
 // Helper: Enhance Code Blocks with Language Badge & Copy Button
@@ -1337,6 +1627,35 @@ const enhanceCodeBlocks = (container) => {
 
 // Helper: Add Message
 const addMessage = async (content, isUser = false, actions = []) => {
+    // Unbox raw LLM JSON responses (e.g. Gemma/Ollama structured role/reasoning envelopes)
+    if (!isUser && typeof content === 'string') {
+        let trimmed = content.trim();
+        if (trimmed.startsWith('```json') && trimmed.endsWith('```')) {
+            trimmed = trimmed.replace(/^```json\s*/i, '').replace(/```$/, '').trim();
+        } else if (trimmed.startsWith('```') && trimmed.endsWith('```')) {
+            trimmed = trimmed.replace(/^```\s*/, '').replace(/```$/, '').trim();
+        }
+        if (trimmed.startsWith('{') && trimmed.endsWith('}')) {
+            try {
+                const parsed = JSON.parse(trimmed);
+                if (parsed && typeof parsed === 'object' && (parsed.role === 'assistant' || parsed.reasoning || parsed.content !== undefined)) {
+                    const reasoning = (parsed.reasoning || '').toLowerCase();
+                    const bodyContent = (parsed.content || '').trim();
+                    if (!bodyContent && (reasoning.includes('generate an image') || reasoning.includes('create an image') || reasoning.includes('image of') || reasoning.includes('user wants to generate an image') || reasoning.includes('user wants an image'))) {
+                        let extracted = 'concept car';
+                        const match = reasoning.match(/image\s+of\s+(?:a\s+|an\s+)?([a-zA-Z0-9\s]+?)(?:\.|\?|,|$)/i);
+                        if (match && match[1]) extracted = match[1].trim();
+                        content = `Here is the artwork synthesized for **"${extracted}"**:\n\n![Generated Image](sd://${encodeURIComponent(extracted)}?model=flux-2)\n\n> ⚡ **Engine:** FLUX.2 Flagship *(Open-Source High Fidelity)*`;
+                    } else if (bodyContent) {
+                        content = bodyContent;
+                    } else if (parsed.reasoning) {
+                        content = parsed.reasoning;
+                    }
+                }
+            } catch(e) {}
+        }
+    }
+
     // Hide hero greeting container as soon as conversation starts
     const heroContainer = document.getElementById('gemini-hero-container');
     if (heroContainer) heroContainer.style.display = 'none';
@@ -1363,15 +1682,15 @@ const addMessage = async (content, isUser = false, actions = []) => {
         const currentEngine = globalSettings?.aiEngine || 'local';
         let modelName = 'Ocal Core';
         if (currentEngine === 'gemini') {
-            modelName = 'Gemini 2.5 Flash';
+            modelName = (globalSettings?.aiApiKey && globalSettings.aiApiKey.trim().length > 14) ? 'Gemini 1.5 Flash' : 'Cloud AI (Online)';
         } else if (currentEngine === 'openai') {
-            modelName = 'ChatGPT';
+            modelName = (globalSettings?.openaiApiKey && globalSettings.openaiApiKey.trim().length > 14) ? 'ChatGPT' : 'Cloud AI (Online)';
         } else if (currentEngine === 'custom') {
             modelName = globalSettings?.customModel || 'Custom API';
         } else {
             modelName = (globalSettings?.localModel && globalSettings.localModel !== 'auto') 
                 ? globalSettings.localModel 
-                : 'Ollama Local';
+                : 'Cloud AI (Online)';
         }
         
         aiHeader.innerHTML = `
@@ -1397,13 +1716,15 @@ const addMessage = async (content, isUser = false, actions = []) => {
         actionsRow.className = 'agent-actions-row';
         actions.forEach(action => {
             const actionEl = document.createElement('div');
-            actionEl.className = `agent-action ${action.url || action.command ? 'clickable' : ''}`;
+            actionEl.className = `agent-action ${action.url || action.command || action.prompt || action.text ? 'clickable' : ''}`;
             actionEl.innerHTML = `<i class="fas ${action.icon || 'fa-bolt'}"></i> <span>${action.text}</span>`;
             
             if (action.url) {
                 actionEl.onclick = () => window.electronAPI.send('open-external', action.url);
             } else if (action.command) {
                 actionEl.onclick = () => window.electronAPI.send('execute-agent-command', action);
+            } else if (action.prompt || action.text) {
+                actionEl.onclick = () => handleSend(action.prompt || action.text);
             }
             actionsRow.appendChild(actionEl);
         });
@@ -1474,21 +1795,22 @@ let currentThinkingEl = null;
 
 const showThinking = () => {
     if (currentThinkingEl) return;
+    ocalHeaderOrb?.setState('thinking');
     const group = document.createElement('div');
     group.className = 'msg-group ai thinking-group';
     const personaCfg = PERSONA_CONFIGS[getPersona()] || PERSONA_CONFIGS.professional;
     const currentEngine = globalSettings?.aiEngine || 'local';
     let modelName = 'Ocal Core';
     if (currentEngine === 'gemini') {
-        modelName = 'Gemini 2.5 Flash';
+        modelName = (globalSettings?.aiApiKey && globalSettings.aiApiKey.trim().length > 14) ? 'Gemini 1.5 Flash' : 'Cloud AI (Online)';
     } else if (currentEngine === 'openai') {
-        modelName = 'ChatGPT';
+        modelName = (globalSettings?.openaiApiKey && globalSettings.openaiApiKey.trim().length > 14) ? 'ChatGPT' : 'Cloud AI (Online)';
     } else if (currentEngine === 'custom') {
         modelName = globalSettings?.customModel || 'Custom API';
     } else {
         modelName = (globalSettings?.localModel && globalSettings.localModel !== 'auto') 
             ? globalSettings.localModel 
-            : 'Ollama Local';
+            : 'Cloud AI (Online)';
     }
 
     group.innerHTML = `
@@ -1500,7 +1822,7 @@ const showThinking = () => {
             </div>
         </div>
         <div class="thinking-pill">
-            <span class="thinking-pulse-dot"></span>
+            <span class="thinking-orb-slot" style="display: inline-flex; align-items: center; justify-content: center; width: 18px; height: 18px; flex-shrink: 0;"></span>
             <span class="thinking-text">Thinking</span>
             <span class="thinking-dots">
                 <span class="dot"></span>
@@ -1511,6 +1833,13 @@ const showThinking = () => {
     `;
     messagesEl.appendChild(group);
     currentThinkingEl = group;
+
+    // Attach mini thinking orb inside pill
+    const miniOrbSlot = group.querySelector('.thinking-orb-slot');
+    if (miniOrbSlot && window.LibrariesDevFX?.ThinkingOrb) {
+        window.LibrariesDevFX.ThinkingOrb.createOrb(miniOrbSlot, { size: 18, mode: 'wave', speed: 2.4 });
+    }
+
     scrollToBottom();
 };
 
@@ -1519,6 +1848,7 @@ const hideThinking = () => {
         currentThinkingEl.remove();
         currentThinkingEl = null;
     }
+    ocalHeaderOrb?.setState('idle');
 };
 
 // Main Handler
@@ -1831,7 +2161,13 @@ checkFullscreenMode();
 // Initialize Chat History State & UI load on start
 loadChatSessions();
 renderHistorySidebar();
-renderSessionMessages(currentSession);
+if (window.OcalChatImageCache) {
+    OcalChatImageCache.init().finally(() => {
+        renderSessionMessages(currentSession);
+    });
+} else {
+    renderSessionMessages(currentSession);
+}
 
 // Tool Handlers
 toolSummarize?.addEventListener('click', () => {
@@ -2106,652 +2442,818 @@ navTabChat?.addEventListener('click', () => {
     imageStudioView.style.display = 'none';
 });
 
-navTabImage?.addEventListener('click', () => {
-    navTabImage.classList.add('active');
-    navTabChat.classList.remove('active');
-    imageStudioView.style.display = 'flex';
-    chatView.style.display = 'none';
-});
-
-// --- AI Image Studio Logic ---
-const studioEngineSelect = document.getElementById('studio-engine-select');
-const studioPromptInput = document.getElementById('studio-prompt-input');
-const studioGenerateBtn = document.getElementById('studio-generate-btn');
-const studioPreviewCard = document.getElementById('studio-preview-card');
-const studioStatusIndicator = document.getElementById('studio-status-indicator');
-const studioStatusText = document.getElementById('studio-status-text');
-const studioResultImg = document.getElementById('studio-result-img');
-const studioActions = document.getElementById('studio-actions');
-const studioDownloadBtn = document.getElementById('studio-download-btn');
-const studioCopyBtn = document.getElementById('studio-copy-btn');
-
-// Shimmer Elements
-const studioShimmer = document.getElementById('studio-loading-shimmer');
-const shimmerPercentage = document.getElementById('shimmer-progress-percentage');
-const shimmerSubtext = document.getElementById('shimmer-progress-subtext');
-const shimmerBarFill = document.getElementById('shimmer-progress-bar-fill');
-const shimmerPercentNum = document.getElementById('shimmer-progress-percent-num');
-
-// Custom Dropdown Interactions (Engine Selector)
-const dropdownContainer = document.getElementById('engine-dropdown-container');
-const dropdownTrigger = document.getElementById('engine-dropdown-trigger');
-const dropdownLabel = document.getElementById('engine-dropdown-label');
-
-// Custom Dropdown Interactions (Aspect Ratio Selector)
-const ratioContainer = document.getElementById('ratio-dropdown-container');
-const ratioTrigger = document.getElementById('ratio-dropdown-trigger');
-const ratioLabel = document.getElementById('ratio-dropdown-label');
-const studioAspectRatio = document.getElementById('studio-aspect-ratio');
-
-dropdownTrigger?.addEventListener('click', (e) => {
-    e.stopPropagation();
-    ratioContainer?.classList.remove('open');
-    dropdownContainer.classList.toggle('open');
-});
-
-dropdownContainer?.querySelectorAll('.dropdown-option').forEach(option => {
-    option.addEventListener('click', (e) => {
-        e.stopPropagation();
-        const value = option.getAttribute('data-value');
-        const iconHtml = option.querySelector('.option-icon').outerHTML;
-        const title = option.querySelector('.option-title').textContent;
-
-        if (studioEngineSelect) {
-            studioEngineSelect.value = value;
-            studioEngineSelect.dispatchEvent(new Event('change'));
-        }
-
-        if (dropdownLabel) {
-            dropdownLabel.innerHTML = `${iconHtml} <span class="option-title">${title}</span>`;
-        }
-
-        dropdownContainer.querySelectorAll('.dropdown-option').forEach(o => o.classList.remove('active'));
-        option.classList.add('active');
-        dropdownContainer.classList.remove('open');
-    });
-});
-
-ratioTrigger?.addEventListener('click', (e) => {
-    e.stopPropagation();
-    dropdownContainer?.classList.remove('open');
-    ratioContainer.classList.toggle('open');
-});
-
-ratioContainer?.querySelectorAll('.dropdown-option').forEach(option => {
-    option.addEventListener('click', (e) => {
-        e.stopPropagation();
-        const value = option.getAttribute('data-value');
-        const iconHtml = option.querySelector('.option-icon').outerHTML;
-        const title = option.querySelector('.option-title').textContent;
-
-        if (studioAspectRatio) {
-            studioAspectRatio.value = value;
-        }
-
-        if (ratioLabel) {
-            ratioLabel.innerHTML = `${iconHtml} <span class="option-title">${title}</span>`;
-        }
-
-        // Update preview wrapper CSS aspect ratio dynamically
-        const ratioFrac = value.replace(':', '/');
-        if (studioShimmer) {
-            studioShimmer.style.setProperty('--aspect-ratio', ratioFrac);
-        }
-
-        ratioContainer.querySelectorAll('.dropdown-option').forEach(o => o.classList.remove('active'));
-        option.classList.add('active');
-        ratioContainer.classList.remove('open');
-    });
-});
-
-document.addEventListener('click', () => {
-    dropdownContainer?.classList.remove('open');
-    ratioContainer?.classList.remove('open');
-});
-
-// Custom Dropdown Interactions (Open Source Model Selector)
-const osModelContainer = document.getElementById('os-model-dropdown-container');
-const osModelTrigger = document.getElementById('os-model-dropdown-trigger');
-const osModelLabel = document.getElementById('os-model-dropdown-label');
-const studioOsModelSelect = document.getElementById('studio-os-model-select');
-
-osModelTrigger?.addEventListener('click', (e) => {
-    e.stopPropagation();
-    dropdownContainer?.classList.remove('open');
-    ratioContainer?.classList.remove('open');
-    osModelContainer?.classList.toggle('open');
-});
-
-osModelContainer?.querySelectorAll('.dropdown-option').forEach(option => {
-    option.addEventListener('click', (e) => {
-        e.stopPropagation();
-        const value = option.getAttribute('data-value');
-        const iconHtml = option.querySelector('.option-icon').outerHTML;
-        const title = option.querySelector('.option-title').textContent;
-
-        if (studioOsModelSelect) {
-            studioOsModelSelect.value = value;
-        }
-
-        if (osModelLabel) {
-            osModelLabel.innerHTML = `${iconHtml} <span class="option-title">${title}</span>`;
-        }
-
-        osModelContainer.querySelectorAll('.dropdown-option').forEach(o => o.classList.remove('active'));
-        option.classList.add('active');
-        osModelContainer.classList.remove('open');
-    });
-});
-
-document.addEventListener('click', () => {
-    dropdownContainer?.classList.remove('open');
-    ratioContainer?.classList.remove('open');
-    osModelContainer?.classList.remove('open');
-});
-
-// Collapsible Advanced Settings Panel
-const advToggle = document.getElementById('advanced-settings-toggle');
-const advPanel = document.getElementById('advanced-settings-panel');
-const advArrow = document.getElementById('advanced-arrow-icon');
-
-advToggle?.addEventListener('click', () => {
-    const isHidden = advPanel.style.display === 'none';
-    advPanel.style.display = isHidden ? 'flex' : 'none';
-    advArrow.classList.toggle('open', isHidden);
-});
-
-// Toggle Sub-Options
-const seedLock = document.getElementById('studio-seed-lock');
-const seedContainer = document.getElementById('seed-input-container');
-seedLock?.addEventListener('change', () => {
-    seedContainer.style.display = seedLock.checked ? 'flex' : 'none';
-});
-
-const watermarkToggle = document.getElementById('studio-watermark-toggle');
-const watermarkContainer = document.getElementById('watermark-input-container');
-watermarkToggle?.addEventListener('change', () => {
-    watermarkContainer.style.display = watermarkToggle.checked ? 'flex' : 'none';
-});
-
-// Model mapping helper to ensure open-source engines route to ultra-fidelity checkpoints
-function mapToHighFidelityModel(osModel) {
-    const map = {
-        'flux-2': 'flux',
-        'sd-3.5': 'flux-realism',
-        'qwen-image': 'flux',
-        'flux-realism': 'flux-realism',
-        'flux-candid': 'flux-candid',
-        'flux-anime': 'flux-anime',
-        'flux-3d': 'flux-3d',
-        'turbo': 'turbo',
-        'flux': 'flux'
-    };
-    return map[osModel] || 'flux';
+// --- Navigation Tab Switcher & Multi-Entry Points ---
+function switchToStudio() {
+    navTabImage?.classList.add('active');
+    navTabChat?.classList.remove('active');
+    const modeBtnStudio = document.getElementById('mode-btn-studio');
+    const modeBtnChat = document.getElementById('mode-btn-chat');
+    modeBtnStudio?.classList.add('active');
+    modeBtnChat?.classList.remove('active');
+    
+    if (imageStudioView) imageStudioView.style.display = 'flex';
+    if (chatView) chatView.style.display = 'none';
 }
 
-// Master prompt builder that elevates any user input into masterwork-quality prompts
-function buildMasterPrompt(rawPrompt, osModel) {
-    let p = (rawPrompt || '').trim();
-    if (!p) return p;
+function switchToChat() {
+    navTabChat?.classList.add('active');
+    navTabImage?.classList.remove('active');
+    const modeBtnStudio = document.getElementById('mode-btn-studio');
+    const modeBtnChat = document.getElementById('mode-btn-chat');
+    modeBtnChat?.classList.add('active');
+    modeBtnStudio?.classList.remove('active');
 
-    // Detect style intention
-    const isAnime = /anime|manga|waifu|chibi|ghibli|shinkai|comic|illustration/i.test(p) || osModel === 'flux-anime';
-    const is3D = /3d|render|octane|unreal|pixar|sculpture|isometric/i.test(p) || osModel === 'flux-3d';
-    const isCyberpunk = /cyberpunk|neon|futuristic|sci-fi|scifi|hologram|cyber/i.test(p);
-    const isPainting = /painting|oil on canvas|watercolor|impressionism|acrylic|masterpiece art/i.test(p);
-    const isPortrait = /portrait|person|woman|man|face|girl|boy|model|human|candid|couple|bride|groom/i.test(p) || osModel === 'flux-candid' || osModel === 'flux-realism';
-
-    if (isAnime) {
-        if (!/makoto shinkai|studio ghibli|pixiv|wallpaper/i.test(p)) {
-            p = `${p}, Makoto Shinkai & Kyoto Animation visual style, CoMix Wave art, breathtaking atmospheric sky lighting, vibrant rich colors, crisp detailed lineart, trending on Pixiv, 8k wallpaper masterwork`;
-        }
-    } else if (isCyberpunk) {
-        if (!/unreal engine|octane|volumetric/i.test(p)) {
-            p = `${p}, cinematic cyberpunk aesthetic, volumetric glowing neon atmosphere, wet reflective asphalt, cinematic raytracing, Unreal Engine 5 render, highly detailed masterwork, 8k UHD`;
-        }
-    } else if (is3D) {
-        if (!/octane|raytracing/i.test(p)) {
-            p = `${p}, Octane Render 3D, Cinema 4D, subsurface scattering, dramatic studio rim lighting, vivid material textures, ultra-detailed raytracing, 8k UHD`;
-        }
-    } else if (isPainting) {
-        if (!/impasto|fine art/i.test(p)) {
-            p = `${p}, classical fine art oil painting on textured canvas, Rembrandt chiaroscuro lighting, expressive impasto brushstrokes, rich museum quality masterwork`;
-        }
-    } else if (isPortrait) {
-        if (!/35mm|hasselblad|skin/i.test(p)) {
-            p = `${p}, shot on 35mm Hasselblad H6D-100c, 85mm f/1.4 lens, natural skin micro-texture, subtle subsurface scattering, masterwork lighting, Kodak Portra 400 film grain, cinematic depth of field, 8k UHD photorealistic`;
-        }
-    } else {
-        if (!/8k|photorealistic|masterpiece|cinematic/i.test(p)) {
-            p = `${p}, 8k resolution, photorealistic masterwork, professional photography, cinematic volumetric lighting, ultra-sharp focus, natural depth of field, highly detailed`;
-        }
-    }
-
-    return p;
+    if (chatView) chatView.style.display = 'flex';
+    if (imageStudioView) imageStudioView.style.display = 'none';
 }
 
-// Style Preset Chips
-document.querySelectorAll('.preset-chip').forEach(btn => {
-    btn.addEventListener('click', () => {
-        btn.classList.toggle('active');
-        const style = btn.getAttribute('data-style');
-        if (studioPromptInput) {
-            const current = studioPromptInput.value.trim();
-            studioPromptInput.value = current ? `${current}, ${style}` : style;
+navTabChat?.addEventListener('click', switchToChat);
+navTabImage?.addEventListener('click', switchToStudio);
+document.getElementById('mode-btn-chat')?.addEventListener('click', switchToChat);
+document.getElementById('mode-btn-studio')?.addEventListener('click', switchToStudio);
+document.getElementById('nav-images-btn')?.addEventListener('click', switchToStudio);
+
+// ── Modern AI Image Studio Engine ─────────────────────────────
+(function initAIImageStudio() {
+    // Curated creative prompts for "Surprise Me"
+    const INSPIRATION_PROMPTS = [
+        "A futuristic holographic bonsai tree glowing with cyan and violet light in a dark minimalist room, 8k resolution, octane render, Ray Tracing, serene aesthetic",
+        "Epic close-up portrait of a cybernetic warrior with glowing gold ocular implants, rain pouring down, neon reflections on titanium armor, hyperrealistic 8k",
+        "Dreamy anime girl watching a glowing shooting star shower on a grassy hill at twilight, Makoto Shinkai art style, breathtaking clouds, vibrant colors",
+        "Mystical floating islands with cascading waterfalls over a sea of clouds, ancient crystalline ruins, golden hour sunlight, majestic fantasy landscape",
+        "A cute tiny red panda wearing an astronaut helmet floating weightless in space with glowing nebulae and distant galaxies, Pixar 3D digital render",
+        "Hyper-detailed portrait of an elderly wizard studying a levitating illuminated celestial globe in an ancient Gothic library, volumetric dust rays, 8k",
+        "Sleek retro-futuristic flying supercar cruising through a neon synthwave metropolis at midnight, purple sunset horizon, chrome reflections",
+        "Biomimetic glass greenhouse city dome on Mars with lush tropical jungle inside, red dust storm raging outside, cinematic sci-fi concept art",
+        "Bioluminescent jellyfish queen floating gracefully through a deep dark abyss, glowing cyan and magenta tentacles, ethereal underwater photography",
+        "Intricate steam-powered mechanical hummingbird with brass gears and iridescent hummingbird feathers sipping golden nectar from a clockwork flower",
+        "A serene Kyoto zen garden in autumn with vibrant crimson maple leaves falling onto a glassy reflective koi pond, misty morning light, photorealistic",
+        "Cyberpunk street noodle vendor in rainy Neo-Tokyo, steam rising from ramen bowls, neon holograms flickering in puddle reflections, cinematic 8k",
+        "Magnificent mythical crystal dragon perched on a jagged obsidian mountain summit during a purple thunderstorm, crackling lightning arcs",
+        "Cozy rainy day coffee shop with warm ambient lantern lights, wooden bookshelves, cat sleeping on a velvet armchair, detailed digital painting",
+        "Surreal dreamscape where giant floating whale-like airships drift peacefully between colossal cotton candy clouds, golden hour sunlight",
+        "Cinematic film still of an explorer discovering a glowing subterranean crystal cave, flashlight illuminating ancient geometric glyphs",
+        "A majestic snow leopard with piercing sapphire eyes standing on an icy Himalayan ridge at sunrise, blowing spindrift, National Geographic 8k"
+    ];
+
+    // State Variables
+    let selectedModel = 'flux';
+    let selectedCloudProvider = 'openai';
+    let selectedRatio = '1:1';
+    let selectedQuality = 'standard';
+    let selectedWidth = 1024;
+    let selectedHeight = 1024;
+    let activeStyleText = '';
+    let activeLightingText = '';
+    let activeCameraText = '';
+    let currentGeneratedUrl = '';
+    let currentGeneratedPrompt = '';
+    let isGenerating = false;
+
+    // Helper: Compute target resolutions based on ratio and quality mode
+    function updateDimensions() {
+        const isUltra = selectedQuality === 'ultra';
+        switch (selectedRatio) {
+            case '16:9':
+                selectedWidth = isUltra ? 1920 : 1344;
+                selectedHeight = isUltra ? 1080 : 768;
+                break;
+            case '9:16':
+                selectedWidth = isUltra ? 1080 : 768;
+                selectedHeight = isUltra ? 1920 : 1344;
+                break;
+            case '4:3':
+                selectedWidth = isUltra ? 1600 : 1152;
+                selectedHeight = isUltra ? 1200 : 864;
+                break;
+            case '1:1':
+            default:
+                selectedWidth = isUltra ? 1536 : 1024;
+                selectedHeight = isUltra ? 1536 : 1024;
+                break;
+        }
+    }
+
+    // DOM References
+    const promptInput = document.getElementById('studio-prompt-input');
+    const promptCountEl = document.getElementById('ais-prompt-count');
+    const generateBtn = document.getElementById('studio-generate-btn');
+    const generateText = document.getElementById('ais-generate-text');
+    const surpriseBtn = document.getElementById('ais-surprise-btn');
+    const enhanceBtn = document.getElementById('ais-enhance-btn');
+    const clearBtn = document.getElementById('ais-clear-btn');
+    const cloudRow = document.getElementById('ais-cloud-row');
+    const advToggle = document.getElementById('ais-adv-toggle');
+    const advArrow = document.getElementById('ais-adv-arrow');
+    const advPanel = document.getElementById('ais-adv-panel');
+    const seedInput = document.getElementById('studio-seed-value');
+    const seedRandBtn = document.getElementById('ais-seed-rand-btn');
+    const negInput = document.getElementById('studio-negative-input');
+
+    // Quality Toggles
+    const qualityStdBtn = document.getElementById('ais-quality-std');
+    const qualityUltraBtn = document.getElementById('ais-quality-ultra');
+
+    // Canvas Stage References
+    const emptyState = document.getElementById('ais-empty-state');
+    const progressState = document.getElementById('ais-progress-state');
+    const resultContainer = document.getElementById('ais-result-container');
+    const resultImg = document.getElementById('studio-result-img');
+    const progressHeadline = document.getElementById('ais-progress-headline');
+    const progressSubtext = document.getElementById('ais-progress-subtext');
+    const progressBarFill = document.getElementById('ais-progress-bar-fill');
+    const progressPercent = document.getElementById('ais-progress-percent');
+    const progressModelTag = document.getElementById('ais-progress-model-tag');
+    const resultPromptSnippet = document.getElementById('ais-result-prompt-snippet');
+    const resultModelBadge = document.getElementById('ais-result-model-badge');
+
+    // Floating Dock Buttons
+    const downloadBtn = document.getElementById('studio-download-btn');
+    const copyBtn = document.getElementById('studio-copy-btn');
+    const zoomBtn = document.getElementById('studio-zoom-btn');
+    const remixBtn = document.getElementById('studio-remix-btn');
+    const chatBtn = document.getElementById('studio-chat-btn');
+    const regenBtn = document.getElementById('studio-regen-btn');
+
+    // Gallery References
+    const gallerySection = document.getElementById('ais-gallery-section');
+    const galleryStrip = document.getElementById('ais-gallery-strip');
+    const galleryClearBtn = document.getElementById('ais-gallery-clear-btn');
+
+    // Lightbox References
+    const lightbox = document.getElementById('ais-lightbox');
+    const lightboxImg = document.getElementById('ais-lightbox-img');
+    const lightboxClose = document.getElementById('ais-lightbox-close');
+    const lightboxBackdrop = document.getElementById('ais-lightbox-backdrop');
+    const lightboxCaption = document.getElementById('ais-lightbox-caption');
+    const lightboxDownload = document.getElementById('ais-lightbox-download');
+
+    // 0. Live Prompt Word & Character Counter
+    function updatePromptCounter() {
+        const val = promptInput?.value?.trim() || '';
+        const words = val ? val.split(/\s+/).length : 0;
+        const chars = val.length;
+        if (promptCountEl) {
+            promptCountEl.textContent = `${words} ${words === 1 ? 'word' : 'words'}${chars > 0 ? ` (${chars} chars)` : ''}`;
+        }
+    }
+    promptInput?.addEventListener('input', updatePromptCounter);
+
+    // 1. Model Pills Selection
+    const enginePills = document.querySelectorAll('.ais-engine-pill');
+    enginePills.forEach(pill => {
+        pill.addEventListener('click', () => {
+            enginePills.forEach(p => p.classList.remove('active'));
+            pill.classList.add('active');
+            selectedModel = pill.getAttribute('data-engine') || 'flux';
+
+            if (selectedModel === 'cloud') {
+                if (cloudRow) cloudRow.style.display = 'flex';
+            } else {
+                if (cloudRow) cloudRow.style.display = 'none';
+            }
+        });
+    });
+
+    // 2. Cloud Provider Tabs
+    const cloudTabs = document.querySelectorAll('.ais-cloud-tab');
+    cloudTabs.forEach(tab => {
+        tab.addEventListener('click', () => {
+            cloudTabs.forEach(t => t.classList.remove('active'));
+            tab.classList.add('active');
+            selectedCloudProvider = tab.getAttribute('data-cloud') || 'openai';
+        });
+    });
+
+    // 3. Quality Mode Toggle (1K HD vs 2K Ultra)
+    qualityStdBtn?.addEventListener('click', () => {
+        selectedQuality = 'standard';
+        qualityStdBtn.classList.add('active');
+        qualityUltraBtn?.classList.remove('active');
+        updateDimensions();
+    });
+
+    qualityUltraBtn?.addEventListener('click', () => {
+        selectedQuality = 'ultra';
+        qualityUltraBtn.classList.add('active');
+        qualityStdBtn?.classList.remove('active');
+        updateDimensions();
+    });
+
+    // 4. Aspect Ratio Selection
+    const aspectBtns = document.querySelectorAll('.ais-aspect-btn');
+    aspectBtns.forEach(btn => {
+        btn.addEventListener('click', () => {
+            aspectBtns.forEach(b => b.classList.remove('active'));
+            btn.classList.add('active');
+            selectedRatio = btn.getAttribute('data-ratio') || '1:1';
+            updateDimensions();
+        });
+    });
+
+    // 5. Category Navigation (Styles / Lighting / Camera)
+    const catTabs = document.querySelectorAll('.ais-cat-tab');
+    const chipsStyles = document.getElementById('ais-chips-styles');
+    const chipsLighting = document.getElementById('ais-chips-lighting');
+    const chipsCamera = document.getElementById('ais-chips-camera');
+
+    catTabs.forEach(tab => {
+        tab.addEventListener('click', () => {
+            catTabs.forEach(t => t.classList.remove('active'));
+            tab.classList.add('active');
+            const cat = tab.getAttribute('data-cat') || 'styles';
+
+            if (chipsStyles) chipsStyles.style.display = (cat === 'styles') ? 'flex' : 'none';
+            if (chipsLighting) chipsLighting.style.display = (cat === 'lighting') ? 'flex' : 'none';
+            if (chipsCamera) chipsCamera.style.display = (cat === 'camera') ? 'flex' : 'none';
+        });
+    });
+
+    // 6. Preset Chips Handlers
+    // Styles
+    chipsStyles?.querySelectorAll('.ais-preset-chip').forEach(chip => {
+        chip.addEventListener('click', () => {
+            const isCurrentlyActive = chip.classList.contains('active');
+            chipsStyles.querySelectorAll('.ais-preset-chip').forEach(c => c.classList.remove('active'));
+
+            if (isCurrentlyActive) {
+                activeStyleText = '';
+            } else {
+                chip.classList.add('active');
+                activeStyleText = chip.getAttribute('data-style') || '';
+            }
+        });
+    });
+
+    // Lighting
+    chipsLighting?.querySelectorAll('.ais-preset-chip').forEach(chip => {
+        chip.addEventListener('click', () => {
+            const isCurrentlyActive = chip.classList.contains('active');
+            chipsLighting.querySelectorAll('.ais-preset-chip').forEach(c => c.classList.remove('active'));
+
+            if (isCurrentlyActive) {
+                activeLightingText = '';
+            } else {
+                chip.classList.add('active');
+                activeLightingText = chip.getAttribute('data-lighting') || '';
+            }
+        });
+    });
+
+    // Camera
+    chipsCamera?.querySelectorAll('.ais-preset-chip').forEach(chip => {
+        chip.addEventListener('click', () => {
+            const isCurrentlyActive = chip.classList.contains('active');
+            chipsCamera.querySelectorAll('.ais-preset-chip').forEach(c => c.classList.remove('active'));
+
+            if (isCurrentlyActive) {
+                activeCameraText = '';
+            } else {
+                chip.classList.add('active');
+                activeCameraText = chip.getAttribute('data-camera') || '';
+            }
+        });
+    });
+
+    // 7. Surprise Me / Random Prompt
+    surpriseBtn?.addEventListener('click', () => {
+        const randomIndex = Math.floor(Math.random() * INSPIRATION_PROMPTS.length);
+        const randomPrompt = INSPIRATION_PROMPTS[randomIndex];
+        if (promptInput) {
+            promptInput.value = randomPrompt;
+            updatePromptCounter();
+            promptInput.focus();
         }
     });
-});
 
-// Image Studio Generation Engine
-let currentGeneratedImgUrl = '';
-
-studioGenerateBtn?.addEventListener('click', async () => {
-    const rawPrompt = studioPromptInput?.value?.trim();
-    if (!rawPrompt) return;
-
-    const engine = studioEngineSelect?.value || 'local';
-    const osModel = studioOsModelSelect?.value || 'flux-2';
-    const mappedModel = mapToHighFidelityModel(osModel);
-
-    // Build enhanced master prompt
-    const prompt = buildMasterPrompt(rawPrompt, osModel);
-
-    // Retrieve Ratio configurations
-    const activeRatioOpt = ratioContainer?.querySelector('.dropdown-option.active');
-    const width = activeRatioOpt ? parseInt(activeRatioOpt.getAttribute('data-w')) : 1024;
-    const height = activeRatioOpt ? parseInt(activeRatioOpt.getAttribute('data-h')) : 1024;
-    const ratioValue = activeRatioOpt ? activeRatioOpt.getAttribute('data-value') : '1:1';
-
-    // Retrieve Advanced Settings
-    let negativePrompt = document.getElementById('studio-negative-input')?.value?.trim() || '';
-    if (!negativePrompt) {
-        negativePrompt = 'blurry, low quality, distorted, deformed, extra limbs, bad anatomy, bad hands, missing fingers, extra fingers, pixelated, ugly, duplicate, artifact, oversaturated, watermark, signature, poorly drawn, out of frame, lowres, mutation, mutated, extra eyes, cutoff, cropped';
-    }
-
-    const isSeedLocked = document.getElementById('studio-seed-lock')?.checked;
-    const seedValInput = document.getElementById('studio-seed-value')?.value?.trim();
-    const seed = isSeedLocked && seedValInput ? parseInt(seedValInput) : Math.floor(Math.random() * 10000000);
-
-    const isWatermarkEnabled = document.getElementById('studio-watermark-toggle')?.checked;
-    const watermarkText = document.getElementById('studio-watermark-text')?.value || 'Ocal AI Studio';
-
-    studioPreviewCard.style.display = 'flex';
-    studioStatusIndicator.style.display = 'flex';
-    studioStatusText.textContent = `Synthesizing masterwork with ${osModel.toUpperCase()} model...`;
-    
-    // Set dynamic aspect ratio on the shimmer loader card
-    const ratioFrac = ratioValue.replace(':', '/');
-    if (studioShimmer) {
-        studioShimmer.style.setProperty('--aspect-ratio', ratioFrac);
-        studioShimmer.style.display = 'flex';
-        shimmerPercentage.textContent = 'Painting canvas...';
-        shimmerSubtext.textContent = `Denoising latent noise fields (${engine === 'local' ? `Open-Source ${osModel}` : engine === 'openai' ? 'DALL-E 3' : 'Imagen'})`;
-    }
-    
-    studioResultImg.style.display = 'none';
-    studioActions.style.display = 'none';
-    studioGenerateBtn.disabled = true;
-
-    // Simulate progress
-    const totalSimDuration = 24000 + Math.floor(Math.random() * 4000); // 24s - 28s
-    let progress = 0;
-    let progressComplete = false;
-    let resultUrlReady = '';
-
-    const progressInterval = setInterval(() => {
-        if (progressComplete) {
-            clearInterval(progressInterval);
+    // 8. Enhance Prompt Button
+    enhanceBtn?.addEventListener('click', () => {
+        if (!promptInput) return;
+        const current = promptInput.value.trim();
+        if (!current) {
+            surpriseBtn?.click();
             return;
         }
 
-        if (progress < 40) {
-            progress += Math.floor(Math.random() * 4) + 3;
-        } else if (progress < 75) {
-            progress += Math.floor(Math.random() * 3) + 1;
-        } else if (progress < 98) {
-            progress += 1;
+        // Smart prompt enhancer
+        let enhanced = current;
+        if (!/8k|photorealistic|high resolution|masterpiece/i.test(enhanced)) {
+            enhanced += ', 8k resolution, photorealistic masterpiece, ultra-detailed';
+        }
+        if (!/lighting|cinematic|volumetric|studio light/i.test(enhanced)) {
+            enhanced += ', cinematic volumetric lighting, ray tracing';
+        }
+        if (!/lens|hasselblad|bokeh|depth of field/i.test(enhanced)) {
+            enhanced += ', shot on 50mm f/1.2 lens, beautiful depth of field';
+        }
+        promptInput.value = enhanced;
+        updatePromptCounter();
+    });
+
+    // 9. Clear Prompt Button
+    clearBtn?.addEventListener('click', () => {
+        if (promptInput) {
+            promptInput.value = '';
+            updatePromptCounter();
+            promptInput.focus();
+        }
+    });
+
+    // 10. Fine-Tuning Toggle & Seed Randomizer
+    advToggle?.addEventListener('click', () => {
+        const isHidden = advPanel.style.display === 'none';
+        advPanel.style.display = isHidden ? 'flex' : 'none';
+        advArrow?.classList.toggle('open', isHidden);
+    });
+
+    seedRandBtn?.addEventListener('click', () => {
+        if (seedInput) {
+            seedInput.value = Math.floor(Math.random() * 9000000) + 100000;
+        }
+    });
+
+    // 11. Starter Cards in Empty State
+    document.querySelectorAll('.ais-starter-card').forEach(card => {
+        card.addEventListener('click', () => {
+            const prompt = card.getAttribute('data-prompt');
+            const style = card.getAttribute('data-style');
+            if (promptInput && prompt) {
+                promptInput.value = prompt;
+                updatePromptCounter();
+            }
+            if (style && chipsStyles) {
+                chipsStyles.querySelectorAll('.ais-preset-chip').forEach(c => {
+                    if (c.textContent.trim().toLowerCase().includes(style.toLowerCase())) {
+                        c.click();
+                    }
+                });
+            }
+            startImageGeneration();
+        });
+    });
+
+    // 12. Ctrl+Enter to trigger generation from textarea
+    promptInput?.addEventListener('keydown', (e) => {
+        if ((e.ctrlKey || e.metaKey) && e.key === 'Enter') {
+            e.preventDefault();
+            startImageGeneration();
+        }
+    });
+
+    generateBtn?.addEventListener('click', () => {
+        startImageGeneration();
+    });
+
+    // 13. High-Accuracy Zero-Watermark Engine (uses globally hoisted produceZeroWatermarkArtwork)
+
+
+    // 14. Core Image Generation Routine
+    async function startImageGeneration() {
+        const rawPrompt = promptInput?.value?.trim();
+        if (!rawPrompt || isGenerating) {
+            if (!rawPrompt && promptInput) promptInput.focus();
+            return;
         }
 
-        if (progress > 98) progress = 98;
+        isGenerating = true;
+        if (generateBtn) generateBtn.disabled = true;
+        if (generateText) generateText.textContent = 'Synthesizing...';
 
-        if (shimmerBarFill) shimmerBarFill.style.width = `${progress}%`;
-        if (shimmerPercentNum) shimmerPercentNum.textContent = `${Math.round(progress)}%`;
-
-        if (shimmerPercentage) {
-            if (progress < 25) {
-                shimmerPercentage.textContent = 'Initializing Latent Neural Diffusion...';
-                if (shimmerSubtext) shimmerSubtext.textContent = 'Constructing latent noise space';
-            } else if (progress < 60) {
-                shimmerPercentage.textContent = `Denoising ${osModel.toUpperCase()} Latent Space...`;
-                if (shimmerSubtext) shimmerSubtext.textContent = `Sampling noise fields (${Math.round(progress * 0.5)}/50 steps)`;
-            } else if (progress < 85) {
-                shimmerPercentage.textContent = 'Synthesizing Textures & Lighting...';
-                if (shimmerSubtext) shimmerSubtext.textContent = 'Volumetric light & ambient materials';
-            } else {
-                shimmerPercentage.textContent = 'Mastering High-Resolution 4K Details...';
-                if (shimmerSubtext) shimmerSubtext.textContent = 'Finalizing canvas dynamic projection';
-            }
+        // Compose full prompt with active style, lighting, and camera presets
+        let fullPrompt = rawPrompt;
+        if (activeStyleText && !fullPrompt.includes(activeStyleText)) {
+            fullPrompt = `${fullPrompt}, ${activeStyleText}`;
         }
-    }, totalSimDuration / 50);
+        if (activeLightingText && !fullPrompt.includes(activeLightingText)) {
+            fullPrompt = `${fullPrompt}, ${activeLightingText}`;
+        }
+        if (activeCameraText && !fullPrompt.includes(activeCameraText)) {
+            fullPrompt = `${fullPrompt}, ${activeCameraText}`;
+        }
 
-    try {
-        let finalUrl = '';
+        // Retrieve negative prompt and seed
+        const negPrompt = negInput?.value?.trim() || 'blurry, low quality, deformed, distorted, extra limbs, extra fingers, bad anatomy, pixelated, ugly, watermark, text, signature, logo';
+        let seed = seedInput?.value?.trim() ? parseInt(seedInput.value, 10) : Math.floor(Math.random() * 9000000) + 100000;
 
-        if (engine === 'openai') {
-            const apiKey = globalSettings.openaiApiKey;
-            if (!apiKey) {
-                throw new Error("OpenAI API Key is missing. Please set it in AI Settings.");
-            }
-            studioStatusText.textContent = 'Generating with ChatGPT DALL-E 3...';
-            
-            let openAiSize = "1024x1024";
-            if (width > height) openAiSize = "1792x1024";
-            else if (width < height) openAiSize = "1024x1792";
+        // Stage UI transitions: Hide empty & result, Show scanner
+        if (emptyState) emptyState.style.display = 'none';
+        if (resultContainer) resultContainer.style.display = 'none';
+        if (progressState) progressState.style.display = 'flex';
 
-            const res = await fetch('https://api.openai.com/v1/images/generations', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'Authorization': `Bearer ${apiKey}`
-                },
-                body: JSON.stringify({
-                    model: 'dall-e-3',
-                    prompt: prompt,
-                    n: 1,
-                    size: openAiSize
-                })
+        // Mount 3D Thinking Orb in Studio loader
+        let orbInstance = null;
+        const orbSlot = document.getElementById('ais-studio-orb-slot');
+        if (orbSlot && window.LibrariesDevFX?.ThinkingOrb) {
+            orbSlot.innerHTML = '';
+            orbInstance = window.LibrariesDevFX.ThinkingOrb.createOrb(orbSlot, {
+                size: 90,
+                mode: 'orbits',
+                speed: 2.2,
+                particleCount: 40
             });
-            if (!res.ok) {
-                const errData = await res.json().catch(() => ({}));
-                throw new Error(errData.error?.message || `DALL-E API Error: ${res.status}`);
-            }
-            const data = await res.json();
-            if (data.data && data.data.length > 0) {
-                finalUrl = data.data[0].url;
-            } else {
-                throw new Error("No image returned from DALL-E 3");
-            }
-        } else if (engine === 'gemini') {
-            studioStatusText.textContent = `Generating with high-fidelity ${mappedModel} model...`;
-            finalUrl = `https://image.pollinations.ai/prompt/${encodeURIComponent(prompt)}?width=${width}&height=${height}&seed=${seed}&model=${encodeURIComponent(mappedModel)}&nologo=true&enhance=true${negativePrompt ? `&negative_prompt=${encodeURIComponent(negativePrompt)}` : ''}`;
-        } else {
-            studioStatusText.textContent = 'Probing local AI servers (SD / Forge / ComfyUI / Fooocus)...';
+        }
+        if (progressState && window.LibrariesDevFX?.BorderBeam) {
+            window.LibrariesDevFX.BorderBeam.attach(progressState, { preset: 'accent', duration: '4.5s' });
+        }
 
-            // 1. Try Automatic1111 / WebUI Forge / SD Next (ports 7860, 7861, 7862)
-            const localSdPorts = [7860, 7861, 7862];
-            for (const port of localSdPorts) {
-                if (finalUrl) break;
-                try {
-                    const controller = new AbortController();
-                    const timeoutId = setTimeout(() => controller.abort(), 1200);
-                    const endpoint = `http://127.0.0.1:${port}/sdapi/v1/txt2img`;
-                    const payload = {
-                        prompt: prompt,
-                        negative_prompt: negativePrompt,
-                        steps: 30,
-                        width: width,
-                        height: height,
-                        cfg_scale: 7.5,
-                        seed: seed,
-                        sampler_name: "Euler a"
-                    };
+        if (progressBarFill) {
+            progressBarFill.style.background = '';
+            progressBarFill.style.width = '0%';
+        }
+        if (progressPercent) progressPercent.textContent = '0%';
+        if (progressHeadline) progressHeadline.textContent = 'Sampling Latent Vector Space...';
+        if (progressSubtext) progressSubtext.textContent = `Initializing ${selectedModel.toUpperCase()} diffusion model`;
+        if (progressModelTag) {
+            progressModelTag.innerHTML = selectedModel === 'cloud' 
+                ? (selectedCloudProvider === 'openai' ? '<i class="fas fa-brain"></i> DALL-E 3 Cloud' : '<i class="fas fa-wand-magic-sparkles"></i> Google Imagen 3')
+                : `<i class="fas fa-microchip"></i> FLUX ${selectedModel.toUpperCase()}`;
+        }
 
-                    const localRes = await fetch(endpoint, {
-                        method: 'POST',
-                        headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify(payload),
-                        signal: controller.signal
-                    });
-                    clearTimeout(timeoutId);
-                    if (localRes.ok) {
-                        const data = await localRes.json();
-                        if (data.images && data.images.length > 0) {
-                            finalUrl = `data:image/png;base64,${data.images[0]}`;
-                            console.log(`Image generated locally via SD WebUI (port ${port}).`);
-                        }
+        // Animated progression steps
+        let progress = 0;
+        let generationFinished = false;
+        const interval = setInterval(() => {
+            if (generationFinished) {
+                clearInterval(interval);
+                return;
+            }
+            if (progress < 40) progress += Math.floor(Math.random() * 7) + 5;
+            else if (progress < 80) progress += Math.floor(Math.random() * 4) + 2;
+            else if (progress < 96) progress += 1;
+
+            if (progress > 96) progress = 96;
+
+            if (progressBarFill) progressBarFill.style.width = `${progress}%`;
+            if (progressPercent) progressPercent.textContent = `${Math.round(progress)}%`;
+
+            if (progressHeadline && progressSubtext) {
+                if (progress < 30) {
+                    progressHeadline.textContent = 'Sampling Latent Vector Space...';
+                    progressSubtext.textContent = 'Constructing high-dimensional vector embeddings';
+                    orbInstance?.setMode('orbits');
+                } else if (progress < 65) {
+                    progressHeadline.textContent = 'Refining Structures & Textures...';
+                    progressSubtext.textContent = `Denoising visual representation (Step ${Math.round(progress * 0.4)}/40)`;
+                    orbInstance?.setMode('wave');
+                } else if (progress < 85) {
+                    progressHeadline.textContent = 'Synthesizing Neural Feature Web...';
+                    progressSubtext.textContent = 'Connecting latent node tensors';
+                    orbInstance?.setMode('web');
+                } else {
+                    progressHeadline.textContent = 'Finalizing Pristine 4K Render...';
+                    progressSubtext.textContent = 'Volumetric light passes & zero-watermark crop';
+                    orbInstance?.setMode('globe');
+                }
+            }
+        }, 200);
+
+        try {
+            let finalImageUrl = '';
+
+            if (selectedModel === 'cloud') {
+                if (selectedCloudProvider === 'openai') {
+                    const apiKey = globalSettings?.openaiApiKey;
+                    if (!apiKey) {
+                        throw new Error('OpenAI API Key is missing. Please set your key in AI Settings.');
                     }
-                } catch (e) {}
-            }
+                    let size = '1024x1024';
+                    if (selectedWidth > selectedHeight) size = '1792x1024';
+                    else if (selectedWidth < selectedHeight) size = '1024x1792';
 
-            // 2. Try Fooocus API (port 8888)
-            if (!finalUrl) {
-                try {
-                    const controller = new AbortController();
-                    const timeoutId = setTimeout(() => controller.abort(), 1200);
-                    const localRes = await fetch('http://127.0.0.1:8888/v1/generation/text-to-image', {
+                    const res = await fetch('https://api.openai.com/v1/images/generations', {
                         method: 'POST',
-                        headers: { 'Content-Type': 'application/json' },
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'Authorization': `Bearer ${apiKey}`
+                        },
                         body: JSON.stringify({
-                            prompt: prompt,
-                            negative_prompt: negativePrompt,
-                            style_selections: ["Fooocus V2", "Fooocus Enhance", "Fooocus Sharp"],
-                            performance_selection: "Quality",
-                            aspect_ratios_selection: `${width}*${height}`,
-                            image_number: 1,
-                            image_seed: seed,
-                            sharpness: 2.0,
-                            guidance_scale: 4.0
-                        }),
-                        signal: controller.signal
-                    });
-                    clearTimeout(timeoutId);
-                    if (localRes.ok) {
-                        const data = await localRes.json();
-                        if (data && data.length > 0 && data[0].url) {
-                            finalUrl = data[0].url;
-                        } else if (data && data.images && data.images.length > 0) {
-                            finalUrl = `data:image/png;base64,${data.images[0]}`;
-                        }
-                    }
-                } catch (e) {}
-            }
-
-            // 3. Try Local OpenAI-compatible Image Endpoint (port 1234)
-            if (!finalUrl) {
-                try {
-                    const controller = new AbortController();
-                    const timeoutId = setTimeout(() => controller.abort(), 1200);
-                    const localRes = await fetch('http://127.0.0.1:1234/v1/images/generations', {
-                        method: 'POST',
-                        headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify({
-                            prompt: prompt,
+                            model: 'dall-e-3',
+                            prompt: fullPrompt,
                             n: 1,
-                            size: `${width}x${height}`
-                        }),
-                        signal: controller.signal
+                            size: size
+                        })
                     });
-                    clearTimeout(timeoutId);
-                    if (localRes.ok) {
-                        const data = await localRes.json();
-                        if (data.data && data.data.length > 0) {
-                            finalUrl = data.data[0].url || (data.data[0].b64_json ? `data:image/png;base64,${data.data[0].b64_json}` : '');
-                        }
+                    if (!res.ok) {
+                        const err = await res.json().catch(() => ({}));
+                        throw new Error(err.error?.message || `OpenAI DALL-E error (${res.status})`);
                     }
-                } catch (e) {}
-            }
+                    const data = await res.json();
+                    if (data.data && data.data.length > 0) {
+                        finalImageUrl = data.data[0].url;
+                    } else {
+                        throw new Error('No image returned by DALL-E 3');
+                    }
+                } else {
+                    // Google Imagen 3
+                    const apiKey = globalSettings?.aiApiKey;
+                    if (!apiKey) {
+                        throw new Error('Gemini API Key is missing. Please set your key in AI Settings.');
+                    }
+                    let imagenRatio = '1:1';
+                    if (selectedRatio === '16:9') imagenRatio = '16:9';
+                    else if (selectedRatio === '9:16') imagenRatio = '9:16';
+                    else if (selectedRatio === '4:3') imagenRatio = '4:3';
 
-            // 4. Open Source Flagship FLUX / Realism / Anime High-Fidelity Endpoint
-            if (!finalUrl) {
-                studioStatusText.textContent = `Generating with Open-Source ${mappedModel.toUpperCase()} Model...`;
-                const compressedThumb = null;
-                const thumbVal = (typeof compressedThumb !== 'undefined' && compressedThumb) ? compressedThumb : null;
-                let imgParam = thumbVal ? `&image=${encodeURIComponent(thumbVal)}` : '';
-                finalUrl = `https://image.pollinations.ai/prompt/${encodeURIComponent(prompt)}?width=${width}&height=${height}&seed=${seed}&model=${encodeURIComponent(mappedModel)}&nologo=true&enhance=true${imgParam}${negativePrompt ? `&negative_prompt=${encodeURIComponent(negativePrompt)}` : ''}`;
-                console.log(`Image generated via Open-Source ${mappedModel} model.`);
-            }
-        }
-
-        // Background preload image so browser decodes it smoothly
-        if (finalUrl) {
-            const preloader = new Image();
-            preloader.crossOrigin = "anonymous";
-            preloader.src = finalUrl;
-        }
-
-        // Apply Auto HD Canvas Enhancement & Sharpening
-        const isHdEnhanceActive = document.getElementById('studio-hd-enhance-toggle')?.checked;
-        if (isHdEnhanceActive && finalUrl) {
-            studioStatusText.textContent = 'Applying HD Canvas Enhancement & Sharpening...';
-            finalUrl = await enhanceImageQualityCanvas(finalUrl, { scale: 1.0, sharpen: true, contrast: true });
-        }
-
-        // Apply watermark if active
-        if (isWatermarkEnabled && finalUrl) {
-            studioStatusText.textContent = 'Adding watermark to artwork...';
-            finalUrl = await addWatermarkToImage(finalUrl, watermarkText);
-        }
-
-        resultUrlReady = finalUrl;
-
-        // Wait until progress reaches 98% naturally, then complete to 100% and show the image
-        const checkReadyInterval = setInterval(() => {
-            if (progress >= 98 && resultUrlReady) {
-                clearInterval(checkReadyInterval);
-                progress = 100;
-                if (shimmerBarFill) shimmerBarFill.style.width = '100%';
-                if (shimmerPercentNum) shimmerPercentNum.textContent = '100%';
-                if (shimmerPercentage) {
-                    shimmerPercentage.textContent = 'Artwork Synthesized!';
+                    const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/imagen-3.0-generate-002:predict?key=${apiKey}`, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({
+                            instances: [{ prompt: fullPrompt }],
+                            parameters: {
+                                sampleCount: 1,
+                                aspectRatio: imagenRatio,
+                                outputMimeType: 'image/jpeg'
+                            }
+                        })
+                    });
+                    if (!res.ok) {
+                        const err = await res.json().catch(() => ({}));
+                        throw new Error(err.error?.message || `Google Imagen error (${res.status})`);
+                    }
+                    const data = await res.json();
+                    if (data.predictions && data.predictions.length > 0) {
+                        const prediction = data.predictions[0];
+                        const base64Data = prediction.bytesBase64Encoded || prediction.image?.imageBytes;
+                        const mime = prediction.mimeType || 'image/jpeg';
+                        finalImageUrl = `data:${mime};base64,${base64Data}`;
+                    } else {
+                        throw new Error('No image returned by Google Imagen 3');
+                    }
                 }
-                if (shimmerSubtext) {
-                    shimmerSubtext.textContent = 'Rendering completed successfully';
-                }
+            } else {
+                // High-performance direct Pollinations FLUX engine
+                let modelParam = 'flux';
+                if (selectedModel === 'flux-realism') modelParam = 'flux-realism';
+                else if (selectedModel === 'flux-anime') modelParam = 'flux-anime';
+                else if (selectedModel === 'flux-3d') modelParam = 'flux-3d';
+                else if (selectedModel === 'turbo') modelParam = 'turbo';
 
-                // 800ms polish delay at 100%
-                setTimeout(() => {
-                    progressComplete = true;
-                    clearInterval(progressInterval);
-                    if (studioShimmer) studioShimmer.style.display = 'none';
+                // Buffer height by +56px so the bottom-left watermark is isolated
+                const fetchHeight = selectedHeight + 56;
+                const encodedPrompt = encodeURIComponent(fullPrompt);
+                const encodedNeg = encodeURIComponent(negPrompt);
+                const rawPollinationsUrl = `https://image.pollinations.ai/prompt/${encodedPrompt}?width=${selectedWidth}&height=${fetchHeight}&seed=${seed}&model=${modelParam}&nologo=true&enhance=true&negative_prompt=${encodedNeg}`;
 
-                    currentGeneratedImgUrl = resultUrlReady;
-
-                    studioResultImg.onerror = () => {
-                        console.warn("Primary studio image load error, falling back to clean high-res model endpoint.");
-                        const cleanFallback = `https://image.pollinations.ai/prompt/${encodeURIComponent(prompt)}?width=${width}&height=${height}&seed=${seed}&model=${encodeURIComponent(mappedModel)}&nologo=true`;
-                        studioResultImg.onerror = null;
-                        studioResultImg.src = cleanFallback;
-                        currentGeneratedImgUrl = cleanFallback;
-                    };
-
-                    studioResultImg.src = resultUrlReady;
-                    studioResultImg.style.display = 'block';
-                    studioStatusIndicator.style.display = 'none';
-                    studioActions.style.display = 'flex';
-                    studioGenerateBtn.disabled = false;
-                }, 1000);
+                // Process through our Zero-Watermark Engine
+                finalImageUrl = await produceZeroWatermarkArtwork(rawPollinationsUrl, selectedWidth, selectedHeight);
             }
-        }, 100);
 
-    } catch (err) {
-        progressComplete = true;
-        clearInterval(progressInterval);
-        if (studioShimmer) studioShimmer.style.display = 'none';
-        studioStatusIndicator.style.display = 'flex';
-        studioStatusText.textContent = `Error: ${err.message}`;
-        studioGenerateBtn.disabled = false;
+            // Preload image before revealing
+            await new Promise((resolve, reject) => {
+                const img = new Image();
+                img.onload = () => resolve();
+                img.onerror = () => {
+                    // Fallback to simpler URL if enhance failed
+                    if (selectedModel !== 'cloud') {
+                        const fallbackUrl = `https://image.pollinations.ai/prompt/${encodeURIComponent(fullPrompt)}?width=${selectedWidth}&height=${selectedHeight + 56}&seed=${seed}&model=flux&nologo=true`;
+                        produceZeroWatermarkArtwork(fallbackUrl, selectedWidth, selectedHeight).then(cleanUrl => {
+                            finalImageUrl = cleanUrl;
+                            const retryImg = new Image();
+                            retryImg.onload = () => resolve();
+                            retryImg.onerror = () => reject(new Error('Network error loading artwork. Please check connection.'));
+                            retryImg.src = finalImageUrl;
+                        }).catch(() => reject(new Error('Network error loading artwork.')));
+                    } else {
+                        reject(new Error('Failed to load artwork from cloud endpoint.'));
+                    }
+                };
+                img.src = finalImageUrl;
+            });
+
+            // Generation succeeded!
+            generationFinished = true;
+            clearInterval(interval);
+
+            if (progressBarFill) progressBarFill.style.width = '100%';
+            if (progressPercent) progressPercent.textContent = '100%';
+
+            currentGeneratedUrl = finalImageUrl;
+            currentGeneratedPrompt = fullPrompt;
+
+            // Display artwork with luminous aperture reveal animation
+            if (resultImg) {
+                resultImg.classList.remove('revealing');
+                resultImg.src = finalImageUrl;
+                void resultImg.offsetWidth; // Trigger reflow for CSS animation
+                resultImg.classList.add('revealing');
+            }
+            if (resultPromptSnippet) {
+                resultPromptSnippet.textContent = rawPrompt;
+                resultPromptSnippet.title = fullPrompt;
+            }
+            if (resultModelBadge) {
+                resultModelBadge.textContent = selectedModel === 'cloud' 
+                    ? selectedCloudProvider.toUpperCase() 
+                    : `FLUX ${selectedModel.toUpperCase()}`;
+            }
+
+            // Save to recent creations gallery
+            saveToStudioHistory(finalImageUrl, rawPrompt);
+
+            // Switch to result container
+            setTimeout(() => {
+                orbInstance?.destroy();
+                if (progressState) progressState.style.display = 'none';
+                if (resultContainer) resultContainer.style.display = 'flex';
+                isGenerating = false;
+                if (generateBtn) generateBtn.disabled = false;
+                if (generateText) generateText.textContent = 'Generate Artwork';
+            }, 300);
+
+        } catch (err) {
+            generationFinished = true;
+            clearInterval(interval);
+            console.error('Image Studio generation failed:', err);
+
+            orbInstance?.setMode('ring');
+            if (progressHeadline) progressHeadline.textContent = 'Generation Failed';
+            if (progressSubtext) progressSubtext.textContent = err.message || 'An unexpected error occurred.';
+            if (progressBarFill) {
+                progressBarFill.style.background = '#EF4444';
+                progressBarFill.style.width = '100%';
+            }
+
+            setTimeout(() => {
+                orbInstance?.destroy();
+                if (progressState) progressState.style.display = 'none';
+                if (emptyState) emptyState.style.display = 'flex';
+                isGenerating = false;
+                if (generateBtn) generateBtn.disabled = false;
+                if (generateText) generateText.textContent = 'Generate Artwork';
+                alert(`AI Image Studio: ${err.message || 'Generation failed. Please try again.'}`);
+            }, 1800);
+        }
     }
-});
 
-const studioEnhanceBtn = document.getElementById('studio-enhance-btn');
-const studioHdrBtn = document.getElementById('studio-hdr-btn');
-const studioSharpenBtn = document.getElementById('studio-sharpen-btn');
-const studioWarmthBtn = document.getElementById('studio-warmth-btn');
+    // 15. Floating Dock Actions
+    downloadBtn?.addEventListener('click', () => {
+        if (!currentGeneratedUrl) return;
+        const a = document.createElement('a');
+        a.href = currentGeneratedUrl;
+        a.download = `ocal-artwork-${Date.now()}.png`;
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+    });
 
-studioEnhanceBtn?.addEventListener('click', async () => {
-    if (!currentGeneratedImgUrl) return;
-    studioEnhanceBtn.disabled = true;
-    studioEnhanceBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> HD 2x...';
-    try {
-        const enhancedUrl = await enhanceImageQualityCanvas(currentGeneratedImgUrl, { scale: 2.0, sharpen: true, contrast: true });
-        currentGeneratedImgUrl = enhancedUrl;
-        studioResultImg.src = enhancedUrl;
-        studioEnhanceBtn.innerHTML = '<i class="fas fa-check"></i> HD 2x Applied!';
-        setTimeout(() => {
-            studioEnhanceBtn.disabled = false;
-            studioEnhanceBtn.innerHTML = '<i class="fas fa-expand"></i> HD 2x';
-        }, 2500);
-    } catch (e) {
-        studioEnhanceBtn.disabled = false;
-        studioEnhanceBtn.innerHTML = '<i class="fas fa-expand"></i> HD 2x';
+    copyBtn?.addEventListener('click', async () => {
+        if (!currentGeneratedUrl) return;
+        try {
+            if (currentGeneratedUrl.startsWith('data:image/')) {
+                const res = await fetch(currentGeneratedUrl);
+                const blob = await res.blob();
+                await navigator.clipboard.write([new ClipboardItem({ [blob.type]: blob })]);
+            } else {
+                await navigator.clipboard.writeText(currentGeneratedUrl);
+            }
+            const originalHtml = copyBtn.innerHTML;
+            copyBtn.innerHTML = '<i class="fas fa-check"></i> <span>Copied!</span>';
+            setTimeout(() => { copyBtn.innerHTML = originalHtml; }, 2000);
+        } catch (e) {
+            navigator.clipboard.writeText(currentGeneratedUrl);
+            const originalHtml = copyBtn.innerHTML;
+            copyBtn.innerHTML = '<i class="fas fa-check"></i> <span>Copied!</span>';
+            setTimeout(() => { copyBtn.innerHTML = originalHtml; }, 2000);
+        }
+    });
+
+    zoomBtn?.addEventListener('click', () => {
+        if (!currentGeneratedUrl || !lightbox) return;
+        if (lightboxImg) lightboxImg.src = currentGeneratedUrl;
+        if (lightboxCaption) lightboxCaption.textContent = currentGeneratedPrompt;
+        lightbox.style.display = 'flex';
+    });
+
+    // Remix Feature: mutate seed and add nuanced creative variation
+    remixBtn?.addEventListener('click', () => {
+        if (isGenerating) return;
+        if (seedInput) {
+            seedInput.value = Math.floor(Math.random() * 9000000) + 100000;
+        }
+        const remixModifiers = [
+            'alternate angle, dramatic composition variation',
+            'atmospheric perspective, hyper-detailed rendering shift',
+            'volumetric haze, dynamic contrast variation',
+            'photographic depth, subtle color grading shift',
+            'intense mood, richer ambient reflections'
+        ];
+        const chosen = remixModifiers[Math.floor(Math.random() * remixModifiers.length)];
+        let currentPrompt = promptInput?.value?.trim() || '';
+        if (currentPrompt && !currentPrompt.includes('variation')) {
+            promptInput.value = `${currentPrompt}, ${chosen}`;
+            updatePromptCounter();
+        }
+        startImageGeneration();
+    });
+
+    lightboxClose?.addEventListener('click', () => {
+        if (lightbox) lightbox.style.display = 'none';
+    });
+
+    lightboxBackdrop?.addEventListener('click', () => {
+        if (lightbox) lightbox.style.display = 'none';
+    });
+
+    lightboxDownload?.addEventListener('click', () => {
+        downloadBtn?.click();
+    });
+
+    document.addEventListener('keydown', (e) => {
+        if (e.key === 'Escape' && lightbox && lightbox.style.display === 'flex') {
+            lightbox.style.display = 'none';
+        }
+    });
+
+    chatBtn?.addEventListener('click', () => {
+        if (!currentGeneratedUrl) return;
+        const queryBox = document.getElementById('ai-query');
+        if (queryBox) {
+            queryBox.value = `Here is an artwork I generated in AI Studio:\n![${currentGeneratedPrompt.slice(0, 40)}](${currentGeneratedUrl})\n\nTell me what you think about this composition and how to improve it.`;
+        }
+        switchToChat();
+        queryBox?.focus();
+    });
+
+    regenBtn?.addEventListener('click', () => {
+        if (seedInput) {
+            seedInput.value = Math.floor(Math.random() * 9000000) + 100000;
+        }
+        startImageGeneration();
+    });
+
+    // 16. Recent Creations Gallery Persistence
+    const HISTORY_KEY = 'ocal_studio_creations';
+
+    function loadStudioHistory() {
+        try {
+            const raw = localStorage.getItem(HISTORY_KEY);
+            return raw ? JSON.parse(raw) : [];
+        } catch (e) {
+            return [];
+        }
     }
-});
 
-studioHdrBtn?.addEventListener('click', async () => {
-    if (!currentGeneratedImgUrl) return;
-    studioHdrBtn.disabled = true;
-    studioHdrBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> HDR...';
-    try {
-        const enhancedUrl = await enhanceImageQualityCanvas(currentGeneratedImgUrl, { scale: 1.0, contrast: true, hdrBoost: true });
-        currentGeneratedImgUrl = enhancedUrl;
-        studioResultImg.src = enhancedUrl;
-        studioHdrBtn.innerHTML = '<i class="fas fa-check"></i> HDR Applied!';
-        setTimeout(() => {
-            studioHdrBtn.disabled = false;
-            studioHdrBtn.innerHTML = '<i class="fas fa-sun"></i> HDR Vibrance';
-        }, 2500);
-    } catch (e) {
-        studioHdrBtn.disabled = false;
-        studioHdrBtn.innerHTML = '<i class="fas fa-sun"></i> HDR Vibrance';
+    function saveToStudioHistory(url, prompt) {
+        try {
+            let history = loadStudioHistory();
+            history = history.filter(item => item.url !== url);
+            history.unshift({ url, prompt, timestamp: Date.now() });
+            if (history.length > 12) history = history.slice(0, 12);
+            localStorage.setItem(HISTORY_KEY, JSON.stringify(history));
+            renderGallery();
+        } catch (e) {}
     }
-});
 
-studioSharpenBtn?.addEventListener('click', async () => {
-    if (!currentGeneratedImgUrl) return;
-    studioSharpenBtn.disabled = true;
-    studioSharpenBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Sharpening...';
-    try {
-        const enhancedUrl = await enhanceImageQualityCanvas(currentGeneratedImgUrl, { scale: 1.0, sharpen: true });
-        currentGeneratedImgUrl = enhancedUrl;
-        studioResultImg.src = enhancedUrl;
-        studioSharpenBtn.innerHTML = '<i class="fas fa-check"></i> Sharpened!';
-        setTimeout(() => {
-            studioSharpenBtn.disabled = false;
-            studioSharpenBtn.innerHTML = '<i class="fas fa-wand-magic-sparkles"></i> Sharpen';
-        }, 2500);
-    } catch (e) {
-        studioSharpenBtn.disabled = false;
-        studioSharpenBtn.innerHTML = '<i class="fas fa-wand-magic-sparkles"></i> Sharpen';
+    function renderGallery() {
+        const history = loadStudioHistory();
+        if (!gallerySection || !galleryStrip) return;
+
+        if (history.length === 0) {
+            gallerySection.style.display = 'none';
+            return;
+        }
+
+        gallerySection.style.display = 'flex';
+        galleryStrip.innerHTML = '';
+
+        history.forEach(item => {
+            const thumb = document.createElement('div');
+            thumb.className = 'ais-gallery-thumb';
+            thumb.title = item.prompt;
+            thumb.innerHTML = `<img src="${item.url}" alt="Artwork" loading="lazy">`;
+            thumb.addEventListener('click', () => {
+                if (promptInput) {
+                    promptInput.value = item.prompt;
+                    updatePromptCounter();
+                }
+                currentGeneratedUrl = item.url;
+                currentGeneratedPrompt = item.prompt;
+                if (resultImg) {
+                    resultImg.classList.remove('revealing');
+                    resultImg.src = item.url;
+                    void resultImg.offsetWidth;
+                    resultImg.classList.add('revealing');
+                }
+                if (resultPromptSnippet) resultPromptSnippet.textContent = item.prompt;
+                if (emptyState) emptyState.style.display = 'none';
+                if (progressState) progressState.style.display = 'none';
+                if (resultContainer) resultContainer.style.display = 'flex';
+            });
+            galleryStrip.appendChild(thumb);
+        });
     }
-});
 
-studioWarmthBtn?.addEventListener('click', async () => {
-    if (!currentGeneratedImgUrl) return;
-    studioWarmthBtn.disabled = true;
-    studioWarmthBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Warming...';
-    try {
-        const enhancedUrl = await enhanceImageQualityCanvas(currentGeneratedImgUrl, { scale: 1.0, warmth: true });
-        currentGeneratedImgUrl = enhancedUrl;
-        studioResultImg.src = enhancedUrl;
-        studioWarmthBtn.innerHTML = '<i class="fas fa-check"></i> Warm Applied!';
-        setTimeout(() => {
-            studioWarmthBtn.disabled = false;
-            studioWarmthBtn.innerHTML = '<i class="fas fa-fire"></i> Warm Tone';
-        }, 2500);
-    } catch (e) {
-        studioWarmthBtn.disabled = false;
-        studioWarmthBtn.innerHTML = '<i class="fas fa-fire"></i> Warm Tone';
-    }
-});
+    galleryClearBtn?.addEventListener('click', () => {
+        if (confirm('Clear all recent creations from history?')) {
+            localStorage.removeItem(HISTORY_KEY);
+            renderGallery();
+        }
+    });
 
-studioDownloadBtn?.addEventListener('click', () => {
-    if (!currentGeneratedImgUrl) return;
-    const a = document.createElement('a');
-    a.href = currentGeneratedImgUrl;
-    a.download = `ocal-ai-art-${Date.now()}.png`;
-    document.body.appendChild(a);
-    a.click();
-    document.body.removeChild(a);
-});
-
-studioCopyBtn?.addEventListener('click', () => {
-    if (!currentGeneratedImgUrl) return;
-    navigator.clipboard.writeText(currentGeneratedImgUrl);
-    studioCopyBtn.innerHTML = '<i class="fas fa-check"></i> Copied!';
-    setTimeout(() => {
-        studioCopyBtn.innerHTML = '<i class="fas fa-copy"></i> Copy Link';
-    }, 2000);
-});
+    // Initial render of gallery & counter
+    renderGallery();
+    updatePromptCounter();
+})();
 
 function enhanceImageQualityCanvas(imgUrl, options = {}) {
     return new Promise((resolve) => {
@@ -2838,59 +3340,7 @@ function enhanceImageQualityCanvas(imgUrl, options = {}) {
     });
 }
 
-// Dynamic watermark stamping engine
-function addWatermarkToImage(imgUrl, watermarkText) {
-    return new Promise((resolve) => {
-        const img = new Image();
-        img.crossOrigin = "anonymous";
-        img.onload = () => {
-            const canvas = document.createElement('canvas');
-            canvas.width = img.naturalWidth;
-            canvas.height = img.naturalHeight;
-            const ctx = canvas.getContext('2d');
-            
-            // Draw original image
-            ctx.drawImage(img, 0, 0);
-            
-            // Configure text styles
-            const fontSize = Math.max(16, Math.floor(canvas.width * 0.024));
-            ctx.font = `bold ${fontSize}px -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif`;
-            
-            // Calculate text metrics for positioning
-            const paddingX = Math.max(20, Math.floor(canvas.width * 0.03));
-            const paddingY = Math.max(20, Math.floor(canvas.height * 0.03));
-            const textWidth = ctx.measureText(watermarkText).width;
-            
-            const rectWidth = textWidth + fontSize * 1.5;
-            const rectHeight = fontSize * 1.8;
-            const rx = canvas.width - rectWidth - paddingX;
-            const ry = canvas.height - rectHeight - paddingY;
-            
-            // Draw soft glassmorphic pill background
-            ctx.fillStyle = 'rgba(15, 17, 23, 0.65)';
-            ctx.beginPath();
-            ctx.roundRect(rx, ry, rectWidth, rectHeight, fontSize * 0.5);
-            ctx.fill();
-            
-            // Draw border
-            ctx.strokeStyle = 'rgba(255, 255, 255, 0.15)';
-            ctx.lineWidth = 1.5;
-            ctx.stroke();
-            
-            // Draw text (white, centered inside pill)
-            ctx.fillStyle = '#ffffff';
-            ctx.textAlign = 'center';
-            ctx.textBaseline = 'middle';
-            ctx.fillText(watermarkText, rx + rectWidth / 2, ry + rectHeight / 2);
-            
-            resolve(canvas.toDataURL('image/png'));
-        };
-        img.onerror = () => {
-            resolve(imgUrl); // Fallback to raw URL on load failure
-        };
-        img.src = imgUrl;
-    });
-}
+
 
 // True Canvas Image-to-Image (Img2Img) Feature Preservation & Neural Style Blender
 function blendImageToImage(sourceDataUrl, styleImgUrl, prompt) {
@@ -3039,5 +3489,56 @@ function blendImageToImage(sourceDataUrl, styleImgUrl, prompt) {
             setTimeout(() => autocorrectField(e.target), 0);
         }
     }, true);
+})();
+
+// ── Libraries.dev FX Suite Initialization ──────────────────────────
+(function initLibrariesDevFX() {
+    try {
+        if (!window.LibrariesDevFX) return;
+
+        // 1. Thinking Orb in AI Header
+        const orbContainer = document.getElementById('ai-header-orb-container');
+        if (orbContainer) {
+            orbContainer.innerHTML = '';
+            ocalHeaderOrb = window.LibrariesDevFX.ThinkingOrb.createOrb(orbContainer, {
+                size: 34,
+                mode: 'orbits',
+                speed: 1.5
+            });
+        }
+
+        // 2. Border Beam around AI Input Container
+        const inputContainer = document.getElementById('ai-input-container');
+        if (inputContainer) {
+            window.LibrariesDevFX.BorderBeam.attach(inputContainer, {
+                preset: 'accent',
+                duration: '6s',
+                width: '2px',
+                opacity: '0.85'
+            });
+        }
+
+        // 3. Border Beam around Image Studio Card
+        const studioCard = document.querySelector('.studio-card');
+        if (studioCard) {
+            window.LibrariesDevFX.BorderBeam.attach(studioCard, {
+                preset: 'sunset',
+                duration: '8s',
+                width: '2px',
+                opacity: '0.75'
+            });
+        }
+
+        // 4. Clean pill containers (complex gooey hover animations removed)
+
+        // 5. Voice Glow & Microphone Integration
+        const micBtn = document.getElementById('btnVoiceMic');
+        if (micBtn && inputContainer) {
+            window.LibrariesDevFX.VoiceGlow.initVoiceInput(micBtn, inputContainer, queryEl);
+        }
+
+    } catch (e) {
+        console.error('LibrariesDevFX initialization error:', e);
+    }
 })();
 

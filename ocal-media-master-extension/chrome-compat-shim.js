@@ -201,15 +201,20 @@
         openPopup: function (options, cb) { if (typeof cb === 'function') cb(); return Promise.resolve(); }
     });
 
-    if (!chrome.action) chrome.action = createActionShim();
+    const shimAction = createActionShim();
+    if (!chrome.action) chrome.action = shimAction;
     else {
-        if (!chrome.action.onClicked) chrome.action.onClicked = createEventObject();
-        if (!chrome.action.getUserSettings) chrome.action.getUserSettings = function(cb) { const s = { isOnToolbar: true }; if (typeof cb === 'function') cb(s); return Promise.resolve(s); };
+        for (const k in shimAction) {
+            if (typeof chrome.action[k] === 'undefined') chrome.action[k] = shimAction[k];
+        }
     }
 
-    if (!chrome.browserAction) chrome.browserAction = createActionShim();
+    const shimBrowserAction = createActionShim();
+    if (!chrome.browserAction) chrome.browserAction = shimBrowserAction;
     else {
-        if (!chrome.browserAction.onClicked) chrome.browserAction.onClicked = createEventObject();
+        for (const k in shimBrowserAction) {
+            if (typeof chrome.browserAction[k] === 'undefined') chrome.browserAction[k] = shimBrowserAction[k];
+        }
     }
 
     if (!chrome.pageAction) {
@@ -219,6 +224,27 @@
             hide: function (tabId, cb) { if (typeof cb === 'function') cb(); return Promise.resolve(); }
         };
     }
+
+    // ── Privacy & Identity Stubs for Extensions like uBlock Origin & Return YouTube Dislike ──
+    const createPrivacySettingStub = () => ({
+        get: function (details, cb) { const res = { value: true, levelOfControl: 'controllable_by_this_extension' }; if (typeof cb === 'function') cb(res); return Promise.resolve(res); },
+        set: function (details, cb) { if (typeof cb === 'function') cb(); return Promise.resolve(); },
+        clear: function (details, cb) { if (typeof cb === 'function') cb(); return Promise.resolve(); },
+        onChange: createEventObject()
+    });
+    if (!chrome.privacy) chrome.privacy = {};
+    if (!chrome.privacy.network) chrome.privacy.network = {};
+    if (!chrome.privacy.network.networkPredictionEnabled) chrome.privacy.network.networkPredictionEnabled = createPrivacySettingStub();
+    if (!chrome.privacy.network.webRTCIPHandlingPolicy) chrome.privacy.network.webRTCIPHandlingPolicy = createPrivacySettingStub();
+    if (!chrome.privacy.websites) chrome.privacy.websites = {};
+    if (!chrome.privacy.websites.hyperlinkAuditingEnabled) chrome.privacy.websites.hyperlinkAuditingEnabled = createPrivacySettingStub();
+    if (!chrome.privacy.services) chrome.privacy.services = {};
+
+    if (!chrome.identity) chrome.identity = {
+        getAuthToken: function (details, cb) { if (typeof cb === 'function') cb(''); return Promise.resolve(''); },
+        getProfileUserInfo: function (details, cb) { const info = { email: '', id: '' }; if (typeof cb === 'function') cb(info); return Promise.resolve(info); },
+        onSignInChanged: createEventObject()
+    };
 
     // ── 4. chrome.scripting API (MV3 Script Injection) ────────────────────────
     if (!chrome.scripting) {
@@ -450,13 +476,37 @@
     }
 
     // ── 15. chrome.webNavigation API ──────────────────────────────────────────
-    if (!chrome.webNavigation) {
-        chrome.webNavigation = {
-            onBeforeNavigate: createEventObject(),
-            onCommitted: createEventObject(),
-            onDOMContentLoaded: createEventObject(),
-            onCompleted: createEventObject(),
-            onErrorOccurred: createEventObject()
+    if (!chrome.webNavigation) chrome.webNavigation = {};
+    const navEvents = [
+        'onBeforeNavigate', 'onCommitted', 'onDOMContentLoaded',
+        'onCompleted', 'onErrorOccurred', 'onCreatedNavigationTarget',
+        'onReferenceFragmentUpdated', 'onTabReplaced', 'onHistoryStateUpdated'
+    ];
+    navEvents.forEach(evt => {
+        if (!chrome.webNavigation[evt]) chrome.webNavigation[evt] = createEventObject();
+    });
+    if (!chrome.webNavigation.getFrame) {
+        chrome.webNavigation.getFrame = function (details, cb) {
+            if (typeof cb === 'function') setTimeout(() => cb(null), 0);
+            return Promise.resolve(null);
         };
+    }
+    if (!chrome.webNavigation.getAllFrames) {
+        chrome.webNavigation.getAllFrames = function (details, cb) {
+            if (typeof cb === 'function') setTimeout(() => cb([]), 0);
+            return Promise.resolve([]);
+        };
+    }
+
+    // Sync global browser with chrome if in webext environment
+    if (typeof g.browser === 'undefined') {
+        try { g.browser = g.chrome; } catch (e) {}
+    } else if (g.browser && typeof g.browser === 'object') {
+        if (!g.browser.webNavigation) g.browser.webNavigation = chrome.webNavigation;
+        else {
+            navEvents.forEach(evt => {
+                if (!g.browser.webNavigation[evt]) g.browser.webNavigation[evt] = chrome.webNavigation[evt];
+            });
+        }
     }
 })();

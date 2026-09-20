@@ -35,8 +35,14 @@
     "@fontsource/geist-mono": "^5.2.8",
     "@fontsource/geist-sans": "^5.2.5",
     "adm-zip": "^0.6.0",
+    "border-beam": "^1.3.0",
     "cross-fetch": "^4.1.0",
-    "electron-squirrel-startup": "^1.0.1"
+    "electron-squirrel-startup": "^1.0.1",
+    "img-fx": "^0.5.1",
+    "liquid-gooey": "^0.2.1",
+    "thinking-orbs": "^0.3.1",
+    "three": "^0.186.0",
+    "voice-glow": "^0.2.0"
   },
   "build": {
     "appId": "com.ocal.browser.v2",
@@ -56,15 +62,21 @@
     "protocols": [
       {
         "name": "HTTP URL",
-        "schemes": ["http"]
+        "schemes": [
+          "http"
+        ]
       },
       {
         "name": "HTTPS URL",
-        "schemes": ["https"]
+        "schemes": [
+          "https"
+        ]
       },
       {
         "name": "Ocal Protocol",
-        "schemes": ["ocal"]
+        "schemes": [
+          "ocal"
+        ]
       }
     ],
     "fileAssociations": [
@@ -135,7 +147,9 @@
       "publisherDisplayName": "Gaming Network Studio Media Group",
       "displayName": "Ocal Browser",
       "backgroundColor": "#0c0d12",
-      "languages": ["en-US"],
+      "languages": [
+        "en-US"
+      ],
       "showNameOnTiles": true,
       "setBuildNumber": true
     }

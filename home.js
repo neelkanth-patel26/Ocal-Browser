@@ -1429,6 +1429,9 @@ function initNewsHubEngine() {
     function renderWeatherData(weather) {
         if (!weather) return;
         lastFetchedWeather = weather;
+        try {
+            localStorage.setItem('ocal-cached-weather', JSON.stringify(weather));
+        } catch (e) {}
 
         const cur = weather.current || {};
         const today = weather.today || {};
@@ -1563,15 +1566,25 @@ function initNewsHubEngine() {
         let lat = null, lon = null, resolvedName = query;
 
         try {
+            // Check cached coordinates to skip extra geocoding network hops
+            let cachedCoords = null;
+            try {
+                cachedCoords = JSON.parse(localStorage.getItem('ocal-weather-coords') || 'null');
+            } catch (e) {}
+
             // 1. Resolve Coordinates & City Name Worldwide
             if (typeof locationQuery === 'object' && locationQuery && locationQuery.latitude) {
                 lat = locationQuery.latitude;
                 lon = locationQuery.longitude;
                 resolvedName = locationQuery.name || `${lat.toFixed(2)}, ${lon.toFixed(2)}`;
+            } else if (cachedCoords && cachedCoords.query && cachedCoords.query.toLowerCase() === query.toLowerCase() && cachedCoords.lat && cachedCoords.lon) {
+                lat = cachedCoords.lat;
+                lon = cachedCoords.lon;
+                resolvedName = cachedCoords.name || query;
             } else if (!query || query.toLowerCase() === 'auto') {
                 // Auto Detect via IP Geolocation or Navigator
                 try {
-                    const ipRes = await fetch('https://get.geojs.io/v1/ip/geo.json');
+                    const ipRes = await fetch('https://get.geojs.io/v1/ip/geo.json', { signal: AbortSignal.timeout(4000) });
                     if (ipRes.ok) {
                         const ipData = await ipRes.json();
                         lat = parseFloat(ipData.latitude);
@@ -1590,7 +1603,7 @@ function initNewsHubEngine() {
             } else {
                 // Search City anywhere in the world via Open-Meteo Global Geocoding API
                 const geoUrl = `https://geocoding-api.open-meteo.com/v1/search?name=${encodeURIComponent(query)}&count=1&language=en&format=json`;
-                const geoRes = await fetch(geoUrl);
+                const geoRes = await fetch(geoUrl, { signal: AbortSignal.timeout(5000) });
                 if (geoRes.ok) {
                     const geoData = await geoRes.json();
                     if (geoData && geoData.results && geoData.results.length > 0) {
@@ -1611,11 +1624,14 @@ function initNewsHubEngine() {
 
             currentCityName = resolvedName;
             localStorage.setItem('ocal-weather-loc', currentCityName);
+            try {
+                localStorage.setItem('ocal-weather-coords', JSON.stringify({ query, lat, lon, name: resolvedName }));
+            } catch (e) {}
 
             // 2. High-Accuracy Global Weather Forecast from Open-Meteo
             const forecastUrl = `https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&current=temperature_2m,relative_humidity_2m,apparent_temperature,is_day,precipitation,rain,showers,snowfall,weather_code,cloud_cover,pressure_msl,surface_pressure,wind_speed_10m,wind_direction_10m,wind_gusts_10m&hourly=temperature_2m,relative_humidity_2m,dew_point_2m,apparent_temperature,precipitation_probability,precipitation,weather_code,pressure_msl,visibility,wind_speed_10m,uv_index&daily=weather_code,temperature_2m_max,temperature_2m_min,apparent_temperature_max,apparent_temperature_min,sunrise,sunset,uv_index_max,precipitation_sum,precipitation_probability_max,wind_speed_10m_max&timezone=auto`;
             
-            const omRes = await fetch(forecastUrl);
+            const omRes = await fetch(forecastUrl, { signal: AbortSignal.timeout(6000) });
             if (omRes.ok) {
                 const omData = await omRes.json();
                 const cur = omData.current || {};
@@ -1710,6 +1726,12 @@ function initNewsHubEngine() {
             console.warn('[Weather Hub] API error:', err);
             if (statusSub) {
                 statusSub.innerHTML = `<i class="fas fa-triangle-exclamation" style="color: #ef4444; margin-right: 6px;"></i> Telemetry offline. Check network connection.`;
+            }
+            if (!lastFetchedWeather) {
+                const homeCity = document.getElementById('weather-city');
+                const homeCond = document.getElementById('weather-condition');
+                if (homeCity) homeCity.textContent = (currentCityName || 'Offline').split(',')[0].trim();
+                if (homeCond) homeCond.innerHTML = `<i class="fas fa-cloud-slash"></i> <span>Offline (tap to retry)</span>`;
             }
         }
     }
@@ -1874,7 +1896,16 @@ function initNewsHubEngine() {
         };
     }
 
-    // Initial weather load
+    // Initial weather load: render cached telemetry immediately to eliminate loading lag
+    try {
+        const cachedRaw = localStorage.getItem('ocal-cached-weather');
+        if (cachedRaw) {
+            const cachedWeather = JSON.parse(cachedRaw);
+            renderWeatherData(cachedWeather);
+        }
+    } catch (e) {}
+
+    // Fresh live meteorological telemetry fetch
     loadWeatherHubData(currentCityName);
 }
 

@@ -693,11 +693,11 @@
                         </div>
 
                         <!-- ─── 2. Dynamic App Icon & Logo Studio (Fills Right Column) ─── -->
-                        <div class="card homepage-bento-card sp-card-white">
+                        <div class="card homepage-bento-card sp-card-white icon-studio-card">
                             <div class="hbc-header">
                                 <div class="hbc-header-left">
                                     <div class="hbc-icon theme-bg">
-                                        <i class="fas fa-icons"></i>
+                                        <i class="fas fa-palette"></i>
                                     </div>
                                     <div class="hbc-identity">
                                         <h4 class="hbc-name">Dynamic Icon & Logo Studio</h4>
@@ -707,59 +707,93 @@
                                 <span class="hbc-badge visual"><i class="fas fa-sparkles"></i> LIVE SYNC</span>
                             </div>
 
-                            <div class="hbc-rows">
-                                <div class="icon-calibration-box" style="margin-top: 0;">
-                                    <div class="icon-preview-display">
-                                        <div class="icon-preview-card">
-                                            <img src="assets/icon.png" class="header-logo-img ocal-logo-preview" id="icon-calibration-preview" alt="Ocal Logo Preview">
-                                            <div class="icon-preview-meta">
-                                                <span class="icon-preview-title">Ocal Browser</span>
-                                                <span class="icon-preview-subtitle" id="icon-preview-color-name">Harmonized with Theme</span>
+                            <div class="hbc-rows icon-studio-rows">
+                                <!-- 1. Master Logo Preview Showcase Stage -->
+                                <div class="icon-studio-stage">
+                                    <div class="icon-stage-preview">
+                                        <div class="icon-brand-orb">
+                                            <img src="assets/icon.png" class="ocal-logo-preview" id="icon-calibration-preview" alt="Ocal Logo Preview">
+                                            <div class="icon-brand-glow"></div>
+                                        </div>
+                                        <div class="icon-stage-meta">
+                                            <div class="icon-stage-title-wrap">
+                                                <span class="icon-stage-title">Ocal Browser</span>
+                                                <span class="icon-stage-chip"><i class="fas fa-circle-check"></i> Primary Brand</span>
+                                            </div>
+                                            <div class="icon-live-status-pill">
+                                                <span class="icon-status-dot"></span>
+                                                <span class="icon-status-text" id="icon-preview-color-name">Harmonized with Theme</span>
                                             </div>
                                         </div>
-                                        <div class="icon-sync-toggle-group">
-                                            <label class="ext-toggle-wrap">
-                                                <input type="checkbox" id="icon-sync-toggle-cb" checked onchange="handleIconSyncToggle(this.checked)">
-                                                <span class="ext-slider"></span>
-                                            </label>
-                                            <span class="icon-sync-label">Sync Icon</span>
+                                    </div>
+                                    
+                                    <div class="icon-stage-toggle">
+                                        <div class="icon-sync-info">
+                                            <span class="icon-sync-title">Sync App Icon</span>
+                                            <span class="icon-sync-sub">Harmonize brand tone</span>
+                                        </div>
+                                        <label class="ext-toggle-wrap">
+                                            <input type="checkbox" id="icon-sync-toggle-cb" checked onchange="handleIconSyncToggle(this.checked)">
+                                            <span class="ext-slider"></span>
+                                        </label>
+                                    </div>
+                                </div>
+
+                                <!-- 2. Sliders & Calibrations -->
+                                <div class="icon-sliders-grid" id="icon-sliders-container">
+                                    <!-- Hue Color Correction Slider -->
+                                    <div class="icon-slider-row">
+                                        <div class="icon-slider-header">
+                                            <div class="icon-slider-desc">
+                                                <span class="icon-slider-name"><i class="fas fa-sliders"></i> Hue Calibration (Fine-Tune)</span>
+                                                <span class="icon-slider-hint">Shift brand spectrum across the color wheel</span>
+                                            </div>
+                                            <span class="icon-slider-badge" id="icon-hue-val">0°</span>
+                                        </div>
+                                        <div class="icon-slider-track-wrap hue-track-wrap">
+                                            <input type="range" class="modern-slider hue-slider" id="icon-hue-slider" min="-60" max="60" value="0" step="1" oninput="handleIconHueAdjust(this.value)">
                                         </div>
                                     </div>
 
-                                    <div class="icon-sliders-grid" id="icon-sliders-container">
-                                        <!-- Hue Color Correction Slider -->
-                                        <div class="icon-slider-row">
-                                            <div class="icon-slider-label">
-                                                <span><i class="fas fa-sliders"></i> Hue Calibration (Fine-Tune)</span>
-                                                <span class="icon-slider-val" id="icon-hue-val">0°</span>
+                                    <!-- Saturation / Vibrancy Slider -->
+                                    <div class="icon-slider-row">
+                                        <div class="icon-slider-header">
+                                            <div class="icon-slider-desc">
+                                                <span class="icon-slider-name"><i class="fas fa-droplet"></i> Vibrancy & Saturation</span>
+                                                <span class="icon-slider-hint">Adjust chromatic brilliance and contrast</span>
                                             </div>
-                                            <input type="range" id="icon-hue-slider" min="-60" max="60" value="0" step="1" oninput="handleIconHueAdjust(this.value)">
+                                            <span class="icon-slider-badge" id="icon-sat-val">100%</span>
                                         </div>
-
-                                        <!-- Saturation / Vibrancy Slider -->
-                                        <div class="icon-slider-row">
-                                            <div class="icon-slider-label">
-                                                <span><i class="fas fa-droplet"></i> Vibrancy & Saturation</span>
-                                                <span class="icon-slider-val" id="icon-sat-val">100%</span>
-                                            </div>
-                                            <input type="range" id="icon-sat-slider" min="50" max="160" value="100" step="5" oninput="handleIconSatAdjust(this.value)">
+                                        <div class="icon-slider-track-wrap sat-track-wrap">
+                                            <input type="range" class="modern-slider sat-slider" id="icon-sat-slider" min="50" max="160" value="100" step="5" oninput="handleIconSatAdjust(this.value)">
                                         </div>
+                                    </div>
 
-                                        <!-- Quick Color Correction Presets -->
-                                        <div class="icon-presets-row" style="display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 8px; padding-top: 10px; border-top: 1px solid color-mix(in srgb, var(--chrome-border, rgba(0,0,0,0.06)) 85%, var(--accent) 15%);">
-                                            <span style="font-size: 11.5px; font-weight: 600; color: var(--text-dim);"><i class="fas fa-palette"></i> Quick Tone:</span>
-                                            <div style="display: flex; gap: 6px;">
-                                                <button type="button" class="specials-preset-pill" style="padding: 4px 10px; font-size: 11px;" onclick="handleIconHueAdjust(-30)">Cooler (-30°)</button>
-                                                <button type="button" class="specials-preset-pill" style="padding: 4px 10px; font-size: 11px;" onclick="handleIconHueAdjust(0)">Neutral (0°)</button>
-                                                <button type="button" class="specials-preset-pill" style="padding: 4px 10px; font-size: 11px;" onclick="handleIconHueAdjust(30)">Warmer (+30°)</button>
-                                            </div>
+                                    <!-- Quick Color Correction Segmented Control -->
+                                    <div class="icon-presets-bar">
+                                        <div class="icon-presets-label">
+                                            <i class="fas fa-wand-magic-sparkles"></i>
+                                            <span>Quick Tone:</span>
                                         </div>
-
-                                        <div class="icon-calibration-actions">
-                                            <button type="button" class="icon-reset-btn" onclick="resetIconCalibration()">
-                                                <i class="fas fa-rotate-left"></i> Reset Calibration
+                                        <div class="icon-segmented-control" id="icon-tone-segmented">
+                                            <button type="button" class="segmented-pill" data-hue="-30" onclick="handleIconHueAdjust(-30)">
+                                                <span class="tone-dot cool-dot"></span> Cooler (-30°)
+                                            </button>
+                                            <button type="button" class="segmented-pill active" data-hue="0" onclick="handleIconHueAdjust(0)">
+                                                <span class="tone-dot neutral-dot"></span> Neutral (0°)
+                                            </button>
+                                            <button type="button" class="segmented-pill" data-hue="30" onclick="handleIconHueAdjust(30)">
+                                                <span class="tone-dot warm-dot"></span> Warmer (+30°)
                                             </button>
                                         </div>
+                                    </div>
+
+                                    <!-- Reset Footer Action -->
+                                    <div class="icon-studio-footer">
+                                        <span class="icon-footer-tip"><i class="fas fa-lightbulb"></i> Changes apply across taskbar, titlebars & tabs</span>
+                                        <button type="button" class="icon-reset-btn" onclick="resetIconCalibration()">
+                                            <i class="fas fa-rotate-left"></i> Reset Defaults
+                                        </button>
                                     </div>
                                 </div>
                             </div>
@@ -817,7 +851,59 @@
                             </div>
                         </div>
 
-                        <!-- ─── 3. Tab Orientation & Layout Engine (Arc / Crescent Style) ─── -->
+                        <!-- ─── 4. Weather Intelligence Location (Fills Right Column next to Workspace Density) ─── -->
+                        <div class="card homepage-bento-card sp-card-white weather-bento-card">
+                            <div class="hbc-header">
+                                <div class="hbc-header-left">
+                                    <div class="hbc-icon weather-bg">
+                                        <i class="fas fa-cloud-sun"></i>
+                                    </div>
+                                    <div class="hbc-identity">
+                                        <h4 class="hbc-name">Weather Intelligence Location</h4>
+                                        <div class="hbc-tagline">Live Forecast & Temperature Synced with Home Dashboard</div>
+                                    </div>
+                                </div>
+                                <span class="hbc-badge weather">TELEMETRY</span>
+                            </div>
+
+                            <div class="hbc-rows">
+                                <div class="weather-location-container">
+                                    <div class="weather-input-pill">
+                                        <i class="fas fa-location-dot"></i>
+                                        <input type="text" id="settings-weather-city-input" placeholder="Enter city name (e.g. Ahmedabad, London, New York)..." autocomplete="off" spellcheck="false" onkeydown="if(event.key==='Enter') saveWeatherLocation();">
+                                    </div>
+                                    <div class="weather-action-buttons">
+                                        <button class="weather-action-btn primary" id="save-weather-city-btn" onclick="saveWeatherLocation()">
+                                            <i class="fas fa-check"></i>
+                                            <span>Save City</span>
+                                        </button>
+                                        <button class="weather-action-btn secondary" id="auto-weather-city-btn" onclick="autoDetectWeatherLocation()">
+                                            <i class="fas fa-location-crosshairs"></i>
+                                            <span>Auto GPS</span>
+                                        </button>
+                                    </div>
+                                </div>
+
+                                <!-- Quick City Presets & Telemetry Status -->
+                                <div class="weather-quick-presets">
+                                    <span class="weather-presets-label"><i class="fas fa-globe"></i> Popular Cities:</span>
+                                    <div class="weather-presets-chips">
+                                        <button type="button" class="weather-preset-chip" onclick="setQuickWeatherCity('Ahmedabad')">Ahmedabad</button>
+                                        <button type="button" class="weather-preset-chip" onclick="setQuickWeatherCity('London')">London</button>
+                                        <button type="button" class="weather-preset-chip" onclick="setQuickWeatherCity('New York')">New York</button>
+                                        <button type="button" class="weather-preset-chip" onclick="setQuickWeatherCity('Tokyo')">Tokyo</button>
+                                        <button type="button" class="weather-preset-chip" onclick="setQuickWeatherCity('Paris')">Paris</button>
+                                    </div>
+                                </div>
+
+                                <div class="weather-telemetry-status-bar">
+                                    <span class="wt-status-chip"><i class="fas fa-satellite-dish fa-fade"></i> Live Telemetry Active</span>
+                                    <span class="wt-status-info" id="settings-weather-active-city-display">Synced with Home Dashboard</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- ─── 5. Tab Orientation & Layout Engine (Arc / Crescent Style) ─── -->
                         <div class="card homepage-bento-card sp-card-white span-full">
                             <div class="hbc-header">
                                 <div class="hbc-header-left">
@@ -902,7 +988,7 @@
                             </div>
                         </div>
 
-                        <!-- ─── 4. Sidebar Controls & WebApp Slideover Drawer ─── -->
+                        <!-- ─── 6. Sidebar Controls & WebApp Slideover Drawer ─── -->
                         <div class="card homepage-bento-card sp-card-white span-full">
                             <div class="hbc-header">
                                 <div class="hbc-header-left">
@@ -955,39 +1041,6 @@
                                         <button class="vt-pill-btn active" data-value="880" onclick="selectSidebarAppWidth(880)"><i class="fas fa-desktop"></i> 880px Standard</button>
                                         <button class="vt-pill-btn" data-value="1080" onclick="selectSidebarAppWidth(1080)"><i class="fas fa-expand"></i> 1080px Wide</button>
                                     </div>
-                                </div>
-                            </div>
-                        </div>
-
-                        <!-- ─── 5. Weather Intelligence Location ─── -->
-                        <div class="card homepage-bento-card sp-card-white span-full">
-                            <div class="hbc-header">
-                                <div class="hbc-header-left">
-                                    <div class="hbc-icon weather-bg">
-                                        <i class="fas fa-cloud-sun"></i>
-                                    </div>
-                                    <div class="hbc-identity">
-                                        <h4 class="hbc-name">Weather Intelligence Location</h4>
-                                        <div class="hbc-tagline">Live Forecast & Temperature Synced with Home Dashboard</div>
-                                    </div>
-                                </div>
-                                <span class="hbc-badge weather">TELEMETRY</span>
-                            </div>
-
-                            <div class="weather-location-container">
-                                <div class="weather-input-pill">
-                                    <i class="fas fa-location-dot"></i>
-                                    <input type="text" id="settings-weather-city-input" placeholder="Enter city name (e.g. Ahmedabad, London, New York)..." autocomplete="off" spellcheck="false" onkeydown="if(event.key==='Enter') saveWeatherLocation();">
-                                </div>
-                                <div class="weather-action-buttons">
-                                    <button class="weather-action-btn primary" id="save-weather-city-btn" onclick="saveWeatherLocation()">
-                                        <i class="fas fa-check"></i>
-                                        <span>Save City</span>
-                                    </button>
-                                    <button class="weather-action-btn secondary" id="auto-weather-city-btn" onclick="autoDetectWeatherLocation()">
-                                        <i class="fas fa-location-crosshairs"></i>
-                                        <span>Auto GPS</span>
-                                    </button>
                                 </div>
                             </div>
                         </div>

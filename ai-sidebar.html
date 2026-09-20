@@ -40,6 +40,7 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/github-dark.min.css">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
+    <script src="libraries-dev-fx.js"></script>
     <style>
         /* ── Design System Tokens (Matched 1:1 with Home Page) ── */
         :root {
@@ -594,18 +595,42 @@
         }
 
         .ai-logo {
-            width: 32px;
-            height: 32px;
-            background: var(--accent-gradient);
+            width: 34px;
+            height: 34px;
+            background: rgba(0, 0, 0, 0.04);
             display: flex;
             align-items: center;
             justify-content: center;
             color: #FFFFFF;
             font-size: 14px;
-            border-radius: 10px;
+            border-radius: 12px;
             font-weight: 800;
             box-shadow: none !important;
             flex-shrink: 0;
+            overflow: hidden;
+            border: 1px solid var(--border);
+            cursor: pointer;
+            transition: all 0.25s ease;
+        }
+
+        body[data-theme="dark"] .ai-logo {
+            background: rgba(255, 255, 255, 0.04);
+            border-color: rgba(255, 255, 255, 0.08);
+        }
+
+        .ai-logo:hover {
+            transform: scale(1.08);
+            border-color: var(--accent);
+            box-shadow: 0 0 12px var(--accent-glow) !important;
+        }
+
+        .voice-mic-btn {
+            transition: all 0.2s ease;
+        }
+
+        .voice-mic-btn:hover {
+            color: var(--accent);
+            border-color: var(--accent-border);
         }
 
         .ai-title-text h1 {
@@ -1938,161 +1963,286 @@
             background: rgba(239, 68, 68, 0.12);
         }
 
-        /* ── Image Studio View ── */
+        /* ── Modern AI Image Studio Design System (V2 Unified Suite) ── */
         .ai-image-studio-view {
             flex: 1;
             display: flex;
             flex-direction: column;
             overflow-y: auto;
-            padding: 24px 28px;
+            padding: 16px 20px;
             background: transparent;
-        }
-
-        body.fullscreen-mode .ai-image-studio-view {
-            max-width: 960px;
-            margin: 0 auto;
-            width: 100%;
-            padding: 32px 28px;
-        }
-
-        .studio-card {
-            background: #FFFFFF;
-            border: 1px solid rgba(0, 0, 0, 0.06);
-            border-radius: var(--radius-lg);
-            padding: 26px 28px;
-            display: flex;
-            flex-direction: column;
-            gap: 18px;
-            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.03);
-        }
-
-        body[data-theme="dark"] .studio-card {
-            background: #222226;
-            border-color: rgba(255, 255, 255, 0.08);
-            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.35);
-        }
-
-        .studio-card-header {
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            padding-bottom: 2px;
-        }
-
-        .studio-header-title {
-            display: flex;
-            align-items: center;
             gap: 14px;
         }
 
-        .studio-header-icon {
-            width: 44px;
-            height: 44px;
-            border-radius: 14px;
-            background: var(--accent-dim);
-            color: var(--accent);
+        body.fullscreen-mode .ai-image-studio-view {
+            max-width: 1040px;
+            margin: 0 auto;
+            width: 100%;
+            padding: 24px 20px;
+        }
+
+        .studio-scroll-area {
+            display: flex;
+            flex-direction: column;
+            gap: 14px;
+            width: 100%;
+        }
+
+        /* Unified Studio Shell Card */
+        .ais-unified-card {
+            background: rgba(255, 255, 255, 0.82);
+            backdrop-filter: blur(24px);
+            -webkit-backdrop-filter: blur(24px);
+            border: 1px solid rgba(0, 0, 0, 0.08);
+            border-radius: var(--radius-lg);
+            padding: 16px 18px;
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            box-shadow: 0 4px 24px rgba(0, 0, 0, 0.04);
+            transition: border-color 0.25s ease, box-shadow 0.25s ease;
+        }
+
+        body[data-theme="dark"] .ais-unified-card {
+            background: rgba(24, 24, 28, 0.85);
+            border-color: rgba(255, 255, 255, 0.08);
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.45);
+        }
+
+        /* Studio Top Bar */
+        .ais-top-bar {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 12px;
+            flex-wrap: wrap;
+            padding-bottom: 10px;
+            border-bottom: 1px solid rgba(0, 0, 0, 0.06);
+        }
+
+        body[data-theme="dark"] .ais-top-bar {
+            border-bottom-color: rgba(255, 255, 255, 0.07);
+        }
+
+        .ais-brand-group {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .ais-brand-icon {
+            width: 36px;
+            height: 36px;
+            border-radius: 11px;
+            background: linear-gradient(135deg, var(--accent) 0%, #8B5CF6 100%);
+            color: #FFFFFF;
             display: flex;
             align-items: center;
             justify-content: center;
-            font-size: 19px;
-            box-shadow: 0 2px 8px var(--accent-glow);
+            font-size: 16px;
+            box-shadow: 0 3px 12px var(--accent-glow);
+            flex-shrink: 0;
         }
 
-        .studio-header-text h3 {
+        .ais-brand-title {
             font-family: var(--title-font);
-            font-size: 19px;
+            font-size: 16.5px;
             font-weight: 800;
             color: var(--text);
-            letter-spacing: -0.4px;
-        }
-
-        .studio-header-text span {
-            font-size: 13px;
-            color: var(--text-dim);
-            font-weight: 500;
-        }
-
-        .studio-header-badge {
-            font-size: 11px;
-            font-weight: 800;
-            background: var(--accent);
-            color: #FFFFFF;
-            padding: 5px 14px;
-            border-radius: var(--radius-pill);
+            letter-spacing: -0.3px;
             display: flex;
             align-items: center;
-            gap: 6px;
-            letter-spacing: 0.5px;
-        }
-
-        .studio-row-grid {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 16px;
-        }
-
-        @media (max-width: 650px) {
-            .studio-row-grid { grid-template-columns: 1fr; }
-        }
-
-        .studio-field {
-            display: flex;
-            flex-direction: column;
             gap: 8px;
         }
 
-        .studio-field label {
-            font-size: 11.5px;
+        .ais-badge-pro {
+            font-size: 10px;
             font-weight: 800;
-            color: var(--text-dim);
+            background: linear-gradient(135deg, #FF9F0A 0%, #FF375F 100%);
+            color: #FFFFFF;
+            padding: 2px 7px;
+            border-radius: var(--radius-pill);
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+            letter-spacing: 0.4px;
+            text-transform: uppercase;
+        }
+
+        .ais-top-controls {
             display: flex;
             align-items: center;
-            gap: 6px;
-            text-transform: uppercase;
-            letter-spacing: 0.6px;
+            gap: 8px;
         }
 
-        .studio-field label i {
-            color: var(--accent);
-            font-size: 12px;
-        }
-
-        .studio-select {
-            width: 100%;
-            height: 46px;
-            background: #F4F4F6;
-            border: 1px solid rgba(0, 0, 0, 0.06);
+        .ais-quality-toggle {
+            display: inline-flex;
+            align-items: center;
+            background: rgba(0, 0, 0, 0.04);
+            border: 1px solid rgba(0, 0, 0, 0.08);
             border-radius: var(--radius-pill);
-            padding: 0 18px;
-            font-family: var(--font);
-            font-size: 13.5px;
-            font-weight: 600;
-            color: var(--text);
-            outline: none;
-            transition: all 0.2s ease;
+            padding: 2px;
+            gap: 2px;
         }
 
-        body[data-theme="dark"] .studio-select {
-            background: #28282D;
+        body[data-theme="dark"] .ais-quality-toggle {
+            background: rgba(255, 255, 255, 0.06);
             border-color: rgba(255, 255, 255, 0.08);
         }
 
-        .studio-select:focus {
+        .ais-quality-btn {
+            background: transparent;
+            border: none;
+            color: var(--text-dim);
+            font-family: var(--font);
+            font-size: 11px;
+            font-weight: 700;
+            padding: 4px 9px;
+            border-radius: var(--radius-pill);
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .ais-quality-btn.active {
+            background: var(--accent);
+            color: #FFFFFF;
+            box-shadow: 0 2px 8px var(--accent-glow);
+        }
+
+        /* Model Segmented Pills */
+        .ais-engine-pills {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 6px;
+        }
+
+        .ais-engine-pill {
+            padding: 6px 12px;
+            border-radius: var(--radius-pill);
+            background: rgba(0, 0, 0, 0.04);
+            border: 1px solid rgba(0, 0, 0, 0.06);
+            color: var(--text-dim);
+            font-family: var(--font);
+            font-size: 11.5px;
+            font-weight: 700;
+            cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+            gap: 5px;
+            transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+            user-select: none;
+        }
+
+        body[data-theme="dark"] .ais-engine-pill {
+            background: rgba(255, 255, 255, 0.05);
+            border-color: rgba(255, 255, 255, 0.08);
+            color: #A1A1AA;
+        }
+
+        .ais-engine-pill:hover {
+            color: var(--text);
+            border-color: var(--accent);
+            background: rgba(255, 255, 255, 0.95);
+            transform: translateY(-1px);
+        }
+
+        body[data-theme="dark"] .ais-engine-pill:hover {
+            background: rgba(255, 255, 255, 0.12);
+            color: #FFFFFF;
+        }
+
+        .ais-engine-pill.active {
+            background: var(--accent) !important;
+            color: #FFFFFF !important;
+            border-color: var(--accent) !important;
+            box-shadow: 0 3px 12px var(--accent-glow);
+        }
+
+        .ais-engine-pill.active i {
+            color: #FFFFFF !important;
+        }
+
+        /* Cloud Row */
+        .ais-cloud-row {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            background: rgba(0, 0, 0, 0.02);
+            border: 1px dashed rgba(0, 0, 0, 0.1);
+            border-radius: var(--radius-md);
+            padding: 8px 12px;
+            font-size: 11.5px;
+        }
+
+        body[data-theme="dark"] .ais-cloud-row {
+            background: rgba(255, 255, 255, 0.03);
+            border-color: rgba(255, 255, 255, 0.1);
+        }
+
+        .ais-cloud-tabs {
+            display: flex;
+            gap: 6px;
+        }
+
+        .ais-cloud-tab {
+            padding: 4px 10px;
+            border-radius: var(--radius-pill);
+            background: rgba(0, 0, 0, 0.05);
+            border: 1px solid rgba(0, 0, 0, 0.06);
+            color: var(--text-dim);
+            font-size: 11px;
+            font-weight: 700;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            transition: all 0.2s ease;
+        }
+
+        body[data-theme="dark"] .ais-cloud-tab {
+            background: rgba(255, 255, 255, 0.06);
+            border-color: rgba(255, 255, 255, 0.08);
+            color: #A1A1AA;
+        }
+
+        .ais-cloud-tab.active {
+            background: var(--accent);
+            color: #FFFFFF;
+            border-color: var(--accent);
+        }
+
+        /* Prompt Box Area */
+        .ais-prompt-wrapper {
+            position: relative;
+            display: flex;
+            flex-direction: column;
+            background: #F4F4F6;
+            border: 1px solid rgba(0, 0, 0, 0.08);
+            border-radius: var(--radius-md);
+            overflow: hidden;
+            transition: border-color 0.2s ease, box-shadow 0.2s ease, background 0.2s ease;
+        }
+
+        body[data-theme="dark"] .ais-prompt-wrapper {
+            background: #25252A;
+            border-color: rgba(255, 255, 255, 0.08);
+        }
+
+        .ais-prompt-wrapper:focus-within {
             border-color: var(--accent);
             background: #FFFFFF;
             box-shadow: 0 0 0 3px var(--accent-dim);
         }
 
-        body[data-theme="dark"] .studio-select:focus {
-            background: #28282D;
+        body[data-theme="dark"] .ais-prompt-wrapper:focus-within {
+            background: #202024;
         }
 
-        .studio-textarea {
+        .ais-prompt-textarea {
             width: 100%;
-            background: #F4F4F6;
-            border: 1px solid rgba(0, 0, 0, 0.06);
-            border-radius: var(--radius-md);
-            padding: 14px 18px;
+            background: transparent;
+            border: none;
+            padding: 12px 14px 6px;
             font-family: var(--font);
             font-size: 13.5px;
             font-weight: 500;
@@ -2100,588 +2250,1043 @@
             color: var(--text);
             outline: none;
             resize: vertical;
-            min-height: 90px;
-            transition: all 0.2s ease;
+            min-height: 64px;
+            box-sizing: border-box;
         }
 
-        body[data-theme="dark"] .studio-textarea {
-            background: #28282D;
-            border-color: rgba(255, 255, 255, 0.08);
-        }
-
-        .studio-textarea:focus {
-            border-color: var(--accent);
-            background: #FFFFFF;
-            box-shadow: 0 0 0 3px var(--accent-dim);
-        }
-
-        body[data-theme="dark"] .studio-textarea:focus {
-            background: #28282D;
-        }
-
-        /* Style Preset Chips (Home Page .sp-tile-item / .news-pill style) */
-        .preset-chips-grid {
+        .ais-prompt-bottom-bar {
             display: flex;
-            flex-wrap: wrap;
+            align-items: center;
+            justify-content: space-between;
+            padding: 6px 10px 8px;
+            border-top: 1px solid rgba(0, 0, 0, 0.04);
             gap: 8px;
         }
 
-        .preset-chip {
-            padding: 8px 18px;
+        body[data-theme="dark"] .ais-prompt-bottom-bar {
+            border-top-color: rgba(255, 255, 255, 0.05);
+        }
+
+        .ais-prompt-tools {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            flex-wrap: wrap;
+        }
+
+        .ais-tool-btn {
+            padding: 4px 10px;
             border-radius: var(--radius-pill);
-            background: #F4F4F6;
+            background: rgba(0, 0, 0, 0.04);
             border: 1px solid rgba(0, 0, 0, 0.06);
             color: var(--text-dim);
             font-family: var(--font);
-            font-size: 12.5px;
+            font-size: 11px;
             font-weight: 700;
             cursor: pointer;
             display: inline-flex;
             align-items: center;
-            gap: 7px;
+            gap: 5px;
             transition: all 0.2s ease;
-            box-shadow: 0 2px 6px rgba(0, 0, 0, 0.02);
         }
 
-        body[data-theme="dark"] .preset-chip {
-            background: #28282D;
+        body[data-theme="dark"] .ais-tool-btn {
+            background: rgba(255, 255, 255, 0.06);
             border-color: rgba(255, 255, 255, 0.08);
             color: #A1A1AA;
         }
 
-        .preset-chip i {
+        .ais-tool-btn:hover {
             color: var(--accent);
-            font-size: 12px;
-        }
-
-        .preset-chip:hover {
-            color: var(--text);
             border-color: var(--accent);
-            background: #FFFFFF;
-            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+            background: rgba(255, 255, 255, 0.95);
+            transform: translateY(-1px);
         }
 
-        body[data-theme="dark"] .preset-chip:hover {
-            background: #2E2E33;
+        body[data-theme="dark"] .ais-tool-btn:hover {
+            background: rgba(255, 255, 255, 0.12);
             color: #FFFFFF;
         }
 
-        .preset-chip.active {
-            background: var(--accent) !important;
-            color: #FFFFFF !important;
-            border-color: var(--accent) !important;
-            font-weight: 800;
-            box-shadow: 0 4px 14px var(--accent-glow);
+        .ais-clear-btn {
+            padding: 4px 8px;
         }
 
-        .preset-chip.active i {
-            color: #FFFFFF !important;
+        .ais-clear-btn:hover {
+            color: #EF4444 !important;
+            border-color: #EF4444 !important;
         }
 
-        /* Custom Dropdown Trigger (Capsule style matching Home Page) */
-        .custom-dropdown {
-            position: relative;
-            width: 100%;
+        .ais-prompt-meta-count {
+            font-size: 11px;
+            color: var(--text-muted);
+            font-family: 'Space Mono', monospace;
         }
 
-        .dropdown-trigger {
-            width: 100%;
-            height: 48px;
-            background: #F4F4F6;
-            border: 1px solid rgba(0, 0, 0, 0.06);
-            border-radius: var(--radius-pill);
-            padding: 0 18px;
+        /* Preset Category Bar (Styles, Lighting, Camera) */
+        .ais-category-nav {
             display: flex;
             align-items: center;
-            justify-content: space-between;
-            color: var(--text);
+            gap: 6px;
+            border-bottom: 1px solid rgba(0, 0, 0, 0.06);
+            padding-bottom: 6px;
+        }
+
+        body[data-theme="dark"] .ais-category-nav {
+            border-bottom-color: rgba(255, 255, 255, 0.07);
+        }
+
+        .ais-cat-tab {
+            background: transparent;
+            border: none;
+            color: var(--text-muted);
             font-family: var(--font);
-            font-size: 13.5px;
-            font-weight: 700;
+            font-size: 11px;
+            font-weight: 800;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            padding: 4px 8px;
+            border-radius: var(--radius-pill);
             cursor: pointer;
             transition: all 0.2s ease;
         }
 
-        body[data-theme="dark"] .dropdown-trigger {
-            background: #28282D;
+        .ais-cat-tab:hover {
+            color: var(--text);
+        }
+
+        .ais-cat-tab.active {
+            color: var(--accent);
+            background: var(--accent-dim);
+        }
+
+        .ais-chips-scroll {
+            display: flex;
+            gap: 6px;
+            overflow-x: auto;
+            padding-bottom: 4px;
+            scrollbar-width: thin;
+        }
+
+        .ais-preset-chip {
+            padding: 5px 11px;
+            border-radius: var(--radius-pill);
+            background: rgba(0, 0, 0, 0.04);
+            border: 1px solid rgba(0, 0, 0, 0.06);
+            color: var(--text-dim);
+            font-family: var(--font);
+            font-size: 11px;
+            font-weight: 700;
+            cursor: pointer;
+            white-space: nowrap;
+            display: inline-flex;
+            align-items: center;
+            gap: 5px;
+            transition: all 0.2s ease;
+            flex-shrink: 0;
+        }
+
+        body[data-theme="dark"] .ais-preset-chip {
+            background: rgba(255, 255, 255, 0.05);
             border-color: rgba(255, 255, 255, 0.08);
+            color: #A1A1AA;
         }
 
-        .dropdown-trigger:hover {
+        .ais-preset-chip:hover {
+            color: var(--text);
             border-color: var(--accent);
-            background: #FFFFFF;
+            background: rgba(255, 255, 255, 0.95);
         }
 
-        body[data-theme="dark"] .dropdown-trigger:hover {
-            background: #2E2E33;
+        body[data-theme="dark"] .ais-preset-chip:hover {
+            background: rgba(255, 255, 255, 0.12);
+            color: #FFFFFF;
         }
 
-        .trigger-label {
+        .ais-preset-chip.active {
+            background: var(--accent-dim) !important;
+            color: var(--accent) !important;
+            border-color: var(--accent) !important;
+            box-shadow: 0 2px 8px var(--accent-glow);
+        }
+
+        /* Aspect Ratio & Fine-Tuning Bar */
+        .ais-controls-bar {
             display: flex;
             align-items: center;
+            justify-content: space-between;
             gap: 10px;
-            overflow: hidden;
-            text-overflow: ellipsis;
-            white-space: nowrap;
+            flex-wrap: wrap;
         }
 
-        .trigger-arrow {
+        .ais-aspect-pills {
+            display: flex;
+            gap: 5px;
+            flex-wrap: wrap;
+        }
+
+        .ais-aspect-btn {
+            padding: 6px 11px;
+            border-radius: var(--radius-sm);
+            background: rgba(0, 0, 0, 0.04);
+            border: 1px solid rgba(0, 0, 0, 0.06);
+            color: var(--text-dim);
+            font-family: var(--font);
             font-size: 11px;
-            color: var(--text-muted);
+            font-weight: 700;
+            cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            transition: all 0.2s ease;
+        }
+
+        body[data-theme="dark"] .ais-aspect-btn {
+            background: rgba(255, 255, 255, 0.05);
+            border-color: rgba(255, 255, 255, 0.08);
+            color: #A1A1AA;
+        }
+
+        .ais-aspect-btn:hover {
+            color: var(--text);
+            border-color: var(--accent);
+        }
+
+        .ais-aspect-btn.active {
+            background: var(--accent-dim);
+            color: var(--accent);
+            border-color: var(--accent);
+            box-shadow: 0 2px 8px var(--accent-glow);
+        }
+
+        .ais-aspect-icon {
+            display: inline-block;
+            border: 1.5px solid currentColor;
+            border-radius: 2px;
+        }
+
+        .ratio-1-1 { width: 11px; height: 11px; }
+        .ratio-16-9 { width: 15px; height: 9px; }
+        .ratio-9-16 { width: 9px; height: 15px; }
+        .ratio-4-3 { width: 13px; height: 10px; }
+
+        .ais-adv-toggle {
+            padding: 6px 11px;
+            border-radius: var(--radius-pill);
+            background: transparent;
+            border: 1px solid rgba(0, 0, 0, 0.08);
+            color: var(--text-dim);
+            font-family: var(--font);
+            font-size: 11px;
+            font-weight: 700;
+            cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            transition: all 0.2s ease;
+        }
+
+        body[data-theme="dark"] .ais-adv-toggle {
+            border-color: rgba(255, 255, 255, 0.1);
+            color: #A1A1AA;
+        }
+
+        .ais-adv-toggle:hover {
+            color: var(--accent);
+            border-color: var(--accent);
+        }
+
+        .ais-adv-arrow {
+            font-size: 9px;
             transition: transform 0.2s ease;
         }
 
-        .custom-dropdown.open .trigger-arrow {
+        .ais-adv-arrow.open {
             transform: rotate(180deg);
         }
 
-        .dropdown-options {
-            display: none;
-            position: absolute;
-            top: calc(100% + 6px);
-            left: 0;
-            right: 0;
+        /* Fine-Tuning Drawer */
+        .ais-adv-panel {
+            background: rgba(0, 0, 0, 0.02);
+            border: 1px solid rgba(0, 0, 0, 0.06);
+            border-radius: var(--radius-md);
+            padding: 12px 14px;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            animation: slideDown 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+
+        @keyframes slideDown {
+            from { opacity: 0; transform: translateY(-8px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        body[data-theme="dark"] .ais-adv-panel {
+            background: rgba(255, 255, 255, 0.03);
+            border-color: rgba(255, 255, 255, 0.08);
+        }
+
+        .ais-adv-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+        }
+
+        @media (max-width: 650px) {
+            .ais-adv-grid { grid-template-columns: 1fr; }
+        }
+
+        .ais-adv-field {
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+        }
+
+        .ais-adv-field label {
+            font-size: 11px;
+            font-weight: 700;
+            color: var(--text-dim);
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+
+        .ais-input {
+            width: 100%;
+            height: 36px;
             background: #FFFFFF;
             border: 1px solid rgba(0, 0, 0, 0.08);
-            border-radius: var(--radius-md);
-            padding: 8px;
-            z-index: 50;
-            box-shadow: 0 14px 40px rgba(0, 0, 0, 0.12);
-            max-height: 260px;
-            overflow-y: auto;
-            flex-direction: column;
-            gap: 3px;
+            border-radius: var(--radius-sm);
+            padding: 0 10px;
+            font-family: var(--font);
+            font-size: 11.5px;
+            color: var(--text);
+            outline: none;
+            box-sizing: border-box;
+            transition: all 0.2s ease;
         }
 
-        body[data-theme="dark"] .dropdown-options {
-            background: #28282D;
-            border-color: rgba(255, 255, 255, 0.1);
-            box-shadow: 0 16px 48px rgba(0, 0, 0, 0.6);
+        body[data-theme="dark"] .ais-input {
+            background: #25252A;
+            border-color: rgba(255, 255, 255, 0.08);
         }
 
-        .custom-dropdown.open .dropdown-options {
+        .ais-input:focus {
+            border-color: var(--accent);
+        }
+
+        .ais-seed-row {
             display: flex;
+            gap: 6px;
         }
 
-        .dropdown-option {
+        .ais-seed-rand-btn {
+            width: 36px;
+            height: 36px;
+            border-radius: var(--radius-sm);
+            background: rgba(0, 0, 0, 0.04);
+            border: 1px solid rgba(0, 0, 0, 0.08);
+            color: var(--text-dim);
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.2s ease;
+            flex-shrink: 0;
+        }
+
+        body[data-theme="dark"] .ais-seed-rand-btn {
+            background: rgba(255, 255, 255, 0.06);
+            border-color: rgba(255, 255, 255, 0.08);
+        }
+
+        .ais-seed-rand-btn:hover {
+            color: var(--accent);
+            border-color: var(--accent);
+        }
+
+        /* High-Impact Generate Button */
+        .ais-generate-btn {
+            width: 100%;
+            height: 48px;
+            border-radius: var(--radius-pill);
+            background: linear-gradient(135deg, var(--accent) 0%, #7C3AED 100%);
+            color: #FFFFFF;
+            border: none;
+            font-family: var(--font);
+            font-size: 14px;
+            font-weight: 800;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0 20px;
+            box-shadow: 0 5px 20px var(--accent-glow);
+            transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .ais-generate-btn::after {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 50%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.3), transparent);
+            transform: skewX(-20deg);
+            transition: left 0.6s ease;
+        }
+
+        .ais-generate-btn:hover::after {
+            left: 150%;
+        }
+
+        .ais-generate-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 26px var(--accent-glow);
+            filter: brightness(1.05);
+        }
+
+        .ais-generate-btn:active {
+            transform: translateY(0);
+        }
+
+        .ais-generate-btn:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+            transform: none !important;
+            filter: grayscale(0.4);
+        }
+
+        .ais-generate-btn-content {
             display: flex;
             align-items: center;
             gap: 10px;
-            padding: 10px 14px;
-            border-radius: var(--radius-sm);
-            cursor: pointer;
-            transition: background 0.15s ease;
+            font-size: 14.5px;
         }
 
-        .dropdown-option:hover {
-            background: var(--hover);
+        .ais-generate-shortcut {
+            font-size: 10.5px;
+            font-weight: 700;
+            background: rgba(255, 255, 255, 0.22);
+            padding: 3px 7px;
+            border-radius: 6px;
+            letter-spacing: 0.3px;
         }
 
-        .dropdown-option.active {
+        /* ── Stage Viewport & High-Tech Neural Stage ── */
+        .ais-stage-viewport {
+            background: rgba(255, 255, 255, 0.85);
+            backdrop-filter: blur(24px);
+            -webkit-backdrop-filter: blur(24px);
+            border: 1px solid rgba(0, 0, 0, 0.08);
+            border-radius: var(--radius-lg);
+            padding: 20px;
+            min-height: 360px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+            box-shadow: 0 4px 24px rgba(0, 0, 0, 0.04);
+            overflow: hidden;
+            transition: all 0.3s ease;
+        }
+
+        body[data-theme="dark"] .ais-stage-viewport {
+            background: rgba(24, 24, 28, 0.85);
+            border-color: rgba(255, 255, 255, 0.08);
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.45);
+        }
+
+        /* Empty State */
+        .ais-empty-state {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            text-align: center;
+            gap: 10px;
+            max-width: 600px;
+            width: 100%;
+            padding: 10px;
+        }
+
+        .ais-empty-icon-glow {
+            width: 56px;
+            height: 56px;
+            border-radius: 18px;
             background: var(--accent-dim);
             color: var(--accent);
-            font-weight: 700;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 24px;
+            box-shadow: 0 4px 18px var(--accent-glow);
+            margin-bottom: 2px;
+            animation: float-gentle 3.5s ease-in-out infinite alternate;
         }
 
-        .option-icon {
-            font-size: 15px;
-            width: 22px;
+        @keyframes float-gentle {
+            0% { transform: translateY(0); }
+            100% { transform: translateY(-5px); }
+        }
+
+        .ais-empty-state h4 {
+            font-family: var(--title-font);
+            font-size: 17px;
+            font-weight: 800;
+            color: var(--text);
+            margin: 0;
+        }
+
+        .ais-empty-state p {
+            margin: 0;
+            font-size: 12.5px;
+            color: var(--text-dim);
+            line-height: 1.4;
+        }
+
+        .ais-starter-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 8px;
+            width: 100%;
+            margin-top: 8px;
+        }
+
+        @media (max-width: 600px) {
+            .ais-starter-grid { grid-template-columns: 1fr; }
+        }
+
+        .ais-starter-card {
+            background: #F4F4F6;
+            border: 1px solid rgba(0, 0, 0, 0.06);
+            border-radius: var(--radius-md);
+            padding: 10px 12px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            text-align: left;
+            cursor: pointer;
+            transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+
+        body[data-theme="dark"] .ais-starter-card {
+            background: #25252A;
+            border-color: rgba(255, 255, 255, 0.06);
+        }
+
+        .ais-starter-card:hover {
+            background: #FFFFFF;
+            border-color: var(--accent);
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+        }
+
+        body[data-theme="dark"] .ais-starter-card:hover {
+            background: #2C2C32;
+            border-color: var(--accent);
+        }
+
+        .ais-starter-card i {
+            font-size: 16px;
+            color: var(--accent);
+            flex-shrink: 0;
+        }
+
+        .ais-starter-info {
+            display: flex;
+            flex-direction: column;
+            gap: 1px;
+            min-width: 0;
+        }
+
+        .ais-starter-info strong {
+            font-size: 12px;
+            font-weight: 700;
+            color: var(--text);
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .ais-starter-info span {
+            font-size: 10.5px;
+            color: var(--text-muted);
+        }
+
+        /* ── Clean Neural Diffusion Thinking Orbs Stage (Matching Chat Section) ── */
+        .ais-scanner-stage {
+            position: relative;
+            width: 100%;
+            max-width: 540px;
+            min-height: 290px;
+            border-radius: var(--radius-lg, 20px);
+            overflow: hidden;
+            background: rgba(20, 20, 25, 0.75);
+            border: 1px solid rgba(255, 255, 255, 0.12);
+            box-shadow: 0 14px 40px rgba(0, 0, 0, 0.35), 0 0 24px rgba(9, 240, 160, 0.08);
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 34px 26px 30px;
+            margin: 0 auto;
+            transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+
+        body[data-theme="light"] .ais-scanner-stage {
+            background: rgba(255, 255, 255, 0.92);
+            border-color: rgba(0, 0, 0, 0.08);
+            box-shadow: 0 12px 36px rgba(0, 0, 0, 0.06), 0 0 24px rgba(139, 92, 246, 0.08);
+        }
+
+        .ais-studio-orb-inner {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            width: 100%;
+            max-width: 400px;
+            text-align: center;
+            position: relative;
+            z-index: 2;
+        }
+
+        .ais-studio-orb-stage {
+            position: relative;
+            width: 110px;
+            height: 110px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-bottom: 16px;
+        }
+
+        .ais-studio-orb-glow {
+            position: absolute;
+            inset: -24px;
+            border-radius: 50%;
+            background: radial-gradient(circle at center, color-mix(in srgb, var(--accent, #09F0A0) 40%, transparent) 0%, rgba(139, 92, 246, 0.25) 45%, transparent 70%);
+            filter: blur(18px);
+            animation: orb-glow-pulse 3.2s ease-in-out infinite alternate;
+            pointer-events: none;
+        }
+
+        .ais-studio-orb-slot {
+            position: relative;
+            z-index: 2;
+            width: 90px;
+            height: 90px;
             display: flex;
             align-items: center;
             justify-content: center;
         }
 
-        .option-text {
+        .ais-studio-orb-slot canvas {
+            border-radius: 50%;
+            filter: drop-shadow(0 0 14px color-mix(in srgb, var(--accent, #09F0A0) 60%, transparent));
+            transition: transform 0.2s ease;
+        }
+
+        .ais-studio-orb-slot canvas:hover {
+            transform: scale(1.06);
+        }
+
+        .ais-studio-orb-info {
             display: flex;
             flex-direction: column;
-            gap: 2px;
-            min-width: 0;
+            width: 100%;
+            gap: 6px;
+            align-items: center;
         }
 
-        .option-title {
-            font-size: 13px;
+        .ais-scanner-title {
+            font-size: 14.5px;
+            font-weight: 800;
+            letter-spacing: 0.3px;
+            background: linear-gradient(135deg, var(--accent, #09F0A0), #A78BFA);
+            -webkit-background-clip: text;
+            background-clip: text;
+            -webkit-text-fill-color: transparent;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .ais-scanner-subtext {
+            font-size: 12px;
+            color: var(--text-dim);
+            font-weight: 500;
+            min-height: 16px;
+            transition: color 0.2s ease;
+        }
+
+        .ais-scanner-bar-track {
+            width: 100%;
+            height: 5px;
+            background: rgba(255, 255, 255, 0.08);
+            border-radius: 999px;
+            overflow: hidden;
+            margin-top: 6px;
+            position: relative;
+        }
+
+        body[data-theme="light"] .ais-scanner-bar-track {
+            background: rgba(0, 0, 0, 0.08);
+        }
+
+        .ais-scanner-bar-fill {
+            height: 100%;
+            width: 0%;
+            background: linear-gradient(90deg, var(--accent, #09F0A0), #8B5CF6);
+            border-radius: 999px;
+            transition: width 0.25s ease;
+            box-shadow: 0 0 10px var(--accent);
+        }
+
+        .ais-scanner-footer {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            width: 100%;
+            margin-top: 4px;
+            font-size: 11px;
+            font-weight: 600;
+            color: var(--text-muted);
+        }
+
+        .ais-scanner-percent {
+            font-family: 'Space Mono', monospace;
             font-weight: 700;
+            color: var(--text-main);
         }
 
-        .option-desc {
+        .ais-scanner-engine-tag {
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+            color: var(--accent);
+            font-weight: 600;
+        }
+
+        /* ── Completed Artwork Showcase & Reveal Animation ── */
+        .ais-result-container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 12px;
+            width: 100%;
+        }
+
+        .ais-img-frame {
+            position: relative;
+            width: 100%;
+            max-width: 620px;
+            border-radius: 16px;
+            overflow: hidden;
+            box-shadow: 0 14px 44px rgba(0, 0, 0, 0.28);
+            background: #000000;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        /* Cinematic aperture / develop reveal animation */
+        .ais-result-img {
+            width: 100%;
+            height: auto;
+            display: block;
+            object-fit: contain;
+            border-radius: 16px;
+            transition: transform 0.35s cubic-bezier(0.16, 1, 0.3, 1), filter 0.5s ease;
+        }
+
+        .ais-result-img.revealing {
+            animation: developReveal 0.8s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+        }
+
+        @keyframes developReveal {
+            0% {
+                filter: blur(14px) brightness(1.25);
+                transform: scale(0.96);
+                opacity: 0.4;
+            }
+            100% {
+                filter: blur(0px) brightness(1);
+                transform: scale(1);
+                opacity: 1;
+            }
+        }
+
+        /* Floating Overlay Action Dock */
+        .ais-floating-dock {
+            position: absolute;
+            bottom: 12px;
+            left: 50%;
+            transform: translateX(-50%);
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            background: rgba(14, 14, 18, 0.88);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.16);
+            border-radius: var(--radius-pill);
+            padding: 5px 8px;
+            box-shadow: 0 10px 28px rgba(0, 0, 0, 0.45);
+            z-index: 10;
+            animation: dockSlideUp 0.4s cubic-bezier(0.16, 1, 0.3, 1) 0.3s backwards;
+        }
+
+        @keyframes dockSlideUp {
+            from { opacity: 0; transform: translate(-50%, 14px); }
+            to { opacity: 1; transform: translate(-50%, 0); }
+        }
+
+        .ais-dock-btn {
+            background: transparent;
+            border: none;
+            color: #FFFFFF;
+            font-family: var(--font);
+            font-size: 11px;
+            font-weight: 700;
+            padding: 5px 10px;
+            border-radius: var(--radius-pill);
+            cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+            gap: 5px;
+            transition: all 0.2s ease;
+        }
+
+        .ais-dock-btn:hover {
+            background: rgba(255, 255, 255, 0.2);
+            color: var(--accent);
+        }
+
+        .ais-dock-btn.ais-dock-remix {
+            background: var(--accent);
+            color: #FFFFFF;
+            box-shadow: 0 2px 10px var(--accent-glow);
+        }
+
+        .ais-dock-btn.ais-dock-remix:hover {
+            filter: brightness(1.1);
+        }
+
+        .ais-dock-regen {
+            padding: 5px 8px;
+            font-size: 11px;
+        }
+
+        .ais-result-meta-bar {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            width: 100%;
+            max-width: 620px;
+            gap: 10px;
+            padding: 0 4px;
+        }
+
+        .ais-prompt-snippet {
             font-size: 11.5px;
             color: var(--text-dim);
             white-space: nowrap;
             overflow: hidden;
             text-overflow: ellipsis;
+            font-style: italic;
         }
 
-        /* Studio Submit Button (Home Page .sp-badge-lime / pill style) */
-        .studio-submit-btn {
-            height: 48px;
-            border-radius: var(--radius-pill);
-            background: var(--accent);
-            color: #FFFFFF;
-            border: none;
-            font-family: var(--font);
-            font-size: 14.5px;
-            font-weight: 800;
-            cursor: pointer;
+        .ais-meta-tags {
             display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 10px;
-            box-shadow: 0 4px 18px var(--accent-glow);
-            transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
-        }
-
-        .studio-submit-btn:hover {
-            transform: translateY(-2px);
-            background: var(--accent-hover);
-            box-shadow: 0 8px 26px var(--accent-glow);
-        }
-
-        /* ── Studio Preview & Actions (Matched with Home Page .sp-card-white) ── */
-        .studio-preview-card {
-            background: #FFFFFF;
-            border: 1px solid rgba(0, 0, 0, 0.06);
-            border-radius: var(--radius-lg);
-            padding: 20px;
-            display: flex;
-            flex-direction: column;
-            gap: 14px;
-            margin-top: 14px;
-            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.035), 0 2px 8px rgba(0, 0, 0, 0.015);
-            transition: all 0.3s ease;
-        }
-
-        body[data-theme="dark"] .studio-preview-card {
-            background: #28282D;
-            border-color: rgba(255, 255, 255, 0.08);
-            box-shadow: 0 12px 36px rgba(0, 0, 0, 0.4);
-        }
-
-        /* Studio Status Pill (Matching Home Page .sp-timeline-pill & .sp-badge-lime) */
-        .studio-status {
-            display: inline-flex;
-            align-items: center;
-            gap: 8px;
-            padding: 7px 16px;
-            border-radius: var(--radius-pill);
-            background: #F4F4F6;
-            border: 1px solid rgba(0, 0, 0, 0.06);
-            font-size: 12px;
-            font-weight: 700;
-            color: var(--accent);
-            width: fit-content;
-            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.02);
-        }
-
-        body[data-theme="dark"] .studio-status {
-            background: #1E1E22;
-            border-color: rgba(255, 255, 255, 0.08);
-            box-shadow: none;
-        }
-
-        .studio-action-btn {
-            padding: 9px 18px;
-            border-radius: var(--radius-pill);
-            border: 1px solid rgba(0, 0, 0, 0.06);
-            background: #F4F4F6;
-            color: #111111;
-            font-family: var(--font);
-            font-size: 12px;
-            font-weight: 700;
-            cursor: pointer;
-            display: inline-flex;
-            align-items: center;
-            gap: 7px;
-            transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
-            box-shadow: 0 2px 6px rgba(0, 0, 0, 0.02);
-        }
-
-        body[data-theme="dark"] .studio-action-btn {
-            background: #1E1E22;
-            border-color: rgba(255, 255, 255, 0.08);
-            color: #FFFFFF;
-        }
-
-        .studio-action-btn:hover {
-            background: #FFFFFF;
-            border-color: var(--accent);
-            color: var(--accent);
-            transform: none;
-            box-shadow: 0 4px 14px rgba(0, 0, 0, 0.06);
-        }
-
-        body[data-theme="dark"] .studio-action-btn:hover {
-            background: #2E2E33;
-            border-color: var(--accent);
-            color: var(--accent);
-        }
-
-        /* ── Modern High-Tech Shimmer Loading Canvas (Matched with Home Page Style) ── */
-        .loading-shimmer-canvas {
-            position: relative;
-            width: 100%;
-            aspect-ratio: var(--aspect-ratio, 1 / 1);
-            border-radius: var(--radius-md);
-            overflow: hidden;
-            background: #F4F4F6;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            border: 1px solid rgba(0, 0, 0, 0.06);
-            box-shadow: inset 0 2px 10px rgba(0, 0, 0, 0.03);
-            transition: all 0.3s ease;
-        }
-
-        body[data-theme="dark"] .loading-shimmer-canvas {
-            background: #18181B;
-            border-color: rgba(255, 255, 255, 0.08);
-            box-shadow: inset 0 2px 14px rgba(0, 0, 0, 0.4);
-        }
-
-        /* High-Tech Grid Matrix Background */
-        .shimmer-grid-matrix {
-            position: absolute;
-            inset: 0;
-            background-image: radial-gradient(circle, rgba(0, 0, 0, 0.06) 1.2px, transparent 1.2px);
-            background-size: 20px 20px;
-            opacity: 0.6;
-            mask-image: radial-gradient(circle at center, black 50%, transparent 90%);
-            -webkit-mask-image: radial-gradient(circle at center, black 50%, transparent 90%);
-        }
-
-        body[data-theme="dark"] .shimmer-grid-matrix {
-            background-image: radial-gradient(circle, rgba(255, 255, 255, 0.08) 1.2px, transparent 1.2px);
-        }
-
-        /* Dual Ambient Gradient Energy Orbs (Soft Harmonious Accent Glow) */
-        .shimmer-ambient-orb {
-            position: absolute;
-            border-radius: 50%;
-            filter: blur(50px);
-            pointer-events: none;
-        }
-
-        .shimmer-ambient-orb.orb-1 {
-            width: 190px;
-            height: 190px;
-            background: var(--accent, #15AC49);
-            top: 10%;
-            left: 10%;
-            opacity: 0.14;
-            animation: orb-float-1 9s ease-in-out infinite alternate;
-        }
-
-        .shimmer-ambient-orb.orb-2 {
-            width: 170px;
-            height: 170px;
-            background: var(--accent-gradient, #06B6D4);
-            bottom: 12%;
-            right: 12%;
-            opacity: 0.10;
-            animation: orb-float-2 11s ease-in-out infinite alternate;
-        }
-
-        body[data-theme="dark"] .shimmer-ambient-orb.orb-1 { opacity: 0.22; }
-        body[data-theme="dark"] .shimmer-ambient-orb.orb-2 { opacity: 0.16; }
-
-        @keyframes orb-float-1 {
-            0% { transform: translate(0, 0) scale(1); }
-            50% { transform: translate(30px, 24px) scale(1.1); }
-            100% { transform: translate(15px, 45px) scale(0.95); }
-        }
-
-        @keyframes orb-float-2 {
-            0% { transform: translate(0, 0) scale(1); }
-            50% { transform: translate(-25px, -20px) scale(1.15); }
-            100% { transform: translate(-10px, -35px) scale(0.9); }
-        }
-
-        /* Laser Scanline */
-        .shimmer-scanline {
-            position: absolute;
-            left: 0;
-            right: 0;
-            height: 2px;
-            background: linear-gradient(90deg, transparent, var(--accent, #15AC49), transparent);
-            box-shadow: 0 0 12px var(--accent, #15AC49);
-            opacity: 0.45;
-            animation: scanline-sweep 3.5s cubic-bezier(0.4, 0, 0.2, 1) infinite;
-            z-index: 2;
-        }
-
-        @keyframes scanline-sweep {
-            0% { top: -5%; opacity: 0; }
-            15% { opacity: 0.6; }
-            85% { opacity: 0.6; }
-            100% { top: 105%; opacity: 0; }
-        }
-
-        /* Center Floating Bento Card (1:1 Matched with Home Page Cards) */
-        .shimmer-floating-bento {
-            position: relative;
-            z-index: 10;
-            width: 88%;
-            max-width: 320px;
-            background: #FFFFFF;
-            border: 1px solid rgba(0, 0, 0, 0.08);
-            border-radius: 24px;
-            padding: 24px 22px;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            text-align: center;
-            box-shadow: 0 16px 40px rgba(0, 0, 0, 0.07), 0 2px 8px rgba(0, 0, 0, 0.02);
-            animation: bento-hover-breathe 4s ease-in-out infinite alternate;
-        }
-
-        body[data-theme="dark"] .shimmer-floating-bento {
-            background: #28282D;
-            border-color: rgba(255, 255, 255, 0.08);
-            box-shadow: 0 20px 50px rgba(0, 0, 0, 0.5), 0 0 24px var(--accent-glow);
-        }
-
-        @keyframes bento-hover-breathe {
-            0% { transform: translateY(0); }
-            100% { transform: translateY(-2px); }
-        }
-
-        /* Animated Core Spinner & Icon */
-        .shimmer-core-loader {
-            position: relative;
-            width: 48px;
-            height: 48px;
-            margin-bottom: 14px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-        }
-
-        .shimmer-core-spinner {
-            position: absolute;
-            inset: 0;
-            border-radius: 50%;
-            border: 2.5px solid rgba(0, 0, 0, 0.06);
-            border-top-color: var(--accent, #15AC49);
-            border-right-color: var(--accent, #15AC49);
-            animation: core-spin 1.1s cubic-bezier(0.5, 0, 0.5, 1) infinite;
-        }
-
-        body[data-theme="dark"] .shimmer-core-spinner {
-            border-color: rgba(255, 255, 255, 0.08);
-            border-top-color: var(--accent, #15AC49);
-            border-right-color: rgba(255, 255, 255, 0.8);
-        }
-
-        @keyframes core-spin {
-            0% { transform: rotate(0deg); }
-            100% { transform: rotate(360deg); }
-        }
-
-        .shimmer-core-center {
-            width: 32px;
-            height: 32px;
-            border-radius: 50%;
-            background: var(--accent-gradient, linear-gradient(135deg, #15AC49, #06B6D4));
-            color: #FFFFFF;
-            font-size: 13px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            box-shadow: 0 2px 10px var(--accent-glow);
-        }
-
-        .shimmer-text-block {
-            display: flex;
-            flex-direction: column;
             align-items: center;
             gap: 6px;
-            width: 100%;
+            flex-shrink: 0;
         }
 
-        .shimmer-stage-title {
-            font-family: var(--font, 'Plus Jakarta Sans', sans-serif);
-            font-size: 14.5px;
+        .ais-model-badge {
+            font-size: 10px;
             font-weight: 800;
-            color: #111111;
-            letter-spacing: -0.3px;
-            line-height: 1.3;
+            color: var(--accent);
+            background: var(--accent-dim);
+            padding: 2px 8px;
+            border-radius: var(--radius-pill);
+            text-transform: uppercase;
         }
 
-        body[data-theme="dark"] .shimmer-stage-title {
-            color: #FFFFFF;
-        }
-
-        .shimmer-chip-pill {
+        .ais-clean-badge {
+            font-size: 10px;
+            font-weight: 800;
+            color: #10B981;
+            background: rgba(16, 185, 129, 0.14);
+            border: 1px solid rgba(16, 185, 129, 0.25);
+            padding: 2px 7px;
+            border-radius: var(--radius-pill);
             display: inline-flex;
             align-items: center;
-            padding: 4px 14px;
-            border-radius: var(--radius-pill);
-            background: #EDEDF0;
-            border: 1px solid rgba(0, 0, 0, 0.06);
-            font-size: 11.5px;
-            font-weight: 600;
-            color: #4B5563;
-            max-width: 90%;
-            overflow: hidden;
-            text-overflow: ellipsis;
-            white-space: nowrap;
+            gap: 3px;
         }
 
-        body[data-theme="dark"] .shimmer-chip-pill {
-            background: #1E1E22;
+        /* ── Recent Creations Gallery ── */
+        .ais-gallery-section {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            background: rgba(255, 255, 255, 0.82);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border: 1px solid rgba(0, 0, 0, 0.08);
+            border-radius: var(--radius-lg);
+            padding: 14px 16px;
+        }
+
+        body[data-theme="dark"] .ais-gallery-section {
+            background: rgba(24, 24, 28, 0.85);
             border-color: rgba(255, 255, 255, 0.08);
-            color: #9CA3AF;
         }
 
-        /* Progress Bar Track & Fill */
-        .shimmer-progress-track {
-            width: 100%;
-            height: 6px;
-            background: #E5E7EB;
-            border-radius: var(--radius-pill);
-            overflow: hidden;
-            margin-top: 16px;
-            position: relative;
-        }
-
-        body[data-theme="dark"] .shimmer-progress-track {
-            background: rgba(255, 255, 255, 0.1);
-        }
-
-        .shimmer-progress-fill {
-            height: 100%;
-            width: 0%;
-            background: var(--accent-gradient, linear-gradient(90deg, #15AC49, #06B6D4));
-            box-shadow: 0 0 10px var(--accent-glow);
-            border-radius: var(--radius-pill);
-            transition: width 0.25s ease-out;
-        }
-
-        .shimmer-meta-footer {
-            width: 100%;
+        .ais-gallery-header {
             display: flex;
             align-items: center;
             justify-content: space-between;
-            margin-top: 8px;
+            font-size: 11.5px;
+            font-weight: 800;
+            color: var(--text-dim);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .ais-gallery-header span {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .ais-gallery-header span i {
+            color: var(--accent);
+        }
+
+        .ais-gallery-clear-btn {
+            background: transparent;
+            border: none;
+            color: var(--text-muted);
             font-size: 11px;
             font-weight: 700;
-            color: #6B7280;
+            cursor: pointer;
+            padding: 2px 6px;
+            border-radius: 4px;
         }
 
-        body[data-theme="dark"] .shimmer-meta-footer {
-            color: #9CA3AF;
+        .ais-gallery-clear-btn:hover {
+            color: #EF4444;
         }
 
-        .shimmer-percent-counter {
-            color: var(--accent, #15AC49);
-            font-weight: 800;
-            font-size: 12px;
-            font-family: 'Space Mono', monospace, var(--font);
+        .ais-gallery-strip {
+            display: flex;
+            gap: 8px;
+            overflow-x: auto;
+            padding-bottom: 4px;
+            scrollbar-width: thin;
         }
 
-        .shimmer-engine-tag {
-            display: inline-flex;
+        .ais-gallery-thumb {
+            width: 68px;
+            height: 68px;
+            border-radius: 11px;
+            overflow: hidden;
+            flex-shrink: 0;
+            border: 2px solid transparent;
+            cursor: pointer;
+            transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+            position: relative;
+            background: #111;
+        }
+
+        .ais-gallery-thumb img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .ais-gallery-thumb:hover {
+            transform: scale(1.06);
+            border-color: var(--accent);
+            box-shadow: 0 4px 14px rgba(0, 0, 0, 0.25);
+        }
+
+        /* Fullscreen Lightbox Modal */
+        .ais-lightbox {
+            position: fixed;
+            inset: 0;
+            z-index: 99999;
+            display: flex;
             align-items: center;
-            gap: 5px;
+            justify-content: center;
+            animation: fadeIn 0.2s ease;
+        }
+
+        .ais-lightbox-backdrop {
+            position: absolute;
+            inset: 0;
+            background: rgba(0, 0, 0, 0.88);
+            backdrop-filter: blur(14px);
+            -webkit-backdrop-filter: blur(14px);
+        }
+
+        .ais-lightbox-content {
+            position: relative;
+            z-index: 2;
+            max-width: 90vw;
+            max-height: 90vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .ais-lightbox-close {
+            position: absolute;
+            top: -42px;
+            right: 0;
+            background: rgba(255, 255, 255, 0.15);
+            border: none;
+            color: #FFFFFF;
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 16px;
+            transition: all 0.2s ease;
+        }
+
+        .ais-lightbox-close:hover {
+            background: rgba(255, 255, 255, 0.3);
+        }
+
+        .ais-lightbox-content img {
+            max-width: 88vw;
+            max-height: 80vh;
+            object-fit: contain;
+            border-radius: 14px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.7);
+        }
+
+        .ais-lightbox-bar {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            width: 100%;
+            color: #FFFFFF;
+            font-size: 12px;
         }
 
         /* ── Memory Bank Tags ── */
@@ -2716,6 +3321,270 @@
         @keyframes slide-up {
             from { opacity: 0; transform: translateY(8px); }
             to { opacity: 1; transform: translateY(0); }
+        }
+
+        /* ── Libraries.dev 3D Orbs Image Generation in Chat ── */
+        .chat-orb-image-card {
+            position: relative;
+            display: flex;
+            flex-direction: column;
+            width: 100%;
+            max-width: 440px;
+            margin: 12px 0 8px 0;
+            border-radius: 18px;
+            overflow: hidden;
+            background: rgba(20, 20, 25, 0.75);
+            border: 1px solid rgba(255, 255, 255, 0.12);
+            box-shadow: 0 14px 40px rgba(0, 0, 0, 0.4), 0 0 24px rgba(9, 240, 160, 0.08);
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+            transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+
+        body[data-theme="light"] .chat-orb-image-card {
+            background: rgba(245, 245, 250, 0.92);
+            border-color: rgba(0, 0, 0, 0.1);
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1), 0 0 24px rgba(9, 240, 160, 0.12);
+        }
+
+        .chat-orb-loader {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 30px 20px 24px;
+            min-height: 250px;
+            position: relative;
+            z-index: 2;
+            transition: opacity 0.4s ease, transform 0.4s ease;
+        }
+
+        .chat-orb-loader.fading {
+            opacity: 0;
+            pointer-events: none;
+            transform: scale(0.96);
+        }
+
+        .chat-orb-stage {
+            position: relative;
+            width: 110px;
+            height: 110px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-bottom: 16px;
+        }
+
+        .chat-orb-ambient-glow {
+            position: absolute;
+            inset: -24px;
+            border-radius: 50%;
+            background: radial-gradient(circle at center, color-mix(in srgb, var(--accent, #09F0A0) 40%, transparent) 0%, rgba(139, 92, 246, 0.25) 45%, transparent 70%);
+            filter: blur(16px);
+            animation: orb-glow-pulse 3.2s ease-in-out infinite alternate;
+            pointer-events: none;
+        }
+
+        @keyframes orb-glow-pulse {
+            0% { transform: scale(0.88); opacity: 0.55; }
+            100% { transform: scale(1.18); opacity: 1; }
+        }
+
+        .chat-orb-canvas-slot {
+            position: relative;
+            z-index: 2;
+            width: 90px;
+            height: 90px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .chat-orb-canvas-slot canvas {
+            border-radius: 50%;
+            filter: drop-shadow(0 0 14px color-mix(in srgb, var(--accent, #09F0A0) 60%, transparent));
+            transition: transform 0.2s ease;
+        }
+
+        .chat-orb-canvas-slot canvas:hover {
+            transform: scale(1.06);
+        }
+
+        .chat-orb-info {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            text-align: center;
+            width: 100%;
+            max-width: 320px;
+            gap: 6px;
+        }
+
+        .chat-orb-title {
+            font-size: 13px;
+            font-weight: 800;
+            letter-spacing: 0.5px;
+            background: linear-gradient(135deg, var(--accent, #09F0A0), #A78BFA);
+            -webkit-background-clip: text;
+            background-clip: text;
+            -webkit-text-fill-color: transparent;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .chat-orb-status {
+            font-size: 11.5px;
+            color: var(--text-dim);
+            font-weight: 500;
+            min-height: 16px;
+            transition: color 0.2s ease;
+        }
+
+        .chat-orb-progress-track {
+            width: 100%;
+            height: 4px;
+            background: rgba(255, 255, 255, 0.08);
+            border-radius: 999px;
+            overflow: hidden;
+            margin-top: 4px;
+            position: relative;
+        }
+
+        body[data-theme="light"] .chat-orb-progress-track {
+            background: rgba(0, 0, 0, 0.08);
+        }
+
+        .chat-orb-progress-fill {
+            height: 100%;
+            width: 8%;
+            background: linear-gradient(90deg, var(--accent, #09F0A0), #8B5CF6);
+            border-radius: 999px;
+            transition: width 0.25s ease;
+            box-shadow: 0 0 10px var(--accent);
+        }
+
+        .chat-orb-meta {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            width: 100%;
+            margin-top: 2px;
+            font-size: 10.5px;
+            font-weight: 600;
+            color: var(--text-muted);
+        }
+
+        .chat-orb-engine {
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+            color: var(--accent);
+        }
+
+        .chat-image-wrapper {
+            position: relative;
+            width: 100%;
+            overflow: hidden;
+            border-radius: 18px;
+        }
+
+        .chat-generated-img {
+            width: 100%;
+            height: auto;
+            display: block;
+            border-radius: 18px;
+            object-fit: cover;
+            transition: transform 0.4s cubic-bezier(0.16, 1, 0.3, 1), filter 0.4s ease;
+        }
+
+        .chat-generated-img.revealing {
+            animation: chat-aperture-reveal 0.9s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+        }
+
+        @keyframes chat-aperture-reveal {
+            0% {
+                opacity: 0;
+                transform: scale(1.07);
+                filter: blur(14px) brightness(1.35);
+            }
+            100% {
+                opacity: 1;
+                transform: scale(1);
+                filter: blur(0px) brightness(1);
+            }
+        }
+
+        .chat-image-dock {
+            position: absolute;
+            bottom: 12px;
+            right: 12px;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            background: rgba(15, 15, 20, 0.78);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.15);
+            padding: 4px 8px;
+            border-radius: 999px;
+            opacity: 0;
+            transform: translateY(6px);
+            transition: all 0.25s ease;
+            z-index: 10;
+        }
+
+        .chat-orb-image-card:hover .chat-image-dock {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        .chat-dock-btn {
+            background: transparent;
+            border: none;
+            color: #FFFFFF;
+            width: 28px;
+            height: 28px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 11px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .chat-dock-btn:hover {
+            background: rgba(255, 255, 255, 0.2);
+            color: var(--accent);
+            transform: scale(1.1);
+        }
+
+        .chat-dock-btn.chat-dock-studio {
+            width: auto;
+            border-radius: 999px;
+            padding: 0 9px;
+            gap: 5px;
+            font-size: 10.5px;
+            font-weight: 700;
+        }
+
+        .chat-image-badge {
+            position: absolute;
+            top: 10px;
+            left: 10px;
+            background: rgba(16, 185, 129, 0.85);
+            backdrop-filter: blur(8px);
+            color: #FFFFFF;
+            font-size: 9.5px;
+            font-weight: 800;
+            padding: 3px 8px;
+            border-radius: 999px;
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+            z-index: 10;
         }
     </style>
 </head>
@@ -2828,7 +3697,9 @@
             <!-- Header Row -->
             <div class="ai-header">
                 <div class="ai-brand">
-                    <div class="ai-logo"><i class="fas fa-wand-magic-sparkles"></i></div>
+                    <div class="ai-logo" id="ai-header-orb-container" title="Ocal AI Thinking Orb (Libraries.dev) - Click to cycle modes">
+                        <i class="fas fa-wand-magic-sparkles"></i>
+                    </div>
                     <div class="ai-title-text" style="display: flex; align-items: center; gap: 8px;">
                         <h1>Ocal AI</h1>
                         <span id="active-model-badge" class="model-badge" style="display: none;">Local: gemma-4</span>
@@ -2954,295 +3825,313 @@
                             <span id="ai-file-name" style="flex: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-weight: 600;">filename.txt</span>
                             <button id="ai-file-remove" class="control-btn" style="width: 20px; height: 20px; min-width: 20px; font-size: 10px; margin: 0;"><i class="fas fa-times"></i></button>
                         </div>
-                        <div class="input-container">
+                        <div class="input-container" id="ai-input-container">
                             <input type="file" id="ai-file-input" accept=".pdf,.doc,.docx,.txt,.md,.markdown,.rtf,.csv,.tsv,.json,.log,.js,.ts,.jsx,.tsx,.py,.java,.cpp,.c,.cs,.go,.rs,.sql,.html,.css,image/*" style="display: none;">
                             <button id="ai-attach-btn" class="control-btn" title="Attach file"><i class="fas fa-paperclip"></i></button>
+                            <button id="btnVoiceMic" class="control-btn voice-mic-btn" title="Voice Dictation (Libraries.dev Voice Glow)"><i class="fas fa-microphone"></i></button>
                             <textarea id="ai-query" placeholder="Search Ocal AI or ask anything..." rows="1"></textarea>
                             <button id="ai-send" class="send-btn" title="Send message"><i class="fas fa-arrow-up"></i></button>
                         </div>
                     </div>
                 </div>
 
-                <!-- Image Studio View -->
+                <!-- Image Studio View (V2 Unified Suite) -->
                 <div class="ai-image-studio-view" id="ai-image-studio-view" style="display: none;">
                     <div class="studio-scroll-area">
-                        <div class="studio-card">
-                            <div class="studio-card-header">
-                                <div class="studio-header-title">
-                                    <div class="studio-header-icon"><i class="fas fa-palette"></i></div>
-                                    <div class="studio-header-text">
-                                        <h3>AI Image Studio</h3>
-                                        <span>Generate & customize artwork</span>
+                        <!-- Unified Studio Shell Card -->
+                        <div class="ais-unified-card">
+                            <!-- Top Bar: Brand, Quality Toggle & Models -->
+                            <div class="ais-top-bar">
+                                <div class="ais-brand-group">
+                                    <div class="ais-brand-icon">
+                                        <i class="fas fa-wand-magic-sparkles"></i>
+                                    </div>
+                                    <div class="ais-brand-title">
+                                        <span>AI Image Studio</span>
+                                        <span class="ais-badge-pro"><i class="fas fa-bolt"></i> PRO 4K</span>
                                     </div>
                                 </div>
-                                <div class="studio-header-badge"><i class="fas fa-wand-magic-sparkles"></i> PRO</div>
+                                <div class="ais-top-controls">
+                                    <div class="ais-quality-toggle" title="Resolution & Quality">
+                                        <button type="button" class="ais-quality-btn active" data-quality="standard" id="ais-quality-std">1K HD</button>
+                                        <button type="button" class="ais-quality-btn" data-quality="ultra" id="ais-quality-ultra">2K Ultra</button>
+                                    </div>
+                                </div>
                             </div>
 
-                            <!-- 2-Column Grid: Engine & Model Selectors -->
-                            <div class="studio-row-grid">
-                                <!-- Engine Selector -->
-                                <div class="studio-field">
-                                    <label><i class="fas fa-microchip"></i> Generation Engine</label>
-                                    <div class="custom-dropdown" id="engine-dropdown-container">
-                                        <input type="hidden" id="studio-engine-select" value="local">
-                                        <button type="button" class="dropdown-trigger" id="engine-dropdown-trigger">
-                                            <span class="trigger-label" id="engine-dropdown-label">
-                                                <span class="option-icon" style="color: var(--accent);"><i class="fas fa-robot"></i></span>
-                                                <span class="option-title">Local Model (Flux.1 / SDXL)</span>
-                                            </span>
-                                            <i class="fas fa-chevron-down trigger-arrow"></i>
+                            <!-- Model Selector Pills -->
+                            <div class="ais-engine-pills" id="ais-engine-pills">
+                                <button type="button" class="ais-engine-pill active" data-engine="flux" title="FLUX.1 Schnell: Fastest & highest visual fidelity">
+                                    <i class="fas fa-bolt-lightning"></i> FLUX.1
+                                </button>
+                                <button type="button" class="ais-engine-pill" data-engine="flux-realism" title="FLUX Realism: Photorealistic portraits & lifelike details">
+                                    <i class="fas fa-camera"></i> Photoreal
+                                </button>
+                                <button type="button" class="ais-engine-pill" data-engine="flux-anime" title="Flux Niji: Vibrant Japanese anime & manga">
+                                    <i class="fas fa-paint-brush"></i> Anime
+                                </button>
+                                <button type="button" class="ais-engine-pill" data-engine="flux-3d" title="3D Octane / Unreal Engine 5 digital renders">
+                                    <i class="fas fa-cube"></i> 3D Render
+                                </button>
+                                <button type="button" class="ais-engine-pill" data-engine="turbo" title="SDXL Turbo: Ultra-fast generation">
+                                    <i class="fas fa-gauge-high"></i> Turbo
+                                </button>
+                                <button type="button" class="ais-engine-pill" data-engine="cloud" title="Cloud APIs (OpenAI DALL-E 3 & Google Imagen 3)">
+                                    <i class="fas fa-cloud"></i> Cloud APIs
+                                </button>
+                            </div>
+
+                            <!-- Cloud API Selector (hidden unless Cloud APIs is selected) -->
+                            <div class="ais-cloud-row" id="ais-cloud-row" style="display: none;">
+                                <label><i class="fas fa-server"></i> Cloud:</label>
+                                <div class="ais-cloud-tabs">
+                                    <button type="button" class="ais-cloud-tab active" data-cloud="openai">
+                                        <i class="fas fa-brain"></i> OpenAI DALL-E 3
+                                    </button>
+                                    <button type="button" class="ais-cloud-tab" data-cloud="gemini">
+                                        <i class="fas fa-wand-magic-sparkles"></i> Google Imagen 3
+                                    </button>
+                                </div>
+                            </div>
+
+                            <!-- Prompt Wrapper with Embedded Toolbar -->
+                            <div class="ais-prompt-wrapper">
+                                <textarea id="studio-prompt-input" class="ais-prompt-textarea" placeholder="Describe what you want to create... (e.g. Cyberpunk samurai with glowing katana in rainy Neo-Tokyo, 8k resolution, volumetric neon lighting)" rows="2"></textarea>
+                                <div class="ais-prompt-bottom-bar">
+                                    <div class="ais-prompt-tools">
+                                        <button type="button" class="ais-tool-btn" id="ais-surprise-btn" title="Surprise Me with an inspiring prompt">
+                                            <i class="fas fa-dice"></i> Surprise Me
                                         </button>
-                                        <div class="dropdown-options" id="engine-dropdown-options">
-                                            <div class="dropdown-option active" data-value="local">
-                                                <span class="option-icon" style="color: var(--accent);"><i class="fas fa-robot"></i></span>
-                                                <div class="option-text">
-                                                    <div class="option-title">Local Model (Flux.1 / SDXL / ComfyUI / Fooocus)</div>
-                                                    <div class="option-desc">Free & Offline dynamic generation</div>
-                                                </div>
-                                            </div>
-                                            <div class="dropdown-option" data-value="openai">
-                                                <span class="option-icon" style="color: #FF9F0A;"><i class="fas fa-bolt"></i></span>
-                                                <div class="option-text">
-                                                    <div class="option-title">ChatGPT / DALL-E 3 API</div>
-                                                    <div class="option-desc">Commercial high-fidelity cloud generation</div>
-                                                </div>
-                                            </div>
-                                            <div class="dropdown-option" data-value="gemini">
-                                                <span class="option-icon" style="color: #0A84FF;"><i class="fas fa-wand-magic-sparkles"></i></span>
-                                                <div class="option-text">
-                                                    <div class="option-title">Gemini / Google Imagen API</div>
-                                                    <div class="option-desc">Advanced cloud-based vision model suite</div>
-                                                </div>
-                                            </div>
+                                        <button type="button" class="ais-tool-btn" id="ais-enhance-btn" title="Enhance prompt with cinematic lighting, camera lens & 8k detail">
+                                            <i class="fas fa-wand-magic-sparkles"></i> Enhance
+                                        </button>
+                                        <button type="button" class="ais-tool-btn ais-clear-btn" id="ais-clear-btn" title="Clear prompt">
+                                            <i class="fas fa-times"></i>
+                                        </button>
+                                    </div>
+                                    <span class="ais-prompt-meta-count" id="ais-prompt-count">0 words</span>
+                                </div>
+                            </div>
+
+                            <!-- Preset Category Navigation (Styles / Lighting / Camera) -->
+                            <div class="ais-category-nav">
+                                <button type="button" class="ais-cat-tab active" data-cat="styles"><i class="fas fa-paint-brush"></i> Styles</button>
+                                <button type="button" class="ais-cat-tab" data-cat="lighting"><i class="fas fa-sun"></i> Lighting</button>
+                                <button type="button" class="ais-cat-tab" data-cat="camera"><i class="fas fa-video"></i> Camera</button>
+                            </div>
+
+                            <!-- 1. Style Presets -->
+                            <div class="ais-chips-scroll" id="ais-chips-styles">
+                                <button type="button" class="ais-preset-chip" data-style="Photorealistic, 8k resolution, professional photography, natural lighting, Hasselblad 50mm f/1.2"><i class="fas fa-camera"></i> Realistic</button>
+                                <button type="button" class="ais-preset-chip" data-style="Makoto Shinkai anime style, vibrant atmospheric skies, detailed lineart, trending on Pixiv"><i class="fas fa-paint-brush"></i> Anime</button>
+                                <button type="button" class="ais-preset-chip" data-style="Cyberpunk aesthetic, glowing neon lights, dark moody atmosphere, volumetric fog, Unreal Engine 5"><i class="fas fa-bolt"></i> Cyberpunk</button>
+                                <button type="button" class="ais-preset-chip" data-style="Octane 3D render, Pixar style, subsurface scattering, smooth clay textures, studio lighting"><i class="fas fa-cube"></i> 3D Pixar</button>
+                                <button type="button" class="ais-preset-chip" data-style="Cinematic movie still, 35mm anamorphic lens, shallow depth of field, dramatic shadows, blockbuster color grading"><i class="fas fa-film"></i> Cinematic</button>
+                                <button type="button" class="ais-preset-chip" data-style="Classical fine art oil painting, textured canvas, heavy impasto, dramatic chiaroscuro lighting"><i class="fas fa-palette"></i> Oil Painting</button>
+                                <button type="button" class="ais-preset-chip" data-style="Dark fantasy concept art, mystical fog, ancient runes, epic scale, Greg Rutkowski art"><i class="fas fa-dragon"></i> Dark Fantasy</button>
+                                <button type="button" class="ais-preset-chip" data-style="Delicate watercolor and ink illustration, soft pastel washes, gold leaf details, artistic paper texture"><i class="fas fa-droplet"></i> Watercolor</button>
+                            </div>
+
+                            <!-- 2. Lighting Presets -->
+                            <div class="ais-chips-scroll" id="ais-chips-lighting" style="display: none;">
+                                <button type="button" class="ais-preset-chip" data-lighting="golden hour sunlight, warm amber glow, long soft shadows"><i class="fas fa-sun"></i> Golden Hour</button>
+                                <button type="button" class="ais-preset-chip" data-lighting="cyber neon illumination, vibrant magenta and cyan rim light"><i class="fas fa-bolt"></i> Cyber Neon</button>
+                                <button type="button" class="ais-preset-chip" data-lighting="cinematic volumetric god rays, dusty atmospheric haze"><i class="fas fa-smog"></i> Volumetric Rays</button>
+                                <button type="button" class="ais-preset-chip" data-lighting="ethereal bioluminescent glow, deep darkness, glowing particles"><i class="fas fa-wand-magic-sparkles"></i> Bioluminescent</button>
+                                <button type="button" class="ais-preset-chip" data-lighting="dramatic chiaroscuro lighting, deep black shadows, high contrast"><i class="fas fa-moon"></i> Moody Noir</button>
+                                <button type="button" class="ais-preset-chip" data-lighting="diffused softbox studio lighting, clean minimal backdrop"><i class="fas fa-lightbulb"></i> Studio Softbox</button>
+                            </div>
+
+                            <!-- 3. Camera Presets -->
+                            <div class="ais-chips-scroll" id="ais-chips-camera" style="display: none;">
+                                <button type="button" class="ais-preset-chip" data-camera="extreme close-up macro lens, intricate surface textures, bokeh"><i class="fas fa-magnifying-glass-plus"></i> Macro Lens</button>
+                                <button type="button" class="ais-preset-chip" data-camera="dramatic ultra-wide angle 14mm lens, expansive epic scale"><i class="fas fa-panorama"></i> Wide Angle</button>
+                                <button type="button" class="ais-preset-chip" data-camera="stunning high-altitude aerial drone perspective, top-down view"><i class="fas fa-plane"></i> Aerial Drone</button>
+                                <button type="button" class="ais-preset-chip" data-camera="flattering 85mm f/1.4 portrait lens, creamy blurred background"><i class="fas fa-user"></i> 85mm Portrait</button>
+                                <button type="button" class="ais-preset-chip" data-camera="vintage 35mm film grain, analog color science, Leica M6 look"><i class="fas fa-film"></i> 35mm Vintage</button>
+                            </div>
+
+                            <!-- Aspect Ratio & Controls Row -->
+                            <div class="ais-controls-bar">
+                                <div class="ais-aspect-pills">
+                                    <button type="button" class="ais-aspect-btn active" data-ratio="1:1" data-w="1024" data-h="1024" title="Square (1024x1024)">
+                                        <span class="ais-aspect-icon ratio-1-1"></span>
+                                        <span>1:1 Square</span>
+                                    </button>
+                                    <button type="button" class="ais-aspect-btn" data-ratio="16:9" data-w="1344" data-h="768" title="Landscape (1344x768)">
+                                        <span class="ais-aspect-icon ratio-16-9"></span>
+                                        <span>16:9 Wide</span>
+                                    </button>
+                                    <button type="button" class="ais-aspect-btn" data-ratio="9:16" data-w="768" data-h="1344" title="Portrait / Story (768x1344)">
+                                        <span class="ais-aspect-icon ratio-9-16"></span>
+                                        <span>9:16 Story</span>
+                                    </button>
+                                    <button type="button" class="ais-aspect-btn" data-ratio="4:3" data-w="1152" data-h="864" title="Standard (1152x864)">
+                                        <span class="ais-aspect-icon ratio-4-3"></span>
+                                        <span>4:3 Standard</span>
+                                    </button>
+                                </div>
+
+                                <button type="button" class="ais-adv-toggle" id="ais-adv-toggle">
+                                    <i class="fas fa-sliders"></i> Fine-Tuning <i class="fas fa-chevron-down ais-adv-arrow" id="ais-adv-arrow"></i>
+                                </button>
+                            </div>
+
+                            <!-- Fine-Tuning Drawer Panel -->
+                            <div class="ais-adv-panel" id="ais-adv-panel" style="display: none;">
+                                <div class="ais-adv-grid">
+                                    <div class="ais-adv-field">
+                                        <label><i class="fas fa-ban"></i> Negative Prompt</label>
+                                        <input type="text" id="studio-negative-input" class="ais-input" placeholder="blurry, low quality, deformed hands, extra fingers, text, watermark...">
+                                    </div>
+                                    <div class="ais-adv-field">
+                                        <label><i class="fas fa-key"></i> Random Seed (Leave empty for random)</label>
+                                        <div class="ais-seed-row">
+                                            <input type="number" id="studio-seed-value" class="ais-input" placeholder="Random (e.g. 849204)">
+                                            <button type="button" class="ais-seed-rand-btn" id="ais-seed-rand-btn" title="Randomize seed"><i class="fas fa-dice"></i></button>
                                         </div>
                                     </div>
                                 </div>
-
-                                <!-- Open Source Model Architecture Selector -->
-                                <div class="studio-field" id="os-model-field">
-                                    <label><i class="fas fa-brain"></i> Open Source Model</label>
-                                    <div class="custom-dropdown" id="os-model-dropdown-container">
-                                        <input type="hidden" id="studio-os-model-select" value="flux-2">
-                                        <button type="button" class="dropdown-trigger" id="os-model-dropdown-trigger">
-                                            <span class="trigger-label" id="os-model-dropdown-label">
-                                                <span class="option-icon" style="color: #34C759;"><i class="fas fa-bolt-lightning"></i></span>
-                                                <span class="option-title">FLUX.2 (Flagship)</span>
-                                            </span>
-                                            <i class="fas fa-chevron-down trigger-arrow"></i>
-                                        </button>
-                                        <div class="dropdown-options" id="os-model-dropdown-options">
-                                            <div class="dropdown-option active" data-value="flux-2">
-                                                <span class="option-icon" style="color: #34C759;"><i class="fas fa-bolt-lightning"></i></span>
-                                                <div class="option-text">
-                                                    <div class="option-title">FLUX.2 (Black Forest Labs Flagship)</div>
-                                                    <div class="option-desc">Next-gen 24B parameter photorealism & text rendering model</div>
-                                                </div>
-                                            </div>
-                                            <div class="dropdown-option" data-value="sd-3.5">
-                                                <span class="option-icon" style="color: #FF9F0A;"><i class="fas fa-layer-group"></i></span>
-                                                <div class="option-text">
-                                                    <div class="option-title">Stable Diffusion 3.5 Large (Stability AI)</div>
-                                                    <div class="option-desc">MMDiT architecture with photorealistic prompt accuracy</div>
-                                                </div>
-                                            </div>
-                                            <div class="dropdown-option" data-value="qwen-image">
-                                                <span class="option-icon" style="color: #0A84FF;"><i class="fas fa-brain"></i></span>
-                                                <div class="option-text">
-                                                    <div class="option-title">Qwen-Image / Qwen-VL (Alibaba Omni)</div>
-                                                    <div class="option-desc">Omni vision model with precise spatial layout generation</div>
-                                                </div>
-                                            </div>
-                                            <div class="dropdown-option" data-value="flux-realism">
-                                                <span class="option-icon" style="color: #30D158;"><i class="fas fa-camera"></i></span>
-                                                <div class="option-text">
-                                                    <div class="option-title">Flux 1.1 Realism Ultra (Hyper-Realistic Photo)</div>
-                                                    <div class="option-desc">Portrait tuning & lifelike human skin textures</div>
-                                                </div>
-                                            </div>
-                                            <div class="dropdown-option" data-value="flux">
-                                                <span class="option-icon" style="color: #5856D6;"><i class="fas fa-wand-magic-sparkles"></i></span>
-                                                <div class="option-text">
-                                                    <div class="option-title">Flux.1 Schnell 12B (High Speed Open Model)</div>
-                                                    <div class="option-desc">12 Billion parameter ultra-high detail open model</div>
-                                                </div>
-                                            </div>
-                                            <div class="dropdown-option" data-value="flux-candid">
-                                                <span class="option-icon" style="color: #FFD60A;"><i class="fas fa-user"></i></span>
-                                                <div class="option-text">
-                                                    <div class="option-title">Flux Candid 4K (Natural Human Portraits)</div>
-                                                    <div class="option-desc">Candid photography & natural ambient light</div>
-                                                </div>
-                                            </div>
-                                            <div class="dropdown-option" data-value="turbo">
-                                                <span class="option-icon" style="color: #FF2D55;"><i class="fas fa-bolt"></i></span>
-                                                <div class="option-text">
-                                                    <div class="option-title">SDXL RealVis V4.0 (Fast Photorealism)</div>
-                                                    <div class="option-desc">RealVisXL photorealism weights</div>
-                                                </div>
-                                            </div>
-                                            <div class="dropdown-option" data-value="flux-3d">
-                                                <span class="option-icon" style="color: #64D2FF;"><i class="fas fa-cube"></i></span>
-                                                <div class="option-text">
-                                                    <div class="option-title">Flux 3D & Cinematic Render</div>
-                                                    <div class="option-desc">Octane/Unreal Engine 5 3D digital renders</div>
-                                                </div>
-                                            </div>
-                                            <div class="dropdown-option" data-value="flux-anime">
-                                                <span class="option-icon" style="color: #AF52DE;"><i class="fas fa-paint-brush"></i></span>
-                                                <div class="option-text">
-                                                    <div class="option-title">Flux Niji V6 (Vibrant Anime & Manga)</div>
-                                                    <div class="option-desc">High quality Japanese anime & illustration style</div>
-                                                </div>
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
                             </div>
 
-                            <!-- Prompt Input -->
-                            <div class="studio-field">
-                                <label><i class="fas fa-font"></i> Image Prompt</label>
-                                <textarea id="studio-prompt-input" class="studio-textarea" placeholder="Describe the image you want to generate (e.g. A majestic glowing dragon over a neon cyberpunk city at night, 8k resolution, photorealistic)..." rows="3"></textarea>
-                            </div>
-
-                            <!-- Style Preset Chips -->
-                            <div class="studio-field">
-                                <label><i class="fas fa-wand-magic-sparkles"></i> Style Presets</label>
-                                <div class="preset-chips-grid">
-                                    <button class="preset-chip" data-style="Photorealistic, 8k resolution, ultra detailed, cinematic lighting"><i class="fas fa-camera"></i> Realistic</button>
-                                    <button class="preset-chip" data-style="Anime style, vibrant colors, detailed lineart, 4k"><i class="fas fa-paint-brush"></i> Anime</button>
-                                    <button class="preset-chip" data-style="Cyberpunk aesthetics, glowing neon, rain, 8k"><i class="fas fa-bolt"></i> Cyberpunk</button>
-                                    <button class="preset-chip" data-style="3D digital render, Octane render, smooth shading, vibrant"><i class="fas fa-cube"></i> 3D Render</button>
-                                    <button class="preset-chip" data-style="Classic oil painting, dramatic lighting, rich textures"><i class="fas fa-palette"></i> Oil Painting</button>
+                            <!-- High-Impact Glowing Generate Button -->
+                            <button type="button" id="studio-generate-btn" class="ais-generate-btn">
+                                <div class="ais-generate-btn-content">
+                                    <i class="fas fa-wand-magic-sparkles"></i>
+                                    <span id="ais-generate-text">Generate Artwork</span>
                                 </div>
-                            </div>
-
-                            <!-- 2-Column Grid: Aspect Ratio & Advanced Settings -->
-                            <div class="studio-row-grid">
-                                <!-- Aspect Ratio Selector -->
-                                <div class="studio-field">
-                                    <label><i class="fas fa-crop-simple"></i> Aspect Ratio</label>
-                                    <div class="custom-dropdown" id="ratio-dropdown-container">
-                                        <input type="hidden" id="studio-aspect-ratio" value="1:1">
-                                        <button type="button" class="dropdown-trigger" id="ratio-dropdown-trigger">
-                                            <span class="trigger-label" id="ratio-dropdown-label">
-                                                <span class="option-icon" style="color: var(--accent);"><i class="fas fa-square"></i></span>
-                                                <span class="option-title">Square (1:1)</span>
-                                            </span>
-                                            <i class="fas fa-chevron-down trigger-arrow"></i>
-                                        </button>
-                                        <div class="dropdown-options" id="ratio-dropdown-options">
-                                            <div class="dropdown-option active" data-value="1:1" data-w="1024" data-h="1024">
-                                                <span class="option-icon" style="color: var(--accent);"><i class="fas fa-square"></i></span>
-                                                <div class="option-text">
-                                                    <div class="option-title">Square (1:1)</div>
-                                                    <div class="option-desc">1024 x 1024 px (Social posts)</div>
-                                                </div>
-                                            </div>
-                                            <div class="dropdown-option" data-value="9:16" data-w="768" data-h="1344">
-                                                <span class="option-icon" style="color: #FF9F0A;"><i class="fas fa-mobile-screen"></i></span>
-                                                <div class="option-text">
-                                                    <div class="option-title">Portrait (9:16)</div>
-                                                    <div class="option-desc">768 x 1344 px (Mobile stories)</div>
-                                                </div>
-                                            </div>
-                                            <div class="dropdown-option" data-value="16:9" data-w="1344" data-h="768">
-                                                <span class="option-icon" style="color: #0A84FF;"><i class="fas fa-display"></i></span>
-                                                <div class="option-text">
-                                                    <div class="option-title">Landscape (16:9)</div>
-                                                    <div class="option-desc">1344 x 768 px (Widescreen displays)</div>
-                                                </div>
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
-
-                                <!-- Collapsible Advanced Settings -->
-                                <div class="studio-field">
-                                    <label><i class="fas fa-sliders-h"></i> Configuration</label>
-                                    <div class="dropdown-trigger" id="advanced-settings-toggle" style="cursor: pointer;">
-                                        <span><i class="fas fa-sliders" style="color: var(--accent); margin-right: 6px;"></i> Advanced Settings</span>
-                                        <i class="fas fa-chevron-down trigger-arrow" id="advanced-arrow-icon"></i>
-                                    </div>
-                                </div>
-                            </div>
-
-                            <div class="advanced-settings-content" id="advanced-settings-panel" style="display: none; flex-direction: column; gap: 12px; padding: 14px; background: var(--panel-bg); border: 1px solid var(--border); border-radius: var(--radius-md);">
-                                <!-- Negative Prompt -->
-                                <div class="studio-field">
-                                    <label><i class="fas fa-ban"></i> Negative Prompt</label>
-                                    <input type="text" id="studio-negative-input" class="studio-select" placeholder="blurry, low quality, deformed, extra fingers...">
-                                </div>
-
-                                <!-- HD Enhancement Toggle -->
-                                <div class="studio-field" style="flex-direction: row; align-items: center; justify-content: space-between;">
-                                    <label style="margin: 0;"><i class="fas fa-wand-magic-sparkles"></i> Auto HD Canvas Enhancement</label>
-                                    <input type="checkbox" id="studio-hd-enhance-toggle" checked style="width: 16px; height: 16px; cursor: pointer; accent-color: var(--accent);">
-                                </div>
-
-                                <!-- Seed Control -->
-                                <div class="studio-field" style="flex-direction: row; align-items: center; justify-content: space-between;">
-                                    <label style="margin: 0;"><i class="fas fa-key"></i> Lock Seed</label>
-                                    <input type="checkbox" id="studio-seed-lock" style="width: 16px; height: 16px; cursor: pointer; accent-color: var(--accent);">
-                                </div>
-                                <div class="studio-field" id="seed-input-container" style="display: none;">
-                                    <input type="number" id="studio-seed-value" class="studio-select" placeholder="Random seed (e.g. 42792)">
-                                </div>
-
-                                <!-- Watermark -->
-                                <div class="studio-field" style="flex-direction: row; align-items: center; justify-content: space-between;">
-                                    <label style="margin: 0;"><i class="fas fa-copyright"></i> Add Watermark</label>
-                                    <input type="checkbox" id="studio-watermark-toggle" checked style="width: 16px; height: 16px; cursor: pointer; accent-color: var(--accent);">
-                                </div>
-                                <div class="studio-field" id="watermark-input-container">
-                                    <input type="text" id="studio-watermark-text" class="studio-select" value="Ocal AI Studio" placeholder="Watermark text">
-                                </div>
-                            </div>
-
-                            <button id="studio-generate-btn" class="studio-submit-btn">
-                                <i class="fas fa-wand-magic-sparkles"></i> <span>Generate Image</span>
+                                <span class="ais-generate-shortcut">Ctrl+Enter</span>
                             </button>
                         </div>
 
-                        <!-- Preview Display Box -->
-                        <div class="studio-preview-card" id="studio-preview-card" style="display: none;">
-                            <div id="studio-status-indicator" class="studio-status">
-                                <i class="fas fa-spinner fa-spin"></i> <span id="studio-status-text">Synthesizing image...</span>
-                            </div>
-                            <div class="studio-img-wrap" id="studio-img-wrap" style="width: 100%; position: relative;">
-                                <!-- High-Tech Neural Diffusion Loading Canvas matching Home Page Style -->
-                                <div id="studio-loading-shimmer" class="loading-shimmer-canvas" style="display: none;">
-                                    <div class="shimmer-grid-matrix"></div>
-                                    <div class="shimmer-ambient-orb orb-1"></div>
-                                    <div class="shimmer-ambient-orb orb-2"></div>
-                                    <div class="shimmer-scanline"></div>
-                                    <div class="shimmer-floating-bento">
-                                        <div class="shimmer-core-loader">
-                                            <div class="shimmer-core-spinner"></div>
-                                            <div class="shimmer-core-center"><i class="fas fa-wand-magic-sparkles"></i></div>
+                        <!-- Canvas Stage Viewport (Empty, High-Tech Scanner, or Result Artwork) -->
+                        <div class="ais-stage-viewport" id="studio-stage-card">
+                            <!-- 1. Inspiring Empty State -->
+                            <div class="ais-empty-state" id="ais-empty-state">
+                                <div class="ais-empty-icon-glow">
+                                    <i class="fas fa-palette"></i>
+                                </div>
+                                <h4>Your Creative Canvas</h4>
+                                <p>Describe any visual concept or start instantly with an idea below:</p>
+                                <div class="ais-starter-grid">
+                                    <div class="ais-starter-card" data-prompt="A futuristic holographic bonsai tree glowing with cyan and violet light in a dark minimalist room, 8k resolution, octane render, Ray Tracing, serene aesthetic" data-style="3D Pixar">
+                                        <i class="fas fa-seedling"></i>
+                                        <div class="ais-starter-info">
+                                            <strong>Holographic Bonsai</strong>
+                                            <span>Cyberpunk & 3D Render</span>
                                         </div>
-                                        <div class="shimmer-text-block">
-                                            <div id="shimmer-progress-percentage" class="shimmer-stage-title">Synthesizing Latent Diffusion...</div>
-                                            <div class="shimmer-chip-pill"><span id="shimmer-progress-subtext">Denoising Latent Noise Fields</span></div>
+                                    </div>
+                                    <div class="ais-starter-card" data-prompt="Epic close-up portrait of a cybernetic warrior with glowing gold ocular implants, rain pouring down, neon reflections on titanium armor, hyperrealistic 8k" data-style="Photorealistic">
+                                        <i class="fas fa-shield-halved"></i>
+                                        <div class="ais-starter-info">
+                                            <strong>Titanium Cyber Warrior</strong>
+                                            <span>Hyper-Realistic 8K</span>
                                         </div>
-                                        <div class="shimmer-progress-track">
-                                            <div id="shimmer-progress-bar-fill" class="shimmer-progress-fill"></div>
+                                    </div>
+                                    <div class="ais-starter-card" data-prompt="Dreamy anime girl watching a glowing shooting star shower on a grassy hill at twilight, Makoto Shinkai art style, breathtaking clouds, vibrant colors" data-style="Anime">
+                                        <i class="fas fa-star"></i>
+                                        <div class="ais-starter-info">
+                                            <strong>Twilight Starlight</strong>
+                                            <span>Makoto Shinkai Anime</span>
                                         </div>
-                                        <div class="shimmer-meta-footer">
-                                            <span id="shimmer-progress-percent-num" class="shimmer-percent-counter">0%</span>
-                                            <span class="shimmer-engine-tag"><i class="fas fa-microchip"></i> Neural Core Active</span>
+                                    </div>
+                                    <div class="ais-starter-card" data-prompt="Mystical floating islands with cascading waterfalls over a sea of clouds, ancient crystalline ruins, golden hour sunlight, majestic fantasy landscape" data-style="Cinematic">
+                                        <i class="fas fa-mountain-sun"></i>
+                                        <div class="ais-starter-info">
+                                            <strong>Floating Islands</strong>
+                                            <span>Cinematic Fantasy</span>
                                         </div>
                                     </div>
                                 </div>
-                                <img id="studio-result-img" class="studio-result-img" alt="Generated AI Artwork" style="display: none; width: 100%; border-radius: var(--radius-md);">
                             </div>
-                            <div class="studio-actions" id="studio-actions" style="display: none; gap: 8px; flex-wrap: wrap; margin-top: 10px;">
-                                <button id="studio-enhance-btn" class="studio-action-btn"><i class="fas fa-expand"></i> HD 2x</button>
-                                <button id="studio-hdr-btn" class="studio-action-btn"><i class="fas fa-sun"></i> HDR Vibrance</button>
-                                <button id="studio-sharpen-btn" class="studio-action-btn"><i class="fas fa-wand-magic-sparkles"></i> Sharpen</button>
-                                <button id="studio-warmth-btn" class="studio-action-btn"><i class="fas fa-fire"></i> Warm Tone</button>
-                                <button id="studio-download-btn" class="studio-action-btn"><i class="fas fa-download"></i> Save</button>
-                                <button id="studio-copy-btn" class="studio-action-btn"><i class="fas fa-copy"></i> Copy Link</button>
+
+                            <!-- 2. Clean Neural Diffusion Thinking Orbs Stage (Matching Chat Section Style) -->
+                            <div class="ais-scanner-stage" id="ais-progress-state" style="display: none;">
+                                <div class="ais-studio-orb-inner">
+                                    <div class="ais-studio-orb-stage">
+                                        <div class="ais-studio-orb-glow"></div>
+                                        <div class="ais-studio-orb-slot" id="ais-studio-orb-slot"></div>
+                                    </div>
+                                    <div class="ais-studio-orb-info">
+                                        <div class="ais-scanner-title">
+                                            <i class="fas fa-wand-magic-sparkles"></i>
+                                            <span id="ais-progress-headline">Sampling Latent Vector Space...</span>
+                                        </div>
+                                        <div class="ais-scanner-subtext" id="ais-progress-subtext">
+                                            Constructing high-dimensional vector embeddings
+                                        </div>
+                                        <div class="ais-scanner-bar-track">
+                                            <div class="ais-scanner-bar-fill" id="ais-progress-bar-fill" style="width: 0%;"></div>
+                                        </div>
+                                        <div class="ais-scanner-footer">
+                                            <span class="ais-scanner-engine-tag" id="ais-progress-model-tag">
+                                                <i class="fas fa-microchip"></i> FLUX Neural Engine
+                                            </span>
+                                            <span class="ais-scanner-percent" id="ais-progress-percent">0%</span>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- 3. Completed Artwork Showcase (Watermark-Free Canvas with Aperture Reveal) -->
+                            <div class="ais-result-container" id="ais-result-container" style="display: none;">
+                                <div class="ais-img-frame" id="ais-img-frame">
+                                    <img id="studio-result-img" class="ais-result-img" alt="AI Generated Artwork" />
+                                    <!-- Floating Glass Action Dock -->
+                                    <div class="ais-floating-dock">
+                                        <button type="button" class="ais-dock-btn" id="studio-download-btn" title="Download 100% Watermark-Free PNG">
+                                            <i class="fas fa-download"></i> <span>Download</span>
+                                        </button>
+                                        <button type="button" class="ais-dock-btn" id="studio-copy-btn" title="Copy Image Data / Link">
+                                            <i class="fas fa-copy"></i> <span>Copy</span>
+                                        </button>
+                                        <button type="button" class="ais-dock-btn" id="studio-zoom-btn" title="View Fullscreen Lightbox">
+                                            <i class="fas fa-expand"></i> <span>Zoom</span>
+                                        </button>
+                                        <button type="button" class="ais-dock-btn ais-dock-remix" id="studio-remix-btn" title="Create a variation of this artwork">
+                                            <i class="fas fa-shuffle"></i> <span>Remix</span>
+                                        </button>
+                                        <button type="button" class="ais-dock-btn" id="studio-chat-btn" title="Send artwork into AI Chat">
+                                            <i class="fas fa-paper-plane"></i> <span>Chat</span>
+                                        </button>
+                                        <button type="button" class="ais-dock-btn ais-dock-regen" id="studio-regen-btn" title="Regenerate with a new seed">
+                                            <i class="fas fa-rotate-right"></i>
+                                        </button>
+                                    </div>
+                                </div>
+                                <div class="ais-result-meta-bar">
+                                    <span class="ais-prompt-snippet" id="ais-result-prompt-snippet"></span>
+                                    <div class="ais-meta-tags">
+                                        <span class="ais-clean-badge"><i class="fas fa-shield-check"></i> Clean HD</span>
+                                        <span class="ais-model-badge" id="ais-result-model-badge">FLUX.1</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Recent Creations Gallery -->
+                        <div class="ais-gallery-section" id="ais-gallery-section" style="display: none;">
+                            <div class="ais-gallery-header">
+                                <span><i class="fas fa-clock-rotate-left"></i> Recent Creations</span>
+                                <button type="button" class="ais-gallery-clear-btn" id="ais-gallery-clear-btn" title="Clear History">Clear</button>
+                            </div>
+                            <div class="ais-gallery-strip" id="ais-gallery-strip">
+                                <!-- Dynamically populated thumbnails -->
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Fullscreen Image Lightbox Modal -->
+                <div class="ais-lightbox" id="ais-lightbox" style="display: none;">
+                    <div class="ais-lightbox-backdrop" id="ais-lightbox-backdrop"></div>
+                    <div class="ais-lightbox-content">
+                        <button type="button" class="ais-lightbox-close" id="ais-lightbox-close"><i class="fas fa-times"></i></button>
+                        <img id="ais-lightbox-img" src="" alt="Fullscreen Artwork">
+                        <div class="ais-lightbox-bar">
+                            <span id="ais-lightbox-caption"></span>
+                            <div class="ais-lightbox-actions">
+                                <button type="button" class="ais-tool-btn" id="ais-lightbox-download"><i class="fas fa-download"></i> Save</button>
                             </div>
                         </div>
                     </div>

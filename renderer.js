@@ -1542,15 +1542,7 @@ document.addEventListener('DOMContentLoaded', () => {
         };
     }
 
-    // Dismiss overlays/sidebars when clicking outside the sidebar
-    document.addEventListener('mousedown', (e) => {
-        const leftSidebar = document.getElementById('left-sidebar');
-        // Only trigger close-all-sidebars if click is outside left sidebar
-        const isInsideSidebar = leftSidebar && leftSidebar.contains(e.target);
-        if (!isInsideSidebar) {
-            window.electronAPI.send('hide-popups');
-        }
-    });
+    // Note: global popup dismissal handled by unified window mousedown listener
 
     let currentWebAppWidth = 780;
 
@@ -2162,7 +2154,10 @@ window.addEventListener('mousedown', (e) => {
         !e.target.closest('.omnibox-actions') && 
         !e.target.closest('.nav-controls') &&
         !e.target.closest('.bookmark-bar') &&
-        !e.target.closest('.custom-context-menu')) {
+        !e.target.closest('.custom-context-menu') &&
+        !e.target.closest('.tab-item') &&
+        !e.target.closest('.new-tab-btn') &&
+        !e.target.closest('.left-sidebar')) {
         window.electronAPI.send('close-all-sidebars');
         window.electronAPI.send('hide-tab-group-popup');
         window.electronAPI.send('hide-downloads-popup');

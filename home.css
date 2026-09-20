@@ -277,6 +277,13 @@ html[data-theme="dark"] .motd-clickable:hover {
     gap: 12px;
     box-shadow: 0 4px 20px rgba(0,0,0,0.03);
     border: 1px solid rgba(0,0,0,0.06);
+    transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.sp-search-pill:focus-within {
+    border-color: color-mix(in srgb, var(--accent, #15AC49) 50%, transparent);
+    box-shadow: 0 8px 28px -4px var(--accent-glow, rgba(0,0,0,0.08)), 0 0 0 3px color-mix(in srgb, var(--accent, #15AC49) 16%, transparent);
+    transform: translateY(-1px);
 }
 
 .sp-search-input {
@@ -323,34 +330,92 @@ body[data-theme="dark"] .sp-search-submit {
 .sp-timeline-pill {
     background: #FFFFFF;
     border-radius: 100px;
-    padding: 8px 18px;
+    height: 48px;
+    padding: 0 16px 0 10px;
     display: flex;
     align-items: center;
-    gap: 10px;
-    box-shadow: 0 4px 16px rgba(0,0,0,0.03);
-    border: 1px solid rgba(0,0,0,0.06);
+    gap: 11px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.03), 0 1px 2px rgba(0, 0, 0, 0.02);
+    border: 1px solid rgba(0, 0, 0, 0.07);
+    transition: all 0.22s cubic-bezier(0.16, 1, 0.3, 1);
+    cursor: default;
+    user-select: none;
+}
+
+.sp-timeline-pill:hover {
+    transform: translateY(-1.5px);
+    box-shadow: 0 6px 18px rgba(0, 0, 0, 0.06), 0 2px 4px rgba(0, 0, 0, 0.02);
+    border-color: rgba(16, 185, 129, 0.28);
 }
 
 .sp-timeline-pill i {
-    color: #15AC49;
-    font-size: 14px;
+    width: 28px;
+    height: 28px;
+    border-radius: 50%;
+    background: rgba(16, 185, 129, 0.1);
+    border: 1px solid rgba(16, 185, 129, 0.22);
+    color: #10b981;
+    font-size: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    transition: transform 0.25s cubic-bezier(0.34, 1.56, 0.64, 1), background 0.2s ease;
+}
+
+.sp-timeline-pill:hover i {
+    transform: scale(1.1);
+    background: rgba(16, 185, 129, 0.16);
+    border-color: rgba(16, 185, 129, 0.35);
 }
 
 .sp-tp-text {
     display: flex;
     flex-direction: column;
+    justify-content: center;
+    gap: 1.5px;
 }
 
 .sp-tp-title {
-    font-size: 12px;
-    font-weight: 700;
-    color: #111111;
+    font-size: 11.5px;
+    font-weight: 800;
+    color: #0f172a;
+    letter-spacing: -0.15px;
+    line-height: 1.25;
 }
 
 .sp-tp-sub {
     font-size: 10px;
-    color: #333740;
+    color: #059669;
     font-weight: 600;
+    letter-spacing: 0.1px;
+    line-height: 1.2;
+}
+
+body[data-theme="dark"] .sp-timeline-pill {
+    background: #1e1e23 !important;
+    border-color: rgba(255, 255, 255, 0.08) !important;
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.25);
+}
+
+body[data-theme="dark"] .sp-timeline-pill:hover {
+    background: #24242a !important;
+    border-color: rgba(52, 211, 153, 0.35) !important;
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.35);
+}
+
+body[data-theme="dark"] .sp-timeline-pill i {
+    background: rgba(16, 185, 129, 0.15);
+    border-color: rgba(52, 211, 153, 0.25);
+    color: #34d399;
+}
+
+body[data-theme="dark"] .sp-tp-title {
+    color: #f8fafc;
+}
+
+body[data-theme="dark"] .sp-tp-sub {
+    color: #34d399;
 }
 
 /* ── Hero Cards Grid ──────────────────────────────────────────── */
@@ -1231,47 +1296,87 @@ body[data-theme="dark"] .sp-badge-gray {
 .sp-news-trigger-btn {
     display: inline-flex;
     align-items: center;
-    gap: 8px;
-    padding: 8px 16px;
+    gap: 9px;
+    height: 42px;
+    padding: 0 16px;
     border-radius: 100px;
     background: #FFFFFF;
-    border: 1px solid rgba(0,0,0,0.08);
+    border: 1px solid rgba(0, 0, 0, 0.07);
     font-family: inherit;
     font-size: 13px;
     font-weight: 700;
-    color: #111111;
+    color: #0f172a;
+    letter-spacing: -0.15px;
     cursor: pointer;
-    box-shadow: none !important;
-    transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.03), 0 1px 2px rgba(0, 0, 0, 0.02);
+    transition: all 0.22s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.sp-news-trigger-btn > i {
+    font-size: 14px;
+    color: #0284c7;
+    transition: transform 0.25s cubic-bezier(0.34, 1.56, 0.64, 1);
 }
 
 .sp-news-trigger-btn:hover {
-    transform: translateY(-1px);
-    box-shadow: none !important;
-    border-color: var(--accent) !important;
+    transform: translateY(-1.5px);
+    background: #FFFFFF;
+    border-color: rgba(2, 132, 199, 0.28);
+    box-shadow: 0 6px 18px rgba(0, 0, 0, 0.06), 0 2px 4px rgba(0, 0, 0, 0.02);
+}
+
+.sp-news-trigger-btn:hover > i {
+    transform: scale(1.14) rotate(6deg);
+}
+
+.sp-news-trigger-btn:active {
+    transform: scale(0.97);
 }
 
 body[data-theme="dark"] .sp-news-trigger-btn {
-    background: #16181D !important;
+    background: #1e1e23 !important;
     border-color: rgba(255, 255, 255, 0.08) !important;
-    color: #FFFFFF !important;
+    color: #f1f5f9 !important;
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.25);
+}
+
+body[data-theme="dark"] .sp-news-trigger-btn > i {
+    color: #38bdf8;
+}
+
+body[data-theme="dark"] .sp-news-trigger-btn:hover {
+    background: #24242a !important;
+    border-color: rgba(56, 189, 248, 0.35) !important;
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.35);
 }
 
 .news-live-pulse {
-    font-size: 9.5px;
-    font-weight: 900;
-    padding: 2px 7px;
+    font-size: 9px;
+    font-weight: 800;
+    padding: 2.5px 7.5px;
     border-radius: 100px;
-    background: rgba(239, 68, 68, 0.12);
-    color: #ef4444;
-    border: 1px solid rgba(239, 68, 68, 0.25);
-    letter-spacing: 0.5px;
-    animation: news-pulse-glow 2s infinite ease-in-out;
+    background: rgba(244, 63, 94, 0.08);
+    color: #e11d48;
+    border: 1px solid rgba(244, 63, 94, 0.2);
+    letter-spacing: 0.6px;
+    animation: news-pulse-glow 2.4s infinite ease-in-out;
+}
+
+body[data-theme="dark"] .news-live-pulse {
+    background: rgba(244, 63, 94, 0.16);
+    color: #fb7185;
+    border-color: rgba(244, 63, 94, 0.32);
 }
 
 @keyframes news-pulse-glow {
-    0%, 100% { opacity: 1; transform: scale(1); }
-    50% { opacity: 0.6; transform: scale(0.95); }
+    0%, 100% {
+        opacity: 1;
+        transform: scale(1);
+    }
+    50% {
+        opacity: 0.75;
+        transform: scale(0.96);
+    }
 }
 
 /* Modal Backdrop Overlay */
