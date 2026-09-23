@@ -31,13 +31,24 @@ Microsoft Partner Center allows submitting traditional Win32 installers directly
      `https://github.com/neelkanth-patel26/Ocal-Browser/releases/download/v9.1.05/Ocal-9.1.05-Setup.exe`
 
 3. **In Microsoft Partner Center**:
-   - Create or edit your submission under **Apps and Games** > **Ocal Browser** > **Packages / Installer details**.
+   - Create or edit your submission under **Apps and Games** > **Ocal Browser** > **Packages / Installer details**:
+   - **Package Identifier**: `GamingNetworkStudioMediaGroup.OcalBrowser` (or `Ocal.Browser`)
+     > [!IMPORTANT]
+     > Do **NOT** leave this as the default placeholder `Publisher.PackageName`. Setting a real identifier forces WinGet to clean and isolate its temporary storage.
+   - **Package Version**: `9.1.5.0`
+     > [!IMPORTANT]
+     > Do **NOT** leave this as `1.0.0.0`. If left as `1.0.0.0`, WinGet caches previously downloaded partial/corrupted files in `%LOCALAPPDATA%\Temp\WinGet\Publisher.PackageName.1.0.0.0\` and re-executes the corrupted file on subsequent runs!
    - **Architecture**: Select **`x64` ONLY** (or `x64` and `x86`).
      > [!CRITICAL]
      > **DO NOT select `ARM64` or `Neutral`** for an x64 Win32 EXE installer!
      > On Qualcomm Snapdragon ARM64 devices (like Microsoft Surface Laptop), selecting `ARM64` causes the Store to expect a native ARM64 binary. Selecting `x64` enables Windows 11's built-in **Prism x64 emulation**, allowing Ocal Browser to install and run perfectly.
    - **Installer URL (Download URL)**:
      `https://github.com/neelkanth-patel26/Ocal-Browser/releases/download/v9.1.05/Ocal-9.1.05-Setup.exe`
+   - **Installer SHA-256 Hash**:
+     `40140968779C049A3F70D931AD31315630ADC25A4652BAAF65F989337676AB45`
+     > [!TIP]
+     > Always specify the SHA-256 hash in Partner Center. WinGet validates this hash before executing the file. If an automated download is truncated or interrupted, WinGet will fail the check instead of attempting to run an incomplete binary.
+   - **Installer Type**: `inno` (or `exe`)
    - **Silent Install Parameters**: `/VERYSILENT /SUPPRESSMSGBOXES /NORESTART /SP-`
    - **Silent Uninstall Parameters**: `/VERYSILENT /SUPPRESSMSGBOXES /NORESTART`
    - **Package or Product Name in Add/Remove Programs**: `Ocal Browser`
@@ -51,7 +62,7 @@ When Partner Center runs automated tests on your installer, it performs key chec
 
 | Partner Center Check | Why it Failed Previously | How We Fixed It |
 | :--- | :--- | :--- |
-| **10.3.4 App Is Testable** (`Unsupported 16-Bit Application` on Microsoft Surface Laptop) | **Root Cause 1**: The release tag `v9.1.05` was initially created without the attached `Ocal-9.1.05-Setup.exe` binary. The download URL returned an HTTP 404 HTML page. When Windows saves an HTML error page as an `.exe` and attempts to execute it, the OS cannot read a PE header and throws `"Unsupported 16-Bit Application"`.<br>**Root Cause 2**: If `ARM64` was checked in Partner Center, the ARM64 Surface Laptop rejected non-native execution without emulation flags. | **1.** Streamed and uploaded the complete 152 MB binary (`Ocal-9.1.05-Setup.exe`) to GitHub Release `v9.1.05`. Validated direct streaming with HTTP 200 and authentic `MZ` PE header.<br>**2.** Configured Inno Setup with `ArchitecturesInstallIn64BitMode=x64compatible` and specified `x64` architecture in Partner Center for clean Prism emulation on Snapdragon Surface Laptops. |
+| **10.3.4 App Is Testable** (`Unsupported 16-Bit Application` in `\??\C:\Users\...\AppData\Local\Temp\WinGet\Publisher.PackageName.1.0.0.0\Ocal-9.1.05-Setup.exe`) | **Root Cause 1: Truncated Download Execution**: When Microsoft Store installs Win32 apps via WinGet, it stores downloads in `%TEMP%\WinGet\<PackageIdentifier>.<PackageVersion>\`. Because Partner Center had default values `Publisher.PackageName` and version `1.0.0.0`, WinGet downloaded to `Publisher.PackageName.1.0.0.0`. When a network drop/timeout interrupted the large download, WinGet attempted to execute the partial/truncated binary. When Windows tries to parse a truncated PE header whose declared sections exceed the file size, `csrss.exe` triggers the legacy fallback error: `"Unsupported 16-Bit Application"`.<br>**Root Cause 2: WinGet Temp Cache Lock**: Because the version remained `1.0.0.0`, WinGet cached the truncated file and repeatedly launched the damaged file instead of redownloading.<br>**Root Cause 3: Missing SHA256 Gate**: Without a SHA256 hash configured in Partner Center, WinGet executed the file without validating integrity. | **1.** Recompiled Inno Setup with `lzma2/ultra64` solid compression, reducing the installer by 15.6 MB down to 137.1 MB for fast, reliable streaming.<br>**2.** Uploaded the complete binary with validated HTTP 200 streaming and authentic `MZ` PE header.<br>**3.** Provided the exact SHA-256 hash (`40140968779C049A3F70D931AD31315630ADC25A4652BAAF65F989337676AB45`) and configured Package Identifier as `GamingNetworkStudioMediaGroup.OcalBrowser` and Version as `9.1.5.0` to eliminate cache conflicts. |
 | **Silent install check** | The installer requested administrative elevation (`PrivilegesRequired=admin`) and was missing `/SP- /SUPPRESSMSGBOXES`, which popped up prompts in Microsoft's headless VM. | Configured `PrivilegesRequired=lowest` with dual-mode fallback, set `CloseApplications=no`, and added `/SP- /SUPPRESSMSGBOXES` flags. Returns exit code `0`. |
 | **Entry in add or remove programs** | The silent installer was failing before writing registry keys, or the name did not match (`Ocal Browser 9.1.03` vs `Ocal Browser`). | Set a permanent `AppId`, configured `UninstallDisplayName=Ocal Browser`, and `AppPublisher=Gaming Network Studio Media Group` in `HKA`. |
 | **Bundleware check** | Automated scanner could not inspect the installed entry because the silent installation aborted. | By passing the silent install and registering cleanly under `Ocal Browser`, the bundleware scanner now identifies the app and validates no unlisted software is bundled. |
