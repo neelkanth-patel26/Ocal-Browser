@@ -30,3 +30,5 @@ startup_final.log
 scratch/
 dist-store/
 .agents/
+ocal-sync-sessions.json
+

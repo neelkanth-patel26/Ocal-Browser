@@ -228,6 +228,19 @@ contextBridge.exposeInMainWorld('electronAPI', {
   // Bookmarks
   toggleBookmark: (bm)    => ipcRenderer.send('toggle-bookmark', bm),
 
+  // Ocal Connect / Mobile Sync
+  syncGetStatus:       ()         => ipcRenderer.invoke('sync:get-status'),
+  syncStart:           ()         => ipcRenderer.invoke('sync:start'),
+  syncStop:            ()         => ipcRenderer.invoke('sync:stop'),
+  syncRegeneratePin:   ()         => ipcRenderer.invoke('sync:regenerate-pin'),
+  syncSendTab:         (url, title) => ipcRenderer.invoke('sync:send-tab', { url, title }),
+  syncSendClipboard:   (text)     => ipcRenderer.invoke('sync:send-clipboard', text),
+  syncTriggerSync:     ()         => ipcRenderer.invoke('sync:trigger-sync'),
+  syncUnpair:          ()         => ipcRenderer.invoke('sync:unpair'),
+  syncSetupFirewall:   ()         => ipcRenderer.invoke('sync:setup-firewall'),
+  onSyncStatusChanged: (cb)       => ipcRenderer.on('sync:status-changed', (e, d) => cb(d)),
+
+
   // Generic send/receive/invoke
   send: (channel, ...args)   => ipcRenderer.send(channel, ...args),
   on:   (channel, cb)         => ipcRenderer.on(channel, (e, d) => cb(e, d)),
@@ -343,17 +356,17 @@ if (window.location.hostname.includes('chromewebstore.google.com') || window.loc
             isLight,
             accent,
             contrast,
-            bannerBg: isLight ? 'rgba(255, 255, 255, 0.96)' : 'rgba(18, 20, 26, 0.95)',
+            bannerBg: isLight ? 'rgba(255, 255, 255, 0.98)' : 'rgba(24, 25, 32, 0.96)',
             bannerBorder: isLight ? 'rgba(0, 0, 0, 0.08)' : 'rgba(255, 255, 255, 0.12)',
             bannerShadow: isLight 
-                ? `0 14px 36px rgba(0, 0, 0, 0.12), 0 2px 6px rgba(0, 0, 0, 0.04), 0 0 0 1px color-mix(in srgb, ${accent} 25%, transparent)`
-                : `0 16px 36px rgba(0, 0, 0, 0.55), 0 0 0 1px color-mix(in srgb, ${accent} 25%, transparent)`,
+                ? '0 2px 10px rgba(0, 0, 0, 0.04), 0 0 0 1px rgba(0, 0, 0, 0.05)'
+                : '0 4px 16px rgba(0, 0, 0, 0.25), 0 0 0 1px rgba(255, 255, 255, 0.08)',
             titleColor: isLight ? '#0f172a' : '#ffffff',
-            subtitleColor: isLight ? '#64748b' : '#9ca3af',
+            subtitleColor: isLight ? '#64748b' : '#94a3b8',
             iconBg: `linear-gradient(135deg, ${accent} 0%, color-mix(in srgb, ${accent} 78%, #000) 100%)`,
-            iconShadow: `0 2px 8px color-mix(in srgb, ${accent} 30%, transparent)`,
+            iconShadow: 'none',
             btnBg: `linear-gradient(135deg, ${accent} 0%, color-mix(in srgb, ${accent} 85%, #000) 100%)`,
-            btnShadow: `0 4px 14px color-mix(in srgb, ${accent} 35%, transparent)`,
+            btnShadow: 'none',
             btnInstalledBg: `color-mix(in srgb, ${accent} 78%, #000)`,
             installedBadgeBg: isLight ? 'rgba(0, 0, 0, 0.06)' : 'rgba(255, 255, 255, 0.08)'
         };
@@ -368,8 +381,11 @@ if (window.location.hostname.includes('chromewebstore.google.com') || window.loc
         }
         style.textContent = `
             @keyframes ocalSlideUp {
-                from { transform: translateY(30px); opacity: 0; }
+                from { transform: translateY(20px); opacity: 0; }
                 to { transform: translateY(0); opacity: 1; }
+            }
+            #ocal-cws-banner {
+                border-radius: 9999px !important;
             }
             .ocal-cws-btn {
                 transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1) !important;
@@ -377,7 +393,7 @@ if (window.location.hostname.includes('chromewebstore.google.com') || window.loc
             .ocal-cws-btn:hover:not(:disabled) {
                 transform: translateY(-1px) scale(1.02) !important;
                 filter: brightness(1.08) !important;
-                box-shadow: 0 6px 20px color-mix(in srgb, ${t.accent} 45%, transparent) !important;
+                box-shadow: none !important;
             }
             .ocal-cws-btn:active:not(:disabled) {
                 transform: scale(0.98) !important;
@@ -389,12 +405,13 @@ if (window.location.hostname.includes('chromewebstore.google.com') || window.loc
             banner.style.background = t.bannerBg;
             banner.style.borderColor = t.bannerBorder;
             banner.style.boxShadow = t.bannerShadow;
+            banner.style.borderRadius = '9999px';
 
             const iconEl = banner.querySelector('#ocal-cws-banner-icon');
             if (iconEl) {
                 iconEl.style.background = t.iconBg;
                 iconEl.style.color = t.contrast;
-                iconEl.style.boxShadow = t.iconShadow;
+                iconEl.style.boxShadow = 'none';
             }
             const titleEl = banner.querySelector('#ocal-cws-banner-title');
             if (titleEl) titleEl.style.color = t.titleColor;
@@ -452,14 +469,14 @@ if (window.location.hostname.includes('chromewebstore.google.com') || window.loc
                 right: 24px;
                 z-index: 2147483647;
                 background: ${t.bannerBg};
-                backdrop-filter: blur(16px);
-                -webkit-backdrop-filter: blur(16px);
+                backdrop-filter: blur(20px);
+                -webkit-backdrop-filter: blur(20px);
                 border: 1px solid ${t.bannerBorder};
-                border-radius: 16px;
-                padding: 12px 18px;
-                display: flex;
+                border-radius: 9999px;
+                padding: 7px 14px 7px 9px;
+                display: inline-flex;
                 align-items: center;
-                gap: 14px;
+                gap: 12px;
                 box-shadow: ${t.bannerShadow};
                 font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
                 animation: ocalSlideUp 0.3s cubic-bezier(0.16, 1, 0.3, 1);
@@ -467,27 +484,28 @@ if (window.location.hostname.includes('chromewebstore.google.com') || window.loc
 
             banner.innerHTML = `
                 <div style="display: flex; align-items: center; gap: 10px;">
-                    <div id="ocal-cws-banner-icon" style="width: 34px; height: 34px; border-radius: 10px; background: ${t.iconBg}; display: flex; align-items: center; justify-content: center; color: ${t.contrast}; font-size: 16px; box-shadow: ${t.iconShadow};">
-                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M19.439 7.85c0-1.57.802-2.5 1.561-2.5.76 0 1.561.93 1.561 2.5 0 1.57-.802 2.5-1.561 2.5-.76 0-1.561-.93-1.561-2.5z"/><path d="M14 4c0-1.57.802-2.5 1.561-2.5.76 0 1.561.93 1.561 2.5 0 1.57-.802 2.5-1.561 2.5-.76 0-1.561-.93-1.561-2.5z"/><path d="M4 14c-1.57 0-2.5-.802-2.5-1.561 0-.76.93-1.561 2.5-1.561 1.57 0 2.5.802 2.5 1.561 0 .76-.93 1.561-2.5 1.561z"/><path d="M4 19.439c-1.57 0-2.5-.802-2.5-1.561 0-.76.93-1.561 2.5-1.561 1.57 0 2.5.802 2.5 1.561 0 .76-.93 1.561-2.5 1.561z"/><rect x="4" y="4" width="16" height="16" rx="2"/></svg>
+                    <div id="ocal-cws-banner-icon" style="width: 32px; height: 32px; border-radius: 9px; background: ${t.iconBg}; display: flex; align-items: center; justify-content: center; color: ${t.contrast}; font-size: 15px; box-shadow: none; flex-shrink: 0;">
+                        <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M19.439 7.85c0-1.57.802-2.5 1.561-2.5.76 0 1.561.93 1.561 2.5 0 1.57-.802 2.5-1.561 2.5-.76 0-1.561-.93-1.561-2.5z"/><path d="M14 4c0-1.57.802-2.5 1.561-2.5.76 0 1.561.93 1.561 2.5 0 1.57-.802 2.5-1.561 2.5-.76 0-1.561-.93-1.561-2.5z"/><path d="M4 14c-1.57 0-2.5-.802-2.5-1.561 0-.76.93-1.561 2.5-1.561 1.57 0 2.5.802 2.5 1.561 0 .76-.93 1.561-2.5 1.561z"/><path d="M4 19.439c-1.57 0-2.5-.802-2.5-1.561 0-.76.93-1.561 2.5-1.561 1.57 0 2.5.802 2.5 1.561 0 .76-.93 1.561-2.5 1.561z"/><rect x="4" y="4" width="16" height="16" rx="2"/></svg>
                     </div>
-                    <div>
-                        <div id="ocal-cws-banner-title" style="font-size: 12px; font-weight: 700; color: ${t.titleColor}; letter-spacing: -0.2px;">Ocal Browser</div>
-                        <div id="ocal-cws-banner-id" style="font-size: 10px; color: ${t.subtitleColor}; font-family: monospace;">ID: ${extensionId.substring(0, 12)}...</div>
+                    <div style="display: flex; flex-direction: column; justify-content: center;">
+                        <div id="ocal-cws-banner-title" style="font-size: 12.5px; font-weight: 600; color: ${t.titleColor}; line-height: 1.25; letter-spacing: -0.2px;">Ocal Browser</div>
+                        <div id="ocal-cws-banner-id" style="font-size: 10px; color: ${t.subtitleColor}; font-family: ui-monospace, SFMono-Regular, Menlo, monospace; margin-top: 1px;">ID: ${extensionId.substring(0, 12)}...</div>
                     </div>
                 </div>
                 <button id="ocal-cws-install-btn" class="ocal-cws-btn" style="
                     background: ${isInstalled ? t.btnInstalledBg : t.btnBg};
                     color: ${t.contrast};
                     border: none;
-                    padding: 9px 18px;
-                    border-radius: 999px;
+                    padding: 8px 18px;
+                    border-radius: 9999px;
                     font-size: 12.5px;
-                    font-weight: 700;
+                    font-weight: 600;
                     cursor: ${isInstalled ? 'default' : 'pointer'};
                     display: inline-flex;
                     align-items: center;
-                    gap: 7px;
-                    box-shadow: ${isInstalled ? 'none' : t.btnShadow};
+                    gap: 6px;
+                    box-shadow: none;
+                    white-space: nowrap;
                 " ${isInstalled ? 'disabled' : ''}>
                     <span>${isInstalled ? '✓ Installed' : 'Add to Ocal'}</span>
                 </button>
@@ -547,15 +565,15 @@ if (window.location.hostname.includes('chromewebstore.google.com') || window.loc
                 background: ${isInstalled ? t.btnInstalledBg : t.btnBg};
                 color: ${t.contrast};
                 border: none;
-                padding: 10px 24px;
+                padding: 9px 22px;
                 border-radius: 9999px;
-                font-weight: 700;
+                font-weight: 600;
                 cursor: ${isInstalled ? 'default' : 'pointer'};
                 margin-left: 10px;
-                font-size: 13.5px;
+                font-size: 13px;
                 display: inline-flex;
                 align-items: center;
-                box-shadow: ${isInstalled ? 'none' : t.btnShadow};
+                box-shadow: none;
                 z-index: 10000;
                 position: relative;
             `;

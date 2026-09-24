@@ -1,6 +1,6 @@
 ; ============================================================
 ;  Ocal Browser - Inno Setup 6 Installer
-;  Version  : 9.1.05  (Stable)
+;  Version  : 9.5.00  (Stable)
 ;  Builder  : Gaming Network Studio Media Group
 ;  Compiler : Inno Setup 6
 ; ============================================================
@@ -8,8 +8,8 @@
 [Setup]
 AppId={{E482C748-0C05-4BE7-B15E-D2C2AEB8718E}
 AppName=Ocal Browser
-AppVersion=9.1.05
-AppVerName=Ocal Browser 9.1.05
+AppVersion=9.5.00
+AppVerName=Ocal Browser 9.5.00
 AppPublisher=Gaming Network Studio Media Group
 AppPublisherURL=https://github.com/neelkanth-patel26/Ocal-Browser
 AppSupportURL=https://github.com/neelkanth-patel26/Ocal-Browser/issues
@@ -18,7 +18,7 @@ AppCopyright=Copyright (C) 2026 Gaming Network Studio Media Group
 DefaultDirName={autopf}\Ocal
 DefaultGroupName=Ocal
 OutputDir=dist-inno
-OutputBaseFilename=Ocal-9.1.05-Setup
+OutputBaseFilename=Ocal-9.5.00-Setup
 SetupIconFile=icon.ico
 Compression=lzma2/ultra64
 LZMAUseSeparateProcess=yes
@@ -31,39 +31,42 @@ LicenseFile=license.txt
 MinVersion=10.0.17763
 UninstallDisplayIcon={app}\icon.ico
 UninstallDisplayName=Ocal Browser
-VersionInfoVersion=9.1.5.0
+VersionInfoVersion=9.5.0.0
 VersionInfoCompany=Gaming Network Studio Media Group
 VersionInfoDescription=Ocal Browser Installer
 VersionInfoProductName=Ocal Browser
-VersionInfoProductVersion=9.1.05
+VersionInfoProductVersion=9.5.00
 WizardStyle=modern
 ShowLanguageDialog=no
 CloseApplications=no
 RestartIfNeededByRun=no
 UsedUserAreasWarning=no
 
-; ── Catalog / Component Selection ──────────────────────────
+; ── Detailed Catalog / Component Selection ──────────────────────────
 [Types]
-Name: "full";    Description: "Full Installation (Recommended)"
-Name: "compact"; Description: "Compact Installation (Core only)"
-Name: "custom";  Description: "Custom Installation"; Flags: iscustom
+Name: "full";    Description: "Full Installation (Recommended - Complete Feature Set)"
+Name: "compact"; Description: "Compact Installation (Core Browser Runtime only)"
+Name: "custom";  Description: "Custom Installation (Choose individual features)"; Flags: iscustom
 
 [Components]
-Name: "core";       Description: "Ocal Browser Core";                    Types: full compact custom; Flags: fixed
-Name: "pdfviewer"; Description: "Built-in PDF Viewer (file association)"; Types: full custom
-
+Name: "core";        Description: "Ocal Browser Core Engine (High-Performance Web, AI Studio & Multitasking Runtime)"; Types: full compact custom; Flags: fixed
+Name: "ocalconnect"; Description: "Ocal Connect Local Mobile Sync Bridge (Zero-cloud LAN peer-to-peer sync)";           Types: full custom
+Name: "pdfviewer";   Description: "Built-in Native PDF Viewer (Document file association for .pdf files)";             Types: full custom
+Name: "webshield";   Description: "Ocal Shield Protection & Anti-Tracker Filters";                                     Types: full custom
+Name: "cwsbridge";   Description: "Chrome Web Store Universal Extension Bridge";                                       Types: full custom
 
 [Tasks]
-Name: "desktopicon";   Description: "{cm:CreateDesktopIcon}";   GroupDescription: "{cm:AdditionalIcons}"; Flags: unchecked
-Name: "quicklaunch";   Description: "Pin to Taskbar on first launch";     GroupDescription: "{cm:AdditionalIcons}"; Flags: unchecked
-Name: "setdefault";    Description: "Set Ocal as default browser";        GroupDescription: "Browser Defaults";     Flags: unchecked
+Name: "desktopicon";   Description: "{cm:CreateDesktopIcon}";               GroupDescription: "{cm:AdditionalIcons}"; Flags: unchecked
+Name: "quicklaunch";   Description: "Pin to Taskbar on first launch";       GroupDescription: "{cm:AdditionalIcons}"; Flags: unchecked
+Name: "setdefault";    Description: "Set Ocal as default browser";          GroupDescription: "Browser Defaults";     Flags: unchecked
 
 [CustomMessages]
-InstallingCore=Installing Ocal Browser core files...
-InstallingPDF=Registering PDF viewer association...
+InstallingCore=Installing Ocal Browser core engine and components...
+InstallingPDF=Registering native PDF document viewer...
+InstallingSync=Configuring Ocal Connect local sync bridge...
 
 LaunchAfterInstall=Launch Ocal Browser now
-ReleaseNotes=View release notes for v9.1.05
+ReleaseNotes=View release notes for v9.5.00
 
 ; ── File Catalog ────────────────────────────────────────────
 [InstallDelete]
@@ -193,13 +196,13 @@ Root: HKCU; Subkey: "Software\Clients\StartMenuInternet\OcalBrowser\Capabilities
 Root: HKCU; Subkey: "Software\RegisteredApplications";                                                       ValueType: string; ValueName: "OcalBrowser";          ValueData: "Software\Clients\StartMenuInternet\OcalBrowser\Capabilities";                                Flags: uninsdeletevalue
 
 ; App registration for Add/Remove Programs detail
-Root: HKA; Subkey: "Software\OcalBrowser"; ValueType: string; ValueName: "Version";      ValueData: "9.1.05"; Flags: uninsdeletekey
+Root: HKA; Subkey: "Software\OcalBrowser"; ValueType: string; ValueName: "Version";      ValueData: "9.5.00"; Flags: uninsdeletekey
 Root: HKA; Subkey: "Software\OcalBrowser"; ValueType: string; ValueName: "InstallPath";  ValueData: "{app}";  Flags: uninsdeletekey
 
 ; ── Post-Install Run ────────────────────────────────────────
 [Run]
 Filename: "{app}\Ocal Browser.exe"; Parameters: "--install";      Description: "{cm:LaunchAfterInstall}";  Flags: nowait postinstall skipifsilent
-Filename: "https://github.com/neelkanth-patel26/Ocal-Browser/releases/tag/v9.1.05"; Description: "{cm:ReleaseNotes}"; Flags: shellexec postinstall skipifsilent unchecked
+Filename: "https://github.com/neelkanth-patel26/Ocal-Browser/releases/tag/v9.5.00"; Description: "{cm:ReleaseNotes}"; Flags: shellexec postinstall skipifsilent unchecked
 
 ; ── Complete Cleanup on Uninstall ───────────────────────────
 [UninstallDelete]
@@ -496,7 +499,7 @@ begin
 
   LblVersion := TLabel.Create(WizardForm);
   LblVersion.Parent := PnlWelcome;
-  LblVersion.Caption := 'v9.1.05 • Stable Release';
+  LblVersion.Caption := 'v9.5.00 • Stable Release';
   LblVersion.Font.Name := 'Segoe UI';
   LblVersion.Font.Size := 8;
   LblVersion.Font.Color := COLOR_ACCENT;

@@ -1,7 +1,7 @@
 {
   "name": "ocal",
   "productName": "Ocal Browser",
-  "version": "9.1.05",
+  "version": "9.5.00",
   "description": "Ocal Browser - Fast, Secure, and Agentic.",
   "main": "main.js",
   "author": "Gaming Network Studio Media Group",
@@ -40,6 +40,7 @@
     "electron-squirrel-startup": "^1.0.1",
     "img-fx": "^0.5.1",
     "liquid-gooey": "^0.2.1",
+    "qrcode": "^1.5.4",
     "thinking-orbs": "^0.3.1",
     "three": "^0.186.0",
     "voice-glow": "^0.2.0"

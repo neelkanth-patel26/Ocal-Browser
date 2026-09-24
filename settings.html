@@ -14,6 +14,7 @@
         rel="stylesheet">
     <link rel="stylesheet" href="assets/fontawesome/css/all.min.css">
     <script src="color-harmonizer.js"></script>
+    <script src="qrGenerator.js"></script>
     <script>
         /* Immediate Theme & AI Gradient Application */
         (function () {
@@ -113,7 +114,11 @@
                     <div class="nav-item-icon"><i class="fas fa-gift"></i></div>
                     <span>What's New</span>
                 </div>
-                <div class="nav-item" data-section="about">
+                                <div class="nav-item" data-section="sync">
+                    <div class="nav-item-icon" style="color: var(--accent);"><i class="fas fa-qrcode"></i></div>
+                    <span>Ocal Connect</span>
+                </div>
+<div class="nav-item" data-section="about">
                     <div class="nav-item-icon"><i class="fas fa-circle-info"></i></div>
                     <span>About</span>
                 </div>
@@ -3321,6 +3326,296 @@
                 </div>
             </section>
 
+        
+            <!-- ─── OCAL CONNECT & MOBILE SYNC SECTION ────────────────────────── -->
+            <section id="sync" class="section">
+                <!-- Home-style Header Row: Title & Stats Bar -->
+                <div class="home-settings-header-row">
+                    <div class="home-settings-greeting">
+                        <div style="display: flex; align-items: center; gap: 12px; flex-wrap: wrap;">
+                            <h1 class="home-settings-title" style="margin: 0;">Ocal Connect</h1>
+                            <span class="sync-live-pill"><span class="sync-beacon-dot"></span> <span id="sync-header-pill-text">Local LAN Bridge</span></span>
+                        </div>
+                        <div class="home-settings-subtitle">
+                            <i class="fas fa-quote-left home-quote-icon"></i>
+                            <span>Peer-to-peer zero-trust local network bridge. Instantly push tabs, synchronize bookmarks, clipboard, and encrypted vault with Ocal Mobile.</span>
+                        </div>
+                    </div>
+
+                    <!-- Dot-Matrix Stats Bar -->
+                    <div class="home-stats-bar">
+                        <div class="home-stat-item">
+                            <span class="home-dot-num" id="sync-stat-status" style="color: var(--accent);">Listening</span>
+                            <span class="home-badge home-badge-lime" id="sync-stat-port">Port 9876</span>
+                        </div>
+                        <div class="home-stat-item">
+                            <span class="home-dot-num" id="sync-stat-device">None</span>
+                            <span class="home-badge" id="sync-stat-badge">Mobile Device</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="page-body">
+                    <div class="sync-bento-grid">
+
+                        <!-- ─── 1. Scan to Connect (Horizontal 2-Column Split Stage) (Span 7) ─── -->
+                        <div class="sync-card sync-card-pair" style="grid-column: span 7;">
+                            <div class="sync-card-header">
+                                <div class="sync-card-header-left">
+                                    <div class="sync-card-icon">
+                                        <i class="fas fa-qrcode"></i>
+                                    </div>
+                                    <div>
+                                        <h3 class="sync-card-title">Mobile Pair Station</h3>
+                                        <div class="sync-card-desc">Scan with camera or enter the 6-digit PIN</div>
+                                    </div>
+                                </div>
+                                <button id="sync-regenerate-pin-btn" class="sync-action-btn" title="Generate New QR & PIN">
+                                    <i class="fas fa-rotate"></i>
+                                    <span>New Code</span>
+                                </button>
+                            </div>
+
+                            <div class="sync-stage-horizontal">
+                                <!-- Left Column: QR Code with Framing Reticle & Scanner Pill -->
+                                <div class="sync-stage-left">
+                                    <div class="sync-qr-reticle-box">
+                                        <span class="reticle-corner reticle-tl"></span>
+                                        <span class="reticle-corner reticle-tr"></span>
+                                        <span class="reticle-corner reticle-bl"></span>
+                                        <span class="reticle-corner reticle-br"></span>
+                                        
+                                        <!-- QR Container (Clean 156x156) -->
+                                        <div id="sync-qr-container"></div>
+                                        <script>
+                                            try {
+                                                if (typeof generateQrSvg === 'function') {
+                                                    const _qrInit = document.getElementById('sync-qr-container');
+                                                    if (_qrInit) _qrInit.innerHTML = generateQrSvg('ocal-sync://127.0.0.1:9876?pin=849204&name=Ocal%20PC', 142);
+                                                }
+                                            } catch(e) {}
+                                        </script>
+                                    </div>
+
+                                    <div class="sync-live-pill sync-scanner-pill">
+                                        <span class="sync-beacon-dot"></span>
+                                        <span>Ready to Scan</span>
+                                    </div>
+                                </div>
+
+                                <!-- Right Column: PIN, Actions, Endpoint URL -->
+                                <div class="sync-stage-right">
+                                    <div class="sync-pin-section">
+                                        <div class="sync-pin-header-row">
+                                            <span class="sync-pin-label"><i class="fas fa-key" style="margin-right: 5px; color: var(--accent);"></i> Manual 6-Digit PIN</span>
+                                            <button id="sync-copy-pin-btn" class="sync-action-btn sync-btn-subtle" title="Copy 6-Digit PIN">
+                                                <i class="fas fa-copy"></i>
+                                                <span>Copy</span>
+                                            </button>
+                                        </div>
+                                        <div class="sync-pin-boxes" id="sync-pin-boxes">
+                                            <span class="sync-pin-digit">8</span>
+                                            <span class="sync-pin-digit">4</span>
+                                            <span class="sync-pin-digit">9</span>
+                                            <span class="sync-pin-digit">2</span>
+                                            <span class="sync-pin-digit">0</span>
+                                            <span class="sync-pin-digit">4</span>
+                                        </div>
+                                        <span id="sync-pin-display" style="display: none;">849204</span>
+                                    </div>
+
+                                    <div class="sync-pin-actions">
+                                        <button id="sync-regen-qr-btn" class="sync-action-btn sync-btn-accent">
+                                            <i class="fas fa-qrcode"></i>
+                                            <span>Generate QR Code</span>
+                                        </button>
+                                        <button id="sync-copy-link-btn" class="sync-action-btn">
+                                            <i class="fas fa-link"></i>
+                                            <span>Copy Link</span>
+                                        </button>
+                                    </div>
+
+                                    <!-- LAN IP Endpoint Chip -->
+                                    <div class="sync-endpoint-chip">
+                                        <div class="sync-endpoint-left">
+                                            <i class="fas fa-wifi"></i>
+                                            <span id="sync-ip-display">http://127.0.0.1:9876</span>
+                                        </div>
+                                        <button id="sync-copy-ip-btn" class="sync-action-btn sync-btn-subtle">
+                                            Copy URL
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="sync-privacy-footer">
+                                <i class="fas fa-shield-halved"></i>
+                                <span>Zero-cloud peer-to-peer encryption. PC and phone must be on the same local Wi-Fi.</span>
+                            </div>
+                        </div>
+
+                        <!-- ─── 2. Connected Device & Live Remote Control (Span 5) ─── -->
+                        <div class="sync-card sync-card-device" style="grid-column: span 5;">
+                            <div class="sync-card-header">
+                                <div class="sync-card-header-left">
+                                    <div class="sync-card-icon">
+                                        <i class="fas fa-mobile-screen-button"></i>
+                                    </div>
+                                    <div>
+                                        <h3 class="sync-card-title">Live Device Control</h3>
+                                        <div class="sync-card-desc">Push tabs, shared clipboard & instant sync</div>
+                                    </div>
+                                </div>
+                                <span id="sync-status-pill" class="sync-live-pill sync-unpaired-pill">
+                                    Unpaired
+                                </span>
+                            </div>
+
+                            <div class="sync-device-body">
+                                <!-- Device Status Hero Box -->
+                                <div id="sync-device-card" class="sync-device-status-box">
+                                    <div class="sync-device-left">
+                                        <div class="sync-device-avatar">
+                                            <span class="sync-radar-pulse"></span>
+                                            <i class="fas fa-satellite-dish" id="sync-device-icon-i"></i>
+                                        </div>
+                                        <div class="sync-device-info">
+                                            <div id="sync-device-name" class="sync-device-title">Awaiting Connection...</div>
+                                            <div id="sync-device-sub" class="sync-device-subtitle">Open Ocal Mobile &rarr; Settings &rarr; Ocal Connect</div>
+                                        </div>
+                                    </div>
+                                    <button id="sync-unpair-btn" class="sync-action-btn sync-unpair-btn" style="display: none;">
+                                        <i class="fas fa-link-slash"></i>
+                                        <span>Disconnect</span>
+                                    </button>
+                                </div>
+
+                                <!-- Remote Cross-Device Actions -->
+                                <div class="sync-action-cards">
+                                    <button id="sync-send-tab-btn" class="sync-btn-hero primary" disabled>
+                                        <i class="fas fa-arrow-up-right-from-square"></i>
+                                        <div class="sync-btn-text">
+                                            <span class="sync-btn-title">Send Active Tab to Phone</span>
+                                            <span class="sync-btn-sub">Opens current webpage instantly on mobile</span>
+                                        </div>
+                                    </button>
+
+                                    <button id="sync-send-clipboard-btn" class="sync-btn-hero secondary" disabled>
+                                        <i class="fas fa-clipboard"></i>
+                                        <div class="sync-btn-text">
+                                            <span class="sync-btn-title">Push PC Clipboard to Phone</span>
+                                            <span class="sync-btn-sub">Transfers copied text, links & codes</span>
+                                        </div>
+                                    </button>
+
+                                    <button id="sync-trigger-all-btn" class="sync-btn-hero accent-outline" disabled>
+                                        <i class="fas fa-rotate"></i>
+                                        <div class="sync-btn-text">
+                                            <span class="sync-btn-title">Request Full Synchronization</span>
+                                            <span class="sync-btn-sub">Merge bookmarks, vault & browsing history</span>
+                                        </div>
+                                    </button>
+                                </div>
+
+                                <!-- Capabilities Notice -->
+                                <div class="sync-capsules-grid">
+                                    <div class="sync-capsule-item">
+                                        <i class="fas fa-bookmark sync-capsule-icon" style="color: #f59e0b;"></i>
+                                        <div class="sync-capsule-title">Bookmarks</div>
+                                        <div class="sync-capsule-subtitle">Clean Merge</div>
+                                    </div>
+                                    <div class="sync-capsule-item">
+                                        <i class="fas fa-key sync-capsule-icon" style="color: var(--accent);"></i>
+                                        <div class="sync-capsule-title">Vault</div>
+                                        <div class="sync-capsule-subtitle">AES-256 GCM</div>
+                                    </div>
+                                    <div class="sync-capsule-item">
+                                        <i class="fas fa-clock-rotate-left sync-capsule-icon" style="color: #8b5cf6;"></i>
+                                        <div class="sync-capsule-title">History</div>
+                                        <div class="sync-capsule-subtitle">Timeline Sync</div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- ─── 3. Mobile Companion Spotlight Banner (Span 12) ─── -->
+                        <div class="sync-mobile-spotlight">
+                            <div class="sync-spotlight-left">
+                                <div class="sync-spotlight-icon-wrap">
+                                    <i class="fab fa-android"></i>
+                                    <span class="sync-spotlight-badge">COMING SOON</span>
+                                </div>
+                                <div class="sync-spotlight-text">
+                                    <div class="sync-spotlight-title">Ocal Browser Mobile Application</div>
+                                    <div class="sync-spotlight-desc">The official Ocal companion app for Android & iOS is currently in development. Experience fluid multitasking, built-in ad shielding, dark glass aesthetics, and instant local LAN desktop sync right from your pocket.</div>
+                                </div>
+                            </div>
+                            <div class="sync-spotlight-capsules">
+                                <span class="sync-spot-cap"><i class="fas fa-bolt"></i> 1-Tap Tab Push</span>
+                                <span class="sync-spot-cap"><i class="fas fa-lock"></i> Zero-Cloud LAN Bridge</span>
+                                <span class="sync-spot-cap"><i class="fas fa-shield-halved"></i> Ad Shield Mobile</span>
+                                <span class="sync-spot-cap"><i class="fas fa-fingerprint"></i> Biometric Vault</span>
+                            </div>
+                        </div>
+
+                        <!-- ─── 4. Step-by-Step Interactive Visual Guide (Span 12) ─── -->
+                        <div class="sync-card sync-guide-card">
+                            <div class="sync-card-header" style="margin-bottom: 0;">
+                                <div class="sync-card-header-left">
+                                    <div class="sync-card-icon">
+                                        <i class="fas fa-wand-magic-sparkles"></i>
+                                    </div>
+                                    <div>
+                                        <h3 class="sync-card-title">How Ocal Connect Works</h3>
+                                        <div class="sync-card-desc">Zero external servers · 3 easy steps to pair your phone</div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="sync-steps-row">
+                                <div class="sync-step-box">
+                                    <span class="sync-step-num">1</span>
+                                    <div class="sync-step-title">Open Ocal Mobile</div>
+                                    <div class="sync-step-desc">Launch Ocal Browser on your phone and open <strong>Settings &rarr; Ocal Connect</strong>.</div>
+                                </div>
+                                <div class="sync-step-box">
+                                    <span class="sync-step-num">2</span>
+                                    <div class="sync-step-title">Scan QR or Enter PIN</div>
+                                    <div class="sync-step-desc">Point your phone camera at the QR code above or enter the 6-digit PIN manually.</div>
+                                </div>
+                                <div class="sync-step-box">
+                                    <span class="sync-step-num">3</span>
+                                    <div class="sync-step-title">Zero-Cloud Bridge</div>
+                                    <div class="sync-step-desc">Enjoy instantaneous cross-device browsing, tabs, and encrypted vault sync over your local network.</div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- ─── 5. Firewall & Connection Helper (Span 12) ─── -->
+                        <div class="sync-firewall-helper">
+                            <div class="sync-firewall-left">
+                                <i class="fas fa-shield-virus"></i>
+                                <div>
+                                    <strong style="color: var(--text, #ffffff);">Cannot discover your PC on mobile?</strong>
+                                    <span style="margin-left: 6px;">Windows Firewall may be restricting local port 9876. Click below to automatically allow inbound traffic.</span>
+                                </div>
+                            </div>
+                            <div style="display:flex; gap:8px; flex-shrink: 0;">
+                                <button id="sync-run-firewall-btn" class="sync-action-btn" style="background: var(--accent); color: var(--accent-text, #111111); font-weight: 700;">
+                                    <i class="fas fa-shield-halved"></i>
+                                    <span>Run Firewall Setup</span>
+                                </button>
+                                <button id="sync-copy-firewall-btn" class="sync-action-btn">
+                                    <i class="fas fa-terminal"></i>
+                                    <span>Copy Fix</span>
+                                </button>
+                            </div>
+                        </div>
+
+                    </div>
+                </div>
+            </section>
+
         </main>
     </div>
 
@@ -3378,10 +3673,38 @@
                 on: (event, cb) => { },
                 importBookmarks: (b) => Promise.resolve({ success: true, count: 42 }),
                 importBookmarkFile: () => Promise.resolve({ success: true, count: 18 }),
-                clearBookmarks: () => console.log('Mock clearBookmarks')
+                clearBookmarks: () => console.log('Mock clearBookmarks'),
+                syncGetStatus: () => Promise.resolve({
+                    running: true,
+                    isRunning: true,
+                    host: '192.168.1.15',
+                    lanIp: '192.168.1.15',
+                    port: 9876,
+                    pin: '849204',
+                    pairingPin: '849204',
+                    token: '7a8b9c0d1e2f',
+                    deviceName: 'Ocal PC (Windows)',
+                    paired: false,
+                    pairedDevice: null,
+                    pairingUri: 'ocal-sync://192.168.1.15:9876?pin=849204&token=7a8b9c0d1e2f&name=Ocal%20PC'
+                }),
+                syncRegeneratePin: () => Promise.resolve({
+                    running: true,
+                    isRunning: true,
+                    host: '192.168.1.15',
+                    lanIp: '192.168.1.15',
+                    port: 9876,
+                    pin: Math.floor(100000 + Math.random() * 900000).toString(),
+                    pairingPin: Math.floor(100000 + Math.random() * 900000).toString(),
+                    token: '7a8b9c0d1e2f',
+                    deviceName: 'Ocal PC (Windows)',
+                    paired: false,
+                    pairedDevice: null
+                })
             };
         }
     </script>
+    <script src="qrGenerator.js"></script>
     <script src="color-harmonizer.js"></script>
     <script src="settings.js"></script>
 </body>

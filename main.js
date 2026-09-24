@@ -37,6 +37,7 @@ protocol.registerSchemesAsPrivileged([
 ]);
 const path = require('path');
 const fs = require('fs');
+const os = require('os');
 const tabMediaMap = new Map(); // Stores detected media per tab ID
 const AdmZip = require('adm-zip');
 const fetch = require('cross-fetch').default || require('cross-fetch');
@@ -388,6 +389,7 @@ let userSettings = loadSettings() || {
     shieldStats: { ads: 0, trackers: 0, dataSaved: 0, history: [] },
     pdfViewerEnabled: true,
     batterySaver: false,
+    resourceLimiterEnabled: true,
     localModel: 'gemma-4',
     localEndpoint: 'http://127.0.0.1:11434',
     openaiApiKey: '',
@@ -2070,7 +2072,17 @@ function resolveInternalURL(url) {
         return 'file://' + path.join(__dirname, 'music-player.html') + (qIdx !== -1 ? url.substring(qIdx) : '');
     }
     if (cleanBase === 'ocal://offline') return 'file://' + path.join(__dirname, 'offline.html');
-    if (cleanBase === 'ocal://suspended') return 'file://' + path.join(__dirname, 'suspended.html') + (url.indexOf('?') !== -1 ? url.substring(url.indexOf('?')) : '');
+    if (cleanBase === 'ocal://suspended') {
+        const qIdx = url.indexOf('?');
+        if (qIdx !== -1) {
+            try {
+                const params = new URLSearchParams(url.substring(qIdx));
+                const targetUrl = params.get('url');
+                if (targetUrl) return targetUrl;
+            } catch (e) {}
+        }
+        return 'file://' + path.join(__dirname, 'suspended.html') + (url.indexOf('?') !== -1 ? url.substring(url.indexOf('?')) : '');
+    }
     if (cleanBase === 'ocal://whats-new' || cleanBase === 'whats-new') return 'file://' + path.join(__dirname, 'whats-new.html');
     if (cleanBase === 'ocal://ssl-warning') {
         const qIdx = url.indexOf('?');
@@ -9057,6 +9069,13 @@ app.whenReady().then(async () => {
 
     createMainWindow();
 
+    // Initialize Ocal Connect Sync Server for cross-device mobile integration
+    try {
+        initOcalSyncServer();
+    } catch (e) {
+        console.error('[OcalSync] Failed to initialize sync server:', e);
+    }
+
     // Update zoom factor when screen resolution or DPI metrics change (safe since app is ready)
     screen.on('display-metrics-changed', () => {
         updateAllUiZoomFactors();
@@ -9064,7 +9083,14 @@ app.whenReady().then(async () => {
     });
 });
 app.on('window-all-closed', () => { if (process.platform !== 'darwin') app.quit(); });
-app.on('activate', () => { if (BrowserWindow.getAllWindows().length === 0) createMainWindow(); });
+app.on('activate', () => { if (BrowserWindow.getAllWindows().length === 0) createMainWindow();
+    // Initialize Ocal Connect Sync Server for cross-device mobile integration
+    try {
+        initOcalSyncServer();
+    } catch (e) {
+        console.error('[OcalSync] Failed to initialize sync server:', e);
+    }
+ });
 
 // Screenshot & Thumbnail IPCs
 ipcMain.on('capture-thumbnail', async (e) => {
@@ -12069,3 +12095,247 @@ setInterval(() => {
         console.error('[Memory Saver Error]', e);
     }
 }, 30000);
+
+
+// ─────────────────────────────────────────────────────────────────────────────
+// ── Ocal Connect / Mobile Cross-Device Sync Server ───────────────────────────
+// ─────────────────────────────────────────────────────────────────────────────
+
+const { OcalSyncServer } = require('./syncServer.js');
+let ocalSyncServerInstance = null;
+
+function initOcalSyncServer() {
+    if (ocalSyncServerInstance) return ocalSyncServerInstance;
+
+    ocalSyncServerInstance = new OcalSyncServer({
+        port: 9876,
+        deviceName: `Ocal PC (${os.hostname() || 'Windows'})`,
+
+        onOpenTab: (url, title) => {
+            console.log('[OcalSync] Remote tab requested from mobile:', url, title);
+            if (url) {
+                createNewTab(url);
+                if (mainWindow && !mainWindow.isDestroyed()) {
+                    mainWindow.focus();
+                }
+            }
+        },
+
+        onClipboardReceived: (text) => {
+            console.log('[OcalSync] Remote clipboard text received from mobile:', text ? text.substring(0, 30) : '');
+            if (text) {
+                clipboard.writeText(text);
+                if (mainWindow && !mainWindow.isDestroyed()) {
+                    mainWindow.webContents.send('show-toast', {
+                        message: 'Copied text received from mobile!',
+                        icon: 'fa-copy'
+                    });
+                }
+            }
+        },
+
+        onBookmarksReceived: (remoteBookmarks) => {
+            console.log('[OcalSync] Received bookmarks from mobile:', remoteBookmarks ? remoteBookmarks.length : 0);
+            if (Array.isArray(remoteBookmarks) && remoteBookmarks.length > 0) {
+                if (!userSettings.bookmarks) userSettings.bookmarks = [];
+                const existingUrls = new Set(userSettings.bookmarks.map(b => (b.url || '').toLowerCase()));
+                let added = 0;
+                remoteBookmarks.forEach(rb => {
+                    if (rb.url && !existingUrls.has(rb.url.toLowerCase())) {
+                        userSettings.bookmarks.push({
+                            id: 'sync_' + Date.now() + '_' + Math.random().toString(36).substring(2, 7),
+                            title: rb.title || rb.name || rb.url,
+                            url: rb.url,
+                            favicon: rb.favicon || rb.icon || '',
+                            createdAt: Date.now()
+                        });
+                        existingUrls.add(rb.url.toLowerCase());
+                        added++;
+                    }
+                });
+                if (added > 0) {
+                    saveSettings(userSettings);
+                    broadcastSettings();
+                    if (mainWindow && !mainWindow.isDestroyed()) {
+                        mainWindow.webContents.send('show-toast', {
+                            message: `Synced ${added} new bookmark(s) from mobile!`,
+                            icon: 'fa-bookmark'
+                        });
+                    }
+                }
+            }
+        },
+
+        onPasswordsReceived: (remoteVault) => {
+            console.log('[OcalSync] Received passwords from mobile:', remoteVault ? remoteVault.length : 0);
+            if (Array.isArray(remoteVault) && remoteVault.length > 0) {
+                const localVault = loadPasswordVaultRaw();
+                let changed = 0;
+                remoteVault.forEach(rp => {
+                    if (!rp.domain && !rp.url) return;
+                    const domain = rp.domain || normalizeDomainName(rp.url || '');
+                    const existingIdx = localVault.findIndex(lp =>
+                        (lp.domain && domain && lp.domain.toLowerCase() === domain.toLowerCase()) &&
+                        (lp.username === rp.username)
+                    );
+                    if (existingIdx !== -1) {
+                        if (rp.password && rp.updatedAt && (!localVault[existingIdx].updatedAt || rp.updatedAt > localVault[existingIdx].updatedAt)) {
+                            localVault[existingIdx].passwordEncrypted = encryptSecret(rp.password);
+                            localVault[existingIdx].updatedAt = rp.updatedAt || Date.now();
+                            changed++;
+                        }
+                    } else if (rp.password) {
+                        localVault.push({
+                            id: 'sync_' + Date.now() + '_' + Math.random().toString(36).substring(2, 7),
+                            domain: domain,
+                            origin: rp.origin || rp.url || '',
+                            username: rp.username || '',
+                            passwordEncrypted: encryptSecret(rp.password),
+                            createdAt: rp.createdAt || Date.now(),
+                            updatedAt: rp.updatedAt || Date.now()
+                        });
+                        changed++;
+                    }
+                });
+                if (changed > 0) {
+                    savePasswordVaultRaw(localVault);
+                    notifyPasswordStatusForActiveTab();
+                    if (mainWindow && !mainWindow.isDestroyed()) {
+                        mainWindow.webContents.send('show-toast', {
+                            message: `Synced ${changed} password credential(s) from mobile!`,
+                            icon: 'fa-key'
+                        });
+                    }
+                }
+            }
+        },
+
+        onHistoryReceived: (remoteHistory) => {
+            console.log('[OcalSync] Received history from mobile:', remoteHistory ? remoteHistory.length : 0);
+            if (Array.isArray(remoteHistory) && remoteHistory.length > 0) {
+                if (!userSettings.history) userSettings.history = [];
+                const existingUrls = new Set(userSettings.history.map(h => (h.url || '').toLowerCase()));
+                let added = 0;
+                remoteHistory.forEach(rh => {
+                    if (rh.url && !existingUrls.has(rh.url.toLowerCase())) {
+                        userSettings.history.push({
+                            title: rh.title || rh.url,
+                            url: rh.url,
+                            timestamp: rh.timestamp || rh.visitedAt || Date.now()
+                        });
+                        existingUrls.add(rh.url.toLowerCase());
+                        added++;
+                    }
+                });
+                if (added > 0) {
+                    userSettings.history.sort((a, b) => (b.timestamp || 0) - (a.timestamp || 0));
+                    if (userSettings.history.length > 3000) userSettings.history.length = 3000;
+                    saveSettings(userSettings);
+                    broadcastSettings();
+                }
+            }
+        },
+
+        getBookmarks: () => {
+            return userSettings.bookmarks || [];
+        },
+
+        getPasswords: () => {
+            const rawVault = loadPasswordVaultRaw();
+            return rawVault.map(item => ({
+                id: item.id,
+                domain: item.domain,
+                origin: item.origin,
+                username: item.username,
+                password: decryptSecret(item.passwordEncrypted),
+                createdAt: item.createdAt,
+                updatedAt: item.updatedAt
+            }));
+        },
+
+        getHistory: () => {
+            return (userSettings.history || []).slice(0, 500);
+        },
+
+        onPairingSuccess: (device) => {
+            console.log('[OcalSync] Device successfully paired:', device.name);
+            if (mainWindow && !mainWindow.isDestroyed()) {
+                mainWindow.webContents.send('sync:status-changed', ocalSyncServerInstance.getStatus());
+                mainWindow.webContents.send('show-toast', {
+                    message: `Connected to ${device.name}!`,
+                    icon: 'fa-mobile-screen'
+                });
+            }
+        },
+
+        onUnpaired: () => {
+            console.log('[OcalSync] Mobile device unpaired');
+            if (mainWindow && !mainWindow.isDestroyed()) {
+                mainWindow.webContents.send('sync:status-changed', ocalSyncServerInstance.getStatus());
+                mainWindow.webContents.send('show-toast', {
+                    message: 'Mobile device disconnected.',
+                    icon: 'fa-link-slash'
+                });
+            }
+        }
+    });
+
+    ocalSyncServerInstance.start();
+    return ocalSyncServerInstance;
+}
+
+// IPC Handlers for Ocal Sync
+ipcMain.handle('sync:get-status', () => {
+    if (!ocalSyncServerInstance) initOcalSyncServer();
+    return ocalSyncServerInstance.getStatus();
+});
+
+ipcMain.handle('sync:regenerate-pin', () => {
+    if (!ocalSyncServerInstance) initOcalSyncServer();
+    return ocalSyncServerInstance.regeneratePin();
+});
+
+ipcMain.handle('sync:start', () => {
+    if (!ocalSyncServerInstance) initOcalSyncServer();
+    return ocalSyncServerInstance.start();
+});
+
+ipcMain.handle('sync:stop', () => {
+    if (ocalSyncServerInstance) ocalSyncServerInstance.stop();
+    return { success: true };
+});
+
+ipcMain.handle('sync:send-tab', (e, tabData) => {
+    if (!ocalSyncServerInstance) initOcalSyncServer();
+    let url = tabData && tabData.url;
+    let title = tabData && tabData.title;
+    if (!url) {
+        const activeEntry = views.find(v => v.id === activeViewId);
+        if (activeEntry && activeEntry.view && activeEntry.view.webContents && !activeEntry.view.webContents.isDestroyed()) {
+            url = activeEntry.view.webContents.getURL();
+            title = activeEntry.view.webContents.getTitle();
+        }
+    }
+    return ocalSyncServerInstance.sendTabToMobile(url, title);
+});
+
+ipcMain.handle('sync:send-clipboard', (e, text) => {
+    if (!ocalSyncServerInstance) initOcalSyncServer();
+    const content = text || clipboard.readText();
+    return ocalSyncServerInstance.sendClipboardToMobile(content);
+});
+
+ipcMain.handle('sync:trigger-sync', () => {
+    if (!ocalSyncServerInstance) initOcalSyncServer();
+    return ocalSyncServerInstance.requestSyncFromMobile();
+});
+
+ipcMain.handle('sync:unpair', () => {
+    if (!ocalSyncServerInstance) initOcalSyncServer();
+    return ocalSyncServerInstance.unpairDevice();
+});
+
+ipcMain.handle('sync:setup-firewall', async () => {
+    if (!ocalSyncServerInstance) initOcalSyncServer();
+    return await ocalSyncServerInstance.ensureFirewallRule(true);
+});

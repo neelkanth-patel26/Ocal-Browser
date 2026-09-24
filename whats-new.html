@@ -1122,7 +1122,7 @@
             <!-- Dot-Matrix Stats Bar -->
             <div class="sp-stats-bar">
                 <div class="sp-stat-item">
-                    <span class="sp-dot-num" id="version-stat">v9.1.05</span>
+                    <span class="sp-dot-num" id="version-stat">v9.5.00</span>
                     <span class="sp-badge sp-badge-lime">Production</span>
                 </div>
                 <div class="sp-stat-item">
@@ -1202,13 +1202,13 @@
                     <div class="sp-hero-left">
                         <div class="sp-hero-tag">
                             <i class="fas fa-circle-check"></i>
-                            <span>v9.1.05 Stable Release</span>
+                            <span>v9.5.00 Stable Release</span>
                         </div>
-                        <h2 class="sp-hero-title">Google Extensions, Better UI & Bug Fixes</h2>
+                        <h2 class="sp-hero-title">Inno Setup Detailed Catalog, Ocal Connect & UI Polish</h2>
                         <p class="sp-hero-desc" id="hero-desc"></p>
                     </div>
                     <div class="sp-hero-right-visual">
-                        <div class="radial-metric-title">9.1.05</div>
+                        <div class="radial-metric-title">9.5.00</div>
                         <div class="radial-metric-status">Flagship Build</div>
                         <div class="sparkline-dots">
                             <span class="spark-dot"></span>
@@ -1302,7 +1302,7 @@
             <div class="sp-section-header">
                 <div class="sp-section-titles">
                     <h2 id="dir-title">All Features & Enhancements</h2>
-                    <p id="dir-subtitle">SHOWING ALL MAJOR UPGRADES IN V9.1.05 STABLE</p>
+                    <p id="dir-subtitle">SHOWING ALL MAJOR UPGRADES IN V9.5.00 STABLE</p>
                 </div>
             </div>
             <div class="features-grid" id="directory-grid" style="margin-top: 20px;"></div>
@@ -1374,7 +1374,7 @@
         }
 
         // ── Typing Animation ──
-        const heroText = "Ocal Browser v9.1.05 introduces universal Google Chrome extension support with intelligent runtime polyfills, an overhauled topbar Extension Capsule with instant search, deep theme mode & accent color synchronization, sleek shadowless UI aesthetics, and comprehensive stability bug fixes.";
+        const heroText = "Ocal Browser v9.5.00 introduces official Inno Setup standalone packaging with a detailed multi-component catalog, alongside Ocal Connect: a peer-to-peer zero-trust sync bridge connecting desktop and mobile. Features an ergonomic shadowless pill-shaped extension install banner, modernized settings layout, and core stability bug fixes.";
         const heroDesc = document.getElementById('hero-desc');
         let charIndex = 0;
 
@@ -1472,6 +1472,35 @@
 
         // ── Features & Team Data ──
         const items = [
+            // ══ Ocal Connect & Mobile Suite (v9.5.00) ══
+            { 
+                type: 'feature', 
+                category: 'multitasking', 
+                icon: 'fa-qrcode', 
+                title: 'Ocal Connect: Local Mobile Sync Bridge', 
+                desc: 'Pair your Windows desktop with the upcoming Ocal Browser mobile application in seconds using a high-contrast QR code or manual 6-digit PIN. Push active tabs, sync clipboard contents, and merge bookmarks & passwords over your local Wi-Fi with zero cloud telemetry.', 
+                actionText: 'Ocal Connect', 
+                targetUrl: 'ocal://settings#sync' 
+            },
+            { 
+                type: 'feature', 
+                category: 'multitasking', 
+                icon: 'fa-mobile-screen-button', 
+                title: 'Ocal Browser for Mobile (Coming Soon)', 
+                desc: 'The official Ocal Browser Android companion app is arriving soon. Enjoy Ocal\'s hallmark ad-shield acceleration, fluid tab multitasking, dark glass aesthetic, and seamless cross-device synchronization in your pocket.', 
+                actionText: 'Mobile Preview', 
+                targetUrl: 'ocal://settings#sync' 
+            },
+            { 
+                type: 'feature', 
+                category: 'performance', 
+                icon: 'fa-wrench', 
+                title: 'Stability Core & Settings Layout Polish', 
+                desc: 'Completely overhauled settings layout geometry for sync controls, resolved IPC lifecycle bindings, implemented instant client-side QR generation, and polished dark/light mode visual consistency.', 
+                actionText: 'Settings', 
+                targetUrl: 'ocal://settings' 
+            },
+
             // ══ Major Update 9.1.05 Highlights ══
             { 
                 type: 'feature', 
@@ -1558,8 +1587,7 @@
             
             // Team Contributors
             { type: 'contributor', category: 'contributors', icon: 'fa-user-gear', title: 'Neelkanth Patel', desc: 'Lead browser architect. Engineered browser core, tab lifecycle, AI intelligence suite, and engine packaging.', role: 'Founder & Lead Dev' },
-            { type: 'contributor', category: 'contributors', icon: 'fa-code', title: 'Jay Shah', desc: 'Worked on tab lifecycle algorithms, background Memory Saver suspensions, and auto-wake event bindings.', role: 'Software Engineer' },
-            { type: 'contributor', category: 'contributors', icon: 'fa-pen-nib', title: 'Jiya Thakkar', desc: 'Lead UX designer behind 2-column AI sidebar, Glassmorphic select popovers, and dynamic contrast themes.', role: 'Lead Designer' },
+                        { type: 'contributor', category: 'contributors', icon: 'fa-pen-nib', title: 'Jiya Thakkar', desc: 'Lead UX designer behind 2-column AI sidebar, Glassmorphic select popovers, and dynamic contrast themes.', role: 'Lead Designer' },
             { type: 'contributor', category: 'contributors', icon: 'fa-user-astronaut', title: 'Reese Whiteman', desc: 'Engineered AI Persona Mood Swings, anger reactivity dynamics, and creative story generation heuristics.', role: 'AI & Research Lead' },
             { type: 'contributor', category: 'contributors', icon: 'fa-laptop-code', title: 'Urmi Thakkar', desc: 'Engineered HD upscaling, HDR color tone-mapping, and image action toolbar controls.', role: 'Lead Frontend Architect' },
             { type: 'contributor', category: 'contributors', icon: 'fa-user-check', title: 'Josephine Alexandra', desc: 'Designed human-like typo generator, backspace fixes, and glassmorphic modal design.', role: 'UI/UX QA Specialist' },
@@ -1578,6 +1606,19 @@
         ];
 
         const changelog = [
+            { 
+                date: 'September 2026', 
+                title: 'v9.5.00 Stable — Inno Setup Detailed Catalog, Ocal Connect & UI Polish', 
+                desc: 'Official v9.5.00 release featuring ultra-compressed Inno Setup 6 standalone packaging with a rich component selection catalog (Core Runtime, Ocal Connect Sync Bridge, Native PDF Viewer, and Ocal Shield). Includes peer-to-peer local mobile LAN bridging for the upcoming Ocal Android app (Coming Soon), an ergonomic shadowless pill-shaped extension install banner, redesigned settings bento layout, and general bug fixes.', 
+                tags: ['v9.5.00 Stable', 'Inno Setup', 'Detailed Catalog', 'Ocal Connect', 'Pill UI', 'Bug Fixes'] 
+            },
+            { 
+                date: 'September 2026', 
+                title: 'v9.4.00 Stable — Ocal Connect, Mobile App (Coming Soon) & Bug Fixes', 
+                desc: 'Major update introducing Ocal Connect: a peer-to-peer zero-trust sync bridge connecting desktop and mobile. Seamlessly push active tabs, share clipboard text, merge bookmarks, and sync encrypted passwords with the upcoming Ocal Mobile Android app (Coming Soon). Includes an overhauled compact settings layout, instant QR code generation, and critical engine stability bug fixes.', 
+                tags: ['v9.4.00 Stable', 'Ocal Connect', 'Mobile Sync', 'Coming Soon', 'Bug Fixes', 'Better Layout'] 
+            },
+
             { 
                 date: 'September 2026', 
                 title: 'v9.1.05 Stable — Google Chrome Extensions, Better UI & Bug Fixes', 
@@ -1701,7 +1742,7 @@
             });
 
             const map = {
-                all: ['All Features & Enhancements', 'SHOWING ALL MAJOR UPGRADES IN V9.1.05 STABLE'],
+                all: ['All Features & Enhancements', 'SHOWING ALL MAJOR UPGRADES IN V9.5.00 STABLE'],
                 extensions: ['Google Extensions & Store', 'UNIVERSAL CHROME EXTENSIONS ENGINE, TOPBAR CAPSULE & POPUPS'],
                 multitasking: ['Multitasking & AI Studio', 'BENTO FILE MANAGER, FLUX MASTERWORK AI & FLUID TABS'],
                 performance: ['Speed & Security Vault', 'TURBO PAGE LOADER, FASTER AD BLOCKER & 256-BIT PASSWORD VAULT'],

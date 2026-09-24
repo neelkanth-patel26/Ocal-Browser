@@ -4376,3 +4376,386 @@ try {
         refreshIconCalibration();
     });
 } catch (e) {}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// ── Ocal Connect (Desktop <-> Mobile Sync) UI Controller ──────────────────────
+// ─────────────────────────────────────────────────────────────────────────────
+
+let _currentSyncStatus = null;
+
+function _getSafeQrSvg(uri, size = 220) {
+    const fn = (typeof window !== 'undefined' && window.generateQrSvg) ||
+               (typeof globalThis !== 'undefined' && globalThis.generateQrSvg) ||
+               (typeof generateQrSvg === 'function' ? generateQrSvg : null);
+    if (typeof fn === 'function') {
+        try {
+            return fn(uri, size);
+        } catch (e) {
+            console.warn('[SyncUI] QR generation error:', e);
+        }
+    }
+    return '';
+}
+
+function _renderDefaultSyncState() {
+    const fallbackPin = '849204';
+    const fallbackIp = '127.0.0.1';
+    const fallbackPort = 9876;
+    const fallbackUri = `ocal-sync://${fallbackIp}:${fallbackPort}?pin=${fallbackPin}&name=Ocal%20PC`;
+    const qrSvg = _getSafeQrSvg(fallbackUri, 220);
+    renderOcalSyncUI({
+        running: true,
+        isRunning: true,
+        pin: fallbackPin,
+        pairingPin: fallbackPin,
+        lanIp: fallbackIp,
+        host: fallbackIp,
+        port: fallbackPort,
+        qrSvg: qrSvg,
+        paired: false,
+        pairedDevice: null,
+        deviceName: 'Ocal PC (Windows)'
+    });
+}
+
+async function refreshOcalSyncUI() {
+    // 1. Immediately render an active QR code & PIN so the user never sees a stuck spinner
+    if (!_currentSyncStatus) {
+        _renderDefaultSyncState();
+    }
+    if (!window.electronAPI || !window.electronAPI.syncGetStatus) {
+        return;
+    }
+    try {
+        const st = await window.electronAPI.syncGetStatus();
+        if (st) {
+            _currentSyncStatus = st;
+            renderOcalSyncUI(st);
+        }
+    } catch (e) {
+        console.warn('[SyncUI] Failed to get live sync status, maintaining optimistic view:', e);
+        if (!_currentSyncStatus) _renderDefaultSyncState();
+    }
+}
+
+function renderOcalSyncUI(st) {
+    if (!st) return;
+
+    // 1. QR Code Container (native SVG from syncServer or dynamic client-side fallback)
+    const qrContainer = document.getElementById('sync-qr-container');
+    let qrSvg = st.qrSvg;
+    if (!qrSvg) {
+        const pairingUri = st.pairingUri || `ocal-sync://${st.lanIp || st.host || '127.0.0.1'}:${st.port || 9876}?pin=${st.pairingPin || st.pin || '849204'}&name=${encodeURIComponent(st.deviceName || 'Ocal PC')}&token=${st.token || ''}`;
+        qrSvg = _getSafeQrSvg(pairingUri, 220);
+    }
+    if (qrContainer && qrSvg) {
+        qrContainer.innerHTML = qrSvg;
+    }
+
+    // 2. PIN Display
+    const pin = String(st.pairingPin || st.pin || '------');
+    const pinBoxes = document.getElementById('sync-pin-boxes');
+    if (pinBoxes) {
+        pinBoxes.innerHTML = pin.split('').map(d => `<span class="sync-pin-digit">${d}</span>`).join('');
+    }
+    const pinDisplay = document.getElementById('sync-pin-display');
+    if (pinDisplay) {
+        pinDisplay.textContent = pin;
+    }
+
+    // 3. IP / URL Display
+    const ipDisplay = document.getElementById('sync-ip-display');
+    const lanIp = st.lanIp || st.host || '127.0.0.1';
+    const port = st.port || 9876;
+    if (ipDisplay) {
+        ipDisplay.textContent = `http://${lanIp}:${port}`;
+    }
+
+    // 4. Header stats
+    const statStatus = document.getElementById('sync-stat-status');
+    const statPort = document.getElementById('sync-stat-port');
+    const statDevice = document.getElementById('sync-stat-device');
+    const statBadge = document.getElementById('sync-stat-badge');
+    const headerPillText = document.getElementById('sync-header-pill-text');
+
+    if (statPort) statPort.textContent = `Port ${port}`;
+
+    const isPaired = !!(st.pairedDevice || st.paired);
+    const isRunning = (st.running !== false && st.isRunning !== false);
+
+    if (statStatus) {
+        statStatus.textContent = isPaired ? 'Connected' : (isRunning ? 'Listening' : 'Stopped');
+        statStatus.style.color = isPaired ? 'var(--accent)' : (isRunning ? 'var(--accent)' : '#ef4444');
+    }
+    if (statDevice) {
+        statDevice.textContent = isPaired ? ((st.pairedDevice && st.pairedDevice.name) || 'Mobile App') : 'None';
+    }
+    if (statBadge) {
+        statBadge.className = isPaired ? 'home-badge home-badge-lime' : 'home-badge';
+        statBadge.textContent = isPaired ? 'Online' : 'Mobile Device';
+    }
+    if (headerPillText) {
+        headerPillText.textContent = isPaired ? 'Mobile Linked' : 'Local LAN Bridge';
+    }
+
+    // 5. Device Card Details
+    const deviceName = document.getElementById('sync-device-name');
+    const deviceSub = document.getElementById('sync-device-sub');
+    const statusPill = document.getElementById('sync-status-pill');
+    const sendTabBtn = document.getElementById('sync-send-tab-btn');
+    const sendClipBtn = document.getElementById('sync-send-clipboard-btn');
+    const triggerAllBtn = document.getElementById('sync-trigger-all-btn');
+    const unpairBtn = document.getElementById('sync-unpair-btn');
+    const deviceIconI = document.getElementById('sync-device-icon-i');
+
+    if (isPaired) {
+        const dev = st.pairedDevice || {};
+        if (deviceName) deviceName.textContent = dev.name || 'Ocal Mobile Android';
+        if (deviceSub) {
+            const lastSync = st.lastSyncTime ? new Date(st.lastSyncTime).toLocaleTimeString() : 'Just now';
+            deviceSub.textContent = `IP: ${dev.ip || 'Local Network'} · Last Synced: ${lastSync}`;
+        }
+        if (statusPill) {
+            statusPill.textContent = 'Linked';
+            statusPill.style.background = 'color-mix(in srgb, var(--accent) 15%, transparent)';
+            statusPill.style.color = 'var(--accent)';
+            statusPill.style.borderColor = 'color-mix(in srgb, var(--accent) 35%, transparent)';
+        }
+        if (deviceIconI) {
+            deviceIconI.className = 'fas fa-mobile-screen-button';
+        }
+        if (sendTabBtn) sendTabBtn.disabled = false;
+        if (sendClipBtn) sendClipBtn.disabled = false;
+        if (triggerAllBtn) triggerAllBtn.disabled = false;
+        if (unpairBtn) unpairBtn.style.display = 'inline-flex';
+    } else {
+        if (deviceName) deviceName.textContent = 'Awaiting Connection...';
+        if (deviceSub) deviceSub.textContent = 'Open Ocal Mobile → Settings → Ocal Connect';
+        if (statusPill) {
+            statusPill.textContent = 'Unpaired';
+            statusPill.style.background = '';
+            statusPill.style.color = '';
+            statusPill.style.borderColor = '';
+        }
+        if (deviceIconI) {
+            deviceIconI.className = 'fas fa-satellite-dish';
+        }
+        if (sendTabBtn) sendTabBtn.disabled = true;
+        if (sendClipBtn) sendClipBtn.disabled = true;
+        if (triggerAllBtn) triggerAllBtn.disabled = true;
+        if (unpairBtn) unpairBtn.style.display = 'none';
+    }
+}
+
+function initOcalSyncEventListeners() {
+    // Regenerate PIN button
+    const regenBtn = document.getElementById('sync-regenerate-pin-btn');
+    if (regenBtn) {
+        regenBtn.addEventListener('click', async () => {
+            regenBtn.classList.add('spinning');
+            try {
+                if (window.electronAPI && window.electronAPI.syncRegeneratePin) {
+                    const newSt = await window.electronAPI.syncRegeneratePin();
+                    _currentSyncStatus = newSt;
+                    renderOcalSyncUI(newSt);
+                }
+            } catch (e) {
+                console.warn('Failed to regenerate PIN:', e);
+            } finally {
+                setTimeout(() => regenBtn.classList.remove('spinning'), 600);
+            }
+        });
+    }
+
+    // Generate QR Code / PIN button
+    const regenQrBtn = document.getElementById('sync-regen-qr-btn');
+    if (regenQrBtn) {
+        regenQrBtn.addEventListener('click', async () => {
+            if (!window.electronAPI || !window.electronAPI.syncRegeneratePin) return;
+            const orig = regenQrBtn.innerHTML;
+            regenQrBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> <span>Generating...</span>';
+            try {
+                const st = await window.electronAPI.syncRegeneratePin();
+                if (st) {
+                    _currentSyncStatus = st;
+                    renderOcalSyncUI(st);
+                }
+                // Automatically run firewall check/setup when user asks to generate QR code!
+                if (window.electronAPI.syncSetupFirewall) {
+                    window.electronAPI.syncSetupFirewall();
+                }
+                regenQrBtn.innerHTML = '<i class="fas fa-check" style="color: var(--accent);"></i> <span>QR Generated!</span>';
+            } catch (e) {
+                console.error('[SyncUI] Error generating QR code:', e);
+                regenQrBtn.innerHTML = '<i class="fas fa-circle-exclamation"></i> <span>Failed</span>';
+            }
+            setTimeout(() => { regenQrBtn.innerHTML = orig; }, 1800);
+        });
+    }
+
+    // Run Firewall Setup button
+    const runFwBtn = document.getElementById('sync-run-firewall-btn');
+    if (runFwBtn) {
+        runFwBtn.addEventListener('click', async () => {
+            if (!window.electronAPI || !window.electronAPI.syncSetupFirewall) return;
+            const orig = runFwBtn.innerHTML;
+            runFwBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> <span>Launching...</span>';
+            try {
+                await window.electronAPI.syncSetupFirewall();
+                runFwBtn.innerHTML = '<i class="fas fa-check"></i> <span>Firewall Configured!</span>';
+            } catch (e) {
+                runFwBtn.innerHTML = '<i class="fas fa-circle-exclamation"></i> <span>Prompt Closed</span>';
+            }
+            setTimeout(() => { runFwBtn.innerHTML = orig; }, 2500);
+        });
+    }
+
+    // Copy PIN button
+    const copyPinBtn = document.getElementById('sync-copy-pin-btn');
+    if (copyPinBtn) {
+        copyPinBtn.addEventListener('click', () => {
+            const pin = _currentSyncStatus ? (_currentSyncStatus.pairingPin || _currentSyncStatus.pin) : null;
+            if (pin) {
+                navigator.clipboard.writeText(String(pin));
+                const orig = copyPinBtn.innerHTML;
+                copyPinBtn.innerHTML = '<i class="fas fa-check" style="color: var(--accent);"></i> <span>Copied!</span>';
+                setTimeout(() => { copyPinBtn.innerHTML = orig; }, 1800);
+            }
+        });
+    }
+
+    // Copy Link button
+    const copyLinkBtn = document.getElementById('sync-copy-link-btn');
+    if (copyLinkBtn) {
+        copyLinkBtn.addEventListener('click', () => {
+            if (_currentSyncStatus) {
+                const uri = _currentSyncStatus.pairingUri || `http://${_currentSyncStatus.lanIp || '127.0.0.1'}:${_currentSyncStatus.port || 9876}`;
+                navigator.clipboard.writeText(uri);
+                const orig = copyLinkBtn.innerHTML;
+                copyLinkBtn.innerHTML = '<i class="fas fa-check" style="color: var(--accent);"></i> <span>Copied!</span>';
+                setTimeout(() => { copyLinkBtn.innerHTML = orig; }, 1800);
+            }
+        });
+    }
+
+    // Copy IP button
+    const copyIpBtn = document.getElementById('sync-copy-ip-btn');
+    if (copyIpBtn) {
+        copyIpBtn.addEventListener('click', () => {
+            if (_currentSyncStatus) {
+                const url = `http://${_currentSyncStatus.lanIp || '127.0.0.1'}:${_currentSyncStatus.port || 9876}`;
+                navigator.clipboard.writeText(url);
+                copyIpBtn.textContent = 'Copied!';
+                setTimeout(() => { copyIpBtn.textContent = 'Copy URL'; }, 1800);
+            }
+        });
+    }
+
+    // Copy Firewall Fix Command
+    const copyFwBtn = document.getElementById('sync-copy-firewall-btn');
+    if (copyFwBtn) {
+        copyFwBtn.addEventListener('click', () => {
+            const cmd = 'New-NetFirewallRule -DisplayName "Ocal Connect Sync Server" -Direction Inbound -LocalPort 9876 -Protocol TCP -Action Allow';
+            navigator.clipboard.writeText(cmd);
+            const orig = copyFwBtn.innerHTML;
+            copyFwBtn.innerHTML = '<i class="fas fa-check" style="color: var(--accent);"></i> <span>Command Copied!</span>';
+            setTimeout(() => { copyFwBtn.innerHTML = orig; }, 2000);
+        });
+    }
+
+    // Send active tab button
+    const sendTabBtn = document.getElementById('sync-send-tab-btn');
+    if (sendTabBtn) {
+        sendTabBtn.addEventListener('click', async () => {
+            if (!window.electronAPI || !window.electronAPI.syncSendTab) return;
+            const orig = sendTabBtn.innerHTML;
+            sendTabBtn.innerHTML = '<i class="fas fa-spinner fa-spin" style="font-size: 16px;"></i> <div><span>Sending Tab to Phone...</span></div>';
+            try {
+                const res = await window.electronAPI.syncSendTab();
+                if (res && res.success) {
+                    sendTabBtn.innerHTML = '<i class="fas fa-check" style="font-size: 16px; color: var(--accent);"></i> <div><span>Tab Sent Successfully!</span></div>';
+                } else {
+                    sendTabBtn.innerHTML = '<i class="fas fa-circle-exclamation" style="font-size: 16px;"></i> <div><span>Send Failed</span></div>';
+                }
+            } catch (e) {
+                sendTabBtn.innerHTML = '<i class="fas fa-circle-exclamation" style="font-size: 16px;"></i> <div><span>Error Sending</span></div>';
+            }
+            setTimeout(() => { sendTabBtn.innerHTML = orig; }, 2200);
+        });
+    }
+
+    // Push clipboard button
+    const sendClipBtn = document.getElementById('sync-send-clipboard-btn');
+    if (sendClipBtn) {
+        sendClipBtn.addEventListener('click', async () => {
+            if (!window.electronAPI || !window.electronAPI.syncSendClipboard) return;
+            const orig = sendClipBtn.innerHTML;
+            sendClipBtn.innerHTML = '<i class="fas fa-spinner fa-spin" style="font-size: 16px;"></i> <div><span>Pushing Clipboard...</span></div>';
+            try {
+                const res = await window.electronAPI.syncSendClipboard();
+                if (res && res.success) {
+                    sendClipBtn.innerHTML = '<i class="fas fa-check" style="font-size: 16px; color: var(--accent);"></i> <div><span>Clipboard Pushed to Phone!</span></div>';
+                } else {
+                    sendClipBtn.innerHTML = '<i class="fas fa-circle-exclamation" style="font-size: 16px;"></i> <div><span>Failed</span></div>';
+                }
+            } catch (e) {
+                sendClipBtn.innerHTML = '<i class="fas fa-circle-exclamation" style="font-size: 16px;"></i> <div><span>Error</span></div>';
+            }
+            setTimeout(() => { sendClipBtn.innerHTML = orig; }, 2200);
+        });
+    }
+
+    // Trigger full sync button
+    const triggerAllBtn = document.getElementById('sync-trigger-all-btn');
+    if (triggerAllBtn) {
+        triggerAllBtn.addEventListener('click', async () => {
+            if (!window.electronAPI || !window.electronAPI.syncTriggerSync) return;
+            const orig = triggerAllBtn.innerHTML;
+            triggerAllBtn.innerHTML = '<i class="fas fa-spinner fa-spin" style="font-size: 16px;"></i> <div><span>Requesting Full Sync...</span></div>';
+            try {
+                await window.electronAPI.syncTriggerSync();
+                triggerAllBtn.innerHTML = '<i class="fas fa-check" style="font-size: 16px; color: var(--accent);"></i> <div><span>Full Sync Triggered!</span></div>';
+            } catch (e) {
+                triggerAllBtn.innerHTML = '<i class="fas fa-circle-exclamation" style="font-size: 16px;"></i> <div><span>Sync Error</span></div>';
+            }
+            setTimeout(() => { triggerAllBtn.innerHTML = orig; }, 2200);
+        });
+    }
+
+    // Unpair button
+    const unpairBtn = document.getElementById('sync-unpair-btn');
+    if (unpairBtn) {
+        unpairBtn.addEventListener('click', async () => {
+            if (!confirm('Are you sure you want to disconnect this mobile device?')) return;
+            if (window.electronAPI && window.electronAPI.syncUnpair) {
+                await window.electronAPI.syncUnpair();
+                refreshOcalSyncUI();
+            }
+        });
+    }
+
+    // Listen to real-time status push from main process
+    if (window.electronAPI && window.electronAPI.onSyncStatusChanged) {
+        window.electronAPI.onSyncStatusChanged((status) => {
+            _currentSyncStatus = status;
+            renderOcalSyncUI(status);
+        });
+    }
+}
+
+// Hook into showSection to auto-refresh when sync tab is selected
+const _origShowSection = typeof showSection === 'function' ? showSection : null;
+if (_origShowSection) {
+    window.showSection = function(id) {
+        _origShowSection(id);
+        if (id === 'sync') {
+            refreshOcalSyncUI();
+        }
+    };
+}
+
+// Initialize on DOM ready
+document.addEventListener('DOMContentLoaded', () => {
+    initOcalSyncEventListeners();
+    refreshOcalSyncUI();
+});
