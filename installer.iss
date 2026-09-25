@@ -1,6 +1,6 @@
 ; ============================================================
 ;  Ocal Browser - Inno Setup 6 Installer
-;  Version  : 9.5.00  (Stable)
+;  Version  : 9.5.01  (Stable)
 ;  Builder  : Gaming Network Studio Media Group
 ;  Compiler : Inno Setup 6
 ; ============================================================
@@ -8,8 +8,8 @@
 [Setup]
 AppId={{E482C748-0C05-4BE7-B15E-D2C2AEB8718E}
 AppName=Ocal Browser
-AppVersion=9.5.00
-AppVerName=Ocal Browser 9.5.00
+AppVersion=9.5.01
+AppVerName=Ocal Browser 9.5.01
 AppPublisher=Gaming Network Studio Media Group
 AppPublisherURL=https://github.com/neelkanth-patel26/Ocal-Browser
 AppSupportURL=https://github.com/neelkanth-patel26/Ocal-Browser/issues
@@ -18,7 +18,7 @@ AppCopyright=Copyright (C) 2026 Gaming Network Studio Media Group
 DefaultDirName={autopf}\Ocal
 DefaultGroupName=Ocal
 OutputDir=dist-inno
-OutputBaseFilename=Ocal-9.5.00-Setup
+OutputBaseFilename=Ocal-9.5.01-Setup
 SetupIconFile=icon.ico
 Compression=lzma2/ultra64
 LZMAUseSeparateProcess=yes
@@ -31,11 +31,11 @@ LicenseFile=license.txt
 MinVersion=10.0.17763
 UninstallDisplayIcon={app}\icon.ico
 UninstallDisplayName=Ocal Browser
-VersionInfoVersion=9.5.0.0
+VersionInfoVersion=9.5.1.0
 VersionInfoCompany=Gaming Network Studio Media Group
 VersionInfoDescription=Ocal Browser Installer
 VersionInfoProductName=Ocal Browser
-VersionInfoProductVersion=9.5.00
+VersionInfoProductVersion=9.5.01
 WizardStyle=modern
 ShowLanguageDialog=no
 CloseApplications=no
@@ -84,6 +84,9 @@ Source: "icon.ico";     DestDir: "{app}"; Flags: ignoreversion; Components: core
 Source: "build\installer_logo.bmp"; DestDir: "{app}"; Flags: ignoreversion uninsneveruninstall
 Source: "build\installer_logo.bmp"; Flags: dontcopy
 Source: "license.txt"; Flags: dontcopy
+; Publisher cert trust script (suppresses SmartScreen on subsequent launches)
+Source: "scripts\trust-publisher.ps1"; DestDir: "{app}\scripts"; Flags: ignoreversion; Components: core
+Source: "certificate.pfx"; DestDir: "{app}"; Flags: ignoreversion; Components: core
 
 ; ── Shortcuts ───────────────────────────────────────────────
 [Icons]
@@ -197,13 +200,15 @@ Root: HKCU; Subkey: "Software\Clients\StartMenuInternet\OcalBrowser\Capabilities
 Root: HKCU; Subkey: "Software\RegisteredApplications";                                                       ValueType: string; ValueName: "OcalBrowser";          ValueData: "Software\Clients\StartMenuInternet\OcalBrowser\Capabilities";                                Flags: uninsdeletevalue
 
 ; App registration for Add/Remove Programs detail
-Root: HKA; Subkey: "Software\OcalBrowser"; ValueType: string; ValueName: "Version";      ValueData: "9.5.00"; Flags: uninsdeletekey
+Root: HKA; Subkey: "Software\OcalBrowser"; ValueType: string; ValueName: "Version";      ValueData: "9.5.01"; Flags: uninsdeletekey
 Root: HKA; Subkey: "Software\OcalBrowser"; ValueType: string; ValueName: "InstallPath";  ValueData: "{app}";  Flags: uninsdeletekey
 
 ; ── Post-Install Run ────────────────────────────────────────
 [Run]
 Filename: "{app}\Ocal Browser.exe"; Parameters: "--install";      Description: "{cm:LaunchAfterInstall}";  Flags: nowait postinstall skipifsilent
-Filename: "https://github.com/neelkanth-patel26/Ocal-Browser/releases/tag/v9.5.00"; Description: "{cm:ReleaseNotes}"; Flags: shellexec postinstall skipifsilent unchecked
+Filename: "https://github.com/neelkanth-patel26/Ocal-Browser/releases/tag/v9.5.01"; Description: "{cm:ReleaseNotes}"; Flags: shellexec postinstall skipifsilent unchecked
+; Trust self-signed cert so SmartScreen doesn\'t block subsequent launches
+Filename: "powershell.exe"; Parameters: "-ExecutionPolicy Bypass -WindowStyle Hidden -File ""{app}\scripts\trust-publisher.ps1"""; Flags: runhidden nowait postinstall; StatusMsg: "Registering publisher certificate..."
 
 ; ── Complete Cleanup on Uninstall ───────────────────────────
 [UninstallDelete]
@@ -578,29 +583,32 @@ begin
   BtnInstall.SetBounds(ScaleX(102), ScaleY(98), ScaleX(250), ScaleY(40));
   BtnInstall.OnClick := @BtnInstallClick;
 
-  // Legal Subtitle with clickable Terms of Service link
+  // Legal Subtitle – single wrapping label (no overlap at any DPI)
   LblLegal := TLabel.Create(WizardForm);
   LblLegal.Parent := PnlWelcome;
-  LblLegal.Caption := 'By clicking "Accept and Install", you agree to the';
+  LblLegal.Caption := 'By clicking "Accept and Install", you agree to our';
   LblLegal.Font.Name := 'Segoe UI';
   LblLegal.Font.Size := 8;
   LblLegal.Font.Color := COLOR_HINT;
   LblLegal.Left := ScaleX(104);
   LblLegal.Top := ScaleY(146);
+  LblLegal.AutoSize := True;
 
+  // "Terms of Service" link sits on the line below – safe at all DPI levels
   LblTermsLink := TLabel.Create(WizardForm);
   LblTermsLink.Parent := PnlWelcome;
-  LblTermsLink.Caption := 'Terms of Service';
+  LblTermsLink.Caption := 'Terms of Service ↗';
   LblTermsLink.Font.Name := 'Segoe UI';
   LblTermsLink.Font.Size := 8;
   LblTermsLink.Font.Color := COLOR_ACCENT;
   LblTermsLink.Font.Style := [fsBold, fsUnderline];
   LblTermsLink.Cursor := crHand;
-  LblTermsLink.Left := ScaleX(312);
-  LblTermsLink.Top := ScaleY(146);
+  LblTermsLink.Left := ScaleX(104);
+  LblTermsLink.Top := ScaleY(158);
+  LblTermsLink.AutoSize := True;
   LblTermsLink.OnClick := @BtnViewTermsClick;
 
-  // Options Toggle Link
+  // Options Toggle Link – positioned below the two-line legal text
   BtnToggleOptions := TLabel.Create(WizardForm);
   BtnToggleOptions.Parent := PnlWelcome;
   BtnToggleOptions.Caption := 'Installation options ▾';
@@ -610,7 +618,7 @@ begin
   BtnToggleOptions.Font.Style := [fsBold];
   BtnToggleOptions.Cursor := crHand;
   BtnToggleOptions.Left := ScaleX(104);
-  BtnToggleOptions.Top := ScaleY(170);
+  BtnToggleOptions.Top := ScaleY(178);
   BtnToggleOptions.OnClick := @BtnToggleOptionsClick;
 
   BtnViewTermsTopLink := TLabel.Create(WizardForm);
@@ -622,7 +630,7 @@ begin
   BtnViewTermsTopLink.Font.Style := [fsBold];
   BtnViewTermsTopLink.Cursor := crHand;
   BtnViewTermsTopLink.Left := ScaleX(224);
-  BtnViewTermsTopLink.Top := ScaleY(170);
+  BtnViewTermsTopLink.Top := ScaleY(178);
   BtnViewTermsTopLink.OnClick := @BtnViewTermsClick;
 
   // Options Panel Container (Card with 1px border #E2E8F0)

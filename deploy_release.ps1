@@ -2,6 +2,14 @@ param (
     [string]$Token = $env:GH_TOKEN
 )
 
+if (-not $Token -and (Test-Path ".env")) {
+    Get-Content ".env" | ForEach-Object {
+        if ($_ -match '^\s*(?:GH_TOKEN|GITHUB_TOKEN)\s*=\s*(.+?)\s*$') {
+            $Token = $matches[1].Trim('"').Trim("'")
+        }
+    }
+}
+
 $token = $Token
 $owner = "neelkanth-patel26"
 $repo = "Ocal-Browser"
