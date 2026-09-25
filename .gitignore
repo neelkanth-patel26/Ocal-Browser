@@ -36,3 +36,6 @@ ocal-sync-sessions.json
 *.token
 *.key
 *secret*
+.env
+.env.*
+.env.local
