@@ -33,3 +33,6 @@ dist-store/
 ocal-sync-sessions.json
 *.pfx
 *.cer
+*.token
+*.key
+*secret*
