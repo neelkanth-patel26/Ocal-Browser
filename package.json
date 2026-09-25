@@ -53,6 +53,27 @@
       "output": "dist-builder",
       "buildResources": "build"
     },
+    "files": [
+      "**/*",
+      "!dist-store/**",
+      "!dist-inno/**",
+      "!dist-builder/**",
+      "!dist/**",
+      "!out/**",
+      "!scratch/**",
+      "!.agents/**",
+      "!.git/**",
+      "!.github/**",
+      "!.vscode/**",
+      "!*.ps1",
+      "!*.bat",
+      "!*.iss",
+      "!*.md",
+      "!*.log",
+      "!release_info.json",
+      "!temp_asar/**",
+      "!ocal-sync-sessions.json"
+    ],
     "win": {
       "target": [
         "nsis",

@@ -21,6 +21,8 @@ Write-Host "[1/4] Cleaning build artifacts..." -ForegroundColor Gray
 if (Test-Path "dist-inno") { Remove-Item -Recurse -Force "dist-inno" }
 if (Test-Path "out") { Remove-Item -Recurse -Force "out" }
 if (Test-Path "dist-builder") { Remove-Item -Recurse -Force "dist-builder" }
+if (Test-Path "dist-store") { Remove-Item -Recurse -Force "dist-store" }
+if (Test-Path "scratch") { Remove-Item -Recurse -Force "scratch" }
 New-Item -ItemType Directory -Path "dist-inno" -Force | Out-Null
 
 # 2. Electron Packaging
