@@ -100,6 +100,7 @@ if (-not $PfxPath -and -not $Thumbprint) {
         $Password = $env:CSC_KEY_PASSWORD
     } elseif (Test-Path "certificate.pfx") {
         $PfxPath = "certificate.pfx"
+        if (-not $Password) { $Password = "OcalBrowser2026" }
     }
 }
 

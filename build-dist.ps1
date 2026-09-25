@@ -58,6 +58,15 @@ if (Test-Path $exePath) {
     Write-Host "WARNING: Executable not found at $exePath. Skipping icon stamp." -ForegroundColor Red
 }
 
+# 2b. Sign unpacked main executable
+if (Test-Path "certificate.pfx") {
+    Write-Host "[2b/4] Signing unpacked Ocal Browser.exe with Authenticode..." -ForegroundColor Yellow
+    $signScript = Join-Path $PSScriptRoot "scripts\sign-installer.ps1"
+    if ((Test-Path $exePath) -and (Test-Path $signScript)) {
+        & powershell -ExecutionPolicy Bypass -File $signScript -FilePath $exePath
+    }
+}
+
 # 3. Inno Setup Compilation
 Write-Host "[3/4] Compiling Inno Setup installer..." -ForegroundColor Magenta
 

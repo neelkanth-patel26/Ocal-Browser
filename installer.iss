@@ -83,6 +83,7 @@ Source: "pdf-icon.ico"; DestDir: "{app}"; Flags: ignoreversion; Components: pdfv
 Source: "icon.ico";     DestDir: "{app}"; Flags: ignoreversion; Components: core
 Source: "build\installer_logo.bmp"; DestDir: "{app}"; Flags: ignoreversion uninsneveruninstall
 Source: "build\installer_logo.bmp"; Flags: dontcopy
+Source: "license.txt"; Flags: dontcopy
 
 ; ── Shortcuts ───────────────────────────────────────────────
 [Icons]
@@ -246,6 +247,7 @@ var
   PnlOptions: TPanel;
   PnlInstalling: TPanel;
   PnlFinished: TPanel;
+  PnlTerms: TPanel;
 
   ImgLogo: TBitmapImage;
   LblBrandTitle: TLabel;
@@ -253,7 +255,16 @@ var
   LblVersion: TLabel;
   BtnInstall: TNewButton;
   LblLegal: TLabel;
+  LblTermsLink: TLabel;
   BtnToggleOptions: TLabel;
+
+  LblTermsTitle: TLabel;
+  LblTermsSub: TLabel;
+  MemoTerms: TNewMemo;
+  BtnBackFromTerms: TNewButton;
+  BtnAcceptFromTerms: TNewButton;
+  BtnOpenLicenseExternal: TLabel;
+  BtnViewTermsTopLink: TLabel;
   
   LblPathTitle: TLabel;
   EditPath: TNewEdit;
@@ -333,6 +344,56 @@ begin
   begin
     EditPath.Text := NewDir;
   end;
+end;
+
+procedure BtnViewTermsClick(Sender: TObject);
+var
+  LicenseFile: string;
+  LinesArr: TArrayOfString;
+  I: Integer;
+begin
+  PnlWelcome.Hide;
+  PnlTerms.Show;
+  WizardForm.ClientHeight := ScaleY(440);
+  PnlMain.Height := WizardForm.ClientHeight;
+  PnlTerms.Height := WizardForm.ClientHeight;
+
+  if MemoTerms.Lines.Count = 0 then
+  begin
+    LicenseFile := ExpandConstant('{tmp}\license.txt');
+    if not FileExists(LicenseFile) then
+      ExtractTemporaryFile('license.txt');
+    if FileExists(LicenseFile) and LoadStringsFromFile(LicenseFile, LinesArr) then
+    begin
+      for I := 0 to GetArrayLength(LinesArr) - 1 do
+        MemoTerms.Lines.Add(LinesArr[I]);
+    end
+    else
+      MemoTerms.Lines.Add('Unable to load license terms. Please refer to license.txt.');
+  end;
+end;
+
+procedure BtnBackFromTermsClick(Sender: TObject);
+begin
+  PnlTerms.Hide;
+  PnlWelcome.Show;
+  if OptionsVisible then
+    WizardForm.ClientHeight := ScaleY(425)
+  else
+    WizardForm.ClientHeight := ScaleY(235);
+  PnlMain.Height := WizardForm.ClientHeight;
+  PnlWelcome.Height := WizardForm.ClientHeight;
+end;
+
+procedure BtnOpenLicenseExternalClick(Sender: TObject);
+var
+  LicenseFile: string;
+  ErrorCode: Integer;
+begin
+  LicenseFile := ExpandConstant('{tmp}\license.txt');
+  if not FileExists(LicenseFile) then
+    ExtractTemporaryFile('license.txt');
+  ShellExec('open', LicenseFile, '', '', SW_SHOWNORMAL, ewNoWait, ErrorCode);
 end;
 
 procedure BtnInstallClick(Sender: TObject);
@@ -517,15 +578,27 @@ begin
   BtnInstall.SetBounds(ScaleX(102), ScaleY(98), ScaleX(250), ScaleY(40));
   BtnInstall.OnClick := @BtnInstallClick;
 
-  // Legal Subtitle
+  // Legal Subtitle with clickable Terms of Service link
   LblLegal := TLabel.Create(WizardForm);
   LblLegal.Parent := PnlWelcome;
-  LblLegal.Caption := 'By clicking "Accept and Install", you agree to the Terms of Service.';
+  LblLegal.Caption := 'By clicking "Accept and Install", you agree to the';
   LblLegal.Font.Name := 'Segoe UI';
   LblLegal.Font.Size := 8;
   LblLegal.Font.Color := COLOR_HINT;
   LblLegal.Left := ScaleX(104);
   LblLegal.Top := ScaleY(146);
+
+  LblTermsLink := TLabel.Create(WizardForm);
+  LblTermsLink.Parent := PnlWelcome;
+  LblTermsLink.Caption := 'Terms of Service';
+  LblTermsLink.Font.Name := 'Segoe UI';
+  LblTermsLink.Font.Size := 8;
+  LblTermsLink.Font.Color := COLOR_ACCENT;
+  LblTermsLink.Font.Style := [fsBold, fsUnderline];
+  LblTermsLink.Cursor := crHand;
+  LblTermsLink.Left := ScaleX(312);
+  LblTermsLink.Top := ScaleY(146);
+  LblTermsLink.OnClick := @BtnViewTermsClick;
 
   // Options Toggle Link
   BtnToggleOptions := TLabel.Create(WizardForm);
@@ -539,6 +612,18 @@ begin
   BtnToggleOptions.Left := ScaleX(104);
   BtnToggleOptions.Top := ScaleY(170);
   BtnToggleOptions.OnClick := @BtnToggleOptionsClick;
+
+  BtnViewTermsTopLink := TLabel.Create(WizardForm);
+  BtnViewTermsTopLink.Parent := PnlWelcome;
+  BtnViewTermsTopLink.Caption := '•   View License & Terms ↗';
+  BtnViewTermsTopLink.Font.Name := 'Segoe UI';
+  BtnViewTermsTopLink.Font.Size := 8;
+  BtnViewTermsTopLink.Font.Color := COLOR_ACCENT;
+  BtnViewTermsTopLink.Font.Style := [fsBold];
+  BtnViewTermsTopLink.Cursor := crHand;
+  BtnViewTermsTopLink.Left := ScaleX(224);
+  BtnViewTermsTopLink.Top := ScaleY(170);
+  BtnViewTermsTopLink.OnClick := @BtnViewTermsClick;
 
   // Options Panel Container (Card with 1px border #E2E8F0)
   PnlOptionsBorder := TPanel.Create(WizardForm);
@@ -669,8 +754,73 @@ begin
   LblAllUsersSub.Font.Name := 'Segoe UI';
   LblAllUsersSub.Font.Size := 8;
   LblAllUsersSub.Font.Color := COLOR_HINT;
-  LblAllUsersSub.Left := ScaleX(264);
+    LblAllUsersSub.Left := ScaleX(264);
   LblAllUsersSub.Top := ScaleY(146);
+
+  // 1b. Terms & Conditions Screen (Modal Panel inside PnlMain)
+  PnlTerms := TPanel.Create(WizardForm);
+  PnlTerms.Parent := PnlMain;
+  PnlTerms.SetBounds(0, 0, PnlMain.Width, ScaleY(440));
+  PnlTerms.Color := clWhite;
+  PnlTerms.BevelOuter := bvNone;
+  PnlTerms.Visible := False;
+
+  LblTermsTitle := TLabel.Create(WizardForm);
+  LblTermsTitle.Parent := PnlTerms;
+  LblTermsTitle.Caption := 'Terms of Service & License Agreement';
+  LblTermsTitle.Font.Name := 'Segoe UI';
+  LblTermsTitle.Font.Size := 11;
+  LblTermsTitle.Font.Style := [fsBold];
+  LblTermsTitle.Font.Color := COLOR_TEXT;
+  LblTermsTitle.Left := ScaleX(20);
+  LblTermsTitle.Top := ScaleY(12);
+
+  LblTermsSub := TLabel.Create(WizardForm);
+  LblTermsSub.Parent := PnlTerms;
+  LblTermsSub.Caption := 'Please review the agreement below before installing Ocal Browser.';
+  LblTermsSub.Font.Name := 'Segoe UI';
+  LblTermsSub.Font.Size := 8;
+  LblTermsSub.Font.Color := COLOR_MUTED;
+  LblTermsSub.Left := ScaleX(20);
+  LblTermsSub.Top := ScaleY(32);
+
+  BtnOpenLicenseExternal := TLabel.Create(WizardForm);
+  BtnOpenLicenseExternal.Parent := PnlTerms;
+  BtnOpenLicenseExternal.Caption := 'Open in text editor ↗';
+  BtnOpenLicenseExternal.Font.Name := 'Segoe UI';
+  BtnOpenLicenseExternal.Font.Size := 8;
+  BtnOpenLicenseExternal.Font.Color := COLOR_ACCENT;
+  BtnOpenLicenseExternal.Font.Style := [fsBold];
+  BtnOpenLicenseExternal.Cursor := crHand;
+  BtnOpenLicenseExternal.Left := ScaleX(375);
+  BtnOpenLicenseExternal.Top := ScaleY(16);
+  BtnOpenLicenseExternal.OnClick := @BtnOpenLicenseExternalClick;
+
+  MemoTerms := TNewMemo.Create(WizardForm);
+  MemoTerms.Parent := PnlTerms;
+  MemoTerms.SetBounds(ScaleX(20), ScaleY(52), ScaleX(480), ScaleY(325));
+  MemoTerms.ReadOnly := True;
+  MemoTerms.ScrollBars := ssVertical;
+  MemoTerms.Font.Name := 'Consolas';
+  MemoTerms.Font.Size := 8;
+  MemoTerms.Color := $F8FAFC;
+
+  BtnBackFromTerms := TNewButton.Create(WizardForm);
+  BtnBackFromTerms.Parent := PnlTerms;
+  BtnBackFromTerms.Caption := '← Back';
+  BtnBackFromTerms.Font.Name := 'Segoe UI';
+  BtnBackFromTerms.Font.Size := 9;
+  BtnBackFromTerms.SetBounds(ScaleX(20), ScaleY(390), ScaleX(110), ScaleY(36));
+  BtnBackFromTerms.OnClick := @BtnBackFromTermsClick;
+
+  BtnAcceptFromTerms := TNewButton.Create(WizardForm);
+  BtnAcceptFromTerms.Parent := PnlTerms;
+  BtnAcceptFromTerms.Caption := 'Accept and Install';
+  BtnAcceptFromTerms.Font.Name := 'Segoe UI';
+  BtnAcceptFromTerms.Font.Size := 9;
+  BtnAcceptFromTerms.Font.Style := [fsBold];
+  BtnAcceptFromTerms.SetBounds(ScaleX(340), ScaleY(390), ScaleX(160), ScaleY(36));
+  BtnAcceptFromTerms.OnClick := @BtnInstallClick;
 
   // 2. Installing Screen
   PnlInstalling := TPanel.Create(WizardForm);

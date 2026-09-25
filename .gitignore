@@ -31,4 +31,5 @@ scratch/
 dist-store/
 .agents/
 ocal-sync-sessions.json
-
+*.pfx
+*.cer
