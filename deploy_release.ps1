@@ -21,6 +21,7 @@ $version = (Get-Content package.json | ConvertFrom-Json).version
 $headers = @{
     Authorization = "token $token"
     Accept = "application/vnd.github.v3+json"
+    "User-Agent" = "Ocal-Release-Bot"
 }
 
 # Find or Create Release
@@ -36,7 +37,8 @@ try {
         $release = Invoke-RestMethod -Uri "https://api.github.com/repos/$owner/$repo/releases/$releaseId" -Method Get -Headers $headers
     } else {
         Write-Output "Creating new release..."
-        $release = Invoke-RestMethod -Uri "https://api.github.com/repos/$owner/$repo/releases" -Method Post -Headers $headers -Body (ConvertTo-Json $releaseData) -ContentType "application/json"
+        $rawJson = [System.IO.File]::ReadAllText("release_info.json", [System.Text.Encoding]::UTF8)
+        $release = Invoke-RestMethod -Uri "https://api.github.com/repos/$owner/$repo/releases" -Method Post -Headers $headers -Body $rawJson -ContentType "application/json; charset=utf-8"
         $releaseId = $release.id
         Write-Output "New release created. ID: $releaseId"
     }
@@ -45,6 +47,8 @@ try {
     $artifacts = @(
         "dist-inno/Ocal-$version-Setup.exe"
     )
+
+    Add-Type -AssemblyName System.Net.Http
 
     foreach ($file in $artifacts) {
         if (Test-Path $file) {
@@ -62,12 +66,32 @@ try {
             }
 
             $uploadUri = "https://uploads.github.com/repos/$owner/$repo/releases/$releaseId/assets?name=$fileName"
-            Write-Output "Uploading $fileName..."
+            Write-Output "Uploading $fileName ($([math]::Round((Get-Item $file).Length / 1MB, 2)) MB)..."
             
-            $fileBytes = [System.IO.File]::ReadAllBytes((Resolve-Path $file))
-            
-            Invoke-RestMethod -Uri $uploadUri -Method Post -Headers $headers -Body $fileBytes -ContentType "application/octet-stream"
-            Write-Output "Successfully uploaded $fileName"
+            $handler = New-Object System.Net.Http.HttpClientHandler
+            $client = New-Object System.Net.Http.HttpClient($handler)
+            $client.Timeout = [TimeSpan]::FromMinutes(15)
+            $client.DefaultRequestHeaders.Add("Authorization", "token $token")
+            $client.DefaultRequestHeaders.Add("User-Agent", "Ocal-Release-Bot")
+            $client.DefaultRequestHeaders.Add("Accept", "application/vnd.github.v3+json")
+
+            $fullPath = (Resolve-Path $file).Path
+            $fileStream = [System.IO.File]::OpenRead($fullPath)
+            try {
+                $content = New-Object System.Net.Http.StreamContent($fileStream)
+                $content.Headers.ContentType = [System.Net.Http.Headers.MediaTypeHeaderValue]::Parse("application/octet-stream")
+                
+                $response = $client.PostAsync($uploadUri, $content).GetAwaiter().GetResult()
+                $respBody = $response.Content.ReadAsStringAsync().GetAwaiter().GetResult()
+                
+                if (-not $response.IsSuccessStatusCode) {
+                    throw "Upload failed with status $($response.StatusCode): $respBody"
+                }
+                Write-Output "Successfully uploaded $fileName"
+            } finally {
+                $fileStream.Dispose()
+                $client.Dispose()
+            }
         } else {
             Write-Warning "File not found: $file"
         }
