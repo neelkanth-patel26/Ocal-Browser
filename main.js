@@ -7508,6 +7508,33 @@ ipcMain.on('create-tab-group', (e, { name, color, tabIds }) => {
     });
     saveSettings(userSettings);
     broadcastTabs();
+
+    // Auto-open the group popup so user can name the group
+    if (!name && mainWindow && !mainWindow.isDestroyed()) {
+        setTimeout(() => {
+            const group = userSettings.tabGroups.find(g => g.id === groupId);
+            if (!group || !tabgroupView) return;
+
+            if (!mainWindow.getBrowserViews().includes(tabgroupView)) {
+                mainWindow.addBrowserView(tabgroupView);
+            }
+
+            const contentBounds = mainWindow.getContentBounds();
+            // Position the popup near the top-left of the tab bar area
+            const popupX = Math.round(contentBounds.width / 2 - 130);
+            const popupY = 48;
+
+            activePopupGroupId = groupId;
+            tabgroupView.setBounds({
+                x: 0, y: 0,
+                width: contentBounds.width,
+                height: contentBounds.height
+            });
+            tabgroupView.webContents.send('show-popup', { x: popupX, y: popupY });
+            mainWindow.setTopBrowserView(tabgroupView);
+            tabgroupView.webContents.send('group-data', group);
+        }, 200);
+    }
 });
 
 ipcMain.on('add-to-group', (e, { tabId, groupId }) => {

@@ -471,12 +471,17 @@ function renderTabs() {
 
     if (vtTabList) {
         vtTabList.innerHTML = '';
-        const vtProcessedGroups = new Set();
+        const vtProcessedGroups = new Map();
 
         tabs.forEach((tab, index) => {
             if (tab.groupId && !vtProcessedGroups.has(tab.groupId)) {
                 const group = tabGroups.find(g => g.id === tab.groupId);
                 if (group) {
+                    // Create wrapper container
+                    const groupWrapper = document.createElement('div');
+                    groupWrapper.className = 'vt-group-wrapper';
+                    groupWrapper.style.setProperty('--group-color', group.color);
+
                     const groupHeader = document.createElement('div');
                     groupHeader.className = 'vt-group-header' + (!group.name ? ' no-name' : '') + (group.collapsed ? ' collapsed' : '');
                     groupHeader.style.setProperty('--group-color', group.color);
@@ -526,8 +531,9 @@ function renderTabs() {
                             y: rect.bottom + 5 
                         });
                     };
-                    vtTabList.appendChild(groupHeader);
-                    vtProcessedGroups.add(tab.groupId);
+                    groupWrapper.appendChild(groupHeader);
+                    vtTabList.appendChild(groupWrapper);
+                    vtProcessedGroups.set(tab.groupId, groupWrapper);
                 }
             }
 
@@ -667,7 +673,12 @@ function renderTabs() {
                 updateMediaMasterIcon(tab.id);
             };
 
-            vtTabList.appendChild(vtEl);
+            // Append grouped tabs into their wrapper, ungrouped into vtTabList
+            if (tab.groupId && vtProcessedGroups.has(tab.groupId)) {
+                vtProcessedGroups.get(tab.groupId).appendChild(vtEl);
+            } else {
+                vtTabList.appendChild(vtEl);
+            }
         });
 
         vtTabList.querySelectorAll('.vt-tab-close').forEach(btn => {
@@ -2532,5 +2543,227 @@ function getEmojiSvgUrl(emoji) {
 
     // Initial render of pinned extensions
     setTimeout(renderPinnedExtensions, 400);
+})();
+
+// ── Toolbar Pill Capsule Collapse & Customization Manager ─────────────────
+(function initToolbarCustomizerAndCollapse() {
+    const hubBtn = document.getElementById('toolbar-hub-btn');
+    const pillCapsule = document.getElementById('toolbar-pill-capsule');
+    const collapseBtn = document.getElementById('toolbar-collapse-btn');
+    const customizeBtn = document.getElementById('toolbar-customize-btn');
+    const backdrop = document.getElementById('toolbar-customize-backdrop');
+    const closeBtn = document.getElementById('tc-close-btn');
+    const doneBtn = document.getElementById('tc-done-btn');
+    const resetBtn = document.getElementById('tc-reset-btn');
+    const toolsList = document.getElementById('tc-tools-list');
+    const collapsedSwitch = document.getElementById('tc-toggle-collapsed');
+    const toolbarActions = document.getElementById('toolbar-actions');
+
+    if (!pillCapsule || !hubBtn) return;
+
+    // Available tools configuration (defaults clean: no duplicate bookmark, no unwanted clutter)
+    const TOOLS_METADATA = [
+        { id: 'ai-toolbar', name: 'AI Assistant', desc: 'Floating AI sidebar & smart tools', icon: 'fas fa-wand-magic-sparkles', defaultVisible: true },
+        { id: 'split-screen', name: 'Split Screen', desc: 'Browse side-by-side tabs and widgets', icon: 'fas fa-columns', defaultVisible: true },
+        { id: 'extensions', name: 'Extensions Hub', desc: 'Pinned extensions & extension shortcuts', icon: 'fas fa-puzzle-piece', defaultVisible: true },
+        { id: 'volume-boost', name: 'Volume Booster', desc: 'Amplifier & equalizer controls up to 600%', icon: 'fas fa-volume-high', defaultVisible: true },
+        { id: 'media-master', name: 'Media Master', desc: 'Floating video & audio detector', icon: 'fas fa-layer-group', defaultVisible: true },
+        { id: 'bookmarks', name: 'Bookmarks', desc: 'Bookmarks sidebar (omnibox has heart bookmark)', icon: 'fas fa-bookmark', defaultVisible: false },
+        { id: 'file-manager', name: 'System Explorer', desc: 'Internal file & media browser', icon: 'fas fa-folder-tree', defaultVisible: false },
+        { id: 'history', name: 'History', desc: 'Recent browsing history sidebar', icon: 'fas fa-clock-rotate-left', defaultVisible: false }
+    ];
+
+    // Ensure clean state migration for redesign
+    if (localStorage.getItem('ocal-toolbar-clean-v') !== '2') {
+        localStorage.removeItem('ocal-toolbar-customization');
+        localStorage.setItem('ocal-toolbar-clean-v', '2');
+    }
+
+    // Load saved customization
+    function getStoredVisibility() {
+        const defaults = {};
+        TOOLS_METADATA.forEach(t => { defaults[t.id] = t.defaultVisible; });
+        try {
+            const raw = localStorage.getItem('ocal-toolbar-customization');
+            if (raw) {
+                const parsed = JSON.parse(raw);
+                return Object.assign({}, defaults, parsed);
+            }
+        } catch (e) {
+            console.error('Failed reading ocal-toolbar-customization', e);
+        }
+        return defaults;
+    }
+
+    function saveStoredVisibility(vis) {
+        try {
+            localStorage.setItem('ocal-toolbar-customization', JSON.stringify(vis));
+        } catch (e) {
+            console.error('Failed saving ocal-toolbar-customization', e);
+        }
+    }
+
+    // Apply visibility to DOM elements
+    function applyVisibility(vis) {
+        TOOLS_METADATA.forEach(t => {
+            const isVisible = vis[t.id] === true;
+            const el = pillCapsule.querySelector(`[data-tool-id="${t.id}"]`);
+            if (el) {
+                if (isVisible) {
+                    el.classList.remove('tool-custom-hidden');
+                } else {
+                    el.classList.add('tool-custom-hidden');
+                }
+            }
+        });
+    }
+
+    // Collapse to single button state via clean class toggle
+    function setCollapsedState(collapsed) {
+        const isCol = !!collapsed;
+        if (toolbarActions) {
+            toolbarActions.classList.toggle('is-collapsed', isCol);
+        }
+        if (collapsedSwitch) {
+            collapsedSwitch.checked = isCol;
+        }
+        localStorage.setItem('ocal-toolbar-collapsed', isCol ? 'true' : 'false');
+    }
+
+    // Initialize state
+    const isCollapsedInitially = localStorage.getItem('ocal-toolbar-collapsed') === 'true';
+    setCollapsedState(isCollapsedInitially);
+
+    const currentVis = getStoredVisibility();
+    applyVisibility(currentVis);
+
+    // Hub button expands
+    hubBtn.addEventListener('click', (e) => {
+        e.stopPropagation();
+        setCollapsedState(false);
+    });
+
+    // Collapse button closes to single button
+    if (collapseBtn) {
+        collapseBtn.addEventListener('click', (e) => {
+            e.stopPropagation();
+            setCollapsedState(true);
+        });
+    }
+
+    // Build the customize modal tools list
+    function renderCustomizeList() {
+        if (!toolsList) return;
+        toolsList.innerHTML = '';
+        const vis = getStoredVisibility();
+
+        TOOLS_METADATA.forEach(tool => {
+            const row = document.createElement('div');
+            row.className = 'tc-tool-row';
+
+            const info = document.createElement('div');
+            info.className = 'tc-tool-info';
+
+            const iconWrap = document.createElement('div');
+            iconWrap.className = 'tc-tool-icon';
+            iconWrap.innerHTML = `<i class="${tool.icon}"></i>`;
+
+            const textWrap = document.createElement('div');
+            textWrap.className = 'tc-tool-text';
+            textWrap.innerHTML = `<span class="tc-tool-name">${tool.name}</span><span class="tc-tool-desc">${tool.desc}</span>`;
+
+            info.appendChild(iconWrap);
+            info.appendChild(textWrap);
+
+            const label = document.createElement('label');
+            label.className = 'tc-switch';
+
+            const input = document.createElement('input');
+            input.type = 'checkbox';
+            input.checked = vis[tool.id] !== false;
+            input.dataset.toolId = tool.id;
+
+            input.addEventListener('change', () => {
+                const updatedVis = getStoredVisibility();
+                updatedVis[tool.id] = input.checked;
+                saveStoredVisibility(updatedVis);
+                applyVisibility(updatedVis);
+            });
+
+            const slider = document.createElement('span');
+            slider.className = 'tc-slider';
+
+            label.appendChild(input);
+            label.appendChild(slider);
+
+            row.appendChild(info);
+            row.appendChild(label);
+            toolsList.appendChild(row);
+        });
+
+        if (collapsedSwitch) {
+            collapsedSwitch.checked = localStorage.getItem('ocal-toolbar-collapsed') === 'true';
+        }
+    }
+
+    if (collapsedSwitch) {
+        collapsedSwitch.addEventListener('change', () => {
+            setCollapsedState(collapsedSwitch.checked);
+        });
+    }
+
+    function openModal() {
+        if (!backdrop) return;
+        renderCustomizeList();
+        backdrop.style.display = 'flex';
+    }
+
+    function closeModal() {
+        if (!backdrop) return;
+        backdrop.style.display = 'none';
+    }
+
+    if (customizeBtn) {
+        customizeBtn.addEventListener('click', (e) => {
+            e.stopPropagation();
+            openModal();
+        });
+    }
+
+    // Right click on toolbar actions / capsule opens customization
+    if (toolbarActions) {
+        toolbarActions.addEventListener('contextmenu', (e) => {
+            // Ignore if right-clicking an extension button directly
+            if (e.target.closest('.pinned-ext-btn')) return;
+            e.preventDefault();
+            openModal();
+        });
+    }
+
+    if (closeBtn) closeBtn.addEventListener('click', closeModal);
+    if (doneBtn) doneBtn.addEventListener('click', closeModal);
+
+    if (resetBtn) {
+        resetBtn.addEventListener('click', () => {
+            const defaults = {};
+            TOOLS_METADATA.forEach(t => { defaults[t.id] = t.defaultVisible; });
+            saveStoredVisibility(defaults);
+            applyVisibility(defaults);
+            setCollapsedState(false);
+            renderCustomizeList();
+        });
+    }
+
+    if (backdrop) {
+        backdrop.addEventListener('click', (e) => {
+            if (e.target === backdrop) closeModal();
+        });
+    }
+
+    document.addEventListener('keydown', (e) => {
+        if (e.key === 'Escape' && backdrop && backdrop.style.display !== 'none') {
+            closeModal();
+        }
+    });
 })();
 

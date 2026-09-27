@@ -63,9 +63,10 @@ let userHasChosenColor = false;
 
 // ── Palette Presets ──
 const PALETTE = [
-    '#15AC49', '#10B981', '#06B6D4', '#3B82F6', '#6366F1',
-    '#A855F7', '#EC4899', '#EF4444', '#F97316', '#F59E0B',
-    '#0F172A', '#D4FC2B', '#E11D48', '#84CC16', '#FFFFFF'
+    '#2563EB', '#3B82F6', '#06B6D4', '#0D9488',
+    '#10B981', '#15AC49', '#84CC16', '#F59E0B',
+    '#F97316', '#EF4444', '#DC2626', '#E11D48',
+    '#EC4899', '#A855F7', '#0F172A', '#FFFFFF'
 ];
 
 function hexToRgba(hex, alpha = 1) {
@@ -153,7 +154,11 @@ function selectColor(color) {
     userHasChosenColor = true;
     updateColorDisplay(color);
     if (chromaCard) chromaCard.style.display = 'none';
-    showToast(`Ink color: ${color.toUpperCase()}`, 1400, 'fa-palette');
+    // If user was on hand tool or eraser, automatically switch to pen tool
+    if (currentTool === 'hand' || currentTool === 'eraser') {
+        setTool('pen');
+    }
+    showToast(`Ink color: ${color.toUpperCase()}`, 1200, 'fa-palette');
 }
 
 function toggleColorPicker(e) {
@@ -168,13 +173,15 @@ function toggleColorPicker(e) {
         return;
     }
 
-    // Precision positioning directly under the color button
+    if (zoomMenu) zoomMenu.style.display = 'none';
+
+    // Precision positioning directly under the color well button
     const rect = colorWell.getBoundingClientRect();
     chromaCard.style.position = 'fixed';
     chromaCard.style.top = `${rect.bottom + 8}px`;
 
     let leftPos = rect.left + (rect.width / 2) - 125;
-    if (leftPos < 12) leftPos = 12;
+    if (leftPos < 10) leftPos = 10;
     if (leftPos + 260 > window.innerWidth) leftPos = window.innerWidth - 270;
     chromaCard.style.left = `${leftPos}px`;
     chromaCard.style.zIndex = '3500';
@@ -204,11 +211,7 @@ function initChroma() {
         colorWell.onclick = toggleColorPicker;
     }
 
-    if (nativePickerBtn && nativeColorPicker) {
-        nativePickerBtn.onclick = (e) => {
-            e.stopPropagation();
-            nativeColorPicker.click();
-        };
+    if (nativeColorPicker) {
         nativeColorPicker.oninput = (e) => {
             updateColorDisplay(e.target.value);
         };
@@ -280,6 +283,11 @@ async function loadPDF(source, name = 'document.pdf') {
         }
 
         pdfDoc = await loadingTask.promise;
+        try {
+            currentPdfData = await pdfDoc.getData();
+        } catch (e) {
+            console.warn('Could not cache raw PDF buffer:', e);
+        }
         showDocumentView();
 
         pageCountSpan.textContent = pdfDoc.numPages;
@@ -1108,7 +1116,9 @@ function updateInspectorData() {
 }
 
 function updateDocStats(source) {
-    document.getElementById('info-filename').textContent = currentFileName;
+    const fnEl = document.getElementById('info-filename');
+    fnEl.textContent = currentFileName;
+    fnEl.title = currentFileName;
     document.getElementById('info-pages').textContent = pdfDoc.numPages;
 
     if (source instanceof ArrayBuffer || (source && source.byteLength)) {
@@ -1128,64 +1138,65 @@ function updateDocStats(source) {
 }
 
 // ── Printing Pipeline (100% Reliable, Crisp & Unclipped) ──
-async function triggerPrint() {
+function preparePrintContainer() {
+    if (!pdfDoc) return;
+    printContainer.innerHTML = '';
+
+    const wrappers = document.querySelectorAll('#page-container-wrapper .page-wrapper');
+    if (!wrappers.length) return;
+
+    wrappers.forEach((wrapper) => {
+        const pdfCanvas = wrapper.querySelector('.pdf-canvas');
+        const drawCanvas = wrapper.querySelector('.drawing-layer');
+        if (!pdfCanvas) return;
+
+        const pageWrap = document.createElement('div');
+        pageWrap.className = 'print-page';
+
+        const comp = document.createElement('canvas');
+        comp.width = pdfCanvas.width;
+        comp.height = pdfCanvas.height;
+        const ctx = comp.getContext('2d');
+
+        // Crisp white background for print
+        ctx.fillStyle = '#ffffff';
+        ctx.fillRect(0, 0, comp.width, comp.height);
+
+        // Composite PDF content
+        ctx.drawImage(pdfCanvas, 0, 0);
+
+        // Composite user annotations
+        if (drawCanvas) {
+            ctx.drawImage(drawCanvas, 0, 0);
+        }
+
+        const img = document.createElement('img');
+        img.src = comp.toDataURL('image/jpeg', 0.98);
+        pageWrap.appendChild(img);
+        printContainer.appendChild(pageWrap);
+    });
+}
+
+function triggerPrint() {
     if (!pdfDoc) {
         showToast('No PDF document loaded to print.', 2500, 'fa-circle-exclamation');
         return;
     }
-
-    showToast('Rendering high-resolution print pages...', 4000, 'fa-print fa-spin');
-    printContainer.innerHTML = '';
-
-    try {
-        const PRINT_DPI_SCALE = 2.0;
-
-        for (let i = 1; i <= pdfDoc.numPages; i++) {
-            const page = await pdfDoc.getPage(i);
-            const printViewport = page.getViewport({ scale: PRINT_DPI_SCALE, rotation });
-
-            const canvas = document.createElement('canvas');
-            canvas.width = printViewport.width;
-            canvas.height = printViewport.height;
-            const ctx = canvas.getContext('2d');
-
-            // Render crisp PDF page
-            await page.render({ canvasContext: ctx, viewport: printViewport }).promise;
-
-            // Composite all annotations seamlessly
-            if (annotations[i] && annotations[i].length > 0) {
-                drawAnnotationsOntoContext(ctx, i, canvas.width, canvas.height, PRINT_DPI_SCALE);
-            }
-
-            const printPageWrap = document.createElement('div');
-            printPageWrap.className = 'print-page';
-
-            const printImg = document.createElement('img');
-            printImg.src = canvas.toDataURL('image/jpeg', 0.95);
-            printPageWrap.appendChild(printImg);
-
-            printContainer.appendChild(printPageWrap);
-        }
-
-        // Trigger native print
-        setTimeout(() => {
-            if (window.electronAPI && window.electronAPI.print) {
-                window.electronAPI.print();
-            } else {
-                window.print();
-            }
-
-            // Cleanup print container after dialog completes
-            setTimeout(() => {
-                printContainer.innerHTML = '';
-            }, 5000);
-        }, 400);
-
-    } catch (e) {
-        console.error('Print generation error:', e);
-        showToast('Print preparation failed', 2500, 'fa-triangle-exclamation');
-    }
+    showToast('Sending document to printer...', 1400, 'fa-print');
+    preparePrintContainer();
+    setTimeout(() => {
+        window.print();
+    }, 120);
 }
+
+// Lifecycle listeners: maintain print container during dialog, clear only after dismissal
+window.addEventListener('beforeprint', () => {
+    preparePrintContainer();
+});
+
+window.addEventListener('afterprint', () => {
+    printContainer.innerHTML = '';
+});
 
 // ── Export & Download with PDF-Lib ──
 document.getElementById('download-btn').onclick = async () => {
@@ -1303,6 +1314,10 @@ function setTool(toolName) {
 document.querySelectorAll('.btn[id^="tool-"]').forEach(btn => {
     btn.onclick = () => {
         const tool = btn.id.replace('tool-', '');
+        if (tool === 'pen' && currentTool === 'pen') {
+            toggleColorPicker();
+            return;
+        }
         if (tool === 'search') {
             const shown = searchBarFloating.style.display === 'flex';
             searchBarFloating.style.display = shown ? 'none' : 'flex';
@@ -1386,7 +1401,20 @@ function applyZoom() {
 
 zoomValBtn.onclick = (e) => {
     e.stopPropagation();
-    zoomMenu.style.display = zoomMenu.style.display === 'flex' ? 'none' : 'flex';
+    if (zoomMenu.style.display === 'flex') {
+        zoomMenu.style.display = 'none';
+        return;
+    }
+    if (chromaCard) chromaCard.style.display = 'none';
+    const rect = zoomValBtn.getBoundingClientRect();
+    zoomMenu.style.position = 'fixed';
+    zoomMenu.style.top = `${rect.bottom + 8}px`;
+    let leftPos = rect.left + (rect.width / 2) - 80;
+    if (leftPos < 10) leftPos = 10;
+    if (leftPos + 170 > window.innerWidth) leftPos = window.innerWidth - 180;
+    zoomMenu.style.left = `${leftPos}px`;
+    zoomMenu.style.zIndex = '3500';
+    zoomMenu.style.display = 'flex';
 };
 
 document.querySelectorAll('.zoom-option').forEach(opt => {
@@ -1496,9 +1524,10 @@ document.getElementById('search-input').onkeydown = (e) => {
 // Sidebar Tabs
 document.querySelectorAll('.sidebar-tab-btn').forEach(btn => {
     btn.onclick = () => {
-        document.querySelectorAll('.sidebar-tab-btn').forEach(b => b.classList.remove('active'));
-        btn.classList.add('active');
         const tab = btn.dataset.tab;
+        if (!tab) return;
+        document.querySelectorAll('.sidebar-tab-btn[data-tab]').forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
         document.getElementById('pane-thumbnails').style.display = tab === 'thumbnails' ? 'block' : 'none';
         document.getElementById('pane-outline').style.display = tab === 'outline' ? 'block' : 'none';
         document.getElementById('pane-info').style.display = tab === 'info' ? 'block' : 'none';
@@ -1625,13 +1654,19 @@ window.addEventListener('keydown', (e) => {
 });
 
 document.addEventListener('click', (e) => {
-    if (!zoomMenu.contains(e.target) && e.target !== zoomValBtn) {
+    if (zoomMenu && !zoomMenu.contains(e.target) && zoomValBtn && !zoomValBtn.contains(e.target)) {
         zoomMenu.style.display = 'none';
+    }
+    if (chromaCard && !chromaCard.contains(e.target) && colorWell && !colorWell.contains(e.target)) {
+        chromaCard.style.display = 'none';
     }
 });
 
 // ── Startup Initialization ──
 (function init() {
+    if (zoomMenu) zoomMenu.style.display = 'none';
+    if (chromaCard) chromaCard.style.display = 'none';
+
     const urlParams = new URLSearchParams(window.location.search);
     let targetFile = urlParams.get('file');
 
