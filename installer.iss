@@ -1,6 +1,6 @@
 ; ============================================================
 ;  Ocal Browser - Inno Setup 6 Installer
-;  Version  : 9.5.04  (Stable)
+;  Version  : 9.5.07  (Stable)
 ;  Builder  : Gaming Network Studio Media Group
 ;  Compiler : Inno Setup 6
 ; ============================================================
@@ -8,8 +8,8 @@
 [Setup]
 AppId={{E482C748-0C05-4BE7-B15E-D2C2AEB8718E}
 AppName=Ocal Browser
-AppVersion=9.5.04
-AppVerName=Ocal Browser 9.5.04
+AppVersion=9.5.07
+AppVerName=Ocal Browser 9.5.07
 AppPublisher=Gaming Network Studio Media Group
 AppPublisherURL=https://github.com/neelkanth-patel26/Ocal-Browser
 AppSupportURL=https://github.com/neelkanth-patel26/Ocal-Browser/issues
@@ -18,7 +18,7 @@ AppCopyright=Copyright (C) 2026 Gaming Network Studio Media Group
 DefaultDirName={autopf}\Ocal
 DefaultGroupName=Ocal
 OutputDir=dist-inno
-OutputBaseFilename=Ocal-9.5.04-Setup
+OutputBaseFilename=Ocal-9.5.07-Setup
 SetupIconFile=icon.ico
 Compression=lzma2/ultra64
 LZMAUseSeparateProcess=yes
@@ -31,11 +31,11 @@ LicenseFile=license.rtf
 MinVersion=10.0.17763
 UninstallDisplayIcon={app}\icon.ico
 UninstallDisplayName=Ocal Browser
-VersionInfoVersion=9.5.4.0
+VersionInfoVersion=9.5.7.0
 VersionInfoCompany=Gaming Network Studio Media Group
 VersionInfoDescription=Ocal Browser Installer
 VersionInfoProductName=Ocal Browser
-VersionInfoProductVersion=9.5.04
+VersionInfoProductVersion=9.5.07
 WizardStyle=modern
 ShowLanguageDialog=no
 CloseApplications=no
@@ -200,13 +200,13 @@ Root: HKCU; Subkey: "Software\Clients\StartMenuInternet\OcalBrowser\Capabilities
 Root: HKCU; Subkey: "Software\RegisteredApplications";                                                       ValueType: string; ValueName: "OcalBrowser";          ValueData: "Software\Clients\StartMenuInternet\OcalBrowser\Capabilities";                                Flags: uninsdeletevalue
 
 ; App registration for Add/Remove Programs detail
-Root: HKA; Subkey: "Software\OcalBrowser"; ValueType: string; ValueName: "Version";      ValueData: "9.5.04"; Flags: uninsdeletekey
+Root: HKA; Subkey: "Software\OcalBrowser"; ValueType: string; ValueName: "Version";      ValueData: "9.5.07"; Flags: uninsdeletekey
 Root: HKA; Subkey: "Software\OcalBrowser"; ValueType: string; ValueName: "InstallPath";  ValueData: "{app}";  Flags: uninsdeletekey
 
 ; ── Post-Install Run ────────────────────────────────────────
 [Run]
 Filename: "{app}\Ocal Browser.exe"; Parameters: "--install";      Description: "{cm:LaunchAfterInstall}";  Flags: nowait postinstall skipifsilent
-Filename: "https://github.com/neelkanth-patel26/Ocal-Browser/releases/tag/v9.5.04"; Description: "{cm:ReleaseNotes}"; Flags: shellexec postinstall skipifsilent unchecked
+Filename: "https://github.com/neelkanth-patel26/Ocal-Browser/releases/tag/v9.5.07"; Description: "{cm:ReleaseNotes}"; Flags: shellexec postinstall skipifsilent unchecked
 ; Trust self-signed cert so SmartScreen doesn\'t block subsequent launches
 Filename: "powershell.exe"; Parameters: "-ExecutionPolicy Bypass -WindowStyle Hidden -File ""{app}\scripts\trust-publisher.ps1"""; Flags: runhidden; StatusMsg: "Registering publisher certificate..."
 
@@ -339,14 +339,14 @@ begin
   if OptionsVisible then
   begin
     BtnToggleOptions.Caption := 'Hide options ▴';
-    WizardForm.ClientHeight := ScaleY(425);
+    WizardForm.ClientHeight := ScaleY(450);
     PnlMain.Height := WizardForm.ClientHeight;
     PnlWelcome.Height := WizardForm.ClientHeight;
   end
   else
   begin
     BtnToggleOptions.Caption := 'Installation options ▾';
-    WizardForm.ClientHeight := ScaleY(235);
+    WizardForm.ClientHeight := ScaleY(260);
     PnlMain.Height := WizardForm.ClientHeight;
     PnlWelcome.Height := WizardForm.ClientHeight;
   end;
@@ -467,8 +467,8 @@ begin
   LblBadge.Font.Size := 7;
   LblBadge.Font.Style := [fsBold];
   LblBadge.Font.Color := COLOR_ACCENT;
-  LblBadge.Left := ScaleX(10);
-  LblBadge.Top := ScaleY(8);
+  LblBadge.Left := ScaleX(12);
+  LblBadge.Top := ScaleY(9);
 
   LblTitle := TLabel.Create(WizardForm);
   LblTitle.Parent := InnerPnl;
@@ -478,8 +478,8 @@ begin
   LblTitle.Font.Size := 9;
   LblTitle.Font.Style := [fsBold];
   LblTitle.Font.Color := COLOR_TEXT;
-  LblTitle.Left := ScaleX(10);
-  LblTitle.Top := ScaleY(23);
+  LblTitle.Left := ScaleX(12);
+  LblTitle.Top := ScaleY(25);
 
   LblDesc := TLabel.Create(WizardForm);
   LblDesc.Parent := InnerPnl;
@@ -487,18 +487,18 @@ begin
   LblDesc.Caption := DescTxt;
   LblDesc.Font.Name := 'Segoe UI';
   LblDesc.Font.Size := 8;
-  LblDesc.Font.Color := COLOR_HEADER;
+  LblDesc.Font.Color := COLOR_MUTED;
   LblDesc.WordWrap := True;
-  LblDesc.Left := ScaleX(10);
-  LblDesc.Top := ScaleY(43);
-  LblDesc.Width := InnerPnl.Width - ScaleX(20);
+  LblDesc.Left := ScaleX(12);
+  LblDesc.Top := ScaleY(45);
+  LblDesc.Width := InnerPnl.Width - ScaleX(24);
 end;
 
 procedure BtnViewTermsClick(Sender: TObject);
 begin
   PnlWelcome.Hide;
   PnlTerms.Show;
-  WizardForm.ClientHeight := ScaleY(466);
+  WizardForm.ClientHeight := ScaleY(500);
   PnlMain.Height := WizardForm.ClientHeight;
   PnlTerms.Height := WizardForm.ClientHeight;
   SetTermsTabState(0);
@@ -509,9 +509,9 @@ begin
   PnlTerms.Hide;
   PnlWelcome.Show;
   if OptionsVisible then
-    WizardForm.ClientHeight := ScaleY(425)
+    WizardForm.ClientHeight := ScaleY(450)
   else
-    WizardForm.ClientHeight := ScaleY(235);
+    WizardForm.ClientHeight := ScaleY(260);
   PnlMain.Height := WizardForm.ClientHeight;
   PnlWelcome.Height := WizardForm.ClientHeight;
 end;
@@ -614,7 +614,7 @@ begin
     PnlOptionsBorder.Hide;
     PnlInstalling.Hide;
     PnlFinished.Show;
-    WizardForm.ClientHeight := ScaleY(148);
+    WizardForm.ClientHeight := ScaleY(160);
     PnlMain.Height := WizardForm.ClientHeight;
     PnlFinished.Height := WizardForm.ClientHeight;
   end;
@@ -634,16 +634,16 @@ var
   LogoPath: string;
   BannerBorder, BannerInner: TPanel;
   LblBanner: TLabel;
+  PnlSeparator: TPanel;
 begin
   OptionsVisible := False;
 
   WizardForm.Caption := 'Ocal Browser Setup';
-  WizardForm.ClientWidth := ScaleX(520);
-  WizardForm.ClientHeight := ScaleY(235);
+  WizardForm.ClientWidth := ScaleX(560);
+  WizardForm.ClientHeight := ScaleY(260);
   WizardForm.Position := poScreenCenter;
   WizardForm.Color := clWhite;
 
-  // Apply seamless white titlebar styling matching light theme
   ApplyModernTitleBar(WizardForm.Handle);
 
   // Hide default wizard chrome
@@ -655,14 +655,18 @@ begin
   WizardForm.NextButton.Hide;
   WizardForm.CancelButton.Hide;
 
-  // Outer Canvas Panel (Pure Crisp White)
+  // ─────────────────────────────────────────────────────────
+  //  Canvas Panel (Root Container)
+  // ─────────────────────────────────────────────────────────
   PnlMain := TPanel.Create(WizardForm);
   PnlMain.Parent := WizardForm;
   PnlMain.SetBounds(0, 0, WizardForm.ClientWidth, WizardForm.ClientHeight);
   PnlMain.Color := clWhite;
   PnlMain.BevelOuter := bvNone;
 
-  // 1. Welcome Screen
+  // ─────────────────────────────────────────────────────────
+  //  1. WELCOME SCREEN
+  // ─────────────────────────────────────────────────────────
   PnlWelcome := TPanel.Create(WizardForm);
   PnlWelcome.Parent := PnlMain;
   PnlWelcome.SetBounds(0, 0, PnlMain.Width, PnlMain.Height);
@@ -672,80 +676,91 @@ begin
   ExtractTemporaryFile('installer_logo.bmp');
   LogoPath := ExpandConstant('{tmp}\installer_logo.bmp');
 
+  // Logo — left-aligned hero mark
   if FileExists(LogoPath) then
   begin
     ImgLogo := TBitmapImage.Create(WizardForm);
     ImgLogo.Parent := PnlWelcome;
-    ImgLogo.SetBounds(ScaleX(24), ScaleY(18), ScaleX(64), ScaleY(64));
+    ImgLogo.SetBounds(ScaleX(32), ScaleY(24), ScaleX(56), ScaleY(56));
     ImgLogo.Stretch := True;
     ImgLogo.Bitmap.LoadFromFile(LogoPath);
   end;
 
+  // Brand Title — large, bold
   LblBrandTitle := TLabel.Create(WizardForm);
   LblBrandTitle.Parent := PnlWelcome;
   LblBrandTitle.Caption := 'Ocal Browser';
   LblBrandTitle.Font.Name := 'Segoe UI';
-  LblBrandTitle.Font.Size := 20;
+  LblBrandTitle.Font.Size := 22;
   LblBrandTitle.Font.Color := COLOR_TEXT;
   LblBrandTitle.Font.Style := [fsBold];
-  LblBrandTitle.Left := ScaleX(102);
-  LblBrandTitle.Top := ScaleY(16);
+  LblBrandTitle.Left := ScaleX(104);
+  LblBrandTitle.Top := ScaleY(18);
 
+  // Tagline
   LblBrandSub := TLabel.Create(WizardForm);
   LblBrandSub.Parent := PnlWelcome;
-  LblBrandSub.Caption := 'Fast, Secure, and Agentic Browser';
+  LblBrandSub.Caption := 'Fast, Secure, and Intelligent Browsing';
   LblBrandSub.Font.Name := 'Segoe UI';
-  LblBrandSub.Font.Size := 9;
+  LblBrandSub.Font.Size := 10;
   LblBrandSub.Font.Color := COLOR_MUTED;
-  LblBrandSub.Left := ScaleX(104);
-  LblBrandSub.Top := ScaleY(46);
+  LblBrandSub.Left := ScaleX(106);
+  LblBrandSub.Top := ScaleY(50);
 
+  // Version badge
   LblVersion := TLabel.Create(WizardForm);
   LblVersion.Parent := PnlWelcome;
-  LblVersion.Caption := 'Official Release • Stable';
+  LblVersion.Caption := 'v9.5.07  •  Stable Release';
   LblVersion.Font.Name := 'Segoe UI';
   LblVersion.Font.Size := 8;
   LblVersion.Font.Color := COLOR_ACCENT;
   LblVersion.Font.Style := [fsBold];
-  LblVersion.Left := ScaleX(104);
-  LblVersion.Top := ScaleY(66);
+  LblVersion.Left := ScaleX(106);
+  LblVersion.Top := ScaleY(72);
 
-  // Prominent "Accept and Install" Button
+  // Horizontal Separator
+  PnlSeparator := TPanel.Create(WizardForm);
+  PnlSeparator.Parent := PnlWelcome;
+  PnlSeparator.SetBounds(ScaleX(32), ScaleY(98), ScaleX(496), ScaleY(1));
+  PnlSeparator.Color := $E2E8F0;
+  PnlSeparator.BevelOuter := bvNone;
+
+  // Primary CTA Button — "Accept and Install"
   BtnInstall := TNewButton.Create(WizardForm);
   BtnInstall.Parent := PnlWelcome;
   BtnInstall.Caption := 'Accept and Install';
   BtnInstall.Font.Name := 'Segoe UI';
-  BtnInstall.Font.Size := 10;
+  BtnInstall.Font.Size := 11;
   BtnInstall.Font.Style := [fsBold];
-  BtnInstall.SetBounds(ScaleX(102), ScaleY(98), ScaleX(250), ScaleY(40));
+  BtnInstall.SetBounds(ScaleX(32), ScaleY(114), ScaleX(496), ScaleY(42));
   BtnInstall.OnClick := @BtnInstallClick;
 
-  // Legal Subtitle – single wrapping label (no overlap at any DPI)
+  // Legal Subtitle
   LblLegal := TLabel.Create(WizardForm);
   LblLegal.Parent := PnlWelcome;
   LblLegal.Caption := 'By clicking "Accept and Install", you agree to our';
   LblLegal.Font.Name := 'Segoe UI';
   LblLegal.Font.Size := 8;
   LblLegal.Font.Color := COLOR_HINT;
-  LblLegal.Left := ScaleX(104);
-  LblLegal.Top := ScaleY(146);
+  LblLegal.Left := ScaleX(32);
+  LblLegal.Top := ScaleY(166);
   LblLegal.AutoSize := True;
 
-  // "Terms of Service" link sits on the line below – safe at all DPI levels
+  // "Terms of Service" link
   LblTermsLink := TLabel.Create(WizardForm);
   LblTermsLink.Parent := PnlWelcome;
-  LblTermsLink.Caption := 'Terms of Service ↗';
+  LblTermsLink.Caption := 'Terms of Service';
   LblTermsLink.Font.Name := 'Segoe UI';
   LblTermsLink.Font.Size := 8;
   LblTermsLink.Font.Color := COLOR_ACCENT;
   LblTermsLink.Font.Style := [fsBold, fsUnderline];
   LblTermsLink.Cursor := crHand;
-  LblTermsLink.Left := ScaleX(104);
-  LblTermsLink.Top := ScaleY(158);
+  LblTermsLink.Left := ScaleX(286);
+  LblTermsLink.Top := ScaleY(166);
   LblTermsLink.AutoSize := True;
   LblTermsLink.OnClick := @BtnViewTermsClick;
 
-  // Options Toggle Link – positioned below the two-line legal text
+  // Bottom Links Row — Options + View Terms
   BtnToggleOptions := TLabel.Create(WizardForm);
   BtnToggleOptions.Parent := PnlWelcome;
   BtnToggleOptions.Caption := 'Installation options ▾';
@@ -754,38 +769,40 @@ begin
   BtnToggleOptions.Font.Color := COLOR_ACCENT;
   BtnToggleOptions.Font.Style := [fsBold];
   BtnToggleOptions.Cursor := crHand;
-  BtnToggleOptions.Left := ScaleX(104);
-  BtnToggleOptions.Top := ScaleY(178);
+  BtnToggleOptions.Left := ScaleX(32);
+  BtnToggleOptions.Top := ScaleY(190);
   BtnToggleOptions.OnClick := @BtnToggleOptionsClick;
 
   BtnViewTermsTopLink := TLabel.Create(WizardForm);
   BtnViewTermsTopLink.Parent := PnlWelcome;
   BtnViewTermsTopLink.ShowAccelChar := False;
-  BtnViewTermsTopLink.Caption := '•   View License & Terms ↗';
+  BtnViewTermsTopLink.Caption := 'View License & Terms ↗';
   BtnViewTermsTopLink.Font.Name := 'Segoe UI';
   BtnViewTermsTopLink.Font.Size := 8;
   BtnViewTermsTopLink.Font.Color := COLOR_ACCENT;
   BtnViewTermsTopLink.Font.Style := [fsBold];
   BtnViewTermsTopLink.Cursor := crHand;
-  BtnViewTermsTopLink.Left := ScaleX(224);
-  BtnViewTermsTopLink.Top := ScaleY(178);
+  BtnViewTermsTopLink.Left := ScaleX(180);
+  BtnViewTermsTopLink.Top := ScaleY(190);
   BtnViewTermsTopLink.OnClick := @BtnViewTermsClick;
 
-  // Options Panel Container (Card with 1px border #E2E8F0)
+  // ─────────────────────────────────────────────────────────
+  //  OPTIONS PANEL (Expandable Card)
+  // ─────────────────────────────────────────────────────────
   PnlOptionsBorder := TPanel.Create(WizardForm);
   PnlOptionsBorder.Parent := PnlWelcome;
-  PnlOptionsBorder.SetBounds(ScaleX(20), ScaleY(202), ScaleX(480), ScaleY(194));
-  PnlOptionsBorder.Color := $E2E8F0; // Soft modern border
+  PnlOptionsBorder.SetBounds(ScaleX(24), ScaleY(218), ScaleX(512), ScaleY(210));
+  PnlOptionsBorder.Color := $E2E8F0;
   PnlOptionsBorder.BevelOuter := bvNone;
   PnlOptionsBorder.Visible := False;
 
   PnlOptions := TPanel.Create(WizardForm);
   PnlOptions.Parent := PnlOptionsBorder;
   PnlOptions.SetBounds(ScaleX(1), ScaleY(1), PnlOptionsBorder.Width - ScaleX(2), PnlOptionsBorder.Height - ScaleY(2));
-  PnlOptions.Color := COLOR_BOX_BG; // #F8FAFC
+  PnlOptions.Color := COLOR_BOX_BG;
   PnlOptions.BevelOuter := bvNone;
 
-  // Section 1: Folder Selection
+  // Section: Folder Selection
   LblPathTitle := TLabel.Create(WizardForm);
   LblPathTitle.Parent := PnlOptions;
   LblPathTitle.Caption := 'INSTALLATION LOCATION';
@@ -793,15 +810,15 @@ begin
   LblPathTitle.Font.Color := COLOR_HEADER;
   LblPathTitle.Font.Size := 8;
   LblPathTitle.Font.Style := [fsBold];
-  LblPathTitle.Left := ScaleX(14);
-  LblPathTitle.Top := ScaleY(12);
+  LblPathTitle.Left := ScaleX(16);
+  LblPathTitle.Top := ScaleY(14);
 
   EditPath := TNewEdit.Create(WizardForm);
   EditPath.Parent := PnlOptions;
   EditPath.Text := ExpandConstant('{autopf}\Ocal');
   EditPath.Font.Name := 'Segoe UI';
   EditPath.Font.Size := 9;
-  EditPath.SetBounds(ScaleX(14), ScaleY(30), ScaleX(354), ScaleY(26));
+  EditPath.SetBounds(ScaleX(16), ScaleY(34), ScaleX(388), ScaleY(26));
 
   BtnBrowse := TNewButton.Create(WizardForm);
   BtnBrowse.Parent := PnlOptions;
@@ -809,16 +826,16 @@ begin
   BtnBrowse.Font.Name := 'Segoe UI';
   BtnBrowse.Font.Size := 8;
   BtnBrowse.Font.Style := [fsBold];
-  BtnBrowse.SetBounds(ScaleX(378), ScaleY(29), ScaleX(86), ScaleY(28));
+  BtnBrowse.SetBounds(ScaleX(414), ScaleY(33), ScaleX(86), ScaleY(28));
   BtnBrowse.OnClick := @BtnBrowseClick;
 
-  // Divider Line
+  // Divider
   Sep1 := TBevel.Create(WizardForm);
   Sep1.Parent := PnlOptions;
   Sep1.Shape := bsTopLine;
-  Sep1.SetBounds(ScaleX(14), ScaleY(68), PnlOptions.Width - ScaleX(28), ScaleY(2));
+  Sep1.SetBounds(ScaleX(16), ScaleY(72), PnlOptions.Width - ScaleX(32), ScaleY(2));
 
-  // Option 1: Default Browser
+  // Option Row 1
   ChkDefaultBrowser := TNewCheckBox.Create(WizardForm);
   ChkDefaultBrowser.Parent := PnlOptions;
   ChkDefaultBrowser.Caption := 'Set as default browser';
@@ -826,20 +843,19 @@ begin
   ChkDefaultBrowser.Font.Name := 'Segoe UI';
   ChkDefaultBrowser.Font.Size := 9;
   ChkDefaultBrowser.Font.Style := [fsBold];
-  ChkDefaultBrowser.Left := ScaleX(14);
-  ChkDefaultBrowser.Top := ScaleY(78);
-  ChkDefaultBrowser.Width := ScaleX(210);
+  ChkDefaultBrowser.Left := ScaleX(16);
+  ChkDefaultBrowser.Top := ScaleY(84);
+  ChkDefaultBrowser.Width := ScaleX(240);
 
   LblDefBrowserSub := TLabel.Create(WizardForm);
   LblDefBrowserSub.Parent := PnlOptions;
-  LblDefBrowserSub.Caption := 'Open web links & HTML with Ocal';
+  LblDefBrowserSub.Caption := 'Open web links & HTML files with Ocal';
   LblDefBrowserSub.Font.Name := 'Segoe UI';
   LblDefBrowserSub.Font.Size := 8;
   LblDefBrowserSub.Font.Color := COLOR_HINT;
-  LblDefBrowserSub.Left := ScaleX(34);
-  LblDefBrowserSub.Top := ScaleY(98);
+  LblDefBrowserSub.Left := ScaleX(36);
+  LblDefBrowserSub.Top := ScaleY(104);
 
-  // Option 2: Desktop Shortcut
   ChkDesktopIcon := TNewCheckBox.Create(WizardForm);
   ChkDesktopIcon.Parent := PnlOptions;
   ChkDesktopIcon.Caption := 'Create desktop shortcut';
@@ -847,9 +863,9 @@ begin
   ChkDesktopIcon.Font.Name := 'Segoe UI';
   ChkDesktopIcon.Font.Size := 9;
   ChkDesktopIcon.Font.Style := [fsBold];
-  ChkDesktopIcon.Left := ScaleX(244);
-  ChkDesktopIcon.Top := ScaleY(78);
-  ChkDesktopIcon.Width := ScaleX(210);
+  ChkDesktopIcon.Left := ScaleX(264);
+  ChkDesktopIcon.Top := ScaleY(84);
+  ChkDesktopIcon.Width := ScaleX(240);
 
   LblDesktopSub := TLabel.Create(WizardForm);
   LblDesktopSub.Parent := PnlOptions;
@@ -857,10 +873,10 @@ begin
   LblDesktopSub.Font.Name := 'Segoe UI';
   LblDesktopSub.Font.Size := 8;
   LblDesktopSub.Font.Color := COLOR_HINT;
-  LblDesktopSub.Left := ScaleX(264);
-  LblDesktopSub.Top := ScaleY(98);
+  LblDesktopSub.Left := ScaleX(284);
+  LblDesktopSub.Top := ScaleY(104);
 
-  // Option 3: PDF Viewer
+  // Option Row 2
   ChkPDFViewer := TNewCheckBox.Create(WizardForm);
   ChkPDFViewer.Parent := PnlOptions;
   ChkPDFViewer.Caption := 'Enable built-in PDF viewer';
@@ -868,8 +884,8 @@ begin
   ChkPDFViewer.Font.Name := 'Segoe UI';
   ChkPDFViewer.Font.Size := 9;
   ChkPDFViewer.Font.Style := [fsBold];
-  ChkPDFViewer.Left := ScaleX(14);
-  ChkPDFViewer.Top := ScaleY(126);
+  ChkPDFViewer.Left := ScaleX(16);
+  ChkPDFViewer.Top := ScaleY(134);
   ChkPDFViewer.Width := ScaleX(260);
 
   LblPDFSub := TLabel.Create(WizardForm);
@@ -878,10 +894,9 @@ begin
   LblPDFSub.Font.Name := 'Segoe UI';
   LblPDFSub.Font.Size := 8;
   LblPDFSub.Font.Color := COLOR_HINT;
-  LblPDFSub.Left := ScaleX(34);
-  LblPDFSub.Top := ScaleY(146);
+  LblPDFSub.Left := ScaleX(36);
+  LblPDFSub.Top := ScaleY(154);
 
-  // Option 4: Install Scope (All Users vs Current User)
   ChkAllUsers := TNewCheckBox.Create(WizardForm);
   ChkAllUsers.Parent := PnlOptions;
   ChkAllUsers.Caption := 'Install for all users';
@@ -889,24 +904,26 @@ begin
   ChkAllUsers.Font.Name := 'Segoe UI';
   ChkAllUsers.Font.Size := 9;
   ChkAllUsers.Font.Style := [fsBold];
-  ChkAllUsers.Left := ScaleX(244);
-  ChkAllUsers.Top := ScaleY(126);
-  ChkAllUsers.Width := ScaleX(210);
+  ChkAllUsers.Left := ScaleX(264);
+  ChkAllUsers.Top := ScaleY(134);
+  ChkAllUsers.Width := ScaleX(240);
   ChkAllUsers.OnClick := @ChkAllUsersClick;
 
   LblAllUsersSub := TLabel.Create(WizardForm);
   LblAllUsersSub.Parent := PnlOptions;
-  LblAllUsersSub.Caption := 'System-wide (Program Files)';
+  LblAllUsersSub.Caption := 'System-wide install (Program Files)';
   LblAllUsersSub.Font.Name := 'Segoe UI';
   LblAllUsersSub.Font.Size := 8;
   LblAllUsersSub.Font.Color := COLOR_HINT;
-    LblAllUsersSub.Left := ScaleX(264);
-  LblAllUsersSub.Top := ScaleY(146);
+  LblAllUsersSub.Left := ScaleX(284);
+  LblAllUsersSub.Top := ScaleY(154);
 
-  // 1b. Terms & Conditions Screen (Modal Panel inside PnlMain)
+  // ─────────────────────────────────────────────────────────
+  //  TERMS & CONDITIONS SCREEN
+  // ─────────────────────────────────────────────────────────
   PnlTerms := TPanel.Create(WizardForm);
   PnlTerms.Parent := PnlMain;
-  PnlTerms.SetBounds(0, 0, PnlMain.Width, ScaleY(466));
+  PnlTerms.SetBounds(0, 0, PnlMain.Width, ScaleY(496));
   PnlTerms.Color := clWhite;
   PnlTerms.BevelOuter := bvNone;
   PnlTerms.Visible := False;
@@ -916,11 +933,11 @@ begin
   LblTermsTitle.ShowAccelChar := False;
   LblTermsTitle.Caption := 'Terms of Service & License Agreement';
   LblTermsTitle.Font.Name := 'Segoe UI';
-  LblTermsTitle.Font.Size := 11;
+  LblTermsTitle.Font.Size := 13;
   LblTermsTitle.Font.Style := [fsBold];
   LblTermsTitle.Font.Color := COLOR_TEXT;
-  LblTermsTitle.Left := ScaleX(20);
-  LblTermsTitle.Top := ScaleY(12);
+  LblTermsTitle.Left := ScaleX(28);
+  LblTermsTitle.Top := ScaleY(14);
 
   LblTermsSub := TLabel.Create(WizardForm);
   LblTermsSub.Parent := PnlTerms;
@@ -928,33 +945,32 @@ begin
   LblTermsSub.Font.Name := 'Segoe UI';
   LblTermsSub.Font.Size := 8;
   LblTermsSub.Font.Color := COLOR_MUTED;
-  LblTermsSub.Left := ScaleX(20);
-  LblTermsSub.Top := ScaleY(32);
+  LblTermsSub.Left := ScaleX(28);
+  LblTermsSub.Top := ScaleY(38);
 
   BtnOpenLicenseExternal := TLabel.Create(WizardForm);
   BtnOpenLicenseExternal.Parent := PnlTerms;
   BtnOpenLicenseExternal.ShowAccelChar := False;
-  BtnOpenLicenseExternal.Caption := 'Open in text editor ↗';
+  BtnOpenLicenseExternal.Caption := 'Open in editor ↗';
   BtnOpenLicenseExternal.Font.Name := 'Segoe UI';
   BtnOpenLicenseExternal.Font.Size := 8;
   BtnOpenLicenseExternal.Font.Color := COLOR_ACCENT;
   BtnOpenLicenseExternal.Font.Style := [fsBold, fsUnderline];
   BtnOpenLicenseExternal.Cursor := crHand;
-  BtnOpenLicenseExternal.Left := ScaleX(360);
-  BtnOpenLicenseExternal.Top := ScaleY(14);
+  BtnOpenLicenseExternal.Left := ScaleX(420);
+  BtnOpenLicenseExternal.Top := ScaleY(16);
   BtnOpenLicenseExternal.OnClick := @BtnOpenLicenseExternalClick;
 
-  // Modern Segmented Pill Tab Bar (macOS / Modern Windows 11 style)
+  // Segmented Tab Bar
   PnlTabBar := TPanel.Create(WizardForm);
   PnlTabBar.Parent := PnlTerms;
-  PnlTabBar.SetBounds(ScaleX(20), ScaleY(52), ScaleX(480), ScaleY(30));
-  PnlTabBar.Color := $F1F5F9; // Soft modern slate-100 pill track
+  PnlTabBar.SetBounds(ScaleX(28), ScaleY(58), ScaleX(504), ScaleY(32));
+  PnlTabBar.Color := $F1F5F9;
   PnlTabBar.BevelOuter := bvNone;
 
-  // Segment 1: Highlights
   TabHighlights := TPanel.Create(WizardForm);
   TabHighlights.Parent := PnlTabBar;
-  TabHighlights.SetBounds(ScaleX(2), ScaleY(2), ScaleX(156), ScaleY(26));
+  TabHighlights.SetBounds(ScaleX(2), ScaleY(2), ScaleX(166), ScaleY(28));
   TabHighlights.BevelOuter := bvNone;
   TabHighlights.Cursor := crHand;
   TabHighlights.OnClick := @TabHighlightsClick;
@@ -962,7 +978,7 @@ begin
   LblTabHighlights := TLabel.Create(WizardForm);
   LblTabHighlights.Parent := TabHighlights;
   LblTabHighlights.ShowAccelChar := False;
-  LblTabHighlights.Caption := '✦ Key Highlights';
+  LblTabHighlights.Caption := 'Key Highlights';
   LblTabHighlights.Font.Name := 'Segoe UI';
   LblTabHighlights.Font.Size := 8;
   LblTabHighlights.Alignment := taCenter;
@@ -971,10 +987,9 @@ begin
   LblTabHighlights.Cursor := crHand;
   LblTabHighlights.OnClick := @TabHighlightsClick;
 
-  // Segment 2: Privacy & Sync
   TabPrivacy := TPanel.Create(WizardForm);
   TabPrivacy.Parent := PnlTabBar;
-  TabPrivacy.SetBounds(ScaleX(162), ScaleY(2), ScaleX(156), ScaleY(26));
+  TabPrivacy.SetBounds(ScaleX(170), ScaleY(2), ScaleX(166), ScaleY(28));
   TabPrivacy.BevelOuter := bvNone;
   TabPrivacy.Cursor := crHand;
   TabPrivacy.OnClick := @TabPrivacyClick;
@@ -982,7 +997,7 @@ begin
   LblTabPrivacy := TLabel.Create(WizardForm);
   LblTabPrivacy.Parent := TabPrivacy;
   LblTabPrivacy.ShowAccelChar := False;
-  LblTabPrivacy.Caption := '🛡️ Privacy & Sync';
+  LblTabPrivacy.Caption := 'Privacy & Sync';
   LblTabPrivacy.Font.Name := 'Segoe UI';
   LblTabPrivacy.Font.Size := 8;
   LblTabPrivacy.Alignment := taCenter;
@@ -991,10 +1006,9 @@ begin
   LblTabPrivacy.Cursor := crHand;
   LblTabPrivacy.OnClick := @TabPrivacyClick;
 
-  // Segment 3: Full Legal Text
   TabFullEula := TPanel.Create(WizardForm);
   TabFullEula.Parent := PnlTabBar;
-  TabFullEula.SetBounds(ScaleX(322), ScaleY(2), ScaleX(156), ScaleY(26));
+  TabFullEula.SetBounds(ScaleX(338), ScaleY(2), ScaleX(164), ScaleY(28));
   TabFullEula.BevelOuter := bvNone;
   TabFullEula.Cursor := crHand;
   TabFullEula.OnClick := @TabFullEulaClick;
@@ -1002,7 +1016,7 @@ begin
   LblTabFullEula := TLabel.Create(WizardForm);
   LblTabFullEula.Parent := TabFullEula;
   LblTabFullEula.ShowAccelChar := False;
-  LblTabFullEula.Caption := '📜 Full Legal Text';
+  LblTabFullEula.Caption := 'Full Legal Text';
   LblTabFullEula.Font.Name := 'Segoe UI';
   LblTabFullEula.Font.Size := 8;
   LblTabFullEula.Alignment := taCenter;
@@ -1011,33 +1025,33 @@ begin
   LblTabFullEula.Cursor := crHand;
   LblTabFullEula.OnClick := @TabFullEulaClick;
 
-  // View 1: Highlights (Bento Grid)
+  // View 1: Highlights (Bento Card Grid)
   PnlViewHighlights := TPanel.Create(WizardForm);
   PnlViewHighlights.Parent := PnlTerms;
-  PnlViewHighlights.SetBounds(ScaleX(20), ScaleY(84), ScaleX(480), ScaleY(296));
+  PnlViewHighlights.SetBounds(ScaleX(28), ScaleY(96), ScaleX(504), ScaleY(310));
   PnlViewHighlights.Color := clWhite;
   PnlViewHighlights.BevelOuter := bvNone;
 
-  CreateFeatureCard(PnlViewHighlights, 0, 0, ScaleX(235), ScaleY(116),
-    '🔒 ZERO-CLOUD PRIVACY', '100% Local Storage',
+  CreateFeatureCard(PnlViewHighlights, 0, 0, ScaleX(247), ScaleY(120),
+    'ZERO-CLOUD PRIVACY', '100% Local Storage',
     'Browsing history, Vault passwords, and sessions remain strictly on your local PC. No remote profiling or targeted ad-trackers.');
 
-  CreateFeatureCard(PnlViewHighlights, ScaleX(245), 0, ScaleX(235), ScaleY(116),
-    '⚡ OCAL CONNECT P2P', 'Local LAN Sync Bridge',
+  CreateFeatureCard(PnlViewHighlights, ScaleX(257), 0, ScaleX(247), ScaleY(120),
+    'OCAL CONNECT P2P', 'Local LAN Sync Bridge',
     'Sync bookmarks and tabs directly over local Wi-Fi with end-to-end encryption. No central cloud relays or data harvesting.');
 
-  CreateFeatureCard(PnlViewHighlights, 0, ScaleY(122), ScaleX(235), ScaleY(116),
-    '⚖️ PERMISSIVE LICENSE', 'Personal & Business',
+  CreateFeatureCard(PnlViewHighlights, 0, ScaleY(128), ScaleX(247), ScaleY(120),
+    'PERMISSIVE LICENSE', 'Personal & Business',
     'Free to install across your desktop and laptop devices for personal work and commercial productivity without seat fees.');
 
-  CreateFeatureCard(PnlViewHighlights, ScaleX(245), ScaleY(122), ScaleX(235), ScaleY(116),
-    '🤖 AI COPILOT SANDBOX', 'Private & On-Demand',
+  CreateFeatureCard(PnlViewHighlights, ScaleX(257), ScaleY(128), ScaleX(247), ScaleY(120),
+    'AI COPILOT SANDBOX', 'Private & On-Demand',
     'AI features run strictly when you prompt them. Conversation context is isolated and never trained on your browsing history.');
 
-  // Bottom Banner on Highlights
+  // Bottom Banner
   BannerBorder := TPanel.Create(WizardForm);
   BannerBorder.Parent := PnlViewHighlights;
-  BannerBorder.SetBounds(0, ScaleY(246), ScaleX(480), ScaleY(44));
+  BannerBorder.SetBounds(0, ScaleY(258), ScaleX(504), ScaleY(44));
   BannerBorder.Color := $E2E8F0;
   BannerBorder.BevelOuter := bvNone;
 
@@ -1050,45 +1064,45 @@ begin
   LblBanner := TLabel.Create(WizardForm);
   LblBanner.Parent := BannerInner;
   LblBanner.ShowAccelChar := False;
-  LblBanner.Caption := '✓  Transparent Open-Source Foundation (Chromium & Electron)  •  Zero Telemetry Lock-in  •  Uninstall Anytime';
+  LblBanner.Caption := 'Open-Source Foundation (Chromium & Electron)  •  Zero Telemetry  •  Uninstall Anytime';
   LblBanner.Font.Name := 'Segoe UI';
   LblBanner.Font.Size := 8;
   LblBanner.Font.Style := [fsBold];
   LblBanner.Font.Color := $047857;
-  LblBanner.Left := ScaleX(10);
+  LblBanner.Left := ScaleX(12);
   LblBanner.Top := ScaleY(13);
 
   // View 2: Privacy Deep Dive
   PnlViewPrivacy := TPanel.Create(WizardForm);
   PnlViewPrivacy.Parent := PnlTerms;
-  PnlViewPrivacy.SetBounds(ScaleX(20), ScaleY(84), ScaleX(480), ScaleY(296));
+  PnlViewPrivacy.SetBounds(ScaleX(28), ScaleY(96), ScaleX(504), ScaleY(310));
   PnlViewPrivacy.Color := clWhite;
   PnlViewPrivacy.BevelOuter := bvNone;
   PnlViewPrivacy.Visible := False;
 
-  CreateFeatureCard(PnlViewPrivacy, 0, 0, ScaleX(480), ScaleY(92),
-    '🔐 LOCAL VAULT & AES-256 CRYPTOGRAPHY', 'Zero Plaintext Storage on Disk',
+  CreateFeatureCard(PnlViewPrivacy, 0, 0, ScaleX(504), ScaleY(96),
+    'LOCAL VAULT & AES-256 CRYPTOGRAPHY', 'Zero Plaintext Storage on Disk',
     'Saved credentials, autofill data, and encryption tokens are protected using standard OS DPAPI and AES-256. Neither Gaming Network Studio nor any third party can access or recover your master keys.');
 
-  CreateFeatureCard(PnlViewPrivacy, 0, ScaleY(98), ScaleX(480), ScaleY(92),
-    '📡 OCAL CONNECT P2P PROTOCOL', 'Ephemeral LAN Handshake',
+  CreateFeatureCard(PnlViewPrivacy, 0, ScaleY(104), ScaleX(504), ScaleY(96),
+    'OCAL CONNECT P2P PROTOCOL', 'Ephemeral LAN Handshake',
     'Device pairing occurs strictly through an in-memory PIN/QR exchange over your local subnet. Raw browsing packets never leave your private network, rendering cloud interception technically impossible.');
 
-  CreateFeatureCard(PnlViewPrivacy, 0, ScaleY(196), ScaleX(480), ScaleY(94),
-    '🛡️ WEBSHIELD ANTI-TRACKER & CRASH TELEMETRY', 'User-Controllable Protection',
+  CreateFeatureCard(PnlViewPrivacy, 0, ScaleY(208), ScaleX(504), ScaleY(96),
+    'WEBSHIELD ANTI-TRACKER & CRASH TELEMETRY', 'User-Controllable Protection',
     'WebShield evaluates tracker-block rules strictly on-device. Anonymised crash diagnostics can be completely toggled off at any moment in Settings > Privacy without restricting any browser capabilities.');
 
-  // View 3: Full Legal Text (RichEdit Viewer Card)
+  // View 3: Full Legal Text (Rich Text Viewer)
   PnlViewFullEula := TPanel.Create(WizardForm);
   PnlViewFullEula.Parent := PnlTerms;
-  PnlViewFullEula.SetBounds(ScaleX(20), ScaleY(84), ScaleX(480), ScaleY(296));
+  PnlViewFullEula.SetBounds(ScaleX(28), ScaleY(96), ScaleX(504), ScaleY(310));
   PnlViewFullEula.Color := clWhite;
   PnlViewFullEula.BevelOuter := bvNone;
   PnlViewFullEula.Visible := False;
 
   PnlTermsBorder := TPanel.Create(WizardForm);
   PnlTermsBorder.Parent := PnlViewFullEula;
-  PnlTermsBorder.SetBounds(0, 0, ScaleX(480), ScaleY(296));
+  PnlTermsBorder.SetBounds(0, 0, ScaleX(504), ScaleY(310));
   PnlTermsBorder.Color := $E2E8F0;
   PnlTermsBorder.BevelOuter := bvNone;
 
@@ -1098,15 +1112,14 @@ begin
   PnlTermsInner.Color := clWhite;
   PnlTermsInner.BevelOuter := bvNone;
 
-  // Embed rich-text license viewer (TRichEditViewer) seamlessly with zero harsh 3D borders
   WizardForm.LicenseMemo.Parent := PnlTermsInner;
-  WizardForm.LicenseMemo.SetBounds(ScaleX(8), ScaleY(8), PnlTermsInner.Width - ScaleX(12), PnlTermsInner.Height - ScaleY(16));
+  WizardForm.LicenseMemo.SetBounds(ScaleX(10), ScaleY(10), PnlTermsInner.Width - ScaleX(20), PnlTermsInner.Height - ScaleY(20));
   WizardForm.LicenseMemo.BorderStyle := bsNone;
   WizardForm.LicenseMemo.Color := clWhite;
   WizardForm.LicenseMemo.ReadOnly := True;
   WizardForm.LicenseMemo.ScrollBars := ssVertical;
 
-  // Bottom Controls
+  // Bottom Action Bar
   ChkAcceptTerms := TNewCheckBox.Create(WizardForm);
   ChkAcceptTerms.Parent := PnlTerms;
   ChkAcceptTerms.Caption := 'I agree to the Ocal Browser Terms of Service & Privacy Policy';
@@ -1114,7 +1127,7 @@ begin
   ChkAcceptTerms.Font.Name := 'Segoe UI';
   ChkAcceptTerms.Font.Size := 9;
   ChkAcceptTerms.Font.Style := [fsBold];
-  ChkAcceptTerms.SetBounds(ScaleX(20), ScaleY(388), ScaleX(480), ScaleY(20));
+  ChkAcceptTerms.SetBounds(ScaleX(28), ScaleY(414), ScaleX(504), ScaleY(20));
   ChkAcceptTerms.OnClick := @ChkAcceptTermsClick;
 
   BtnBackFromTerms := TNewButton.Create(WizardForm);
@@ -1122,19 +1135,21 @@ begin
   BtnBackFromTerms.Caption := '← Back';
   BtnBackFromTerms.Font.Name := 'Segoe UI';
   BtnBackFromTerms.Font.Size := 9;
-  BtnBackFromTerms.SetBounds(ScaleX(20), ScaleY(416), ScaleX(110), ScaleY(36));
+  BtnBackFromTerms.SetBounds(ScaleX(28), ScaleY(444), ScaleX(120), ScaleY(38));
   BtnBackFromTerms.OnClick := @BtnBackFromTermsClick;
 
   BtnAcceptFromTerms := TNewButton.Create(WizardForm);
   BtnAcceptFromTerms.Parent := PnlTerms;
   BtnAcceptFromTerms.Caption := 'Accept and Install';
   BtnAcceptFromTerms.Font.Name := 'Segoe UI';
-  BtnAcceptFromTerms.Font.Size := 9;
+  BtnAcceptFromTerms.Font.Size := 10;
   BtnAcceptFromTerms.Font.Style := [fsBold];
-  BtnAcceptFromTerms.SetBounds(ScaleX(340), ScaleY(416), ScaleX(160), ScaleY(36));
+  BtnAcceptFromTerms.SetBounds(ScaleX(372), ScaleY(444), ScaleX(160), ScaleY(38));
   BtnAcceptFromTerms.OnClick := @BtnInstallClick;
 
-  // 2. Installing Screen
+  // ─────────────────────────────────────────────────────────
+  //  2. INSTALLING SCREEN
+  // ─────────────────────────────────────────────────────────
   PnlInstalling := TPanel.Create(WizardForm);
   PnlInstalling.Parent := PnlMain;
   PnlInstalling.SetBounds(0, 0, PnlMain.Width, PnlMain.Height);
@@ -1146,7 +1161,7 @@ begin
   begin
     ImgInstallLogo := TBitmapImage.Create(WizardForm);
     ImgInstallLogo.Parent := PnlInstalling;
-    ImgInstallLogo.SetBounds(ScaleX(28), ScaleY(22), ScaleX(52), ScaleY(52));
+    ImgInstallLogo.SetBounds(ScaleX(32), ScaleY(28), ScaleX(48), ScaleY(48));
     ImgInstallLogo.Stretch := True;
     ImgInstallLogo.Bitmap.LoadFromFile(LogoPath);
   end;
@@ -1155,11 +1170,11 @@ begin
   LblInstallTitle.Parent := PnlInstalling;
   LblInstallTitle.Caption := 'Installing Ocal Browser...';
   LblInstallTitle.Font.Name := 'Segoe UI';
-  LblInstallTitle.Font.Size := 15;
+  LblInstallTitle.Font.Size := 16;
   LblInstallTitle.Font.Color := COLOR_TEXT;
   LblInstallTitle.Font.Style := [fsBold];
-  LblInstallTitle.Left := ScaleX(94);
-  LblInstallTitle.Top := ScaleY(22);
+  LblInstallTitle.Left := ScaleX(96);
+  LblInstallTitle.Top := ScaleY(26);
 
   LblInstallStatus := TLabel.Create(WizardForm);
   LblInstallStatus.Parent := PnlInstalling;
@@ -1167,34 +1182,36 @@ begin
   LblInstallStatus.Font.Name := 'Segoe UI';
   LblInstallStatus.Font.Color := COLOR_MUTED;
   LblInstallStatus.Font.Size := 9;
-  LblInstallStatus.Left := ScaleX(96);
-  LblInstallStatus.Top := ScaleY(50);
-  LblInstallStatus.Width := ScaleX(330);
+  LblInstallStatus.Left := ScaleX(98);
+  LblInstallStatus.Top := ScaleY(54);
+  LblInstallStatus.Width := ScaleX(360);
 
   LblProgressPct := TLabel.Create(WizardForm);
   LblProgressPct.Parent := PnlInstalling;
   LblProgressPct.Caption := '0%';
   LblProgressPct.Font.Name := 'Segoe UI';
-  LblProgressPct.Font.Color := $00C78402; // Vibrant Ocal Azure (#0284C7)
+  LblProgressPct.Font.Color := COLOR_ACCENT;
   LblProgressPct.Font.Size := 9;
   LblProgressPct.Font.Style := [fsBold];
   LblProgressPct.Alignment := taRightJustify;
-  LblProgressPct.SetBounds(ScaleX(430), ScaleY(50), ScaleX(62), ScaleY(18));
+  LblProgressPct.SetBounds(ScaleX(468), ScaleY(54), ScaleX(60), ScaleY(18));
 
-  // Sleek, modern custom progress bar (Outer track + inner vibrant fill)
+  // Modern Progress Bar
   PnlProgressTrack := TPanel.Create(WizardForm);
   PnlProgressTrack.Parent := PnlInstalling;
-  PnlProgressTrack.SetBounds(ScaleX(28), ScaleY(86), ScaleX(464), ScaleY(8));
-  PnlProgressTrack.Color := $00E2E8F0; // #E2E8F0 (soft light slate track)
+  PnlProgressTrack.SetBounds(ScaleX(32), ScaleY(92), ScaleX(496), ScaleY(6));
+  PnlProgressTrack.Color := $00E2E8F0;
   PnlProgressTrack.BevelOuter := bvNone;
 
   PnlProgressFill := TPanel.Create(WizardForm);
   PnlProgressFill.Parent := PnlProgressTrack;
   PnlProgressFill.SetBounds(0, 0, 0, PnlProgressTrack.Height);
-  PnlProgressFill.Color := $00D47800; // #0078D4 (vibrant Ocal blue accent)
+  PnlProgressFill.Color := COLOR_ACCENT;
   PnlProgressFill.BevelOuter := bvNone;
 
-  // 3. Finished Screen
+  // ─────────────────────────────────────────────────────────
+  //  3. FINISHED SCREEN
+  // ─────────────────────────────────────────────────────────
   PnlFinished := TPanel.Create(WizardForm);
   PnlFinished.Parent := PnlMain;
   PnlFinished.SetBounds(0, 0, PnlMain.Width, PnlMain.Height);
@@ -1206,37 +1223,37 @@ begin
   begin
     ImgFinishLogo := TBitmapImage.Create(WizardForm);
     ImgFinishLogo.Parent := PnlFinished;
-    ImgFinishLogo.SetBounds(ScaleX(28), ScaleY(22), ScaleX(52), ScaleY(52));
+    ImgFinishLogo.SetBounds(ScaleX(32), ScaleY(24), ScaleX(52), ScaleY(52));
     ImgFinishLogo.Stretch := True;
     ImgFinishLogo.Bitmap.LoadFromFile(LogoPath);
   end;
 
   LblFinishedTitle := TLabel.Create(WizardForm);
   LblFinishedTitle.Parent := PnlFinished;
-  LblFinishedTitle.Caption := 'Installation Complete!';
+  LblFinishedTitle.Caption := 'Installation Complete';
   LblFinishedTitle.Font.Name := 'Segoe UI';
-  LblFinishedTitle.Font.Size := 16;
+  LblFinishedTitle.Font.Size := 18;
   LblFinishedTitle.Font.Color := COLOR_TEXT;
   LblFinishedTitle.Font.Style := [fsBold];
-  LblFinishedTitle.Left := ScaleX(94);
+  LblFinishedTitle.Left := ScaleX(100);
   LblFinishedTitle.Top := ScaleY(22);
 
   LblFinishedSub := TLabel.Create(WizardForm);
   LblFinishedSub.Parent := PnlFinished;
-  LblFinishedSub.Caption := 'Ocal Browser is ready to explore.';
+  LblFinishedSub.Caption := 'Ocal Browser has been successfully installed and is ready to explore.';
   LblFinishedSub.Font.Name := 'Segoe UI';
   LblFinishedSub.Font.Color := COLOR_MUTED;
   LblFinishedSub.Font.Size := 9;
-  LblFinishedSub.Left := ScaleX(96);
-  LblFinishedSub.Top := ScaleY(50);
+  LblFinishedSub.Left := ScaleX(100);
+  LblFinishedSub.Top := ScaleY(52);
 
   BtnFinishLaunch := TNewButton.Create(WizardForm);
   BtnFinishLaunch.Parent := PnlFinished;
   BtnFinishLaunch.Caption := 'Launch Ocal Browser';
   BtnFinishLaunch.Font.Name := 'Segoe UI';
-  BtnFinishLaunch.Font.Size := 10;
+  BtnFinishLaunch.Font.Size := 11;
   BtnFinishLaunch.Font.Style := [fsBold];
-  BtnFinishLaunch.SetBounds(ScaleX(94), ScaleY(84), ScaleX(220), ScaleY(38));
+  BtnFinishLaunch.SetBounds(ScaleX(100), ScaleY(88), ScaleX(240), ScaleY(40));
   BtnFinishLaunch.OnClick := @BtnFinishLaunchClick;
 end;
 
@@ -1254,7 +1271,7 @@ var
   UninstConfirmForm: TSetupForm;
   ImgLogo: TBitmapImage;
   LblTitle, LblSub, LblFeedbackHint, LblFeedbackEmail: TLabel;
-  PnlFeedbackCard: TPanel;
+  PnlFeedbackBorder, PnlFeedbackCard: TPanel;
   BtnKeep, BtnUninstall, BtnFeedback: TNewButton;
   LogoPath: string;
   ErrorCode: Integer;
@@ -1268,7 +1285,7 @@ begin
     Exit;
   end;
 
-  UninstConfirmForm := CreateCustomForm(ScaleX(480), ScaleY(240), False, False);
+  UninstConfirmForm := CreateCustomForm(ScaleX(540), ScaleY(260), False, False);
   try
     UninstConfirmForm.Caption := 'Ocal Browser Uninstall';
     UninstConfirmForm.Position := poScreenCenter;
@@ -1281,7 +1298,7 @@ begin
     begin
       ImgLogo := TBitmapImage.Create(UninstConfirmForm);
       ImgLogo.Parent := UninstConfirmForm;
-      ImgLogo.SetBounds(ScaleX(28), ScaleY(22), ScaleX(52), ScaleY(52));
+      ImgLogo.SetBounds(ScaleX(32), ScaleY(24), ScaleX(52), ScaleY(52));
       ImgLogo.Stretch := True;
       ImgLogo.Bitmap.LoadFromFile(LogoPath);
     end;
@@ -1290,10 +1307,10 @@ begin
     LblTitle.Parent := UninstConfirmForm;
     LblTitle.Caption := 'Uninstall Ocal Browser?';
     LblTitle.Font.Name := 'Segoe UI';
-    LblTitle.Font.Size := 15;
+    LblTitle.Font.Size := 16;
     LblTitle.Font.Color := COLOR_TEXT;
     LblTitle.Font.Style := [fsBold];
-    LblTitle.SetBounds(ScaleX(94), ScaleY(20), ScaleX(360), ScaleY(26));
+    LblTitle.SetBounds(ScaleX(100), ScaleY(22), ScaleX(410), ScaleY(28));
 
     LblSub := TLabel.Create(UninstConfirmForm);
     LblSub.Parent := UninstConfirmForm;
@@ -1302,22 +1319,28 @@ begin
     LblSub.Font.Color := COLOR_MUTED;
     LblSub.Font.Size := 9;
     LblSub.WordWrap := True;
-    LblSub.SetBounds(ScaleX(94), ScaleY(48), ScaleX(360), ScaleY(38));
+    LblSub.SetBounds(ScaleX(102), ScaleY(52), ScaleX(410), ScaleY(36));
 
-    // Modern feedback card
+    // Modern feedback card with subtle border
+    PnlFeedbackBorder := TPanel.Create(UninstConfirmForm);
+    PnlFeedbackBorder.Parent := UninstConfirmForm;
+    PnlFeedbackBorder.SetBounds(ScaleX(32), ScaleY(98), ScaleX(476), ScaleY(86));
+    PnlFeedbackBorder.Color := $E2E8F0;
+    PnlFeedbackBorder.BevelOuter := bvNone;
+
     PnlFeedbackCard := TPanel.Create(UninstConfirmForm);
-    PnlFeedbackCard.Parent := UninstConfirmForm;
-    PnlFeedbackCard.SetBounds(ScaleX(28), ScaleY(96), ScaleX(424), ScaleY(74));
-    PnlFeedbackCard.Color := $00F8FAFC;
+    PnlFeedbackCard.Parent := PnlFeedbackBorder;
+    PnlFeedbackCard.SetBounds(ScaleX(1), ScaleY(1), PnlFeedbackBorder.Width - ScaleX(2), PnlFeedbackBorder.Height - ScaleY(2));
+    PnlFeedbackCard.Color := COLOR_BOX_BG;
     PnlFeedbackCard.BevelOuter := bvNone;
 
     LblFeedbackHint := TLabel.Create(UninstConfirmForm);
     LblFeedbackHint.Parent := PnlFeedbackCard;
-    LblFeedbackHint.Caption := 'Help us improve! Send your feedback or suggestions:';
+    LblFeedbackHint.Caption := 'Help us improve! Send your feedback or report an issue:';
     LblFeedbackHint.Font.Name := 'Segoe UI';
     LblFeedbackHint.Font.Size := 8;
     LblFeedbackHint.Font.Color := COLOR_MUTED;
-    LblFeedbackHint.SetBounds(ScaleX(14), ScaleY(10), ScaleX(396), ScaleY(18));
+    LblFeedbackHint.SetBounds(ScaleX(14), ScaleY(12), ScaleX(440), ScaleY(18));
 
     LblFeedbackEmail := TLabel.Create(UninstConfirmForm);
     LblFeedbackEmail.Parent := PnlFeedbackCard;
@@ -1325,18 +1348,18 @@ begin
     LblFeedbackEmail.Font.Name := 'Segoe UI';
     LblFeedbackEmail.Font.Size := 9;
     LblFeedbackEmail.Font.Style := [fsBold, fsUnderline];
-    LblFeedbackEmail.Font.Color := $00C78402; // Vibrant Ocal Azure (#0284C7)
+    LblFeedbackEmail.Font.Color := COLOR_ACCENT;
     LblFeedbackEmail.Cursor := crHand;
-    LblFeedbackEmail.SetBounds(ScaleX(14), ScaleY(34), ScaleX(270), ScaleY(20));
+    LblFeedbackEmail.SetBounds(ScaleX(14), ScaleY(38), ScaleX(290), ScaleY(22));
     LblFeedbackEmail.OnClick := @OpenFeedbackMail;
 
     BtnFeedback := TNewButton.Create(UninstConfirmForm);
     BtnFeedback.Parent := PnlFeedbackCard;
-    BtnFeedback.Caption := 'Send Feedback';
+    BtnFeedback.Caption := 'Send Feedback ↗';
     BtnFeedback.Font.Name := 'Segoe UI';
     BtnFeedback.Font.Size := 8;
     BtnFeedback.Font.Style := [fsBold];
-    BtnFeedback.SetBounds(ScaleX(296), ScaleY(30), ScaleX(114), ScaleY(28));
+    BtnFeedback.SetBounds(ScaleX(336), ScaleY(32), ScaleX(124), ScaleY(32));
     BtnFeedback.OnClick := @OpenFeedbackMail;
 
     // Action Buttons
@@ -1347,16 +1370,15 @@ begin
     BtnKeep.Font.Size := 9;
     BtnKeep.Font.Style := [fsBold];
     BtnKeep.ModalResult := mrCancel;
-    BtnKeep.SetBounds(ScaleX(204), ScaleY(188), ScaleX(142), ScaleY(34));
+    BtnKeep.SetBounds(ScaleX(236), ScaleY(200), ScaleX(154), ScaleY(38));
 
     BtnUninstall := TNewButton.Create(UninstConfirmForm);
     BtnUninstall.Parent := UninstConfirmForm;
     BtnUninstall.Caption := 'Uninstall';
     BtnUninstall.Font.Name := 'Segoe UI';
     BtnUninstall.Font.Size := 9;
-    BtnUninstall.Font.Style := [fsBold];
     BtnUninstall.ModalResult := mrYes;
-    BtnUninstall.SetBounds(ScaleX(354), ScaleY(188), ScaleX(98), ScaleY(34));
+    BtnUninstall.SetBounds(ScaleX(402), ScaleY(200), ScaleX(106), ScaleY(38));
 
     UninstConfirmForm.ActiveControl := BtnKeep;
 
@@ -1380,8 +1402,8 @@ var
   LogoPath: string;
 begin
   UninstallProgressForm.Caption := 'Ocal Browser Uninstaller';
-  UninstallProgressForm.ClientWidth := ScaleX(520);
-  UninstallProgressForm.ClientHeight := ScaleY(210);
+  UninstallProgressForm.ClientWidth := ScaleX(560);
+  UninstallProgressForm.ClientHeight := ScaleY(154);
   UninstallProgressForm.Position := poScreenCenter;
   UninstallProgressForm.Color := clWhite;
   UninstallProgressForm.Bevel.Hide;
@@ -1394,7 +1416,7 @@ begin
   begin
     UninstLogo := TBitmapImage.Create(UninstallProgressForm);
     UninstLogo.Parent := UninstallProgressForm;
-    UninstLogo.SetBounds(ScaleX(28), ScaleY(22), ScaleX(52), ScaleY(52));
+    UninstLogo.SetBounds(ScaleX(32), ScaleY(28), ScaleX(48), ScaleY(48));
     UninstLogo.Stretch := True;
     UninstLogo.Bitmap.LoadFromFile(LogoPath);
   end;
@@ -1403,11 +1425,11 @@ begin
   LblUninstTitle.Parent := UninstallProgressForm;
   LblUninstTitle.Caption := 'Uninstalling Ocal Browser...';
   LblUninstTitle.Font.Name := 'Segoe UI';
-  LblUninstTitle.Font.Size := 15;
+  LblUninstTitle.Font.Size := 16;
   LblUninstTitle.Font.Color := COLOR_TEXT;
   LblUninstTitle.Font.Style := [fsBold];
-  LblUninstTitle.Left := ScaleX(94);
-  LblUninstTitle.Top := ScaleY(22);
+  LblUninstTitle.Left := ScaleX(96);
+  LblUninstTitle.Top := ScaleY(26);
 
   LblUninstSub := TLabel.Create(UninstallProgressForm);
   LblUninstSub.Parent := UninstallProgressForm;
@@ -1415,15 +1437,14 @@ begin
   LblUninstSub.Font.Name := 'Segoe UI';
   LblUninstSub.Font.Color := COLOR_MUTED;
   LblUninstSub.Font.Size := 9;
-  LblUninstSub.Left := ScaleX(96);
-  LblUninstSub.Top := ScaleY(50);
+  LblUninstSub.Left := ScaleX(98);
+  LblUninstSub.Top := ScaleY(54);
 
-  UninstallProgressForm.ClientHeight := ScaleY(150);
   UninstallProgressForm.ProgressBar.Parent := UninstallProgressForm;
-  UninstallProgressForm.ProgressBar.SetBounds(ScaleX(28), ScaleY(86), ScaleX(464), ScaleY(10));
+  UninstallProgressForm.ProgressBar.SetBounds(ScaleX(32), ScaleY(92), ScaleX(496), ScaleY(8));
 
   UninstallProgressForm.StatusLabel.Parent := UninstallProgressForm;
-  UninstallProgressForm.StatusLabel.SetBounds(ScaleX(28), ScaleY(106), ScaleX(464), ScaleY(20));
+  UninstallProgressForm.StatusLabel.SetBounds(ScaleX(32), ScaleY(108), ScaleX(496), ScaleY(20));
   UninstallProgressForm.StatusLabel.Font.Name := 'Segoe UI';
   UninstallProgressForm.StatusLabel.Font.Color := COLOR_MUTED;
 end;

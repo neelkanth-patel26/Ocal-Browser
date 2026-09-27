@@ -1460,9 +1460,9 @@
                                 <span class="tmp-green"></span>
                             </span>
                             <i class="fas fa-circle-check"></i>
-                            <span>v9.5.00 Stable Release</span>
+                            <span>v9.5.07 Stable Release</span>
                         </div>
-                        <h2 class="sp-hero-title">Inno Setup Detailed Catalog, Ocal Connect & UI Polish</h2>
+                        <h2 class="sp-hero-title">Custom Installer Rework, Fluid Vertical Tabs & UI Polish</h2>
                         <p class="sp-hero-desc" id="hero-desc"></p>
                     </div>
                     <div class="sp-hero-right-visual">
@@ -1499,8 +1499,8 @@
                                 </g>
                             </svg>
                         </div>
-                        <div class="radial-metric-title">9.5.00</div>
-                        <div class="radial-metric-status">Flagship Build</div>
+                        <div class="radial-metric-title">9.5.07</div>
+                        <div class="radial-metric-status">Stable Build</div>
                         <div class="sparkline-dots">
                             <span class="spark-dot"></span>
                             <span class="spark-dot"></span>
@@ -1593,7 +1593,7 @@
             <div class="sp-section-header">
                 <div class="sp-section-titles">
                     <h2 id="dir-title">All Features & Enhancements</h2>
-                    <p id="dir-subtitle">SHOWING ALL MAJOR UPGRADES IN V9.5.00 STABLE</p>
+                    <p id="dir-subtitle">SHOWING ALL MAJOR UPGRADES IN V9.5.07 STABLE</p>
                 </div>
             </div>
             <div class="features-grid" id="directory-grid" style="margin-top: 20px;"></div>
@@ -1665,7 +1665,7 @@
         }
 
         // ── Typing Animation ──
-        const heroText = "Ocal Browser v9.5.00 introduces official Inno Setup standalone packaging with a detailed multi-component catalog, alongside Ocal Connect: a peer-to-peer zero-trust sync bridge connecting desktop and mobile. Features an ergonomic shadowless pill-shaped extension install banner, modernized settings layout, and core stability bug fixes.";
+        const heroText = "Ocal Browser v9.5.07 introduces a completely redesigned custom Inno Setup installer architecture with Windows 11 rounded titlebars and interactive bento terms. Features card-based vertical tab group wrappers with dynamic color-mix tinting, full-height active tabs, upgraded Electron 43.7.2, SHA-256 Authenticode code signing with DigiCert timestamping, and UI polishing based on user feedback.";
         const heroDesc = document.getElementById('hero-desc');
         let charIndex = 0;
 
@@ -1763,6 +1763,35 @@
 
         // ── Features & Team Data ──
         const items = [
+            // ══ v9.5.07 Feature Upgrades ══
+            { 
+                type: 'feature', 
+                category: 'media', 
+                icon: 'fa-box-archive', 
+                title: 'Custom Installer Architecture Overhaul', 
+                desc: 'Completely redesigned Inno Setup installer with a 560px grid, seamless Windows 11 titlebar integration with rounded corners, interactive bento feature cards, expandable installation options card, and an overhauled uninstaller with direct feedback capabilities.', 
+                actionText: 'Installer Overhaul', 
+                targetUrl: 'ocal://settings' 
+            },
+            { 
+                type: 'feature', 
+                category: 'multitasking', 
+                icon: 'fa-layer-group', 
+                title: 'Card-Based Vertical Tab Groups', 
+                desc: 'Vertical tab groups now feature clean card wrappers with dynamic color-mix background tinting, subtle dividers, rounded container bounds, and modernized full-height active tab states.', 
+                actionText: 'Try Vertical Tabs', 
+                targetUrl: 'ocal://settings' 
+            },
+            { 
+                type: 'feature', 
+                category: 'performance', 
+                icon: 'fa-certificate', 
+                title: 'Electron 43.7.2 & Authenticode Code Signing', 
+                desc: 'Upgraded Electron runtime engine to 43.7.2 with updated three.js, adm-zip, thinking-orbs, and voice-glow dependencies. Bundles full SHA-256 Authenticode code signing with DigiCert RFC 3161 timestamping.', 
+                actionText: 'Release Notes', 
+                targetUrl: 'ocal://whats-new' 
+            },
+
             // ══ Ocal Connect & Mobile Suite (v9.5.00) ══
             { 
                 type: 'feature', 
@@ -1897,6 +1926,12 @@
         ];
 
         const changelog = [
+            { 
+                date: 'September 2026', 
+                title: 'v9.5.07 Stable — Custom Installer Overhaul, Vertical Tab Cards & UI Polish', 
+                desc: 'Major release featuring a completely redesigned custom Inno Setup installer with native Windows 11 titlebar chrome, expandable options grid, bento terms/privacy cards, and interactive uninstaller feedback dialog. Introduces card-based vertical tab group wrappers with dynamic color-mix tinting and full-height active tabs. Updates Electron to 43.7.2 with modern dependencies, full SHA-256 Authenticode code signing with DigiCert timestamping for Microsoft Partner Center compliance, and targeted bug fixes based on user feedback.', 
+                tags: ['v9.5.07 Stable', 'Installer Overhaul', 'Vertical Tab Cards', 'UI Polish', 'Electron 43.7.2', 'Code Signing', 'Bug Fixes'] 
+            },
             { 
                 date: 'September 2026', 
                 title: 'v9.5.00 Stable — Inno Setup Detailed Catalog, Ocal Connect & UI Polish', 
