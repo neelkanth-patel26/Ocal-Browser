@@ -11,23 +11,38 @@
     let allExtensions = [];
 
     if (manageBtn) {
-        manageBtn.onclick = () => {
-            if (window.electronAPI && window.electronAPI.send) {
-                window.electronAPI.send('hide-extensions-dropdown');
-                window.electronAPI.send('open-extensions-page');
+        manageBtn.onclick = (e) => {
+            if (e) e.stopPropagation();
+            if (window.electronAPI) {
+                if (window.electronAPI.send) {
+                    window.electronAPI.send('open-extensions-page');
+                } else if (window.electronAPI.newTab) {
+                    window.electronAPI.newTab('ocal://settings#extensions');
+                } else if (window.electronAPI.navigateTo) {
+                    window.electronAPI.navigateTo('ocal://settings#extensions');
+                }
+                if (window.electronAPI.send) {
+                    window.electronAPI.send('hide-extensions-dropdown');
+                }
             } else {
-                window.open('file://' + __dirname + '/extensions.html');
+                window.location.href = 'settings.html#extensions';
             }
         };
     }
 
     if (storeBtn) {
         storeBtn.onclick = () => {
-            if (window.electronAPI && window.electronAPI.navigateTo) {
-                window.electronAPI.navigateTo('ocal://store');
-                window.electronAPI.send('hide-extensions-dropdown');
+            if (window.electronAPI) {
+                if (window.electronAPI.send) {
+                    window.electronAPI.send('hide-extensions-dropdown');
+                }
+                if (window.electronAPI.newTab) {
+                    window.electronAPI.newTab('ocal://store');
+                } else if (window.electronAPI.navigateTo) {
+                    window.electronAPI.navigateTo('ocal://store');
+                }
             } else {
-                window.open('file://' + __dirname + '/extension-store.html');
+                window.location.href = 'extension-store.html';
             }
         };
     }

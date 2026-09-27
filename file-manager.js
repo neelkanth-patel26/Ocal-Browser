@@ -1,30 +1,79 @@
+// ── Ocal Browser Bento File Hub & Media Studio ──────────────────────────────
+
+// DOM Elements
 const fileGrid = document.getElementById('file-grid');
 const breadcrumbs = document.getElementById('breadcrumbs');
+const directPathInput = document.getElementById('direct-path-input');
+const pathDisplayBox = document.getElementById('path-display-box');
+const editPathBtn = document.getElementById('edit-path-btn');
+const copyPathBtn = document.getElementById('copy-path-btn');
+
+const pageTitle = document.getElementById('page-title');
+const pageEyebrow = document.getElementById('page-eyebrow');
 const currentPathEl = document.getElementById('current-path');
 const itemCountEl = document.getElementById('item-count');
-const fileSearch = document.getElementById('file-search');
-const searchClearBtn = document.getElementById('search-clear-btn');
-const contextMenu = document.getElementById('context-menu');
-const pageTitle = document.getElementById('page-title');
-const navBackBtn = document.getElementById('nav-back-btn');
-const copyPathBtn = document.getElementById('copy-path-btn');
-const refreshDirBtn = document.getElementById('refresh-dir-btn');
-const drivesListEl = document.getElementById('drives-list');
-const togglePreviewsBtn = document.getElementById('toggle-previews-btn');
-
 const statItemsCount = document.getElementById('stat-items-count');
 const statSelectedCount = document.getElementById('stat-selected-count');
-const statModeBadge = document.getElementById('stat-mode-badge');
+const statSelectedSize = document.getElementById('stat-selected-size');
+const statusFreeSpace = document.getElementById('status-free-space');
 
+const navBackBtn = document.getElementById('nav-back-btn');
+const navForwardBtn = document.getElementById('nav-forward-btn');
+const navUpBtn = document.getElementById('nav-up-btn');
+const refreshDirBtn = document.getElementById('refresh-dir-btn');
+const refreshDrivesBtn = document.getElementById('refresh-drives-btn');
+
+const fileSearch = document.getElementById('file-search');
+const searchClearBtn = document.getElementById('search-clear-btn');
+const searchCountBadge = document.getElementById('search-count-badge');
+const cleanModePill = document.getElementById('clean-mode-pill');
+const togglePreviewsBtn = document.getElementById('toggle-previews-btn');
+
+const viewGridBtn = document.getElementById('view-grid');
+const viewListBtn = document.getElementById('view-list');
+const viewCompactBtn = document.getElementById('view-compact');
+
+const sortMenuBtn = document.getElementById('sort-menu-btn');
+const sortDropdownMenu = document.getElementById('sort-dropdown-menu');
+const sortCurrentLbl = document.getElementById('sort-current-lbl');
+const sortOrderToggle = document.getElementById('sort-order-toggle');
+const sortOrderIcon = document.getElementById('sort-order-icon');
+const sortOrderLbl = document.getElementById('sort-order-lbl');
+
+const sidebarNewFolderBtn = document.getElementById('sidebar-new-folder-btn');
+const topNewFolderBtn = document.getElementById('top-new-folder-btn');
+const drivesListEl = document.getElementById('drives-list');
+const contextMenu = document.getElementById('context-menu');
+
+// Inspector Elements
 const previewInspector = document.getElementById('preview-inspector');
+const toggleInspectorBtn = document.getElementById('toggle-inspector-btn');
 const inspectorCloseBtn = document.getElementById('inspector-close-btn');
 const inspectorOpenBtn = document.getElementById('inspector-open-btn');
+const inspectorShowFolderBtn = document.getElementById('inspector-show-folder-btn');
+const inspectorTrashBtn = document.getElementById('inspector-trash-btn');
+const inspectorCopyPathBtn = document.getElementById('inspector-copy-path-btn');
 const inspectorPreviewBox = document.getElementById('inspector-preview-box');
 const inspectorFileName = document.getElementById('inspector-file-name');
 const inspectorType = document.getElementById('inspector-type');
 const inspectorSize = document.getElementById('inspector-size');
 const inspectorDate = document.getElementById('inspector-date');
+const inspectorCreated = document.getElementById('inspector-created');
 const inspectorPath = document.getElementById('inspector-path');
+const inspectorSnippetCard = document.getElementById('inspector-snippet-card');
+const snippetCode = document.getElementById('snippet-code');
+const snippetLen = document.getElementById('snippet-len');
+
+// Input Modal Elements (New Folder / Rename)
+const inputModal = document.getElementById('input-modal');
+const modalTitle = document.getElementById('modal-title');
+const modalIconBadge = document.getElementById('modal-icon-badge');
+const modalInputLabel = document.getElementById('modal-input-label');
+const modalInputField = document.getElementById('modal-input-field');
+const modalErrorMsg = document.getElementById('modal-error-msg');
+const modalCloseBtn = document.getElementById('modal-close-btn');
+const modalCancelBtn = document.getElementById('modal-cancel-btn');
+const modalConfirmBtn = document.getElementById('modal-confirm-btn');
 
 // Media Modal Elements
 const mediaPlayerModal = document.getElementById('media-player-modal');
@@ -33,8 +82,6 @@ const mediaModalClose = document.getElementById('media-modal-close');
 const mediaModalName = document.getElementById('media-modal-name');
 const mediaModalIcon = document.getElementById('media-modal-icon');
 const mediaModalBody = document.getElementById('media-modal-body');
-const audioEnhancerToolbar = document.getElementById('audio-enhancer-toolbar');
-
 const mediaTimeCurrent = document.getElementById('media-time-current');
 const mediaTimeDuration = document.getElementById('media-time-duration');
 const mediaSeekBar = document.getElementById('media-seek-bar');
@@ -52,22 +99,33 @@ const editorFilename = document.getElementById('editor-filename');
 const editorImgTarget = document.getElementById('editor-img-target');
 const editorCloseBtn = document.getElementById('editor-close-btn');
 const editorSaveBtn = document.getElementById('editor-save-btn');
+const editorCompareBtn = document.getElementById('editor-compare-btn');
+const editorCopyBtn = document.getElementById('editor-copy-btn');
+const editorOpenTabBtn = document.getElementById('editor-open-tab-btn');
 
+// ── State ──────────────────────────────────────────────────────────────────
 let currentPath = '';
 let currentItems = [];
 let systemFolders = {};
 let systemDrives = [];
-let isListView = false;
-let showPreviews = true;
-let selectedItems = new Set();
+let historyStack = [];
+let historyIndex = -1;
+
+let viewMode = localStorage.getItem('ocal-fm-view-mode') || 'grid'; // 'grid' | 'list' | 'compact'
+let showPreviews = localStorage.getItem('ocal-fm-previews') !== 'false';
+let cleanMode = localStorage.getItem('ocal-fm-clean-mode') !== 'false'; // Default TRUE: hide junk
+let inspectorOpen = localStorage.getItem('ocal-fm-inspector') === 'true';
+
+let selectedItems = new Set(); // Stores item paths
 let activeCategory = 'all';
 let currentInspectedItem = null;
-let sortField = 'name';
-let sortAsc = true;
+let sortField = localStorage.getItem('ocal-fm-sort-field') || 'name';
+let sortAsc = localStorage.getItem('ocal-fm-sort-asc') !== 'false';
 
-// Active Media State
+let modalAction = null; // { type: 'new-folder' | 'rename', targetItem?: item }
+
+// Audio DSP State
 let currentMediaItem = null;
-let currentMediaType = null; // 'audio' or 'video'
 let activeAudio = null;
 let activeVideo = null;
 let isSeeking = false;
@@ -89,10 +147,54 @@ let surroundMode = 'cinema';
 
 // Photo Editor State
 let currentPhotoItem = null;
-let photoTransform = { rotate: 0, flipH: 1, flipV: 1, scale: 1 };
-let photoFilters = { brightness: 100, contrast: 100, saturation: 100, sepia: 0, blur: 0 };
+let photoTransform = { rotate: 0, flipH: 1, flipV: 1, scale: 1, panX: 0, panY: 0 };
+let photoFilters = { brightness: 100, contrast: 100, saturation: 100, sepia: 0, blur: 0, invert: 0 };
+let isPanningPhoto = false;
+let panStartX = 0;
+let panStartY = 0;
+let isComparingPhoto = false;
 
-// Helper to apply accent color dynamically
+// ── Unwanted Files & Clutter Filter Definitions ────────────────────────────
+const UNWANTED_EXACT = new Set([
+    'desktop.ini', 'thumbs.db', 'ehthumbs.db',
+    'system volume information', '$recycle.bin', 'recovery',
+    'config.msi', 'msocache', 'bootmgr', 'bootnxt', 'bootstat.dat',
+    'pagefile.sys', 'swapfile.sys', 'hiberfil.sys', 'dumpstack.log.tmp',
+    'dumpstack.log', 'ntuser.ini', '.ds_store', '.localized',
+    'onedrivetemp', 'documents and settings'
+]);
+
+const WINDOWS_JUNCTIONS = new Set([
+    'application data', 'cookies', 'local settings', 'nethood',
+    'printhood', 'recent', 'sendto', 'start menu', 'templates', 'my documents'
+]);
+
+// Helper to filter out unwanted system files and clutter
+function isUnwantedFile(item) {
+    if (!item || !item.name) return true;
+    const name = item.name;
+    const lower = name.toLowerCase();
+
+    // 1. Always exclude core OS files, crash dumps, and recycle bins
+    if (UNWANTED_EXACT.has(lower)) return true;
+    if (lower.startsWith('$')) return true;
+    if (lower.startsWith('ntuser.dat') || lower.startsWith('usrclass.dat')) return true;
+    if (name.startsWith('~$')) return true; // Office temporary lock files
+
+    // 2. Filter out Windows restricted junction directories
+    if (WINDOWS_JUNCTIONS.has(lower)) return true;
+
+    // 3. Clean mode suppresses dot-files, AppData, and temporary downloads
+    if (cleanMode) {
+        if (name.startsWith('.')) return true;
+        if (lower === 'appdata') return true;
+        if (lower.endsWith('.tmp') || lower.endsWith('.crdownload') || lower.endsWith('.part')) return true;
+    }
+
+    return false;
+}
+
+// ── Dynamic Theme & Accent Helper ──────────────────────────────────────────
 function applyAccent(accentColor) {
     if (!accentColor) return;
     document.documentElement.style.setProperty('--accent', accentColor);
@@ -133,76 +235,65 @@ document.addEventListener('DOMContentLoaded', async () => {
     }
 
     // 2. Fetch system folders & drives
-    try {
-        if (window.electronAPI && window.electronAPI.invoke) {
-            systemFolders = await window.electronAPI.invoke('get-system-folders') || {};
-            systemDrives = await window.electronAPI.invoke('get-system-drives') || [];
-        }
-    } catch (e) {
-        console.error('Failed to load system folders:', e);
-    }
+    await loadSystemEnvironment();
 
-    renderDrivesList();
+    // 3. Setup Navigation History Controls
+    if (navBackBtn) navBackBtn.onclick = () => goBack();
+    if (navForwardBtn) navForwardBtn.onclick = () => goForward();
+    if (navUpBtn) navUpBtn.onclick = () => navigateUp();
+    if (refreshDirBtn) refreshDirBtn.onclick = () => refreshCurrentDirectory();
+    if (refreshDrivesBtn) refreshDrivesBtn.onclick = () => loadSystemEnvironment();
 
-    // 3. Setup Sidebar Nav
+    // 4. Setup Omnibar & Direct Path Editing
+    setupOmnibarControls();
+
+    // 5. Setup Sidebar Navigation
     document.querySelectorAll('.nav-item').forEach(btn => {
         btn.onclick = () => {
             const folderKey = btn.getAttribute('data-folder');
             if (systemFolders[folderKey]) {
                 document.querySelectorAll('.nav-item').forEach(b => b.classList.remove('active'));
+                document.querySelectorAll('.drive-bento-card').forEach(b => b.classList.remove('active'));
                 btn.classList.add('active');
-                if (pageTitle) {
-                    pageTitle.innerText = btn.querySelector('span')?.innerText || 'Local Explorer';
-                }
+                if (pageTitle) pageTitle.innerText = btn.querySelector('.nav-label')?.innerText || 'Local Storage';
+                if (pageEyebrow) pageEyebrow.innerText = 'Quick Access';
                 navigateTo(systemFolders[folderKey]);
             }
         };
     });
 
-    // 4. View Toggles (Grid / List)
-    const gridBtn = document.getElementById('view-grid');
-    const listBtn = document.getElementById('view-list');
-    if (gridBtn) gridBtn.onclick = () => setViewMode(false);
-    if (listBtn) listBtn.onclick = () => setViewMode(true);
+    // 6. View Mode Controls
+    setupViewModeControls();
 
-    // Previews Toggle
-    if (togglePreviewsBtn) {
-        togglePreviewsBtn.onclick = () => {
-            showPreviews = !showPreviews;
-            togglePreviewsBtn.classList.toggle('active', showPreviews);
-            togglePreviewsBtn.querySelector('span').innerText = showPreviews ? 'Previews ON' : 'Previews OFF';
+    // 7. Clean Mode Pill (Suppresses unwanted OS files)
+    if (cleanModePill) {
+        updateCleanModeUi();
+        cleanModePill.onclick = () => {
+            cleanMode = !cleanMode;
+            localStorage.setItem('ocal-fm-clean-mode', cleanMode);
+            updateCleanModeUi();
             renderCurrentFiles();
         };
     }
 
-    // Refresh Button
-    if (refreshDirBtn) {
-        refreshDirBtn.onclick = () => {
-            if (currentPath) navigateTo(currentPath);
+    // 8. Previews Toggle
+    if (togglePreviewsBtn) {
+        togglePreviewsBtn.classList.toggle('active', showPreviews);
+        togglePreviewsBtn.onclick = () => {
+            showPreviews = !showPreviews;
+            localStorage.setItem('ocal-fm-previews', showPreviews);
+            togglePreviewsBtn.classList.toggle('active', showPreviews);
+            renderCurrentFiles();
         };
     }
 
-    // Back / Up Button
-    if (navBackBtn) {
-        navBackBtn.onclick = () => {
-            navigateUp();
-        };
-    }
+    // 9. Sort Menu Controls
+    setupSortControls();
 
-    // Copy Path Button
-    if (copyPathBtn) {
-        copyPathBtn.onclick = () => {
-            if (currentPath) {
-                navigator.clipboard.writeText(currentPath);
-                copyPathBtn.innerHTML = '<i class="fas fa-check" style="color:var(--accent)"></i>';
-                setTimeout(() => {
-                    copyPathBtn.innerHTML = '<i class="fas fa-copy"></i>';
-                }, 1500);
-            }
-        };
-    }
+    // 10. Search Controls
+    setupSearchControls();
 
-    // Category Filter Pills
+    // 11. Category Ribbon Filters
     document.querySelectorAll('.filter-pill').forEach(pill => {
         pill.onclick = () => {
             document.querySelectorAll('.filter-pill').forEach(p => p.classList.remove('active'));
@@ -212,107 +303,132 @@ document.addEventListener('DOMContentLoaded', async () => {
         };
     });
 
-    // 5. Search
-    if (fileSearch) {
-        fileSearch.oninput = () => {
-            if (searchClearBtn) {
-                searchClearBtn.style.display = fileSearch.value ? 'flex' : 'none';
-            }
-            renderCurrentFiles();
-        };
-    }
-    if (searchClearBtn) {
-        searchClearBtn.onclick = () => {
-            fileSearch.value = '';
-            searchClearBtn.style.display = 'none';
-            renderCurrentFiles();
-            fileSearch.focus();
-        };
-    }
+    // 12. Inspector Controls
+    setupInspectorControls();
 
-    // 6. Global Click Handlers (Context Menu & Selection)
-    document.addEventListener('click', (event) => {
-        if (contextMenu) contextMenu.style.display = 'none';
-        const dropdownMenu = document.getElementById('surround-dropdown-menu');
-        if (dropdownMenu && !event.target.closest('#custom-surround-dropdown')) {
-            dropdownMenu.classList.remove('open');
-        }
-        if (!event.target.closest('.file-item') && !event.target.closest('#preview-inspector')) {
-            clearSelection();
-        }
-    });
+    // 13. Dialog Modals (New Folder / Rename)
+    setupModalControls();
 
-    // Inspector handlers
-    if (inspectorCloseBtn) {
-        inspectorCloseBtn.onclick = () => {
-            if (previewInspector) previewInspector.style.display = 'none';
-        };
-    }
-    if (inspectorOpenBtn) {
-        inspectorOpenBtn.onclick = () => {
-            if (currentInspectedItem) openItem(currentInspectedItem);
-        };
-    }
-
-    // Initialize Media Controls & Photo Studio
+    // 14. Media Players & Photo Studio Controls
     initMediaStudioControls();
     initPhotoEditorControls();
 
-    // 7. Initial Load: Open Home or Downloads folder
+    // 15. Global Click Handlers & Keyboard Shortcuts
+    setupGlobalShortcuts();
+
+    // 16. Initial Load: Home folder
     const initialDir = systemFolders.home || systemFolders.downloads || systemFolders.desktop || 'C:\\';
     navigateTo(initialDir);
 });
 
-// ── Drives Rendering ────────────────────────────────────────────────────────
+// ── Environment & Drives Loading ───────────────────────────────────────────
+async function loadSystemEnvironment() {
+    try {
+        if (window.electronAPI && window.electronAPI.invoke) {
+            systemFolders = await window.electronAPI.invoke('get-system-folders') || {};
+            systemDrives = await window.electronAPI.invoke('get-system-drives') || [];
+        }
+    } catch (e) {
+        console.error('Failed to load system environment:', e);
+    }
+    renderDrivesList();
+}
+
 function renderDrivesList() {
     if (!drivesListEl) return;
     drivesListEl.innerHTML = '';
     
     if (systemDrives.length === 0) {
         drivesListEl.innerHTML = `
-            <button class="nav-item drive-nav-item" onclick="navigateTo('C:\\\\')">
-                <i class="fas fa-hard-drive"></i>
-                <span class="drive-label">Local Disk (C:)</span>
-            </button>
+            <div class="drive-bento-card" onclick="navigateTo('C:\\\\')">
+                <div class="drive-card-top">
+                    <div class="drive-info-cluster">
+                        <i class="fas fa-hard-drive drive-icon-wrap"></i>
+                        <span class="drive-title-text">Local Disk</span>
+                    </div>
+                    <span class="drive-letter-chip">C:</span>
+                </div>
+            </div>
         `;
         return;
     }
 
     systemDrives.forEach(drive => {
-        const btn = document.createElement('button');
-        btn.className = 'nav-item drive-nav-item';
-        btn.innerHTML = `
-            <i class="fas ${drive.isMobile ? 'fa-mobile-screen' : 'fa-hard-drive'}"></i>
-            <span class="drive-label">${escapeHtml(drive.name)}</span>
+        const card = document.createElement('div');
+        card.className = `drive-bento-card ${currentPath.startsWith(drive.path) ? 'active' : ''}`;
+        
+        const percent = typeof drive.percentUsed === 'number' ? drive.percentUsed : 0;
+        let fillClass = '';
+        if (percent >= 90) fillClass = 'danger';
+        else if (percent >= 75) fillClass = 'warning';
+
+        const freeStr = drive.freeBytes ? `${formatBytes(drive.freeBytes)} free` : '';
+        const totalStr = drive.totalBytes ? formatBytes(drive.totalBytes) : '';
+        const spaceSub = freeStr ? `${freeStr} of ${totalStr}` : drive.path;
+
+        card.innerHTML = `
+            <div class="drive-card-top">
+                <div class="drive-info-cluster">
+                    <i class="fas ${drive.isMobile ? 'fa-mobile-screen' : 'fa-hard-drive'} drive-icon-wrap"></i>
+                    <span class="drive-title-text" title="${escapeHtml(drive.name)}">${escapeHtml(drive.name)}</span>
+                </div>
+                <span class="drive-letter-chip">${escapeHtml(drive.letter ? drive.letter + ':' : 'VOL')}</span>
+            </div>
+            ${drive.totalBytes > 0 ? `
+            <div class="drive-track-wrap">
+                <div class="drive-fill-bar ${fillClass}" style="width: ${percent}%;"></div>
+            </div>
+            <div class="drive-meta-sub">
+                <span>${escapeHtml(spaceSub)}</span>
+                <span>${percent}%</span>
+            </div>
+            ` : ''}
         `;
-        btn.onclick = () => {
+
+        card.onclick = () => {
             document.querySelectorAll('.nav-item').forEach(b => b.classList.remove('active'));
-            btn.classList.add('active');
+            document.querySelectorAll('.drive-bento-card').forEach(b => b.classList.remove('active'));
+            card.classList.add('active');
             if (pageTitle) pageTitle.innerText = drive.name;
+            if (pageEyebrow) pageEyebrow.innerText = 'Storage Volume';
             navigateTo(drive.path);
         };
-        drivesListEl.appendChild(btn);
+
+        drivesListEl.appendChild(card);
     });
 }
 
-// ── Navigation ─────────────────────────────────────────────────────────────
-async function navigateTo(targetPath) {
+// ── Navigation & History Stack ─────────────────────────────────────────────
+async function navigateTo(targetPath, pushHistory = true) {
     if (!targetPath) return;
+    targetPath = targetPath.trim();
+    if (/^[a-zA-Z]:$/i.test(targetPath)) targetPath += '\\';
+
     currentPath = targetPath;
 
+    // Update History Stack
+    if (pushHistory) {
+        historyStack = historyStack.slice(0, historyIndex + 1);
+        historyStack.push(targetPath);
+        historyIndex = historyStack.length - 1;
+    }
+    updateHistoryButtons();
+
+    // Update Status and Title
     if (currentPathEl) currentPathEl.innerText = targetPath;
     updateBreadcrumbs(targetPath);
+    updateDriveActiveState(targetPath);
 
     fileGrid.innerHTML = `
-        <div class="loading-state">
-            <i class="fas fa-circle-notch fa-spin"></i>
-            <span>Loading folder contents...</span>
+        <div class="empty-state-card">
+            <i class="fas fa-circle-notch fa-spin empty-state-icon-wrap" style="box-shadow:none; background:transparent; font-size:32px;"></i>
+            <span style="font-size:13px; color:var(--text-muted); font-weight:600;">Loading files...</span>
         </div>
     `;
 
     try {
         if (window.electronAPI && window.electronAPI.invoke) {
-            const items = await window.electronAPI.invoke('get-directory-entries', targetPath);
+            const items = await window.electronAPI.invoke('get-directory-entries', targetPath, { showHidden: !cleanMode });
             currentItems = Array.isArray(items) ? items : [];
         } else {
             currentItems = [];
@@ -325,15 +441,110 @@ async function navigateTo(targetPath) {
     renderCurrentFiles();
 }
 
+function refreshCurrentDirectory() {
+    if (!currentPath) return;
+    if (refreshDirBtn) {
+        const icon = refreshDirBtn.querySelector('i');
+        if (icon) {
+            icon.classList.add('fa-spin');
+            setTimeout(() => icon.classList.remove('fa-spin'), 600);
+        }
+    }
+    navigateTo(currentPath, false);
+}
+
+function goBack() {
+    if (historyIndex > 0) {
+        historyIndex--;
+        navigateTo(historyStack[historyIndex], false);
+    }
+}
+
+function goForward() {
+    if (historyIndex < historyStack.length - 1) {
+        historyIndex++;
+        navigateTo(historyStack[historyIndex], false);
+    }
+}
+
 function navigateUp() {
     if (!currentPath) return;
     const normalized = currentPath.replace(/[\/\\]+$/, '');
     const lastSlash = Math.max(normalized.lastIndexOf('\\'), normalized.lastIndexOf('/'));
     if (lastSlash > 0) {
-        const parentPath = normalized.slice(0, lastSlash);
-        navigateTo(parentPath.includes(':') && !parentPath.includes('\\') && !parentPath.includes('/') ? parentPath + '\\' : parentPath);
+        let parentPath = normalized.slice(0, lastSlash);
+        if (/^[a-zA-Z]:$/i.test(parentPath)) parentPath += '\\';
+        navigateTo(parentPath);
     } else if (lastSlash === 0) {
         navigateTo('/');
+    } else {
+        // Fallback to PC root
+        navigateTo(systemFolders.home || 'C:\\');
+    }
+}
+
+function updateHistoryButtons() {
+    if (navBackBtn) navBackBtn.disabled = historyIndex <= 0;
+    if (navForwardBtn) navForwardBtn.disabled = historyIndex >= historyStack.length - 1;
+}
+
+function updateDriveActiveState(targetPath) {
+    document.querySelectorAll('.drive-bento-card').forEach(card => {
+        const titleEl = card.querySelector('.drive-title-text');
+        const letterEl = card.querySelector('.drive-letter-chip');
+        const letter = letterEl?.innerText?.replace(':', '');
+        if (letter && targetPath.toUpperCase().startsWith(letter.toUpperCase() + ':')) {
+            card.classList.add('active');
+        } else {
+            card.classList.remove('active');
+        }
+    });
+}
+
+// ── Breadcrumbs & Omnibar Controls ─────────────────────────────────────────
+function setupOmnibarControls() {
+    if (editPathBtn && directPathInput && breadcrumbs) {
+        editPathBtn.onclick = () => toggleDirectPathInput(true);
+
+        directPathInput.onkeydown = (e) => {
+            if (e.key === 'Enter') {
+                const newPath = directPathInput.value.trim();
+                toggleDirectPathInput(false);
+                if (newPath) navigateTo(newPath);
+            } else if (e.key === 'Escape') {
+                toggleDirectPathInput(false);
+            }
+        };
+
+        directPathInput.onblur = () => {
+            toggleDirectPathInput(false);
+        };
+    }
+
+    if (copyPathBtn) {
+        copyPathBtn.onclick = () => {
+            if (currentPath) {
+                navigator.clipboard.writeText(currentPath);
+                copyPathBtn.innerHTML = '<i class="fas fa-check" style="color:var(--accent)"></i>';
+                setTimeout(() => {
+                    copyPathBtn.innerHTML = '<i class="fas fa-copy"></i>';
+                }, 1500);
+            }
+        };
+    }
+}
+
+function toggleDirectPathInput(showInput) {
+    if (!directPathInput || !breadcrumbs) return;
+    if (showInput) {
+        directPathInput.value = currentPath;
+        directPathInput.style.display = 'block';
+        breadcrumbs.style.display = 'none';
+        directPathInput.focus();
+        directPathInput.select();
+    } else {
+        directPathInput.style.display = 'none';
+        breadcrumbs.style.display = 'flex';
     }
 }
 
@@ -344,7 +555,7 @@ function updateBreadcrumbs(pathStr) {
 
     const rootItem = document.createElement('span');
     rootItem.className = 'breadcrumb-item';
-    rootItem.innerText = 'This PC';
+    rootItem.innerHTML = '<i class="fas fa-computer" style="margin-right:4px;"></i> This PC';
     rootItem.onclick = () => navigateTo(systemFolders.home || 'C:\\');
     breadcrumbs.appendChild(rootItem);
 
@@ -369,54 +580,232 @@ function updateBreadcrumbs(pathStr) {
         item.onclick = () => navigateTo(target);
         breadcrumbs.appendChild(item);
     });
+
+    breadcrumbs.scrollLeft = breadcrumbs.scrollWidth;
 }
 
-// ── Rendering & Filtering ──────────────────────────────────────────────────
+// ── Clean Mode UI ──────────────────────────────────────────────────────────
+function updateCleanModeUi() {
+    if (!cleanModePill) return;
+    cleanModePill.classList.toggle('active', cleanMode);
+    cleanModePill.innerHTML = cleanMode ?
+        '<i class="fas fa-sparkles"></i> <span>Clean Mode</span>' :
+        '<i class="fas fa-eye"></i> <span>Show Hidden</span>';
+    cleanModePill.title = cleanMode ?
+        'Clean Mode: Unwanted system files, dumps, and desktop.ini are hidden (Click to show all)' :
+        'Showing all files including dotfiles (Click for Clean Mode)';
+}
+
+// ── View Mode Controls ─────────────────────────────────────────────────────
+function setupViewModeControls() {
+    setViewMode(viewMode, false);
+
+    if (viewGridBtn) viewGridBtn.onclick = () => setViewMode('grid');
+    if (viewListBtn) viewListBtn.onclick = () => setViewMode('list');
+    if (viewCompactBtn) viewCompactBtn.onclick = () => setViewMode('compact');
+}
+
+function setViewMode(mode, save = true) {
+    viewMode = mode;
+    if (save) localStorage.setItem('ocal-fm-view-mode', mode);
+
+    fileGrid.classList.remove('grid-mode', 'list-mode', 'compact-mode');
+    fileGrid.classList.add(`${mode}-mode`);
+
+    if (viewGridBtn) viewGridBtn.classList.toggle('active', mode === 'grid');
+    if (viewListBtn) viewListBtn.classList.toggle('active', mode === 'list');
+    if (viewCompactBtn) viewCompactBtn.classList.toggle('active', mode === 'compact');
+
+    renderCurrentFiles();
+}
+
+// ── Sort Controls ──────────────────────────────────────────────────────────
+function setupSortControls() {
+    if (sortMenuBtn && sortDropdownMenu) {
+        sortMenuBtn.onclick = (e) => {
+            e.stopPropagation();
+            sortDropdownMenu.classList.toggle('open');
+        };
+
+        document.querySelectorAll('.sort-item[data-sort]').forEach(item => {
+            item.onclick = (e) => {
+                e.stopPropagation();
+                document.querySelectorAll('.sort-item[data-sort]').forEach(i => i.classList.remove('active'));
+                item.classList.add('active');
+                sortField = item.getAttribute('data-sort');
+                localStorage.setItem('ocal-fm-sort-field', sortField);
+                if (sortCurrentLbl) sortCurrentLbl.innerText = item.innerText.trim();
+                sortDropdownMenu.classList.remove('open');
+                renderCurrentFiles();
+            };
+        });
+
+        if (sortOrderToggle) {
+            sortOrderToggle.onclick = (e) => {
+                e.stopPropagation();
+                sortAsc = !sortAsc;
+                localStorage.setItem('ocal-fm-sort-asc', sortAsc);
+                updateSortOrderUi();
+                renderCurrentFiles();
+            };
+        }
+    }
+    updateSortOrderUi();
+}
+
+function updateSortOrderUi() {
+    if (sortOrderIcon) sortOrderIcon.className = sortAsc ? 'fas fa-arrow-up-wide-short' : 'fas fa-arrow-down-wide-short';
+    if (sortOrderLbl) sortOrderLbl.innerText = sortAsc ? 'Ascending' : 'Descending';
+}
+
+// ── Search Controls ────────────────────────────────────────────────────────
+function setupSearchControls() {
+    if (fileSearch) {
+        fileSearch.oninput = () => {
+            const hasText = Boolean(fileSearch.value.trim());
+            if (searchClearBtn) searchClearBtn.style.display = hasText ? 'flex' : 'none';
+            renderCurrentFiles();
+        };
+    }
+
+    if (searchClearBtn) {
+        searchClearBtn.onclick = () => {
+            fileSearch.value = '';
+            searchClearBtn.style.display = 'none';
+            if (searchCountBadge) searchCountBadge.style.display = 'none';
+            renderCurrentFiles();
+            fileSearch.focus();
+        };
+    }
+}
+
+// ── Inspector Controls ─────────────────────────────────────────────────────
+function setupInspectorControls() {
+    if (toggleInspectorBtn) {
+        toggleInspectorBtn.classList.toggle('active', inspectorOpen);
+        if (previewInspector) previewInspector.style.display = inspectorOpen ? 'flex' : 'none';
+
+        toggleInspectorBtn.onclick = () => {
+            inspectorOpen = !inspectorOpen;
+            localStorage.setItem('ocal-fm-inspector', inspectorOpen);
+            toggleInspectorBtn.classList.toggle('active', inspectorOpen);
+            if (previewInspector) previewInspector.style.display = inspectorOpen ? 'flex' : 'none';
+            if (inspectorOpen && currentInspectedItem) inspectItem(currentInspectedItem);
+        };
+    }
+
+    if (inspectorCloseBtn) {
+        inspectorCloseBtn.onclick = () => {
+            inspectorOpen = false;
+            localStorage.setItem('ocal-fm-inspector', false);
+            if (toggleInspectorBtn) toggleInspectorBtn.classList.remove('active');
+            if (previewInspector) previewInspector.style.display = 'none';
+        };
+    }
+
+    if (inspectorOpenBtn) {
+        inspectorOpenBtn.onclick = () => {
+            if (currentInspectedItem) openItem(currentInspectedItem);
+        };
+    }
+
+    if (inspectorShowFolderBtn) {
+        inspectorShowFolderBtn.onclick = () => {
+            if (currentInspectedItem) showInNativeFolder(currentInspectedItem.path);
+        };
+    }
+
+    if (inspectorTrashBtn) {
+        inspectorTrashBtn.onclick = () => {
+            if (currentInspectedItem) deleteSystemItem(currentInspectedItem.path);
+        };
+    }
+
+    if (inspectorCopyPathBtn) {
+        inspectorCopyPathBtn.onclick = () => {
+            if (currentInspectedItem) {
+                navigator.clipboard.writeText(currentInspectedItem.path);
+                inspectorCopyPathBtn.innerHTML = '<i class="fas fa-check" style="color:var(--accent)"></i>';
+                setTimeout(() => {
+                    inspectorCopyPathBtn.innerHTML = '<i class="fas fa-copy"></i>';
+                }, 1500);
+            }
+        };
+    }
+}
+
+// ── Rendering & Filtering Files ────────────────────────────────────────────
 function renderCurrentFiles() {
     fileGrid.innerHTML = '';
 
     const query = fileSearch ? fileSearch.value.trim().toLowerCase() : '';
 
-    const filtered = currentItems.filter(item => {
-        if (query && !item.name.toLowerCase().includes(query)) return false;
+    // 1. Filter out unwanted junk & system clutter
+    let visible = currentItems.filter(item => !isUnwantedFile(item));
 
-        if (activeCategory === 'all') return true;
-        if (activeCategory === 'folders') return item.isDirectory;
-        if (item.isDirectory) return false;
-
-        const ext = getExtension(item.name);
-        switch (activeCategory) {
-            case 'pdfs':
-                return ext === 'pdf';
-            case 'images':
-                return ['png', 'jpg', 'jpeg', 'gif', 'webp', 'svg', 'bmp', 'ico'].includes(ext);
-            case 'audio':
-                return ['mp3', 'wav', 'flac', 'ogg', 'm4a', 'aac', 'wma'].includes(ext);
-            case 'videos':
-                return ['mp4', 'mkv', 'webm', 'mov', 'avi', 'wmv'].includes(ext);
-            case 'docs':
-                return ['doc', 'docx', 'txt', 'pdf', 'xlsx', 'xls', 'pptx', 'ppt', 'csv', 'md', 'json', 'xml', 'log'].includes(ext);
-            default:
-                return true;
+    // 2. Search query filter
+    if (query) {
+        visible = visible.filter(item => item.name.toLowerCase().includes(query));
+        if (searchCountBadge) {
+            searchCountBadge.innerText = visible.length;
+            searchCountBadge.style.display = 'inline-block';
         }
-    });
+    } else {
+        if (searchCountBadge) searchCountBadge.style.display = 'none';
+    }
 
-    if (statItemsCount) statItemsCount.innerText = filtered.length;
-    if (itemCountEl) itemCountEl.innerText = `${filtered.length} items`;
-    updateSelectedCount();
+    // 3. Category ribbon filter
+    if (activeCategory !== 'all') {
+        visible = visible.filter(item => {
+            if (activeCategory === 'folders') return item.isDirectory;
+            if (item.isDirectory) return false;
 
-    if (filtered.length === 0) {
+            const ext = getExtension(item.name);
+            switch (activeCategory) {
+                case 'docs':
+                    return ['pdf', 'doc', 'docx', 'txt', 'rtf', 'odt', 'xlsx', 'xls', 'csv', 'pptx', 'ppt', 'md'].includes(ext);
+                case 'images':
+                    return isImageFile(item.name);
+                case 'audio':
+                    return ['mp3', 'wav', 'flac', 'ogg', 'm4a', 'aac', 'wma', 'opus'].includes(ext);
+                case 'videos':
+                    return ['mp4', 'mkv', 'webm', 'mov', 'avi', 'wmv'].includes(ext);
+                case 'code':
+                    return ['js', 'ts', 'jsx', 'tsx', 'html', 'css', 'json', 'py', 'c', 'cpp', 'rs', 'go', 'java', 'cs', 'php', 'rb', 'sql', 'sh', 'bat'].includes(ext);
+                case 'archives':
+                    return ['zip', 'rar', '7z', 'tar', 'gz', 'bz2', 'iso'].includes(ext);
+                default:
+                    return true;
+            }
+        });
+    }
+
+    // Update Counts & Status Summary
+    const totalCount = visible.length;
+    const foldersCount = visible.filter(i => i.isDirectory).length;
+    const filesCount = totalCount - foldersCount;
+    
+    if (statItemsCount) statItemsCount.innerText = `${totalCount} item${totalCount === 1 ? '' : 's'}`;
+    if (itemCountEl) itemCountEl.innerText = `${totalCount} items (${foldersCount} folder${foldersCount === 1 ? '' : 's'}, ${filesCount} file${filesCount === 1 ? '' : 's'})`;
+    updateSelectedSummary();
+
+    // 4. Empty State
+    if (visible.length === 0) {
         fileGrid.innerHTML = `
-            <div class="loading-state">
-                <i class="fas fa-folder-open" style="opacity: 0.25; font-size: 42px; color: var(--accent);"></i>
-                <span>${query ? 'No matching files found' : 'This folder is empty'}</span>
+            <div class="empty-state-card">
+                <div class="empty-state-icon-wrap">
+                    <i class="fas ${query ? 'fa-magnifying-glass' : 'fa-folder-open'}"></i>
+                </div>
+                <div class="empty-state-title">${query ? 'No matching files found' : 'This folder is clean & empty'}</div>
+                <div class="empty-state-sub">${query ? 'Try checking your spelling or adjusting your category filter.' : 'You can create a new folder or drop files here anytime.'}</div>
+                ${!query ? `<button class="action-btn primary" onclick="promptNewFolder()"><i class="fas fa-plus"></i> New Folder</button>` : ''}
             </div>
         `;
         return;
     }
 
-    // Sort items
-    const sorted = [...filtered].sort((a, b) => {
+    // 5. Sort Items (Folders first, then files)
+    const sorted = [...visible].sort((a, b) => {
         if (a.isDirectory && !b.isDirectory) return -1;
         if (!a.isDirectory && b.isDirectory) return 1;
 
@@ -435,104 +824,194 @@ function renderCurrentFiles() {
         return sortAsc ? res : -res;
     });
 
-    if (isListView) {
-        const getSortIcon = (field) => {
-            if (sortField !== field) return '<i class="fas fa-sort" style="opacity:0.35; margin-left:4px; font-size:10px;"></i>';
-            return `<i class="fas fa-chevron-${sortAsc ? 'up' : 'down'}" style="color:var(--accent); margin-left:4px; font-size:10px;"></i>`;
-        };
-
-        const header = document.createElement('div');
-        header.className = 'list-table-header';
-        header.innerHTML = `
-            <div class="sortable col-name" onclick="toggleSort('name')">Name ${getSortIcon('name')}</div>
-            <div class="sortable col-date" onclick="toggleSort('date')">Date Modified ${getSortIcon('date')}</div>
-            <div class="sortable col-type" onclick="toggleSort('type')">Type ${getSortIcon('type')}</div>
-            <div class="sortable col-size" onclick="toggleSort('size')">Size ${getSortIcon('size')}</div>
-            <div class="col-actions">Actions</div>
-        `;
-        fileGrid.appendChild(header);
+    // 6. Render based on active view mode
+    if (viewMode === 'list') {
+        renderListView(sorted);
+    } else if (viewMode === 'compact') {
+        renderCompactView(sorted);
+    } else {
+        renderGridView(sorted);
     }
+}
 
-    sorted.forEach(item => {
-        const el = document.createElement('div');
-        el.dataset.path = item.path;
+// ── Bento Grid View ────────────────────────────────────────────────────────
+function renderGridView(items) {
+    items.forEach(item => {
+        const card = document.createElement('div');
+        card.className = `file-item grid-card ${selectedItems.has(item.path) ? 'selected' : ''}`;
+        card.dataset.path = item.path;
 
         const iconInfo = getFileIcon(item);
-        const sizeStr = item.isDirectory ? (isListView ? '--' : 'Folder') : formatBytes(item.size);
+        const sizeStr = item.isDirectory ? 'Folder' : formatBytes(item.size);
         const dateStr = item.mtime ? new Date(item.mtime).toLocaleDateString() : '--';
         const isImg = isImageFile(item.name);
-        const typeLabel = item.isDirectory ? 'DIR' : getFileTypeLabel(item.name);
-        const safePath = item.path.replace(/\\/g, '\\\\').replace(/'/g, "\\'");
+        const isAudio = ['mp3', 'wav', 'flac', 'ogg', 'm4a'].includes(getExtension(item.name));
+        const ext = getExtension(item.name);
+        const fileUrl = 'file:///' + item.path.replace(/\\/g, '/');
 
-        if (isListView) {
-            el.className = `file-item list-row ${selectedItems.has(item.path) ? 'selected' : ''}`;
-            el.innerHTML = `
-                <div class="col-name">
-                    <div class="file-icon-mini" style="color: ${iconInfo.color || 'inherit'}">
-                        <i class="${iconInfo.icon}"></i>
-                    </div>
-                    <span class="file-name-text" title="${escapeHtml(item.name)}">${escapeHtml(item.name)}</span>
-                </div>
-                <div class="col-date">${dateStr}</div>
-                <div class="col-type"><span class="file-type-pill">${escapeHtml(typeLabel)}</span></div>
-                <div class="col-size">${sizeStr}</div>
-                <div class="col-actions">
-                    <button class="list-action-btn" title="Open" onclick="event.stopPropagation(); window.handleOpenItem('${safePath}', ${item.isDirectory})"><i class="fas fa-arrow-up-right-from-square"></i></button>
-                    <button class="list-action-btn" title="Copy Path" onclick="event.stopPropagation(); window.handleCopyPath('${safePath}')"><i class="fas fa-copy"></i></button>
-                </div>
+        let visualHtml = '';
+        if (item.isDirectory) {
+            visualHtml = `<i class="fas fa-folder card-icon-emblem" style="color:#F59E0B"></i>`;
+        } else if (showPreviews && isImg) {
+            visualHtml = `
+                <img src="${fileUrl}" class="card-img-preview" alt="" onerror="this.parentElement.innerHTML='<i class=\\'${iconInfo.icon} card-icon-emblem\\' style=\\'color:${iconInfo.color}\\'></i>'">
+                <span class="card-type-chip">${escapeHtml(ext || 'IMG')}</span>
+            `;
+        } else if (isAudio) {
+            visualHtml = `
+                <i class="fas fa-music card-icon-emblem" style="color:#10B981"></i>
+                <button class="card-audio-play-btn" title="Play Track" onclick="event.stopPropagation(); window.handleOpenItem('${escapePath(item.path)}', false)">
+                    <i class="fas fa-play"></i>
+                </button>
+                <span class="card-type-chip">AUDIO</span>
             `;
         } else {
-            el.className = `file-item grid-card ${selectedItems.has(item.path) ? 'selected' : ''}`;
-
-            let previewContent = '';
-            if (showPreviews && isImg && !item.isDirectory) {
-                const fileUrl = 'file:///' + item.path.replace(/\\/g, '/');
-                previewContent = `<img src="${fileUrl}" class="file-preview-img" onerror="this.parentElement.innerHTML='<div class=\\'file-icon\\' style=\\'color:${iconInfo.color}\\'><i class=\\'${iconInfo.icon}\\'></i></div>'" alt="">`;
-            } else {
-                previewContent = `<div class="file-icon" style="color: ${iconInfo.color || 'inherit'}"><i class="${iconInfo.icon}"></i></div>`;
-            }
-
-            el.innerHTML = `
-                <div class="file-preview-container">
-                    ${previewContent}
-                </div>
-                <div class="file-details">
-                    <div class="file-name" title="${escapeHtml(item.name)}">${escapeHtml(item.name)}</div>
-                    <div class="file-meta-row">
-                        <span class="file-type-pill">${escapeHtml(typeLabel)}</span>
-                        <span class="meta-size">${sizeStr}</span>
-                    </div>
-                </div>
-                <div class="file-card-actions">
-                    <button class="card-action-btn" title="Open" onclick="event.stopPropagation(); window.handleOpenItem('${safePath}', ${item.isDirectory})"><i class="fas fa-arrow-up-right-from-square"></i></button>
-                    <button class="card-action-btn" title="Copy Path" onclick="event.stopPropagation(); window.handleCopyPath('${safePath}')"><i class="fas fa-copy"></i></button>
-                </div>
+            visualHtml = `
+                <i class="${iconInfo.icon} card-icon-emblem" style="color:${iconInfo.color}"></i>
+                ${ext ? `<span class="card-type-chip">${escapeHtml(ext)}</span>` : ''}
             `;
         }
 
-        el.onclick = (e) => {
-            e.stopPropagation();
-            if (!e.ctrlKey && !e.shiftKey) clearSelection();
-            toggleSelection(item, el);
-            inspectItem(item);
-        };
+        card.innerHTML = `
+            <div class="card-stage">
+                ${visualHtml}
+            </div>
+            <div class="card-meta-cluster">
+                <div class="card-name-title" title="${escapeHtml(item.name)}">${escapeHtml(item.name)}</div>
+                <div class="card-sub-info">
+                    <span>${sizeStr}</span>
+                    <span>${dateStr}</span>
+                </div>
+            </div>
+            <div class="card-hover-actions">
+                <button class="card-action-mini-btn" title="Open" onclick="event.stopPropagation(); window.handleOpenItem('${escapePath(item.path)}', ${item.isDirectory})">
+                    <i class="fas fa-arrow-up-right-from-square"></i>
+                </button>
+                <button class="card-action-mini-btn" title="Show in Folder" onclick="event.stopPropagation(); window.handleShowFolder('${escapePath(item.path)}')">
+                    <i class="fas fa-folder-open"></i>
+                </button>
+                <button class="card-action-mini-btn" title="Copy Path" onclick="event.stopPropagation(); window.handleCopyPath('${escapePath(item.path)}')">
+                    <i class="fas fa-copy"></i>
+                </button>
+                <button class="card-action-mini-btn danger" title="Delete" onclick="event.stopPropagation(); window.handleDeleteItem('${escapePath(item.path)}')">
+                    <i class="fas fa-trash"></i>
+                </button>
+            </div>
+        `;
 
-        el.ondblclick = (e) => {
-            e.stopPropagation();
-            openItem(item);
-        };
-
-        el.oncontextmenu = (e) => {
-            e.preventDefault();
-            e.stopPropagation();
-            showContextMenu(e, item);
-        };
-
-        fileGrid.appendChild(el);
+        bindItemEvents(card, item);
+        fileGrid.appendChild(card);
     });
 }
 
-// ── Selection & Inspector ──────────────────────────────────────────────────
+// ── List View ──────────────────────────────────────────────────────────────
+function renderListView(items) {
+    const getSortIcon = (field) => {
+        if (sortField !== field) return '<i class="fas fa-sort" style="opacity:0.35; margin-left:4px; font-size:10px;"></i>';
+        return `<i class="fas fa-chevron-${sortAsc ? 'up' : 'down'}" style="color:var(--accent); margin-left:4px; font-size:10px;"></i>`;
+    };
+
+    const header = document.createElement('div');
+    header.className = 'list-table-header';
+    header.innerHTML = `
+        <div class="sortable col-name" onclick="toggleSortColumn('name')">Name ${getSortIcon('name')}</div>
+        <div class="sortable col-date" onclick="toggleSortColumn('date')">Date Modified ${getSortIcon('date')}</div>
+        <div class="sortable col-type" onclick="toggleSortColumn('type')">Type ${getSortIcon('type')}</div>
+        <div class="sortable col-size" onclick="toggleSortColumn('size')">Size ${getSortIcon('size')}</div>
+        <div class="col-actions">Actions</div>
+    `;
+    fileGrid.appendChild(header);
+
+    items.forEach(item => {
+        const row = document.createElement('div');
+        row.className = `file-item list-row ${selectedItems.has(item.path) ? 'selected' : ''}`;
+        row.dataset.path = item.path;
+
+        const iconInfo = getFileIcon(item);
+        const sizeStr = item.isDirectory ? '--' : formatBytes(item.size);
+        const dateStr = item.mtime ? new Date(item.mtime).toLocaleString() : '--';
+        const typeLabel = item.isDirectory ? 'Folder' : getFileTypeLabel(item.name);
+
+        row.innerHTML = `
+            <div class="col-name">
+                <div class="col-icon-mini" style="color: ${iconInfo.color}">
+                    <i class="${iconInfo.icon}"></i>
+                </div>
+                <span class="file-name-text" title="${escapeHtml(item.name)}">${escapeHtml(item.name)}</span>
+            </div>
+            <div class="col-date">${dateStr}</div>
+            <div class="col-type"><span class="file-type-pill">${escapeHtml(typeLabel)}</span></div>
+            <div class="col-size">${sizeStr}</div>
+            <div class="col-actions">
+                <button class="list-action-btn" title="Open" onclick="event.stopPropagation(); window.handleOpenItem('${escapePath(item.path)}', ${item.isDirectory})"><i class="fas fa-arrow-up-right-from-square"></i></button>
+                <button class="list-action-btn" title="Show in Folder" onclick="event.stopPropagation(); window.handleShowFolder('${escapePath(item.path)}')"><i class="fas fa-folder-open"></i></button>
+                <button class="list-action-btn" title="Copy Path" onclick="event.stopPropagation(); window.handleCopyPath('${escapePath(item.path)}')"><i class="fas fa-copy"></i></button>
+                <button class="list-action-btn danger" title="Delete" onclick="event.stopPropagation(); window.handleDeleteItem('${escapePath(item.path)}')"><i class="fas fa-trash"></i></button>
+            </div>
+        `;
+
+        bindItemEvents(row, item);
+        fileGrid.appendChild(row);
+    });
+}
+
+// ── Compact View ───────────────────────────────────────────────────────────
+function renderCompactView(items) {
+    items.forEach(item => {
+        const card = document.createElement('div');
+        card.className = `file-item compact-card ${selectedItems.has(item.path) ? 'selected' : ''}`;
+        card.dataset.path = item.path;
+
+        const iconInfo = getFileIcon(item);
+
+        card.innerHTML = `
+            <i class="${iconInfo.icon} compact-icon" style="color:${iconInfo.color}"></i>
+            <span class="compact-name" title="${escapeHtml(item.name)}">${escapeHtml(item.name)}</span>
+        `;
+
+        bindItemEvents(card, item);
+        fileGrid.appendChild(card);
+    });
+}
+
+// ── Item Interactions & Selection ──────────────────────────────────────────
+function bindItemEvents(el, item) {
+    el.onclick = (e) => {
+        e.stopPropagation();
+        if (e.ctrlKey || e.metaKey) {
+            toggleSelection(item, el);
+        } else if (e.shiftKey) {
+            rangeSelection(item);
+        } else {
+            clearSelection();
+            selectItem(item, el);
+        }
+        inspectItem(item);
+    };
+
+    el.ondblclick = (e) => {
+        e.stopPropagation();
+        openItem(item);
+    };
+
+    el.oncontextmenu = (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        if (!selectedItems.has(item.path)) {
+            clearSelection();
+            selectItem(item, el);
+            inspectItem(item);
+        }
+        showContextMenu(e, item);
+    };
+}
+
+function selectItem(item, el) {
+    selectedItems.add(item.path);
+    el.classList.add('selected');
+    updateSelectedSummary();
+}
+
 function toggleSelection(item, el) {
     if (selectedItems.has(item.path)) {
         selectedItems.delete(item.path);
@@ -541,49 +1020,100 @@ function toggleSelection(item, el) {
         selectedItems.add(item.path);
         el.classList.add('selected');
     }
-    updateSelectedCount();
+    updateSelectedSummary();
 }
 
 function clearSelection() {
     selectedItems.clear();
     document.querySelectorAll('.file-item.selected').forEach(el => el.classList.remove('selected'));
-    updateSelectedCount();
+    updateSelectedSummary();
 }
 
-function updateSelectedCount() {
-    if (statSelectedCount) statSelectedCount.innerText = selectedItems.size;
+function updateSelectedSummary() {
+    if (statSelectedCount) statSelectedCount.innerText = `${selectedItems.size} selected`;
+    
+    if (statSelectedSize) {
+        if (selectedItems.size > 0) {
+            let totalBytes = 0;
+            currentItems.forEach(i => {
+                if (selectedItems.has(i.path) && !i.isDirectory) totalBytes += (i.size || 0);
+            });
+            statSelectedSize.innerText = totalBytes > 0 ? `(${formatBytes(totalBytes)})` : '';
+        } else {
+            statSelectedSize.innerText = '';
+        }
+    }
 }
 
-function inspectItem(item) {
-    if (!previewInspector) return;
+// ── Inspector Panel Display ────────────────────────────────────────────────
+async function inspectItem(item) {
     currentInspectedItem = item;
-    previewInspector.style.display = 'flex';
+    if (!previewInspector || !inspectorOpen) return;
 
     if (inspectorFileName) inspectorFileName.innerText = item.name;
     if (inspectorType) inspectorType.innerText = item.isDirectory ? 'File Folder' : getFileTypeLabel(item.name);
     if (inspectorSize) inspectorSize.innerText = item.isDirectory ? '--' : formatBytes(item.size);
     if (inspectorDate) inspectorDate.innerText = item.mtime ? new Date(item.mtime).toLocaleString() : '--';
+    if (inspectorCreated) inspectorCreated.innerText = item.birthtime ? new Date(item.birthtime).toLocaleString() : (item.mtime ? new Date(item.mtime).toLocaleString() : '--');
     if (inspectorPath) inspectorPath.innerText = item.path;
 
+    // Reset preview stage
     if (inspectorPreviewBox) {
         inspectorPreviewBox.innerHTML = '';
         const ext = getExtension(item.name);
         const fileUrl = 'file:///' + item.path.replace(/\\/g, '/');
 
         if (item.isDirectory) {
-            inspectorPreviewBox.innerHTML = `<i class="fas fa-folder" style="font-size: 48px; color: #F59E0B;"></i>`;
+            inspectorPreviewBox.innerHTML = `<i class="fas fa-folder" style="font-size: 58px; color: #F59E0B;"></i>`;
         } else if (isImageFile(item.name)) {
-            inspectorPreviewBox.innerHTML = `<img src="${fileUrl}" style="max-width:100%; max-height:100%; object-fit:contain; border-radius:8px;" alt="">`;
-        } else if (['mp4', 'webm', 'mov'].includes(ext)) {
-            inspectorPreviewBox.innerHTML = `<i class="fas fa-file-video" style="font-size: 48px; color: #8B5CF6;"></i>`;
+            inspectorPreviewBox.innerHTML = `<img src="${fileUrl}" class="inspector-preview-img" alt="">`;
+        } else if (['mp4', 'webm', 'mov', 'mkv'].includes(ext)) {
+            inspectorPreviewBox.innerHTML = `
+                <div style="display:flex; flex-direction:column; align-items:center; gap:8px;">
+                    <i class="fas fa-file-video" style="font-size: 58px; color: #8B5CF6;"></i>
+                    <span style="font-size:11px; color:var(--text-muted); font-weight:700;">VIDEO MEDIA</span>
+                </div>
+            `;
         } else if (['mp3', 'wav', 'ogg', 'flac', 'm4a'].includes(ext)) {
-            inspectorPreviewBox.innerHTML = `<i class="fas fa-file-audio" style="font-size: 48px; color: #10B981;"></i>`;
+            inspectorPreviewBox.innerHTML = `
+                <div style="display:flex; flex-direction:column; align-items:center; gap:8px;">
+                    <i class="fas fa-file-audio" style="font-size: 58px; color: #10B981;"></i>
+                    <span style="font-size:11px; color:var(--text-muted); font-weight:700;">AUDIO TRACK</span>
+                </div>
+            `;
         } else if (ext === 'pdf') {
-            inspectorPreviewBox.innerHTML = `<i class="fas fa-file-pdf" style="font-size: 48px; color: #EF4444;"></i>`;
+            inspectorPreviewBox.innerHTML = `
+                <div style="display:flex; flex-direction:column; align-items:center; gap:8px;">
+                    <i class="fas fa-file-pdf" style="font-size: 58px; color: #EF4444;"></i>
+                    <span style="font-size:11px; color:var(--text-muted); font-weight:700;">PDF DOCUMENT</span>
+                </div>
+            `;
         } else {
             const iconInfo = getFileIcon(item);
-            inspectorPreviewBox.innerHTML = `<i class="${iconInfo.icon}" style="font-size: 48px; color:${iconInfo.color || 'var(--text-dim)'}"></i>`;
+            inspectorPreviewBox.innerHTML = `<i class="${iconInfo.icon}" style="font-size: 58px; color:${iconInfo.color}"></i>`;
         }
+    }
+
+    // Code & Text snippet preview
+    if (inspectorSnippetCard && snippetCode) {
+        const textExts = new Set(['txt', 'md', 'json', 'js', 'ts', 'html', 'css', 'py', 'c', 'cpp', 'rs', 'go', 'java', 'xml', 'yaml', 'yml', 'log', 'ini']);
+        const ext = getExtension(item.name);
+
+        if (!item.isDirectory && textExts.has(ext) && item.size < 500000) {
+            try {
+                if (window.electronAPI && window.electronAPI.invoke) {
+                    const content = await window.electronAPI.invoke('read-file-content', item.path);
+                    if (content) {
+                        const lines = content.split('\n').slice(0, 40).join('\n');
+                        snippetCode.innerText = lines;
+                        if (snippetLen) snippetLen.innerText = `${content.length} bytes`;
+                        inspectorSnippetCard.style.display = 'flex';
+                        return;
+                    }
+                }
+            } catch (e) {}
+        }
+        inspectorSnippetCard.style.display = 'none';
     }
 }
 
@@ -617,6 +1147,286 @@ function openItem(item) {
     }
 }
 
+function showInNativeFolder(fullPath) {
+    if (window.electronAPI && window.electronAPI.invoke) {
+        window.electronAPI.invoke('show-item-in-folder', fullPath);
+    } else if (window.electronAPI && window.electronAPI.send) {
+        window.electronAPI.send('show-item-in-folder', fullPath);
+    }
+}
+
+async function deleteSystemItem(fullPath) {
+    if (window.electronAPI && window.electronAPI.invoke) {
+        const success = await window.electronAPI.invoke('delete-system-item', fullPath);
+        if (success) {
+            selectedItems.delete(fullPath);
+            refreshCurrentDirectory();
+        }
+    }
+}
+
+// ── New Folder & Rename Modals ─────────────────────────────────────────────
+function setupModalControls() {
+    if (sidebarNewFolderBtn) sidebarNewFolderBtn.onclick = () => promptNewFolder();
+    if (topNewFolderBtn) topNewFolderBtn.onclick = () => promptNewFolder();
+
+    if (modalCloseBtn) modalCloseBtn.onclick = () => closeInputModal();
+    if (modalCancelBtn) modalCancelBtn.onclick = () => closeInputModal();
+
+    if (modalConfirmBtn) modalConfirmBtn.onclick = () => executeModalAction();
+
+    if (modalInputField) {
+        modalInputField.onkeydown = (e) => {
+            if (e.key === 'Enter') executeModalAction();
+            else if (e.key === 'Escape') closeInputModal();
+        };
+    }
+}
+
+function promptNewFolder() {
+    modalAction = { type: 'new-folder' };
+    if (modalTitle) modalTitle.innerText = 'New Folder';
+    if (modalIconBadge) modalIconBadge.innerHTML = '<i class="fas fa-folder-plus"></i>';
+    if (modalInputLabel) modalInputLabel.innerText = 'Folder Name:';
+    if (modalInputField) {
+        modalInputField.value = 'New Folder';
+        modalInputField.select();
+    }
+    if (modalErrorMsg) modalErrorMsg.style.display = 'none';
+    if (inputModal) inputModal.style.display = 'flex';
+    setTimeout(() => modalInputField?.focus(), 50);
+}
+
+function promptRename(item) {
+    modalAction = { type: 'rename', targetItem: item };
+    if (modalTitle) modalTitle.innerText = 'Rename Item';
+    if (modalIconBadge) modalIconBadge.innerHTML = '<i class="fas fa-pen"></i>';
+    if (modalInputLabel) modalInputLabel.innerText = 'New Name:';
+    if (modalInputField) {
+        modalInputField.value = item.name;
+        modalInputField.select();
+    }
+    if (modalErrorMsg) modalErrorMsg.style.display = 'none';
+    if (inputModal) inputModal.style.display = 'flex';
+    setTimeout(() => modalInputField?.focus(), 50);
+}
+
+function closeInputModal() {
+    if (inputModal) inputModal.style.display = 'none';
+    modalAction = null;
+}
+
+async function executeModalAction() {
+    if (!modalAction || !modalInputField) return;
+    const value = modalInputField.value.trim();
+    if (!value) {
+        showModalError('Name cannot be empty.');
+        return;
+    }
+
+    if (/[\\/:*?"<>|]/.test(value)) {
+        showModalError('Name contains invalid characters (/ \\ : * ? " < > |).');
+        return;
+    }
+
+    if (modalAction.type === 'new-folder') {
+        const newDirPath = currentPath + (currentPath.endsWith('\\') || currentPath.endsWith('/') ? '' : '\\') + value;
+        try {
+            if (window.electronAPI && window.electronAPI.invoke) {
+                const ok = await window.electronAPI.invoke('create-directory', newDirPath);
+                if (ok) {
+                    closeInputModal();
+                    refreshCurrentDirectory();
+                } else {
+                    showModalError('Failed to create folder. Check permissions.');
+                }
+            }
+        } catch (err) {
+            showModalError(err.message || 'Error creating folder');
+        }
+    } else if (modalAction.type === 'rename') {
+        const item = modalAction.targetItem;
+        if (!item) return;
+        const parentDir = item.path.substring(0, Math.max(item.path.lastIndexOf('\\'), item.path.lastIndexOf('/')));
+        const newPath = parentDir + (parentDir.endsWith('\\') || parentDir.endsWith('/') ? '' : '\\') + value;
+        try {
+            if (window.electronAPI && window.electronAPI.invoke) {
+                const ok = await window.electronAPI.invoke('rename-system-item', { oldPath: item.path, newPath });
+                if (ok) {
+                    closeInputModal();
+                    refreshCurrentDirectory();
+                } else {
+                    showModalError('Failed to rename item.');
+                }
+            }
+        } catch (err) {
+            showModalError(err.message || 'Error renaming item');
+        }
+    }
+}
+
+function showModalError(msg) {
+    if (modalErrorMsg) {
+        modalErrorMsg.innerText = msg;
+        modalErrorMsg.style.display = 'block';
+    }
+}
+
+// ── Custom Glass Context Menu ──────────────────────────────────────────────
+function showContextMenu(e, item) {
+    if (!contextMenu) return;
+    contextMenu.style.display = 'flex';
+    
+    // Position within viewport boundaries
+    const menuWidth = 200;
+    const menuHeight = 220;
+    const x = Math.min(e.clientX, window.innerWidth - menuWidth - 10);
+    const y = Math.min(e.clientY, window.innerHeight - menuHeight - 10);
+    
+    contextMenu.style.left = `${x}px`;
+    contextMenu.style.top = `${y}px`;
+
+    const safePath = escapePath(item.path);
+
+    contextMenu.innerHTML = `
+        <div class="context-menu-item" onclick="window.handleOpenItem('${safePath}', ${item.isDirectory})">
+            <i class="fas fa-arrow-up-right-from-square"></i> Open
+        </div>
+        ${!item.isDirectory ? `
+        <div class="context-menu-item" onclick="window.handleOpenInTab('${safePath}')">
+            <i class="fas fa-table-columns"></i> Open in New Tab
+        </div>` : ''}
+        <div class="context-menu-item" onclick="window.handleShowFolder('${safePath}')">
+            <i class="fas fa-folder-open"></i> Show in Folder
+        </div>
+        <div class="context-menu-item" onclick="window.handleCopyPath('${safePath}')">
+            <i class="fas fa-copy"></i> Copy Path
+        </div>
+        <div class="context-menu-divider"></div>
+        <div class="context-menu-item" onclick="window.handleRenameItem('${safePath}')">
+            <i class="fas fa-pen"></i> Rename
+        </div>
+        <div class="context-menu-item danger" onclick="window.handleDeleteItem('${safePath}')">
+            <i class="fas fa-trash"></i> Move to Trash
+        </div>
+    `;
+}
+
+// ── Global Event Handlers & Window Binds ───────────────────────────────────
+function setupGlobalShortcuts() {
+    document.addEventListener('click', (e) => {
+        if (contextMenu) contextMenu.style.display = 'none';
+        if (sortDropdownMenu && !e.target.closest('.sort-menu-wrap')) {
+            sortDropdownMenu.classList.remove('open');
+        }
+        if (!e.target.closest('.file-item') && !e.target.closest('#preview-inspector') && !e.target.closest('.content-header') && !e.target.closest('.sidebar')) {
+            clearSelection();
+        }
+    });
+
+    document.addEventListener('keydown', (e) => {
+        // Ctrl+F or F3 to Search
+        if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'f') {
+            e.preventDefault();
+            fileSearch?.focus();
+            fileSearch?.select();
+        }
+        // Ctrl+L to focus Path Bar
+        else if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'l') {
+            e.preventDefault();
+            toggleDirectPathInput(true);
+        }
+        // Alt+Left to Go Back
+        else if (e.altKey && e.key === 'ArrowLeft') {
+            e.preventDefault();
+            goBack();
+        }
+        // Alt+Right to Go Forward
+        else if (e.altKey && e.key === 'ArrowRight') {
+            e.preventDefault();
+            goForward();
+        }
+        // Alt+Up or Backspace to Go Up
+        else if ((e.altKey && e.key === 'ArrowUp') || (e.key === 'Backspace' && !['INPUT', 'TEXTAREA'].includes(e.target.tagName))) {
+            e.preventDefault();
+            navigateUp();
+        }
+        // F5 or Ctrl+R to Refresh
+        else if (e.key === 'F5' || ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'r')) {
+            e.preventDefault();
+            refreshCurrentDirectory();
+        }
+        // Delete to Trash selected items
+        else if (e.key === 'Delete' && selectedItems.size > 0 && !['INPUT', 'TEXTAREA'].includes(e.target.tagName)) {
+            e.preventDefault();
+            selectedItems.forEach(p => deleteSystemItem(p));
+        }
+        // Ctrl+A to Select All
+        else if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'a' && !['INPUT', 'TEXTAREA'].includes(e.target.tagName)) {
+            e.preventDefault();
+            currentItems.forEach(i => selectedItems.add(i.path));
+            document.querySelectorAll('.file-item').forEach(el => el.classList.add('selected'));
+            updateSelectedSummary();
+        }
+        // Escape to dismiss
+        else if (e.key === 'Escape') {
+            if (inputModal && inputModal.style.display !== 'none') closeInputModal();
+            else if (mediaPlayerModal && mediaPlayerModal.style.display !== 'none') closeMediaModal();
+            else if (photoEditorModal && photoEditorModal.style.display !== 'none') photoEditorModal.style.display = 'none';
+            else clearSelection();
+        }
+    });
+}
+
+// Window Exposed Handlers for Inline Clicks
+window.handleOpenItem = (pathStr, isDir) => {
+    if (isDir) {
+        navigateTo(pathStr);
+    } else {
+        const item = currentItems.find(i => i.path === pathStr) || { name: pathStr.split(/[\\\/]/).pop(), path: pathStr, isDirectory: false };
+        openItem(item);
+    }
+};
+
+window.handleOpenInTab = (pathStr) => {
+    const fileUrl = 'file:///' + pathStr.replace(/\\/g, '/');
+    if (window.electronAPI && window.electronAPI.newTab) {
+        window.electronAPI.newTab(fileUrl);
+    }
+};
+
+window.handleShowFolder = (pathStr) => {
+    showInNativeFolder(pathStr);
+};
+
+window.handleCopyPath = (pathStr) => {
+    navigator.clipboard.writeText(pathStr);
+};
+
+window.handleDeleteItem = (pathStr) => {
+    deleteSystemItem(pathStr);
+};
+
+window.handleRenameItem = (pathStr) => {
+    const item = currentItems.find(i => i.path === pathStr);
+    if (item) promptRename(item);
+};
+
+window.toggleSortColumn = (field) => {
+    if (sortField === field) {
+        sortAsc = !sortAsc;
+    } else {
+        sortField = field;
+        sortAsc = true;
+    }
+    localStorage.setItem('ocal-fm-sort-field', sortField);
+    localStorage.setItem('ocal-fm-sort-asc', sortAsc);
+    updateSortOrderUi();
+    renderCurrentFiles();
+};
+
+window.promptNewFolder = promptNewFolder;
+
 // ── AUDIO STUDIO & WEB AUDIO DSP ENGINE ────────────────────────────────────
 function ensureAudioContext() {
     if (!audioCtx) {
@@ -636,11 +1446,9 @@ function initAudioDspPipeline() {
     try {
         audioSourceNode = audioCtx.createMediaElementSource(activeAudio);
 
-        // 1. Preamp Node (clean headroom boost)
         preampNode = audioCtx.createGain();
         preampNode.gain.value = 1.15;
 
-        // 2. Dual-Stage Sub-Bass & Punch Filter
         bassNode = audioCtx.createBiquadFilter();
         bassNode.type = 'lowshelf';
         bassNode.frequency.value = 60;
@@ -653,7 +1461,6 @@ function initAudioDspPipeline() {
         punchNode.Q.value = 1.2;
         punchNode.gain.value = bassVal * 0.6;
 
-        // 3. Dual-Stage Vocal & Highs Air Exciter
         highsNode = audioCtx.createBiquadFilter();
         highsNode.type = 'highshelf';
         highsNode.frequency.value = 3600;
@@ -667,7 +1474,6 @@ function initAudioDspPipeline() {
         airNode.Q.value = 1.1;
         airNode.gain.value = clarityOn ? highsVal * 0.7 : 0;
 
-        // 4. 10-Band Graphic EQ Nodes
         const freqs = [32, 64, 125, 250, 500, 1000, 2000, 4000, 8000, 16000];
         eqNodes = freqs.map(freq => {
             const filter = audioCtx.createBiquadFilter();
@@ -679,11 +1485,9 @@ function initAudioDspPipeline() {
             return filter;
         });
 
-        // 5. Stereo Panner Node (Spatial & 3D)
         pannerNode = audioCtx.createStereoPanner();
         pannerNode.pan.value = 0;
 
-        // 6. Studio Mastering Compressor (glues mix, enhances loudness & punch)
         compressorNode = audioCtx.createDynamicsCompressor();
         compressorNode.threshold.value = -16;
         compressorNode.knee.value = 24;
@@ -691,11 +1495,9 @@ function initAudioDspPipeline() {
         compressorNode.attack.value = 0.003;
         compressorNode.release.value = 0.22;
 
-        // 7. Live Real-Time Beat Analyser Node
         analyserNode = audioCtx.createAnalyser();
         analyserNode.fftSize = 64;
 
-        // Connect graph
         let prev = audioSourceNode;
         prev.connect(preampNode);
         prev = preampNode;
@@ -745,17 +1547,15 @@ function startBeatVisualizer() {
 
         analyserNode.getByteFrequencyData(dataArray);
         let bassSum = 0;
-        for (let i = 0; i < 4; i++) {
-            bassSum += dataArray[i] || 0;
-        }
-        const bassLevel = (bassSum / 4) / 255;
+        for (let i = 0; i < 4; i++) bassSum += dataArray[i];
+        const bassAvg = bassSum / 4;
+        const pumpScale = 1 + (bassAvg / 255) * 0.08;
 
         const vinyl = document.getElementById('spinning-vinyl');
         if (vinyl) {
-            const glowSize = 35 + bassLevel * 45;
-            const scale = 1 + bassLevel * 0.04;
-            vinyl.style.boxShadow = `0 14px 40px rgba(0, 0, 0, 0.45), 0 0 ${glowSize}px var(--accent-glow)`;
-            vinyl.style.transform = `scale(${scale})`;
+            vinyl.style.transform = `scale(${pumpScale})`;
+            const glowAlpha = (bassAvg / 255) * 0.6 + 0.2;
+            vinyl.style.boxShadow = `0 0 ${20 + bassAvg * 0.2}px var(--accent-glow)`;
         }
 
         visualizerAnimFrame = requestAnimationFrame(tick);
@@ -769,145 +1569,123 @@ function stopBeatVisualizer() {
         cancelAnimationFrame(visualizerAnimFrame);
         visualizerAnimFrame = null;
     }
-    const vinyl = document.getElementById('spinning-vinyl');
-    if (vinyl) {
-        vinyl.style.boxShadow = '';
-        vinyl.style.transform = '';
-    }
 }
 
 function openAudioStudio(item) {
-    stopCurrentMedia();
     currentMediaItem = item;
-    currentMediaType = 'audio';
-
-    ensureAudioContext();
-
     const fileUrl = 'file:///' + item.path.replace(/\\/g, '/');
 
     if (mediaModalName) mediaModalName.innerText = item.name;
     if (mediaModalIcon) mediaModalIcon.className = 'fas fa-music';
-    if (audioEnhancerToolbar) audioEnhancerToolbar.style.display = 'block';
-    if (mediaFsBtn) mediaFsBtn.style.display = 'none';
 
-    // Turntable Vinyl Stage
-    mediaModalBody.innerHTML = `
-        <div class="audio-art-stage">
-            <div class="spinning-vinyl-art" id="spinning-vinyl">
-                <div class="vinyl-groove-ring ring-1"></div>
-                <div class="vinyl-groove-ring ring-2"></div>
-                <div class="vinyl-center-pin">
+    if (mediaModalBody) {
+        mediaModalBody.innerHTML = `
+            <div class="spinning-vinyl paused" id="spinning-vinyl">
+                <div class="vinyl-center-dot">
                     <i class="fas fa-compact-disc"></i>
                 </div>
             </div>
-            <div class="audio-track-info">
-                <span class="audio-track-title">${escapeHtml(item.name.replace(/\.[^/.]+$/, ''))}</span>
-                <span class="audio-track-sub">Local Audio Studio • 3D DSP Active</span>
-            </div>
-        </div>
-    `;
+            <audio id="active-media-audio" src="${fileUrl}" preload="auto"></audio>
+        `;
+    }
 
-    // Create audio element
-    activeAudio = new Audio(fileUrl);
-    activeAudio.crossOrigin = 'anonymous';
+    activeAudio = document.getElementById('active-media-audio');
+    activeVideo = null;
 
-    // Attach Web Audio DSP
-    initAudioDspPipeline();
+    if (mediaFsBtn) mediaFsBtn.style.display = 'none';
+    const enhancer = document.getElementById('audio-enhancer-toolbar');
+    if (enhancer) enhancer.style.display = 'flex';
 
-    // Wire events
-    activeAudio.addEventListener('loadedmetadata', () => {
-        if (mediaTimeDuration) mediaTimeDuration.innerText = formatTime(activeAudio.duration || 0);
-    });
-
-    activeAudio.addEventListener('timeupdate', () => {
-        if (!isSeeking && activeAudio && activeAudio.duration) {
-            const progress = (activeAudio.currentTime / activeAudio.duration) * 100;
-            if (mediaSeekBar) mediaSeekBar.value = progress;
-            if (mediaTimeCurrent) mediaTimeCurrent.innerText = formatTime(activeAudio.currentTime);
+    if (activeAudio) {
+        activeAudio.onloadedmetadata = () => {
             if (mediaTimeDuration) mediaTimeDuration.innerText = formatTime(activeAudio.duration);
-        }
-    });
+            if (mediaSeekBar) mediaSeekBar.max = activeAudio.duration;
+        };
 
-    activeAudio.addEventListener('ended', () => {
-        updatePlayBtnState(false);
-    });
+        activeAudio.ontimeupdate = () => {
+            if (!isSeeking && mediaSeekBar && activeAudio) {
+                mediaSeekBar.value = activeAudio.currentTime;
+                if (mediaTimeCurrent) mediaTimeCurrent.innerText = formatTime(activeAudio.currentTime);
+            }
+        };
 
-    activeAudio.addEventListener('play', () => {
-        updatePlayBtnState(true);
-        startSpatial8d();
-    });
+        activeAudio.onplay = () => {
+            ensureAudioContext();
+            if (!audioSourceNode) initAudioDspPipeline();
+            const vinyl = document.getElementById('spinning-vinyl');
+            if (vinyl) vinyl.classList.remove('paused');
+            if (mediaPlayBtn) mediaPlayBtn.innerHTML = '<i class="fas fa-pause"></i>';
+            startBeatVisualizer();
+        };
 
-    activeAudio.addEventListener('pause', () => {
-        updatePlayBtnState(false);
-        stopSpatial8d();
-    });
+        activeAudio.onpause = () => {
+            const vinyl = document.getElementById('spinning-vinyl');
+            if (vinyl) vinyl.classList.add('paused');
+            if (mediaPlayBtn) mediaPlayBtn.innerHTML = '<i class="fas fa-play"></i>';
+            stopBeatVisualizer();
+        };
 
-    // Start playback
-    activeAudio.play().then(() => {
-        updatePlayBtnState(true);
-    }).catch(err => {
-        console.warn('Audio auto-play policy:', err);
-        updatePlayBtnState(false);
-    });
+        activeAudio.onended = () => {
+            const vinyl = document.getElementById('spinning-vinyl');
+            if (vinyl) vinyl.classList.add('paused');
+            if (mediaPlayBtn) mediaPlayBtn.innerHTML = '<i class="fas fa-play"></i>';
+            stopBeatVisualizer();
+        };
 
-    mediaPlayerModal.style.display = 'flex';
+        activeAudio.play().catch(() => {});
+    }
+
+    if (mediaPlayerModal) mediaPlayerModal.style.display = 'flex';
 }
 
 function openVideoStudio(item) {
-    stopCurrentMedia();
     currentMediaItem = item;
-    currentMediaType = 'video';
-
     const fileUrl = 'file:///' + item.path.replace(/\\/g, '/');
 
     if (mediaModalName) mediaModalName.innerText = item.name;
     if (mediaModalIcon) mediaModalIcon.className = 'fas fa-video';
-    if (audioEnhancerToolbar) audioEnhancerToolbar.style.display = 'none';
+
+    if (mediaModalBody) {
+        mediaModalBody.innerHTML = `
+            <video id="active-media-video" src="${fileUrl}" style="max-width:100%; max-height:360px; border-radius:12px;" playsinline></video>
+        `;
+    }
+
+    activeVideo = document.getElementById('active-media-video');
+    activeAudio = null;
+
     if (mediaFsBtn) mediaFsBtn.style.display = 'flex';
+    const enhancer = document.getElementById('audio-enhancer-toolbar');
+    if (enhancer) enhancer.style.display = 'none';
 
-    mediaModalBody.innerHTML = `
-        <video id="active-video-player" src="${fileUrl}" style="width:100%; max-height:420px; border-radius:14px; background:#000; outline:none;"></video>
-    `;
-
-    activeVideo = document.getElementById('active-video-player');
-
-    activeVideo.addEventListener('loadedmetadata', () => {
-        if (mediaTimeDuration) mediaTimeDuration.innerText = formatTime(activeVideo.duration || 0);
-    });
-
-    activeVideo.addEventListener('timeupdate', () => {
-        if (!isSeeking && activeVideo && activeVideo.duration) {
-            const progress = (activeVideo.currentTime / activeVideo.duration) * 100;
-            if (mediaSeekBar) mediaSeekBar.value = progress;
-            if (mediaTimeCurrent) mediaTimeCurrent.innerText = formatTime(activeVideo.currentTime);
+    if (activeVideo) {
+        activeVideo.onloadedmetadata = () => {
             if (mediaTimeDuration) mediaTimeDuration.innerText = formatTime(activeVideo.duration);
-        }
-    });
+            if (mediaSeekBar) mediaSeekBar.max = activeVideo.duration;
+        };
 
-    activeVideo.addEventListener('ended', () => {
-        updatePlayBtnState(false);
-    });
+        activeVideo.ontimeupdate = () => {
+            if (!isSeeking && mediaSeekBar && activeVideo) {
+                mediaSeekBar.value = activeVideo.currentTime;
+                if (mediaTimeCurrent) mediaTimeCurrent.innerText = formatTime(activeVideo.currentTime);
+            }
+        };
 
-    activeVideo.addEventListener('play', () => {
-        updatePlayBtnState(true);
-    });
+        activeVideo.onplay = () => {
+            if (mediaPlayBtn) mediaPlayBtn.innerHTML = '<i class="fas fa-pause"></i>';
+        };
 
-    activeVideo.addEventListener('pause', () => {
-        updatePlayBtnState(false);
-    });
+        activeVideo.onpause = () => {
+            if (mediaPlayBtn) mediaPlayBtn.innerHTML = '<i class="fas fa-play"></i>';
+        };
 
-    activeVideo.play().then(() => {
-        updatePlayBtnState(true);
-    }).catch(() => {
-        updatePlayBtnState(false);
-    });
+        activeVideo.play().catch(() => {});
+    }
 
-    mediaPlayerModal.style.display = 'flex';
+    if (mediaPlayerModal) mediaPlayerModal.style.display = 'flex';
 }
 
-function stopCurrentMedia() {
-    stopSpatial8d();
-    stopBeatVisualizer();
+function closeMediaModal() {
     if (activeAudio) {
         activeAudio.pause();
         activeAudio.src = '';
@@ -918,203 +1696,96 @@ function stopCurrentMedia() {
         activeVideo.src = '';
         activeVideo = null;
     }
-    updatePlayBtnState(false);
-    if (mediaSeekBar) mediaSeekBar.value = 0;
-    if (mediaTimeCurrent) mediaTimeCurrent.innerText = '0:00';
-    if (mediaTimeDuration) mediaTimeDuration.innerText = '0:00';
+    stopBeatVisualizer();
+    if (mediaPlayerModal) mediaPlayerModal.style.display = 'none';
 }
 
-function updatePlayBtnState(isPlaying) {
-    if (mediaPlayBtn) {
-        mediaPlayBtn.innerHTML = `<i class="fas fa-${isPlaying ? 'pause' : 'play'}"></i>`;
-    }
-    const vinyl = document.getElementById('spinning-vinyl');
-    if (vinyl) {
-        vinyl.style.animationPlayState = isPlaying ? 'running' : 'paused';
-    }
-}
-
-function toggleMediaPlay() {
-    ensureAudioContext();
-    if (currentMediaType === 'audio' && activeAudio) {
-        if (activeAudio.paused) {
-            activeAudio.play();
-        } else {
-            activeAudio.pause();
-        }
-    } else if (currentMediaType === 'video' && activeVideo) {
-        if (activeVideo.paused) {
-            activeVideo.play();
-        } else {
-            activeVideo.pause();
-        }
-    }
-}
-
-function startSpatial8d() {
-    if (surroundMode !== 'spatial8d') return;
-    stopSpatial8d();
-    spatial8dTimer = setInterval(() => {
-        if (pannerNode && audioCtx) {
-            spatial8dAngle += 0.04;
-            const depth = parseFloat(document.getElementById('fx-surround-width')?.value || 0.7);
-            pannerNode.pan.value = Math.sin(spatial8dAngle) * depth;
-        }
-    }, 40);
-}
-
-function stopSpatial8d() {
-    if (spatial8dTimer) {
-        clearInterval(spatial8dTimer);
-        spatial8dTimer = null;
-    }
-    if (pannerNode) pannerNode.pan.value = 0;
-}
-
-// ── Initialize Media Controls ──────────────────────────────────────────────
 function initMediaStudioControls() {
-    if (mediaPlayBtn) mediaPlayBtn.onclick = toggleMediaPlay;
+    if (mediaModalClose) mediaModalClose.onclick = () => closeMediaModal();
+    if (mediaModalBackdrop) mediaModalBackdrop.onclick = () => closeMediaModal();
 
-    if (mediaModalClose) {
-        mediaModalClose.onclick = () => {
-            stopCurrentMedia();
-            mediaPlayerModal.style.display = 'none';
+    if (mediaPlayBtn) {
+        mediaPlayBtn.onclick = () => {
+            const current = activeAudio || activeVideo;
+            if (!current) return;
+            if (current.paused) current.play();
+            else current.pause();
         };
     }
 
-    if (mediaModalBackdrop) {
-        mediaModalBackdrop.onclick = () => {
-            stopCurrentMedia();
-            mediaPlayerModal.style.display = 'none';
-        };
-    }
-
-    // Seek Bar
     if (mediaSeekBar) {
-        mediaSeekBar.oninput = () => {
-            isSeeking = true;
-            const target = activeAudio || activeVideo;
-            if (target && target.duration) {
-                const time = (mediaSeekBar.value / 100) * target.duration;
-                if (mediaTimeCurrent) mediaTimeCurrent.innerText = formatTime(time);
-            }
-        };
-
+        mediaSeekBar.oninput = () => { isSeeking = true; };
         mediaSeekBar.onchange = () => {
-            const target = activeAudio || activeVideo;
-            if (target && target.duration) {
-                target.currentTime = (mediaSeekBar.value / 100) * target.duration;
+            const current = activeAudio || activeVideo;
+            if (current) {
+                current.currentTime = parseFloat(mediaSeekBar.value);
             }
             isSeeking = false;
         };
     }
 
-    // Volume Slider & Mute
     if (mediaVolBar) {
         mediaVolBar.oninput = () => {
+            const current = activeAudio || activeVideo;
             const val = parseFloat(mediaVolBar.value);
-            if (activeAudio) activeAudio.volume = val;
-            if (activeVideo) activeVideo.volume = val;
-            updateVolumeIcon(val);
+            if (current) current.volume = val;
+            if (mediaMuteBtn) {
+                mediaMuteBtn.innerHTML = val === 0 ? '<i class="fas fa-volume-xmark"></i>' : (val < 0.5 ? '<i class="fas fa-volume-low"></i>' : '<i class="fas fa-volume-high"></i>');
+            }
         };
     }
 
     if (mediaMuteBtn) {
         mediaMuteBtn.onclick = () => {
-            const target = activeAudio || activeVideo;
-            if (!target) return;
-            if (target.volume > 0) {
-                target.dataset.prevVol = target.volume;
-                target.volume = 0;
-                if (mediaVolBar) mediaVolBar.value = 0;
-                updateVolumeIcon(0);
-            } else {
-                const prev = parseFloat(target.dataset.prevVol || 1);
-                target.volume = prev;
-                if (mediaVolBar) mediaVolBar.value = prev;
-                updateVolumeIcon(prev);
-            }
+            const current = activeAudio || activeVideo;
+            if (!current) return;
+            current.muted = !current.muted;
+            mediaMuteBtn.innerHTML = current.muted ? '<i class="fas fa-volume-xmark"></i>' : '<i class="fas fa-volume-high"></i>';
         };
     }
 
-    function updateVolumeIcon(vol) {
-        if (!mediaMuteBtn) return;
-        if (vol === 0) {
-            mediaMuteBtn.innerHTML = '<i class="fas fa-volume-xmark"></i>';
-        } else if (vol < 0.5) {
-            mediaMuteBtn.innerHTML = '<i class="fas fa-volume-low"></i>';
-        } else {
-            mediaMuteBtn.innerHTML = '<i class="fas fa-volume-high"></i>';
-        }
-    }
-
-    // Rewind 10s & Forward 10s
     if (mediaRewBtn) {
         mediaRewBtn.onclick = () => {
-            const target = activeAudio || activeVideo;
-            if (target) target.currentTime = Math.max(0, target.currentTime - 10);
+            const current = activeAudio || activeVideo;
+            if (current) current.currentTime = Math.max(0, current.currentTime - 10);
         };
     }
 
     if (mediaFwdBtn) {
         mediaFwdBtn.onclick = () => {
-            const target = activeAudio || activeVideo;
-            if (target && target.duration) target.currentTime = Math.min(target.duration, target.currentTime + 10);
+            const current = activeAudio || activeVideo;
+            if (current) current.currentTime = Math.min(current.duration || 0, current.currentTime + 10);
         };
     }
 
-    // Open in Tab
     if (mediaOpenTabBtn) {
         mediaOpenTabBtn.onclick = () => {
             if (currentMediaItem) {
-                const fileUrl = 'file:///' + currentMediaItem.path.replace(/\\/g, '/');
-                const ext = getExtension(currentMediaItem.name);
-                let targetUrl = fileUrl;
-                if (['mp3', 'wav', 'flac', 'ogg', 'm4a', 'aac', 'wma'].includes(ext)) {
-                    targetUrl = `ocal://music-player?song=${encodeURIComponent(fileUrl)}`;
-                } else if (isImageFile(currentMediaItem.name)) {
-                    targetUrl = `ocal://photo-view?file=${encodeURIComponent(fileUrl)}`;
-                } else if (ext === 'pdf') {
-                    targetUrl = `ocal://pdf-viewer?file=${encodeURIComponent(fileUrl)}`;
-                }
-                if (window.electronAPI && window.electronAPI.newTab) {
-                    window.electronAPI.newTab(targetUrl);
-                }
+                window.handleOpenInTab(currentMediaItem.path);
+                closeMediaModal();
             }
         };
     }
 
-    // Fullscreen for video
-    if (mediaFsBtn) {
-        mediaFsBtn.onclick = () => {
-            if (activeVideo) {
-                if (activeVideo.requestFullscreen) activeVideo.requestFullscreen();
-            }
-        };
-    }
-
-    // Audio FX Tab Switching
-    const tabs = [
-        { btn: 'enhancer-tab-3d', panel: 'panel-3d' },
-        { btn: 'enhancer-tab-clarity', panel: 'panel-clarity' },
-        { btn: 'enhancer-tab-bass', panel: 'panel-bass' },
-        { btn: 'enhancer-tab-eq', panel: 'panel-eq' }
-    ];
-
-    tabs.forEach(({ btn, panel }) => {
-        const tabEl = document.getElementById(btn);
-        if (tabEl) {
-            tabEl.onclick = () => {
-                document.querySelectorAll('.enhancer-pill-btn').forEach(b => b.classList.remove('active'));
-                document.querySelectorAll('.enhancer-panel').forEach(p => p.style.display = 'none');
-                tabEl.classList.add('active');
-                const panelEl = document.getElementById(panel);
-                if (panelEl) panelEl.style.display = (panel === 'panel-eq' ? 'flex' : 'flex');
+    // Audio DSP Tabs
+    const tabs = ['3d', 'clarity', 'bass', 'eq'];
+    tabs.forEach(tab => {
+        const btn = document.getElementById(`enhancer-tab-${tab}`);
+        const panel = document.getElementById(`panel-${tab}`);
+        if (btn && panel) {
+            btn.onclick = () => {
+                tabs.forEach(t => {
+                    document.getElementById(`enhancer-tab-${t}`)?.classList.remove('active');
+                    const p = document.getElementById(`panel-${t}`);
+                    if (p) p.style.display = 'none';
+                });
+                btn.classList.add('active');
+                panel.style.display = 'flex';
             };
         }
     });
 
-    // Surround Dropdown
+    // Custom Surround Dropdown
     const trigger = document.getElementById('surround-dropdown-trigger');
     const menu = document.getElementById('surround-dropdown-menu');
     if (trigger && menu) {
@@ -1128,91 +1799,28 @@ function initMediaStudioControls() {
                 e.stopPropagation();
                 menu.querySelectorAll('.fx-dropdown-item').forEach(i => i.classList.remove('active'));
                 item.classList.add('active');
-                surroundMode = item.getAttribute('data-value') || 'cinema';
-                const currentVal = document.getElementById('surround-current-val');
-                if (currentVal) currentVal.innerHTML = item.innerHTML;
+                const val = item.getAttribute('data-value');
+                surroundMode = val;
+                const currentValSpan = document.getElementById('surround-current-val');
+                if (currentValSpan) currentValSpan.innerHTML = item.innerHTML;
                 menu.classList.remove('open');
-
-                if (surroundMode === 'spatial8d') {
-                    startSpatial8d();
-                } else {
-                    stopSpatial8d();
-                }
             };
         });
     }
 
-    // Spatial Depth Slider
-    const surroundWidthSlider = document.getElementById('fx-surround-width');
-    if (surroundWidthSlider) {
-        surroundWidthSlider.oninput = () => {
-            if (pannerNode && surroundMode !== 'spatial8d') {
-                pannerNode.pan.value = (parseFloat(surroundWidthSlider.value) - 0.5) * 0.4;
-            }
-        };
-    }
-
-    // Clarity Toggle & Slider
-    const clarityToggle = document.getElementById('fx-clarity-toggle');
-    const highsSlider = document.getElementById('fx-highs-slider');
-    if (clarityToggle) {
-        clarityToggle.onclick = () => {
-            clarityToggle.classList.toggle('active');
-            const isOn = clarityToggle.classList.contains('active');
-            clarityToggle.innerText = isOn ? 'ON' : 'OFF';
-            const val = parseFloat(highsSlider?.value || 4);
-            if (highsNode) highsNode.gain.value = isOn ? val : 0;
-            if (airNode) airNode.gain.value = isOn ? val * 0.7 : 0;
-        };
-    }
-    if (highsSlider) {
-        highsSlider.oninput = () => {
-            const val = parseFloat(highsSlider.value);
-            if (clarityToggle?.classList.contains('active')) {
-                if (highsNode) highsNode.gain.value = val;
-                if (airNode) airNode.gain.value = val * 0.7;
-            }
-        };
-    }
-
-    // Bass Boost Slider
+    // Bass Slider
     const bassSlider = document.getElementById('fx-bass-slider');
+    const valBass = document.getElementById('val-bass');
     if (bassSlider) {
         bassSlider.oninput = () => {
             const val = parseFloat(bassSlider.value);
+            if (valBass) valBass.innerText = `+${val} dB`;
             if (bassNode) bassNode.gain.value = val;
             if (punchNode) punchNode.gain.value = val * 0.6;
         };
     }
 
-    // 10-Band EQ Presets
-    const eqPresets = {
-        flat: [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-        bass: [6, 5, 3, 1, 0, 0, 0, 0, 0, 0],
-        vocal: [-2, -1, 0, 2, 4, 4, 3, 1, 0, -1],
-        rock: [5, 3, 1, 0, -1, 0, 2, 3, 4, 4],
-        pop: [-1, 1, 3, 4, 4, 3, 1, -1, 2, 3],
-        electronic: [5, 4, 1, 0, -2, 2, 1, 2, 4, 5]
-    };
-
-    document.querySelectorAll('.eq-preset-btn').forEach(btn => {
-        btn.onclick = () => {
-            document.querySelectorAll('.eq-preset-btn').forEach(b => b.classList.remove('active'));
-            btn.classList.add('active');
-            const presetName = btn.getAttribute('data-preset');
-            const values = eqPresets[presetName] || eqPresets.flat;
-
-            document.querySelectorAll('.eq-slider').forEach((slider, idx) => {
-                const val = values[idx] || 0;
-                slider.value = val;
-                const valLabel = slider.parentElement?.querySelector('.eq-val');
-                if (valLabel) valLabel.innerText = (val > 0 ? '+' : '') + val;
-                if (eqNodes[idx]) eqNodes[idx].gain.value = val;
-            });
-        };
-    });
-
-    // EQ Sliders Drag
+    // EQ Sliders
     document.querySelectorAll('.eq-slider').forEach((slider, idx) => {
         slider.oninput = () => {
             const val = parseFloat(slider.value);
@@ -1228,86 +1836,87 @@ function openPhotoStudio(item) {
     currentPhotoItem = item;
     const fileUrl = 'file:///' + item.path.replace(/\\/g, '/');
 
-    photoTransform = { rotate: 0, flipH: 1, flipV: 1, scale: 1 };
-    photoFilters = { brightness: 100, contrast: 100, saturation: 100, sepia: 0, blur: 0 };
+    photoTransform = { rotate: 0, flipH: 1, flipV: 1, scale: 1, panX: 0, panY: 0 };
+    photoFilters = { brightness: 100, contrast: 100, saturation: 100, sepia: 0, blur: 0, invert: 0 };
+    isComparingPhoto = false;
 
     if (editorFilename) editorFilename.innerText = item.name;
+    const dimText = document.getElementById('photo-dim-text');
+    const sizeText = document.getElementById('photo-size-text');
+    const detailPath = document.getElementById('detail-path');
+    const detailSize = document.getElementById('detail-size');
+
+    if (sizeText) sizeText.innerText = formatBytes(item.size);
+    if (detailSize) detailSize.innerText = formatBytes(item.size);
+    if (detailPath) detailPath.innerText = item.path;
+
     if (editorImgTarget) {
+        editorImgTarget.onload = () => {
+            const w = editorImgTarget.naturalWidth || 0;
+            const h = editorImgTarget.naturalHeight || 0;
+            const dimStr = `${w} × ${h} px`;
+            if (dimText) dimText.innerText = dimStr;
+            const detailRes = document.getElementById('detail-res');
+            if (detailRes) detailRes.innerText = dimStr;
+
+            const detailAspect = document.getElementById('detail-aspect');
+            if (detailAspect && w > 0 && h > 0) {
+                const ratioStr = `${(w / h).toFixed(2)}:1`;
+                detailAspect.innerText = ratioStr;
+            }
+        };
         editorImgTarget.src = fileUrl;
         applyPhotoTransforms();
     }
 
-    // Reset sliders in UI
-    const bSlider = document.getElementById('slider-brightness');
-    const cSlider = document.getElementById('slider-contrast');
-    const sSlider = document.getElementById('slider-saturation');
-    const sepSlider = document.getElementById('slider-sepia');
-    const blurSlider = document.getElementById('slider-blur');
-
-    if (bSlider) bSlider.value = 100;
-    if (cSlider) cSlider.value = 100;
-    if (sSlider) sSlider.value = 100;
-    if (sepSlider) sepSlider.value = 0;
-    if (blurSlider) blurSlider.value = 0;
-
-    document.querySelectorAll('.editor-chip').forEach(c => c.classList.remove('active'));
-    document.querySelector('.editor-chip[data-preset="normal"]')?.classList.add('active');
+    syncPhotoSlidersUi();
 
     if (photoEditorModal) photoEditorModal.style.display = 'flex';
 }
 
+function syncPhotoSlidersUi() {
+    const sliders = [
+        { id: 'slider-brightness', val: photoFilters.brightness, badgeId: 'val-brightness', unit: '%' },
+        { id: 'slider-contrast', val: photoFilters.contrast, badgeId: 'val-contrast', unit: '%' },
+        { id: 'slider-saturation', val: photoFilters.saturation, badgeId: 'val-saturation', unit: '%' },
+        { id: 'slider-sepia', val: photoFilters.sepia, badgeId: 'val-sepia', unit: '%' },
+        { id: 'slider-blur', val: photoFilters.blur, badgeId: 'val-blur', unit: 'px' },
+        { id: 'slider-invert', val: photoFilters.invert, badgeId: 'val-invert', unit: '%' }
+    ];
+
+    sliders.forEach(({ id, val, badgeId, unit }) => {
+        const slider = document.getElementById(id);
+        const badge = document.getElementById(badgeId);
+        if (slider) slider.value = val;
+        if (badge) badge.innerText = `${val}${unit}`;
+    });
+}
+
 function applyPhotoTransforms() {
     if (!editorImgTarget) return;
-    const { rotate, flipH, flipV, scale } = photoTransform;
-    const { brightness, contrast, saturation, sepia, blur } = photoFilters;
 
-    editorImgTarget.style.transform = `scale(${scale}) scaleX(${flipH}) scaleY(${flipV}) rotate(${rotate}deg)`;
-    editorImgTarget.style.filter = `brightness(${brightness}%) contrast(${contrast}%) saturate(${saturation}%) sepia(${sepia}%) blur(${blur}px)`;
+    if (isComparingPhoto) {
+        editorImgTarget.style.transform = 'translate(0px, 0px) scale(1) rotate(0deg)';
+        editorImgTarget.style.filter = 'none';
+        return;
+    }
+
+    const { rotate, flipH, flipV, scale, panX, panY } = photoTransform;
+    const { brightness, contrast, saturation, sepia, blur, invert } = photoFilters;
+
+    editorImgTarget.style.transform = `translate(${panX}px, ${panY}px) scale(${scale}) scaleX(${flipH}) scaleY(${flipV}) rotate(${rotate}deg)`;
+    editorImgTarget.style.filter = `brightness(${brightness}%) contrast(${contrast}%) saturate(${saturation}%) sepia(${sepia}%) blur(${blur}px) invert(${invert}%)`;
+
+    const valZoom = document.getElementById('val-zoom');
+    if (valZoom) valZoom.innerText = `${Math.round(scale * 100)}%`;
 }
 
 function initPhotoEditorControls() {
-    if (editorCloseBtn) {
-        editorCloseBtn.onclick = () => {
-            if (photoEditorModal) photoEditorModal.style.display = 'none';
-        };
-    }
+    if (editorCloseBtn) editorCloseBtn.onclick = () => { if (photoEditorModal) photoEditorModal.style.display = 'none'; };
 
-    if (editorSaveBtn) {
-        editorSaveBtn.onclick = () => {
-            if (currentPhotoItem) {
-                const fileUrl = 'file:///' + currentPhotoItem.path.replace(/\\/g, '/');
-                if (window.electronAPI && window.electronAPI.newTab) {
-                    window.electronAPI.newTab(fileUrl);
-                }
-            }
-        };
-    }
-
-    // Rotate Left & Right
-    document.getElementById('tool-rotate-left')?.addEventListener('click', () => {
-        photoTransform.rotate = (photoTransform.rotate - 90) % 360;
-        applyPhotoTransforms();
-    });
-
-    document.getElementById('tool-rotate-right')?.addEventListener('click', () => {
-        photoTransform.rotate = (photoTransform.rotate + 90) % 360;
-        applyPhotoTransforms();
-    });
-
-    // Flip Horizontal & Vertical
-    document.getElementById('tool-flip-h')?.addEventListener('click', () => {
-        photoTransform.flipH *= -1;
-        applyPhotoTransforms();
-    });
-
-    document.getElementById('tool-flip-v')?.addEventListener('click', () => {
-        photoTransform.flipV *= -1;
-        applyPhotoTransforms();
-    });
-
-    // Zoom
+    // Zoom & Rotate Controls
     document.getElementById('tool-zoom-in')?.addEventListener('click', () => {
-        photoTransform.scale = Math.min(3, photoTransform.scale + 0.25);
+        photoTransform.scale = Math.min(5, photoTransform.scale + 0.25);
         applyPhotoTransforms();
     });
 
@@ -1318,157 +1927,86 @@ function initPhotoEditorControls() {
 
     document.getElementById('tool-fit')?.addEventListener('click', () => {
         photoTransform.scale = 1;
+        photoTransform.panX = 0;
+        photoTransform.panY = 0;
+        applyPhotoTransforms();
+    });
+
+    document.getElementById('tool-rotate-left')?.addEventListener('click', () => {
+        photoTransform.rotate = (photoTransform.rotate - 90) % 360;
+        applyPhotoTransforms();
+    });
+
+    document.getElementById('tool-rotate-right')?.addEventListener('click', () => {
+        photoTransform.rotate = (photoTransform.rotate + 90) % 360;
+        applyPhotoTransforms();
+    });
+
+    document.getElementById('tool-flip-h')?.addEventListener('click', () => {
+        photoTransform.flipH *= -1;
+        applyPhotoTransforms();
+    });
+
+    document.getElementById('tool-flip-v')?.addEventListener('click', () => {
+        photoTransform.flipV *= -1;
         applyPhotoTransforms();
     });
 
     document.getElementById('tool-reset')?.addEventListener('click', () => {
-        photoTransform = { rotate: 0, flipH: 1, flipV: 1, scale: 1 };
-        photoFilters = { brightness: 100, contrast: 100, saturation: 100, sepia: 0, blur: 0 };
+        photoTransform = { rotate: 0, flipH: 1, flipV: 1, scale: 1, panX: 0, panY: 0 };
+        photoFilters = { brightness: 100, contrast: 100, saturation: 100, sepia: 0, blur: 0, invert: 0 };
+        syncPhotoSlidersUi();
         applyPhotoTransforms();
     });
 
-    // Photo Presets
-    const presets = {
-        normal: { brightness: 100, contrast: 100, saturation: 100, sepia: 0, blur: 0 },
-        vivid: { brightness: 110, contrast: 125, saturation: 140, sepia: 0, blur: 0 },
-        bw: { brightness: 105, contrast: 120, saturation: 0, sepia: 0, blur: 0 },
-        sepia: { brightness: 95, contrast: 110, saturation: 80, sepia: 75, blur: 0 },
-        cyber: { brightness: 115, contrast: 135, saturation: 180, sepia: 0, blur: 0 },
-        warm: { brightness: 105, contrast: 105, saturation: 120, sepia: 30, blur: 0 }
-    };
+    // Compare Button (Hold down)
+    if (editorCompareBtn) {
+        editorCompareBtn.onmousedown = () => { isComparingPhoto = true; applyPhotoTransforms(); };
+        editorCompareBtn.onmouseup = () => { isComparingPhoto = false; applyPhotoTransforms(); };
+        editorCompareBtn.onmouseleave = () => { isComparingPhoto = false; applyPhotoTransforms(); };
+    }
 
-    document.querySelectorAll('.editor-chip').forEach(chip => {
-        chip.onclick = () => {
-            document.querySelectorAll('.editor-chip').forEach(c => c.classList.remove('active'));
-            chip.classList.add('active');
-            const p = presets[chip.getAttribute('data-preset')] || presets.normal;
-            photoFilters = { ...p };
-            applyPhotoTransforms();
+    // Open in Tab Button
+    if (editorOpenTabBtn) {
+        editorOpenTabBtn.onclick = () => {
+            if (currentPhotoItem) window.handleOpenInTab(currentPhotoItem.path);
+        };
+    }
+
+    // Dock Tabs Switcher
+    document.querySelectorAll('.dock-tab-btn').forEach(btn => {
+        btn.onclick = () => {
+            document.querySelectorAll('.dock-tab-btn').forEach(b => b.classList.remove('active'));
+            document.querySelectorAll('.dock-panel').forEach(p => p.style.display = 'none');
+            btn.classList.add('active');
+            const targetTab = btn.getAttribute('data-tab');
+            const panel = document.getElementById(`dock-panel-${targetTab}`);
+            if (panel) panel.style.display = 'flex';
         };
     });
 
     // Sliders
-    const bSlider = document.getElementById('slider-brightness');
-    const cSlider = document.getElementById('slider-contrast');
-    const sSlider = document.getElementById('slider-saturation');
-    const sepSlider = document.getElementById('slider-sepia');
-    const blurSlider = document.getElementById('slider-blur');
+    const bindSlider = (id, badgeId, key, unit) => {
+        const slider = document.getElementById(id);
+        const badge = document.getElementById(badgeId);
+        if (!slider) return;
+        slider.oninput = () => {
+            const val = parseFloat(slider.value);
+            photoFilters[key] = val;
+            if (badge) badge.innerText = `${val}${unit}`;
+            applyPhotoTransforms();
+        };
+    };
 
-    if (bSlider) {
-        bSlider.oninput = () => {
-            photoFilters.brightness = bSlider.value;
-            document.getElementById('val-brightness').innerText = bSlider.value + '%';
-            applyPhotoTransforms();
-        };
-    }
-    if (cSlider) {
-        cSlider.oninput = () => {
-            photoFilters.contrast = cSlider.value;
-            document.getElementById('val-contrast').innerText = cSlider.value + '%';
-            applyPhotoTransforms();
-        };
-    }
-    if (sSlider) {
-        sSlider.oninput = () => {
-            photoFilters.saturation = sSlider.value;
-            document.getElementById('val-saturation').innerText = sSlider.value + '%';
-            applyPhotoTransforms();
-        };
-    }
-    if (sepSlider) {
-        sepSlider.oninput = () => {
-            photoFilters.sepia = sepSlider.value;
-            document.getElementById('val-sepia').innerText = sepSlider.value + '%';
-            applyPhotoTransforms();
-        };
-    }
-    if (blurSlider) {
-        blurSlider.oninput = () => {
-            photoFilters.blur = blurSlider.value;
-            document.getElementById('val-blur').innerText = blurSlider.value + 'px';
-            applyPhotoTransforms();
-        };
-    }
+    bindSlider('slider-brightness', 'val-brightness', 'brightness', '%');
+    bindSlider('slider-contrast', 'val-contrast', 'contrast', '%');
+    bindSlider('slider-saturation', 'val-saturation', 'saturation', '%');
+    bindSlider('slider-sepia', 'val-sepia', 'sepia', '%');
+    bindSlider('slider-blur', 'val-blur', 'blur', 'px');
+    bindSlider('slider-invert', 'val-invert', 'invert', '%');
 }
 
-// ── Context Menu ───────────────────────────────────────────────────────────
-function showContextMenu(e, item) {
-    if (!contextMenu) return;
-    contextMenu.style.display = 'block';
-    contextMenu.style.left = Math.min(e.pageX, window.innerWidth - 200) + 'px';
-    contextMenu.style.top = Math.min(e.pageY, window.innerHeight - 180) + 'px';
-
-    const safePath = item.path.replace(/\\/g, '\\\\').replace(/'/g, "\\'");
-
-    contextMenu.innerHTML = `
-        <div class="context-menu-item" onclick="handleOpenItem('${safePath}', ${item.isDirectory})">
-            <i class="fas fa-arrow-up-right-from-square"></i> Open
-        </div>
-        <div class="context-menu-item" onclick="handleCopyPath('${safePath}')">
-            <i class="fas fa-copy"></i> Copy Path
-        </div>
-        ${!item.isDirectory ? `
-        <div class="context-menu-item" onclick="handleOpenFolder('${safePath}')">
-            <i class="fas fa-folder-open"></i> Show in Folder
-        </div>` : ''}
-        <div class="menu-divider" style="height:1px; background:var(--border-color); margin:4px 0;"></div>
-        <div class="context-menu-item danger" style="color:#EF4444;" onclick="handleDeleteItem('${safePath}')">
-            <i class="fas fa-trash"></i> Move to Trash
-        </div>
-    `;
-}
-
-window.handleOpenItem = (pathStr, isDir) => {
-    if (isDir) {
-        navigateTo(pathStr);
-    } else {
-        const item = currentItems.find(i => i.path === pathStr) || { name: pathStr.split(/[\\\/]/).pop(), path: pathStr, isDirectory: false };
-        openItem(item);
-    }
-};
-
-window.handleCopyPath = (pathStr) => {
-    navigator.clipboard.writeText(pathStr);
-};
-
-window.handleOpenFolder = (pathStr) => {
-    if (window.electronAPI && window.electronAPI.invoke) {
-        window.electronAPI.invoke('open-system-item', currentPath || pathStr);
-    }
-};
-
-window.handleDeleteItem = async (pathStr) => {
-    if (window.electronAPI && window.electronAPI.invoke) {
-        const success = await window.electronAPI.invoke('delete-system-item', pathStr);
-        if (success && currentPath) {
-            navigateTo(currentPath);
-        }
-    }
-};
-
-// ── View Mode & Helpers ────────────────────────────────────────────────────
-function setViewMode(isList) {
-    isListView = isList;
-    fileGrid.classList.toggle('list-view', isList);
-    const gridBtn = document.getElementById('view-grid');
-    const listBtn = document.getElementById('view-list');
-    if (gridBtn) gridBtn.classList.toggle('active', !isList);
-    if (listBtn) listBtn.classList.toggle('active', isList);
-    if (statModeBadge) statModeBadge.innerText = isList ? 'LIST' : 'GRID';
-    renderCurrentFiles();
-}
-window.setViewMode = setViewMode;
-
-window.toggleSort = (field) => {
-    if (sortField === field) {
-        sortAsc = !sortAsc;
-    } else {
-        sortField = field;
-        sortAsc = true;
-    }
-    renderCurrentFiles();
-};
-
+// ── File Icon & Utility Helpers ────────────────────────────────────────────
 function getExtension(filename) {
     if (!filename || !filename.includes('.')) return '';
     return filename.split('.').pop().toLowerCase();
@@ -1476,7 +2014,7 @@ function getExtension(filename) {
 
 function isImageFile(filename) {
     const ext = getExtension(filename);
-    return ['png', 'jpg', 'jpeg', 'gif', 'webp', 'svg', 'bmp', 'ico'].includes(ext);
+    return ['png', 'jpg', 'jpeg', 'gif', 'webp', 'svg', 'bmp', 'ico', 'avif'].includes(ext);
 }
 
 function getFileIcon(item) {
@@ -1512,6 +2050,8 @@ function getFileIcon(item) {
         case 'gz': return { icon: 'fas fa-file-zipper', color: '#EC4899' };
         case 'js':
         case 'ts':
+        case 'jsx':
+        case 'tsx':
         case 'html':
         case 'css':
         case 'json':
@@ -1522,7 +2062,7 @@ function getFileIcon(item) {
         case 'cs': return { icon: 'fas fa-file-code', color: '#6366F1' };
         case 'txt':
         case 'md':
-        case 'log': return { icon: 'fas fa-file-lines', color: '#9CA3AF' };
+        case 'log': return { icon: 'fas fa-file-lines', color: '#94A3B8' };
         case 'doc':
         case 'docx': return { icon: 'fas fa-file-word', color: '#2563EB' };
         case 'xls':
@@ -1534,7 +2074,7 @@ function getFileIcon(item) {
         case 'msi':
         case 'bat':
         case 'cmd': return { icon: 'fas fa-gear', color: '#64748B' };
-        default: return { icon: 'fas fa-file', color: '#9CA3AF' };
+        default: return { icon: 'fas fa-file', color: '#94A3B8' };
     }
 }
 
@@ -1565,4 +2105,9 @@ function escapeHtml(str) {
               .replace(/>/g, '&gt;')
               .replace(/"/g, '&quot;')
               .replace(/'/g, '&#039;');
+}
+
+function escapePath(pathStr) {
+    if (!pathStr) return '';
+    return pathStr.replace(/\\/g, '\\\\').replace(/'/g, "\\'");
 }

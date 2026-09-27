@@ -479,13 +479,14 @@ if (shieldCard) {
 }
 
 const PROFILE_PALETTE = [
-    { name: 'Emerald', color: '#09f0a0' },
-    { name: 'Cyan', color: '#00e5ff' },
-    { name: 'Violet', color: '#a855f7' },
-    { name: 'Rose', color: '#ff007f' },
-    { name: 'Amber', color: '#ff9100' },
-    { name: 'Crimson', color: '#ff4d4d' },
-    { name: 'Slate', color: '#64748b' }
+    { name: 'Indigo', color: '#4F46E5' },
+    { name: 'Emerald', color: '#10B981' },
+    { name: 'Cyan', color: '#06B6D4' },
+    { name: 'Violet', color: '#8B5CF6' },
+    { name: 'Rose', color: '#F43F5E' },
+    { name: 'Amber', color: '#F59E0B' },
+    { name: 'Crimson', color: '#EF4444' },
+    { name: 'Slate', color: '#64748B' }
 ];
 
 function renderProfiles(s) {
@@ -498,11 +499,11 @@ function renderProfiles(s) {
     const profiles = s.profiles || [];
     const profilesData = s.profilesData || {};
     const curId = s.currentProfileId || 'default';
-    const activeProf = profiles.find(p => p.id === curId) || profiles[0] || { id: 'default', name: 'Personal', icon: 'fa-user', color: '#09f0a0' };
+    const activeProf = profiles.find(p => p.id === curId) || profiles[0] || { id: 'default', name: 'Personal', icon: 'fa-user', color: '#4F46E5' };
 
     const activeBookmarks = (s.bookmarks || []);
     const activeHistory = (s.history || []);
-    const activeColor = activeProf.color || s.accentColor || '#09f0a0';
+    const activeColor = activeProf.color || s.accentColor || '#4F46E5';
 
     // 1. Update Dot-Matrix Stats Bar & Badges
     const statCount = document.getElementById('profile-stat-count');
@@ -524,16 +525,17 @@ function renderProfiles(s) {
         statBookmarks.textContent = totalBm.toString();
     }
 
-    // 2. Render Active Profile Hero Spotlight Card (Home Page .sp-card-green-grad style)
+    // 2. Render Active Profile Hero Spotlight Card (Clean Solid Color - No Gradients)
     if (spotlight) {
+        spotlight.style.background = activeColor;
         const safeActiveName = (activeProf.name || 'Personal').replace(/'/g, "\\'");
         const spotlightHtml = `
             <div class="sp-profile-spotlight-content">
                 <div class="sp-profile-left">
-                    <div class="sp-profile-avatar-giant">
+                    <div class="sp-profile-avatar-giant" style="background: #FFFFFF !important; color: ${activeColor} !important;">
                         <i class="fas ${activeProf.icon || 'fa-user'}"></i>
                         <div class="sp-pulse-ring">
-                            <div class="sp-pulse-center"></div>
+                            <div class="sp-pulse-center" style="background: ${activeColor}; box-shadow: 0 0 8px ${activeColor};"></div>
                         </div>
                     </div>
                     <div class="sp-profile-info-block">
@@ -574,13 +576,13 @@ function renderProfiles(s) {
         }
     }
 
-    // 3. Render Profile Nodes Bento Grid (Home Page Bento Cards - Wide Rectangle)
+    // 3. Render Profile Nodes Bento Grid (Clean Solid Icons - No Gradients)
     let html = profiles.map((p) => {
         const isActive = curId === p.id;
         const pData = profilesData[p.id] || {};
         const pBookmarks = isActive ? activeBookmarks : (pData.bookmarks || []);
         const pHistory = isActive ? activeHistory : (pData.history || []);
-        const pColor = p.color || (isActive ? activeColor : '#09f0a0');
+        const pColor = p.color || (isActive ? activeColor : '#4F46E5');
         const safeName = (p.name || 'Profile').replace(/'/g, "\\'");
 
         return `
@@ -590,7 +592,7 @@ function renderProfiles(s) {
             
             <div class="node-top-bar">
                 <div class="node-identity-left">
-                    <div class="node-avatar-box" style="background: color-mix(in srgb, ${pColor} 14%, transparent); color: ${pColor}; border: 1px solid color-mix(in srgb, ${pColor} 28%, transparent);">
+                    <div class="node-avatar-box" style="background: ${pColor}; color: #FFFFFF; border: none; box-shadow: 0 4px 12px color-mix(in srgb, ${pColor} 30%, transparent);">
                         <i class="fas ${p.icon || 'fa-user'}"></i>
                     </div>
                     <div class="node-identity-section">
@@ -712,12 +714,12 @@ document.getElementById('studio-modal-overlay')?.addEventListener('click', (e) =
 
 const PROFILE_ICONS = ['fa-user', 'fa-user-ninja', 'fa-user-astronaut', 'fa-user-secret', 'fa-user-tie', 'fa-ghost', 'fa-robot', 'fa-skull', 'fa-crown', 'fa-eye'];
 
-// Live Preview Helper for Profile Modals
+// Live Preview Helper for Profile Modals (Solid Icon Preview)
 window.updateProfileModalPreview = function() {
     const nameInput = document.getElementById('new-profile-name') || document.getElementById('edit-profile-name');
     const titleEl = document.getElementById('sm-preview-profile-title');
     const iconWrapperEl = document.getElementById('sm-preview-profile-icon');
-    const color = window._selectedProfileColor || '#09f0a0';
+    const color = window._selectedProfileColor || '#4F46E5';
     const icon = window._selectedProfileIcon || 'fa-user';
 
     if (titleEl && nameInput) {
@@ -725,9 +727,10 @@ window.updateProfileModalPreview = function() {
     }
     if (iconWrapperEl) {
         iconWrapperEl.innerHTML = `<i class="fas ${icon}"></i>`;
-        iconWrapperEl.style.background = `color-mix(in srgb, ${color} 14%, transparent)`;
-        iconWrapperEl.style.color = color;
-        iconWrapperEl.style.border = `1px solid color-mix(in srgb, ${color} 28%, transparent)`;
+        iconWrapperEl.style.background = color;
+        iconWrapperEl.style.color = '#FFFFFF';
+        iconWrapperEl.style.border = 'none';
+        iconWrapperEl.style.boxShadow = `0 4px 12px color-mix(in srgb, ${color} 30%, transparent)`;
     }
 };
 
@@ -747,7 +750,7 @@ window.selectProfileIcon = (el, icon) => {
 
 function createProfilePrompt() {
     window._selectedProfileIcon = 'fa-user';
-    window._selectedProfileColor = '#09f0a0';
+    window._selectedProfileColor = '#4F46E5';
 
     const content = `
         <div class="sm-modal-wrap">
@@ -766,7 +769,7 @@ function createProfilePrompt() {
                 <!-- Live Interactive Preview Card matching Home Page -->
                 <div class="sm-preview-card">
                     <div class="sm-preview-left">
-                        <div class="sm-preview-tile-icon" id="sm-preview-profile-icon" style="background: color-mix(in srgb, #09f0a0 14%, transparent); color: #09f0a0; border: 1px solid color-mix(in srgb, #09f0a0 28%, transparent);">
+                        <div class="sm-preview-tile-icon" id="sm-preview-profile-icon" style="background: #4F46E5; color: #FFFFFF; border: none; box-shadow: 0 4px 12px rgba(79, 70, 229, 0.3);">
                             <i class="fas fa-user"></i>
                         </div>
                         <div class="sm-preview-details">
@@ -794,7 +797,7 @@ function createProfilePrompt() {
                     <label>Accent Color</label>
                     <div class="profile-color-selector-grid" id="profile-color-selector">
                         ${PROFILE_PALETTE.map(pal => `
-                            <div class="profile-color-chip ${pal.color === '#09f0a0' ? 'active' : ''}" 
+                            <div class="profile-color-chip ${pal.color === '#4F46E5' ? 'active' : ''}" 
                                  onclick="window.selectProfileColor(this, '${pal.color}')" 
                                  style="background:${pal.color};" 
                                  title="${pal.name}"></div>
@@ -832,7 +835,7 @@ async function confirmCreateProfile() {
     const nameInput = document.getElementById('new-profile-name');
     const name = (nameInput && nameInput.value.trim()) ? nameInput.value.trim() : 'New Profile';
     const icon = window._selectedProfileIcon || 'fa-user';
-    const color = window._selectedProfileColor || '#09f0a0';
+    const color = window._selectedProfileColor || '#4F46E5';
     
     closeModal();
     if (window.electronAPI && window.electronAPI.createProfile) {
@@ -853,11 +856,11 @@ async function editProfilePrompt(id) {
             window.currentSettings = await window.electronAPI.getSettings();
         }
     }
-    const profiles = (window.currentSettings && window.currentSettings.profiles) || [{ id: 'default', name: 'Personal', icon: 'fa-user', color: '#09f0a0' }];
-    const profile = profiles.find(p => p.id === id) || profiles[0] || { id, name: 'Personal', icon: 'fa-user', color: '#09f0a0' };
+    const profiles = (window.currentSettings && window.currentSettings.profiles) || [{ id: 'default', name: 'Personal', icon: 'fa-user', color: '#4F46E5' }];
+    const profile = profiles.find(p => p.id === id) || profiles[0] || { id, name: 'Personal', icon: 'fa-user', color: '#4F46E5' };
     
     window._selectedProfileIcon = profile.icon || 'fa-user';
-    window._selectedProfileColor = profile.color || '#09f0a0';
+    window._selectedProfileColor = profile.color || '#4F46E5';
     
     const content = `
         <div class="sm-modal-wrap">
@@ -876,7 +879,7 @@ async function editProfilePrompt(id) {
                 <!-- Live Interactive Preview Card matching Home Page -->
                 <div class="sm-preview-card">
                     <div class="sm-preview-left">
-                        <div class="sm-preview-tile-icon" id="sm-preview-profile-icon" style="background: color-mix(in srgb, ${window._selectedProfileColor} 14%, transparent); color: ${window._selectedProfileColor}; border: 1px solid color-mix(in srgb, ${window._selectedProfileColor} 28%, transparent);">
+                        <div class="sm-preview-tile-icon" id="sm-preview-profile-icon" style="background: ${window._selectedProfileColor}; color: #FFFFFF; border: none; box-shadow: 0 4px 12px color-mix(in srgb, ${window._selectedProfileColor} 30%, transparent);">
                             <i class="fas ${window._selectedProfileIcon}"></i>
                         </div>
                         <div class="sm-preview-details">
@@ -942,7 +945,7 @@ async function confirmEditProfile(id) {
     const nameInput = document.getElementById('edit-profile-name');
     const name = (nameInput && nameInput.value.trim()) ? nameInput.value.trim() : 'Profile';
     const icon = window._selectedProfileIcon || 'fa-user';
-    const color = window._selectedProfileColor || '#09f0a0';
+    const color = window._selectedProfileColor || '#4F46E5';
     
     closeModal();
     if (window.electronAPI && window.electronAPI.editProfile) {
@@ -1121,17 +1124,52 @@ const syncReleaseCatalogWithGitHub = async (v) => {
         const response = await fetch('https://api.github.com/repos/neelkanth-patel26/Ocal-Browser/releases/latest');
         if (!response.ok) throw new Error('API Rate Limit');
         const data = await response.json();
+        const gitHubVersion = (data.tag_name || '').replace(/^[vV]/, '');
         
-        let htmlContent = `<p style="margin-top: 0; color: var(--text); font-weight: 800; text-transform: uppercase; letter-spacing: 0.5px;">${data.name}</p>`;
+        let htmlContent = `<p style="margin-top: 0; color: var(--text); font-weight: 800; text-transform: uppercase; letter-spacing: 0.5px;">${data.name || ('Ocal Browser v' + gitHubVersion)}</p>`;
         htmlContent += `<div style="font-size: 12px; color: var(--text-dim); line-height: 1.6;">${formatGitHubMarkdown(data.body)}</div>`;
         
-        populateReleaseNotes(data.tag_name.replace('v', ''), htmlContent);
+        // If GitHub has a newer version, trigger update available state immediately
+        if (isNewerVersion(gitHubVersion, v)) {
+            showUpdateInfo({
+                version: gitHubVersion,
+                notes: data.body || '',
+                url: data.html_url || ''
+            });
+            populateReleaseNotes(gitHubVersion, htmlContent);
+        } else {
+            populateReleaseNotes(v, htmlContent);
+            const statusTitle = document.getElementById('update-status-title');
+            const statusDesc = document.getElementById('update-status-desc');
+            const iconBox = document.getElementById('update-status-icon-box');
+            const icon = document.getElementById('update-status-icon');
+            if (statusTitle) statusTitle.innerText = "Browser is up to date";
+            if (statusDesc) statusDesc.innerText = `v${v} is active and verified`;
+            if (iconBox) iconBox.className = "update-icon-box up-to-date";
+            if (icon) {
+                icon.className = "fas fa-circle-check";
+                icon.style.color = "";
+            }
+        }
         console.log('GitHub Release Sync: Success');
     } catch (err) {
         console.log('GitHub Release Sync: Falling back to local manifest');
         populateReleaseNotes(v, currentVersionHighlights);
     }
 };
+
+function isNewerVersion(latest, current) {
+    if (!latest || !current) return false;
+    const l = String(latest).replace(/^[vV]/, '').split(/[.-]/).map(n => parseInt(n, 10) || 0);
+    const c = String(current).replace(/^[vV]/, '').split(/[.-]/).map(n => parseInt(n, 10) || 0);
+    for (let i = 0; i < Math.max(l.length, c.length); i++) {
+        const ln = l[i] || 0;
+        const cn = c[i] || 0;
+        if (ln > cn) return true;
+        if (ln < cn) return false;
+    }
+    return false;
+}
 
 window.electronAPI.getAppVersion().then(v => {
     currentVer = v;
@@ -1162,6 +1200,15 @@ window.electronAPI.getAppVersion().then(v => {
     if (sidebarVer) sidebarVer.textContent = `v${v} · Up to date`;
 });
 
+// Listen for global update-available events from main process
+if (window.electronAPI && typeof window.electronAPI.onUpdateAvailable === 'function') {
+    window.electronAPI.onUpdateAvailable(data => {
+        if (data && data.version) {
+            showUpdateInfo(data);
+        }
+    });
+}
+
 const updateBtn      = document.getElementById('update-check-btn');
 const downloadBtn    = document.getElementById('download-update-btn');
 const updateHub      = document.getElementById('update-dashboard');
@@ -1172,82 +1219,80 @@ const updateExpanded = document.getElementById('update-info-expanded');
 
 if (updateBtn) {
     updateBtn.onclick = async () => {
+        // If an update is already detected, trigger the download directly
+        if (updateBtn.dataset.hasUpdate === 'true') {
+            if (downloadBtn) {
+                downloadBtn.click();
+            }
+            return;
+        }
+
         updateBtn.disabled = true;
-        updateBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> SEARCHING...';
-        updateHub.classList.add('scanning');
-        updateStatusD.innerText = "Scanning Ocal network for updates...";
+        updateBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> CHECKING...';
+        if (updateHub) updateHub.classList.add('scanning');
+        const iconBox = document.getElementById('update-status-icon-box');
+        if (iconBox) iconBox.className = "update-icon-box scanning";
+        if (updateStatusI) updateStatusI.className = "fas fa-arrows-rotate fa-spin";
+        if (updateStatusT) updateStatusT.innerText = "Checking for updates...";
+        if (updateStatusD) updateStatusD.innerText = "Contacting Ocal update network...";
 
         try {
-            // Artificial delay to make it feel deliberate
-            await sleep(2500);
+            await sleep(1500);
 
             const latest = await Promise.race([
                 window.electronAPI.checkForUpdate(),
                 new Promise(resolve => setTimeout(() => resolve(null), 15000))
             ]);
-            updateHub.classList.remove('scanning');
+            if (updateHub) updateHub.classList.remove('scanning');
             
-            console.log('Update Check:', {
+            console.log('Update Check Result:', {
                 currentVersion: currentVer,
-                latestVersion: latest ? latest.version : 'none'
+                latest: latest
             });
             
-            if (latest && isNewerVersion(latest.version, currentVer)) {
+            if (latest && (isNewerVersion(latest.version, currentVer) || latest.isUpdateAvailable)) {
                 showUpdateInfo(latest);
-            } else {
-                updateHub.classList.add('up-to-date');
-                updateStatusT.innerText = "System Up to Date";
-                updateStatusD.innerText = "You are running the latest production build of Ocal.";
-                updateStatusI.className = "fas fa-check-double";
-                updateStatusI.style.color = ""; 
-                updateStatusI.style.opacity = "";
+            } else if (latest) {
+                if (updateHub) updateHub.classList.add('up-to-date');
+                if (iconBox) iconBox.className = "update-icon-box up-to-date";
+                if (updateStatusT) updateStatusT.innerText = "Browser is up to date";
+                if (updateStatusD) updateStatusD.innerText = `You are running the latest version of Ocal (v${currentVer}).`;
+                if (updateStatusI) {
+                    updateStatusI.className = "fas fa-circle-check";
+                    updateStatusI.style.color = ""; 
+                    updateStatusI.style.opacity = "";
+                }
                 
-                updateBtn.innerHTML = 'Up to Date <i class="fas fa-check-circle"></i>';
+                updateBtn.innerHTML = '<i class="fas fa-circle-check"></i> Up to Date';
                 updateBtn.classList.remove('primary');
                 updateBtn.classList.add('success');
+                updateBtn.disabled = false;
                 
                 setTimeout(() => { 
-                    updateHub.classList.remove('up-to-date');
-                    updateStatusT.innerText = "System Check";
-                    updateStatusD.innerText = "Scanning for new dimensions of Ocal.";
-                    updateStatusI.className = "fas fa-shield-check";
-                    updateStatusI.style.color = ""; 
-                    updateStatusI.style.opacity = "0.5";
-                    updateBtn.innerHTML = 'Check for Update <i class="fas fa-bolt"></i>';
+                    if (updateHub) updateHub.classList.remove('up-to-date');
+                    updateBtn.innerHTML = '<i class="fas fa-arrows-rotate"></i> Check for Updates';
                     updateBtn.classList.remove('success');
                     updateBtn.classList.add('primary');
-                    updateBtn.disabled = false;
                 }, 5000);
+            } else {
+                if (iconBox) iconBox.className = "update-icon-box";
+                if (updateStatusT) updateStatusT.innerText = "Check for Updates";
+                if (updateStatusD) updateStatusD.innerText = "Unable to connect to update server. Please try again.";
+                if (updateStatusI) updateStatusI.className = "fas fa-arrows-rotate";
+                updateBtn.innerHTML = '<i class="fas fa-arrows-rotate"></i> Retry Check';
+                updateBtn.disabled = false;
             }
         } catch(e) { 
-            updateHub.classList.remove('scanning');
-            updateStatusT.innerText = "Check Failed";
-            updateStatusD.innerText = "Unable to check for updates. Please try again later.";
-            updateBtn.innerHTML = 'Error checking'; 
+            if (updateHub) updateHub.classList.remove('scanning');
+            if (iconBox) iconBox.className = "update-icon-box";
+            if (updateStatusT) updateStatusT.innerText = "Check Failed";
+            if (updateStatusD) updateStatusD.innerText = "Unable to check for updates. Please try again later.";
+            if (updateStatusI) updateStatusI.className = "fas fa-triangle-exclamation";
+            updateBtn.innerHTML = '<i class="fas fa-arrows-rotate"></i> Retry Check'; 
             updateBtn.disabled = false; 
             console.error('Update check error:', e);
-            
-            // Reset after 5 seconds
-            setTimeout(() => {
-                updateStatusT.innerText = "System Check";
-                updateStatusD.innerText = "Scanning for new dimensions of Ocal.";
-                updateBtn.innerHTML = 'Check for Update <i class="fas fa-bolt"></i>';
-                updateBtn.disabled = false;
-            }, 5000);
         }
     };
-}
-
-function isNewerVersion(latest, current) {
-    const l = latest.split('.').map(Number);
-    const c = current.split('.').map(Number);
-    for (let i = 0; i < Math.max(l.length, c.length); i++) {
-        const ln = l[i] || 0;
-        const cn = c[i] || 0;
-        if (ln > cn) return true;
-        if (ln < cn) return false;
-    }
-    return false;
 }
 
 // Initialize from Hash
@@ -1266,55 +1311,86 @@ window.addEventListener('load', () => {
 });
 
 function showUpdateInfo(latest) {
-    updateStatusT.innerText = "New Update Available";
-    updateStatusD.innerText = `Ocal v${latest.version} is now ready for deployment.`;
-    updateStatusI.className = "fas fa-cloud-arrow-down";
-    updateStatusI.style.color = "var(--accent)";
-    updateStatusI.style.opacity = "1";
+    if (!latest || !latest.version) return;
+    const updateStatusT  = document.getElementById('update-status-title');
+    const updateStatusD  = document.getElementById('update-status-desc');
+    const updateStatusI  = document.getElementById('update-status-icon');
+    const iconBox        = document.getElementById('update-status-icon-box');
+    const updateBtn      = document.getElementById('update-check-btn');
+    const sidebarVer     = document.getElementById('sidebar-version-label');
+    const updateExpanded = document.getElementById('update-info-expanded');
+    const downloadBtn    = document.getElementById('download-update-btn');
 
-    updateExpanded.style.setProperty('display', 'block', 'important');
+    if (updateStatusT) updateStatusT.innerText = `Update Available (v${latest.version})`;
+    if (updateStatusD) updateStatusD.innerText = `Ocal v${latest.version} is ready for installation.`;
+    if (updateStatusI) {
+        updateStatusI.className = "fas fa-cloud-arrow-down";
+        updateStatusI.style.color = "var(--accent, #4F46E5)";
+        updateStatusI.style.opacity = "1";
+    }
+    if (iconBox) {
+        iconBox.className = "update-icon-box update-available";
+    }
+    if (sidebarVer) {
+        sidebarVer.innerHTML = `v${currentVer} · <span class="sidebar-update-badge"><span class="sidebar-update-dot"></span>Update Available</span>`;
+    }
+    if (updateBtn) {
+        updateBtn.dataset.hasUpdate = 'true';
+        updateBtn.innerHTML = `<i class="fas fa-download"></i> Download v${latest.version}`;
+        updateBtn.classList.remove('success');
+        updateBtn.classList.add('primary');
+        updateBtn.disabled = false;
+    }
+
+    if (updateExpanded) {
+        updateExpanded.style.setProperty('display', 'block', 'important');
+    }
     
     // Build update catalog notes
-    const formattedNotes = `
-        <p style="margin-top: 0; color: #fff; font-weight: 700;">What's New in v${latest.version}:</p>
-        <ul style="padding-left: 20px; list-style-type: disc;">
-            ${latest.notes.split('\n').filter(l => l.trim()).map(l => `<li>${l.replace(/^-\s*/, '')}</li>`).join('')}
-        </ul>
-        <p style="margin-bottom: 0;">Verified and published via GNS-Cloud Secure Delivery.</p>
-    `;
-    populateReleaseNotes(latest.version, formattedNotes);
+    if (latest.notes) {
+        const formattedNotes = `
+            <p style="margin-top: 0; color: var(--text); font-weight: 700;">What's New in v${latest.version}:</p>
+            <ul style="padding-left: 20px; list-style-type: disc;">
+                ${latest.notes.split('\n').filter(l => l.trim()).map(l => `<li>${l.replace(/^-\s*/, '')}</li>`).join('')}
+            </ul>
+            <p style="margin-bottom: 0;">Verified and published via GNS-Cloud Secure Delivery.</p>
+        `;
+        populateReleaseNotes(latest.version, formattedNotes);
+    }
     
-    updateBtn.style.display = 'none';
-    downloadBtn.style.display = 'flex';
-
-    downloadBtn.onclick = async () => {
-        downloadBtn.disabled = true;
-        downloadBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> CONNECTING...';
-        
-        const progWrapper = document.getElementById('update-progress-wrapper');
-        const fill = document.getElementById('update-progress-fill');
-        const pText = document.getElementById('update-progress-percent');
-        if (progWrapper) progWrapper.style.display = 'block';
-        if (fill) fill.style.width = '2%';
-        if (pText) pText.innerText = '0%';
-        
-        try {
-            const path = await window.electronAPI.downloadUpdate();
+    if (downloadBtn) {
+        downloadBtn.style.display = 'flex';
+        downloadBtn.innerHTML = `<i class="fas fa-download"></i> Download &amp; Install v${latest.version}`;
+        downloadBtn.onclick = async () => {
+            downloadBtn.disabled = true;
+            downloadBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> DOWNLOADING UPDATE...';
             
-            if (fill) fill.style.width = '100%';
-            if (pText) pText.innerText = '100% (Ready to Install)';
+            const progWrapper = document.getElementById('update-progress-wrapper');
+            const fill = document.getElementById('update-progress-fill');
+            const pText = document.getElementById('update-progress-percent');
+            if (progWrapper) progWrapper.style.display = 'block';
+            if (fill) fill.style.width = '2%';
+            if (pText) pText.innerText = '0%';
             
-            downloadBtn.innerHTML = 'RESTART TO UPDATE <i class="fas fa-power-off"></i>';
-            downloadBtn.style.background = 'var(--accent)';
-            downloadBtn.disabled = false;
-            downloadBtn.onclick = () => window.electronAPI.applyUpdate(path);
-        } catch(err) {
-            downloadBtn.innerHTML = '<i class="fas fa-triangle-exclamation"></i> DOWNLOAD FAILED';
-            downloadBtn.disabled = false;
-            if (pText) pText.innerText = 'Download failed';
-        }
-    };
+            try {
+                const path = await window.electronAPI.downloadUpdate();
+                
+                if (fill) fill.style.width = '100%';
+                if (pText) pText.innerText = '100% (Ready to Install)';
+                
+                downloadBtn.innerHTML = 'RESTART TO UPDATE <i class="fas fa-power-off"></i>';
+                downloadBtn.style.background = 'var(--accent, #4F46E5)';
+                downloadBtn.disabled = false;
+                downloadBtn.onclick = () => window.electronAPI.applyUpdate(path);
+            } catch(err) {
+                downloadBtn.innerHTML = '<i class="fas fa-triangle-exclamation"></i> DOWNLOAD FAILED';
+                downloadBtn.disabled = false;
+                if (pText) pText.innerText = 'Download failed';
+            }
+        };
+    }
 }
+
 
 if (window.electronAPI && window.electronAPI.onUpdateProgress) {
     window.electronAPI.onUpdateProgress(data => {
@@ -3166,6 +3242,16 @@ window.handleIconHueAdjust = function(val) {
         }
     });
 
+    const hueMarks = document.querySelectorAll('#icon-hue-marks .scale-mark-pill');
+    hueMarks.forEach(pill => {
+        const m = Number(pill.getAttribute('data-mark'));
+        if (m === num) {
+            pill.classList.add('active');
+        } else {
+            pill.classList.remove('active');
+        }
+    });
+
     try {
         localStorage.setItem('ocal-icon-hue-adjust', num.toString());
     } catch (e) {}
@@ -3176,6 +3262,22 @@ window.handleIconSatAdjust = function(val) {
     const num = Number(val) || 100;
     const valLabel = document.getElementById('icon-sat-val');
     if (valLabel) valLabel.innerText = `${num}%`;
+
+    const satSlider = document.getElementById('icon-sat-slider');
+    if (satSlider && Number(satSlider.value) !== num) {
+        satSlider.value = num;
+    }
+
+    const satMarks = document.querySelectorAll('#icon-sat-marks .scale-mark-pill');
+    satMarks.forEach(pill => {
+        const m = Number(pill.getAttribute('data-mark'));
+        if (m === num) {
+            pill.classList.add('active');
+        } else {
+            pill.classList.remove('active');
+        }
+    });
+
     try {
         localStorage.setItem('ocal-icon-sat-adjust', num.toString());
     } catch (e) {}
@@ -3208,6 +3310,18 @@ window.resetIconCalibration = function() {
         else pill.classList.remove('active');
     });
 
+    const hueMarks = document.querySelectorAll('#icon-hue-marks .scale-mark-pill');
+    hueMarks.forEach(pill => {
+        if (Number(pill.getAttribute('data-mark')) === 0) pill.classList.add('active');
+        else pill.classList.remove('active');
+    });
+
+    const satMarks = document.querySelectorAll('#icon-sat-marks .scale-mark-pill');
+    satMarks.forEach(pill => {
+        if (Number(pill.getAttribute('data-mark')) === 100) pill.classList.add('active');
+        else pill.classList.remove('active');
+    });
+
     const slidersContainer = document.getElementById('icon-sliders-container');
     if (slidersContainer) {
         slidersContainer.style.opacity = '1';
@@ -3219,7 +3333,7 @@ window.resetIconCalibration = function() {
 
 function refreshIconCalibration() {
     const activeColor = localStorage.getItem('ocal-settings-accent') || 
-        getComputedStyle(document.documentElement).getPropertyValue('--accent').trim() || '#15AC49';
+        getComputedStyle(document.documentElement).getPropertyValue('--accent').trim() || '#4F46E5';
     
     if (window.OcalColorHarmonizer) {
         const filter = window.OcalColorHarmonizer.calculateLogoFilter(activeColor);
@@ -3245,22 +3359,36 @@ function initIconCalibrationUI() {
         if (syncCb) syncCb.checked = sync;
 
         const hue = localStorage.getItem('ocal-icon-hue-adjust') || '0';
+        const hueNum = Number(hue);
         const hueSlider = document.getElementById('icon-hue-slider');
         if (hueSlider) hueSlider.value = hue;
         const hueVal = document.getElementById('icon-hue-val');
-        if (hueVal) hueVal.innerText = (Number(hue) >= 0 ? `+${hue}°` : `${hue}°`);
+        if (hueVal) hueVal.innerText = (hueNum >= 0 ? `+${hue}°` : `${hue}°`);
 
         const segPills = document.querySelectorAll('#icon-tone-segmented .segmented-pill');
         segPills.forEach(pill => {
-            if (Number(pill.getAttribute('data-hue')) === Number(hue)) pill.classList.add('active');
+            if (Number(pill.getAttribute('data-hue')) === hueNum) pill.classList.add('active');
+            else pill.classList.remove('active');
+        });
+
+        const hueMarks = document.querySelectorAll('#icon-hue-marks .scale-mark-pill');
+        hueMarks.forEach(pill => {
+            if (Number(pill.getAttribute('data-mark')) === hueNum) pill.classList.add('active');
             else pill.classList.remove('active');
         });
 
         const sat = localStorage.getItem('ocal-icon-sat-adjust') || '100';
+        const satNum = Number(sat);
         const satSlider = document.getElementById('icon-sat-slider');
         if (satSlider) satSlider.value = sat;
         const satVal = document.getElementById('icon-sat-val');
         if (satVal) satVal.innerText = `${sat}%`;
+
+        const satMarks = document.querySelectorAll('#icon-sat-marks .scale-mark-pill');
+        satMarks.forEach(pill => {
+            if (Number(pill.getAttribute('data-mark')) === satNum) pill.classList.add('active');
+            else pill.classList.remove('active');
+        });
 
         const slidersContainer = document.getElementById('icon-sliders-container');
         if (slidersContainer) {
@@ -3331,6 +3459,8 @@ function renderHomepageSettings(s) {
     applyAccent(currentAccent);
 
     const presetNames = {
+        '#4F46E5': 'Ocal Indigo',
+        '#6366F1': 'Ocal Indigo',
         '#15AC49': 'Emerald Green',
         '#09F0A0': 'Emerald Neon',
         '#2563EB': 'Ocean Sapphire',
@@ -3968,6 +4098,12 @@ window.handleAmbientVolumeInput = function(val) {
     if (labelEl) labelEl.textContent = getVolumeDescription(num);
     const statVol = document.getElementById('specials-stat-vol');
     if (statVol) statVol.textContent = `${num}%`;
+
+    const pills = document.querySelectorAll('#ambient-volume-pills .specials-preset-pill');
+    pills.forEach(p => {
+        p.classList.toggle('active', Number(p.getAttribute('data-vol')) === num);
+    });
+
     localAmbientState.volume = Math.max(0, Math.min(1, num / 100));
     syncAmbientSettings();
 };
@@ -4120,6 +4256,47 @@ function renderAmbientTracks() {
         ];
     }
 
+    // Attach single delegated click handler to the grid container
+    if (!grid.dataset.bound) {
+        grid.dataset.bound = 'true';
+        grid.addEventListener('click', (e) => {
+            const card = e.target.closest('.ambient-track-card');
+            if (!card) return;
+            const idx = parseInt(card.dataset.trackIndex, 10);
+            const track = currentAmbientTracks[idx];
+            if (track) {
+                handleAmbientTrackSelect(track.fileName || track.id);
+            }
+        });
+    }
+
+    // If grid already contains cards matching track count, update in-place without wiping DOM
+    const existingCards = grid.querySelectorAll('.ambient-track-card');
+    if (existingCards.length === currentAmbientTracks.length) {
+        existingCards.forEach((card, idx) => {
+            const t = currentAmbientTracks[idx];
+            const isSelected = (t && (t.fileName === localAmbientState.track || t.id === localAmbientState.track));
+            card.classList.toggle('selected', isSelected);
+            const icon = card.querySelector('.atc-icon-wrap i');
+            if (icon) icon.className = `fas ${isSelected ? 'fa-circle-play' : 'fa-music'}`;
+            const titleEl = card.querySelector('.atc-title');
+            if (titleEl) titleEl.textContent = t.name || t.fileName;
+            const sub = card.querySelector('.atc-sub');
+            if (sub) sub.textContent = isSelected ? 'Active Loop Track' : 'Click to select & loop';
+            let pill = card.querySelector('.atc-active-pill');
+            if (isSelected && !pill) {
+                const newPill = document.createElement('span');
+                newPill.className = 'atc-active-pill';
+                newPill.innerHTML = '<i class="fas fa-check"></i>';
+                card.appendChild(newPill);
+            } else if (!isSelected && pill) {
+                pill.remove();
+            }
+        });
+        return;
+    }
+
+    // Full render when track list structure changes
     grid.innerHTML = currentAmbientTracks.map((t, idx) => {
         const isSelected = (t.fileName === localAmbientState.track || t.id === localAmbientState.track);
         return `
@@ -4135,19 +4312,6 @@ function renderAmbientTracks() {
             </div>
         `;
     }).join('');
-
-    // Direct click binding with stopPropagation to avoid parent form triggers
-    grid.querySelectorAll('.ambient-track-card').forEach(card => {
-        const idx = parseInt(card.dataset.trackIndex, 10);
-        const track = currentAmbientTracks[idx];
-        if (track) {
-            card.onclick = (e) => {
-                e.preventDefault();
-                e.stopPropagation();
-                handleAmbientTrackSelect(track.fileName || track.id);
-            };
-        }
-    });
 }
 
 async function renderAmbientSoundSettings(s) {
@@ -4181,6 +4345,10 @@ async function renderAmbientSoundSettings(s) {
     if (slider) slider.value = volPercent;
     const labelEl = document.getElementById('ambient-volume-val-label');
     if (labelEl) labelEl.textContent = getVolumeDescription(volPercent);
+    const pills = document.querySelectorAll('#ambient-volume-pills .specials-preset-pill');
+    pills.forEach(p => {
+        p.classList.toggle('active', Number(p.getAttribute('data-vol')) === volPercent);
+    });
 
     // Smart ducking checkbox
     const duckingCb = document.getElementById('ambient-ducking-toggle-cb');
@@ -4231,6 +4399,12 @@ window.handlePageFXIntensityInput = function(val) {
     const num = parseInt(val, 10);
     const labelEl = document.getElementById('fx-intensity-val-label');
     if (labelEl) labelEl.textContent = `${num}% (${num > 75 ? 'Full FX' : num > 40 ? 'Moderate' : 'Subtle'})`;
+
+    const pills = document.querySelectorAll('#fx-intensity-pills .specials-preset-pill');
+    pills.forEach(p => {
+        p.classList.toggle('active', Number(p.getAttribute('data-intensity')) === num);
+    });
+
     localPageFXState.intensity = Math.max(0.1, Math.min(1, num / 100));
     syncPageFXSettings();
     updatePageFXPreview();
@@ -4336,6 +4510,10 @@ function renderPageFXSettings(s) {
         intensitySlider.value = pct;
         const labelEl = document.getElementById('fx-intensity-val-label');
         if (labelEl) labelEl.textContent = `${pct}% (${pct > 75 ? 'Full FX' : pct > 40 ? 'Moderate' : 'Subtle'})`;
+        const fxPills = document.querySelectorAll('#fx-intensity-pills .specials-preset-pill');
+        fxPills.forEach(p => {
+            p.classList.toggle('active', Number(p.getAttribute('data-intensity')) === pct);
+        });
     }
 
     // Global toggle

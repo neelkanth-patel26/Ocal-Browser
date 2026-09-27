@@ -482,51 +482,158 @@
             transform: translateY(-3px);
         }
 
-        .sp-card-green-grad {
-            background: linear-gradient(112deg, 
-                #FF671F 0%, 
-                #FF7A26 18%, 
-                #FF9645 32%, 
-                #FFF6ED 45%, 
-                #FFFFFF 50%, 
-                #EDFBF1 55%, 
-                #22C55E 70%, 
-                #138808 85%, 
-                #046A38 100%
-            );
-            box-shadow: 0 16px 44px rgba(255, 103, 31, 0.2), 0 8px 30px rgba(4, 106, 56, 0.18);
+        /* ══════════════════════════════════════════════════════════════════════════
+           INDIAN FLAG (TIRANGA) ANIMATED SHOWROOM HERO CARD
+           ══════════════════════════════════════════════════════════════════════════ */
+        .sp-card-green-grad.tiranga-hero-card {
+            position: relative;
+            overflow: hidden;
+            border-radius: var(--radius-card);
+            min-height: 310px;
             border: none;
-            min-height: 290px;
+            background: #000;
+            box-shadow: 0 20px 50px rgba(255, 103, 31, 0.28), 0 10px 32px rgba(4, 106, 56, 0.24);
+            transition: transform 0.25s ease, box-shadow 0.25s ease;
+        }
+
+        .sp-card-green-grad.tiranga-hero-card:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 26px 60px rgba(255, 103, 31, 0.38), 0 14px 40px rgba(4, 106, 56, 0.32);
+        }
+
+        /* 1. Authentic 3-Stripe Indian Flag with Waving Physics */
+        .tiranga-flag-canvas {
+            position: absolute;
+            inset: 0;
+            display: flex;
+            flex-direction: column;
+            z-index: 1;
+            pointer-events: none;
+            overflow: hidden;
+        }
+
+        .tiranga-band {
+            flex: 1;
+            width: 100%;
             position: relative;
         }
 
-        .sp-card-green-grad::before {
-            content: '';
+        /* Saffron Band (Bhagwa) */
+        .tiranga-band.saffron {
+            background: linear-gradient(90deg, #FF671F 0%, #FF7824 25%, #FF5500 50%, #FF8032 75%, #FF671F 100%);
+            background-size: 200% 100%;
+            animation: flagBandWave 9s ease-in-out infinite alternate;
+        }
+
+        /* White Band (Shweta) with Ashoka Chakra */
+        .tiranga-band.white {
+            background: linear-gradient(90deg, #FFFFFF 0%, #F8FAFC 25%, #FFFFFF 50%, #F1F5F9 75%, #FFFFFF 100%);
+            background-size: 200% 100%;
+            animation: flagBandWave 9s ease-in-out infinite alternate-reverse;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        /* India Green Band (Harita) */
+        .tiranga-band.green {
+            background: linear-gradient(90deg, #046A38 0%, #0F9643 25%, #03522C 50%, #138808 75%, #046A38 100%);
+            background-size: 200% 100%;
+            animation: flagBandWave 9s ease-in-out infinite alternate;
+        }
+
+        @keyframes flagBandWave {
+            0% { background-position: 0% 50%; }
+            100% { background-position: 100% 50%; }
+        }
+
+        /* 2. Ashoka Chakra Animated Centerpiece (24 Spokes) */
+        .ashoka-chakra-container {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 96px;
+            height: 96px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            pointer-events: none;
+            z-index: 2;
+            opacity: 0.95;
+        }
+
+        .ashoka-chakra-svg {
+            width: 100%;
+            height: 100%;
+            animation: chakraSpin 24s linear infinite;
+            filter: drop-shadow(0 0 10px rgba(0, 0, 128, 0.4));
+        }
+
+        @keyframes chakraSpin {
+            from { transform: rotate(0deg); }
+            to { transform: rotate(360deg); }
+        }
+
+        /* 3. Realistic Wind Wave & Cloth Ripples */
+        .tiranga-wind-ripples {
             position: absolute;
             inset: 0;
-            background: linear-gradient(180deg, rgba(255, 255, 255, 0.22) 0%, rgba(255, 255, 255, 0.04) 40%, rgba(0, 0, 0, 0.04) 100%);
-            pointer-events: none;
-            border-radius: var(--radius-card);
-        }
-
-        body[data-theme="dark"] .sp-card-green-grad {
-            background: linear-gradient(112deg, 
-                #FF671F 0%, 
-                #FF7A26 18%, 
-                #FF9645 32%, 
-                #FFF6ED 45%, 
-                #FFFFFF 50%, 
-                #EDFBF1 55%, 
-                #22C55E 70%, 
-                #138808 85%, 
-                #046A38 100%
+            background: repeating-linear-gradient(
+                112deg,
+                rgba(255, 255, 255, 0) 0%,
+                rgba(255, 255, 255, 0.22) 12%,
+                rgba(0, 0, 0, 0.1) 24%,
+                rgba(255, 255, 255, 0.2) 36%,
+                rgba(0, 0, 0, 0.12) 48%,
+                rgba(255, 255, 255, 0) 60%
             );
-            box-shadow: 0 18px 48px rgba(0, 0, 0, 0.45), 0 0 32px rgba(255, 103, 31, 0.12);
-            border: none;
+            background-size: 250% 250%;
+            animation: windRippleMove 7s ease-in-out infinite;
+            mix-blend-mode: overlay;
+            pointer-events: none;
+            z-index: 3;
         }
 
-        body[data-theme="dark"] .sp-card-green-grad::before {
-            background: linear-gradient(180deg, rgba(255, 255, 255, 0.16) 0%, rgba(255, 255, 255, 0.02) 40%, rgba(0, 0, 0, 0.08) 100%);
+        @keyframes windRippleMove {
+            0% {
+                background-position: 0% 0%;
+                opacity: 0.65;
+            }
+            50% {
+                background-position: 100% 50%;
+                opacity: 0.95;
+            }
+            100% {
+                background-position: 200% 100%;
+                opacity: 0.65;
+            }
+        }
+
+        /* 4. Sunlight Silk Sheen Beam */
+        .tiranga-sheen-sweep {
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 60%;
+            height: 100%;
+            background: linear-gradient(
+                90deg, 
+                transparent 0%, 
+                rgba(255, 255, 255, 0.4) 50%, 
+                transparent 100%
+            );
+            transform: skewX(-20deg);
+            animation: sheenSweep 6s cubic-bezier(0.4, 0, 0.2, 1) infinite;
+            pointer-events: none;
+            z-index: 4;
+        }
+
+        @keyframes sheenSweep {
+            0% { left: -100%; opacity: 0; }
+            25% { opacity: 0.85; }
+            50% { left: 160%; opacity: 0; }
+            100% { left: 160%; opacity: 0; }
         }
 
         .sp-hero-content-flex {
@@ -536,46 +643,106 @@
             gap: 24px;
             height: 100%;
             position: relative;
-            z-index: 2;
+            z-index: 5;
+            padding: 10px 0;
         }
 
-        .sp-hero-left {
+        /* 5. Frosted Glassmorphism Content Plate for Crystal Clear Contrast */
+        .sp-hero-left.sp-hero-glass-plate {
             display: flex;
             flex-direction: column;
-            gap: 10px;
-            z-index: 2;
+            gap: 12px;
+            z-index: 5;
+            max-width: 620px;
+            background: rgba(255, 255, 255, 0.88);
+            backdrop-filter: blur(24px) saturate(1.6);
+            -webkit-backdrop-filter: blur(24px) saturate(1.6);
+            border: 1.5px solid rgba(255, 255, 255, 0.95);
+            border-radius: 24px;
+            padding: 24px 28px;
+            box-shadow: 0 14px 36px rgba(0, 0, 80, 0.1), 0 2px 8px rgba(0, 0, 0, 0.04);
             color: #0F172A;
-            max-width: 600px;
+            transition: transform 0.22s ease, box-shadow 0.22s ease;
+        }
+
+        .sp-hero-left.sp-hero-glass-plate:hover {
+            box-shadow: 0 18px 44px rgba(0, 0, 80, 0.15);
+        }
+
+        body[data-theme="dark"] .sp-hero-left.sp-hero-glass-plate {
+            background: rgba(15, 23, 42, 0.88);
+            border-color: rgba(255, 255, 255, 0.15);
+            box-shadow: 0 18px 44px rgba(0, 0, 0, 0.5);
+            color: #F8FAFC;
         }
 
         .sp-hero-tag {
             font-family: var(--font-mono);
             font-size: 11px;
             font-weight: 800;
-            letter-spacing: 2px;
+            letter-spacing: 1.5px;
             text-transform: uppercase;
-            color: #0F172A;
-            opacity: 0.9;
+            color: #000080;
             display: inline-flex;
             align-items: center;
-            gap: 6px;
+            gap: 8px;
+        }
+
+        body[data-theme="dark"] .sp-hero-tag {
+            color: #93C5FD;
+        }
+
+        /* Tiranga Mini Pill Badge */
+        .tiranga-mini-pill {
+            display: inline-flex;
+            height: 12px;
+            width: 22px;
+            border-radius: 3px;
+            overflow: hidden;
+            box-shadow: 0 1px 4px rgba(0, 0, 0, 0.25);
+            border: 1px solid rgba(0, 0, 0, 0.12);
+            flex-shrink: 0;
+        }
+
+        .tiranga-mini-pill .tmp-saffron {
+            flex: 1;
+            background: #FF671F;
+        }
+
+        .tiranga-mini-pill .tmp-white {
+            flex: 1;
+            background: #FFFFFF;
+        }
+
+        .tiranga-mini-pill .tmp-green {
+            flex: 1;
+            background: #046A38;
         }
 
         .sp-hero-title {
-            font-size: 38px;
+            font-size: 34px;
             font-weight: 800;
             letter-spacing: -1.2px;
-            line-height: 1.1;
+            line-height: 1.15;
             color: #0F172A;
+            margin: 0;
+        }
+
+        body[data-theme="dark"] .sp-hero-title {
+            color: #FFFFFF;
         }
 
         .sp-hero-desc {
-            font-size: 14.5px;
-            font-weight: 600;
-            line-height: 1.5;
-            color: #1E293B;
-            opacity: 0.95;
+            font-size: 14px;
+            font-weight: 500;
+            line-height: 1.55;
+            color: #334155;
+            margin: 0;
             min-height: 44px;
+        }
+
+        body[data-theme="dark"] .sp-hero-desc {
+            color: #CBD5E1;
         }
 
         .sp-hero-right-visual {
@@ -585,15 +752,16 @@
             justify-content: center;
             text-align: center;
             background: rgba(255, 255, 255, 0.95);
-            backdrop-filter: blur(24px) saturate(1.4);
-            border: none;
+            backdrop-filter: blur(24px) saturate(1.6);
+            -webkit-backdrop-filter: blur(24px) saturate(1.6);
+            border: 1.5px solid rgba(255, 255, 255, 0.95);
             border-radius: 24px;
-            padding: 22px 30px;
-            min-width: 190px;
+            padding: 22px 28px;
+            min-width: 195px;
             color: #000080;
             box-shadow: 0 16px 36px rgba(0, 0, 80, 0.12), 0 2px 8px rgba(0, 0, 0, 0.04);
             flex-shrink: 0;
-            z-index: 2;
+            z-index: 5;
             transition: all 0.22s cubic-bezier(0.16, 1, 0.3, 1);
         }
 
@@ -604,9 +772,21 @@
 
         body[data-theme="dark"] .sp-hero-right-visual {
             background: rgba(255, 255, 255, 0.96);
-            border: none;
+            border-color: rgba(255, 255, 255, 0.95);
             color: #000080;
-            box-shadow: 0 16px 40px rgba(0, 0, 0, 0.28);
+            box-shadow: 0 16px 40px rgba(0, 0, 0, 0.35);
+        }
+
+        .chakra-mini-badge {
+            margin-bottom: 6px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .chakra-svg-mini {
+            animation: chakraSpin 14s linear infinite;
+            filter: drop-shadow(0 2px 4px rgba(0, 0, 128, 0.2));
         }
 
         .radial-metric-title {
@@ -1196,11 +1376,89 @@
 
         <!-- ══ Hero Showroom Bento Grid ══ -->
         <section class="sp-hero-bento-grid">
-            <!-- Gradient Hero Showroom Card -->
-            <div class="sp-card sp-card-green-grad">
+            <!-- Indian Flag (Tiranga) Animated Hero Showroom Card -->
+            <div class="sp-card sp-card-green-grad tiranga-hero-card">
+                <!-- 3-Stripe Indian Flag Canvas with Physics Animations -->
+                <div class="tiranga-flag-canvas" aria-hidden="true">
+                    <div class="tiranga-band saffron"></div>
+                    <div class="tiranga-band white">
+                        <!-- High-Detail Animated Ashoka Chakra (24 Spokes) -->
+                        <div class="ashoka-chakra-container">
+                            <svg class="ashoka-chakra-svg" viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg">
+                                <circle cx="100" cy="100" r="92" fill="none" stroke="#000080" stroke-width="4.5" />
+                                <circle cx="100" cy="100" r="86" fill="none" stroke="#000080" stroke-width="1.5" />
+                                <circle cx="100" cy="100" r="18" fill="#000080" />
+                                <circle cx="100" cy="100" r="7" fill="#FFFFFF" />
+                                <g stroke="#000080" stroke-width="2.5" stroke-linecap="round">
+                                    <line x1="100" y1="100" x2="100" y2="12" />
+                                    <line x1="100" y1="100" x2="100" y2="12" transform="rotate(15 100 100)" />
+                                    <line x1="100" y1="100" x2="100" y2="12" transform="rotate(30 100 100)" />
+                                    <line x1="100" y1="100" x2="100" y2="12" transform="rotate(45 100 100)" />
+                                    <line x1="100" y1="100" x2="100" y2="12" transform="rotate(60 100 100)" />
+                                    <line x1="100" y1="100" x2="100" y2="12" transform="rotate(75 100 100)" />
+                                    <line x1="100" y1="100" x2="100" y2="12" transform="rotate(90 100 100)" />
+                                    <line x1="100" y1="100" x2="100" y2="12" transform="rotate(105 100 100)" />
+                                    <line x1="100" y1="100" x2="100" y2="12" transform="rotate(120 100 100)" />
+                                    <line x1="100" y1="100" x2="100" y2="12" transform="rotate(135 100 100)" />
+                                    <line x1="100" y1="100" x2="100" y2="12" transform="rotate(150 100 100)" />
+                                    <line x1="100" y1="100" x2="100" y2="12" transform="rotate(165 100 100)" />
+                                    <line x1="100" y1="100" x2="100" y2="12" transform="rotate(180 100 100)" />
+                                    <line x1="100" y1="100" x2="100" y2="12" transform="rotate(195 100 100)" />
+                                    <line x1="100" y1="100" x2="100" y2="12" transform="rotate(210 100 100)" />
+                                    <line x1="100" y1="100" x2="100" y2="12" transform="rotate(225 100 100)" />
+                                    <line x1="100" y1="100" x2="100" y2="12" transform="rotate(240 100 100)" />
+                                    <line x1="100" y1="100" x2="100" y2="12" transform="rotate(255 100 100)" />
+                                    <line x1="100" y1="100" x2="100" y2="12" transform="rotate(270 100 100)" />
+                                    <line x1="100" y1="100" x2="100" y2="12" transform="rotate(285 100 100)" />
+                                    <line x1="100" y1="100" x2="100" y2="12" transform="rotate(300 100 100)" />
+                                    <line x1="100" y1="100" x2="100" y2="12" transform="rotate(315 100 100)" />
+                                    <line x1="100" y1="100" x2="100" y2="12" transform="rotate(330 100 100)" />
+                                    <line x1="100" y1="100" x2="100" y2="12" transform="rotate(345 100 100)" />
+                                </g>
+                                <g fill="#000080">
+                                    <circle cx="100" cy="13" r="2.8" transform="rotate(7.5 100 100)" />
+                                    <circle cx="100" cy="13" r="2.8" transform="rotate(22.5 100 100)" />
+                                    <circle cx="100" cy="13" r="2.8" transform="rotate(37.5 100 100)" />
+                                    <circle cx="100" cy="13" r="2.8" transform="rotate(52.5 100 100)" />
+                                    <circle cx="100" cy="13" r="2.8" transform="rotate(67.5 100 100)" />
+                                    <circle cx="100" cy="13" r="2.8" transform="rotate(82.5 100 100)" />
+                                    <circle cx="100" cy="13" r="2.8" transform="rotate(97.5 100 100)" />
+                                    <circle cx="100" cy="13" r="2.8" transform="rotate(112.5 100 100)" />
+                                    <circle cx="100" cy="13" r="2.8" transform="rotate(127.5 100 100)" />
+                                    <circle cx="100" cy="13" r="2.8" transform="rotate(142.5 100 100)" />
+                                    <circle cx="100" cy="13" r="2.8" transform="rotate(157.5 100 100)" />
+                                    <circle cx="100" cy="13" r="2.8" transform="rotate(172.5 100 100)" />
+                                    <circle cx="100" cy="13" r="2.8" transform="rotate(187.5 100 100)" />
+                                    <circle cx="100" cy="13" r="2.8" transform="rotate(202.5 100 100)" />
+                                    <circle cx="100" cy="13" r="2.8" transform="rotate(217.5 100 100)" />
+                                    <circle cx="100" cy="13" r="2.8" transform="rotate(232.5 100 100)" />
+                                    <circle cx="100" cy="13" r="2.8" transform="rotate(247.5 100 100)" />
+                                    <circle cx="100" cy="13" r="2.8" transform="rotate(262.5 100 100)" />
+                                    <circle cx="100" cy="13" r="2.8" transform="rotate(277.5 100 100)" />
+                                    <circle cx="100" cy="13" r="2.8" transform="rotate(292.5 100 100)" />
+                                    <circle cx="100" cy="13" r="2.8" transform="rotate(307.5 100 100)" />
+                                    <circle cx="100" cy="13" r="2.8" transform="rotate(322.5 100 100)" />
+                                    <circle cx="100" cy="13" r="2.8" transform="rotate(337.5 100 100)" />
+                                    <circle cx="100" cy="13" r="2.8" transform="rotate(352.5 100 100)" />
+                                </g>
+                            </svg>
+                        </div>
+                    </div>
+                    <div class="tiranga-band green"></div>
+
+                    <!-- Animated Wind Ripples & Silk Sheen -->
+                    <div class="tiranga-wind-ripples"></div>
+                    <div class="tiranga-sheen-sweep"></div>
+                </div>
+
                 <div class="sp-hero-content-flex">
-                    <div class="sp-hero-left">
+                    <div class="sp-hero-left sp-hero-glass-plate">
                         <div class="sp-hero-tag">
+                            <span class="tiranga-mini-pill" title="National Flag of India">
+                                <span class="tmp-saffron"></span>
+                                <span class="tmp-white"></span>
+                                <span class="tmp-green"></span>
+                            </span>
                             <i class="fas fa-circle-check"></i>
                             <span>v9.5.00 Stable Release</span>
                         </div>
@@ -1208,6 +1466,39 @@
                         <p class="sp-hero-desc" id="hero-desc"></p>
                     </div>
                     <div class="sp-hero-right-visual">
+                        <div class="chakra-mini-badge" title="Ashoka Chakra - 24 Spokes of Progress">
+                            <svg class="chakra-svg-mini" viewBox="0 0 200 200" width="30" height="30" xmlns="http://www.w3.org/2000/svg">
+                                <circle cx="100" cy="100" r="92" fill="none" stroke="#000080" stroke-width="6" />
+                                <circle cx="100" cy="100" r="20" fill="#000080" />
+                                <circle cx="100" cy="100" r="8" fill="#FFFFFF" />
+                                <g stroke="#000080" stroke-width="3.5" stroke-linecap="round">
+                                    <line x1="100" y1="100" x2="100" y2="12" />
+                                    <line x1="100" y1="100" x2="100" y2="12" transform="rotate(15 100 100)" />
+                                    <line x1="100" y1="100" x2="100" y2="12" transform="rotate(30 100 100)" />
+                                    <line x1="100" y1="100" x2="100" y2="12" transform="rotate(45 100 100)" />
+                                    <line x1="100" y1="100" x2="100" y2="12" transform="rotate(60 100 100)" />
+                                    <line x1="100" y1="100" x2="100" y2="12" transform="rotate(75 100 100)" />
+                                    <line x1="100" y1="100" x2="100" y2="12" transform="rotate(90 100 100)" />
+                                    <line x1="100" y1="100" x2="100" y2="12" transform="rotate(105 100 100)" />
+                                    <line x1="100" y1="100" x2="100" y2="12" transform="rotate(120 100 100)" />
+                                    <line x1="100" y1="100" x2="100" y2="12" transform="rotate(135 100 100)" />
+                                    <line x1="100" y1="100" x2="100" y2="12" transform="rotate(150 100 100)" />
+                                    <line x1="100" y1="100" x2="100" y2="12" transform="rotate(165 100 100)" />
+                                    <line x1="100" y1="100" x2="100" y2="12" transform="rotate(180 100 100)" />
+                                    <line x1="100" y1="100" x2="100" y2="12" transform="rotate(195 100 100)" />
+                                    <line x1="100" y1="100" x2="100" y2="12" transform="rotate(210 100 100)" />
+                                    <line x1="100" y1="100" x2="100" y2="12" transform="rotate(225 100 100)" />
+                                    <line x1="100" y1="100" x2="100" y2="12" transform="rotate(240 100 100)" />
+                                    <line x1="100" y1="100" x2="100" y2="12" transform="rotate(255 100 100)" />
+                                    <line x1="100" y1="100" x2="100" y2="12" transform="rotate(270 100 100)" />
+                                    <line x1="100" y1="100" x2="100" y2="12" transform="rotate(285 100 100)" />
+                                    <line x1="100" y1="100" x2="100" y2="12" transform="rotate(300 100 100)" />
+                                    <line x1="100" y1="100" x2="100" y2="12" transform="rotate(315 100 100)" />
+                                    <line x1="100" y1="100" x2="100" y2="12" transform="rotate(330 100 100)" />
+                                    <line x1="100" y1="100" x2="100" y2="12" transform="rotate(345 100 100)" />
+                                </g>
+                            </svg>
+                        </div>
                         <div class="radial-metric-title">9.5.00</div>
                         <div class="radial-metric-status">Flagship Build</div>
                         <div class="sparkline-dots">

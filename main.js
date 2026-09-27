@@ -264,7 +264,7 @@ function loadProfileData(profileId) {
         if (data.customSearchUrl) userSettings.customSearchUrl = data.customSearchUrl;
     } else {
         const prof = (userSettings.profiles || []).find(p => p.id === profileId);
-        const col = (prof && prof.color) ? prof.color : (userSettings.accentColor || '#09f0a0');
+        const col = (prof && prof.color) ? prof.color : (userSettings.accentColor || '#4F46E5');
         userSettings.profilesData[profileId] = {
             bookmarks: [],
             folders: [],
@@ -2055,23 +2055,37 @@ function resolveInternalURL(url) {
         return resolveExtensionRuntimeUrl(url);
     }
 
+    const rawClean = url.trim();
+    // Normalize spaces around slashes and hashes (e.g. "ocal://settings / extensions" -> "ocal://settings/extensions")
+    const normalizedUrl = rawClean.replace(/\s*\/\s*/g, '/').replace(/\s*#\s*/g, '#');
+
     // Strip query and hash for path matching
-    const basePart = url.split(/[?#]/)[0];
+    const basePart = normalizedUrl.split(/[?#]/)[0];
     const cleanBase = basePart.toLowerCase().replace(/\/$/, ''); // remove trailing slash for comparison
 
+    const getFilePath = (fileName) => 'file:///' + path.join(__dirname, fileName).replace(/\\/g, '/');
+
     // 1. Exact Page Mappings
-    if (cleanBase === 'home' || cleanBase === 'ocal://home') return 'file://' + path.join(__dirname, 'home.html');
-    if (cleanBase === 'settings' || cleanBase === 'ocal://settings') return 'file://' + path.join(__dirname, 'settings.html');
-    if (url.startsWith('ocal://settings#')) return 'file://' + path.join(__dirname, 'settings.html') + url.substring(15);
-    if (url.startsWith('ocal://settings/')) return 'file://' + path.join(__dirname, 'settings.html') + '#' + url.substring(16);
-    if (cleanBase === 'extensions' || cleanBase === 'ocal://extensions') return 'file://' + path.join(__dirname, 'extensions.html');
-    if (cleanBase === 'store' || cleanBase === 'ocal://store' || cleanBase === 'ocal://webstore' || cleanBase === 'ocal://extension-store') return 'file://' + path.join(__dirname, 'extension-store.html');
-    if (cleanBase === 'file-manager' || cleanBase === 'ocal://file-manager') return 'file://' + path.join(__dirname, 'file-manager.html');
+    if (cleanBase === 'home' || cleanBase === 'ocal://home') return getFilePath('home.html');
+    if (cleanBase === 'settings' || cleanBase === 'ocal://settings') return getFilePath('settings.html');
+    if (normalizedUrl.startsWith('ocal://settings#')) return getFilePath('settings.html') + '#' + normalizedUrl.split('#')[1].trim();
+    if (normalizedUrl.startsWith('ocal://settings/')) {
+        const sub = normalizedUrl.split('ocal://settings/')[1].replace(/^\/+/, '').trim();
+        return getFilePath('settings.html') + '#' + sub;
+    }
+    if (cleanBase === 'settings/extensions' || cleanBase === 'ocal://settings/extensions' || cleanBase === 'extensions' || cleanBase === 'ocal://extensions') {
+        return getFilePath('settings.html') + '#extensions';
+    }
+    if (cleanBase === 'store' || cleanBase === 'ocal://store' || cleanBase === 'ocal://webstore' || cleanBase === 'ocal://extension-store') return getFilePath('extension-store.html');
+    if (cleanBase === 'file-manager' || cleanBase === 'ocal://file-manager') return getFilePath('file-manager.html');
     if (cleanBase === 'ocal://music-player' || cleanBase === 'ocal://music' || cleanBase === 'music-player') {
         const qIdx = url.indexOf('?');
-        return 'file://' + path.join(__dirname, 'music-player.html') + (qIdx !== -1 ? url.substring(qIdx) : '');
+        return getFilePath('music-player.html') + (qIdx !== -1 ? url.substring(qIdx) : '');
     }
-    if (cleanBase === 'ocal://offline') return 'file://' + path.join(__dirname, 'offline.html');
+    if (cleanBase === 'offline' || cleanBase === 'ocal://offline') {
+        const qIdx = url.indexOf('?');
+        return getFilePath('offline.html') + (qIdx !== -1 ? url.substring(qIdx) : '');
+    }
     if (cleanBase === 'ocal://suspended') {
         const qIdx = url.indexOf('?');
         if (qIdx !== -1) {
@@ -2081,7 +2095,7 @@ function resolveInternalURL(url) {
                 if (targetUrl) return targetUrl;
             } catch (e) {}
         }
-        return 'file://' + path.join(__dirname, 'suspended.html') + (url.indexOf('?') !== -1 ? url.substring(url.indexOf('?')) : '');
+        return 'file://' + path.join(__dirname, 'home.html');
     }
     if (cleanBase === 'ocal://whats-new' || cleanBase === 'whats-new') return 'file://' + path.join(__dirname, 'whats-new.html');
     if (cleanBase === 'ocal://ssl-warning') {
@@ -2103,7 +2117,7 @@ function resolveInternalURL(url) {
         return 'file://' + path.join(__dirname, 'site-settings.html') + (qIdx !== -1 ? url.substring(qIdx) : '');
     }
     // Standardize with trailing slash to avoid CSP relative path issues
-    if (cleanBase === 'ocal://pdf-viewer') {
+    if (cleanBase === 'ocal://pdf-viewer' || cleanBase === 'ocal://pdf' || cleanBase === 'pdf' || cleanBase === 'pdf-viewer') {
         const qIdx = url.indexOf('?');
         return 'file://' + path.join(__dirname, 'pdf-viewer.html') + (qIdx !== -1 ? url.substring(qIdx) : '');
     }
@@ -2205,6 +2219,9 @@ function createNewTab(url = null) {
 
 function formatDisplayUrl(url) {
     if (!url) return '';
+    if (url.includes('offline.html') || (url.startsWith('file://') && url.includes('offline.html')) || url.startsWith('ocal://offline')) {
+        return 'ocal://offline';
+    }
     if (url.startsWith('chrome-extension://')) return url;
     let display = url;
     if (display.includes('home.html') || display === 'ocal://home') return '';
@@ -2216,9 +2233,9 @@ function formatDisplayUrl(url) {
         const qIdx = display.indexOf('?');
         return 'ocal://doc-viewer' + (qIdx !== -1 ? display.substring(qIdx) : '');
     }
-    if (display.includes('pdf-viewer.html')) {
+    if (display.includes('pdf-viewer.html') || display.startsWith('ocal://pdf')) {
         const qIdx = display.indexOf('?');
-        return 'ocal://pdf-viewer' + (qIdx !== -1 ? display.substring(qIdx) : '');
+        return 'ocal://pdf' + (qIdx !== -1 ? display.substring(qIdx) : '');
     }
     if (display.includes('file-manager.html')) {
         return 'ocal://file-manager';
@@ -2231,11 +2248,14 @@ function formatDisplayUrl(url) {
         return 'ocal://store';
     }
     if (display.includes('extensions.html') || display.startsWith('ocal://extensions')) {
-        return 'ocal://extensions';
+        return 'ocal://settings#extensions';
     }
     if (display.includes('settings.html')) {
         const hIdx = display.indexOf('#');
         return 'ocal://settings' + (hIdx !== -1 ? display.substring(hIdx) : '');
+    }
+    if (display.includes('offline.html') || (display.startsWith('file://') && display.includes('offline.html')) || display.startsWith('ocal://offline')) {
+        return 'ocal://offline';
     }
     return display;
 }
@@ -2649,12 +2669,12 @@ function setupViewEvents(tabId, view, side = 'left') {
     webContents.on('did-fail-load', (event, errorCode, errorDescription, validatedURL, isMainFrame) => {
         if (isMainFrame) {
             const connectivityErrors = [
-                -106, -105, -118, -100, -102, -101
+                -106, -105, -118, -100, -102, -101, -109, -104, -137, -324
             ];
 
             if (connectivityErrors.includes(errorCode) && !validatedURL.startsWith('ocal://') && !validatedURL.startsWith('file://')) {
                 console.log(`[Rescue] Connectivity Error ${errorCode} on ${validatedURL}. Redirecting to Offline Page.`);
-                webContents.loadURL('ocal://offline');
+                webContents.loadURL('ocal://offline?url=' + encodeURIComponent(validatedURL) + '&code=' + errorCode + '&desc=' + encodeURIComponent(errorDescription || ''));
             }
         }
 
@@ -2739,9 +2759,15 @@ function broadcastTabs() {
         if (url1 === undefined && v.view && !v.view.webContents.isDestroyed()) {
             url1 = v.view.webContents.getURL();
         }
+        if (url1 && (url1.includes('offline.html') || url1.startsWith('ocal://offline'))) {
+            url1 = 'ocal://offline';
+        }
         let title1 = v.title;
         if (!title1 && v.view && !v.view.webContents.isDestroyed()) {
             title1 = v.view.webContents.getTitle();
+        }
+        if (url1 === 'ocal://offline') {
+            title1 = 'No Internet';
         }
         if (!title1) {
             title1 = (url1 && (url1.includes('home.html') || url1.startsWith('ocal://home') || !url1)) ? 'Ocal Home' : 'Tab';
@@ -2751,9 +2777,15 @@ function broadcastTabs() {
         if (url2 === undefined && v.isSplit && v.view2 && !v.view2.webContents.isDestroyed()) {
             url2 = v.view2.webContents.getURL();
         }
+        if (url2 && (url2.includes('offline.html') || url2.startsWith('ocal://offline'))) {
+            url2 = 'ocal://offline';
+        }
         let title2 = v.title2;
         if (!title2 && v.isSplit && v.view2 && !v.view2.webContents.isDestroyed()) {
             title2 = v.view2.webContents.getTitle();
+        }
+        if (url2 === 'ocal://offline') {
+            title2 = 'No Internet';
         }
         if (v.isSplit && !title2) {
             title2 = (url2 && (url2.includes('home.html') || url2.startsWith('ocal://home') || !url2)) ? 'Ocal Home' : 'Tab';
@@ -5015,7 +5047,7 @@ Supported Commands:
             userSettings.memorySaver = !(q.includes('disable') || q.includes('off'));
             saveSettings(userSettings);
             broadcastSettings();
-            return { text: `Memory Saver is now **${userSettings.memorySaver ? 'enabled ⚡' : 'disabled'}**. Inactive tabs will be automatically discarded from RAM.`, actions: [] };
+            return { text: `Memory Saver is now **${userSettings.memorySaver ? 'enabled ⚡' : 'disabled'}**. Web cache cleanup is active.`, actions: [] };
         }
 
         // 20. AI Engine Switching via Command
@@ -8320,9 +8352,27 @@ ipcMain.handle('select-custom-ambient-file', async () => {
         return null;
     }
 });
+
+function broadcastUpdateAvailable(updateData) {
+    if (mainWindow && !mainWindow.isDestroyed()) {
+        mainWindow.webContents.send('update-available', updateData);
+    }
+    if (Array.isArray(views)) {
+        views.forEach(v => {
+            if (v.view && !v.view.webContents.isDestroyed()) {
+                v.view.webContents.send('update-available', updateData);
+            }
+            if (v.isSplit && v.view2 && !v.view2.webContents.isDestroyed()) {
+                v.view2.webContents.send('update-available', updateData);
+            }
+        });
+    }
+}
+
 function isNewerVersion(latest, current) {
-    const l = latest.split('.').map(Number);
-    const c = current.split('.').map(Number);
+    if (!latest || !current) return false;
+    const l = String(latest).replace(/^[vV]/, '').split(/[.-]/).map(n => parseInt(n, 10) || 0);
+    const c = String(current).replace(/^[vV]/, '').split(/[.-]/).map(n => parseInt(n, 10) || 0);
     for (let i = 0; i < Math.max(l.length, c.length); i++) {
         const ln = l[i] || 0;
         const cn = c[i] || 0;
@@ -8349,16 +8399,16 @@ async function checkForUpdatesSilently() {
                 if (response.statusCode === 200) {
                     try {
                         const json = JSON.parse(data);
-                        const latest = json.tag_name.replace(/^v/, '');
+                        const latest = (json.tag_name || '').replace(/^[vV]/, '');
                         const current = app.getVersion();
                         if (isNewerVersion(latest, current)) {
-                            if (mainWindow) {
-                                mainWindow.webContents.send('update-available', {
-                                    version: latest,
-                                    notes: json.body,
-                                    url: json.html_url
-                                });
-                            }
+                            broadcastUpdateAvailable({
+                                version: latest,
+                                notes: json.body || '',
+                                url: json.html_url || '',
+                                currentVersion: current,
+                                isUpdateAvailable: true
+                            });
                         }
                     } catch (e) { }
                 }
@@ -8373,13 +8423,12 @@ ipcMain.handle('check-for-update', async () => {
     return new Promise((resolve) => {
         let resolved = false;
 
-        // Set a timeout to prevent hanging
         const timeout = setTimeout(() => {
             if (!resolved) {
                 resolved = true;
                 resolve(null);
             }
-        }, 15000); // 15 second timeout
+        }, 15000);
 
         try {
             const { net } = require('electron');
@@ -8399,11 +8448,20 @@ ipcMain.handle('check-for-update', async () => {
                         if (response.statusCode === 200) {
                             try {
                                 const json = JSON.parse(data);
-                                resolve({
-                                    version: json.tag_name.replace(/^v/, ''),
-                                    notes: json.body,
-                                    url: json.html_url
-                                });
+                                const latest = (json.tag_name || '').replace(/^[vV]/, '');
+                                const current = app.getVersion();
+                                const isUpdate = isNewerVersion(latest, current);
+                                const payload = {
+                                    version: latest,
+                                    notes: json.body || '',
+                                    url: json.html_url || '',
+                                    currentVersion: current,
+                                    isUpdateAvailable: isUpdate
+                                };
+                                if (isUpdate) {
+                                    broadcastUpdateAvailable(payload);
+                                }
+                                resolve(payload);
                             } catch (e) {
                                 resolve(null);
                             }
@@ -8945,7 +9003,7 @@ ipcMain.on('hide-extensions-dropdown', () => {
 
 ipcMain.on('open-extensions-page', () => {
     hidePopups();
-    createNewTab(`file://${__dirname}/extensions.html`);
+    createNewTab('ocal://settings#extensions');
 });
 
 ipcMain.on('action-extension', (e, id) => {
@@ -9437,12 +9495,30 @@ ipcMain.handle('get-system-drives', async () => {
             const drivePath = `${char}:\\`;
             try {
                 if (fs.existsSync(drivePath)) {
+                    let totalBytes = 0;
+                    let freeBytes = 0;
+                    let usedBytes = 0;
+                    let percentUsed = 0;
+                    try {
+                        const stat = fs.statfsSync(drivePath);
+                        totalBytes = Number(stat.blocks) * Number(stat.bsize);
+                        freeBytes = Number(stat.bavail) * Number(stat.bsize);
+                        usedBytes = Math.max(0, totalBytes - freeBytes);
+                        if (totalBytes > 0) {
+                            percentUsed = Math.min(100, Math.max(0, Math.round((usedBytes / totalBytes) * 100)));
+                        }
+                    } catch (e) {}
+
                     drives.push({
-                        name: char === 'C' ? 'Local Disk (C:)' : `Drive (${char}:)`,
+                        name: char === 'C' ? 'Local Disk (C:)' : `Volume (${char}:)`,
                         path: drivePath,
                         letter: char,
                         isMobile: false,
-                        isDirectory: true
+                        isDirectory: true,
+                        totalBytes,
+                        freeBytes,
+                        usedBytes,
+                        percentUsed
                     });
                 }
             } catch (e) {}
@@ -9450,13 +9526,13 @@ ipcMain.handle('get-system-drives', async () => {
     }
 
     if (drives.length === 0) {
-        drives.push({ name: 'Root (/)', path: '/', isMobile: false, isDirectory: true });
+        drives.push({ name: 'Root (/)', path: '/', isMobile: false, isDirectory: true, totalBytes: 0, freeBytes: 0, usedBytes: 0, percentUsed: 0 });
     }
 
     return drives;
 });
 
-ipcMain.handle('get-directory-entries', async (event, dirPath) => {
+ipcMain.handle('get-directory-entries', async (event, dirPath, options = {}) => {
     try {
         if (!dirPath) return [];
         let targetPath = String(dirPath).trim();
@@ -9465,18 +9541,54 @@ ipcMain.handle('get-directory-entries', async (event, dirPath) => {
         }
         if (!fs.existsSync(targetPath)) return [];
 
+        const showHidden = Boolean(options && options.showHidden);
         const entries = fs.readdirSync(targetPath, { withFileTypes: true });
         const result = [];
-        
+
+        // Exact blacklist of Windows system clutter, dumps, hives, and artifacts
+        const UNWANTED_EXACT = new Set([
+            'desktop.ini', 'thumbs.db', 'ehthumbs.db',
+            'system volume information', '$recycle.bin', 'recovery',
+            'config.msi', 'msocache', 'bootmgr', 'bootnxt', 'bootstat.dat',
+            'pagefile.sys', 'swapfile.sys', 'hiberfil.sys', 'dumpstack.log.tmp',
+            'dumpstack.log', 'ntuser.ini', '.ds_store', '.localized',
+            'onedrivetemp', 'documents and settings'
+        ]);
+
+        // Windows hidden junctions in user directory that are restricted or duplicate
+        const WINDOWS_JUNCTIONS = new Set([
+            'application data', 'cookies', 'local settings', 'nethood',
+            'printhood', 'recent', 'sendto', 'start menu', 'templates', 'my documents'
+        ]);
+
         for (const dirent of entries) {
             try {
-                const fullPath = path.join(targetPath, dirent.name);
+                const name = dirent.name;
+                const lowerName = name.toLowerCase();
+
+                // 1. Always exclude core OS files, crash dumps, and recycle bins
+                if (UNWANTED_EXACT.has(lowerName)) continue;
+                if (lowerName.startsWith('$')) continue;
+                if (lowerName.startsWith('ntuser.dat') || lowerName.startsWith('usrclass.dat')) continue;
+                if (name.startsWith('~$')) continue; // Office temporary lock files
+
+                // 2. Filter out Windows restricted junction directories
+                if (WINDOWS_JUNCTIONS.has(lowerName)) continue;
+
+                // 3. Filter out dot-files, AppData and temporary downloads when not in showHidden mode
+                if (!showHidden) {
+                    if (name.startsWith('.')) continue;
+                    if (lowerName === 'appdata') continue;
+                    if (lowerName.endsWith('.tmp') || lowerName.endsWith('.crdownload') || lowerName.endsWith('.part')) continue;
+                }
+
+                const fullPath = path.join(targetPath, name);
                 let isDir = false;
                 try {
                     isDir = dirent.isDirectory();
                 } catch (e) {}
 
-                let stats = { size: 0, mtime: new Date() };
+                let stats = { size: 0, mtime: new Date(), birthtime: new Date() };
                 try {
                     stats = fs.statSync(fullPath);
                 } catch (e) {}
@@ -9486,7 +9598,8 @@ ipcMain.handle('get-directory-entries', async (event, dirPath) => {
                     path: fullPath,
                     isDirectory: isDir,
                     size: stats.size || 0,
-                    mtime: stats.mtime || new Date()
+                    mtime: stats.mtime || new Date(),
+                    birthtime: stats.birthtime || stats.mtime || new Date()
                 });
             } catch (e) {
                 // Ignore restricted system file errors
@@ -9620,6 +9733,36 @@ ipcMain.handle('scan-system-audio', async () => {
 
 ipcMain.handle('open-system-item', async (event, fullPath) => {
     return await shell.openPath(fullPath);
+});
+
+ipcMain.handle('show-item-in-folder', async (event, fullPath) => {
+    try {
+        if (!fullPath) return false;
+        shell.showItemInFolder(fullPath);
+        return true;
+    } catch (e) { return false; }
+});
+
+ipcMain.handle('create-directory', async (event, dirPath) => {
+    try {
+        if (!dirPath) return false;
+        fs.mkdirSync(dirPath, { recursive: true });
+        return true;
+    } catch (e) {
+        console.error('[File Manager] create-directory error:', e);
+        return false;
+    }
+});
+
+ipcMain.handle('rename-system-item', async (event, { oldPath, newPath }) => {
+    try {
+        if (!oldPath || !newPath) return false;
+        fs.renameSync(oldPath, newPath);
+        return true;
+    } catch (e) {
+        console.error('[File Manager] rename-system-item error:', e);
+        return false;
+    }
 });
 
 ipcMain.handle('delete-system-item', async (event, fullPath) => {
@@ -11454,7 +11597,7 @@ ipcMain.on('switch-profile', (e, profileId) => {
 
 ipcMain.handle('create-profile', (e, { name, icon, color }) => {
     const id = 'profile_' + Date.now();
-    const profileColor = color || '#09f0a0';
+    const profileColor = color || (userSettings && userSettings.accentColor) || '#4F46E5';
     const newProfile = { id, name: name || 'New Profile', icon: icon || 'fa-user', color: profileColor };
 
     if (!userSettings.profiles) userSettings.profiles = [];
@@ -12038,63 +12181,8 @@ powerMonitor.on('on-ac', () => {
     // Optional: maybe auto-disable? User probably wants choice.
 });
 
-// ── Ocal Memory Saver / Tab Suspension Algorithm ──
-setInterval(() => {
-    try {
-        if (userSettings.memorySaverEnabled === false && !userSettings.batterySaver) return;
-        
-        // Inactivity threshold: 5 minutes on battery, 10 minutes on AC/default
-        const thresholdMs = (userSettings.batterySaver) ? 5 * 60 * 1000 : 10 * 60 * 1000;
-        const now = Date.now();
-
-        views.forEach(v => {
-            if (v.id === activeViewId) return; // Skip active tab
-            if (v.suspended) return; // Skip already suspended tabs
-            
-            const inactiveDuration = now - (v.lastActiveTime || now);
-            if (inactiveDuration < thresholdMs) return;
-
-            // Do not suspend if playing media
-            let isPlaying = false;
-            try {
-                if (v.view && v.view.webContents && !v.view.webContents.isDestroyed()) {
-                    if (v.view.webContents.isPlayingMedia()) isPlaying = true;
-                }
-                if (v.view2 && v.view2.webContents && !v.view2.webContents.isDestroyed()) {
-                    if (v.view2.webContents.isPlayingMedia()) isPlaying = true;
-                }
-            } catch (e) {}
-
-            if (isPlaying) return;
-
-            // Suspend the tab
-            v.suspended = true;
-            if (v.view && v.view.webContents && !v.view.webContents.isDestroyed()) {
-                const u = v.view.webContents.getURL();
-                if (u && !isHomeURL(u) && !u.startsWith('ocal://suspended')) {
-                    v.suspendedUrl = u;
-                    const pageTitle = v.view.webContents.getTitle() || '';
-                    const inactiveMin = Math.max(1, Math.round(inactiveDuration / 60000));
-                    const currentTheme = userSettings.themeMode || 'dark';
-                    v.view.webContents.loadURL(`ocal://suspended?url=${encodeURIComponent(u)}&title=${encodeURIComponent(pageTitle)}&inactive=${inactiveMin}&theme=${encodeURIComponent(currentTheme)}`);
-                }
-            }
-            if (v.view2 && v.view2.webContents && !v.view2.webContents.isDestroyed()) {
-                const u = v.view2.webContents.getURL();
-                if (u && !isHomeURL(u) && !u.startsWith('ocal://suspended')) {
-                    v.suspendedUrl2 = u;
-                    const pageTitle2 = v.view2.webContents.getTitle() || '';
-                    const inactiveMin = Math.max(1, Math.round(inactiveDuration / 60000));
-                    const currentTheme = userSettings.themeMode || 'dark';
-                    v.view2.webContents.loadURL(`ocal://suspended?url=${encodeURIComponent(u)}&title=${encodeURIComponent(pageTitle2)}&inactive=${inactiveMin}&theme=${encodeURIComponent(currentTheme)}`);
-                }
-            }
-            console.log(`[Memory Saver] Suspended idle tab ${v.id} (inactive for ${Math.round(inactiveDuration / 60000)} min)`);
-        });
-    } catch (e) {
-        console.error('[Memory Saver Error]', e);
-    }
-}, 30000);
+// ── Tab Suspension Permanently Disabled ──
+// All tabs remain active in memory without ever being suspended or discarded.
 
 
 // ─────────────────────────────────────────────────────────────────────────────

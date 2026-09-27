@@ -747,60 +747,10 @@ window.electronAPI.on('split-side-focused', (e, { tabId, side }) => {
     }
 });
 
-function formatDisplayUrl(url) {
-    if (!url) return '';
-    let display = url;
-    if (display.includes('home.html') || display === 'ocal://home') return '';
-    
-    // Convert local file URL paths to clean ocal:// internal scheme URLs
-    if (display.includes('photo-editor.html') || (display.startsWith('file://') && display.includes('photo-editor')) || display.startsWith('ocal://photo-editor') || display.startsWith('ocal://photo-view')) {
-        const qIdx = display.indexOf('?');
-        return 'ocal://photo-view' + (qIdx !== -1 ? display.substring(qIdx) : '');
-    }
-    if (display.includes('doc-viewer.html') || (display.startsWith('file://') && display.includes('doc-viewer'))) {
-        const qIdx = display.indexOf('?');
-        return 'ocal://doc-viewer' + (qIdx !== -1 ? display.substring(qIdx) : '');
-    }
-    if (display.includes('pdf-viewer.html') || (display.startsWith('file://') && display.includes('pdf-viewer'))) {
-        const qIdx = display.indexOf('?');
-        return 'ocal://pdf-viewer' + (qIdx !== -1 ? display.substring(qIdx) : '');
-    }
-    if (display.includes('file-manager.html') || (display.startsWith('file://') && display.includes('file-manager'))) {
-        return 'ocal://file-manager';
-    }
-    if (display.includes('music-player.html') || (display.startsWith('file://') && display.includes('music-player'))) {
-        const qIdx = display.indexOf('?');
-        return 'ocal://music-player' + (qIdx !== -1 ? display.substring(qIdx) : '');
-    }
-    if (display.includes('ai-sidebar.html') || (display.startsWith('file://') && display.includes('ai-sidebar')) || display.startsWith('ocal://ai')) {
-        return 'ocal://ai';
-    }
-    if (display.includes('extension-store.html') || (display.startsWith('file://') && display.includes('extension-store')) || display.startsWith('ocal://store') || display.startsWith('ocal://webstore') || display.startsWith('ocal://extension-store')) {
-        return 'ocal://store';
-    }
-    if (display.startsWith('chrome-extension://')) {
-        return display;
-    }
-    if (display.includes('extensions.html') || (display.startsWith('file://') && display.includes('extensions.html')) || display.startsWith('ocal://extensions')) {
-        return 'ocal://extensions';
-    }
-    if (display.includes('settings.html') || display.startsWith('ocal://settings')) {
-        let sec = '';
-        if (display.includes('#')) {
-            sec = display.split('#')[1];
-        } else if (display.startsWith('ocal://settings/')) {
-            sec = display.split('ocal://settings/')[1];
-        }
-        if (sec) {
-            const secClean = sec.split('/')[0].split('?')[0];
-            return `ocal://settings / ${secClean.toLowerCase()}`;
-        }
-        return 'ocal://settings';
-    }
-    return display;
-}
-
 function syncOmnibox(url) {
+    if (url && (url.includes('offline.html') || url.startsWith('ocal://offline'))) {
+        url = 'ocal://offline';
+    }
     const isHome = !url || url.includes('home.html');
     const displayUrl = isHome ? '' : formatDisplayUrl(url);
     if (addressInput) addressInput.value = displayUrl;
@@ -835,6 +785,12 @@ function updatePrettyUrl(url) {
     if (!prettyEl) return;
     if (!url) { prettyEl.innerHTML = ''; return; }
 
+    // Intercept offline page immediately so file path never renders
+    if (url.includes('offline.html') || url.startsWith('ocal://offline')) {
+        prettyEl.innerHTML = `<span class="protocol">ocal://</span><span class="domain">offline</span>`;
+        return;
+    }
+
     if (url.startsWith('chrome-extension://')) {
         const afterScheme = url.replace('chrome-extension://', '');
         const slashIdx = afterScheme.indexOf('/');
@@ -863,6 +819,10 @@ function updatePrettyUrl(url) {
         const isHttp = urlObj.protocol === 'http:';
         const protocol = urlObj.protocol + '//';
         if (urlObj.protocol === 'file:') {
+            if (url.includes('offline.html')) {
+                prettyEl.innerHTML = `<span class="protocol">ocal://</span><span class="domain">offline</span>`;
+                return;
+            }
             const decodedPath = decodeURIComponent(urlObj.pathname).replace(/^\/([A-Za-z]:)/, '$1');
             prettyEl.innerHTML = `<span class="protocol">file:///</span><span class="path">${decodedPath}</span>`;
             return;
@@ -886,6 +846,9 @@ function updateHeartStatus(url) {
 
 function formatDisplayUrl(url) {
     if (!url) return '';
+    if (url.includes('offline.html') || (url.startsWith('file://') && url.includes('offline.html')) || url.startsWith('ocal://offline')) {
+        return 'ocal://offline';
+    }
     if (url.startsWith('chrome-extension://')) return url;
     if (url.includes('home.html')) return '';
     if (url.includes('settings.html') || url.startsWith('ocal://settings')) {
@@ -973,6 +936,9 @@ function formatDisplayUrl(url) {
         } catch(e) {}
         return 'ocal://security-warning';
     }
+    if (url.includes('offline.html') || (url.startsWith('file://') && url.includes('offline.html')) || url.startsWith('ocal://offline')) {
+        return 'ocal://offline';
+    }
     return url;
 }
 
@@ -1010,6 +976,7 @@ function getSimplifiedTitle(title, url) {
     if (url.includes('games.html') || url.startsWith('ocal://games')) return 'Games';
     if (url.includes('whats-new.html') || url.startsWith('ocal://whats-new')) return "What's New";
     if (url.includes('certificate-viewer.html') || url.startsWith('ocal://certificate-viewer')) return "Certificate Explorer";
+    if (url.includes('offline.html') || url.startsWith('ocal://offline')) return "No Internet";
     if (url.includes('suspended.html') || url.startsWith('ocal://suspended')) {
         try {
             const u = new URL(url.startsWith('file://') || url.startsWith('ocal://') ? url : 'https://' + url);
@@ -1197,6 +1164,10 @@ function updateOmniboxIcon(url) {
     }
     if (url && (url.includes('file-manager.html') || url.startsWith('ocal://file-manager'))) {
         iconContainer.innerHTML = '<i class="fas fa-folder-tree" style="color:var(--accent)"></i>';
+        return;
+    }
+    if (url && (url.includes('offline.html') || url.startsWith('ocal://offline'))) {
+        iconContainer.innerHTML = '<i class="fas fa-bolt" style="color:var(--accent); font-size:13px;"></i>';
         return;
     }
     if (url && (url.includes('game.html') || url.includes('games.html') || url.includes('snake.html') || url.includes('tetris.html') || url.startsWith('ocal://games') || url.startsWith('ocal://snake') || url.startsWith('ocal://tetris') || url.startsWith('ocal://runner') || url.startsWith('ocal://game'))) {

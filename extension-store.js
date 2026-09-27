@@ -667,10 +667,13 @@
 
     let installedIds = new Set();
     let currentCategory = 'all';
+    let currentSort = 'featured';
     let searchQuery = '';
 
     const gridEl = document.getElementById('extensionsGrid');
     const searchInput = document.getElementById('storeSearchInput');
+    const sortSelect = document.getElementById('storeSortSelect');
+    const clearSearchBtn = document.getElementById('storeSearchClearBtn');
     const categoryBar = document.getElementById('categoryBar');
     const directInput = document.getElementById('directInstallInput');
     const directBtn = document.getElementById('btnDirectInstall');
@@ -681,6 +684,24 @@
     const modalCloseBtn = document.getElementById('modalCloseBtn');
     const toastEl = document.getElementById('storeToast');
     const toastMsg = document.getElementById('toastMsg');
+
+    // ── Category Counts ────────────────────────────────────────────────────────
+    function updateCategoryCounts() {
+        const counts = {
+            all: EXTENSIONS_CATALOG.length,
+            featured: EXTENSIONS_CATALOG.filter(e => e.featured).length,
+            adblock: EXTENSIONS_CATALOG.filter(e => e.category === 'adblock').length,
+            productivity: EXTENSIONS_CATALOG.filter(e => e.category === 'productivity').length,
+            developer: EXTENSIONS_CATALOG.filter(e => e.category === 'devtools' || e.category === 'developer').length,
+            media: EXTENSIONS_CATALOG.filter(e => e.category === 'media').length,
+            utilities: EXTENSIONS_CATALOG.filter(e => e.category === 'utilities').length,
+            installed: installedIds.size
+        };
+        for (const [cat, cnt] of Object.entries(counts)) {
+            const badge = document.getElementById(`count-${cat}`);
+            if (badge) badge.innerText = cnt;
+        }
+    }
 
     // ── Theme Sync ────────────────────────────────────────────────────────────
     function syncTheme() {
@@ -700,6 +721,7 @@
                 if (e && e.id) installedIds.add(e.id.toLowerCase());
             });
             updateAllButtons();
+            updateCategoryCounts();
         } catch (e) {
             console.error('Error getting installed extensions:', e);
         }
@@ -717,9 +739,11 @@
                 ? true 
                 : currentCategory === 'featured' 
                     ? ext.featured 
-                    : (ext.category === currentCategory || 
-                       (currentCategory === 'developer' && ext.category === 'devtools') ||
-                       (currentCategory === 'devtools' && ext.category === 'developer'));
+                    : currentCategory === 'installed'
+                        ? installedIds.has(ext.id.toLowerCase())
+                        : (ext.category === currentCategory || 
+                           (currentCategory === 'developer' && ext.category === 'devtools') ||
+                           (currentCategory === 'devtools' && ext.category === 'developer'));
             
             const matchesSearch = !q || 
                 ext.name.toLowerCase().includes(q) || 
@@ -731,10 +755,25 @@
             return matchesCat && matchesSearch;
         });
 
+        // Apply Sorting
+        if (currentSort === 'rating') {
+            filtered.sort((a, b) => b.rating - a.rating);
+        } else if (currentSort === 'users') {
+            const parseUsers = (u) => parseInt(String(u).replace(/[^\d]/g, ''), 10) || 0;
+            filtered.sort((a, b) => parseUsers(b.users) - parseUsers(a.users));
+        } else if (currentSort === 'name') {
+            filtered.sort((a, b) => a.name.localeCompare(b.name));
+        } else {
+            // 'featured'
+            filtered.sort((a, b) => (b.featured ? 1 : 0) - (a.featured ? 1 : 0) || b.rating - a.rating);
+        }
+
         const badge = document.getElementById('gridCountBadge');
         if (badge) {
             badge.innerText = `Showing ${filtered.length} of ${EXTENSIONS_CATALOG.length} extensions`;
         }
+
+        updateCategoryCounts();
 
         if (filtered.length === 0) {
             const idMatch = q.match(/([a-p]{32})/i);
@@ -1069,38 +1108,104 @@
         };
     }
 
-    // ── Spotlight Hero Setup ─────────────────────────────────────────────────
-    function setupHero() {
-        const featured = EXTENSIONS_CATALOG.find(e => e.id === 'eimadpbcbfnmbkopoojfekhnkhdbieeh');
-        if (!featured) return;
+    // ── Spotlight Hero Showcase & Switcher ──────────────────────────────────
+    const SPOTLIGHT_EXT_IDS = [
+        'eimadpbcbfnmbkopoojfekhnkhdbieeh', // Dark Reader
+        'cjpalhdlnbpafiamejdnhcphjbkeiagm', // uBlock Origin
+        'nngceckbapebfimnlniiiahkandclblb'  // Bitwarden
+    ];
+    let currentSpotlightIdx = 0;
 
-        const heroPreview = document.getElementById('heroPreview');
-        if (heroPreview) {
-            heroPreview.innerHTML = featured.screenshotSvg;
+    function renderSpotlight(idx) {
+        const extId = SPOTLIGHT_EXT_IDS[idx];
+        const ext = EXTENSIONS_CATALOG.find(e => e.id === extId);
+        if (!ext) return;
+
+        currentSpotlightIdx = idx;
+
+        const dots = document.querySelectorAll('#spotlightDots .spotlight-dot');
+        dots.forEach((dot, i) => dot.classList.toggle('active', i === idx));
+
+        const iconBox = document.getElementById('heroIconBox');
+        if (iconBox) {
+            iconBox.innerHTML = renderExtIcon(ext);
         }
 
-        const heroSpotlightIcon = document.querySelector('#heroSpotlight .store-spotlight-icon');
-        if (heroSpotlightIcon) {
-            heroSpotlightIcon.innerHTML = `<img src="${featured.iconUrl || 'assets/extension-icons/' + featured.id + '.png'}" alt="${featured.name}" class="real-ext-icon">`;
-        }
+        const titleEl = document.getElementById('heroTitle');
+        if (titleEl) titleEl.innerText = ext.name;
+
+        const ratingEl = document.getElementById('heroRating');
+        if (ratingEl) ratingEl.innerHTML = `<i class="fas fa-star"></i> ${ext.rating}`;
+
+        const reviewsEl = document.getElementById('heroReviews');
+        if (reviewsEl) reviewsEl.innerText = `(${ext.reviews} reviews)`;
+
+        const usersEl = document.getElementById('heroUsers');
+        if (usersEl) usersEl.innerText = `${ext.users} active users`;
+
+        const descEl = document.getElementById('heroDesc');
+        if (descEl) descEl.innerText = ext.desc;
 
         if (heroInstallBtn) {
+            heroInstallBtn.dataset.extId = ext.id;
+            const isInstalled = installedIds.has(ext.id.toLowerCase());
+            heroInstallBtn.className = isInstalled ? 'btn-spotlight-action secondary' : 'btn-spotlight-action primary';
+            heroInstallBtn.innerHTML = isInstalled 
+                ? '<i class="fas fa-check" style="color: #10B981;"></i> <span>Active in Ocal</span>' 
+                : '<i class="fas fa-plus"></i> <span>Add to Ocal</span>';
             heroInstallBtn.onclick = () => {
-                if (!installedIds.has(featured.id.toLowerCase())) {
-                    installExtension(featured.id, heroInstallBtn);
+                if (!installedIds.has(ext.id.toLowerCase())) {
+                    installExtension(ext.id, heroInstallBtn);
                 } else {
-                    showToast(`${featured.name} is already active in Ocal.`);
+                    if (window.electronAPI && typeof window.electronAPI.newTab === 'function') {
+                        window.electronAPI.newTab('ocal://settings#extensions');
+                    } else {
+                        window.location.href = 'settings.html#extensions';
+                    }
                 }
             };
         }
+
+        const heroDetailsBtn = document.getElementById('heroDetailsBtn');
+        if (heroDetailsBtn) {
+            heroDetailsBtn.onclick = () => openDetailModal(ext);
+        }
+    }
+
+    function setupHero() {
+        renderSpotlight(0);
+
+        const dots = document.querySelectorAll('#spotlightDots .spotlight-dot');
+        dots.forEach((dot, i) => {
+            dot.onclick = () => renderSpotlight(i);
+        });
+
+        // Auto cycle spotlight every 10 seconds
+        setInterval(() => {
+            const nextIdx = (currentSpotlightIdx + 1) % SPOTLIGHT_EXT_IDS.length;
+            renderSpotlight(nextIdx);
+        }, 10000);
     }
 
     // ── Search & Filter Listeners ────────────────────────────────────────────
     if (searchInput) {
         searchInput.addEventListener('input', (e) => {
             searchQuery = e.target.value;
+            if (clearSearchBtn) {
+                clearSearchBtn.style.display = searchQuery ? 'flex' : 'none';
+            }
             renderGrid();
         });
+
+        if (clearSearchBtn) {
+            clearSearchBtn.onclick = () => {
+                searchInput.value = '';
+                searchQuery = '';
+                clearSearchBtn.style.display = 'none';
+                renderGrid();
+                searchInput.focus();
+            };
+        }
 
         // Shortcut '/' to focus search
         window.addEventListener('keydown', (e) => {
@@ -1110,8 +1215,23 @@
                 searchInput.select();
             }
             if (e.key === 'Escape') {
-                closeDetailModal();
+                if (searchInput.value) {
+                    searchInput.value = '';
+                    searchQuery = '';
+                    if (clearSearchBtn) clearSearchBtn.style.display = 'none';
+                    renderGrid();
+                } else {
+                    closeDetailModal();
+                }
             }
+        });
+    }
+
+    // ── Sort Dropdown Listener ───────────────────────────────────────────────
+    if (sortSelect) {
+        sortSelect.addEventListener('change', (e) => {
+            currentSort = e.target.value;
+            renderGrid();
         });
     }
 

@@ -11,12 +11,12 @@
 
     // ── Color Space Conversion Utilities ─────────────────────────────────────
     function hexToRgb(hex) {
-        if (!hex) return { r: 21, g: 172, b: 73 };
+        if (!hex) return { r: 79, g: 70, b: 229 };
         let c = hex.toString().trim().replace(/^#/, '');
         if (c.length === 3) c = c.split('').map(x => x + x).join('');
-        if (c.length !== 6) return { r: 21, g: 172, b: 73 };
+        if (c.length !== 6) return { r: 79, g: 70, b: 229 };
         const num = parseInt(c, 16);
-        if (isNaN(num)) return { r: 21, g: 172, b: 73 };
+        if (isNaN(num)) return { r: 79, g: 70, b: 229 };
         return {
             r: (num >> 16) & 255,
             g: (num >> 8) & 255,
@@ -88,6 +88,15 @@
 
     // ── Curated Preset Harmony Palette Catalog ───────────────────────────────
     const CURATED_PRESETS = [
+        {
+            names: ['indigo', 'ocal', '#4f46e5', '#6366f1', '#4338ca', '#818cf8', '#3730a3'],
+            hueRange: [235, 254],
+            primary: 'linear-gradient(135deg, #A5B4FC 0%, #818CF8 30%, #4F46E5 70%, #3730A3 100%)',
+            secondary: 'linear-gradient(135deg, #DDD6FE 0%, #C084FC 35%, #9333EA 100%)',
+            accentGrad: 'linear-gradient(135deg, #818CF8 0%, #4F46E5 100%)',
+            badgeBg: '#4F46E5',
+            badgeText: '#FFFFFF'
+        },
         {
             names: ['emerald', 'green', '#15ac49', '#09f0a0', '#058f60', '#10b981'],
             hueRange: [130, 165],
@@ -276,8 +285,8 @@
             return 'grayscale(1) brightness(1.05) contrast(1.1)';
         }
 
-        // Real base hue of Ocal squircle icon's colored core is ~187° (cyan/teal)
-        const originalHue = 187;
+        // Real base hue of Ocal squircle icon's colored core is ~242° (indigo)
+        const originalHue = 242;
         let hueDelta = (hsl.h - originalHue + 360) % 360;
 
         // User Color Correction (Hue Offset in degrees: e.g. -60 to +60)
@@ -304,7 +313,7 @@
         }
         if (isNaN(userSatMult) || userSatMult <= 0) userSatMult = 1.0;
 
-        // If very close to original teal and no hue offset, keep crisp original
+        // If very close to original indigo and no hue offset, keep crisp original
         if (Math.abs(hsl.h - originalHue) <= 4 && Math.abs(userHueOffset) < 2 && Math.abs(userSatMult - 1.0) < 0.05) {
             return 'none';
         }
@@ -330,7 +339,7 @@
 
         const currentTheme = themeMode || doc.body?.getAttribute('data-theme') || localStorage.getItem('ocal-settings-theme') || 'light';
         const isLight = (currentTheme === 'light');
-        const baseColor = accentHex || (isLight ? '#15AC49' : '#09F0A0');
+        const baseColor = accentHex || (isLight ? '#4F46E5' : '#6366F1');
 
         // Synthesize harmonic gradients and logo color filter
         const harmony = synthesizeHarmonicGradients(baseColor);
@@ -490,18 +499,18 @@
     function initAutoSync() {
         // Initial application from storage
         try {
-            const storedAccent = localStorage.getItem('ocal-settings-accent');
-            const storedTheme = localStorage.getItem('ocal-settings-theme');
-            if (storedAccent) {
-                applyHarmonizedTheme(storedAccent, storedTheme);
-            }
+            const storedAccent = localStorage.getItem('ocal-settings-accent') || '#4F46E5';
+            const storedTheme = localStorage.getItem('ocal-settings-theme') || 'light';
+            applyHarmonizedTheme(storedAccent, storedTheme);
         } catch (e) {}
 
         if (typeof window !== 'undefined') {
             window.addEventListener('storage', (e) => {
-                if (e.key === 'ocal-settings-accent' || e.key === 'ocal-settings-theme') {
-                    const a = localStorage.getItem('ocal-settings-accent');
-                    const t = localStorage.getItem('ocal-settings-theme');
+                if (e.key === 'ocal-settings-accent' || e.key === 'ocal-settings-theme' || 
+                    e.key === 'ocal-settings-logo-filter' || e.key === 'ocal-icon-sync-theme' || 
+                    e.key === 'ocal-icon-hue-adjust' || e.key === 'ocal-icon-sat-adjust') {
+                    const a = localStorage.getItem('ocal-settings-accent') || '#4F46E5';
+                    const t = localStorage.getItem('ocal-settings-theme') || 'light';
                     applyHarmonizedTheme(a, t);
                 }
             });

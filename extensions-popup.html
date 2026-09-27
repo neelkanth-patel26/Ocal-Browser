@@ -10,42 +10,37 @@
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
     <style>
         :root {
-            --accent: #09F0A0;
-            --accent-glow: rgba(9, 240, 160, 0.3);
-            --accent-dim: rgba(9, 240, 160, 0.15);
-            --accent-border: rgba(9, 240, 160, 0.3);
-            --accent-text: #0d1117;
-            --lime: #D4FC2B;
-            --bg-glass: #16181D;
-            --border-glass: rgba(255, 255, 255, 0.08);
-            --card-bg: #20242D;
-            --card-border: rgba(255, 255, 255, 0.06);
-            --card-hover-bg: #2A2E3B;
-            --text-primary: #FFFFFF;
-            --text-secondary: #9CA3AF;
-            --radius: 16px;
-            --font-main: 'Plus Jakarta Sans', sans-serif;
-            --font-mono: 'Space Mono', monospace;
-        }
-
-        body[data-theme="light"], body {
+            --accent: #15AC49;
+            --accent-glow: rgba(21, 172, 73, 0.28);
+            --accent-dim: rgba(21, 172, 73, 0.12);
+            --accent-border: rgba(21, 172, 73, 0.3);
+            --accent-text: #FFFFFF;
             --bg-glass: #FFFFFF;
-            --border-glass: rgba(0, 0, 0, 0.06);
-            --card-bg: #F4F4F6;
-            --card-border: rgba(0, 0, 0, 0.04);
-            --card-hover-bg: #EAEBED;
-            --text-primary: #111111;
-            --text-secondary: #475569;
+            --border-glass: rgba(0, 0, 0, 0.12);
+            --card-bg: #F8F9FA;
+            --card-border: rgba(0, 0, 0, 0.07);
+            --card-hover-bg: #F1F3F5;
+            --text-primary: #0F172A;
+            --text-secondary: #64748B;
+            --text-dim: #94A3B8;
+            --radius-card: 20px;
+            --radius-item: 14px;
+            --radius-pill: 100px;
+            --font-main: 'Plus Jakarta Sans', -apple-system, sans-serif;
+            --font-mono: 'Space Mono', monospace;
+            --popup-shadow: none;
         }
 
-        body[data-theme="dark"] {
-            --bg-glass: #16181D;
-            --border-glass: rgba(255, 255, 255, 0.08);
-            --card-bg: #20242D;
-            --card-border: rgba(255, 255, 255, 0.06);
-            --card-hover-bg: #2A2E3B;
-            --text-primary: #FFFFFF;
-            --text-secondary: #9CA3AF;
+        body[data-theme="dark"], html[data-theme="dark"] {
+            --bg-glass: #16181F;
+            --border-glass: rgba(255, 255, 255, 0.12);
+            --card-bg: #1E202A;
+            --card-border: rgba(255, 255, 255, 0.08);
+            --card-hover-bg: #272A36;
+            --text-primary: #F8FAFC;
+            --text-secondary: #94A3B8;
+            --text-dim: #64748B;
+            --popup-shadow: none;
         }
 
         * {
@@ -65,67 +60,122 @@
             display: flex;
             align-items: flex-start;
             justify-content: flex-start;
-            padding: 8px;
+            padding: 8px 10px;
             -webkit-font-smoothing: antialiased;
         }
 
+        /* ── Main Popup Container Card ── */
         .popup-container {
             position: relative;
             background: var(--bg-glass);
             border: 1px solid var(--border-glass);
-            padding: 14px;
+            padding: 16px;
             display: flex;
             flex-direction: column;
-            gap: 10px;
-            width: 300px;
-            border-radius: var(--radius);
+            gap: 12px;
+            width: 320px;
+            border-radius: var(--radius-card);
             box-shadow: none !important;
+            backdrop-filter: blur(24px) saturate(160%);
+            -webkit-backdrop-filter: blur(24px) saturate(160%);
+            animation: popupAppear 0.22s cubic-bezier(0.16, 1, 0.3, 1);
         }
 
+        @keyframes popupAppear {
+            from {
+                opacity: 0;
+                transform: translateY(-8px) scale(0.97);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0) scale(1);
+            }
+        }
+
+        /* ── Header Row ── */
         .header {
             display: flex;
             justify-content: space-between;
             align-items: center;
-            padding-bottom: 8px;
+            padding-bottom: 12px;
             border-bottom: 1px solid var(--border-glass);
         }
 
-        .header h3 {
-            font-size: 13px;
-            font-weight: 800;
-            color: var(--text-primary);
-            letter-spacing: -0.2px;
-        }
-
-        .count-badge {
-            background: var(--card-bg);
-            border: 1px solid var(--card-border);
-            color: var(--accent);
-            font-size: 9px;
-            font-weight: 800;
-            padding: 1px 6px;
-            border-radius: 10px;
-        }
-
-        .ext-search-box {
+        .header-title-box {
             display: flex;
             align-items: center;
             gap: 8px;
+        }
+
+        .header-puzzle-icon {
+            font-size: 15px;
+            color: var(--accent);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .header h3 {
+            font-size: 15px;
+            font-weight: 800;
+            color: var(--text-primary);
+            letter-spacing: -0.3px;
+        }
+
+        .count-badge {
+            background: color-mix(in srgb, var(--accent) 14%, transparent);
+            border: 1px solid color-mix(in srgb, var(--accent) 26%, transparent);
+            color: var(--accent);
+            font-family: var(--font-mono);
+            font-size: 10.5px;
+            font-weight: 800;
+            padding: 1px 7px;
+            border-radius: var(--radius-pill);
+        }
+
+        .manage-btn {
+            font-size: 11.5px;
+            font-weight: 700;
+            color: var(--accent);
+            background: color-mix(in srgb, var(--accent) 12%, transparent);
+            border: 1px solid color-mix(in srgb, var(--accent) 24%, transparent);
+            padding: 4px 11px;
+            border-radius: var(--radius-pill);
+            cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+            outline: none;
+        }
+
+        .manage-btn:hover {
+            background: var(--accent);
+            color: var(--accent-text, #FFFFFF);
+            transform: translateY(-1px);
+            box-shadow: none !important;
+        }
+
+        /* ── Live Search Input ── */
+        .ext-search-box {
+            display: flex;
+            align-items: center;
+            gap: 9px;
             background: var(--card-bg);
             border: 1px solid var(--card-border);
-            border-radius: 10px;
-            padding: 5px 9px;
+            border-radius: 12px;
+            padding: 7px 11px;
             transition: all 0.2s ease;
         }
 
         .ext-search-box:focus-within {
             border-color: var(--accent);
-            box-shadow: 0 0 0 2px var(--accent-glow);
+            box-shadow: none !important;
         }
 
         .ext-search-box i {
-            font-size: 11px;
-            color: var(--text-secondary);
+            font-size: 12px;
+            color: var(--text-dim);
         }
 
         .ext-search-input {
@@ -134,57 +184,53 @@
             border: none;
             outline: none;
             color: var(--text-primary);
-            font-size: 11px;
+            font-size: 12px;
+            font-weight: 600;
             font-family: var(--font-main);
         }
 
         .ext-search-input::placeholder {
-            color: var(--text-secondary);
-            opacity: 0.7;
+            color: var(--text-dim);
+            font-weight: 500;
         }
 
-        .manage-link {
-            font-size: 8px;
+        /* ── Section Label ── */
+        .list-section-label {
+            font-size: 9.5px;
             font-weight: 800;
             text-transform: uppercase;
             letter-spacing: 1px;
-            color: var(--accent);
-            cursor: pointer;
-            display: flex;
-            align-items: center;
-            gap: 4px;
-            transition: all 0.2s ease;
-        }
-
-        body[data-theme="dark"] .manage-link {
-            color: var(--accent) !important;
-        }
-
-        .list-section-label {
-            font-size: 8.5px;
-            font-weight: 800;
-            text-transform: uppercase;
-            letter-spacing: 1.2px;
             color: var(--text-secondary);
             margin-top: 2px;
+            margin-bottom: 2px;
+            padding-left: 2px;
         }
 
+        /* ── Extension Items List ── */
         .ext-list {
-            max-height: 330px;
+            max-height: 290px;
             overflow-y: auto;
             display: flex;
             flex-direction: column;
-            gap: 6px;
-            scrollbar-width: none;
+            gap: 8px;
+            padding-right: 2px;
+            scrollbar-width: thin;
         }
-        .ext-list::-webkit-scrollbar { display: none; }
+
+        .ext-list::-webkit-scrollbar {
+            width: 4px;
+        }
+        .ext-list::-webkit-scrollbar-thumb {
+            background: var(--card-border);
+            border-radius: 10px;
+        }
 
         .ext-item {
             display: flex;
             align-items: center;
-            gap: 10px;
-            padding: 8px 10px;
-            border-radius: 12px;
+            gap: 12px;
+            padding: 10px 12px;
+            border-radius: var(--radius-item);
             background: var(--card-bg);
             border: 1px solid var(--card-border);
             transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
@@ -192,26 +238,28 @@
 
         .ext-item:hover {
             background: var(--card-hover-bg);
-            border-color: rgba(255, 255, 255, 0.12);
+            border-color: color-mix(in srgb, var(--accent) 30%, transparent);
+            transform: translateY(-1px);
         }
 
-        .ext-icon-wrapper,
-        body[data-theme="dark"] .ext-icon-wrapper {
-            width: 28px;
-            height: 28px;
-            border-radius: 8px;
-            background: var(--accent-dim, rgba(21, 172, 73, 0.15));
-            border: 1px solid var(--accent-border, rgba(21, 172, 73, 0.3));
+        .ext-icon-wrapper {
+            width: 36px;
+            height: 36px;
+            border-radius: 10px;
+            background: color-mix(in srgb, var(--accent) 14%, transparent);
+            border: 1px solid color-mix(in srgb, var(--accent) 26%, transparent);
             display: flex;
             align-items: center;
             justify-content: center;
             color: var(--accent);
-            font-size: 12px;
+            font-size: 15px;
             flex-shrink: 0;
-            transition: transform 0.15s ease;
+            overflow: hidden;
+            box-shadow: none !important;
+            transition: transform 0.18s ease;
         }
 
-        .ext-icon-wrapper:hover {
+        .ext-item:hover .ext-icon-wrapper {
             transform: scale(1.08);
         }
 
@@ -219,21 +267,22 @@
             flex: 1;
             display: flex;
             flex-direction: column;
-            gap: 1px;
+            gap: 2px;
             min-width: 0;
         }
 
         .ext-title {
-            font-size: 11px;
-            font-weight: 800;
+            font-size: 12.5px;
+            font-weight: 700;
             color: var(--text-primary);
             white-space: nowrap;
             overflow: hidden;
             text-overflow: ellipsis;
+            line-height: 1.25;
         }
 
         .ext-desc {
-            font-size: 9.5px;
+            font-size: 10.5px;
             font-weight: 500;
             color: var(--text-secondary);
             white-space: nowrap;
@@ -241,38 +290,41 @@
             text-overflow: ellipsis;
         }
 
+        /* ── Action Buttons ── */
         .icon-btn-pill {
             background: transparent;
             border: none;
-            color: var(--text-secondary);
+            color: var(--text-dim);
             cursor: pointer;
-            width: 22px;
-            height: 22px;
-            border-radius: 6px;
+            width: 26px;
+            height: 26px;
+            border-radius: 8px;
             display: inline-flex;
             align-items: center;
             justify-content: center;
-            font-size: 11px;
-            transition: all 0.2s ease;
+            font-size: 11.5px;
+            transition: all 0.18s ease;
         }
 
         .icon-btn-pill:hover {
-            color: var(--accent);
-            background: rgba(255, 255, 255, 0.08);
+            color: var(--text-primary);
+            background: color-mix(in srgb, var(--text-primary) 8%, transparent);
             transform: scale(1.1);
         }
 
         .icon-btn-pill.pinned {
             color: var(--accent) !important;
+            background: color-mix(in srgb, var(--accent) 14%, transparent);
         }
 
-        /* Switches */
+        /* ── Smooth iOS Switch ── */
         .switch {
             position: relative;
             display: inline-block;
-            width: 32px;
-            height: 17px;
+            width: 34px;
+            height: 19px;
             flex-shrink: 0;
+            margin-left: 2px;
         }
 
         .switch input { opacity: 0; width: 0; height: 0; }
@@ -281,26 +333,23 @@
             position: absolute;
             cursor: pointer;
             inset: 0;
-            background: rgba(255, 255, 255, 0.15);
-            transition: 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+            background: rgba(148, 163, 184, 0.3);
+            transition: 0.24s cubic-bezier(0.16, 1, 0.3, 1);
             border-radius: 100px;
-        }
-
-        body[data-theme="light"] .slider {
-            background: rgba(0, 0, 0, 0.12);
         }
 
         .slider:before {
             position: absolute;
             content: "";
-            height: 13px;
-            width: 13px;
+            height: 15px;
+            width: 15px;
             left: 2px;
             bottom: 2px;
             background: #FFFFFF;
-            transition: 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+            transition: 0.22s cubic-bezier(0.16, 1, 0.3, 1);
             border-radius: 50%;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+            box-shadow: none !important;
+            border: 0.5px solid rgba(0, 0, 0, 0.15);
         }
 
         input:checked + .slider {
@@ -309,38 +358,51 @@
 
         input:checked + .slider:before {
             transform: translateX(15px);
-            background: var(--accent-text, #111111) !important;
+            background: var(--accent-text, #FFFFFF) !important;
         }
 
+        /* ── Store Footer ── */
         .store-footer {
-            padding-top: 8px;
+            padding-top: 10px;
             border-top: 1px solid var(--border-glass);
             display: flex;
             align-items: center;
             justify-content: center;
         }
 
-        .store-footer button {
-            background: rgba(255, 255, 255, 0.05);
-            border: 1px solid var(--border-glass);
+        .btn-open-store-pill {
+            width: 100%;
+            background: var(--card-bg);
+            border: 1px solid var(--card-border);
             color: var(--text-primary);
-            padding: 6px 14px;
-            border-radius: 100px;
-            font-size: 10px;
+            padding: 8px 16px;
+            border-radius: var(--radius-pill);
+            font-size: 11.5px;
             font-weight: 700;
             font-family: var(--font-main);
             cursor: pointer;
             display: flex;
             align-items: center;
-            gap: 6px;
-            transition: all 0.2s ease;
+            justify-content: center;
+            gap: 8px;
+            transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
         }
 
-        .store-footer button:hover {
+        .btn-open-store-pill i {
+            color: var(--accent);
+            font-size: 13px;
+        }
+
+        .btn-open-store-pill:hover {
             background: var(--accent);
-            color: var(--accent-text, #111111);
+            color: var(--accent-text, #FFFFFF);
             border-color: var(--accent);
             transform: translateY(-1px);
+            box-shadow: none !important;
+        }
+
+        .btn-open-store-pill:hover i {
+            color: var(--accent-text, #FFFFFF);
         }
     </style>
 </head>
@@ -350,7 +412,7 @@
             const t = localStorage.getItem('ocal-settings-theme') || 'dark';
             document.body.setAttribute('data-theme', t);
             document.documentElement.setAttribute('data-theme', t);
-            const a = localStorage.getItem('ocal-settings-accent') || '#09F0A0';
+            const a = localStorage.getItem('ocal-settings-accent') || '#15AC49';
             document.documentElement.style.setProperty('--accent', a);
             document.documentElement.style.setProperty('--accent-glow', `color-mix(in srgb, ${a} 30%, transparent)`);
             document.documentElement.style.setProperty('--accent-dim', `color-mix(in srgb, ${a} 15%, transparent)`);
@@ -362,25 +424,35 @@
         })();
     </script>
     <div class="popup-container">
+        <!-- Header Row -->
         <div class="header">
-            <div style="display: flex; align-items: center; gap: 6px;">
+            <div class="header-title-box">
+                <div class="header-puzzle-icon">
+                    <i class="fas fa-puzzle-piece"></i>
+                </div>
                 <h3>Extensions</h3>
                 <span class="count-badge" id="ext-count-badge">0</span>
             </div>
-            <span class="manage-link" id="btn-manage-ext">Manage <i class="fas fa-arrow-right"></i></span>
+            <button class="manage-btn" id="btn-manage-ext" title="Open extensions in Ocal Settings">
+                <span>Manage</span>
+                <i class="fas fa-arrow-up-right-from-square"></i>
+            </button>
         </div>
 
+        <!-- Search Bar (shown when >= 3 extensions) -->
         <div class="ext-search-box" id="ext-search-container" style="display: none;">
             <i class="fas fa-magnifying-glass"></i>
-            <input type="text" class="ext-search-input" id="ext-search-input" placeholder="Search installed extensions..." autocomplete="off">
+            <input type="text" class="ext-search-input" id="ext-search-input" placeholder="Search extensions..." autocomplete="off">
         </div>
 
+        <!-- Extensions List -->
         <div class="ext-list" id="ext-list">
-            <!-- Items rendered dynamically by JS -->
+            <!-- Dynamically populated by extensions-popup.js -->
         </div>
 
+        <!-- Footer: Explore Store -->
         <div class="store-footer">
-            <button id="btn-open-store">
+            <button class="btn-open-store-pill" id="btn-open-store" title="Open Ocal Web Store">
                 <i class="fas fa-bag-shopping"></i>
                 <span>Get Chrome Extensions</span>
             </button>

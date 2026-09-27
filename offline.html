@@ -2,159 +2,1103 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com https://cdn.jsdelivr.net; font-src 'self' https://fonts.gstatic.com https://cdn.jsdelivr.net; img-src 'self' data:;">
-    <title>No Connection | Ocal Browser</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="Content-Security-Policy" content="default-src 'self' data: blob: 'unsafe-inline' 'unsafe-eval' https:; script-src 'self' 'unsafe-inline' 'unsafe-eval' https:; style-src 'self' 'unsafe-inline' https:; font-src 'self' https: data:; img-src 'self' data: blob: https:; connect-src 'self' https: http:;">
+    <title>No Internet Connection | Ocal Browser</title>
+    <!-- ANTI-FLASH: Must execute immediately before stylesheets -->
+    <script>
+        (function () {
+            var t = localStorage.getItem('ocal-settings-theme') || 'dark';
+            document.documentElement.setAttribute('data-theme', t);
+            if (t === 'dark') {
+                document.documentElement.style.background = '#0D0E11';
+                document.documentElement.style.colorScheme = 'dark';
+            } else {
+                document.documentElement.style.background = '#F4F5F8';
+                document.documentElement.style.colorScheme = 'light';
+            }
+        })();
+    </script>
     <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;700;800&family=Inter:wght@400;600&display=swap" rel="stylesheet">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="assets/fontawesome/css/all.min.css">
+    <script src="color-harmonizer.js"></script>
+
     <style>
-        :root {
-            --accent: #ffffff;
-            --accent-glow: transparent;
-            --bg: #000000;
-            --glass: #000000;
-            --glass-border: #171717;
-        }
-
-        * { box-sizing: border-box; margin: 0; padding: 0; border-radius: 0px !important; }
-
-        body {
-            background: var(--bg);
-            color: #fff;
-            font-family: 'Geist Mono', monospace;
-            overflow: hidden;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            height: 100vh;
-            width: 100vw;
+        /* ══ Reset & Custom Properties ══ */
+        *, *::before, *::after {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            outline: none;
+            -webkit-user-select: none;
             user-select: none;
         }
 
-        /* Animated Background Gradients */
-        .ambient-bg { display: none; }
-        .glow-sphere { display: none; }
-
-        .container {
-            text-align: center;
-            width: 100%;
-            max-width: 500px;
-            padding: 40px;
-            animation: fadeIn 0.8s ease-out;
+        :root {
+            --bg: #0D0E11;
+            --card-surface: #16181D;
+            --card-surface-hover: #1C1F26;
+            --border-subtle: rgba(255, 255, 255, 0.08);
+            --border-hover: rgba(255, 255, 255, 0.18);
+            --accent: #D4FC2B;
+            --accent-glow: rgba(212, 252, 43, 0.25);
+            --text-primary: #F0F2F5;
+            --text-secondary: #9FA4B2;
+            --text-muted: #606575;
+            --red-signal: #EF4444;
+            --red-glow: rgba(239, 68, 68, 0.25);
+            --green-signal: #10B981;
+            --green-glow: rgba(16, 185, 129, 0.25);
+            --font-main: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+            --font-mono: 'Space Mono', 'Consolas', monospace;
         }
 
-        @keyframes fadeIn { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
+        html[data-theme="light"] {
+            --bg: #F4F5F8;
+            --card-surface: #FFFFFF;
+            --card-surface-hover: #F8F9FA;
+            --border-subtle: rgba(0, 0, 0, 0.08);
+            --border-hover: rgba(0, 0, 0, 0.16);
+            --accent: #15AC49;
+            --accent-glow: rgba(21, 172, 73, 0.25);
+            --text-primary: #121417;
+            --text-secondary: #5A6072;
+            --text-muted: #8E94A5;
+            --red-signal: #DC2626;
+            --red-glow: rgba(220, 38, 38, 0.15);
+            --green-signal: #059669;
+            --green-glow: rgba(5, 150, 105, 0.15);
+        }
 
-        /* Icon with status ring */
-        .icon-container {
+        body {
+            background: var(--bg);
+            color: var(--text-primary);
+            font-family: var(--font-main);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: space-between;
+            overflow-x: hidden;
+            transition: background 0.25s ease, color 0.25s ease;
             position: relative;
-            width: 100px; height: 100px;
-            margin: 0 auto 32px;
-            display: flex; align-items: center; justify-content: center;
         }
-        .icon-container .ring {
-            position: absolute; inset: 0;
-            border: 2px solid var(--accent);
+
+        /* ══ Header Bar ══ */
+        .offline-header {
+            width: 100%;
+            max-width: 1120px;
+            padding: 24px 32px 0 32px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            z-index: 10;
+        }
+
+        .header-brand {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .brand-logo-badge {
+            width: 38px;
+            height: 38px;
+            border-radius: 12px;
+            background: var(--card-surface);
+            border: 1px solid var(--border-subtle);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+        }
+
+        .brand-logo-badge svg {
+            width: 22px;
+            height: 22px;
+            fill: var(--accent);
+        }
+
+        .brand-meta {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .brand-name {
+            font-size: 15px;
+            font-weight: 800;
+            letter-spacing: -0.3px;
+            color: var(--text-primary);
+        }
+
+        .brand-url-badge {
+            font-family: var(--font-mono);
+            font-size: 11px;
+            font-weight: 700;
+            padding: 3px 9px;
+            border-radius: 6px;
+            background: var(--card-surface);
+            border: 1px solid var(--border-subtle);
+            color: var(--accent);
+            letter-spacing: 0.2px;
+        }
+
+        .header-controls {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .status-pill {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 6px 14px;
+            border-radius: 100px;
+            font-size: 11.5px;
+            font-weight: 700;
+            letter-spacing: 0.5px;
+            text-transform: uppercase;
+            background: var(--card-surface);
+            border: 1px solid var(--border-subtle);
+            color: var(--text-secondary);
+            box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+            transition: all 0.3s ease;
+        }
+
+        .status-pill.offline {
+            color: var(--red-signal);
+            border-color: rgba(239, 68, 68, 0.3);
+        }
+
+        .status-pill.offline .status-dot {
+            background: var(--red-signal);
+            box-shadow: 0 0 8px var(--red-signal);
+            animation: pulseDot 1.5s infinite ease-in-out;
+        }
+
+        .status-pill.reconnecting {
+            color: #F59E0B;
+            border-color: rgba(245, 158, 11, 0.3);
+        }
+
+        .status-pill.reconnecting .status-dot {
+            background: #F59E0B;
+            box-shadow: 0 0 8px #F59E0B;
+            animation: pulseDot 0.8s infinite ease-in-out;
+        }
+
+        .status-pill.online {
+            color: var(--green-signal);
+            border-color: rgba(16, 185, 129, 0.3);
+        }
+
+        .status-pill.online .status-dot {
+            background: var(--green-signal);
+            box-shadow: 0 0 8px var(--green-signal);
+        }
+
+        .status-dot {
+            width: 8px;
+            height: 8px;
             border-radius: 50%;
-            opacity: 0.2;
-            animation: ripple 2s infinite ease-out;
-        }
-        @keyframes ripple { from { transform: scale(1); opacity: 0.2; } to { transform: scale(1.8); opacity: 0; } }
-        
-        .icon-container i {
-            font-size: 48px; color: var(--accent);
-            filter: drop-shadow(0 0 15px var(--accent-glow));
+            transition: all 0.3s ease;
         }
 
-        h1 {
-            font-family: 'Geist Mono', monospace;
-            font-size: 42px; font-weight: 800;
-            margin-bottom: 12px; letter-spacing: -1px;
-        }
-        p {
-            font-size: 16px; color: rgba(255,255,255,0.5);
-            line-height: 1.6; margin-bottom: 48px;
+        @keyframes pulseDot {
+            0%, 100% { opacity: 1; transform: scale(1); }
+            50% { opacity: 0.4; transform: scale(0.85); }
         }
 
-        .actions {
-            display: flex; flex-direction: column; gap: 16px;
+        .theme-toggle-btn {
+            width: 36px;
+            height: 36px;
+            border-radius: 10px;
+            background: var(--card-surface);
+            border: 1px solid var(--border-subtle);
+            color: var(--text-secondary);
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 14px;
+            transition: all 0.2s ease;
         }
 
-        .btn {
-            padding: 18px 32px; border-radius: 0px;
-            font-family: 'Geist Mono', monospace; font-size: 18px; font-weight: 700;
-            cursor: pointer; transition: all 0.3s; 
-            display: flex; align-items: center; justify-content: center; gap: 12px;
-            border: 1px solid var(--glass-border);
+        .theme-toggle-btn:hover {
+            border-color: var(--border-hover);
+            color: var(--text-primary);
+            transform: translateY(-1px);
         }
 
-        .btn.primary {
-            background: var(--accent); color: #fff;
+        /* ══ Main Stage Workspace ══ */
+        .offline-main {
+            width: 100%;
+            max-width: 980px;
+            padding: 32px 24px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 28px;
+            z-index: 2;
+        }
+
+        /* ── Hero Card ── */
+        .hero-rescue-card {
+            width: 100%;
+            background: var(--card-surface);
+            border: 1px solid var(--border-subtle);
+            border-radius: 28px;
+            padding: 44px 48px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            text-align: center;
+            box-shadow: 0 16px 40px rgba(0, 0, 0, 0.08);
+            position: relative;
+            overflow: hidden;
+            transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+
+        /* Ambient subtle pulse halo behind radar */
+        .radar-stage-wrap {
+            position: relative;
+            width: 130px;
+            height: 130px;
+            margin-bottom: 24px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .radar-pulse-ring {
+            position: absolute;
+            inset: 0;
+            border: 1.5px solid var(--accent);
+            border-radius: 50%;
+            opacity: 0.25;
+            animation: radarRipple 2.8s cubic-bezier(0.1, 0.8, 0.3, 1) infinite;
+        }
+
+        .radar-pulse-ring:nth-child(2) {
+            animation-delay: 0.9s;
+        }
+
+        .radar-pulse-ring:nth-child(3) {
+            animation-delay: 1.8s;
+        }
+
+        @keyframes radarRipple {
+            0% { transform: scale(0.4); opacity: 0.7; }
+            100% { transform: scale(1.65); opacity: 0; }
+        }
+
+        .radar-core-hub {
+            position: relative;
+            width: 76px;
+            height: 76px;
+            border-radius: 22px;
+            background: var(--bg);
+            border: 1.5px solid var(--border-subtle);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: var(--accent);
+            font-size: 32px;
+            box-shadow: 0 8px 24px rgba(0,0,0,0.15);
+            z-index: 2;
+            transition: all 0.3s ease;
+        }
+
+        .radar-core-hub i {
+            transition: transform 0.3s ease;
+        }
+
+        .hero-title {
+            font-size: 36px;
+            font-weight: 800;
+            letter-spacing: -0.8px;
+            color: var(--text-primary);
+            line-height: 1.2;
+            margin-bottom: 12px;
+        }
+
+        .hero-desc {
+            font-size: 15.5px;
+            color: var(--text-secondary);
+            line-height: 1.6;
+            max-width: 600px;
+            margin-bottom: 24px;
+        }
+
+        /* Target Failed URL Banner */
+        .target-url-box {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 10px 18px;
+            border-radius: 14px;
+            background: var(--bg);
+            border: 1px solid var(--border-subtle);
+            max-width: 100%;
+            margin-bottom: 28px;
+            box-shadow: inset 0 2px 4px rgba(0,0,0,0.05);
+        }
+
+        .target-url-icon {
+            color: var(--text-muted);
+            font-size: 14px;
+        }
+
+        .target-url-text {
+            font-family: var(--font-mono);
+            font-size: 13px;
+            color: var(--text-primary);
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+            max-width: 480px;
+            user-select: text;
+            -webkit-user-select: text;
+        }
+
+        .target-url-copy-btn {
+            background: transparent;
             border: none;
-            box-shadow: 0 10px 30px var(--accent-glow);
+            color: var(--text-muted);
+            cursor: pointer;
+            font-size: 13px;
+            padding: 4px;
+            border-radius: 6px;
+            transition: all 0.2s ease;
         }
-        .btn.primary:hover {
+
+        .target-url-copy-btn:hover {
+            color: var(--accent);
+            background: var(--card-surface);
+        }
+
+        .error-code-chip {
+            font-family: var(--font-mono);
+            font-size: 11px;
+            font-weight: 700;
+            padding: 3px 8px;
+            border-radius: 6px;
+            background: rgba(239, 68, 68, 0.12);
+            color: var(--red-signal);
+            border: 1px solid rgba(239, 68, 68, 0.2);
+            letter-spacing: 0.3px;
+        }
+
+        /* Action Buttons Row */
+        .hero-action-row {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 14px;
+            flex-wrap: wrap;
+        }
+
+        .action-btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 9px;
+            padding: 13px 26px;
+            border-radius: 100px;
+            font-family: var(--font-main);
+            font-size: 14px;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.22s cubic-bezier(0.16, 1, 0.3, 1);
+            text-decoration: none;
+            border: 1px solid transparent;
+        }
+
+        .action-btn.primary {
+            background: var(--accent);
+            color: #0D0E11;
+            box-shadow: 0 6px 20px var(--accent-glow);
+        }
+
+        html[data-theme="light"] .action-btn.primary {
+            color: #FFFFFF;
+        }
+
+        .action-btn.primary:hover {
+            transform: translateY(-2px);
+            filter: brightness(1.08);
+            box-shadow: 0 8px 26px var(--accent-glow);
+        }
+
+        .action-btn.secondary {
+            background: var(--bg);
+            border-color: var(--border-subtle);
+            color: var(--text-primary);
+        }
+
+        .action-btn.secondary:hover {
+            background: var(--card-surface-hover);
+            border-color: var(--border-hover);
+            transform: translateY(-1px);
+        }
+
+        .action-btn.secondary.active-view {
+            border-color: var(--accent);
+            color: var(--accent);
+        }
+
+        /* ── Diagnostics Checklist Drawer ── */
+        .diagnostics-drawer {
+            width: 100%;
+            display: none;
+            flex-direction: column;
+            gap: 14px;
+            background: var(--card-surface);
+            border: 1px solid var(--border-subtle);
+            border-radius: 24px;
+            padding: 26px 30px;
+            animation: slideDown 0.3s ease-out forwards;
+        }
+
+        @keyframes slideDown {
+            from { opacity: 0; transform: translateY(-8px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .diag-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            border-bottom: 1px solid var(--border-subtle);
+            padding-bottom: 14px;
+            margin-bottom: 6px;
+        }
+
+        .diag-title-cluster {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-size: 14.5px;
+            font-weight: 800;
+            color: var(--text-primary);
+        }
+
+        .diag-title-cluster i {
+            color: var(--accent);
+        }
+
+        .diag-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 14px;
+        }
+
+        @media (max-width: 768px) {
+            .diag-grid { grid-template-columns: 1fr; }
+        }
+
+        .diag-item {
+            display: flex;
+            gap: 14px;
+            padding: 16px 18px;
+            border-radius: 16px;
+            background: var(--bg);
+            border: 1px solid var(--border-subtle);
+        }
+
+        .diag-item-num {
+            width: 28px;
+            height: 28px;
+            border-radius: 8px;
+            background: var(--card-surface);
+            border: 1px solid var(--border-subtle);
+            color: var(--accent);
+            font-size: 12px;
+            font-weight: 800;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
+        }
+
+        .diag-item-content h4 {
+            font-size: 13.5px;
+            font-weight: 700;
+            color: var(--text-primary);
+            margin-bottom: 4px;
+        }
+
+        .diag-item-content p {
+            font-size: 12.5px;
+            color: var(--text-secondary);
+            line-height: 1.5;
+        }
+
+        .diag-item-content code {
+            font-family: var(--font-mono);
+            font-size: 11px;
+            background: var(--card-surface);
+            padding: 2px 6px;
+            border-radius: 4px;
+            color: var(--accent);
+            user-select: text;
+            -webkit-user-select: text;
+        }
+
+        /* ── Offline Arcade Bento Section ── */
+        .arcade-section {
+            width: 100%;
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
+        }
+
+        .arcade-section-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0 4px;
+        }
+
+        .arcade-title-group {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .arcade-title {
+            font-size: 18px;
+            font-weight: 800;
+            letter-spacing: -0.3px;
+            color: var(--text-primary);
+        }
+
+        .arcade-badge {
+            font-size: 10.5px;
+            font-weight: 800;
+            text-transform: uppercase;
+            letter-spacing: 0.6px;
+            padding: 3px 9px;
+            border-radius: 100px;
+            background: rgba(212, 252, 43, 0.12);
+            color: var(--accent);
+            border: 1px solid rgba(212, 252, 43, 0.25);
+        }
+
+        html[data-theme="light"] .arcade-badge {
+            background: rgba(21, 172, 73, 0.1);
+            color: var(--accent);
+            border-color: rgba(21, 172, 73, 0.2);
+        }
+
+        .arcade-cards-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 16px;
+        }
+
+        @media (max-width: 860px) {
+            .arcade-cards-grid { grid-template-columns: repeat(2, 1fr); }
+        }
+
+        @media (max-width: 500px) {
+            .arcade-cards-grid { grid-template-columns: 1fr; }
+        }
+
+        .arcade-card {
+            background: var(--card-surface);
+            border: 1px solid var(--border-subtle);
+            border-radius: 20px;
+            padding: 22px 18px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            text-align: center;
+            cursor: pointer;
+            text-decoration: none;
+            color: inherit;
+            transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+            box-shadow: 0 4px 16px rgba(0, 0, 0, 0.04);
+            position: relative;
+        }
+
+        .arcade-card:hover {
             transform: translateY(-4px);
-            box-shadow: 0 15px 40px var(--accent-glow);
-            filter: brightness(1.1);
+            border-color: var(--accent);
+            box-shadow: 0 10px 24px rgba(0, 0, 0, 0.12);
         }
 
-        .btn.secondary {
-            background: var(--glass);
-            color: rgba(255,255,255,0.8);
-            backdrop-filter: blur(12px);
-        }
-        .btn.secondary:hover {
-            background: rgba(255,255,255,0.06);
-            color: #fff; transform: translateY(-2px);
+        .arcade-icon-box {
+            width: 54px;
+            height: 54px;
+            border-radius: 16px;
+            background: var(--bg);
+            border: 1px solid var(--border-subtle);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 22px;
+            color: var(--accent);
+            margin-bottom: 14px;
+            transition: all 0.25s ease;
         }
 
-        .footer {
-            margin-top: 60px;
-            font-size: 12px; color: rgba(255,255,255,0.2);
-            text-transform: uppercase; letter-spacing: 2px; font-weight: 700;
+        .arcade-card:hover .arcade-icon-box {
+            background: var(--accent);
+            color: #0D0E11;
+            transform: scale(1.08);
+        }
+
+        html[data-theme="light"] .arcade-card:hover .arcade-icon-box {
+            color: #FFFFFF;
+        }
+
+        .arcade-card-name {
+            font-size: 14.5px;
+            font-weight: 800;
+            color: var(--text-primary);
+            margin-bottom: 4px;
+        }
+
+        .arcade-card-sub {
+            font-size: 11.5px;
+            color: var(--text-secondary);
+            line-height: 1.4;
+            margin-bottom: 12px;
+        }
+
+        .arcade-launch-pill {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            padding: 5px 12px;
+            border-radius: 100px;
+            background: var(--bg);
+            border: 1px solid var(--border-subtle);
+            font-size: 11px;
+            font-weight: 700;
+            color: var(--accent);
+            transition: all 0.2s ease;
+        }
+
+        .arcade-card:hover .arcade-launch-pill {
+            background: var(--accent);
+            color: #0D0E11;
+            border-color: var(--accent);
+        }
+
+        html[data-theme="light"] .arcade-card:hover .arcade-launch-pill {
+            color: #FFFFFF;
+        }
+
+        /* ══ Footer ══ */
+        .offline-footer {
+            width: 100%;
+            max-width: 1120px;
+            padding: 0 32px 24px 32px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            font-size: 12px;
+            color: var(--text-muted);
+            z-index: 10;
+        }
+
+        .footer-left {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .footer-right {
+            font-family: var(--font-mono);
+            font-size: 11px;
         }
     </style>
-    <!-- No external icons for offline stability; using emojis -->
 </head>
 <body>
-    <div class="ambient-bg"></div>
-    <div class="glow-sphere"></div>
 
-    <div class="container">
-        <div class="icon-container">
-            <div class="ring"></div>
-            <span style="font-size: 58px; filter: drop-shadow(0 0 15px var(--accent-glow));">📡</span>
+    <!-- Header Bar -->
+    <header class="offline-header">
+        <div class="header-brand">
+            <div class="brand-logo-badge">
+                <svg viewBox="0 0 24 24">
+                    <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-1 17.93c-3.95-.49-7-3.85-7-7.93 0-.62.08-1.21.21-1.79L9 15v1c0 1.1.9 2 2 2v1.93zm6.9-2.54c-.26-.81-1-1.39-1.9-1.39h-1v-3c0-.55-.45-1-1-1H8v-2h2c.55 0 1-.45 1-1V7h2c1.1 0 2-.9 2-2v-.41c2.93 1.19 5 4.06 5 7.41 0 2.08-.8 3.97-2.1 5.39z"/>
+                </svg>
+            </div>
+            <div class="brand-meta">
+                <span class="brand-name">Ocal Browser</span>
+                <span class="brand-url-badge">ocal://offline</span>
+            </div>
         </div>
 
-        <h1>Lost Connection</h1>
-        <p>You appear to be offline. Ocal is standing by—it will automatically attempt to reconnect once a signal is found.</p>
-
-        <div class="actions">
-            <button class="btn primary" onclick="openGames()">
-                <span>🎮</span> Open Games Hub
-            </button>
-            <button class="btn secondary" onclick="retry()">
-                <span>🔄</span> Retry Connection
+        <div class="header-controls">
+            <div class="status-pill offline" id="connection-status-pill">
+                <span class="status-dot"></span>
+                <span id="connection-status-text">Disconnected</span>
+            </div>
+            <button class="theme-toggle-btn" id="theme-toggle-btn" title="Toggle Theme (Light / Dark)">
+                <i class="fas fa-moon" id="theme-icon"></i>
             </button>
         </div>
+    </header>
 
-        <div class="footer">Ocal Rescue Protocol v4.0</div>
-    </div>
+    <!-- Main Workspace Stage -->
+    <main class="offline-main">
 
+        <!-- Central Hero Rescue Card -->
+        <div class="hero-rescue-card">
+            
+            <!-- Animated Radar / Disconnected Wave Stage -->
+            <div class="radar-stage-wrap">
+                <div class="radar-pulse-ring"></div>
+                <div class="radar-pulse-ring"></div>
+                <div class="radar-pulse-ring"></div>
+                <div class="radar-core-hub" id="radar-hub-icon">
+                    <i class="fas fa-bolt"></i>
+                </div>
+            </div>
+
+            <h1 class="hero-title">You're Offline</h1>
+            <p class="hero-desc">
+                Ocal Browser cannot connect to the internet. We'll automatically restore your session the instant a network signal is detected.
+            </p>
+
+            <!-- Destination Target URL Display (Populated dynamically) -->
+            <div class="target-url-box" id="target-url-box" style="display: none;">
+                <i class="fas fa-link target-url-icon"></i>
+                <span class="target-url-text" id="target-url-display">https://example.com</span>
+                <button class="target-url-copy-btn" id="target-url-copy" title="Copy URL">
+                    <i class="fas fa-copy"></i>
+                </button>
+                <span class="error-code-chip" id="error-code-chip">ERR_INTERNET_DISCONNECTED</span>
+            </div>
+
+            <!-- Action Controls -->
+            <div class="hero-action-row">
+                <button class="action-btn primary" id="btn-retry">
+                    <i class="fas fa-rotate-right" id="retry-icon"></i>
+                    <span id="retry-btn-label">Try Again</span>
+                </button>
+                <button class="action-btn secondary" id="btn-diagnostics">
+                    <i class="fas fa-wrench"></i>
+                    <span>Diagnostics</span>
+                </button>
+                <button class="action-btn secondary" id="btn-home">
+                    <i class="fas fa-house"></i>
+                    <span>Go to Home</span>
+                </button>
+            </div>
+        </div>
+
+        <!-- Collapsible Diagnostics Drawer -->
+        <div class="diagnostics-drawer" id="diagnostics-drawer">
+            <div class="diag-header">
+                <div class="diag-title-cluster">
+                    <i class="fas fa-network-wired"></i>
+                    <span>Network Troubleshooting Checklist</span>
+                </div>
+                <div style="font-size: 12px; color: var(--text-muted); font-family: var(--font-mono);">
+                    AUTO-POLLING: <span id="poll-timer">10s</span>
+                </div>
+            </div>
+
+            <div class="diag-grid">
+                <div class="diag-item">
+                    <div class="diag-item-num">1</div>
+                    <div class="diag-item-content">
+                        <h4>Check Physical Connection</h4>
+                        <p>Verify that your Wi-Fi is toggled on, or that your Ethernet cable is firmly seated into your computer and router.</p>
+                    </div>
+                </div>
+
+                <div class="diag-item">
+                    <div class="diag-item-num">2</div>
+                    <div class="diag-item-content">
+                        <h4>Reboot Modem or Flush DNS</h4>
+                        <p>Restart your router, or open Windows Terminal and run <code>ipconfig /flushdns</code> to clear stale records.</p>
+                    </div>
+                </div>
+
+                <div class="diag-item">
+                    <div class="diag-item-num">3</div>
+                    <div class="diag-item-content">
+                        <h4>Check Firewall & Proxies</h4>
+                        <p>Make sure any third-party VPN, antivirus firewall, or HTTP proxy is not blocking outbound web requests.</p>
+                    </div>
+                </div>
+
+                <div class="diag-item">
+                    <div class="diag-item-num">4</div>
+                    <div class="diag-item-content">
+                        <h4>Windows Network Troubleshooter</h4>
+                        <p>Right-click the network icon in the Windows taskbar and choose <strong>Diagnose network problems</strong>.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Offline Arcade Bento Cards (Play While You Wait) -->
+        <section class="arcade-section">
+            <div class="arcade-section-header">
+                <div class="arcade-title-group">
+                    <h3 class="arcade-title">Built-in Offline Arcade</h3>
+                    <span class="arcade-badge">No Internet Required</span>
+                </div>
+                <button class="action-btn secondary" style="padding: 7px 16px; font-size: 12px;" onclick="openArcade('games')">
+                    <i class="fas fa-gamepad"></i> <span>All Games Hub</span>
+                </button>
+            </div>
+
+            <div class="arcade-cards-grid">
+                <!-- Game 1: Cyber Dino Runner -->
+                <div class="arcade-card" onclick="openArcade('runner')">
+                    <div class="arcade-icon-box">
+                        <i class="fas fa-bolt"></i>
+                    </div>
+                    <h4 class="arcade-card-name">Ocal Pulse</h4>
+                    <p class="arcade-card-sub">Jump obstacles in the classic cyber dino runner</p>
+                    <div class="arcade-launch-pill">
+                        <i class="fas fa-play"></i> <span>Play Runner</span>
+                    </div>
+                </div>
+
+                <!-- Game 2: Cyber Snake -->
+                <div class="arcade-card" onclick="openArcade('snake')">
+                    <div class="arcade-icon-box">
+                        <i class="fas fa-worm"></i>
+                    </div>
+                    <h4 class="arcade-card-name">Cyber Snake</h4>
+                    <p class="arcade-card-sub">Retro neon snake with grid mechanics and powerups</p>
+                    <div class="arcade-launch-pill">
+                        <i class="fas fa-play"></i> <span>Play Snake</span>
+                    </div>
+                </div>
+
+                <!-- Game 3: Neon Tetris -->
+                <div class="arcade-card" onclick="openArcade('tetris')">
+                    <div class="arcade-icon-box">
+                        <i class="fas fa-cubes"></i>
+                    </div>
+                    <h4 class="arcade-card-name">Neon Tetris</h4>
+                    <p class="arcade-card-sub">Stack falling blocks with fast-paced cyber arcade sound</p>
+                    <div class="arcade-launch-pill">
+                        <i class="fas fa-play"></i> <span>Play Tetris</span>
+                    </div>
+                </div>
+
+                <!-- Game 4: HexGL 3D Racer -->
+                <div class="arcade-card" onclick="openArcade('games')">
+                    <div class="arcade-icon-box">
+                        <i class="fas fa-rocket"></i>
+                    </div>
+                    <h4 class="arcade-card-name">HexGL 3D</h4>
+                    <p class="arcade-card-sub">High-speed 3D anti-gravity futuristic racer</p>
+                    <div class="arcade-launch-pill">
+                        <i class="fas fa-play"></i> <span>Open Arcade</span>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+    </main>
+
+    <!-- Footer -->
+    <footer class="offline-footer">
+        <div class="footer-left">
+            <i class="fas fa-shield-halved"></i>
+            <span>Ocal Network Sentinel • Standby Engine</span>
+        </div>
+        <div class="footer-right">
+            STATUS: OFFLINE_STANDBY
+        </div>
+    </footer>
+
+    <!-- Logic Script -->
     <script>
-        function openGames() {
-            window.location.href = 'games.html';
-        }
-        function retry() {
-            // Send signal to main process to try again or just refresh
-            window.location.reload();
+        // ── Parse Query Parameters for Target URL & Error Code ──
+        const urlParams = new URLSearchParams(window.location.search);
+        const targetUrl = urlParams.get('url') || '';
+        const errorCode = urlParams.get('code') || '';
+        const errorDesc = urlParams.get('desc') || '';
+
+        // Wire target URL display
+        const targetBox = document.getElementById('target-url-box');
+        const targetDisplay = document.getElementById('target-url-display');
+        const targetCopyBtn = document.getElementById('target-url-copy');
+        const errorCodeChip = document.getElementById('error-code-chip');
+
+        if (targetUrl) {
+            targetBox.style.display = 'flex';
+            targetDisplay.textContent = targetUrl;
+            targetDisplay.title = targetUrl;
+
+            if (errorCode) {
+                // Friendly error translation
+                const codeMap = {
+                    '-106': 'ERR_INTERNET_DISCONNECTED',
+                    '-105': 'ERR_NAME_NOT_RESOLVED',
+                    '-118': 'ERR_CONNECTION_TIMED_OUT',
+                    '-100': 'ERR_CONNECTION_CLOSED',
+                    '-102': 'ERR_CONNECTION_REFUSED',
+                    '-101': 'ERR_CONNECTION_RESET',
+                    '-109': 'ERR_ADDRESS_UNREACHABLE',
+                    '-104': 'ERR_CONNECTION_FAILED',
+                    '-137': 'ERR_NAME_RESOLUTION_FAILED',
+                    '-324': 'ERR_EMPTY_RESPONSE'
+                };
+                errorCodeChip.textContent = codeMap[errorCode] || `ERR_NETWORK (${errorCode})`;
+            } else {
+                errorCodeChip.textContent = 'ERR_INTERNET_DISCONNECTED';
+            }
         }
 
-        // Auto-reconnect listener? 
-        window.addEventListener('online', () => {
-            console.log('Back online! Automatically retrying...');
-            window.location.reload();
+        // Copy button
+        if (targetCopyBtn && targetUrl) {
+            targetCopyBtn.addEventListener('click', () => {
+                navigator.clipboard.writeText(targetUrl).then(() => {
+                    targetCopyBtn.innerHTML = '<i class="fas fa-check" style="color:var(--accent);"></i>';
+                    setTimeout(() => {
+                        targetCopyBtn.innerHTML = '<i class="fas fa-copy"></i>';
+                    }, 2000);
+                });
+            });
+        }
+
+        // ── Actions & Navigation ──
+        const btnRetry = document.getElementById('btn-retry');
+        const btnDiagnostics = document.getElementById('btn-diagnostics');
+        const btnHome = document.getElementById('btn-home');
+        const retryIcon = document.getElementById('retry-icon');
+        const retryLabel = document.getElementById('retry-btn-label');
+        const diagDrawer = document.getElementById('diagnostics-drawer');
+
+        function doRetry() {
+            retryIcon.classList.add('fa-spin');
+            retryLabel.textContent = 'Reconnecting...';
+            btnRetry.disabled = true;
+
+            // Attempt to fetch or navigate
+            if (targetUrl && !targetUrl.startsWith('ocal://') && !targetUrl.startsWith('file://')) {
+                // If electronAPI available, navigate to target
+                if (window.electronAPI && window.electronAPI.navigateTo) {
+                    window.electronAPI.navigateTo(targetUrl);
+                } else {
+                    window.location.href = targetUrl;
+                }
+            } else {
+                window.location.reload();
+            }
+
+            setTimeout(() => {
+                retryIcon.classList.remove('fa-spin');
+                retryLabel.textContent = 'Try Again';
+                btnRetry.disabled = false;
+            }, 3000);
+        }
+
+        btnRetry.addEventListener('click', doRetry);
+
+        btnDiagnostics.addEventListener('click', () => {
+            const isVisible = diagDrawer.style.display === 'flex';
+            diagDrawer.style.display = isVisible ? 'none' : 'flex';
+            btnDiagnostics.classList.toggle('active-view', !isVisible);
         });
+
+        btnHome.addEventListener('click', () => {
+            if (window.electronAPI && window.electronAPI.navigateTo) {
+                window.electronAPI.navigateTo('ocal://home');
+            } else {
+                window.location.href = 'home.html';
+            }
+        });
+
+        // ── Arcade Navigation ──
+        function openArcade(game) {
+            let url = 'games.html';
+            if (game === 'runner') url = 'game.html';
+            else if (game === 'snake') url = 'snake.html';
+            else if (game === 'tetris') url = 'tetris.html';
+            else if (game === 'games') url = 'games.html';
+
+            if (window.electronAPI && window.electronAPI.navigateTo) {
+                const schemeUrl = 'ocal://' + (game === 'runner' ? 'runner' : game);
+                window.electronAPI.navigateTo(schemeUrl);
+            } else {
+                window.location.href = url;
+            }
+        }
+
+        // ── Online / Offline Live Event Listeners ──
+        const statusPill = document.getElementById('connection-status-pill');
+        const statusText = document.getElementById('connection-status-text');
+        const radarHubIcon = document.getElementById('radar-hub-icon');
+
+        function updateNetworkStatus() {
+            if (navigator.onLine) {
+                statusPill.className = 'status-pill online';
+                statusText.textContent = 'Back Online';
+                radarHubIcon.innerHTML = '<i class="fas fa-wifi" style="color:var(--green-signal);"></i>';
+                
+                // If we were waiting on a target URL, auto-navigate!
+                setTimeout(() => {
+                    doRetry();
+                }, 800);
+            } else {
+                statusPill.className = 'status-pill offline';
+                statusText.textContent = 'Disconnected';
+                radarHubIcon.innerHTML = '<i class="fas fa-bolt"></i>';
+            }
+        }
+
+        window.addEventListener('online', updateNetworkStatus);
+        window.addEventListener('offline', updateNetworkStatus);
+
+        // ── Periodic Background Auto-Poll ──
+        let pollCount = 10;
+        const pollTimerEl = document.getElementById('poll-timer');
+        setInterval(() => {
+            pollCount--;
+            if (pollCount <= 0) {
+                pollCount = 10;
+                if (navigator.onLine) {
+                    updateNetworkStatus();
+                }
+            }
+            if (pollTimerEl) {
+                pollTimerEl.textContent = `${pollCount}s`;
+            }
+        }, 1000);
+
+        // ── Theme Toggle ──
+        const themeToggleBtn = document.getElementById('theme-toggle-btn');
+        const themeIcon = document.getElementById('theme-icon');
+
+        function updateThemeIcon(theme) {
+            if (themeIcon) {
+                themeIcon.className = theme === 'dark' ? 'fas fa-sun' : 'fas fa-moon';
+            }
+        }
+
+        const initialTheme = document.documentElement.getAttribute('data-theme') || 'dark';
+        updateThemeIcon(initialTheme);
+
+        if (themeToggleBtn) {
+            themeToggleBtn.addEventListener('click', () => {
+                const cur = document.documentElement.getAttribute('data-theme') || 'dark';
+                const next = cur === 'dark' ? 'light' : 'dark';
+                document.documentElement.setAttribute('data-theme', next);
+                localStorage.setItem('ocal-settings-theme', next);
+                updateThemeIcon(next);
+
+                if (window.electronAPI && window.electronAPI.updateSetting) {
+                    window.electronAPI.updateSetting('themeMode', next);
+                }
+            });
+        }
     </script>
 </body>
 </html>

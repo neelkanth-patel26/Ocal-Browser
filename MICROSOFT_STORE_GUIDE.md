@@ -23,29 +23,29 @@ Microsoft Partner Center allows submitting traditional Win32 installers directly
    ```bash
    npm run build-inno
    ```
-   This generates: `dist-inno\Ocal-9.1.05-Setup.exe`.
+   This generates: `dist-inno\Ocal-9.5.04-Setup.exe` (135.15 MB).
 
 2. **Host the Installer**:
-   Upload `Ocal-9.1.05-Setup.exe` to a permanent public direct-download URL.
+   Upload `Ocal-9.5.04-Setup.exe` to a permanent public direct-download URL.
    - **GitHub Release Verified Direct Link**:
-     `https://github.com/neelkanth-patel26/Ocal-Browser/releases/download/v9.1.05/Ocal-9.1.05-Setup.exe`
+     `https://github.com/neelkanth-patel26/Ocal-Browser/releases/download/v9.5.04/Ocal-9.5.04-Setup.exe`
 
 3. **In Microsoft Partner Center**:
    - Create or edit your submission under **Apps and Games** > **Ocal Browser** > **Packages / Installer details**:
    - **Package Identifier**: `GamingNetworkStudioMediaGroup.OcalBrowser` (or `Ocal.Browser`)
      > [!IMPORTANT]
      > Do **NOT** leave this as the default placeholder `Publisher.PackageName`. Setting a real identifier forces WinGet to clean and isolate its temporary storage.
-   - **Package Version**: `9.1.5.0`
+   - **Package Version**: `9.5.2.0`
      > [!IMPORTANT]
      > Do **NOT** leave this as `1.0.0.0`. If left as `1.0.0.0`, WinGet caches previously downloaded partial/corrupted files in `%LOCALAPPDATA%\Temp\WinGet\Publisher.PackageName.1.0.0.0\` and re-executes the corrupted file on subsequent runs!
    - **Architecture**: Select **`x64` ONLY** (or `x64` and `x86`).
      > [!CRITICAL]
      > **DO NOT select `ARM64` or `Neutral`** for an x64 Win32 EXE installer!
-     > On Qualcomm Snapdragon ARM64 devices (like Microsoft Surface Laptop), selecting `ARM64` causes the Store to expect a native ARM64 binary. Selecting `x64` enables Windows 11's built-in **Prism x64 emulation**, allowing Ocal Browser to install and run perfectly.
+     > On Qualcomm Snapdragon ARM64 devices (like Microsoft Surface Laptop), selecting `x64` enables Windows 11's built-in **Prism x64 emulation**, allowing Ocal Browser to install and run perfectly.
    - **Installer URL (Download URL)**:
-     `https://github.com/neelkanth-patel26/Ocal-Browser/releases/download/v9.1.05/Ocal-9.1.05-Setup.exe`
+     `https://github.com/neelkanth-patel26/Ocal-Browser/releases/download/v9.5.04/Ocal-9.5.04-Setup.exe`
    - **Installer SHA-256 Hash**:
-     `40140968779C049A3F70D931AD31315630ADC25A4652BAAF65F989337676AB45`
+     `9588636A171FB4CF774EACC41C62B745054E4D0734F48D05E0DB8221985C162A`
      > [!TIP]
      > Always specify the SHA-256 hash in Partner Center. WinGet validates this hash before executing the file. If an automated download is truncated or interrupted, WinGet will fail the check instead of attempting to run an incomplete binary.
    - **Installer Type**: `inno` (or `exe`)
@@ -66,7 +66,7 @@ When Partner Center runs automated tests on your installer, it performs key chec
 | **Silent install check** | The installer requested administrative elevation (`PrivilegesRequired=admin`) and was missing `/SP- /SUPPRESSMSGBOXES`, which popped up prompts in Microsoft's headless VM. | Configured `PrivilegesRequired=lowest` with dual-mode fallback, set `CloseApplications=no`, and added `/SP- /SUPPRESSMSGBOXES` flags. Returns exit code `0`. |
 | **Entry in add or remove programs** | The silent installer was failing before writing registry keys, or the name did not match (`Ocal Browser 9.1.03` vs `Ocal Browser`). | Set a permanent `AppId`, configured `UninstallDisplayName=Ocal Browser`, and `AppPublisher=Gaming Network Studio Media Group` in `HKA`. |
 | **Bundleware check** | Automated scanner could not inspect the installed entry because the silent installation aborted. | By passing the silent install and registering cleanly under `Ocal Browser`, the bundleware scanner now identifies the app and validates no unlisted software is bundled. |
-| **Code signing check** (`Package should be signed with SHA256 or higher algorithm`) | The hosted `.exe` installer at your download URL was unsigned (`Code signing type: Unsigned`). | Sign `dist-inno\Ocal-9.1.05-Setup.exe` using `npm run sign-installer` (with your Authenticode `.pfx` certificate) or use a direct URL with valid signature. |
+| **10.2.9 Security - Code Signing** (`Package should be signed with SHA256 or higher algorithm`) | Partner Center marked the package as `Unsigned` because the `.exe` was signed with a self-signed certificate (`CN=Gaming Network Studio Media Group`). Under Policy 10.2.9, direct `.exe` submissions must chain to a public CA in the **Microsoft Trusted Root Program** (e.g. DigiCert, Sectigo, or Microsoft Azure Trusted Signing). | **Option A (Fastest & 100% Free)**: Submit the native MSIX/AppX package (`npm run build-store`). Microsoft Store **automatically signs MSIX packages with Microsoft's own trusted CA certificate for FREE**, completely bypassing Policy 10.2.9!<br>**Option B (Direct .exe)**: Sign the `.exe` using [Microsoft Trusted Signing](https://learn.microsoft.com/en-us/azure/trusted-signing/overview) (~$9.99/mo) or a commercial certificate from a CA listed in the [CCADB Microsoft Trusted Root Report](https://ccadb.my.salesforce-sites.com/microsoft/IncludedCACertificateReportForMSFT). |
 
 ---
 
