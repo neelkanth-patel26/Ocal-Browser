@@ -53,7 +53,7 @@
     <header class="settings-header">
         <div class="header-left">
             <div class="header-logo">
-                <img src="assets/icon.png" class="header-logo-img" alt="Ocal">
+                <img src="assets/Dark.png" class="header-logo-img" id="header-logo-img" alt="Ocal">
             </div>
             <div class="header-logo-text">Ocal Settings</div>
         </div>
@@ -491,7 +491,7 @@
                     <div class="homepage-bento-grid">
 
                         <!-- ─── 1. Theme & Accent Visual System ─── -->
-                        <div class="card homepage-bento-card sp-card-white">
+                        <div class="card homepage-bento-card sp-card-white span-full">
                             <div class="hbc-header">
                                 <div class="hbc-header-left">
                                     <div class="hbc-icon theme-bg">
@@ -698,191 +698,7 @@
                             </div>
                         </div>
 
-                        <!-- ─── 2. Dynamic App Icon & Logo Studio (Fills Right Column) ─── -->
-                        <div class="card homepage-bento-card sp-card-white icon-studio-card">
-                            <div class="hbc-header">
-                                <div class="hbc-header-left">
-                                    <div class="hbc-icon theme-bg">
-                                        <i class="fas fa-palette"></i>
-                                    </div>
-                                    <div class="hbc-identity">
-                                        <h4 class="hbc-name">Dynamic Icon &amp; Logo Studio</h4>
-                                        <div class="hbc-tagline">Theme Color Calibration &bull; Multi-Surface Harmonizer</div>
-                                    </div>
-                                </div>
-                                <div class="icon-studio-header-badges">
-                                    <span class="hbc-badge visual"><i class="fas fa-sparkles"></i> LIVE SYNC</span>
-                                </div>
-                            </div>
-
-                            <div class="hbc-rows icon-studio-rows">
-                                <!-- 1. Master Multi-Surface Preview Stage -->
-                                <div class="icon-studio-stage">
-                                    <!-- Stage Top Bar: Brand Status + Master Sync Toggle -->
-                                    <div class="icon-stage-topbar">
-                                        <div class="icon-stage-brand-meta">
-                                            <div class="icon-stage-title-wrap">
-                                                <span class="icon-stage-title">Ocal Dynamic Brand</span>
-                                                <span class="icon-stage-chip"><i class="fas fa-circle-check"></i> Adaptive Vector</span>
-                                            </div>
-                                            <div class="icon-live-status-pill">
-                                                <span class="icon-status-dot"></span>
-                                                <span class="icon-status-text" id="icon-preview-color-name">Harmonized with Theme</span>
-                                            </div>
-                                        </div>
-
-                                        <div class="icon-stage-toggle">
-                                            <div class="icon-sync-info">
-                                                <span class="icon-sync-title">Sync App Icon</span>
-                                                <span class="icon-sync-sub">Adaptive chromatic tone</span>
-                                            </div>
-                                            <label class="ext-toggle-wrap">
-                                                <input type="checkbox" id="icon-sync-toggle-cb" checked onchange="handleIconSyncToggle(this.checked)">
-                                                <span class="ext-slider"></span>
-                                            </label>
-                                        </div>
-                                    </div>
-
-                                    <!-- Multi-Surface Visual Preview Showcase -->
-                                    <div class="icon-multi-surface-deck">
-                                        <!-- Surface 1: Desktop App Icon Squircle (Hero) -->
-                                        <div class="surface-preview-item surface-hero-item">
-                                            <div class="surface-preview-canvas">
-                                                <div class="icon-brand-orb">
-                                                    <img src="assets/icon.png" class="ocal-logo-preview" id="icon-calibration-preview" alt="Ocal Logo Preview">
-                                                    <div class="icon-brand-glow"></div>
-                                                </div>
-                                            </div>
-                                            <div class="surface-item-footer">
-                                                <span class="surface-label"><i class="fas fa-desktop"></i> App Window</span>
-                                                <span class="surface-scale-tag">HQ 64px</span>
-                                            </div>
-                                        </div>
-
-                                        <!-- Surface 2: Windows Taskbar Mockup Island -->
-                                        <div class="surface-preview-item surface-taskbar-item">
-                                            <div class="surface-preview-canvas">
-                                                <div class="mock-taskbar-island">
-                                                    <div class="mock-tb-icon-btn active">
-                                                        <img src="assets/icon.png" class="ocal-preview-icon" alt="Taskbar Icon">
-                                                        <span class="mock-tb-indicator"></span>
-                                                    </div>
-                                                    <div class="mock-tb-icon-btn ghost">
-                                                        <i class="fas fa-folder"></i>
-                                                    </div>
-                                                    <div class="mock-tb-icon-btn ghost">
-                                                        <i class="fas fa-terminal"></i>
-                                                    </div>
-                                                </div>
-                                            </div>
-                                            <div class="surface-item-footer">
-                                                <span class="surface-label"><i class="fas fa-grip"></i> Taskbar Dock</span>
-                                                <span class="surface-scale-tag">Dock 32px</span>
-                                            </div>
-                                        </div>
-
-                                        <!-- Surface 3: Browser Tab Favicon Mockup -->
-                                        <div class="surface-preview-item surface-tab-item">
-                                            <div class="surface-preview-canvas">
-                                                <div class="mock-browser-tab">
-                                                    <img src="assets/icon.png" class="ocal-preview-icon" alt="Tab Favicon">
-                                                    <span class="mock-tab-title">Ocal Browser</span>
-                                                    <span class="mock-tab-close"><i class="fas fa-xmark"></i></span>
-                                                </div>
-                                            </div>
-                                            <div class="surface-item-footer">
-                                                <span class="surface-label"><i class="fas fa-table-columns"></i> Omnibox Tab</span>
-                                                <span class="surface-scale-tag">Tab 16px</span>
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
-
-                                <!-- 2. Dual Calibration Sliders & Controls Grid -->
-                                <div class="icon-sliders-grid" id="icon-sliders-container">
-                                    <div class="icon-slider-cards-row">
-                                        <!-- Hue Color Correction Slider Card -->
-                                        <div class="icon-slider-card hue-card">
-                                            <div class="icon-slider-card-header">
-                                                <div class="icon-slider-desc">
-                                                    <span class="icon-slider-name"><i class="fas fa-sliders"></i> Hue Spectrum Shift</span>
-                                                    <span class="icon-slider-hint">Fine-tune chromatic angle across color wheel</span>
-                                                </div>
-                                                <span class="icon-slider-badge" id="icon-hue-val">0&deg;</span>
-                                            </div>
-                                            <div class="icon-slider-track-wrap hue-track-wrap">
-                                                <input type="range" class="modern-slider hue-slider" id="icon-hue-slider" min="-60" max="60" value="0" step="1" oninput="handleIconHueAdjust(this.value)">
-                                                <div class="track-scale-marks" id="icon-hue-marks">
-                                                    <button type="button" class="scale-mark-pill" data-mark="-60" onclick="handleIconHueAdjust(-60)" title="Cooler Chromatic Shift">
-                                                        <i class="fas fa-snowflake"></i> -60&deg; Cool
-                                                    </button>
-                                                    <button type="button" class="scale-mark-pill active" data-mark="0" onclick="handleIconHueAdjust(0)" title="Harmonized Match">
-                                                        <i class="fas fa-check"></i> 0&deg; Match
-                                                    </button>
-                                                    <button type="button" class="scale-mark-pill" data-mark="60" onclick="handleIconHueAdjust(60)" title="Warmer Chromatic Shift">
-                                                        <i class="fas fa-fire"></i> +60&deg; Warm
-                                                    </button>
-                                                </div>
-                                            </div>
-                                        </div>
-
-                                        <!-- Saturation / Vibrancy Slider Card -->
-                                        <div class="icon-slider-card sat-card">
-                                            <div class="icon-slider-card-header">
-                                                <div class="icon-slider-desc">
-                                                    <span class="icon-slider-name"><i class="fas fa-droplet"></i> Vibrancy &amp; Saturation</span>
-                                                    <span class="icon-slider-hint">Adjust color brilliance &amp; contrast depth</span>
-                                                </div>
-                                                <span class="icon-slider-badge" id="icon-sat-val">100%</span>
-                                            </div>
-                                            <div class="icon-slider-track-wrap sat-track-wrap">
-                                                <input type="range" class="modern-slider sat-slider" id="icon-sat-slider" min="50" max="160" value="100" step="5" oninput="handleIconSatAdjust(this.value)">
-                                                <div class="track-scale-marks" id="icon-sat-marks">
-                                                    <button type="button" class="scale-mark-pill" data-mark="50" onclick="handleIconSatAdjust(50)" title="Muted Tone">
-                                                        <i class="fas fa-circle-half-stroke"></i> 50% Muted
-                                                    </button>
-                                                    <button type="button" class="scale-mark-pill active" data-mark="100" onclick="handleIconSatAdjust(100)" title="Neutral Tone">
-                                                        <i class="fas fa-circle-check"></i> 100% Neutral
-                                                    </button>
-                                                    <button type="button" class="scale-mark-pill" data-mark="160" onclick="handleIconSatAdjust(160)" title="Vivid Vibrancy">
-                                                        <i class="fas fa-wand-magic-sparkles"></i> 160% Vivid
-                                                    </button>
-                                                </div>
-                                            </div>
-                                        </div>
-                                    </div>
-
-                                    <!-- Quick Color Correction Segmented Control -->
-                                    <div class="icon-presets-bar">
-                                        <div class="icon-presets-label">
-                                            <i class="fas fa-wand-magic-sparkles"></i>
-                                            <span>Quick Tone Presets:</span>
-                                        </div>
-                                        <div class="icon-segmented-control" id="icon-tone-segmented">
-                                            <button type="button" class="segmented-pill" data-hue="-30" onclick="handleIconHueAdjust(-30)">
-                                                <span class="tone-dot cool-dot"></span> Cooler (-30&deg;)
-                                            </button>
-                                            <button type="button" class="segmented-pill active" data-hue="0" onclick="handleIconHueAdjust(0)">
-                                                <span class="tone-dot neutral-dot"></span> Neutral (0&deg;)
-                                            </button>
-                                            <button type="button" class="segmented-pill" data-hue="30" onclick="handleIconHueAdjust(30)">
-                                                <span class="tone-dot warm-dot"></span> Warmer (+30&deg;)
-                                            </button>
-                                        </div>
-                                    </div>
-
-                                    <!-- Reset Footer Action -->
-                                    <div class="icon-studio-footer">
-                                        <span class="icon-footer-tip"><i class="fas fa-circle-check"></i> Changes apply live across Windows taskbar, titlebars &amp; tabs</span>
-                                        <button type="button" class="icon-reset-btn" onclick="resetIconCalibration()">
-                                            <i class="fas fa-rotate-left"></i> Reset Defaults
-                                        </button>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-
-                        <!-- ─── 3. Workspace Density & Quick Toggles ─── -->
+                        <!-- ─── 2. Workspace Density & Quick Toggles ─── -->
                         <div class="card homepage-bento-card sp-card-white">
                             <div class="hbc-header">
                                 <div class="hbc-header-left">

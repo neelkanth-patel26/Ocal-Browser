@@ -323,6 +323,12 @@ function applyTheme(theme) {
         const currentAccent = localStorage.getItem('ocal-settings-accent') || '#09F0A0';
         applyAccent(currentAccent, true);
     }
+
+    const headerLogo = document.querySelector('.header-logo-img');
+    if (headerLogo) {
+        headerLogo.src = isDark ? 'assets/Dark.png' : 'assets/Light.png';
+        headerLogo.style.filter = 'none';
+    }
 }
 window.applyTheme = applyTheme;
 
@@ -3332,70 +3338,13 @@ window.resetIconCalibration = function() {
 };
 
 function refreshIconCalibration() {
-    const activeColor = localStorage.getItem('ocal-settings-accent') || 
-        getComputedStyle(document.documentElement).getPropertyValue('--accent').trim() || '#4F46E5';
-    
     if (window.OcalColorHarmonizer) {
-        const filter = window.OcalColorHarmonizer.calculateLogoFilter(activeColor);
-        document.documentElement.style.setProperty('--logo-filter', filter);
-        if (document.body) document.body.style.setProperty('--logo-filter', filter);
-        window.OcalColorHarmonizer.updateLogoElements(document, filter);
-        try {
-            localStorage.setItem('ocal-settings-logo-filter', filter);
-        } catch (e) {}
-    }
-
-    const previewName = document.getElementById('icon-preview-color-name');
-    if (previewName) {
-        const syncEnabled = (localStorage.getItem('ocal-icon-sync-theme') !== 'false');
-        previewName.innerText = syncEnabled ? 'Harmonized with Theme' : 'Brand Original';
+        const theme = document.documentElement.getAttribute('data-theme') || 'dark';
+        window.OcalColorHarmonizer.updateLogoElements(document, theme);
     }
 }
 
 function initIconCalibrationUI() {
-    try {
-        const sync = (localStorage.getItem('ocal-icon-sync-theme') !== 'false');
-        const syncCb = document.getElementById('icon-sync-toggle-cb');
-        if (syncCb) syncCb.checked = sync;
-
-        const hue = localStorage.getItem('ocal-icon-hue-adjust') || '0';
-        const hueNum = Number(hue);
-        const hueSlider = document.getElementById('icon-hue-slider');
-        if (hueSlider) hueSlider.value = hue;
-        const hueVal = document.getElementById('icon-hue-val');
-        if (hueVal) hueVal.innerText = (hueNum >= 0 ? `+${hue}°` : `${hue}°`);
-
-        const segPills = document.querySelectorAll('#icon-tone-segmented .segmented-pill');
-        segPills.forEach(pill => {
-            if (Number(pill.getAttribute('data-hue')) === hueNum) pill.classList.add('active');
-            else pill.classList.remove('active');
-        });
-
-        const hueMarks = document.querySelectorAll('#icon-hue-marks .scale-mark-pill');
-        hueMarks.forEach(pill => {
-            if (Number(pill.getAttribute('data-mark')) === hueNum) pill.classList.add('active');
-            else pill.classList.remove('active');
-        });
-
-        const sat = localStorage.getItem('ocal-icon-sat-adjust') || '100';
-        const satNum = Number(sat);
-        const satSlider = document.getElementById('icon-sat-slider');
-        if (satSlider) satSlider.value = sat;
-        const satVal = document.getElementById('icon-sat-val');
-        if (satVal) satVal.innerText = `${sat}%`;
-
-        const satMarks = document.querySelectorAll('#icon-sat-marks .scale-mark-pill');
-        satMarks.forEach(pill => {
-            if (Number(pill.getAttribute('data-mark')) === satNum) pill.classList.add('active');
-            else pill.classList.remove('active');
-        });
-
-        const slidersContainer = document.getElementById('icon-sliders-container');
-        if (slidersContainer) {
-            slidersContainer.style.opacity = sync ? '1' : '0.45';
-            slidersContainer.style.pointerEvents = sync ? 'auto' : 'none';
-        }
-    } catch (e) {}
     refreshIconCalibration();
 }
 

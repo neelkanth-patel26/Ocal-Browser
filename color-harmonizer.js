@@ -262,74 +262,9 @@
 
         // Check if user disabled icon sync
         let syncTheme = opts.syncTheme;
-        if (syncTheme === undefined) {
-            try {
-                syncTheme = (localStorage.getItem('ocal-icon-sync-theme') !== 'false');
-            } catch (e) {
-                syncTheme = true;
-            }
-        }
-        if (!syncTheme && !opts.forceColor) {
-            return 'none';
-        }
-
-        const cleanHex = (opts.customColor || hexColor).toLowerCase().trim();
-        const rgb = hexToRgb(cleanHex);
-        const hsl = rgbToHsl(rgb.r, rgb.g, rgb.b);
-
-        // Low saturation / monochrome / slate / white
-        if (hsl.s < 14) {
-            if (hsl.l > 75) {
-                return 'grayscale(1) brightness(1.2) contrast(1.15)';
-            }
-            return 'grayscale(1) brightness(1.05) contrast(1.1)';
-        }
-
-        // Real base hue of Ocal squircle icon's colored core is ~242° (indigo)
-        const originalHue = 242;
-        let hueDelta = (hsl.h - originalHue + 360) % 360;
-
-        // User Color Correction (Hue Offset in degrees: e.g. -60 to +60)
-        let userHueOffset = opts.hueOffset;
-        if (userHueOffset === undefined) {
-            try {
-                userHueOffset = Number(localStorage.getItem('ocal-icon-hue-adjust') || 0);
-            } catch (e) {
-                userHueOffset = 0;
-            }
-        }
-        if (!isNaN(userHueOffset) && userHueOffset !== 0) {
-            hueDelta = (hueDelta + userHueOffset + 360) % 360;
-        }
-
-        // User Vibrancy / Saturation Multiplier (e.g. 0.5 to 1.6)
-        let userSatMult = opts.satMultiplier;
-        if (userSatMult === undefined) {
-            try {
-                userSatMult = Number(localStorage.getItem('ocal-icon-sat-adjust') || 100) / 100;
-            } catch (e) {
-                userSatMult = 1.0;
-            }
-        }
-        if (isNaN(userSatMult) || userSatMult <= 0) userSatMult = 1.0;
-
-        // If very close to original indigo and no hue offset, keep crisp original
-        if (Math.abs(hsl.h - originalHue) <= 4 && Math.abs(userHueOffset) < 2 && Math.abs(userSatMult - 1.0) < 0.05) {
-            return 'none';
-        }
-
-        // Saturation: vibrant color without blowing out squircle borders
-        const satPercent = Math.max(80, Math.min(200, Math.round(hsl.s * 1.15 * userSatMult)));
-
-        // Brightness: Keep near 100% so the white squircle card remains pristine clean white!
-        let brightPercent = 100;
-        if (hsl.l > 70) {
-            brightPercent = Math.min(108, Math.round(100 + (hsl.l - 70) * 0.25));
-        } else if (hsl.l < 30) {
-            brightPercent = Math.max(95, Math.min(100, Math.round(100 - (30 - hsl.l) * 0.2)));
-        }
-
-        return `hue-rotate(${Math.round(hueDelta)}deg) saturate(${satPercent}%) brightness(${brightPercent}%)`;
+        // User requested fixed preset PNG logos: Light.png for light mode, Dark.png for dark mode.
+        // No artificial CSS filters are applied.
+        return 'none';
     }
 
     // ── Apply & Sync to DOM ──────────────────────────────────────────────────
@@ -372,8 +307,8 @@
         setProps(root);
         if (body) setProps(body);
 
-        // Dynamically update any logo images on the page directly
-        updateLogoElements(doc, logoFilter);
+        // Dynamically update any logo images on the page directly with preset Dark.png/Light.png
+        updateLogoElements(doc, currentTheme);
 
         // Save to localStorage for instant non-flash cross-tab synchronization
         try {
@@ -525,16 +460,33 @@
         }
     }
 
-    // ── Update Logo Elements in DOM ─────────────────────────────────────────
-    function updateLogoElements(targetDoc, explicitFilter) {
+    // ── Update Logo Elements in DOM with Preset PNG Logos ───────────────────
+    function updateLogoElements(targetDoc, themeOrFilter) {
         const doc = targetDoc || (typeof document !== 'undefined' ? document : null);
         if (!doc) return;
-        const filter = (explicitFilter !== undefined) ? explicitFilter : 
-            (doc.documentElement ? doc.documentElement.style.getPropertyValue('--logo-filter') : 'none');
+
+        let isDark = true;
+        if (typeof themeOrFilter === 'string' && (themeOrFilter === 'dark' || themeOrFilter === 'light')) {
+            isDark = (themeOrFilter === 'dark');
+        } else {
+            const currentTheme = (doc.documentElement ? doc.documentElement.getAttribute('data-theme') : null) || 
+                (doc.body ? doc.body.getAttribute('data-theme') : null) || 
+                (typeof localStorage !== 'undefined' ? localStorage.getItem('ocal-settings-theme') : null) || 'dark';
+            isDark = (currentTheme === 'dark');
+        }
+
+        const targetName = isDark ? 'Dark.png' : 'Light.png';
+
         try {
             const logoImgs = doc.querySelectorAll('.sidebar-logo-img, .header-logo-img, .sidebar-logo-btn img, .ocal-brand-logo, .ocal-logo-preview, .icon-preview-card img, .ocal-preview-icon');
             logoImgs.forEach(img => {
-                img.style.filter = filter || 'none';
+                const src = img.getAttribute('src') || '';
+                const prefix = src.includes('assets/') ? 'assets/' : '';
+                const targetSrc = prefix + targetName;
+                if (img.getAttribute('src') !== targetSrc) {
+                    img.src = targetSrc;
+                }
+                img.style.filter = 'none';
             });
         } catch (e) {}
     }

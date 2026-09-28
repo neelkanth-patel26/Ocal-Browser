@@ -445,8 +445,7 @@ body[data-theme="dark"] .sidebar-logo-container {
   height: 24px;
   border-radius: 6px;
   object-fit: contain;
-  filter: var(--logo-filter, none);
-  transition: transform 0.25s cubic-bezier(0.16, 1, 0.3, 1), filter 0.4s ease;
+  transition: transform 0.25s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
 .sidebar-logo-btn:hover {
@@ -457,7 +456,6 @@ body[data-theme="dark"] .sidebar-logo-container {
 
 .sidebar-logo-btn:hover .sidebar-logo-img {
   transform: scale(1.12);
-  filter: var(--logo-filter, none) drop-shadow(0 0 10px var(--accent-glow));
 }
 
 .sidebar-top-shortcuts {
