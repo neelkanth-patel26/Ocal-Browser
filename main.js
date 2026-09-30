@@ -11,7 +11,7 @@ if (typeof electron === 'string' || !electron.app) {
 const {
     app, BrowserWindow, BrowserView, webContents, ipcMain, dialog,
     shell, session, Menu, MenuItem, clipboard, protocol, net,
-    powerMonitor, Notification, screen, nativeImage
+    powerMonitor, Notification, screen, nativeImage, nativeTheme
 } = electron;
 
 // Explicitly set application name for OS / Task Manager identification
@@ -46,33 +46,107 @@ const fetch = require('cross-fetch').default || require('cross-fetch');
 app.commandLine.appendSwitch('disable-quic');
 // Enable High-DPI support for sharp rendering on Windows
 app.commandLine.appendSwitch('high-dpi-support', '1');
-// Enable modern TLS features, Print Preview, and macOS/iOS style Smooth Inertia Scrolling
-app.commandLine.appendSwitch('enable-features', 'Tls13EarlyData,PrintPreview,PrintWithReducedRasterization,SmoothScrolling,PercentBasedScrolling,TouchpadOverscrollHistoryNavigation');
 // Hide the fact that we are an automated/embedded browser
 app.commandLine.appendSwitch('disable-blink-features', 'AutomationControlled');
-// Enable Chrome-style Print Preview (remove disable-print-preview — it was counteracting the enable flags)
+// Enable Chrome-style Print Preview
 app.commandLine.appendSwitch('enable-print-browser');
 app.commandLine.appendSwitch('enable-print-preview');
-// Force native smooth scrolling for mouse wheel & trackpad (macOS/iOS momentum feel)
+// Force native smooth scrolling for mouse wheel & trackpad
 app.commandLine.appendSwitch('enable-smooth-scrolling');
 app.commandLine.appendSwitch('enable-experimental-web-platform-features');
 
+// ── Check Initial Hardware Acceleration Setting ──
+let preStartupSettings = null;
+try {
+    const sPath = path.join(app.getPath('userData'), 'settings.json');
+    if (fs.existsSync(sPath)) {
+        preStartupSettings = JSON.parse(fs.readFileSync(sPath, 'utf8'));
+    }
+} catch (e) {}
+
+const isHwAccelEnabled = !preStartupSettings || preStartupSettings.hardwareAcceleration !== false;
+
+if (!isHwAccelEnabled) {
+    app.disableHardwareAcceleration();
+    console.log('[Hardware Acceleration] Disabled per user settings.');
+} else {
+    // ── Full Hardware Acceleration & Direct Driver Pipeline ──
+    // Override vendor driver blocklist so all GPUs (dedicated & integrated) receive full hardware acceleration
+    app.commandLine.appendSwitch('ignore-gpu-blocklist');
+
+    // Windows Display Driver: Direct communication via Direct3D 11 & ANGLE
+    if (process.platform === 'win32') {
+        app.commandLine.appendSwitch('use-angle', 'd3d11');
+    }
+
+    // Direct Driver Communication: Passthrough Command Decoder bypasses Chromium's validating emulator,
+    // sending GL/WebGL instructions straight to the native GPU driver for ultra-low draw-call latency
+    app.commandLine.appendSwitch('use-cmd-decoder', 'passthrough');
+
+    // Zero-Copy Texture & Rasterization: Raster threads write directly to GPU memory buffers,
+    // eliminating CPU-to-GPU memory copies for 60/120+ FPS fluid compositing
+    app.commandLine.appendSwitch('enable-zero-copy');
+    app.commandLine.appendSwitch('enable-native-gpu-memory-buffers');
+    app.commandLine.appendSwitch('enable-gpu-memory-buffer-compositor-resources');
+
+    // DirectComposition & Hardware Overlays: Direct hardware presentation to Windows Desktop Window Manager (DWM)
+    app.commandLine.appendSwitch('enable-hardware-overlays', 'single-fullscreen,single-on-top,underlay');
+    app.commandLine.appendSwitch('enable-direct-composition-layers');
+
+    // GPU Rasterization (Out-of-Process on dedicated GPU thread)
+    app.commandLine.appendSwitch('enable-gpu-rasterization');
+    app.commandLine.appendSwitch('enable-oop-rasterization');
+    app.commandLine.appendSwitch('gpu-rasterization-msaa-sample-count', '0');
+    app.commandLine.appendSwitch('enable-gpu-async-worker-context');
+
+    // Hardware Accelerated Video & Media Decode/Encode pipelines (YouTube, 4K/60FPS, WebM, H.264/HEVC/AV1)
+    app.commandLine.appendSwitch('enable-accelerated-video-decode');
+    app.commandLine.appendSwitch('enable-accelerated-video-encode');
+    app.commandLine.appendSwitch('enable-accelerated-mjpeg-decode');
+
+    // High-Performance WebGL & Graphics Extensions
+    app.commandLine.appendSwitch('enable-webgl');
+    app.commandLine.appendSwitch('enable-webgl2-compute-context');
+    app.commandLine.appendSwitch('enable-webgl-draft-extensions');
+    app.commandLine.appendSwitch('max-active-webgl-contexts', '64');
+}
+
 // ── Web Loading & Rendering Speed Optimizations ──
-// Enable GPU Rasterization (speeds up page painting/scrolling)
-app.commandLine.appendSwitch('enable-gpu-rasterization');
-// Enable Parallel Downloading (faster file/media loading)
+const enabledFeatures = [
+    'Tls13EarlyData',
+    'PrintPreview',
+    'PrintWithReducedRasterization',
+    'SmoothScrolling',
+    'PercentBasedScrolling',
+    'TouchpadOverscrollHistoryNavigation',
+    ...(isHwAccelEnabled ? [
+        'CanvasOopRasterization',
+        'DirectCompositionOverlays',
+        'DirectCompositionUnderlays',
+        'D3D11VideoDecoder',
+        'PlatformHEVCDecoderSupport',
+        'AcceleratedVideoDecodeLinuxGL',
+        'BackForwardCache',
+        'ZeroCopyTabSwitching'
+    ] : [])
+].join(',');
+app.commandLine.appendSwitch('enable-features', enabledFeatures);
+
+// High-Performance Disk & Media Streaming Buffering (512MB disk cache, 256MB media streaming buffer)
+app.commandLine.appendSwitch('disk-cache-size', '536870912');
+app.commandLine.appendSwitch('media-cache-size', '268435456');
 app.commandLine.appendSwitch('enable-parallel-downloading');
-// Optimize JavaScript engine heap memory limit for heavy web apps
-app.commandLine.appendSwitch('js-flags', '--max-old-space-size=4096 --expose-gc');
-// Enable fast unload of pages/tabs
-app.commandLine.appendSwitch('enable-fast-unload');
-// Prevent background timer throttling (faster background tabs loading)
-app.commandLine.appendSwitch('disable-background-timer-throttling');
-// Prevent backgrounding of renderers
-app.commandLine.appendSwitch('disable-renderer-backgrounding');
-// Fast TCP Acceleration & DNS Prefetch
 app.commandLine.appendSwitch('enable-tcp-fast-open');
 app.commandLine.appendSwitch('dns-prefetch-disable', 'false');
+app.commandLine.appendSwitch('enable-fast-unload');
+
+// Optimize JavaScript engine heap memory limit for heavy web apps
+app.commandLine.appendSwitch('js-flags', '--max-old-space-size=4096 --expose-gc');
+
+// Prevent background timer throttling & renderer backgrounding throttles for fluid multi-tab performance
+app.commandLine.appendSwitch('disable-background-timer-throttling');
+app.commandLine.appendSwitch('disable-renderer-backgrounding');
+app.commandLine.appendSwitch('disable-backgrounding-occluded-windows');
 
 // Disable the default Electron menu bar on Windows/Linux to prevent UI shifting
 Menu.setApplicationMenu(null);
@@ -257,7 +331,9 @@ function loadProfileData(profileId) {
         userSettings.history = Array.isArray(data.history) ? JSON.parse(JSON.stringify(data.history)) : [];
         if (data.accentColorDark) userSettings.accentColorDark = data.accentColorDark;
         if (data.accentColorLight) userSettings.accentColorLight = data.accentColorLight;
-        if (data.themeMode) userSettings.themeMode = data.themeMode;
+        if (data.themeMode) {
+            applyThemeModeGlobally(data.themeMode);
+        }
         if (data.accentColor) userSettings.accentColor = data.accentColor;
         else userSettings.accentColor = userSettings.themeMode === 'light' ? userSettings.accentColorLight : userSettings.accentColorDark;
         if (data.searchEngine) userSettings.searchEngine = data.searchEngine;
@@ -510,6 +586,35 @@ if (userSettings.accentColorLight === undefined) {
     else userSettings.accentColorLight = '#058f60';
 }
 userSettings.accentColor = userSettings.themeMode === 'light' ? userSettings.accentColorLight : userSettings.accentColorDark;
+
+function applyThemeModeGlobally(mode) {
+    const isLight = mode === 'light';
+    userSettings.themeMode = isLight ? 'light' : 'dark';
+    if (nativeTheme) {
+        nativeTheme.themeSource = isLight ? 'light' : 'dark';
+    }
+    const bgColor = isLight ? '#EDEDF0' : '#18181B';
+    if (typeof mainWindow !== 'undefined' && mainWindow && !mainWindow.isDestroyed()) {
+        mainWindow.setBackgroundColor(bgColor);
+    }
+    if (typeof views !== 'undefined' && Array.isArray(views)) {
+        views.forEach(v => {
+            if (v.view && !v.view.webContents.isDestroyed()) {
+                v.view.setBackgroundColor('#00000000');
+            }
+            if (v.isSplit && v.view2 && !v.view2.webContents.isDestroyed()) {
+                v.view2.setBackgroundColor('#00000000');
+            }
+        });
+        if (typeof updateCornerRoundingOnAllViews === 'function') {
+            updateCornerRoundingOnAllViews();
+        }
+    }
+}
+
+if (nativeTheme) {
+    nativeTheme.themeSource = userSettings.themeMode === 'light' ? 'light' : 'dark';
+}
 
 // Native Extensions Defaults
 if (userSettings.cyberStealthEnabled === undefined) userSettings.cyberStealthEnabled = false;
@@ -967,6 +1072,19 @@ function applyShieldSettings() {
 
         headers['Accept-Language'] = 'en-US,en;q=0.9';
 
+        // Provide client hint for prefers-color-scheme (Google Search, Bing, DuckDuckGo, etc.)
+        const isLightMode = userSettings && userSettings.themeMode === 'light';
+        headers['Sec-CH-Prefers-Color-Scheme'] = isLightMode ? '"light"' : '"dark"';
+
+        // Ensure Google Search respects user theme preference instead of a stuck hardcoded cookie
+        if (url.includes('google.') && headers['Cookie']) {
+            if (isLightMode && headers['Cookie'].includes('f6=8')) {
+                headers['Cookie'] = headers['Cookie'].replace(/\bf6=8\b/g, 'f6=400');
+            } else if (!isLightMode && headers['Cookie'].includes('f6=9')) {
+                headers['Cookie'] = headers['Cookie'].replace(/\bf6=9\b/g, 'f6=400');
+            }
+        }
+
         // Strip Electron detection headers across all sessions
         delete headers['X-Requested-With'];
         delete headers['X-Electron-Id'];
@@ -1210,7 +1328,7 @@ function createMainWindow() {
         icon: process.platform === 'win32' ? appIconPath : (appIcon || appIconPath),
         frame: false,
         transparent: false,
-        backgroundColor: userSettings.themeMode === 'light' ? '#ffffff' : '#0c0c0e', // Dynamic background to match theme and prevent flashbang
+        backgroundColor: userSettings.themeMode === 'light' ? '#EDEDF0' : '#18181B', // Dynamic background to match theme and prevent flashbang
         resizable: true,
         fullscreenable: true,
         titleBarStyle: 'hidden', // Ensures native title bar is fully hidden on Windows 10
@@ -1921,23 +2039,28 @@ ipcMain.on('hide-downloads-popup', () => {
 });
 
 let shieldPopupView = null;
+let shieldPopupShowTime = 0;
 function createShieldPopupView() {
+    if (shieldPopupView) return;
     shieldPopupView = new BrowserView({
         webPreferences: { preload: path.join(__dirname, 'preload.js'), contextIsolation: false, nodeIntegration: true }
     });
     shieldPopupView.webContents.loadFile('shield-popup.html');
     shieldPopupView.setBackgroundColor('#00000000');
 
-    // Auto-hide on blur
+    // Auto-hide on blur with grace period so initial focus shift doesn't instantly close it
     shieldPopupView.webContents.on('blur', () => {
-        if (shieldPopupView && mainWindow && mainWindow.getBrowserViews().includes(shieldPopupView)) {
+        if (Date.now() - shieldPopupShowTime < 500) return;
+        if (shieldPopupView && mainWindow && !mainWindow.isDestroyed() && mainWindow.getBrowserViews().includes(shieldPopupView)) {
             mainWindow.removeBrowserView(shieldPopupView);
         }
     });
 }
 
 let passwordsPopupView = null;
+let passwordsPopupShowTime = 0;
 function createPasswordsPopupView() {
+    if (passwordsPopupView) return;
     passwordsPopupView = new BrowserView({
         webPreferences: { preload: path.join(__dirname, 'preload.js'), contextIsolation: false, nodeIntegration: true }
     });
@@ -1945,7 +2068,8 @@ function createPasswordsPopupView() {
     passwordsPopupView.setBackgroundColor('#00000000');
 
     passwordsPopupView.webContents.on('blur', () => {
-        if (passwordsPopupView && mainWindow && mainWindow.getBrowserViews().includes(passwordsPopupView)) {
+        if (Date.now() - passwordsPopupShowTime < 500) return;
+        if (passwordsPopupView && mainWindow && !mainWindow.isDestroyed() && mainWindow.getBrowserViews().includes(passwordsPopupView)) {
             mainWindow.removeBrowserView(passwordsPopupView);
         }
     });
@@ -2018,24 +2142,24 @@ function resolveExtensionRuntimeUrl(url) {
         const lowerHost = host.toLowerCase();
 
         if (lowerHost === 'cjpalhdlnbpafiamejdnhcphjbkeiagm' || lowerHost === 'ad-blocker' || lowerHost === 'ublock' || lowerHost === 'ublock0' || lowerHost === 'ublock-origin') {
-            matchedExt = allExts.find(e => e.name && e.name.toLowerCase().includes('ublock'));
+            matchedExt = allExts.find(e => (e.name && e.name.toLowerCase().includes('ublock')) || (e.path && e.path.toLowerCase().includes('ublock')));
         } else if (lowerHost === 'gebbhagfogifgggkldgodflihgfeippi' || lowerHost === 'dislike-recovery' || lowerHost === 'dislike' || lowerHost === 'return-youtube-dislike') {
-            matchedExt = allExts.find(e => e.name && e.name.toLowerCase().includes('dislike'));
+            matchedExt = allExts.find(e => (e.name && (e.name.toLowerCase().includes('dislike') || e.name.includes('__MSG_extensionName__'))) || (e.path && e.path.toLowerCase().includes('dislike')));
         } else if (lowerHost === 'ocal-focus' || lowerHost === 'focus') {
-            matchedExt = allExts.find(e => e.name && e.name.toLowerCase().includes('focus'));
+            matchedExt = allExts.find(e => (e.name && e.name.toLowerCase().includes('focus')) || (e.path && e.path.toLowerCase().includes('focus')));
         } else if (lowerHost === 'media-master' || lowerHost === 'ocal-media-master') {
-            matchedExt = allExts.find(e => e.name && e.name.toLowerCase().includes('media'));
+            matchedExt = allExts.find(e => (e.name && e.name.toLowerCase().includes('media')) || (e.path && e.path.toLowerCase().includes('media')));
         }
 
         if (!matchedExt && typeof userSettings !== 'undefined' && Array.isArray(userSettings.extensions)) {
             const settingExt = userSettings.extensions.find(e => e.id === host || (e.name && e.name.toLowerCase() === lowerHost));
             if (settingExt) {
-                matchedExt = allExts.find(e => e.id === settingExt.id || (settingExt.name && e.name && e.name.toLowerCase() === settingExt.name.toLowerCase()));
+                matchedExt = allExts.find(e => e.id === settingExt.id || (settingExt.name && e.name && e.name.toLowerCase() === settingExt.name.toLowerCase()) || (settingExt.localPath && e.path && path.resolve(e.path) === path.resolve(settingExt.localPath)));
             }
         }
 
         if (!matchedExt) {
-            matchedExt = allExts.find(e => e.name && e.name.toLowerCase().replace(/[^a-z0-9]/g, '') === lowerHost);
+            matchedExt = allExts.find(e => (e.name && e.name.toLowerCase().replace(/[^a-z0-9]/g, '') === lowerHost) || (e.path && e.path.toLowerCase().includes(lowerHost)));
         }
 
         if (matchedExt && matchedExt.id) {
@@ -2177,10 +2301,12 @@ function createNewTab(url = null) {
             contextIsolation: true,
             nodeIntegration: false,
             sandbox: false,
-            devTools: true
+            devTools: true,
+            backgroundThrottling: false,
+            webgl: true
         },
     });
-    view.setBackgroundColor(userSettings.themeMode === 'light' ? '#EDEDF0' : '#0D0E11');
+    view.setBackgroundColor(userSettings.themeMode === 'light' ? '#EDEDF0' : '#18181B');
     view.webContents.setUserAgent(OCAL_USER_AGENT);
     setupViewEvents(id, view, 'left');
     ensureSessionExtensions(view.webContents.session);
@@ -2201,9 +2327,21 @@ function createNewTab(url = null) {
         }
     }
 
-    // Load the ocal:// URL directly so the address bar stays clean
+    // Load the ocal:// or extension URL directly so the address bar stays clean
     if (finalUrl) {
-        view.webContents.loadURL(resolveInternalURL(finalUrl));
+        if (finalUrl.startsWith('chrome-extension://')) {
+            ensureSessionExtensions(view.webContents.session).then(() => {
+                if (!view.webContents.isDestroyed()) {
+                    view.webContents.loadURL(resolveInternalURL(finalUrl));
+                }
+            }).catch(() => {
+                if (!view.webContents.isDestroyed()) {
+                    view.webContents.loadURL(resolveInternalURL(finalUrl));
+                }
+            });
+        } else {
+            view.webContents.loadURL(resolveInternalURL(finalUrl));
+        }
     } else {
         view.webContents.loadFile('home.html');
     }
@@ -2284,11 +2422,87 @@ function setActiveSplitSide(tabId, side) {
     }
 }
 
+function getIsNoCurve() {
+    const isVerticalTabs = (userSettings.tabLayout === 'vertical');
+    const isHideMode = (!!htmlFullscreenViewId || userSettings.sidebarMode === 'hidden' || userSettings.sidebarMode === 'autohide');
+    return isHideMode && !isVerticalTabs;
+}
+
+function applyCornerRoundingToWebContents(wc) {
+    if (!wc || wc.isDestroyed()) return;
+    const isNoCurve = getIsNoCurve();
+    const url = wc.getURL() || '';
+    const isInternal = url.startsWith('ocal://') || url.startsWith('file://') || url.includes('home.html');
+
+    if (isInternal) {
+        wc.insertCSS(`
+            html, body {
+                border-radius: ${isNoCurve ? '0px' : '12px'} !important;
+            }
+        `).catch(() => {});
+        wc.executeJavaScript(`
+            try {
+                if (document.documentElement) document.documentElement.style.setProperty('border-radius', '${isNoCurve ? '0px' : '12px'}', 'important');
+                if (document.body) document.body.style.setProperty('border-radius', '${isNoCurve ? '0px' : '12px'}', 'important');
+            } catch (e) {}
+        `).catch(() => {});
+    } else {
+        const maskColor = userSettings.themeMode === 'light' ? '#EDEDF0' : '#18181B';
+        wc.insertCSS(`
+            #ocal-corner-masks-container, .ocal-corner-mask {
+                display: ${isNoCurve ? 'none' : 'block'} !important;
+                --mask-bg: ${maskColor} !important;
+            }
+        `).catch(() => {});
+        wc.executeJavaScript(`
+            try {
+                var c = document.getElementById('ocal-corner-masks-container');
+                if (!c && ${!isNoCurve}) {
+                    c = document.createElement('div');
+                    c.id = 'ocal-corner-masks-container';
+                    c.style.position = 'fixed';
+                    c.style.inset = '0';
+                    c.style.pointerEvents = 'none';
+                    c.style.zIndex = '2147483647';
+                    ['tl', 'tr', 'bl', 'br'].forEach(function(pos) {
+                        var m = document.createElement('div');
+                        m.className = 'ocal-corner-mask ocal-corner-mask-' + pos;
+                        c.appendChild(m);
+                    });
+                    if (document.body) document.body.appendChild(c);
+                    else if (document.documentElement) document.documentElement.appendChild(c);
+                }
+                if (c) {
+                    c.style.setProperty('display', '${isNoCurve ? 'none' : 'block'}', 'important');
+                    var masks = c.querySelectorAll('.ocal-corner-mask');
+                    masks.forEach(function(m) {
+                        m.style.setProperty('--mask-bg', '${maskColor}', 'important');
+                    });
+                }
+            } catch (e) {}
+        `).catch(() => {});
+    }
+}
+
+function updateCornerRoundingOnAllViews() {
+    views.forEach(v => {
+        if (v.view && v.view.webContents && !v.view.webContents.isDestroyed()) {
+            applyCornerRoundingToWebContents(v.view.webContents);
+        }
+        if (v.isSplit && v.view2 && v.view2.webContents && !v.view2.webContents.isDestroyed()) {
+            applyCornerRoundingToWebContents(v.view2.webContents);
+        }
+    });
+}
+
+let cachedAdShieldScript = null;
+
 function setupViewEvents(tabId, view, side = 'left') {
     const webContents = view.webContents;
 
-    // Clear media on navigation
+    // Apply corner rounding immediately on navigation and loading start (so it curves during load)
     webContents.on('did-start-navigation', (e, url, isInPlace) => {
+        applyCornerRoundingToWebContents(webContents);
         if (!isInPlace) {
             tabMedia[tabId] = [];
             if (mainWindow && !mainWindow.isDestroyed()) {
@@ -2297,24 +2511,33 @@ function setupViewEvents(tabId, view, side = 'left') {
         }
     });
 
+    webContents.on('did-start-loading', () => {
+        applyCornerRoundingToWebContents(webContents);
+        if (mainWindow && !mainWindow.isDestroyed()) {
+            mainWindow.webContents.send('load-progress', { id: tabId, progress: 15 });
+        }
+    });
+
     // Inject Rounded Corners inside Web Pages
     webContents.on('dom-ready', () => {
-        const url = webContents.getURL();
+        const url = webContents.getURL() || '';
         const isInternal = url.startsWith('ocal://') || url.startsWith('file://') || url.includes('home.html');
+        const isNoCurve = getIsNoCurve();
+        const rad = isNoCurve ? '0px' : '12px';
 
         if (isInternal) {
             // Pages that need scrolling get a different treatment
-            const needsScroll = url.includes('whats-new.html') || url.includes('settings.html') || url.includes('site-settings.html') || url.includes('games.html');
+            const needsScroll = url.includes('whats-new.html') || url.includes('settings.html') || url.includes('site-settings.html') || url.includes('games.html') || url.includes('extension-store.html');
             if (needsScroll) {
                 webContents.insertCSS(`
                     html {
-                        border-radius: 12px !important;
+                        border-radius: ${rad} !important;
                         overflow: hidden !important;
                         background: transparent !important;
                         contain: paint !important;
                     }
                     body {
-                        border-radius: 12px !important;
+                        border-radius: ${rad} !important;
                         overflow-y: auto !important;
                         overflow-x: hidden !important;
                         background: transparent !important;
@@ -2326,11 +2549,11 @@ function setupViewEvents(tabId, view, side = 'left') {
                     html:-webkit-full-screen *, body:-webkit-full-screen * {
                         border-radius: 0px !important;
                     }
-                `);
+                `).catch(() => {});
             } else {
                 webContents.insertCSS(`
                     html, body {
-                        border-radius: 12px !important;
+                        border-radius: ${rad} !important;
                         overflow: hidden !important;
                         background: transparent !important;
                         contain: paint !important;
@@ -2341,16 +2564,39 @@ function setupViewEvents(tabId, view, side = 'left') {
                     html:-webkit-full-screen *, body:-webkit-full-screen * {
                         border-radius: 0px !important;
                     }
-                `);
+                `).catch(() => {});
             }
         }
 
-        if (!isInternal) {
-            const maskColor = userSettings.themeMode === 'light' ? '#f5f5f5' : '#0c0c0c';
-            const sbColor = userSettings.themeMode === 'light' ? 'rgba(0,0,0,0.16)' : 'rgba(255,255,255,0.16)';
-            const sbHover = userSettings.themeMode === 'light' ? 'rgba(0,0,0,0.36)' : 'rgba(255,255,255,0.36)';
+        // Special handling for chrome-extension:// tabs
+        if (url.startsWith('chrome-extension://')) {
+            const isLight = userSettings.themeMode === 'light';
+            webContents.insertCSS(`
+                html, body {
+                    background-color: ${isLight ? '#f4f5f7' : '#141416'} !important;
+                    color-scheme: ${isLight ? 'light' : 'dark'} !important;
+                }
+            `).catch(() => {});
+            if (url.includes('popup')) {
+                webContents.insertCSS(`
+                    body {
+                        margin: 24px auto !important;
+                        max-width: 480px !important;
+                        box-shadow: 0 10px 40px rgba(0,0,0,0.3) !important;
+                        border-radius: 14px !important;
+                        overflow: hidden !important;
+                    }
+                `).catch(() => {});
+            }
+        }
+
+        if (!isInternal && !url.startsWith('chrome-extension://')) {
+            const maskColor = userSettings.themeMode === 'light' ? '#EDEDF0' : '#18181B';
 
             webContents.insertCSS(`
+                #ocal-corner-masks-container, .ocal-corner-mask {
+                    display: ${isNoCurve ? 'none' : 'block'} !important;
+                }
                 .ocal-corner-mask {
                     position: fixed !important;
                     width: 12px !important;
@@ -2382,7 +2628,7 @@ function setupViewEvents(tabId, view, side = 'left') {
                     height: 0px !important;
                     display: none !important;
                 }
-            `);
+            `).catch(() => {});
 
             const injectScript = `
                 (function() {
@@ -2393,6 +2639,7 @@ function setupViewEvents(tabId, view, side = 'left') {
                     container.style.inset = '0';
                     container.style.pointerEvents = 'none';
                     container.style.zIndex = '2147483647';
+                    container.style.display = '${isNoCurve ? 'none' : 'block'}';
                     
                     const tl = document.createElement('div'); tl.className = 'ocal-corner-mask ocal-corner-mask-tl';
                     const tr = document.createElement('div'); tr.className = 'ocal-corner-mask ocal-corner-mask-tr';
@@ -2406,7 +2653,7 @@ function setupViewEvents(tabId, view, side = 'left') {
                     
                     if (document.body) {
                         document.body.appendChild(container);
-                    } else {
+                    } else if (document.documentElement) {
                         document.documentElement.appendChild(container);
                     }
                 })();
@@ -2419,11 +2666,14 @@ function setupViewEvents(tabId, view, side = 'left') {
     const injectYouTubeEnhancers = () => {
         const url = webContents.getURL() || '';
         if (url.includes('youtube.com') && (userSettings.adBlockEnabled !== false || userSettings.youtubeDislikeEnabled !== false)) {
-            const adShieldPath = path.join(__dirname, 'youtube-ad-remover.js');
-            if (fs.existsSync(adShieldPath)) {
-                const script = fs.readFileSync(adShieldPath, 'utf8');
-                webContents.executeJavaScript(script).catch(() => { });
-                console.log(`[YouTube Enhancer] DOM Injected into ${url} (Ad-Shield + Dislike Recovery)`);
+            if (!cachedAdShieldScript) {
+                const adShieldPath = path.join(__dirname, 'youtube-ad-remover.js');
+                if (fs.existsSync(adShieldPath)) {
+                    try { cachedAdShieldScript = fs.readFileSync(adShieldPath, 'utf8'); } catch (e) {}
+                }
+            }
+            if (cachedAdShieldScript) {
+                webContents.executeJavaScript(cachedAdShieldScript).catch(() => {});
             }
         }
     };
@@ -3024,6 +3274,7 @@ function updateViewBounds(forcedUrl = null) {
             if (activeViewEntry.isSplit && activeViewEntry.view2 && !activeViewEntry.view2.webContents.isDestroyed()) {
                 activeViewEntry.view2.webContents.send('set-split-mode', true);
             }
+            updateCornerRoundingOnAllViews();
         }
     }
 
@@ -3999,13 +4250,6 @@ ipcMain.on('set-ai-sidebar-width', (e, width) => {
     updateViewBounds();
 });
 
-ipcMain.on('start-ai-resize', () => {
-    mainWindow.webContents.send('ai-resize-started');
-});
-
-ipcMain.on('stop-ai-resize', () => {
-    mainWindow.webContents.send('ai-resize-stopped');
-});
 
 function registerWindowsDefaultBrowserRegistry() {
     if (process.platform !== 'win32') return;
@@ -4416,10 +4660,11 @@ async function executeBrowserAction(action) {
                 return { success: true, message: 'Cleared browsing history' };
             }
             case 'set-theme': {
-                userSettings.themeMode = p.theme || 'dark';
+                const targetTheme = p.theme || 'dark';
+                applyThemeModeGlobally(targetTheme);
                 saveSettings(userSettings);
                 broadcastSettings();
-                return { success: true, message: `Switched theme to ${p.theme}` };
+                return { success: true, message: `Switched theme to ${targetTheme}` };
             }
             case 'set-accent': {
                 userSettings.accentColor = p.color || '#09f0a0';
@@ -7613,6 +7858,7 @@ ipcMain.on('update-setting', (e, key, val) => {
     }
 
     if (key === 'themeMode') {
+        applyThemeModeGlobally(val);
         if (val === 'light') {
             userSettings.accentColor = userSettings.accentColorLight || '#058f60';
         } else {
@@ -7631,18 +7877,6 @@ ipcMain.on('update-setting', (e, key, val) => {
 
     if (key === 'adBlockEnabled' || key === 'trackingProtection') {
         applyShieldSettings();
-    }
-
-    if (key === 'themeMode') {
-        const bgColor = val === 'light' ? '#ffffff' : '#0c0c0e';
-        if (mainWindow && !mainWindow.isDestroyed()) {
-            mainWindow.setBackgroundColor(bgColor);
-        }
-        views.forEach(v => {
-            if (v.view && !v.view.webContents.isDestroyed()) {
-                v.view.setBackgroundColor('#00000000');
-            }
-        });
     }
 });
 
@@ -8711,25 +8945,39 @@ ipcMain.on('show-shield-popup', (e, { x, y, width, height, tabId }) => {
     mainWindow.addBrowserView(shieldPopupView);
 
     const zoom = getOptimalZoomFactor();
-    const popupWidth = Math.round(280 * zoom);
-    const popupHeight = Math.round(360 * zoom);
+    const popupWidth = Math.round(284 * zoom);
+    const popupHeight = Math.round(375 * zoom);
     const contentBounds = mainWindow.getContentBounds();
-
-    let targetX = x + (width / 2) - (popupWidth / 2);
-    if (targetX < 10) targetX = 10;
-    if (targetX + popupWidth > contentBounds.width - 10) targetX = contentBounds.width - popupWidth - 10;
-
     const winOffset = getWinOffset();
+
+    // Anchor directly beneath the omnibox shield pill (#shield-status)
+    let targetX = Math.round(x + winOffset - 6);
+    if (targetX + popupWidth + 16 > contentBounds.width - 10) {
+        targetX = contentBounds.width - (popupWidth + 16) - 10;
+    }
+    if (targetX < 10) targetX = 10;
+
     shieldPopupView.setBounds({
-        x: Math.round(targetX + winOffset) - 15,
-        y: Math.round(y + height + 10 + winOffset),
-        width: Math.round(popupWidth) + 30,
-        height: Math.round(popupHeight) + 30
+        x: targetX,
+        y: Math.round(y + height + 6 + winOffset),
+        width: Math.round(popupWidth) + 16,
+        height: Math.round(popupHeight) + 16
     });
 
     mainWindow.setTopBrowserView(shieldPopupView);
-    shieldPopupView.webContents.send('show-popup', { x: 0, y: 0, tabId, isYouTube });
-    shieldPopupView.webContents.focus();
+    shieldPopupShowTime = Date.now();
+
+    const sendData = () => {
+        if (!shieldPopupView || shieldPopupView.webContents.isDestroyed()) return;
+        shieldPopupView.webContents.send('show-popup', { x: 0, y: 0, tabId, isYouTube });
+        try { shieldPopupView.webContents.focus(); } catch (err) {}
+    };
+
+    if (shieldPopupView.webContents.isLoading()) {
+        shieldPopupView.webContents.once('did-finish-load', sendData);
+    } else {
+        sendData();
+    }
 });
 
 ipcMain.on('show-passwords-popover', (e, { x, y, width, height }) => {
@@ -10839,18 +11087,18 @@ async function showExtensionPopup(extId, anchorBounds) {
     await ensureSessionExtensions(ses);
 
     // Check if it's a built-in security module with a popup
-    if (extId === 'ad-blocker') {
+    if (extId === 'ad-blocker' || extId === 'cjpalhdlnbpafiamejdnhcphjbkeiagm' || extId === 'ublock') {
         const ublockPath = path.join(__dirname, 'ublock-origin-extension', 'uBlock0.chromium');
         if (fs.existsSync(ublockPath)) {
-            const loaded = ses.getAllExtensions().find(e => e.name && e.name.toLowerCase().includes('ublock'));
+            const loaded = ses.getAllExtensions().find(e => (e.name && e.name.toLowerCase().includes('ublock')) || (e.path && e.path.toLowerCase().includes('ublock')));
             if (loaded) {
                 return openExtensionWindow(loaded.id, 'popup-fenix.html', anchorBounds, 'uBlock Origin');
             }
         }
-    } else if (extId === 'dislike-recovery') {
+    } else if (extId === 'dislike-recovery' || extId === 'gebbhagfogifgggkldgodflihgfeippi' || extId === 'dislike' || extId === 'return-youtube-dislike') {
         const rydPath = path.join(__dirname, 'return-youtube-dislike-extension');
         if (fs.existsSync(rydPath)) {
-            const loaded = ses.getAllExtensions().find(e => e.name && e.name.toLowerCase().includes('dislike'));
+            const loaded = ses.getAllExtensions().find(e => (e.name && (e.name.toLowerCase().includes('dislike') || e.name.includes('__MSG_extensionName__'))) || (e.path && e.path.toLowerCase().includes('dislike')));
             if (loaded) {
                 return openExtensionWindow(loaded.id, 'popup.html', anchorBounds, 'Return YouTube Dislike');
             }
@@ -11849,16 +12097,19 @@ ipcMain.on('reset-volume-boost', () => {
     }
 });
 
+let volumeBoostShowTime = 0;
 function createVolumeBoostView() {
+    if (volumeBoostView) return;
     volumeBoostView = new BrowserView({
         webPreferences: { preload: path.join(__dirname, 'preload.js'), contextIsolation: false, nodeIntegration: true }
     });
     volumeBoostView.webContents.loadFile('volume-booster.html');
     volumeBoostView.setBackgroundColor('#00000000');
 
-    // Auto-hide on blur
+    // Auto-hide on blur with grace period
     volumeBoostView.webContents.on('blur', () => {
-        if (volumeBoostView && mainWindow && mainWindow.getBrowserViews().includes(volumeBoostView)) {
+        if (Date.now() - volumeBoostShowTime < 500) return;
+        if (volumeBoostView && mainWindow && !mainWindow.isDestroyed() && mainWindow.getBrowserViews().includes(volumeBoostView)) {
             mainWindow.removeBrowserView(volumeBoostView);
         }
     });
@@ -11894,8 +12145,19 @@ ipcMain.on('toggle-volume-boost-popup', (e, bounds) => {
     });
 
     mainWindow.setTopBrowserView(volumeBoostView);
-    volumeBoostView.webContents.send('show-popup', { tabId: activeViewId });
-    volumeBoostView.webContents.focus();
+    volumeBoostShowTime = Date.now();
+
+    const sendVbData = () => {
+        if (!volumeBoostView || volumeBoostView.webContents.isDestroyed()) return;
+        volumeBoostView.webContents.send('show-popup', { tabId: activeViewId });
+        try { volumeBoostView.webContents.focus(); } catch (err) {}
+    };
+
+    if (volumeBoostView.webContents.isLoading()) {
+        volumeBoostView.webContents.once('did-finish-load', sendVbData);
+    } else {
+        sendVbData();
+    }
 });
 
 ipcMain.on('hide-volume-boost-popup', () => {

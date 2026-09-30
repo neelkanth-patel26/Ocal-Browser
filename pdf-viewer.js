@@ -1624,13 +1624,58 @@ window.addEventListener('keydown', (e) => {
         searchInput.focus();
         searchInput.select();
     }
+    // Ctrl+O / Cmd+O -> Open PDF
+    else if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'o') {
+        e.preventDefault();
+        triggerFilePicker();
+    }
+    // Ctrl+S / Cmd+S -> Export / Save PDF
+    else if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 's') {
+        e.preventDefault();
+        document.getElementById('download-btn')?.click();
+    }
     // Ctrl+P / Cmd+P -> Print
-    if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'p') {
+    else if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'p') {
         e.preventDefault();
         triggerPrint();
     }
+    // Ctrl+B or Alt+S -> Toggle Sidebar
+    else if (((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'b') || (e.altKey && e.key.toLowerCase() === 's')) {
+        e.preventDefault();
+        document.getElementById('sidebar')?.classList.toggle('collapsed');
+    }
+    // Ctrl+R -> Rotate 90 deg clockwise
+    else if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'r') {
+        e.preventDefault();
+        document.getElementById('rotate-btn')?.click();
+    }
+    // Ctrl+Plus or Ctrl+= -> Zoom In
+    else if ((e.ctrlKey || e.metaKey) && (e.key === '+' || e.key === '=')) {
+        e.preventDefault();
+        document.getElementById('zoom-in')?.click();
+    }
+    // Ctrl+Minus or Ctrl+- -> Zoom Out
+    else if ((e.ctrlKey || e.metaKey) && (e.key === '-' || e.key === '_')) {
+        e.preventDefault();
+        document.getElementById('zoom-out')?.click();
+    }
+    // Ctrl+0 -> Fit to Width / Reset Zoom
+    else if ((e.ctrlKey || e.metaKey) && e.key === '0') {
+        e.preventDefault();
+        fitToWidth();
+    }
+    // F11 -> Toggle Presentation Mode
+    else if (e.key === 'F11') {
+        e.preventDefault();
+        if (document.body.classList.contains('presentation-mode')) {
+            document.body.classList.remove('presentation-mode');
+            exitPresentationBtn.style.display = 'none';
+        } else {
+            presentationBtn?.click();
+        }
+    }
     // Escape -> dismiss popovers
-    if (e.key === 'Escape') {
+    else if (e.key === 'Escape') {
         if (document.body.classList.contains('presentation-mode')) {
             document.body.classList.remove('presentation-mode');
             exitPresentationBtn.style.display = 'none';
@@ -1643,12 +1688,18 @@ window.addEventListener('keydown', (e) => {
         closeFloatingInput();
         clearAllHighlights();
     }
-    // Left/Right Page arrows
-    if (!['INPUT', 'TEXTAREA'].includes(document.activeElement.tagName)) {
+    // Navigation Keys
+    else if (!['INPUT', 'TEXTAREA'].includes(document.activeElement.tagName)) {
         if (e.key === 'ArrowRight' || e.key === 'PageDown') {
             if (pageNum < (pdfDoc ? pdfDoc.numPages : 0)) scrollToPage(pageNum + 1);
         } else if (e.key === 'ArrowLeft' || e.key === 'PageUp') {
             if (pageNum > 1) scrollToPage(pageNum - 1);
+        } else if (e.key === 'Home' && pdfDoc) {
+            e.preventDefault();
+            scrollToPage(1);
+        } else if (e.key === 'End' && pdfDoc) {
+            e.preventDefault();
+            scrollToPage(pdfDoc.numPages);
         }
     }
 });

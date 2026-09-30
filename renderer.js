@@ -388,7 +388,7 @@ function renderTabs() {
                     <span class="sub-title">${title2}</span>
                 </div>
 
-                <i class="fas fa-times tab-close" data-id="${tab.id}" title="Close split workspace"></i>
+                <button class="tab-close" data-id="${tab.id}" title="Close split workspace" aria-label="Close split workspace"><i class="fas fa-times"></i></button>
             `;
 
             el.querySelectorAll('.sub-tab-half').forEach(half => {
@@ -412,39 +412,12 @@ function renderTabs() {
                 ${iconHtml}
                 <span class="tab-title">${simplifiedTitle}</span>
                 ${tab.audible ? '<i class="fas fa-volume-high tab-audio-icon"></i>' : ''}
-                <div class="tab-split-zone" data-target-id="${tab.id}" title="Drop here to split tab">
-                    <i class="fas fa-columns"></i>
-                </div>
-                <i class="fas fa-times tab-close" data-id="${tab.id}"></i>
+                <button class="tab-close" data-id="${tab.id}" title="Close tab" aria-label="Close tab"><i class="fas fa-times"></i></button>
             `;
         }
 
-        const splitZone = el.querySelector('.tab-split-zone');
-        if (splitZone) {
-            splitZone.ondragover = (e) => {
-                e.preventDefault();
-                e.stopPropagation();
-                splitZone.classList.add('drag-over');
-            };
-            splitZone.ondragleave = () => splitZone.classList.remove('drag-over');
-            splitZone.ondrop = (e) => {
-                e.preventDefault();
-                e.stopPropagation();
-                splitZone.classList.remove('drag-over');
-                const fromIndex = parseInt(e.dataTransfer.getData('tab-index'));
-                const draggedTab = tabs[fromIndex];
-                const targetTabId = splitZone.getAttribute('data-target-id');
-                if (draggedTab && draggedTab.id !== targetTabId) {
-                    window.electronAPI.send('merge-tabs-to-split', {
-                        sourceTabId: draggedTab.id,
-                        targetTabId: targetTabId
-                    });
-                }
-            };
-        }
-
         el.onclick = (e) => {
-            if (e.target.classList.contains('tab-close')) return;
+            if (e.target.closest('.tab-close')) return;
             if (tab.isSplit) return;
             activeTabId = tab.id;
             window.electronAPI.switchTab(tab.id);
@@ -455,10 +428,32 @@ function renderTabs() {
         parentContainer.appendChild(el);
     });
 
+    // Capture-phase delegated listener for horizontal tabs (#tab-list)
+    const tabListEl = document.getElementById('tab-list');
+    if (tabListEl && !tabListEl.dataset.tabCloseDelegated) {
+        tabListEl.dataset.tabCloseDelegated = 'true';
+        tabListEl.addEventListener('click', (e) => {
+            const closeBtn = e.target.closest('.tab-close');
+            if (closeBtn) {
+                e.stopPropagation();
+                e.preventDefault();
+                const tabId = closeBtn.getAttribute('data-id');
+                if (tabId) {
+                    window.electronAPI.closeTab(tabId);
+                }
+            }
+        }, true);
+    }
+
+    // Direct button listener fallback
     document.querySelectorAll('.tab-close').forEach(btn => {
         btn.onclick = (e) => {
             e.stopPropagation();
-            window.electronAPI.closeTab(btn.getAttribute('data-id'));
+            e.preventDefault();
+            const tabId = btn.getAttribute('data-id');
+            if (tabId) {
+                window.electronAPI.closeTab(tabId);
+            }
         };
     });
 
@@ -632,39 +627,12 @@ function renderTabs() {
                         <span class="vt-tab-title" style="${group ? `color: ${group.color};` : ''}">${simplifiedTitle}</span>
                     </div>
                     ${tab.audible ? '<i class="fas fa-volume-high vt-audio-icon"></i>' : ''}
-                    <div class="vt-tab-split-zone" data-target-id="${tab.id}" title="Drop tab here to split">
-                        <i class="fas fa-columns"></i>
-                    </div>
                     <button class="vt-tab-close" data-id="${tab.id}" title="Close tab"><i class="fas fa-times"></i></button>
                 `;
-
-                const vtSplitZone = vtEl.querySelector('.vt-tab-split-zone');
-                if (vtSplitZone) {
-                    vtSplitZone.ondragover = (e) => {
-                        e.preventDefault();
-                        e.stopPropagation();
-                        vtSplitZone.classList.add('drag-over');
-                    };
-                    vtSplitZone.ondragleave = () => vtSplitZone.classList.remove('drag-over');
-                    vtSplitZone.ondrop = (e) => {
-                        e.preventDefault();
-                        e.stopPropagation();
-                        vtSplitZone.classList.remove('drag-over');
-                        const fromIndex = parseInt(e.dataTransfer.getData('tab-index'));
-                        const draggedTab = tabs[fromIndex];
-                        const targetTabId = vtSplitZone.getAttribute('data-target-id');
-                        if (draggedTab && draggedTab.id !== targetTabId) {
-                            window.electronAPI.send('merge-tabs-to-split', {
-                                sourceTabId: draggedTab.id,
-                                targetTabId: targetTabId
-                            });
-                        }
-                    };
-                }
             }
 
             vtEl.onclick = (e) => {
-                if (e.target.closest('.vt-tab-close') || e.target.closest('.vt-tab-split-zone')) return;
+                if (e.target.closest('.vt-tab-close')) return;
                 if (tab.isSplit) return;
                 activeTabId = tab.id;
                 window.electronAPI.switchTab(tab.id);
@@ -852,7 +820,8 @@ function updateHeartStatus(url) {
     if (!heartBtn) return;
     const isBookmarked = currentBookmarks.some(b => b.url === url);
     heartBtn.classList.toggle('active', isBookmarked);
-    heartBtn.innerHTML = isBookmarked ? '<i class="fas fa-heart"></i>' : '<i class="far fa-heart"></i>';
+    heartBtn.innerHTML = '<i data-lucide="heart"></i>';
+    if (window.IconEnhancer) window.IconEnhancer.enhance(heartBtn);
 }
 
 function formatDisplayUrl(url) {
@@ -1014,27 +983,14 @@ function getSimplifiedTitle(title, url) {
         return 'PDF Viewer';
     }
     
-    let t = title || '';
+    let t = title ? title.trim() : '';
     if (t.toLowerCase().endsWith('.html')) {
         t = t.replace(/\.html$/i, '').replace(/[-_]/g, ' ');
         t = t.charAt(0).toUpperCase() + t.slice(1);
     }
     
-    // Split by standard web title separators: " - ", " | ", " – ", " • ", " : "
-    const parts = t.split(/\s*[-|–—•:]\s*/).map(p => p.trim()).filter(Boolean);
-    if (parts.length > 1) {
-        // If the first part is a generic page name (e.g. "Home", "Feed", "Dashboard"), prefer the brand part
-        if (/^(home|welcome|dashboard|main|feed|explore|index|start)$/i.test(parts[0])) {
-            t = parts[parts.length - 1]; // e.g. "Home - Spotify" -> "Spotify"
-        } else {
-            t = parts[0];
-        }
-    } else if (parts.length === 1) {
-        t = parts[0];
-    }
-    
-    // If title is just generic "Home" or "Ocal Home" but URL is an actual site (e.g. Spotify), derive clean site brand
-    if ((/^(home|ocal home|index|new tab)$/i.test(t.trim()) || !t.trim()) && url && !url.startsWith('ocal://') && !url.includes('home.html')) {
+    // If title is just generic "Home" or "Ocal Home" or empty but URL is an actual site (e.g. Spotify), derive clean site brand
+    if ((/^(home|ocal home|index|new tab)$/i.test(t) || !t) && url && !url.startsWith('ocal://') && !url.includes('home.html')) {
         try {
             const host = new URL(url.startsWith('http') ? url : 'https://' + url).hostname.replace(/^www\./, '');
             const hostParts = host.split('.');
@@ -1047,7 +1003,7 @@ function getSimplifiedTitle(title, url) {
         } catch(e) {}
     }
 
-    return t.trim() || title || 'Tab';
+    return t || title || 'Tab';
 }
 
 function getTabIconHtml(tab, tintColor) {
@@ -1085,20 +1041,21 @@ function getTabIconHtml(tab, tintColor) {
         return `<i class="fas fa-moon tab-favicon" style="color:${accentColor}"></i>`;
     }
 
-    if (!url || url.includes('home.html')) return `<i class="fas fa-house tab-favicon" style="color:${accentColor}"></i>`;
+    if (!url || url.includes('home.html')) return `<i class="fas fa-house tab-favicon solid-icon" style="color:${accentColor}"></i>`;
     if (url.includes('extension-store.html') || url.startsWith('ocal://store') || url.startsWith('ocal://webstore') || url.startsWith('ocal://extension-store')) {
-        return `<i class="fas fa-bag-shopping tab-favicon" style="color:${accentColor}"></i>`;
+        return `<i class="fas fa-bag-shopping tab-favicon solid-icon" style="color:${accentColor}"></i>`;
     }
-    if (url.includes('extensions.html') || url.startsWith('ocal://extensions')) return `<i class="fas fa-puzzle-piece tab-favicon" style="color:${accentColor}"></i>`;
-    if (url.includes('music-player.html') || url.startsWith('ocal://music-player') || url.startsWith('ocal://music')) return `<i class="fas fa-compact-disc tab-favicon" style="color:${accentColor}"></i>`;
-    if (url.includes('site-settings.html') || url.startsWith('ocal://site-settings')) return `<i class="fas fa-sliders tab-favicon" style="color:${accentColor}"></i>`;
-    if (url.includes('settings.html')) return `<i class="fas fa-gear tab-favicon" style="color:${accentColor}"></i>`;
-    if (url.includes('pdf-viewer.html') || url.endsWith('.pdf') || url.startsWith('ocal://pdf-viewer') || url.startsWith('ocal://pdf')) return `<i class="fas fa-file-pdf tab-favicon" style="color:${accentColor}"></i>`;
-    if (url.includes('file-manager.html') || url.startsWith('ocal://file-manager')) return `<i class="fas fa-folder-tree tab-favicon" style="color:${accentColor}"></i>`;
-    if (url.includes('downloads.html') || url.startsWith('ocal://downloads')) return `<i class="fas fa-arrow-down-to-bracket tab-favicon" style="color:${accentColor}"></i>`;
-    if (url.includes('whats-new.html') || url.startsWith('ocal://whats-new')) return `<i class="fas fa-sparkles tab-favicon" style="color:${accentColor}"></i>`;
+    if (url.includes('extensions.html') || url.startsWith('ocal://extensions')) return `<i class="fas fa-puzzle-piece tab-favicon solid-icon" style="color:${accentColor}"></i>`;
+    if (url.includes('music-player.html') || url.startsWith('ocal://music-player') || url.startsWith('ocal://music')) return `<i class="fas fa-compact-disc tab-favicon solid-icon" style="color:${accentColor}"></i>`;
+    if (url.includes('site-settings.html') || url.startsWith('ocal://site-settings')) return `<i class="fas fa-sliders tab-favicon solid-icon" style="color:${accentColor}"></i>`;
+    if (url.includes('settings.html')) return `<i class="fas fa-gear tab-favicon solid-icon" style="color:${accentColor}"></i>`;
+    if (url.includes('pdf-viewer.html') || url.endsWith('.pdf') || url.startsWith('ocal://pdf-viewer') || url.startsWith('ocal://pdf')) return `<i class="fas fa-file-pdf tab-favicon solid-icon" style="color:${accentColor}"></i>`;
+    if (url.includes('file-manager.html') || url.startsWith('ocal://file-manager')) return `<i class="fas fa-folder-tree tab-favicon solid-icon" style="color:${accentColor}"></i>`;
+    if (url.includes('ai-sidebar.html') || url.startsWith('ocal://ai-sidebar') || url.startsWith('ocal://ai')) return `<i class="fas fa-wand-magic-sparkles tab-favicon solid-icon" style="color:${accentColor}"></i>`;
+    if (url.includes('downloads.html') || url.startsWith('ocal://downloads')) return `<i class="fas fa-circle-down tab-favicon solid-icon" style="color:${accentColor}"></i>`;
+    if (url.includes('whats-new.html') || url.startsWith('ocal://whats-new')) return `<i class="fas fa-wand-magic-sparkles tab-favicon solid-icon" style="color:${accentColor}"></i>`;
     if (url.includes('game.html') || url.includes('games.html') || url.includes('snake.html') || url.includes('tetris.html') || url.startsWith('ocal://games') || url.startsWith('ocal://snake') || url.startsWith('ocal://tetris') || url.startsWith('ocal://runner') || url.startsWith('ocal://game')) {
-        return `<i class="fas fa-gamepad tab-favicon" style="color:${accentColor}"></i>`;
+        return `<i class="fas fa-gamepad tab-favicon solid-icon" style="color:${accentColor}"></i>`;
     }
     
     // Search Engines
@@ -1113,12 +1070,12 @@ function getTabIconHtml(tab, tintColor) {
         try {
             const domain = new URL(url.startsWith('http') ? url : 'https://' + url).hostname;
             if (domain && domain.includes('.')) {
-                return `<img src="https://www.google.com/s2/favicons?domain=${domain}&sz=32" class="tab-favicon" onerror="const i=document.createElement('i'); i.className='fas fa-globe tab-favicon'; ${tintColor ? `i.style.color='${tintColor}';` : ''} this.replaceWith(i);">`;
+                return `<img src="https://www.google.com/s2/favicons?domain=${domain}&sz=32" class="tab-favicon" onerror="const i=document.createElement('i'); i.className='fas fa-globe tab-favicon solid-icon'; ${tintColor ? `i.style.color='${tintColor}';` : ''} this.replaceWith(i);">`;
             }
         } catch (e) {}
     }
 
-    return `<i class="fas fa-globe tab-favicon" ${tintColor ? `style="color:${tintColor}"` : ''}></i>`;
+    return `<i class="fas fa-globe tab-favicon solid-icon" ${tintColor ? `style="color:${tintColor}"` : ''}></i>`;
 }
 
 function updateOmniboxIcon(url) {
@@ -1175,6 +1132,10 @@ function updateOmniboxIcon(url) {
     }
     if (url && (url.includes('file-manager.html') || url.startsWith('ocal://file-manager'))) {
         iconContainer.innerHTML = '<i class="fas fa-folder-tree" style="color:var(--accent)"></i>';
+        return;
+    }
+    if (url && (url.includes('ai-sidebar.html') || url.startsWith('ocal://ai-sidebar') || url.startsWith('ocal://ai'))) {
+        iconContainer.innerHTML = '<i class="fas fa-sparkles" style="color:var(--accent)"></i>';
         return;
     }
     if (url && (url.includes('offline.html') || url.startsWith('ocal://offline'))) {
@@ -1403,6 +1364,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const dlBtn  = document.getElementById('download-icon-btn');
     const extBtn = document.getElementById('extensions-toolbar-btn');
     const fmBtn  = document.getElementById('file-manager-btn');
+    const omniFmBtn = document.getElementById('omni-file-manager-btn');
 
     if (aiBtn) aiBtn.onclick = () => window.electronAPI.send('toggle-ai-sidebar');
     if (extBtn) {
@@ -1419,6 +1381,24 @@ document.addEventListener('DOMContentLoaded', () => {
     if (bmBtn) bmBtn.onclick = () => { window.electronAPI.send('toggle-sidebar', true); window.electronAPI.send('switch-sidebar-tab', 'bookmarks'); };
     if (hiBtn) hiBtn.onclick = () => { window.electronAPI.send('toggle-sidebar', true); window.electronAPI.send('switch-sidebar-tab', 'history'); };
     if (fmBtn) fmBtn.onclick = () => window.electronAPI.navigateTo('ocal://file-manager');
+    if (omniFmBtn) {
+        omniFmBtn.onclick = (e) => {
+            e.stopPropagation();
+            if (e.ctrlKey || e.metaKey) {
+                window.electronAPI.send('new-tab', { url: 'ocal://file-manager' });
+            } else {
+                window.electronAPI.navigateTo('ocal://file-manager');
+            }
+        };
+    }
+    const screenBtn = document.getElementById('screenshot-btn');
+    if (screenBtn) {
+        screenBtn.onclick = (e) => {
+            e.stopPropagation();
+            window.electronAPI.send('capture-screenshot', 'visible');
+            showToast('Capturing screenshot...', 'fa-camera');
+        };
+    }
     if (mnBtn) mnBtn.onclick = () => window.electronAPI.send('open-settings');
     
     // ── Split Screen Helper Popover UI Logic ─────────────────────────
@@ -1781,12 +1761,15 @@ function hexToRgba(hex, alpha) {
 }
 
 function getContrastColor(hex) {
-    if (!hex || hex.length < 7) return '#000000';
-    const r = parseInt(hex.substring(1, 3), 16);
-    const g = parseInt(hex.substring(3, 5), 16);
-    const b = parseInt(hex.substring(5, 7), 16);
+    if (!hex) return '#ffffff';
+    let c = hex.toString().trim().replace(/^#/, '');
+    if (c.length === 3) c = c.split('').map(x => x + x).join('');
+    if (c.length !== 6) return '#ffffff';
+    const r = parseInt(c.substring(0, 2), 16);
+    const g = parseInt(c.substring(2, 4), 16);
+    const b = parseInt(c.substring(4, 6), 16);
     const luma = 0.2126 * r + 0.7152 * g + 0.0722 * b;
-    return luma > 128 ? '#000000' : '#ffffff';
+    return luma > 145 ? '#111111' : '#ffffff';
 }
 
 function getModeAccent(color, isLight) {
@@ -1807,29 +1790,34 @@ function getModeAccent(color, isLight) {
 function applyGlobalSettings(s) {
     lastSettings = s;
     const isLight = s.themeMode === 'light';
-    if (s.accentColor) {
-        const activeAccent = getModeAccent(s.accentColor, isLight);
-        const contrastColor = getContrastColor(activeAccent);
-        document.documentElement.style.setProperty('--accent', activeAccent);
-        document.documentElement.style.setProperty('--accent-glow', 'transparent');
-        document.documentElement.style.setProperty('--accent-dim', hexToRgba(activeAccent, 0.15));
-        document.documentElement.style.setProperty('--accent-border', hexToRgba(activeAccent, 0.4));
-        document.documentElement.style.setProperty('--accent-text', contrastColor);
+    const activeAccent = s.accentColor ? getModeAccent(s.accentColor, isLight) : getModeAccent(null, isLight);
+    const contrastColor = getContrastColor(activeAccent);
 
-        document.body.style.setProperty('--accent', activeAccent);
-        document.body.style.setProperty('--accent-glow', 'transparent');
-        document.body.style.setProperty('--accent-dim', hexToRgba(activeAccent, 0.15));
-        document.body.style.setProperty('--accent-border', hexToRgba(activeAccent, 0.4));
-        document.body.style.setProperty('--accent-text', contrastColor);
-    } else {
-        const defaultAccent = getModeAccent(null, isLight);
-        document.body.style.setProperty('--accent', defaultAccent);
-        document.body.style.setProperty('--accent-dim', hexToRgba(defaultAccent, 0.15));
-        document.body.style.setProperty('--accent-border', hexToRgba(defaultAccent, 0.4));
-    }
+    document.documentElement.style.setProperty('--accent', activeAccent);
+    document.documentElement.style.setProperty('--accent-glow', 'transparent');
+    document.documentElement.style.setProperty('--accent-dim', hexToRgba(activeAccent, 0.15));
+    document.documentElement.style.setProperty('--accent-border', hexToRgba(activeAccent, 0.4));
+    document.documentElement.style.setProperty('--accent-text', contrastColor);
+
+    document.body.style.setProperty('--accent', activeAccent);
+    document.body.style.setProperty('--accent-glow', 'transparent');
+    document.body.style.setProperty('--accent-dim', hexToRgba(activeAccent, 0.15));
+    document.body.style.setProperty('--accent-border', hexToRgba(activeAccent, 0.4));
+    document.body.style.setProperty('--accent-text', contrastColor);
     document.body.classList.toggle('compact-mode', !!s.compactMode);
     document.body.classList.toggle('battery-saver', !!s.batterySaver);
-    document.body.setAttribute('data-theme', s.themeMode || 'dark');
+    const theme = s.themeMode || 'dark';
+    document.documentElement.setAttribute('data-theme', theme);
+    document.body.setAttribute('data-theme', theme);
+    if (window.OcalColorHarmonizer && window.OcalColorHarmonizer.updateLogoElements) {
+        window.OcalColorHarmonizer.updateLogoElements(document, theme);
+    } else {
+        const logoImg = document.getElementById('sidebar-logo-img');
+        if (logoImg) {
+            logoImg.src = theme === 'dark' ? 'assets/Dark.png' : 'assets/Light.png';
+            logoImg.style.filter = 'none';
+        }
+    }
     
     const isHide = s.sidebarMode === 'hidden';
     document.body.classList.toggle('sidebar-visible', s.sidebarMode === 'visible');
@@ -2009,7 +1997,7 @@ function renderBookmarkBar() {
     const webFolder = document.createElement('div');
     webFolder.className = 'web-folder';
     webFolder.id = 'web-folder-btn';
-    webFolder.innerHTML = `<i class="fas fa-folder"></i><span>Saves</span>`;
+    webFolder.innerHTML = `<i class="fas fa-folder solid-icon"></i><span>Saves</span>`;
     webFolder.onclick = (e) => {
         e.stopPropagation();
         const rect = webFolder.getBoundingClientRect();
@@ -2034,7 +2022,7 @@ function renderBookmarkBar() {
         if (f.name.toLowerCase() === 'web') return; // Skip if named Web (we use 'Saves' above)
         const el = document.createElement('div');
         el.className = 'bookmark-bar-folder';
-        el.innerHTML = `<i class="fas fa-folder"></i><span>${f.name}</span>`;
+        el.innerHTML = `<i class="fas fa-folder solid-icon"></i><span>${f.name}</span>`;
         el.onclick = (e) => {
             e.stopPropagation();
             const rect = el.getBoundingClientRect();
@@ -2098,37 +2086,7 @@ if (screenshotBtn) {
 }
 
 // ── Global Click-to-Dismiss ──────────────────────────────────────────────
-// ── AI Resizing Logic ───────────────────────────────────────────────────
-let isAiResizing = false;
-const resizeOverlay = document.createElement('div');
-resizeOverlay.style.cssText = 'position:fixed;inset:0;z-index:99999;cursor:ew-resize;display:none;background:transparent;';
-document.body.appendChild(resizeOverlay);
 
-window.electronAPI.on('ai-resize-started', () => {
-    isAiResizing = true;
-    resizeOverlay.style.display = 'block';
-});
-
-window.electronAPI.on('ai-resize-stopped', () => {
-    isAiResizing = false;
-    resizeOverlay.style.display = 'none';
-});
-
-window.addEventListener('mousemove', (e) => {
-    if (!isAiResizing) return;
-    const newWidth = window.innerWidth - e.clientX;
-    if (newWidth >= 300 && newWidth <= 950) {
-        window.electronAPI.send('set-ai-sidebar-width', newWidth);
-    }
-});
-
-window.addEventListener('mouseup', () => {
-    if (isAiResizing) {
-        isAiResizing = false;
-        resizeOverlay.style.display = 'none';
-        window.electronAPI.send('stop-ai-resize');
-    }
-});
 
 window.addEventListener('mousedown', (e) => {
     // Only close if we're not clicking a button that's supposed to open/control something
@@ -2422,8 +2380,10 @@ function getEmojiSvgUrl(emoji) {
 // ── Real-Time Theme & Logo Color Harmonizer ────────────────────────
 (function() {
     function syncMainAppThemeAndLogo() {
-        const theme = localStorage.getItem('ocal-settings-theme') || 'light';
-        const accent = localStorage.getItem('ocal-settings-accent') || (theme === 'light' ? '#15AC49' : '#09F0A0');
+        const theme = localStorage.getItem('ocal-settings-theme') || (window.lastSettings && window.lastSettings.themeMode) || 'dark';
+        const accent = localStorage.getItem('ocal-settings-accent') || (window.lastSettings && window.lastSettings.accentColor) || (theme === 'light' ? '#15AC49' : '#09F0A0');
+        document.documentElement.setAttribute('data-theme', theme);
+        if (document.body) document.body.setAttribute('data-theme', theme);
         if (window.OcalColorHarmonizer) {
             window.OcalColorHarmonizer.applyHarmonizedTheme(accent, theme);
         }
@@ -2441,8 +2401,10 @@ function getEmojiSvgUrl(emoji) {
         try {
             window.electronAPI.onSettingsChanged((s) => {
                 if (s) {
-                    const theme = s.themeMode || localStorage.getItem('ocal-settings-theme') || 'light';
-                    const accent = s.accentColor || localStorage.getItem('ocal-settings-accent') || '#15AC49';
+                    const theme = s.themeMode || localStorage.getItem('ocal-settings-theme') || 'dark';
+                    const accent = s.accentColor || localStorage.getItem('ocal-settings-accent') || (theme === 'light' ? '#15AC49' : '#09F0A0');
+                    document.documentElement.setAttribute('data-theme', theme);
+                    if (document.body) document.body.setAttribute('data-theme', theme);
                     if (window.OcalColorHarmonizer) {
                         window.OcalColorHarmonizer.applyHarmonizedTheme(accent, theme);
                     }

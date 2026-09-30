@@ -19,34 +19,33 @@
     <link rel="stylesheet" href="assets/fontawesome/css/all.min.css">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     <style>
         :root {
             --accent: #15AC49;
-            --accent-glow: rgba(21, 172, 73, 0.25);
+            --accent-glow: rgba(21, 172, 73, 0.22);
             --accent-dim: rgba(21, 172, 73, 0.12);
             --accent-text: #FFFFFF;
             --bg-glass: #FFFFFF;
             --border-glass: rgba(0, 0, 0, 0.08);
-            --card-bg: #F4F4F6;
-            --card-border: rgba(0, 0, 0, 0.06);
-            --card-hover-bg: #EAEBED;
-            --text-primary: #111111;
-            --text-secondary: #555860;
-            --text-muted: #7E8492;
-            --font-main: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, sans-serif;
-            --font-mono: 'Space Mono', monospace;
-            --radius: 20px;
+            --card-bg: #F6F7F9;
+            --card-border: rgba(0, 0, 0, 0.05);
+            --card-hover-bg: #EEF0F4;
+            --text-primary: #121417;
+            --text-secondary: #58606E;
+            --text-muted: #8A92A0;
+            --font-main: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            --radius: 18px;
         }
 
         [data-theme="dark"], body[data-theme="dark"] {
-            --bg-glass: #16181D;
+            --bg-glass: #17191E;
             --border-glass: rgba(255, 255, 255, 0.08);
-            --card-bg: #1F222A;
-            --card-border: rgba(255, 255, 255, 0.06);
-            --card-hover-bg: #272B35;
-            --text-primary: #FFFFFF;
-            --text-secondary: #9CA3AF;
+            --card-bg: #1F2228;
+            --card-border: rgba(255, 255, 255, 0.05);
+            --card-hover-bg: #282C34;
+            --text-primary: #F3F4F6;
+            --text-secondary: #9AA2B1;
             --text-muted: #6B7280;
             color-scheme: dark;
         }
@@ -56,6 +55,7 @@
             padding: 0;
             box-sizing: border-box;
             user-select: none;
+            box-shadow: none !important;
         }
 
         body {
@@ -73,28 +73,20 @@
         }
 
         .popup-overlay {
-            position: fixed;
-            inset: 0;
-            background: transparent;
-            z-index: 1;
+            display: none;
         }
 
         .shield-card {
             position: relative;
             background: var(--bg-glass);
             border: 1px solid var(--border-glass);
-            padding: 14px;
+            padding: 13px 14px;
             display: flex;
             flex-direction: column;
             gap: 10px;
-            width: 270px;
+            width: 272px;
             z-index: 2;
-            opacity: 1;
             border-radius: var(--radius);
-            box-shadow: none !important;
-        }
-
-        [data-theme="dark"] .shield-card {
             box-shadow: none !important;
         }
 
@@ -103,7 +95,7 @@
             display: flex;
             align-items: center;
             justify-content: space-between;
-            padding-bottom: 8px;
+            padding-bottom: 9px;
             border-bottom: 1px solid var(--border-glass);
         }
 
@@ -118,82 +110,94 @@
             height: 30px;
             background: var(--accent-dim);
             border: 1px solid var(--accent);
-            border-radius: 10px;
+            border-radius: 9px;
             display: flex;
             align-items: center;
             justify-content: center;
             color: var(--accent);
-            font-size: 13px;
+            flex-shrink: 0;
+        }
+
+        .shield-icon-badge svg {
+            display: block;
         }
 
         .header h2 {
             font-size: 13.5px;
-            font-weight: 800;
+            font-weight: 700;
             letter-spacing: -0.2px;
             color: var(--text-primary);
         }
 
         .status-badge {
-            font-family: var(--font-mono);
-            font-size: 9.5px;
+            font-size: 10px;
             font-weight: 700;
-            color: var(--accent-text) !important;
-            background: var(--accent) !important;
-            padding: 3px 9px;
-            border-radius: 100px;
-            text-transform: uppercase;
+            color: var(--accent-text);
+            background: var(--accent);
+            padding: 3.5px 9px;
+            border-radius: 999px;
             letter-spacing: 0.5px;
-            box-shadow: none !important;
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
         }
 
-        /* Stats Dashboard */
+        .status-badge::before {
+            content: '';
+            width: 4px;
+            height: 4px;
+            border-radius: 50%;
+            background: #FFFFFF;
+            opacity: 0.9;
+        }
+
+        /* Stats Bento Box */
         .stats-dashboard {
             background: var(--card-bg);
             border: 1px solid var(--card-border);
-            padding: 12px 14px;
-            border-radius: 14px;
+            padding: 11px 12px;
+            border-radius: 13px;
             display: flex;
             flex-direction: column;
             gap: 8px;
         }
 
         .section-label {
-            font-family: var(--font-mono);
-            font-size: 8.5px;
+            font-size: 9.5px;
             font-weight: 700;
-            letter-spacing: 0.8px;
+            letter-spacing: 0.6px;
             color: var(--text-muted);
             text-transform: uppercase;
         }
 
         .stats-row {
-            display: flex;
-            justify-content: space-between;
+            display: grid;
+            grid-template-columns: 1fr auto 1fr;
             align-items: center;
-            padding: 2px 0;
+            gap: 8px;
+            padding: 2px 0 4px 0;
         }
 
         .stat-group {
             display: flex;
             flex-direction: column;
+            align-items: flex-start;
         }
 
         .stat-value-big {
-            font-family: var(--font-mono);
-            font-size: 22px;
-            font-weight: 700;
+            font-size: 23px;
+            font-weight: 800;
             color: var(--accent);
             line-height: 1.1;
+            font-variant-numeric: tabular-nums;
+            letter-spacing: -0.5px;
         }
 
         .stat-label-sub {
-            font-family: var(--font-mono);
-            font-size: 8px;
-            font-weight: 700;
+            font-size: 10px;
+            font-weight: 600;
             color: var(--text-secondary);
-            margin-top: 3px;
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
+            margin-top: 2px;
         }
 
         .stat-divider {
@@ -202,19 +206,27 @@
             background: var(--border-glass);
         }
 
+        .stat-footer {
+            border-top: 1px solid var(--border-glass);
+            padding-top: 6px;
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+        }
+
         .stat-row-mini {
             display: flex;
             justify-content: space-between;
+            align-items: center;
             font-size: 10.5px;
             color: var(--text-secondary);
-            font-weight: 600;
-            padding-top: 2px;
+            font-weight: 500;
         }
 
         .stat-row-mini span:last-child {
             color: var(--text-primary);
             font-weight: 700;
-            font-family: var(--font-mono);
+            font-variant-numeric: tabular-nums;
         }
 
         /* Toggle items list */
@@ -228,30 +240,55 @@
             display: flex;
             align-items: center;
             justify-content: space-between;
-            padding: 9px 12px;
+            padding: 8px 11px;
             background: var(--card-bg);
             border: 1px solid var(--card-border);
-            border-radius: 14px;
-            transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+            border-radius: 12px;
+            transition: background 0.18s ease, border-color 0.18s ease;
         }
 
         .toggle-item:hover {
             background: var(--card-hover-bg);
-            border-color: var(--accent);
+            border-color: rgba(0, 0, 0, 0.1);
+        }
+
+        [data-theme="dark"] .toggle-item:hover {
+            border-color: rgba(255, 255, 255, 0.1);
+        }
+
+        .toggle-left {
+            display: flex;
+            align-items: center;
+            gap: 9px;
+        }
+
+        .toggle-icon-badge {
+            width: 26px;
+            height: 26px;
+            border-radius: 8px;
+            background: var(--card-hover-bg);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: var(--accent);
+            flex-shrink: 0;
+        }
+
+        .toggle-icon-badge svg {
+            display: block;
         }
 
         .toggle-info {
             display: flex;
             flex-direction: column;
-            gap: 2px;
+            gap: 1.5px;
         }
 
         .toggle-title {
-            font-size: 11px;
-            font-weight: 800;
+            font-size: 11.5px;
+            font-weight: 700;
             color: var(--text-primary);
-            letter-spacing: 0.3px;
-            text-transform: uppercase;
+            letter-spacing: -0.1px;
         }
 
         .toggle-desc {
@@ -267,21 +304,24 @@
             width: 36px;
             height: 20px;
             flex-shrink: 0;
+            cursor: pointer;
         }
 
         .switch input {
             opacity: 0;
             width: 0;
             height: 0;
+            position: absolute;
         }
 
         .slider {
             position: absolute;
             cursor: pointer;
             inset: 0;
-            background: rgba(148, 163, 184, 0.3);
-            transition: 0.25s cubic-bezier(0.16, 1, 0.3, 1);
-            border-radius: 100px;
+            background: rgba(140, 150, 165, 0.3);
+            transition: background 0.22s cubic-bezier(0.16, 1, 0.3, 1);
+            border-radius: 999px;
+            box-shadow: none !important;
         }
 
         .slider:before {
@@ -292,7 +332,7 @@
             left: 3px;
             bottom: 3px;
             background: #FFFFFF;
-            transition: 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+            transition: transform 0.2s cubic-bezier(0.16, 1, 0.3, 1);
             border-radius: 50%;
             box-shadow: none !important;
         }
@@ -314,12 +354,16 @@
             document.body.setAttribute('data-theme', t);
         })();
     </script>
-    <div class="popup-overlay" id="popup-overlay"></div>
 
     <div class="shield-card" id="shield-card">
         <div class="header">
             <div class="brand-box">
-                <div class="shield-icon-badge"><i class="fas fa-shield-halved"></i></div>
+                <div class="shield-icon-badge">
+                    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
+                        <path d="m9 12 2 2 4-4"/>
+                    </svg>
+                </div>
                 <h2>Ocal Shield</h2>
             </div>
             <span class="status-badge">ACTIVE</span>
@@ -338,21 +382,31 @@
                     <span class="stat-label-sub">Time Saved</span>
                 </div>
             </div>
-            <div class="stat-row-mini">
-                <span>Lifetime Blocked:</span>
-                <span id="ads-blocked">1,304</span>
-            </div>
-            <div class="stat-row-mini">
-                <span>Total Trackers:</span>
-                <span id="trackers-blocked">266</span>
+            <div class="stat-footer">
+                <div class="stat-row-mini">
+                    <span>Lifetime Blocked</span>
+                    <span id="ads-blocked">0</span>
+                </div>
+                <div class="stat-row-mini">
+                    <span>Total Trackers</span>
+                    <span id="trackers-blocked">0</span>
+                </div>
             </div>
         </div>
 
         <div class="toggle-section">
             <div class="toggle-item">
-                <div class="toggle-info">
-                    <span class="toggle-title">Ad Block</span>
-                    <span class="toggle-desc">Remove intrusive ads</span>
+                <div class="toggle-left">
+                    <div class="toggle-icon-badge">
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <circle cx="12" cy="12" r="10"/>
+                            <path d="m4.9 4.9 14.2 14.2"/>
+                        </svg>
+                    </div>
+                    <div class="toggle-info">
+                        <span class="toggle-title">Ad Block</span>
+                        <span class="toggle-desc">Remove intrusive ads</span>
+                    </div>
                 </div>
                 <label class="switch">
                     <input type="checkbox" id="adblock-toggle" checked>
@@ -361,9 +415,17 @@
             </div>
 
             <div class="toggle-item">
-                <div class="toggle-info">
-                    <span class="toggle-title">Strict Privacy</span>
-                    <span class="toggle-desc">Block cross-site tracking</span>
+                <div class="toggle-left">
+                    <div class="toggle-icon-badge">
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <rect width="18" height="11" x="3" y="11" rx="2" ry="2"/>
+                            <path d="M7 11V7a5 5 0 0 1 10 0v4"/>
+                        </svg>
+                    </div>
+                    <div class="toggle-info">
+                        <span class="toggle-title">Strict Privacy</span>
+                        <span class="toggle-desc">Block cross-site tracking</span>
+                    </div>
                 </div>
                 <label class="switch">
                     <input type="checkbox" id="privacy-toggle" checked>
@@ -372,9 +434,17 @@
             </div>
 
             <div class="toggle-item">
-                <div class="toggle-info">
-                    <span class="toggle-title">YouTube Dislikes</span>
-                    <span class="toggle-desc">Restore dislike counts</span>
+                <div class="toggle-left">
+                    <div class="toggle-icon-badge">
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M17 14V2"/>
+                            <path d="M9 18.12 10 14H4.17a2 2 0 0 1-1.92-2.56l2.33-8A2 2 0 0 1 6.5 2H20a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2h-2.76a2 2 0 0 0-1.79 1.11L12 22h-1.5a1.5 1.5 0 0 1-1.5-1.5v-2.38Z"/>
+                        </svg>
+                    </div>
+                    <div class="toggle-info">
+                        <span class="toggle-title">YouTube Dislikes</span>
+                        <span class="toggle-desc">Restore dislike counts</span>
+                    </div>
                 </div>
                 <label class="switch">
                     <input type="checkbox" id="dislike-toggle" checked>

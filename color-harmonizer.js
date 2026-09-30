@@ -270,11 +270,9 @@
     // ── Apply & Sync to DOM ──────────────────────────────────────────────────
     function applyHarmonizedTheme(accentHex, themeMode, targetDoc) {
         const doc = targetDoc || document;
-        if (!doc || !doc.documentElement) return;
-
-        const currentTheme = themeMode || doc.body?.getAttribute('data-theme') || localStorage.getItem('ocal-settings-theme') || 'light';
+        const currentTheme = themeMode || (doc.documentElement ? doc.documentElement.getAttribute('data-theme') : null) || (doc.body ? doc.body.getAttribute('data-theme') : null) || (typeof localStorage !== 'undefined' ? localStorage.getItem('ocal-settings-theme') : null) || 'dark';
         const isLight = (currentTheme === 'light');
-        const baseColor = accentHex || (isLight ? '#4F46E5' : '#6366F1');
+        const baseColor = accentHex || (isLight ? '#15AC49' : '#09F0A0');
 
         // Synthesize harmonic gradients and logo color filter
         const harmony = synthesizeHarmonicGradients(baseColor);
@@ -434,8 +432,9 @@
     function initAutoSync() {
         // Initial application from storage
         try {
-            const storedAccent = localStorage.getItem('ocal-settings-accent') || '#4F46E5';
-            const storedTheme = localStorage.getItem('ocal-settings-theme') || 'light';
+            const storedTheme = (typeof localStorage !== 'undefined' ? localStorage.getItem('ocal-settings-theme') : null) || 'dark';
+            const defaultAccent = (storedTheme === 'light' ? '#15AC49' : '#09F0A0');
+            const storedAccent = (typeof localStorage !== 'undefined' ? localStorage.getItem('ocal-settings-accent') : null) || defaultAccent;
             applyHarmonizedTheme(storedAccent, storedTheme);
         } catch (e) {}
 
@@ -444,8 +443,9 @@
                 if (e.key === 'ocal-settings-accent' || e.key === 'ocal-settings-theme' || 
                     e.key === 'ocal-settings-logo-filter' || e.key === 'ocal-icon-sync-theme' || 
                     e.key === 'ocal-icon-hue-adjust' || e.key === 'ocal-icon-sat-adjust') {
-                    const a = localStorage.getItem('ocal-settings-accent') || '#4F46E5';
-                    const t = localStorage.getItem('ocal-settings-theme') || 'light';
+                    const t = (typeof localStorage !== 'undefined' ? localStorage.getItem('ocal-settings-theme') : null) || 'dark';
+                    const defAcc = (t === 'light' ? '#15AC49' : '#09F0A0');
+                    const a = (typeof localStorage !== 'undefined' ? localStorage.getItem('ocal-settings-accent') : null) || defAcc;
                     applyHarmonizedTheme(a, t);
                 }
             });

@@ -3,6 +3,119 @@ try {
     require('./chrome-compat-shim.js');
 } catch (e) {}
 
+// ── Seamless Early Webview Corner Rounding (Active During Page Loading) ──
+(function initEarlyCornerMasks() {
+    try {
+        const url = window.location.href || '';
+        const isInternal = url.startsWith('ocal://') || 
+                           url.startsWith('file://') || 
+                           url.includes('home.html') ||
+                           url.startsWith('chrome-extension://');
+
+        const { ipcRenderer } = require('electron');
+
+        function applyMasks(settings) {
+            const isDark = settings ? (settings.themeMode !== 'light') : true;
+            const maskColor = isDark ? '#18181B' : '#EDEDF0';
+            const isVerticalTabs = settings ? (settings.tabLayout === 'vertical') : true;
+            const isHideMode = settings ? (settings.sidebarMode === 'hidden' || settings.sidebarMode === 'autohide') : false;
+            const isNoCurve = settings ? (isHideMode && !isVerticalTabs) : false;
+
+            if (isInternal) {
+                const rad = isNoCurve ? '0px' : '12px';
+                let style = document.getElementById('ocal-internal-curve-style');
+                if (!style) {
+                    style = document.createElement('style');
+                    style.id = 'ocal-internal-curve-style';
+                    const target = document.head || document.documentElement;
+                    if (target) target.appendChild(style);
+                }
+                if (style) {
+                    style.textContent = `
+                        html, body {
+                            border-radius: ${rad} !important;
+                        }
+                    `;
+                }
+                return;
+            }
+
+            let style = document.getElementById('ocal-corner-masks-style');
+            if (!style) {
+                style = document.createElement('style');
+                style.id = 'ocal-corner-masks-style';
+                const target = document.head || document.documentElement;
+                if (target) target.appendChild(style);
+            }
+            if (style) {
+                style.textContent = `
+                    #ocal-corner-masks-container, .ocal-corner-mask {
+                        display: ${isNoCurve ? 'none' : 'block'} !important;
+                    }
+                    .ocal-corner-mask {
+                        position: fixed !important;
+                        width: 12px !important;
+                        height: 12px !important;
+                        z-index: 2147483647 !important;
+                        pointer-events: none !important;
+                        --mask-bg: ${maskColor} !important;
+                    }
+                    .ocal-corner-mask-tl { top: 0 !important; left: 0 !important; background: radial-gradient(circle at 100% 100%, transparent 12px, var(--mask-bg) 12.5px) !important; }
+                    .ocal-corner-mask-tr { top: 0 !important; right: 0 !important; background: radial-gradient(circle at 0% 100%, transparent 12px, var(--mask-bg) 12.5px) !important; }
+                    .ocal-corner-mask-bl { bottom: 0 !important; left: 0 !important; background: radial-gradient(circle at 100% 0%, transparent 12px, var(--mask-bg) 12.5px) !important; }
+                    .ocal-corner-mask-br { bottom: 0 !important; right: 0 !important; background: radial-gradient(circle at 0% 0%, transparent 12px, var(--mask-bg) 12.5px) !important; }
+                    html:fullscreen .ocal-corner-mask,
+                    html:-webkit-full-screen .ocal-corner-mask {
+                        display: none !important;
+                    }
+                `;
+            }
+
+            let container = document.getElementById('ocal-corner-masks-container');
+            if (!container) {
+                container = document.createElement('div');
+                container.id = 'ocal-corner-masks-container';
+                container.style.position = 'fixed';
+                container.style.inset = '0';
+                container.style.pointerEvents = 'none';
+                container.style.zIndex = '2147483647';
+                container.style.display = isNoCurve ? 'none' : 'block';
+
+                ['tl', 'tr', 'bl', 'br'].forEach(pos => {
+                    const m = document.createElement('div');
+                    m.className = 'ocal-corner-mask ocal-corner-mask-' + pos;
+                    container.appendChild(m);
+                });
+
+                const root = document.documentElement || document.body;
+                if (root) root.appendChild(container);
+            } else {
+                container.style.display = isNoCurve ? 'none' : 'block';
+            }
+        }
+
+        // 1. Run synchronously as early as possible
+        if (document.documentElement) {
+            applyMasks();
+        } else {
+            const observer = new MutationObserver(() => {
+                if (document.documentElement) {
+                    observer.disconnect();
+                    applyMasks();
+                }
+            });
+            observer.observe(document, { childList: true });
+        }
+
+        // 2. Fetch fresh settings immediately
+        if (ipcRenderer && ipcRenderer.invoke) {
+            ipcRenderer.invoke('get-settings').then(s => {
+                if (s) applyMasks(s);
+            }).catch(() => {});
+        }
+    } catch (e) {}
+})();
+
 // ── Neural Shield V10: Deep Metadata Interceptor (Secondary & Sidebar Scrubbing) ──
 (function() {
     console.log('[Neural Shield] Initializing Deep Interceptor V10...');
@@ -1166,6 +1279,19 @@ window.addEventListener('DOMContentLoaded', () => {
         }
         ipcRenderer.invoke('get-settings').then(applyGlobalTheme).catch(() => {});
         ipcRenderer.on('settings-changed', (e, s) => applyGlobalTheme(s));
+    } else if (window.location.protocol === 'http:' || window.location.protocol === 'https:') {
+        function syncExternalPageTheme(s) {
+            if (!s) return;
+            const theme = s.themeMode || 'dark';
+            try {
+                let meta = document.querySelector('meta[name="color-scheme"]');
+                if (meta) {
+                    meta.content = theme;
+                }
+            } catch (e) {}
+        }
+        ipcRenderer.invoke('get-settings').then(syncExternalPageTheme).catch(() => {});
+        ipcRenderer.on('settings-changed', (e, s) => syncExternalPageTheme(s));
     }
 });
 

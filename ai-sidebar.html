@@ -152,24 +152,6 @@
             background: var(--accent);
         }
 
-        /* ── Resize Handle ── */
-        #resize-handle {
-            width: 4px;
-            height: 100%;
-            cursor: ew-resize;
-            background: transparent;
-            z-index: 100;
-            flex-shrink: 0;
-            transition: background 0.2s ease;
-        }
-        #resize-handle:hover, #resize-handle.active {
-            background: var(--accent);
-        }
-
-        body.fullscreen-mode #resize-handle {
-            display: none !important;
-        }
-
         /* ── Dashboard Outer Layout & Smooth Fluid Animation ── */
         .ai-panel {
             flex: 1;
@@ -180,8 +162,8 @@
             overflow: hidden;
             position: relative;
             background: var(--bg);
-            padding: 12px;
-            gap: 14px;
+            padding: 8px 8px 8px 2px;
+            gap: 12px;
             box-sizing: border-box;
             opacity: 0;
             transform: translateX(42px) scale(0.985);
@@ -3599,7 +3581,6 @@
             }
         })();
     </script>
-    <div id="resize-handle"></div>
     <div class="ai-panel">
         <!-- Col 1: Left History Sidebar Bento Card -->
         <div class="history-sidebar" id="history-sidebar">
@@ -3698,7 +3679,7 @@
             <div class="ai-header">
                 <div class="ai-brand">
                     <div class="ai-logo" id="ai-header-orb-container" title="Ocal AI Thinking Orb (Libraries.dev) - Click to cycle modes">
-                        <i class="fas fa-wand-magic-sparkles"></i>
+                        <i class="fas fa-sparkles"></i>
                     </div>
                     <div class="ai-title-text" style="display: flex; align-items: center; gap: 8px;">
                         <h1>Ocal AI</h1>

@@ -1460,6 +1460,12 @@ function initNewsHubEngine() {
         if (lowEl) lowEl.textContent = formatTemperature(today.low ?? cur.temp);
         if (feelsEl) feelsEl.textContent = formatTemperature(cur.feelsLike ?? cur.temp);
 
+        const btnTemp = document.getElementById('weather-btn-temp');
+        if (btnTemp && cur.temp !== undefined && cur.temp !== null && !isNaN(cur.temp)) {
+            btnTemp.textContent = formatTemperature(cur.temp);
+            btnTemp.style.display = 'inline';
+        }
+
         // 10 Detailed Meteorological Metrics
         const humEl = document.getElementById('wd-humidity');
         const windEl = document.getElementById('wd-wind');
@@ -1480,7 +1486,7 @@ function initNewsHubEngine() {
         if (uvVal > 8) uvLevel = 'Very High';
         else if (uvVal > 5) uvLevel = 'High';
         else if (uvVal > 2) uvLevel = 'Moderate';
-        if (uvEl) uvEl.textContent = `${uvVal} (${uvLevel})`;
+        if (uvEl) uvEl.textContent = `${uvVal} • ${uvLevel}`;
 
         if (pressEl) pressEl.textContent = `${Math.round(cur.pressure ?? 1013)} hPa`;
         
@@ -1553,6 +1559,10 @@ function initNewsHubEngine() {
                 `;
             });
             dailyGrid.innerHTML = dailyHtml;
+        }
+
+        if (window.IconEnhancer && newsModalOverlay) {
+            window.IconEnhancer.enhance(newsModalOverlay);
         }
     }
 
@@ -1739,7 +1749,7 @@ function initNewsHubEngine() {
     // Expose global weather loader for other components
     window.loadGlobalWeather = (q) => loadWeatherHubData(q);
 
-    // Modal open / close handlers
+    // Bottom Drawer open / close handlers
     function openWeatherModal() {
         newsModalOverlay.style.display = 'flex';
         newsModalOverlay.offsetHeight;
@@ -1750,6 +1760,9 @@ function initNewsHubEngine() {
             if (searchClearBtn) searchClearBtn.style.display = 'none';
             const dropdown = document.getElementById('weather-search-dropdown');
             if (dropdown) dropdown.style.display = 'none';
+        }
+        if (window.IconEnhancer) {
+            window.IconEnhancer.enhance(newsModalOverlay);
         }
     }
 
@@ -1762,8 +1775,14 @@ function initNewsHubEngine() {
                 newsModalOverlay.style.display = 'none';
                 document.body.style.overflow = '';
             }
-        }, 250);
+        }, 380);
     }
+
+    document.addEventListener('keydown', (e) => {
+        if (e.key === 'Escape' && newsModalOverlay && newsModalOverlay.classList.contains('active')) {
+            closeWeatherModal();
+        }
+    });
 
     if (newsTriggerBtn) newsTriggerBtn.onclick = openWeatherModal;
     if (newsCloseBtn) newsCloseBtn.onclick = closeWeatherModal;

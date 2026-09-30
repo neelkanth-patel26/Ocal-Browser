@@ -1302,11 +1302,11 @@
             <!-- Dot-Matrix Stats Bar -->
             <div class="sp-stats-bar">
                 <div class="sp-stat-item">
-                    <span class="sp-dot-num" id="version-stat">v9.5.00</span>
+                    <span class="sp-dot-num" id="version-stat">v9.8.00</span>
                     <span class="sp-badge sp-badge-lime">Production</span>
                 </div>
                 <div class="sp-stat-item">
-                    <span class="sp-dot-num" id="features-stat">22</span>
+                    <span class="sp-dot-num" id="features-stat">26</span>
                     <span class="sp-badge sp-badge-gray">Features</span>
                 </div>
                 <div class="sp-stat-item">
@@ -1460,9 +1460,9 @@
                                 <span class="tmp-green"></span>
                             </span>
                             <i class="fas fa-circle-check"></i>
-                            <span>v9.5.07 Stable Release</span>
+                            <span>v9.8.00 Stable Release</span>
                         </div>
-                        <h2 class="sp-hero-title">Custom Installer Rework, Fluid Vertical Tabs & UI Polish</h2>
+                        <h2 class="sp-hero-title">Direct GPU Acceleration, Extension Store Overhaul & Contrast Precision</h2>
                         <p class="sp-hero-desc" id="hero-desc"></p>
                     </div>
                     <div class="sp-hero-right-visual">
@@ -1499,7 +1499,7 @@
                                 </g>
                             </svg>
                         </div>
-                        <div class="radial-metric-title">9.5.07</div>
+                        <div class="radial-metric-title">9.8.00</div>
                         <div class="radial-metric-status">Stable Build</div>
                         <div class="sparkline-dots">
                             <span class="spark-dot"></span>
@@ -1593,7 +1593,7 @@
             <div class="sp-section-header">
                 <div class="sp-section-titles">
                     <h2 id="dir-title">All Features & Enhancements</h2>
-                    <p id="dir-subtitle">SHOWING ALL MAJOR UPGRADES IN V9.5.07 STABLE</p>
+                    <p id="dir-subtitle">SHOWING ALL MAJOR UPGRADES IN V9.8.00 STABLE</p>
                 </div>
             </div>
             <div class="features-grid" id="directory-grid" style="margin-top: 20px;"></div>
@@ -1665,7 +1665,7 @@
         }
 
         // ── Typing Animation ──
-        const heroText = "Ocal Browser v9.5.07 introduces a completely redesigned custom Inno Setup installer architecture with Windows 11 rounded titlebars and interactive bento terms. Features card-based vertical tab group wrappers with dynamic color-mix tinting, full-height active tabs, upgraded Electron 43.7.2, SHA-256 Authenticode code signing with DigiCert timestamping, and UI polishing based on user feedback.";
+        const heroText = "Ocal Browser v9.8.00 delivers enterprise-grade direct hardware acceleration via Direct3D 11 and passthrough command decoder, 4K/60FPS zero-copy video decode, and ultra-smooth compositor pipelines. Features a clean, flat, minimalist overhaul of the Extension Store (ocal://store), flush AI sidebar layout with seamless bounds, and dynamic luminance-based text contrast for omnibox shields and badges.";
         const heroDesc = document.getElementById('hero-desc');
         let charIndex = 0;
 
@@ -1763,6 +1763,44 @@
 
         // ── Features & Team Data ──
         const items = [
+            // ══ v9.8.00 Feature Upgrades ══
+            { 
+                type: 'feature', 
+                category: 'performance', 
+                icon: 'fa-microchip', 
+                title: 'Hardware Acceleration & Direct GPU Pipeline', 
+                desc: 'Direct GPU driver communication via Direct3D 11 ANGLE backend, passthrough command decoder, out-of-process GPU rasterization, zero-copy tile memory buffers, and 4K 60FPS hardware-accelerated video decode/encode pipelines.', 
+                actionText: 'GPU Benchmark', 
+                targetUrl: 'ocal://settings' 
+            },
+            { 
+                type: 'feature', 
+                category: 'extensions', 
+                icon: 'fa-store', 
+                title: 'Extension Store Redesign (ocal://store)', 
+                desc: 'Clean, flat, minimalist layout overhaul removing heavy drop-shadows and gradients to seamlessly match the flagship Home Page design tokens, with sticky search bar, category chips, and live installation states.', 
+                actionText: 'Open Store', 
+                targetUrl: 'ocal://store' 
+            },
+            { 
+                type: 'feature', 
+                category: 'multitasking', 
+                icon: 'fa-robot', 
+                title: 'Flush AI Sidebar Integration', 
+                desc: 'Removed left spacing gap and drag-resize handle for a flush, zero-distraction edge-to-edge AI assistant viewport that maximizes your primary tab workspace.', 
+                actionText: 'AI Sidebar', 
+                targetUrl: 'ocal://home' 
+            },
+            { 
+                type: 'feature', 
+                category: 'media', 
+                icon: 'fa-circle-half-stroke', 
+                title: 'Dynamic Luminance Contrast Engine', 
+                desc: 'Adaptive contrast algorithm that calculates exact perceived luminance across active theme backgrounds and custom accent palettes, guaranteeing crisp legibility for omnibox shield badges and chips.', 
+                actionText: 'Color Settings', 
+                targetUrl: 'ocal://settings' 
+            },
+
             // ══ v9.5.07 Feature Upgrades ══
             { 
                 type: 'feature', 
@@ -1926,6 +1964,12 @@
         ];
 
         const changelog = [
+            { 
+                date: 'September 2026', 
+                title: 'v9.8.00 Stable — Hardware Acceleration, Direct GPU Driver Pipeline, Extension Store & UI Polish', 
+                desc: 'Major performance and visual milestone introducing direct GPU driver hardware acceleration via Direct3D 11 ANGLE backend, passthrough command decoder, zero-copy buffers, and hardware video decode/encode up to 4K 60FPS. Features a completely redesigned Extension Store (ocal://store) with clean, shadowless, flat layout matching the home page design language. Refines the AI sidebar by removing unwanted resize gaps and handles for a flush workspace, and integrates dynamic luminance-based contrast calculation for omnibox shield badges and chips across custom accent themes.', 
+                tags: ['v9.8.00 Stable', 'Hardware Acceleration', 'Direct3D 11', 'Extension Store', 'AI Sidebar', 'Theme Contrast', 'Zero-Copy', 'Performance'] 
+            },
             { 
                 date: 'September 2026', 
                 title: 'v9.5.07 Stable — Custom Installer Overhaul, Vertical Tab Cards & UI Polish', 

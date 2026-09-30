@@ -97,9 +97,10 @@
             -webkit-font-smoothing: antialiased;
         }
 
-        /* ── Top App Bar (Compact & Styled to Match Browser Chrome) ── */
+        /* ── Top App Bar (Native Desktop Styling) ── */
         .pdf-app-bar {
-            height: 42px;
+            height: 44px;
+            min-height: 44px;
             background: var(--appbar-bg);
             border-bottom: 1px solid var(--border);
             display: flex;
@@ -115,15 +116,15 @@
         .app-bar-left {
             display: flex;
             align-items: center;
-            gap: 7px;
+            gap: 6px;
             flex-shrink: 0;
         }
 
-        /* Circular Sidebar Toggle Matching Browser Nav Button Style */
+        /* Sidebar Toggle Desktop Button */
         #show-sidebar {
-            width: 30px;
-            height: 30px;
-            border-radius: 50%;
+            width: 32px;
+            height: 32px;
+            border-radius: 6px;
             background: var(--surface);
             border: 1px solid var(--border);
             color: var(--text-dim);
@@ -131,9 +132,8 @@
             align-items: center;
             justify-content: center;
             cursor: pointer;
-            box-shadow: var(--shadow-pill);
-            transition: all 0.18s cubic-bezier(0.16, 1, 0.3, 1);
-            font-size: 12px;
+            transition: all 0.15s ease;
+            font-size: 13px;
             outline: none;
             flex-shrink: 0;
         }
@@ -141,21 +141,20 @@
         #show-sidebar:hover {
             color: var(--accent);
             border-color: var(--accent);
-            transform: scale(1.05);
+            background: var(--surface-hover);
         }
 
-        /* Document Badge Styled Like Omnibox Pill */
+        /* Document Badge Desktop Control */
         .doc-badge {
             display: flex;
             align-items: center;
-            gap: 6px;
-            padding: 0 10px 0 5px;
-            border-radius: var(--radius-pill);
+            gap: 7px;
+            padding: 0 10px 0 6px;
+            border-radius: 6px;
             background: var(--surface);
             border: 1px solid var(--border);
-            box-shadow: var(--shadow-pill);
-            height: 30px;
-            max-width: 170px;
+            height: 32px;
+            max-width: 190px;
         }
 
         .doc-badge-chip {
@@ -163,17 +162,17 @@
             color: var(--accent);
             width: 20px;
             height: 20px;
-            border-radius: 50%;
+            border-radius: 4px;
             display: inline-flex;
             align-items: center;
             justify-content: center;
-            font-size: 10px;
+            font-size: 11px;
             flex-shrink: 0;
         }
 
         .doc-title-text {
-            font-size: 11.5px;
-            font-weight: 700;
+            font-size: 12px;
+            font-weight: 600;
             color: var(--text);
             white-space: nowrap;
             overflow: hidden;
@@ -183,38 +182,35 @@
         .btn-open-doc {
             display: inline-flex;
             align-items: center;
-            gap: 5px;
+            gap: 6px;
             padding: 0 10px;
-            border-radius: var(--radius-pill);
+            border-radius: 6px;
             background: var(--surface);
             border: 1px solid var(--border);
-            box-shadow: var(--shadow-pill);
-            color: var(--text-dim);
-            font-size: 11.5px;
-            font-weight: 700;
+            color: var(--text);
+            font-size: 12px;
+            font-weight: 600;
             cursor: pointer;
             transition: all 0.15s ease;
-            height: 30px;
+            height: 32px;
         }
 
         .btn-open-doc:hover {
             background: var(--surface-hover);
             border-color: var(--accent);
             color: var(--accent);
-            transform: translateY(-0.5px);
         }
 
-        /* ── Center Floating Action Island (Omnibox Capsule Style) ── */
+        /* ── Center Desktop Action Toolbar ── */
         .toolbar {
             background: var(--toolbar-bg);
             border: 1px solid var(--toolbar-border);
-            padding: 2px 5px;
-            border-radius: var(--radius-pill);
+            padding: 2px 6px;
+            border-radius: 6px;
             display: flex;
             align-items: center;
             gap: 2px;
-            box-shadow: var(--shadow-pill);
-            height: 32px;
+            height: 34px;
             flex-shrink: 1;
             min-width: 0;
             overflow-x: auto;
@@ -236,7 +232,7 @@
             width: 1px;
             height: 16px;
             background: var(--border);
-            margin: 0 3px;
+            margin: 0 4px;
             opacity: 0.7;
             flex-shrink: 0;
         }
@@ -245,15 +241,15 @@
             background: transparent;
             border: 1px solid transparent;
             color: var(--text-dim);
-            width: 25px;
-            height: 25px;
-            border-radius: 50%;
+            width: 28px;
+            height: 28px;
+            border-radius: 5px;
             display: inline-flex;
             align-items: center;
             justify-content: center;
             cursor: pointer;
-            transition: all 0.15s cubic-bezier(0.16, 1, 0.3, 1);
-            font-size: 11.5px;
+            transition: all 0.12s ease;
+            font-size: 12px;
             outline: none;
             box-shadow: none !important;
             flex-shrink: 0;
@@ -283,14 +279,14 @@
             color: #FFFFFF !important;
             width: auto;
             padding: 0 13px;
-            height: 30px;
+            height: 32px;
             gap: 6px;
-            font-weight: 800;
-            font-size: 11.5px;
+            font-weight: 700;
+            font-size: 12px;
             border: 1px solid var(--accent);
-            border-radius: var(--radius-pill);
-            box-shadow: 0 2px 8px var(--accent-glow);
-            transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+            border-radius: 6px;
+            box-shadow: none;
+            transition: all 0.15s ease;
             flex-shrink: 0;
             cursor: pointer;
             display: inline-flex;
@@ -300,16 +296,14 @@
 
         .btn.primary:hover {
             filter: brightness(1.08);
-            transform: translateY(-0.5px);
-            box-shadow: 0 4px 12px var(--accent-glow);
         }
 
         .page-num-jump {
             background: var(--surface-hover);
             border: 1px solid var(--border-subtle);
-            border-radius: var(--radius-pill);
+            border-radius: 5px;
             padding: 0 6px;
-            height: 24px;
+            height: 26px;
             display: flex;
             align-items: center;
             justify-content: center;
@@ -324,7 +318,7 @@
             background: transparent;
             border: none;
             color: var(--text);
-            width: 22px;
+            width: 24px;
             text-align: right;
             font-weight: 800;
             font-family: var(--font-mono);
@@ -345,18 +339,18 @@
         .zoom-dropdown-btn {
             background: var(--surface-hover);
             border: 1px solid var(--border-subtle);
-            border-radius: var(--radius-pill);
+            border-radius: 5px;
             padding: 0 7px;
-            height: 24px;
+            height: 26px;
             display: flex;
             align-items: center;
             gap: 4px;
-            font-size: 11px;
+            font-size: 11.5px;
             font-weight: 700;
             font-family: var(--font-mono);
             color: var(--text);
             cursor: pointer;
-            transition: all 0.15s ease;
+            transition: all 0.12s ease;
             box-shadow: none !important;
             user-select: none;
             flex-shrink: 0;
@@ -371,26 +365,25 @@
         .color-well-btn {
             width: 24px;
             height: 24px;
-            border-radius: 50%;
+            border-radius: 5px;
             display: flex;
             align-items: center;
             justify-content: center;
             cursor: pointer;
             background: var(--surface-hover);
             border: 1px solid var(--border-subtle);
-            transition: transform 0.15s ease, border-color 0.15s ease;
+            transition: border-color 0.15s ease;
             flex-shrink: 0;
         }
 
         .color-well-btn:hover {
             border-color: var(--accent);
-            transform: scale(1.1);
         }
 
         .color-well-circle {
             width: 14px;
             height: 14px;
-            border-radius: 50%;
+            border-radius: 3px;
             background: var(--accent);
             box-shadow: 0 1px 3px rgba(0, 0, 0, 0.2);
             border: 1.5px solid var(--surface);
@@ -404,20 +397,20 @@
             gap: 3px;
             padding: 1px 5px;
             background: var(--surface-hover);
-            border-radius: var(--radius-pill);
+            border-radius: 5px;
             border: 1px solid var(--border);
-            height: 24px;
+            height: 26px;
         }
 
         .stroke-dot {
             width: 12px;
             height: 12px;
-            border-radius: 50%;
+            border-radius: 3px;
             display: flex;
             align-items: center;
             justify-content: center;
             cursor: pointer;
-            transition: transform 0.15s ease;
+            transition: all 0.12s ease;
         }
 
         .stroke-dot.active {
@@ -426,7 +419,7 @@
         }
 
         .stroke-dot-inner {
-            border-radius: 50%;
+            border-radius: 2px;
             background: var(--text);
         }
 
@@ -771,16 +764,16 @@
         #search-bar-floating {
             display: none;
             position: absolute;
-            top: 14px;
-            right: 24px;
+            top: 10px;
+            right: 20px;
             background: var(--surface);
             border: 1px solid var(--border);
-            border-radius: var(--radius-pill);
-            padding: 4px 8px 4px 14px;
+            border-radius: 6px;
+            padding: 4px 8px 4px 10px;
             align-items: center;
             gap: 6px;
             z-index: 800;
-            box-shadow: none !important;
+            box-shadow: 0 4px 16px rgba(0, 0, 0, 0.15) !important;
             animation: fadeInDown 0.15s ease;
         }
 
@@ -1266,14 +1259,14 @@
     <!-- Top Header App Bar -->
     <header class="pdf-app-bar">
         <div class="app-bar-left">
-            <button id="show-sidebar" title="Toggle Sidebar (Thumbnails & Outline)">
-                <i class="fas fa-bars"></i>
+            <button id="show-sidebar" title="Toggle Sidebar (Ctrl+B)">
+                <i class="fas fa-sidebar"></i>
             </button>
             <div class="doc-badge">
                 <div class="doc-badge-chip"><i class="fas fa-file-pdf"></i></div>
                 <span class="doc-title-text" id="doc-title">Ocal Document</span>
             </div>
-            <button class="btn-open-doc" id="app-bar-open-btn" title="Open PDF from Computer">
+            <button class="btn-open-doc" id="app-bar-open-btn" title="Open PDF from Computer (Ctrl+O)">
                 <i class="fas fa-folder-open"></i>
                 <span>Open</span>
             </button>
@@ -1284,14 +1277,14 @@
         <div class="toolbar">
             <!-- Navigation -->
             <div class="tool-group">
-                <button class="btn" id="prev-btn" title="Previous Page (Left Arrow)"><i
+                <button class="btn" id="prev-btn" title="Previous Page (PageUp / Left Arrow)"><i
                         class="fas fa-chevron-left"></i></button>
                 <div class="page-num-jump">
                     <input type="text" id="page-num" value="1">
                     <span style="opacity:0.4; margin: 0 1px;">/</span>
                     <span id="page-count">0</span>
                 </div>
-                <button class="btn" id="next-btn" title="Next Page (Right Arrow)"><i
+                <button class="btn" id="next-btn" title="Next Page (PageDown / Right Arrow)"><i
                         class="fas fa-chevron-right"></i></button>
             </div>
 
@@ -1333,15 +1326,15 @@
 
             <!-- Zoom & Viewport Controls -->
             <div class="tool-group">
-                <button class="btn" id="zoom-out" title="Zoom Out (-)"><i class="fas fa-minus"></i></button>
+                <button class="btn" id="zoom-out" title="Zoom Out (Ctrl+-)"><i class="fas fa-minus"></i></button>
                 <div class="zoom-dropdown-btn" id="zoom-val-btn" title="Zoom Presets">
                     <span id="zoom-val">100%</span>
                     <i class="fas fa-chevron-down" style="font-size:9px; opacity:0.6;"></i>
                 </div>
-                <button class="btn" id="zoom-in" title="Zoom In (+)"><i class="fas fa-plus"></i></button>
-                <button class="btn" id="fit-width-btn" title="Fit to Width"><i
+                <button class="btn" id="zoom-in" title="Zoom In (Ctrl++)"><i class="fas fa-plus"></i></button>
+                <button class="btn" id="fit-width-btn" title="Fit to Width (Ctrl+0)"><i
                         class="fas fa-arrows-left-right"></i></button>
-                <button class="btn" id="rotate-btn" title="Rotate Document (90° Clockwise)"><i
+                <button class="btn" id="rotate-btn" title="Rotate Document (Ctrl+R)"><i
                         class="fas fa-rotate-right"></i></button>
             </div>
 
@@ -1363,7 +1356,7 @@
 
         <!-- Right Side Actions -->
         <div class="app-bar-right">
-            <button class="btn primary" id="download-btn" title="Export Document with Annotations">
+            <button class="btn primary" id="download-btn" title="Export / Save PDF (Ctrl+S)">
                 <i class="fas fa-download"></i>
                 <span>Export PDF</span>
             </button>

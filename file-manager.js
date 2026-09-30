@@ -1336,6 +1336,70 @@ function setupGlobalShortcuts() {
             e.preventDefault();
             toggleDirectPathInput(true);
         }
+        // Ctrl+N or Ctrl+Shift+N for New Folder
+        else if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'n') {
+            e.preventDefault();
+            promptNewFolder();
+        }
+        // Ctrl+1 / Ctrl+2 / Ctrl+3 View Modes
+        else if ((e.ctrlKey || e.metaKey) && e.key === '1') {
+            e.preventDefault();
+            setViewMode('grid');
+        }
+        else if ((e.ctrlKey || e.metaKey) && e.key === '2') {
+            e.preventDefault();
+            setViewMode('list');
+        }
+        else if ((e.ctrlKey || e.metaKey) && e.key === '3') {
+            e.preventDefault();
+            setViewMode('compact');
+        }
+        // Ctrl+I to Toggle Inspector Panel
+        else if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'i') {
+            e.preventDefault();
+            toggleInspectorBtn?.click();
+        }
+        // F2 to Rename selected item
+        else if (e.key === 'F2' && selectedItems.size === 1 && !['INPUT', 'TEXTAREA'].includes(e.target.tagName)) {
+            e.preventDefault();
+            const selectedPath = Array.from(selectedItems)[0];
+            const item = currentItems.find(i => i.path === selectedPath);
+            if (item) promptRename(item);
+        }
+        // Enter to Open selected item
+        else if (e.key === 'Enter' && !['INPUT', 'TEXTAREA'].includes(e.target.tagName)) {
+            if (selectedItems.size > 0) {
+                e.preventDefault();
+                const selectedPath = Array.from(selectedItems)[0];
+                const item = currentItems.find(i => i.path === selectedPath);
+                if (item) openItem(item);
+            }
+        }
+        // Arrow Navigation in File Grid
+        else if (['ArrowDown', 'ArrowUp', 'ArrowRight', 'ArrowLeft'].includes(e.key) && !['INPUT', 'TEXTAREA'].includes(e.target.tagName)) {
+            const visibleDoms = Array.from(document.querySelectorAll('.file-item'));
+            if (visibleDoms.length > 0) {
+                e.preventDefault();
+                let currentIdx = visibleDoms.findIndex(el => selectedItems.has(el.dataset.path));
+                let nextIdx = 0;
+                if (currentIdx !== -1) {
+                    if (e.key === 'ArrowRight' || e.key === 'ArrowDown') {
+                        nextIdx = (currentIdx + 1) % visibleDoms.length;
+                    } else {
+                        nextIdx = (currentIdx - 1 + visibleDoms.length) % visibleDoms.length;
+                    }
+                }
+                const targetDom = visibleDoms[nextIdx];
+                const targetPath = targetDom.dataset.path;
+                const item = currentItems.find(i => i.path === targetPath);
+                if (item) {
+                    clearSelection();
+                    selectItem(item, targetDom);
+                    inspectItem(item);
+                    targetDom.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+                }
+            }
+        }
         // Alt+Left to Go Back
         else if (e.altKey && e.key === 'ArrowLeft') {
             e.preventDefault();

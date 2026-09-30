@@ -151,9 +151,19 @@ function hexToRgba(hex, alpha) {
     return `rgba(${r}, ${g}, ${b}, ${alpha})`;
 }
 
+function getContrastColor(hex) {
+    if (!hex || hex.length < 7) return '#FFFFFF';
+    const r = parseInt(hex.slice(1, 3), 16);
+    const g = parseInt(hex.slice(3, 5), 16);
+    const b = parseInt(hex.slice(5, 7), 16);
+    const yiq = ((r * 299) + (g * 587) + (b * 114)) / 1000;
+    return (yiq >= 165) ? '#111111' : '#FFFFFF';
+}
+
 function applyAccent(color) {
     if (!color) return;
     document.documentElement.style.setProperty('--accent', color);
+    document.documentElement.style.setProperty('--accent-text', getContrastColor(color));
 }
 
 function applyTheme(settings) {

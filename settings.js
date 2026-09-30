@@ -317,7 +317,7 @@ function applyTheme(theme) {
     if (activeSwatch) {
         const newColor = isDark ? (activeSwatch.dataset.darkColor || activeSwatch.dataset.color) : (activeSwatch.dataset.color || activeSwatch.dataset.darkColor);
         if (newColor) {
-            applyAccent(newColor);
+            applyAccent(newColor, true);
         }
     } else {
         const currentAccent = localStorage.getItem('ocal-settings-accent') || '#09F0A0';
@@ -427,6 +427,7 @@ function filterExtSettings() {
         card.style.display = !query || name.includes(query) ? '' : 'none';
     });
 }
+window.filterExtSettings = filterExtSettings;
 
 function filterExtensions() {
     const query = document.getElementById('ext-search-input')?.value.toLowerCase().trim() || '';
@@ -511,7 +512,7 @@ function renderProfiles(s) {
     const activeHistory = (s.history || []);
     const activeColor = activeProf.color || s.accentColor || '#4F46E5';
 
-    // 1. Update Dot-Matrix Stats Bar & Badges
+    // 1. Update Stats Bar & Badges
     const statCount = document.getElementById('profile-stat-count');
     const statPartition = document.getElementById('profile-stat-partition');
     const statBookmarks = document.getElementById('profile-stat-bookmarks');
@@ -519,7 +520,7 @@ function renderProfiles(s) {
 
     if (statCount) statCount.textContent = profiles.length.toString();
     if (statPartition) statPartition.textContent = `persist:profile_${curId}`;
-    if (countBadge) countBadge.textContent = `${profiles.length} Node${profiles.length === 1 ? '' : 's'}`;
+    if (countBadge) countBadge.textContent = `${profiles.length} Profile${profiles.length === 1 ? '' : 's'}`;
 
     if (statBookmarks) {
         let totalBm = 0;
@@ -531,45 +532,36 @@ function renderProfiles(s) {
         statBookmarks.textContent = totalBm.toString();
     }
 
-    // 2. Render Active Profile Hero Spotlight Card (Clean Solid Color - No Gradients)
+    // 2. Render Active Profile Hero Spotlight Card (Clean Native Desktop Card)
     if (spotlight) {
-        spotlight.style.background = activeColor;
+        spotlight.style.background = '';
         const safeActiveName = (activeProf.name || 'Personal').replace(/'/g, "\\'");
         const spotlightHtml = `
-            <div class="sp-profile-spotlight-content">
-                <div class="sp-profile-left">
-                    <div class="sp-profile-avatar-giant" style="background: #FFFFFF !important; color: ${activeColor} !important;">
+            <div class="settings-engine-row profile-active-row" style="cursor: default;">
+                <div class="ser-left" style="gap: 14px;">
+                    <div class="ser-icon" style="background: ${activeColor} !important; color: #FFFFFF !important; width: 36px; height: 36px; border-radius: 8px; font-size: 15px;">
                         <i class="fas ${activeProf.icon || 'fa-user'}"></i>
-                        <div class="sp-pulse-ring">
-                            <div class="sp-pulse-center" style="background: ${activeColor}; box-shadow: 0 0 8px ${activeColor};"></div>
-                        </div>
                     </div>
-                    <div class="sp-profile-info-block">
-                        <div class="sp-profile-badge-row">
-                            <span class="sp-badge sp-badge-lime">ACTIVE IDENTITY NODE</span>
-                            <span class="sp-profile-partition-tag"><i class="fas fa-cube"></i> persist:profile_${activeProf.id}</span>
+                    <div class="ser-info">
+                        <div style="display: flex; align-items: center; gap: 8px; flex-wrap: wrap;">
+                            <span class="ser-name">${activeProf.name}</span>
+                            <span class="engine-active-indicator"><span class="status-dot"></span><span>Active Profile</span></span>
+                            <span class="profile-partition-code">persist:${activeProf.id}</span>
                         </div>
-                        <h2 class="sp-profile-active-title">${activeProf.name}</h2>
-                        <p class="sp-profile-active-desc">Sandboxed session envelope with isolated cookies, localStorage, and scoped bookmarks.</p>
+                        <span class="ser-sub" style="margin-top: 2px;">Sandboxed session envelope with isolated cookies, localStorage, and scoped bookmarks</span>
                     </div>
                 </div>
 
-                <div class="sp-profile-metrics-bar">
-                    <div class="sp-profile-metric-item">
-                        <div class="sp-dot-num sp-metric-num">${activeBookmarks.length}</div>
-                        <span class="sp-metric-label">Bookmarks</span>
+                <div class="ser-right" style="gap: 10px;">
+                    <div class="profile-meta-pills-row" style="display: flex; align-items: center; gap: 6px;">
+                        <span class="profile-meta-pill"><i class="fas fa-bookmark"></i> <span><strong>${activeBookmarks.length}</strong> Bookmarks</span></span>
+                        <span class="profile-meta-pill"><i class="fas fa-clock-rotate-left"></i> <span><strong>${activeHistory.length}</strong> History Logs</span></span>
                     </div>
-                    <div class="sp-profile-metric-divider"></div>
-                    <div class="sp-profile-metric-item">
-                        <div class="sp-dot-num sp-metric-num">${activeHistory.length}</div>
-                        <span class="sp-metric-label">History Logs</span>
-                    </div>
-                    <div class="sp-profile-metric-divider"></div>
-                    <div class="sp-profile-actions-stack">
-                        <button type="button" class="sp-btn-hero primary" onclick="event.stopPropagation(); window.editProfilePrompt('${activeProf.id}')">
+                    <div style="display: flex; align-items: center; gap: 6px;">
+                        <button type="button" class="desktop-action-btn desktop-primary-btn" onclick="event.stopPropagation(); window.editProfilePrompt('${activeProf.id}')">
                             <i class="fas fa-pen"></i> <span>Edit Profile</span>
                         </button>
-                        <button type="button" class="sp-btn-hero secondary" onclick="event.stopPropagation(); window.clearProfilePrompt('${activeProf.id}', '${safeActiveName}')">
+                        <button type="button" class="desktop-action-btn desktop-secondary-btn" onclick="event.stopPropagation(); window.clearProfilePrompt('${activeProf.id}', '${safeActiveName}')">
                             <i class="fas fa-broom"></i> <span>Clear Cache</span>
                         </button>
                     </div>
@@ -582,7 +574,7 @@ function renderProfiles(s) {
         }
     }
 
-    // 3. Render Profile Nodes Bento Grid (Clean Solid Icons - No Gradients)
+    // 3. Render Profiles Desktop List (Clean Native Desktop List matching Search Engines)
     let html = profiles.map((p) => {
         const isActive = curId === p.id;
         const pData = profilesData[p.id] || {};
@@ -592,81 +584,71 @@ function renderProfiles(s) {
         const safeName = (p.name || 'Profile').replace(/'/g, "\\'");
 
         return `
-        <div class="profile-node-card ${isActive ? 'is-active' : ''}" 
-             style="--node-accent: ${pColor}; cursor: ${isActive ? 'default' : 'pointer'};"
+        <div class="settings-engine-row profile-item-row ${isActive ? 'active' : ''}" 
+             data-profile-id="${p.id}"
+             style="cursor: ${isActive ? 'default' : 'pointer'};"
              ${isActive ? '' : `onclick="window.switchProfile('${p.id}')"`}>
             
-            <div class="node-top-bar">
-                <div class="node-identity-left">
-                    <div class="node-avatar-box" style="background: ${pColor}; color: #FFFFFF; border: none; box-shadow: 0 4px 12px color-mix(in srgb, ${pColor} 30%, transparent);">
-                        <i class="fas ${p.icon || 'fa-user'}"></i>
-                    </div>
-                    <div class="node-identity-section">
-                        <h4 class="node-profile-title" title="${p.name}">${p.name}</h4>
-                        <div class="node-profile-subtitle">
-                            ${isActive ? '<span class="node-status-text active">Active Workspace Node</span>' : '<span class="node-status-text">Isolated Sandbox Node</span>'}
-                        </div>
-                    </div>
+            <div class="ser-left" style="gap: 14px;">
+                <div class="ser-icon" style="background: ${pColor}; color: #FFFFFF; width: 34px; height: 34px; border-radius: 8px; font-size: 14px;">
+                    <i class="fas ${p.icon || 'fa-user'}"></i>
                 </div>
-                <div class="node-top-badges">
-                    ${isActive ? '<span class="node-active-pill"><span class="node-live-dot"></span> ACTIVE</span>' : '<span class="node-standby-pill">ISOLATED</span>'}
-                    <span class="profile-meta-pill partition-pill" title="Partition Isolation: persist:profile_${p.id}">
-                        <i class="fas fa-cube"></i> persist:${p.id}
-                    </span>
+                <div class="ser-info">
+                    <div style="display: flex; align-items: center; gap: 8px; flex-wrap: wrap;">
+                        <span class="ser-name">${p.name}</span>
+                        ${isActive ? '<span class="engine-active-indicator"><span class="status-dot"></span><span>Active</span></span>' : '<span class="spc-status"><span class="status-dot"></span><span>Ready</span></span>'}
+                        <span class="profile-partition-code">persist:${p.id}</span>
+                    </div>
+                    <div class="ser-sub" style="display: flex; align-items: center; gap: 8px; margin-top: 2px;">
+                        <span><i class="fas fa-bookmark" style="font-size: 10.5px; margin-right: 4px; opacity: 0.7;"></i>${pBookmarks.length} Bookmarks</span>
+                        <span style="opacity: 0.3;">&bull;</span>
+                        <span><i class="fas fa-clock-rotate-left" style="font-size: 10.5px; margin-right: 4px; opacity: 0.7;"></i>${pHistory.length} History Logs</span>
+                        <span style="opacity: 0.3;">&bull;</span>
+                        <span>Sandboxed partition</span>
+                    </div>
                 </div>
             </div>
 
-            <div class="profile-node-pills">
-                <span class="profile-meta-pill">
-                    <i class="fas fa-bookmark"></i> ${pBookmarks.length} Bookmarks
-                </span>
-                <span class="profile-meta-pill">
-                    <i class="fas fa-clock-rotate-left"></i> ${pHistory.length} History Logs
-                </span>
-                <span class="profile-meta-pill">
-                    <i class="fas fa-shield-halved"></i> Sandboxed
-                </span>
-            </div>
-
-            <div class="profile-node-footer">
-                ${!isActive ? `
-                <button type="button" class="node-action-btn switch-btn" onclick="event.stopPropagation(); window.switchProfile('${p.id}')" title="Switch to this identity">
-                    <i class="fas fa-right-to-bracket"></i> <span>Switch Node</span>
-                </button>` : `
-                <button type="button" class="node-action-btn active-state-btn" disabled>
-                    <i class="fas fa-check"></i> <span>Current Node</span>
-                </button>`}
-                
-                <div class="node-utility-btns">
-                    <button type="button" class="node-mini-btn" onclick="event.stopPropagation(); window.editProfilePrompt('${p.id}')" title="Edit Profile Details">
-                        <i class="fas fa-pen"></i>
+            <div class="ser-right" style="gap: 8px;">
+                ${isActive ? `
+                <span class="spc-status active"><span class="status-dot"></span><span>Current Profile</span></span>
+                ` : `
+                <button type="button" class="spc-action-btn" onclick="event.stopPropagation(); window.switchProfile('${p.id}')" title="Switch to this profile">
+                    <i class="fas fa-arrow-right-to-bracket" style="font-size: 11px;"></i> <span>Switch</span>
+                </button>
+                `}
+                <div style="display: flex; align-items: center; gap: 4px; margin-left: 4px;">
+                    <button type="button" class="desktop-action-btn desktop-secondary-btn" style="padding: 0 8px; height: 28px;" onclick="event.stopPropagation(); window.editProfilePrompt('${p.id}')" title="Edit Profile Details">
+                        <i class="fas fa-pen" style="font-size: 11px;"></i>
                     </button>
-                    <button type="button" class="node-mini-btn" onclick="event.stopPropagation(); window.clearProfilePrompt('${p.id}', '${safeName}')" title="Clear Cookies & Cache">
-                        <i class="fas fa-broom"></i>
+                    <button type="button" class="desktop-action-btn desktop-secondary-btn" style="padding: 0 8px; height: 28px;" onclick="event.stopPropagation(); window.clearProfilePrompt('${p.id}', '${safeName}')" title="Clear Cookies & Cache">
+                        <i class="fas fa-broom" style="font-size: 11px;"></i>
                     </button>
                     ${p.id !== 'default' ? `
-                    <button type="button" class="node-mini-btn danger" onclick="event.stopPropagation(); window.deleteProfile('${p.id}', '${safeName}')" title="Terminate Node">
-                        <i class="fas fa-trash"></i>
+                    <button type="button" class="desktop-action-btn desktop-secondary-btn danger" style="padding: 0 8px; height: 28px;" onclick="event.stopPropagation(); window.deleteProfile('${p.id}', '${safeName}')" title="Delete Profile">
+                        <i class="fas fa-trash" style="font-size: 11px;"></i>
                     </button>` : ''}
                 </div>
             </div>
         </div>
-    `;
+        `;
     }).join('');
 
-    // Append the dashed "+ Create New Profile" Bento card (Wide Landscape Rectangle)
+    // Append clean desktop "+ Add New Profile..." row at the bottom of the list
     html += `
-        <div class="add-profile-bento-card" onclick="window.createProfilePrompt()">
-            <div class="add-node-content-horizontal">
-                <div class="add-avatar-circle">
+        <div class="settings-engine-row add-profile-action-row" onclick="window.createProfilePrompt()" style="cursor: pointer;">
+            <div class="ser-left" style="gap: 14px;">
+                <div class="ser-icon" style="background: rgba(0, 0, 0, 0.04); color: var(--accent); width: 34px; height: 34px; border-radius: 8px; font-size: 14px;">
                     <i class="fas fa-plus"></i>
                 </div>
-                <div class="add-node-text-wrap">
-                    <h4 class="add-node-title">Create New Profile</h4>
-                    <p class="add-node-desc">Launch an isolated session node with independent login credentials and bookmarks.</p>
+                <div class="ser-info">
+                    <span class="ser-name" style="color: var(--accent); font-weight: 500;">Add New Profile...</span>
+                    <span class="ser-sub">Create an isolated workspace partition with independent credentials and bookmarks</span>
                 </div>
-                <button type="button" class="btn primary add-node-btn" onclick="event.stopPropagation(); window.createProfilePrompt()">
-                    <i class="fas fa-plus"></i> <span>New Identity</span>
+            </div>
+            <div class="ser-right">
+                <button type="button" class="desktop-action-btn desktop-secondary-btn" onclick="event.stopPropagation(); window.createProfilePrompt()">
+                    <i class="fas fa-plus"></i> <span>Add Profile</span>
                 </button>
             </div>
         </div>
@@ -2199,11 +2181,12 @@ async function renderExtensions(s = null) {
     }
 
     const builtins = [
-        { id: 'adblock',  key: 'adBlockEnabled',     toggleId: 'toggle-adblock',  defaultOn: true },
-        { id: 'vault',   key: 'assetVaultEnabled',   toggleId: 'toggle-vault',    defaultOn: false },
-        { id: 'ai',      key: 'aiAssistantEnabled',  toggleId: 'toggle-ai',       defaultOn: false },
-        { id: 'stealth', key: 'cyberStealthEnabled', toggleId: 'toggle-stealth',  defaultOn: false },
-        { id: 'focus',   key: 'ocalFocusEnabled',    toggleId: 'toggle-focus',    defaultOn: false },
+        { id: 'adblock',  key: 'adBlockEnabled',        toggleId: 'toggle-adblock',  defaultOn: true },
+        { id: 'dislike',  key: 'youtubeDislikeEnabled', toggleId: 'toggle-dislike',  defaultOn: true },
+        { id: 'vault',    key: 'assetVaultEnabled',      toggleId: 'toggle-vault',    defaultOn: false },
+        { id: 'ai',       key: 'aiAssistantEnabled',     toggleId: 'toggle-ai',       defaultOn: false },
+        { id: 'stealth',  key: 'cyberStealthEnabled',    toggleId: 'toggle-stealth',  defaultOn: false },
+        { id: 'focus',    key: 'ocalFocusEnabled',       toggleId: 'toggle-focus',    defaultOn: false },
     ];
 
     let builtinsActive = 0;
@@ -2528,22 +2511,40 @@ window.checkForUpdates = () => {
 };
 
 window.electronAPI.onSettingsChanged(s => {
+    if (!s) return;
+    const prev = window.currentSettings || {};
     window.currentSettings = s;
-    if (s.accentColor) applyAccent(s.accentColor, true);
-    if (s.themeMode) {
+
+    if (s.accentColor && s.accentColor !== prev.accentColor) {
+        applyAccent(s.accentColor, true);
+    }
+    if (s.themeMode && s.themeMode !== prev.themeMode) {
         applyTheme(s.themeMode);
         const themeToggle = document.getElementById('theme-mode-toggle');
         if (themeToggle) themeToggle.classList.toggle('on', s.themeMode !== 'light');
     }
-    if (s.searchEngine !== undefined || s.customSearchUrl !== undefined) {
+    if (s.searchEngine !== undefined && (s.searchEngine !== prev.searchEngine || s.customSearchUrl !== prev.customSearchUrl)) {
         renderSearchSettings(s);
     }
-    renderHomepageSettings(s);
-    renderAISettings(s);
-    renderSystemSettings(s);
-    renderSecuritySettings(s);
-    renderExtensions(s);
-    renderProfiles(s);
+
+    const nonThemeKeys = [
+        'searchEngine', 'customSearchUrl', 'dns', 'adBlockEnabled', 'trackingProtection',
+        'ramLimit', 'cpuLimit', 'batterySaver', 'compactMode', 'bookmarkBarMode',
+        'sidebarMode', 'tabLayout', 'verticalTabsCollapsed', 'verticalTabsWidth',
+        'aiAssistantEnabled', 'aiProvider', 'geminiApiKey', 'localLlmUrl', 'localLlmModel',
+        'privacyEngineEnabled', 'homeLayout', 'homeTileSize', 'homeTileSpacing'
+    ];
+    const hasConfigChanges = nonThemeKeys.some(k => s[k] !== undefined && s[k] !== prev[k]);
+
+    if (hasConfigChanges) {
+        renderHomepageSettings(s);
+        renderAISettings(s);
+        renderSystemSettings(s);
+        renderSecuritySettings(s);
+        renderExtensions(s);
+        renderProfiles(s);
+    }
+
     if (s.shieldStats) {
         updateShieldDashboard(s.shieldStats);
     }
@@ -2931,7 +2932,7 @@ function renderSearchSettings(s) {
     if (!s) return;
     const engine = s.searchEngine || 'google';
 
-    // Highlight active card & check radio
+    // Highlight active card, check radio & update action button
     const cards = document.querySelectorAll('.search-provider-card');
     cards.forEach(card => {
         const isMatch = (card.dataset.searchEngine === engine);
@@ -2941,7 +2942,14 @@ function renderSearchSettings(s) {
         const statusEl = card.querySelector('.spc-status');
         if (statusEl) {
             statusEl.className = isMatch ? 'spc-status active' : 'spc-status';
-            statusEl.innerHTML = `<span class="status-dot"></span><span>${isMatch ? 'Active Provider' : 'Available'}</span>`;
+            statusEl.innerHTML = `<span class="status-dot"></span><span>${isMatch ? 'Default' : 'Available'}</span>`;
+        }
+        const actionBtn = card.querySelector('.spc-action-btn');
+        if (actionBtn) {
+            actionBtn.classList.toggle('active', isMatch);
+            actionBtn.innerHTML = isMatch
+                ? `<i class="fas fa-check"></i><span>Default</span>`
+                : `<span>Make default</span>`;
         }
     });
 
@@ -2953,23 +2961,23 @@ function renderSearchSettings(s) {
         },
         bing: {
             name: 'Microsoft Bing',
-            logo: `<i class="fab fa-microsoft" style="color: #00A4EF; font-size: 19px;"></i>`
+            logo: `<svg width="20" height="20" viewBox="0 0 24 24"><path fill="#F25022" d="M1 1h10v10H1z"/><path fill="#7FBA00" d="M13 1h10v10H13z"/><path fill="#00A4EF" d="M1 13h10v10H1z"/><path fill="#FFB900" d="M13 13h10v10H13z"/></svg>`
         },
         duckduckgo: {
             name: 'DuckDuckGo',
-            logo: `<i class="fas fa-shield-cat" style="color: #DE5833; font-size: 19px;"></i>`
+            logo: `<svg width="20" height="20" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="10" fill="#DE5833"/><path d="M16.5 13.5C16.5 15.5 14.5 17 12 17C9.5 17 7.5 15.5 7.5 13.5C7.5 12 8.5 10.8 10 10.3V9C10 7.9 10.9 7 12 7C13.1 7 14 7.9 14 9V10.3C15.5 10.8 16.5 12 16.5 13.5Z" fill="#FFFFFF"/><circle cx="10.5" cy="11.5" r="1" fill="#333333"/><circle cx="13.5" cy="11.5" r="1" fill="#333333"/><ellipse cx="12" cy="13.5" rx="2" ry="1.2" fill="#EAA023"/></svg>`
         },
         brave: {
             name: 'Brave Search',
-            logo: `<i class="fab fa-brave" style="color: #FB542B; font-size: 19px;"></i>`
+            logo: `<svg width="20" height="20" viewBox="0 0 24 24" fill="#FB542B"><path d="M12 2L4 6v6c0 5.5 3.5 10 8 11 4.5-1 8-5.5 8-11V6l-8-4zm0 2.2l6 3v4.8c0 4.3-2.7 8-6 8.9-3.3-.9-6-4.6-6-8.9V7.2l6-3zm-1 5.8a1 1 0 00-1 1v2a1 1 0 002 0V11a1 1 0 00-1-1zm2 0a1 1 0 00-1 1v2a1 1 0 002 0V11a1 1 0 00-1-1z"/></svg>`
         },
         yahoo: {
             name: 'Yahoo Search',
-            logo: `<i class="fab fa-yahoo" style="color: #720DEA; font-size: 19px;"></i>`
+            logo: `<svg width="20" height="20" viewBox="0 0 24 24"><rect width="24" height="24" rx="6" fill="#720DEA"/><path d="M6.5 6L10.5 13.2V18H13.5V13.2L17.5 6H14.5L12 11.2L9.5 6H6.5Z" fill="#FFFFFF"/><circle cx="19" cy="17" r="1.3" fill="#FFFFFF"/></svg>`
         },
         custom: {
             name: 'Custom Engine',
-            logo: `<i class="fas fa-sliders" style="color: var(--accent); font-size: 18px;"></i>`
+            logo: `<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line><line x1="8" y1="11" x2="14" y2="11"></line><line x1="11" y1="8" x2="11" y2="14"></line></svg>`
         }
     };
 
@@ -3092,12 +3100,6 @@ window.setCustomPreset = function(url, name) {
 // ══════════════════════════════════════════════════════════════════════════
 // HOMEPAGE & WORKSPACE HOME-STYLE HANDLERS
 // ══════════════════════════════════════════════════════════════════════════
-window.handleThemeToggle = function(checked) {
-    const newTheme = checked ? 'dark' : 'light';
-    window.electronAPI.updateSetting('themeMode', newTheme);
-    applyTheme(newTheme);
-};
-
 window.handleCompactToggle = function(checked) {
     window.electronAPI.updateSetting('compactWorkspace', checked);
     window.electronAPI.updateSetting('compactMode', checked);
@@ -3405,7 +3407,7 @@ function renderHomepageSettings(s) {
 
     // Accent
     const currentAccent = (s.accentColor || localStorage.getItem('ocal-settings-accent') || '#09F0A0').toUpperCase();
-    applyAccent(currentAccent);
+    applyAccent(currentAccent, true);
 
     const presetNames = {
         '#4F46E5': 'Ocal Indigo',
@@ -4041,12 +4043,31 @@ window.handleAmbientTrackSelect = function(trackFileName) {
     updateAmbientUIState();
 };
 
+let lastNonZeroAmbientVolume = 35;
+
 window.handleAmbientVolumeInput = function(val) {
     const num = parseInt(val, 10);
+    const slider = document.getElementById('ambient-volume-slider');
+    if (slider) {
+        slider.style.setProperty('--slider-fill', `${num}%`);
+    }
     const labelEl = document.getElementById('ambient-volume-val-label');
     if (labelEl) labelEl.textContent = getVolumeDescription(num);
     const statVol = document.getElementById('specials-stat-vol');
     if (statVol) statVol.textContent = `${num}%`;
+
+    const badge = document.getElementById('ambient-volume-percent-badge');
+    if (badge) badge.textContent = num === 0 ? 'Mute' : `${num}%`;
+
+    const icon = document.getElementById('ambient-vol-icon');
+    if (icon) {
+        icon.className = num === 0 ? 'fas fa-volume-xmark' : (num <= 50 ? 'fas fa-volume-low' : 'fas fa-volume-high');
+        icon.title = num === 0 ? 'Click to Unmute' : 'Click to Mute';
+    }
+
+    if (num > 0) {
+        lastNonZeroAmbientVolume = num;
+    }
 
     const pills = document.querySelectorAll('#ambient-volume-pills .specials-preset-pill');
     pills.forEach(p => {
@@ -4065,9 +4086,30 @@ window.handleAmbientVolumeChange = function(val) {
 
 window.handleAmbientVolumePreset = function(pct) {
     const slider = document.getElementById('ambient-volume-slider');
-    if (slider) slider.value = pct;
+    if (slider) {
+        slider.value = pct;
+        slider.style.setProperty('--slider-fill', `${pct}%`);
+    }
     window.handleAmbientVolumeInput(pct);
     window.handleAmbientVolumeChange(pct);
+};
+
+window.toggleAmbientMute = function() {
+    const current = Math.round(localAmbientState.volume * 100);
+    if (current > 0) {
+        lastNonZeroAmbientVolume = current;
+        window.handleAmbientVolumePreset(0);
+    } else {
+        window.handleAmbientVolumePreset(lastNonZeroAmbientVolume || 35);
+    }
+};
+
+window.cycleAmbientVolumePreset = function() {
+    const PRESETS = [0, 20, 40, 70, 100];
+    const current = Math.round(localAmbientState.volume * 100);
+    let next = PRESETS.find(p => p > current);
+    if (next === undefined) next = 0;
+    window.handleAmbientVolumePreset(next);
 };
 
 window.handleAmbientDuckingToggle = function(checked) {
@@ -4178,19 +4220,7 @@ window.handleAmbientPrevTrack = function() {
     handleAmbientTrackSelect(currentAmbientTracks[idx].fileName || currentAmbientTracks[idx].id);
 };
 
-window.handleAmbientVolumePreset = function(percent) {
-    const slider = document.getElementById('ambient-volume-slider');
-    if (slider) slider.value = percent;
-    handleAmbientVolumeInput(percent);
-    handleAmbientVolumeChange(percent);
-};
 
-window.handlePageFXIntensityPreset = function(percent) {
-    const slider = document.getElementById('fx-intensity-slider');
-    if (slider) slider.value = percent;
-    handlePageFXIntensityInput(percent);
-    handlePageFXIntensityChange(percent);
-};
 
 function renderAmbientTracks() {
     const grid = document.getElementById('ambient-tracks-grid');
@@ -4291,7 +4321,19 @@ async function renderAmbientSoundSettings(s) {
     // Volume Slider & Label
     const volPercent = Math.round(localAmbientState.volume * 100);
     const slider = document.getElementById('ambient-volume-slider');
-    if (slider) slider.value = volPercent;
+    if (slider) {
+        slider.value = volPercent;
+        slider.style.setProperty('--slider-fill', `${volPercent}%`);
+    }
+    const badge = document.getElementById('ambient-volume-percent-badge');
+    if (badge) badge.textContent = volPercent === 0 ? 'Mute' : `${volPercent}%`;
+
+    const icon = document.getElementById('ambient-vol-icon');
+    if (icon) {
+        icon.className = volPercent === 0 ? 'fas fa-volume-xmark' : (volPercent <= 50 ? 'fas fa-volume-low' : 'fas fa-volume-high');
+        icon.title = volPercent === 0 ? 'Click to Unmute' : 'Click to Mute';
+    }
+
     const labelEl = document.getElementById('ambient-volume-val-label');
     if (labelEl) labelEl.textContent = getVolumeDescription(volPercent);
     const pills = document.querySelectorAll('#ambient-volume-pills .specials-preset-pill');
@@ -4346,8 +4388,16 @@ window.handlePageFXSelect = function(effectId) {
 
 window.handlePageFXIntensityInput = function(val) {
     const num = parseInt(val, 10);
+    const slider = document.getElementById('fx-intensity-slider');
+    if (slider) {
+        const fillPct = Math.round(((num - 20) / 80) * 100);
+        slider.style.setProperty('--slider-fill', `${fillPct}%`);
+    }
     const labelEl = document.getElementById('fx-intensity-val-label');
     if (labelEl) labelEl.textContent = `${num}% (${num > 75 ? 'Full FX' : num > 40 ? 'Moderate' : 'Subtle'})`;
+
+    const badge = document.getElementById('fx-intensity-percent-badge');
+    if (badge) badge.textContent = `${num}%`;
 
     const pills = document.querySelectorAll('#fx-intensity-pills .specials-preset-pill');
     pills.forEach(p => {
@@ -4368,9 +4418,21 @@ window.handlePageFXIntensityChange = function(val) {
 
 window.handlePageFXIntensityPreset = function(pct) {
     const slider = document.getElementById('fx-intensity-slider');
-    if (slider) slider.value = pct;
+    if (slider) {
+        slider.value = pct;
+        const fillPct = Math.round(((pct - 20) / 80) * 100);
+        slider.style.setProperty('--slider-fill', `${fillPct}%`);
+    }
     window.handlePageFXIntensityInput(pct);
     window.handlePageFXIntensityChange(pct);
+};
+
+window.cyclePageFXIntensityPreset = function() {
+    const PRESETS = [25, 60, 100];
+    const current = Math.round(localPageFXState.intensity * 100);
+    let next = PRESETS.find(p => p > current);
+    if (next === undefined) next = 25;
+    window.handlePageFXIntensityPreset(next);
 };
 
 window.handlePageFXGlobalToggle = function(checked) {
@@ -4457,6 +4519,10 @@ function renderPageFXSettings(s) {
     if (intensitySlider) {
         const pct = Math.round(localPageFXState.intensity * 100);
         intensitySlider.value = pct;
+        const fillPct = Math.round(((pct - 20) / 80) * 100);
+        intensitySlider.style.setProperty('--slider-fill', `${fillPct}%`);
+        const badge = document.getElementById('fx-intensity-percent-badge');
+        if (badge) badge.textContent = `${pct}%`;
         const labelEl = document.getElementById('fx-intensity-val-label');
         if (labelEl) labelEl.textContent = `${pct}% (${pct > 75 ? 'Full FX' : pct > 40 ? 'Moderate' : 'Subtle'})`;
         const fxPills = document.querySelectorAll('#fx-intensity-pills .specials-preset-pill');
@@ -4886,3 +4952,134 @@ document.addEventListener('DOMContentLoaded', () => {
     initOcalSyncEventListeners();
     refreshOcalSyncUI();
 });
+
+// ══════════════════════════════════════════════════════════════════════════
+// SHORTCUT TASK EXECUTION & KEYBOARD INTERACTION
+// ══════════════════════════════════════════════════════════════════════════
+window.executeShortcutTask = function(action, btn) {
+    if (btn) {
+        btn.classList.add('executed');
+        const origHTML = btn.innerHTML;
+        btn.innerHTML = '<i class="fas fa-check"></i><span>Executed</span>';
+        setTimeout(() => {
+            btn.classList.remove('executed');
+            btn.innerHTML = origHTML;
+        }, 1200);
+    }
+
+    try {
+        if (!window.electronAPI) return;
+        switch (action) {
+            case 'new-tab':
+                if (typeof window.electronAPI.newTab === 'function') {
+                    window.electronAPI.newTab('ocal://newtab');
+                } else {
+                    window.electronAPI.send('new-tab');
+                }
+                break;
+            case 'close-tab':
+                if (typeof window.electronAPI.closeTab === 'function') {
+                    window.electronAPI.closeTab();
+                } else {
+                    window.electronAPI.send('close-tab');
+                }
+                break;
+            case 'reopen-tab':
+                window.electronAPI.send('reopen-closed-tab');
+                break;
+            case 'reload':
+                if (typeof window.electronAPI.reload === 'function') {
+                    window.electronAPI.reload();
+                } else {
+                    window.location.reload();
+                }
+                break;
+            case 'back':
+                if (typeof window.electronAPI.goBack === 'function') {
+                    window.electronAPI.goBack();
+                } else {
+                    window.history.back();
+                }
+                break;
+            case 'forward':
+                if (typeof window.electronAPI.goForward === 'function') {
+                    window.electronAPI.goForward();
+                } else {
+                    window.history.forward();
+                }
+                break;
+            case 'focus-address-bar':
+                window.electronAPI.send('focus-omnibox');
+                break;
+            case 'toggle-sidebar':
+                window.electronAPI.send('toggle-sidebar');
+                break;
+            case 'settings':
+                if (typeof showSection === 'function') showSection('search');
+                break;
+            case 'devtools':
+                window.electronAPI.send('toggle-devtools');
+                break;
+            case 'history':
+                window.electronAPI.send('open-history');
+                break;
+            case 'downloads':
+                window.electronAPI.send('open-downloads');
+                break;
+            case 'ai-copilot':
+                window.electronAPI.send('toggle-ai-sidebar');
+                break;
+            case 'web-intel':
+                window.electronAPI.send('open-ai-web');
+                break;
+            case 'split-screen':
+                window.electronAPI.send('toggle-split-screen');
+                break;
+            case 'bookmark':
+                window.electronAPI.send('toggle-bookmark');
+                break;
+            case 'print':
+                if (typeof window.electronAPI.print === 'function') {
+                    window.electronAPI.print();
+                } else {
+                    window.electronAPI.send('print-document');
+                }
+                break;
+            case 'fullscreen':
+                window.electronAPI.send('window-maximize');
+                break;
+            default:
+                console.log('Shortcut task triggered:', action);
+        }
+    } catch (err) {
+        console.warn('executeShortcutTask error:', err);
+    }
+};
+
+window.addEventListener('keydown', (e) => {
+    const shortcutsSection = document.getElementById('shortcuts');
+    if (!shortcutsSection || !shortcutsSection.classList.contains('active')) return;
+
+    const parts = [];
+    if (e.ctrlKey) parts.push('ctrl');
+    if (e.altKey) parts.push('alt');
+    if (e.shiftKey) parts.push('shift');
+    if (e.metaKey) parts.push('meta');
+    
+    let key = e.key.toLowerCase();
+    if (!['control', 'alt', 'shift', 'meta'].includes(key)) {
+        parts.push(key);
+        const combo = parts.join('+');
+        const matchRow = document.querySelector(`.shortcut-row-item[data-shortcut="${combo}"]`);
+        if (matchRow) {
+            matchRow.classList.add('shortcut-active-pulse');
+            const runBtn = matchRow.querySelector('.shortcut-run-btn');
+            if (runBtn) {
+                runBtn.classList.add('executed');
+                setTimeout(() => runBtn.classList.remove('executed'), 1000);
+            }
+            setTimeout(() => matchRow.classList.remove('shortcut-active-pulse'), 800);
+        }
+    }
+});
+

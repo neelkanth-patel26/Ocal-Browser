@@ -142,19 +142,22 @@ ipcRenderer.on('shield-stats-updated', (event, stats) => {
 
 
 const shieldCard = document.getElementById('shield-card');
+if (shieldCard) shieldCard.classList.add('show');
 const popupOverlay = document.getElementById('popup-overlay');
 
 ipcRenderer.on('show-popup', (event, { x, y, tabId, isYouTube }) => {
     window._currentTabId = tabId;
-    shieldCard.style.left = `${x}px`;
-    shieldCard.style.top = `${y}px`;
-    shieldCard.classList.add('show');
+    if (shieldCard) {
+        shieldCard.classList.add('show');
+    }
     
     // Refresh stats immediately for the specific tab
     ipcRenderer.invoke('get-shield-stats', tabId).then(stats => updateUI(stats, isYouTube));
 });
 
-popupOverlay.onclick = () => {
-    shieldCard.classList.remove('show');
-    ipcRenderer.send('hide-popups'); 
-};
+if (popupOverlay) {
+    popupOverlay.onclick = () => {
+        if (shieldCard) shieldCard.classList.remove('show');
+        ipcRenderer.send('hide-popups'); 
+    };
+}

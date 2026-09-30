@@ -1,7 +1,7 @@
 {
   "name": "ocal",
   "productName": "Ocal Browser",
-  "version": "9.5.07",
+  "version": "9.8.00",
   "description": "Ocal Browser - Fast, Secure, and Agentic.",
   "main": "main.js",
   "author": "Gaming Network Studio Media Group",
@@ -40,6 +40,7 @@
     "electron-squirrel-startup": "^1.0.1",
     "img-fx": "^0.5.1",
     "liquid-gooey": "^0.2.2",
+    "lucide": "^1.48.0",
     "qrcode": "^1.5.4",
     "thinking-orbs": "^0.3.2",
     "three": "^0.186.1",
@@ -76,8 +77,18 @@
     ],
     "win": {
       "target": [
-        "nsis",
-        "portable"
+        {
+          "target": "nsis",
+          "arch": [
+            "x64"
+          ]
+        },
+        {
+          "target": "portable",
+          "arch": [
+            "x64"
+          ]
+        }
       ],
       "icon": "icon.ico"
     },

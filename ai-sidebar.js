@@ -8,7 +8,6 @@ const queryEl = document.getElementById('ai-query');
 const sendBtn = document.getElementById('ai-send');
 const clearBtn = document.getElementById('clear-chat');
 const closeBtn = document.getElementById('close-ai');
-const handle = document.getElementById('resize-handle');
 
 // Libraries.dev FX state references
 let ocalHeaderOrb = null;
@@ -2201,12 +2200,6 @@ if (quickToolsContainer) {
     }, { passive: false });
 }
 
-// Resize Logic
-if (handle) {
-    handle.onmousedown = (e) => {
-        window.electronAPI?.send('start-ai-resize');
-    };
-}
 
 // Accent Color Synchronization
 function hexToRgba(hex, alpha) {

@@ -19,34 +19,33 @@
     <link rel="stylesheet" href="assets/fontawesome/css/all.min.css">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     <style>
         :root {
             --accent: #15AC49;
-            --accent-glow: rgba(21, 172, 73, 0.25);
+            --accent-glow: rgba(21, 172, 73, 0.22);
             --accent-dim: rgba(21, 172, 73, 0.12);
             --accent-text: #FFFFFF;
             --bg-glass: #FFFFFF;
             --border-glass: rgba(0, 0, 0, 0.08);
-            --card-bg: #F4F4F6;
-            --card-border: rgba(0, 0, 0, 0.06);
-            --card-hover-bg: #EAEBED;
-            --text-primary: #111111;
-            --text-secondary: #555860;
-            --text-muted: #7E8492;
-            --font-main: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, sans-serif;
-            --font-mono: 'Space Mono', monospace;
-            --radius: 20px;
+            --card-bg: #F6F7F9;
+            --card-border: rgba(0, 0, 0, 0.05);
+            --card-hover-bg: #EEF0F4;
+            --text-primary: #121417;
+            --text-secondary: #58606E;
+            --text-muted: #8A92A0;
+            --font-main: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            --radius: 18px;
         }
 
         [data-theme="dark"], body[data-theme="dark"] {
-            --bg-glass: #16181D;
+            --bg-glass: #17191E;
             --border-glass: rgba(255, 255, 255, 0.08);
-            --card-bg: #1F222A;
-            --card-border: rgba(255, 255, 255, 0.06);
-            --card-hover-bg: #272B35;
-            --text-primary: #FFFFFF;
-            --text-secondary: #9CA3AF;
+            --card-bg: #1F2228;
+            --card-border: rgba(255, 255, 255, 0.05);
+            --card-hover-bg: #282C34;
+            --text-primary: #F3F4F6;
+            --text-secondary: #9AA2B1;
             --text-muted: #6B7280;
             color-scheme: dark;
         }
@@ -56,6 +55,7 @@
             padding: 0;
             box-sizing: border-box;
             user-select: none;
+            box-shadow: none !important;
         }
 
         body {
@@ -73,28 +73,20 @@
         }
 
         .popup-overlay {
-            position: fixed;
-            inset: 0;
-            background: transparent;
-            z-index: 1;
+            display: none;
         }
 
         .volume-boost-card {
             position: relative;
             background: var(--bg-glass);
             border: 1px solid var(--border-glass);
-            padding: 14px;
+            padding: 13px 14px;
             display: flex;
             flex-direction: column;
             gap: 12px;
-            width: 270px;
+            width: 272px;
             z-index: 2;
-            opacity: 1;
             border-radius: var(--radius);
-            box-shadow: none !important;
-        }
-
-        [data-theme="dark"] .volume-boost-card {
             box-shadow: none !important;
         }
 
@@ -103,7 +95,7 @@
             display: flex;
             align-items: center;
             justify-content: space-between;
-            padding-bottom: 8px;
+            padding-bottom: 9px;
             border-bottom: 1px solid var(--border-glass);
         }
 
@@ -118,26 +110,29 @@
             height: 30px;
             background: var(--accent-dim);
             border: 1px solid var(--accent);
-            border-radius: 10px;
+            border-radius: 9px;
             display: flex;
             align-items: center;
             justify-content: center;
             color: var(--accent);
-            font-size: 13px;
+            flex-shrink: 0;
+        }
+
+        .vb-icon-badge svg {
+            display: block;
         }
 
         .vb-title {
-            font-size: 12px;
-            font-weight: 800;
-            letter-spacing: 0.5px;
-            text-transform: uppercase;
+            font-size: 13.5px;
+            font-weight: 700;
+            letter-spacing: -0.2px;
             color: var(--text-primary);
         }
 
         .header-actions {
             display: flex;
             align-items: center;
-            gap: 6px;
+            gap: 5px;
         }
 
         .header-btn {
@@ -147,50 +142,53 @@
             background: var(--card-bg);
             border: 1px solid var(--card-border);
             color: var(--text-secondary);
-            font-size: 11px;
             cursor: pointer;
             display: flex;
             align-items: center;
             justify-content: center;
-            transition: all 0.2s ease;
+            transition: all 0.18s ease;
             outline: none;
+            box-shadow: none !important;
+        }
+
+        .header-btn svg {
+            display: block;
         }
 
         .header-btn:hover {
-            background: var(--accent-dim);
+            background: var(--card-hover-bg);
             color: var(--accent);
             border-color: var(--accent);
-            transform: scale(1.08);
+            transform: scale(1.06);
         }
 
-        /* Display Dashboard */
+        /* Hero Display Dashboard */
         .vb-display {
             background: var(--card-bg);
             border: 1px solid var(--card-border);
             padding: 12px 14px;
-            border-radius: 14px;
+            border-radius: 13px;
             display: flex;
             align-items: center;
             justify-content: space-between;
         }
 
         .vb-percentage {
-            font-family: var(--font-mono);
-            font-size: 30px;
-            font-weight: 700;
+            font-size: 32px;
+            font-weight: 800;
             color: var(--accent);
-            letter-spacing: -1px;
+            letter-spacing: -1.2px;
             line-height: 1;
+            font-variant-numeric: tabular-nums;
         }
 
         .level-badge {
-            font-family: var(--font-mono);
-            font-size: 9.5px;
+            font-size: 10px;
             font-weight: 700;
             letter-spacing: 0.5px;
             text-transform: uppercase;
-            padding: 4px 10px;
-            border-radius: 100px;
+            padding: 4px 9px;
+            border-radius: 999px;
             background: var(--accent-dim);
             color: var(--accent);
             border: 1px solid var(--accent);
@@ -201,14 +199,14 @@
 
         .level-badge::before {
             content: '';
-            width: 5px;
-            height: 5px;
+            width: 4.5px;
+            height: 4.5px;
             border-radius: 50%;
             background: var(--accent);
             display: inline-block;
         }
 
-        /* Slider Area */
+        /* Slider Section */
         .slider-section {
             display: flex;
             flex-direction: column;
@@ -218,7 +216,7 @@
         .vb-slider-track {
             position: relative;
             width: 100%;
-            height: 18px;
+            height: 20px;
             display: flex;
             align-items: center;
         }
@@ -228,36 +226,46 @@
             height: 6px;
             -webkit-appearance: none;
             appearance: none;
-            background: rgba(148, 163, 184, 0.25);
-            border-radius: 100px;
+            background: rgba(140, 150, 165, 0.25);
+            border-radius: 999px;
             outline: none;
             cursor: pointer;
             transition: all 0.2s ease;
+            box-shadow: none !important;
+        }
+
+        [data-theme="light"] .vb-slider {
+            background: #E2E8F0;
         }
 
         .vb-slider::-webkit-slider-thumb {
             -webkit-appearance: none;
-            width: 15px;
-            height: 15px;
+            width: 16px;
+            height: 16px;
             border-radius: 50%;
             background: var(--accent);
-            box-shadow: none !important;
             cursor: pointer;
             transition: transform 0.15s ease;
             border: 2px solid #FFFFFF;
+            box-shadow: none !important;
+        }
+
+        [data-theme="dark"] .vb-slider::-webkit-slider-thumb {
+            border-color: #17191E;
         }
 
         .vb-slider::-webkit-slider-thumb:hover {
-            transform: scale(1.25);
+            transform: scale(1.2);
+            box-shadow: none !important;
         }
 
         .vb-labels {
             display: flex;
             justify-content: space-between;
-            font-size: 9px;
-            font-weight: 700;
+            font-size: 10px;
+            font-weight: 600;
             color: var(--text-muted);
-            font-family: var(--font-mono);
+            font-variant-numeric: tabular-nums;
             padding: 0 2px;
         }
 
@@ -274,15 +282,16 @@
             background: var(--card-bg);
             border: 1px solid var(--card-border);
             color: var(--text-primary);
-            font-size: 10.5px;
+            font-size: 11px;
             font-weight: 700;
-            font-family: var(--font-mono);
+            font-variant-numeric: tabular-nums;
             cursor: pointer;
             display: flex;
             align-items: center;
             justify-content: center;
-            transition: all 0.2s ease;
+            transition: all 0.16s ease;
             outline: none;
+            box-shadow: none !important;
         }
 
         .vb-preset:hover {
@@ -307,17 +316,32 @@
             document.body.setAttribute('data-theme', t);
         })();
     </script>
-    <div class="popup-overlay" id="popup-overlay"></div>
 
     <div class="volume-boost-card" id="vb-card">
         <div class="vb-header">
             <div class="brand-box">
-                <div class="vb-icon-badge"><i class="fas fa-volume-high" id="vb-icon"></i></div>
+                <div class="vb-icon-badge">
+                    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                        <polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/>
+                        <path d="M15.54 8.46a5 5 0 0 1 0 7.07"/>
+                        <path d="M19.07 4.93a10 10 0 0 1 0 14.14"/>
+                    </svg>
+                </div>
                 <span class="vb-title">Volume Booster</span>
             </div>
             <div class="header-actions">
-                <button class="header-btn" id="vb-reset-btn" title="Reset Volume"><i class="fas fa-rotate-left"></i></button>
-                <button class="header-btn" id="vb-close-btn" title="Close"><i class="fas fa-xmark"></i></button>
+                <button class="header-btn" id="vb-reset-btn" title="Reset to 100%">
+                    <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/>
+                        <path d="M3 3v5h5"/>
+                    </svg>
+                </button>
+                <button class="header-btn" id="vb-close-btn" title="Close">
+                    <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M18 6 6 18"/>
+                        <path d="m6 6 12 12"/>
+                    </svg>
+                </button>
             </div>
         </div>
 
