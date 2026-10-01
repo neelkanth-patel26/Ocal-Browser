@@ -10,14 +10,16 @@
             var t = localStorage.getItem('ocal-settings-theme') || 'dark';
             document.documentElement.setAttribute('data-theme', t);
             if (t === 'dark') {
-                document.documentElement.style.background = '#18181B';
+                document.documentElement.style.background = '#0D0E11';
                 document.documentElement.style.colorScheme = 'dark';
+            } else {
+                document.documentElement.style.background = '#EDEDF0';
             }
         })();
     </script>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="assets/fontawesome/css/all.min.css">
     <style>
         :root {
@@ -31,12 +33,11 @@
             --border-hover: rgba(0, 0, 0, 0.12);
             --text: #111111;
             --text-dim: #6B7280;
-            --success: #15AC49;
         }
 
         html[data-theme="dark"], body[data-theme="dark"] {
-            --bg: #18181B;
-            --card-bg: #222226;
+            --bg: #0D0E11;
+            --card-bg: #202124;
             --card-inner: #28282D;
             --border: rgba(255, 255, 255, 0.08);
             --border-hover: rgba(255, 255, 255, 0.16);
@@ -56,571 +57,384 @@
             background: var(--bg);
             color: var(--text);
             min-height: 100vh;
-            padding: 40px 28px 60px;
+            padding: 36px 28px 60px;
             overflow-x: hidden;
             transition: background-color 0.25s ease, color 0.25s ease;
         }
 
         .container {
-            max-width: 1400px;
+            max-width: 860px;
             margin: 0 auto;
             display: flex;
             flex-direction: column;
-            gap: 24px;
+            gap: 18px;
         }
 
-        /* ── Header Row ───────────────────────────────────────────── */
-        .ext-header-row {
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            flex-wrap: wrap;
-            gap: 20px;
+        /* ── Page Header (matching settings-page-header) ──────────── */
+        .page-header {
+            margin-bottom: 4px;
         }
 
-        .ext-greeting {
-            display: flex;
-            flex-direction: column;
-            gap: 4px;
-        }
-
-        .ext-title {
-            font-size: 32px;
-            font-weight: 700;
-            color: var(--text);
-            letter-spacing: -0.8px;
-            line-height: 1.2;
-        }
-
-        .ext-subtitle {
-            font-size: 13.5px;
-            color: var(--text-dim);
+        .page-title {
+            font-size: 22px;
             font-weight: 600;
-            display: inline-flex;
-            align-items: center;
-            gap: 8px;
+            color: var(--text);
+            letter-spacing: -0.4px;
+            margin: 0 0 4px 0;
+            line-height: 1.3;
         }
 
-        .motd-quote-icon {
-            color: var(--accent) !important;
-            font-size: 11px;
+        .page-subtitle {
+            font-size: 13px;
+            color: var(--text-dim);
+            margin: 0;
+            font-weight: 400;
         }
 
-        /* Dot-Matrix Stats Bar matching Home Page .sp-stats-bar */
-        .sp-stats-bar {
-            display: flex;
-            align-items: center;
-            gap: 20px;
-            background: var(--card-bg);
-            padding: 10px 22px;
-            border-radius: 100px;
-            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.03);
-            border: 1px solid var(--border);
-        }
-
-        body[data-theme="dark"] .sp-stats-bar {
-            box-shadow: 0 4px 16px rgba(0, 0, 0, 0.25);
-        }
-
-        .sp-stat-item {
+        /* ── Action Row ───────────────────────────────────────────── */
+        .action-row {
             display: flex;
             align-items: center;
             gap: 8px;
-        }
-
-        .sp-dot-num {
-            font-family: 'Space Mono', monospace;
-            font-size: 17px;
-            font-weight: 700;
-            color: var(--text);
-        }
-
-        .sp-badge {
-            font-size: 11px;
-            font-weight: 700;
-            padding: 4px 12px;
-            border-radius: 100px;
-            display: inline-flex;
-            align-items: center;
-        }
-
-        .sp-badge-lime {
-            background: var(--accent) !important;
-            color: var(--accent-text, #111111) !important;
-            font-weight: 800;
-        }
-
-        .sp-badge-gray {
-            background: var(--card-inner);
-            color: var(--text) !important;
-            font-weight: 700;
-        }
-
-        /* ── Search Section matching Home Page .sp-search-section ─── */
-        .sp-search-section {
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            gap: 16px;
-            margin-top: 4px;
             flex-wrap: wrap;
         }
 
-        .sp-search-pill {
-            flex: 1;
-            max-width: 620px;
-            height: 48px;
-            background: var(--card-bg);
-            border-radius: 100px;
-            display: flex;
-            align-items: center;
-            padding: 0 18px;
-            gap: 12px;
-            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.03);
-            border: 1px solid var(--border);
-            transition: all 0.2s ease;
-        }
-
-        .sp-search-pill:focus-within {
-            border-color: var(--accent);
-            box-shadow: 0 0 0 2px color-mix(in srgb, var(--accent) 25%, transparent);
-        }
-
-        .sp-search-logo {
-            display: flex;
-            align-items: center;
-            font-size: 15px;
-        }
-
-        .sp-search-input {
-            flex: 1;
-            border: none;
-            background: none;
-            font-size: 13.5px;
-            font-weight: 600;
-            color: var(--text);
-            outline: none;
-        }
-
-        .sp-search-input::placeholder {
-            color: var(--text-dim);
-            font-weight: 500;
-        }
-
-        .sp-search-btn {
-            width: 32px;
+        .action-btn {
             height: 32px;
-            border-radius: 50%;
-            background: var(--card-inner);
-            color: var(--text);
-            border: none;
-            display: flex;
+            padding: 0 14px;
+            border-radius: 6px;
+            font-size: 12.5px;
+            font-weight: 500;
+            display: inline-flex;
             align-items: center;
-            justify-content: center;
-            font-size: 12px;
+            gap: 6px;
             cursor: pointer;
-            transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
-            flex-shrink: 0;
+            transition: all 0.15s ease;
+            border: 1px solid var(--border);
             outline: none;
+            background: var(--card-bg);
+            color: var(--text);
         }
 
-        .sp-search-btn:hover {
-            transform: scale(1.08);
-            background: var(--accent);
-            color: var(--accent-text, #FFFFFF);
+        body[data-theme="dark"] .action-btn {
+            background: #2A2A2E;
+            border-color: rgba(255, 255, 255, 0.14);
         }
 
-        .ext-top-actions {
+        .action-btn:hover {
+            border-color: var(--accent);
+            color: var(--accent);
+            background: color-mix(in srgb, var(--accent) 8%, transparent);
+        }
+
+        .action-btn.primary {
+            background: color-mix(in srgb, var(--accent) 14%, transparent);
+            color: var(--accent);
+            border: 1px solid color-mix(in srgb, var(--accent) 30%, transparent);
+            font-weight: 600;
+        }
+
+        .action-btn.primary:hover {
+            background: color-mix(in srgb, var(--accent) 22%, transparent);
+        }
+
+        /* ── Search Row ───────────────────────────────────────────── */
+        .search-row {
             display: flex;
             align-items: center;
             gap: 10px;
-            flex-wrap: wrap;
         }
 
-        .ext-action-pill {
-            height: 46px;
-            padding: 0 20px;
-            border-radius: 100px;
-            font-size: 13px;
-            font-weight: 700;
-            display: inline-flex;
-            align-items: center;
-            gap: 8px;
-            cursor: pointer;
-            transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
-            border: 1px solid transparent;
-            outline: none;
-        }
-
-        .ext-action-pill.primary {
-            background: var(--accent);
-            color: var(--accent-text, #111111);
-            box-shadow: 0 4px 14px color-mix(in srgb, var(--accent) 30%, transparent);
-        }
-
-        .ext-action-pill.primary:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 6px 20px color-mix(in srgb, var(--accent) 45%, transparent);
-        }
-
-        .ext-action-pill.secondary {
+        .search-field {
+            flex: 1;
+            height: 36px;
+            padding: 0 14px;
+            border-radius: 6px;
+            border: 1px solid var(--border);
             background: var(--card-bg);
             color: var(--text);
-            border-color: var(--border);
-            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.03);
+            font-size: 13px;
+            font-weight: 500;
+            outline: none;
+            transition: border-color 0.15s ease;
         }
 
-        .ext-action-pill.secondary:hover {
-            background: var(--card-inner);
-            transform: translateY(-2px);
-            border-color: var(--border-hover);
+        body[data-theme="dark"] .search-field {
+            background: #202124;
+            border-color: rgba(255, 255, 255, 0.08);
         }
 
-        /* ── Web Store Quick-Install Drawer ───────────────────────── */
-        .ext-install-drawer {
+        .search-field::placeholder {
+            color: var(--text-dim);
+            font-weight: 400;
+        }
+
+        .search-field:focus {
+            border-color: var(--accent);
+        }
+
+        /* ── Group Card (matching settings-group-card) ─────────── */
+        .group-card {
             background: var(--card-bg);
             border: 1px solid var(--border);
-            border-radius: 24px;
-            padding: 24px;
-            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.04);
-            animation: fadeIn 0.25s ease;
+            border-radius: 12px;
+            overflow: hidden;
+            box-shadow: none;
         }
 
-        body[data-theme="dark"] .ext-install-drawer {
-            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.35);
+        body[data-theme="dark"] .group-card {
+            background: #202124;
+            border-color: rgba(255, 255, 255, 0.08);
         }
 
-        .ext-drawer-inner {
+        .group-header {
+            padding: 14px 20px;
             display: flex;
-            flex-direction: column;
+            align-items: center;
+            justify-content: space-between;
+            border-bottom: 1px solid rgba(0, 0, 0, 0.06);
             gap: 16px;
         }
 
-        .ext-drawer-header {
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            gap: 14px;
+        body[data-theme="dark"] .group-header {
+            border-color: rgba(255, 255, 255, 0.06);
         }
 
-        .ext-drawer-title-wrap {
+        .group-header-text {
             display: flex;
-            align-items: center;
-            gap: 14px;
+            flex-direction: column;
+            gap: 2px;
         }
 
-        .ext-drawer-icon {
-            width: 44px;
-            height: 44px;
-            border-radius: 14px;
-            background: color-mix(in srgb, var(--accent) 14%, transparent);
-            color: var(--accent);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 22px;
-            flex-shrink: 0;
-        }
-
-        .ext-drawer-title {
-            font-size: 16px;
-            font-weight: 700;
+        .group-title {
+            font-size: 13.5px;
+            font-weight: 600;
             color: var(--text);
-            margin: 0 0 2px 0;
-        }
-
-        .ext-drawer-desc {
-            font-size: 12.5px;
-            color: var(--text-dim);
             margin: 0;
         }
 
-        .ext-drawer-close {
-            width: 32px;
-            height: 32px;
+        .group-desc {
+            font-size: 12px;
+            color: var(--text-dim);
+            margin: 0;
+            font-weight: 400;
+        }
+
+        .group-stat {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            padding: 4px 10px;
+            border-radius: 100px;
+            font-size: 11.5px;
+            font-weight: 500;
+            color: var(--text-dim);
+            background: rgba(0, 0, 0, 0.04);
+            border: 1px solid rgba(0, 0, 0, 0.06);
+            flex-shrink: 0;
+        }
+
+        body[data-theme="dark"] .group-stat {
+            background: rgba(255, 255, 255, 0.05);
+            border-color: rgba(255, 255, 255, 0.08);
+        }
+
+        .group-stat .dot {
+            width: 6px;
+            height: 6px;
             border-radius: 50%;
-            background: var(--card-inner);
-            border: none;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            color: var(--text-dim);
-            cursor: pointer;
-            transition: all 0.2s ease;
-        }
-
-        .ext-drawer-close:hover {
-            background: rgba(239, 68, 68, 0.12);
-            color: #ef4444;
-        }
-
-        .ext-drawer-input-row {
-            display: flex;
-            align-items: center;
-            gap: 12px;
-        }
-
-        .ext-input-pill {
-            flex: 1;
-            height: 48px;
-            background: var(--card-inner);
-            border: 1px solid var(--border);
-            border-radius: 100px;
-            display: flex;
-            align-items: center;
-            padding: 0 18px;
-            gap: 12px;
-            transition: all 0.2s ease;
-        }
-
-        .ext-input-pill:focus-within {
-            border-color: var(--accent);
-            box-shadow: 0 0 0 2px color-mix(in srgb, var(--accent) 25%, transparent);
-        }
-
-        .ext-input-pill i {
-            color: var(--text-dim);
-            font-size: 13px;
-        }
-
-        .ext-input-pill input {
-            flex: 1;
-            border: none;
-            background: none;
-            font-size: 13px;
-            font-weight: 600;
-            color: var(--text);
-            outline: none;
-        }
-
-        .ext-install-submit-btn {
-            height: 48px;
-            padding: 0 24px;
-            border-radius: 100px;
             background: var(--accent);
-            color: var(--accent-text, #111111);
-            border: none;
-            font-size: 13px;
-            font-weight: 700;
-            display: inline-flex;
-            align-items: center;
-            gap: 8px;
-            cursor: pointer;
-            transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
-            flex-shrink: 0;
         }
 
-        .ext-install-submit-btn:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 6px 18px color-mix(in srgb, var(--accent) 40%, transparent);
-        }
-
-        .ext-popular-chips-wrap {
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            flex-wrap: wrap;
-            padding-top: 14px;
-            border-top: 1px solid var(--border);
-        }
-
-        .ext-chips-label {
-            font-size: 12px;
-            font-weight: 700;
-            color: var(--text-dim);
-            display: inline-flex;
-            align-items: center;
-            gap: 6px;
-            margin-right: 4px;
-        }
-
-        .ext-chip-btn {
-            padding: 6px 14px;
-            border-radius: 100px;
-            background: var(--card-inner);
-            border: 1px solid var(--border);
-            font-size: 12px;
-            font-weight: 600;
-            color: var(--text);
-            cursor: pointer;
-            display: inline-flex;
-            align-items: center;
-            gap: 6px;
-            transition: all 0.2s ease;
-            outline: none;
-        }
-
-        .ext-chip-btn:hover {
-            background: var(--accent);
-            color: var(--accent-text, #111111);
-            border-color: var(--accent);
-            transform: translateY(-1px);
-        }
-
-        /* ── Bento Grid Cards matching Home Page ──────────────────── */
-        .extension-grid {
-            display: grid;
-            grid-template-columns: repeat(2, 1fr);
-            gap: 20px;
-            width: 100%;
-        }
-
-        @media (max-width: 960px) {
-            .extension-grid {
-                grid-template-columns: 1fr;
-            }
-        }
-
-        .extension-card {
-            background: var(--card-bg);
-            border: 1px solid var(--border);
-            border-radius: 24px;
-            padding: 22px;
-            display: flex;
-            flex-direction: column;
-            justify-content: space-between;
-            gap: 14px;
-            min-height: 170px;
-            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.035), 0 2px 8px rgba(0, 0, 0, 0.015);
-            transition: transform 0.25s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.25s, border-color 0.25s;
-        }
-
-        body[data-theme="dark"] .extension-card {
-            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.35);
-        }
-
-        .extension-card:hover {
-            transform: none;
-            border-color: color-mix(in srgb, var(--accent) 35%, transparent);
-            box-shadow: 0 12px 28px rgba(0, 0, 0, 0.06);
-        }
-
-        body[data-theme="dark"] .extension-card:hover {
-            box-shadow: 0 14px 32px rgba(0, 0, 0, 0.4);
-        }
-
-        .ext-card-header {
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            gap: 14px;
-        }
-
-        .ext-card-header-left {
-            display: flex;
-            align-items: center;
-            gap: 14px;
-        }
-
-        .ext-icon {
-            width: 48px;
-            height: 48px;
-            border-radius: 16px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 20px;
-            flex-shrink: 0;
-            background: color-mix(in srgb, var(--accent) 14%, transparent);
+        .group-stat.accent {
             color: var(--accent);
-            border: 1px solid color-mix(in srgb, var(--accent) 25%, transparent);
-            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+            background: color-mix(in srgb, var(--accent) 12%, transparent);
+            border-color: color-mix(in srgb, var(--accent) 25%, transparent);
+        }
+
+        /* ── Extension Row (matching settings-engine-row) ────────── */
+        .ext-row {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 12px 20px;
+            cursor: default;
+            transition: background 0.15s ease;
+            border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+            gap: 14px;
+        }
+
+        body[data-theme="dark"] .ext-row {
+            border-color: rgba(255, 255, 255, 0.05);
+        }
+
+        .ext-row:last-child {
+            border-bottom: none;
+        }
+
+        .ext-row:hover {
+            background: rgba(0, 0, 0, 0.025);
+        }
+
+        body[data-theme="dark"] .ext-row:hover {
+            background: rgba(255, 255, 255, 0.035);
+        }
+
+        .ext-row.active-ext {
+            background: color-mix(in srgb, var(--accent) 5%, transparent);
+        }
+
+        body[data-theme="dark"] .ext-row.active-ext {
+            background: color-mix(in srgb, var(--accent) 9%, transparent);
+        }
+
+        .ext-left {
+            display: flex;
+            align-items: center;
+            gap: 14px;
+            flex: 1;
+            min-width: 0;
+        }
+
+        .ext-icon-box {
+            width: 36px;
+            height: 36px;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: rgba(0, 0, 0, 0.04);
+            border: 1px solid rgba(0, 0, 0, 0.06);
+            flex-shrink: 0;
+            font-size: 16px;
+            color: var(--text-dim);
             overflow: hidden;
         }
 
-        .ext-icon img {
-            width: 100%;
-            height: 100%;
-            object-fit: contain;
-            border-radius: inherit;
+        body[data-theme="dark"] .ext-icon-box {
+            background: rgba(255, 255, 255, 0.05);
+            border-color: rgba(255, 255, 255, 0.08);
+            color: var(--text-dim);
         }
 
-        .ext-icon.adblock-icon { color: #ef4444; background: rgba(239, 68, 68, 0.12); border-color: rgba(239, 68, 68, 0.25); }
-        .ext-icon.vault-icon { color: #3b82f6; background: rgba(59, 130, 246, 0.12); border-color: rgba(59, 130, 246, 0.25); }
-        .ext-icon.ai-icon { color: #a855f7; background: rgba(168, 85, 247, 0.12); border-color: rgba(168, 85, 247, 0.25); }
-        .ext-icon.stealth-icon { color: #10b981; background: rgba(16, 185, 129, 0.12); border-color: rgba(16, 185, 129, 0.25); }
-        .ext-icon.focus-icon { color: #f59e0b; background: rgba(245, 158, 11, 0.12); border-color: rgba(245, 158, 11, 0.25); }
+        .ext-icon-box img {
+            width: 22px;
+            height: 22px;
+            object-fit: contain;
+        }
 
-        .ext-identity {
+        .ext-info {
             display: flex;
             flex-direction: column;
+            gap: 1px;
+            min-width: 0;
         }
 
         .ext-name {
-            font-size: 16px;
-            font-weight: 700;
+            font-size: 13.5px;
+            font-weight: 600;
             color: var(--text);
-            margin: 0 0 2px 0;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
         }
 
-        .ext-version {
+        .ext-sub {
             font-size: 12px;
             color: var(--text-dim);
-            font-weight: 500;
+            font-weight: 400;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
         }
 
-        .ext-desc {
-            font-size: 13px;
-            color: var(--text-dim);
-            line-height: 1.5;
-            margin: 0;
-            font-weight: 500;
-        }
-
-        .ext-actions {
+        .ext-right {
             display: flex;
             align-items: center;
-            justify-content: space-between;
-            padding-top: 14px;
-            border-top: 1px solid var(--border);
-            flex-wrap: wrap;
-            gap: 10px;
+            gap: 8px;
+            flex-shrink: 0;
         }
 
-        .ext-tag {
-            font-size: 10.5px;
-            font-weight: 800;
-            padding: 4px 10px;
-            border-radius: 100px;
-            letter-spacing: 0.5px;
-            text-transform: uppercase;
-        }
-
-        .ext-tag.core { color: #ef4444; background: rgba(239, 68, 68, 0.12); border: 1px solid rgba(239, 68, 68, 0.25); }
-        .ext-tag.installed { color: var(--accent); background: color-mix(in srgb, var(--accent) 12%, transparent); border: 1px solid color-mix(in srgb, var(--accent) 25%, transparent); }
-
-        .ext-status {
-            display: flex;
+        /* ── Row action buttons (matching spc-action-btn) ────────── */
+        .row-btn {
+            height: 28px;
+            padding: 0 10px;
+            border-radius: 6px;
+            font-size: 11.5px;
+            font-weight: 500;
+            border: 1px solid rgba(0, 0, 0, 0.12);
+            background: var(--card-bg);
+            color: var(--text);
+            cursor: pointer;
+            transition: all 0.15s ease;
+            outline: none;
+            display: inline-flex;
             align-items: center;
-            gap: 6px;
-            font-size: 12px;
-            font-weight: 700;
-            color: var(--text-dim);
+            justify-content: center;
+            gap: 5px;
+            white-space: nowrap;
         }
 
-        .ext-status.on {
+        body[data-theme="dark"] .row-btn {
+            background: #2A2A2E;
+            border-color: rgba(255, 255, 255, 0.14);
+            color: #FFFFFF;
+        }
+
+        .row-btn:hover {
+            border-color: var(--accent);
             color: var(--accent);
+            background: color-mix(in srgb, var(--accent) 8%, transparent);
         }
 
-        .ext-status .status-dot {
-            width: 8px;
-            height: 8px;
+        .row-btn.danger:hover {
+            border-color: #ef4444;
+            color: #ef4444;
+            background: rgba(239, 68, 68, 0.08);
+        }
+
+        .row-btn.status-active {
+            background: color-mix(in srgb, var(--accent) 14%, transparent);
+            color: var(--accent);
+            border: 1px solid color-mix(in srgb, var(--accent) 30%, transparent);
+            font-weight: 600;
+            cursor: default;
+        }
+
+        /* ── Status badge ─────────────────────────────────────────── */
+        .status-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 5px;
+            font-size: 11.5px;
+            font-weight: 500;
+            color: var(--text-dim);
+            padding: 3px 8px;
+            border-radius: 100px;
+        }
+
+        .status-badge .dot {
+            width: 6px;
+            height: 6px;
             border-radius: 50%;
             background: var(--text-dim);
         }
 
-        .ext-status.on .status-dot {
-            background: var(--accent);
-            box-shadow: 0 0 8px color-mix(in srgb, var(--accent) 50%, transparent);
+        .status-badge.on {
+            color: var(--accent);
         }
 
-        /* Toggle Switch */
+        .status-badge.on .dot {
+            background: var(--accent);
+        }
+
+        /* ── Toggle Switch ─────────────────────────────────────────── */
         .switch {
             position: relative;
             display: inline-flex;
             align-items: center;
-            width: 46px;
-            height: 26px;
+            width: 38px;
+            height: 22px;
             flex-shrink: 0;
         }
 
@@ -651,15 +465,14 @@
         .slider:before {
             position: absolute;
             content: "";
-            height: 20px;
-            width: 20px;
+            height: 16px;
+            width: 16px;
             left: 3px;
             top: 50%;
             transform: translateY(-50%);
             background-color: #FFFFFF !important;
             transition: transform 0.25s cubic-bezier(0.16, 1, 0.3, 1);
             border-radius: 50%;
-            box-shadow: 0 2px 6px rgba(0, 0, 0, 0.25);
         }
 
         .switch input:checked + .slider {
@@ -667,54 +480,193 @@
         }
 
         .switch input:checked + .slider:before {
-            transform: translate(20px, -50%);
+            transform: translate(16px, -50%);
         }
 
-        .ext-action-btn-pill {
-            height: 32px;
-            padding: 0 14px;
-            border-radius: 100px;
+        /* ── Install Drawer ────────────────────────────────────────── */
+        .install-drawer {
+            background: var(--card-bg);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 18px 20px;
+            overflow: hidden;
+        }
+
+        body[data-theme="dark"] .install-drawer {
+            background: #202124;
+            border-color: rgba(255, 255, 255, 0.08);
+        }
+
+        .drawer-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 12px;
+            margin-bottom: 14px;
+        }
+
+        .drawer-title-wrap {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .drawer-icon {
+            width: 36px;
+            height: 36px;
+            border-radius: 8px;
+            background: color-mix(in srgb, var(--accent) 12%, transparent);
+            color: var(--accent);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 16px;
+            flex-shrink: 0;
+        }
+
+        .drawer-title {
+            font-size: 13.5px;
+            font-weight: 600;
+            color: var(--text);
+            margin: 0 0 2px 0;
+        }
+
+        .drawer-desc {
             font-size: 12px;
-            font-weight: 700;
+            color: var(--text-dim);
+            margin: 0;
+            font-weight: 400;
+        }
+
+        .drawer-close {
+            width: 28px;
+            height: 28px;
+            border-radius: 6px;
+            background: transparent;
+            border: 1px solid var(--border);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: var(--text-dim);
+            cursor: pointer;
+            transition: all 0.15s ease;
+            font-size: 12px;
+        }
+
+        .drawer-close:hover {
+            background: rgba(239, 68, 68, 0.08);
+            color: #ef4444;
+            border-color: rgba(239, 68, 68, 0.2);
+        }
+
+        .drawer-input-row {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .drawer-input {
+            flex: 1;
+            height: 36px;
+            padding: 0 14px;
+            border-radius: 6px;
+            border: 1px solid var(--border);
+            background: var(--card-inner);
+            color: var(--text);
+            font-size: 12.5px;
+            font-weight: 500;
+            outline: none;
+            transition: border-color 0.15s ease;
+        }
+
+        body[data-theme="dark"] .drawer-input {
+            background: rgba(255, 255, 255, 0.04);
+            border-color: rgba(255, 255, 255, 0.08);
+        }
+
+        .drawer-input:focus {
+            border-color: var(--accent);
+        }
+
+        .drawer-submit {
+            height: 36px;
+            padding: 0 16px;
+            border-radius: 6px;
+            background: color-mix(in srgb, var(--accent) 14%, transparent);
+            color: var(--accent);
+            border: 1px solid color-mix(in srgb, var(--accent) 30%, transparent);
+            font-size: 12.5px;
+            font-weight: 600;
             display: inline-flex;
             align-items: center;
             gap: 6px;
+            cursor: pointer;
+            transition: all 0.15s ease;
+            flex-shrink: 0;
+            outline: none;
+        }
+
+        .drawer-submit:hover {
+            background: color-mix(in srgb, var(--accent) 22%, transparent);
+        }
+
+        .chips-wrap {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            flex-wrap: wrap;
+            padding-top: 12px;
+            margin-top: 12px;
+            border-top: 1px solid var(--border);
+        }
+
+        .chips-label {
+            font-size: 11.5px;
+            font-weight: 600;
+            color: var(--text-dim);
+            display: inline-flex;
+            align-items: center;
+            gap: 5px;
+            margin-right: 2px;
+        }
+
+        .chip-btn {
+            padding: 4px 10px;
+            border-radius: 6px;
             background: var(--card-inner);
             border: 1px solid var(--border);
+            font-size: 11.5px;
+            font-weight: 500;
             color: var(--text);
             cursor: pointer;
-            transition: all 0.2s ease;
+            display: inline-flex;
+            align-items: center;
+            gap: 5px;
+            transition: all 0.15s ease;
+            outline: none;
         }
 
-        .ext-action-btn-pill:hover {
-            background: var(--accent);
-            color: var(--accent-text, #111111);
+        .chip-btn:hover {
             border-color: var(--accent);
-            transform: none;
+            color: var(--accent);
+            background: color-mix(in srgb, var(--accent) 8%, transparent);
         }
 
-        .ext-action-btn-pill.danger:hover {
-            background: #ef4444;
-            color: #FFFFFF;
-            border-color: #ef4444;
-        }
-
-        /* Loading Overlay */
+        /* ── Loading Overlay ───────────────────────────────────────── */
         .loading-overlay {
             position: fixed;
             inset: 0;
-            background: rgba(0, 0, 0, 0.6);
+            background: rgba(0, 0, 0, 0.5);
             display: none;
             justify-content: center;
             align-items: center;
             z-index: 1000;
-            backdrop-filter: blur(8px);
         }
 
         .loader {
-            width: 44px;
-            height: 44px;
-            border: 4px solid rgba(255, 255, 255, 0.2);
+            width: 36px;
+            height: 36px;
+            border: 3px solid rgba(255, 255, 255, 0.2);
             border-bottom-color: var(--accent);
             border-radius: 50%;
             display: inline-block;
@@ -726,13 +678,11 @@
             100% { transform: rotate(360deg); }
         }
 
-        /* Custom Modal Overlay */
+        /* ── Modal ─────────────────────────────────────────────────── */
         .ext-modal-overlay {
             position: fixed;
             inset: 0;
-            background: rgba(0, 0, 0, 0.52);
-            backdrop-filter: blur(16px);
-            -webkit-backdrop-filter: blur(16px);
+            background: rgba(0, 0, 0, 0.4);
             display: flex;
             align-items: center;
             justify-content: center;
@@ -740,256 +690,278 @@
             padding: 20px;
             opacity: 0;
             pointer-events: none;
-            transition: opacity 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+            transition: opacity 0.2s ease;
         }
+
         .ext-modal-overlay.active {
             opacity: 1;
             pointer-events: auto;
         }
+
         .ext-modal {
-            background: var(--card-bg, #FFFFFF);
+            background: var(--card-bg);
             border: 1px solid var(--border);
-            border-radius: 24px;
-            box-shadow: 0 24px 60px rgba(0, 0, 0, 0.25);
-            padding: 24px;
-            max-width: 460px;
+            border-radius: 12px;
+            padding: 20px;
+            max-width: 420px;
             width: 100%;
-            transform: scale(0.96) translateY(8px);
-            transition: transform 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+            transform: scale(0.97) translateY(6px);
+            transition: transform 0.2s ease;
             display: flex;
             flex-direction: column;
-            gap: 18px;
+            gap: 16px;
             box-sizing: border-box;
         }
+
         body[data-theme="dark"] .ext-modal {
-            box-shadow: 0 30px 70px rgba(0, 0, 0, 0.6);
+            background: #202124;
         }
+
         .ext-modal-overlay.active .ext-modal {
             transform: scale(1) translateY(0);
         }
+
         .sm-modal-wrap {
             display: flex;
             flex-direction: column;
-            gap: 18px;
+            gap: 16px;
             width: 100%;
         }
+
         .sm-header {
             display: flex;
             align-items: center;
             justify-content: space-between;
             width: 100%;
         }
+
         .sm-title {
             display: flex;
             align-items: center;
-            gap: 12px;
+            gap: 10px;
         }
+
         .sm-icon-badge {
-            width: 40px;
-            height: 40px;
-            border-radius: 12px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 16px;
-            flex-shrink: 0;
-        }
-        .sm-icon-badge.danger {
-            background: rgba(239, 68, 68, 0.14);
-            color: #ef4444;
-            border: 1px solid rgba(239, 68, 68, 0.3);
-        }
-        .sm-text-group h3 {
-            font-size: 16px;
-            font-weight: 800;
-            color: var(--text);
-            margin: 0 0 2px 0;
-            letter-spacing: -0.3px;
-        }
-        .sm-text-group span {
-            font-size: 12px;
-            color: var(--text-dim);
-            font-weight: 500;
-            display: block;
-        }
-        .sm-close-btn {
-            background: transparent;
-            border: none;
-            color: var(--text-dim);
-            width: 32px;
-            height: 32px;
-            border-radius: 50%;
-            cursor: pointer;
+            width: 36px;
+            height: 36px;
+            border-radius: 8px;
             display: flex;
             align-items: center;
             justify-content: center;
             font-size: 14px;
+            flex-shrink: 0;
+        }
+
+        .sm-icon-badge.danger {
+            background: rgba(239, 68, 68, 0.1);
+            color: #ef4444;
+        }
+
+        .sm-text-group h3 {
+            font-size: 14px;
+            font-weight: 600;
+            color: var(--text);
+            margin: 0 0 2px 0;
+        }
+
+        .sm-text-group span {
+            font-size: 12px;
+            color: var(--text-dim);
+            font-weight: 400;
+            display: block;
+        }
+
+        .sm-close-btn {
+            background: transparent;
+            border: 1px solid var(--border);
+            color: var(--text-dim);
+            width: 28px;
+            height: 28px;
+            border-radius: 6px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 12px;
             transition: all 0.15s;
         }
+
         .sm-close-btn:hover {
             background: var(--card-inner);
             color: var(--text);
         }
+
         .sm-body {
             display: flex;
             flex-direction: column;
-            gap: 14px;
+            gap: 12px;
             width: 100%;
         }
+
         .sm-footer {
             display: flex;
             align-items: center;
             justify-content: flex-end;
-            gap: 10px;
-            margin-top: 4px;
+            gap: 8px;
+            margin-top: 2px;
         }
+
         .sm-cancel-btn {
-            height: 38px;
-            padding: 0 18px;
-            border-radius: 100px;
+            height: 32px;
+            padding: 0 14px;
+            border-radius: 6px;
             background: transparent;
             border: 1px solid var(--border);
             color: var(--text-dim);
-            font-size: 12.5px;
-            font-weight: 700;
+            font-size: 12px;
+            font-weight: 500;
             cursor: pointer;
-            transition: all 0.2s ease;
+            transition: all 0.15s ease;
         }
+
         .sm-cancel-btn:hover {
             background: var(--card-inner);
             color: var(--text);
         }
+
         .sm-save-btn {
-            height: 38px;
-            padding: 0 22px;
-            border-radius: 100px;
+            height: 32px;
+            padding: 0 16px;
+            border-radius: 6px;
             background: var(--accent);
-            color: var(--accent-text, #111111);
+            color: var(--accent-text);
             border: none;
-            font-size: 12.5px;
-            font-weight: 800;
+            font-size: 12px;
+            font-weight: 600;
             display: inline-flex;
             align-items: center;
-            gap: 7px;
+            gap: 6px;
             cursor: pointer;
             transition: filter 0.15s ease;
         }
+
         .sm-save-btn.danger {
             background: #ef4444;
             color: #FFFFFF;
-            box-shadow: 0 4px 14px rgba(239, 68, 68, 0.35);
         }
+
         .sm-save-btn.danger:hover {
             background: #dc2626;
         }
+
+        /* ── Responsive ─────────────────────────────────────────── */
+        @media (max-width: 600px) {
+            body { padding: 20px 14px 40px; }
+            .ext-row { padding: 10px 14px; }
+            .group-header { padding: 12px 14px; }
+        }
+
+        /* ── Fade In ────────────────────────────────────────────── */
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(4px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        .group-card { animation: fadeIn 0.25s ease; }
     </style>
 </head>
 <body>
     <div class="loading-overlay" id="loader">
         <div style="text-align: center; color: #FFFFFF;">
             <span class="loader"></span>
-            <p style="margin-top: 18px; font-weight: 700; font-size: 14px;">Installing Extension...</p>
+            <p style="margin-top: 14px; font-weight: 600; font-size: 13px;">Installing Extension...</p>
         </div>
     </div>
 
     <div class="container">
-        <!-- Home-style Header Row: Title & Stats Bar -->
-        <header class="ext-header-row">
-            <div class="ext-greeting">
-                <h1 class="ext-title">Extensions & Addons</h1>
-                <div class="ext-subtitle">
-                    <i class="fas fa-quote-left motd-quote-icon"></i>
-                    <span>Power up your workspace with high-performance Chrome add-ons and built-in Ocal modules.</span>
-                </div>
-            </div>
+        <!-- Page Header -->
+        <div class="page-header">
+            <h1 class="page-title">Extensions</h1>
+            <p class="page-subtitle">Manage Chrome add-ons and built-in Ocal modules for your workspace.</p>
+        </div>
 
-            <!-- Stats Bar -->
-            <div class="sp-stats-bar">
-                <div class="sp-stat-item">
-                    <span class="sp-dot-num" id="stat-active">5</span>
-                    <span class="sp-badge sp-badge-lime">Active</span>
-                </div>
-                <div class="sp-stat-item">
-                    <span class="sp-dot-num" id="stat-custom">0</span>
-                    <span class="sp-badge sp-badge-gray">Custom</span>
-                </div>
-                <div class="sp-stat-item">
-                    <span class="sp-dot-num" id="stat-total">5</span>
-                    <span class="sp-badge sp-badge-gray">Total</span>
-                </div>
-            </div>
-        </header>
+        <!-- Action Row -->
+        <div class="action-row">
+            <button class="action-btn primary" onclick="window.location.href='extension-store.html'">
+                <i class="fas fa-store"></i>
+                <span>Browse Web Store</span>
+            </button>
+            <button class="action-btn" onclick="toggleDrawer()">
+                <i class="fab fa-chrome"></i>
+                <span>Add by ID / URL</span>
+            </button>
+            <button class="action-btn" onclick="loadUnpackedExtension()">
+                <i class="fas fa-folder-open"></i>
+                <span>Load Unpacked</span>
+            </button>
+            <div style="flex:1;"></div>
+            <input type="text" class="search-field" id="searchExt" placeholder="Search extensions..." autocomplete="off" spellcheck="false" style="max-width: 240px;">
+        </div>
 
-        <!-- Search & Action Section -->
-        <section class="sp-search-section">
-            <div class="sp-search-pill">
-                <div class="sp-search-logo">
-                    <i class="fas fa-puzzle-piece" style="color: var(--accent);"></i>
-                </div>
-                <input type="text" class="sp-search-input" id="searchExt" placeholder="Search installed addons or Chrome web extensions..." autocomplete="off" spellcheck="false">
-                <button class="sp-search-btn" title="Search / Clear" onclick="document.getElementById('searchExt').value=''; filterExtensions();">
-                    <i class="fas fa-magnifying-glass"></i>
-                </button>
-            </div>
-
-            <div class="ext-top-actions">
-                <button class="ext-action-pill primary" onclick="window.location.href='extension-store.html'">
-                    <i class="fas fa-store"></i>
-                    <span>Browse Web Store</span>
-                </button>
-                <button class="ext-action-pill secondary" onclick="toggleDrawer()">
-                    <i class="fab fa-chrome"></i>
-                    <span>Add by ID / URL</span>
-                </button>
-                <button class="ext-action-pill secondary" onclick="loadUnpackedExtension()">
-                    <i class="fas fa-folder-open"></i>
-                    <span>Load Unpacked</span>
-                </button>
-            </div>
-        </section>
-
-        <!-- Web Store Quick-Install Drawer -->
-        <div class="ext-install-drawer" id="extInstallDrawer" style="display: none;">
-            <div class="ext-drawer-inner">
-                <div class="ext-drawer-header">
-                    <div class="ext-drawer-title-wrap">
-                        <div class="ext-drawer-icon">
-                            <i class="fab fa-chrome"></i>
-                        </div>
-                        <div>
-                            <h4 class="ext-drawer-title">Chrome Web Store Instant Installer</h4>
-                            <p class="ext-drawer-desc">Paste an extension ID or full URL from the Chrome Web Store to download and deploy immediately.</p>
-                        </div>
+        <!-- Install Drawer -->
+        <div class="install-drawer" id="extInstallDrawer" style="display: none;">
+            <div class="drawer-header">
+                <div class="drawer-title-wrap">
+                    <div class="drawer-icon">
+                        <i class="fab fa-chrome"></i>
                     </div>
-                    <button class="ext-drawer-close" onclick="toggleDrawer(false)"><i class="fas fa-times"></i></button>
-                </div>
-
-                <div class="ext-drawer-input-row">
-                    <div class="ext-input-pill">
-                        <i class="fas fa-link"></i>
-                        <input type="text" id="extIdInput" placeholder="Paste extension ID or web store URL (e.g., cjpalhdlnbpafiamejdnhcphjbkeiagm)...">
+                    <div>
+                        <h4 class="drawer-title">Chrome Web Store Installer</h4>
+                        <p class="drawer-desc">Paste an extension ID or full URL from the Chrome Web Store.</p>
                     </div>
-                    <button class="ext-install-submit-btn" onclick="installExtension()">
-                        <i class="fas fa-cloud-arrow-down"></i>
-                        <span>Deploy Addon</span>
-                    </button>
                 </div>
+                <button class="drawer-close" onclick="toggleDrawer(false)"><i class="fas fa-times"></i></button>
+            </div>
 
-                <!-- Popular Suggestions Chips -->
-                <div class="ext-popular-chips-wrap">
-                    <span class="ext-chips-label"><i class="fas fa-wand-magic-sparkles" style="color: var(--accent);"></i> Popular Addons:</span>
-                    <button class="ext-chip-btn" onclick="installPopularExt('cjpalhdlnbpafiamejdnhcphjbkeiagm')"><i class="fas fa-shield-alt"></i> uBlock Origin</button>
-                    <button class="ext-chip-btn" onclick="installPopularExt('eimadpbcbfnmbkopoojfekhnkhdbieeh')"><i class="fas fa-moon"></i> Dark Reader</button>
-                    <button class="ext-chip-btn" onclick="installPopularExt('nngceckbapebfimnlniiiahkandclblb')"><i class="fas fa-key"></i> Bitwarden</button>
-                    <button class="ext-chip-btn" onclick="installPopularExt('mnjggcdmjocbbbhaepdhchncahnbgone')"><i class="fas fa-forward"></i> SponsorBlock</button>
-                    <button class="ext-chip-btn" onclick="installPopularExt('gebbhagfogifgggkldgodflihgfeippi')"><i class="fas fa-thumbs-down"></i> Return Dislike</button>
-                </div>
+            <div class="drawer-input-row">
+                <input type="text" class="drawer-input" id="extIdInput" placeholder="Extension ID or web store URL...">
+                <button class="drawer-submit" onclick="installExtension()">
+                    <i class="fas fa-cloud-arrow-down"></i>
+                    <span>Install</span>
+                </button>
+            </div>
+
+            <div class="chips-wrap">
+                <span class="chips-label"><i class="fas fa-bolt" style="color: var(--accent);"></i> Quick:</span>
+                <button class="chip-btn" onclick="installPopularExt('cjpalhdlnbpafiamejdnhcphjbkeiagm')"><i class="fas fa-shield-alt"></i> uBlock Origin</button>
+                <button class="chip-btn" onclick="installPopularExt('eimadpbcbfnmbkopoojfekhnkhdbieeh')"><i class="fas fa-moon"></i> Dark Reader</button>
+                <button class="chip-btn" onclick="installPopularExt('nngceckbapebfimnlniiiahkandclblb')"><i class="fas fa-key"></i> Bitwarden</button>
+                <button class="chip-btn" onclick="installPopularExt('mnjggcdmjocbbbhaepdhchncahnbgone')"><i class="fas fa-forward"></i> SponsorBlock</button>
+                <button class="chip-btn" onclick="installPopularExt('gebbhagfogifgggkldgodflihgfeippi')"><i class="fas fa-thumbs-down"></i> Return Dislike</button>
             </div>
         </div>
 
-        <!-- Bento Grid Cards -->
-        <div class="extension-grid" id="extensionGrid">
-            <!-- Extensions will be rendered here -->
+        <!-- Built-in Modules Group -->
+        <div class="group-card" id="builtinGroup">
+            <div class="group-header">
+                <div class="group-header-text">
+                    <h3 class="group-title">Built-in modules</h3>
+                    <p class="group-desc">Core Ocal components and integrated features.</p>
+                </div>
+                <div class="group-stat accent" id="builtin-stat">
+                    <span class="dot"></span>
+                    <span id="stat-builtin-count">5 modules</span>
+                </div>
+            </div>
+            <div id="builtinList">
+                <!-- Rendered by JS -->
+            </div>
+        </div>
+
+        <!-- Installed Extensions Group -->
+        <div class="group-card" id="installedGroup">
+            <div class="group-header">
+                <div class="group-header-text">
+                    <h3 class="group-title">Installed extensions</h3>
+                    <p class="group-desc">Chrome Web Store add-ons loaded into your workspace.</p>
+                </div>
+                <div class="group-stat" id="installed-stat">
+                    <span class="dot"></span>
+                    <span id="stat-installed-count">0 installed</span>
+                </div>
+            </div>
+            <div id="installedList">
+                <!-- Rendered by JS -->
+            </div>
         </div>
     </div>
 
@@ -1013,119 +985,124 @@
 
         async function loadExtensions() {
             const extensions = await ipcRenderer.invoke('get-extensions') || [];
-            const grid = document.getElementById('extensionGrid');
-            grid.innerHTML = '';
+            const builtinList = document.getElementById('builtinList');
+            const installedList = document.getElementById('installedList');
+            builtinList.innerHTML = '';
+            installedList.innerHTML = '';
 
             // Core modules
             const coreModules = [
-                { id: 'adblock', name: 'uBlock Origin', version: 'v1.74.0', desc: 'High-efficiency content filter blocking malicious ads, telemetry trackers, and popup vectors across all domains.', iconClass: 'fas fa-shield-cat adblock-icon', tag: 'CORE MODULE', enabled: true, isCore: true },
-                { id: 'vault', name: 'Asset Vault', version: 'Built-in', desc: 'Encrypted local credential store protecting account passwords, autofill tokens, and payment secrets with hardware security.', iconClass: 'fas fa-vault vault-icon', tag: 'CORE MODULE', enabled: false, isCore: true },
-                { id: 'ai', name: 'Ocal AI Assistant', version: 'Built-in', desc: 'Native browser-integrated AI agent providing full-page web summarization, smart context inspection, and automated controls.', iconClass: 'fas fa-wand-magic-sparkles ai-icon', tag: 'AI AGENT', enabled: false, isCore: true },
-                { id: 'stealth', name: 'Cyber Stealth', version: 'Built-in', desc: 'Defends against advanced browser fingerprinting by randomizing canvas, WebGL telemetry, audio buffers, and hardware signatures.', iconClass: 'fas fa-user-secret stealth-icon', tag: 'PRIVACY', enabled: false, isCore: true },
-                { id: 'focus', name: 'Ocal Focus', version: 'Built-in', desc: 'Integrated Pomodoro session timer, distraction-free site blocklist, and productivity workflow telemetry synced with Home.', iconClass: 'fas fa-clock focus-icon', tag: 'PRODUCTIVITY', enabled: false, isCore: true }
+                { id: 'adblock', name: 'uBlock Origin', version: 'v1.74.0 · Core Guard', desc: 'Content filter blocking malicious ads, telemetry trackers, and popups.', icon: 'fas fa-shield-cat', iconClass: 'adblock', tag: 'CORE MODULE', enabled: true, isCore: true },
+                { id: 'dislike', name: 'Return YouTube Dislike', version: 'v4.0.4 · Video Shield', desc: 'Restores real-time dislike counts via community API telemetry.', icon: 'fas fa-thumbs-down', iconClass: 'dislike', tag: 'MEDIA', enabled: true, isCore: true },
+                { id: 'vault', name: 'Asset Vault', version: 'Built-in · Security Module', desc: 'Encrypted credential store for passwords, autofill tokens, and payments.', icon: 'fas fa-vault', iconClass: 'vault', tag: 'CORE MODULE', enabled: true, isCore: true },
+                { id: 'ai', name: 'Ocal AI Assistant', version: 'Built-in · Neural Agent Suite', desc: 'AI agent for web summarization, smart inspection, and automated controls.', icon: 'fas fa-wand-magic-sparkles', iconClass: 'ai', tag: 'AI AGENT', enabled: true, isCore: true },
+                { id: 'stealth', name: 'Cyber Stealth', version: 'Built-in · Privacy Guard', desc: 'Fingerprint defense: canvas, WebGL, audio buffers, hardware signatures.', icon: 'fas fa-user-secret', iconClass: 'stealth', tag: 'PRIVACY', enabled: false, isCore: true },
+                { id: 'focus', name: 'Ocal Focus', version: 'Built-in · Deep Work Suite', desc: 'Pomodoro timer, site blocklist, and productivity workflow telemetry.', icon: 'fas fa-clock', iconClass: 'focus', tag: 'PRODUCTIVITY', enabled: false, isCore: true }
             ];
 
             let activeCount = 0;
-            let customCount = extensions.length;
 
-            // Render Core Modules
+            // Render Core Modules as rows
             coreModules.forEach(mod => {
                 if (mod.enabled) activeCount++;
-                const card = document.createElement('div');
-                card.className = 'extension-card';
-                card.dataset.extname = mod.name.toLowerCase();
+                const row = document.createElement('div');
+                row.className = `ext-row${mod.enabled ? ' active-ext' : ''}`;
+                row.dataset.extname = mod.name.toLowerCase();
 
-                card.innerHTML = `
-                    <div class="ext-card-header">
-                        <div class="ext-card-header-left">
-                            <div class="ext-icon ${mod.iconClass}">
-                                <i class="${mod.iconClass.split(' ')[0]} ${mod.iconClass.split(' ')[1]}"></i>
-                            </div>
-                            <div class="ext-identity">
-                                <h4 class="ext-name">${mod.name}</h4>
-                                <div class="ext-version">${mod.version}</div>
-                            </div>
+                row.innerHTML = `
+                    <div class="ext-left">
+                        <div class="ext-icon-box ${mod.iconClass}">
+                            <i class="${mod.icon}"></i>
                         </div>
+                        <div class="ext-info">
+                            <span class="ext-name">${mod.name}</span>
+                            <span class="ext-sub">${mod.version}</span>
+                        </div>
+                    </div>
+                    <div class="ext-right">
+                        <span class="status-badge ${mod.enabled ? 'on' : ''}">
+                            <span class="dot"></span>
+                            <span>${mod.enabled ? 'Active' : 'Idle'}</span>
+                        </span>
                         <label class="switch">
-                            <input type="checkbox" ${mod.enabled ? 'checked' : ''} onchange="this.checked ? activeCount++ : activeCount--; updateStats();">
+                            <input type="checkbox" ${mod.enabled ? 'checked' : ''}>
                             <span class="slider"></span>
                         </label>
                     </div>
-                    <div class="ext-desc">${mod.desc}</div>
-                    <div class="ext-actions">
-                        <span class="ext-tag core">${mod.tag}</span>
-                        <div style="display: flex; align-items: center; gap: 8px;">
-                            <span class="ext-status ${mod.enabled ? 'on' : ''}">
-                                <span class="status-dot"></span><span>${mod.enabled ? 'Active' : 'Idle'}</span>
-                            </span>
-                        </div>
-                    </div>
                 `;
-                grid.appendChild(card);
+                builtinList.appendChild(row);
             });
 
-            // Render Installed Chrome Extensions
+            // Render Installed Chrome Extensions as rows
+            let customCount = extensions.length;
+
             extensions.forEach(ext => {
                 if (ext.enabled) activeCount++;
-                const card = document.createElement('div');
-                card.className = 'extension-card';
-                card.dataset.extname = (ext.name || '').toLowerCase();
+                const row = document.createElement('div');
+                row.className = `ext-row${ext.enabled ? ' active-ext' : ''}`;
+                row.dataset.extname = (ext.name || '').toLowerCase();
 
-                let iconHtml = '<div class="ext-icon"><i class="fas fa-puzzle-piece"></i></div>';
+                let iconInner = '<i class="fas fa-puzzle-piece"></i>';
                 if (ext.iconData) {
-                    iconHtml = `<div class="ext-icon"><img src="${ext.iconData}" style="width: 28px; height: 28px; object-fit: contain;" alt=""></div>`;
+                    iconInner = `<img src="${ext.iconData}" alt="">`;
                 } else if (ext.icons && Object.keys(ext.icons).length > 0) {
                     const iconSizes = Object.keys(ext.icons).map(Number).sort((a,b) => b-a);
                     if (iconSizes.length > 0) {
                         const iconPath = `chrome-extension://${ext.id}/${ext.icons[iconSizes[0]]}`;
-                        iconHtml = `<div class="ext-icon"><img src="${iconPath}" onerror="this.src='https://icons.duckduckgo.com/ip3/${ext.id}.ico'; this.onerror=()=>{const i=document.createElement('i'); i.className='fas fa-puzzle-piece'; this.replaceWith(i);}"></div>`;
+                        iconInner = `<img src="${iconPath}" onerror="this.src='https://icons.duckduckgo.com/ip3/${ext.id}.ico'; this.onerror=()=>{const i=document.createElement('i'); i.className='fas fa-puzzle-piece'; this.replaceWith(i);}" alt="">`;
                     }
                 }
 
-                card.innerHTML = `
-                    <div class="ext-card-header">
-                        <div class="ext-card-header-left">
-                            ${iconHtml}
-                            <div class="ext-identity">
-                                <h4 class="ext-name">${ext.name}</h4>
-                                <div class="ext-version">Version ${ext.version || '?'} &middot; ID: ${(ext.id || '').substring(0, 16)}...</div>
-                            </div>
+                const actionBtns = [];
+                if (ext.hasPopup) {
+                    actionBtns.push(`<button class="row-btn" onclick="openPopup('${ext.id}', this)" title="Launch Popup"><i class="fas fa-arrow-up-right-from-square"></i></button>`);
+                }
+                if (ext.hasOptions || ext.optionsPage) {
+                    actionBtns.push(`<button class="row-btn" onclick="openOptions('${ext.id}', '${ext.optionsPage || ''}')" title="Options"><i class="fas fa-gear"></i></button>`);
+                }
+                actionBtns.push(`<button class="row-btn" onclick="togglePin('${ext.id}')" title="${ext.pinned ? 'Unpin from Toolbar' : 'Pin to Toolbar'}"><i class="fas fa-thumbtack"></i></button>`);
+                actionBtns.push(`<button class="row-btn" onclick="openStore('${ext.id}')" title="View in Store"><i class="fas fa-external-link-alt"></i></button>`);
+                actionBtns.push(`<button class="row-btn danger" onclick="removeExtension('${ext.id}', '${escapeJs(ext.name)}')" title="Uninstall"><i class="fas fa-trash"></i></button>`);
+
+                row.innerHTML = `
+                    <div class="ext-left">
+                        <div class="ext-icon-box store">
+                            ${iconInner}
                         </div>
+                        <div class="ext-info">
+                            <span class="ext-name">${ext.name}</span>
+                            <span class="ext-sub">v${ext.version || '?'} · ${(ext.id || '').substring(0, 12)}...</span>
+                        </div>
+                    </div>
+                    <div class="ext-right">
+                        ${actionBtns.join('')}
+                        <span class="status-badge ${ext.enabled ? 'on' : ''}">
+                            <span class="dot"></span>
+                            <span>${ext.enabled ? 'Active' : 'Off'}</span>
+                        </span>
                         <label class="switch">
                             <input type="checkbox" ${ext.enabled ? 'checked' : ''} onchange="toggleExtension('${ext.id}', this.checked)">
                             <span class="slider"></span>
                         </label>
                     </div>
-                    <div class="ext-desc">${ext.description || 'Custom Chrome Web Store extension loaded into Ocal workspace.'}</div>
-                    <div class="ext-actions">
-                        <span class="ext-tag installed">INSTALLED</span>
-                        <div style="display: flex; align-items: center; gap: 8px;">
-                            <span class="ext-status ${ext.enabled ? 'on' : ''}">
-                                <span class="status-dot"></span><span>${ext.enabled ? 'Active' : 'Disabled'}</span>
-                            </span>
-                            ${ext.hasPopup ? `<button class="ext-action-btn-pill" onclick="openPopup('${ext.id}', this)" title="Launch Extension Popup"><i class="fas fa-arrow-up-right-from-square"></i> Popup</button>` : ''}
-                            ${ext.hasOptions || ext.optionsPage ? `<button class="ext-action-btn-pill" onclick="openOptions('${ext.id}', '${ext.optionsPage || ''}')" title="Extension Options"><i class="fas fa-gear"></i> Options</button>` : ''}
-                            <button class="ext-action-btn-pill ${ext.pinned ? 'active' : ''}" onclick="togglePin('${ext.id}')" title="Pin to Toolbar"><i class="fas fa-thumbtack"></i> ${ext.pinned ? 'Pinned' : 'Pin'}</button>
-                            <button class="ext-action-btn-pill" onclick="openStore('${ext.id}')"><i class="fas fa-external-link-alt"></i> Store</button>
-                            <button class="ext-action-btn-pill danger" onclick="removeExtension('${ext.id}', '${escapeJs(ext.name)}')"><i class="fas fa-trash"></i> Remove</button>
-                        </div>
-                    </div>
                 `;
-                grid.appendChild(card);
+                installedList.appendChild(row);
             });
 
             // Update stats
-            document.getElementById('stat-active').innerText = activeCount;
-            document.getElementById('stat-custom').innerText = customCount;
-            document.getElementById('stat-total').innerText = coreModules.length + customCount;
+            document.getElementById('stat-builtin-count').innerText = `${coreModules.length} modules`;
+            document.getElementById('stat-installed-count').innerText = `${customCount} installed`;
+
+            // Show/hide installed group
+            document.getElementById('installedGroup').style.display = customCount > 0 ? 'block' : 'none';
         }
 
         function filterExtensions() {
             const query = (document.getElementById('searchExt')?.value || '').toLowerCase().trim();
-            const cards = document.querySelectorAll('.extension-card');
-            cards.forEach(card => {
-                const name = (card.dataset.extname || card.querySelector('.ext-name')?.innerText || '').toLowerCase();
-                card.style.display = !query || name.includes(query) ? 'flex' : 'none';
+            const rows = document.querySelectorAll('.ext-row');
+            rows.forEach(row => {
+                const name = (row.dataset.extname || '').toLowerCase();
+                row.style.display = !query || name.includes(query) ? 'flex' : 'none';
             });
         }
 
@@ -1134,7 +1111,6 @@
             const raw = input.value.trim();
             if (!raw) return;
 
-            // Extract 32-char extension ID if full URL pasted
             const match = raw.match(/([a-p]{32})/i);
             const id = match ? match[1].toLowerCase() : raw;
 
@@ -1243,12 +1219,12 @@
                     </div>
 
                     <div class="sm-body">
-                        <p style="color:var(--text); font-size:13.5px; line-height:1.5; margin:0;">
-                            Are you sure you want to uninstall and remove <strong>"${escapeHtml(displayName)}"</strong>?
+                        <p style="color:var(--text); font-size:13px; line-height:1.5; margin:0;">
+                            Are you sure you want to uninstall <strong>"${escapeHtml(displayName)}"</strong>?
                         </p>
-                        <div style="background: var(--card-inner); border: 1px solid var(--border); border-radius: 14px; padding: 12px 16px; font-size: 12px; color: var(--text-dim); display: flex; align-items: center; gap: 10px;">
-                            <i class="fas fa-circle-info" style="color: var(--accent); font-size: 14px; flex-shrink: 0;"></i>
-                            <span>This extension and its local configuration will be permanently detached from all active browser profiles.</span>
+                        <div style="background: var(--card-inner); border: 1px solid var(--border); border-radius: 8px; padding: 10px 14px; font-size: 12px; color: var(--text-dim); display: flex; align-items: center; gap: 8px;">
+                            <i class="fas fa-circle-info" style="color: var(--accent); font-size: 13px; flex-shrink: 0;"></i>
+                            <span>This extension will be permanently removed from all active browser profiles.</span>
                         </div>
                     </div>
 
@@ -1301,5 +1277,6 @@
     <div id="ext-modal-overlay" class="ext-modal-overlay">
         <div id="ext-modal" class="ext-modal"></div>
     </div>
+
 </body>
 </html>

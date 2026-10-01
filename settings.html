@@ -879,7 +879,7 @@
                         <div class="settings-list-group">
                             <div class="settings-toggle-row import-desktop-row" id="import-chrome-btn" style="cursor: pointer;">
                                 <div class="str-left">
-                                    <div class="str-icon" style="background: rgba(234, 67, 53, 0.1); color: #EA4335;">
+                                    <div class="str-icon">
                                         <i class="fab fa-chrome"></i>
                                     </div>
                                     <div class="str-text">
@@ -895,7 +895,7 @@
                             </div>
                             <div class="settings-toggle-row import-desktop-row" id="import-edge-btn" style="cursor: pointer;">
                                 <div class="str-left">
-                                    <div class="str-icon" style="background: rgba(0, 120, 215, 0.1); color: #0078D7;">
+                                    <div class="str-icon">
                                         <i class="fab fa-edge"></i>
                                     </div>
                                     <div class="str-text">
@@ -911,7 +911,7 @@
                             </div>
                             <div class="settings-toggle-row import-desktop-row" id="import-file-btn" style="cursor: pointer;">
                                 <div class="str-left">
-                                    <div class="str-icon" style="background: rgba(168, 85, 247, 0.1); color: #A855F7;">
+                                    <div class="str-icon">
                                         <i class="fas fa-file-code"></i>
                                     </div>
                                     <div class="str-text">
@@ -940,7 +940,7 @@
                         <div class="settings-list-group">
                             <div class="settings-toggle-row">
                                 <div class="str-left">
-                                    <div class="str-icon" style="background: rgba(16, 185, 129, 0.1); color: #10B981;">
+                                    <div class="str-icon">
                                         <i class="fas fa-cookie-bite"></i>
                                     </div>
                                     <div class="str-text">
@@ -954,7 +954,7 @@
                             </div>
                             <div class="settings-toggle-row">
                                 <div class="str-left">
-                                    <div class="str-icon" style="background: rgba(59, 130, 246, 0.1); color: #3B82F6;">
+                                    <div class="str-icon">
                                         <i class="fas fa-clock-rotate-left"></i>
                                     </div>
                                     <div class="str-text">
@@ -968,7 +968,7 @@
                             </div>
                             <div class="settings-toggle-row">
                                 <div class="str-left">
-                                    <div class="str-icon" style="background: rgba(168, 85, 247, 0.1); color: #A855F7;">
+                                    <div class="str-icon">
                                         <i class="fas fa-user-lock"></i>
                                     </div>
                                     <div class="str-text">
@@ -1226,7 +1226,7 @@
                             <!-- Row 1: Now Playing / Mini Player Controller -->
                             <div class="settings-toggle-row">
                                 <div class="str-left">
-                                    <div class="str-icon" style="background: rgba(168, 85, 247, 0.1); color: #A855F7;">
+                                    <div class="str-icon">
                                         <i class="fas fa-compact-disc" id="ambient-vinyl-disc"></i>
                                     </div>
                                     <div class="str-text">
@@ -1251,7 +1251,7 @@
                             <!-- Row 2: Playback Volume & Loudness Customization -->
                             <div class="settings-toggle-row">
                                 <div class="str-left">
-                                    <div class="str-icon" style="background: rgba(59, 130, 246, 0.1); color: #3B82F6;">
+                                    <div class="str-icon">
                                         <i class="fas fa-volume-high"></i>
                                     </div>
                                     <div class="str-text">
@@ -1273,7 +1273,7 @@
                             <!-- Row 3: Smart Media Ducking & Auto-Mute -->
                             <div class="settings-toggle-row">
                                 <div class="str-left">
-                                    <div class="str-icon" style="background: rgba(16, 185, 129, 0.1); color: #10B981;">
+                                    <div class="str-icon">
                                         <i class="fas fa-sliders"></i>
                                     </div>
                                     <div class="str-text">
@@ -1455,7 +1455,7 @@
                             <!-- Shader Intensity Slider Row -->
                             <div class="settings-toggle-row">
                                 <div class="str-left">
-                                    <div class="str-icon" style="background: rgba(236, 72, 153, 0.1); color: #EC4899;">
+                                    <div class="str-icon">
                                         <i class="fas fa-wand-magic-sparkles"></i>
                                     </div>
                                     <div class="str-text">
@@ -1477,7 +1477,7 @@
                             <!-- Apply Across Tabs Toggle Row -->
                             <div class="settings-toggle-row">
                                 <div class="str-left">
-                                    <div class="str-icon" style="background: rgba(99, 102, 241, 0.1); color: #6366F1;">
+                                    <div class="str-icon">
                                         <i class="fas fa-globe"></i>
                                     </div>
                                     <div class="str-text">
@@ -1809,11 +1809,11 @@
                 </div>
             </div>
 
-            <!-- ── EXTENSIONS MANAGER (HOME PAGE STYLE) ── -->
+            <!-- ── EXTENSIONS (NATIVE DESKTOP SETTINGS STYLE - MATCHING SEARCH ENGINE) ── -->
             <section id="extensions" class="section">
                 <div class="settings-page-header">
                     <h1 class="settings-page-title">Extensions</h1>
-                    <p class="settings-page-subtitle">Power up your workspace with Chrome add-ons and built-in Ocal modules.</p>
+                    <p class="settings-page-subtitle">Manage installed Chrome extensions, built-in security shields, and developer add-ons.</p>
                     <span id="ext-stat-active" style="display:none;"></span>
                     <span id="ext-stat-custom" style="display:none;"></span>
                     <span id="ext-stat-total" style="display:none;"></span>
@@ -1821,265 +1821,283 @@
 
                 <div class="page-body">
 
-                    <!-- Home-style Search Section matching .sp-search-section -->
-                    <div class="ext-search-section">
-                        <div class="ext-search-pill">
-                            <div class="ext-search-logo">
-                                <i class="fas fa-puzzle-piece" style="color: var(--accent);"></i>
+                    <!-- Group 1: Search & Filter Extensions -->
+                    <div class="settings-group-card">
+                        <div class="settings-group-header">
+                            <div class="group-header-text">
+                                <h3 class="group-title">Filter extensions</h3>
+                                <p class="group-desc">Search through installed extensions, tools, and built-in protection modules.</p>
                             </div>
-                            <input type="text" class="ext-search-input" id="ext-search-input" placeholder="Search installed addons or Chrome web extensions..." autocomplete="off" spellcheck="false" oninput="filterExtSettings()">
-                            <button class="ext-search-btn" id="ext-search-clear-btn" title="Search / Clear" onclick="document.getElementById('ext-search-input').value=''; filterExtSettings();">
-                                <i class="fas fa-magnifying-glass"></i>
-                            </button>
+                            <div class="engine-active-indicator" id="ext-search-status-badge">
+                                <span class="status-dot"></span>
+                                <span id="ext-search-stat-count">All modules</span>
+                            </div>
                         </div>
-
-                        <!-- Action Pills matching Home Page pill style -->
-                        <div class="ext-action-pills">
-                            <button class="ext-action-pill primary" onclick="openExtensionStore()" title="Browse Ocal Extension Store">
-                                <i class="fas fa-store"></i>
-                                <span>Browse Web Store</span>
-                            </button>
-                            <button class="ext-action-pill secondary" onclick="const dr = document.getElementById('ext-install-drawer'); dr.style.display = dr.style.display === 'none' ? 'block' : 'none';" title="Direct install by ID or URL">
-                                <i class="fab fa-chrome"></i>
-                                <span>Install by ID</span>
-                            </button>
-                            <button class="ext-action-pill secondary" onclick="loadUnpackedExtension()" title="Load unpacked extension folder">
-                                <i class="fas fa-folder-open"></i>
-                                <span>Load Unpacked</span>
-                            </button>
+                        <div class="settings-group-body">
+                            <div class="desktop-input-group">
+                                <div class="desktop-input-wrapper">
+                                    <i class="fas fa-magnifying-glass desktop-input-icon"></i>
+                                    <input type="text" class="desktop-text-field" id="ext-search-input" placeholder="Search extensions by name, description, or keyword..." autocomplete="off" spellcheck="false" oninput="filterExtSettings()">
+                                </div>
+                                <button class="desktop-action-btn desktop-secondary-btn" type="button" onclick="document.getElementById('ext-search-input').value=''; filterExtSettings();">
+                                    <i class="fas fa-times"></i>
+                                    <span>Clear</span>
+                                </button>
+                            </div>
                         </div>
                     </div>
 
-                    <!-- Web Store Quick-Install Drawer styled like Home Page cards -->
-                    <div class="ext-install-drawer sp-card-white" id="ext-install-drawer" style="display: none;">
-                        <div class="ext-drawer-inner">
-                            <div class="ext-drawer-header">
-                                <div class="ext-drawer-title-wrap">
-                                    <div class="ext-drawer-icon">
-                                        <i class="fab fa-chrome"></i>
+                    <!-- Group 2: Installed Extensions (CWS & Unpacked) -->
+                    <div class="settings-group-card" id="installed-extensions-card">
+                        <div class="settings-group-header">
+                            <div class="group-header-text">
+                                <h3 class="group-title">Installed extensions</h3>
+                                <p class="group-desc">Chrome Web Store extensions and locally loaded developer add-ons.</p>
+                            </div>
+                            <div class="engine-active-indicator" id="installed-ext-badge">
+                                <span class="status-dot"></span>
+                                <span id="ext-installed-count-text">0 installed</span>
+                            </div>
+                        </div>
+
+                        <div class="settings-list-group" id="ext-settings-grid">
+                            <!-- Dynamically loaded extensions appended here by renderExtensions() -->
+                            <div class="settings-toggle-row" id="no-installed-exts" style="padding: 22px 20px; justify-content: center; color: var(--text-dim); font-size: 13px; cursor: default;">
+                                <i class="fas fa-puzzle-piece" style="margin-right: 8px; opacity: 0.6;"></i>
+                                <span>No third-party extensions installed yet. Use the installer below or browse the Web Store.</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Group 3: Built-in Protection & Core Modules -->
+                    <div class="settings-group-card">
+                        <div class="settings-group-header">
+                            <div class="group-header-text">
+                                <h3 class="group-title">Built-in modules & security shields</h3>
+                                <p class="group-desc">Core browser features, content filters, and privacy mechanisms built directly into Ocal.</p>
+                            </div>
+                            <div class="engine-active-indicator">
+                                <span class="status-dot" style="background: #10B981;"></span>
+                                <span>Core shields</span>
+                            </div>
+                        </div>
+
+                        <div class="settings-list-group" id="builtin-modules-grid">
+                            <!-- uBlock Origin -->
+                            <div class="settings-toggle-row ext-card-row" data-extname="ublock origin ad blocker core guard privacy tracker content filter" id="ext-adblock">
+                                <div class="str-left">
+                                    <div class="str-icon">
+                                        <i class="fas fa-shield-cat"></i>
                                     </div>
-                                    <div>
-                                        <h4 class="ext-drawer-title">Chrome Web Store Instant Installer</h4>
-                                        <p class="ext-drawer-desc">Paste an extension ID or full URL from the Chrome Web Store, or <a href="javascript:void(0)" onclick="openExtensionStore()" style="color:var(--accent); text-decoration:underline; font-weight:600;">browse the Web Store directly</a>.</p>
+                                    <div class="str-text">
+                                        <div style="display: flex; align-items: center; gap: 8px;">
+                                            <span class="str-title">uBlock Origin</span>
+                                            <span class="ext-card-tag core">CORE MODULE</span>
+                                            <span class="ser-sub">v1.74.0</span>
+                                        </div>
+                                        <span class="str-desc">High-efficiency content filter blocking malicious ads, telemetry trackers, and popup vectors across all domains.</span>
                                     </div>
                                 </div>
-                                <button class="ext-drawer-close" onclick="document.getElementById('ext-install-drawer').style.display='none';"><i class="fas fa-times"></i></button>
+                                <div class="str-right" style="gap: 12px;">
+                                    <span class="ext-status-indicator on" id="status-adblock"><span class="status-dot"></span><span>Active</span></span>
+                                    <label class="native-switch">
+                                        <input type="checkbox" id="toggle-adblock" checked
+                                            onchange="window.electronAPI.send('set-security-toggle',{key:'adBlockEnabled',value:this.checked}); setTimeout(()=>window.electronAPI.getSettings().then(s=>renderExtensions(s)),100);">
+                                        <span class="native-switch-slider"></span>
+                                    </label>
+                                </div>
                             </div>
 
-                            <div class="ext-drawer-input-row">
-                                <div class="ext-input-pill">
-                                    <i class="fas fa-link"></i>
-                                    <input type="text" id="ext-cws-input" placeholder="Paste extension ID or web store URL (e.g. cjpalhdlnbpafiamejdnhcphjbkeiagm)...">
+                            <!-- Return YouTube Dislike -->
+                            <div class="settings-toggle-row ext-card-row" data-extname="return youtube dislike dislike recovery video media" id="ext-dislike">
+                                <div class="str-left">
+                                    <div class="str-icon">
+                                        <i class="fas fa-thumbs-down"></i>
+                                    </div>
+                                    <div class="str-text">
+                                        <div style="display: flex; align-items: center; gap: 8px;">
+                                            <span class="str-title">Return YouTube Dislike</span>
+                                            <span class="ext-card-tag utility">MEDIA</span>
+                                            <span class="ser-sub">v4.0.4</span>
+                                        </div>
+                                        <span class="str-desc">Restores real-time YouTube dislike counts and rating ratios via community API telemetry and predictive scoring.</span>
+                                    </div>
                                 </div>
-                                <button class="ext-install-submit-btn" onclick="installExtFromSettings()">
+                                <div class="str-right" style="gap: 10px;">
+                                    <button class="spc-action-btn" type="button" onclick="openExtPopup('dislike-recovery', this)" title="Launch Dislike Popup">
+                                        <i class="fas fa-arrow-up-right-from-square" style="font-size: 11px;"></i>
+                                        <span>Popup</span>
+                                    </button>
+                                    <span class="ext-status-indicator on" id="status-dislike"><span class="status-dot"></span><span>Active</span></span>
+                                    <label class="native-switch">
+                                        <input type="checkbox" id="toggle-dislike" checked
+                                            onchange="window.electronAPI.send('set-security-toggle',{key:'youtubeDislikeEnabled',value:this.checked}); setTimeout(()=>window.electronAPI.getSettings().then(s=>renderExtensions(s)),100);">
+                                        <span class="native-switch-slider"></span>
+                                    </label>
+                                </div>
+                            </div>
+
+                            <!-- Asset Vault -->
+                            <div class="settings-toggle-row ext-card-row" data-extname="asset vault password manager credential store autofill" id="ext-vault">
+                                <div class="str-left">
+                                    <div class="str-icon">
+                                        <i class="fas fa-vault"></i>
+                                    </div>
+                                    <div class="str-text">
+                                        <div style="display: flex; align-items: center; gap: 8px;">
+                                            <span class="str-title">Asset Vault</span>
+                                            <span class="ext-card-tag core">SECURITY</span>
+                                        </div>
+                                        <span class="str-desc">Encrypted local credential store protecting account passwords, autofill tokens, and payment secrets.</span>
+                                    </div>
+                                </div>
+                                <div class="str-right" style="gap: 12px;">
+                                    <span class="ext-status-indicator" id="status-vault"><span class="status-dot"></span><span>Idle</span></span>
+                                    <label class="native-switch">
+                                        <input type="checkbox" id="toggle-vault"
+                                            onchange="window.electronAPI.send('set-security-toggle',{key:'assetVaultEnabled',value:this.checked}); setTimeout(()=>window.electronAPI.getSettings().then(s=>renderExtensions(s)),100);">
+                                        <span class="native-switch-slider"></span>
+                                    </label>
+                                </div>
+                            </div>
+
+                            <!-- Ocal AI Assistant -->
+                            <div class="settings-toggle-row ext-card-row" data-extname="ocal ai assistant pro neural agent chat summarize" id="ext-ai">
+                                <div class="str-left">
+                                    <div class="str-icon">
+                                        <i class="fas fa-wand-magic-sparkles"></i>
+                                    </div>
+                                    <div class="str-text">
+                                        <div style="display: flex; align-items: center; gap: 8px;">
+                                            <span class="str-title">Ocal AI Assistant</span>
+                                            <span class="ext-card-tag ai">AI AGENT</span>
+                                        </div>
+                                        <span class="str-desc">Native browser-integrated AI agent providing full-page web summarization, smart context inspection, and sidebar assistance.</span>
+                                    </div>
+                                </div>
+                                <div class="str-right" style="gap: 12px;">
+                                    <span class="ext-status-indicator" id="status-ai"><span class="status-dot"></span><span>Idle</span></span>
+                                    <label class="native-switch">
+                                        <input type="checkbox" id="toggle-ai"
+                                            onchange="window.electronAPI.send('set-security-toggle',{key:'aiAssistantEnabled',value:this.checked}); setTimeout(()=>window.electronAPI.getSettings().then(s=>renderExtensions(s)),100);">
+                                        <span class="native-switch-slider"></span>
+                                    </label>
+                                </div>
+                            </div>
+
+                            <!-- Cyber Stealth -->
+                            <div class="settings-toggle-row ext-card-row" data-extname="cyber stealth fingerprint privacy guard canvas webgl" id="ext-stealth">
+                                <div class="str-left">
+                                    <div class="str-icon">
+                                        <i class="fas fa-user-secret"></i>
+                                    </div>
+                                    <div class="str-text">
+                                        <div style="display: flex; align-items: center; gap: 8px;">
+                                            <span class="str-title">Cyber Stealth</span>
+                                            <span class="ext-card-tag privacy">PRIVACY</span>
+                                        </div>
+                                        <span class="str-desc">Defends against advanced browser fingerprinting by randomizing canvas, WebGL telemetry, audio buffers, and hardware signatures.</span>
+                                    </div>
+                                </div>
+                                <div class="str-right" style="gap: 12px;">
+                                    <span class="ext-status-indicator" id="status-stealth"><span class="status-dot"></span><span>Idle</span></span>
+                                    <label class="native-switch">
+                                        <input type="checkbox" id="toggle-stealth"
+                                            onchange="window.electronAPI.send('set-security-toggle',{key:'cyberStealthEnabled',value:this.checked}); setTimeout(()=>window.electronAPI.getSettings().then(s=>renderExtensions(s)),100);">
+                                        <span class="native-switch-slider"></span>
+                                    </label>
+                                </div>
+                            </div>
+
+                            <!-- Ocal Focus -->
+                            <div class="settings-toggle-row ext-card-row" data-extname="ocal focus pomodoro productivity timer deep work" id="ext-focus">
+                                <div class="str-left">
+                                    <div class="str-icon">
+                                        <i class="fas fa-clock"></i>
+                                    </div>
+                                    <div class="str-text">
+                                        <div style="display: flex; align-items: center; gap: 8px;">
+                                            <span class="str-title">Ocal Focus</span>
+                                            <span class="ext-card-tag utility">PRODUCTIVITY</span>
+                                        </div>
+                                        <span class="str-desc">Integrated Pomodoro session timer, distraction-free site blocklist, and productivity workflow telemetry synced with Home.</span>
+                                    </div>
+                                </div>
+                                <div class="str-right" style="gap: 12px;">
+                                    <span class="ext-status-indicator" id="status-focus"><span class="status-dot"></span><span>Idle</span></span>
+                                    <label class="native-switch">
+                                        <input type="checkbox" id="toggle-focus"
+                                            onchange="window.electronAPI.send('set-security-toggle',{key:'ocalFocusEnabled',value:this.checked}); setTimeout(()=>window.electronAPI.getSettings().then(s=>renderExtensions(s)),100);">
+                                        <span class="native-switch-slider"></span>
+                                    </label>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Group 4: Install Extension & Chrome Web Store -->
+                    <div class="settings-group-card">
+                        <div class="settings-group-header">
+                            <div class="group-header-text">
+                                <h3 class="group-title">Install from Chrome Web Store</h3>
+                                <p class="group-desc">Specify a Chrome Web Store extension ID or link to download and deploy into Ocal.</p>
+                            </div>
+                            <div style="display: flex; align-items: center; gap: 8px;">
+                                <button class="spc-action-btn" type="button" onclick="loadUnpackedExtension()" title="Load unpacked extension folder from disk">
+                                    <i class="fas fa-folder-open"></i>
+                                    <span>Load unpacked</span>
+                                </button>
+                                <button class="spc-action-btn" type="button" onclick="openExtensionStore()" title="Open Ocal Extension Store">
+                                    <i class="fas fa-store"></i>
+                                    <span>Browse store</span>
+                                </button>
+                            </div>
+                        </div>
+
+                        <div class="settings-group-body">
+                            <div class="desktop-input-group">
+                                <div class="desktop-input-wrapper">
+                                    <i class="fab fa-chrome desktop-input-icon"></i>
+                                    <input type="text" class="desktop-text-field" id="ext-cws-input" placeholder="Paste extension ID or Chrome Web Store link (e.g. cjpalhdlnbpafiamejdnhcphjbkeiagm)..." spellcheck="false" onkeydown="if(event.key==='Enter') installExtFromSettings();">
+                                </div>
+                                <button class="desktop-action-btn desktop-primary-btn" type="button" onclick="installExtFromSettings()">
                                     <i class="fas fa-cloud-arrow-down"></i>
-                                    <span>Deploy Addon</span>
+                                    <span>Install Addon</span>
                                 </button>
                             </div>
 
-                            <!-- Popular One-Click Suggestions Chips -->
-                            <div class="ext-popular-chips-wrap">
-                                <span class="ext-chips-label"><i class="fas fa-wand-magic-sparkles" style="color:var(--accent);"></i> Popular Addons:</span>
-                                <button class="ext-chip-btn" onclick="installPopularExt('cjpalhdlnbpafiamejdnhcphjbkeiagm')"><i class="fas fa-shield-alt"></i> uBlock Origin</button>
-                                <button class="ext-chip-btn" onclick="installPopularExt('eimadpbcbfnmbkopoojfekhnkhdbieeh')"><i class="fas fa-moon"></i> Dark Reader</button>
-                                <button class="ext-chip-btn" onclick="installPopularExt('nngceckbapebfimnlniiiahkandclblb')"><i class="fas fa-key"></i> Bitwarden</button>
-                                <button class="ext-chip-btn" onclick="installPopularExt('mnjggcdmjocbbbhaepdhchncahnbgone')"><i class="fas fa-forward"></i> SponsorBlock</button>
-                                <button class="ext-chip-btn" onclick="installPopularExt('gebbhagfogifgggkldgodflihgfeippi')"><i class="fas fa-thumbs-down"></i> Return Dislike</button>
-                                <button class="ext-chip-btn" onclick="openExtensionStore()" style="background: rgba(66,133,244,0.12); color: #4285f4; border-color: rgba(66,133,244,0.3); font-weight: 600;"><i class="fas fa-store"></i> Web Store &rarr;</button>
+                            <div class="desktop-presets-row">
+                                <span class="presets-caption">Quick install:</span>
+                                <button class="preset-tag-btn" type="button" onclick="installPopularExt('cjpalhdlnbpafiamejdnhcphjbkeiagm')">uBlock Origin</button>
+                                <button class="preset-tag-btn" type="button" onclick="installPopularExt('eimadpbcbfnmbkopoojfekhnkhdbieeh')">Dark Reader</button>
+                                <button class="preset-tag-btn" type="button" onclick="installPopularExt('nngceckbapebfimnlniiiahkandclblb')">Bitwarden</button>
+                                <button class="preset-tag-btn" type="button" onclick="installPopularExt('mnjggcdmjocbbbhaepdhchncahnbgone')">SponsorBlock</button>
+                                <button class="preset-tag-btn" type="button" onclick="installPopularExt('gebbhagfogifgggkldgodflihgfeippi')">Return Dislike</button>
                             </div>
                         </div>
                     </div>
 
-                    <!-- Extensions Bento Grid (Squircle Cards matching Home page) -->
-                    <div id="ext-settings-grid" class="extensions-dashboard-grid">
-
-                        <!-- uBlock Origin -->
-                        <div class="ext-card-row sp-card-white" data-extname="ublock origin ad blocker" id="ext-adblock">
-                            <div class="ext-card-header">
-                                <div class="ext-card-header-left">
-                                    <div class="ext-card-icon adblock-icon">
-                                        <i class="fas fa-shield-cat"></i>
-                                    </div>
-                                    <div class="ext-card-identity">
-                                        <h4 class="ext-card-name">uBlock Origin</h4>
-                                        <div class="ext-card-version">Built-in &middot; v1.74.0 &middot; Core Guard</div>
-                                    </div>
+                    <!-- Group 5: Web Store Discovery Banner -->
+                    <div class="settings-group-card">
+                        <div class="settings-engine-row" style="cursor: pointer; padding: 14px 20px;" onclick="openExtensionStore()">
+                            <div class="ser-left">
+                                <div class="ser-icon">
+                                    <i class="fas fa-store"></i>
                                 </div>
-                                <label class="ext-toggle-wrap">
-                                    <input type="checkbox" id="toggle-adblock" checked
-                                        onchange="window.electronAPI.send('set-security-toggle',{key:'adBlockEnabled',value:this.checked}); setTimeout(()=>window.electronAPI.getSettings().then(s=>renderExtensions(s)),100);">
-                                    <span class="ext-slider"></span>
-                                </label>
+                                <div class="ser-info">
+                                    <span class="ser-name">Explore Ocal Web Store</span>
+                                    <span class="ser-sub">Discover curated productivity tools, privacy shields, ad blockers, and themes.</span>
+                                </div>
                             </div>
-                            <div class="ext-card-desc">
-                                High-efficiency content filter blocking malicious ads, telemetry trackers, and popup vectors across all domains.
-                            </div>
-                            <div class="ext-card-footer">
-                                <span class="ext-card-tag core">CORE MODULE</span>
-                                <span class="ext-status-indicator on" id="status-adblock"><span class="status-dot"></span><span>Active</span></span>
+                            <div class="ser-right">
+                                <button class="spc-action-btn active" type="button">
+                                    <span>Open Store</span>
+                                    <i class="fas fa-arrow-up-right-from-square" style="font-size: 10px;"></i>
+                                </button>
                             </div>
                         </div>
-
-                        <!-- Return YouTube Dislike -->
-                        <div class="ext-card-row sp-card-white is-active" data-extname="return youtube dislike dislike recovery" id="ext-dislike">
-                            <div class="ext-card-header">
-                                <div class="ext-card-header-left">
-                                    <div class="ext-card-icon dislike-icon" style="background: rgba(239, 68, 68, 0.12); color: #ef4444;">
-                                        <i class="fas fa-thumbs-down"></i>
-                                    </div>
-                                    <div class="ext-card-identity">
-                                        <h4 class="ext-card-name">Return YouTube Dislike</h4>
-                                        <div class="ext-card-version">Built-in &middot; v4.0.4 &middot; Video Shield</div>
-                                    </div>
-                                </div>
-                                <label class="ext-toggle-wrap">
-                                    <input type="checkbox" id="toggle-dislike" checked
-                                        onchange="window.electronAPI.send('set-security-toggle',{key:'youtubeDislikeEnabled',value:this.checked}); setTimeout(()=>window.electronAPI.getSettings().then(s=>renderExtensions(s)),100);">
-                                    <span class="ext-slider"></span>
-                                </label>
-                            </div>
-                            <div class="ext-card-desc">
-                                Restores real-time YouTube dislike counts and rating ratios via community API telemetry and predictive scoring.
-                            </div>
-                            <div class="ext-card-footer">
-                                <span class="ext-card-tag utility">MEDIA</span>
-                                <div style="display:flex; align-items:center; gap:8px;">
-                                    <button class="ext-action-icon-btn" onclick="openExtPopup('dislike-recovery', this)" title="Launch Dislike Popup">
-                                        <i class="fas fa-arrow-up-right-from-square"></i>
-                                    </button>
-                                    <span class="ext-status-indicator on" id="status-dislike"><span class="status-dot"></span><span>Active</span></span>
-                                </div>
-                            </div>
-                        </div>
-
-                        <!-- Asset Vault -->
-                        <div class="ext-card-row sp-card-white" data-extname="asset vault password manager" id="ext-vault">
-                            <div class="ext-card-header">
-                                <div class="ext-card-header-left">
-                                    <div class="ext-card-icon vault-icon">
-                                        <i class="fas fa-vault"></i>
-                                    </div>
-                                    <div class="ext-card-identity">
-                                        <h4 class="ext-card-name">Asset Vault</h4>
-                                        <div class="ext-card-version">Built-in &middot; Security Module</div>
-                                    </div>
-                                </div>
-                                <label class="ext-toggle-wrap">
-                                    <input type="checkbox" id="toggle-vault"
-                                        onchange="window.electronAPI.send('set-security-toggle',{key:'assetVaultEnabled',value:this.checked}); setTimeout(()=>window.electronAPI.getSettings().then(s=>renderExtensions(s)),100);">
-                                    <span class="ext-slider"></span>
-                                </label>
-                            </div>
-                            <div class="ext-card-desc">
-                                Encrypted local credential store protecting account passwords, autofill tokens, and payment secrets with hardware security.
-                            </div>
-                            <div class="ext-card-footer">
-                                <span class="ext-card-tag core">CORE MODULE</span>
-                                <span class="ext-status-indicator" id="status-vault"><span class="status-dot"></span><span>Idle</span></span>
-                            </div>
-                        </div>
-
-                        <!-- Ocal AI Assistant -->
-                        <div class="ext-card-row sp-card-white" data-extname="ocal ai assistant pro" id="ext-ai">
-                            <div class="ext-card-header">
-                                <div class="ext-card-header-left">
-                                    <div class="ext-card-icon ai-icon">
-                                        <i class="fas fa-wand-magic-sparkles"></i>
-                                    </div>
-                                    <div class="ext-card-identity">
-                                        <h4 class="ext-card-name">Ocal AI Assistant</h4>
-                                        <div class="ext-card-version">Built-in &middot; Neural Agent Suite</div>
-                                    </div>
-                                </div>
-                                <label class="ext-toggle-wrap">
-                                    <input type="checkbox" id="toggle-ai"
-                                        onchange="window.electronAPI.send('set-security-toggle',{key:'aiAssistantEnabled',value:this.checked}); setTimeout(()=>window.electronAPI.getSettings().then(s=>renderExtensions(s)),100);">
-                                    <span class="ext-slider"></span>
-                                </label>
-                            </div>
-                            <div class="ext-card-desc">
-                                Native browser-integrated AI agent providing full-page web summarization, smart context inspection, and automated controls.
-                            </div>
-                            <div class="ext-card-footer">
-                                <span class="ext-card-tag ai">AI AGENT</span>
-                                <span class="ext-status-indicator" id="status-ai"><span class="status-dot"></span><span>Idle</span></span>
-                            </div>
-                        </div>
-
-                        <!-- Cyber Stealth -->
-                        <div class="ext-card-row sp-card-white" data-extname="cyber stealth fingerprint privacy" id="ext-stealth">
-                            <div class="ext-card-header">
-                                <div class="ext-card-header-left">
-                                    <div class="ext-card-icon stealth-icon">
-                                        <i class="fas fa-user-secret"></i>
-                                    </div>
-                                    <div class="ext-card-identity">
-                                        <h4 class="ext-card-name">Cyber Stealth</h4>
-                                        <div class="ext-card-version">Built-in &middot; Privacy Guard</div>
-                                    </div>
-                                </div>
-                                <label class="ext-toggle-wrap">
-                                    <input type="checkbox" id="toggle-stealth"
-                                        onchange="window.electronAPI.send('set-security-toggle',{key:'cyberStealthEnabled',value:this.checked}); setTimeout(()=>window.electronAPI.getSettings().then(s=>renderExtensions(s)),100);">
-                                    <span class="ext-slider"></span>
-                                </label>
-                            </div>
-                            <div class="ext-card-desc">
-                                Defends against advanced browser fingerprinting by randomizing canvas, WebGL telemetry, audio buffers, and hardware signatures.
-                            </div>
-                            <div class="ext-card-footer">
-                                <span class="ext-card-tag privacy">PRIVACY</span>
-                                <span class="ext-status-indicator" id="status-stealth"><span class="status-dot"></span><span>Idle</span></span>
-                            </div>
-                        </div>
-
-                        <!-- Ocal Focus -->
-                        <div class="ext-card-row sp-card-white" data-extname="ocal focus pomodoro productivity timer" id="ext-focus">
-                            <div class="ext-card-header">
-                                <div class="ext-card-header-left">
-                                    <div class="ext-card-icon focus-icon">
-                                        <i class="fas fa-clock"></i>
-                                    </div>
-                                    <div class="ext-card-identity">
-                                        <h4 class="ext-card-name">Ocal Focus</h4>
-                                        <div class="ext-card-version">Built-in &middot; Deep Work Suite</div>
-                                    </div>
-                                </div>
-                                <label class="ext-toggle-wrap">
-                                    <input type="checkbox" id="toggle-focus"
-                                        onchange="window.electronAPI.send('set-security-toggle',{key:'ocalFocusEnabled',value:this.checked}); setTimeout(()=>window.electronAPI.getSettings().then(s=>renderExtensions(s)),100);">
-                                    <span class="ext-slider"></span>
-                                </label>
-                            </div>
-                            <div class="ext-card-desc">
-                                Integrated Pomodoro session timer, distraction-free site blocklist, and productivity workflow telemetry synced with Home.
-                            </div>
-                            <div class="ext-card-footer">
-                                <span class="ext-card-tag utility">PRODUCTIVITY</span>
-                                <span class="ext-status-indicator" id="status-focus"><span class="status-dot"></span><span>Idle</span></span>
-                            </div>
-                        </div>
-
-                        <!-- Dynamically loaded extensions will be appended here by renderExtensions() -->
-
                     </div>
 
-                    <!-- Store Discovery Callout Banner -->
-                    <div class="ext-store-callout-card sp-card-white" onclick="openExtensionStore()" title="Explore all extensions in Ocal Web Store">
-                        <div class="ext-store-callout-left">
-                            <div class="ext-store-callout-icon">
-                                <i class="fas fa-store"></i>
-                            </div>
-                            <div class="ext-store-callout-texts">
-                                <h4 class="ext-store-callout-title">Explore More Extensions in Web Store</h4>
-                                <p class="ext-store-callout-desc">Discover curated productivity tools, privacy shields, ad blockers, themes, and developer utilities with seamless 1-click install.</p>
-                            </div>
-                        </div>
-                        <button class="ext-action-pill primary ext-store-callout-btn" tabindex="-1">
-                            <span>Open Store</span>
-                            <i class="fas fa-arrow-up-right-from-square" style="font-size: 11px;"></i>
-                        </button>
-                    </div>
                 </div>
             </section>
 
@@ -2447,389 +2465,604 @@
 
             <!-- ── AI ASSISTANT ── -->
             <!-- ── AI ASSISTANT (HOME PAGE STYLE) ── -->
+            <!-- ── AI ASSISTANT (CLEAN NATIVE DESKTOP LAYOUT) ── -->
             <section id="ai" class="section">
                 <div class="settings-page-header">
-                    <h1 class="settings-page-title">AI Assistant</h1>
-                    <p class="settings-page-subtitle">Neural browsing companion, multimodal intelligence models, and cognitive reasoning parameters.</p>
+                    <h1 class="settings-page-title">AI Assistant &amp; Copilot</h1>
+                    <p class="settings-page-subtitle">Configure neural intelligence models, conversational personas, browsing context privileges, and custom behavioral directives.</p>
                     <span id="ai-stat-engine" style="display:none;"></span>
                     <span id="ai-stat-model" style="display:none;"></span>
                     <span id="ai-stat-agency" style="display:none;"></span>
                 </div>
 
                 <div class="page-body">
-                    <!-- AI Interactive Hero Simulation Card (Squircle Card) -->
-                    <div class="card ai-bento-card sp-card-white span-full ai-hero-banner">
-                        <div class="ai-hero-content">
-                            <div class="ai-hero-header-left">
-                                <div class="ai-icon-squircle hero-brain">
-                                    <i class="fas fa-brain"></i>
-                                </div>
-                                <div class="ai-hero-text">
-                                    <div class="ai-hero-title-row">
-                                        <h3 class="ai-hero-heading">Ocal Cognitive Engine V4</h3>
-                                        <span class="ai-badge-status online"><span class="status-dot"></span> Online</span>
-                                    </div>
-                                    <div class="ai-feature-chips">
-                                        <span class="ai-chip"><i class="fas fa-bolt"></i> Local Heuristics Active</span>
-                                        <span class="ai-chip"><i class="fas fa-earth-americas"></i> Live Web RAG-Lite</span>
-                                        <span class="ai-chip"><i class="fas fa-eye"></i> Vision Multimodal</span>
-                                    </div>
-                                </div>
+                    <!-- Group 1: Neural Core Backend & Provider -->
+                    <div class="settings-group-card">
+                        <div class="settings-group-header">
+                            <div class="group-header-text">
+                                <h3 class="group-title">Neural Engine &amp; Model Provider</h3>
+                                <p class="group-desc">Select local offline execution or cloud high-reasoning endpoints.</p>
+                            </div>
+                            <div class="engine-active-indicator" id="ai-status-indicator">
+                                <span class="status-dot"></span>
+                                <span id="ai-active-engine-badge">Local Ollama &middot; Ready</span>
                             </div>
                         </div>
 
-                        <!-- Live AI Query Simulation Pill matching Home Search Pill -->
-                        <div class="ai-preview-pill-wrap">
-                            <div class="ai-preview-pill">
-                                <div class="ai-preview-icon" id="ai-preview-icon">
-                                    <i class="fas fa-wand-magic-sparkles"></i>
-                                </div>
-                                <input type="text" id="ai-preview-input" placeholder="Ask Ocal AI anything (e.g. Summarize active page, explain quantum computing)..." autocomplete="off" spellcheck="false" onkeydown="if(event.key==='Enter') testAIPrompt();">
-                                <button class="ai-preview-send-btn" title="Send to Ocal AI" onclick="testAIPrompt();">
-                                    <i class="fas fa-arrow-right"></i>
-                                </button>
-                            </div>
-                        </div>
-                    </div>
-
-                    <!-- Bento Grid for AI Engine Providers and Settings -->
-                    <div class="ai-bento-grid">
-
-                        <!-- ─── 1. Neural Core Backend Provider Bento Card ─── -->
-                        <div class="card ai-bento-card sp-card-white span-full">
-                            <div class="abc-header">
-                                <div class="abc-header-left">
-                                    <div class="abc-icon neural-bg">
+                        <div class="settings-list-group" id="ai-engine-grid">
+                            <!-- Local Ollama -->
+                            <div class="settings-engine-row ai-provider-row ai-provider-card active" data-ai-engine="local" data-value="local" onclick="selectAIEngine('local')">
+                                <div class="ser-left">
+                                    <div class="ser-icon">
                                         <i class="fas fa-microchip"></i>
                                     </div>
-                                    <div class="abc-identity">
-                                        <h4 class="abc-name">Neural Engine & Model Provider</h4>
-                                        <div class="abc-tagline">Select local offline execution or high-reasoning cloud endpoints</div>
+                                    <div class="ser-info">
+                                        <span class="ser-name">Ocal Local Neural Core (Ollama)</span>
+                                        <span class="ser-sub">Zero latency on-device neural execution &middot; 100% private, zero cloud telemetry</span>
                                     </div>
                                 </div>
-                                <span class="abc-badge neural">CORE BACKEND</span>
-                            </div>
-
-                            <!-- Provider Selection Squircle Bento Grid -->
-                            <div class="ai-providers-grid" id="ai-engine-grid">
-                                <!-- Local Ollama Provider Card -->
-                                <div class="ai-provider-card active" data-value="local" onclick="selectAIEngine('local')">
-                                    <div class="apc-top">
-                                        <div class="apc-icon local">
-                                            <i class="fas fa-microchip"></i>
-                                        </div>
-                                        <div class="apc-radio">
-                                            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round">
-                                                <polyline points="20 6 9 17 4 12"></polyline>
-                                            </svg>
-                                        </div>
-                                    </div>
-                                    <h4 class="apc-name">Ocal Local (Ollama)</h4>
-                                    <p class="apc-desc">Zero latency on-device neural model. Completely private with zero cloud telemetry.</p>
-                                    <div class="apc-badge-tag">OFFLINE & PRIVACY</div>
-                                </div>
-
-                                <!-- Gemini Pro Provider Card -->
-                                <div class="ai-provider-card" data-value="gemini" onclick="selectAIEngine('gemini')">
-                                    <div class="apc-top">
-                                        <div class="apc-icon gemini">
-                                            <svg width="22" height="22" viewBox="0 0 24 24" fill="currentColor">
-                                                <path d="M12 2C12 7.52 7.52 12 2 12C7.52 12 12 16.48 12 22C12 16.48 16.48 12 22 12C16.48 12 12 7.52 12 2Z"/>
-                                            </svg>
-                                        </div>
-                                        <div class="apc-radio">
-                                            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round">
-                                                <polyline points="20 6 9 17 4 12"></polyline>
-                                            </svg>
-                                        </div>
-                                    </div>
-                                    <h4 class="apc-name">Google Gemini Pro</h4>
-                                    <p class="apc-desc">Google DeepMind multimodal flagship model with million-token context window.</p>
-                                    <div class="apc-badge-tag gemini">MULTIMODAL CLOUD</div>
-                                </div>
-
-                                <!-- OpenAI ChatGPT Provider Card -->
-                                <div class="ai-provider-card" data-value="openai" onclick="selectAIEngine('openai')">
-                                    <div class="apc-top">
-                                        <div class="apc-icon openai">
-                                            <i class="fas fa-comment-dots"></i>
-                                        </div>
-                                        <div class="apc-radio">
-                                            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round">
-                                                <polyline points="20 6 9 17 4 12"></polyline>
-                                            </svg>
-                                        </div>
-                                    </div>
-                                    <h4 class="apc-name">OpenAI ChatGPT</h4>
-                                    <p class="apc-desc">GPT-4o intelligence backend known for high-accuracy reasoning and structured coding.</p>
-                                    <div class="apc-badge-tag openai">BENCHMARK REASONING</div>
-                                </div>
-
-                                <!-- Custom Endpoint Provider Card -->
-                                <div class="ai-provider-card" data-value="custom" onclick="selectAIEngine('custom')">
-                                    <div class="apc-top">
-                                        <div class="apc-icon custom">
-                                            <i class="fas fa-plug"></i>
-                                        </div>
-                                        <div class="apc-radio">
-                                            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round">
-                                                <polyline points="20 6 9 17 4 12"></polyline>
-                                            </svg>
-                                        </div>
-                                    </div>
-                                    <h4 class="apc-name">Custom OpenAI API</h4>
-                                    <p class="apc-desc">Connect custom endpoints like DeepSeek, LM Studio, Anthropic proxies, or vLLM.</p>
-                                    <div class="apc-badge-tag custom">OPENAI-COMPATIBLE</div>
+                                <div class="ser-right">
+                                    <span class="spc-status active"><span class="status-dot"></span><span>Selected</span></span>
+                                    <button class="spc-action-btn active" type="button"><i class="fas fa-check"></i><span>Selected</span></button>
                                 </div>
                             </div>
 
-                            <!-- Contextual Config Drawer for Active Provider -->
-                            <div class="ai-config-drawer" id="ai-config-drawer">
-                                <!-- Gemini API Key Row -->
-                                <div class="ai-config-row" id="gemini-key-row">
-                                    <div class="ai-config-info">
-                                        <h4>Google Gemini API Key</h4>
-                                        <p>Required for cloud inference. <a href="https://aistudio.google.com/app/apikey" target="_blank" class="accent-link">Get a free key at Google AI Studio &rarr;</a></p>
+                            <!-- Google Gemini -->
+                            <div class="settings-engine-row ai-provider-row ai-provider-card" data-ai-engine="gemini" data-value="gemini" onclick="selectAIEngine('gemini')">
+                                <div class="ser-left">
+                                    <div class="ser-icon">
+                                        <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor">
+                                            <path d="M12 2C12 7.52 7.52 12 2 12C7.52 12 12 16.48 12 22C12 16.48 16.48 12 22 12C16.48 12 12 7.52 12 2Z"/>
+                                        </svg>
                                     </div>
-                                    <div class="ai-secure-pill">
-                                        <input type="password" id="ai-api-key-input" placeholder="Paste your Gemini API key here..." autocomplete="off">
-                                        <i class="fas fa-eye secure-eye" onclick="toggleAIKeyVisibility('ai-api-key-input', this)"></i>
-                                    </div>
-                                </div>
-
-                                <!-- OpenAI API Key Row -->
-                                <div class="ai-config-row" id="openai-key-row">
-                                    <div class="ai-config-info">
-                                        <h4>OpenAI API Key</h4>
-                                        <p>Your OpenAI secret token. <a href="https://platform.openai.com/api-keys" target="_blank" class="accent-link">Create key on OpenAI Platform &rarr;</a></p>
-                                    </div>
-                                    <div class="ai-secure-pill">
-                                        <input type="password" id="openai-api-key-input" placeholder="sk-..." autocomplete="off">
-                                        <i class="fas fa-eye secure-eye" onclick="toggleAIKeyVisibility('openai-api-key-input', this)"></i>
+                                    <div class="ser-info">
+                                        <span class="ser-name">Google Gemini Pro</span>
+                                        <span class="ser-sub">Google DeepMind flagship multimodal model &middot; Million-token context window</span>
                                     </div>
                                 </div>
+                                <div class="ser-right">
+                                    <span class="spc-status"><span class="status-dot"></span><span>Available</span></span>
+                                    <button class="spc-action-btn" type="button"><span>Select</span></button>
+                                </div>
+                            </div>
 
-                                <!-- Custom Endpoint URL Row -->
-                                <div class="ai-config-row" id="custom-endpoint-row">
-                                    <div class="ai-config-info">
-                                        <h4>Custom API Base URL</h4>
-                                        <p>OpenAI-compatible base endpoint (e.g. https://api.deepseek.com/v1)</p>
+                            <!-- OpenAI ChatGPT -->
+                            <div class="settings-engine-row ai-provider-row ai-provider-card" data-ai-engine="openai" data-value="openai" onclick="selectAIEngine('openai')">
+                                <div class="ser-left">
+                                    <div class="ser-icon">
+                                        <i class="fas fa-comment-dots"></i>
                                     </div>
-                                    <div class="ai-input-pill">
-                                        <input type="text" id="custom-endpoint-input" placeholder="https://api.deepseek.com/v1" autocomplete="off">
+                                    <div class="ser-info">
+                                        <span class="ser-name">OpenAI ChatGPT (GPT-4o)</span>
+                                        <span class="ser-sub">OpenAI intelligence backend known for high-accuracy reasoning &amp; coding</span>
                                     </div>
                                 </div>
+                                <div class="ser-right">
+                                    <span class="spc-status"><span class="status-dot"></span><span>Available</span></span>
+                                    <button class="spc-action-btn" type="button"><span>Select</span></button>
+                                </div>
+                            </div>
 
-                                <!-- Custom Model Name Row -->
-                                <div class="ai-config-row" id="custom-model-row">
-                                    <div class="ai-config-info">
-                                        <h4>Custom Model Identifier</h4>
-                                        <p>Model name string (e.g. deepseek-chat, mistral-large)</p>
+                            <!-- Custom Endpoint -->
+                            <div class="settings-engine-row ai-provider-row ai-provider-card" data-ai-engine="custom" data-value="custom" onclick="selectAIEngine('custom')">
+                                <div class="ser-left">
+                                    <div class="ser-icon">
+                                        <i class="fas fa-plug"></i>
                                     </div>
-                                    <div class="ai-input-pill">
-                                        <input type="text" id="custom-model-input" placeholder="deepseek-chat" autocomplete="off">
+                                    <div class="ser-info">
+                                        <span class="ser-name">Custom OpenAI-Compatible API</span>
+                                        <span class="ser-sub">DeepSeek, LM Studio, Anthropic proxies, vLLM, or self-hosted inference servers</span>
                                     </div>
                                 </div>
-
-                                <!-- Custom API Key Row -->
-                                <div class="ai-config-row" id="custom-key-row">
-                                    <div class="ai-config-info">
-                                        <h4>Custom Provider API Key</h4>
-                                        <p>Authorization Bearer key for your custom server</p>
-                                    </div>
-                                    <div class="ai-secure-pill">
-                                        <input type="password" id="custom-key-input" placeholder="Paste custom key here..." autocomplete="off">
-                                        <i class="fas fa-eye secure-eye" onclick="toggleAIKeyVisibility('custom-key-input', this)"></i>
-                                    </div>
-                                </div>
-
-                                <!-- Local Ollama Model Selector Row -->
-                                <div class="ai-config-row" id="local-model-row">
-                                    <div class="ai-config-info">
-                                        <h4>Local Neural Model</h4>
-                                        <p>Select Ollama model detected on host. Make sure Ollama daemon is running.</p>
-                                    </div>
-                                    <div class="ai-select-pill">
-                                        <select id="local-model-select">
-                                            <option value="auto">Auto-detect (Heuristics)</option>
-                                        </select>
-                                    </div>
-                                </div>
-
-                                <!-- Local Ollama Endpoint Row -->
-                                <div class="ai-config-row" id="local-endpoint-row">
-                                    <div class="ai-config-info">
-                                        <h4>Local Service Port Endpoint</h4>
-                                        <p>Ollama local address (default: http://localhost:11434)</p>
-                                    </div>
-                                    <div class="ai-input-pill">
-                                        <input type="text" id="local-endpoint-input" placeholder="http://localhost:11434" autocomplete="off">
-                                    </div>
+                                <div class="ser-right">
+                                    <span class="spc-status"><span class="status-dot"></span><span>Available</span></span>
+                                    <button class="spc-action-btn" type="button"><span>Select</span></button>
                                 </div>
                             </div>
                         </div>
 
-                        <!-- ─── 2. Agent System Constraints Card ─── -->
-                        <div class="card ai-bento-card sp-card-white">
-                            <div class="abc-header">
-                                <div class="abc-header-left">
-                                    <div class="abc-icon agent-bg">
-                                        <i class="fas fa-robot"></i>
-                                    </div>
-                                    <div class="abc-identity">
-                                        <h4 class="abc-name">Agent System Constraints</h4>
-                                        <div class="abc-tagline">Autonomous execution & page heuristics</div>
+                        <!-- Active Provider Configuration Drawer -->
+                        <div class="settings-list-group" id="ai-config-drawer" style="border-top: 1px solid rgba(0, 0, 0, 0.06);">
+                            <!-- Gemini API Key -->
+                            <div class="settings-toggle-row" id="gemini-key-row">
+                                <div class="str-left">
+                                    <div class="str-icon"><i class="fas fa-key"></i></div>
+                                    <div class="str-text">
+                                        <span class="str-title">Google Gemini API Key</span>
+                                        <span class="str-desc">Required for cloud inference. <a href="https://aistudio.google.com/app/apikey" target="_blank" class="accent-link">Get a free key at Google AI Studio &rarr;</a></span>
                                     </div>
                                 </div>
-                                <span class="abc-badge agent">GOVERNANCE</span>
+                                <div class="str-right" style="width: 320px;">
+                                    <div class="desktop-input-wrapper" style="height: 32px; width: 100%;">
+                                        <input type="password" class="desktop-text-field" id="ai-api-key-input" placeholder="Paste Gemini API key..." autocomplete="off">
+                                        <i class="fas fa-eye" style="cursor: pointer; color: var(--text-dim); font-size: 13px;" onclick="toggleAIKeyVisibility('ai-api-key-input', this)" title="Toggle visibility"></i>
+                                    </div>
+                                </div>
                             </div>
 
-                            <div class="abc-rows">
-                                <div class="abc-toggle-row">
-                                    <div class="abc-row-info">
-                                        <h4>Browser Automation Control</h4>
-                                        <p>Allow agent to manage active tabs, scroll, and trigger shell actions</p>
+                            <!-- OpenAI API Key -->
+                            <div class="settings-toggle-row" id="openai-key-row">
+                                <div class="str-left">
+                                    <div class="str-icon"><i class="fas fa-key"></i></div>
+                                    <div class="str-text">
+                                        <span class="str-title">OpenAI API Key</span>
+                                        <span class="str-desc">Your secret token. <a href="https://platform.openai.com/api-keys" target="_blank" class="accent-link">Create key on OpenAI Platform &rarr;</a></span>
                                     </div>
-                                    <label class="ext-toggle-wrap">
+                                </div>
+                                <div class="str-right" style="width: 320px;">
+                                    <div class="desktop-input-wrapper" style="height: 32px; width: 100%;">
+                                        <input type="password" class="desktop-text-field" id="openai-api-key-input" placeholder="sk-..." autocomplete="off">
+                                        <i class="fas fa-eye" style="cursor: pointer; color: var(--text-dim); font-size: 13px;" onclick="toggleAIKeyVisibility('openai-api-key-input', this)" title="Toggle visibility"></i>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Custom Endpoint URL -->
+                            <div class="settings-toggle-row" id="custom-endpoint-row">
+                                <div class="str-left">
+                                    <div class="str-icon"><i class="fas fa-link"></i></div>
+                                    <div class="str-text">
+                                        <span class="str-title">Custom API Base URL</span>
+                                        <span class="str-desc">OpenAI-compatible base endpoint (e.g. https://api.deepseek.com/v1)</span>
+                                    </div>
+                                </div>
+                                <div class="str-right" style="width: 320px;">
+                                    <div class="desktop-input-wrapper" style="height: 32px; width: 100%;">
+                                        <input type="text" class="desktop-text-field" id="custom-endpoint-input" placeholder="https://api.deepseek.com/v1" autocomplete="off">
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Custom Model Name -->
+                            <div class="settings-toggle-row" id="custom-model-row">
+                                <div class="str-left">
+                                    <div class="str-icon"><i class="fas fa-microchip"></i></div>
+                                    <div class="str-text">
+                                        <span class="str-title">Custom Model Identifier</span>
+                                        <span class="str-desc">Model name string (e.g. deepseek-chat, mistral-large)</span>
+                                    </div>
+                                </div>
+                                <div class="str-right" style="width: 320px;">
+                                    <div class="desktop-input-wrapper" style="height: 32px; width: 100%;">
+                                        <input type="text" class="desktop-text-field" id="custom-model-input" placeholder="deepseek-chat" autocomplete="off">
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Custom API Key -->
+                            <div class="settings-toggle-row" id="custom-key-row">
+                                <div class="str-left">
+                                    <div class="str-icon"><i class="fas fa-key"></i></div>
+                                    <div class="str-text">
+                                        <span class="str-title">Custom Provider API Key</span>
+                                        <span class="str-desc">Authorization Bearer key for your custom server</span>
+                                    </div>
+                                </div>
+                                <div class="str-right" style="width: 320px;">
+                                    <div class="desktop-input-wrapper" style="height: 32px; width: 100%;">
+                                        <input type="password" class="desktop-text-field" id="custom-key-input" placeholder="Paste custom key here..." autocomplete="off">
+                                        <i class="fas fa-eye" style="cursor: pointer; color: var(--text-dim); font-size: 13px;" onclick="toggleAIKeyVisibility('custom-key-input', this)" title="Toggle visibility"></i>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Local Ollama Model Selector -->
+                            <div class="settings-toggle-row" id="local-model-row">
+                                <div class="str-left">
+                                    <div class="str-icon"><i class="fas fa-list-check"></i></div>
+                                    <div class="str-text">
+                                        <span class="str-title">Local Neural Model</span>
+                                        <span class="str-desc">Select Ollama model detected on host system</span>
+                                    </div>
+                                </div>
+                                <div class="str-right" style="width: 320px;">
+                                    <select id="local-model-select" class="desktop-select-field" style="width: 100%;">
+                                        <option value="auto">Auto-detect (Heuristics)</option>
+                                    </select>
+                                </div>
+                            </div>
+
+                            <!-- Local Ollama Endpoint -->
+                            <div class="settings-toggle-row" id="local-endpoint-row">
+                                <div class="str-left">
+                                    <div class="str-icon"><i class="fas fa-network-wired"></i></div>
+                                    <div class="str-text">
+                                        <span class="str-title">Local Service Port Endpoint</span>
+                                        <span class="str-desc">Ollama local address (default: http://localhost:11434)</span>
+                                    </div>
+                                </div>
+                                <div class="str-right" style="width: 320px;">
+                                    <div class="desktop-input-wrapper" style="height: 32px; width: 100%;">
+                                        <input type="text" class="desktop-text-field" id="local-endpoint-input" placeholder="http://localhost:11434" autocomplete="off">
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Group 3: AI Personalization & Custom Directives -->
+                    <div class="settings-group-card">
+                        <div class="settings-group-header">
+                            <div class="group-header-text">
+                                <h3 class="group-title">Personalization &amp; Custom Directives</h3>
+                                <p class="group-desc">Customize how Ocal AI speaks, your preferred name, language, and core rules to follow.</p>
+                            </div>
+                        </div>
+
+                        <div class="settings-list-group">
+                            <!-- Persona & Voice Mode -->
+                            <div class="settings-toggle-row">
+                                <div class="str-left">
+                                    <div class="str-icon"><i class="fas fa-user-gear"></i></div>
+                                    <div class="str-text">
+                                        <span class="str-title">AI Persona &amp; Voice</span>
+                                        <span class="str-desc">Choose response framing, tone, and behavioral posture</span>
+                                    </div>
+                                </div>
+                                <div class="str-right">
+                                    <select id="ai-persona-select" class="desktop-select-field" onchange="handleAIPersonaChange(this.value)">
+                                        <option value="professional">Professional Executive (Concise, structured, polite)</option>
+                                        <option value="tech">Tech &amp; Code Master (Deeply technical, clean syntax)</option>
+                                        <option value="funny">Witty &amp; Entertaining (Humorous, clever, casual)</option>
+                                        <option value="calm">Mindful &amp; Calm Coach (Empathetic, reassuring)</option>
+                                        <option value="custom">Custom Companion (Personal role &amp; traits)</option>
+                                    </select>
+                                </div>
+                            </div>
+
+                            <!-- Preferred Name -->
+                            <div class="settings-toggle-row">
+                                <div class="str-left">
+                                    <div class="str-icon"><i class="fas fa-signature"></i></div>
+                                    <div class="str-text">
+                                        <span class="str-title">How AI should address you</span>
+                                        <span class="str-desc">Your preferred name or title used across conversation turns</span>
+                                    </div>
+                                </div>
+                                <div class="str-right" style="width: 240px;">
+                                    <div class="desktop-input-wrapper" style="height: 32px; width: 100%;">
+                                        <input type="text" class="desktop-text-field" id="ai-user-name-input" placeholder="e.g. Alex" autocomplete="off" spellcheck="false" onchange="window.electronAPI.updateSetting('aiUserName', this.value.trim())">
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Response Format & Verbosity -->
+                            <div class="settings-toggle-row">
+                                <div class="str-left">
+                                    <div class="str-icon"><i class="fas fa-align-left"></i></div>
+                                    <div class="str-text">
+                                        <span class="str-title">Response format &amp; verbosity</span>
+                                        <span class="str-desc">Choose default depth, structure, and output detail</span>
+                                    </div>
+                                </div>
+                                <div class="str-right">
+                                    <select id="ai-response-style-select" class="desktop-select-field" onchange="handleAIResponseStyleChange(this.value)">
+                                        <option value="concise">Concise (Bullet points, quick facts)</option>
+                                        <option value="detailed" selected>Detailed (Balanced synthesis with citations)</option>
+                                        <option value="creative">Creative (Exploratory, brainstorming)</option>
+                                    </select>
+                                </div>
+                            </div>
+
+                            <!-- Preferred Language -->
+                            <div class="settings-toggle-row">
+                                <div class="str-left">
+                                    <div class="str-icon"><i class="fas fa-language"></i></div>
+                                    <div class="str-text">
+                                        <span class="str-title">Preferred response language</span>
+                                        <span class="str-desc">Force AI to always formulate responses in this language</span>
+                                    </div>
+                                </div>
+                                <div class="str-right">
+                                    <select id="ai-language-select" class="desktop-select-field" onchange="handleAILanguageChange(this.value)">
+                                        <option value="auto">Auto-detect (Match query language)</option>
+                                        <option value="English">English</option>
+                                        <option value="Spanish">Español (Spanish)</option>
+                                        <option value="French">Français (French)</option>
+                                        <option value="German">Deutsch (German)</option>
+                                        <option value="Japanese">日本語 (Japanese)</option>
+                                        <option value="Chinese">中文 (Chinese)</option>
+                                        <option value="Hindi">हिन्दी (Hindi)</option>
+                                        <option value="Portuguese">Português (Portuguese)</option>
+                                        <option value="Arabic">العربية (Arabic)</option>
+                                        <option value="Russian">Русский (Russian)</option>
+                                    </select>
+                                </div>
+                            </div>
+
+                            <!-- Custom Behavioral Directives Textarea -->
+                            <div class="settings-toggle-row" style="flex-direction: column; align-items: stretch; gap: 10px;">
+                                <div class="str-left">
+                                    <div class="str-icon"><i class="fas fa-terminal"></i></div>
+                                    <div class="str-text">
+                                        <span class="str-title">Custom behavioral directives &amp; rules</span>
+                                        <span class="str-desc">Instructions Ocal AI will follow on every query (e.g. "Always use concise bullet points", "Prefer TypeScript", "No fluff")</span>
+                                    </div>
+                                </div>
+                                <div style="width: 100%; padding-left: 46px; box-sizing: border-box;">
+                                    <textarea id="ai-custom-instructions-input" class="desktop-textarea-field" rows="3" placeholder="Enter custom behavioral rules and instructions for Ocal AI..." onchange="window.electronAPI.updateSetting('aiCustomInstructions', this.value.trim())"></textarea>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Group 4: Browsing Integration & Context Privileges -->
+                    <div class="settings-group-card">
+                        <div class="settings-group-header">
+                            <div class="group-header-text">
+                                <h3 class="group-title">Browsing Integration &amp; Context Privileges</h3>
+                                <p class="group-desc">Control how AI interacts with websites, page selections, and active browser tabs.</p>
+                            </div>
+                        </div>
+
+                        <div class="settings-list-group">
+                            <!-- Active Tab Inspection -->
+                            <div class="settings-toggle-row">
+                                <div class="str-left">
+                                    <div class="str-icon"><i class="fas fa-file-lines"></i></div>
+                                    <div class="str-text">
+                                        <span class="str-title">Active tab page inspection</span>
+                                        <span class="str-desc">Allow AI to read active web page text and headings for contextual questions</span>
+                                    </div>
+                                </div>
+                                <div class="str-right">
+                                    <label class="native-switch">
+                                        <input type="checkbox" id="ai-page-context-toggle" checked onchange="window.electronAPI.updateSetting('aiPageContextEnabled', this.checked)">
+                                        <span class="native-switch-slider"></span>
+                                    </label>
+                                </div>
+                            </div>
+
+                            <!-- Smart Selection Pill -->
+                            <div class="settings-toggle-row">
+                                <div class="str-left">
+                                    <div class="str-icon"><i class="fas fa-i-cursor"></i></div>
+                                    <div class="str-text">
+                                        <span class="str-title">Smart text selection quick pill</span>
+                                        <span class="str-desc">Display a lightweight "Ask AI" pill when highlighting text on any webpage</span>
+                                    </div>
+                                </div>
+                                <div class="str-right">
+                                    <label class="native-switch">
+                                        <input type="checkbox" id="ai-selection-pill-toggle" checked onchange="window.electronAPI.updateSetting('aiSelectionPillEnabled', this.checked)">
+                                        <span class="native-switch-slider"></span>
+                                    </label>
+                                </div>
+                            </div>
+
+                            <!-- Auto-summarize Long Articles -->
+                            <div class="settings-toggle-row">
+                                <div class="str-left">
+                                    <div class="str-icon"><i class="fas fa-book-open"></i></div>
+                                    <div class="str-text">
+                                        <span class="str-title">Auto-summarize long articles</span>
+                                        <span class="str-desc">Offer one-click executive summaries on comprehensive reading pages (>1,500 words)</span>
+                                    </div>
+                                </div>
+                                <div class="str-right">
+                                    <label class="native-switch">
+                                        <input type="checkbox" id="ai-auto-summarize-toggle" checked onchange="window.electronAPI.updateSetting('aiAutoSummarizeEnabled', this.checked)">
+                                        <span class="native-switch-slider"></span>
+                                    </label>
+                                </div>
+                            </div>
+
+                            <!-- Address Bar AI Answers -->
+                            <div class="settings-toggle-row">
+                                <div class="str-left">
+                                    <div class="str-icon"><i class="fas fa-magnifying-glass"></i></div>
+                                    <div class="str-text">
+                                        <span class="str-title">Address bar AI query answers</span>
+                                        <span class="str-desc">Show quick neural answer previews in the omnibox dropdown as you type questions</span>
+                                    </div>
+                                </div>
+                                <div class="str-right">
+                                    <label class="native-switch">
+                                        <input type="checkbox" id="ai-omnibox-toggle" checked onchange="window.electronAPI.updateSetting('aiOmniboxEnabled', this.checked)">
+                                        <span class="native-switch-slider"></span>
+                                    </label>
+                                </div>
+                            </div>
+
+                            <!-- Browser Automation Control -->
+                            <div class="settings-toggle-row">
+                                <div class="str-left">
+                                    <div class="str-icon"><i class="fas fa-robot"></i></div>
+                                    <div class="str-text">
+                                        <span class="str-title">Browser automation control</span>
+                                        <span class="str-desc">Allow agent to manage active tabs, scroll, navigate, and trigger browser actions</span>
+                                    </div>
+                                </div>
+                                <div class="str-right">
+                                    <label class="native-switch">
                                         <input type="checkbox" id="ai-agency-toggle-cb" checked
                                             onchange="window.electronAPI.updateSetting('aiAgencyEnabled', this.checked); updateAIStats();">
-                                        <span class="ext-slider"></span>
-                                    </label>
-                                </div>
-                                <div class="abc-toggle-row">
-                                    <div class="abc-row-info">
-                                        <h4>Semantic Heuristic Extraction</h4>
-                                        <p>Rank and parse document sections using neural vectors for speed</p>
-                                    </div>
-                                    <label class="ext-toggle-wrap">
-                                        <input type="checkbox" id="ai-heuristic-toggle-cb" checked
-                                            onchange="window.electronAPI.updateSetting('aiHeuristicEnabled', this.checked)">
-                                        <span class="ext-slider"></span>
+                                        <span class="native-switch-slider"></span>
                                     </label>
                                 </div>
                             </div>
                         </div>
+                    </div>
 
-                        <!-- ─── 3. Analytical Reasoning Depth Card ─── -->
-                        <div class="card ai-bento-card sp-card-white">
-                            <div class="abc-header">
-                                <div class="abc-header-left">
-                                    <div class="abc-icon logic-bg">
-                                        <i class="fas fa-layer-group"></i>
-                                    </div>
-                                    <div class="abc-identity">
-                                        <h4 class="abc-name">Analytical Reasoning Depth</h4>
-                                        <div class="abc-tagline">DOM inspection & Chain-of-Thought logs</div>
+                    <!-- Group 5: Analytical Reasoning & Generation Parameters -->
+                    <div class="settings-group-card">
+                        <div class="settings-group-header">
+                            <div class="group-header-text">
+                                <h3 class="group-title">Cognitive Reasoning &amp; Generation Parameters</h3>
+                                <p class="group-desc">Fine-tune inference temperature, reasoning depth, and DOM extraction.</p>
+                            </div>
+                        </div>
+
+                        <div class="settings-list-group">
+                            <!-- Real-time Web Search -->
+                            <div class="settings-toggle-row">
+                                <div class="str-left">
+                                    <div class="str-icon"><i class="fas fa-earth-americas"></i></div>
+                                    <div class="str-text">
+                                        <span class="str-title">Live web search synthesis (RAG-Lite)</span>
+                                        <span class="str-desc">Query live web search in real-time to answer queries about current events</span>
                                     </div>
                                 </div>
-                                <span class="abc-badge logic">REASONING</span>
-                            </div>
-
-                            <div class="abc-rows">
-                                <div class="abc-toggle-row">
-                                    <div class="abc-row-info">
-                                        <h4>Deep DOM Tree Scraping</h4>
-                                        <p>Extract extensive document layout trees for contextual processing</p>
-                                    </div>
-                                    <label class="ext-toggle-wrap">
-                                        <input type="checkbox" id="ai-deep-scrape-toggle-cb" checked
-                                            onchange="window.electronAPI.updateSetting('aiDeepScrape', this.checked)">
-                                        <span class="ext-slider"></span>
+                                <div class="str-right">
+                                    <label class="native-switch">
+                                        <input type="checkbox" id="ai-web-search-toggle" checked onchange="window.electronAPI.updateSetting('aiWebSearchEnabled', this.checked)">
+                                        <span class="native-switch-slider"></span>
                                     </label>
                                 </div>
-                                <div class="abc-toggle-row">
-                                    <div class="abc-row-info">
-                                        <h4>Show Chain-of-Thought Steps</h4>
-                                        <p>Display live intermediate reasoning tokens and search queries</p>
+                            </div>
+
+                            <!-- Chain of Thought -->
+                            <div class="settings-toggle-row">
+                                <div class="str-left">
+                                    <div class="str-icon"><i class="fas fa-brain"></i></div>
+                                    <div class="str-text">
+                                        <span class="str-title">Show Chain-of-Thought steps</span>
+                                        <span class="str-desc">Display live intermediate reasoning steps and tool execution in the AI panel</span>
                                     </div>
-                                    <label class="ext-toggle-wrap">
+                                </div>
+                                <div class="str-right">
+                                    <label class="native-switch">
                                         <input type="checkbox" id="ai-show-reasoning-toggle-cb" checked
                                             onchange="window.electronAPI.updateSetting('aiShowReasoning', this.checked)">
-                                        <span class="ext-slider"></span>
+                                        <span class="native-switch-slider"></span>
                                     </label>
                                 </div>
                             </div>
-                        </div>
 
-                        <!-- ─── 4. Generation Parameters Card ─── -->
-                        <div class="card ai-bento-card sp-card-white">
-                            <div class="abc-header">
-                                <div class="abc-header-left">
-                                    <div class="abc-icon params-bg">
-                                        <i class="fas fa-sliders"></i>
-                                    </div>
-                                    <div class="abc-identity">
-                                        <h4 class="abc-name">Generation Parameters</h4>
-                                        <div class="abc-tagline">Temperature randomness & token thresholds</div>
+                            <!-- Deep DOM Tree Scraping -->
+                            <div class="settings-toggle-row">
+                                <div class="str-left">
+                                    <div class="str-icon"><i class="fas fa-layer-group"></i></div>
+                                    <div class="str-text">
+                                        <span class="str-title">Deep DOM tree scraping</span>
+                                        <span class="str-desc">Extract extensive document layout trees for contextual processing</span>
                                     </div>
                                 </div>
-                                <span class="abc-badge params">TUNING</span>
+                                <div class="str-right">
+                                    <label class="native-switch">
+                                        <input type="checkbox" id="ai-deep-scrape-toggle-cb" checked
+                                            onchange="window.electronAPI.updateSetting('aiDeepScrape', this.checked)">
+                                        <span class="native-switch-slider"></span>
+                                    </label>
+                                </div>
                             </div>
 
-                            <div class="ai-sliders-container">
-                                <!-- Temperature Slider -->
-                                <div class="ai-slider-card">
-                                    <div class="slider-header-row">
-                                        <div class="sh-info">
-                                            <h4>Creativity Temperature</h4>
-                                            <p>Controls generation randomness and hallucination penalty</p>
-                                        </div>
-                                        <div id="label-ai-temp" class="ai-mono-bubble">0.7</div>
+                            <!-- Semantic Heuristics -->
+                            <div class="settings-toggle-row">
+                                <div class="str-left">
+                                    <div class="str-icon"><i class="fas fa-bolt"></i></div>
+                                    <div class="str-text">
+                                        <span class="str-title">Semantic heuristic extraction</span>
+                                        <span class="str-desc">Rank and parse document sections using neural vectors for speed</span>
                                     </div>
-                                    <input type="range" min="0" max="1" step="0.1" value="0.7" id="aiTemperature"
-                                        oninput="updateAISetting('aiTemperature', this.value); document.getElementById('label-ai-temp').innerText = parseFloat(this.value).toFixed(1);">
                                 </div>
-
-                                <!-- Max Tokens Slider -->
-                                <div class="ai-slider-card">
-                                    <div class="slider-header-row">
-                                        <div class="sh-info">
-                                            <h4>Max Output Tokens</h4>
-                                            <p>Maximum response length generated per conversation turn</p>
-                                        </div>
-                                        <div id="label-ai-tokens" class="ai-mono-bubble">2048</div>
-                                    </div>
-                                    <input type="range" min="256" max="4096" step="128" value="2048" id="aiMaxTokens"
-                                        oninput="updateAISetting('aiMaxTokens', this.value); document.getElementById('label-ai-tokens').innerText = this.value;">
+                                <div class="str-right">
+                                    <label class="native-switch">
+                                        <input type="checkbox" id="ai-heuristic-toggle-cb" checked
+                                            onchange="window.electronAPI.updateSetting('aiHeuristicEnabled', this.checked)">
+                                        <span class="native-switch-slider"></span>
+                                    </label>
                                 </div>
                             </div>
-                        </div>
 
-                        <!-- ─── 5. Output Personality Preset Card ─── -->
-                        <div class="card ai-bento-card sp-card-white">
-                            <div class="abc-header">
-                                <div class="abc-header-left">
-                                    <div class="abc-icon preset-bg">
-                                        <i class="fas fa-wand-magic-sparkles"></i>
-                                    </div>
-                                    <div class="abc-identity">
-                                        <h4 class="abc-name">Output Personality Preset</h4>
-                                        <div class="abc-tagline">Tone, phrasing density, and summarization depth</div>
+                            <!-- Creativity Temperature -->
+                            <div class="settings-toggle-row">
+                                <div class="str-left">
+                                    <div class="str-icon"><i class="fas fa-sliders"></i></div>
+                                    <div class="str-text">
+                                        <span class="str-title">Creativity Temperature</span>
+                                        <span class="str-desc">Controls generation randomness (0.0 = Deterministic &amp; exact; 1.0 = Highly creative)</span>
                                     </div>
                                 </div>
-                                <span class="abc-badge preset">PERSONA</span>
+                                <div class="str-right" style="display: flex; align-items: center; gap: 12px; flex-shrink: 0;">
+                                    <div class="ai-slider-desktop-wrap">
+                                        <input type="range" min="0" max="1" step="0.1" value="0.7" id="aiTemperature"
+                                            oninput="updateAISetting('aiTemperature', this.value); document.getElementById('label-ai-temp').innerText = parseFloat(this.value).toFixed(1);">
+                                        <span id="label-ai-temp" class="ai-mono-bubble">0.7</span>
+                                    </div>
+                                </div>
                             </div>
 
-                            <div class="ai-personality-pills" id="ai-style-grid">
-                                <div class="ai-persona-card" data-value="concise" onclick="selectAIPersona('concise')">
-                                    <div class="apc-pill-icon"><i class="fas fa-bolt"></i></div>
-                                    <h4>Concise</h4>
-                                    <p>Bullet points, high-speed facts, minimal narrative prose.</p>
+                            <!-- Max Output Tokens -->
+                            <div class="settings-toggle-row">
+                                <div class="str-left">
+                                    <div class="str-icon"><i class="fas fa-coins"></i></div>
+                                    <div class="str-text">
+                                        <span class="str-title">Max Output Tokens</span>
+                                        <span class="str-desc">Maximum generation length budget per response turn (256 to 4,096 tokens)</span>
+                                    </div>
                                 </div>
-                                <div class="ai-persona-card active" data-value="detailed" onclick="selectAIPersona('detailed')">
-                                    <div class="apc-pill-icon"><i class="fas fa-list-check"></i></div>
-                                    <h4>Detailed</h4>
-                                    <p>Balanced analytical synthesis with verified source citations.</p>
-                                </div>
-                                <div class="ai-persona-card" data-value="creative" onclick="selectAIPersona('creative')">
-                                    <div class="apc-pill-icon"><i class="fas fa-wand-magic-sparkles"></i></div>
-                                    <h4>Creative</h4>
-                                    <p>Brainstorming, exploratory framing, expressive reasoning.</p>
+                                <div class="str-right" style="display: flex; align-items: center; gap: 12px; flex-shrink: 0;">
+                                    <div class="ai-slider-desktop-wrap">
+                                        <input type="range" min="256" max="4096" step="128" value="2048" id="aiMaxTokens"
+                                            oninput="updateAISetting('aiMaxTokens', this.value); document.getElementById('label-ai-tokens').innerText = this.value;">
+                                        <span id="label-ai-tokens" class="ai-mono-bubble">2048</span>
+                                    </div>
                                 </div>
                             </div>
                         </div>
-
                     </div>
+
+                    <!-- Group 6: Data Privacy & Memory Bank -->
+                    <div class="settings-group-card">
+                        <div class="settings-group-header">
+                            <div class="group-header-text">
+                                <h3 class="group-title">Data Privacy &amp; Memory Bank</h3>
+                                <p class="group-desc">Manage learned user facts, sandboxed local history, and privacy guarantees.</p>
+                            </div>
+                        </div>
+
+                        <div class="settings-list-group">
+                            <!-- Remember Facts Toggle -->
+                            <div class="settings-toggle-row">
+                                <div class="str-left">
+                                    <div class="str-icon"><i class="fas fa-memory"></i></div>
+                                    <div class="str-text">
+                                        <span class="str-title">Remember user facts &amp; context</span>
+                                        <span class="str-desc">Allow AI to remember details you share across sessions in your sandboxed profile</span>
+                                    </div>
+                                </div>
+                                <div class="str-right">
+                                    <label class="native-switch">
+                                        <input type="checkbox" id="ai-save-history-toggle" checked onchange="window.electronAPI.updateSetting('aiSaveHistory', this.checked)">
+                                        <span class="native-switch-slider"></span>
+                                    </label>
+                                </div>
+                            </div>
+
+                            <!-- Reset AI Memory Button -->
+                            <div class="settings-toggle-row">
+                                <div class="str-left">
+                                    <div class="str-icon"><i class="fas fa-trash-can"></i></div>
+                                    <div class="str-text">
+                                        <span class="str-title">Reset AI memory bank</span>
+                                        <span class="str-desc">Erase all saved facts, learned context, and profile memory from local storage</span>
+                                    </div>
+                                </div>
+                                <div class="str-right">
+                                    <button type="button" class="desktop-action-btn danger" id="btn-clear-ai-memory" onclick="handleClearAIMemory()">
+                                        <i class="fas fa-trash-can"></i>
+                                        <span>Clear Memory</span>
+                                    </button>
+                                </div>
+                            </div>
+
+                            <!-- Zero Cloud Training Guarantee -->
+                            <div class="settings-toggle-row">
+                                <div class="str-left">
+                                    <div class="str-icon"><i class="fas fa-shield-halved"></i></div>
+                                    <div class="str-text">
+                                        <span class="str-title">Sandboxed local client</span>
+                                        <span class="str-desc">Ocal AI queries execute in sandboxed browser processes. Prompts and documents are never used for model training</span>
+                                    </div>
+                                </div>
+                                <div class="str-right">
+                                    <span class="engine-active-indicator"><span class="status-dot"></span><span>Zero Cloud Training</span></span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
                 </div>
 
                 <script>
@@ -3467,8 +3700,6 @@
             };
         }
     </script>
-    <script src="qrGenerator.js"></script>
-    <script src="color-harmonizer.js"></script>
     <script src="settings.js"></script>
 </body>
 

@@ -489,16 +489,16 @@
             position: relative;
             overflow: hidden;
             border-radius: var(--radius-card);
-            min-height: 310px;
-            border: none;
+            min-height: 285px;
+            border: 1px solid var(--chrome-border);
             background: #000;
-            box-shadow: 0 20px 50px rgba(255, 103, 31, 0.28), 0 10px 32px rgba(4, 106, 56, 0.24);
-            transition: transform 0.25s ease, box-shadow 0.25s ease;
+            box-shadow: none;
+            transition: transform 0.22s cubic-bezier(0.16, 1, 0.3, 1);
         }
 
         .sp-card-green-grad.tiranga-hero-card:hover {
-            transform: translateY(-4px);
-            box-shadow: 0 26px 60px rgba(255, 103, 31, 0.38), 0 14px 40px rgba(4, 106, 56, 0.32);
+            transform: translateY(-2px);
+            box-shadow: none;
         }
 
         /* 1. Authentic 3-Stripe Indian Flag with Waving Physics */
@@ -567,7 +567,7 @@
             width: 100%;
             height: 100%;
             animation: chakraSpin 24s linear infinite;
-            filter: drop-shadow(0 0 10px rgba(0, 0, 128, 0.4));
+            filter: none;
         }
 
         @keyframes chakraSpin {
@@ -647,32 +647,32 @@
             padding: 10px 0;
         }
 
-        /* 5. Frosted Glassmorphism Content Plate for Crystal Clear Contrast */
+        /* 5. Frosted Content Plate for Crystal Clear Contrast (Clean Shadowless Style) */
         .sp-hero-left.sp-hero-glass-plate {
             display: flex;
             flex-direction: column;
-            gap: 12px;
+            gap: 10px;
             z-index: 5;
             max-width: 620px;
-            background: rgba(255, 255, 255, 0.88);
+            background: rgba(255, 255, 255, 0.94);
             backdrop-filter: blur(24px) saturate(1.6);
             -webkit-backdrop-filter: blur(24px) saturate(1.6);
-            border: 1.5px solid rgba(255, 255, 255, 0.95);
-            border-radius: 24px;
-            padding: 24px 28px;
-            box-shadow: 0 14px 36px rgba(0, 0, 80, 0.1), 0 2px 8px rgba(0, 0, 0, 0.04);
+            border: 1px solid rgba(255, 255, 255, 0.95);
+            border-radius: 20px;
+            padding: 22px 26px;
+            box-shadow: none;
             color: #0F172A;
-            transition: transform 0.22s ease, box-shadow 0.22s ease;
+            transition: transform 0.22s ease;
         }
 
         .sp-hero-left.sp-hero-glass-plate:hover {
-            box-shadow: 0 18px 44px rgba(0, 0, 80, 0.15);
+            box-shadow: none;
         }
 
         body[data-theme="dark"] .sp-hero-left.sp-hero-glass-plate {
-            background: rgba(15, 23, 42, 0.88);
-            border-color: rgba(255, 255, 255, 0.15);
-            box-shadow: 0 18px 44px rgba(0, 0, 0, 0.5);
+            background: rgba(15, 23, 42, 0.92);
+            border-color: rgba(255, 255, 255, 0.12);
+            box-shadow: none;
             color: #F8FAFC;
         }
 
@@ -699,7 +699,7 @@
             width: 22px;
             border-radius: 3px;
             overflow: hidden;
-            box-shadow: 0 1px 4px rgba(0, 0, 0, 0.25);
+            box-shadow: none;
             border: 1px solid rgba(0, 0, 0, 0.12);
             flex-shrink: 0;
         }
@@ -720,10 +720,10 @@
         }
 
         .sp-hero-title {
-            font-size: 34px;
+            font-size: 26px;
             font-weight: 800;
-            letter-spacing: -1.2px;
-            line-height: 1.15;
+            letter-spacing: -0.8px;
+            line-height: 1.25;
             color: #0F172A;
             margin: 0;
         }
@@ -733,12 +733,12 @@
         }
 
         .sp-hero-desc {
-            font-size: 14px;
+            font-size: 13.5px;
             font-weight: 500;
-            line-height: 1.55;
-            color: #334155;
+            line-height: 1.5;
+            color: #475569;
             margin: 0;
-            min-height: 44px;
+            min-height: auto;
         }
 
         body[data-theme="dark"] .sp-hero-desc {
@@ -751,15 +751,15 @@
             align-items: center;
             justify-content: center;
             text-align: center;
-            background: rgba(255, 255, 255, 0.95);
+            background: rgba(255, 255, 255, 0.96);
             backdrop-filter: blur(24px) saturate(1.6);
             -webkit-backdrop-filter: blur(24px) saturate(1.6);
-            border: 1.5px solid rgba(255, 255, 255, 0.95);
-            border-radius: 24px;
-            padding: 22px 28px;
-            min-width: 195px;
+            border: 1px solid rgba(255, 255, 255, 0.95);
+            border-radius: 20px;
+            padding: 20px 24px;
+            min-width: 190px;
             color: #000080;
-            box-shadow: 0 16px 36px rgba(0, 0, 80, 0.12), 0 2px 8px rgba(0, 0, 0, 0.04);
+            box-shadow: none;
             flex-shrink: 0;
             z-index: 5;
             transition: all 0.22s cubic-bezier(0.16, 1, 0.3, 1);
@@ -767,14 +767,14 @@
 
         .sp-hero-right-visual:hover {
             transform: translateY(-2px);
-            box-shadow: 0 20px 42px rgba(0, 0, 80, 0.18);
+            box-shadow: none;
         }
 
         body[data-theme="dark"] .sp-hero-right-visual {
             background: rgba(255, 255, 255, 0.96);
             border-color: rgba(255, 255, 255, 0.95);
             color: #000080;
-            box-shadow: 0 16px 40px rgba(0, 0, 0, 0.35);
+            box-shadow: none;
         }
 
         .chakra-mini-badge {
@@ -786,7 +786,7 @@
 
         .chakra-svg-mini {
             animation: chakraSpin 14s linear infinite;
-            filter: drop-shadow(0 2px 4px rgba(0, 0, 128, 0.2));
+            filter: none;
         }
 
         .radial-metric-title {
@@ -1463,7 +1463,7 @@
                             <span>v9.8.00 Stable Release</span>
                         </div>
                         <h2 class="sp-hero-title">Direct GPU Acceleration, Extension Store Overhaul & Contrast Precision</h2>
-                        <p class="sp-hero-desc" id="hero-desc"></p>
+                        <p class="sp-hero-desc" id="hero-desc">Direct3D 11 GPU acceleration, 4K/60FPS video decode, and a refreshed minimalist Extension Store.</p>
                     </div>
                     <div class="sp-hero-right-visual">
                         <div class="chakra-mini-badge" title="Ashoka Chakra - 24 Spokes of Progress">
@@ -1665,7 +1665,12 @@
         }
 
         // ── Typing Animation ──
+        // Short, concise description for a clean, minimalist hero presentation.
+        // (Uncomment the original extended paragraph below if you wish to restore it)
+        /*
         const heroText = "Ocal Browser v9.8.00 delivers enterprise-grade direct hardware acceleration via Direct3D 11 and passthrough command decoder, 4K/60FPS zero-copy video decode, and ultra-smooth compositor pipelines. Features a clean, flat, minimalist overhaul of the Extension Store (ocal://store), flush AI sidebar layout with seamless bounds, and dynamic luminance-based text contrast for omnibox shields and badges.";
+        */
+        const heroText = "Direct3D 11 GPU acceleration, 4K/60FPS video decode, and a refreshed minimalist Extension Store.";
         const heroDesc = document.getElementById('hero-desc');
         let charIndex = 0;
 

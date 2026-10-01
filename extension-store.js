@@ -1,6 +1,185 @@
 // Ocal Web Store — Extensions & Add-ons Controller
 
 (function () {
+        // Official Google Chrome Web Store & Store Media Screenshots Map
+    const CWS_SCREENSHOTS_MAP = {
+        "cjpalhdlnbpafiamejdnhcphjbkeiagm": [
+                "https://lh3.googleusercontent.com/KWwl2rmh3M_-IUUA6b6eojLru1tBti_26KR8D0KfADqEjcsLCMZQzvt_TgPasVPdg98zhdmFy7sYADeG_Uu4PesblQ",
+                "https://lh3.googleusercontent.com/C-pM8SPEBcwgp8VhNnbnyAXH9JBalVDgabg6yPA145FELdpsTtK3NeLnX1Q4kcb7-ZW1hOtbgVNKU2OUja9IMUSPJg",
+                "https://lh3.googleusercontent.com/PkdO2XWloxLDu8cDGTGGKDQnnZZBe3P9Ki9-NfvMAP_vmbmE_xF1EKYRrohRZBL_5gi3Q25gOTg_QpWUM0CKtBFt"
+        ],
+        "eimadpbcbfnmbkopoojfekhnkhdbieeh": [
+                "https://lh3.googleusercontent.com/5yCH2xbg29Alk2IzqTrkFFO4G939ZJzSe8uhg5Kb7XLgXp6Ozq83xRCoNdLj6uv6rrFooCmndAf6cWAecztdG4I9",
+                "https://lh3.googleusercontent.com/MviJx9Jun4hC6YyWeZ_57uUDQ_fs74gw4OydIf7NOdBRwWA6ZxeFV6eiX2b41iBKaNtVMoePX8PxnpQttEL29QzpVw",
+                "https://lh3.googleusercontent.com/a93aAy4IkobWYQTDugwrVy8EoKvmcgZtvj8iy0aP8Y1-sKDmc0XrgCqgH1ETqSnkaDQm32qOCFa92GrusVisVvtXwA",
+                "https://lh3.googleusercontent.com/gFK6KEcbO_MATjAaqt71yiV6WVV0FhQmdexb_mcS4sh7EFMEhoXW4cv_Sn_3YrCEsKdDPqhZ0ruEMci6fX0OSGRy"
+        ],
+        "nngceckbapebfimnlniiiahkandclblb": [
+                "https://lh3.googleusercontent.com/YcscY9vfm_cU0ki06DPaKiMarPdBcjklV4VOkOW54kzTxfYqsbXOCFm0uSl92hU-nLt_1N6zQs86cgRy6T98bGUKcg",
+                "https://lh3.googleusercontent.com/R81yRFgTI9NQ2_c5t3JijcH-96afN5gBhZXAN7fDPpPjVPslc35sxdRWHsK_7HUr5n94ESzm0gEfaf6uJYpE0mBey2Q",
+                "https://lh3.googleusercontent.com/fitJiqFAG28NoaXMuq1pTd3MD1rHve2lDBvznyV_Orti4UiFSwpCb3_h4n9atBiDDwBXpvUSu8Br2lI1t5UoHnGR",
+                "https://lh3.googleusercontent.com/a2lRgSoI9PXxfI94EAQ3o1TEG99tRZPW6_zmBuKStd-484N3rqX-wP-8HZv_LK-P-xMgAKKi-1dnRl6DBck3ogFK0Q"
+        ],
+        "gebbhagfogifgggkldgodflihgfeippi": [
+                "https://lh3.googleusercontent.com/0gXz3ElPNY-ZyHmlhxnCZBOQSj6qDuuvnGIw2_bUSHWpvdnqwuMegkg_Zc6l7j2WTbc2VA78laclYRXldAFg3AOqzg",
+                "https://lh3.googleusercontent.com/dq5R70JefcpmiYUutNasZpHdRO8U-7_qF_qw6YljC-y2rfH6nHA7ojy0Vv3uVVsdIzMvPeGTUn1MvbpnAepZcMLkdg",
+                "https://lh3.googleusercontent.com/KtP6aTEVUQ6g1McE_T0B6NGwB5X3HpBkWbeTHNnAJNumJWpyAJphTz7rp_NsTb2cnf6JxMhNngW-hQL7m8blGafhrik",
+                "https://lh3.googleusercontent.com/VIeO7Cg1EdiJz0gqZEiq3tiwzEDgsTqEDoTmrI6P-eG05vXiSfhJhRYw7DOLzNYne49XxfFomNuQl-LUDMa572ry8i8"
+        ],
+        "mnjggqmfldjflhhcmfdnddlhafdhhime": [
+                "https://lh3.googleusercontent.com/Bklbx1klWsG5G21pkvTHZAeFT2hisZoSQSuYCYTKocRjue0Leu0s-bqxzD1objb9zJsNMeBgpPdFzEGrZW7kSpPkrC8",
+                "https://lh3.googleusercontent.com/5wc0rHYjJxkYhUjxuwDg0Y5aJeQ2GUOav9Az5Jd5zEmrwV7BtZXRPdxXeuICf2X4nHEXPqOu4Za1sSGW7gOJO-poCg",
+                "https://lh3.googleusercontent.com/8ZfTYzpBLEZ03bwu0cioHFBuxy7SNrc6SZ03Gma2ovE4O7d2iEwD5osGnUgjNBPEUjR1ejO9gJR9xPXtx_zLZsYoiJ8",
+                "https://lh3.googleusercontent.com/mgNKV-3VMXD556WVUiWSbcukQQN-il4Zlqq03efTjG2B5j9YP7Fxr3idTQ_G0JFD7E6o4TMwvTQTleDn_8UdFLf5VQ"
+        ],
+        "aapbdbdomjkkjkaonfhkkikfgjllcleb": [
+                "https://lh3.googleusercontent.com/db0s8-RkRp0dKNR5p3Y0YU-LjlU5VEL5Ub7L3-HKrWNqmv9plqj7EjJf5yGUSaB7laVz9jQS3aqWA2mETYMEta1U9A",
+                "https://lh3.googleusercontent.com/of6lxYQBEWCtHMmfT81R_v9utoUsf1HVqQXDldbhq_OEllTMoKPhwT3TbCF2qQC-qTIb5q3rgPryWUor4GMmSZ-PAw",
+                "https://lh3.googleusercontent.com/m243qO0tSR6ulbsVJw6kxi7JrqtTx1mAeLWKE0sw66iXHyT9WvILV0DZpibsdEmaGilUsY0FxKisvMA1FfAwT1Gk",
+                "https://lh3.googleusercontent.com/AG61hV15d6f-x4S_NE71Rigr95ibnSh3-CFHD60waZ5mEghjT4xehtAPImNazPCDjief4VEXpTJpb8GGl_A32XOz"
+        ],
+        "kbfnbcaeplbcioakkpcpgfkobkghlhen": [
+                "https://lh3.googleusercontent.com/R59PRq5jiRICQN9EVla7lgEWA0OevPDp8kC7IexIMQYPfuuOdZO7wT6LNFnTzXCyd0Mpogt4GHPnOTBA6zHD1K1q",
+                "https://lh3.googleusercontent.com/9O7Z-kJZeAb4hEgjyK9J1rzxGr4NN_-wXjWMnm3qd1uNRH-Gm5uKpBhdIW2gipVMi9glln3tGsIZnGLfqUjsF8Zqyg",
+                "https://lh3.googleusercontent.com/rDxan18SkY_SmRHdLB-Er1fWls1mhZs7BFGvEgeYalrVn770eFI3V3nRYGsOEZs97hSahRnQwr6eNJIkFnFaoFhv9g",
+                "https://lh3.googleusercontent.com/3knq77kXd5O6bmr4oUaIep7dSoCmwjVSlsNj7xJKYvL95GJ-BgC43EDnHhd-AgcTCyhybj_h5mhQYgnsPks6lEVqbw"
+        ],
+        "fmkadmapgofadopljbjfkapdkoienihi": [
+                "https://lh3.googleusercontent.com/6PjEhK6JkQwq-Xqr8sd4iVdey4aGrLs6n6v2TzRXbfm72J8nnRoDAjQgvFMBoNjUl69K8Yj0c4UFdLeWXfMUpJBvrw",
+                "https://lh3.googleusercontent.com/6wr4z-Az56tbunqZMy8AMw1g2bEinwGpK0uZ3lw2ts3VOizNMbjLpMIgvXpwR9i0O7ZQ1cDfU0nycOS5M4iKv4WEG7A",
+                "https://lh3.googleusercontent.com/57uDSJx9ItU_LWmPkOm9lO75V2xzmHRSOKOdTsxjyNEY_54-8YnTflXE11wF2Tv6xD60e8bVHV6J57UcnRHbW4lzT8U",
+                "https://lh3.googleusercontent.com/B4THhCXD9A6HCKIkjXwyTVDk0UnGuVfcbPQ9lmY4_WvCyfXa3m3NJdYOpxqRyVfCEbX7AZ-GtyPIpYf0HBsatQemtA"
+        ],
+        "nhdogjmejiglipccpnnnanhbledajbpd": [
+                "https://lh3.googleusercontent.com/P-E89-Gta0vhhEP1l_S7IZNabcFQsS1NUXE_JmaObHHXTYUKsjQFEmGm-mEVtNvf44ka_RW_OUxV2PZciBBqqaIAZg"
+        ],
+        "jinjaccalgkegednnccohejagnlnfdag": [
+                "https://lh3.googleusercontent.com/dq5R70JefcpmiYUutNasZpHdRO8U-7_qF_qw6YljC-y2rfH6nHA7ojy0Vv3uVVsdIzMvPeGTUn1MvbpnAepZcMLkdg",
+                "https://lh3.googleusercontent.com/pSsBQGsAjB6UNy3Rr8IfcUPp3evEqoiJDKRX8-f7P2pQMEbToEs-yUst2ZvHWL0GktpmOwfqtLgLFMeKSPk4Z-zO",
+                "https://lh3.googleusercontent.com/5YgFPZpY3w4avzA5YeDzGP5xpO8iivZks7w15SNuDOpRVXWLem5SBODQANPr2Ba_2fz-tIXAGwWjWf2QnmprAkiIVQ",
+                "https://lh3.googleusercontent.com/v6lqHGqcCVebajUZVJrtTz8tWO9LBd8OtRaBS_nmWU2qeC7YgaoT0XrWg4x6yIprM6mNLFm1ChH9N15M4yzIl0eZ0g"
+        ],
+        "bhlhnicpbjkfdgahfnagkillifijdadj": [
+                "https://www.colorzilla.com/images/colorzilla-for-chrome.png"
+        ],
+        "bmnlcjabgnpnenekpadlanbbkooimhnj": [
+                "https://lh3.googleusercontent.com/2FXUXR5ewOLdh9SoZWgZj_NHEUITQQ20NhmvJDoST9_lc9RCa_cnMpKiPZViByESzEbBekQfmeL0U11TvkqUPqatWoo",
+                "https://lh3.googleusercontent.com/hzEuDosE0ZhTFdi_esq5mNsKJrlxo3iKYDijKYTJsZynLpKIVvlgIccdjEsygQh6n3FmYu5gmqOhg5AREcXkAdczpg",
+                "https://lh3.googleusercontent.com/A7hBqz0LSK0pGZoVPWO9VAyWamxxIXwQ2tWi4EVGTwXZihO0WX-qnK5ZVWkWRWNrKUszu4ADfYmjpy4NAAwjGy8HUHY",
+                "https://lh3.googleusercontent.com/qeUEMINdUc5T8Rw_sarL9oTPIkpPiIX2tWG22rfEflxeP5D6p5-ZXsFwLAPypSPA5vVRDUGVxgOJ1RFR4HJYn3Zl"
+        ],
+        "laookkfknndomljfdkgnaeiknndfdpmh": [
+                "https://momentumdash.com/gsap/Frame354.webp"
+        ],
+        "mpbjkejclgikndihedadaamefmganikf": [
+                "https://lh3.googleusercontent.com/HmwzVNHXtzHRTE_J5RjV1A3h5SG4uxdFi8NyCqWJjTW08ohLYL91tF2qntjnlX32-n8T2k6RP4rrCqpL3XTiGrjBBg",
+                "https://lh3.googleusercontent.com/RzNBAk9GvUd3IYEGCWhb3Gk2es5i7-_qUEfzXD42ItTzAqwBZpDXwo3FYMO3B-kDvI6JvIs3zsxxYs3z6JoTrpwlnq8",
+                "https://lh3.googleusercontent.com/Zkg_zgRf4si-waFPkOk8uhewAy2BvM_6V5fS3HH3XRg90x1qpyiBcawzUerBEuGVJmYfejl_i_TR0o69QvKYboRg7Q"
+        ],
+        "gppongmhjkpfnbhagpmjfkannfbllamg": [
+                "https://lh3.googleusercontent.com/B4THhCXD9A6HCKIkjXwyTVDk0UnGuVfcbPQ9lmY4_WvCyfXa3m3NJdYOpxqRyVfCEbX7AZ-GtyPIpYf0HBsatQemtA",
+                "https://lh3.googleusercontent.com/-gjdrKQG9QGXu6tf8ZZhnn3CTyvUgaO5slK0rIknIXsMkUxp9FB15u7fezSwdEkJe-IaZ4cZyFdD1P4G_n37VbSTHQ",
+                "https://lh3.googleusercontent.com/HlpNVhworKdj7Ko0mZPJhWOCrL5hrdWgyPRO0fplQvyoVNZXJxjRxOqSrQ0b71Epf_zbnzTmzUG3OLK2dTXx_t3fRw",
+                "https://lh3.googleusercontent.com/ghdrZH3NXxdNtcklkMQ-lPug0xQnFeBQFgIRaumSDDP_DglqyH8wHbnufcKqA9Fq9i79WTES0Gbu4mygBSVH17B7"
+        ],
+        "nlipoenfbbikpkjkecapggfdiomgofak": [
+                "https://lh3.googleusercontent.com/y2OKATmAbQgY_X2MoxXGSNaRQjKHNfc7AHH4iy9YIfEMyY3CMlfmyVpeqp3aq7VhztxdRLHz30TYM_Wir6YPgfGs",
+                "https://lh3.googleusercontent.com/aKA5jjvKSKe2SYSL94qRUkv_k3TwTatNnefQ2xvjvnSfLmLEz5LDfkSUq390V8WRfSQP4Br5wnVb3gAb4K9fQmq8rA",
+                "https://lh3.googleusercontent.com/RvKYB4zs7Lw4zOhS6G2Ezub-vDKB4Qg6I0julCiE7Nm3mdbJInEMSsbksU4wY76FArRkQF2nLTMwKKUjYBE77K3Qiw",
+                "https://lh3.googleusercontent.com/-FXUXGYQgCgKUpZXMu8KLXO3Z74J8PVIIjTYzLRWLkxVuclZ8GaT7wQ1VNxVy820lgRgvMjI-ALdY_9w6kmwaqmA"
+        ],
+        "dhdgffkkebhmkfjojejmpbldmpobfkfo": [
+                "https://lh3.googleusercontent.com/pSsBQGsAjB6UNy3Rr8IfcUPp3evEqoiJDKRX8-f7P2pQMEbToEs-yUst2ZvHWL0GktpmOwfqtLgLFMeKSPk4Z-zO",
+                "https://lh3.googleusercontent.com/v6lqHGqcCVebajUZVJrtTz8tWO9LBd8OtRaBS_nmWU2qeC7YgaoT0XrWg4x6yIprM6mNLFm1ChH9N15M4yzIl0eZ0g",
+                "https://lh3.googleusercontent.com/n3InYljPuGu5iP7UKgigWGHGe9eIYnKTuSMl-YmHf-xu2d5ZQDDgGetR-agsSV9OvjoKl553uupC2P6v5diLXNhbAg",
+                "https://lh3.googleusercontent.com/HzqNjHVi9tC3seCzRYDRAlAtx1CilxIotHr_DsdCGTFokjj_L6VAJpUV9gAR_16GA6EloM2mjOyotLz2guhqCQJIbA"
+        ],
+        "bgnkhhnnamicmpeenaelnjfhikgbkllg": [
+                "https://lh3.googleusercontent.com/pUTaH-_V2H9rxbAa5FPJHmE0WU36dTyntvKJliNxHzrp809EvUW9Dz_Qp617F1VMBNkQjC3EWXcMEHsRGJO0d_8r",
+                "https://lh3.googleusercontent.com/XEvzNaKlcT2lLOvoove2ywlMppS-9hJShJJ-SWjRmjE8U7oy1gptne0Fgqvwa1qJnMzIjNELi2SEHiIK3A2aKNtZ",
+                "https://lh3.googleusercontent.com/-v17_G19cMvY5gIXEJL6xtQDQZ7Xy0FOqmWyyBRYihyp3rHYyUSN3aGBhjHUP4I_WCLAuApKrEXBy1Qrk7g8u3bbxA",
+                "https://lh3.googleusercontent.com/ojHqwPQJSYsGXRWdt4L30k18GX85GZqLCVYOzwVK-IA-VhHWwwY-0JRvI4wwL-fiiHwDhfp5zTgo8k2n9rnlUpul"
+        ],
+        "mlomiejdfkolichcflejclcbmpeaniij": [
+                "https://lh3.googleusercontent.com/fitJiqFAG28NoaXMuq1pTd3MD1rHve2lDBvznyV_Orti4UiFSwpCb3_h4n9atBiDDwBXpvUSu8Br2lI1t5UoHnGR",
+                "https://lh3.googleusercontent.com/7hPzZiwbyPBKrlh-CO8rSZAhrubgLChujM45T4JbXgIHwP_5QG_rKYCekCtubWUy6EOJZlvSNGhw8gdNEelJe8Vz",
+                "https://lh3.googleusercontent.com/8mHdRNME3zvhw-j5l-mtsEGoySMMiFOj_DxN1hvR8SgXwZQ-ANmeBQD_skSzbTxO8LfkcfmTDl_j0U3F49xMz8SE",
+                "https://lh3.googleusercontent.com/jlNk2i0pyaqhyXQzwsKLPRAiA_Lh4LJRUD39vxjZadX7pkUpBDUAqyh3T_ufyeHuJ-IO3NUYrL-lSZEODF8oAAQd"
+        ],
+        "aeblfdkhhhdcdjpifhhbdiojplfjncoa": [
+                "https://lh3.googleusercontent.com/5kezsqeqU5nmkkmYMZXGAYiMo8WRYtIAz9cxJ9TS2EuXjP1uj1wxTeUa53xA2Fe2V_S8389hev1cDF25j6_Aymfp",
+                "https://lh3.googleusercontent.com/FSNJyC69g-UyVJOBof41St0OnM_qCgcnJzAtMlHCwfwGIPyFM-f1stjR95TnvI65mdc1jWNdRkJ1SHmr9s2W2yw68w",
+                "https://lh3.googleusercontent.com/vCYJGpSIN_auzBhjLRoX9PW5W4tBDcUbMx8_VA3WqkNXxtELPtdI9ibyafBP3UWiwkg76licB-9XKwio46ThcG6z",
+                "https://lh3.googleusercontent.com/h_vW_eXvUZWtp8wLqO_wSiT1LvuWISaOltN5UTdvjWov00NkW_9tOg4xNkQP9c0Csgwq53LCYroEHTChNklXo0VhuQ"
+        ],
+        "hdokiejnpimakedhajhdlcegeplioahd": [
+                "https://lh3.googleusercontent.com/AaKz9ZdXbtXdZ7t0lMkOM2Vo2ci7921E6SrjDxSsKCXM7IQ0cYBXeqd5T3xkSjO_WosaRCOFTwFPl9ZPQT0_flEgm1w",
+                "https://lh3.googleusercontent.com/Vy6ZYa5JBApx7it6VD-Oj360-Bf4VR5lpG32Oz5XBmQ9oM6fhGw6yD5C0IdbuA0Lc-3u4PsAvfzI2lgtvYp7x9-aRCQ",
+                "https://lh3.googleusercontent.com/cbqMH5LAUUroFi5BygFgqB8e7cRhME6zZzSKrzETvj_O4us__O0OP91zQDwtijCtdS8m8Fep-sXfZ6OqweDTEK5-9cA",
+                "https://lh3.googleusercontent.com/ynRztdC5-1UbAl4ZToSArbelUmwL_DDEEfQfwopuOMasKATHcxrE4zYBfIsYCj_YAevc1mHL58JYbwzT5-lXUFT8cAc"
+        ],
+        "knheggckgoiihginacbkhaalnibhilkk": [
+                "https://lh3.googleusercontent.com/E0OW6PBrOQdjSvyYl1mYdSmvtax-PgFYgB0NZ0YBEZgGq5znR3aeuANdHWonaA4ZgItgAn2MPQEg0-1XPrgWbi_s",
+                "https://lh3.googleusercontent.com/AjeGu8Ql_UBLAL5YUIPNoryFRmd60onmg6uM7oHs4jsOaraX0AXLmlDecFS9BpLL9FWx4joqpsFg1BuDvY1sUMRGfEg",
+                "https://lh3.googleusercontent.com/i6U7l88kYBfFLNuZ1GoCR0y7xFh8-ybjp9PqxMyzOWAh6hkpiPQdRVp7rlJ_wvtgOT1BpM85rK6lNM2Jmj-omNtd_g",
+                "https://lh3.googleusercontent.com/Qxj5XCOLpxdkt_VsHjJJd3Zae8evPgwXShyksyjKMI2_NMRsHWRvwRmWTJ5XUCwpC6TFK3SNg2hVo_lIwpq3IEi4PA"
+        ],
+        "niloccmipbidfmhmbggdfmfdgfaakedf": [
+                "https://addons.mozilla.org/user-media/previews/full/251/251474.png?modified=1622136469"
+        ],
+        "cofdbpoegempjloogbagkncekinflcnj": [
+                "https://lh3.googleusercontent.com/GH7AA1OCilKG7tCMzauXs6zvVZgjII3_cisVQqa_1m_Mb7Jow1gE9zwSJxPJ2EHarG-MrDyKPsOQ_eXzfXwF0GAT",
+                "https://lh3.googleusercontent.com/bmie32NdbO-GljeDID37Si8XAN0a8BpzvLUq-WM3zTN-ircO8hpE-68fQ-XyPjudYMOqFsVoBc0P91zYCRI2rtMb0Q",
+                "https://lh3.googleusercontent.com/4eC8AimNBeIwq5FKmR5WcYwN3LdVY1OtHIAYJrwDPglBvT3AGLAx34YPnQhzcwPEFuZkCBQGW4TAMY4oTwU6IoAj",
+                "https://lh3.googleusercontent.com/4L1jsjIHbNKZr4ZBJpFJojnIVlWxd_TMUbgCOGQc2iMiDVRkons24VaAUapm07Tr5m5BgYvpwmskLvtV81-5V5RjL0s"
+        ],
+        "lmhkpmbekcpmknklioeibfkpmmfibljd": [
+                "https://lh3.googleusercontent.com/57uDSJx9ItU_LWmPkOm9lO75V2xzmHRSOKOdTsxjyNEY_54-8YnTflXE11wF2Tv6xD60e8bVHV6J57UcnRHbW4lzT8U",
+                "https://lh3.googleusercontent.com/_CEW85zGKmiZQ0KhB5bdiQ9TJiVbnZ6r_JRgy2GcUNpxh_U6exVUhlYqnb9ZdKyrYMMQ_yWbJZgbXeZjaSRo6_7dxQ",
+                "https://lh3.googleusercontent.com/qCDc9cVxQBCjzSx1skHqH4nmmBkORMmHD-7JTNaoKD88LCVVVLCVd6V62rSQE4Q4p3T8Dhzupb9EnwcwRA3N5OWACg",
+                "https://lh3.googleusercontent.com/ji5MEDLJ4bCt4FqacHWhcAAvC2aMXs537utkDQdTaFs4T3RgyZIwJRiXX9i9_SBcmJY219PE-lsCr0OmqJ29uC7Xbw"
+        ],
+        "gbmdgdemhfpmlhhnhfdggmhmhbihfgab": [
+                "https://lh3.googleusercontent.com/uxbNNReacDQPwlfGNYpVsfDo-l0DKurZlHFr3GG_LyWf43ELwBoU8ZpxJu6y5gRAewKY4gSiFqa2bzOaYz65WNrJ_g",
+                "https://lh3.googleusercontent.com/_CEW85zGKmiZQ0KhB5bdiQ9TJiVbnZ6r_JRgy2GcUNpxh_U6exVUhlYqnb9ZdKyrYMMQ_yWbJZgbXeZjaSRo6_7dxQ",
+                "https://lh3.googleusercontent.com/B4THhCXD9A6HCKIkjXwyTVDk0UnGuVfcbPQ9lmY4_WvCyfXa3m3NJdYOpxqRyVfCEbX7AZ-GtyPIpYf0HBsatQemtA",
+                "https://lh3.googleusercontent.com/TI89Q_suyjhybR02S6biT1oe1lDTovOmBhxZfa8brbsLEbSXOSXjzcG8-jyyad2i7sNG75f1QNpHn9A4cZirja8z2g"
+        ],
+        "aicmkgpgakddgnaphhhpliifpcfhicfo": [
+                "https://lh3.googleusercontent.com/JJc622xYIpwSXmi8CPY7CTF4JOe95hZBiHcdcRtkIkS7G1TKYDu9kmTVwKp_sEZPWNKWvBI_BSYZvXI5GndagucRCg",
+                "https://lh3.googleusercontent.com/6wr4z-Az56tbunqZMy8AMw1g2bEinwGpK0uZ3lw2ts3VOizNMbjLpMIgvXpwR9i0O7ZQ1cDfU0nycOS5M4iKv4WEG7A",
+                "https://lh3.googleusercontent.com/3BMNDzAsfwzfEZchpiUyDMRhhuWeL-j6R0xaxZqyxDLStAy2e-wPPiqpUZfrXcIkVKXYDlMTJ-fAlKtP0vZyxL289Pk",
+                "https://lh3.googleusercontent.com/SCw4DHa-5OqSUdp97K8sk4_ZzDBtu7zYnKbGeLwjo8NZBWz5L_pU9GlW47QSHNY82nLa3tyrO5qyp0z0-G_mIwI3"
+        ],
+        "khncfooichmfjbepaaaebmommgaepoid": [
+                "https://lh3.googleusercontent.com/VIeO7Cg1EdiJz0gqZEiq3tiwzEDgsTqEDoTmrI6P-eG05vXiSfhJhRYw7DOLzNYne49XxfFomNuQl-LUDMa572ry8i8",
+                "https://lh3.googleusercontent.com/SZsx6Bx7uwBQ2ZLYr6g-RfxRWHDanmxWWKLdcKRBpW6Le1UVOhNjbOtd4s8thjpUBAA6kJJa_S5kRSFulzk8QEMX6MM",
+                "https://lh3.googleusercontent.com/6x8D9RpPxMyqEjICBmjgN-XCQ5sR56T2Xo2R9ZUy36WKhRslm1hbg4wEoRbJwMu_c6K0rqK_Mwm0CC03M979XOCZ",
+                "https://lh3.googleusercontent.com/5p7suypwfE7EAmiLn2ZiffS8lWGHdLnmz_eDRQDl8QlPoUXal_3SHjKL09SyKbwv3-Rrc4giJHxIuI7LlC9oG4zJGA"
+        ],
+        "jghehhbalbhjaihmagkgnhgheidhbmfl": [
+                "https://lh3.googleusercontent.com/-zsIkD6psKdO7bhnnBB7ZpQl_MDPfBnVXhDefhEENelxcwswBRJqMNFxh4ywQRv5U4_p9BvCV8Yhz4v2ZccbJW-x",
+                "https://lh3.googleusercontent.com/FuR6dK-ENyU6Rbe3iviEpwi-f0RNwkKdhGN9JlkokOTHoVtYmYnZ_bWGcF-7xg34bexrIqT_-1gp8iMKG8HnGEBH",
+                "https://lh3.googleusercontent.com/Yfu8GpqyCLs7IKWyvQQvBJpcxW-YyBvZEcqFTbvWeTQ2jkuOBm426mXbMP49Tn0IicE_5PwSnxIqi5ZZ5SSh4vU6tMU",
+                "https://lh3.googleusercontent.com/gj-NjY0fQrq7YGKzTsaHlefD-v7WKo40VdNqzQ_ijuQlUg2HVripJ0N3J5jZ0tFT22mNjZHFcsQhfBzcgwR7POqHRts"
+        ],
+        "hkgfoiooedbmglgahbhhlipkgjinfaam": [
+                "https://lh3.googleusercontent.com/lRl9yMSllTpSW23TBzx330HFn1pdgayyYerJ-YaDEP7OmhMgVHmoTSyF1ThHkhnvW50PwlqVYo0UbIIymeS1Exm5bA",
+                "https://lh3.googleusercontent.com/YRwgnb6FBrN3yH1HYhb06gGZ_PdC6gWHWLivuCoel3TIKVaLFvnPqzSBKpsmbBpaWygFKu1bqaUIhRPc8bo42Rx8vg",
+                "https://lh3.googleusercontent.com/JJWneWX3k9uqocgKrah4Igydw5nn0sJqn5BB94VQPulw8ViN6cRB8FFzV8LRqN73dMKR9Dov2fm0Q-KMYrd4FYv_Qw",
+                "https://lh3.googleusercontent.com/tpMkwrzv_7U2Tm5HhO-XOway9IKWsWeqPoNWbfD9wpy6dey_KtOJfsaP5gMxR9FYGB3_LBUqhxn0DFpAVLKkYrk0mA"
+        ],
+        "lckanjdmomiamkkllfdicnkignkgfgpp": [
+                "https://addons.mozilla.org/user-media/previews/full/231/231733.png?modified=1640781132",
+                "https://addons.mozilla.org/user-media/previews/full/231/231732.png?modified=1640781132",
+                "https://addons.mozilla.org/user-media/previews/full/231/231754.png?modified=1640781132"
+        ],
+        "pgjjikdiikihdfapbhakaknnddljallf": [
+                "https://addons.mozilla.org/user-media/previews/full/275/275603.png?modified=1669200853",
+                "https://addons.mozilla.org/user-media/previews/full/271/271221.png?modified=1669200848"
+        ]
+};
+
     const EXTENSIONS_CATALOG = [
         {
             id: 'cjpalhdlnbpafiamejdnhcphjbkeiagm',
@@ -960,10 +1139,69 @@
     }
 
     // ── Detail Modal ─────────────────────────────────────────────────────────
+    window.copyModalExtId = function(id, btnEl) {
+        if (!id) return;
+        navigator.clipboard.writeText(id).then(() => {
+            const original = btnEl.innerHTML;
+            btnEl.innerHTML = '<i class="fas fa-check" style="color: #10B981;"></i>';
+            showToast('✓ Extension ID copied to clipboard!');
+            setTimeout(() => {
+                btnEl.innerHTML = original;
+            }, 1800);
+        }).catch(() => {
+            showToast('Extension ID: ' + id);
+        });
+    };
+
+    function getCategoryMeta(cat) {
+        switch ((cat || '').toLowerCase()) {
+            case 'adblock': return { icon: 'fa-shield-halved', label: 'Ad Blockers & Privacy' };
+            case 'productivity': return { icon: 'fa-bolt-lightning', label: 'Productivity & AI' };
+            case 'developer':
+            case 'devtools': return { icon: 'fa-code', label: 'Developer Tools' };
+            case 'media': return { icon: 'fa-circle-play', label: 'Video & Media' };
+            case 'utilities': return { icon: 'fa-sliders', label: 'Utilities' };
+            case 'featured': return { icon: 'fa-wand-magic-sparkles', label: 'Featured Spotlight' };
+            default: return { icon: 'fa-puzzle-piece', label: cat || 'Extension' };
+        }
+    }
+
+    function getPermIcon(p) {
+        if (!p) return 'fa-circle-check';
+        const lower = p.toLowerCase();
+        if (lower === 'storage') return 'fa-database';
+        if (lower === 'tabs') return 'fa-window-restore';
+        if (lower.includes('webrequest')) return 'fa-network-wired';
+        if (lower.includes('clipboard')) return 'fa-clipboard-check';
+        if (lower.includes('contextmenu')) return 'fa-list-check';
+        if (lower.includes('all_urls') || lower.includes('://')) return 'fa-globe';
+        return 'fa-shield-check';
+    }
+
     function openDetailModal(ext) {
         if (!detailModal || !modalBody) return;
 
         const isInstalled = installedIds.has(ext.id.toLowerCase());
+
+        const catBadge = document.getElementById('modalHeaderCat');
+        if (catBadge) {
+            const meta = getCategoryMeta(ext.category);
+            catBadge.innerHTML = `<i class="fas ${meta.icon}"></i> ${meta.label}`;
+        }
+
+        const permsHtml = (ext.permissions && ext.permissions.length > 0)
+            ? `
+                <div class="modal-perms-wrap">
+                    <h5 class="modal-subheading"><i class="fas fa-shield-halved"></i> Sandboxed Permissions</h5>
+                    <div class="modal-perms-chips">
+                        ${ext.permissions.map(p => {
+                            const name = p === '<all_urls>' ? 'Access to all websites' : (p.startsWith('*://') ? p.replace(/^\*:\/\/\*\.?/, '').replace(/\/\*$/, '') : p);
+                            return `<span class="perm-chip" title="Permission: ${p}"><i class="fas ${getPermIcon(p)}"></i> ${name}</span>`;
+                        }).join('')}
+                    </div>
+                </div>
+            `
+            : '';
 
         modalBody.innerHTML = `
             <div class="modal-ext-hero">
@@ -974,9 +1212,9 @@
                     <h2 class="modal-ext-title">${ext.name}</h2>
                     <div class="modal-ext-byline">
                         <span>Offered by <strong>${ext.author}</strong></span>
-                        ${ext.verified ? '<i class="fas fa-certificate author-verified" title="Verified Publisher"></i>' : ''}
+                        ${ext.verified ? '<span class="author-verified-chip"><i class="fas fa-circle-check"></i> Verified</span>' : ''}
                         <span>&bull;</span>
-                        <span class="modal-cat-badge">${ext.category}</span>
+                        <span class="modal-version-tag"><i class="fas fa-code-commit"></i> v${ext.version}</span>
                     </div>
                     <div class="modal-ext-stats">
                         <div class="modal-stars-wrap">
@@ -994,17 +1232,33 @@
             <!-- Action Bar -->
             <div class="modal-action-bar">
                 <button class="btn-modal-install ${isInstalled ? 'installed' : ''}" id="modalInstallBtn">
-                    ${isInstalled ? '<i class="fas fa-check"></i> Manage in Settings' : '<i class="fas fa-plus"></i> Add to Ocal'}
+                    ${isInstalled ? '<i class="fas fa-circle-check"></i> Manage in Settings' : '<i class="fas fa-arrow-down-to-bracket"></i> Add to Ocal'}
                 </button>
                 <button class="btn-modal-google" id="modalVerifyGoogleBtn" title="Fetch live extension metadata from Google Chrome Web Store">
-                    <i class="fas fa-satellite-dish"></i>
+                    <i class="fas fa-arrows-rotate"></i>
                     <span>Sync Live Data</span>
                 </button>
+                <a href="https://chromewebstore.google.com/detail/${ext.id}" target="_blank" class="btn-modal-external" title="Inspect on Google Chrome Web Store">
+                    <i class="fab fa-chrome"></i>
+                    <span>Official Store</span>
+                    <i class="fas fa-arrow-up-right-from-square" style="font-size: 10px; opacity: 0.6;"></i>
+                </a>
             </div>
 
-            <!-- Screenshot Preview Carousel -->
-            <div class="modal-screenshots-carousel">
-                ${ext.screenshotSvg}
+            <!-- Framed Mockup Window Preview -->
+            <div class="modal-preview-frame">
+                <div class="preview-frame-header">
+                    <div class="preview-traffic-dots">
+                        <span class="dot-red"></span>
+                        <span class="dot-yellow"></span>
+                        <span class="dot-green"></span>
+                    </div>
+                    <span class="preview-frame-caption"><i class="fas fa-display"></i> Interactive Interface Preview</span>
+                    <span class="preview-frame-tag"><i class="fas fa-sparkles"></i> Live UI</span>
+                </div>
+                <div class="preview-frame-body">
+                    ${ext.screenshotSvg}
+                </div>
             </div>
 
             <!-- Overview Description -->
@@ -1015,7 +1269,9 @@
                 </div>
             </div>
 
-            <!-- Specifications Grid -->
+            ${permsHtml}
+
+            <!-- Specifications Bento Grid -->
             <div class="modal-spec-grid">
                 <div class="spec-card">
                     <div class="spec-icon"><i class="fas fa-code-branch"></i></div>
@@ -1025,14 +1281,14 @@
                     </div>
                 </div>
                 <div class="spec-card">
-                    <div class="spec-icon"><i class="fas fa-file-zipper"></i></div>
+                    <div class="spec-icon"><i class="fas fa-hard-drive"></i></div>
                     <div class="spec-meta">
                         <span class="spec-label">Package Size</span>
                         <span class="spec-val">${ext.size}</span>
                     </div>
                 </div>
                 <div class="spec-card">
-                    <div class="spec-icon"><i class="fas fa-calendar-check"></i></div>
+                    <div class="spec-icon"><i class="fas fa-clock-rotate-left"></i></div>
                     <div class="spec-meta">
                         <span class="spec-label">Last Updated</span>
                         <span class="spec-val">${ext.updated}</span>
@@ -1042,7 +1298,12 @@
                     <div class="spec-icon"><i class="fas fa-fingerprint"></i></div>
                     <div class="spec-meta">
                         <span class="spec-label">Extension ID</span>
-                        <span class="spec-val font-mono" title="${ext.id}">${ext.id.substring(0, 14)}...</span>
+                        <div style="display: flex; align-items: center; justify-content: space-between; gap: 4px;">
+                            <span class="spec-val font-mono" title="${ext.id}">${ext.id.substring(0, 10)}...</span>
+                            <button class="btn-copy-id" onclick="copyModalExtId('${ext.id}', this)" title="Copy Extension ID">
+                                <i class="fas fa-copy"></i>
+                            </button>
+                        </div>
                     </div>
                 </div>
             </div>

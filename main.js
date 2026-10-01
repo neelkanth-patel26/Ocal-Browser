@@ -1773,7 +1773,10 @@ function createAiSidebar() {
     });
 }
 
+let sidebarCloseTimeout = null;
+
 function showSidebarOverlay() {
+    clearTimeout(sidebarCloseTimeout);
     if (!sidebarOverlayView) createSidebarOverlay();
     if (!sidebarOverlayView || !mainWindow || mainWindow.isDestroyed()) return;
     if (aiSidebarOpen) hideAiSidebar();
@@ -1790,6 +1793,7 @@ function showSidebarOverlay() {
             folders: userSettings.folders || []
         });
         sidebarOverlayView.webContents.send('download-updated', userSettings.downloads || []);
+        sidebarOverlayView.webContents.send('toggle-sidebar', true);
     }
 }
 
@@ -1798,12 +1802,19 @@ function hideSidebarOverlay() {
         return;
     }
     sidebarOpen = false;
-    if (sidebarOverlayView && !sidebarOverlayView.webContents.isDestroyed() && mainWindow && !mainWindow.isDestroyed()) {
-        if (mainWindow.getBrowserViews().includes(sidebarOverlayView)) {
-            mainWindow.removeBrowserView(sidebarOverlayView);
-        }
+    if (sidebarOverlayView && !sidebarOverlayView.webContents.isDestroyed()) {
+        sidebarOverlayView.webContents.send('toggle-sidebar', false);
+        sidebarOverlayView.webContents.send('start-sidebar-exit');
     }
-    updateViewBounds();
+    clearTimeout(sidebarCloseTimeout);
+    sidebarCloseTimeout = setTimeout(() => {
+        if (!sidebarOpen && sidebarOverlayView && !sidebarOverlayView.webContents.isDestroyed() && mainWindow && !mainWindow.isDestroyed()) {
+            if (mainWindow.getBrowserViews().includes(sidebarOverlayView)) {
+                mainWindow.removeBrowserView(sidebarOverlayView);
+            }
+        }
+        updateViewBounds();
+    }, 290);
 }
 
 function showAiSidebar() {
@@ -1845,6 +1856,13 @@ ipcMain.on('sidebar-exit-complete', () => {
         mainWindow.removeBrowserView(aiSidebarView);
         updateViewBounds();
     }
+    if (!sidebarOpen && sidebarOverlayView && !sidebarOverlayView.webContents.isDestroyed() &&
+        mainWindow && !mainWindow.isDestroyed() &&
+        mainWindow.getBrowserViews().includes(sidebarOverlayView)) {
+        clearTimeout(sidebarCloseTimeout);
+        mainWindow.removeBrowserView(sidebarOverlayView);
+        updateViewBounds();
+    }
 });
 
 function createSuggestionsView() {
@@ -1876,12 +1894,7 @@ function closeOverlays() {
     let needsBoundsUpdate = false;
 
     if (sidebarOpen || (sidebarOverlayView && mainWindow && !mainWindow.isDestroyed() && mainWindow.getBrowserViews().includes(sidebarOverlayView))) {
-        sidebarOpen = false;
-        if (sidebarOverlayView && !sidebarOverlayView.webContents.isDestroyed() && mainWindow && !mainWindow.isDestroyed()) {
-            if (mainWindow.getBrowserViews().includes(sidebarOverlayView)) {
-                mainWindow.removeBrowserView(sidebarOverlayView);
-            }
-        }
+        hideSidebarOverlay();
         needsBoundsUpdate = true;
     }
 
@@ -2439,7 +2452,7 @@ function applyCornerRoundingToWebContents(wc) {
             html, body {
                 border-radius: ${isNoCurve ? '0px' : '12px'} !important;
             }
-        `).catch(() => {});
+        `, { cssOrigin: 'user' }).catch(() => {});
         wc.executeJavaScript(`
             try {
                 if (document.documentElement) document.documentElement.style.setProperty('border-radius', '${isNoCurve ? '0px' : '12px'}', 'important');
@@ -2449,11 +2462,35 @@ function applyCornerRoundingToWebContents(wc) {
     } else {
         const maskColor = userSettings.themeMode === 'light' ? '#EDEDF0' : '#18181B';
         wc.insertCSS(`
+            *, html, body {
+                scrollbar-width: none !important;
+                -ms-overflow-style: none !important;
+            }
+            *::-webkit-scrollbar, html::-webkit-scrollbar, body::-webkit-scrollbar {
+                width: 0px !important;
+                height: 0px !important;
+                display: none !important;
+            }
             #ocal-corner-masks-container, .ocal-corner-mask {
                 display: ${isNoCurve ? 'none' : 'block'} !important;
+            }
+            .ocal-corner-mask {
+                position: fixed !important;
+                width: 12px !important;
+                height: 12px !important;
+                z-index: 2147483647 !important;
+                pointer-events: none !important;
                 --mask-bg: ${maskColor} !important;
             }
-        `).catch(() => {});
+            .ocal-corner-mask-tl { top: 0 !important; left: 0 !important; background: radial-gradient(circle at 100% 100%, transparent 12px, var(--mask-bg) 12.5px) !important; }
+            .ocal-corner-mask-tr { top: 0 !important; right: 0 !important; background: radial-gradient(circle at 0% 100%, transparent 12px, var(--mask-bg) 12.5px) !important; }
+            .ocal-corner-mask-bl { bottom: 0 !important; left: 0 !important; background: radial-gradient(circle at 100% 0%, transparent 12px, var(--mask-bg) 12.5px) !important; }
+            .ocal-corner-mask-br { bottom: 0 !important; right: 0 !important; background: radial-gradient(circle at 0% 0%, transparent 12px, var(--mask-bg) 12.5px) !important; }
+            html:fullscreen .ocal-corner-mask,
+            html:-webkit-full-screen .ocal-corner-mask {
+                display: none !important;
+            }
+        `, { cssOrigin: 'user' }).catch(() => {});
         wc.executeJavaScript(`
             try {
                 var c = document.getElementById('ocal-corner-masks-container');
@@ -2469,8 +2506,8 @@ function applyCornerRoundingToWebContents(wc) {
                         m.className = 'ocal-corner-mask ocal-corner-mask-' + pos;
                         c.appendChild(m);
                     });
-                    if (document.body) document.body.appendChild(c);
-                    else if (document.documentElement) document.documentElement.appendChild(c);
+                    if (document.documentElement) document.documentElement.appendChild(c);
+                    else if (document.body) document.body.appendChild(c);
                 }
                 if (c) {
                     c.style.setProperty('display', '${isNoCurve ? 'none' : 'block'}', 'important');
@@ -4224,18 +4261,7 @@ ipcMain.on('toggle-sidebar', (e, open) => {
     sidebarOpen = (open === undefined) ? !sidebarOpen : open;
     if (sidebarOpen) {
         showSidebarOverlay();
-        if (sidebarOverlayView && !sidebarOverlayView.webContents.isDestroyed()) {
-            sidebarOverlayView.webContents.send('toggle-sidebar', true);
-            sidebarOverlayView.webContents.send('bookmarks-changed', {
-                bookmarks: userSettings.bookmarks || [],
-                folders: userSettings.folders || []
-            });
-            sidebarOverlayView.webContents.send('download-updated', userSettings.downloads || []);
-        }
     } else {
-        if (sidebarOverlayView && !sidebarOverlayView.webContents.isDestroyed()) {
-            sidebarOverlayView.webContents.send('toggle-sidebar', false);
-        }
         hideSidebarOverlay();
     }
 });
@@ -4243,6 +4269,14 @@ ipcMain.on('toggle-sidebar', (e, open) => {
 ipcMain.on('toggle-ai-sidebar', (e, open) => {
     aiSidebarOpen = (open === undefined) ? !aiSidebarOpen : open;
     if (aiSidebarOpen) showAiSidebar(); else hideAiSidebar();
+});
+
+ipcMain.on('open-ai-chat-prompt', (e, promptText) => {
+    aiSidebarOpen = true;
+    showAiSidebar();
+    if (aiSidebarView && !aiSidebarView.webContents.isDestroyed()) {
+        aiSidebarView.webContents.send('submit-external-prompt', promptText);
+    }
 });
 
 ipcMain.on('set-ai-sidebar-width', (e, width) => {
@@ -4763,20 +4797,20 @@ async function executeBrowserAction(action) {
 ipcMain.handle('ai-agent-execute', async (event, query) => {
     let prompt = '';
     let fileObj = null;
-    let personaKey = 'professional';
+    let personaKey = userSettings.aiPersona || 'professional';
     let memoryList = [];
     let customConfig = {};
-    let rawUsername = 'Gaming';
+    let rawUsername = userSettings.aiUserName || userSettings.userName || 'Gaming';
 
     let historyList = [];
 
     if (query && typeof query === 'object') {
         prompt = query.query || 'Analyze this file';
         fileObj = query.file;
-        personaKey = query.persona || 'professional';
+        personaKey = query.persona || userSettings.aiPersona || 'professional';
         memoryList = query.memory || [];
         customConfig = query.customConfig || {};
-        rawUsername = query.username || userSettings.userName || 'Gaming';
+        rawUsername = query.username || userSettings.aiUserName || userSettings.userName || 'Gaming';
         historyList = Array.isArray(query.history) ? query.history : [];
     } else {
         prompt = query || '';
@@ -4820,6 +4854,18 @@ ipcMain.handle('ai-agent-execute', async (event, query) => {
         const sysInstruction = PERSONA_INSTRUCTIONS[personaKey] || PERSONA_INSTRUCTIONS.professional;
         let memoryHeader = memoryList.length > 0 ? `\n\n[Remembered User Context & Facts:\n- ${memoryList.join('\n- ')}]` : '';
         
+        const customDirectives = (userSettings.aiCustomInstructions && userSettings.aiCustomInstructions.trim())
+            ? `\n\n[User Custom Directives & Personal Behavioral Rules]:\n${userSettings.aiCustomInstructions.trim()}`
+            : '';
+        const languageDirective = (userSettings.aiLanguage && userSettings.aiLanguage !== 'auto')
+            ? `\n\n[Language Preference]: You must formulate and respond in ${userSettings.aiLanguage}.`
+            : '';
+        const styleDirective = customStyle === 'concise'
+            ? '\n\n[Response Formatting]: Be concise, direct, and avoid any unnecessary preamble.'
+            : (customStyle === 'creative'
+                ? '\n\n[Response Formatting]: Provide rich, creative, and evocative responses with analogies.'
+                : '\n\n[Response Formatting]: Provide clear, well-structured, and comprehensive insights.');
+
         const toolGuideline = `\n[BROWSER AGENT TOOL CALLING]:
 You have full browser control capabilities. When the user asks you to perform a browser action, append [ACTION:{"command":"<command>","params":{...}}] to your response.
 Supported Commands:
@@ -4843,7 +4889,7 @@ Supported Commands:
 - open-bookmarks, open-history, open-downloads, open-extensions, open-file-manager, open-passwords, open-whats-new, open-settings (params: {"section": "general"|"search"|"homepage"|"security"|"ai"})
 - clear-history (params: {})`;
 
-        let fullLLMPrompt = `[System Instructions: ${sysInstruction}\n${toolGuideline}\n- Respond naturally like a real human being in character.\n- NEVER use AI clichés like "I did some digging", "As an AI language model", raw citation numbers like [1], or IPA phonetics guides.\n- Keep tone organic, articulate, clear, and engaging.\n- Format code, tables, and answers in clean Markdown.\n- RULE: In professional, tech, calm, and funny modes, you MUST NEVER address the user as "babe" or romantic pet names.]${memoryHeader}\n\nUser Query: ${promptText}`;
+        let fullLLMPrompt = `[System Instructions: ${sysInstruction}\n${toolGuideline}\n- Respond naturally like a real human being in character.\n- NEVER use AI clichés like "I did some digging", "As an AI language model", raw citation numbers like [1], or IPA phonetics guides.\n- Keep tone organic, articulate, clear, and engaging.\n- Format code, tables, and answers in clean Markdown.\n- RULE: In professional, tech, calm, and funny modes, you MUST NEVER address the user as "babe" or romantic pet names.]${memoryHeader}${customDirectives}${languageDirective}${styleDirective}\n\nUser Query: ${promptText}`;
 
         let finalPrompt = fullLLMPrompt;
         // Inject document if present and not already embedded in promptText
@@ -8535,6 +8581,20 @@ ipcMain.handle('passwords:autofill-active', (e, cred) => {
         }
     } catch (err) {}
     return { success: false };
+});
+
+ipcMain.on('get-theme-info-sync', (event) => {
+    const isVerticalTabs = (userSettings.tabLayout === 'vertical');
+    const isHideMode = (!!htmlFullscreenViewId || userSettings.sidebarMode === 'hidden' || userSettings.sidebarMode === 'autohide');
+    const isNoCurve = isHideMode && !isVerticalTabs;
+    const isDark = userSettings.themeMode !== 'light';
+    const maskColor = isDark ? '#18181B' : '#EDEDF0';
+    event.returnValue = {
+        themeMode: userSettings.themeMode || 'dark',
+        maskColor,
+        isNoCurve,
+        isDark
+    };
 });
 
 ipcMain.handle('get-settings', () => {

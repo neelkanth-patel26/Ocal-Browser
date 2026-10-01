@@ -3,7 +3,7 @@ try {
     require('./chrome-compat-shim.js');
 } catch (e) {}
 
-// ── Seamless Early Webview Corner Rounding (Active During Page Loading) ──
+// ── Seamless Early Webview Corner Rounding & Scrollbar Masking (Active Before Page Loads) ──
 (function initEarlyCornerMasks() {
     try {
         const url = window.location.href || '';
@@ -14,12 +14,20 @@ try {
 
         const { ipcRenderer } = require('electron');
 
+        // Fetch synchronous theme info immediately without waiting for async IPC
+        let initialTheme = null;
+        try {
+            if (ipcRenderer && ipcRenderer.sendSync) {
+                initialTheme = ipcRenderer.sendSync('get-theme-info-sync');
+            }
+        } catch (e) {}
+
         function applyMasks(settings) {
-            const isDark = settings ? (settings.themeMode !== 'light') : true;
-            const maskColor = isDark ? '#18181B' : '#EDEDF0';
-            const isVerticalTabs = settings ? (settings.tabLayout === 'vertical') : true;
+            const isDark = settings ? (settings.themeMode !== 'light') : (initialTheme ? initialTheme.isDark : false);
+            const maskColor = settings ? (isDark ? '#18181B' : '#EDEDF0') : (initialTheme ? initialTheme.maskColor : '#EDEDF0');
+            const isVerticalTabs = settings ? (settings.tabLayout === 'vertical') : (initialTheme ? !initialTheme.isNoCurve : true);
             const isHideMode = settings ? (settings.sidebarMode === 'hidden' || settings.sidebarMode === 'autohide') : false;
-            const isNoCurve = settings ? (isHideMode && !isVerticalTabs) : false;
+            const isNoCurve = settings ? (isHideMode && !isVerticalTabs) : (initialTheme ? initialTheme.isNoCurve : false);
 
             if (isInternal) {
                 const rad = isNoCurve ? '0px' : '12px';
@@ -49,6 +57,18 @@ try {
             }
             if (style) {
                 style.textContent = `
+                    html {
+                        scroll-behavior: smooth !important;
+                    }
+                    *, html, body {
+                        scrollbar-width: none !important;
+                        -ms-overflow-style: none !important;
+                    }
+                    *::-webkit-scrollbar, html::-webkit-scrollbar, body::-webkit-scrollbar {
+                        width: 0px !important;
+                        height: 0px !important;
+                        display: none !important;
+                    }
                     #ocal-corner-masks-container, .ocal-corner-mask {
                         display: ${isNoCurve ? 'none' : 'block'} !important;
                     }
@@ -94,7 +114,7 @@ try {
             }
         }
 
-        // 1. Run synchronously as early as possible
+        // 1. Run synchronously as early as possible before page HTML/DOM is parsed
         if (document.documentElement) {
             applyMasks();
         } else {
@@ -107,7 +127,7 @@ try {
             observer.observe(document, { childList: true });
         }
 
-        // 2. Fetch fresh settings immediately
+        // 2. Fetch fresh settings asynchronously to keep dynamic settings in sync
         if (ipcRenderer && ipcRenderer.invoke) {
             ipcRenderer.invoke('get-settings').then(s => {
                 if (s) applyMasks(s);

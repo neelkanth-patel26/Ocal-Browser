@@ -123,23 +123,28 @@
         }
 
         .count-badge {
-            background: color-mix(in srgb, var(--accent) 14%, transparent);
-            border: 1px solid color-mix(in srgb, var(--accent) 26%, transparent);
-            color: var(--accent);
+            background: var(--accent);
+            border: none;
+            color: var(--accent-text, #FFFFFF);
             font-family: var(--font-mono);
             font-size: 10.5px;
             font-weight: 800;
-            padding: 1px 7px;
+            padding: 2px 7px;
             border-radius: var(--radius-pill);
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            min-width: 19px;
+            line-height: 1;
         }
 
         .manage-btn {
             font-size: 11.5px;
             font-weight: 700;
-            color: var(--accent);
-            background: color-mix(in srgb, var(--accent) 12%, transparent);
-            border: 1px solid color-mix(in srgb, var(--accent) 24%, transparent);
-            padding: 4px 11px;
+            color: var(--accent-text, #FFFFFF);
+            background: var(--accent);
+            border: none;
+            padding: 5px 12px;
             border-radius: var(--radius-pill);
             cursor: pointer;
             display: inline-flex;
@@ -150,8 +155,7 @@
         }
 
         .manage-btn:hover {
-            background: var(--accent);
-            color: var(--accent-text, #FFFFFF);
+            opacity: 0.92;
             transform: translateY(-1px);
             box-shadow: none !important;
         }
@@ -243,18 +247,18 @@
         }
 
         .ext-icon-wrapper {
-            width: 36px;
-            height: 36px;
-            border-radius: 10px;
-            background: color-mix(in srgb, var(--accent) 14%, transparent);
-            border: 1px solid color-mix(in srgb, var(--accent) 26%, transparent);
+            width: 32px;
+            height: 32px;
+            border-radius: 0;
+            background: transparent !important;
+            border: none !important;
             display: flex;
             align-items: center;
             justify-content: center;
             color: var(--accent);
-            font-size: 15px;
+            font-size: 18px;
             flex-shrink: 0;
-            overflow: hidden;
+            overflow: visible;
             box-shadow: none !important;
             transition: transform 0.18s ease;
         }
@@ -320,36 +324,47 @@
         /* ── Smooth iOS Switch ── */
         .switch {
             position: relative;
-            display: inline-block;
-            width: 34px;
-            height: 19px;
+            display: inline-flex;
+            align-items: center;
+            width: 36px;
+            height: 20px;
             flex-shrink: 0;
+            cursor: pointer;
             margin-left: 2px;
         }
 
-        .switch input { opacity: 0; width: 0; height: 0; }
+        .switch input {
+            opacity: 0;
+            width: 0;
+            height: 0;
+            position: absolute;
+            margin: 0;
+            pointer-events: none;
+        }
 
         .slider {
             position: absolute;
             cursor: pointer;
             inset: 0;
-            background: rgba(148, 163, 184, 0.3);
-            transition: 0.24s cubic-bezier(0.16, 1, 0.3, 1);
-            border-radius: 100px;
+            background: rgba(148, 163, 184, 0.35);
+            transition: background 0.22s cubic-bezier(0.16, 1, 0.3, 1);
+            border-radius: 999px;
+            box-shadow: none !important;
+            overflow: hidden;
         }
 
         .slider:before {
             position: absolute;
             content: "";
-            height: 15px;
-            width: 15px;
-            left: 2px;
-            bottom: 2px;
-            background: #FFFFFF;
-            transition: 0.22s cubic-bezier(0.16, 1, 0.3, 1);
+            height: 14px;
+            width: 14px;
+            left: 3px;
+            top: 3px;
+            background: #FFFFFF !important;
+            transition: transform 0.22s cubic-bezier(0.16, 1, 0.3, 1);
             border-radius: 50%;
-            box-shadow: none !important;
-            border: 0.5px solid rgba(0, 0, 0, 0.15);
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.25);
+            border: none;
         }
 
         input:checked + .slider {
@@ -357,8 +372,8 @@
         }
 
         input:checked + .slider:before {
-            transform: translateX(15px);
-            background: var(--accent-text, #FFFFFF) !important;
+            transform: translateX(16px);
+            background: #FFFFFF !important;
         }
 
         /* ── Store Footer ── */

@@ -153,11 +153,11 @@
 
         let iconHtml;
         if (ext.iconData) {
-            iconHtml = `<img src="${ext.iconData}" style="width: 18px; height: 18px; object-fit: contain; border-radius: 4px;" alt="" onerror="this.onerror=null;this.parentElement.innerHTML='<i class=\\'fas fa-puzzle-piece\\'></i>';">`;
+            iconHtml = `<img src="${ext.iconData}" style="width: 24px; height: 24px; object-fit: contain; display: block;" alt="" onerror="this.onerror=null;this.parentElement.innerHTML='<i class=\\'fas fa-puzzle-piece\\' style=\\'font-size: 20px;\\'></i>';">`;
         } else if (ext.icon && ext.icon.startsWith('fa-')) {
-            iconHtml = `<i class="fas ${ext.icon}"></i>`;
+            iconHtml = `<i class="fas ${ext.icon}" style="font-size: 20px;"></i>`;
         } else {
-            iconHtml = `<i class="fas fa-puzzle-piece"></i>`;
+            iconHtml = `<i class="fas fa-puzzle-piece" style="font-size: 20px;"></i>`;
         }
 
         const isPinned = Boolean(ext.pinned);
@@ -172,7 +172,7 @@
                 <div class="ext-title" title="${ext.name}">${ext.name}</div>
                 <div class="ext-desc">${ext.desc || ext.description || (isNative ? 'Built-in module' : (hasPopup ? 'Interactive Popup' : (hasOptions ? 'Settings Available' : 'Background Module')))}</div>
             </div>
-            <div style="display: flex; align-items: center; gap: 4px;">
+            <div style="display: flex; align-items: center; gap: 4px; flex-shrink: 0;">
                 ${hasPopup ? `
                     <button class="icon-btn-pill btn-open-popup" title="Open Extension Popup">
                         <i class="fas fa-arrow-up-right-from-square"></i>

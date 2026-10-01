@@ -2058,6 +2058,9 @@ modeBtnStudio?.addEventListener('click', () => {
     if (studioViewEl) studioViewEl.style.setProperty('display', 'flex', 'important');
     if (chatViewEl) chatViewEl.style.setProperty('display', 'none', 'important');
     if (settingsViewEl) settingsViewEl.style.setProperty('display', 'none', 'important');
+    if (typeof window.handleStudioPromptInput === 'function') {
+        window.handleStudioPromptInput();
+    }
 });
 
 // Settings View Toggle & Configuration Logic
@@ -2403,6 +2406,15 @@ if (window.electronAPI) {
 
     window.electronAPI.on?.('sidebar-shown', triggerEntranceAnimation);
 
+    window.electronAPI.on?.('submit-external-prompt', (e, promptText) => {
+        triggerEntranceAnimation();
+        if (promptText && typeof promptText === 'string') {
+            setTimeout(() => {
+                handleSend(promptText);
+            }, 150);
+        }
+    });
+
     // Also trigger entrance on initial document load
     if (document.readyState === 'loading') {
         document.addEventListener('DOMContentLoaded', triggerEntranceAnimation);
@@ -2446,6 +2458,9 @@ function switchToStudio() {
     
     if (imageStudioView) imageStudioView.style.display = 'flex';
     if (chatView) chatView.style.display = 'none';
+    if (typeof window.handleStudioPromptInput === 'function') {
+        window.handleStudioPromptInput();
+    }
 }
 
 function switchToChat() {
@@ -2489,6 +2504,37 @@ document.getElementById('nav-images-btn')?.addEventListener('click', switchToStu
         "A majestic snow leopard with piercing sapphire eyes standing on an icy Himalayan ridge at sunrise, blowing spindrift, National Geographic 8k"
     ];
 
+    // Model options list for quick-cycle chip
+    const STUDIO_MODELS = [
+        { id: 'flux', label: 'FLUX.1', icon: 'fa-bolt-lightning' },
+        { id: 'flux-realism', label: 'Photoreal', icon: 'fa-camera' },
+        { id: 'flux-anime', label: 'Anime', icon: 'fa-paint-brush' },
+        { id: 'flux-3d', label: '3D Render', icon: 'fa-cube' },
+        { id: 'turbo', label: 'Turbo', icon: 'fa-gauge-high' },
+        { id: 'cloud', label: 'Cloud APIs', icon: 'fa-cloud' }
+    ];
+
+    // Aspect ratio options list for quick-cycle chip
+    const STUDIO_RATIOS = [
+        { ratio: '1:1', label: '1:1 Square' },
+        { ratio: '16:9', label: '16:9 Wide' },
+        { ratio: '9:16', label: '9:16 Story' },
+        { ratio: '4:3', label: '4:3 Standard' }
+    ];
+
+    // Style presets list
+    const STUDIO_STYLES = [
+        { label: 'Style: All', value: '' },
+        { label: 'Realistic', value: 'Photorealistic, 8k resolution, professional photography, natural lighting, Hasselblad 50mm f/1.2' },
+        { label: 'Anime', value: 'Makoto Shinkai anime style, vibrant atmospheric skies, detailed lineart, trending on Pixiv' },
+        { label: 'Cyberpunk', value: 'Cyberpunk aesthetic, glowing neon lights, dark moody atmosphere, volumetric fog, Unreal Engine 5' },
+        { label: '3D Pixar', value: 'Octane 3D render, Pixar style, subsurface scattering, smooth clay textures, studio lighting' },
+        { label: 'Cinematic', value: 'Cinematic movie still, 35mm anamorphic lens, shallow depth of field, dramatic shadows, blockbuster color grading' },
+        { label: 'Oil Painting', value: 'Classical fine art oil painting, textured canvas, heavy impasto, dramatic chiaroscuro lighting' },
+        { label: 'Dark Fantasy', value: 'Dark fantasy concept art, mystical fog, ancient runes, epic scale, Greg Rutkowski art' },
+        { label: 'Watercolor', value: 'Delicate watercolor and ink illustration, soft pastel washes, gold leaf details, artistic paper texture' }
+    ];
+
     // State Variables
     let selectedModel = 'flux';
     let selectedCloudProvider = 'openai';
@@ -2497,11 +2543,82 @@ document.getElementById('nav-images-btn')?.addEventListener('click', switchToStu
     let selectedWidth = 1024;
     let selectedHeight = 1024;
     let activeStyleText = '';
-    let activeLightingText = '';
-    let activeCameraText = '';
     let currentGeneratedUrl = '';
     let currentGeneratedPrompt = '';
     let isGenerating = false;
+
+    // Img2Img Reference Image State
+    let currentRefImageUrl = null;
+    let currentRefStrength = 0.65;
+    let currentRawImageObj = null;
+
+    // Darkroom Live Tuning State
+    const darkroomSettings = {
+        brightness: 0,
+        contrast: 0,
+        saturation: 0,
+        warmth: 0,
+        vignette: 0,
+        sharpness: 25,
+        supersampled: false
+    };
+
+    // Helper: Zero-Watermark Engine (Binary Blob -> Local Data URL -> Clean Canvas Crop)
+    async function produceZeroWatermarkArtwork(url, targetWidth, targetHeight) {
+        try {
+            // If already a data: URL, proceed directly to cropping
+            let dataUrl = url;
+            if (!url.startsWith('data:')) {
+                const response = await fetch(url);
+                if (!response.ok) throw new Error(`HTTP ${response.status}`);
+                const blob = await response.blob();
+                dataUrl = await new Promise((resolve, reject) => {
+                    const reader = new FileReader();
+                    reader.onloadend = () => resolve(reader.result);
+                    reader.onerror = reject;
+                    reader.readAsDataURL(blob);
+                });
+            }
+
+            // Load local Data URL into an image - Guaranteed 0% CORS taint!
+            return new Promise((resolve) => {
+                const img = new Image();
+                img.onload = () => {
+                    try {
+                        const nw = img.naturalWidth || targetWidth;
+                        const nh = img.naturalHeight || (targetHeight + 56);
+
+                        // If Pollinations provided extra height (+56px), crop precisely to targetHeight.
+                        // Otherwise, crop off the bottom ~5.5% (approx 45-60px) where the watermark is placed.
+                        let cropH = targetHeight;
+                        if (nh > targetHeight + 30) {
+                            cropH = targetHeight;
+                        } else {
+                            cropH = Math.max(100, nh - Math.max(48, Math.round(nh * 0.055)));
+                        }
+
+                        const canvas = document.createElement('canvas');
+                        canvas.width = nw;
+                        canvas.height = cropH;
+                        const ctx = canvas.getContext('2d');
+                        ctx.imageSmoothingEnabled = true;
+                        ctx.imageSmoothingQuality = 'high';
+                        // Extract artwork region completely excluding the bottom watermark
+                        ctx.drawImage(img, 0, 0, nw, cropH, 0, 0, nw, cropH);
+                        resolve(canvas.toDataURL('image/png'));
+                    } catch (e) {
+                        console.warn('Canvas crop error, fallback to dataUrl:', e);
+                        resolve(dataUrl);
+                    }
+                };
+                img.onerror = () => resolve(dataUrl);
+                img.src = dataUrl;
+            });
+        } catch (err) {
+            console.warn('produceZeroWatermarkArtwork fetch error, fallback:', err);
+            return url;
+        }
+    }
 
     // Helper: Compute target resolutions based on ratio and quality mode
     function updateDimensions() {
@@ -2527,31 +2644,52 @@ document.getElementById('nav-images-btn')?.addEventListener('click', switchToStu
         }
     }
 
-    // DOM References
+    // DOM Elements - Inputs & Docks
     const promptInput = document.getElementById('studio-prompt-input');
-    const promptCountEl = document.getElementById('ais-prompt-count');
     const generateBtn = document.getElementById('studio-generate-btn');
-    const generateText = document.getElementById('ais-generate-text');
+    const clearPromptBtn = document.getElementById('studio-clear-btn');
     const surpriseBtn = document.getElementById('ais-surprise-btn');
     const enhanceBtn = document.getElementById('ais-enhance-btn');
-    const clearBtn = document.getElementById('ais-clear-btn');
-    const cloudRow = document.getElementById('ais-cloud-row');
     const advToggle = document.getElementById('ais-adv-toggle');
     const advArrow = document.getElementById('ais-adv-arrow');
-    const advPanel = document.getElementById('ais-adv-panel');
+    const advDrawer = document.getElementById('studio-adv-drawer');
     const seedInput = document.getElementById('studio-seed-value');
     const seedRandBtn = document.getElementById('ais-seed-rand-btn');
     const negInput = document.getElementById('studio-negative-input');
+    const voiceMicBtn = document.getElementById('studio-voice-mic-btn');
 
-    // Quality Toggles
-    const qualityStdBtn = document.getElementById('ais-quality-std');
-    const qualityUltraBtn = document.getElementById('ais-quality-ultra');
+    // Quick Tool Chips
+    const modelChip = document.getElementById('studio-model-chip');
+    const modelLabel = document.getElementById('studio-model-label');
+    const ratioChip = document.getElementById('studio-ratio-chip');
+    const ratioLabel = document.getElementById('studio-ratio-label');
+    const qualityChip = document.getElementById('studio-quality-chip');
+    const qualityLabel = document.getElementById('studio-quality-label');
+    const styleChip = document.getElementById('studio-style-chip');
+    const styleLabel = document.getElementById('studio-style-label');
 
-    // Canvas Stage References
+    // Img2Img Reference Bar
+    const refFileInput = document.getElementById('studio-ref-file-input');
+    const attachBtn = document.getElementById('studio-attach-btn');
+    const refBar = document.getElementById('studio-ref-img-bar');
+    const refThumb = document.getElementById('studio-ref-thumb');
+    const refName = document.getElementById('studio-ref-name');
+    const refStrengthInput = document.getElementById('studio-ref-strength');
+    const refStrengthVal = document.getElementById('studio-ref-strength-val');
+    const refRemoveBtn = document.getElementById('studio-ref-remove');
+
+    // Canvas Stage & Results
+    const scrollContainer = document.getElementById('studio-canvas-scroll');
     const emptyState = document.getElementById('ais-empty-state');
     const progressState = document.getElementById('ais-progress-state');
     const resultContainer = document.getElementById('ais-result-container');
-    const resultImg = document.getElementById('studio-result-img');
+    const rawImgEl = document.getElementById('studio-raw-img');
+    const legacyResultImg = document.getElementById('studio-result-img');
+    const darkroomCanvas = document.getElementById('studio-darkroom-canvas');
+    const splitContainer = document.getElementById('studio-split-container');
+    const splitDivider = document.getElementById('studio-split-divider');
+    const splitToggleBtn = document.getElementById('studio-split-toggle-btn');
+
     const progressHeadline = document.getElementById('ais-progress-headline');
     const progressSubtext = document.getElementById('ais-progress-subtext');
     const progressBarFill = document.getElementById('ais-progress-bar-fill');
@@ -2560,7 +2698,7 @@ document.getElementById('nav-images-btn')?.addEventListener('click', switchToStu
     const resultPromptSnippet = document.getElementById('ais-result-prompt-snippet');
     const resultModelBadge = document.getElementById('ais-result-model-badge');
 
-    // Floating Dock Buttons
+    // Action Dock
     const downloadBtn = document.getElementById('studio-download-btn');
     const copyBtn = document.getElementById('studio-copy-btn');
     const zoomBtn = document.getElementById('studio-zoom-btn');
@@ -2568,12 +2706,12 @@ document.getElementById('nav-images-btn')?.addEventListener('click', switchToStu
     const chatBtn = document.getElementById('studio-chat-btn');
     const regenBtn = document.getElementById('studio-regen-btn');
 
-    // Gallery References
+    // Gallery
     const gallerySection = document.getElementById('ais-gallery-section');
     const galleryStrip = document.getElementById('ais-gallery-strip');
     const galleryClearBtn = document.getElementById('ais-gallery-clear-btn');
 
-    // Lightbox References
+    // Lightbox
     const lightbox = document.getElementById('ais-lightbox');
     const lightboxImg = document.getElementById('ais-lightbox-img');
     const lightboxClose = document.getElementById('ais-lightbox-close');
@@ -2581,35 +2719,68 @@ document.getElementById('nav-images-btn')?.addEventListener('click', switchToStu
     const lightboxCaption = document.getElementById('ais-lightbox-caption');
     const lightboxDownload = document.getElementById('ais-lightbox-download');
 
-    // 0. Live Prompt Word & Character Counter
-    function updatePromptCounter() {
-        const val = promptInput?.value?.trim() || '';
-        const words = val ? val.split(/\s+/).length : 0;
-        const chars = val.length;
-        if (promptCountEl) {
-            promptCountEl.textContent = `${words} ${words === 1 ? 'word' : 'words'}${chars > 0 ? ` (${chars} chars)` : ''}`;
+    // Cloud Providers
+    const cloudRow = document.getElementById('ais-cloud-row');
+    const cloudTabs = document.querySelectorAll('.ais-cloud-tab');
+    const enginePills = document.querySelectorAll('.ais-engine-pill');
+    const aspectBtns = document.querySelectorAll('.ais-aspect-btn');
+    const presetStyleChips = document.querySelectorAll('#ais-chips-styles .ais-preset-chip');
+
+    // 0. Auto-expand Prompt Input & Clear Button
+    function handlePromptInput() {
+        if (!promptInput) return;
+        if (!promptInput.value.trim()) {
+            promptInput.style.height = '36px';
+            if (clearPromptBtn) clearPromptBtn.style.display = 'none';
+            return;
+        }
+        promptInput.style.height = 'auto';
+        promptInput.style.height = Math.max(36, Math.min(promptInput.scrollHeight, 160)) + 'px';
+        if (clearPromptBtn) {
+            clearPromptBtn.style.display = 'flex';
         }
     }
-    promptInput?.addEventListener('input', updatePromptCounter);
+    window.handleStudioPromptInput = handlePromptInput;
+    promptInput?.addEventListener('input', handlePromptInput);
 
-    // 1. Model Pills Selection
-    const enginePills = document.querySelectorAll('.ais-engine-pill');
+    clearPromptBtn?.addEventListener('click', () => {
+        if (promptInput) {
+            promptInput.value = '';
+            handlePromptInput();
+            promptInput.focus();
+        }
+    });
+
+    // 1. Quick Tool: Model Selector Pill
+    function setModel(engineId) {
+        selectedModel = engineId;
+        const found = STUDIO_MODELS.find(m => m.id === engineId) || STUDIO_MODELS[0];
+        if (modelLabel) modelLabel.textContent = found.label;
+        if (modelChip) {
+            const icon = modelChip.querySelector('i');
+            if (icon) icon.className = `fas ${found.icon}`;
+        }
+        enginePills.forEach(p => {
+            p.classList.toggle('active', p.getAttribute('data-engine') === engineId);
+        });
+        if (cloudRow) {
+            cloudRow.style.display = (engineId === 'cloud') ? 'flex' : 'none';
+        }
+    }
+
+    modelChip?.addEventListener('click', () => {
+        const curIdx = STUDIO_MODELS.findIndex(m => m.id === selectedModel);
+        const nextIdx = (curIdx + 1) % STUDIO_MODELS.length;
+        setModel(STUDIO_MODELS[nextIdx].id);
+    });
+
     enginePills.forEach(pill => {
         pill.addEventListener('click', () => {
-            enginePills.forEach(p => p.classList.remove('active'));
-            pill.classList.add('active');
-            selectedModel = pill.getAttribute('data-engine') || 'flux';
-
-            if (selectedModel === 'cloud') {
-                if (cloudRow) cloudRow.style.display = 'flex';
-            } else {
-                if (cloudRow) cloudRow.style.display = 'none';
-            }
+            const engineId = pill.getAttribute('data-engine') || 'flux';
+            setModel(engineId);
         });
     });
 
-    // 2. Cloud Provider Tabs
-    const cloudTabs = document.querySelectorAll('.ais-cloud-tab');
     cloudTabs.forEach(tab => {
         tab.addEventListener('click', () => {
             cloudTabs.forEach(t => t.classList.remove('active'));
@@ -2618,108 +2789,87 @@ document.getElementById('nav-images-btn')?.addEventListener('click', switchToStu
         });
     });
 
-    // 3. Quality Mode Toggle (1K HD vs 2K Ultra)
-    qualityStdBtn?.addEventListener('click', () => {
-        selectedQuality = 'standard';
-        qualityStdBtn.classList.add('active');
-        qualityUltraBtn?.classList.remove('active');
+    // 2. Quick Tool: Aspect Ratio Pill
+    function setRatio(ratioKey) {
+        selectedRatio = ratioKey;
+        const found = STUDIO_RATIOS.find(r => r.ratio === ratioKey) || STUDIO_RATIOS[0];
+        if (ratioLabel) ratioLabel.textContent = found.label;
+        aspectBtns.forEach(b => {
+            b.classList.toggle('active', b.getAttribute('data-ratio') === ratioKey);
+        });
         updateDimensions();
+    }
+
+    ratioChip?.addEventListener('click', () => {
+        const curIdx = STUDIO_RATIOS.findIndex(r => r.ratio === selectedRatio);
+        const nextIdx = (curIdx + 1) % STUDIO_RATIOS.length;
+        setRatio(STUDIO_RATIOS[nextIdx].ratio);
     });
 
-    qualityUltraBtn?.addEventListener('click', () => {
-        selectedQuality = 'ultra';
-        qualityUltraBtn.classList.add('active');
-        qualityStdBtn?.classList.remove('active');
-        updateDimensions();
-    });
-
-    // 4. Aspect Ratio Selection
-    const aspectBtns = document.querySelectorAll('.ais-aspect-btn');
     aspectBtns.forEach(btn => {
         btn.addEventListener('click', () => {
-            aspectBtns.forEach(b => b.classList.remove('active'));
-            btn.classList.add('active');
-            selectedRatio = btn.getAttribute('data-ratio') || '1:1';
-            updateDimensions();
+            const r = btn.getAttribute('data-ratio') || '1:1';
+            setRatio(r);
         });
     });
 
-    // 5. Category Navigation (Styles / Lighting / Camera)
-    const catTabs = document.querySelectorAll('.ais-cat-tab');
-    const chipsStyles = document.getElementById('ais-chips-styles');
-    const chipsLighting = document.getElementById('ais-chips-lighting');
-    const chipsCamera = document.getElementById('ais-chips-camera');
+    // 3. Quick Tool: Quality Pill (1K HD vs 2K Ultra)
+    function setQuality(mode) {
+        selectedQuality = mode;
+        if (qualityLabel) {
+            qualityLabel.textContent = mode === 'ultra' ? '2K Ultra' : '1K HD';
+        }
+        if (qualityChip) {
+            qualityChip.classList.toggle('ais-tool-chip-active', mode === 'ultra');
+        }
+        updateDimensions();
+    }
 
-    catTabs.forEach(tab => {
-        tab.addEventListener('click', () => {
-            catTabs.forEach(t => t.classList.remove('active'));
-            tab.classList.add('active');
-            const cat = tab.getAttribute('data-cat') || 'styles';
-
-            if (chipsStyles) chipsStyles.style.display = (cat === 'styles') ? 'flex' : 'none';
-            if (chipsLighting) chipsLighting.style.display = (cat === 'lighting') ? 'flex' : 'none';
-            if (chipsCamera) chipsCamera.style.display = (cat === 'camera') ? 'flex' : 'none';
-        });
+    qualityChip?.addEventListener('click', () => {
+        setQuality(selectedQuality === 'standard' ? 'ultra' : 'standard');
     });
 
-    // 6. Preset Chips Handlers
-    // Styles
-    chipsStyles?.querySelectorAll('.ais-preset-chip').forEach(chip => {
+    // 4. Quick Tool: Style Preset Pill
+    function setStylePreset(styleObj) {
+        activeStyleText = styleObj.value;
+        if (styleLabel) styleLabel.textContent = styleObj.label;
+        presetStyleChips.forEach(chip => {
+            const dataStyle = chip.getAttribute('data-style') || '';
+            chip.classList.toggle('active', !!(dataStyle && styleObj.value && dataStyle === styleObj.value));
+        });
+    }
+
+    styleChip?.addEventListener('click', () => {
+        const curIdx = STUDIO_STYLES.findIndex(s => s.value === activeStyleText);
+        const nextIdx = (curIdx + 1) % STUDIO_STYLES.length;
+        setStylePreset(STUDIO_STYLES[nextIdx]);
+    });
+
+    presetStyleChips.forEach(chip => {
         chip.addEventListener('click', () => {
-            const isCurrentlyActive = chip.classList.contains('active');
-            chipsStyles.querySelectorAll('.ais-preset-chip').forEach(c => c.classList.remove('active'));
-
-            if (isCurrentlyActive) {
-                activeStyleText = '';
+            const val = chip.getAttribute('data-style') || '';
+            const isActive = chip.classList.contains('active');
+            if (isActive) {
+                setStylePreset(STUDIO_STYLES[0]);
             } else {
-                chip.classList.add('active');
-                activeStyleText = chip.getAttribute('data-style') || '';
+                const labelText = chip.textContent.trim();
+                setStylePreset({ label: labelText, value: val });
             }
         });
     });
 
-    // Lighting
-    chipsLighting?.querySelectorAll('.ais-preset-chip').forEach(chip => {
-        chip.addEventListener('click', () => {
-            const isCurrentlyActive = chip.classList.contains('active');
-            chipsLighting.querySelectorAll('.ais-preset-chip').forEach(c => c.classList.remove('active'));
-
-            if (isCurrentlyActive) {
-                activeLightingText = '';
-            } else {
-                chip.classList.add('active');
-                activeLightingText = chip.getAttribute('data-lighting') || '';
-            }
-        });
-    });
-
-    // Camera
-    chipsCamera?.querySelectorAll('.ais-preset-chip').forEach(chip => {
-        chip.addEventListener('click', () => {
-            const isCurrentlyActive = chip.classList.contains('active');
-            chipsCamera.querySelectorAll('.ais-preset-chip').forEach(c => c.classList.remove('active'));
-
-            if (isCurrentlyActive) {
-                activeCameraText = '';
-            } else {
-                chip.classList.add('active');
-                activeCameraText = chip.getAttribute('data-camera') || '';
-            }
-        });
-    });
-
-    // 7. Surprise Me / Random Prompt
+    // 5. Surprise Me Prompt
     surpriseBtn?.addEventListener('click', () => {
         const randomIndex = Math.floor(Math.random() * INSPIRATION_PROMPTS.length);
         const randomPrompt = INSPIRATION_PROMPTS[randomIndex];
         if (promptInput) {
             promptInput.value = randomPrompt;
-            updatePromptCounter();
+            handlePromptInput();
             promptInput.focus();
         }
     });
 
-    // 8. Enhance Prompt Button
+    // 6. Enhance Prompt Button
     enhanceBtn?.addEventListener('click', () => {
         if (!promptInput) return;
         const current = promptInput.value.trim();
@@ -2727,8 +2877,6 @@ document.getElementById('nav-images-btn')?.addEventListener('click', switchToStu
             surpriseBtn?.click();
             return;
         }
-
-        // Smart prompt enhancer
         let enhanced = current;
         if (!/8k|photorealistic|high resolution|masterpiece/i.test(enhanced)) {
             enhanced += ', 8k resolution, photorealistic masterpiece, ultra-detailed';
@@ -2740,22 +2888,14 @@ document.getElementById('nav-images-btn')?.addEventListener('click', switchToStu
             enhanced += ', shot on 50mm f/1.2 lens, beautiful depth of field';
         }
         promptInput.value = enhanced;
-        updatePromptCounter();
+        handlePromptInput();
     });
 
-    // 9. Clear Prompt Button
-    clearBtn?.addEventListener('click', () => {
-        if (promptInput) {
-            promptInput.value = '';
-            updatePromptCounter();
-            promptInput.focus();
-        }
-    });
-
-    // 10. Fine-Tuning Toggle & Seed Randomizer
+    // 7. Pro Diffusion Drawer Toggle & Seed
     advToggle?.addEventListener('click', () => {
-        const isHidden = advPanel.style.display === 'none';
-        advPanel.style.display = isHidden ? 'flex' : 'none';
+        if (!advDrawer) return;
+        const isHidden = advDrawer.style.display === 'none' || !advDrawer.style.display;
+        advDrawer.style.display = isHidden ? 'flex' : 'none';
         advArrow?.classList.toggle('open', isHidden);
     });
 
@@ -2765,27 +2905,143 @@ document.getElementById('nav-images-btn')?.addEventListener('click', switchToStu
         }
     });
 
-    // 11. Starter Cards in Empty State
+    // 8. Img2Img Reference Image Upload & Handling
+    attachBtn?.addEventListener('click', () => {
+        refFileInput?.click();
+    });
+
+    refFileInput?.addEventListener('change', (e) => {
+        const file = e.target.files?.[0];
+        if (file && file.type.startsWith('image/')) {
+            const reader = new FileReader();
+            reader.onload = (re) => {
+                currentRefImageUrl = re.target.result;
+                if (refThumb) refThumb.src = currentRefImageUrl;
+                if (refName) refName.textContent = file.name;
+                if (refBar) refBar.style.display = 'flex';
+                // Mount into raw canvas stage preview if empty
+                if (!currentRawImageObj && emptyState && emptyState.style.display !== 'none') {
+                    promptInput?.setAttribute('placeholder', `Enhance "${file.name}" or describe your Img2Img style...`);
+                }
+            };
+            reader.readAsDataURL(file);
+        }
+    });
+
+    refStrengthInput?.addEventListener('input', () => {
+        if (!refStrengthInput || !refStrengthVal) return;
+        const val = parseInt(refStrengthInput.value, 10);
+        currentRefStrength = val / 100;
+        refStrengthVal.textContent = `${val}%`;
+    });
+
+    refRemoveBtn?.addEventListener('click', () => {
+        currentRefImageUrl = null;
+        if (refBar) refBar.style.display = 'none';
+        if (refFileInput) refFileInput.value = '';
+        promptInput?.setAttribute('placeholder', 'Describe your visual concept or attach an image to enhance...');
+    });
+
+    // Drag and Drop Image File onto Studio
+    [scrollContainer, document.getElementById('studio-input-container')].forEach(dropZone => {
+        if (!dropZone) return;
+        dropZone.addEventListener('dragover', (e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            dropZone.classList.add('drag-over');
+        });
+        dropZone.addEventListener('dragleave', (e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            dropZone.classList.remove('drag-over');
+        });
+        dropZone.addEventListener('drop', (e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            dropZone.classList.remove('drag-over');
+            const file = e.dataTransfer?.files?.[0];
+            if (file && file.type.startsWith('image/')) {
+                const reader = new FileReader();
+                reader.onload = (re) => {
+                    currentRefImageUrl = re.target.result;
+                    if (refThumb) refThumb.src = currentRefImageUrl;
+                    if (refName) refName.textContent = file.name;
+                    if (refBar) refBar.style.display = 'flex';
+                };
+                reader.readAsDataURL(file);
+            }
+        });
+    });
+
+    // 9. Voice Dictation in Studio Input Dock
+    let isVoiceActive = false;
+    let voiceRecognition = null;
+    const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+
+    if (SpeechRecognition && voiceMicBtn) {
+        voiceRecognition = new SpeechRecognition();
+        voiceRecognition.continuous = false;
+        voiceRecognition.interimResults = true;
+        voiceRecognition.lang = 'en-US';
+
+        voiceRecognition.onresult = (event) => {
+            let transcript = '';
+            for (let i = event.resultIndex; i < event.results.length; i++) {
+                transcript += event.results[i][0].transcript;
+            }
+            if (promptInput) {
+                promptInput.value = (promptInput.value ? promptInput.value + ' ' : '') + transcript;
+                handlePromptInput();
+            }
+        };
+
+        voiceRecognition.onerror = () => {
+            isVoiceActive = false;
+            voiceMicBtn.classList.remove('listening');
+        };
+
+        voiceRecognition.onend = () => {
+            isVoiceActive = false;
+            voiceMicBtn.classList.remove('listening');
+        };
+
+        voiceMicBtn.addEventListener('click', () => {
+            if (!isVoiceActive) {
+                try {
+                    voiceRecognition.start();
+                    isVoiceActive = true;
+                    voiceMicBtn.classList.add('listening');
+                } catch (e) {
+                    voiceRecognition.stop();
+                    isVoiceActive = false;
+                    voiceMicBtn.classList.remove('listening');
+                }
+            } else {
+                voiceRecognition.stop();
+                isVoiceActive = false;
+                voiceMicBtn.classList.remove('listening');
+            }
+        });
+    }
+
+    // 10. Starter Cards Click
     document.querySelectorAll('.ais-starter-card').forEach(card => {
         card.addEventListener('click', () => {
             const prompt = card.getAttribute('data-prompt');
             const style = card.getAttribute('data-style');
             if (promptInput && prompt) {
                 promptInput.value = prompt;
-                updatePromptCounter();
+                handlePromptInput();
             }
-            if (style && chipsStyles) {
-                chipsStyles.querySelectorAll('.ais-preset-chip').forEach(c => {
-                    if (c.textContent.trim().toLowerCase().includes(style.toLowerCase())) {
-                        c.click();
-                    }
-                });
+            if (style) {
+                const found = STUDIO_STYLES.find(s => s.label.toLowerCase().includes(style.toLowerCase()));
+                if (found) setStylePreset(found);
             }
             startImageGeneration();
         });
     });
 
-    // 12. Ctrl+Enter to trigger generation from textarea
+    // Ctrl+Enter or Generate button click
     promptInput?.addEventListener('keydown', (e) => {
         if ((e.ctrlKey || e.metaKey) && e.key === 'Enter') {
             e.preventDefault();
@@ -2797,43 +3053,34 @@ document.getElementById('nav-images-btn')?.addEventListener('click', switchToStu
         startImageGeneration();
     });
 
-    // 13. High-Accuracy Zero-Watermark Engine (uses globally hoisted produceZeroWatermarkArtwork)
-
-
-    // 14. Core Image Generation Routine
+    // 11. Core Image Generation Routine
     async function startImageGeneration() {
         const rawPrompt = promptInput?.value?.trim();
-        if (!rawPrompt || isGenerating) {
+        if ((!rawPrompt && !currentRefImageUrl) || isGenerating) {
             if (!rawPrompt && promptInput) promptInput.focus();
             return;
         }
 
+        const effectivePrompt = rawPrompt || "High resolution photorealistic masterpiece, enhanced cinematic depth";
         isGenerating = true;
         if (generateBtn) generateBtn.disabled = true;
-        if (generateText) generateText.textContent = 'Synthesizing...';
 
-        // Compose full prompt with active style, lighting, and camera presets
-        let fullPrompt = rawPrompt;
+        // Compose full prompt with active style preset
+        let fullPrompt = effectivePrompt;
         if (activeStyleText && !fullPrompt.includes(activeStyleText)) {
             fullPrompt = `${fullPrompt}, ${activeStyleText}`;
         }
-        if (activeLightingText && !fullPrompt.includes(activeLightingText)) {
-            fullPrompt = `${fullPrompt}, ${activeLightingText}`;
-        }
-        if (activeCameraText && !fullPrompt.includes(activeCameraText)) {
-            fullPrompt = `${fullPrompt}, ${activeCameraText}`;
-        }
 
-        // Retrieve negative prompt and seed
         const negPrompt = negInput?.value?.trim() || 'blurry, low quality, deformed, distorted, extra limbs, extra fingers, bad anatomy, pixelated, ugly, watermark, text, signature, logo';
         let seed = seedInput?.value?.trim() ? parseInt(seedInput.value, 10) : Math.floor(Math.random() * 9000000) + 100000;
 
-        // Stage UI transitions: Hide empty & result, Show scanner
+        // Transition UI to Progress Scanner State
         if (emptyState) emptyState.style.display = 'none';
         if (resultContainer) resultContainer.style.display = 'none';
         if (progressState) progressState.style.display = 'flex';
+        scrollContainer?.scrollTo({ top: 0, behavior: 'smooth' });
 
-        // Mount 3D Thinking Orb in Studio loader
+        // Mount 3D Thinking Orb
         let orbInstance = null;
         const orbSlot = document.getElementById('ais-studio-orb-slot');
         if (orbSlot && window.LibrariesDevFX?.ThinkingOrb) {
@@ -2849,56 +3096,17 @@ document.getElementById('nav-images-btn')?.addEventListener('click', switchToStu
             window.LibrariesDevFX.BorderBeam.attach(progressState, { preset: 'accent', duration: '4.5s' });
         }
 
-        if (progressBarFill) {
-            progressBarFill.style.background = '';
-            progressBarFill.style.width = '0%';
-        }
-        if (progressPercent) progressPercent.textContent = '0%';
-        if (progressHeadline) progressHeadline.textContent = 'Sampling Latent Vector Space...';
-        if (progressSubtext) progressSubtext.textContent = `Initializing ${selectedModel.toUpperCase()} diffusion model`;
-        if (progressModelTag) {
-            progressModelTag.innerHTML = selectedModel === 'cloud' 
-                ? (selectedCloudProvider === 'openai' ? '<i class="fas fa-brain"></i> DALL-E 3 Cloud' : '<i class="fas fa-wand-magic-sparkles"></i> Google Imagen 3')
-                : `<i class="fas fa-microchip"></i> FLUX ${selectedModel.toUpperCase()}`;
+        if (progressHeadline) {
+            progressHeadline.textContent = currentRefImageUrl ? 'Analyzing Img2Img Reference...' : 'Generating Artwork...';
         }
 
-        // Animated progression steps
-        let progress = 0;
-        let generationFinished = false;
-        const interval = setInterval(() => {
-            if (generationFinished) {
-                clearInterval(interval);
-                return;
-            }
-            if (progress < 40) progress += Math.floor(Math.random() * 7) + 5;
-            else if (progress < 80) progress += Math.floor(Math.random() * 4) + 2;
-            else if (progress < 96) progress += 1;
-
-            if (progress > 96) progress = 96;
-
-            if (progressBarFill) progressBarFill.style.width = `${progress}%`;
-            if (progressPercent) progressPercent.textContent = `${Math.round(progress)}%`;
-
-            if (progressHeadline && progressSubtext) {
-                if (progress < 30) {
-                    progressHeadline.textContent = 'Sampling Latent Vector Space...';
-                    progressSubtext.textContent = 'Constructing high-dimensional vector embeddings';
-                    orbInstance?.setMode('orbits');
-                } else if (progress < 65) {
-                    progressHeadline.textContent = 'Refining Structures & Textures...';
-                    progressSubtext.textContent = `Denoising visual representation (Step ${Math.round(progress * 0.4)}/40)`;
-                    orbInstance?.setMode('wave');
-                } else if (progress < 85) {
-                    progressHeadline.textContent = 'Synthesizing Neural Feature Web...';
-                    progressSubtext.textContent = 'Connecting latent node tensors';
-                    orbInstance?.setMode('web');
-                } else {
-                    progressHeadline.textContent = 'Finalizing Pristine 4K Render...';
-                    progressSubtext.textContent = 'Volumetric light passes & zero-watermark crop';
-                    orbInstance?.setMode('globe');
-                }
-            }
-        }, 200);
+        // Fluid 3D particle transitions during generation
+        const orbModes = ['orbits', 'wave', 'web', 'globe'];
+        let orbModeIdx = 0;
+        const orbInterval = setInterval(() => {
+            orbModeIdx = (orbModeIdx + 1) % orbModes.length;
+            orbInstance?.setMode(orbModes[orbModeIdx]);
+        }, 1200);
 
         try {
             let finalImageUrl = '';
@@ -2906,9 +3114,7 @@ document.getElementById('nav-images-btn')?.addEventListener('click', switchToStu
             if (selectedModel === 'cloud') {
                 if (selectedCloudProvider === 'openai') {
                     const apiKey = globalSettings?.openaiApiKey;
-                    if (!apiKey) {
-                        throw new Error('OpenAI API Key is missing. Please set your key in AI Settings.');
-                    }
+                    if (!apiKey) throw new Error('OpenAI API Key is missing. Please set your key in AI Settings.');
                     let size = '1024x1024';
                     if (selectedWidth > selectedHeight) size = '1792x1024';
                     else if (selectedWidth < selectedHeight) size = '1024x1792';
@@ -2939,9 +3145,7 @@ document.getElementById('nav-images-btn')?.addEventListener('click', switchToStu
                 } else {
                     // Google Imagen 3
                     const apiKey = globalSettings?.aiApiKey;
-                    if (!apiKey) {
-                        throw new Error('Gemini API Key is missing. Please set your key in AI Settings.');
-                    }
+                    if (!apiKey) throw new Error('Gemini API Key is missing. Please set your key in AI Settings.');
                     let imagenRatio = '1:1';
                     if (selectedRatio === '16:9') imagenRatio = '16:9';
                     else if (selectedRatio === '9:16') imagenRatio = '9:16';
@@ -2981,14 +3185,17 @@ document.getElementById('nav-images-btn')?.addEventListener('click', switchToStu
                 else if (selectedModel === 'flux-3d') modelParam = 'flux-3d';
                 else if (selectedModel === 'turbo') modelParam = 'turbo';
 
-                // Buffer height by +56px so the bottom-left watermark is isolated
                 const fetchHeight = selectedHeight + 56;
                 const encodedPrompt = encodeURIComponent(fullPrompt);
                 const encodedNeg = encodeURIComponent(negPrompt);
                 const rawPollinationsUrl = `https://image.pollinations.ai/prompt/${encodedPrompt}?width=${selectedWidth}&height=${fetchHeight}&seed=${seed}&model=${modelParam}&nologo=true&enhance=true&negative_prompt=${encodedNeg}`;
 
-                // Process through our Zero-Watermark Engine
                 finalImageUrl = await produceZeroWatermarkArtwork(rawPollinationsUrl, selectedWidth, selectedHeight);
+
+                // Blend with Reference Image if Img2Img is active
+                if (currentRefImageUrl) {
+                    finalImageUrl = await blendImageToImage(currentRefImageUrl, finalImageUrl, fullPrompt, currentRefStrength);
+                }
             }
 
             // Preload image before revealing
@@ -2996,7 +3203,6 @@ document.getElementById('nav-images-btn')?.addEventListener('click', switchToStu
                 const img = new Image();
                 img.onload = () => resolve();
                 img.onerror = () => {
-                    // Fallback to simpler URL if enhance failed
                     if (selectedModel !== 'cloud') {
                         const fallbackUrl = `https://image.pollinations.ai/prompt/${encodeURIComponent(fullPrompt)}?width=${selectedWidth}&height=${selectedHeight + 56}&seed=${seed}&model=flux&nologo=true`;
                         produceZeroWatermarkArtwork(fallbackUrl, selectedWidth, selectedHeight).then(cleanUrl => {
@@ -3014,57 +3220,55 @@ document.getElementById('nav-images-btn')?.addEventListener('click', switchToStu
             });
 
             // Generation succeeded!
-            generationFinished = true;
-            clearInterval(interval);
-
-            if (progressBarFill) progressBarFill.style.width = '100%';
-            if (progressPercent) progressPercent.textContent = '100%';
+            clearInterval(orbInterval);
 
             currentGeneratedUrl = finalImageUrl;
             currentGeneratedPrompt = fullPrompt;
 
-            // Display artwork with luminous aperture reveal animation
-            if (resultImg) {
-                resultImg.classList.remove('revealing');
-                resultImg.src = finalImageUrl;
-                void resultImg.offsetWidth; // Trigger reflow for CSS animation
-                resultImg.classList.add('revealing');
-            }
+            // Load into Raw Image and trigger Darkroom Canvas render
+            currentRawImageObj = new Image();
+            currentRawImageObj.onload = () => {
+                if (rawImgEl) rawImgEl.src = finalImageUrl;
+                if (legacyResultImg) legacyResultImg.src = finalImageUrl;
+                resetDarkroomSettings();
+                renderDarkroomCanvas();
+            };
+            currentRawImageObj.src = finalImageUrl;
+
             if (resultPromptSnippet) {
-                resultPromptSnippet.textContent = rawPrompt;
+                resultPromptSnippet.textContent = effectivePrompt;
                 resultPromptSnippet.title = fullPrompt;
             }
             if (resultModelBadge) {
-                resultModelBadge.textContent = selectedModel === 'cloud' 
-                    ? selectedCloudProvider.toUpperCase() 
+                resultModelBadge.textContent = selectedModel === 'cloud'
+                    ? selectedCloudProvider.toUpperCase()
                     : `FLUX ${selectedModel.toUpperCase()}`;
             }
 
             // Save to recent creations gallery
-            saveToStudioHistory(finalImageUrl, rawPrompt);
+            saveToStudioHistory(finalImageUrl, effectivePrompt);
 
-            // Switch to result container
+            // Switch to result container and paint canvas once visible
             setTimeout(() => {
+                clearInterval(orbInterval);
                 orbInstance?.destroy();
                 if (progressState) progressState.style.display = 'none';
                 if (resultContainer) resultContainer.style.display = 'flex';
                 isGenerating = false;
                 if (generateBtn) generateBtn.disabled = false;
-                if (generateText) generateText.textContent = 'Generate Artwork';
+                scrollContainer?.scrollTo({ top: 0, behavior: 'smooth' });
+                // Repaint Darkroom canvas to guarantee crisp rendering in visible layout
+                requestAnimationFrame(() => {
+                    renderDarkroomCanvas();
+                });
             }, 300);
 
         } catch (err) {
-            generationFinished = true;
-            clearInterval(interval);
+            clearInterval(orbInterval);
             console.error('Image Studio generation failed:', err);
 
             orbInstance?.setMode('ring');
             if (progressHeadline) progressHeadline.textContent = 'Generation Failed';
-            if (progressSubtext) progressSubtext.textContent = err.message || 'An unexpected error occurred.';
-            if (progressBarFill) {
-                progressBarFill.style.background = '#EF4444';
-                progressBarFill.style.width = '100%';
-            }
 
             setTimeout(() => {
                 orbInstance?.destroy();
@@ -3072,17 +3276,274 @@ document.getElementById('nav-images-btn')?.addEventListener('click', switchToStu
                 if (emptyState) emptyState.style.display = 'flex';
                 isGenerating = false;
                 if (generateBtn) generateBtn.disabled = false;
-                if (generateText) generateText.textContent = 'Generate Artwork';
                 alert(`AI Image Studio: ${err.message || 'Generation failed. Please try again.'}`);
             }, 1800);
         }
     }
 
-    // 15. Floating Dock Actions
+    // 12. Interactive Darkroom 60fps Canvas Engine
+    function renderDarkroomCanvas() {
+        if (!currentRawImageObj || !darkroomCanvas) return;
+
+        const w = currentRawImageObj.naturalWidth || selectedWidth;
+        const h = currentRawImageObj.naturalHeight || selectedHeight;
+        if (darkroomCanvas.width !== w || darkroomCanvas.height !== h) {
+            darkroomCanvas.width = w;
+            darkroomCanvas.height = h;
+        }
+
+        const ctx = darkroomCanvas.getContext('2d');
+        ctx.imageSmoothingEnabled = true;
+        ctx.imageSmoothingQuality = 'high';
+        ctx.clearRect(0, 0, w, h);
+
+        // 1. Build GPU-accelerated filter string
+        const b = 100 + darkroomSettings.brightness;
+        const c = 100 + darkroomSettings.contrast;
+        const s = 100 + darkroomSettings.saturation;
+        let sepia = 0;
+        let hue = 0;
+        if (darkroomSettings.warmth > 0) {
+            sepia = Math.min(50, darkroomSettings.warmth * 0.7);
+            hue = -darkroomSettings.warmth * 0.15;
+        } else if (darkroomSettings.warmth < 0) {
+            hue = darkroomSettings.warmth * 0.35;
+        }
+
+        ctx.save();
+        ctx.filter = `brightness(${b}%) contrast(${c}%) saturate(${s}%) sepia(${sepia}%) hue-rotate(${hue}deg)`;
+        ctx.drawImage(currentRawImageObj, 0, 0, w, h);
+        ctx.restore();
+
+        // 2. Warmth Color Grade Tint
+        if (darkroomSettings.warmth !== 0) {
+            ctx.save();
+            ctx.globalCompositeOperation = 'overlay';
+            if (darkroomSettings.warmth > 0) {
+                ctx.fillStyle = `rgba(255, 170, 70, ${darkroomSettings.warmth * 0.0035})`;
+            } else {
+                ctx.fillStyle = `rgba(50, 140, 255, ${Math.abs(darkroomSettings.warmth) * 0.0035})`;
+            }
+            ctx.fillRect(0, 0, w, h);
+            ctx.restore();
+        }
+
+        // 3. Radial Vignette Gradient
+        if (darkroomSettings.vignette > 0) {
+            ctx.save();
+            const maxRadius = Math.sqrt((w / 2) * (w / 2) + (h / 2) * (h / 2));
+            const innerRadius = maxRadius * 0.45;
+            const vigGrad = ctx.createRadialGradient(w / 2, h / 2, innerRadius, w / 2, h / 2, maxRadius);
+            const vigAlpha = (darkroomSettings.vignette / 100) * 0.75;
+            vigGrad.addColorStop(0, 'rgba(0,0,0,0)');
+            vigGrad.addColorStop(0.7, `rgba(0,0,0,${vigAlpha * 0.4})`);
+            vigGrad.addColorStop(1, `rgba(0,0,0,${vigAlpha})`);
+            ctx.fillStyle = vigGrad;
+            ctx.fillRect(0, 0, w, h);
+            ctx.restore();
+        }
+
+        // 4. Real-time Unsharp Edge Clarity
+        if (darkroomSettings.sharpness > 25) {
+            const extra = (darkroomSettings.sharpness - 25) / 75;
+            ctx.save();
+            ctx.globalAlpha = extra * 0.22;
+            ctx.globalCompositeOperation = 'overlay';
+            ctx.drawImage(currentRawImageObj, 0, 0, w, h);
+            ctx.restore();
+        }
+    }
+
+    rawImgEl?.addEventListener('load', () => {
+        renderDarkroomCanvas();
+    });
+
+    // Sliders & Labels Binding
+    const sliderDefs = [
+        { id: 'dr-slider-brightness', key: 'brightness', valId: 'val-dr-brightness', unit: '%' },
+        { id: 'dr-slider-contrast', key: 'contrast', valId: 'val-dr-contrast', unit: '%' },
+        { id: 'dr-slider-saturation', key: 'saturation', valId: 'val-dr-saturation', unit: '%' },
+        { id: 'dr-slider-warmth', key: 'warmth', valId: 'val-dr-warmth', unit: '%' },
+        { id: 'dr-slider-vignette', key: 'vignette', valId: 'val-dr-vignette', unit: '%' },
+        { id: 'dr-slider-sharpness', key: 'sharpness', valId: 'val-dr-sharpness', unit: '%' }
+    ];
+
+    sliderDefs.forEach(def => {
+        const input = document.getElementById(def.id);
+        const valEl = document.getElementById(def.valId);
+        if (!input) return;
+        input.addEventListener('input', () => {
+            const num = parseInt(input.value, 10);
+            darkroomSettings[def.key] = num;
+            if (valEl) valEl.textContent = `${num > 0 && def.unit === '%' && def.key !== 'vignette' && def.key !== 'sharpness' ? '+' : ''}${num}${def.unit}`;
+            renderDarkroomCanvas();
+        });
+    });
+
+    function resetDarkroomSettings() {
+        darkroomSettings.brightness = 0;
+        darkroomSettings.contrast = 0;
+        darkroomSettings.saturation = 0;
+        darkroomSettings.warmth = 0;
+        darkroomSettings.vignette = 0;
+        darkroomSettings.sharpness = 25;
+        darkroomSettings.supersampled = false;
+
+        sliderDefs.forEach(def => {
+            const input = document.getElementById(def.id);
+            const valEl = document.getElementById(def.valId);
+            if (input) input.value = darkroomSettings[def.key];
+            if (valEl) {
+                const num = darkroomSettings[def.key];
+                valEl.textContent = `${num}${def.unit}`;
+            }
+        });
+
+        document.querySelectorAll('.dr-preset-chip').forEach(c => {
+            c.classList.toggle('active', c.getAttribute('data-preset') === 'original');
+        });
+    }
+
+    document.getElementById('darkroom-reset-btn')?.addEventListener('click', () => {
+        resetDarkroomSettings();
+        renderDarkroomCanvas();
+    });
+
+    // Darkroom Preset Chips
+    const DARKROOM_PRESETS = {
+        original: { brightness: 0, contrast: 0, saturation: 0, warmth: 0, vignette: 0, sharpness: 25 },
+        cinematic: { brightness: 2, contrast: 18, saturation: 10, warmth: -12, vignette: 24, sharpness: 35 },
+        cyberpunk: { brightness: 4, contrast: 24, saturation: 32, warmth: -20, vignette: 30, sharpness: 40 },
+        hdr: { brightness: 6, contrast: 28, saturation: 22, warmth: 4, vignette: 12, sharpness: 50 },
+        vintage: { brightness: 6, contrast: -8, saturation: -16, warmth: 24, vignette: 38, sharpness: 15 },
+        noir: { brightness: -4, contrast: 35, saturation: -100, warmth: 0, vignette: 45, sharpness: 30 },
+        golden: { brightness: 8, contrast: 12, saturation: 14, warmth: 32, vignette: 18, sharpness: 28 },
+        pastel: { brightness: 12, contrast: -12, saturation: 18, warmth: 6, vignette: 0, sharpness: 20 }
+    };
+
+    document.querySelectorAll('.dr-preset-chip').forEach(chip => {
+        chip.addEventListener('click', () => {
+            const presetKey = chip.getAttribute('data-preset');
+            const p = DARKROOM_PRESETS[presetKey];
+            if (!p) return;
+
+            document.querySelectorAll('.dr-preset-chip').forEach(c => c.classList.remove('active'));
+            chip.classList.add('active');
+
+            Object.assign(darkroomSettings, p);
+            sliderDefs.forEach(def => {
+                const input = document.getElementById(def.id);
+                const valEl = document.getElementById(def.valId);
+                if (input) input.value = darkroomSettings[def.key];
+                if (valEl) {
+                    const num = darkroomSettings[def.key];
+                    valEl.textContent = `${num > 0 && def.unit === '%' && def.key !== 'vignette' && def.key !== 'sharpness' ? '+' : ''}${num}${def.unit}`;
+                }
+            });
+            renderDarkroomCanvas();
+        });
+    });
+
+    // 4K Sharpen Button (Deep unsharp mask pass)
+    document.getElementById('darkroom-supersample-btn')?.addEventListener('click', async () => {
+        const btn = document.getElementById('darkroom-supersample-btn');
+        if (!currentRawImageObj || !darkroomCanvas) return;
+        const originalHtml = btn ? btn.innerHTML : '';
+        if (btn) btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Processing 4K...';
+
+        try {
+            const currentDataUrl = darkroomCanvas.toDataURL('image/png');
+            const enhancedUrl = await enhanceImageQualityCanvas(currentDataUrl, {
+                scale: 1.0,
+                sharpen: true,
+                contrast: true,
+                hdrBoost: true
+            });
+
+            const sharpenedImg = new Image();
+            sharpenedImg.onload = () => {
+                currentRawImageObj = sharpenedImg;
+                darkroomSettings.sharpness = 60;
+                const sharpSlider = document.getElementById('dr-slider-sharpness');
+                const sharpVal = document.getElementById('val-dr-sharpness');
+                if (sharpSlider) sharpSlider.value = 60;
+                if (sharpVal) sharpVal.textContent = '60%';
+                renderDarkroomCanvas();
+                if (btn) {
+                    btn.innerHTML = '<i class="fas fa-check"></i> 4K Applied!';
+                    setTimeout(() => { if (btn) btn.innerHTML = originalHtml; }, 2200);
+                }
+            };
+            sharpenedImg.src = enhancedUrl;
+        } catch (e) {
+            console.error('4K Sharpen failed:', e);
+            if (btn) btn.innerHTML = originalHtml;
+        }
+    });
+
+    // 13. Split Before/After Divider Dragging & Toggle
+    let isDraggingSplit = false;
+
+    function updateSplitPosition(clientX) {
+        if (!splitContainer) return;
+        const rect = splitContainer.getBoundingClientRect();
+        let pct = ((clientX - rect.left) / rect.width) * 100;
+        pct = Math.max(0, Math.min(100, pct));
+        splitContainer.style.setProperty('--split-pos', `${pct}%`);
+    }
+
+    splitDivider?.addEventListener('mousedown', (e) => {
+        isDraggingSplit = true;
+        e.preventDefault();
+    });
+
+    window.addEventListener('mousemove', (e) => {
+        if (isDraggingSplit) {
+            updateSplitPosition(e.clientX);
+        }
+    });
+
+    window.addEventListener('mouseup', () => {
+        isDraggingSplit = false;
+    });
+
+    splitDivider?.addEventListener('touchstart', (e) => {
+        isDraggingSplit = true;
+    }, { passive: true });
+
+    window.addEventListener('touchmove', (e) => {
+        if (isDraggingSplit && e.touches[0]) {
+            updateSplitPosition(e.touches[0].clientX);
+        }
+    }, { passive: true });
+
+    window.addEventListener('touchend', () => {
+        isDraggingSplit = false;
+    });
+
+    splitToggleBtn?.addEventListener('click', () => {
+        if (!splitContainer) return;
+        const currentPos = splitContainer.style.getPropertyValue('--split-pos');
+        if (currentPos === '0%' || currentPos === '0') {
+            splitContainer.style.setProperty('--split-pos', '50%');
+            splitToggleBtn.innerHTML = '<i class="fas fa-columns"></i> <span>Split View</span>';
+        } else {
+            splitContainer.style.setProperty('--split-pos', '0%');
+            splitToggleBtn.innerHTML = '<i class="fas fa-eye"></i> <span>Full Darkroom</span>';
+        }
+    });
+
+    // 14. Action Dock Buttons
     downloadBtn?.addEventListener('click', () => {
-        if (!currentGeneratedUrl) return;
+        let exportUrl = currentGeneratedUrl;
+        try {
+            if (darkroomCanvas && darkroomCanvas.width > 0) {
+                exportUrl = darkroomCanvas.toDataURL('image/png');
+            }
+        } catch (e) {}
+        if (!exportUrl) return;
         const a = document.createElement('a');
-        a.href = currentGeneratedUrl;
+        a.href = exportUrl;
         a.download = `ocal-artwork-${Date.now()}.png`;
         document.body.appendChild(a);
         a.click();
@@ -3090,53 +3551,54 @@ document.getElementById('nav-images-btn')?.addEventListener('click', switchToStu
     });
 
     copyBtn?.addEventListener('click', async () => {
-        if (!currentGeneratedUrl) return;
+        let copied = false;
         try {
-            if (currentGeneratedUrl.startsWith('data:image/')) {
-                const res = await fetch(currentGeneratedUrl);
-                const blob = await res.blob();
-                await navigator.clipboard.write([new ClipboardItem({ [blob.type]: blob })]);
-            } else {
-                await navigator.clipboard.writeText(currentGeneratedUrl);
+            if (darkroomCanvas && darkroomCanvas.toBlob) {
+                darkroomCanvas.toBlob(async (blob) => {
+                    if (blob) {
+                        await navigator.clipboard.write([new ClipboardItem({ 'image/png': blob })]);
+                        showCopiedSuccess();
+                    }
+                }, 'image/png');
+                copied = true;
             }
-            const originalHtml = copyBtn.innerHTML;
-            copyBtn.innerHTML = '<i class="fas fa-check"></i> <span>Copied!</span>';
-            setTimeout(() => { copyBtn.innerHTML = originalHtml; }, 2000);
-        } catch (e) {
-            navigator.clipboard.writeText(currentGeneratedUrl);
-            const originalHtml = copyBtn.innerHTML;
-            copyBtn.innerHTML = '<i class="fas fa-check"></i> <span>Copied!</span>';
-            setTimeout(() => { copyBtn.innerHTML = originalHtml; }, 2000);
+        } catch (e) {}
+
+        if (!copied && currentGeneratedUrl) {
+            try {
+                if (currentGeneratedUrl.startsWith('data:image/')) {
+                    const res = await fetch(currentGeneratedUrl);
+                    const blob = await res.blob();
+                    await navigator.clipboard.write([new ClipboardItem({ [blob.type]: blob })]);
+                } else {
+                    await navigator.clipboard.writeText(currentGeneratedUrl);
+                }
+                showCopiedSuccess();
+            } catch (err) {
+                navigator.clipboard.writeText(currentGeneratedUrl);
+                showCopiedSuccess();
+            }
         }
     });
+
+    function showCopiedSuccess() {
+        if (!copyBtn) return;
+        const originalHtml = copyBtn.innerHTML;
+        copyBtn.innerHTML = '<i class="fas fa-check"></i> <span>Copied!</span>';
+        setTimeout(() => { copyBtn.innerHTML = originalHtml; }, 2000);
+    }
 
     zoomBtn?.addEventListener('click', () => {
-        if (!currentGeneratedUrl || !lightbox) return;
-        if (lightboxImg) lightboxImg.src = currentGeneratedUrl;
+        if (!lightbox) return;
+        let exportUrl = currentGeneratedUrl;
+        try {
+            if (darkroomCanvas && darkroomCanvas.width > 0) {
+                exportUrl = darkroomCanvas.toDataURL('image/png');
+            }
+        } catch (e) {}
+        if (lightboxImg) lightboxImg.src = exportUrl;
         if (lightboxCaption) lightboxCaption.textContent = currentGeneratedPrompt;
         lightbox.style.display = 'flex';
-    });
-
-    // Remix Feature: mutate seed and add nuanced creative variation
-    remixBtn?.addEventListener('click', () => {
-        if (isGenerating) return;
-        if (seedInput) {
-            seedInput.value = Math.floor(Math.random() * 9000000) + 100000;
-        }
-        const remixModifiers = [
-            'alternate angle, dramatic composition variation',
-            'atmospheric perspective, hyper-detailed rendering shift',
-            'volumetric haze, dynamic contrast variation',
-            'photographic depth, subtle color grading shift',
-            'intense mood, richer ambient reflections'
-        ];
-        const chosen = remixModifiers[Math.floor(Math.random() * remixModifiers.length)];
-        let currentPrompt = promptInput?.value?.trim() || '';
-        if (currentPrompt && !currentPrompt.includes('variation')) {
-            promptInput.value = `${currentPrompt}, ${chosen}`;
-            updatePromptCounter();
-        }
-        startImageGeneration();
     });
 
     lightboxClose?.addEventListener('click', () => {
@@ -3157,16 +3619,47 @@ document.getElementById('nav-images-btn')?.addEventListener('click', switchToStu
         }
     });
 
+    // Remix Feature: Mutate seed and add nuanced creative prompt variation
+    remixBtn?.addEventListener('click', () => {
+        if (isGenerating) return;
+        if (seedInput) {
+            seedInput.value = Math.floor(Math.random() * 9000000) + 100000;
+        }
+        const remixModifiers = [
+            'alternate angle, dramatic composition variation',
+            'atmospheric perspective, hyper-detailed rendering shift',
+            'volumetric haze, dynamic contrast variation',
+            'photographic depth, subtle color grading shift',
+            'intense mood, richer ambient reflections'
+        ];
+        const chosen = remixModifiers[Math.floor(Math.random() * remixModifiers.length)];
+        let currentPrompt = promptInput?.value?.trim() || '';
+        if (currentPrompt && !currentPrompt.includes('variation')) {
+            promptInput.value = `${currentPrompt}, ${chosen}`;
+            handlePromptInput();
+        }
+        startImageGeneration();
+    });
+
+    // Send Artwork to Chat View
     chatBtn?.addEventListener('click', () => {
-        if (!currentGeneratedUrl) return;
+        let exportUrl = currentGeneratedUrl;
+        try {
+            if (darkroomCanvas && darkroomCanvas.width > 0) {
+                exportUrl = darkroomCanvas.toDataURL('image/png');
+            }
+        } catch (e) {}
+        if (!exportUrl) return;
+
         const queryBox = document.getElementById('ai-query');
         if (queryBox) {
-            queryBox.value = `Here is an artwork I generated in AI Studio:\n![${currentGeneratedPrompt.slice(0, 40)}](${currentGeneratedUrl})\n\nTell me what you think about this composition and how to improve it.`;
+            queryBox.value = `Here is an artwork I created in AI Image Studio:\n![${currentGeneratedPrompt.slice(0, 40)}](${exportUrl})\n\nTell me what you think about this composition and how to enhance it further.`;
         }
         switchToChat();
         queryBox?.focus();
     });
 
+    // Regenerate with New Random Seed
     regenBtn?.addEventListener('click', () => {
         if (seedInput) {
             seedInput.value = Math.floor(Math.random() * 9000000) + 100000;
@@ -3174,7 +3667,7 @@ document.getElementById('nav-images-btn')?.addEventListener('click', switchToStu
         startImageGeneration();
     });
 
-    // 16. Recent Creations Gallery Persistence
+    // 15. Recent Creations Gallery Persistence
     const HISTORY_KEY = 'ocal_studio_creations';
 
     function loadStudioHistory() {
@@ -3217,20 +3710,26 @@ document.getElementById('nav-images-btn')?.addEventListener('click', switchToStu
             thumb.addEventListener('click', () => {
                 if (promptInput) {
                     promptInput.value = item.prompt;
-                    updatePromptCounter();
+                    handlePromptInput();
                 }
                 currentGeneratedUrl = item.url;
                 currentGeneratedPrompt = item.prompt;
-                if (resultImg) {
-                    resultImg.classList.remove('revealing');
-                    resultImg.src = item.url;
-                    void resultImg.offsetWidth;
-                    resultImg.classList.add('revealing');
-                }
+
+                currentRawImageObj = new Image();
+                currentRawImageObj.crossOrigin = 'anonymous';
+                currentRawImageObj.onload = () => {
+                    if (rawImgEl) rawImgEl.src = item.url;
+                    if (legacyResultImg) legacyResultImg.src = item.url;
+                    resetDarkroomSettings();
+                    renderDarkroomCanvas();
+                };
+                currentRawImageObj.src = item.url;
+
                 if (resultPromptSnippet) resultPromptSnippet.textContent = item.prompt;
                 if (emptyState) emptyState.style.display = 'none';
                 if (progressState) progressState.style.display = 'none';
                 if (resultContainer) resultContainer.style.display = 'flex';
+                scrollContainer?.scrollTo({ top: 0, behavior: 'smooth' });
             });
             galleryStrip.appendChild(thumb);
         });
@@ -3245,7 +3744,9 @@ document.getElementById('nav-images-btn')?.addEventListener('click', switchToStu
 
     // Initial render of gallery & counter
     renderGallery();
-    updatePromptCounter();
+    if (promptInput) {
+        promptInput.style.height = '36px';
+    }
 })();
 
 function enhanceImageQualityCanvas(imgUrl, options = {}) {
@@ -3336,7 +3837,7 @@ function enhanceImageQualityCanvas(imgUrl, options = {}) {
 
 
 // True Canvas Image-to-Image (Img2Img) Feature Preservation & Neural Style Blender
-function blendImageToImage(sourceDataUrl, styleImgUrl, prompt) {
+function blendImageToImage(sourceDataUrl, styleImgUrl, prompt, strength = 0.65) {
     return new Promise((resolve) => {
         const sourceImg = new Image();
         const styleImg = new Image();
@@ -3359,26 +3860,32 @@ function blendImageToImage(sourceDataUrl, styleImgUrl, prompt) {
                 ctx.imageSmoothingEnabled = true;
                 ctx.imageSmoothingQuality = 'high';
 
-                // 1. Render base user photo (preserving couple / faces / composition)
+                // 1. Render base user photo (preserving structure / faces / composition)
                 ctx.drawImage(sourceImg, 0, 0, w, h);
+
+                // Calibrate blend opacities based on influence strength (0.1 to 0.9)
+                const s = Math.max(0.1, Math.min(0.95, strength));
+                const alphaSoft = Math.min(0.85, 0.2 + s * 0.5);
+                const alphaOverlay = Math.min(0.75, 0.15 + s * 0.4);
+                const alphaMultiply = Math.min(0.45, 0.05 + s * 0.25);
 
                 // 2. Soft-light blend AI model lighting & style projection onto base photo
                 ctx.save();
-                ctx.globalAlpha = 0.52;
+                ctx.globalAlpha = alphaSoft;
                 ctx.globalCompositeOperation = 'soft-light';
                 ctx.drawImage(styleImg, 0, 0, w, h);
                 ctx.restore();
 
                 // 3. Overlay style color grading & prompt atmosphere
                 ctx.save();
-                ctx.globalAlpha = 0.38;
+                ctx.globalAlpha = alphaOverlay;
                 ctx.globalCompositeOperation = 'overlay';
                 ctx.drawImage(styleImg, 0, 0, w, h);
                 ctx.restore();
 
                 // 4. Multiply shadow contrast
                 ctx.save();
-                ctx.globalAlpha = 0.18;
+                ctx.globalAlpha = alphaMultiply;
                 ctx.globalCompositeOperation = 'multiply';
                 ctx.drawImage(styleImg, 0, 0, w, h);
                 ctx.restore();
@@ -3386,7 +3893,7 @@ function blendImageToImage(sourceDataUrl, styleImgUrl, prompt) {
                 // 5. Enhance sharpness & dynamic range
                 const imgData = ctx.getImageData(0, 0, w, h);
                 const data = imgData.data;
-                const contrastFactor = 1.08;
+                const contrastFactor = 1.05 + s * 0.08;
                 for (let i = 0; i < data.length; i += 4) {
                     data[i]     = Math.min(255, Math.max(0, (data[i] - 128) * contrastFactor + 128));
                     data[i + 1] = Math.min(255, Math.max(0, (data[i + 1] - 128) * contrastFactor + 128));

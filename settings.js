@@ -422,25 +422,27 @@ document.querySelectorAll('.ext-card .btn').forEach(btn => {
 
 function filterExtSettings() {
     const query = document.getElementById('ext-search-input')?.value.toLowerCase().trim() || '';
-    document.querySelectorAll('#ext-settings-grid .ext-card-row').forEach(card => {
-        const name = (card.dataset.extname || card.querySelector('.ext-card-name')?.innerText || '').toLowerCase();
-        card.style.display = !query || name.includes(query) ? '' : 'none';
+    const cards = document.querySelectorAll('#ext-settings-grid .ext-card-row, #builtin-modules-grid .ext-card-row');
+    let visible = 0;
+    cards.forEach(card => {
+        const name = (card.dataset.extname || card.querySelector('.str-title, .ext-card-name')?.innerText || '').toLowerCase();
+        const matches = !query || name.includes(query);
+        card.style.display = matches ? 'flex' : 'none';
+        if (matches) visible++;
     });
+    const statBadge = document.getElementById('ext-search-stat-count');
+    if (statBadge) {
+        statBadge.textContent = query ? `${visible} found` : 'All modules';
+    }
 }
 window.filterExtSettings = filterExtSettings;
 
 function filterExtensions() {
-    const query = document.getElementById('ext-search-input')?.value.toLowerCase().trim() || '';
-    // Support both old grid and new grid
-    const cards = document.querySelectorAll('#ext-settings-grid .ext-card-row, #extensions-grid .ext-item-card');
-    cards.forEach(card => {
-        const name = (card.dataset.extname || card.querySelector('.ext-card-name, h5')?.innerText || '').toLowerCase();
-        card.style.display = !query || name.includes(query) ? '' : 'none';
-    });
+    filterExtSettings();
 }
 
 const extSearchInput = document.getElementById('ext-search-input');
-if (extSearchInput) extSearchInput.addEventListener('input', filterExtensions);
+if (extSearchInput) extSearchInput.addEventListener('input', filterExtSettings);
 
 document.querySelectorAll('.filter-pill').forEach(btn => {
     btn.addEventListener('click', () => {
@@ -2212,6 +2214,7 @@ async function renderExtensions(s = null) {
 
     // Dynamic (installed) extensions from Store or Unpacked
     const grid = document.getElementById('ext-settings-grid');
+    const emptyRow = document.getElementById('no-installed-exts');
     let dynamicActive = 0;
     const extensionsList = (s.extensions && Array.isArray(s.extensions)) ? s.extensions : [];
     const customCount = extensionsList.length;
@@ -2227,7 +2230,11 @@ async function renderExtensions(s = null) {
             }
         });
 
-        if (extensionsList.length > 0) {
+        if (extensionsList.length === 0) {
+            if (emptyRow) emptyRow.style.display = 'flex';
+        } else {
+            if (emptyRow) emptyRow.style.display = 'none';
+
             extensionsList.forEach(ext => {
                 if (ext.enabled) dynamicActive++;
                 const statusIndicatorClass = ext.enabled ? 'on' : 'off';
@@ -2235,13 +2242,13 @@ async function renderExtensions(s = null) {
                 const tagText = ext.isLocal ? 'UNPACKED' : 'STORE';
                 const iconSrc = ext.iconData || ext.icon || '';
                 const iconHtml = iconSrc
-                    ? `<img src="${iconSrc}" alt="${escapeHtml(ext.name)}" style="width:30px; height:30px; object-fit:contain; border-radius:7px; display:block;">`
-                    : `<i class="fas fa-puzzle-piece" style="font-size: 18px; color: #64748B;"></i>`;
+                    ? `<img src="${iconSrc}" alt="${escapeHtml(ext.name)}" style="width:20px; height:20px; object-fit:contain; border-radius:4px; display:block;">`
+                    : `<i class="fas fa-puzzle-piece" style="font-size: 14px; color: var(--text-dim);"></i>`;
 
                 let el = document.getElementById('ext-card-' + ext.id);
                 if (el) {
                     // Update in-place to prevent hover loss or click interruption
-                    el.className = 'ext-card-row sp-card-white dynamic-ext' + (ext.enabled ? ' is-active' : '');
+                    el.className = 'settings-toggle-row ext-card-row dynamic-ext' + (ext.enabled ? ' is-active' : '');
                     el.dataset.extname = ((ext.name || '') + ' ' + (ext.description || '')).toLowerCase();
 
                     const toggleInput = el.querySelector('.ext-toggle-input');
@@ -2257,67 +2264,65 @@ async function renderExtensions(s = null) {
 
                     const pinBtn = el.querySelector('.ext-pin-btn');
                     if (pinBtn) {
-                        pinBtn.className = `ext-action-icon-btn ext-pin-btn ${ext.pinned ? 'active' : ''}`;
+                        pinBtn.className = `spc-action-btn ext-pin-btn ${ext.pinned ? 'active' : ''}`;
                         pinBtn.title = ext.pinned ? 'Unpin from Toolbar' : 'Pin to Toolbar';
+                        pinBtn.innerHTML = `<i class="fas fa-thumbtack" style="font-size: 11px;"></i><span>${ext.pinned ? 'Pinned' : 'Pin'}</span>`;
                     }
                 } else {
-                    // Create new card
+                    // Create new native settings list row
                     el = document.createElement('div');
                     el.id = 'ext-card-' + ext.id;
                     el.dataset.extid = ext.id;
-                    el.className = 'ext-card-row sp-card-white dynamic-ext' + (ext.enabled ? ' is-active' : '');
+                    el.className = 'settings-toggle-row ext-card-row dynamic-ext' + (ext.enabled ? ' is-active' : '');
                     el.dataset.extname = ((ext.name || '') + ' ' + (ext.description || '')).toLowerCase();
 
                     el.innerHTML = `
-                        <div class="ext-card-header">
-                            <div class="ext-card-header-left">
-                                <div class="ext-card-icon dynamic-icon">
-                                    ${iconHtml}
-                                </div>
-                                <div class="ext-card-identity">
-                                    <h4 class="ext-card-name" title="${escapeHtml(ext.name || '')}">${escapeHtml(ext.name || 'Extension')}</h4>
-                                    <div class="ext-card-meta-row">
-                                        <span class="ext-card-tag ${ext.isLocal ? 'unpacked' : 'installed'}">${tagText}</span>
-                                        <span class="ext-card-version" title="Extension ID: ${escapeHtml(ext.id || '')}">v${escapeHtml(ext.version || '1.0')}</span>
-                                    </div>
-                                </div>
+                        <div class="str-left">
+                            <div class="str-icon">
+                                ${iconHtml}
                             </div>
-                            <label class="ext-toggle-wrap" title="${ext.enabled ? 'Disable Extension' : 'Enable Extension'}">
-                                <input type="checkbox" class="ext-toggle-input" ${ext.enabled ? 'checked' : ''}
-                                    onchange="toggleExtState('${escapeJs(ext.id)}', this.checked)">
-                                <span class="ext-slider"></span>
-                            </label>
+                            <div class="str-text">
+                                <div style="display: flex; align-items: center; gap: 8px; flex-wrap: wrap;">
+                                    <span class="str-title" title="${escapeHtml(ext.name || '')}">${escapeHtml(ext.name || 'Extension')}</span>
+                                    <span class="ext-card-tag ${ext.isLocal ? 'unpacked' : 'installed'}">${tagText}</span>
+                                    <span class="ser-sub" style="font-size: 11px;">v${escapeHtml(ext.version || '1.0')}</span>
+                                </div>
+                                <span class="str-desc" title="${escapeHtml(ext.description || '')}">${escapeHtml(ext.description || 'Custom Chrome Web Store extension loaded into Ocal workspace.')}</span>
+                            </div>
                         </div>
-                        <div class="ext-card-desc" title="${escapeHtml(ext.description || '')}">
-                            ${escapeHtml(ext.description || 'Custom Chrome Web Store extension loaded into Ocal workspace.')}
-                        </div>
-                        <div class="ext-card-footer">
+                        <div class="str-right" style="gap: 8px; flex-shrink: 0;">
+                            ${ext.hasPopup ? `
+                                <button class="spc-action-btn" type="button" onclick="openExtPopup('${escapeJs(ext.id)}', this)" title="Launch Extension Popup">
+                                    <i class="fas fa-arrow-up-right-from-square" style="font-size: 11px;"></i>
+                                    <span>Popup</span>
+                                </button>
+                            ` : ''}
+                            ${ext.optionsPage ? `
+                                <button class="spc-action-btn" type="button" onclick="window.electronAPI.newTab ? window.electronAPI.newTab('chrome-extension://${escapeJs(ext.id)}/${escapeJs(ext.optionsPage)}') : window.open('chrome-extension://${escapeJs(ext.id)}/${escapeJs(ext.optionsPage)}')" title="Extension Options">
+                                    <i class="fas fa-gear" style="font-size: 11px;"></i>
+                                    <span>Options</span>
+                                </button>
+                            ` : ''}
+                            <button class="spc-action-btn ext-pin-btn ${ext.pinned ? 'active' : ''}" type="button" onclick="togglePinExt('${escapeJs(ext.id)}')" title="${ext.pinned ? 'Unpin from Toolbar' : 'Pin to Toolbar'}">
+                                <i class="fas fa-thumbtack" style="font-size: 11px;"></i>
+                                <span>${ext.pinned ? 'Pinned' : 'Pin'}</span>
+                            </button>
+                            ${!ext.isLocal ? `
+                                <button class="spc-action-btn" type="button" onclick="window.electronAPI.newTab ? window.electronAPI.newTab('https://chromewebstore.google.com/detail/${escapeJs(ext.id)}') : window.open('https://chromewebstore.google.com/detail/${escapeJs(ext.id)}')" title="View on Chrome Web Store">
+                                    <i class="fas fa-store" style="font-size: 11px;"></i>
+                                </button>
+                            ` : ''}
+                            <button class="spc-action-btn" type="button" onclick="removeExtFromSettings('${escapeJs(ext.id)}', '${escapeJs(ext.name)}')" title="Uninstall Extension" style="color: #ef4444; border-color: rgba(239, 68, 68, 0.25);">
+                                <i class="fas fa-trash" style="font-size: 11px;"></i>
+                            </button>
                             <span class="ext-status-indicator ${statusIndicatorClass}">
                                 <span class="status-dot"></span><span>${statusText}</span>
                             </span>
-                            <div class="ext-card-actions">
-                                ${ext.hasPopup ? `
-                                    <button class="ext-action-icon-btn" onclick="openExtPopup('${escapeJs(ext.id)}', this)" title="Launch Extension Popup">
-                                        <i class="fas fa-arrow-up-right-from-square"></i>
-                                    </button>
-                                ` : ''}
-                                ${ext.optionsPage ? `
-                                    <button class="ext-action-icon-btn" onclick="window.electronAPI.newTab ? window.electronAPI.newTab('chrome-extension://${escapeJs(ext.id)}/${escapeJs(ext.optionsPage)}') : window.open('chrome-extension://${escapeJs(ext.id)}/${escapeJs(ext.optionsPage)}')" title="Extension Options">
-                                        <i class="fas fa-gear"></i>
-                                    </button>
-                                ` : ''}
-                                <button class="ext-action-icon-btn ext-pin-btn ${ext.pinned ? 'active' : ''}" onclick="togglePinExt('${escapeJs(ext.id)}')" title="${ext.pinned ? 'Unpin from Toolbar' : 'Pin to Toolbar'}">
-                                    <i class="fas fa-thumbtack"></i>
-                                </button>
-                                ${!ext.isLocal ? `
-                                    <button class="ext-action-icon-btn" onclick="window.electronAPI.newTab ? window.electronAPI.newTab('https://chromewebstore.google.com/detail/${escapeJs(ext.id)}') : window.open('https://chromewebstore.google.com/detail/${escapeJs(ext.id)}')" title="View on Chrome Web Store">
-                                        <i class="fas fa-store"></i>
-                                    </button>
-                                ` : ''}
-                                <button class="ext-action-icon-btn danger" onclick="removeExtFromSettings('${escapeJs(ext.id)}', '${escapeJs(ext.name)}')" title="Uninstall Extension">
-                                    <i class="fas fa-trash"></i>
-                                </button>
-                            </div>
+                            <label class="native-switch" title="${ext.enabled ? 'Disable Extension' : 'Enable Extension'}">
+                                <input type="checkbox" class="ext-toggle-input" ${ext.enabled ? 'checked' : ''}
+                                    onchange="toggleExtState('${escapeJs(ext.id)}', this.checked)">
+                                <span class="native-switch-slider"></span>
+                            </label>
                         </div>
                     `;
                     grid.appendChild(el);
@@ -2326,7 +2331,7 @@ async function renderExtensions(s = null) {
         }
     }
 
-    // Update Home-style Stats Bar Counters
+    // Update Counter Badges
     const activeCount = builtinsActive + dynamicActive;
     const totalCount = builtins.length + customCount;
     const statActiveEl = document.getElementById('ext-stat-active');
@@ -2335,6 +2340,11 @@ async function renderExtensions(s = null) {
     if (statActiveEl) statActiveEl.innerText = activeCount;
     if (statCustomEl) statCustomEl.innerText = customCount;
     if (statTotalEl)  statTotalEl.innerText  = totalCount;
+
+    const installedCountBadge = document.getElementById('ext-installed-count-text');
+    if (installedCountBadge) {
+        installedCountBadge.innerText = `${dynamicActive} active (${customCount} installed)`;
+    }
 
     if (window.filterExtSettings) window.filterExtSettings();
 }
@@ -3740,8 +3750,26 @@ window.selectAIEngine = function(engine) {
     }
 
     window.electronAPI.updateSetting('aiEngine', engine);
-    const cards = document.querySelectorAll('.ai-provider-card');
-    cards.forEach(c => c.classList.toggle('active', c.dataset.value === engine));
+    const cards = document.querySelectorAll('.ai-provider-card, .ai-provider-row');
+    cards.forEach(c => {
+        const isActive = c.dataset.value === engine;
+        c.classList.toggle('active', isActive);
+        const statusEl = c.querySelector('.spc-status');
+        const actionBtn = c.querySelector('.spc-action-btn');
+        if (statusEl) {
+            statusEl.classList.toggle('active', isActive);
+            statusEl.innerHTML = isActive 
+                ? '<span class="status-dot"></span><span>Selected</span>' 
+                : '<span class="status-dot"></span><span>Available</span>';
+        }
+        if (actionBtn) {
+            actionBtn.classList.toggle('active', isActive);
+            actionBtn.innerHTML = isActive 
+                ? '<i class="fas fa-check"></i><span>Selected</span>' 
+                : '<span>Select</span>';
+        }
+    });
+
     if (typeof window.updateAISettingsVisibility === 'function') {
         window.updateAISettingsVisibility(engine);
     }
@@ -3754,20 +3782,71 @@ window.selectAIPersona = function(style) {
     pills.forEach(p => p.classList.toggle('active', p.dataset.value === style));
 };
 
+window.handleAIPersonaChange = function(val) {
+    if (window.electronAPI && window.electronAPI.updateSetting) {
+        window.electronAPI.updateSetting('aiPersona', val);
+    }
+    try {
+        localStorage.setItem('ocal_ai_persona', val);
+    } catch (e) {}
+};
+
+window.handleAIResponseStyleChange = function(val) {
+    if (window.electronAPI && window.electronAPI.updateSetting) {
+        window.electronAPI.updateSetting('aiResponseStyle', val);
+    }
+    const pills = document.querySelectorAll('.ai-persona-card');
+    pills.forEach(p => p.classList.toggle('active', p.dataset.value === val));
+};
+
+window.handleAILanguageChange = function(val) {
+    if (window.electronAPI && window.electronAPI.updateSetting) {
+        window.electronAPI.updateSetting('aiLanguage', val);
+    }
+};
+
+window.setAIPresetPrompt = function(promptText) {
+    const input = document.getElementById('ai-preview-input');
+    if (input) {
+        input.value = promptText;
+        input.focus();
+    }
+};
+
+window.handleClearAIMemory = function() {
+    if (confirm('Are you sure you want to clear learned AI memories, conversation context, and profile facts?')) {
+        try {
+            localStorage.removeItem('ocal_ai_memory');
+            localStorage.setItem('ocal_ai_memory', '[]');
+        } catch (e) {}
+        if (window.electronAPI && window.electronAPI.updateSetting) {
+            window.electronAPI.updateSetting('aiLearnedFacts', []);
+        }
+        const stat = document.getElementById('ai-test-status');
+        if (stat) {
+            stat.style.display = 'block';
+            stat.innerText = 'AI memory bank and conversation context have been reset.';
+            setTimeout(() => { stat.style.display = 'none'; }, 4000);
+        }
+    }
+};
+
 window.updateAIStats = function() {
     window.electronAPI.getSettings().then(s => {
         const engine = s.aiEngine || 'local';
         const statEngine = document.getElementById('ai-stat-engine');
         const statModel = document.getElementById('ai-stat-model');
         const statAgency = document.getElementById('ai-stat-agency');
+        const headerBadge = document.getElementById('ai-active-engine-badge');
 
         const engineLabels = {
-            local: 'Local',
-            gemini: 'Gemini',
-            openai: 'ChatGPT',
-            custom: 'Custom'
+            local: 'Local Ollama',
+            gemini: 'Google Gemini Pro',
+            openai: 'OpenAI ChatGPT (GPT-4o)',
+            custom: 'Custom API'
         };
         if (statEngine) statEngine.innerText = engineLabels[engine] || 'Local';
+        if (headerBadge) headerBadge.innerText = `${engineLabels[engine] || 'Local Neural Core'} · Ready`;
 
         if (statModel) {
             if (engine === 'local') statModel.innerText = (s.localModel || 'gemma-4').split(':')[0];
@@ -3793,7 +3872,12 @@ window.testAIPrompt = function() {
         window.electronAPI.send('open-ai-chat-prompt', prompt);
     }
     input.value = '';
-    alert(`Ocal AI received query: "${prompt}"\nProcessing with active neural backend...`);
+    const stat = document.getElementById('ai-test-status');
+    if (stat) {
+        stat.style.display = 'block';
+        stat.innerText = `Sent query to Ocal AI: "${prompt}". Check the AI Copilot sidepanel.`;
+        setTimeout(() => { stat.style.display = 'none'; }, 4500);
+    }
 };
 
 function renderAISettings(s) {
@@ -3801,8 +3885,25 @@ function renderAISettings(s) {
 
     // Active Engine
     const engine = s.aiEngine || 'local';
-    const cards = document.querySelectorAll('.ai-provider-card');
-    cards.forEach(c => c.classList.toggle('active', c.dataset.value === engine));
+    const cards = document.querySelectorAll('.ai-provider-card, .ai-provider-row');
+    cards.forEach(c => {
+        const isActive = c.dataset.value === engine;
+        c.classList.toggle('active', isActive);
+        const statusEl = c.querySelector('.spc-status');
+        const actionBtn = c.querySelector('.spc-action-btn');
+        if (statusEl) {
+            statusEl.classList.toggle('active', isActive);
+            statusEl.innerHTML = isActive 
+                ? '<span class="status-dot"></span><span>Selected</span>' 
+                : '<span class="status-dot"></span><span>Available</span>';
+        }
+        if (actionBtn) {
+            actionBtn.classList.toggle('active', isActive);
+            actionBtn.innerHTML = isActive 
+                ? '<i class="fas fa-check"></i><span>Selected</span>' 
+                : '<span>Select</span>';
+        }
+    });
     if (typeof window.updateAISettingsVisibility === 'function') {
         window.updateAISettingsVisibility(engine);
     }
@@ -3828,18 +3929,46 @@ function renderAISettings(s) {
     syncInput('custom-key-input', 'customApiKey');
     syncInput('local-endpoint-input', 'localEndpoint', 'http://localhost:11434');
 
-    // Toggles
-    const agencyCb = document.getElementById('ai-agency-toggle-cb');
-    if (agencyCb && s.aiAgencyEnabled !== undefined) agencyCb.checked = (s.aiAgencyEnabled !== false);
+    // Personalization inputs
+    syncInput('ai-user-name-input', 'aiUserName', s.userName || '');
+    syncInput('ai-custom-instructions-input', 'aiCustomInstructions', '');
 
-    const heuristicCb = document.getElementById('ai-heuristic-toggle-cb');
-    if (heuristicCb && s.aiHeuristicEnabled !== undefined) heuristicCb.checked = (s.aiHeuristicEnabled !== false);
+    // Selects
+    const personaSelect = document.getElementById('ai-persona-select');
+    if (personaSelect && s.aiPersona) {
+        personaSelect.value = s.aiPersona;
+    }
 
-    const deepScrapeCb = document.getElementById('ai-deep-scrape-toggle-cb');
-    if (deepScrapeCb && s.aiDeepScrape !== undefined) deepScrapeCb.checked = (s.aiDeepScrape !== false);
+    const styleSelect = document.getElementById('ai-response-style-select');
+    if (styleSelect && s.aiResponseStyle) {
+        styleSelect.value = s.aiResponseStyle;
+    }
 
-    const showReasoningCb = document.getElementById('ai-show-reasoning-toggle-cb');
-    if (showReasoningCb && s.aiShowReasoning !== undefined) showReasoningCb.checked = (s.aiShowReasoning !== false);
+    const langSelect = document.getElementById('ai-language-select');
+    if (langSelect && s.aiLanguage) {
+        langSelect.value = s.aiLanguage;
+    }
+
+    // Helper to sync toggles
+    const syncToggle = (id, key, defaultVal = true) => {
+        const cb = document.getElementById(id);
+        if (cb && s[key] !== undefined) {
+            cb.checked = (s[key] !== false);
+        } else if (cb) {
+            cb.checked = defaultVal;
+        }
+    };
+
+    syncToggle('ai-agency-toggle-cb', 'aiAgencyEnabled', true);
+    syncToggle('ai-heuristic-toggle-cb', 'aiHeuristicEnabled', true);
+    syncToggle('ai-deep-scrape-toggle-cb', 'aiDeepScrape', true);
+    syncToggle('ai-show-reasoning-toggle-cb', 'aiShowReasoning', true);
+    syncToggle('ai-page-context-toggle', 'aiPageContextEnabled', true);
+    syncToggle('ai-selection-pill-toggle', 'aiSelectionPillEnabled', true);
+    syncToggle('ai-auto-summarize-toggle', 'aiAutoSummarizeEnabled', true);
+    syncToggle('ai-omnibox-toggle', 'aiOmniboxEnabled', true);
+    syncToggle('ai-web-search-toggle', 'aiWebSearchEnabled', true);
+    syncToggle('ai-save-history-toggle', 'aiSaveHistory', true);
 
     // Sliders
     const tempSlider = document.getElementById('aiTemperature');

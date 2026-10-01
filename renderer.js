@@ -952,7 +952,8 @@ function getSimplifiedTitle(title, url) {
     if (url.includes('extensions.html') || url.startsWith('ocal://extensions')) return 'Extensions';
     if (url.includes('settings.html') || url.startsWith('ocal://settings')) return 'Settings';
     if (url.includes('downloads.html') || url.startsWith('ocal://downloads')) return 'Downloads';
-    if (url.includes('bookmarks.html') || url.startsWith('ocal://bookmarks')) return 'Bookmarks';
+    if (url.includes('bookmarks.html') || url.startsWith('ocal://bookmarks') || url.startsWith('ocal://saves')) return 'Bookmarks';
+    if (url.includes('history.html') || url.startsWith('ocal://history')) return 'History';
     if (url.includes('games.html') || url.startsWith('ocal://games')) return 'Games';
     if (url.includes('whats-new.html') || url.startsWith('ocal://whats-new')) return "What's New";
     if (url.includes('certificate-viewer.html') || url.startsWith('ocal://certificate-viewer')) return "Certificate Explorer";
@@ -1019,14 +1020,15 @@ function getTabIconHtml(tab, tintColor) {
     }
     
     const url = tab.url || '';
+    const accentColor = tintColor || 'var(--accent)';
+
+    // Internal pages take strict priority over any external or stale tab.favicon
     if (url.includes('ssl-warning.html') || url.startsWith('ocal://ssl-warning')) {
         return `<i class="fas fa-lock-open tab-favicon" style="color: #f59e0b;"></i>`;
     }
     if (url.includes('security-warning.html') || url.startsWith('ocal://security-warning')) {
         return `<i class="fas fa-triangle-exclamation tab-favicon" style="color: #ef4444;"></i>`;
     }
-    const accentColor = tintColor || 'var(--accent)';
-    if (tab.favicon) return `<img src="${tab.favicon}" class="tab-favicon">`;
     if (url.includes('suspended.html') || url.startsWith('ocal://suspended')) {
         try {
             const u = new URL(url.startsWith('file://') || url.startsWith('ocal://') ? url : 'https://' + url);
@@ -1041,22 +1043,30 @@ function getTabIconHtml(tab, tintColor) {
         return `<i class="fas fa-moon tab-favicon" style="color:${accentColor}"></i>`;
     }
 
-    if (!url || url.includes('home.html')) return `<i class="fas fa-house tab-favicon solid-icon" style="color:${accentColor}"></i>`;
+    if (!url || url.includes('home.html') || url.startsWith('ocal://home')) return `<i class="fas fa-house tab-favicon solid-icon" style="color:${accentColor}"></i>`;
+    if (url.includes('settings.html') || url.startsWith('ocal://settings')) return `<i class="fas fa-gear tab-favicon solid-icon" style="color:${accentColor}"></i>`;
     if (url.includes('extension-store.html') || url.startsWith('ocal://store') || url.startsWith('ocal://webstore') || url.startsWith('ocal://extension-store')) {
         return `<i class="fas fa-bag-shopping tab-favicon solid-icon" style="color:${accentColor}"></i>`;
     }
     if (url.includes('extensions.html') || url.startsWith('ocal://extensions')) return `<i class="fas fa-puzzle-piece tab-favicon solid-icon" style="color:${accentColor}"></i>`;
     if (url.includes('music-player.html') || url.startsWith('ocal://music-player') || url.startsWith('ocal://music')) return `<i class="fas fa-compact-disc tab-favicon solid-icon" style="color:${accentColor}"></i>`;
     if (url.includes('site-settings.html') || url.startsWith('ocal://site-settings')) return `<i class="fas fa-sliders tab-favicon solid-icon" style="color:${accentColor}"></i>`;
-    if (url.includes('settings.html')) return `<i class="fas fa-gear tab-favicon solid-icon" style="color:${accentColor}"></i>`;
     if (url.includes('pdf-viewer.html') || url.endsWith('.pdf') || url.startsWith('ocal://pdf-viewer') || url.startsWith('ocal://pdf')) return `<i class="fas fa-file-pdf tab-favicon solid-icon" style="color:${accentColor}"></i>`;
-    if (url.includes('file-manager.html') || url.startsWith('ocal://file-manager')) return `<i class="fas fa-folder-tree tab-favicon solid-icon" style="color:${accentColor}"></i>`;
+    if (url.includes('file-manager.html') || url.startsWith('ocal://file-manager') || url.includes('doc-viewer.html') || url.startsWith('ocal://doc-viewer')) return `<i class="fas fa-folder-tree tab-favicon solid-icon" style="color:${accentColor}"></i>`;
     if (url.includes('ai-sidebar.html') || url.startsWith('ocal://ai-sidebar') || url.startsWith('ocal://ai')) return `<i class="fas fa-wand-magic-sparkles tab-favicon solid-icon" style="color:${accentColor}"></i>`;
     if (url.includes('downloads.html') || url.startsWith('ocal://downloads')) return `<i class="fas fa-circle-down tab-favicon solid-icon" style="color:${accentColor}"></i>`;
+    if (url.includes('bookmarks.html') || url.startsWith('ocal://bookmarks') || url.startsWith('ocal://saves')) return `<i class="fas fa-bookmark tab-favicon solid-icon" style="color:${accentColor}"></i>`;
+    if (url.includes('history.html') || url.startsWith('ocal://history')) return `<i class="fas fa-clock-rotate-left tab-favicon solid-icon" style="color:${accentColor}"></i>`;
     if (url.includes('whats-new.html') || url.startsWith('ocal://whats-new')) return `<i class="fas fa-wand-magic-sparkles tab-favicon solid-icon" style="color:${accentColor}"></i>`;
+    if (url.includes('certificate-viewer.html') || url.startsWith('ocal://certificate-viewer')) return `<i class="fas fa-shield-halved tab-favicon solid-icon" style="color:${accentColor}"></i>`;
+    if (url.includes('photo-editor.html') || url.startsWith('ocal://photo-view') || url.startsWith('ocal://photo-editor') || url.startsWith('ocal://image-viewer')) return `<i class="fas fa-image tab-favicon solid-icon" style="color:${accentColor}"></i>`;
+    if (url.includes('offline.html') || url.startsWith('ocal://offline')) return `<i class="fas fa-bolt tab-favicon solid-icon" style="color:${accentColor}"></i>`;
     if (url.includes('game.html') || url.includes('games.html') || url.includes('snake.html') || url.includes('tetris.html') || url.startsWith('ocal://games') || url.startsWith('ocal://snake') || url.startsWith('ocal://tetris') || url.startsWith('ocal://runner') || url.startsWith('ocal://game')) {
         return `<i class="fas fa-gamepad tab-favicon solid-icon" style="color:${accentColor}"></i>`;
     }
+
+    // External webpage favicon
+    if (tab.favicon) return `<img src="${tab.favicon}" class="tab-favicon">`;
     
     // Search Engines
     if (url.includes('google.com')) return '<i class="fab fa-google tab-favicon" style="color:#4285F4"></i>';
@@ -1130,12 +1140,36 @@ function updateOmniboxIcon(url) {
         iconContainer.innerHTML = '<i class="fas fa-file-pdf" style="color:var(--accent)"></i>';
         return;
     }
-    if (url && (url.includes('file-manager.html') || url.startsWith('ocal://file-manager'))) {
+    if (url && (url.includes('file-manager.html') || url.startsWith('ocal://file-manager') || url.includes('doc-viewer.html') || url.startsWith('ocal://doc-viewer'))) {
         iconContainer.innerHTML = '<i class="fas fa-folder-tree" style="color:var(--accent)"></i>';
         return;
     }
     if (url && (url.includes('ai-sidebar.html') || url.startsWith('ocal://ai-sidebar') || url.startsWith('ocal://ai'))) {
         iconContainer.innerHTML = '<i class="fas fa-sparkles" style="color:var(--accent)"></i>';
+        return;
+    }
+    if (url && (url.includes('downloads.html') || url.startsWith('ocal://downloads'))) {
+        iconContainer.innerHTML = '<i class="fas fa-circle-down" style="color:var(--accent)"></i>';
+        return;
+    }
+    if (url && (url.includes('bookmarks.html') || url.startsWith('ocal://bookmarks') || url.startsWith('ocal://saves'))) {
+        iconContainer.innerHTML = '<i class="fas fa-bookmark" style="color:var(--accent)"></i>';
+        return;
+    }
+    if (url && (url.includes('history.html') || url.startsWith('ocal://history'))) {
+        iconContainer.innerHTML = '<i class="fas fa-clock-rotate-left" style="color:var(--accent)"></i>';
+        return;
+    }
+    if (url && (url.includes('whats-new.html') || url.startsWith('ocal://whats-new'))) {
+        iconContainer.innerHTML = '<i class="fas fa-wand-magic-sparkles" style="color:var(--accent)"></i>';
+        return;
+    }
+    if (url && (url.includes('certificate-viewer.html') || url.startsWith('ocal://certificate-viewer'))) {
+        iconContainer.innerHTML = '<i class="fas fa-shield-halved" style="color:var(--accent)"></i>';
+        return;
+    }
+    if (url && (url.includes('photo-editor.html') || url.startsWith('ocal://photo-view') || url.startsWith('ocal://photo-editor') || url.startsWith('ocal://image-viewer'))) {
+        iconContainer.innerHTML = '<i class="fas fa-image" style="color:var(--accent)"></i>';
         return;
     }
     if (url && (url.includes('offline.html') || url.startsWith('ocal://offline'))) {

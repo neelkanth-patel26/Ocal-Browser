@@ -353,8 +353,8 @@
             width: 68px;
             height: 68px;
             border-radius: 18px;
-            background: var(--store-input-bg);
-            border: 1px solid var(--store-card-border);
+            background: transparent;
+            border: none;
             display: flex;
             align-items: center;
             justify-content: center;
@@ -373,6 +373,8 @@
             height: 100%;
             object-fit: contain;
             border-radius: 16px;
+            border: none;
+            background: transparent;
         }
 
         .spotlight-info-col {
@@ -959,8 +961,8 @@
             width: 48px;
             height: 48px;
             border-radius: 14px;
-            background: var(--store-input-bg);
-            border: 1px solid var(--store-card-border);
+            background: transparent;
+            border: none;
             display: flex;
             align-items: center;
             justify-content: center;
@@ -979,6 +981,8 @@
             height: 100%;
             object-fit: contain;
             border-radius: 12px;
+            border: none;
+            background: transparent;
             display: block;
         }
 
@@ -1130,7 +1134,7 @@
             background: rgba(16, 185, 129, 0.18) !important;
         }
 
-        /* ── 5. Extension Detail Modal ── */
+        /* ── 5. Extension Detail Modal (Reworked Theme Blur & Premium Modern UI) ── */
         html.modal-open,
         body.modal-open {
             overflow: hidden !important;
@@ -1141,43 +1145,69 @@
             position: fixed !important;
             inset: 0 !important;
             z-index: 99999 !important;
-            background: rgba(0, 0, 0, 0.5) !important;
-            backdrop-filter: blur(8px) !important;
-            -webkit-backdrop-filter: blur(8px) !important;
+            background: rgba(255, 255, 255, 0.72) !important;
+            backdrop-filter: blur(24px) saturate(180%) !important;
+            -webkit-backdrop-filter: blur(24px) saturate(180%) !important;
             display: none;
             align-items: center;
             justify-content: center;
-            padding: 20px;
+            padding: 30px 20px;
             box-sizing: border-box;
             overflow-y: auto;
+            transition: background 0.25s ease, opacity 0.2s ease;
+        }
+
+        html[data-theme="dark"] .store-modal-overlay,
+        body[data-theme="dark"] .store-modal-overlay {
+            background: rgba(10, 11, 16, 0.8) !important;
+            backdrop-filter: blur(24px) saturate(180%) !important;
+            -webkit-backdrop-filter: blur(24px) saturate(180%) !important;
         }
 
         .store-modal-overlay.active {
             display: flex !important;
-            animation: fadeIn 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+            animation: modalFadeIn 0.22s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+
+        @keyframes modalFadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+
+        @keyframes modalSlideUp {
+            from { opacity: 0; transform: scale(0.96) translateY(18px); }
+            to { opacity: 1; transform: scale(1) translateY(0); }
         }
 
         .store-modal-card {
             background: var(--store-card-bg);
             border: 1px solid var(--store-card-border);
-            border-radius: 24px;
-            width: 100%;
-            max-width: 700px;
-            max-height: 88vh;
+            border-radius: 28px;
+            width: min(940px, 94vw);
+            max-width: 940px;
+            max-height: 90vh;
             overflow-y: auto;
-            padding: 26px 30px 30px;
-            animation: slideUpModal 0.24s cubic-bezier(0.16, 1, 0.3, 1);
+            padding: 30px 36px 36px;
+            animation: modalSlideUp 0.26s cubic-bezier(0.16, 1, 0.3, 1);
             position: relative;
             margin: auto !important;
             box-sizing: border-box;
             color: var(--store-text);
+            box-shadow: 0 24px 70px rgba(0, 0, 0, 0.12), 0 8px 24px rgba(0, 0, 0, 0.05);
+        }
+
+        html[data-theme="dark"] .store-modal-card,
+        body[data-theme="dark"] .store-modal-card {
+            background: #191A22;
+            border-color: rgba(255, 255, 255, 0.09);
+            box-shadow: 0 28px 80px rgba(0, 0, 0, 0.75), 0 0 0 1px rgba(255, 255, 255, 0.06);
         }
 
         .store-modal-card::-webkit-scrollbar {
             width: 6px;
         }
         .store-modal-card::-webkit-scrollbar-thumb {
-            background: rgba(148, 163, 184, 0.3);
+            background: rgba(148, 163, 184, 0.35);
             border-radius: 10px;
         }
 
@@ -1185,29 +1215,49 @@
             display: flex;
             align-items: center;
             justify-content: space-between;
-            margin-bottom: 18px;
-            padding-bottom: 12px;
+            padding-bottom: 16px;
             border-bottom: 1px solid var(--store-card-border);
         }
 
-        .modal-spec-badge {
+        .modal-header-badges {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            flex-wrap: wrap;
+        }
+
+        .modal-badge-verified {
             font-size: 11px;
             font-weight: 700;
-            color: var(--accent, #15AC49);
-            background: color-mix(in srgb, var(--accent, #15AC49) 12%, transparent);
-            border: 1px solid color-mix(in srgb, var(--accent, #15AC49) 22%, transparent);
-            padding: 3px 10px;
+            color: #10B981;
+            background: rgba(16, 185, 129, 0.1);
+            border: 1px solid rgba(16, 185, 129, 0.22);
+            padding: 4px 11px;
             border-radius: 100px;
             display: inline-flex;
             align-items: center;
             gap: 6px;
-            letter-spacing: 0.5px;
-            text-transform: uppercase;
+            letter-spacing: 0.3px;
+        }
+
+        .modal-badge-cat {
+            font-size: 11px;
+            font-weight: 700;
+            color: var(--accent, #15AC49);
+            background: color-mix(in srgb, var(--accent, #15AC49) 10%, transparent);
+            border: 1px solid color-mix(in srgb, var(--accent, #15AC49) 20%, transparent);
+            padding: 4px 11px;
+            border-radius: 100px;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            text-transform: capitalize;
+            letter-spacing: 0.3px;
         }
 
         .store-modal-close {
-            width: 34px;
-            height: 34px;
+            width: 36px;
+            height: 36px;
             border-radius: 50%;
             background: var(--store-input-bg);
             border: 1px solid var(--store-card-border);
@@ -1218,31 +1268,35 @@
             color: var(--store-text-muted);
             transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
             outline: none;
+            font-size: 14px;
         }
 
         .store-modal-close:hover {
             color: var(--store-text);
             background: color-mix(in srgb, var(--accent, #15AC49) 14%, transparent);
+            transform: scale(1.06) rotate(90deg);
         }
 
+        /* ── Hero Identity ── */
         .modal-ext-hero {
             display: flex;
-            align-items: center;
-            gap: 16px;
-            margin-bottom: 18px;
+            align-items: flex-start;
+            gap: 22px;
+            margin-top: 18px;
+            margin-bottom: 22px;
         }
 
         .modal-ext-icon {
-            width: 64px;
-            height: 64px;
-            border-radius: 18px;
+            width: 80px;
+            height: 80px;
+            border-radius: 20px;
             overflow: hidden;
             flex-shrink: 0;
             display: flex;
             align-items: center;
             justify-content: center;
-            background: var(--store-input-bg);
-            border: 1px solid var(--store-card-border);
+            background: transparent;
+            border: none;
         }
 
         .modal-ext-icon img,
@@ -1250,8 +1304,11 @@
             width: 100%;
             height: 100%;
             object-fit: contain;
-            border-radius: 16px;
+            border-radius: 18px;
+            border: none;
+            background: transparent;
             display: block;
+            filter: drop-shadow(0 6px 16px rgba(0, 0, 0, 0.1));
         }
 
         .modal-ext-main {
@@ -1260,85 +1317,105 @@
         }
 
         .modal-ext-title {
-            font-size: 20px;
-            font-weight: 700;
+            font-size: 22px;
+            font-weight: 800;
+            letter-spacing: -0.4px;
             color: var(--store-text);
             line-height: 1.25;
-            margin-bottom: 3px;
+            margin: 0 0 6px 0;
         }
 
         .modal-ext-byline {
             display: flex;
             align-items: center;
             gap: 8px;
-            font-size: 12.5px;
+            font-size: 13px;
             color: var(--store-text-muted);
             flex-wrap: wrap;
         }
 
-        .modal-cat-badge {
-            text-transform: capitalize;
+        .modal-ext-byline strong {
+            color: var(--store-text);
+        }
+
+        .author-verified-chip {
+            color: #3B82F6;
+            font-size: 12px;
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+        }
+
+        .modal-version-tag {
+            font-size: 11px;
             font-weight: 700;
-            color: var(--accent, #15AC49);
+            padding: 1px 7px;
+            border-radius: 6px;
+            background: var(--store-input-bg);
+            color: var(--store-text-muted);
+            border: 1px solid var(--store-card-border);
+            font-family: 'Space Mono', monospace;
         }
 
         .modal-ext-stats {
             display: flex;
             align-items: center;
             gap: 12px;
-            margin-top: 6px;
-            font-size: 12.5px;
+            margin-top: 8px;
+            font-size: 13px;
+            flex-wrap: wrap;
         }
 
         .modal-stars-wrap {
             display: flex;
             align-items: center;
-            gap: 5px;
+            gap: 4px;
             color: #F59E0B;
-            font-weight: 700;
+            font-size: 12px;
         }
 
         .modal-rating-val {
             color: var(--store-text);
+            font-weight: 700;
+            font-size: 13.5px;
             margin-left: 2px;
         }
 
         .modal-rating-count {
             color: var(--store-text-dim);
             font-weight: 500;
-            font-size: 11.5px;
+            font-size: 12px;
         }
 
         .modal-users-chip {
             font-weight: 700;
             color: var(--store-text-muted);
-            font-size: 11.5px;
+            font-size: 12px;
             background: var(--store-input-bg);
-            padding: 3px 9px;
+            padding: 4px 10px;
             border-radius: 100px;
             border: 1px solid var(--store-card-border);
             display: inline-flex;
             align-items: center;
-            gap: 5px;
+            gap: 6px;
         }
 
+        /* ── Action Toolbar ── */
         .modal-action-bar {
             display: flex;
             align-items: center;
             gap: 10px;
-            margin-bottom: 20px;
-            padding: 12px 16px;
-            border-radius: 16px;
-            background: var(--store-input-bg);
-            border: 1px solid var(--store-card-border);
+            margin-bottom: 22px;
+            flex-wrap: wrap;
         }
 
         .btn-modal-install {
             flex: 1;
-            height: 40px;
-            padding: 0 20px;
-            border-radius: 100px;
-            font-size: 13px;
+            min-width: 180px;
+            height: 44px;
+            padding: 0 24px;
+            border-radius: 14px;
+            font-size: 13.5px;
             font-weight: 700;
             background: var(--accent, #15AC49);
             color: var(--accent-text, #FFFFFF);
@@ -1348,35 +1425,42 @@
             align-items: center;
             justify-content: center;
             gap: 8px;
-            transition: opacity 0.2s, transform 0.2s;
+            transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
             outline: none;
+            box-shadow: 0 4px 14px color-mix(in srgb, var(--accent, #15AC49) 25%, transparent);
         }
 
         .btn-modal-install:hover {
-            opacity: 0.92;
             transform: translateY(-1px);
+            filter: brightness(1.06);
+            box-shadow: 0 6px 18px color-mix(in srgb, var(--accent, #15AC49) 35%, transparent);
         }
 
         .btn-modal-install.installed {
             background: rgba(16, 185, 129, 0.12) !important;
             color: #10B981 !important;
             border: 1px solid rgba(16, 185, 129, 0.3) !important;
+            box-shadow: none !important;
+        }
+
+        .btn-modal-install.installed:hover {
+            background: rgba(16, 185, 129, 0.18) !important;
         }
 
         .btn-modal-google {
-            height: 40px;
-            padding: 0 16px;
-            border-radius: 100px;
-            font-size: 12.5px;
+            height: 44px;
+            padding: 0 18px;
+            border-radius: 14px;
+            font-size: 13px;
             font-weight: 700;
-            background: rgba(66, 133, 244, 0.08);
-            color: #4285F4;
-            border: 1px solid rgba(66, 133, 244, 0.25);
+            background: var(--store-input-bg);
+            color: var(--store-text);
+            border: 1px solid var(--store-card-border);
             cursor: pointer;
             display: inline-flex;
             align-items: center;
             justify-content: center;
-            gap: 7px;
+            gap: 8px;
             white-space: nowrap;
             transition: all 0.2s;
             outline: none;
@@ -1385,49 +1469,154 @@
         .btn-modal-google:hover {
             background: #4285F4;
             color: #FFFFFF;
+            border-color: #4285F4;
+            transform: translateY(-1px);
         }
 
-        .modal-screenshots-carousel {
-            border-radius: 16px;
-            overflow: hidden;
-            margin: 18px 0;
-            background: #0D0E12;
+        .btn-modal-external {
+            height: 44px;
+            padding: 0 16px;
+            border-radius: 14px;
+            font-size: 13px;
+            font-weight: 700;
+            background: var(--store-input-bg);
+            color: var(--store-text-muted);
             border: 1px solid var(--store-card-border);
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 7px;
+            white-space: nowrap;
+            transition: all 0.2s;
+            cursor: pointer;
+        }
+
+        .btn-modal-external:hover {
+            color: var(--store-text);
+            border-color: var(--store-text-dim);
+            transform: translateY(-1px);
+        }
+
+        /* ── Framed Mockup Window Preview ── */
+        .modal-preview-frame {
+            border-radius: 18px;
+            overflow: hidden;
+            margin: 20px 0 24px 0;
+            background: #111216;
+            border: 1px solid var(--store-card-border);
+            box-shadow: 0 8px 24px rgba(0, 0, 0, 0.08);
+        }
+
+        html[data-theme="dark"] .modal-preview-frame {
+            background: #0E0F14;
+            box-shadow: 0 12px 30px rgba(0, 0, 0, 0.4);
+        }
+
+        .preview-frame-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 10px 16px;
+            background: rgba(255, 255, 255, 0.04);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+        }
+
+        .preview-traffic-dots {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .preview-traffic-dots span {
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            display: inline-block;
+        }
+
+        .preview-traffic-dots .dot-red { background: #FF5F56; }
+        .preview-traffic-dots .dot-yellow { background: #FFBD2E; }
+        .preview-traffic-dots .dot-green { background: #27C93F; }
+
+        .preview-frame-caption {
+            font-size: 11.5px;
+            font-weight: 600;
+            color: #94A3B8;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .preview-frame-tag {
+            font-size: 10px;
+            font-weight: 700;
+            color: #10B981;
+            background: rgba(16, 185, 129, 0.15);
+            padding: 2px 7px;
+            border-radius: 6px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .preview-frame-body {
             aspect-ratio: 600 / 320;
             display: flex;
             align-items: center;
             justify-content: center;
+            overflow: hidden;
         }
 
-        .modal-screenshots-carousel svg {
+        .preview-frame-body svg {
             width: 100%;
             height: 100%;
             display: block;
         }
 
+        /* ── Overview & Features ── */
+        .modal-overview-wrap {
+            margin-bottom: 22px;
+        }
+
         .modal-section-heading {
-            font-size: 14.5px;
+            font-size: 15px;
             font-weight: 700;
             color: var(--store-text);
             display: flex;
             align-items: center;
             gap: 8px;
-            margin-bottom: 8px;
+            margin-bottom: 10px;
         }
 
         .modal-desc-body {
-            font-size: 13px;
-            line-height: 1.55;
+            font-size: 13.5px;
+            line-height: 1.6;
+            color: var(--store-text-muted);
+        }
+
+        .modal-desc-p {
+            margin: 0 0 10px 0;
+            font-size: 13.5px;
+            line-height: 1.6;
             color: var(--store-text-muted);
         }
 
         .modal-feature-bullet {
             display: flex;
             align-items: flex-start;
-            gap: 9px;
+            gap: 10px;
+            padding: 8px 12px;
             margin-bottom: 6px;
+            border-radius: 10px;
+            background: var(--store-input-bg);
+            border: 1px solid var(--store-card-border);
             font-size: 13px;
             color: var(--store-text);
+            transition: background 0.15s;
+        }
+
+        .modal-feature-bullet:hover {
+            background: color-mix(in srgb, var(--accent, #15AC49) 8%, var(--store-input-bg));
         }
 
         .modal-feature-bullet i {
@@ -1437,49 +1626,107 @@
             flex-shrink: 0;
         }
 
+        /* ── Permissions Section ── */
+        .modal-perms-wrap {
+            margin: 18px 0;
+            padding: 14px 16px;
+            border-radius: 14px;
+            background: var(--store-input-bg);
+            border: 1px solid var(--store-card-border);
+        }
+
+        .modal-subheading {
+            font-size: 12px;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            color: var(--store-text-dim);
+            margin: 0 0 10px 0;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .modal-perms-chips {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 6px;
+        }
+
+        .perm-chip {
+            font-size: 11px;
+            font-weight: 600;
+            padding: 4px 10px;
+            border-radius: 8px;
+            background: var(--store-card-bg);
+            color: var(--store-text);
+            border: 1px solid var(--store-card-border);
+            display: inline-flex;
+            align-items: center;
+            gap: 5px;
+        }
+
+        .perm-chip i {
+            color: #10B981;
+            font-size: 10px;
+        }
+
+        /* ── Specifications Bento Grid ── */
         .modal-spec-grid {
             display: grid;
             grid-template-columns: repeat(4, 1fr);
-            gap: 8px;
-            margin-top: 20px;
-            padding-top: 18px;
+            gap: 10px;
+            margin-top: 22px;
+            padding-top: 20px;
             border-top: 1px solid var(--store-card-border);
         }
 
-        @media (max-width: 650px) {
+        @media (max-width: 680px) {
             .modal-spec-grid {
                 grid-template-columns: repeat(2, 1fr);
+            }
+            .modal-action-bar {
+                flex-direction: column;
+            }
+            .btn-modal-install, .btn-modal-google, .btn-modal-external {
+                width: 100%;
             }
         }
 
         .spec-card {
             background: var(--store-input-bg);
             border: 1px solid var(--store-card-border);
-            border-radius: 12px;
-            padding: 8px 10px;
+            border-radius: 14px;
+            padding: 10px 12px;
             display: flex;
             align-items: center;
-            gap: 8px;
+            gap: 10px;
+            transition: transform 0.15s;
+        }
+
+        .spec-card:hover {
+            transform: translateY(-1px);
         }
 
         .spec-icon {
-            width: 30px;
-            height: 30px;
-            border-radius: 8px;
+            width: 32px;
+            height: 32px;
+            border-radius: 10px;
             background: color-mix(in srgb, var(--accent, #15AC49) 12%, transparent);
             color: var(--accent, #15AC49);
             display: flex;
             align-items: center;
             justify-content: center;
-            font-size: 12px;
+            font-size: 13px;
             flex-shrink: 0;
         }
 
         .spec-meta {
             display: flex;
             flex-direction: column;
-            gap: 1px;
+            gap: 2px;
             min-width: 0;
+            flex: 1;
         }
 
         .spec-label {
@@ -1491,7 +1738,7 @@
         }
 
         .spec-val {
-            font-size: 12px;
+            font-size: 12.5px;
             font-weight: 700;
             color: var(--store-text);
             white-space: nowrap;
@@ -1503,6 +1750,28 @@
             font-family: 'Space Mono', monospace;
             font-size: 11px;
             font-weight: 600;
+        }
+
+        .btn-copy-id {
+            background: transparent;
+            border: none;
+            color: var(--store-text-muted);
+            cursor: pointer;
+            padding: 4px;
+            border-radius: 6px;
+            font-size: 11px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: color 0.15s, background 0.15s;
+        }
+
+        .btn-copy-id:hover {
+            color: var(--store-text);
+            background: rgba(0, 0, 0, 0.05);
+        }
+        html[data-theme="dark"] .btn-copy-id:hover {
+            background: rgba(255, 255, 255, 0.08);
         }
 
         /* ── 6. Toast Notification ── */
@@ -1686,7 +1955,7 @@
                     <div id="grabbedExtensionCard">
                         <div style="display: flex; align-items: flex-start; justify-content: space-between; gap: 14px;">
                             <div style="display: flex; align-items: flex-start; gap: 12px; min-width: 0;">
-                                <div id="grabbedIcon" style="width: 44px; height: 44px; border-radius: 12px; overflow: hidden; flex-shrink: 0; background: var(--store-card-bg); display: flex; align-items: center; justify-content: center; border: 1px solid var(--store-card-border);">
+                                <div id="grabbedIcon" style="width: 44px; height: 44px; border-radius: 12px; overflow: hidden; flex-shrink: 0; background: transparent; display: flex; align-items: center; justify-content: center; border: none;">
                                     <i class="fab fa-chrome" style="color: #4285f4; font-size: 22px;"></i>
                                 </div>
                                 <div style="min-width: 0;">
@@ -1764,12 +2033,12 @@
                     <span class="cat-pill-count" id="count-featured">0</span>
                 </button>
                 <button class="cat-pill" data-cat="adblock">
-                    <i class="fas fa-shield-alt"></i>
+                    <i class="fas fa-shield-halved"></i>
                     <span>Ad Blockers & Privacy</span>
                     <span class="cat-pill-count" id="count-adblock">0</span>
                 </button>
                 <button class="cat-pill" data-cat="productivity">
-                    <i class="fas fa-bolt"></i>
+                    <i class="fas fa-bolt-lightning"></i>
                     <span>Productivity & AI</span>
                     <span class="cat-pill-count" id="count-productivity">0</span>
                 </button>
@@ -1779,12 +2048,12 @@
                     <span class="cat-pill-count" id="count-developer">0</span>
                 </button>
                 <button class="cat-pill" data-cat="media">
-                    <i class="fas fa-play-circle"></i>
+                    <i class="fas fa-circle-play"></i>
                     <span>Video & Media</span>
                     <span class="cat-pill-count" id="count-media">0</span>
                 </button>
                 <button class="cat-pill" data-cat="utilities">
-                    <i class="fas fa-screwdriver-wrench"></i>
+                    <i class="fas fa-sliders"></i>
                     <span>Utilities</span>
                     <span class="cat-pill-count" id="count-utilities">0</span>
                 </button>
@@ -1818,8 +2087,11 @@
     <div class="store-modal-overlay" id="detailModal">
         <div class="store-modal-card">
             <div class="store-modal-header">
-                <span class="modal-spec-badge"><i class="fas fa-cube"></i> Extension Overview</span>
-                <button class="store-modal-close" id="modalCloseBtn" title="Close (Esc)"><i class="fas fa-times"></i></button>
+                <div class="modal-header-badges">
+                    <span class="modal-badge-verified"><i class="fas fa-shield-halved"></i> Verified Sandboxed Extension</span>
+                    <span class="modal-badge-cat" id="modalHeaderCat"><i class="fas fa-layer-group"></i> Extension</span>
+                </div>
+                <button class="store-modal-close" id="modalCloseBtn" title="Close (Esc)"><i class="fas fa-xmark"></i></button>
             </div>
             <div id="modalBody">
                 <!-- Injected dynamically by extension-store.js -->

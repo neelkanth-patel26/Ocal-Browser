@@ -22,14 +22,35 @@ const tabBtns   = document.querySelectorAll('.tab-pill');
 const clearHistoryBtn = document.getElementById('clear-history-btn');
 
 // ── Sidebar open/close ─────────────────────────────────────────────────────
+let isClosingSidebar = false;
+
 function openSidebar() {
+    isClosingSidebar = false;
+    sidebar.classList.remove('closing');
+    backdrop.classList.remove('closing');
     sidebar.classList.add('open');
     backdrop.classList.add('show');
 }
+
 function closeSidebar() {
+    if (!sidebar.classList.contains('open') && !backdrop.classList.contains('show')) {
+        window.electronAPI.send?.('sidebar-exit-complete');
+        return;
+    }
+    if (isClosingSidebar) return;
+    isClosingSidebar = true;
+
     sidebar.classList.remove('open');
+    sidebar.classList.add('closing');
     backdrop.classList.remove('show');
-    window.electronAPI.send('close-all-sidebars');
+    backdrop.classList.add('closing');
+
+    setTimeout(() => {
+        isClosingSidebar = false;
+        sidebar.classList.remove('closing');
+        backdrop.classList.remove('closing');
+        window.electronAPI.send?.('sidebar-exit-complete');
+    }, 280);
 }
 
 // ── Tab switching ──────────────────────────────────────────────────────────
@@ -63,6 +84,10 @@ sbSearch.addEventListener('input', e => { searchFilter = e.target.value.toLowerC
 // ── IPC listeners ──────────────────────────────────────────────────────────
 window.electronAPI.onToggleSidebar((e, open) => {
     if (open) openSidebar(); else closeSidebar();
+});
+
+window.electronAPI.on?.('start-sidebar-exit', () => {
+    closeSidebar();
 });
 
 window.electronAPI.onSwitchTab((tab) => {
@@ -150,12 +175,16 @@ function hexToRgba(hex, alpha) {
 }
 
 window.electronAPI.onSettingsChanged((s) => {
-    currentSettings = s;
-    historyItems = s.history || [];
-    const isLight = s.themeMode === 'light';
-    document.body.setAttribute('data-theme', s.themeMode || 'dark');
-    if (s.accentColor) {
-        const activeAccent = getModeAccent(s.accentColor, isLight);
+    currentSettings = s || {};
+    historyItems = currentSettings.history || [];
+    const theme = currentSettings.themeMode || localStorage.getItem('ocal-settings-theme') || 'light';
+    const isLight = theme === 'light';
+    document.body.setAttribute('data-theme', theme);
+    document.documentElement.setAttribute('data-theme', theme);
+    if (window.OcalColorHarmonizer && currentSettings.accentColor) {
+        window.OcalColorHarmonizer.applyHarmonizedTheme(currentSettings.accentColor, theme);
+    } else if (currentSettings.accentColor) {
+        const activeAccent = getModeAccent(currentSettings.accentColor, isLight);
         document.documentElement.style.setProperty('--accent', activeAccent);
         document.documentElement.style.setProperty('--accent-glow', hexToRgba(activeAccent, 0.35));
         document.documentElement.style.setProperty('--accent-dim', hexToRgba(activeAccent, 0.12));
@@ -222,14 +251,18 @@ window.handleSS = (type) => {
 
 // ── Initial load ───────────────────────────────────────────────────────────
 window.electronAPI.getSettings().then(s => {
-    currentSettings = s;
-    historyItems = s.history || [];
-    bookmarks    = s.bookmarks || [];
-    folders      = s.folders   || [];
-    const isLight = s.themeMode === 'light';
-    document.body.setAttribute('data-theme', s.themeMode || 'dark');
-    if (s.accentColor) {
-        const activeAccent = getModeAccent(s.accentColor, isLight);
+    currentSettings = s || {};
+    historyItems = currentSettings.history || [];
+    bookmarks    = currentSettings.bookmarks || [];
+    folders      = currentSettings.folders   || [];
+    const theme = currentSettings.themeMode || localStorage.getItem('ocal-settings-theme') || 'light';
+    const isLight = theme === 'light';
+    document.body.setAttribute('data-theme', theme);
+    document.documentElement.setAttribute('data-theme', theme);
+    if (window.OcalColorHarmonizer && currentSettings.accentColor) {
+        window.OcalColorHarmonizer.applyHarmonizedTheme(currentSettings.accentColor, theme);
+    } else if (currentSettings.accentColor) {
+        const activeAccent = getModeAccent(currentSettings.accentColor, isLight);
         document.documentElement.style.setProperty('--accent', activeAccent);
         document.documentElement.style.setProperty('--accent-glow', hexToRgba(activeAccent, 0.35));
         document.documentElement.style.setProperty('--accent-dim', hexToRgba(activeAccent, 0.12));
@@ -260,7 +293,34 @@ function render() {
     else if (currentTab === 'downloads') renderDownloads();
 
     if (!sbContent.children.length) {
-        sbContent.innerHTML = `<div class="empty-state"><i class="fas fa-ghost"></i><p>Nothing here yet</p></div>`;
+        if (currentTab === 'bookmarks') {
+            sbContent.innerHTML = `
+                <div class="empty-state">
+                    <i class="fas fa-bookmark"></i>
+                    <div class="empty-title">${searchFilter ? 'No matching saves' : 'No saves yet'}</div>
+                    <div class="empty-sub">${searchFilter ? 'Try searching for something else' : 'Save your favorite bookmarks to access them quickly anytime'}</div>
+                </div>`;
+        } else if (currentTab === 'history') {
+            sbContent.innerHTML = `
+                <div class="empty-state">
+                    <i class="fas fa-clock-rotate-left"></i>
+                    <div class="empty-title">${searchFilter ? 'No matching history' : 'No history yet'}</div>
+                    <div class="empty-sub">${searchFilter ? 'No visited pages match your search term' : 'Websites and pages you browse will appear here'}</div>
+                </div>`;
+        } else if (currentTab === 'downloads') {
+            sbContent.innerHTML = `
+                <div class="empty-state">
+                    <i class="fas fa-folder-arrow-down"></i>
+                    <div class="empty-title">${searchFilter ? 'No matching files' : 'No downloaded files'}</div>
+                    <div class="empty-sub">${searchFilter ? 'Try searching with a different file name' : 'Files you download will appear here for easy access'}</div>
+                </div>`;
+        } else {
+            sbContent.innerHTML = `
+                <div class="empty-state">
+                    <i class="fas fa-ghost"></i>
+                    <div class="empty-title">Nothing here yet</div>
+                </div>`;
+        }
     }
 }
 
@@ -473,16 +533,10 @@ function addFolder() {
 
     const row = document.createElement('div');
     row.id = 'new-folder-input-row';
-    row.style.cssText = 'display:flex;gap:6px;padding:6px 12px 4px;flex-shrink:0';
+    row.className = 'new-folder-row';
     row.innerHTML = `
-        <input id="new-folder-name" type="text" placeholder="Folder name..."
-            style="flex:1;background:var(--hover);border:1px solid var(--border);
-                   border-radius:7px;padding:6px 10px;color:var(--text);font-size:12px;
-                   font-family:Inter,sans-serif;outline:none">
-        <button id="new-folder-confirm"
-            style="padding:6px 12px;border-radius:7px;background:var(--accent);
-                   border:none;color:#000;font-weight:600;font-size:11px;
-                   font-family:Inter,sans-serif;cursor:pointer">Add</button>
+        <input id="new-folder-name" class="new-folder-input" type="text" placeholder="Folder name...">
+        <button id="new-folder-confirm" class="new-folder-btn">Add</button>
     `;
 
     // Insert before the panel-body
