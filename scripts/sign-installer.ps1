@@ -78,7 +78,7 @@ if ($SelfSign) {
     if (-not $existingCert) {
         $certParams = @{
             Type = "CodeSigningCert"
-            Subject = "CN=$certName, O=Gaming Network Studio Media Group"
+            Subject = "CN=$certName, O=Gaming Network Studio"
             CertStoreLocation = "Cert:\CurrentUser\My"
             HashAlgorithm = "SHA256"
             KeyLength = 2048

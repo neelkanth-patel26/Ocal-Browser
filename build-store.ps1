@@ -1,5 +1,5 @@
 # Ocal Browser - Microsoft Store Package Build Script
-# Builds an AppX / MSIX package ready for Microsoft Partner Center or local sideloading test.
+# Builds AppX & MSIX packages and a standalone MSIX installer with certificate baked in.
 
 $ErrorActionPreference = "Stop"
 
@@ -8,16 +8,14 @@ Write-Host "==========================================================" -Foregro
 Write-Host "   🌌 Ocal Browser v$version - Microsoft Store Build       " -ForegroundColor Cyan
 Write-Host "==========================================================" -ForegroundColor Cyan
 
-# 1. Check Store Assets
-Write-Host "[1/4] Checking Microsoft Store visual assets..." -ForegroundColor Yellow
-if (-not (Test-Path "build\appx\StoreLogo.png")) {
-    Write-Host "Generating AppX visual assets..." -ForegroundColor Gray
-    python scripts/generate-store-assets.py
-}
-Write-Host "Store visual assets verified in build\appx\" -ForegroundColor Green
+# 1. Refresh Store Visual Assets
+Write-Host "[1/5] Refreshing Microsoft Store visual assets from icon.png..." -ForegroundColor Yellow
+python scripts/generate-store-assets.py
+Copy-Item -Force icon.ico build\icon.ico
+Write-Host "Store visual assets refreshed in build\appx\" -ForegroundColor Green
 
 # 2. Cleanup Store Output Directory
-Write-Host "[2/4] Preparing output directory: dist-store..." -ForegroundColor Yellow
+Write-Host "[2/5] Preparing output directory: dist-store..." -ForegroundColor Yellow
 if (Test-Path "dist-store") {
     try {
         Remove-Item -Recurse -Force "dist-store"
@@ -28,48 +26,107 @@ if (Test-Path "dist-store") {
 New-Item -ItemType Directory -Path "dist-store" -Force | Out-Null
 
 # 3. Compile AppX / MSIX Package
-Write-Host "[3/4] Packaging Electron application into AppX / MSIX..." -ForegroundColor Magenta
+Write-Host "[3/5] Packaging Electron application into AppX / MSIX..." -ForegroundColor Magenta
 Write-Host "Executing electron-builder --win appx..." -ForegroundColor Gray
+
+$env:CSC_LINK = $null
+$env:CSC_KEY_PASSWORD = $null
 
 # Build AppX package
 cmd.exe /c npx electron-builder --win appx --config.directories.output=dist-store
 if ($LASTEXITCODE -ne 0) {
-    Write-Host ""
-    Write-Host "Note: If electron-builder asks for a valid code signing cert for local testing," -ForegroundColor Yellow
-    Write-Host "you can upload the unsigned/partner-center package directly to Partner Center," -ForegroundColor Yellow
-    Write-Host "as Microsoft signs the package automatically during store ingestion!" -ForegroundColor Yellow
     throw "Electron AppX packaging failed with exit code $LASTEXITCODE."
 }
 
-# 4. Summary & Instructions
-Write-Host ""
-Write-Host "[4/4] Microsoft Store Build Finished!" -ForegroundColor Green
-Write-Host "==========================================================" -ForegroundColor Cyan
-
-$appxFiles = Get-ChildItem "dist-store\*.appx", "dist-store\*.msix", "dist-store\*.appxupload", "dist-store\*.msixupload" -ErrorAction SilentlyContinue
-
-if ($appxFiles) {
-    foreach ($file in $appxFiles) {
-        Write-Host "Package created: $($file.FullName) ($([math]::Round($file.Length / 1MB, 2)) MB)" -ForegroundColor White
+# Ensure both .appx and .msix exist in dist-store
+$generatedAppx = Get-ChildItem "dist-store\*.appx" -ErrorAction SilentlyContinue | Select-Object -First 1
+if ($generatedAppx) {
+    $msixName = $generatedAppx.FullName -replace '\.appx$', '.msix'
+    if (-not (Test-Path $msixName)) {
+        Copy-Item -Path $generatedAppx.FullName -Destination $msixName -Force
+        Write-Host "Generated matching MSIX package: $(Split-Path $msixName -Leaf)" -ForegroundColor Green
     }
-} else {
-    Write-Host "Files generated in dist-store:" -ForegroundColor White
-    Get-ChildItem "dist-store" | Select-Object Name, Length | Format-Table
 }
 
+# Sign packages with certificate.pfx and RFC 3161 timestamping
+$packagesToSign = Get-ChildItem "dist-store\*.appx", "dist-store\*.msix" -ErrorAction SilentlyContinue
+$signtoolPaths = @(
+    "C:\Program Files (x86)\Windows Kits\10\bin\10.0.26100.0\x64\signtool.exe",
+    "C:\Program Files (x86)\Windows Kits\10\bin\10.0.22621.0\x64\signtool.exe",
+    "C:\Program Files (x86)\Windows Kits\10\bin\10.0.19041.0\x64\signtool.exe"
+)
+$signtool = $signtoolPaths | Where-Object { Test-Path $_ } | Select-Object -First 1
+
+if ($packagesToSign -and (Test-Path "certificate.pfx") -and $signtool) {
+    foreach ($pkg in $packagesToSign) {
+        Write-Host "Signing $($pkg.Name) with Authenticode & RFC 3161 timestamp..." -ForegroundColor Yellow
+        $signSuccess = $false
+        $timestampUrls = @("http://timestamp.digicert.com", "http://timestamp.sectigo.com", "http://tsa.starfieldtech.com")
+        
+        foreach ($ts in $timestampUrls) {
+            & $signtool sign /fd SHA256 /f certificate.pfx /p OcalBrowser2026 /tr $ts /td SHA256 $pkg.FullName
+            if ($LASTEXITCODE -eq 0) {
+                Write-Host "Signed $($pkg.Name) successfully with timestamp from $ts." -ForegroundColor Green
+                $signSuccess = $true
+                break
+            }
+        }
+        if (-not $signSuccess) {
+            # Fallback without timestamp
+            & $signtool sign /fd SHA256 /f certificate.pfx /p OcalBrowser2026 $pkg.FullName
+            Write-Host "Signed $($pkg.Name) (without timestamp)." -ForegroundColor Yellow
+        }
+    }
+}
+
+# 4. Compile Standalone MSIX Installer (Ocal-MSIX-Setup.exe)
+Write-Host "[4/5] Compiling dedicated MSIX installer with certificate baked in..." -ForegroundColor Magenta
+$isccPaths = @(
+    "ISCC.exe",
+    "$env:USERPROFILE\AppData\Local\Programs\Inno Setup 6\ISCC.exe",
+    "C:\Program Files (x86)\Inno Setup 6\ISCC.exe",
+    "C:\Program Files\Inno Setup 6\ISCC.exe"
+)
+$isccPath = $null
+foreach ($path in $isccPaths) {
+    if (Get-Command $path -ErrorAction SilentlyContinue) {
+        $isccPath = (Get-Command $path).Source
+        break
+    }
+    if (Test-Path $path) {
+        $isccPath = $path
+        break
+    }
+}
+
+if ($isccPath -and (Test-Path "msix-installer.iss")) {
+    Write-Host "Compiling msix-installer.iss with ISCC..." -ForegroundColor Gray
+    & $isccPath msix-installer.iss
+    if ($LASTEXITCODE -eq 0) {
+        $msixSetup = "dist-store\Ocal-MSIX-Setup.exe"
+        if (Test-Path $msixSetup) {
+            Write-Host "Signing Ocal-MSIX-Setup.exe..." -ForegroundColor Yellow
+            $signScript = Join-Path $PSScriptRoot "scripts\sign-installer.ps1"
+            if (Test-Path $signScript) {
+                & powershell -ExecutionPolicy Bypass -File $signScript -FilePath $msixSetup
+            }
+            Write-Host "Ocal-MSIX-Setup.exe compiled and signed successfully." -ForegroundColor Green
+        }
+    } else {
+        Write-Host "Notice: ISCC msix-installer compilation skipped." -ForegroundColor Yellow
+    }
+}
+
+# 5. Summary & Instructions
 Write-Host ""
-Write-Host "=== HOW TO PUBLISH TO MICROSOFT STORE ===" -ForegroundColor Cyan
-Write-Host "1. Register an account at: https://partner.microsoft.com/dashboard" -ForegroundColor White
-Write-Host "2. Reserve your app name ('Ocal Browser') in Apps and Games > Product management" -ForegroundColor White
-Write-Host "3. In 'Product Identity', copy:" -ForegroundColor White
-Write-Host "   - Package/Identity/Name       -> put in package.json > build > appx > identityName" -ForegroundColor Gray
-Write-Host "   - Package/Identity/Publisher  -> put in package.json > build > appx > publisher" -ForegroundColor Gray
-Write-Host "   - Publisher Display Name      -> put in package.json > build > appx > publisherDisplayName" -ForegroundColor Gray
-Write-Host "4. Re-run 'npm run build-store' to generate your final store package." -ForegroundColor White
-Write-Host "5. Upload the generated .appx / .msix to 'Packages' section in Partner Center." -ForegroundColor White
-Write-Host ""
-Write-Host "ALTERNATIVE (EASIEST): Win32 Direct Installer Submission" -ForegroundColor Yellow
-Write-Host "Microsoft Store now directly accepts Win32 .exe installers!" -ForegroundColor White
-Write-Host "You can submit your standard installer generated by 'npm run build-inno' with:" -ForegroundColor White
-Write-Host "   Silent install arguments: /VERYSILENT /NORESTART" -ForegroundColor Gray
+Write-Host "[5/5] Microsoft Store Build Finished!" -ForegroundColor Green
+Write-Host "==========================================================" -ForegroundColor Cyan
+
+$distStoreFiles = Get-ChildItem "dist-store\*.appx", "dist-store\*.msix", "dist-store\*.exe" -ErrorAction SilentlyContinue
+
+if ($distStoreFiles) {
+    foreach ($file in $distStoreFiles) {
+        Write-Host "Created: $($file.Name) ($([math]::Round($file.Length / 1MB, 2)) MB)" -ForegroundColor White
+    }
+}
 Write-Host "==========================================================" -ForegroundColor Cyan

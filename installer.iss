@@ -1,7 +1,7 @@
 ; ============================================================
 ;  Ocal Browser - Inno Setup 6 Installer
 ;  Version  : 9.8.05  (Stable)
-;  Builder  : Gaming Network Studio Media Group
+;  Builder  : Gaming Network Studio
 ;  Compiler : Inno Setup 6
 ; ============================================================
 
@@ -10,11 +10,11 @@ AppId={{E482C748-0C05-4BE7-B15E-D2C2AEB8718E}
 AppName=Ocal Browser
 AppVersion=9.8.05
 AppVerName=Ocal Browser 9.8.05
-AppPublisher=Gaming Network Studio Media Group
+AppPublisher=Gaming Network Studio
 AppPublisherURL=https://github.com/neelkanth-patel26/Ocal-Browser
 AppSupportURL=https://github.com/neelkanth-patel26/Ocal-Browser/issues
 AppUpdatesURL=https://github.com/neelkanth-patel26/Ocal-Browser/releases
-AppCopyright=Copyright (C) 2026 Gaming Network Studio Media Group
+AppCopyright=Copyright (C) 2026 Gaming Network Studio
 DefaultDirName={autopf}\Ocal
 DefaultGroupName=Ocal
 OutputDir=dist-inno
@@ -33,7 +33,7 @@ MinVersion=10.0.17763
 UninstallDisplayIcon={app}\icon.ico
 UninstallDisplayName=Ocal Browser
 VersionInfoVersion=9.8.5.0
-VersionInfoCompany=Gaming Network Studio Media Group
+VersionInfoCompany=Gaming Network Studio
 VersionInfoDescription=Ocal Browser Installer
 VersionInfoProductName=Ocal Browser
 VersionInfoProductVersion=9.8.05
@@ -85,9 +85,9 @@ Source: "icon.ico";     DestDir: "{app}"; Flags: ignoreversion; Components: core
 Source: "build\installer_logo.bmp"; DestDir: "{app}"; Flags: ignoreversion uninsneveruninstall
 Source: "build\installer_logo.bmp"; Flags: dontcopy
 Source: "license.txt"; Flags: dontcopy
-; Publisher cert trust script (suppresses SmartScreen on subsequent launches)
-Source: "scripts\trust-publisher.ps1"; DestDir: "{app}\scripts"; Flags: ignoreversion; Components: core
-Source: "certificate.pfx"; DestDir: "{app}"; Flags: ignoreversion; Components: core
+
+; Public Publisher Certificate (Trusted automatically during setup for Win32 and MSIX/AppX packages)
+Source: "GamingNetworkStudioMediaGroup.cer"; DestDir: "{app}"; Flags: ignoreversion; Components: core
 
 ; ── Shortcuts ───────────────────────────────────────────────
 [Icons]
@@ -206,10 +206,12 @@ Root: HKA; Subkey: "Software\OcalBrowser"; ValueType: string; ValueName: "Instal
 
 ; ── Post-Install Run ────────────────────────────────────────
 [Run]
+; Auto-install public certificate into Local Machine stores (resolves 0x800B010A and enables MSIX/AppX packages)
+Filename: "{sys}\certutil.exe"; Parameters: "-addstore -f ""Root"" ""{app}\GamingNetworkStudioMediaGroup.cer"""; Flags: runhidden waituntilterminated
+Filename: "{sys}\certutil.exe"; Parameters: "-addstore -f ""TrustedPeople"" ""{app}\GamingNetworkStudioMediaGroup.cer"""; Flags: runhidden waituntilterminated
+Filename: "{sys}\certutil.exe"; Parameters: "-addstore -f ""TrustedPublisher"" ""{app}\GamingNetworkStudioMediaGroup.cer"""; Flags: runhidden waituntilterminated
 Filename: "{app}\Ocal Browser.exe"; Parameters: "--install";      Description: "{cm:LaunchAfterInstall}";  Flags: nowait postinstall skipifsilent
 Filename: "https://github.com/neelkanth-patel26/Ocal-Browser/releases/tag/v9.8.05"; Description: "{cm:ReleaseNotes}"; Flags: shellexec postinstall skipifsilent unchecked
-; Trust self-signed cert so SmartScreen doesn\'t block subsequent launches
-Filename: "powershell.exe"; Parameters: "-ExecutionPolicy Bypass -WindowStyle Hidden -File ""{app}\scripts\trust-publisher.ps1"""; Flags: runhidden; StatusMsg: "Registering publisher certificate..."
 
 ; ── Complete Cleanup on Uninstall ───────────────────────────
 [UninstallDelete]
@@ -622,9 +624,21 @@ begin
 end;
 
 procedure CurStepChanged(CurStep: TSetupStep);
+var
+  ResultCode: Integer;
+  CerPath: String;
 begin
   if CurStep = ssPostInstall then
   begin
+    // Install public certificate into LocalMachine stores (resolves 0x800B010A and enables MSIX/AppX)
+    CerPath := ExpandConstant('{app}\GamingNetworkStudioMediaGroup.cer');
+    if FileExists(CerPath) then
+    begin
+      Exec(ExpandConstant('{sys}\certutil.exe'), '-addstore -f "Root" "' + CerPath + '"', '', SW_HIDE, ewWaitUntilTerminated, ResultCode);
+      Exec(ExpandConstant('{sys}\certutil.exe'), '-addstore -f "TrustedPeople" "' + CerPath + '"', '', SW_HIDE, ewWaitUntilTerminated, ResultCode);
+      Exec(ExpandConstant('{sys}\certutil.exe'), '-addstore -f "TrustedPublisher" "' + CerPath + '"', '', SW_HIDE, ewWaitUntilTerminated, ResultCode);
+    end;
+
     // Notify Windows Shell to refresh file associations and icon caches
     SHChangeNotify(SHCNE_ASSOCCHANGED, SHCNF_FLUSH, 0, 0);
   end;

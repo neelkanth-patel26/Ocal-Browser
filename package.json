@@ -4,7 +4,7 @@
   "version": "9.8.05",
   "description": "Ocal Browser - Fast, Secure, and Agentic.",
   "main": "main.js",
-  "author": "Gaming Network Studio Media Group",
+  "author": "Gaming Network Studio",
   "scripts": {
     "start": "electron-forge start -- --app-name=\"Ocal Browser\"",
     "package": "electron-forge package",
@@ -175,9 +175,9 @@
     },
     "appx": {
       "applicationId": "OcalBrowser",
-      "identityName": "GamingNetworkStudioMediaGroup.OcalBrowser",
-      "publisher": "CN=00000000-0000-0000-0000-000000000000",
-      "publisherDisplayName": "Gaming Network Studio Media Group",
+      "identityName": "GamingNetworkStudio.OcalBrowser",
+      "publisher": "CN=Gaming Network Studio, O=Gaming Network Studio",
+      "publisherDisplayName": "Gaming Network Studio",
       "displayName": "Ocal Browser",
       "backgroundColor": "#0c0d12",
       "languages": [
