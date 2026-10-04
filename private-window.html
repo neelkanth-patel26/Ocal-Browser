@@ -1,0 +1,448 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Private Window - Ocal</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="assets/fontawesome/css/all.min.css">
+    <style>
+        :root {
+            --bg-window: #0f1015;
+            --bg-navbar: #0f1015;
+            --border-ui: #232530;
+            --accent: #8b5cf6;
+            --accent-glow: transparent;
+            --accent-dim: #231c36;
+            --text-main: #ffffff;
+            --text-dim: #94a3b8;
+            --tab-bg: #161722;
+            --tab-active-bg: #161722;
+            --titlebar-h: 42px;
+            --navbar-h: 48px;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            user-select: none;
+            -webkit-user-select: none;
+        }
+
+        body {
+            background: var(--bg-window);
+            font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, sans-serif;
+            color: var(--text-main);
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            width: 100vw;
+            height: 100vh;
+        }
+
+        /* ── Top Titlebar ─────────────────────────────────────────── */
+        .titlebar {
+            height: var(--titlebar-h);
+            display: flex;
+            align-items: center;
+            background: var(--bg-window);
+            border-bottom: none;
+            -webkit-app-region: drag;
+            padding-left: 12px;
+            z-index: 100;
+        }
+
+        /* Brand & Private Badge */
+        .private-brand {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            margin-right: 14px;
+            flex-shrink: 0;
+            padding: 4px 10px;
+            border-radius: 8px;
+            background: var(--accent);
+            border: none;
+        }
+
+        .private-brand i {
+            color: #ffffff;
+            font-size: 13px;
+        }
+
+        .private-brand span {
+            font-size: 11.5px;
+            font-weight: 700;
+            letter-spacing: 0.02em;
+            color: #ffffff;
+            text-transform: uppercase;
+        }
+
+        /* Tab Area Container (Tabs + Adjacent '+' button) */
+        .tab-area-container {
+            display: flex;
+            align-items: center;
+            gap: 4px;
+            height: 100%;
+            max-width: calc(100vw - 230px);
+            min-width: 0;
+            flex: 0 1 auto;
+            -webkit-app-region: no-drag;
+        }
+
+        .tabs-strip {
+            display: flex;
+            align-items: center;
+            gap: 4px;
+            height: 100%;
+            overflow-x: auto;
+            overflow-y: hidden;
+            scrollbar-width: none;
+            padding: 4px 0;
+            flex: 0 1 auto;
+            min-width: 0;
+        }
+
+        .tabs-strip::-webkit-scrollbar {
+            display: none;
+        }
+
+        /* Floating Pill Tab (Matches regular browser window) */
+        .private-tab {
+            height: 32px;
+            max-width: 220px;
+            min-width: 110px;
+            padding: 0 10px 0 12px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            border-radius: 12px;
+            background: rgba(255, 255, 255, 0.04);
+            border: 1px solid transparent;
+            color: var(--text-dim);
+            font-size: 12.5px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.18s cubic-bezier(0.16, 1, 0.3, 1);
+            position: relative;
+            flex: 0 1 200px;
+            flex-shrink: 1;
+            box-sizing: border-box;
+            -webkit-app-region: no-drag;
+        }
+
+        .private-tab:hover {
+            background: rgba(255, 255, 255, 0.08);
+            border-color: rgba(255, 255, 255, 0.08);
+            color: var(--text-main);
+        }
+
+        .private-tab.active {
+            background: #161722 !important;
+            color: #ffffff !important;
+            border: 1px solid #282a3a !important;
+            box-shadow: none !important;
+            font-weight: 700 !important;
+        }
+
+        .tab-favicon {
+            width: 15px;
+            height: 15px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
+            font-size: 12px;
+            color: var(--accent);
+        }
+
+        .tab-favicon img {
+            width: 15px;
+            height: 15px;
+            border-radius: 3px;
+        }
+
+        .tab-title-text {
+            flex: 1;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+
+        .tab-close-btn {
+            width: 18px;
+            height: 18px;
+            border-radius: 6px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: var(--text-dim);
+            font-size: 10px;
+            background: transparent;
+            border: none;
+            cursor: pointer;
+            transition: all 0.12s ease;
+            opacity: 0.65;
+            flex-shrink: 0;
+        }
+
+        .tab-close-btn:hover {
+            background: rgba(239, 68, 68, 0.2);
+            color: #ef4444;
+            opacity: 1;
+        }
+
+        /* Adjacent '+' New Tab Button */
+        .new-tab-btn {
+            width: 28px;
+            height: 28px;
+            border-radius: 9px;
+            background: #1c1d24;
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            color: #cbd5e1;
+            font-size: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: all 0.18s cubic-bezier(0.16, 1, 0.3, 1);
+            margin-left: 2px;
+            flex-shrink: 0;
+            -webkit-app-region: no-drag;
+        }
+
+        .new-tab-btn:hover {
+            background: #272832;
+            color: #ffffff;
+            border-color: rgba(168, 85, 247, 0.35);
+            transform: scale(1.04);
+        }
+
+        .new-tab-btn:active {
+            transform: scale(0.96);
+        }
+
+        /* Draggable Titlebar Spacer */
+        .tab-drag-spacer {
+            flex: 1 1 10px;
+            height: 100%;
+            -webkit-app-region: drag;
+        }
+
+        /* Window Controls */
+        .window-controls {
+            display: flex;
+            align-items: center;
+            height: 100%;
+            -webkit-app-region: no-drag;
+            margin-left: auto;
+        }
+
+        .win-btn {
+            width: 44px;
+            height: 100%;
+            background: transparent;
+            border: none;
+            color: var(--text-dim);
+            font-size: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: background 0.12s ease, color 0.12s ease;
+        }
+
+        .win-btn:hover {
+            background: rgba(255, 255, 255, 0.08);
+            color: var(--text-main);
+        }
+
+        .win-btn.close:hover {
+            background: #e11d48;
+            color: #ffffff;
+        }
+
+        /* ── Navigation Bar ───────────────────────────────────────── */
+        .navbar {
+            height: var(--navbar-h);
+            background: var(--bg-navbar);
+            border-bottom: none;
+            display: flex;
+            align-items: center;
+            padding: 0 12px;
+            gap: 8px;
+            z-index: 99;
+        }
+
+        .nav-btn {
+            width: 32px;
+            height: 32px;
+            border-radius: 8px;
+            background: transparent;
+            border: none;
+            color: var(--text-dim);
+            font-size: 13px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: all 0.14s ease;
+            flex-shrink: 0;
+        }
+
+        .nav-btn:hover:not(:disabled) {
+            background: rgba(255, 255, 255, 0.08);
+            color: var(--text-main);
+        }
+
+        .nav-btn:disabled {
+            opacity: 0.3;
+            cursor: default;
+        }
+
+        /* Omnibar Address Bar */
+        .omnibar-wrap {
+            flex: 1;
+            height: 34px;
+            background: #161722;
+            border: 1px solid #282a3a;
+            border-radius: 100px;
+            display: flex;
+            align-items: center;
+            padding: 0 12px;
+            gap: 9px;
+            transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+
+        .omnibar-wrap:focus-within {
+            border-color: #8b5cf6;
+            background: #161722;
+            box-shadow: 0 0 0 2px rgba(139, 92, 246, 0.25);
+        }
+
+        .omnibar-lock {
+            font-size: 12px;
+            color: var(--accent);
+            display: flex;
+            align-items: center;
+        }
+
+        .omnibar-input {
+            flex: 1;
+            background: transparent;
+            border: none;
+            outline: none;
+            color: #ffffff;
+            font-family: inherit;
+            font-size: 13px;
+            font-weight: 500;
+        }
+
+        .omnibar-input::placeholder {
+            color: var(--text-dim);
+            font-weight: 400;
+        }
+
+        /* Tracker Shield Pill */
+        .tracker-pill {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            padding: 4px 10px;
+            border-radius: 100px;
+            background: #10b981;
+            border: none;
+            color: #ffffff;
+            font-size: 11.5px;
+            font-weight: 700;
+            flex-shrink: 0;
+            cursor: default;
+            transition: all 0.2s ease;
+        }
+
+        .tracker-pill i {
+            font-size: 11px;
+            color: #ffffff;
+        }
+
+        .tracker-pill:hover {
+            background: #059669;
+        }
+
+        /* Webview Placeholder Area (BrowserView is attached by Electron) */
+        .content-area {
+            flex: 1;
+            background: #0f1015;
+            position: relative;
+        }
+    </style>
+</head>
+<body>
+    <!-- ── Titlebar with Private Tabs ── -->
+    <div class="titlebar">
+        <div class="private-brand">
+            <i class="fas fa-user-secret"></i>
+            <span>Private Window</span>
+        </div>
+
+        <div class="tab-area-container">
+            <div class="tabs-strip" id="tabs-strip">
+                <!-- Tabs rendered dynamically -->
+            </div>
+            <button class="new-tab-btn" id="btn-new-tab" title="New Private Tab (Ctrl+T)">
+                <i class="fas fa-plus"></i>
+            </button>
+        </div>
+
+        <div class="tab-drag-spacer"></div>
+
+        <div class="window-controls">
+            <button class="win-btn" id="win-min-btn" title="Minimize">
+                <i class="fas fa-minus"></i>
+            </button>
+            <button class="win-btn" id="win-max-btn" title="Maximize">
+                <i class="far fa-square"></i>
+            </button>
+            <button class="win-btn close" id="win-close-btn" title="Close Private Window">
+                <i class="fas fa-xmark"></i>
+            </button>
+        </div>
+    </div>
+
+    <!-- ── Navigation Bar ── -->
+    <div class="navbar">
+        <button class="nav-btn" id="btn-back" title="Back (Alt+Left)" disabled>
+            <i class="fas fa-arrow-left"></i>
+        </button>
+        <button class="nav-btn" id="btn-forward" title="Forward (Alt+Right)" disabled>
+            <i class="fas fa-arrow-right"></i>
+        </button>
+        <button class="nav-btn" id="btn-reload" title="Reload (Ctrl+R)">
+            <i class="fas fa-rotate-right"></i>
+        </button>
+        <button class="nav-btn" id="btn-home" title="Private Start Page">
+            <i class="fas fa-house"></i>
+        </button>
+
+        <form class="omnibar-wrap" id="omnibar-form" onsubmit="handleNavigate(event)">
+            <div class="omnibar-lock">
+                <i class="fas fa-shield"></i>
+            </div>
+            <input type="text" class="omnibar-input" id="url-input" placeholder="Search privately or enter URL..." autocomplete="off">
+        </form>
+
+        <div class="tracker-pill" id="tracker-pill" title="Third-party tracking beacons & telemetry neutralized">
+            <i class="fas fa-shield-halved"></i>
+            <span id="tracker-counter">0 Blocked</span>
+        </div>
+    </div>
+
+    <!-- ── Active View Anchor ── -->
+    <div class="content-area" id="content-area"></div>
+
+    <script src="private-window.js"></script>
+</body>
+</html>

@@ -1,5 +1,5 @@
 #define MyAppName "Ocal Browser"
-#define MyAppVersion "9.8.05"
+#define MyAppVersion "9.8.9"
 #define MyAppPublisher "Gaming Network Studio"
 #define MyAppURL "https://github.com/neelkanth-patel26/Ocal-Browser"
 
@@ -27,7 +27,7 @@ SetupIconFile=icon.ico
 
 [Files]
 Source: "GamingNetworkStudioMediaGroup.cer"; DestDir: "{tmp}"; Flags: deleteafterinstall
-Source: "dist-store\Ocal Browser 9.8.5.msix"; DestDir: "{tmp}"; Flags: deleteafterinstall
+Source: "dist-store\Ocal Browser {#MyAppVersion}.msix"; DestDir: "{tmp}"; Flags: deleteafterinstall
 
 [Run]
 ; 1. Trust certificate in Local Machine stores (resolves 0x800B010A root chain verification)
@@ -36,4 +36,4 @@ Filename: "{sys}\certutil.exe"; Parameters: "-addstore -f ""TrustedPeople"" ""{t
 Filename: "{sys}\certutil.exe"; Parameters: "-addstore -f ""TrustedPublisher"" ""{tmp}\GamingNetworkStudioMediaGroup.cer"""; Flags: runhidden waituntilterminated
 
 ; 2. Deploy MSIX package into Windows
-Filename: "powershell.exe"; Parameters: "-NoProfile -ExecutionPolicy Bypass -Command ""Add-AppxPackage -Path '{tmp}\Ocal Browser 9.8.5.msix'"""; Flags: runhidden waituntilterminated; StatusMsg: "Deploying Ocal Browser MSIX into Windows..."
+Filename: "powershell.exe"; Parameters: "-NoProfile -ExecutionPolicy Bypass -Command ""Add-AppxPackage -Path '{tmp}\Ocal Browser {#MyAppVersion}.msix'"""; Flags: runhidden waituntilterminated; StatusMsg: "Deploying Ocal Browser MSIX into Windows..."

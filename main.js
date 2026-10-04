@@ -141,7 +141,7 @@ app.commandLine.appendSwitch('dns-prefetch-disable', 'false');
 app.commandLine.appendSwitch('enable-fast-unload');
 
 // Optimize JavaScript engine heap memory limit for heavy web apps
-app.commandLine.appendSwitch('js-flags', '--max-old-space-size=4096 --expose-gc');
+app.commandLine.appendSwitch('js-flags', '--max-old-space-size=4096');
 
 // Prevent background timer throttling & renderer backgrounding throttles for fluid multi-tab performance
 app.commandLine.appendSwitch('disable-background-timer-throttling');
@@ -151,7 +151,9 @@ app.commandLine.appendSwitch('disable-backgrounding-occluded-windows');
 // Disable the default Electron menu bar on Windows/Linux to prevent UI shifting
 Menu.setApplicationMenu(null);
 
-const OCAL_USER_AGENT = 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/123.0.0.0 Safari/537.36';
+const chromeVersion = (process.versions && process.versions.chrome) || '134.0.0.0';
+const chromeMajor = chromeVersion.split('.')[0] || '134';
+const OCAL_USER_AGENT = `Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/${chromeVersion} Safari/537.36`;
 app.userAgentFallback = OCAL_USER_AGENT;
 
 // Single Instance Lock
@@ -184,6 +186,7 @@ function hasAnyOpenOverlay() {
         if (typeof mediaMasterView !== 'undefined' && mediaMasterView && attachedViews.includes(mediaMasterView)) return true;
         if (typeof tabgroupView !== 'undefined' && tabgroupView && attachedViews.includes(tabgroupView)) return true;
         if (typeof tabContextView !== 'undefined' && tabContextView && attachedViews.includes(tabContextView)) return true;
+        if (typeof pageContextView !== 'undefined' && pageContextView && attachedViews.includes(pageContextView)) return true;
         if (typeof downloadsView !== 'undefined' && downloadsView && attachedViews.includes(downloadsView)) return true;
     }
     return false;
@@ -751,6 +754,8 @@ var siteInfoView = null;
 var webAppView = null;
 var tabgroupView = null;
 var tabContextView = null;
+var pageContextView = null;
+let pageContextTargetContentsId = null;
 let isAlwaysOnTop = false;
 
 let downloadsView = null;
@@ -1037,8 +1042,8 @@ function applyShieldSettings() {
         const { url, resourceType, webContentsId } = details;
         if (!url) return callback({});
 
-        // 1. HTTPS Upgrade for mainFrame navigation
-        if (userSettings.httpsUpgradeEnabled && resourceType === 'mainFrame' && url.startsWith('http://')) {
+        // 1. HTTPS Upgrade for mainFrame navigation (excluding localhost/127.0.0.1)
+        if (userSettings.httpsUpgradeEnabled && resourceType === 'mainFrame' && url.startsWith('http://') && !url.includes('localhost') && !url.includes('127.0.0.1')) {
             try {
                 const upgradeUrl = new URL(url);
                 upgradeUrl.protocol = 'https:';
@@ -1090,13 +1095,15 @@ function applyShieldSettings() {
         delete headers['X-Electron-Id'];
         delete headers['X-Electron-Version'];
 
-        // YouTube stealth headers
-        if (url.includes('youtube.com') && !url.includes('googlevideo.com')) {
-            if (!headers['Sec-Ch-Ua']) {
-                headers['Sec-Ch-Ua'] = '"Chromium";v="134", "Not:A-Brand";v="99"';
-                headers['Sec-Ch-Ua-Mobile'] = '?0';
-                headers['Sec-Ch-Ua-Platform'] = '"Windows"';
-            }
+        // Synchronize authentic Chromium Client Hints & User-Agent on all external web requests
+        if (!url.startsWith('ocal://') && !url.startsWith('file://')) {
+            headers['User-Agent'] = OCAL_USER_AGENT;
+            headers['Sec-CH-UA'] = `"Chromium";v="${chromeMajor}", "Google Chrome";v="${chromeMajor}", "Not?A_Brand";v="99"`;
+            headers['Sec-CH-UA-Mobile'] = '?0';
+            headers['Sec-CH-UA-Platform'] = '"Windows"';
+            headers['Sec-CH-UA-Platform-Version'] = '"15.0.0"';
+            headers['Sec-CH-UA-Full-Version-List'] = `"Chromium";v="${chromeVersion}", "Google Chrome";v="${chromeVersion}", "Not?A_Brand";v="99.0.0.0"`;
+            headers['Upgrade-Insecure-Requests'] = '1';
         }
 
         callback({ requestHeaders: headers });
@@ -1129,8 +1136,17 @@ function applyShieldSettings() {
             return callback({ responseHeaders: headers });
         }
 
-        // YouTube specifically needs its headers preserved to avoid 403s on videoplayback
-        if (url.includes('googlevideo.com') || url.includes('youtube.com')) {
+        // Security & Verification Endpoints (Cloudflare Turnstile, CAPTCHA, Accounts) must preserve full headers & CSP
+        const isSecurityOrChallenge = url.includes('challenges.cloudflare.com') ||
+                                     url.includes('cloudflare.com') ||
+                                     url.includes('turnstile') ||
+                                     url.includes('recaptcha') ||
+                                     url.includes('hcaptcha.com') ||
+                                     url.includes('arkoselabs.com') ||
+                                     url.includes('accounts.google.com');
+
+        // YouTube and verification endpoints specifically need their headers preserved
+        if (isSecurityOrChallenge || url.includes('googlevideo.com') || url.includes('youtube.com')) {
             return callback({ responseHeaders: headers });
         }
 
@@ -1416,6 +1432,7 @@ function createMainWindow() {
         if (!suggestionsView) createSuggestionsView();
         if (!tabgroupView) createTabgroupView();
         if (!tabContextView) createTabContextView();
+        if (!pageContextView) createPageContextView();
         if (!mediaMasterView) createMediaMasterView();
         if (!bmDropdownView) createBMDropdownView();
         // Always open a tab on startup
@@ -1575,8 +1592,6 @@ app.on('web-contents-created', (event, contents) => {
     });
 
     const desktopUA = OCAL_USER_AGENT;
-    const googleBypassUA = 'Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:130.0) Gecko/20100101 Firefox/130.0';
-
     contents.setUserAgent(desktopUA);
 
     function checkAndBroadcastAudioActivity() {
@@ -1627,24 +1642,11 @@ app.on('web-contents-created', (event, contents) => {
 
     contents.on('did-start-navigation', (event, url, isInPlace, isMainFrame) => {
         if (!isMainFrame) return;
-
-        const isSignFlow = url.includes('ServiceLogin') || url.includes('signin') || url.includes('identifier');
-        const isGoogleAccounts = url.includes('accounts.google.com') || url.includes('google.com/accounts');
-        const isPostLogin = url.includes('CheckCookie') || url.includes('ServiceLoginAuth');
-
-        if (isGoogleAccounts && isSignFlow && !isPostLogin) {
-            contents.setUserAgent(googleBypassUA);
-        } else {
-            contents.setUserAgent(desktopUA);
-        }
+        contents.setUserAgent(desktopUA);
     });
 
     contents.on('did-stop-navigation', () => {
-        const url = contents.getURL();
-        const isGoogleAccounts = url.includes('accounts.google.com') || url.includes('google.com/accounts');
-        if (!isGoogleAccounts && contents.getUserAgent() === googleBypassUA) {
-            contents.setUserAgent(desktopUA);
-        }
+        contents.setUserAgent(desktopUA);
     });
 
     contents.on('did-fail-load', (e, code, desc, url, isMain) => {
@@ -1660,45 +1662,50 @@ function setupDownloadHandler() {
         const fileName = item.getFilename();
 
         let savePath = lastSaveAsPath;
-        if (!savePath || userSettings.askSavePath) {
-            const filters = [];
-            const ext = path.extname(fileName).toLowerCase().replace(/^\./, '');
-            if (ext) {
-                let extName = `${ext.toUpperCase()} File`;
-                if (['png', 'jpg', 'jpeg', 'gif', 'webp', 'bmp', 'svg'].includes(ext)) {
-                    extName = 'Image Files';
-                } else if (ext === 'pdf') {
-                    extName = 'PDF Document';
-                } else if (ext === 'html' || ext === 'htm') {
-                    extName = 'HTML Document';
-                } else if (ext === 'txt' || ext === 'log') {
-                    extName = 'Text Files';
-                } else if (ext === 'zip' || ext === 'rar' || ext === '7z') {
-                    extName = 'Archive Files';
+        const targetDir = userSettings.downloadPath || app.getPath('downloads');
+        if (!savePath) {
+            if (userSettings.askSaveLocation || userSettings.askSavePath) {
+                const filters = [];
+                const ext = path.extname(fileName).toLowerCase().replace(/^\./, '');
+                if (ext) {
+                    let extName = `${ext.toUpperCase()} File`;
+                    if (['png', 'jpg', 'jpeg', 'gif', 'webp', 'bmp', 'svg'].includes(ext)) {
+                        extName = 'Image Files';
+                    } else if (ext === 'pdf') {
+                        extName = 'PDF Document';
+                    } else if (ext === 'html' || ext === 'htm') {
+                        extName = 'HTML Document';
+                    } else if (ext === 'txt' || ext === 'log') {
+                        extName = 'Text Files';
+                    } else if (ext === 'zip' || ext === 'rar' || ext === '7z') {
+                        extName = 'Archive Files';
+                    }
+                    
+                    let extensions = [ext];
+                    if (ext === 'jpg' || ext === 'jpeg') {
+                        extensions = ['jpg', 'jpeg'];
+                    } else if (ext === 'html' || ext === 'htm') {
+                        extensions = ['html', 'htm'];
+                    }
+                    filters.push({ name: extName, extensions: extensions });
                 }
-                
-                let extensions = [ext];
-                if (ext === 'jpg' || ext === 'jpeg') {
-                    extensions = ['jpg', 'jpeg'];
-                } else if (ext === 'html' || ext === 'htm') {
-                    extensions = ['html', 'htm'];
+                filters.push({ name: 'All Files', extensions: ['*'] });
+
+                const result = dialog.showSaveDialogSync(mainWindow, {
+                    title: 'Save File',
+                    defaultPath: path.join(targetDir, fileName),
+                    buttonLabel: 'Save',
+                    filters: filters
+                });
+
+                if (result) {
+                    savePath = result;
+                } else {
+                    event.preventDefault();
+                    return;
                 }
-                filters.push({ name: extName, extensions: extensions });
-            }
-            filters.push({ name: 'All Files', extensions: ['*'] });
-
-            const result = dialog.showSaveDialogSync(mainWindow, {
-                title: 'Save File',
-                defaultPath: path.join(app.getPath('downloads'), fileName),
-                buttonLabel: 'Save',
-                filters: filters
-            });
-
-            if (result) {
-                savePath = result;
             } else {
-                event.preventDefault();
-                return;
+                savePath = path.join(targetDir, fileName);
             }
         }
 
@@ -1888,6 +1895,14 @@ function createTabContextView() {
     tabContextView.setBackgroundColor('#00000000');
 }
 
+function createPageContextView() {
+    pageContextView = new BrowserView({
+        webPreferences: { preload: path.join(__dirname, 'preload.js'), contextIsolation: true, nodeIntegration: false }
+    });
+    pageContextView.webContents.loadFile('page-context.html');
+    pageContextView.setBackgroundColor('#00000000');
+}
+
 function closeOverlays() {
     if (!hasAnyOpenOverlay()) return;
 
@@ -1917,7 +1932,7 @@ function closeOverlays() {
         const toRemove = [
             suggestionsView, shieldPopupView, passwordsPopupView, bmDropdownView,
             extensionDropdownView, siteInfoView, volumeBoostView, mediaMasterView,
-            tabgroupView, tabContextView, downloadsView
+            tabgroupView, tabContextView, pageContextView, downloadsView
         ];
         toRemove.forEach(v => {
             if (v && !v.webContents.isDestroyed() && mainWindow.getBrowserViews().includes(v)) {
@@ -2203,7 +2218,17 @@ function resolveInternalURL(url) {
     const getFilePath = (fileName) => 'file:///' + path.join(__dirname, fileName).replace(/\\/g, '/');
 
     // 1. Exact Page Mappings
-    if (cleanBase === 'home' || cleanBase === 'ocal://home') return getFilePath('home.html');
+    if (cleanBase === 'home' || cleanBase === 'ocal://home') {
+        const qIdx = url.indexOf('?');
+        return getFilePath('home.html') + (qIdx !== -1 ? url.substring(qIdx) : '');
+    }
+    if (cleanBase === 'private-home' || cleanBase === 'ocal://private-home') {
+        return getFilePath('home.html') + '?private=true';
+    }
+    if (cleanBase === 'search' || cleanBase === 'ocal://search') {
+        const qIdx = url.indexOf('?');
+        return 'http://localhost:8080/search' + (qIdx !== -1 ? url.substring(qIdx) : '');
+    }
     if (cleanBase === 'settings' || cleanBase === 'ocal://settings') return getFilePath('settings.html');
     if (normalizedUrl.startsWith('ocal://settings#')) return getFilePath('settings.html') + '#' + normalizedUrl.split('#')[1].trim();
     if (normalizedUrl.startsWith('ocal://settings/')) {
@@ -3041,6 +3066,9 @@ function broadcastTabs() {
     const tabData = views.map(v => {
         const isAudibleLeft = (v.view && !v.view.webContents.isDestroyed()) ? (v.view.webContents.isCurrentlyAudible() || !!v.isPlayingMedia || !!v.audible) : false;
         const isAudibleRight = (v.isSplit && v.view2 && !v.view2.webContents.isDestroyed()) ? (v.view2.webContents.isCurrentlyAudible() || !!v.isPlayingMedia2 || !!v.audible2) : false;
+        const isMutedLeft = (v.view && !v.view.webContents.isDestroyed()) ? v.view.webContents.isAudioMuted() : false;
+        const isMutedRight = (v.isSplit && v.view2 && !v.view2.webContents.isDestroyed()) ? v.view2.webContents.isAudioMuted() : false;
+        const isMuted = isMutedLeft || isMutedRight || !!v.muted;
 
         let url1 = v.url;
         if (url1 === undefined && v.view && !v.view.webContents.isDestroyed()) {
@@ -3085,6 +3113,7 @@ function broadcastTabs() {
             favicon: v.favicon || null,
             groupId: v.groupId || null,
             audible: isAudibleLeft || isAudibleRight,
+            muted: isMuted,
             isSplit: !!v.isSplit,
             splitDirection: v.splitDirection || 'horizontal',
             focusedSide: v.focusedSide || 'left',
@@ -4170,7 +4199,8 @@ ipcMain.on('navigate-to', (e, url) => {
         else {
             const engine = userSettings.searchEngine || 'google';
             let baseUrl = 'https://www.google.com/search?q=';
-            if (engine === 'bing') baseUrl = 'https://www.bing.com/search?q=';
+            if (engine === 'ocal') baseUrl = 'http://localhost:8080/search?q=';
+            else if (engine === 'bing') baseUrl = 'https://www.bing.com/search?q=';
             else if (engine === 'duckduckgo') baseUrl = 'https://duckduckgo.com/?q=';
             else if (engine === 'brave') baseUrl = 'https://search.brave.com/search?q=';
             else if (engine === 'yahoo') baseUrl = 'https://search.yahoo.com/search?p=';
@@ -4476,6 +4506,7 @@ const AI_SITE_MAP = {
     'twitch': 'https://www.twitch.tv',
     'amazon': 'https://www.amazon.com',
     'linkedin': 'https://www.linkedin.com',
+    'ocal': 'http://localhost:8080',
     'bing': 'https://www.bing.com',
     'duckduckgo': 'https://duckduckgo.com',
     'maps': 'https://maps.google.com',
@@ -7617,7 +7648,10 @@ ipcMain.on('show-tab-context', (e, data) => {
     tabContextView._x = data.x;
     tabContextView._y = data.y;
     const targetV = views.find(v => v.id === data.tabId);
-    if (targetV) data.isSplit = !!targetV.isSplit;
+    if (targetV) {
+        data.isSplit = !!targetV.isSplit;
+        data.isMuted = (targetV.view && !targetV.view.webContents.isDestroyed()) ? targetV.view.webContents.isAudioMuted() : !!targetV.muted;
+    }
     tabContextView.webContents.send('render-tab-context', data);
 });
 
@@ -7681,6 +7715,226 @@ ipcMain.on('tab-context-action', (e, data) => {
                 }
                 broadcastTabs();
             }
+        }
+    }
+});
+
+// ── Tab Audio Mute Toggle IPC ──
+ipcMain.on('toggle-tab-mute', (e, tabId) => {
+    const v = views.find(item => item.id === tabId);
+    if (!v) return;
+    const isMuted = (v.view && !v.view.webContents.isDestroyed()) ? v.view.webContents.isAudioMuted() : !!v.muted;
+    const newMuted = !isMuted;
+    if (v.view && !v.view.webContents.isDestroyed()) {
+        v.view.webContents.setAudioMuted(newMuted);
+    }
+    if (v.isSplit && v.view2 && !v.view2.webContents.isDestroyed()) {
+        v.view2.webContents.setAudioMuted(newMuted);
+    }
+    v.muted = newMuted;
+    if (mainWindow && !mainWindow.isDestroyed()) {
+        mainWindow.webContents.send('tab-audio-status-changed', { id: tabId, isAudible: !!v.audible, muted: newMuted });
+    }
+    broadcastTabs();
+});
+
+// ── Shadowless Page Context Menu IPC Handlers ──
+ipcMain.on('hide-page-context', () => {
+    hidePageContextMenu();
+});
+
+ipcMain.on('resize-page-context', (e, data) => {
+    if (pageContextView && pageContextView._x !== undefined) {
+        const zoom = getOptimalZoomFactor();
+        const parentWin = (pageContextView._parentWindow && !pageContextView._parentWindow.isDestroyed()) ? pageContextView._parentWindow : mainWindow;
+        const contentBounds = parentWin ? parentWin.getContentBounds() : { width: 1200, height: 800 };
+        const scaledWidth = Math.round(data.width * zoom);
+        const scaledHeight = Math.round(data.height * zoom);
+        let finalX = pageContextView._x;
+        let finalY = pageContextView._y;
+
+        if (finalX + scaledWidth > contentBounds.width) finalX = contentBounds.width - scaledWidth - 8;
+        if (finalY + scaledHeight > contentBounds.height) finalY = contentBounds.height - scaledHeight - 8;
+        if (finalX < 8) finalX = 8;
+        if (finalY < 8) finalY = 8;
+
+        pageContextView.setBounds({
+            x: Math.round(finalX),
+            y: Math.round(finalY),
+            width: scaledWidth,
+            height: scaledHeight
+        });
+    }
+});
+
+ipcMain.on('page-context-action', (e, data) => {
+    hidePageContextMenu();
+    if (!data) return;
+    const targetWc = webContents.fromId(data.targetContentsId || pageContextTargetContentsId);
+
+    switch (data.action) {
+        case 'ask-ocal-ai': {
+            openAiSidebar(`Explain or summarize: "${data.text}"`);
+            break;
+        }
+        case 'search-google': {
+            createNewTab(`https://www.google.com/search?q=${encodeURIComponent(data.text)}`);
+            break;
+        }
+        case 'copy': {
+            if (targetWc && !targetWc.isDestroyed()) targetWc.copy();
+            else if (data.text) clipboard.writeText(data.text);
+            break;
+        }
+        case 'cut': {
+            if (targetWc && !targetWc.isDestroyed()) targetWc.cut();
+            break;
+        }
+        case 'paste': {
+            if (targetWc && !targetWc.isDestroyed()) targetWc.paste();
+            break;
+        }
+        case 'paste-and-match-style': {
+            if (targetWc && !targetWc.isDestroyed()) targetWc.pasteAndMatchStyle();
+            break;
+        }
+        case 'select-all': {
+            if (targetWc && !targetWc.isDestroyed()) targetWc.selectAll();
+            break;
+        }
+        case 'undo': {
+            if (targetWc && !targetWc.isDestroyed()) targetWc.undo();
+            break;
+        }
+        case 'redo': {
+            if (targetWc && !targetWc.isDestroyed()) targetWc.redo();
+            break;
+        }
+        case 'back': {
+            if (targetWc && !targetWc.isDestroyed()) {
+                if (targetWc.goBack) targetWc.goBack();
+                else if (targetWc.navigationHistory) targetWc.navigationHistory.goBack();
+            }
+            break;
+        }
+        case 'forward': {
+            if (targetWc && !targetWc.isDestroyed()) {
+                if (targetWc.goForward) targetWc.goForward();
+                else if (targetWc.navigationHistory) targetWc.navigationHistory.goForward();
+            }
+            break;
+        }
+        case 'reload': {
+            if (targetWc && !targetWc.isDestroyed()) targetWc.reload();
+            break;
+        }
+        case 'print': {
+            if (targetWc && !targetWc.isDestroyed()) {
+                try { targetWc.print(); } catch (err) {}
+            }
+            break;
+        }
+        case 'view-source': {
+            if (data.url && !data.url.startsWith('ocal://') && !data.url.startsWith('file://')) {
+                createNewTab('view-source:' + data.url);
+            }
+            break;
+        }
+        case 'inspect-element': {
+            if (targetWc && !targetWc.isDestroyed()) {
+                try {
+                    targetWc.inspectElement(data.inspectX || 0, data.inspectY || 0);
+                    if (!targetWc.isDevToolsOpened()) targetWc.openDevTools();
+                } catch (err) {}
+            }
+            break;
+        }
+        case 'open-link-new-tab': {
+            if (data.linkUrl) {
+                if (typeof privateWindow !== 'undefined' && privateWindow && !privateWindow.isDestroyed() && pageContextView && pageContextView._parentWindow === privateWindow) {
+                    createPrivateTab(data.linkUrl);
+                } else {
+                    createNewTab(data.linkUrl);
+                }
+            }
+            break;
+        }
+        case 'open-link-private-window': {
+            if (data.linkUrl) openPrivateWindow(data.linkUrl);
+            break;
+        }
+        case 'open-private-window': {
+            openPrivateWindow();
+            break;
+        }
+        case 'open-link-split': {
+            if (data.linkUrl) {
+                const currentActive = views.find(v => v.id === activeViewId);
+                if (currentActive) {
+                    currentActive.isSplit = true;
+                    currentActive.splitUrl = data.linkUrl;
+                    currentActive.splitDirection = currentActive.splitDirection || 'horizontal';
+                    currentActive.focusedSide = 'right';
+                    broadcastTabs();
+                    updateViewBounds();
+                } else {
+                    createNewTab(data.linkUrl);
+                }
+            }
+            break;
+        }
+        case 'copy-link-address': {
+            if (data.linkUrl) clipboard.writeText(data.linkUrl);
+            break;
+        }
+        case 'open-image-new-tab': {
+            if (data.srcUrl) {
+                if (typeof privateWindow !== 'undefined' && privateWindow && !privateWindow.isDestroyed() && pageContextView && pageContextView._parentWindow === privateWindow) {
+                    createPrivateTab(data.srcUrl);
+                } else {
+                    createNewTab(data.srcUrl);
+                }
+            }
+            break;
+        }
+        case 'copy-image': {
+            if (targetWc && !targetWc.isDestroyed()) {
+                try { targetWc.copyImageAt(data.inspectX || 0, data.inspectY || 0); } catch (err) {}
+            }
+            break;
+        }
+        case 'copy-image-address': {
+            if (data.srcUrl) clipboard.writeText(data.srcUrl);
+            break;
+        }
+        case 'save-image-as': {
+            if (targetWc && !targetWc.isDestroyed() && data.srcUrl) {
+                try { targetWc.downloadURL(data.srcUrl); } catch (err) {}
+            }
+            break;
+        }
+        case 'search-lens': {
+            if (data.srcUrl) {
+                const lensUrl = `https://lens.google.com/uploadbyurl?url=${encodeURIComponent(data.srcUrl)}`;
+                if (typeof privateWindow !== 'undefined' && privateWindow && !privateWindow.isDestroyed() && pageContextView && pageContextView._parentWindow === privateWindow) {
+                    createPrivateTab(lensUrl);
+                } else {
+                    createNewTab(lensUrl);
+                }
+            }
+            break;
+        }
+        case 'replace-misspelling': {
+            if (targetWc && !targetWc.isDestroyed() && data.suggestion) {
+                try { targetWc.replaceMisspelling(data.suggestion); } catch (err) {}
+            }
+            break;
+        }
+        case 'add-to-dictionary': {
+            if (targetWc && !targetWc.isDestroyed() && data.word) {
+                try { targetWc.session.addWordToSpellCheckerDictionary(data.word); } catch (err) {}
+            }
+            break;
         }
     }
 });
@@ -8109,8 +8363,13 @@ function handleShortcuts(event, input) {
 
     const cmdOrCtrl = process.platform === 'darwin' ? input.meta : input.control;
 
+    // Ctrl + Shift + N or Ctrl + Shift + P: New Private Window
+    if (cmdOrCtrl && input.shift && (input.key.toLowerCase() === 'n' || input.key.toLowerCase() === 'p')) {
+        event.preventDefault();
+        openPrivateWindow();
+    }
     // Ctrl + T: New Tab
-    if (cmdOrCtrl && input.key.toLowerCase() === 't') {
+    else if (cmdOrCtrl && input.key.toLowerCase() === 't') {
         event.preventDefault();
         createNewTab();
     }
@@ -8599,10 +8858,35 @@ ipcMain.on('get-theme-info-sync', (event) => {
 
 ipcMain.handle('get-settings', () => {
     const resolvedExtensions = (userSettings.extensions || []).map(ext => resolveExtensionMetadata({ ...ext }));
-    return { ...userSettings, extensions: resolvedExtensions };
+    return {
+        ...userSettings,
+        downloadPath: userSettings.downloadPath || app.getPath('downloads'),
+        extensions: resolvedExtensions
+    };
 });
 ipcMain.handle('get-app-version', () => app.getVersion());
 ipcMain.handle('get-downloads', () => downloads);
+
+ipcMain.handle('select-download-directory', async () => {
+    try {
+        const currentPath = userSettings.downloadPath || app.getPath('downloads');
+        const result = await dialog.showOpenDialog(mainWindow, {
+            title: 'Select Default Download Directory',
+            defaultPath: currentPath,
+            properties: ['openDirectory', 'createDirectory']
+        });
+        if (result.canceled || !result.filePaths || result.filePaths.length === 0) {
+            return null;
+        }
+        const selectedPath = result.filePaths[0];
+        userSettings.downloadPath = selectedPath;
+        saveSettings(userSettings);
+        return selectedPath;
+    } catch (err) {
+        console.error('Error selecting download directory:', err);
+        return null;
+    }
+});
 
 ipcMain.handle('get-ambient-tracks', async () => {
     try {
@@ -9392,7 +9676,8 @@ function updateHistory(view, url) {
                 'pip.html', 'sidebars.html', 'sidepanel.html', 'suggestions.html',
                 'tab-context.html', 'tabgroup.html', 'shield-popup.html', 'site-info.html',
                 'media-popup.html', 'ai-sidebar.html', 'certificate-viewer.html',
-                'bm-dropdown.html', 'file-manager.html', 'music-player.html', 'snake.html', 'tetris.html'
+                'bm-dropdown.html', 'file-manager.html', 'music-player.html', 'snake.html', 'tetris.html', 'page-context.html',
+                'private-home.html', 'private-window.html'
             ].some(page => url.toLowerCase().includes(page.toLowerCase()));
 
         if (!isInternalPage) {
@@ -9729,15 +10014,131 @@ ipcMain.on('open-settings', (e, section) => {
     hideSiteInfo();
 });
 
+function getAllActiveSessions() {
+    const sessions = new Set();
+    if (session.defaultSession) sessions.add(session.defaultSession);
+    try { sessions.add(session.fromPartition('persist:google_login')); } catch(e) {}
+    try { sessions.add(session.fromPartition(getProfilePartition())); } catch(e) {}
+    if (userSettings && Array.isArray(userSettings.profiles)) {
+        userSettings.profiles.forEach(p => {
+            if (p && p.id) {
+                try { sessions.add(session.fromPartition(`persist:profile_${p.id}`)); } catch(e) {}
+            }
+        });
+    }
+    try {
+        const partitionsDir = path.join(app.getPath('userData'), 'Partitions');
+        if (fs.existsSync(partitionsDir)) {
+            const dirs = fs.readdirSync(partitionsDir);
+            for (const d of dirs) {
+                try {
+                    sessions.add(session.fromPartition(`persist:${d}`));
+                } catch(e) {}
+            }
+        }
+    } catch(e) {}
+    if (views && Array.isArray(views)) {
+        for (const v of views) {
+            try {
+                if (v && v.view && v.view.webContents && !v.view.webContents.isDestroyed() && v.view.webContents.session) {
+                    sessions.add(v.view.webContents.session);
+                }
+            } catch(e) {}
+        }
+    }
+    return Array.from(sessions);
+}
+
+async function getCookiesForHost(targetOriginOrHost) {
+    let hostname = targetOriginOrHost || '';
+    if (hostname.includes('://')) {
+        try {
+            hostname = new URL(hostname).hostname;
+        } catch (e) {
+            hostname = targetOriginOrHost;
+        }
+    }
+    
+    hostname = hostname.toLowerCase().trim();
+    if (!hostname) return [];
+
+    // Derive base domain, e.g. www.electronjs.org -> electronjs.org
+    const hostParts = hostname.split('.');
+    let baseDomain = hostname;
+    if (hostParts.length > 2) {
+        const secondLast = hostParts[hostParts.length - 2];
+        const isTwoPartTLD = ['co', 'com', 'org', 'net', 'edu', 'gov'].includes(secondLast) && hostParts[hostParts.length - 1].length <= 3;
+        if (isTwoPartTLD && hostParts.length > 3) {
+            baseDomain = hostParts.slice(-3).join('.');
+        } else {
+            baseDomain = hostParts.slice(-2).join('.');
+        }
+    }
+
+    const cookieMap = new Map();
+    const addCookie = (c) => {
+        if (!c || !c.name) return;
+        const key = `${c.name}|${c.domain}|${c.path}`;
+        if (!cookieMap.has(key)) {
+            cookieMap.set(key, c);
+        }
+    };
+
+    const targetSessions = getAllActiveSessions();
+
+    for (const ses of targetSessions) {
+        try {
+            // 1. Query by URL (both HTTPS and HTTP)
+            try {
+                const httpsCookies = await ses.cookies.get({ url: `https://${hostname}` });
+                httpsCookies.forEach(addCookie);
+            } catch (e) {}
+            try {
+                const httpCookies = await ses.cookies.get({ url: `http://${hostname}` });
+                httpCookies.forEach(addCookie);
+            } catch (e) {}
+
+            // 2. Query by specific domain filters
+            try {
+                const hostCookies = await ses.cookies.get({ domain: hostname });
+                hostCookies.forEach(addCookie);
+            } catch (e) {}
+
+            if (baseDomain !== hostname) {
+                try {
+                    const baseCookies = await ses.cookies.get({ domain: baseDomain });
+                    baseCookies.forEach(addCookie);
+                } catch (e) {}
+            }
+
+            // 3. Scan all session cookies to match dot-prefixed domains (e.g. .electronjs.org) and subdomains
+            try {
+                const allCookies = await ses.cookies.get({});
+                allCookies.forEach(c => {
+                    if (!c.domain) return;
+                    const cDom = (c.domain.startsWith('.') ? c.domain.substring(1) : c.domain).toLowerCase();
+                    if (cDom === hostname || cDom === baseDomain || hostname.endsWith('.' + cDom) || cDom.endsWith('.' + baseDomain)) {
+                        addCookie(c);
+                    }
+                });
+            } catch (e) {}
+        } catch (e) {}
+    }
+
+    return Array.from(cookieMap.values());
+}
+
 ipcMain.on('get-site-data', async (event, origin) => {
     try {
-        const url = new URL(origin);
-        const domain = url.hostname;
-        // Search for all cookies related to this domain (including subdomains)
-        const cookies = await session.defaultSession.cookies.get({ domain });
+        let hostname = origin;
+        try { hostname = new URL(origin).hostname; } catch(e) {}
+        const cookies = await getCookiesForHost(origin);
 
         // Extract unique domains
-        const domains = [...new Set(cookies.map(c => c.domain.startsWith('.') ? c.domain.substring(1) : c.domain))];
+        let domains = [...new Set(cookies.map(c => c.domain.startsWith('.') ? c.domain.substring(1) : c.domain))];
+        if (domains.length === 0 && hostname) {
+            domains = [hostname];
+        }
 
         event.reply('update-site-data', domains);
     } catch (e) {
@@ -9747,16 +10148,138 @@ ipcMain.on('get-site-data', async (event, origin) => {
 
 ipcMain.handle('get-site-usage', async (event, origin) => {
     try {
-        const url = new URL(origin);
-        // We look for all cookies that match or are subdomains of the hostname
-        const cookies = await session.defaultSession.cookies.get({ domain: url.hostname });
+        let hostname = origin || '';
+        if (hostname.includes('://')) {
+            try { hostname = new URL(hostname).hostname; } catch(e) {}
+        }
+        hostname = hostname.toLowerCase().trim();
 
-        // Simplified estimate: each cookie is ~4KB in overhead/storage for the DB
+        const cookies = await getCookiesForHost(hostname);
+
+        // 1. Calculate cookie data size
+        let cookieBytes = 0;
+        for (const c of cookies) {
+            cookieBytes += (c.name?.length || 0) + 
+                           (c.value?.length || 0) + 
+                           (c.domain?.length || 0) + 
+                           (c.path?.length || 0) + 
+                           256; // Storage overhead per record
+        }
+
+        // 2. Query live storage usage (localStorage, IndexedDB, CacheStorage) from open tab
+        let storageUsage = 0;
+        let storageItems = 0;
+
+        try {
+            const matchingTab = views && views.find(v => {
+                try {
+                    const u = new URL(v.view.webContents.getURL());
+                    const tabH = u.hostname.toLowerCase();
+                    return tabH === hostname || tabH.endsWith('.' + hostname) || hostname.endsWith('.' + tabH);
+                } catch(e) { return false; }
+            });
+
+            if (matchingTab && !matchingTab.view.webContents.isDestroyed()) {
+                const liveStorage = await matchingTab.view.webContents.executeJavaScript(`
+                    (async () => {
+                        let lsBytes = 0;
+                        let lsCount = 0;
+                        try {
+                            lsCount = localStorage.length;
+                            for (let i = 0; i < localStorage.length; i++) {
+                                const k = localStorage.key(i);
+                                lsBytes += (k ? k.length : 0) + (localStorage.getItem(k) ? localStorage.getItem(k).length : 0);
+                            }
+                        } catch(e) {}
+                        let estBytes = 0;
+                        try {
+                            if (navigator.storage && navigator.storage.estimate) {
+                                const est = await navigator.storage.estimate();
+                                if (est && est.usage) estBytes = est.usage;
+                            }
+                        } catch(e) {}
+                        return { bytes: Math.max(lsBytes, estBytes), count: lsCount };
+                    })()
+                `).catch(() => null);
+
+                if (liveStorage && typeof liveStorage.bytes === 'number' && liveStorage.bytes > 0) {
+                    storageUsage = liveStorage.bytes;
+                    storageItems = liveStorage.count || 0;
+                }
+            }
+        } catch(e) {}
+
+        // 3. Fallback disk check for IndexedDB directory (including profile partitions)
+        if (storageUsage === 0 && hostname) {
+            try {
+                const fs = require('fs');
+                const path = require('path');
+                const userData = app.getPath('userData');
+                const dirsToCheck = [
+                    path.join(userData, 'IndexedDB'),
+                    path.join(userData, 'Partitions')
+                ];
+                const cleanH = hostname.replace(/[^a-zA-Z0-9.-]/g, '_').toLowerCase();
+                const hostParts = hostname.split('.');
+                let baseDomain = hostname;
+                if (hostParts.length > 2) {
+                    const secondLast = hostParts[hostParts.length - 2];
+                    const isTwoPartTLD = ['co', 'com', 'org', 'net', 'edu', 'gov'].includes(secondLast) && hostParts[hostParts.length - 1].length <= 3;
+                    if (isTwoPartTLD && hostParts.length > 3) {
+                        baseDomain = hostParts.slice(-3).join('.');
+                    } else {
+                        baseDomain = hostParts.slice(-2).join('.');
+                    }
+                }
+                const cleanBase = baseDomain.replace(/[^a-zA-Z0-9.-]/g, '_').toLowerCase();
+
+                const scanDir = (dir) => {
+                    if (!fs.existsSync(dir)) return;
+                    try {
+                        const entries = fs.readdirSync(dir);
+                        for (const entry of entries) {
+                            const fullEntry = path.join(dir, entry);
+                            const lower = entry.toLowerCase();
+                            if (lower.includes(cleanH) || lower.includes(cleanBase)) {
+                                try {
+                                    const stat = fs.statSync(fullEntry);
+                                    if (stat.isDirectory()) {
+                                        const files = fs.readdirSync(fullEntry);
+                                        for (const f of files) {
+                                            try { storageUsage += fs.statSync(path.join(fullEntry, f)).size; } catch(err) {}
+                                        }
+                                    } else {
+                                        storageUsage += stat.size;
+                                    }
+                                    storageItems++;
+                                } catch(err) {}
+                            } else {
+                                try {
+                                    if (fs.statSync(fullEntry).isDirectory() && (dir.includes('Partitions') || entry === 'IndexedDB')) {
+                                        scanDir(fullEntry);
+                                    }
+                                } catch(e) {}
+                            }
+                        }
+                    } catch(e) {}
+                };
+
+                for (const d of dirsToCheck) {
+                    scanDir(d);
+                }
+            } catch(e) {}
+        }
+
+        const totalBytes = cookieBytes + storageUsage;
+
         return {
-            bytes: cookies.length * 4096,
-            count: cookies.length
+            bytes: totalBytes,
+            count: cookies.length,
+            storageItems: storageItems
         };
-    } catch (e) { return { bytes: 0, count: 0 }; }
+    } catch (e) {
+        return { bytes: 0, count: 0, storageItems: 0 };
+    }
 });
 
 ipcMain.handle('get-host-permissions', (event, origin) => {
@@ -9774,25 +10297,153 @@ ipcMain.on('open-site-settings', (event, host) => {
 });
 
 
-ipcMain.handle('delete-site-data', async (event, { origin, domain }) => {
+async function executeDeleteSiteData(payload) {
     try {
-        const targetOrigin = origin || (domain.includes('://') ? domain : `https://${domain}`);
-        const url = new URL(targetOrigin);
-        const host = url.hostname;
+        const { origin, domain } = payload || {};
+        const rawTarget = origin || domain || '';
+        let hostname = rawTarget;
+        if (hostname.includes('://')) {
+            try { hostname = new URL(hostname).hostname; } catch(e) {}
+        }
+        hostname = hostname.toLowerCase().trim();
+        if (!hostname) return true;
 
-        // 1. Clear Origin-based data (localStorage, IndexedDB, etc.)
-        await session.defaultSession.clearStorageData({
-            origin: targetOrigin,
-            storages: ['cookies', 'localstorage', 'indexeddb', 'websql', 'serviceworkers', 'cachestorage']
-        });
+        // Derive base domain, e.g. www.youtube.com -> youtube.com
+        const hostParts = hostname.split('.');
+        let baseDomain = hostname;
+        if (hostParts.length > 2) {
+            const secondLast = hostParts[hostParts.length - 2];
+            const isTwoPartTLD = ['co', 'com', 'org', 'net', 'edu', 'gov'].includes(secondLast) && hostParts[hostParts.length - 1].length <= 3;
+            if (isTwoPartTLD && hostParts.length > 3) {
+                baseDomain = hostParts.slice(-3).join('.');
+            } else {
+                baseDomain = hostParts.slice(-2).join('.');
+            }
+        }
 
-        // 2. Deep clean cookies by domain (catch .domain.com and subdomains)
-        const domainPattern = host.startsWith('www.') ? host.substring(4) : host;
-        const cookies = await session.defaultSession.cookies.get({ domain: domainPattern });
+        // 1. Stop and navigate away any active tabs matching this host so background workers/pings cannot re-create cookies or hold in-memory cache
+        if (views && Array.isArray(views)) {
+            for (const v of views) {
+                try {
+                    if (v && v.view && v.view.webContents && !v.view.webContents.isDestroyed()) {
+                        const tabUrl = v.view.webContents.getURL();
+                        if (!tabUrl) continue;
+                        let tabH = '';
+                        try { tabH = new URL(tabUrl).hostname.toLowerCase(); } catch(e) {}
+                        if (tabH && (tabH === hostname || tabH === baseDomain || tabH.endsWith('.' + baseDomain) || baseDomain.endsWith('.' + tabH))) {
+                            try { v.view.webContents.stop(); } catch(e) {}
+                            v.view.webContents.loadURL('about:blank');
+                        }
+                    }
+                } catch(e) {}
+            }
+        }
 
-        for (const cookie of cookies) {
-            const cookieUrl = `http${cookie.secure ? 's' : ''}://${cookie.domain}${cookie.path}`;
-            await session.defaultSession.cookies.remove(cookieUrl, cookie.name);
+        // 2. Build target origins for storage clearing
+        const originList = [
+            `https://${hostname}`,
+            `http://${hostname}`,
+            `https://${baseDomain}`,
+            `http://${baseDomain}`
+        ];
+        if (baseDomain !== hostname) {
+            originList.push(`https://www.${baseDomain}`, `http://www.${baseDomain}`);
+            originList.push(`https://m.${baseDomain}`, `http://m.${baseDomain}`);
+        }
+        const uniqueOrigins = [...new Set(originList)];
+        const targetSessions = getAllActiveSessions();
+
+        // 3. Clear storage across all active browser sessions (Electron requires 'indexdb' without 'e')
+        const storageTypes = ['appcache', 'cookies', 'filesystem', 'indexdb', 'localstorage', 'shadercache', 'websql', 'serviceworkers', 'cachestorage'];
+
+        for (const ses of targetSessions) {
+            for (const orig of uniqueOrigins) {
+                try {
+                    await ses.clearStorageData({
+                        origin: orig,
+                        storages: storageTypes
+                    });
+                } catch(e) {}
+                try {
+                    await ses.clearStorageData({
+                        origin: orig
+                    });
+                } catch(e) {}
+            }
+
+            // 4. Remove all matching cookies from session
+            try {
+                const allCookies = await ses.cookies.get({});
+                for (const c of allCookies) {
+                    if (!c || !c.domain) continue;
+                    const cDom = c.domain.replace(/^\.+/, '').toLowerCase();
+                    if (cDom === hostname || cDom === baseDomain || hostname.endsWith('.' + cDom) || cDom.endsWith('.' + baseDomain) || (baseDomain.length > 3 && cDom.includes(baseDomain))) {
+                        const cleanPath = (c.path && c.path.startsWith('/')) ? c.path : `/${c.path || ''}`;
+                        const candHosts = [
+                            cDom,
+                            hostname,
+                            baseDomain,
+                            `www.${baseDomain}`,
+                            `m.${baseDomain}`
+                        ];
+                        for (const h of candHosts) {
+                            if (!h) continue;
+                            for (const s of ['https', 'http']) {
+                                try { await ses.cookies.remove(`${s}://${h}${cleanPath}`, c.name); } catch(e) {}
+                                if (cleanPath !== '/') {
+                                    try { await ses.cookies.remove(`${s}://${h}/`, c.name); } catch(e) {}
+                                }
+                            }
+                        }
+                    }
+                }
+            } catch(e) {}
+
+            try { await ses.flushStorageData(); } catch(e) {}
+        }
+
+        // 5. Clean up any lingering IndexedDB directories on disk
+        try {
+            const fs = require('fs');
+            const path = require('path');
+            const userData = app.getPath('userData');
+            const dirsToCheck = [
+                path.join(userData, 'IndexedDB'),
+                path.join(userData, 'Partitions')
+            ];
+
+            const cleanH = hostname.replace(/[^a-zA-Z0-9.-]/g, '_').toLowerCase();
+            const cleanBase = baseDomain.replace(/[^a-zA-Z0-9.-]/g, '_').toLowerCase();
+
+            for (const rootDir of dirsToCheck) {
+                if (!fs.existsSync(rootDir)) continue;
+                const scanAndRemove = (dir) => {
+                    try {
+                        const entries = fs.readdirSync(dir);
+                        for (const entry of entries) {
+                            const fullEntry = path.join(dir, entry);
+                            const lowerEntry = entry.toLowerCase();
+                            if (lowerEntry.includes(cleanH) || lowerEntry.includes(cleanBase)) {
+                                try {
+                                    fs.rmSync(fullEntry, { recursive: true, force: true });
+                                } catch(err) {}
+                            } else {
+                                try {
+                                    if (fs.statSync(fullEntry).isDirectory()) {
+                                        scanAndRemove(fullEntry);
+                                    }
+                                } catch(err) {}
+                            }
+                        }
+                    } catch(err) {}
+                };
+                scanAndRemove(rootDir);
+            }
+        } catch(e) {}
+
+        // Flush once more
+        for (const ses of targetSessions) {
+            try { await ses.flushStorageData(); } catch(e) {}
         }
 
         return true;
@@ -9800,6 +10451,14 @@ ipcMain.handle('delete-site-data', async (event, { origin, domain }) => {
         console.error("Failed to thoroughly delete site data", e);
         return false;
     }
+}
+
+ipcMain.handle('delete-site-data', async (event, payload) => {
+    return await executeDeleteSiteData(payload);
+});
+
+ipcMain.on('delete-site-data', async (event, payload) => {
+    await executeDeleteSiteData(payload);
 });
 
 ipcMain.on('reorder-tabs', (e, { fromIndex, toIndex }) => {
@@ -12259,7 +12918,8 @@ function broadcastSettings() {
         tabgroupView,
         tabContextView,
         bmDropdownView,
-        downloadsView
+        downloadsView,
+        pageContextView
     ];
     overlayViews.forEach(v => {
         if (v && !v.webContents.isDestroyed()) {
@@ -12329,6 +12989,96 @@ function isLocalPageContents(contents, props) {
     return false;
 }
 
+function openAiSidebar(promptText) {
+    aiSidebarOpen = true;
+    showAiSidebar();
+    if (promptText && aiSidebarView && !aiSidebarView.webContents.isDestroyed()) {
+        const sendPrompt = () => {
+            if (aiSidebarView && !aiSidebarView.webContents.isDestroyed()) {
+                aiSidebarView.webContents.send('submit-external-prompt', promptText);
+            }
+        };
+        if (aiSidebarView.webContents.isLoading()) {
+            aiSidebarView.webContents.once('dom-ready', () => {
+                setTimeout(sendPrompt, 250);
+            });
+        } else {
+            setTimeout(sendPrompt, 150);
+        }
+    }
+}
+
+function showPageContextMenu(data, targetWin = mainWindow) {
+    if (!targetWin || targetWin.isDestroyed()) return;
+    if (!pageContextView) createPageContextView();
+    closeOverlays();
+
+    pageContextTargetContentsId = data.targetContentsId;
+    pageContextView._x = data.x;
+    pageContextView._y = data.y;
+    pageContextView._parentWindow = targetWin;
+
+    // Dynamically inject active theme mode and accent color
+    const currentMode = userSettings.themeMode || 'dark';
+    data.themeMode = currentMode;
+    data.accentColor = (currentMode === 'light' ? userSettings.accentColorLight : userSettings.accentColorDark) || userSettings.accentColor || '#15AC49';
+    data.accentColorLight = userSettings.accentColorLight || '#058f60';
+    data.accentColorDark = userSettings.accentColorDark || userSettings.accentColor || '#09f0a0';
+    data.isPrivate = (typeof privateWindow !== 'undefined' && targetWin === privateWindow) || !!data.isPrivate;
+
+    const zoom = getOptimalZoomFactor();
+    const contentBounds = targetWin.getContentBounds();
+    const initialWidth = Math.round(250 * zoom);
+    const initialHeight = Math.round(280 * zoom);
+
+    let initialX = data.x;
+    let initialY = data.y;
+    if (initialX + initialWidth > contentBounds.width) initialX = contentBounds.width - initialWidth - 8;
+    if (initialY + initialHeight > contentBounds.height) initialY = contentBounds.height - initialHeight - 8;
+    if (initialX < 8) initialX = 8;
+    if (initialY < 8) initialY = 8;
+
+    pageContextView.setBounds({
+        x: Math.round(initialX),
+        y: Math.round(initialY),
+        width: initialWidth,
+        height: initialHeight
+    });
+
+    const dispatchRender = () => {
+        if (!targetWin || targetWin.isDestroyed() || !pageContextView || pageContextView.webContents.isDestroyed()) return;
+        if (mainWindow && !mainWindow.isDestroyed() && targetWin !== mainWindow && mainWindow.getBrowserViews().includes(pageContextView)) {
+            mainWindow.removeBrowserView(pageContextView);
+        }
+        if (typeof privateWindow !== 'undefined' && privateWindow && !privateWindow.isDestroyed() && targetWin !== privateWindow && privateWindow.getBrowserViews().includes(pageContextView)) {
+            privateWindow.removeBrowserView(pageContextView);
+        }
+
+        if (!targetWin.getBrowserViews().includes(pageContextView)) {
+            targetWin.addBrowserView(pageContextView);
+        }
+        targetWin.setTopBrowserView(pageContextView);
+        pageContextView.webContents.send('render-page-context', data);
+    };
+
+    if (pageContextView.webContents.isLoading()) {
+        pageContextView.webContents.once('did-finish-load', dispatchRender);
+    } else {
+        dispatchRender();
+    }
+}
+
+function hidePageContextMenu() {
+    if (pageContextView) {
+        if (mainWindow && !mainWindow.isDestroyed() && mainWindow.getBrowserViews().includes(pageContextView)) {
+            mainWindow.removeBrowserView(pageContextView);
+        }
+        if (typeof privateWindow !== 'undefined' && privateWindow && !privateWindow.isDestroyed() && privateWindow.getBrowserViews().includes(pageContextView)) {
+            privateWindow.removeBrowserView(pageContextView);
+        }
+    }
+}
+
 function setupContextMenu(contents) {
     if (!contents || contents.isDestroyed()) return;
     if (contents._hasOcalContextMenu) return;
@@ -12336,146 +13086,53 @@ function setupContextMenu(contents) {
 
     contents.on('context-menu', (e, props) => {
         if (!contents || contents.isDestroyed()) return;
+        e.preventDefault();
         const isLocal = isLocalPageContents(contents, props);
-        const menu = new Menu();
 
-        // 1. Spelling Corrections (Shown at top when right-clicking misspelled words)
-        if (props.misspelledWord) {
-            if (props.dictionarySuggestions && props.dictionarySuggestions.length > 0) {
-                props.dictionarySuggestions.forEach(suggestion => {
-                    menu.append(new MenuItem({
-                        label: suggestion,
-                        click: () => {
-                            try { contents.replaceMisspelling(suggestion); } catch (err) {}
-                        }
-                    }));
-                });
-            } else {
-                menu.append(new MenuItem({ label: 'No Spelling Suggestions', enabled: false }));
-            }
-            menu.append(new MenuItem({ type: 'separator' }));
-            menu.append(new MenuItem({
-                label: `Add "${props.misspelledWord}" to Dictionary`,
-                click: () => {
-                    try {
-                        contents.session.addWordToSpellCheckerDictionary(props.misspelledWord);
-                    } catch (err) {}
+        let viewX = 0;
+        let viewY = 0;
+        let targetWin = mainWindow;
+
+        const isPrivate = typeof privateViews !== 'undefined' && privateViews.some(v => v.view && v.view.webContents.id === contents.id);
+        if (isPrivate && typeof privateWindow !== 'undefined' && privateWindow && !privateWindow.isDestroyed()) {
+            targetWin = privateWindow;
+            viewX = 0;
+            viewY = 90; // Top titlebar + navbar height
+        } else {
+            const ownerViewEntry = views.find(v => (v.view && v.view.webContents.id === contents.id) || (v.view2 && v.view2.webContents.id === contents.id));
+            if (ownerViewEntry) {
+                const vObj = (ownerViewEntry.view && ownerViewEntry.view.webContents.id === contents.id) ? ownerViewEntry.view : ownerViewEntry.view2;
+                if (vObj) {
+                    const b = vObj.getBounds();
+                    viewX = b.x;
+                    viewY = b.y;
                 }
-            }));
-            menu.append(new MenuItem({ type: 'separator' }));
-        }
-
-        // 2. Link Actions
-        if (props.linkURL) {
-            menu.append(new MenuItem({ label: 'Open Link in New Tab', click: () => { createNewTab(props.linkURL); } }));
-            menu.append(new MenuItem({ label: 'Open Link in Split View', click: () => {
-                const currentActive = views.find(v => v.id === activeViewId);
-                if (currentActive) {
-                    currentActive.isSplit = true;
-                    currentActive.splitUrl = props.linkURL;
-                    currentActive.splitDirection = currentActive.splitDirection || 'horizontal';
-                    currentActive.focusedSide = 'right';
-                    broadcastTabs();
-                    updateViewBounds();
-                } else {
-                    createNewTab(props.linkURL);
-                }
-            } }));
-            menu.append(new MenuItem({ label: 'Copy Link Address', click: () => { clipboard.writeText(props.linkURL); } }));
-            menu.append(new MenuItem({ type: 'separator' }));
-        }
-
-        // 3. Image Actions
-        if (props.mediaType === 'image') {
-            menu.append(new MenuItem({ label: 'Open Image in New Tab', click: () => { createNewTab(props.srcURL); } }));
-            menu.append(new MenuItem({ label: 'Copy Image', click: () => { try { contents.copyImageAt(props.x, props.y); } catch (err) {} } }));
-            menu.append(new MenuItem({ label: 'Copy Image Address', click: () => { clipboard.writeText(props.srcURL); } }));
-            menu.append(new MenuItem({ label: 'Save Image As...', click: () => { try { contents.downloadURL(props.srcURL); } catch (err) {} } }));
-            menu.append(new MenuItem({ type: 'separator' }));
-            menu.append(new MenuItem({ label: 'Search with Google Lens', click: () => { createNewTab(`https://lens.google.com/uploadbyurl?url=${encodeURIComponent(props.srcURL)}`); } }));
-            menu.append(new MenuItem({ type: 'separator' }));
-        }
-
-        // 4. Selection Actions
-        if (props.selectionText && props.selectionText.trim()) {
-            const trimmed = props.selectionText.trim();
-            menu.append(new MenuItem({ label: 'Copy', role: 'copy' }));
-            menu.append(new MenuItem({ 
-                label: `Ask Ocal AI about "${trimmed.length > 24 ? trimmed.substring(0, 24) + '...' : trimmed}"`, 
-                click: () => {
-                    openAiSidebar(`Explain or summarize: "${trimmed}"`);
-                } 
-            }));
-            menu.append(new MenuItem({ 
-                label: `Search Google for "${trimmed.length > 24 ? trimmed.substring(0, 24) + '...' : trimmed}"`, 
-                click: () => { 
-                    createNewTab(`https://www.google.com/search?q=${encodeURIComponent(trimmed)}`); 
-                } 
-            }));
-            menu.append(new MenuItem({ type: 'separator' }));
-        }
-
-        // 5. Text Editing Actions
-        if (props.isEditable) {
-            menu.append(new MenuItem({ label: 'Undo', role: 'undo' }));
-            menu.append(new MenuItem({ label: 'Redo', role: 'redo' }));
-            menu.append(new MenuItem({ type: 'separator' }));
-            menu.append(new MenuItem({ label: 'Cut', role: 'cut' }));
-            menu.append(new MenuItem({ label: 'Copy', role: 'copy' }));
-            menu.append(new MenuItem({ label: 'Paste', role: 'paste' }));
-            menu.append(new MenuItem({ label: 'Paste and Match Style', role: 'pasteAndMatchStyle' }));
-            menu.append(new MenuItem({ label: 'Select All', role: 'selectAll' }));
-            menu.append(new MenuItem({ type: 'separator' }));
-        }
-
-        // 6. General Page Navigation & Actions
-        if (!props.linkURL && props.mediaType !== 'image') {
-            const canBack = typeof contents.canGoBack === 'function' ? contents.canGoBack() : (contents.navigationHistory ? contents.navigationHistory.canGoBack() : false);
-            const canFwd = typeof contents.canGoForward === 'function' ? contents.canGoForward() : (contents.navigationHistory ? contents.navigationHistory.canGoForward() : false);
-            menu.append(new MenuItem({ label: 'Back', enabled: canBack, click: () => { try { if (contents.goBack) contents.goBack(); else if (contents.navigationHistory) contents.navigationHistory.goBack(); } catch(e){} } }));
-            menu.append(new MenuItem({ label: 'Forward', enabled: canFwd, click: () => { try { if (contents.goForward) contents.goForward(); else if (contents.navigationHistory) contents.navigationHistory.goForward(); } catch(e){} } }));
-            menu.append(new MenuItem({ label: 'Reload', click: () => { try { contents.reload(); } catch(e){} } }));
-            menu.append(new MenuItem({ type: 'separator' }));
-            menu.append(new MenuItem({ label: 'Print...', click: () => { try { contents.print(); } catch (err) {} } }));
-            
-            // View Page Source: only on remote web pages, completely removed on local/internal pages
-            if (!isLocal) {
-                menu.append(new MenuItem({ 
-                    label: 'View Page Source', 
-                    click: () => {
-                        const currentUrl = contents.getURL();
-                        if (currentUrl && !currentUrl.startsWith('ocal://') && !currentUrl.startsWith('file://')) {
-                            createNewTab('view-source:' + currentUrl);
-                        }
-                    } 
-                }));
             }
         }
 
-        // 7. Inspect Element - only on remote web pages, completely removed on all local/internal pages
-        if (!isLocal) {
-            menu.append(new MenuItem({ type: 'separator' }));
-            menu.append(new MenuItem({ 
-                label: 'Inspect Element', 
-                click: () => { 
-                    try { 
-                        contents.inspectElement(props.x, props.y); 
-                        if (!contents.isDevToolsOpened()) contents.openDevTools();
-                    } catch(err){} 
-                } 
-            }));
-        }
+        const canBack = typeof contents.canGoBack === 'function' ? contents.canGoBack() : (contents.navigationHistory ? contents.navigationHistory.canGoBack() : false);
+        const canFwd = typeof contents.canGoForward === 'function' ? contents.canGoForward() : (contents.navigationHistory ? contents.navigationHistory.canGoForward() : false);
 
-        const targetWindow = BrowserWindow.fromWebContents(contents) || mainWindow || BrowserWindow.getFocusedWindow();
-        try {
-            if (targetWindow && !targetWindow.isDestroyed()) {
-                menu.popup({ window: targetWindow });
-            } else {
-                menu.popup();
-            }
-        } catch (err) {
-            try { menu.popup(); } catch(e) {}
-        }
+        const menuData = {
+            x: Math.round(viewX + props.x),
+            y: Math.round(viewY + props.y),
+            targetContentsId: contents.id,
+            selectionText: props.selectionText ? props.selectionText.trim() : '',
+            linkURL: props.linkURL || '',
+            srcURL: props.srcURL || '',
+            mediaType: props.mediaType || '',
+            isEditable: !!props.isEditable,
+            editFlags: props.editFlags || {},
+            misspelledWord: props.misspelledWord || '',
+            dictionarySuggestions: props.dictionarySuggestions || [],
+            canGoBack: canBack,
+            canGoForward: canFwd,
+            isLocal: isLocal,
+            isPrivate: isPrivate,
+            pageUrl: contents.getURL()
+        };
+
+        showPageContextMenu(menuData, targetWin);
     });
 }
 
@@ -12776,3 +13433,391 @@ ipcMain.handle('sync:setup-firewall', async () => {
     if (!ocalSyncServerInstance) initOcalSyncServer();
     return await ocalSyncServerInstance.ensureFirewallRule(true);
 });
+
+// ══════════════════════════════════════════════════════════════════════════════
+// ── Ocal Isolated Private Window Engine (Incognito / InPrivate) ───────────────
+// ══════════════════════════════════════════════════════════════════════════════
+let privateWindow = null;
+let privateSession = null;
+let privateViews = [];
+let activePrivateTabId = null;
+
+function getPrivateSession() {
+    if (!privateSession) {
+        // In-memory partition (strictly RAM only, no persist: prefix)
+        const partition = 'private-session-' + Date.now();
+        privateSession = session.fromPartition(partition);
+
+        // Strict third-party tracker, telemetry, and analytics interception
+        const trackerPatterns = [
+            '*://*.google-analytics.com/*',
+            '*://*.googletagmanager.com/*',
+            '*://*.doubleclick.net/*',
+            '*://*.facebook.com/tr/*',
+            '*://*.connect.facebook.net/*',
+            '*://*.criteo.com/*',
+            '*://*.criteo.net/*',
+            '*://*.hotjar.com/*',
+            '*://*.clarity.ms/*',
+            '*://*.scorecardresearch.com/*',
+            '*://*.segment.com/*',
+            '*://*.segment.io/*',
+            '*://*.mixpanel.com/*',
+            '*://*.amplitude.com/*',
+            '*://*.taboola.com/*',
+            '*://*.outbrain.com/*',
+            '*://*.adnxs.com/*',
+            '*://*.quantserve.com/*',
+            '*://*.pubmatic.com/*'
+        ];
+
+        try {
+            privateSession.webRequest.onBeforeRequest({ urls: trackerPatterns }, (details, callback) => {
+                if (activePrivateTabId) {
+                    const tab = privateViews.find(t => t.id === activePrivateTabId);
+                    if (tab) {
+                        tab.trackersBlocked = (tab.trackersBlocked || 0) + 1;
+                        if (privateWindow && !privateWindow.isDestroyed()) {
+                            privateWindow.webContents.send('private-trackers-updated', tab.trackersBlocked);
+                        }
+                    }
+                }
+                callback({ cancel: true });
+            });
+        } catch (err) {
+            console.error('[PrivateWindow] Error setting up tracker interceptor:', err);
+        }
+
+        // Isolated downloads handling
+        privateSession.on('will-download', (event, item) => {
+            // Downloads are isolated; not logged into persistent browser history
+        });
+    }
+    return privateSession;
+}
+
+function openPrivateWindow(targetUrl = null) {
+    if (privateWindow && !privateWindow.isDestroyed()) {
+        privateWindow.focus();
+        if (targetUrl) {
+            createPrivateTab(targetUrl);
+        }
+        return;
+    }
+
+    const appIcon = getAppIcon();
+    const appIconPath = getAppIconPath();
+
+    privateWindow = new BrowserWindow({
+        width: 1350,
+        height: 900,
+        minWidth: 500,
+        minHeight: 400,
+        title: 'Ocal Browser - Private Window',
+        icon: process.platform === 'win32' ? appIconPath : (appIcon || appIconPath),
+        frame: false,
+        backgroundColor: '#0f1015',
+        resizable: true,
+        thickFrame: true,
+        titleBarStyle: 'hidden',
+        webPreferences: {
+            preload: path.join(__dirname, 'preload.js'),
+            contextIsolation: true,
+            nodeIntegration: false,
+            devTools: true
+        }
+    });
+
+    privateWindow.loadFile('private-window.html');
+
+    privateWindow.on('resize', () => {
+        updatePrivateViewBounds();
+    });
+
+    privateWindow.on('maximize', () => {
+        if (privateWindow && !privateWindow.isDestroyed()) {
+            privateWindow.webContents.send('window-is-maximized', true);
+        }
+    });
+
+    privateWindow.on('unmaximize', () => {
+        if (privateWindow && !privateWindow.isDestroyed()) {
+            privateWindow.webContents.send('window-is-maximized', false);
+        }
+    });
+
+    privateWindow.on('closed', async () => {
+        try {
+            if (privateSession) {
+                await privateSession.clearStorageData();
+                await privateSession.clearCache();
+                await privateSession.clearHostResolverCache();
+            }
+        } catch (e) {
+            console.error('[PrivateWindow] Cleanup error on close:', e);
+        }
+        privateViews = [];
+        activePrivateTabId = null;
+        privateWindow = null;
+        privateSession = null;
+    });
+
+    privateWindow.webContents.once('did-finish-load', () => {
+        createPrivateTab(targetUrl);
+    });
+}
+
+function updatePrivateViewBounds() {
+    if (!privateWindow || privateWindow.isDestroyed()) return;
+    const { width, height } = privateWindow.getContentBounds();
+    const topBarHeight = 90; // titlebar 42px + navbar 48px
+    const viewHeight = Math.max(0, height - topBarHeight);
+
+    const activeEntry = privateViews.find(v => v.id === activePrivateTabId);
+    if (activeEntry && activeEntry.view) {
+        activeEntry.view.setBounds({
+            x: 0,
+            y: topBarHeight,
+            width: width,
+            height: viewHeight
+        });
+    }
+}
+
+function broadcastPrivateTabs() {
+    if (!privateWindow || privateWindow.isDestroyed()) return;
+    const tabsData = privateViews.map(v => ({
+        id: v.id,
+        title: v.title || 'Private Tab',
+        url: v.url || '',
+        favicon: v.favicon || '',
+        trackersBlocked: v.trackersBlocked || 0
+    }));
+
+    privateWindow.webContents.send('private-tabs-updated', {
+        tabs: tabsData,
+        activeTabId: activePrivateTabId
+    });
+
+    const activeEntry = privateViews.find(v => v.id === activePrivateTabId);
+    if (activeEntry && activeEntry.view && !activeEntry.view.webContents.isDestroyed()) {
+        const wc = activeEntry.view.webContents;
+        const canBack = typeof wc.canGoBack === 'function' ? wc.canGoBack() : false;
+        const canFwd = typeof wc.canGoForward === 'function' ? wc.canGoForward() : false;
+        privateWindow.webContents.send('private-tab-state', {
+            url: activeEntry.url || '',
+            canGoBack: canBack,
+            canGoForward: canFwd,
+            trackersBlocked: activeEntry.trackersBlocked || 0
+        });
+    }
+}
+
+function createPrivateTab(url = null) {
+    if (!privateWindow || privateWindow.isDestroyed()) return;
+    const ses = getPrivateSession();
+    const id = 'ptab-' + Date.now() + Math.random().toString(36).substring(2, 7);
+
+    const view = new BrowserView({
+        webPreferences: {
+            preload: path.join(__dirname, 'preload.js'),
+            session: ses,
+            contextIsolation: true,
+            nodeIntegration: false,
+            sandbox: false,
+            devTools: true
+        }
+    });
+
+    view.setBackgroundColor('#0f1015');
+    view.webContents.setUserAgent(OCAL_USER_AGENT);
+
+    // Context menu support inside private tab
+    setupContextMenu(view.webContents);
+
+    // Keyboard shortcuts inside private tab
+    view.webContents.on('before-input-event', (event, input) => {
+        if (input.type !== 'keyDown') return;
+        const cmdOrCtrl = process.platform === 'darwin' ? input.meta : input.control;
+        if (cmdOrCtrl && input.key.toLowerCase() === 't') {
+            event.preventDefault();
+            createPrivateTab();
+        } else if (cmdOrCtrl && input.key.toLowerCase() === 'w') {
+            event.preventDefault();
+            closePrivateTab(id);
+        } else if (cmdOrCtrl && input.key.toLowerCase() === 'r') {
+            event.preventDefault();
+            view.webContents.reload();
+        } else if (cmdOrCtrl && input.shift && (input.key.toLowerCase() === 'n' || input.key.toLowerCase() === 'p')) {
+            event.preventDefault();
+            createPrivateTab();
+        } else if (input.alt && input.key === 'ArrowLeft') {
+            if (view.webContents.canGoBack()) view.webContents.goBack();
+        } else if (input.alt && input.key === 'ArrowRight') {
+            if (view.webContents.canGoForward()) view.webContents.goForward();
+        }
+    });
+
+    const entry = {
+        id,
+        view,
+        url: url || '',
+        title: 'New Tab',
+        favicon: '',
+        trackersBlocked: 0
+    };
+
+    view.webContents.on('page-title-updated', (e, title) => {
+        entry.title = title || 'Private Tab';
+        broadcastPrivateTabs();
+    });
+
+    view.webContents.on('page-favicon-updated', (e, favicons) => {
+        if (favicons && favicons.length > 0) {
+            entry.favicon = favicons[0];
+            broadcastPrivateTabs();
+        }
+    });
+
+    view.webContents.on('did-start-navigation', (e, navUrl, isInPlace, isMainFrame) => {
+        if (isMainFrame) {
+            entry.url = navUrl;
+            broadcastPrivateTabs();
+        }
+    });
+
+    view.webContents.on('did-finish-load', () => {
+        entry.title = view.webContents.getTitle() || entry.title;
+        entry.url = view.webContents.getURL();
+        broadcastPrivateTabs();
+    });
+
+    privateViews.push(entry);
+
+    if (url) {
+        view.webContents.loadURL(resolveInternalURL(url));
+    } else {
+        const homeUrl = 'file:///' + path.join(__dirname, 'home.html').replace(/\\/g, '/') + '?private=true';
+        view.webContents.loadURL(homeUrl);
+    }
+
+    switchPrivateTab(id);
+}
+
+function switchPrivateTab(id) {
+    if (!privateWindow || privateWindow.isDestroyed()) return;
+    const targetEntry = privateViews.find(v => v.id === id);
+    if (!targetEntry) return;
+
+    // Remove other views from privateWindow
+    privateViews.forEach(v => {
+        if (v.id !== id && privateWindow.getBrowserViews().includes(v.view)) {
+            privateWindow.removeBrowserView(v.view);
+        }
+    });
+
+    if (!privateWindow.getBrowserViews().includes(targetEntry.view)) {
+        privateWindow.addBrowserView(targetEntry.view);
+    }
+    privateWindow.setTopBrowserView(targetEntry.view);
+
+    activePrivateTabId = id;
+    updatePrivateViewBounds();
+    broadcastPrivateTabs();
+}
+
+function closePrivateTab(id) {
+    const idx = privateViews.findIndex(v => v.id === id);
+    if (idx === -1) return;
+
+    const [removed] = privateViews.splice(idx, 1);
+    if (removed && removed.view && privateWindow && !privateWindow.isDestroyed()) {
+        if (privateWindow.getBrowserViews().includes(removed.view)) {
+            privateWindow.removeBrowserView(removed.view);
+        }
+        try { removed.view.webContents.destroy(); } catch (e) {}
+    }
+
+    if (privateViews.length === 0) {
+        if (privateWindow && !privateWindow.isDestroyed()) {
+            privateWindow.close();
+        }
+    } else {
+        const nextIdx = Math.max(0, idx - 1);
+        switchPrivateTab(privateViews[nextIdx].id);
+    }
+}
+
+// ── Private Window IPC Handlers ──
+ipcMain.on('private-window-ready', () => {
+    broadcastPrivateTabs();
+    updatePrivateViewBounds();
+});
+
+ipcMain.on('private-window-minimize', () => {
+    if (privateWindow && !privateWindow.isDestroyed()) privateWindow.minimize();
+});
+
+ipcMain.on('private-window-maximize', () => {
+    if (privateWindow && !privateWindow.isDestroyed()) {
+        if (privateWindow.isMaximized()) privateWindow.unmaximize();
+        else privateWindow.maximize();
+    }
+});
+
+ipcMain.on('private-window-close', () => {
+    if (privateWindow && !privateWindow.isDestroyed()) privateWindow.close();
+});
+
+ipcMain.on('private-new-tab', () => {
+    createPrivateTab();
+});
+
+ipcMain.on('private-switch-tab', (e, id) => {
+    switchPrivateTab(id);
+});
+
+ipcMain.on('private-close-tab', (e, id) => {
+    closePrivateTab(id);
+});
+
+ipcMain.on('private-navigate', (e, url) => {
+    const entry = privateViews.find(v => v.id === activePrivateTabId);
+    if (entry && entry.view && !entry.view.webContents.isDestroyed()) {
+        entry.view.webContents.loadURL(resolveInternalURL(url));
+    }
+});
+
+ipcMain.on('private-back', () => {
+    const entry = privateViews.find(v => v.id === activePrivateTabId);
+    if (entry && entry.view && !entry.view.webContents.isDestroyed()) {
+        if (entry.view.webContents.canGoBack()) entry.view.webContents.goBack();
+    }
+});
+
+ipcMain.on('private-forward', () => {
+    const entry = privateViews.find(v => v.id === activePrivateTabId);
+    if (entry && entry.view && !entry.view.webContents.isDestroyed()) {
+        if (entry.view.webContents.canGoForward()) entry.view.webContents.goForward();
+    }
+});
+
+ipcMain.on('private-reload', () => {
+    const entry = privateViews.find(v => v.id === activePrivateTabId);
+    if (entry && entry.view && !entry.view.webContents.isDestroyed()) {
+        entry.view.webContents.reload();
+    }
+});
+
+ipcMain.on('private-home', () => {
+    const entry = privateViews.find(v => v.id === activePrivateTabId);
+    if (entry && entry.view && !entry.view.webContents.isDestroyed()) {
+        const homeUrl = 'file:///' + path.join(__dirname, 'home.html').replace(/\\/g, '/') + '?private=true';
+        entry.view.webContents.loadURL(homeUrl);
+    }
+});
+
+ipcMain.on('open-private-window', (e, url) => {
+    openPrivateWindow(url);
+});
+

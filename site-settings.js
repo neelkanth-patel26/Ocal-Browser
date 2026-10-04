@@ -53,6 +53,7 @@ async function refreshUsage() {
         const stats = await window.electronAPI.invoke('get-site-usage', targetOrigin);
         const bytes = stats.bytes || 0;
         const cookies = stats.count || 0;
+        const storageItems = stats.storageItems || 0;
 
         if (!bytes || bytes === 0) {
             siteUsageEl.textContent = '0 bytes';
@@ -64,9 +65,18 @@ async function refreshUsage() {
             siteUsageEl.textContent = `${(bytes / (1024 * 1024)).toFixed(1)} MB`;
         }
 
-        siteCookieCountEl.textContent = `${cookies} ${cookies === 1 ? 'cookie' : 'cookies'}`;
+        if (cookies > 0 && storageItems > 0) {
+            siteCookieCountEl.textContent = `${cookies} ${cookies === 1 ? 'cookie' : 'cookies'} · local data`;
+        } else if (cookies > 0) {
+            siteCookieCountEl.textContent = `${cookies} ${cookies === 1 ? 'cookie' : 'cookies'}`;
+        } else if (bytes > 0) {
+            siteCookieCountEl.textContent = '0 cookies · local site data';
+        } else {
+            siteCookieCountEl.textContent = '0 cookies';
+        }
     } catch (e) {
-        siteUsageEl.textContent = 'Error calculating usage';
+        siteUsageEl.textContent = '0 bytes';
+        siteCookieCountEl.textContent = '0 cookies';
     }
 }
 
@@ -79,6 +89,7 @@ function renderPermissions(savedPerms) {
         row.className = 'row';
         
         const currentVal = savedPerms[p.id] || 'default';
+        const defaultLabel = getDefaultLabel(p.id);
         
         row.innerHTML = `
             <div class="row-icon"><i class="fas ${p.icon}"></i></div>
@@ -86,20 +97,100 @@ function renderPermissions(savedPerms) {
                 <div class="row-title">${p.label}</div>
                 ${p.desc ? `<div class="row-desc">${p.desc}</div>` : ''}
             </div>
-            <select data-perm="${p.id}">
-                <option value="default" ${currentVal === 'default' ? 'selected' : ''}>${getDefaultLabel(p.id)} (default)</option>
-                <option value="allow" ${currentVal === 'allow' ? 'selected' : ''}>Allow</option>
-                <option value="block" ${currentVal === 'block' ? 'selected' : ''}>Block</option>
-            </select>
         `;
         
-        row.querySelector('select').onchange = (e) => {
-            updatePermission(p.id, e.target.value);
-        };
+        const customSelect = createCustomSelect(p.id, currentVal, defaultLabel);
+        row.appendChild(customSelect);
         
         permissionsList.appendChild(row);
     });
 }
+
+function createCustomSelect(permId, currentVal, defaultLabel) {
+    const options = [
+        { value: 'default', label: `${defaultLabel} (default)` },
+        { value: 'allow', label: 'Allow' },
+        { value: 'block', label: 'Block' }
+    ];
+
+    const currentOpt = options.find(o => o.value === currentVal) || options[0];
+
+    const container = document.createElement('div');
+    container.className = 'custom-select-container';
+    container.setAttribute('data-perm', permId);
+
+    container.innerHTML = `
+        <button type="button" class="custom-select-trigger" aria-haspopup="listbox" aria-expanded="false">
+            <span class="custom-select-value">${currentOpt.label}</span>
+            <i class="fas fa-chevron-down custom-select-arrow"></i>
+        </button>
+        <div class="custom-select-menu" role="listbox">
+            ${options.map(opt => `
+                <div class="custom-select-option ${opt.value === currentVal ? 'selected' : ''}" data-value="${opt.value}" role="option" aria-selected="${opt.value === currentVal}">
+                    <span>${opt.label}</span>
+                    ${opt.value === currentVal ? '<i class="fas fa-check"></i>' : ''}
+                </div>
+            `).join('')}
+        </div>
+    `;
+
+    const trigger = container.querySelector('.custom-select-trigger');
+    const valueEl = container.querySelector('.custom-select-value');
+
+    trigger.onclick = (e) => {
+        e.stopPropagation();
+        const isOpen = container.classList.contains('open');
+        // Close all other open custom selects
+        document.querySelectorAll('.custom-select-container.open').forEach(el => {
+            if (el !== container) el.classList.remove('open');
+        });
+        container.classList.toggle('open', !isOpen);
+        trigger.setAttribute('aria-expanded', String(!isOpen));
+    };
+
+    container.querySelectorAll('.custom-select-option').forEach(optEl => {
+        optEl.onclick = (e) => {
+            e.stopPropagation();
+            const newVal = optEl.getAttribute('data-value');
+            
+            // Update UI selection
+            container.querySelectorAll('.custom-select-option').forEach(o => {
+                o.classList.remove('selected');
+                o.setAttribute('aria-selected', 'false');
+                const check = o.querySelector('i.fa-check');
+                if (check) check.remove();
+            });
+            optEl.classList.add('selected');
+            optEl.setAttribute('aria-selected', 'true');
+            if (!optEl.querySelector('i.fa-check')) {
+                optEl.insertAdjacentHTML('beforeend', '<i class="fas fa-check"></i>');
+            }
+            valueEl.textContent = optEl.querySelector('span').textContent;
+            container.classList.remove('open');
+            trigger.setAttribute('aria-expanded', 'false');
+
+            // Dispatch update to main process
+            updatePermission(permId, newVal);
+        };
+    });
+
+    return container;
+}
+
+// Global click-outside & escape listeners to dismiss open menus
+document.addEventListener('click', () => {
+    document.querySelectorAll('.custom-select-container.open').forEach(el => {
+        el.classList.remove('open');
+    });
+});
+
+document.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape') {
+        document.querySelectorAll('.custom-select-container.open').forEach(el => {
+            el.classList.remove('open');
+        });
+    }
+});
 
 function getDefaultLabel(permId) {
     const allows = ['audio', 'background-sync', 'javascript', 'images', 'popups'];
@@ -120,10 +211,18 @@ if (deleteDataBtn) {
     deleteDataBtn.onclick = async () => {
         deleteDataBtn.disabled = true;
         deleteDataBtn.textContent = 'Deleting...';
-        await window.electronAPI.invoke('delete-site-data', { origin: targetOrigin, domain: targetHost });
-        await refreshUsage();
-        deleteDataBtn.disabled = false;
-        deleteDataBtn.textContent = 'Delete data';
+        try {
+            await window.electronAPI.invoke('delete-site-data', { origin: targetOrigin, domain: targetHost });
+            siteUsageEl.textContent = '0 bytes';
+            siteCookieCountEl.textContent = '0 cookies';
+            await new Promise(r => setTimeout(r, 250));
+            await refreshUsage();
+        } catch (e) {
+            console.error("Failed to delete site data:", e);
+        } finally {
+            deleteDataBtn.disabled = false;
+            deleteDataBtn.textContent = 'Delete data';
+        }
     };
 }
 

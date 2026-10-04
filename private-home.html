@@ -1,0 +1,465 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Private Browsing - Ocal</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="assets/fontawesome/css/all.min.css">
+    <style>
+        :root {
+            --bg-base: #0f1015;
+            --card-bg: #161722;
+            --card-border: #282a3a;
+            --accent: #8b5cf6;
+            --accent-glow: transparent;
+            --accent-dim: #231c36;
+            --text-main: #ffffff;
+            --text-muted: #94a3b8;
+            --text-dim: #64748b;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            -webkit-font-smoothing: antialiased;
+        }
+
+        body {
+            background-color: var(--bg-base);
+            font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, sans-serif;
+            color: var(--text-main);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 40px 24px;
+            position: relative;
+            overflow-x: hidden;
+            user-select: none;
+        }
+
+        /* Ambient Privacy Background (Solid dark aesthetic) */
+        .ambient-mesh {
+            display: none;
+        }
+
+        .ambient-grid {
+            display: none;
+        }
+
+        .container {
+            max-width: 900px;
+            width: 100%;
+            z-index: 1;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 32px;
+            animation: fadeIn 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(12px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        /* Hero Shield Header */
+        .hero-section {
+            text-align: center;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 14px;
+        }
+
+        .hero-badge-wrap {
+            position: relative;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            margin-bottom: 4px;
+        }
+
+        .hero-icon-box {
+            width: 76px;
+            height: 76px;
+            border-radius: 24px;
+            background: #231c36;
+            border: 1px solid #4a3272;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #c084fc;
+            font-size: 32px;
+            box-shadow: none;
+            transition: transform 0.3s ease;
+        }
+
+        .hero-icon-box:hover {
+            transform: scale(1.05) rotate(-3deg);
+            background: #2c2244;
+            border-color: #634399;
+        }
+
+        .hero-title {
+            font-size: 32px;
+            font-weight: 800;
+            letter-spacing: -0.03em;
+            color: #ffffff;
+            background: none;
+            background-clip: initial;
+            -webkit-background-clip: initial;
+            -webkit-text-fill-color: #ffffff;
+        }
+
+        .hero-subtitle {
+            font-size: 14px;
+            color: var(--text-muted);
+            max-width: 900px;
+            white-space: nowrap;
+            line-height: 1.55;
+            font-weight: 500;
+        }
+
+        /* Private Search Bar (Solid) */
+        .search-pill-card {
+            width: 100%;
+            max-width: 660px;
+            background: #161722;
+            border: 1px solid #282a3a;
+            border-radius: 100px;
+            padding: 6px 8px 6px 20px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+            box-shadow: none;
+        }
+
+        .search-pill-card:focus-within {
+            border-color: #8b5cf6;
+            box-shadow: 0 0 0 2px rgba(139, 92, 246, 0.25);
+            transform: translateY(-2px);
+        }
+
+        .search-icon-indicator {
+            color: var(--accent);
+            font-size: 15px;
+            display: flex;
+            align-items: center;
+        }
+
+        .search-input {
+            flex: 1;
+            background: transparent;
+            border: none;
+            outline: none;
+            color: #ffffff;
+            font-family: inherit;
+            font-size: 15px;
+            font-weight: 600;
+        }
+
+        .search-input::placeholder {
+            color: var(--text-dim);
+            font-weight: 500;
+        }
+
+        .search-submit-btn {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background: var(--accent);
+            border: none;
+            color: #ffffff;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: transform 0.2s cubic-bezier(0.16, 1, 0.3, 1), background 0.2s ease;
+            outline: none;
+            flex-shrink: 0;
+        }
+
+        .search-submit-btn:hover {
+            transform: scale(1.08);
+            background: #9333ea;
+        }
+
+        /* Bento Features Grid */
+        .bento-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 16px;
+            width: 100%;
+        }
+
+        @media (max-width: 640px) {
+            .bento-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        /* Clean Dual-Card InPrivate Style (Matches Edge InPrivate inspiration) */
+        .sp-private-dual-card {
+            background: #161722;
+            border: 1px solid #282a3a;
+            border-radius: 16px;
+            padding: 22px 26px;
+            display: flex;
+            flex-direction: column;
+            gap: 14px;
+            transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+            box-sizing: border-box;
+        }
+
+        .sp-private-dual-card:hover {
+            background: #1a1c29;
+            border-color: #3b3f54;
+            transform: translateY(-1px);
+        }
+
+        .sp-pdc-header {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .sp-pdc-check {
+            color: #38bdf8;
+            font-size: 16px;
+            flex-shrink: 0;
+        }
+
+        .sp-pdc-cross {
+            color: #38bdf8;
+            font-size: 16px;
+            flex-shrink: 0;
+        }
+
+        .sp-pdc-title {
+            font-size: 15.5px;
+            font-weight: 700;
+            color: #ffffff;
+            letter-spacing: -0.01em;
+            margin: 0;
+        }
+
+        .sp-pdc-list {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .sp-pdc-list li {
+            font-size: 13.5px;
+            line-height: 1.55;
+            color: #94a3b8;
+            font-weight: 400;
+            transition: color 0.15s ease;
+        }
+
+        .sp-private-dual-card:hover .sp-pdc-list li {
+            color: #cbd5e1;
+        }
+
+        /* Engine Switcher Chips */
+        .engines-row {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            flex-wrap: wrap;
+            justify-content: center;
+        }
+
+        .engine-chip {
+            padding: 5px 12px;
+            border-radius: 100px;
+            font-size: 12px;
+            font-weight: 600;
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            color: var(--text-muted);
+            cursor: pointer;
+            transition: all 0.15s ease;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .engine-chip.active {
+            background: var(--accent-dim);
+            border-color: var(--accent);
+            color: #d8b4fe;
+        }
+
+        .engine-chip:hover {
+            color: #ffffff;
+            border-color: rgba(255, 255, 255, 0.2);
+        }
+
+        /* Status Badge (Solid) */
+        .session-status-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 7px;
+            padding: 6px 14px;
+            border-radius: 100px;
+            background: #142921;
+            border: 1px solid #185a40;
+            color: #34d399;
+            font-size: 12px;
+            font-weight: 700;
+            letter-spacing: 0.02em;
+        }
+
+        .status-dot {
+            width: 7px;
+            height: 7px;
+            border-radius: 50%;
+            background: #10b981;
+            box-shadow: 0 0 8px #10b981;
+            animation: pulse 2s infinite ease-in-out;
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 1; transform: scale(1); }
+            50% { opacity: 0.5; transform: scale(0.85); }
+        }
+    </style>
+</head>
+<body>
+    <div class="ambient-mesh"></div>
+    <div class="ambient-grid"></div>
+
+    <div class="container">
+        <!-- Hero Section -->
+        <div class="hero-section">
+            <div class="hero-badge-wrap">
+                <div class="hero-icon-box">
+                    <i class="fas fa-user-secret"></i>
+                </div>
+            </div>
+            <div class="session-status-badge">
+                <div class="status-dot"></div>
+                <span>ISOLATED PRIVATE SESSION ACTIVE</span>
+            </div>
+            <h1 class="hero-title">You're in a Private Window</h1>
+            <p class="hero-subtitle">
+                Ocal won't remember pages you visited, searches you conducted, cookies, or temporary site data after you close this window.
+            </p>
+        </div>
+
+        <!-- Search Bar -->
+        <form class="search-pill-card" id="private-search-form" onsubmit="handlePrivateSearch(event)">
+            <div class="search-icon-indicator">
+                <i class="fas fa-lock"></i>
+            </div>
+            <input type="text" class="search-input" id="search-input" placeholder="Search privately with Ocal Search or enter URL..." autofocus autocomplete="off">
+            <button type="submit" class="search-submit-btn" title="Search">
+                <i class="fas fa-arrow-right"></i>
+            </button>
+        </form>
+
+        <!-- Engine Selectors -->
+        <div class="engines-row">
+            <div class="engine-chip active" data-engine="ocal" onclick="selectEngine('ocal')">
+                <i class="fas fa-shield-halved" style="color: #09f0a0;"></i> Ocal Private Search
+            </div>
+            <div class="engine-chip" data-engine="duckduckgo" onclick="selectEngine('duckduckgo')">
+                <i class="fas fa-shield"></i> DuckDuckGo
+            </div>
+            <div class="engine-chip" data-engine="brave" onclick="selectEngine('brave')">
+                <i class="fas fa-lion"></i> Brave Search
+            </div>
+            <div class="engine-chip" data-engine="google" onclick="selectEngine('google')">
+                <i class="fab fa-google"></i> Google
+            </div>
+        </div>
+
+        <!-- Privacy Information Dual Cards -->
+        <div class="bento-grid">
+            <!-- Card 1: What Private Browsing does -->
+            <div class="sp-private-dual-card">
+                <div class="sp-pdc-header">
+                    <i class="fa-solid fa-check sp-pdc-check"></i>
+                    <h3 class="sp-pdc-title">What Private browsing does</h3>
+                </div>
+                <ul class="sp-pdc-list">
+                    <li>Deletes your browsing info, search history, and form data when you close all private windows</li>
+                    <li>Saves cookies and temporary site data in an isolated partition that is completely discarded on exit</li>
+                    <li>Blocks third-party trackers, telemetry beacons, and fingerprinting scripts automatically</li>
+                </ul>
+            </div>
+
+            <!-- Card 2: What Private Browsing doesn't do -->
+            <div class="sp-private-dual-card">
+                <div class="sp-pdc-header">
+                    <i class="fa-solid fa-xmark sp-pdc-cross"></i>
+                    <h3 class="sp-pdc-title">What Private browsing doesn't do</h3>
+                </div>
+                <ul class="sp-pdc-list">
+                    <li>Hide your browsing from your school, employer, or internet service provider</li>
+                    <li>Hide your IP address or physical network location from the websites you visit</li>
+                    <li>Keep you signed in to your web accounts after you close this window</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let currentEngine = 'ocal';
+
+        function selectEngine(engine) {
+            currentEngine = engine;
+            document.querySelectorAll('.engine-chip').forEach(chip => {
+                chip.classList.toggle('active', chip.dataset.engine === engine);
+            });
+            const input = document.getElementById('search-input');
+            const name = engine === 'ocal' ? 'Ocal Search' : (engine === 'duckduckgo' ? 'DuckDuckGo' : (engine === 'brave' ? 'Brave' : 'Google'));
+            input.placeholder = `Search privately with ${name} or enter URL...`;
+            input.focus();
+        }
+
+        function handlePrivateSearch(e) {
+            e.preventDefault();
+            const input = document.getElementById('search-input');
+            const query = (input.value || '').trim();
+            if (!query) return;
+
+            let targetUrl = query;
+            const isUrl = /^(https?:\/\/|[a-z0-9]+([\-\.]{1}[a-z0-9]+)*\.[a-z]{2,5}(:[0-9]{1,5})?(\/.*)?$)/i.test(query);
+
+            if (isUrl) {
+                if (!targetUrl.startsWith('http://') && !targetUrl.startsWith('https://')) {
+                    targetUrl = 'https://' + targetUrl;
+                }
+            } else {
+                if (currentEngine === 'ocal') {
+                    targetUrl = `http://localhost:8080/search?q=${encodeURIComponent(query)}`;
+                } else if (currentEngine === 'duckduckgo') {
+                    targetUrl = `https://duckduckgo.com/?q=${encodeURIComponent(query)}`;
+                } else if (currentEngine === 'brave') {
+                    targetUrl = `https://search.brave.com/search?q=${encodeURIComponent(query)}`;
+                } else {
+                    targetUrl = `https://www.google.com/search?q=${encodeURIComponent(query)}`;
+                }
+            }
+
+            if (window.electronAPI?.send) {
+                window.electronAPI.send('private-navigate', targetUrl);
+            } else {
+                window.location.href = targetUrl;
+            }
+        }
+    </script>
+</body>
+</html>

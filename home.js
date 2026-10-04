@@ -35,7 +35,9 @@ function updateSearchEngineLogo(engine) {
     const logoContainer = document.getElementById('search-engine-logo');
     if (!logoContainer) return;
 
-    if (engine === 'google') {
+    if (engine === 'ocal') {
+        logoContainer.innerHTML = '<i class="fas fa-shield-halved" style="color: #09f0a0; font-size: 18px;" title="Ocal Private Search"></i>';
+    } else if (engine === 'google') {
         logoContainer.innerHTML = `<svg width="20" height="20" viewBox="0 0 24 24">
             <path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="#4285F4"/>
             <path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98 1.06-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853"/>
@@ -55,12 +57,131 @@ function updateSearchEngineLogo(engine) {
     }
 }
 
+// ── Private / Stealth Mode Customization ─────────────────────────
+function initPrivateModeHome() {
+    const isPrivate = window.location.search.includes('private=true') || 
+                      window.location.hash.includes('private') || 
+                      document.documentElement.classList.contains('sp-private-mode') ||
+                      document.body?.classList?.contains('sp-private-mode');
+    if (!isPrivate) {
+        const privateCards = document.getElementById('sp-private-benefits-grid');
+        if (privateCards) privateCards.style.display = 'none';
+        const regularCards = document.getElementById('sp-regular-hero-cards');
+        if (regularCards) regularCards.style.display = '';
+        return;
+    }
+
+    document.documentElement.classList.add('sp-private-mode');
+    document.documentElement.setAttribute('data-theme', 'dark');
+    if (document.body) {
+        document.body.classList.add('sp-private-mode');
+        document.body.setAttribute('data-theme', 'dark');
+    }
+    document.title = 'Private Home - Ocal';
+
+    if (window.OcalColorHarmonizer) {
+        window.OcalColorHarmonizer.applyHarmonizedTheme('#a855f7', 'dark');
+    }
+
+    // Adjust Greeting for Clean Centered InPrivate View
+    const welcomePrefix = document.getElementById('welcome-prefix');
+    if (welcomePrefix) {
+        welcomePrefix.innerHTML = '<i class="fas fa-user-secret" style="margin-right: 12px; color: #8b5cf6;"></i>';
+    }
+    const userNameTitle = document.getElementById('user-name-title');
+    if (userNameTitle) {
+        userNameTitle.textContent = 'InPrivate Browsing';
+        userNameTitle.setAttribute('contenteditable', 'false');
+    }
+    const motdQuote = document.querySelector('.motd-quote-icon');
+    if (motdQuote) {
+        motdQuote.style.display = 'none';
+    }
+    const motdContainer = document.getElementById('message-of-the-day');
+    if (motdContainer) {
+        motdContainer.removeAttribute('title');
+        motdContainer.classList.remove('motd-clickable');
+    }
+    const motdText = document.getElementById('motd-text');
+    if (motdText) {
+        motdText.textContent = "Ocal won't save your browsing history, cookies and site data, or form inputs on this device.";
+    }
+
+    // Adjust Stats Bar (Crisp solid colors, no gradients)
+    const statsBar = document.querySelector('.sp-stats-bar');
+    if (statsBar) {
+        statsBar.innerHTML = `
+            <div class="sp-stat-item">
+                <span class="sp-dot-num" id="clock-mini">00:00</span>
+                <span class="sp-badge" style="background: #8b5cf6; color: #ffffff; font-weight: 700; border-radius: 6px; padding: 2px 8px;">Stealth</span>
+            </div>
+            <div class="sp-stat-item">
+                <span class="sp-dot-num">0</span>
+                <span class="sp-badge" style="background: #252836; color: #cbd5e1; font-weight: 700; border-radius: 6px; padding: 2px 8px;">History Kept</span>
+            </div>
+            <div class="sp-stat-item">
+                <span class="sp-dot-num">Active</span>
+                <span class="sp-badge" style="background: #10b981; color: #ffffff; font-weight: 700; border-radius: 6px; padding: 2px 8px;">Shield</span>
+            </div>
+        `;
+    }
+
+    // Adjust Top action card
+    const trackerActionCard = document.querySelector('.sp-connect-tracker-mini');
+    if (trackerActionCard) {
+        trackerActionCard.classList.add('sp-private-stealth-pill');
+        const acTitle = trackerActionCard.querySelector('.sp-ac-title');
+        if (acTitle) acTitle.innerHTML = 'Zero-Trace<br>Isolated';
+    }
+
+    // Swap regular productivity widgets with Private Benefits Bento Grid
+    const regularCards = document.getElementById('sp-regular-hero-cards');
+    if (regularCards) regularCards.style.display = 'none';
+    const privateCards = document.getElementById('sp-private-benefits-grid');
+    if (privateCards) privateCards.style.display = 'grid';
+
+    // Default search engine to DuckDuckGo in Private Mode
+    currentSearchEngine = 'duckduckgo';
+    updateSearchEngineLogo('duckduckgo');
+    const searchInp = document.getElementById('main-search-input') || document.getElementById('home-search');
+    if (searchInp) {
+        searchInp.placeholder = 'Search privately with DuckDuckGo or enter web URL...';
+    }
+
+    // Timeline Pill
+    const tpTitle = document.querySelector('.sp-tp-title');
+    if (tpTitle) tpTitle.textContent = 'Stealth Isolation';
+    const tpSub = document.querySelector('.sp-tp-sub');
+    if (tpSub) tpSub.textContent = 'Zero History & Tracker Blocked';
+
+    // Bottom Bar updates for Private Mode
+    const histBtn = document.getElementById('history-btn');
+    if (histBtn) {
+        histBtn.innerHTML = '<i class="fas fa-shield-halved" style="color: #34D399;"></i> <span>Zero-Trace</span>';
+        histBtn.title = 'Private Mode: Zero Browsing History Kept';
+        histBtn.onclick = (e) => {
+            e.preventDefault();
+        };
+    }
+    const brandText = document.querySelector('.sp-brand-text');
+    if (brandText) {
+        brandText.textContent = 'OCAL STEALTH';
+    }
+
+    const qlSub = document.querySelector('.sp-section-subtitle');
+    if (qlSub) {
+        qlSub.textContent = 'Privacy-friendly web applications and private shortcuts.';
+    }
+}
+
 // ── Entry Animation ──
 document.addEventListener('DOMContentLoaded', () => {
+    initPrivateModeHome();
     setTimeout(() => {
         document.body.classList.add('loaded');
     }, 100);
 });
+initPrivateModeHome();
 
 // ── Tick (Clock & Dynamic Greeting) ──────────────────────────────
 function updateTick() {
@@ -71,11 +192,15 @@ function updateTick() {
     if (clockEl) clockEl.innerHTML = `${String(hours).padStart(2, '0')}<span class="clock-colon">:</span>${String(minutes).padStart(2, '0')}`;
 
     if (greetingTxt) {
-        let greet = 'GOOD NIGHT';
-        if (hours >= 5 && hours < 12) greet = 'GOOD MORNING';
-        else if (hours >= 12 && hours < 17) greet = 'GOOD AFTERNOON';
-        else if (hours >= 17 && hours < 21) greet = 'GOOD EVENING';
-        greetingTxt.textContent = greet;
+        if (document.body.classList.contains('sp-private-mode')) {
+            greetingTxt.textContent = 'STEALTH MODE';
+        } else {
+            let greet = 'GOOD NIGHT';
+            if (hours >= 5 && hours < 12) greet = 'GOOD MORNING';
+            else if (hours >= 12 && hours < 17) greet = 'GOOD AFTERNOON';
+            else if (hours >= 17 && hours < 21) greet = 'GOOD EVENING';
+            greetingTxt.textContent = greet;
+        }
     }
 
     if (dateTxt) dateTxt.textContent = `${days[now.getDay()]}, ${months[now.getMonth()]} ${now.getDate()}`;
@@ -87,6 +212,10 @@ updateTick();
 
 // ── Search Logic ───────────────────────────────────────────────
 function navigateToTargetUrl(url) {
+    if (window.location.search.includes('private=true') || window.location.hash.includes('private') || document.body.classList.contains('sp-private-mode')) {
+        window.location.href = url;
+        return;
+    }
     if (window.electronAPI && typeof window.electronAPI.navigateTo === 'function') {
         window.electronAPI.navigateTo(url);
     } else if (typeof require !== 'undefined') {
@@ -114,7 +243,8 @@ function executeSearch() {
         targetUrl = 'https://' + q;
     } else {
         let searchUrl = 'https://www.google.com/search?q=';
-        if (currentSearchEngine === 'bing') searchUrl = 'https://www.bing.com/search?q=';
+        if (currentSearchEngine === 'ocal') searchUrl = 'http://localhost:8080/search?q=';
+        else if (currentSearchEngine === 'bing') searchUrl = 'https://www.bing.com/search?q=';
         else if (currentSearchEngine === 'duckduckgo') searchUrl = 'https://duckduckgo.com/?q=';
         else if (currentSearchEngine === 'brave') searchUrl = 'https://search.brave.com/search?q=';
         else if (currentSearchEngine === 'yahoo') searchUrl = 'https://search.yahoo.com/search?p=';
@@ -1258,11 +1388,16 @@ const motdList = [
 ];
 
 document.addEventListener('DOMContentLoaded', () => {
+    const isPrivate = window.location.search.includes('private=true') || 
+                      window.location.hash.includes('private') || 
+                      document.documentElement.classList.contains('sp-private-mode') ||
+                      document.body?.classList?.contains('sp-private-mode');
+
     // User name editable title persistence & dynamic greeting
     const userNameTitle = document.getElementById('user-name-title');
     const welcomePrefix = document.getElementById('welcome-prefix');
 
-    if (userNameTitle) {
+    if (userNameTitle && !isPrivate) {
         const savedName = localStorage.getItem('sp-user-name');
         if (savedName) userNameTitle.textContent = savedName;
 
@@ -1291,7 +1426,7 @@ document.addEventListener('DOMContentLoaded', () => {
     // Message of the Day (MOTD)
     const motdTextEl = document.getElementById('motd-text');
     const motdContainer = document.getElementById('message-of-the-day');
-    if (motdTextEl) {
+    if (motdTextEl && !isPrivate) {
         let dayIndex = (new Date().getDate() + new Date().getMonth()) % motdList.length;
         const savedQuoteIdx = localStorage.getItem('sp-motd-idx');
         if (savedQuoteIdx !== null) {

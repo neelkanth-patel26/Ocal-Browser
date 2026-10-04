@@ -96,6 +96,496 @@ body,
     display: none;
 }
 
+/* ── Private / Stealth Mode Styling for Home Page ── */
+.sp-private-mode {
+    --accent: #a855f7 !important;
+    --accent-glow: rgba(168, 85, 247, 0.3) !important;
+    --accent-dim: rgba(168, 85, 247, 0.15) !important;
+}
+
+/* ── Private Mode Settings (Solid Colors, Zero Gradients) ─────── */
+#sp-private-benefits-grid {
+    display: none !important;
+}
+
+body.sp-private-mode {
+    background: #0f1015 !important;
+    color: #ffffff !important;
+    overflow-x: hidden !important;
+}
+
+body.sp-private-mode .sp-wallpaper-bg {
+    background: #0f1015 !important;
+}
+
+/* Centered Clean Dashboard Wrapper in Private Mode (Matches Edge clean aesthetic) */
+body.sp-private-mode .sp-dashboard-wrapper {
+    max-width: 900px !important;
+    margin: 0 auto !important;
+    display: flex !important;
+    flex-direction: column !important;
+    align-items: center !important;
+    justify-content: center !important;
+    min-height: 85vh !important;
+    padding: 30px 20px !important;
+    gap: 28px !important;
+    box-sizing: border-box !important;
+}
+
+body.sp-private-mode .sp-header-row {
+    display: flex !important;
+    flex-direction: column !important;
+    align-items: center !important;
+    text-align: center !important;
+    gap: 8px !important;
+    width: 100% !important;
+    margin-bottom: 0 !important;
+}
+
+body.sp-private-mode .sp-user-greeting {
+    display: flex !important;
+    flex-direction: column !important;
+    align-items: center !important;
+    text-align: center !important;
+}
+
+body.sp-private-mode .sp-user-name {
+    font-size: 32px !important;
+    font-weight: 800 !important;
+    letter-spacing: -0.02em !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    gap: 12px !important;
+    color: #ffffff !important;
+}
+
+body.sp-private-mode .sp-user-subtitle {
+    font-size: 14px !important;
+    color: #94a3b8 !important;
+    max-width: 900px !important;
+    white-space: nowrap !important;
+    line-height: 1.55 !important;
+    margin-top: 6px !important;
+    text-align: center !important;
+    display: block !important;
+    cursor: default !important;
+    pointer-events: none !important;
+}
+
+@media (max-width: 768px) {
+    body.sp-private-mode .sp-user-subtitle {
+        white-space: normal !important;
+    }
+}
+
+body.sp-private-mode .motd-quote-icon {
+    display: none !important;
+}
+
+body.sp-private-mode .motd-clickable {
+    cursor: default !important;
+    pointer-events: none !important;
+}
+
+/* Hide clutter in private mode (stats bar, weather, focus flow, timeline pill, banner, tiles, bottom bar) */
+body.sp-private-mode .sp-stats-bar,
+body.sp-private-mode .sp-top-actions,
+body.sp-private-mode .sp-timeline-pill,
+body.sp-private-mode #private-mode-banner,
+body.sp-private-mode #sp-regular-hero-cards,
+body.sp-private-mode .sp-tiles-section,
+body.sp-private-mode .sp-bottom-bar-container {
+    display: none !important;
+}
+
+body.sp-private-mode .sp-search-section {
+    width: 100% !important;
+    max-width: 660px !important;
+    display: flex !important;
+    justify-content: center !important;
+    margin: 0 !important;
+}
+
+body.sp-private-mode .sp-search-pill {
+    width: 100% !important;
+    max-width: 660px !important;
+    height: 48px !important;
+    background: #161722 !important;
+    border: 1px solid #282a3a !important;
+    border-radius: 100px !important;
+    padding: 0 16px 0 20px !important;
+    box-shadow: none !important;
+}
+
+body.sp-private-mode #sp-private-benefits-grid {
+    display: grid !important;
+    grid-template-columns: repeat(2, 1fr) !important;
+    gap: 18px !important;
+    width: 100% !important;
+    max-width: 900px !important;
+}
+
+@media (max-width: 768px) {
+    body.sp-private-mode #sp-private-benefits-grid {
+        grid-template-columns: 1fr !important;
+    }
+}
+
+/* Solid Top Notification Banner */
+.sp-private-banner {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    padding: 12px 18px;
+    background: #171822;
+    border: 1px solid #2d2f42;
+    border-radius: 14px;
+    animation: fadeInPrivate 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+@keyframes fadeInPrivate {
+    from { opacity: 0; transform: translateY(-8px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+.sp-private-banner .sp-private-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    background: #8b5cf6;
+    color: #ffffff;
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 0.05em;
+    padding: 5px 12px;
+    border-radius: 8px;
+    flex-shrink: 0;
+}
+
+.sp-private-banner .sp-private-details {
+    flex: 1;
+    font-size: 13px;
+    color: #cbd5e1;
+    line-height: 1.4;
+    font-weight: 500;
+}
+
+.sp-private-banner .sp-private-tag {
+    display: inline-flex;
+    align-items: center;
+    gap: 7px;
+    font-size: 12px;
+    font-weight: 600;
+    color: #c4b5fd;
+    background: #232238;
+    padding: 5px 12px;
+    border-radius: 20px;
+    white-space: nowrap;
+    border: 1px solid #4338ca;
+}
+
+/* Solid Top Action Card */
+body.sp-private-mode .sp-action-card.sp-private-stealth-pill {
+    border: 1px solid #282a3a !important;
+    background: #161722 !important;
+    box-shadow: none !important;
+}
+
+body.sp-private-mode .sp-action-card.sp-private-stealth-pill .sp-pulse-ring {
+    border-color: #2a2d40 !important;
+}
+
+body.sp-private-mode .sp-action-card.sp-private-stealth-pill .sp-pulse-center {
+    background: #10b981 !important;
+    box-shadow: 0 0 8px #10b981 !important;
+}
+
+/* Solid Greeting (Pure solid high-contrast text, no gradient) */
+body.sp-private-mode .sp-user-name {
+    color: #ffffff !important;
+}
+
+body.sp-private-mode #user-name-title {
+    color: #ffffff !important;
+    background: none !important;
+    -webkit-background-clip: initial !important;
+    -webkit-text-fill-color: #ffffff !important;
+    font-weight: 700 !important;
+}
+
+body.sp-private-mode .sp-welcome-prefix {
+    color: #94a3b8 !important;
+}
+
+body.sp-private-mode .sp-user-subtitle {
+    color: #94a3b8 !important;
+}
+
+/* Solid Stats & Action Pills */
+body.sp-private-mode .sp-stats-bar {
+    background: #161722 !important;
+    border: 1px solid #282a3a !important;
+    box-shadow: none !important;
+}
+
+body.sp-private-mode .sp-stats-bar .sp-dot-num {
+    color: #ffffff !important;
+}
+
+body.sp-private-mode .sp-news-trigger-btn {
+    background: #161722 !important;
+    border: 1px solid #282a3a !important;
+    color: #ffffff !important;
+    box-shadow: none !important;
+}
+
+body.sp-private-mode .sp-news-trigger-btn:hover {
+    background: #1e202e !important;
+    border-color: #3b3f54 !important;
+}
+
+body.sp-private-mode .sp-timeline-pill {
+    background: #161722 !important;
+    border: 1px solid #1a382c !important;
+    box-shadow: none !important;
+}
+
+body.sp-private-mode .sp-timeline-pill i {
+    color: #10b981 !important;
+}
+
+body.sp-private-mode .sp-timeline-pill .sp-tp-title {
+    color: #34d399 !important;
+}
+
+body.sp-private-mode .sp-timeline-pill .sp-tp-sub {
+    color: #94a3b8 !important;
+}
+
+/* Solid Search Bar */
+body.sp-private-mode .sp-search-pill {
+    background: #161722 !important;
+    border: 1px solid #282a3a !important;
+    box-shadow: none !important;
+}
+
+body.sp-private-mode .sp-search-pill:focus-within {
+    border-color: #8b5cf6 !important;
+}
+
+body.sp-private-mode .sp-search-input {
+    color: #ffffff !important;
+}
+
+body.sp-private-mode .sp-search-input::placeholder {
+    color: #64748b !important;
+}
+
+body.sp-private-mode .sp-search-btn {
+    background: #8b5cf6 !important;
+    color: #ffffff !important;
+}
+
+body.sp-private-mode .sp-search-btn:hover {
+    background: #7c3aed !important;
+}
+
+/* ── Solid-Color Bento Benefit Cards ─────────────────────────── */
+@media (max-width: 860px) {
+    body.sp-private-mode #sp-private-benefits-grid {
+        grid-template-columns: 1fr !important;
+    }
+}
+
+/* ── Clean Dual-Card Minimal InPrivate Styling (Inspired by Edge) ── */
+.sp-private-dual-card {
+    background: #161722;
+    border: 1px solid #282a3a;
+    border-radius: 16px;
+    padding: 22px 26px;
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+    transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+    box-sizing: border-box;
+}
+
+.sp-private-dual-card:hover {
+    background: #1a1c29;
+    border-color: #3b3f54;
+    transform: translateY(-1px);
+}
+
+.sp-pdc-header {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.sp-pdc-check {
+    color: #38bdf8;
+    font-size: 16px;
+    flex-shrink: 0;
+}
+
+.sp-pdc-cross {
+    color: #38bdf8;
+    font-size: 16px;
+    flex-shrink: 0;
+}
+
+.sp-pdc-title {
+    font-size: 15.5px;
+    font-weight: 700;
+    color: #ffffff;
+    letter-spacing: -0.01em;
+    margin: 0;
+}
+
+.sp-pdc-list {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.sp-pdc-list li {
+    font-size: 13.5px;
+    line-height: 1.55;
+    color: #94a3b8;
+    font-weight: 400;
+    transition: color 0.15s ease;
+}
+
+.sp-private-dual-card:hover .sp-pdc-list li {
+    color: #cbd5e1;
+}
+
+.sp-private-benefit-card {
+    background: #161722;
+    border: 1px solid #282a3a;
+    border-radius: 12px;
+    padding: 13px 16px;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    transition: all 0.18s cubic-bezier(0.16, 1, 0.3, 1);
+    position: relative;
+    box-sizing: border-box;
+}
+
+.sp-private-benefit-card::before {
+    display: none !important;
+}
+
+.sp-private-benefit-card:hover {
+    transform: translateY(-1px);
+    background: #1a1c29;
+    border-color: #3b3f54;
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.25);
+}
+
+.sp-pbc-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 10px;
+}
+
+.sp-pbc-icon-title {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.sp-pbc-icon {
+    width: 30px;
+    height: 30px;
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 13px;
+    flex-shrink: 0;
+}
+
+.sp-pbc-title {
+    font-size: 14px;
+    font-weight: 700;
+    color: #ffffff;
+    letter-spacing: -0.01em;
+}
+
+.sp-pbc-badge {
+    font-size: 10px;
+    font-weight: 700;
+    padding: 2.5px 7px;
+    border-radius: 5px;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+}
+
+.sp-pbc-badge.purple {
+    background: #8b5cf6;
+    color: #ffffff;
+}
+
+.sp-pbc-badge.blue {
+    background: #3b82f6;
+    color: #ffffff;
+}
+
+.sp-pbc-badge.green {
+    background: #10b981;
+    color: #ffffff;
+}
+
+.sp-pbc-badge.amber {
+    background: #d97706;
+    color: #ffffff;
+}
+
+.sp-pbc-desc {
+    font-size: 12.5px;
+    line-height: 1.45;
+    color: #94a3b8;
+    font-weight: 500;
+    margin: 0;
+}
+
+.sp-pbc-chips {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+    margin-top: 1px;
+}
+
+.sp-pbc-chip {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    padding: 2.5px 8px;
+    border-radius: 6px;
+    font-size: 11px;
+    font-weight: 600;
+    background: #1b1d2a;
+    border: 1px solid #282b3d;
+    color: #cbd5e1;
+}
+
+.sp-pbc-chip i {
+    font-size: 10px;
+}
+
+.sp-pbc-chip.accent-chip {
+    background: #231c36;
+    border-color: #432e67;
+    color: #d8b4fe;
+}
+
 /* ── Main Dashboard Layout ─────────────────────────────────────── */
 .sp-dashboard-wrapper {
     max-width: 1600px;

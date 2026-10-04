@@ -1,7 +1,184 @@
+const _earlyUrl = (typeof window !== 'undefined' && window.location && window.location.href) || '';
+const _isInternalEarly = _earlyUrl.startsWith('ocal://') || 
+                         _earlyUrl.startsWith('file://') || 
+                         _earlyUrl.includes('home.html') ||
+                         (typeof window !== 'undefined' && window.location && window.location.protocol === 'chrome-extension:');
+
 // ── Universal Chrome Extension Compatibility Polyfill ─────────────────────────
-try {
-    require('./chrome-compat-shim.js');
-} catch (e) {}
+// ONLY load extension shim for extensions or internal browser pages
+if (_isInternalEarly || (typeof window !== 'undefined' && window.location && window.location.protocol === 'chrome-extension:')) {
+    try {
+        require('./chrome-compat-shim.js');
+    } catch (e) {}
+}
+
+// ── Anti-Bot Stealth Engine (Shield against bot detection / verification loops) ──
+const { webFrame: _stealthWebFrame } = require('electron');
+if (_stealthWebFrame && !_isInternalEarly) {
+    try {
+        _stealthWebFrame.executeJavaScript(`
+(function() {
+    'use strict';
+    try {
+        // 1. Standardize navigator.webdriver to false with native getter
+        try {
+            Object.defineProperty(Navigator.prototype, 'webdriver', {
+                get: function() { return false; },
+                enumerable: true,
+                configurable: true
+            });
+            delete navigator.webdriver;
+        } catch (e) {}
+
+        // 2. Standardize window.chrome with genuine desktop Chrome properties
+        if (!window.chrome) {
+            window.chrome = {};
+        }
+        if (!window.chrome.app) {
+            window.chrome.app = {
+                isInstalled: false,
+                InstallState: { DISABLED: 'disabled', INSTALLED: 'installed', NOT_INSTALLED: 'not_installed' },
+                RunningState: { CANNOT_RUN: 'cannot_run', READY_TO_RUN: 'ready_to_run', RUNNING: 'running' },
+                getDetails: function() { return null; },
+                getIsInstalled: function() { return false; },
+                installState: function() {}
+            };
+        }
+        if (!window.chrome.csi) {
+            window.chrome.csi = function() {
+                return {
+                    onloadT: Date.now(),
+                    pageT: (performance && performance.timing ? performance.timing.loadEventEnd - performance.timing.navigationStart : 0),
+                    startE: Date.now(),
+                    tran: 15
+                };
+            };
+        }
+        if (!window.chrome.loadTimes) {
+            window.chrome.loadTimes = function() {
+                const now = Date.now() / 1000;
+                const navStart = (performance && performance.timing) ? performance.timing.navigationStart / 1000 : now;
+                return {
+                    requestTime: (performance && performance.timing) ? performance.timing.requestStart / 1000 : now,
+                    startLoadTime: navStart,
+                    commitLoadTime: (performance && performance.timing) ? performance.timing.responseStart / 1000 : now,
+                    finishDocumentLoadTime: (performance && performance.timing) ? performance.timing.domContentLoadedEventEnd / 1000 : now,
+                    finishLoadTime: (performance && performance.timing) ? performance.timing.loadEventEnd / 1000 : now,
+                    firstPaintTime: (performance && performance.timing) ? performance.timing.responseStart / 1000 : now,
+                    firstPaintAfterLoadTime: 0,
+                    navigationType: 'Other',
+                    wasFetchedViaSpdy: true,
+                    wasNpnNegotiated: true,
+                    npnNegotiatedProtocol: 'h2',
+                    wasAlternateProtocolAvailable: false,
+                    connectionInfo: 'h2'
+                };
+            };
+        }
+
+        // 3. Emulate standard Chrome plugins & mimeTypes
+        try {
+            if (!navigator.plugins || navigator.plugins.length === 0) {
+                const pluginDefs = [
+                    { name: 'PDF Viewer', filename: 'internal-pdf-viewer', description: 'Portable Document Format', mimeTypes: [{ type: 'application/pdf', suffixes: 'pdf', description: 'Portable Document Format' }, { type: 'text/pdf', suffixes: 'pdf', description: 'Portable Document Format' }] },
+                    { name: 'Chrome PDF Viewer', filename: 'internal-pdf-viewer', description: 'Portable Document Format', mimeTypes: [{ type: 'application/pdf', suffixes: 'pdf', description: 'Portable Document Format' }, { type: 'text/pdf', suffixes: 'pdf', description: 'Portable Document Format' }] },
+                    { name: 'Chromium PDF Viewer', filename: 'internal-pdf-viewer', description: 'Portable Document Format', mimeTypes: [{ type: 'application/pdf', suffixes: 'pdf', description: 'Portable Document Format' }, { type: 'text/pdf', suffixes: 'pdf', description: 'Portable Document Format' }] },
+                    { name: 'Microsoft Edge PDF Viewer', filename: 'internal-pdf-viewer', description: 'Portable Document Format', mimeTypes: [{ type: 'application/pdf', suffixes: 'pdf', description: 'Portable Document Format' }, { type: 'text/pdf', suffixes: 'pdf', description: 'Portable Document Format' }] },
+                    { name: 'WebKit built-in PDF', filename: 'internal-pdf-viewer', description: 'Portable Document Format', mimeTypes: [{ type: 'application/pdf', suffixes: 'pdf', description: 'Portable Document Format' }, { type: 'text/pdf', suffixes: 'pdf', description: 'Portable Document Format' }] }
+                ];
+
+                const pluginArray = Object.create(PluginArray.prototype);
+                const mimeTypeArray = Object.create(MimeTypeArray.prototype);
+
+                let mIdxCount = 0;
+                pluginDefs.forEach((p, idx) => {
+                    const plugin = Object.create(Plugin.prototype);
+                    Object.defineProperties(plugin, {
+                        name: { value: p.name, enumerable: true },
+                        filename: { value: p.filename, enumerable: true },
+                        description: { value: p.description, enumerable: true },
+                        length: { value: p.mimeTypes.length, enumerable: true }
+                    });
+
+                    p.mimeTypes.forEach((m, mIdx) => {
+                        const mime = Object.create(MimeType.prototype);
+                        Object.defineProperties(mime, {
+                            type: { value: m.type, enumerable: true },
+                            suffixes: { value: m.suffixes, enumerable: true },
+                            description: { value: m.description, enumerable: true },
+                            enabledPlugin: { value: plugin, enumerable: true }
+                        });
+                        Object.defineProperty(plugin, mIdx, { value: mime, enumerable: true });
+                        Object.defineProperty(plugin, m.type, { value: mime, enumerable: false });
+
+                        Object.defineProperty(mimeTypeArray, mIdxCount, { value: mime, enumerable: true });
+                        Object.defineProperty(mimeTypeArray, m.type, { value: mime, enumerable: false });
+                        mIdxCount++;
+                    });
+
+                    Object.defineProperty(pluginArray, idx, { value: plugin, enumerable: true });
+                    Object.defineProperty(pluginArray, p.name, { value: plugin, enumerable: false });
+                });
+
+                Object.defineProperty(pluginArray, 'length', { value: pluginDefs.length, enumerable: true });
+                Object.defineProperty(mimeTypeArray, 'length', { value: mIdxCount, enumerable: true });
+
+                Object.defineProperty(Navigator.prototype, 'plugins', {
+                    get: () => pluginArray,
+                    enumerable: true,
+                    configurable: true
+                });
+
+                Object.defineProperty(Navigator.prototype, 'mimeTypes', {
+                    get: () => mimeTypeArray,
+                    enumerable: true,
+                    configurable: true
+                });
+            }
+        } catch (e) {}
+
+        // 4. Permissions API consistency for notifications
+        try {
+            if (navigator.permissions && navigator.permissions.query) {
+                const origQuery = navigator.permissions.query;
+                navigator.permissions.query = function(params) {
+                    if (params && params.name === 'notifications') {
+                        const s = (typeof Notification !== 'undefined' && Notification.permission === 'granted')
+                            ? 'granted'
+                            : (typeof Notification !== 'undefined' && Notification.permission === 'denied')
+                                ? 'denied'
+                                : 'prompt';
+                        return Promise.resolve({
+                            state: s,
+                            name: 'notifications',
+                            onchange: null
+                        });
+                    }
+                    return origQuery.apply(this, arguments);
+                };
+                try {
+                    navigator.permissions.query.toString = function() { return 'function query() { [native code] }'; };
+                } catch (e) {}
+            }
+        } catch (e) {}
+
+        // 5. Clean function toString formatting
+        const formatNative = (fn, name) => {
+            try {
+                Object.defineProperty(fn, 'toString', {
+                    value: function() { return 'function ' + (name || fn.name || '') + '() { [native code] }'; },
+                    configurable: true,
+                    writable: true
+                });
+            } catch (e) {}
+        };
+        if (window.chrome && window.chrome.loadTimes) formatNative(window.chrome.loadTimes, 'loadTimes');
+        if (window.chrome && window.chrome.csi) formatNative(window.chrome.csi, 'csi');
+    } catch (e) {}
+})();
+        `);
+    } catch (e) {}
+}
 
 // ── Seamless Early Webview Corner Rounding & Scrollbar Masking (Active Before Page Loads) ──
 (function initEarlyCornerMasks() {
@@ -136,9 +313,12 @@ try {
     } catch (e) {}
 })();
 
-// ── Neural Shield V10: Deep Metadata Interceptor (Secondary & Sidebar Scrubbing) ──
+// ── Neural Shield V10: Deep Metadata Interceptor (YouTube-Only Scrubbing) ──
 (function() {
-    console.log('[Neural Shield] Initializing Deep Interceptor V10...');
+    const isYouTube = (typeof window !== 'undefined' && window.location && window.location.hostname && window.location.hostname.includes('youtube.com'));
+    if (!isYouTube) return; // Strictly isolate to YouTube only - never touch native fetch/XHR on other sites!
+
+    console.log('[Neural Shield] Initializing Deep Interceptor V10 for YouTube...');
 
     const AD_KEYS = [
         'adPlacements', 'playerAds', 'adSlots', 'masthead', 
@@ -152,7 +332,6 @@ try {
             // Filter out items that explicitly look like ads in lists (sidebar/search)
             return obj.filter(item => {
                 if (item?.adSlotRenderer || item?.promotedSparklesWebRenderer || item?.adRenderer) {
-                    console.log('[Neural Shield] Scrubbing ad-renderer from list');
                     return false;
                 }
                 return true;
@@ -171,13 +350,13 @@ try {
         return cleaned;
     }
 
-    // ── 1. Fetch Interception (Priority Boosting & Metadata Scrubbing) ────────
+    // ── 1. Fetch Interception (Priority Boosting & Metadata Scrubbing on YouTube) ────────
     const originalFetch = window.fetch;
     window.fetch = async (...args) => {
         let url = args[0] instanceof Request ? args[0].url : args[0];
         
         // Priority Boost
-        if (url.includes('googlevideo.com/videoplayback')) {
+        if (typeof url === 'string' && url.includes('googlevideo.com/videoplayback')) {
             if (!url.includes('&priority=high')) {
                 url += '&priority=high';
                 if (args[0] instanceof Request) args[0] = new Request(url, args[0]);
@@ -187,12 +366,11 @@ try {
 
         const response = await originalFetch(...args);
         
-        if (url.includes('/v1/player') || url.includes('/v1/next')) {
+        if (typeof url === 'string' && (url.includes('/v1/player') || url.includes('/v1/next'))) {
             const clone = response.clone();
             try {
                 const json = await clone.json();
                 const cleanJson = neuralCleaner(json);
-                console.log('[Neural Shield] Neutralized ad metadata in Fetch (Safe)');
                 return new Response(JSON.stringify(cleanJson), {
                     status: response.status,
                     headers: response.headers
@@ -201,14 +379,20 @@ try {
         }
         return response;
     };
+    try {
+        window.fetch.toString = function() { return 'function fetch() { [native code] }'; };
+    } catch(e) {}
 
-    // ── 2. XHR Interception (Tracking & Scrubbing) ───────────────────────────
+    // ── 2. XHR Interception (Tracking & Scrubbing on YouTube) ───────────────────────────
     const originalOpen = XMLHttpRequest.prototype.open;
     XMLHttpRequest.prototype.open = function(method, url) {
         this._url = url;
-        this._isAdMetadata = url.includes('/v1/player') || url.includes('/v1/next');
+        this._isAdMetadata = typeof url === 'string' && (url.includes('/v1/player') || url.includes('/v1/next'));
         return originalOpen.apply(this, arguments);
     };
+    try {
+        XMLHttpRequest.prototype.open.toString = function() { return 'function open() { [native code] }'; };
+    } catch(e) {}
 
     const originalSend = XMLHttpRequest.prototype.send;
     XMLHttpRequest.prototype.send = function() {
@@ -221,7 +405,6 @@ try {
                         const cleanJson = neuralCleaner(json);
                         Object.defineProperty(this, 'responseText', { value: JSON.stringify(cleanJson), configurable: true });
                         Object.defineProperty(this, 'response', { value: JSON.stringify(cleanJson), configurable: true });
-                        console.log('[Neural Shield] Neutralized ad metadata in XHR (Safe)');
                     } catch (e) {}
                 }
                 if (originalOnReadyStateChange) originalOnReadyStateChange.apply(this, arguments);
@@ -229,47 +412,32 @@ try {
         }
         return originalSend.apply(this, arguments);
     };
+    try {
+        XMLHttpRequest.prototype.send.toString = function() { return 'function send() { [native code] }'; };
+    } catch(e) {}
 })();
 
 // ── Global Trusted Types Policy (Bypass YouTube Security Blocks) ────────────
-if (window.trustedTypes && window.trustedTypes.createPolicy) {
-    if (!window.trustedTypes.defaultPolicy) {
-        window.trustedTypes.createPolicy('default', {
-            createHTML: (s) => s,
-            createScript: (s) => s,
-            createScriptURL: (s) => s,
-        });
+if (typeof window !== 'undefined' && window.location && window.location.hostname && window.location.hostname.includes('youtube.com')) {
+    if (window.trustedTypes && window.trustedTypes.createPolicy) {
+        if (!window.trustedTypes.defaultPolicy) {
+            try {
+                window.trustedTypes.createPolicy('default', {
+                    createHTML: (s) => s,
+                    createScript: (s) => s,
+                    createScriptURL: (s) => s,
+                });
+            } catch (e) {}
+        }
     }
 }
 
-// ── Ocal Turbo-Shield: Cosmetic Ad Collapser & Anti-Adblock Defuser ─────────
+// ── Ocal Turbo-Shield: High-Speed Cosmetic Ad Hiding ────────────────────────
 (function() {
     const isInternal = window.location.protocol === 'ocal:' || window.location.protocol === 'file:';
     if (isInternal) return;
 
-    // 1. Anti-Adblock Defuser Stubs (Neutralizes anti-adblock blocker scripts)
-    try {
-        window.canRunAds = true;
-        window.isAdBlockActive = false;
-        window.adsbygoogle = window.adsbygoogle || [];
-        window.adsbygoogle.loaded = true;
-        window.adsbygoogle.push = function() { return 1; };
-
-        // Defuse popular open-source anti-adblock libraries
-        const noopObj = {
-            on: function(isAdBlock, callback) { if (!isAdBlock && typeof callback === 'function') { try { callback(); } catch(e){} } return this; },
-            onDetected: function() { return this; },
-            onNotDetected: function(callback) { if (typeof callback === 'function') { try { callback(); } catch(e){} } return this; },
-            check: function() { return true; },
-            setOption: function() { return this; },
-            clearEvent: function() { return this; }
-        };
-        window.fuckAdBlock = noopObj;
-        window.BlockAdBlock = noopObj;
-        window.SnackPack = { isAdBlock: false };
-    } catch (e) {}
-
-    // 2. High-Speed Cosmetic Ad Hiding Stylesheet (Collapses ad containers before render)
+    // Cosmetic Ad Hiding Stylesheet (Collapses ad containers without setting suspicious window globals)
     const COSMETIC_AD_CSS = `
         .adsbygoogle,
         [id^="google_ads_"],
@@ -321,7 +489,8 @@ if (window.trustedTypes && window.trustedTypes.createPolicy) {
 
 const { contextBridge, ipcRenderer } = require('electron');
 
-contextBridge.exposeInMainWorld('electronAPI', {
+if (_isInternalEarly) {
+    contextBridge.exposeInMainWorld('electronAPI', {
   // Navigation
   newTab:       (url)     => ipcRenderer.send('new-tab', url),
   switchTab:    (id)      => ipcRenderer.send('switch-tab', id),
@@ -357,6 +526,7 @@ contextBridge.exposeInMainWorld('electronAPI', {
   setAsDefaultBrowser: ()        => ipcRenderer.invoke('set-as-default-browser'),
   getAmbientTracks:    ()        => ipcRenderer.invoke('get-ambient-tracks'),
   selectCustomAmbientFile: ()    => ipcRenderer.invoke('select-custom-ambient-file'),
+  selectDownloadDirectory: ()    => ipcRenderer.invoke('select-download-directory'),
 
   // Bookmarks
   toggleBookmark: (bm)    => ipcRenderer.send('toggle-bookmark', bm),
@@ -424,7 +594,8 @@ contextBridge.exposeInMainWorld('electronAPI', {
 
   // Printing
   print: () => ipcRenderer.send('print-document')
-});
+    });
+}
 
 // ── Chrome Web Store Smart Injection & Downloader Engine ──────────────────────────
 if (window.location.hostname.includes('chromewebstore.google.com') || window.location.hostname.includes('chrome.google.com')) {
@@ -1335,6 +1506,9 @@ window.addEventListener('mousedown', () => {
         href.includes('ocal://ai-sidebar') || 
         href.includes('sidebars.html') ||
         href.includes('tab-context.html') ||
+        href.includes('page-context.html') ||
+        href.includes('private-window.html') ||
+        href.includes('private-home.html') ||
         href.includes('tabgroup.html') ||
         href.includes('bm-dropdown.html') ||
         href.includes('downloads.html') ||
@@ -1911,9 +2085,7 @@ window.addEventListener('mousedown', () => {
 
         const bannerBg = isLight ? 'rgba(255, 255, 255, 0.95)' : 'rgba(18, 20, 29, 0.95)';
         const bannerBorder = isLight ? 'rgba(0, 0, 0, 0.1)' : 'rgba(255, 255, 255, 0.1)';
-        const bannerShadow = isLight 
-            ? '0 16px 36px rgba(0, 0, 0, 0.14), 0 0 0 1px rgba(0, 0, 0, 0.04), inset 0 1px 0 rgba(255, 255, 255, 0.9)' 
-            : '0 16px 36px rgba(0, 0, 0, 0.55), 0 0 0 1px rgba(255, 255, 255, 0.05), inset 0 1px 0 rgba(255, 255, 255, 0.12)';
+        const bannerShadow = 'none';
         const titleColor = isLight ? '#0f172a' : '#f8fafc';
         const subtitleColor = isLight ? '#64748b' : '#94a3b8';
         const closeBtnBg = isLight ? 'rgba(0, 0, 0, 0.05)' : 'rgba(255, 255, 255, 0.05)';
@@ -1937,7 +2109,7 @@ window.addEventListener('mousedown', () => {
             border-radius: 14px;
             padding: 8px 12px;
             font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-            box-shadow: ${bannerShadow};
+            box-shadow: none !important;
             display: flex;
             align-items: center;
             gap: 10px;
@@ -1954,20 +2126,22 @@ window.addEventListener('mousedown', () => {
                     to { opacity: 1; transform: translateY(0) scale(1); }
                 }
                 #ocal-save-pass-btn:hover {
-                    transform: translateY(-1px);
-                    box-shadow: 0 4px 14px color-mix(in srgb, ${accent} 50%, transparent) !important;
                     filter: brightness(1.08);
+                    box-shadow: none !important;
                 }
                 #ocal-save-pass-btn:active {
                     transform: scale(0.96);
+                    filter: brightness(0.95);
+                    box-shadow: none !important;
                 }
                 #ocal-close-pass-btn:hover {
                     background: ${closeBtnHoverBg} !important;
                     color: ${closeBtnHoverColor} !important;
+                    box-shadow: none !important;
                 }
             </style>
 
-            <div style="width: 32px; height: 32px; border-radius: 9px; background: color-mix(in srgb, ${accent} 16%, transparent); border: 1px solid color-mix(in srgb, ${accent} 35%, transparent); display: flex; align-items: center; justify-content: center; color: ${accent}; flex-shrink: 0;">
+            <div style="width: 32px; height: 32px; border-radius: 9px; background: color-mix(in srgb, ${accent} 16%, transparent); border: 1px solid color-mix(in srgb, ${accent} 35%, transparent); display: flex; align-items: center; justify-content: center; color: ${accent}; flex-shrink: 0; box-shadow: none !important;">
                 <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
                     <circle cx="7.5" cy="15.5" r="5.5"></circle>
                     <path d="m21 2-9.6 9.6"></path>
@@ -1990,8 +2164,8 @@ window.addEventListener('mousedown', () => {
             </div>
 
             <div style="display: flex; align-items: center; gap: 6px; margin-left: 6px; flex-shrink: 0;">
-                <button id="ocal-save-pass-btn" style="padding: 6px 14px; background: ${accent}; color: ${btnTextColor}; border: none; border-radius: 8px; font-weight: 700; font-size: 11.5px; cursor: pointer; transition: all 0.15s cubic-bezier(0.16, 1, 0.3, 1); box-shadow: 0 2px 10px color-mix(in srgb, ${accent} 40%, transparent); font-family: inherit;">Save</button>
-                <button id="ocal-close-pass-btn" title="Dismiss" style="width: 26px; height: 26px; border-radius: 7px; background: ${closeBtnBg}; border: 1px solid ${closeBtnBorder}; color: ${closeBtnColor}; display: flex; align-items: center; justify-content: center; cursor: pointer; transition: all 0.15s ease;">
+                <button id="ocal-save-pass-btn" style="padding: 6px 14px; background: ${accent}; color: ${btnTextColor}; border: none; border-radius: 8px; font-weight: 700; font-size: 11.5px; cursor: pointer; transition: all 0.15s cubic-bezier(0.16, 1, 0.3, 1); box-shadow: none !important; font-family: inherit;">Save</button>
+                <button id="ocal-close-pass-btn" title="Dismiss" style="width: 26px; height: 26px; border-radius: 7px; background: ${closeBtnBg}; border: 1px solid ${closeBtnBorder}; color: ${closeBtnColor}; display: flex; align-items: center; justify-content: center; cursor: pointer; transition: all 0.15s ease; box-shadow: none !important;">
                     <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round">
                         <line x1="18" y1="6" x2="6" y2="18"></line>
                         <line x1="6" y1="6" x2="18" y2="18"></line>

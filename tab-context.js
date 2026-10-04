@@ -36,7 +36,7 @@ function addMenuSeparator(parent) {
     parent.appendChild(sep);
 }
 
-window.electronAPI.on('render-tab-context', (event, { tabId, groupId, tabGroups }) => {
+window.electronAPI.on('render-tab-context', (event, { tabId, groupId, tabGroups, isMuted }) => {
     currentTabId = tabId;
     const container = document.getElementById('menu-container');
     container.innerHTML = '';
@@ -104,6 +104,9 @@ window.electronAPI.on('render-tab-context', (event, { tabId, groupId, tabGroups 
     });
 
     addMenuSeparator(container);
+    addMenuOption(container, isMuted ? 'Unmute Tab' : 'Mute Tab', isMuted ? 'fa-volume-high' : 'fa-volume-xmark', () => {
+        window.electronAPI.send('toggle-tab-mute', tabId);
+    });
     addMenuOption(container, 'Close Tab', 'fa-xmark', () => {
         window.electronAPI.send('tab-context-action', { action: 'close-tab', tabId });
     });

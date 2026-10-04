@@ -17,6 +17,8 @@ dist-builder/
 !extensions-popup.js
 !extension-store.js
 !chrome-compat-shim.js
+!page-context.js
+!private-window.js
 !assets/icon-enhancer.js
 !assets/lucide.min.js
 publish-release.ps1

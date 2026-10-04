@@ -10,7 +10,7 @@
         (function () {
             var t = localStorage.getItem('ocal-settings-theme') || 'dark';
             document.documentElement.setAttribute('data-theme', t);
-            document.documentElement.style.background = t === 'dark' ? '#121316' : '#F4F5F8';
+            document.documentElement.style.background = t === 'dark' ? '#18181B' : '#EDEDF0';
             if (t === 'dark') document.documentElement.style.colorScheme = 'dark';
             var a = localStorage.getItem('ocal-settings-accent');
             if (window.OcalColorHarmonizer) {
@@ -223,7 +223,7 @@
 
                     <!-- Toggle Inspector Panel -->
                     <button class="toolbar-btn" id="toggle-inspector-btn" title="Toggle Inspector Panel (Ctrl+I)">
-                        <i class="fas fa-sidebar"></i>
+                        <i class="fas fa-circle-info"></i>
                     </button>
                 </div>
             </header>
@@ -393,34 +393,45 @@
         </div>
     </div>
 
-    <!-- ── Built-in Custom Media Player Modal (DSP 3D Surround & EQ) ── -->
+    <!-- ── Redesigned Audio & Video Media Studio Preview Modal ── -->
     <div id="media-player-modal" class="media-player-modal" style="display:none;">
         <div class="media-modal-backdrop" id="media-modal-backdrop"></div>
         <div class="media-modal-card">
+            <!-- Modal Header: Audio Pill, Metadata, Close Button -->
             <div class="media-modal-header">
                 <div class="media-modal-title">
-                    <div class="media-icon-badge"><i id="media-modal-icon" class="fas fa-music"></i></div>
-                    <span id="media-modal-name">audio.mp3</span>
+                    <div class="media-icon-badge"><i id="media-modal-icon" class="fas fa-compact-disc"></i></div>
+                    <div class="media-modal-meta-cluster">
+                        <span id="media-modal-name" class="media-modal-name">audio.mp3</span>
+                        <div class="media-modal-subline">
+                            <span class="media-format-chip" id="media-format-chip">HI-RES AUDIO</span>
+                            <span class="media-meta-dot">•</span>
+                            <span class="media-dsp-live-pill" id="media-dsp-status"><i class="fas fa-bolt"></i> STUDIO DSP ACTIVE</span>
+                        </div>
+                    </div>
                 </div>
-                <button class="media-modal-close" id="media-modal-close" title="Close Player (Esc)"><i class="fas fa-xmark"></i></button>
+                <div class="media-header-actions">
+                    <button class="media-modal-close" id="media-modal-close" title="Close Preview (Esc)"><i class="fas fa-xmark"></i></button>
+                </div>
             </div>
             
+            <!-- Modal Stage: Visualizer Deck with Ambient Glowing Vinyl -->
             <div class="media-modal-body" id="media-modal-body"></div>
 
             <!-- Custom Audio Controls Bar -->
             <div class="custom-media-controls" id="custom-media-controls">
-                <!-- Audio Studio Enhancer Toolbar -->
+                <!-- Audio Studio Enhancer Toolbar: Clean Pill Preset Switcher -->
                 <div class="audio-enhancer-toolbar" id="audio-enhancer-toolbar">
                     <div class="enhancer-toggle-row">
                         <span class="enhancer-label"><i class="fas fa-sliders"></i> Audio DSP:</span>
-                        <button class="enhancer-pill-btn active" id="enhancer-tab-3d"><i class="fas fa-arrows-spin"></i> 3D Surround</button>
-                        <button class="enhancer-pill-btn" id="enhancer-tab-clarity"><i class="fas fa-wand-magic-sparkles"></i> Enhancer</button>
-                        <button class="enhancer-pill-btn" id="enhancer-tab-bass"><i class="fas fa-drum"></i> Bass Boost</button>
-                        <button class="enhancer-pill-btn" id="enhancer-tab-eq"><i class="fas fa-chart-simple"></i> 10-Band EQ</button>
+                        <button class="enhancer-pill-btn active" id="enhancer-tab-3d" title="3D Spatial Surround Sound"><i class="fas fa-arrows-spin"></i> 3D Surround</button>
+                        <button class="enhancer-pill-btn" id="enhancer-tab-clarity" title="Vocal Clarity & Air Exciter"><i class="fas fa-wand-magic-sparkles"></i> Enhancer</button>
+                        <button class="enhancer-pill-btn" id="enhancer-tab-bass" title="Deep Sub-Bass Punch"><i class="fas fa-drum"></i> Bass Boost</button>
+                        <button class="enhancer-pill-btn" id="enhancer-tab-eq" title="10-Band Graphic Equalizer"><i class="fas fa-chart-simple"></i> 10-Band EQ</button>
                     </div>
 
                     <!-- 3D Surround Sound Control Panel -->
-                    <div class="enhancer-panel" id="panel-3d" style="display: flex;">
+                    <div class="enhancer-panel" id="panel-3d" style="display: grid;">
                         <div class="fx-control-group">
                             <span class="fx-field-label"><i class="fas fa-film"></i> Stage Mode:</span>
                             <div class="custom-fx-dropdown" id="custom-surround-dropdown">
@@ -432,17 +443,17 @@
                                     <div class="fx-dropdown-item active" data-value="cinema"><i class="fas fa-film"></i> 3D Cinema Stage</div>
                                     <div class="fx-dropdown-item" data-value="spatial8d"><i class="fas fa-arrows-spin"></i> 8D Spatial Orbit</div>
                                     <div class="fx-dropdown-item" data-value="studio"><i class="fas fa-sliders"></i> Studio Concert Hall</div>
-                                    <div class="fx-dropdown-item" data-value="off"><i class="fas fa-power-off"></i> Off (Standard Stereo)</div>
+                                    <div class="fx-dropdown-item" data-value="off"><i class="fas fa-power-off"></i> Off (Direct Stereo)</div>
                                 </div>
                             </div>
                         </div>
                         <div class="fx-control-group fx-slider-group">
                             <div class="fx-slider-label-row">
                                 <span class="fx-field-label"><i class="fas fa-arrows-left-right"></i> Spatial Width:</span>
-                                <span class="fx-val-badge" id="val-surround-depth">70%</span>
+                                <span class="fx-val-badge" id="val-surround-depth">75%</span>
                             </div>
                             <div class="slider-rail-wrap">
-                                <input type="range" id="fx-surround-width" min="0" max="1" value="0.7" step="0.05" aria-label="Spatial Width">
+                                <input type="range" id="fx-surround-width" min="0" max="1" value="0.75" step="0.05" aria-label="Spatial Width">
                             </div>
                         </div>
                     </div>
@@ -451,15 +462,15 @@
                     <div class="enhancer-panel" id="panel-clarity" style="display: none;">
                         <div class="fx-control-group">
                             <span class="fx-field-label"><i class="fas fa-wand-magic-sparkles"></i> Dynamic Master:</span>
-                            <button class="fx-toggle-btn active" id="fx-clarity-toggle">ON</button>
+                            <button class="fx-toggle-btn active" id="fx-clarity-toggle">ENABLED</button>
                         </div>
                         <div class="fx-control-group fx-slider-group">
                             <div class="fx-slider-label-row">
-                                <span class="fx-field-label"><i class="fas fa-bolt"></i> Vocal Air:</span>
-                                <span class="fx-val-badge" id="val-highs">+4 dB</span>
+                                <span class="fx-field-label"><i class="fas fa-bolt"></i> Vocal Clarity & Air:</span>
+                                <span class="fx-val-badge" id="val-highs">+5 dB</span>
                             </div>
                             <div class="slider-rail-wrap">
-                                <input type="range" id="fx-highs-slider" min="0" max="12" value="4" step="1" aria-label="Vocal Air">
+                                <input type="range" id="fx-highs-slider" min="0" max="12" value="5" step="1" aria-label="Vocal Air">
                             </div>
                         </div>
                     </div>
@@ -468,7 +479,7 @@
                     <div class="enhancer-panel" id="panel-bass" style="display: none;">
                         <div class="fx-control-group fx-slider-group fx-full-width">
                             <div class="fx-slider-label-row">
-                                <span class="fx-field-label"><i class="fas fa-drum"></i> Sub-Bass Punch (60Hz):</span>
+                                <span class="fx-field-label"><i class="fas fa-drum"></i> Sub-Bass Punch (60Hz Shelf + 110Hz Kick):</span>
                                 <span class="fx-val-badge" id="val-bass">+6 dB</span>
                             </div>
                             <div class="slider-rail-wrap">
@@ -478,7 +489,7 @@
                     </div>
 
                     <!-- 10-Band EQ Panel -->
-                    <div class="enhancer-panel" id="panel-eq" style="display: none; flex-direction: column; gap: 10px;">
+                    <div class="enhancer-panel" id="panel-eq" style="display: none; flex-direction: column; gap: 8px;">
                         <div class="eq-presets-row">
                             <span class="eq-preset-label"><i class="fas fa-wand-magic-sparkles"></i> Presets:</span>
                             <button class="eq-preset-btn active" data-preset="flat">Flat</button>
@@ -489,16 +500,16 @@
                             <button class="eq-preset-btn" data-preset="electronic">Electronic</button>
                         </div>
                         <div class="eq-sliders-row">
-                            <div class="eq-band"><span class="eq-lbl">32Hz</span><input type="range" class="eq-slider" data-freq="32" min="-12" max="12" value="2" orient="vertical"><span class="eq-val">+2</span></div>
-                            <div class="eq-band"><span class="eq-lbl">64Hz</span><input type="range" class="eq-slider" data-freq="64" min="-12" max="12" value="4" orient="vertical"><span class="eq-val">+4</span></div>
-                            <div class="eq-band"><span class="eq-lbl">125Hz</span><input type="range" class="eq-slider" data-freq="125" min="-12" max="12" value="3" orient="vertical"><span class="eq-val">+3</span></div>
-                            <div class="eq-band"><span class="eq-lbl">250Hz</span><input type="range" class="eq-slider" data-freq="250" min="-12" max="12" value="0" orient="vertical"><span class="eq-val">0</span></div>
-                            <div class="eq-band"><span class="eq-lbl">500Hz</span><input type="range" class="eq-slider" data-freq="500" min="-12" max="12" value="-1" orient="vertical"><span class="eq-val">-1</span></div>
-                            <div class="eq-band"><span class="eq-lbl">1kHz</span><input type="range" class="eq-slider" data-freq="1000" min="-12" max="12" value="0" orient="vertical"><span class="eq-val">0</span></div>
-                            <div class="eq-band"><span class="eq-lbl">2kHz</span><input type="range" class="eq-slider" data-freq="2000" min="-12" max="12" value="2" orient="vertical"><span class="eq-val">+2</span></div>
-                            <div class="eq-band"><span class="eq-lbl">4kHz</span><input type="range" class="eq-slider" data-freq="4000" min="-12" max="12" value="3" orient="vertical"><span class="eq-val">+3</span></div>
-                            <div class="eq-band"><span class="eq-lbl">8kHz</span><input type="range" class="eq-slider" data-freq="8000" min="-12" max="12" value="4" orient="vertical"><span class="eq-val">+4</span></div>
-                            <div class="eq-band"><span class="eq-lbl">16kHz</span><input type="range" class="eq-slider" data-freq="16000" min="-12" max="12" value="3" orient="vertical"><span class="eq-val">+3</span></div>
+                            <div class="eq-band"><span class="eq-lbl">32</span><input type="range" class="eq-slider" data-freq="32" min="-12" max="12" value="2" orient="vertical"><span class="eq-val">+2</span></div>
+                            <div class="eq-band"><span class="eq-lbl">64</span><input type="range" class="eq-slider" data-freq="64" min="-12" max="12" value="4" orient="vertical"><span class="eq-val">+4</span></div>
+                            <div class="eq-band"><span class="eq-lbl">125</span><input type="range" class="eq-slider" data-freq="125" min="-12" max="12" value="3" orient="vertical"><span class="eq-val">+3</span></div>
+                            <div class="eq-band"><span class="eq-lbl">250</span><input type="range" class="eq-slider" data-freq="250" min="-12" max="12" value="0" orient="vertical"><span class="eq-val">0</span></div>
+                            <div class="eq-band"><span class="eq-lbl">500</span><input type="range" class="eq-slider" data-freq="500" min="-12" max="12" value="-1" orient="vertical"><span class="eq-val">-1</span></div>
+                            <div class="eq-band"><span class="eq-lbl">1k</span><input type="range" class="eq-slider" data-freq="1000" min="-12" max="12" value="0" orient="vertical"><span class="eq-val">0</span></div>
+                            <div class="eq-band"><span class="eq-lbl">2k</span><input type="range" class="eq-slider" data-freq="2000" min="-12" max="12" value="2" orient="vertical"><span class="eq-val">+2</span></div>
+                            <div class="eq-band"><span class="eq-lbl">4k</span><input type="range" class="eq-slider" data-freq="4000" min="-12" max="12" value="3" orient="vertical"><span class="eq-val">+3</span></div>
+                            <div class="eq-band"><span class="eq-lbl">8k</span><input type="range" class="eq-slider" data-freq="8000" min="-12" max="12" value="4" orient="vertical"><span class="eq-val">+4</span></div>
+                            <div class="eq-band"><span class="eq-lbl">16k</span><input type="range" class="eq-slider" data-freq="16000" min="-12" max="12" value="3" orient="vertical"><span class="eq-val">+3</span></div>
                         </div>
                     </div>
                 </div>
@@ -512,7 +523,7 @@
                     <span id="media-time-duration">0:00</span>
                 </div>
                 
-                <!-- Buttons Row -->
+                <!-- Controls Row: Volume, Main Controls, and Launch Music Player Button -->
                 <div class="media-buttons-row">
                     <div class="media-vol-group">
                         <button class="media-ctrl-btn" id="media-mute-btn" title="Mute/Unmute">
@@ -539,8 +550,9 @@
                         <button class="media-ctrl-btn" id="media-fs-btn" title="Fullscreen" style="display:none;">
                             <i class="fas fa-expand"></i>
                         </button>
-                        <button class="media-modal-btn" id="media-open-tab-btn">
-                            <i class="fas fa-arrow-up-right-from-square"></i> Open in Tab
+                        <button class="media-studio-launch-btn" id="media-open-music-player-btn" title="Open track in Studio Music Player (music-player.html)">
+                            <i class="fas fa-compact-disc"></i>
+                            <span>Music Player</span>
                         </button>
                     </div>
                 </div>

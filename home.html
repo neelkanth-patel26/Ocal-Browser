@@ -8,13 +8,17 @@
     <script src="color-harmonizer.js"></script>
     <script>
         (function () {
-            var t = localStorage.getItem('ocal-settings-theme') || 'light';
+            var isPrivate = window.location.search.includes('private=true') || window.location.hash.includes('private');
+            var t = isPrivate ? 'dark' : (localStorage.getItem('ocal-settings-theme') || 'light');
             document.documentElement.setAttribute('data-theme', t);
             if (t === 'dark') {
                 document.documentElement.style.background = '#0D0E11';
                 document.documentElement.style.colorScheme = 'dark';
             }
-            var a = localStorage.getItem('ocal-settings-accent');
+            if (isPrivate) {
+                document.documentElement.classList.add('sp-private-mode');
+            }
+            var a = isPrivate ? '#a855f7' : localStorage.getItem('ocal-settings-accent');
             if (window.OcalColorHarmonizer) {
                 window.OcalColorHarmonizer.applyHarmonizedTheme(a, t);
             }
@@ -32,9 +36,13 @@
 <body class="sp-dashboard-body">
     <script>
         (function () {
-            var t = localStorage.getItem('ocal-settings-theme') || 'light';
+            var isPrivate = window.location.search.includes('private=true') || window.location.hash.includes('private');
+            var t = isPrivate ? 'dark' : (localStorage.getItem('ocal-settings-theme') || 'light');
             document.body.setAttribute('data-theme', t);
-            var a = localStorage.getItem('ocal-settings-accent');
+            if (isPrivate) {
+                document.body.classList.add('sp-private-mode');
+            }
+            var a = isPrivate ? '#a855f7' : localStorage.getItem('ocal-settings-accent');
             if (window.OcalColorHarmonizer) {
                 window.OcalColorHarmonizer.applyHarmonizedTheme(a, t);
             }
@@ -61,6 +69,15 @@
     <!-- Main Superpower Dashboard Container -->
     <main class="sp-dashboard-wrapper" id="dashboard-main">
         
+        <!-- Private Browsing Notification Banner (Only visible in private mode) -->
+        <div class="sp-private-banner" id="private-mode-banner" style="display: none;">
+            <div class="sp-private-badge"><i class="fas fa-user-secret"></i> PRIVATE BROWSING</div>
+            <div class="sp-private-details">
+                <span>Stealth session active. Searches, visited pages, cookies, and temporary data are completely isolated and never saved to this device.</span>
+            </div>
+            <div class="sp-private-tag"><i class="fas fa-shield-halved"></i> Tracker Shield Active</div>
+        </div>
+
         <!-- Header Row: User Title & Dot-Matrix Stats Bar -->
         <header class="sp-header-row">
             <div class="sp-user-greeting">
@@ -136,8 +153,8 @@
             </div>
         </section>
 
-        <!-- Core Dashboard Productivity Widgets Grid -->
-        <section class="sp-hero-cards-grid">
+        <!-- Core Dashboard Productivity Widgets Grid (Regular Mode) -->
+        <section class="sp-hero-cards-grid" id="sp-regular-hero-cards">
             
             <!-- Widget 1: Focus Flow / Pomodoro Timer (Gold-to-Green Gradient Card) -->
             <div class="sp-card sp-card-green-grad sp-focus-card">
@@ -212,6 +229,37 @@
                     <span class="sp-badge sp-badge-gray">Auto Saved</span>
                 </div>
                 <textarea class="sp-notes-textarea" id="scratchpad-notes" placeholder="Jot down quick thoughts, links or tasks..."></textarea>
+            </div>
+
+        </section>
+
+        <!-- Private Browsing Benefits & Protection (Clean Dual-Card Minimal Style) -->
+        <section class="sp-hero-cards-grid sp-private-benefits-grid" id="sp-private-benefits-grid" style="display: none;">
+            
+            <!-- Card 1: What Private Browsing does -->
+            <div class="sp-private-dual-card">
+                <div class="sp-pdc-header">
+                    <i class="fa-solid fa-check sp-pdc-check"></i>
+                    <h3 class="sp-pdc-title">What Private browsing does</h3>
+                </div>
+                <ul class="sp-pdc-list">
+                    <li>Deletes your browsing info, search history, and form data when you close all private windows</li>
+                    <li>Saves cookies and temporary site data in an isolated partition that is completely discarded on exit</li>
+                    <li>Blocks third-party trackers, telemetry beacons, and fingerprinting scripts automatically</li>
+                </ul>
+            </div>
+
+            <!-- Card 2: What Private Browsing doesn't do -->
+            <div class="sp-private-dual-card">
+                <div class="sp-pdc-header">
+                    <i class="fa-solid fa-xmark sp-pdc-cross"></i>
+                    <h3 class="sp-pdc-title">What Private browsing doesn't do</h3>
+                </div>
+                <ul class="sp-pdc-list">
+                    <li>Hide your browsing from your school, employer, or internet service provider</li>
+                    <li>Hide your IP address or physical network location from the websites you visit</li>
+                    <li>Keep you signed in to your web accounts after you close this window</li>
+                </ul>
             </div>
 
         </section>

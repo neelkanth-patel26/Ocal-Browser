@@ -836,7 +836,7 @@ body[data-theme="light"] .web-folder .fa-folder {
 
 body[data-theme="light"] .custom-context-menu,
 body[data-theme="light"] .menu-sub {
-  background: #ffffff !important;
+  background: #EDEDF0 !important;
   border-color: rgba(0,0,0,0.15) !important;
   box-shadow: none !important;
 }
@@ -1207,17 +1207,80 @@ button.tab-close,
   background: rgba(239, 68, 68, 0.9) !important; 
   transform: scale(1.05); 
 }
-.tab-audio-icon {
-  font-size: 10px;
+/* ── Modern Clickable Tab Audio / Mute Button ── */
+.tab-audio-btn,
+.vt-audio-btn {
+  width: 22px;
+  height: 22px;
+  min-width: 22px;
+  border-radius: 50%;
+  border: none;
+  background: transparent;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  margin: 0 4px;
+  padding: 0;
+  transition: all 0.18s cubic-bezier(0.16, 1, 0.3, 1);
+  position: relative;
+  z-index: 4;
+}
+
+.tab-audio-btn i,
+.vt-audio-btn i {
+  font-size: 11px;
+  transition: transform 0.14s ease, color 0.14s ease;
+}
+
+/* Playing State */
+.tab-audio-btn.is-playing,
+.vt-audio-btn.is-playing {
+  color: var(--accent);
+}
+
+.tab-audio-btn.is-playing:not(:hover) i {
+  animation: audio-wave-pulse 1.8s ease-in-out infinite;
+}
+
+@keyframes audio-wave-pulse {
+  0%, 100% { transform: scale(1); opacity: 0.95; }
+  50% { transform: scale(1.1); opacity: 0.65; }
+}
+
+.tab-audio-btn.is-playing:hover,
+.vt-audio-btn.is-playing:hover {
+  background: rgba(239, 68, 68, 0.18);
+  color: #ef4444;
+  transform: scale(1.12);
+}
+
+.tab-audio-btn.is-playing:hover i::before,
+.vt-audio-btn.is-playing:hover i::before {
+  content: "\f6a9"; /* FontAwesome fa-volume-xmark */
+}
+
+/* Muted State */
+.tab-audio-btn.is-muted,
+.vt-audio-btn.is-muted {
+  color: #ef4444;
+  background: rgba(239, 68, 68, 0.12);
+  opacity: 0.95;
+}
+
+.tab-audio-btn.is-muted:hover,
+.vt-audio-btn.is-muted:hover {
+  background: var(--accent-dim);
+  color: var(--accent);
+  transform: scale(1.12);
+}
+
+.tab-audio-icon,
+.vt-audio-icon {
+  font-size: 11px;
   color: var(--accent);
   margin-left: 4px;
-  opacity: 0.85;
-  text-shadow: 0 0 8px var(--accent-glow);
-  animation: audio-pulse 2s ease-in-out infinite;
-}
-@keyframes audio-pulse {
-  0%, 100% { opacity: 0.85; }
-  50% { opacity: 0.5; }
+  animation: audio-wave-pulse 1.8s ease-in-out infinite;
 }
 
 /* ── Tab Groups (Modern Unified Capsule & Vertical Indicator) ── */

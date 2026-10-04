@@ -91,7 +91,7 @@ const mediaVolBar = document.getElementById('media-vol-bar');
 const mediaRewBtn = document.getElementById('media-rew-btn');
 const mediaFwdBtn = document.getElementById('media-fwd-btn');
 const mediaFsBtn = document.getElementById('media-fs-btn');
-const mediaOpenTabBtn = document.getElementById('media-open-tab-btn');
+const mediaOpenMusicPlayerBtn = document.getElementById('media-open-music-player-btn');
 
 // Photo Editor Modal Elements
 const photoEditorModal = document.getElementById('photo-editor-modal');
@@ -1286,16 +1286,20 @@ function showContextMenu(e, item) {
     contextMenu.style.left = `${x}px`;
     contextMenu.style.top = `${y}px`;
 
-    const safePath = escapePath(item.path);
+    const ext = getExtension(item.name);
+    const isAudio = ['mp3', 'wav', 'flac', 'ogg', 'm4a', 'aac', 'wma'].includes(ext);
 
     contextMenu.innerHTML = `
         <div class="context-menu-item" onclick="window.handleOpenItem('${safePath}', ${item.isDirectory})">
             <i class="fas fa-arrow-up-right-from-square"></i> Open
         </div>
-        ${!item.isDirectory ? `
+        ${!item.isDirectory ? (isAudio ? `
+        <div class="context-menu-item" onclick="window.handleOpenInMusicPlayer('${safePath}')">
+            <i class="fas fa-compact-disc"></i> Open in Music Player
+        </div>` : `
         <div class="context-menu-item" onclick="window.handleOpenInTab('${safePath}')">
             <i class="fas fa-table-columns"></i> Open in New Tab
-        </div>` : ''}
+        </div>`) : ''}
         <div class="context-menu-item" onclick="window.handleShowFolder('${safePath}')">
             <i class="fas fa-folder-open"></i> Show in Folder
         </div>
@@ -1459,6 +1463,17 @@ window.handleOpenInTab = (pathStr) => {
     }
 };
 
+window.handleOpenInMusicPlayer = (pathStr) => {
+    const targetUrl = 'ocal://music-player?file=' + encodeURIComponent(pathStr);
+    if (window.electronAPI && window.electronAPI.newTab) {
+        window.electronAPI.newTab(targetUrl);
+    } else if (window.electronAPI && window.electronAPI.navigateTo) {
+        window.electronAPI.navigateTo(targetUrl);
+    } else {
+        window.location.href = targetUrl;
+    }
+};
+
 window.handleShowFolder = (pathStr) => {
     showInNativeFolder(pathStr);
 };
@@ -1504,6 +1519,17 @@ function ensureAudioContext() {
     }
 }
 
+function launchMusicPlayerFromItem(item) {
+    if (!item || !item.path) return;
+    const pathStr = item.path;
+    closeMediaModal();
+    if (window.electronAPI && typeof window.electronAPI.newTab === 'function') {
+        window.electronAPI.newTab(`ocal://music-player?file=${encodeURIComponent(pathStr)}`);
+    } else {
+        window.open(`music-player.html?file=${encodeURIComponent(pathStr)}`, '_blank');
+    }
+}
+
 function initAudioDspPipeline() {
     if (!activeAudio || !audioCtx) return;
 
@@ -1529,7 +1555,7 @@ function initAudioDspPipeline() {
         highsNode.type = 'highshelf';
         highsNode.frequency.value = 3600;
         const clarityOn = document.getElementById('fx-clarity-toggle')?.classList.contains('active');
-        const highsVal = parseFloat(document.getElementById('fx-highs-slider')?.value || 4);
+        const highsVal = parseFloat(document.getElementById('fx-highs-slider')?.value || 5);
         highsNode.gain.value = clarityOn ? highsVal : 0;
 
         airNode = audioCtx.createBiquadFilter();
@@ -1549,8 +1575,8 @@ function initAudioDspPipeline() {
             return filter;
         });
 
-        pannerNode = audioCtx.createStereoPanner();
-        pannerNode.pan.value = 0;
+        pannerNode = audioCtx.createStereoPanner ? audioCtx.createStereoPanner() : null;
+        if (pannerNode) pannerNode.pan.value = 0;
 
         compressorNode = audioCtx.createDynamicsCompressor();
         compressorNode.threshold.value = -16;
@@ -1560,7 +1586,7 @@ function initAudioDspPipeline() {
         compressorNode.release.value = 0.22;
 
         analyserNode = audioCtx.createAnalyser();
-        analyserNode.fftSize = 64;
+        analyserNode.fftSize = 128;
 
         let prev = audioSourceNode;
         prev.connect(preampNode);
@@ -1583,8 +1609,12 @@ function initAudioDspPipeline() {
             prev = node;
         });
 
-        prev.connect(pannerNode);
-        pannerNode.connect(compressorNode);
+        if (pannerNode) {
+            prev.connect(pannerNode);
+            prev = pannerNode;
+        }
+
+        prev.connect(compressorNode);
         compressorNode.connect(analyserNode);
         analyserNode.connect(audioCtx.destination);
 
@@ -1597,7 +1627,14 @@ function initAudioDspPipeline() {
 function startBeatVisualizer() {
     stopBeatVisualizer();
     if (!analyserNode) return;
-    const dataArray = new Uint8Array(analyserNode.frequencyBinCount);
+    const bufferLength = analyserNode.frequencyBinCount;
+    const dataArray = new Uint8Array(bufferLength);
+
+    const canvas = document.getElementById('media-beat-canvas');
+    let ctx = null;
+    if (canvas) {
+        ctx = canvas.getContext('2d');
+    }
 
     const tick = () => {
         if (!activeAudio || activeAudio.paused || !analyserNode) {
@@ -1606,20 +1643,55 @@ function startBeatVisualizer() {
                 vinyl.style.boxShadow = '';
                 vinyl.style.transform = '';
             }
+            if (ctx && canvas) {
+                ctx.clearRect(0, 0, canvas.width, canvas.height);
+            }
             return;
         }
 
         analyserNode.getByteFrequencyData(dataArray);
+
+        // Sub-bass frequency reactive beat pump
         let bassSum = 0;
         for (let i = 0; i < 4; i++) bassSum += dataArray[i];
         const bassAvg = bassSum / 4;
-        const pumpScale = 1 + (bassAvg / 255) * 0.08;
+        const pumpScale = 1 + (bassAvg / 255) * 0.07;
 
         const vinyl = document.getElementById('spinning-vinyl');
         if (vinyl) {
             vinyl.style.transform = `scale(${pumpScale})`;
-            const glowAlpha = (bassAvg / 255) * 0.6 + 0.2;
-            vinyl.style.boxShadow = `0 0 ${20 + bassAvg * 0.2}px var(--accent-glow)`;
+            vinyl.style.boxShadow = `0 8px ${24 + bassAvg * 0.25}px var(--accent-glow)`;
+        }
+
+        // 8D spatial orbit panning
+        if (surroundMode === 'spatial8d' && pannerNode) {
+            spatial8dAngle += 0.024;
+            pannerNode.pan.value = Math.sin(spatial8dAngle) * 0.82;
+        } else if (pannerNode && surroundMode !== 'spatial8d') {
+            pannerNode.pan.value = 0;
+        }
+
+        // Render dynamic frequency spectrum bars on canvas
+        if (ctx && canvas) {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            const numBars = 32;
+            const barWidth = (canvas.width / numBars) - 2;
+            const accentColor = getComputedStyle(document.body).getPropertyValue('--accent').trim() || '#15AC49';
+
+            for (let i = 0; i < numBars; i++) {
+                const val = dataArray[i * 2] || 0;
+                const percent = val / 255;
+                const barHeight = Math.max(3, percent * (canvas.height - 4));
+                const x = i * (barWidth + 2);
+                const y = canvas.height - barHeight;
+
+                ctx.fillStyle = accentColor;
+                ctx.globalAlpha = 0.35 + percent * 0.65;
+                ctx.beginPath();
+                ctx.roundRect(x, y, barWidth, barHeight, 3);
+                ctx.fill();
+            }
+            ctx.globalAlpha = 1;
         }
 
         visualizerAnimFrame = requestAnimationFrame(tick);
@@ -1642,13 +1714,26 @@ function openAudioStudio(item) {
     if (mediaModalName) mediaModalName.innerText = item.name;
     if (mediaModalIcon) mediaModalIcon.className = 'fas fa-music';
 
+    const ext = (item.extension || '').toLowerCase().replace('.', '');
+    const chipEl = document.getElementById('media-format-chip');
+    if (chipEl) {
+        if (ext === 'flac') chipEl.innerText = 'FLAC LOSSLESS';
+        else if (ext === 'wav') chipEl.innerText = 'WAV PCM AUDIO';
+        else if (ext === 'm4a' || ext === 'aac') chipEl.innerText = 'AAC HI-RES';
+        else if (ext === 'ogg' || ext === 'opus') chipEl.innerText = 'OGG OPUS';
+        else chipEl.innerText = `${ext.toUpperCase() || 'MP3'} AUDIO`;
+    }
+
     if (mediaModalBody) {
         mediaModalBody.innerHTML = `
             <div class="spinning-vinyl paused" id="spinning-vinyl">
+                <div class="vinyl-groove groove-1"></div>
+                <div class="vinyl-groove groove-2"></div>
                 <div class="vinyl-center-dot">
                     <i class="fas fa-compact-disc"></i>
                 </div>
             </div>
+            <canvas id="media-beat-canvas" width="580" height="40" class="media-beat-canvas"></canvas>
             <audio id="active-media-audio" src="${fileUrl}" preload="auto"></audio>
         `;
     }
@@ -1689,11 +1774,15 @@ function openAudioStudio(item) {
             stopBeatVisualizer();
         };
 
+        // When track playback is done, automatically open music-player.html
         activeAudio.onended = () => {
             const vinyl = document.getElementById('spinning-vinyl');
             if (vinyl) vinyl.classList.add('paused');
             if (mediaPlayBtn) mediaPlayBtn.innerHTML = '<i class="fas fa-play"></i>';
             stopBeatVisualizer();
+            if (currentMediaItem) {
+                launchMusicPlayerFromItem(currentMediaItem);
+            }
         };
 
         activeAudio.play().catch(() => {});
@@ -1709,9 +1798,15 @@ function openVideoStudio(item) {
     if (mediaModalName) mediaModalName.innerText = item.name;
     if (mediaModalIcon) mediaModalIcon.className = 'fas fa-video';
 
+    const chipEl = document.getElementById('media-format-chip');
+    if (chipEl) {
+        const ext = (item.extension || 'mp4').toLowerCase().replace('.', '');
+        chipEl.innerText = `${ext.toUpperCase()} VIDEO`;
+    }
+
     if (mediaModalBody) {
         mediaModalBody.innerHTML = `
-            <video id="active-media-video" src="${fileUrl}" style="max-width:100%; max-height:360px; border-radius:12px;" playsinline></video>
+            <video id="active-media-video" src="${fileUrl}" style="max-width:100%; max-height:360px; border-radius:14px;" playsinline></video>
         `;
     }
 
@@ -1822,11 +1917,11 @@ function initMediaStudioControls() {
         };
     }
 
-    if (mediaOpenTabBtn) {
-        mediaOpenTabBtn.onclick = () => {
+    // Direct Launch into music-player.html
+    if (mediaOpenMusicPlayerBtn) {
+        mediaOpenMusicPlayerBtn.onclick = () => {
             if (currentMediaItem) {
-                window.handleOpenInTab(currentMediaItem.path);
-                closeMediaModal();
+                launchMusicPlayerFromItem(currentMediaItem);
             }
         };
     }
@@ -1844,7 +1939,7 @@ function initMediaStudioControls() {
                     if (p) p.style.display = 'none';
                 });
                 btn.classList.add('active');
-                panel.style.display = 'flex';
+                panel.style.display = (tab === 'eq' || tab === 'bass') ? 'flex' : 'grid';
             };
         }
     });
@@ -1872,6 +1967,50 @@ function initMediaStudioControls() {
         });
     }
 
+    document.addEventListener('click', () => {
+        if (menu && menu.classList.contains('open')) {
+            menu.classList.remove('open');
+        }
+    });
+
+    // Surround Width Slider
+    const widthSlider = document.getElementById('fx-surround-width');
+    const valSurroundDepth = document.getElementById('val-surround-depth');
+    if (widthSlider) {
+        widthSlider.oninput = () => {
+            const val = parseFloat(widthSlider.value);
+            if (valSurroundDepth) valSurroundDepth.innerText = `${Math.round(val * 100)}%`;
+        };
+    }
+
+    // Clarity Toggle & Highs Slider
+    const clarityToggle = document.getElementById('fx-clarity-toggle');
+    const highsSlider = document.getElementById('fx-highs-slider');
+    const valHighs = document.getElementById('val-highs');
+
+    if (clarityToggle) {
+        clarityToggle.onclick = () => {
+            clarityToggle.classList.toggle('active');
+            const on = clarityToggle.classList.contains('active');
+            clarityToggle.innerText = on ? 'ENABLED' : 'BYPASS';
+            const val = parseFloat(highsSlider?.value || 5);
+            if (highsNode) highsNode.gain.value = on ? val : 0;
+            if (airNode) airNode.gain.value = on ? val * 0.7 : 0;
+        };
+    }
+
+    if (highsSlider) {
+        highsSlider.oninput = () => {
+            const val = parseFloat(highsSlider.value);
+            if (valHighs) valHighs.innerText = `+${val} dB`;
+            const on = clarityToggle?.classList.contains('active');
+            if (on) {
+                if (highsNode) highsNode.gain.value = val;
+                if (airNode) airNode.gain.value = val * 0.7;
+            }
+        };
+    }
+
     // Bass Slider
     const bassSlider = document.getElementById('fx-bass-slider');
     const valBass = document.getElementById('val-bass');
@@ -1883,6 +2022,33 @@ function initMediaStudioControls() {
             if (punchNode) punchNode.gain.value = val * 0.6;
         };
     }
+
+    // 10-Band EQ Presets
+    const eqPresets = {
+        flat: [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+        bass: [5, 4, 3, 1, 0, 0, 0, 0, 0, 0],
+        vocal: [-1, -1, 0, 2, 4, 4, 3, 1, 0, 0],
+        rock: [4, 3, 2, 0, -1, 0, 2, 3, 4, 4],
+        pop: [-1, 1, 3, 3, 2, 0, 1, 2, 3, 3],
+        electronic: [5, 5, 3, 0, -1, 1, 2, 4, 5, 5]
+    };
+
+    document.querySelectorAll('.eq-preset-btn').forEach(btn => {
+        btn.onclick = () => {
+            document.querySelectorAll('.eq-preset-btn').forEach(b => b.classList.remove('active'));
+            btn.classList.add('active');
+            const presetKey = btn.getAttribute('data-preset');
+            const curve = eqPresets[presetKey] || eqPresets.flat;
+            const sliders = document.querySelectorAll('.eq-slider');
+            sliders.forEach((slider, idx) => {
+                const targetVal = curve[idx] !== undefined ? curve[idx] : 0;
+                slider.value = targetVal;
+                const valLabel = slider.parentElement?.querySelector('.eq-val');
+                if (valLabel) valLabel.innerText = (targetVal > 0 ? '+' : '') + targetVal;
+                if (eqNodes[idx]) eqNodes[idx].gain.value = targetVal;
+            });
+        };
+    });
 
     // EQ Sliders
     document.querySelectorAll('.eq-slider').forEach((slider, idx) => {

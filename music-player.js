@@ -1138,3 +1138,48 @@ function escapeHtml(str) {
                       .replace(/"/g, '&quot;')
                       .replace(/'/g, '&#039;');
 }
+
+function handleUrlParams() {
+    try {
+        const params = new URLSearchParams(window.location.search);
+        const file = params.get('file') || params.get('path') || params.get('song') || params.get('track');
+        if (!file) return;
+
+        const decodedPath = decodeURIComponent(file);
+        const normalizedTarget = decodedPath.replace(/\\/g, '/').toLowerCase();
+
+        // Check if track is already in allTracks
+        const existingIdx = allTracks.findIndex(t => {
+            const p = (t.path || '').replace(/\\/g, '/').toLowerCase();
+            return p === normalizedTarget || p.endsWith(normalizedTarget);
+        });
+
+        if (existingIdx >= 0) {
+            playTrack(existingIdx);
+            return;
+        }
+
+        // Add as a new track at the top of library
+        const filename = decodedPath.replace(/\\/g, '/').split('/').pop() || 'Loaded Audio';
+        const title = filename.replace(/\.[^/.]+$/, '');
+        const ext = (filename.split('.').pop() || 'AUDIO').toUpperCase();
+
+        const newTrack = {
+            name: filename,
+            title: title,
+            artist: 'Studio Master',
+            path: decodedPath,
+            size: 0,
+            format: ext,
+            category: 'all'
+        };
+
+        allTracks.unshift(newTrack);
+        updateTrackCounts();
+        applyFilter();
+        playTrack(0);
+    } catch (err) {
+        console.warn('Error handling URL params in music player:', err);
+    }
+}
+
