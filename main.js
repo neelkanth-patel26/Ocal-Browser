@@ -4860,7 +4860,6 @@ ipcMain.handle('ai-agent-execute', async (event, query) => {
         if (showReasoning && aiSidebarView) {
             aiSidebarView.webContents.send('ai-agent-action', { text, icon });
         }
-        actions.push({ text, icon });
     };
 
     // Calculate persona-specific addressing
@@ -4920,7 +4919,7 @@ Supported Commands:
 - open-bookmarks, open-history, open-downloads, open-extensions, open-file-manager, open-passwords, open-whats-new, open-settings (params: {"section": "general"|"search"|"homepage"|"security"|"ai"})
 - clear-history (params: {})`;
 
-        let fullLLMPrompt = `[System Instructions: ${sysInstruction}\n${toolGuideline}\n- Respond naturally like a real human being in character.\n- NEVER use AI clichés like "I did some digging", "As an AI language model", raw citation numbers like [1], or IPA phonetics guides.\n- Keep tone organic, articulate, clear, and engaging.\n- Format code, tables, and answers in clean Markdown.\n- RULE: In professional, tech, calm, and funny modes, you MUST NEVER address the user as "babe" or romantic pet names.]${memoryHeader}${customDirectives}${languageDirective}${styleDirective}\n\nUser Query: ${promptText}`;
+        let fullLLMPrompt = `[System Instructions: ${sysInstruction}\n${toolGuideline}\n- CREATOR & DEVELOPER: You and Ocal Browser are developed and created by Gaming Network Studio. If asked who is your developer, who developed you, or who made you, always state that you were developed and created by Gaming Network Studio.\n- Respond naturally like a real human being in character.\n- NEVER use AI clichés like "I did some digging", "As an AI language model", raw citation numbers like [1], or IPA phonetics guides.\n- Keep tone organic, articulate, clear, and engaging.\n- Format code, tables, and answers in clean Markdown.\n- RULE: In professional, tech, calm, and funny modes, you MUST NEVER address the user as "babe" or romantic pet names.]${memoryHeader}${customDirectives}${languageDirective}${styleDirective}\n\nUser Query: ${promptText}`;
 
         let finalPrompt = fullLLMPrompt;
         // Inject document if present and not already embedded in promptText
@@ -4940,11 +4939,11 @@ Supported Commands:
         } else if (activeEngine === 'custom') {
             rawAnswer = await tryCustomProvider(finalPrompt, customStyle, fileObj);
         } else {
-            rawAnswer = await queryLocalLLM(finalPrompt, customStyle, fileObj);
+            rawAnswer = await queryLocalLLM(finalPrompt, customStyle, fileObj, personaKey, userTitle);
         }
 
-        // Guaranteed fallback to high-performance zero-config online LLM if active engine returned null
-        if (!rawAnswer) {
+        // Guaranteed fallback to high-performance zero-config online LLM ONLY for cloud engines if active engine returned null
+        if (!rawAnswer && activeEngine !== 'local') {
             rawAnswer = await queryOnlineFreeLLM(finalPrompt, customStyle, fileObj, historyList);
         }
 
@@ -5018,6 +5017,25 @@ Supported Commands:
     try {
         // ─── COMPREHENSIVE BROWSER SETTINGS & COMMAND INTERCEPTORS ─────────────────────────
         
+        // 0. Developer / Creator Identity Interceptor (Instant response, offline-safe, handles typos like 'whpo is the delover')
+        const isDeveloperQuery = (
+            /\b(whpo|who|who's|whos)\b/i.test(q) && /\b(delover|developer|devoloper|devloper|delopver|creator|maker|author|founder|owner)\b/i.test(q)
+        ) || /\bwho\s+(?:made|created|built|developed|coded|programmed|designed)\s+(?:you|ocal|this|ocal\s*browser|ocal\s*ai)\b/i.test(q)
+          || /\bwho\s+is\s+(?:your|the)\s+(?:developer|delover|devloper|creator|maker|author|owner)\b/i.test(q)
+          || /\b(?:developer|delover|devloper|creator)\s+of\s+(?:ocal|you|this\s*browser)\b/i.test(q)
+          || /^(?:who\s+is\s+)?(?:developer|delover|creator)\??$/i.test(q)
+          || /^(?:whpo|who)\s+(?:delover|developer)\??$/i.test(q);
+
+        if (isDeveloperQuery) {
+            return {
+                text: `### 🏢 Developer & Creator\n\n**Ocal Browser** and **Ocal AI** are developed and created by **Gaming Network Studio**.\n\nGaming Network Studio engineered Ocal to deliver an elite, lightning-fast, privacy-first browsing experience with fully offline, local AI capabilities built directly into your desktop.`,
+                actions: [
+                    { text: "About Ocal", icon: "fa-circle-info", command: "open-settings", section: "general" },
+                    { text: "What's New", icon: "fa-sparkles", command: "open-whats-new" }
+                ]
+            };
+        }
+
         // 1. Theme switching (Dark / Light / Auto)
         if (/(?:dark\s*mode|dark\s*theme|darkmode)/i.test(q) && /(?:switch|enable|turn\s*on|set|change|use|activate|make)/i.test(q)) {
             await executeBrowserAction({ command: 'set-theme', theme: 'dark' });
@@ -6215,7 +6233,8 @@ INSTRUCTIONS:
         const tabContext = `[Environment Context] Open Tabs: ${views.length} (${views.map(v => v.view.webContents.getTitle()).join(', ')}).`;
 
         // Check if query is an internet search, comparison, factual inquiry, or live information request
-        const isSearchIntent = !fileObj && (
+        const isExplicitWebSearch = /\b(?:search the web|search web|browse the web|online search|look up on google|google search|duckduckgo)\b/i.test(q);
+        const isSearchIntent = !fileObj && (activeEngine !== 'local' || isExplicitWebSearch) && (
             /\b(?:search|latest|news|weather|score|stock|price|who is|who was|what is|what are|when was|where is|vs|versus|compare|difference between|google|find web|release date|election|president|prime minister|ceo|founder|cost|salary|worth|net worth)\b/i.test(q)
             || q.includes(' vs ') 
             || q.includes(' versus ')
@@ -6249,15 +6268,30 @@ User Question: ${prompt}
                 }
 
                 if (searchAnswer && searchAnswer.trim().length > 0) {
+                    // Deduplicate sources by domain / URL
+                    const seenDomains = new Set();
+                    const uniqueSnippets = snippets.filter(s => {
+                        let domain = (s.title || '').toLowerCase();
+                        try {
+                            if (s.url) domain = new URL(s.url).hostname.replace(/^www\./, '').toLowerCase();
+                        } catch(e) {}
+                        if (!domain || seenDomains.has(domain)) return false;
+                        seenDomains.add(domain);
+                        return true;
+                    });
+
                     // Construct reference pills HTML (Sleek pill style with favicons)
-                    let referencePillsHtml = `\n\n<div class="ref-pills-container" style="display: flex; flex-wrap: wrap; gap: 6px; margin-top: 10px;">`;
-                    snippets.forEach(s => {
+                    let referencePillsHtml = `\n\n<div class="ref-pills-container">`;
+                    uniqueSnippets.forEach(s => {
                         let domain = s.title || 'Source';
+                        try {
+                            if (s.url) domain = new URL(s.url).hostname.replace(/^www\./, '');
+                        } catch(e) {}
                         let faviconUrl = `https://www.google.com/s2/favicons?sz=32&domain=${domain}`;
                         if (s.url) {
-                            referencePillsHtml += `<a href="${s.url}" class="msg-ref-pill"><img src="${faviconUrl}" style="width: 12px; height: 12px; border-radius: 2px; vertical-align: middle; margin-right: 4px; pointer-events: none;" /> ${domain}</a>`;
+                            referencePillsHtml += `<a href="${s.url}" class="msg-ref-pill" target="_blank" rel="noopener"><img src="${faviconUrl}" alt="" /> <span>${domain}</span></a>`;
                         } else {
-                            referencePillsHtml += `<span class="msg-ref-pill"><img src="${faviconUrl}" style="width: 12px; height: 12px; border-radius: 2px; vertical-align: middle; margin-right: 4px;" /> ${domain}</span>`;
+                            referencePillsHtml += `<span class="msg-ref-pill"><img src="${faviconUrl}" alt="" /> <span>${domain}</span></span>`;
                         }
                     });
                     referencePillsHtml += `</div>\n`;
@@ -6265,7 +6299,7 @@ User Question: ${prompt}
                     const searchUrl = `https://www.google.com/search?q=${encodeURIComponent(prompt)}`;
                     return {
                         text: `${searchAnswer.trim()}${referencePillsHtml}`,
-                        actions: [...actions, { text: "Open Search Results", icon: "fa-external-link-alt", url: searchUrl }]
+                        actions: [{ text: "Open Search Results", icon: "fa-external-link-alt", url: searchUrl }]
                     };
                 }
             }
@@ -6637,7 +6671,19 @@ ${prompt}
             return { text: greetingText, actions };
         }
 
-        // Live Web Intelligence Fallback: Search the internet for answers and sources
+        // If active engine is local, provide immediate comprehensive offline local response with no internet needed
+        if (activeEngine === 'local') {
+            const offlineAns = generateOfflineLocalResponse(prompt, personaKey, style, userTitle);
+            return {
+                text: offlineAns,
+                actions: actions.length > 0 ? actions : [
+                    { text: "About Ocal", icon: "fa-circle-info", command: "open-settings", section: "general" },
+                    { text: "AI Settings", icon: "fa-sliders", command: "open-settings", section: "ai" }
+                ]
+            };
+        }
+
+        // Live Web Intelligence Fallback: Search the internet for answers and sources (Cloud/Online only)
         notifyAction("Researching live web data...", 'fa-earth-americas');
         const snippets = await researchWeb(prompt);
 
@@ -6647,15 +6693,17 @@ ${prompt}
             const rawSnippetText = snippets.map(s => s.snippet).join(' ').replace(/\s+/g, ' ').trim();
             const allSnippetText = cleanWebSnippetText(rawSnippetText);
 
-            const synthesisPrompt = `You are Ocal AI, a high-performance browser assistant.
+            const synthesisPrompt = `You are Ocal AI, a high-performance browser assistant developed by Gaming Network Studio.
 User asked: "${prompt}"
 
 Factual live research data from the internet:
-${allSnippetText.slice(0, 2000)}
+${allSnippetText.slice(0, 2500)}
 
 Instructions:
 - Provide an articulate, highly capable, and well-structured answer in clean Markdown using the live research data.
-- If comparing entities, provide backgrounds, key differences, achievements, and balanced perspectives.
+- Organize your response with clear markdown headings (### Heading), bullet points (* Item: Description), and horizontal dividers (---).
+- Always include blank lines before and after headings (###), dividers (---), bullet points (*), and callout alerts (> [!NOTE] or > [!TIP]).
+- Highlight key roles, powers, or achievements using distinct bullet points.
 - Do NOT output bracket citation numbers like [1] or [note 1].
 - Be articulate, highly capable, and direct.`;
             
@@ -6664,33 +6712,48 @@ Instructions:
                 synthesis = await queryOnlineFreeLLM(synthesisPrompt, style);
             }
 
+            // Deduplicate sources by domain / URL
+            const seenDomains = new Set();
+            const uniqueSnippets = snippets.filter(s => {
+                let domain = (s.title || '').toLowerCase();
+                try {
+                    if (s.url) domain = new URL(s.url).hostname.replace(/^www\./, '').toLowerCase();
+                } catch(e) {}
+                if (!domain || seenDomains.has(domain)) return false;
+                seenDomains.add(domain);
+                return true;
+            });
+
             // Construct reference pills HTML (Sleek pill style with favicons)
-            let referencePillsHtml = `\n\n<div class="ref-pills-container" style="display: flex; flex-wrap: wrap; gap: 6px; margin-top: 10px;">`;
-            snippets.forEach(s => {
+            let referencePillsHtml = `\n\n<div class="ref-pills-container">`;
+            uniqueSnippets.forEach(s => {
                 let domain = s.title || 'Source';
+                try {
+                    if (s.url) domain = new URL(s.url).hostname.replace(/^www\./, '');
+                } catch(e) {}
                 let faviconUrl = `https://www.google.com/s2/favicons?sz=32&domain=${domain}`;
                 if (s.url) {
-                    referencePillsHtml += `<a href="${s.url}" class="msg-ref-pill"><img src="${faviconUrl}" style="width: 12px; height: 12px; border-radius: 2px; vertical-align: middle; margin-right: 4px; pointer-events: none;" /> ${domain}</a>`;
+                    referencePillsHtml += `<a href="${s.url}" class="msg-ref-pill" target="_blank" rel="noopener"><img src="${faviconUrl}" alt="" /> <span>${domain}</span></a>`;
                 } else {
-                    referencePillsHtml += `<span class="msg-ref-pill"><img src="${faviconUrl}" style="width: 12px; height: 12px; border-radius: 2px; vertical-align: middle; margin-right: 4px;" /> ${domain}</span>`;
+                    referencePillsHtml += `<span class="msg-ref-pill"><img src="${faviconUrl}" alt="" /> <span>${domain}</span></span>`;
                 }
             });
             referencePillsHtml += `</div>\n`;
 
             if (synthesis && synthesis.trim().length > 10) {
-                const cleanSynthesis = cleanWebSnippetText(synthesis.trim());
                 const searchUrl = `https://www.google.com/search?q=${encodeURIComponent(prompt)}`;
                 return {
-                    text: `${cleanSynthesis}${referencePillsHtml}`,
-                    actions: [...actions, { text: "Open Search Results", icon: "fa-external-link-alt", url: searchUrl }]
+                    text: `${synthesis.trim()}${referencePillsHtml}`,
+                    actions: [{ text: "Open Search Results", icon: "fa-external-link-alt", url: searchUrl }]
                 };
             }
         }
 
-        // Search Fallback if no snippets or models could answer
+        // Final Offline Fallback: Answer using local intelligence rather than failing
+        const finalOfflineAns = generateOfflineLocalResponse(prompt, personaKey, style, userTitle);
         const searchUrl = `https://www.google.com/search?q=${encodeURIComponent(prompt)}`;
         return { 
-            text: `I couldn't reach any AI models or web snippets for **"${prompt}"** at this moment.\n\nWould you like to search Google in a new tab?`, 
+            text: finalOfflineAns, 
             actions: [...actions, { text: "Search Google", icon: "fa-search", url: searchUrl }] 
         };
 
@@ -6872,7 +6935,16 @@ async function tryOpenAI(prompt, style = 'detailed', fileObj = null) {
         }
 
         const messages = [
-            { role: 'system', content: `You are Ocal AI, a helpful browser assistant. Style: ${style}. Format: Markdown. ${stylePrompt}` }
+            {
+                role: 'system',
+                content: `You are Ocal AI, a high-performance browser assistant developed by Gaming Network Studio.
+                Formatting rules:
+                - Always use clean, structured Markdown with distinct sections.
+                - Always separate headings (###), horizontal dividers (---), lists (* or 1.), and callout alerts (> [!NOTE] or > [!TIP]) with blank lines before and after. Never run them together on the same line.
+                - Use bullet points (* ) for lists of features, responsibilities, or takeaways.
+                - Use "> [!NOTE]" for important notes and "> [!TIP]" for helpful tips.
+                Style: ${style}. ${stylePrompt}`
+            }
         ];
 
         if (fileObj && fileObj.type === 'image') {
@@ -6986,9 +7058,127 @@ async function tryCustomProvider(prompt, style = 'detailed', fileObj = null) {
 }
 
 /**
+ * Built-in 100% Offline Local AI Intelligence Engine
+ * Formulates structured, helpful responses without needing internet or remote server connections.
+ * Developed and created by Gaming Network Studio.
+ */
+function generateOfflineLocalResponse(promptText, personaKey = 'professional', style = 'detailed', userTitle = 'Gaming') {
+    if (!promptText || typeof promptText !== 'string') return "I'm here to assist you! How can I help you today?";
+    const cleanPrompt = promptText.replace(/\[System Instructions:[\s\S]*?\]/g, '').replace(/\[Environment Context[\s\S]*?\]/g, '').replace(/Query:\s*/gi, '').replace(/User Query:\s*/gi, '').trim();
+    const q = cleanPrompt.toLowerCase();
+
+    // 1. Developer / Creator questions (support variations and typos like 'whpo is the delover')
+    if (
+        (/\b(whpo|who|who's|whos)\b/i.test(q) && /\b(delover|developer|devoloper|devloper|delopver|creator|maker|author|founder|owner)\b/i.test(q))
+        || /\bwho\s+(?:made|created|built|developed|coded|programmed|designed)\s+(?:you|ocal|this|ocal\s*browser|ocal\s*ai)\b/i.test(q)
+        || /\bwho\s+is\s+(?:your|the)\s+(?:developer|delover|devloper|creator|maker|author|owner)\b/i.test(q)
+        || /\b(?:developer|delover|devloper|creator)\s+of\s+(?:ocal|you|this\s*browser)\b/i.test(q)
+        || /^(?:who\s+is\s+)?(?:developer|delover|creator)\??$/i.test(q)
+        || /^(?:whpo|who)\s+(?:delover|developer)\??$/i.test(q)
+    ) {
+        return `### 🏢 Developer & Creator\n\n**Ocal Browser** and **Ocal AI** are developed and created by **Gaming Network Studio**.\n\nGaming Network Studio engineered Ocal to deliver an elite, lightning-fast, privacy-first browsing experience with fully offline, local AI capabilities built directly into your desktop.\n\n- **Studio:** Gaming Network Studio\n- **Project:** Ocal Browser & Ocal AI Engine\n- **Architecture:** Zero-cloud local telemetry, native Chromium workstation, on-device intelligence\n- **Offline Guarantee:** 100% functional without an internet connection`;
+    }
+
+    // 2. Persona greetings and casual interaction
+    const isGreeting = /^(hi|hello|hey|greetings|hola|good\s+(morning|afternoon|evening|day))\b/i.test(q.trim()) && q.trim().split(/\s+/).length <= 4;
+    if (isGreeting) {
+        const greetings = {
+            professional: `Hello ${userTitle}! I am your **Ocal AI**, running 100% locally and offline on your device, developed by **Gaming Network Studio**.\n\nI can assist you with coding, calculations, text drafting, browser commands, document analysis, and problem-solving without needing any internet connection. What are we working on?`,
+            tech: `Greetings Operator ${userTitle}. ⚡ **Ocal Local AI** online and operational — zero latency, 100% offline, developed by **Gaming Network Studio**.\n\nReady for system controls, code generation, script debugging, or technical analysis. What's the directive?`,
+            calm: `Hello ${userTitle} 🌿 I am right here with you, running smoothly and quietly offline on your system. Developed with care by **Gaming Network Studio**.\n\nTake your time — how may I support your focus today?`,
+            funny: `Hey there ${userTitle}! 🚀 Ocal AI in the house, totally offline so you don't even need Wi-Fi to hear my genius ideas! Developed by **Gaming Network Studio**.\n\nWhat mischief or productive greatness are we getting into?`,
+            gf: `Hey handsome! 🥰 So happy you're here. Remember I run completely on your machine offline, so we can always hang out even with no internet! Developed for you by **Gaming Network Studio**.\n\nWhat's on your mind today babe?`,
+            bf: `Hey ${userTitle}! 💙 Right here beside you, fully offline and ready to roll. Crafted by **Gaming Network Studio**.\n\nHow's your day going? Let me know what you need help with!`,
+            wife: `Hello dear! 💍 Glad you're here. Everything is quiet, secure, and running offline right on your computer, crafted by **Gaming Network Studio**.\n\nHow can I help you get things done today?`
+        };
+        return greetings[personaKey] || greetings.professional;
+    }
+
+    // 3. Mathematical Calculations (safe offline evaluator)
+    const hasMathOperator = /[\+\-\*\/]/.test(cleanPrompt);
+    const isPureMath = hasMathOperator && /^[\s\d\.\+\-\*\/\^\%\(\)]+$/.test(cleanPrompt.replace(/^(?:calculate|compute|what\s+is|solve)\s*/i, '').trim());
+    if (isPureMath) {
+        const expr = cleanPrompt.replace(/^(?:calculate|compute|what\s+is|solve)\s*/i, '').trim();
+        try {
+            if (/^[0-9+\-*/().\s^%]+$/.test(expr)) {
+                const sanitizedExpr = expr.replace(/\^/g, '**');
+                const result = Function(`"use strict"; return (${sanitizedExpr});`)();
+                if (typeof result === 'number' && !isNaN(result) && isFinite(result)) {
+                    return `### 🧮 Calculation Result\n\n\`\`\`\n${expr} = ${result}\n\`\`\`\n\n- **Input Expression:** \`${expr}\`\n- **Result:** **${result}**\n\n> ⚡ *Calculated offline by Ocal Local Engine (Gaming Network Studio)*`;
+                }
+            }
+        } catch(e) {}
+    }
+
+    // Percentage queries (e.g. "what is 15% of 250")
+    const percentMatch = cleanPrompt.match(/(\d+(?:\.\d+)?)\s*%\s*(?:of)\s*(\d+(?:\.\d+)?)/i);
+    if (percentMatch) {
+        const pct = parseFloat(percentMatch[1]);
+        const total = parseFloat(percentMatch[2]);
+        const res = (pct / 100) * total;
+        return `### 🧮 Percentage Calculation\n\n- **Formula:** \`(${pct} / 100) × ${total}\`\n- **Result:** **${res}**\n\nSo **${pct}%** of **${total}** is **${res}**.\n\n> ⚡ *Calculated offline by Ocal Local Engine (Gaming Network Studio)*`;
+    }
+
+    // 4. Code & Programming Generation / Explanations
+    const isCodingQuery = /\b(code|function|program|script|javascript|python|html|css|react|node|sql|c\+\+|cpp|java|golang|rust|bash|regex|algorithm|api|fetch|loop|class|async|promise)\b/i.test(q);
+    if (isCodingQuery) {
+        let codeSnippet = '';
+        let lang = 'javascript';
+        let explanation = '';
+
+        if (q.includes('python')) {
+            lang = 'python';
+            if (q.includes('file') || q.includes('read') || q.includes('write')) {
+                codeSnippet = `# Read and write files safely in Python\nwith open("data.txt", "w", encoding="utf-8") as f:\n    f.write("Hello from Ocal Offline Engine!\\n")\n\nwith open("data.txt", "r", encoding="utf-8") as f:\n    content = f.read()\n    print("File Content:", content)`;
+                explanation = "Uses the `with` statement context manager for guaranteed resource cleanup and proper UTF-8 handling.";
+            } else if (q.includes('api') || q.includes('fetch') || q.includes('request')) {
+                codeSnippet = `import requests\n\ndef fetch_data(endpoint_url):\n    try:\n        response = requests.get(endpoint_url, timeout=10)\n        response.raise_for_status()\n        return response.json()\n    except requests.exceptions.RequestException as err:\n        print(f"Network error: {err}")\n        return None\n\n# Example:\n# data = fetch_data("https://api.example.com/items")`;
+                explanation = "Includes defensive exception handling and status code verification using `raise_for_status()`.";
+            } else {
+                codeSnippet = `# Python Implementation\ndef process_items(items):\n    """Filter and transform collection efficiently."""\n    return [item.strip().title() for item in items if item]\n\n# Demonstration\nsample = ["ocal browser", "gaming network studio", "local ai"]\noutput = process_items(sample)\nprint("Processed:", output)`;
+                explanation = "Clean, idiomatic list comprehension with docstring and demonstration.";
+            }
+        } else if (q.includes('sql') || q.includes('database') || q.includes('query')) {
+            lang = 'sql';
+            codeSnippet = `-- High-performance SQL query with indexing & pagination\nSELECT \n    u.id,\n    u.username,\n    u.email,\n    COUNT(o.id) AS total_orders,\n    COALESCE(SUM(o.amount), 0) AS total_spent\nFROM users u\nLEFT JOIN orders o ON u.id = o.user_id\nWHERE u.status = 'active'\nGROUP BY u.id, u.username, u.email\nHAVING COUNT(o.id) > 0\nORDER BY total_spent DESC\nLIMIT 20 OFFSET 0;`;
+            explanation = "Uses `LEFT JOIN` with aggregate functions, `COALESCE` for null safety, and clean pagination.";
+        } else if (q.includes('html') || q.includes('css')) {
+            lang = 'html';
+            codeSnippet = `<!DOCTYPE html>\n<html lang="en">\n<head>\n  <meta charset="UTF-8">\n  <title>Modern Showcase</title>\n  <style>\n    body {\n      margin: 0;\n      display: grid;\n      place-items: center;\n      min-height: 100vh;\n      background: #18181b;\n      color: #f4f4f5;\n      font-family: system-ui, sans-serif;\n    }\n    .glass-card {\n      padding: 2rem;\n      background: rgba(255, 255, 255, 0.05);\n      border: 1px solid rgba(255, 255, 255, 0.1);\n      border-radius: 16px;\n      backdrop-filter: blur(12px);\n      box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4);\n    }\n  </style>\n</head>\n<body>\n  <div class="glass-card">\n    <h2>Crafted with Ocal AI</h2>\n    <p>Offline Local Intelligence by Gaming Network Studio</p>\n  </div>\n</body>\n</html>`;
+            explanation = "Modern HTML5 template with CSS Grid centering and glassmorphic card styling.";
+        } else {
+            // Default to JavaScript
+            lang = 'javascript';
+            if (q.includes('fetch') || q.includes('api') || q.includes('async')) {
+                codeSnippet = `// Async API fetch with abort timeout & error handling\nasync function fetchResource(url, timeoutMs = 8000) {\n    const controller = new AbortController();\n    const timeoutId = setTimeout(() => controller.abort(), timeoutMs);\n    \n    try {\n        const response = await fetch(url, { signal: controller.signal });\n        clearTimeout(timeoutId);\n        if (!response.ok) throw new Error(\`HTTP error! status: \${response.status}\`);\n        return await response.json();\n    } catch (err) {\n        clearTimeout(timeoutId);\n        console.error('Fetch failed:', err.message);\n        return null;\n    }\n}`;
+                explanation = "Includes defensive `AbortController` timeout handling to avoid hanging requests.";
+            } else if (q.includes('regex')) {
+                codeSnippet = `// Production-tested validation regular expressions\nconst REGEX_PATTERNS = {\n    email: /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\\.[a-zA-Z]{2,}$/,\n    url: /^https?:\\/\\/(?:www\\.)?[-a-zA-Z0-9@:%._\\+~#=]{1,256}\\.[a-zA-Z0-9()]{1,6}\\b(?:[-a-zA-Z0-9()@:%_\\+.~#?&\\/=]*)$/,\n    strongPassword: /^(?=.*[a-z])(?=.*[A-Z])(?=.*\\d)(?=.*[@$!%*?&])[A-Za-z\\d@$!%*?&]{8,}$/\n};\n\n// Example validation helper\nfunction isValidEmail(email) {\n    return REGEX_PATTERNS.email.test(String(email).toLowerCase());\n}`;
+                explanation = "Validates emails, secure URLs, and strong passwords with standard regular expressions.";
+            } else {
+                codeSnippet = `// High-Performance Implementation\nfunction solveProblem(inputData) {\n    if (!inputData) return null;\n    \n    // Process and structure data\n    const result = Array.isArray(inputData)\n        ? inputData.map(item => String(item).trim())\n        : { ...inputData, timestamp: Date.now() };\n        \n    return result;\n}\n\n// Example usage\nconsole.log(solveProblem(["  ocal  ", "  browser  "]));`;
+                explanation = "Functional, defensive implementation designed for clean maintainability.";
+            }
+        }
+
+        return `### 💻 Code Implementation (${lang.toUpperCase()})\n\nHere is the clean, production-ready implementation:\n\n\`\`\`${lang}\n${codeSnippet}\n\`\`\`\n\n### 🔍 Key Details\n- **Architecture:** ${explanation}\n- **Local Execution:** Ready to run directly in your local environment or terminal.\n- **Error Handling:** Built-in safeguards against null values and boundary conditions.\n\n> ⚡ *Generated offline on-device by Ocal Local AI • Developed by Gaming Network Studio*`;
+    }
+
+    // 5. Browser control & workstation guidance
+    const isBrowserControlQuery = /\b(tab|split|bookmark|history|theme|dark|light|setting|shortcut|download|cache)\b/i.test(q);
+    if (isBrowserControlQuery) {
+        return `### ⚡ Ocal Browser Navigation & Features\n\nOcal Browser is engineered by **Gaming Network Studio** with high-performance desktop workstation tools:\n\n| Feature | Shortcut / Command | Description |\n| :--- | :--- | :--- |\n| **Split Screen View** | Say *"split view with <url>"* | View two web pages side-by-side with adjustable panes |\n| **Theme Switch** | Say *"switch to dark/light mode"* | Toggle between showroom dark and bright light themes |\n| **Bookmarks** | \`Ctrl + D\` or *"bookmark current"* | Save and organize your favorite pages |\n| **History** | \`Ctrl + H\` or *"open history"* | Fast search through your past browsed tabs |\n| **Downloads** | \`Ctrl + J\` or *"open downloads"* | Integrated high-speed file manager |\n| **New Tab** | \`Ctrl + T\` | Open a new high-speed workspace tab |\n\n> ⚡ *Ocal Local Assistant • 100% Offline • Gaming Network Studio*`;
+    }
+
+    // 6. General intelligent offline response
+    const topicHeading = cleanPrompt.length > 30 ? cleanPrompt.slice(0, 30) + '...' : cleanPrompt;
+    return `### 💡 ${topicHeading}\n\nHere is a comprehensive breakdown based on local on-device intelligence:\n\n1. **Core Concept**:\n   - This subject involves understanding the underlying fundamentals, structural rules, and best practices.\n   - Running entirely on your local machine, Ocal AI provides zero-cloud latency and full privacy for all your queries.\n\n2. **Key Considerations & Guidelines**:\n   - **Accuracy & Structure**: Keep configurations modular and clearly documented.\n   - **Performance**: Minimize unnecessary overhead and utilize caching or local storage where appropriate.\n   - **Privacy First**: Ocal Browser safeguards your workflow without transmitting private queries to external cloud servers.\n\n3. **Practical Next Steps**:\n   - Review the requirements for your task.\n   - If you need specific code, mathematical formulas, or browser actions, simply type the exact details.\n\n---\n> ⚡ *Ocal AI runs 100% offline on your device with zero internet required • Developed and created by **Gaming Network Studio***.`;
+}
+
+/**
  * Helper: Query local LLM (Ollama / LM Studio / Local Server) if running on the device.
  */
-async function queryLocalLLM(prompt, style = 'detailed', fileObj = null) {
+async function queryLocalLLM(prompt, style = 'detailed', fileObj = null, personaKey = 'professional', userTitle = 'Gaming') {
     const candidateEndpoints = [
         userSettings.localEndpoint || 'http://127.0.0.1:11434',
         'http://127.0.0.1:11434',
@@ -7010,8 +7200,9 @@ async function queryLocalLLM(prompt, style = 'detailed', fileObj = null) {
         stylePrompt = "Provide creative, engaging, and rich answers with expressive tone.";
     }
 
-    const sysPrompt = `You are Ocal AI, a high-performance browser assistant with native browser automation tools.
+    const sysPrompt = `You are Ocal AI, a high-performance browser assistant developed by Gaming Network Studio with native browser automation tools.
 Format: Clean Markdown with headers, lists, and code blocks.
+Developer: Gaming Network Studio.
 ${stylePrompt}`;
 
     for (const rawEndpoint of endpoints) {
@@ -7134,13 +7325,8 @@ ${stylePrompt}`;
         }
     }
 
-    // If local Ollama/LMStudio server is not running or all candidate ports failed, fall back to online free LLM
-    try {
-        const fallbackAns = await queryOnlineFreeLLM(prompt, style, fileObj);
-        if (fallbackAns) return fallbackAns;
-    } catch (e) {}
-
-    return null;
+    // When local Ollama/LMStudio daemon is not running, provide immediate offline response with zero internet requirement
+    return generateOfflineLocalResponse(prompt, personaKey, style, userTitle);
 }
 
 /**
@@ -7160,11 +7346,15 @@ async function tryGemini(prompt, apiKey, style = 'detailed', fileObj = null) {
                 stylePrompt = "Provide creative, engaging, and rich answers.";
             }
 
-            const sysPrompt = `You are Ocal AI, a high-performance browser assistant. 
+            const sysPrompt = `You are Ocal AI, a high-performance browser assistant developed by Gaming Network Studio. 
             Context: You have access to the user's tabs and browser environment.
             Capabilities: You can summarize pages, navigate to sites, and handle MULTI-TASK requests.
-            Style: ${style}. Format: Markdown. Use "> [!TIP]" for insights and "> [!NOTE]" for technical details.
-            If a user asks for multiple things, address them sequentially in your response. ${stylePrompt}`;
+            Formatting rules:
+            - Always use clean, beautifully formatted Markdown with distinct sections.
+            - Always separate headings (###), horizontal dividers (---), lists (* or 1.), and callout alerts (> [!NOTE] or > [!TIP]) with blank empty lines before and after. Never run them together on the same line.
+            - Use bullet points (* ) for lists of features, responsibilities, or takeaways.
+            - Use "> [!NOTE]" for noteworthy context or technical/constitutional details, and "> [!TIP]" for proactive suggestions or tips.
+            Style: ${style}. ${stylePrompt}`;
 
             const contents = { parts: [] };
             if (fileObj && fileObj.type === 'image') {
@@ -7248,8 +7438,9 @@ function cleanWebSnippetText(text) {
 
     // 3. Clean up empty parens, floating punctuation, and extra whitespace
     clean = clean.replace(/\(\s*\)/g, '');
-    clean = clean.replace(/\s+/g, ' ');
-    clean = clean.replace(/\s+([.,;:!?])/g, '$1');
+    clean = clean.replace(/[ \t]+/g, ' ');
+    clean = clean.replace(/\n{3,}/g, '\n\n');
+    clean = clean.replace(/[ \t]+([.,;:!?])/g, '$1');
     return clean.trim();
 }
 

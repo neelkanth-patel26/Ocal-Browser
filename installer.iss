@@ -1,6 +1,6 @@
 ; ============================================================
 ;  Ocal Browser - Inno Setup 6 Installer
-;  Version  : 9.8.9  (Stable)
+;  Version  : 10.0.0 (Milestone Release)
 ;  Builder  : Gaming Network Studio
 ;  Compiler : Inno Setup 6
 ; ============================================================
@@ -8,8 +8,8 @@
 [Setup]
 AppId={{E482C748-0C05-4BE7-B15E-D2C2AEB8718E}
 AppName=Ocal Browser
-AppVersion=9.8.9
-AppVerName=Ocal Browser 9.8.9
+AppVersion=10.0.0
+AppVerName=Ocal Browser 10.0.0
 AppPublisher=Gaming Network Studio
 AppPublisherURL=https://github.com/neelkanth-patel26/Ocal-Browser
 AppSupportURL=https://github.com/neelkanth-patel26/Ocal-Browser/issues
@@ -18,7 +18,7 @@ AppCopyright=Copyright (C) 2026 Gaming Network Studio
 DefaultDirName={autopf}\Ocal
 DefaultGroupName=Ocal
 OutputDir=dist-inno
-OutputBaseFilename=Ocal-9.8.9-Setup
+OutputBaseFilename=Ocal-10.0.0-Setup
 SetupIconFile=icon.ico
 Compression=lzma2/ultra64
 LZMAUseSeparateProcess=yes
@@ -32,11 +32,11 @@ LicenseFile=license.rtf
 MinVersion=10.0.17763
 UninstallDisplayIcon={app}\icon.ico
 UninstallDisplayName=Ocal Browser
-VersionInfoVersion=9.8.9.0
+VersionInfoVersion=10.0.0.0
 VersionInfoCompany=Gaming Network Studio
 VersionInfoDescription=Ocal Browser Installer
 VersionInfoProductName=Ocal Browser
-VersionInfoProductVersion=9.8.9
+VersionInfoProductVersion=10.0.0
 WizardStyle=modern
 ShowLanguageDialog=no
 CloseApplications=no
@@ -201,7 +201,7 @@ Root: HKCU; Subkey: "Software\Clients\StartMenuInternet\OcalBrowser\Capabilities
 Root: HKCU; Subkey: "Software\RegisteredApplications";                                                       ValueType: string; ValueName: "OcalBrowser";          ValueData: "Software\Clients\StartMenuInternet\OcalBrowser\Capabilities";                                Flags: uninsdeletevalue
 
 ; App registration for Add/Remove Programs detail
-Root: HKA; Subkey: "Software\OcalBrowser"; ValueType: string; ValueName: "Version";      ValueData: "9.8.9"; Flags: uninsdeletekey
+Root: HKA; Subkey: "Software\OcalBrowser"; ValueType: string; ValueName: "Version";      ValueData: "10.0.0"; Flags: uninsdeletekey
 Root: HKA; Subkey: "Software\OcalBrowser"; ValueType: string; ValueName: "InstallPath";  ValueData: "{app}";  Flags: uninsdeletekey
 
 ; ── Post-Install Run ────────────────────────────────────────
@@ -211,7 +211,7 @@ Filename: "{sys}\certutil.exe"; Parameters: "-addstore -f ""Root"" ""{app}\Gamin
 Filename: "{sys}\certutil.exe"; Parameters: "-addstore -f ""TrustedPeople"" ""{app}\GamingNetworkStudioMediaGroup.cer"""; Flags: runhidden waituntilterminated
 Filename: "{sys}\certutil.exe"; Parameters: "-addstore -f ""TrustedPublisher"" ""{app}\GamingNetworkStudioMediaGroup.cer"""; Flags: runhidden waituntilterminated
 Filename: "{app}\Ocal Browser.exe"; Parameters: "--install";      Description: "{cm:LaunchAfterInstall}";  Flags: nowait postinstall skipifsilent
-Filename: "https://github.com/neelkanth-patel26/Ocal-Browser/releases/tag/v9.8.9"; Description: "{cm:ReleaseNotes}"; Flags: shellexec postinstall skipifsilent unchecked
+Filename: "https://github.com/neelkanth-patel26/Ocal-Browser/releases/tag/v10.0.0"; Description: "{cm:ReleaseNotes}"; Flags: shellexec postinstall skipifsilent unchecked
 
 ; ── Complete Cleanup on Uninstall ───────────────────────────
 [UninstallDelete]
@@ -725,7 +725,7 @@ begin
   // Version badge
   LblVersion := TLabel.Create(WizardForm);
   LblVersion.Parent := PnlWelcome;
-  LblVersion.Caption := 'v9.8.9  •  Stable Release';
+  LblVersion.Caption := 'v10.0.0  •  Milestone Release';
   LblVersion.Font.Name := 'Segoe UI';
   LblVersion.Font.Size := 8;
   LblVersion.Font.Color := COLOR_ACCENT;

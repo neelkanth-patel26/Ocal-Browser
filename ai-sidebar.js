@@ -1393,9 +1393,41 @@ const scrollToBottom = (force = false) => {
     }
 };
 
+const normalizeMarkdownSpacing = (raw) => {
+    if (!raw || typeof raw !== 'string') return '';
+    let str = raw;
+
+    // 1. Separate divider lines (--- or *** or ___) with newlines before and after
+    str = str.replace(/([^\n])\s*(---|\*\*\*|___)\s*([^\n])/g, '$1\n\n$2\n\n$3');
+    str = str.replace(/([^\n])\s*(---|\*\*\*|___)$/gm, '$1\n\n$2');
+
+    // 2. Separate markdown headers (###, ##, #, ####) with newlines before them
+    str = str.replace(/([^\n])\s*(#{1,6}\s+[^\n]+)/g, '$1\n\n$2\n\n');
+
+    // 3. Separate GFM Alert callouts (> [!NOTE], > [!TIP], > [!IMPORTANT], etc.)
+    str = str.replace(/([^\n])\s*(>\s*\[!(?:NOTE|TIP|IMPORTANT|WARNING|CAUTION)\])/gi, '$1\n\n$2');
+
+    // 4. In case the model output: > [!NOTE] > Under Articles 74 and 75...
+    str = str.replace(/(>\s*\[!(?:NOTE|TIP|IMPORTANT|WARNING|CAUTION)\][^\n]*?)\s*>\s*/gi, '$1\n> ');
+
+    // 5. Separate inline bullet points (* , - , • ) that follow punctuation or bold headers
+    str = str.replace(/([.:!?;])\s+([*•-])\s+(\*\*[^*]+\*\*|[A-Za-z0-9])/g, '$1\n\n$2 $3');
+    str = str.replace(/([^\n])\s+([*•-])\s+(\*\*[^*]+\*\*)/g, '$1\n\n$2 $3');
+
+    // 6. Ensure double newlines around callouts
+    str = str.replace(/([^\n])\s*(>\s*\[!)/g, '$1\n\n$2');
+
+    return str;
+};
+
 const renderMarkdown = (text, isFinal = true) => {
+    if (!text || typeof text !== 'string') return '';
+
+    // Normalize spacing around headers, dividers, lists, alerts
+    let processedText = normalizeMarkdownSpacing(text);
+
     // Replace file preview tag with custom HTML block chip
-    let processedText = text.replace(/\[File:\s*\*\*(.*?)\*\*\]/gi, (match, filename) => {
+    processedText = processedText.replace(/\[File:\s*\*\*(.*?)\*\*\]/gi, (match, filename) => {
         let iconClass = 'fa-file-lines';
         let ext = filename.includes('.') ? filename.split('.').pop().toUpperCase() : 'FILE';
         if (filename.toLowerCase().endsWith('.pdf')) {
@@ -1464,12 +1496,43 @@ const renderMarkdown = (text, isFinal = true) => {
         return `${num}[**${cleanTitle}**](${url}) \`${domain}\``;
     });
 
-    let html = marked.parse(processedText);
-    // GFM Alert Parsing (Post-process)
-    html = html.replace(/<blockquote>\s*<p>\[!NOTE\]/gi, '<div class="alert alert-note"><p>')
-               .replace(/<blockquote>\s*<p>\[!TIP\]/gi, '<div class="alert alert-tip"><p>')
-               .replace(/<blockquote>\s*<p>\[!IMPORTANT\]/gi, '<div class="alert alert-important"><p>')
-               .replace(/<\/p>\s*<\/blockquote>/gi, '</p></div>');
+    let html = '';
+    if (typeof marked !== 'undefined' && marked && typeof marked.parse === 'function') {
+        html = marked.parse(processedText);
+    } else {
+        html = processedText
+            .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
+            .replace(/```([a-zA-Z0-9]*)\n([\s\S]*?)```/g, '<pre><code>$2</code></pre>')
+            .replace(/`([^`]+)`/g, '<code>$1</code>')
+            .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
+            .replace(/\*(.*?)\*/g, '<em>$1</em>')
+            .replace(/\n\n/g, '<br><br>')
+            .replace(/\n/g, '<br>');
+    }
+
+    // GFM Alert Parsing (Post-process into sleek cards with icons and title)
+    const alertTypes = {
+        'NOTE': { class: 'alert-note', icon: 'fa-info-circle', title: 'Note' },
+        'TIP': { class: 'alert-tip', icon: 'fa-lightbulb', title: 'Tip' },
+        'IMPORTANT': { class: 'alert-important', icon: 'fa-triangle-exclamation', title: 'Important' },
+        'WARNING': { class: 'alert-warning', icon: 'fa-circle-exclamation', title: 'Warning' },
+        'CAUTION': { class: 'alert-caution', icon: 'fa-shield-halved', title: 'Caution' }
+    };
+
+    // 1. Process <blockquote> elements containing [!TYPE]
+    html = html.replace(/<blockquote>\s*<p>\s*\[!(NOTE|TIP|IMPORTANT|WARNING|CAUTION)\]\s*(?:<br>|\n)?([\s\S]*?)<\/blockquote>/gi, (match, type, content) => {
+        const conf = alertTypes[type.toUpperCase()] || alertTypes.NOTE;
+        let cleanBody = content.trim();
+        if (cleanBody.endsWith('</p>')) cleanBody = cleanBody.slice(0, -4).trim();
+        return `<div class="alert ${conf.class}"><i class="fas ${conf.icon} alert-icon"></i><div class="alert-body"><div class="alert-title">${conf.title}</div><div class="alert-content">${cleanBody}</div></div></div>`;
+    });
+
+    // 2. Process any raw alert fallbacks like: &gt; [!NOTE] or > [!NOTE]
+    html = html.replace(/(?:&gt;|>)\s*\[!(NOTE|TIP|IMPORTANT|WARNING|CAUTION)\]\s*(?:&gt;|>)?\s*([^\n<]+(?:<br>[^\n<]+)*)/gi, (match, type, content) => {
+        const conf = alertTypes[type.toUpperCase()] || alertTypes.NOTE;
+        return `<div class="alert ${conf.class}"><i class="fas ${conf.icon} alert-icon"></i><div class="alert-body"><div class="alert-title">${conf.title}</div><div class="alert-content">${content.trim()}</div></div></div>`;
+    });
+
     return html.trim();
 };
 
@@ -1624,6 +1687,31 @@ const enhanceCodeBlocks = (container) => {
     });
 };
 
+const getModelDisplayTag = (settings) => {
+    const s = settings || globalSettings || {};
+    const engine = s.aiEngine || 'local';
+    if (engine === 'gemini') {
+        return (s.aiApiKey && s.aiApiKey.trim().length > 14) ? 'Gemini 1.5 Flash' : 'Cloud AI (Gemini)';
+    } else if (engine === 'openai') {
+        return (s.openaiApiKey && s.openaiApiKey.trim().length > 14) ? 'ChatGPT' : 'Cloud AI (OpenAI)';
+    } else if (engine === 'custom') {
+        return s.customModel || 'Custom API';
+    } else {
+        const m = s.localModel || 'auto';
+        if (m === 'auto' || !m) return 'Local AI (Offline)';
+        if (m.includes('deepseek')) return 'Local: DeepSeek R1';
+        if (m.includes('llama3.3') || m.includes('llama-3.3')) return 'Local: Llama 3.3';
+        if (m.includes('llama3.2') || m.includes('llama-3.2')) return 'Local: Llama 3.2';
+        if (m.includes('llama')) return 'Local: Llama 3';
+        if (m.includes('qwen')) return 'Local: Qwen 2.5';
+        if (m.includes('gemma-4') || m.includes('gemma:4')) return 'Local: Gemma 4';
+        if (m.includes('gemma')) return 'Local: Gemma 2';
+        if (m.includes('phi')) return 'Local: Phi-4';
+        if (m.includes('mistral')) return 'Local: Mistral';
+        return `Local: ${m}`;
+    }
+};
+
 // Helper: Add Message
 const addMessage = async (content, isUser = false, actions = []) => {
     // Unbox raw LLM JSON responses (e.g. Gemma/Ollama structured role/reasoning envelopes)
@@ -1678,19 +1766,7 @@ const addMessage = async (content, isUser = false, actions = []) => {
         const aiHeader = document.createElement('div');
         aiHeader.className = 'msg-sender-header';
         const personaCfg = PERSONA_CONFIGS[getPersona()] || PERSONA_CONFIGS.professional;
-        const currentEngine = globalSettings?.aiEngine || 'local';
-        let modelName = 'Ocal Core';
-        if (currentEngine === 'gemini') {
-            modelName = (globalSettings?.aiApiKey && globalSettings.aiApiKey.trim().length > 14) ? 'Gemini 1.5 Flash' : 'Cloud AI (Online)';
-        } else if (currentEngine === 'openai') {
-            modelName = (globalSettings?.openaiApiKey && globalSettings.openaiApiKey.trim().length > 14) ? 'ChatGPT' : 'Cloud AI (Online)';
-        } else if (currentEngine === 'custom') {
-            modelName = globalSettings?.customModel || 'Custom API';
-        } else {
-            modelName = (globalSettings?.localModel && globalSettings.localModel !== 'auto') 
-                ? globalSettings.localModel 
-                : 'Cloud AI (Online)';
-        }
+        const modelName = getModelDisplayTag(globalSettings);
         
         aiHeader.innerHTML = `
             <div class="msg-sender-meta">
@@ -1798,19 +1874,7 @@ const showThinking = () => {
     const group = document.createElement('div');
     group.className = 'msg-group ai thinking-group';
     const personaCfg = PERSONA_CONFIGS[getPersona()] || PERSONA_CONFIGS.professional;
-    const currentEngine = globalSettings?.aiEngine || 'local';
-    let modelName = 'Ocal Core';
-    if (currentEngine === 'gemini') {
-        modelName = (globalSettings?.aiApiKey && globalSettings.aiApiKey.trim().length > 14) ? 'Gemini 1.5 Flash' : 'Cloud AI (Online)';
-    } else if (currentEngine === 'openai') {
-        modelName = (globalSettings?.openaiApiKey && globalSettings.openaiApiKey.trim().length > 14) ? 'ChatGPT' : 'Cloud AI (Online)';
-    } else if (currentEngine === 'custom') {
-        modelName = globalSettings?.customModel || 'Custom API';
-    } else {
-        modelName = (globalSettings?.localModel && globalSettings.localModel !== 'auto') 
-            ? globalSettings.localModel 
-            : 'Cloud AI (Online)';
-    }
+    const modelName = getModelDisplayTag(globalSettings);
 
     group.innerHTML = `
         <div class="msg-sender-header">
@@ -1847,6 +1911,8 @@ const hideThinking = () => {
         currentThinkingEl.remove();
         currentThinkingEl = null;
     }
+    const tempStatus = document.getElementById('ai-agent-status-indicator');
+    if (tempStatus) tempStatus.remove();
     ocalHeaderOrb?.setState('idle');
 };
 
@@ -2304,21 +2370,23 @@ async function updateActiveModelBadge(s) {
             }
         }
 
-        if (!model || model === 'auto') model = 'deepseek-r1';
-        
-        // Clean display label
-        let displayModel = model;
-        if (model.includes('deepseek')) displayModel = 'DeepSeek R1';
-        else if (model.includes('llama3.3') || model.includes('llama-3.3')) displayModel = 'Llama 3.3';
-        else if (model.includes('llama3.2') || model.includes('llama-3.2')) displayModel = 'Llama 3.2';
-        else if (model.includes('llama3') || model.includes('llama-3')) displayModel = 'Llama 3';
-        else if (model.includes('qwen2.5') || model.includes('qwen-2.5')) displayModel = 'Qwen 2.5';
-        else if (model.includes('gemma-4') || model.includes('gemma:4')) displayModel = 'Gemma 4';
-        else if (model.includes('gemma2') || model.includes('gemma:2')) displayModel = 'Gemma 2';
-        else if (model.includes('phi4') || model.includes('phi-4')) displayModel = 'Phi-4';
-        else if (model.includes('mistral')) displayModel = 'Mistral';
+        if (!model || model === 'auto') {
+            label = 'Local AI (Offline)';
+        } else {
+            // Clean display label
+            let displayModel = model;
+            if (model.includes('deepseek')) displayModel = 'DeepSeek R1';
+            else if (model.includes('llama3.3') || model.includes('llama-3.3')) displayModel = 'Llama 3.3';
+            else if (model.includes('llama3.2') || model.includes('llama-3.2')) displayModel = 'Llama 3.2';
+            else if (model.includes('llama3') || model.includes('llama-3')) displayModel = 'Llama 3';
+            else if (model.includes('qwen2.5') || model.includes('qwen-2.5')) displayModel = 'Qwen 2.5';
+            else if (model.includes('gemma-4') || model.includes('gemma:4')) displayModel = 'Gemma 4';
+            else if (model.includes('gemma2') || model.includes('gemma:2')) displayModel = 'Gemma 2';
+            else if (model.includes('phi4') || model.includes('phi-4')) displayModel = 'Phi-4';
+            else if (model.includes('mistral')) displayModel = 'Mistral';
 
-        label = `Local: ${displayModel}`;
+            label = `Local: ${displayModel}`;
+        }
     }
     
     badge.textContent = label;
@@ -2375,10 +2443,22 @@ if (window.electronAPI) {
     fetchInitialSettings();
 
     window.electronAPI.on?.('ai-agent-action', (e, action) => {
-        const actionEl = document.createElement('div');
-        actionEl.className = 'agent-action';
-        actionEl.innerHTML = `<i class="fas ${action.icon || 'fa-bolt'}"></i> ${action.text}`;
-        messagesEl.appendChild(actionEl);
+        // If an active thinking pill exists, update its status dynamically
+        if (currentThinkingEl) {
+            const thinkingText = currentThinkingEl.querySelector('.thinking-text');
+            if (thinkingText && action.text) {
+                thinkingText.textContent = action.text.replace(/\.\.\.$/, '');
+            }
+            return;
+        }
+        let statusEl = document.getElementById('ai-agent-status-indicator');
+        if (!statusEl) {
+            statusEl = document.createElement('div');
+            statusEl.id = 'ai-agent-status-indicator';
+            statusEl.className = 'agent-transient-status';
+            messagesEl.appendChild(statusEl);
+        }
+        statusEl.innerHTML = `<i class="fas ${action.icon || 'fa-spinner fa-spin'}"></i> <span>${action.text}</span>`;
         scrollToBottom();
     });
 

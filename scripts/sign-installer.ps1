@@ -105,40 +105,70 @@ if (-not $PfxPath -and -not $Thumbprint) {
 }
 
 # 5. Execute Signing with SHA-256 + RFC 3161 Timestamp
-$timestampUrl = "http://timestamp.digicert.com"
+$timestampUrls = @(
+    "http://timestamp.digicert.com",
+    "http://timestamp.sectigo.com",
+    "http://tsa.starfieldtech.com",
+    "http://timestamp.comodoca.com"
+)
+
+$signedSuccessfully = $false
 
 if ($PfxPath) {
     Write-Host ""
     Write-Host "Signing with PFX certificate: $PfxPath" -ForegroundColor Magenta
-    $signArgs = @("sign", "/fd", "SHA256", "/tr", $timestampUrl, "/td", "SHA256", "/d", "Ocal Browser Installer")
-    if ($Password) {
-        $plainPassword = if ($Password -is [System.Security.SecureString]) {
-            [System.Net.NetworkCredential]::new('', $Password).Password
-        } else {
-            [string]$Password
-        }
-        $signArgs += @("/p", $plainPassword)
+    $plainPassword = if ($Password -is [System.Security.SecureString]) {
+        [System.Net.NetworkCredential]::new('', $Password).Password
+    } else {
+        [string]$Password
     }
-    $signArgs += @("/f", $PfxPath, $FilePath)
 
-    & $signtool $signArgs
-    if ($LASTEXITCODE -ne 0) {
-        Write-Host "Retrying with Sectigo timestamp server..." -ForegroundColor Yellow
-        $signArgs[4] = "http://timestamp.sectigo.com"
+    foreach ($ts in $timestampUrls) {
+        Write-Host "Attempting signature with timestamp: $ts" -ForegroundColor Gray
+        $signArgs = @("sign", "/fd", "SHA256", "/tr", $ts, "/td", "SHA256", "/d", "Ocal Browser")
+        if ($plainPassword) {
+            $signArgs += @("/p", $plainPassword)
+        }
+        $signArgs += @("/f", $PfxPath, $FilePath)
+
         & $signtool $signArgs
-        if ($LASTEXITCODE -ne 0) { throw "Signing failed with exit code $LASTEXITCODE" }
+        if ($LASTEXITCODE -eq 0) {
+            $signedSuccessfully = $true
+            break
+        }
+    }
+
+    if (-not $signedSuccessfully) {
+        Write-Host "Timestamp servers unreachable, signing without timestamp..." -ForegroundColor Yellow
+        $signArgs = @("sign", "/fd", "SHA256", "/d", "Ocal Browser")
+        if ($plainPassword) {
+            $signArgs += @("/p", $plainPassword)
+        }
+        $signArgs += @("/f", $PfxPath, $FilePath)
+        & $signtool $signArgs
+        if ($LASTEXITCODE -eq 0) { $signedSuccessfully = $true }
+        else { throw "Signing failed with exit code $LASTEXITCODE" }
     }
 } elseif ($Thumbprint) {
     Write-Host ""
     Write-Host "Signing with Certificate Store thumbprint: $Thumbprint" -ForegroundColor Magenta
-    $signArgs = @("sign", "/sha1", $Thumbprint, "/fd", "SHA256", "/tr", $timestampUrl, "/td", "SHA256", "/d", "Ocal Browser Installer", $FilePath)
 
-    & $signtool $signArgs
-    if ($LASTEXITCODE -ne 0) {
-        Write-Host "Retrying with Sectigo timestamp server..." -ForegroundColor Yellow
-        $signArgs[6] = "http://timestamp.sectigo.com"
+    foreach ($ts in $timestampUrls) {
+        Write-Host "Attempting signature with timestamp: $ts" -ForegroundColor Gray
+        $signArgs = @("sign", "/sha1", $Thumbprint, "/fd", "SHA256", "/tr", $ts, "/td", "SHA256", "/d", "Ocal Browser", $FilePath)
         & $signtool $signArgs
-        if ($LASTEXITCODE -ne 0) { throw "Signing failed with exit code $LASTEXITCODE" }
+        if ($LASTEXITCODE -eq 0) {
+            $signedSuccessfully = $true
+            break
+        }
+    }
+
+    if (-not $signedSuccessfully) {
+        Write-Host "Timestamp servers unreachable, signing without timestamp..." -ForegroundColor Yellow
+        $signArgs = @("sign", "/sha1", $Thumbprint, "/fd", "SHA256", "/d", "Ocal Browser", $FilePath)
+        & $signtool $signArgs
+        if ($LASTEXITCODE -eq 0) { $signedSuccessfully = $true }
+        else { throw "Signing failed with exit code $LASTEXITCODE" }
     }
 } else {
     Write-Host ""

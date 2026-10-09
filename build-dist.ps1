@@ -58,12 +58,21 @@ if (Test-Path $exePath) {
     Write-Host "WARNING: Executable not found at $exePath. Skipping icon stamp." -ForegroundColor Red
 }
 
-# 2b. Sign unpacked main executable
-if (Test-Path "certificate.pfx") {
-    Write-Host "[2b/4] Signing unpacked Ocal Browser.exe with Authenticode..." -ForegroundColor Yellow
+# 2b. Sign unpacked main executable & all PE files (.exe, .dll)
+$certToUse = if ($PfxPath -and (Test-Path $PfxPath)) { $PfxPath } elseif (Test-Path "certificate.pfx") { "certificate.pfx" } else { $null }
+$passToUse = if ($Password) {
+    if ($Password -is [System.Security.SecureString]) { [System.Net.NetworkCredential]::new('', $Password).Password } else { [string]$Password }
+} else { "OcalBrowser2026" }
+
+if ($certToUse) {
+    Write-Host "[2b/4] Signing unpacked PE files (.exe, .dll) with SHA-256 Authenticode..." -ForegroundColor Yellow
     $signScript = Join-Path $PSScriptRoot "scripts\sign-installer.ps1"
-    if ((Test-Path $exePath) -and (Test-Path $signScript)) {
-        & powershell -ExecutionPolicy Bypass -File $signScript -FilePath $exePath
+    if (Test-Path $signScript) {
+        $peFiles = Get-ChildItem -Path "dist-builder\win-unpacked" -Include *.exe, *.dll -Recurse -File -ErrorAction SilentlyContinue
+        foreach ($pe in $peFiles) {
+            Write-Host "Signing: $($pe.Name)" -ForegroundColor DarkCyan
+            & powershell -ExecutionPolicy Bypass -File $signScript -FilePath $pe.FullName -PfxPath $certToUse -Password $passToUse
+        }
     }
 }
 
