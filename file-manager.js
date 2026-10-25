@@ -340,13 +340,17 @@ function renderDrivesList() {
     
     if (systemDrives.length === 0) {
         drivesListEl.innerHTML = `
-            <div class="drive-bento-card" onclick="navigateTo('C:\\\\')">
+            <div class="drive-bento-card" data-path="C:\\" data-letter="C" onclick="navigateTo('C:\\\\')">
                 <div class="drive-card-top">
                     <div class="drive-info-cluster">
-                        <i class="fas fa-hard-drive drive-icon-wrap"></i>
-                        <span class="drive-title-text">Local Disk</span>
+                        <div class="drive-icon-badge">
+                            <i class="fas fa-hard-drive"></i>
+                        </div>
+                        <div class="drive-text-col">
+                            <span class="drive-title-text">Local Disk (C:)</span>
+                        </div>
                     </div>
-                    <span class="drive-letter-chip">C:</span>
+                    <span class="drive-pct-badge">C:</span>
                 </div>
             </div>
         `;
@@ -355,8 +359,10 @@ function renderDrivesList() {
 
     systemDrives.forEach(drive => {
         const card = document.createElement('div');
-        card.className = `drive-bento-card ${currentPath.startsWith(drive.path) ? 'active' : ''}`;
-        
+        const letter = (drive.letter || '').toUpperCase();
+        card.setAttribute('data-path', drive.path || '');
+        card.setAttribute('data-letter', letter);
+
         const percent = typeof drive.percentUsed === 'number' ? drive.percentUsed : 0;
         let fillClass = '';
         if (percent >= 90) fillClass = 'danger';
@@ -364,23 +370,37 @@ function renderDrivesList() {
 
         const freeStr = drive.freeBytes ? `${formatBytes(drive.freeBytes)} free` : '';
         const totalStr = drive.totalBytes ? formatBytes(drive.totalBytes) : '';
-        const spaceSub = freeStr ? `${freeStr} of ${totalStr}` : drive.path;
+        const spaceSub = freeStr ? `${freeStr} of ${totalStr}` : (drive.path || '');
+
+        let displayName = drive.name || (letter ? `Local Disk (${letter}:)` : 'Storage Volume');
+        if (letter && !displayName.includes(`(${letter}:)`)) {
+            displayName = `${displayName} (${letter}:)`;
+        }
+
+        const pctText = drive.totalBytes > 0 ? `${percent}%` : (letter ? `${letter}:` : '');
+
+        card.className = 'drive-bento-card';
+        card.setAttribute('title', `${displayName} • ${spaceSub}`);
 
         card.innerHTML = `
             <div class="drive-card-top">
                 <div class="drive-info-cluster">
-                    <i class="fas ${drive.isMobile ? 'fa-mobile-screen' : 'fa-hard-drive'} drive-icon-wrap"></i>
-                    <span class="drive-title-text" title="${escapeHtml(drive.name)}">${escapeHtml(drive.name)}</span>
+                    <div class="drive-icon-badge">
+                        <i class="fas ${drive.isMobile ? 'fa-mobile-screen' : 'fa-hard-drive'}"></i>
+                    </div>
+                    <div class="drive-text-col">
+                        <span class="drive-title-text">${escapeHtml(displayName)}</span>
+                    </div>
                 </div>
-                <span class="drive-letter-chip">${escapeHtml(drive.letter ? drive.letter + ':' : 'VOL')}</span>
+                ${pctText ? `<span class="drive-pct-badge">${pctText}</span>` : ''}
             </div>
             ${drive.totalBytes > 0 ? `
             <div class="drive-track-wrap">
                 <div class="drive-fill-bar ${fillClass}" style="width: ${percent}%;"></div>
             </div>
             <div class="drive-meta-sub">
-                <span>${escapeHtml(spaceSub)}</span>
-                <span>${percent}%</span>
+                <span class="drive-free-val">${escapeHtml(freeStr || 'Available')}</span>
+                <span class="drive-total-val">${escapeHtml(totalStr ? `${totalStr} total` : '')}</span>
             </div>
             ` : ''}
         `;
@@ -389,13 +409,17 @@ function renderDrivesList() {
             document.querySelectorAll('.nav-item').forEach(b => b.classList.remove('active'));
             document.querySelectorAll('.drive-bento-card').forEach(b => b.classList.remove('active'));
             card.classList.add('active');
-            if (pageTitle) pageTitle.innerText = drive.name;
+            if (pageTitle) pageTitle.innerText = displayName;
             if (pageEyebrow) pageEyebrow.innerText = 'Storage Volume';
             navigateTo(drive.path);
         };
 
         drivesListEl.appendChild(card);
     });
+
+    if (currentPath) {
+        updateDriveActiveState(currentPath);
+    }
 }
 
 // ── Navigation & History Stack ─────────────────────────────────────────────
@@ -489,11 +513,12 @@ function updateHistoryButtons() {
 }
 
 function updateDriveActiveState(targetPath) {
+    if (!targetPath) return;
+    const normTarget = targetPath.toUpperCase();
     document.querySelectorAll('.drive-bento-card').forEach(card => {
-        const titleEl = card.querySelector('.drive-title-text');
-        const letterEl = card.querySelector('.drive-letter-chip');
-        const letter = letterEl?.innerText?.replace(':', '');
-        if (letter && targetPath.toUpperCase().startsWith(letter.toUpperCase() + ':')) {
+        const driveLetter = (card.getAttribute('data-letter') || '').toUpperCase();
+        const drivePath = (card.getAttribute('data-path') || '').toUpperCase();
+        if ((driveLetter && normTarget.startsWith(driveLetter + ':')) || (drivePath && normTarget.startsWith(drivePath))) {
             card.classList.add('active');
         } else {
             card.classList.remove('active');

@@ -1,0 +1,193 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Snap Ghost Preview</title>
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            user-select: none;
+            -webkit-user-select: none;
+        }
+        html, body {
+            width: 100%;
+            height: 100%;
+            overflow: hidden;
+            background: transparent !important;
+            font-family: 'Segoe UI Variable Text', 'Segoe UI', -apple-system, sans-serif;
+        }
+        .preview-container {
+            width: 100%;
+            height: 100%;
+            padding: 6px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-sizing: border-box;
+        }
+        .snap-ghost {
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 120, 212, 0.16);
+            border: 2px solid rgba(0, 120, 212, 0.72);
+            border-radius: 10px;
+            backdrop-filter: blur(18px) saturate(180%);
+            -webkit-backdrop-filter: blur(18px) saturate(180%);
+            box-shadow: 0 0 0 1px rgba(255, 255, 255, 0.18) inset, 0 16px 48px rgba(0, 120, 212, 0.28);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            box-sizing: border-box;
+            animation: ghostAppear 0.16s cubic-bezier(0.16, 1, 0.3, 1);
+            transition: all 0.15s ease;
+            position: relative;
+        }
+        body.private-mode .snap-ghost {
+            background: rgba(139, 92, 246, 0.18);
+            border-color: rgba(139, 92, 246, 0.78);
+            box-shadow: 0 0 0 1px rgba(255, 255, 255, 0.18) inset, 0 16px 48px rgba(139, 92, 246, 0.32);
+        }
+        body.light-mode .snap-ghost {
+            background: rgba(0, 120, 212, 0.12);
+            border-color: rgba(0, 120, 212, 0.65);
+            box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.1) inset, 0 8px 32px rgba(0, 0, 0, 0.12);
+        }
+        @keyframes ghostAppear {
+            from { opacity: 0; transform: scale(0.985); }
+            to { opacity: 1; transform: scale(1); }
+        }
+        .app-badge-card {
+            background: rgba(24, 25, 34, 0.88);
+            backdrop-filter: blur(28px);
+            -webkit-backdrop-filter: blur(28px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            border-radius: 14px;
+            padding: 14px 22px;
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            box-shadow: 0 16px 40px rgba(0, 0, 0, 0.45), 0 0 0 1px rgba(255, 255, 255, 0.12) inset;
+            pointer-events: none;
+        }
+        body.light-mode .app-badge-card {
+            background: rgba(255, 255, 255, 0.94);
+            border-color: rgba(0, 0, 0, 0.14);
+            box-shadow: 0 16px 36px rgba(0, 0, 0, 0.16);
+        }
+        .app-logo {
+            width: 44px;
+            height: 44px;
+            object-fit: contain;
+            border-radius: 10px;
+            filter: drop-shadow(0 4px 10px rgba(0, 0, 0, 0.35));
+        }
+        .app-details {
+            display: flex;
+            flex-direction: column;
+            gap: 3px;
+        }
+        .app-name-row {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .app-title {
+            font-size: 16px;
+            font-weight: 700;
+            color: #ffffff;
+            letter-spacing: -0.2px;
+        }
+        body.light-mode .app-title {
+            color: #0f172a;
+        }
+        .active-pill {
+            font-size: 9.5px;
+            font-weight: 700;
+            text-transform: uppercase;
+            padding: 2.5px 7px;
+            border-radius: 10px;
+            background: #0078d4;
+            color: #ffffff;
+            letter-spacing: 0.5px;
+        }
+        body.private-mode .active-pill {
+            background: #8b5cf6;
+        }
+        .zone-label {
+            font-size: 13px;
+            font-weight: 600;
+            color: #38bdf8;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+        body.private-mode .zone-label {
+            color: #c084fc;
+        }
+        body.light-mode .zone-label {
+            color: #0284c7;
+        }
+        .sub-hint {
+            font-size: 11px;
+            color: #94a3b8;
+            margin-top: 1px;
+        }
+        body.light-mode .sub-hint {
+            color: #64748b;
+        }
+    </style>
+</head>
+<body>
+    <div class="preview-container">
+        <div class="snap-ghost">
+            <div class="app-badge-card">
+                <img src="icon.png" class="app-logo" id="preview-logo" alt="Ocal Browser">
+                <div class="app-details">
+                    <div class="app-name-row">
+                        <span class="app-title" id="app-title-text">Ocal Browser</span>
+                        <span class="active-pill" id="app-type-pill">This Window</span>
+                    </div>
+                    <div class="zone-label" id="zone-label-text">
+                        <span>Left Half (50%)</span>
+                    </div>
+                    <div class="sub-hint">Click zone in flyout to snap here • Other apps tile into companion zone</div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <script>
+        if (window.electronAPI && typeof window.electronAPI.on === 'function') {
+            window.electronAPI.on('set-preview-info', (e, data) => {
+                if (!data) return;
+                const titleText = document.getElementById('app-title-text');
+                const pill = document.getElementById('app-type-pill');
+                const zoneText = document.getElementById('zone-label-text');
+
+                if (data.isPrivate) {
+                    document.body.classList.add('private-mode');
+                    if (titleText) titleText.textContent = 'Ocal Browser (Private)';
+                    if (pill) pill.textContent = 'Private Window';
+                } else {
+                    document.body.classList.remove('private-mode');
+                    if (titleText) titleText.textContent = 'Ocal Browser';
+                    if (pill) pill.textContent = 'This Window';
+                }
+
+                if (data.themeMode === 'light') {
+                    document.body.classList.add('light-mode');
+                } else {
+                    document.body.classList.remove('light-mode');
+                }
+
+                if (zoneText && data.zoneName) {
+                    zoneText.innerHTML = '<span>' + data.zoneName + '</span>';
+                }
+            });
+        }
+    </script>
+</body>
+</html>

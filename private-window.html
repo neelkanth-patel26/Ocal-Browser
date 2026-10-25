@@ -3,6 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="Content-Security-Policy" content="default-src 'self' ocal:; script-src 'self' 'unsafe-inline' https://cdnjs.cloudflare.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com https://cdnjs.cloudflare.com; font-src 'self' https://fonts.gstatic.com https://cdnjs.cloudflare.com; img-src 'self' data: https: http: chrome-extension: blob:; connect-src 'self' https: wss: http:;">
     <title>Private Window - Ocal</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -378,6 +379,97 @@
             background: #0f1015;
             position: relative;
         }
+
+        /* Windows 11 Snap Layouts Flyout */
+        .win11-snap-flyout {
+            position: fixed;
+            top: 42px;
+            right: 44px;
+            z-index: 999999;
+            background: rgba(28, 29, 36, 0.94);
+            backdrop-filter: blur(28px) saturate(190%);
+            -webkit-backdrop-filter: blur(28px) saturate(190%);
+            border: 1px solid rgba(255, 255, 255, 0.12);
+            border-radius: 10px;
+            padding: 10px 12px 12px;
+            box-shadow: 0 16px 48px rgba(0, 0, 0, 0.5), 0 0 0 1px rgba(255, 255, 255, 0.08);
+            user-select: none;
+            -webkit-user-select: none;
+            animation: win11SnapIn 0.16s cubic-bezier(0.1, 0.9, 0.2, 1);
+            transform-origin: top right;
+        }
+
+        @keyframes win11SnapIn {
+            from { opacity: 0; transform: scale(0.96) translateY(-4px); }
+            to { opacity: 1; transform: scale(1) translateY(0); }
+        }
+
+        .win11-snap-title {
+            font-size: 10px;
+            font-weight: 700;
+            letter-spacing: 0.6px;
+            color: #94a3b8;
+            margin-bottom: 8px;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            text-transform: uppercase;
+            opacity: 0.85;
+        }
+
+        .win11-snap-grid {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .snap-layout-card {
+            width: 68px;
+            height: 48px;
+            background: rgba(0, 0, 0, 0.28);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            border-radius: 6px;
+            padding: 3px;
+            display: flex;
+            gap: 2.5px;
+            box-sizing: border-box;
+            transition: border-color 0.15s ease;
+        }
+
+        .snap-layout-card:hover {
+            border-color: rgba(255, 255, 255, 0.22);
+        }
+
+        .snap-zone {
+            background: rgba(255, 255, 255, 0.14);
+            border-radius: 3px;
+            transition: background 0.12s ease, box-shadow 0.12s ease, border-color 0.12s ease;
+            flex: 1;
+            cursor: pointer;
+            border: 1px solid transparent;
+        }
+
+        .snap-zone:hover {
+            background: #8b5cf6 !important;
+            border-color: rgba(255, 255, 255, 0.4);
+            box-shadow: 0 0 10px rgba(139, 92, 246, 0.6);
+        }
+
+        .layout-67-33 .snap-zone:first-child { flex: 2; }
+        .layout-67-33 .snap-zone:last-child { flex: 1; }
+        .layout-three .snap-zone { flex: 1; }
+
+        .layout-quad {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            grid-template-rows: 1fr 1fr;
+            gap: 2.5px;
+        }
+        .layout-quad .snap-zone {
+            flex: none;
+            width: 100%;
+            height: 100%;
+        }
     </style>
 </head>
 <body>
@@ -403,7 +495,7 @@
             <button class="win-btn" id="win-min-btn" title="Minimize">
                 <i class="fas fa-minus"></i>
             </button>
-            <button class="win-btn" id="win-max-btn" title="Maximize">
+            <button class="win-btn" id="win-max-btn">
                 <i class="far fa-square"></i>
             </button>
             <button class="win-btn close" id="win-close-btn" title="Close Private Window">

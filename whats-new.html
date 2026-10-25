@@ -1,12 +1,11 @@
 <!DOCTYPE html>
 <html lang="en">
-
 <head>
     <meta charset="UTF-8">
-    <meta http-equiv="Content-Security-Policy"
-        content="default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval' https:; style-src 'self' 'unsafe-inline' https:; font-src 'self' https: data:; img-src 'self' data: https: blob:; connect-src 'self' https: http:;">
+    <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline' https:; style-src 'self' 'unsafe-inline' https:; font-src 'self' https: data:; img-src 'self' data: https: blob:; connect-src 'self' https: http:;">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>What's New | Ocal Browser</title>
-    <!-- ANTI-FLASH: must be FIRST in head, before any stylesheet -->
+    <!-- ANTI-FLASH: must be FIRST in head -->
     <script>
         (function () {
             var t = localStorage.getItem('ocal-settings-theme') || 'light';
@@ -14,6 +13,14 @@
             if (t === 'dark') {
                 document.documentElement.style.background = '#18181B';
                 document.documentElement.style.colorScheme = 'dark';
+            } else {
+                document.documentElement.style.background = '#EDEDF0';
+            }
+            var a = localStorage.getItem('ocal-settings-accent');
+            if (a) {
+                document.documentElement.style.setProperty('--accent', a);
+                document.documentElement.style.setProperty('--accent-glow', 'color-mix(in srgb, ' + a + ' 25%, transparent)');
+                document.documentElement.style.setProperty('--accent-dim', 'color-mix(in srgb, ' + a + ' 12%, transparent)');
             }
         })();
     </script>
@@ -21,8 +28,9 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="assets/fontawesome/css/all.min.css">
+    <script src="color-harmonizer.js"></script>
     <style>
-        /* ── Reset & CSS Variables ────────────────────────────────────────────── */
+        /* ── Reset & Modern Full-Width Design System ──────────────────────────── */
         *, *::before, *::after {
             box-sizing: border-box;
             margin: 0;
@@ -32,43 +40,60 @@
 
         :root {
             --bg: #EDEDF0;
+            --bg-elevated: #FFFFFF;
             --card-bg: #FFFFFF;
-            --sp-card-white: #FFFFFF;
-            --chrome-border: rgba(0, 0, 0, 0.06);
-            --chrome-border-subtle: rgba(0, 0, 0, 0.04);
-            --text: #111111;
-            --text-dim: #555860;
+            --card-hover: #F8F8FA;
+            --border-subtle: rgba(0, 0, 0, 0.05);
+            --border-card: rgba(0, 0, 0, 0.06);
+            --text: #111113;
+            --text-secondary: #4B4D54;
+            --text-dim: #6E717B;
             --text-muted: #8E929C;
             --accent: #15AC49;
             --accent-dim: rgba(21, 172, 73, 0.10);
             --accent-glow: rgba(21, 172, 73, 0.22);
-            --accent-text: #111111;
+            --accent-text: #FFFFFF;
             --font-main: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, sans-serif;
             --font-mono: 'Space Mono', monospace;
-            --shadow-sm: 0 4px 20px rgba(0, 0, 0, 0.03);
-            --shadow-card: 0 10px 30px rgba(0, 0, 0, 0.035), 0 2px 8px rgba(0, 0, 0, 0.015);
-            --radius-pill: 100px;
-            --radius-card: 26px;
-            --radius-sub: 18px;
+            --radius-pill: 999px;
+            --radius-card: 22px;
+            --radius-sub: 16px;
+            --shadow-subtle: 0 4px 20px rgba(0, 0, 0, 0.02);
+            --shadow-float: 0 16px 40px rgba(0, 0, 0, 0.06);
+            --speed-smooth: 0.25s cubic-bezier(0.16, 1, 0.3, 1);
         }
 
         html[data-theme="dark"],
         body[data-theme="dark"] {
             --bg: #18181B;
+            --bg-elevated: #1E1E23;
             --card-bg: #222226;
-            --sp-card-white: #222226;
-            --chrome-border: rgba(255, 255, 255, 0.08);
-            --chrome-border-subtle: rgba(255, 255, 255, 0.05);
-            --text: #F4F4F5;
-            --text-dim: #A1A1AA;
-            --text-muted: #71717A;
+            --card-hover: #202026;
+            --border-subtle: rgba(255, 255, 255, 0.05);
+            --border-card: rgba(255, 255, 255, 0.07);
+            --text: #F4F4F6;
+            --text-secondary: #A6A6B2;
+            --text-dim: #7B7B88;
+            --text-muted: #62626E;
             --accent: #09F0A0;
             --accent-dim: rgba(9, 240, 160, 0.12);
             --accent-glow: rgba(9, 240, 160, 0.25);
-            --accent-text: #18181B;
-            --shadow-sm: 0 4px 20px rgba(0, 0, 0, 0.3);
-            --shadow-card: 0 12px 36px rgba(0, 0, 0, 0.35), 0 2px 8px rgba(0, 0, 0, 0.2);
-            color-scheme: dark;
+            --accent-text: #0E0E11;
+        }
+
+        html[data-theme-combo],
+        body[data-theme-combo] {
+            --bg: var(--background);
+            --bg-elevated: var(--surface);
+            --card-bg: var(--surface);
+            --card-hover: var(--surface-card);
+            --border-subtle: var(--border, rgba(255, 255, 255, 0.08));
+            --border-card: var(--border, rgba(255, 255, 255, 0.1));
+            --text: var(--text);
+            --text-secondary: var(--text-dim, #A6A6B2);
+            --text-dim: var(--text-dim, #7B7B88);
+            --text-muted: var(--text-dim, #62626E);
+            --accent: var(--accent);
         }
 
         html {
@@ -76,8 +101,8 @@
             min-height: 100%;
             background: var(--bg);
             overflow-x: hidden;
-            overflow-y: auto !important;
-            scrollbar-width: thin;
+            overflow-y: auto;
+            scroll-behavior: smooth;
         }
 
         body {
@@ -87,12 +112,11 @@
             font-family: var(--font-main);
             color: var(--text);
             overflow-x: hidden;
-            overflow-y: auto !important;
             -webkit-font-smoothing: antialiased;
             user-select: none;
             -webkit-user-select: none;
             opacity: 0;
-            transition: opacity 0.35s ease, background 0.25s ease;
+            transition: opacity 0.3s ease, background 0.25s ease;
         }
 
         body.loaded {
@@ -101,1533 +125,1218 @@
 
         /* ── Scrollbars ── */
         ::-webkit-scrollbar {
-            width: 8px;
-            height: 8px;
+            width: 6px;
+            height: 6px;
         }
         ::-webkit-scrollbar-track {
             background: transparent;
         }
         ::-webkit-scrollbar-thumb {
-            background: rgba(148, 163, 184, 0.35);
+            background: rgba(140, 140, 150, 0.25);
             border-radius: 10px;
         }
         ::-webkit-scrollbar-thumb:hover {
             background: var(--accent);
         }
 
-        /* ── Background Wallpaper & Canvas ── */
-        .sp-wallpaper-bg {
-            position: fixed;
-            inset: 0;
-            z-index: -2;
-            background: var(--bg);
-            transition: background 0.25s ease;
-        }
-
-        .particles-canvas {
-            position: fixed;
-            inset: 0;
-            z-index: -1;
-            pointer-events: none;
-            opacity: 0.25;
-        }
-
-        /* ── Main Layout Wrapper ── */
-        .sp-dashboard-wrapper {
-            max-width: 1560px;
+        /* ── Full-Width Fluid Workspace ── */
+        .fullwidth-workspace {
             width: 100%;
-            margin: 0 auto;
-            padding: 24px 32px 100px;
+            max-width: 100%;
+            padding: 24px 36px 120px;
             display: flex;
             flex-direction: column;
             gap: 24px;
         }
 
         @media (max-width: 900px) {
-            .sp-dashboard-wrapper {
-                padding: 16px 18px 90px;
+            .fullwidth-workspace {
+                padding: 16px 16px 100px;
                 gap: 18px;
             }
         }
 
-        /* ── Header Row ── */
-        .sp-header-row {
+        /* ── Full-Width Header Command Hub ── */
+        .command-header-hub {
+            background: var(--card-bg);
+            border: 1px solid var(--border-card);
+            border-radius: var(--radius-card);
+            padding: 20px 28px;
             display: flex;
             align-items: center;
             justify-content: space-between;
             flex-wrap: wrap;
-            gap: 20px;
-        }
-
-        .sp-user-greeting {
-            display: flex;
-            flex-direction: column;
-            gap: 4px;
-        }
-
-        .sp-user-name {
-            font-size: 32px;
-            font-weight: 800;
-            color: var(--text);
-            letter-spacing: -0.8px;
-            display: flex;
-            align-items: center;
-            gap: 10px;
-            flex-wrap: wrap;
-        }
-
-        .sp-welcome-prefix {
-            font-weight: 500;
-            color: var(--text-dim);
-        }
-
-        .sp-user-subtitle {
-            font-size: 13.5px;
-            color: var(--text-dim);
-            font-weight: 600;
-            display: inline-flex;
-            align-items: center;
-            gap: 8px;
-        }
-
-        .motd-quote-icon {
-            color: var(--accent) !important;
-            font-size: 11px;
-        }
-
-        /* Dot-Matrix Stats Bar */
-        .sp-stats-bar {
-            display: flex;
-            align-items: center;
-            gap: 22px;
-            background: var(--card-bg);
-            padding: 10px 24px;
-            border-radius: var(--radius-pill);
-            box-shadow: var(--shadow-sm);
-            border: 1px solid var(--chrome-border);
-        }
-
-        .sp-stat-item {
-            display: flex;
-            align-items: center;
-            gap: 8px;
-        }
-
-        .sp-dot-num {
-            font-family: var(--font-mono);
-            font-size: 16px;
-            font-weight: 700;
-            color: var(--text);
-        }
-
-        .sp-badge {
-            font-size: 11px;
-            font-weight: 700;
-            padding: 4px 12px;
-            border-radius: var(--radius-pill);
-            display: inline-flex;
-            align-items: center;
-        }
-
-        .sp-badge-lime {
-            background: var(--accent) !important;
-            color: var(--accent-text) !important;
-            font-weight: 800;
-        }
-
-        .sp-badge-gray {
-            background: rgba(148, 163, 184, 0.15);
-            color: var(--text) !important;
-            font-weight: 700;
-        }
-
-        /* Top Action Buttons */
-        .sp-top-actions {
-            display: flex;
-            align-items: center;
-            gap: 12px;
-        }
-
-        .sp-action-btn {
-            background: var(--card-bg);
-            border: 1px solid var(--chrome-border);
-            border-radius: var(--radius-pill);
-            padding: 10px 20px;
-            display: inline-flex;
-            align-items: center;
-            gap: 10px;
-            color: var(--text);
-            font-family: var(--font-main);
-            font-size: 13px;
-            font-weight: 700;
-            cursor: pointer;
-            box-shadow: var(--shadow-sm);
-            transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
-            text-decoration: none;
-        }
-
-        .sp-action-btn:hover {
-            transform: translateY(-2px);
-            border-color: var(--accent);
-            box-shadow: 0 6px 20px var(--accent-dim);
-        }
-
-        .sp-action-btn i {
-            color: var(--accent);
-            font-size: 14px;
-        }
-
-        .sp-action-card-mini {
-            background: linear-gradient(135deg, #15AC49 0%, #09F0A0 100%);
-            border-radius: 20px;
-            padding: 10px 18px;
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            gap: 14px;
-            box-shadow: 0 6px 20px rgba(21, 172, 73, 0.25);
-            color: #18181B;
-        }
-
-        .sp-ac-title {
-            font-size: 11px;
-            font-weight: 800;
-            line-height: 1.25;
-            color: #18181B;
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
-        }
-
-        .sp-pulse-ring {
-            width: 22px;
-            height: 22px;
-            border-radius: 50%;
-            border: 2px solid rgba(24, 24, 27, 0.4);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-        }
-
-        .sp-pulse-center {
-            width: 7px;
-            height: 7px;
-            border-radius: 50%;
-            background: #18181B;
-            animation: pulseDot 1.8s infinite;
-        }
-
-        @keyframes pulseDot {
-            0%, 100% { transform: scale(1); opacity: 1; }
-            50% { transform: scale(1.4); opacity: 0.6; }
-        }
-
-        /* ── Search & Filter Pill Section ── */
-        .sp-filter-section {
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
             gap: 16px;
+            box-shadow: var(--shadow-subtle);
+        }
+
+        .hub-left {
+            display: flex;
+            align-items: center;
+            gap: 18px;
             flex-wrap: wrap;
         }
 
-        .sp-search-pill {
-            flex: 1;
-            min-width: 280px;
-            max-width: 520px;
-            height: 48px;
-            background: var(--card-bg);
-            border-radius: var(--radius-pill);
-            display: flex;
-            align-items: center;
-            padding: 0 18px;
-            gap: 12px;
-            box-shadow: var(--shadow-sm);
-            border: 1px solid var(--chrome-border);
-            transition: all 0.2s ease;
-        }
-
-        .sp-search-pill:focus-within {
-            border-color: var(--accent);
-            box-shadow: 0 0 0 3px var(--accent-dim);
-        }
-
-        .sp-search-icon {
-            color: var(--text-muted);
-            font-size: 14px;
-            transition: color 0.2s ease;
-        }
-
-        .sp-search-pill:focus-within .sp-search-icon {
-            color: var(--accent);
-        }
-
-        .sp-search-input {
-            flex: 1;
-            border: none;
-            background: none;
-            font-size: 14px;
-            font-weight: 600;
-            color: var(--text);
-            outline: none;
-            font-family: var(--font-main);
-        }
-
-        .sp-search-input::placeholder {
-            color: var(--text-muted);
-            font-weight: 500;
-        }
-
-        .sp-search-badge {
-            font-family: var(--font-mono);
-            font-size: 11px;
-            font-weight: 700;
-            background: rgba(148, 163, 184, 0.15);
-            color: var(--text-muted);
-            padding: 3px 8px;
-            border-radius: 6px;
-        }
-
-        /* Category Filter Capsule Pills */
-        .sp-category-capsules {
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            flex-wrap: wrap;
-            background: var(--card-bg);
-            padding: 6px;
-            border-radius: var(--radius-pill);
-            border: 1px solid var(--chrome-border);
-            box-shadow: var(--shadow-sm);
-        }
-
-        .sp-cat-pill {
+        .brand-badge-pill {
             display: inline-flex;
             align-items: center;
-            gap: 8px;
-            padding: 8px 16px;
-            border-radius: var(--radius-pill);
-            background: transparent;
-            border: 1px solid transparent;
-            color: var(--text-dim);
-            font-family: var(--font-main);
-            font-size: 13px;
-            font-weight: 700;
-            cursor: pointer;
-            transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
-        }
-
-        .sp-cat-pill i {
-            font-size: 13px;
-            opacity: 0.8;
-        }
-
-        .sp-cat-pill:hover {
-            color: var(--text);
-            background: rgba(148, 163, 184, 0.1);
-        }
-
-        .sp-cat-pill.active {
-            background: var(--accent) !important;
-            color: var(--accent-text) !important;
-            font-weight: 800;
-            box-shadow: 0 4px 14px var(--accent-dim);
-        }
-
-        .sp-cat-pill.active i {
-            opacity: 1;
-            color: var(--accent-text);
-        }
-
-        .sp-cat-badge {
-            font-family: var(--font-mono);
-            font-size: 10px;
-            font-weight: 700;
-            padding: 2px 7px;
-            border-radius: 100px;
-            background: rgba(148, 163, 184, 0.18);
-            color: var(--text-dim);
-        }
-
-        .sp-cat-pill.active .sp-cat-badge {
-            background: rgba(0, 0, 0, 0.2);
-            color: var(--accent-text);
-        }
-
-        /* ── Hero Showroom Bento Grid ── */
-        .sp-hero-bento-grid {
-            display: grid;
-            grid-template-columns: 1.6fr 1fr;
-            gap: 20px;
-        }
-
-        @media (max-width: 1100px) {
-            .sp-hero-bento-grid {
-                grid-template-columns: 1fr;
-            }
-        }
-
-        /* Hero Banner (Gradient Card) */
-        .sp-card {
-            border-radius: var(--radius-card);
-            padding: 28px;
-            display: flex;
-            flex-direction: column;
-            justify-content: space-between;
-            position: relative;
-            overflow: hidden;
-            transition: transform 0.25s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.25s;
-        }
-
-        .sp-card:hover {
-            transform: translateY(-3px);
-        }
-
-        /* ══════════════════════════════════════════════════════════════════════════
-           INDIAN FLAG (TIRANGA) ANIMATED SHOWROOM HERO CARD
-           ══════════════════════════════════════════════════════════════════════════ */
-        .sp-card-green-grad.tiranga-hero-card {
-            position: relative;
-            overflow: hidden;
-            border-radius: var(--radius-card);
-            min-height: 285px;
-            border: 1px solid var(--chrome-border);
-            background: #000;
-            box-shadow: none;
-            transition: transform 0.22s cubic-bezier(0.16, 1, 0.3, 1);
-        }
-
-        .sp-card-green-grad.tiranga-hero-card:hover {
-            transform: translateY(-2px);
-            box-shadow: none;
-        }
-
-        /* 1. Authentic 3-Stripe Indian Flag with Waving Physics */
-        .tiranga-flag-canvas {
-            position: absolute;
-            inset: 0;
-            display: flex;
-            flex-direction: column;
-            z-index: 1;
-            pointer-events: none;
-            overflow: hidden;
-        }
-
-        .tiranga-band {
-            flex: 1;
-            width: 100%;
-            position: relative;
-        }
-
-        /* Saffron Band (Bhagwa) */
-        .tiranga-band.saffron {
-            background: linear-gradient(90deg, #FF671F 0%, #FF7824 25%, #FF5500 50%, #FF8032 75%, #FF671F 100%);
-            background-size: 200% 100%;
-            animation: flagBandWave 9s ease-in-out infinite alternate;
-        }
-
-        /* White Band (Shweta) with Ashoka Chakra */
-        .tiranga-band.white {
-            background: linear-gradient(90deg, #FFFFFF 0%, #F8FAFC 25%, #FFFFFF 50%, #F1F5F9 75%, #FFFFFF 100%);
-            background-size: 200% 100%;
-            animation: flagBandWave 9s ease-in-out infinite alternate-reverse;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-        }
-
-        /* India Green Band (Harita) */
-        .tiranga-band.green {
-            background: linear-gradient(90deg, #046A38 0%, #0F9643 25%, #03522C 50%, #138808 75%, #046A38 100%);
-            background-size: 200% 100%;
-            animation: flagBandWave 9s ease-in-out infinite alternate;
-        }
-
-        @keyframes flagBandWave {
-            0% { background-position: 0% 50%; }
-            100% { background-position: 100% 50%; }
-        }
-
-        /* 2. Ashoka Chakra Animated Centerpiece (24 Spokes) */
-        .ashoka-chakra-container {
-            position: absolute;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
-            width: 96px;
-            height: 96px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            pointer-events: none;
-            z-index: 2;
-            opacity: 0.95;
-        }
-
-        .ashoka-chakra-svg {
-            width: 100%;
-            height: 100%;
-            animation: chakraSpin 24s linear infinite;
-            filter: none;
-        }
-
-        @keyframes chakraSpin {
-            from { transform: rotate(0deg); }
-            to { transform: rotate(360deg); }
-        }
-
-        /* 3. Realistic Wind Wave & Cloth Ripples */
-        .tiranga-wind-ripples {
-            position: absolute;
-            inset: 0;
-            background: repeating-linear-gradient(
-                112deg,
-                rgba(255, 255, 255, 0) 0%,
-                rgba(255, 255, 255, 0.22) 12%,
-                rgba(0, 0, 0, 0.1) 24%,
-                rgba(255, 255, 255, 0.2) 36%,
-                rgba(0, 0, 0, 0.12) 48%,
-                rgba(255, 255, 255, 0) 60%
-            );
-            background-size: 250% 250%;
-            animation: windRippleMove 7s ease-in-out infinite;
-            mix-blend-mode: overlay;
-            pointer-events: none;
-            z-index: 3;
-        }
-
-        @keyframes windRippleMove {
-            0% {
-                background-position: 0% 0%;
-                opacity: 0.65;
-            }
-            50% {
-                background-position: 100% 50%;
-                opacity: 0.95;
-            }
-            100% {
-                background-position: 200% 100%;
-                opacity: 0.65;
-            }
-        }
-
-        /* 4. Sunlight Silk Sheen Beam */
-        .tiranga-sheen-sweep {
-            position: absolute;
-            top: 0;
-            left: -100%;
-            width: 60%;
-            height: 100%;
-            background: linear-gradient(
-                90deg, 
-                transparent 0%, 
-                rgba(255, 255, 255, 0.4) 50%, 
-                transparent 100%
-            );
-            transform: skewX(-20deg);
-            animation: sheenSweep 6s cubic-bezier(0.4, 0, 0.2, 1) infinite;
-            pointer-events: none;
-            z-index: 4;
-        }
-
-        @keyframes sheenSweep {
-            0% { left: -100%; opacity: 0; }
-            25% { opacity: 0.85; }
-            50% { left: 160%; opacity: 0; }
-            100% { left: 160%; opacity: 0; }
-        }
-
-        .sp-hero-content-flex {
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            gap: 24px;
-            height: 100%;
-            position: relative;
-            z-index: 5;
-            padding: 10px 0;
-        }
-
-        /* 5. Frosted Content Plate for Crystal Clear Contrast (Clean Shadowless Style) */
-        .sp-hero-left.sp-hero-glass-plate {
-            display: flex;
-            flex-direction: column;
             gap: 10px;
-            z-index: 5;
-            max-width: 620px;
-            background: rgba(255, 255, 255, 0.94);
-            backdrop-filter: blur(24px) saturate(1.6);
-            -webkit-backdrop-filter: blur(24px) saturate(1.6);
-            border: 1px solid rgba(255, 255, 255, 0.95);
-            border-radius: 20px;
-            padding: 22px 26px;
-            box-shadow: none;
-            color: #0F172A;
-            transition: transform 0.22s ease;
         }
 
-        .sp-hero-left.sp-hero-glass-plate:hover {
-            box-shadow: none;
-        }
-
-        body[data-theme="dark"] .sp-hero-left.sp-hero-glass-plate {
-            background: rgba(15, 23, 42, 0.92);
-            border-color: rgba(255, 255, 255, 0.12);
-            box-shadow: none;
-            color: #F8FAFC;
-        }
-
-        .sp-hero-tag {
-            font-family: var(--font-mono);
-            font-size: 11px;
-            font-weight: 800;
-            letter-spacing: 1.5px;
-            text-transform: uppercase;
-            color: #000080;
-            display: inline-flex;
-            align-items: center;
-            gap: 8px;
-        }
-
-        body[data-theme="dark"] .sp-hero-tag {
-            color: #93C5FD;
-        }
-
-        /* Tiranga Mini Pill Badge */
-        .tiranga-mini-pill {
-            display: inline-flex;
-            height: 12px;
-            width: 22px;
-            border-radius: 3px;
-            overflow: hidden;
-            box-shadow: none;
-            border: 1px solid rgba(0, 0, 0, 0.12);
-            flex-shrink: 0;
-        }
-
-        .tiranga-mini-pill .tmp-saffron {
-            flex: 1;
-            background: #FF671F;
-        }
-
-        .tiranga-mini-pill .tmp-white {
-            flex: 1;
-            background: #FFFFFF;
-        }
-
-        .tiranga-mini-pill .tmp-green {
-            flex: 1;
-            background: #046A38;
-        }
-
-        .sp-hero-title {
-            font-size: 26px;
-            font-weight: 800;
-            letter-spacing: -0.8px;
-            line-height: 1.25;
-            color: #0F172A;
-            margin: 0;
-        }
-
-        body[data-theme="dark"] .sp-hero-title {
-            color: #FFFFFF;
-        }
-
-        .sp-hero-desc {
-            font-size: 13.5px;
-            font-weight: 500;
-            line-height: 1.5;
-            color: #475569;
-            margin: 0;
-            min-height: auto;
-        }
-
-        body[data-theme="dark"] .sp-hero-desc {
-            color: #CBD5E1;
-        }
-
-        .sp-hero-right-visual {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            text-align: center;
-            background: rgba(255, 255, 255, 0.96);
-            backdrop-filter: blur(24px) saturate(1.6);
-            -webkit-backdrop-filter: blur(24px) saturate(1.6);
-            border: 1px solid rgba(255, 255, 255, 0.95);
-            border-radius: 20px;
-            padding: 20px 24px;
-            min-width: 190px;
-            color: #000080;
-            box-shadow: none;
-            flex-shrink: 0;
-            z-index: 5;
-            transition: all 0.22s cubic-bezier(0.16, 1, 0.3, 1);
-        }
-
-        .sp-hero-right-visual:hover {
-            transform: translateY(-2px);
-            box-shadow: none;
-        }
-
-        body[data-theme="dark"] .sp-hero-right-visual {
-            background: rgba(255, 255, 255, 0.96);
-            border-color: rgba(255, 255, 255, 0.95);
-            color: #000080;
-            box-shadow: none;
-        }
-
-        .chakra-mini-badge {
-            margin-bottom: 6px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-        }
-
-        .chakra-svg-mini {
-            animation: chakraSpin 14s linear infinite;
-            filter: none;
-        }
-
-        .radial-metric-title {
-            font-size: 46px;
-            font-weight: 800;
-            line-height: 1;
-            font-family: var(--font-mono);
-            letter-spacing: -2px;
-            color: #000080;
-        }
-
-        .radial-metric-status {
-            font-size: 11px;
-            font-weight: 800;
-            letter-spacing: 1.2px;
-            text-transform: uppercase;
-            margin-top: 6px;
-            color: #000080;
-            opacity: 0.9;
-        }
-
-        .sparkline-dots {
-            display: flex;
-            gap: 5px;
-            margin-top: 14px;
-            align-items: center;
-            height: 16px;
-        }
-
-        .spark-dot {
-            width: 5px;
-            height: 5px;
-            border-radius: 50%;
-            background: #000080;
-            opacity: 0.35;
-        }
-
-        .spark-dot.active {
-            opacity: 1;
-            transform: scale(1.4);
-            background: #000080;
-        }
-
-        /* ── 4 Quick Metric Bento Tiles ── */
-        .sp-stats-grid {
-            display: grid;
-            grid-template-columns: repeat(2, 1fr);
-            gap: 16px;
-        }
-
-        .sp-card-white {
-            background: var(--sp-card-white);
-            box-shadow: var(--shadow-card);
-            border: 1px solid var(--chrome-border);
-            border-radius: var(--radius-card);
-            padding: 22px;
-            display: flex;
-            flex-direction: column;
-            justify-content: space-between;
-            min-height: 136px;
-            position: relative;
-            overflow: hidden;
-            transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
-        }
-
-        .sp-card-white:hover {
-            transform: translateY(-3px);
-            border-color: var(--accent);
-            box-shadow: 0 12px 30px rgba(0, 0, 0, 0.08);
-        }
-
-        .stat-card-header {
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            width: 100%;
-        }
-
-        .stat-num {
-            font-family: var(--font-mono);
-            font-size: 32px;
-            font-weight: 700;
-            color: var(--text);
-            letter-spacing: -1px;
-            line-height: 1;
-        }
-
-        .stat-icon-bubble {
-            width: 34px;
-            height: 34px;
-            border-radius: 11px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 14px;
-            background: var(--accent-dim);
-            color: var(--accent);
-            border: 1px solid var(--accent-glow);
-            transition: all 0.25s;
-        }
-
-        .sp-card-white:hover .stat-icon-bubble {
-            transform: scale(1.08) rotate(6deg);
+        .brand-logo-sq {
+            width: 38px;
+            height: 38px;
+            border-radius: 10px;
             background: var(--accent);
             color: var(--accent-text);
-        }
-
-        .stat-card-body {
-            margin-top: 10px;
-        }
-
-        .stat-card-title {
-            font-size: 14px;
-            font-weight: 700;
-            color: var(--text);
-            letter-spacing: -0.2px;
-        }
-
-        .stat-card-desc {
-            font-size: 11.5px;
-            color: var(--text-dim);
-            margin-top: 3px;
-            line-height: 1.4;
-        }
-
-        .stat-visual-line {
-            display: flex;
-            gap: 4px;
-            align-items: center;
-            height: 4px;
-            margin-top: 8px;
-        }
-
-        .stat-dot {
-            width: 4px;
-            height: 4px;
-            border-radius: 50%;
-            background: var(--text-muted);
-            opacity: 0.25;
-            transition: all 0.3s;
-        }
-
-        .stat-dot.active {
-            background: var(--accent);
-            opacity: 1;
-        }
-
-        /* ── Feature Directory Grid ── */
-        .sp-section-header {
-            display: flex;
-            align-items: flex-end;
-            justify-content: space-between;
-            border-bottom: 1px solid var(--chrome-border);
-            padding-bottom: 14px;
-            margin-top: 8px;
-        }
-
-        .sp-section-titles h2 {
-            font-size: 22px;
-            font-weight: 800;
-            letter-spacing: -0.6px;
-            color: var(--text);
-        }
-
-        .sp-section-titles p {
-            font-size: 12.5px;
-            font-weight: 600;
-            color: var(--text-dim);
-            margin-top: 2px;
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
-            font-family: var(--font-mono);
-        }
-
-        .features-grid {
-            display: grid;
-            grid-template-columns: repeat(3, 1fr);
-            gap: 20px;
-        }
-
-        @media (max-width: 1200px) {
-            .features-grid {
-                grid-template-columns: repeat(2, 1fr);
-            }
-        }
-
-        @media (max-width: 700px) {
-            .features-grid {
-                grid-template-columns: 1fr;
-            }
-        }
-
-        /* Feature Card Showroom Bento Style */
-        .feature-item-card {
-            background: var(--sp-card-white);
-            border: 1px solid var(--chrome-border);
-            border-radius: var(--radius-card);
-            padding: 24px;
-            box-shadow: var(--shadow-card);
-            display: flex;
-            flex-direction: column;
-            justify-content: space-between;
-            min-height: 230px;
-            transition: all 0.28s cubic-bezier(0.16, 1, 0.3, 1);
-            cursor: pointer;
-            position: relative;
-            overflow: hidden;
-        }
-
-        .feature-item-card:hover {
-            transform: translateY(-4px);
-            border-color: var(--accent);
-            box-shadow: 0 16px 36px rgba(0, 0, 0, 0.08);
-        }
-
-        body[data-theme="dark"] .feature-item-card:hover {
-            box-shadow: 0 16px 36px rgba(0, 0, 0, 0.35);
-        }
-
-        .card-top {
-            display: flex;
-            flex-direction: column;
-            gap: 12px;
-        }
-
-        .card-visual-header {
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-        }
-
-        .card-icon-bubble {
-            width: 44px;
-            height: 44px;
-            border-radius: 14px;
             display: flex;
             align-items: center;
             justify-content: center;
             font-size: 18px;
-            background: var(--accent-dim);
-            color: var(--accent);
-            border: 1px solid var(--accent-glow);
-            transition: all 0.25s;
+            font-weight: 800;
         }
 
-        .feature-item-card:hover .card-icon-bubble {
-            transform: scale(1.08) rotate(4deg);
+        .brand-titles {
+            display: flex;
+            flex-direction: column;
+            gap: 2px;
+        }
+
+        .brand-name {
+            font-size: 18px;
+            font-weight: 800;
+            letter-spacing: -0.4px;
+            color: var(--text);
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .brand-subtitle {
+            font-size: 11px;
+            font-weight: 600;
+            color: var(--text-dim);
+            text-transform: uppercase;
+            letter-spacing: 0.6px;
+        }
+
+        .milestone-beacon-pill {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            background: var(--accent-dim);
+            color: var(--accent);
+            padding: 5px 14px;
+            border-radius: var(--radius-pill);
+            font-size: 12px;
+            font-weight: 700;
+        }
+
+        .beacon-pulse {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: var(--accent);
+            box-shadow: 0 0 0 0 var(--accent-glow);
+            animation: pulseWave 2s infinite;
+        }
+
+        @keyframes pulseWave {
+            0% { transform: scale(0.95); box-shadow: 0 0 0 0 var(--accent-glow); }
+            70% { transform: scale(1); box-shadow: 0 0 0 8px transparent; }
+            100% { transform: scale(0.95); box-shadow: 0 0 0 0 transparent; }
+        }
+
+        .hub-telemetry-strip {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+            background: var(--bg);
+            padding: 6px 18px;
+            border-radius: var(--radius-pill);
+            font-size: 11px;
+            font-weight: 600;
+            color: var(--text-dim);
+        }
+
+        @media (max-width: 1200px) {
+            .hub-telemetry-strip {
+                display: none;
+            }
+        }
+
+        .telemetry-item {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .telemetry-item i {
+            color: var(--accent);
+            font-size: 10px;
+        }
+
+        .telemetry-divider {
+            width: 1px;
+            height: 12px;
+            background: var(--border-subtle);
+        }
+
+        .hub-actions {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .hub-btn {
+            background: var(--bg);
+            border: none;
+            border-radius: var(--radius-pill);
+            padding: 8px 16px;
+            font-size: 12px;
+            font-weight: 600;
+            color: var(--text);
+            cursor: pointer;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 7px;
+            transition: var(--speed-smooth);
+        }
+
+        .hub-btn:hover {
+            background: var(--card-hover);
+            color: var(--accent);
+            transform: translateY(-1px);
+        }
+
+        .hub-btn.primary {
             background: var(--accent);
             color: var(--accent-text);
         }
 
-        .card-category-badge {
-            font-family: var(--font-mono);
+        .hub-btn.primary:hover {
+            opacity: 0.92;
+            transform: translateY(-2px);
+            box-shadow: 0 8px 24px var(--accent-glow);
+        }
+
+        /* ── 12-Column Asymmetric Bento Grid ── */
+        .bento-master-grid {
+            display: grid;
+            grid-template-columns: repeat(12, 1fr);
+            gap: 16px;
+        }
+
+        .bento-cell {
+            background: var(--card-bg);
+            border: 1px solid var(--border-card);
+            border-radius: var(--radius-card);
+            padding: 28px;
+            position: relative;
+            overflow: hidden;
+            box-shadow: var(--shadow-subtle);
+            transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.3s cubic-bezier(0.16, 1, 0.3, 1), border-color 0.3s ease;
+            cursor: pointer;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+        }
+
+        .bento-cell:hover {
+            border-color: color-mix(in srgb, var(--accent) 35%, var(--border-card));
+            box-shadow: var(--shadow-float);
+            transform: translateY(-3px);
+        }
+
+        /* Asymmetric Column Spans */
+        .span-7 { grid-column: span 7; }
+        .span-5 { grid-column: span 5; }
+        .span-4 { grid-column: span 4; }
+        .span-3 { grid-column: span 3; }
+        .span-6 { grid-column: span 6; }
+        .span-12 { grid-column: span 12; }
+
+        @media (max-width: 1100px) {
+            .span-7, .span-5, .span-4, .span-3, .span-6 {
+                grid-column: span 6;
+            }
+        }
+
+        @media (max-width: 720px) {
+            .span-7, .span-5, .span-4, .span-3, .span-6, .span-12 {
+                grid-column: span 12;
+            }
+        }
+
+        /* Bento Card Internal Elements */
+        .bento-cell-tag {
             font-size: 10px;
             font-weight: 700;
-            color: var(--text-dim);
-            letter-spacing: 1px;
             text-transform: uppercase;
-            background: rgba(148, 163, 184, 0.12);
-            padding: 4px 10px;
-            border-radius: 100px;
-            border: 1px solid var(--chrome-border);
+            letter-spacing: 0.8px;
+            color: var(--accent);
+            margin-bottom: 8px;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
         }
 
-        .card-title-text {
-            font-size: 16px;
+        .bento-cell-title {
+            font-size: 20px;
             font-weight: 800;
+            letter-spacing: -0.4px;
             color: var(--text);
-            letter-spacing: -0.3px;
-            line-height: 1.3;
+            line-height: 1.25;
+            margin-bottom: 10px;
         }
 
-        .card-desc-text {
-            font-size: 12.5px;
-            color: var(--text-dim);
-            line-height: 1.55;
+        .bento-cell-desc {
+            font-size: 13.5px;
+            color: var(--text-secondary);
+            line-height: 1.6;
         }
 
-        .card-footer {
-            border-top: 1px solid var(--chrome-border);
-            padding-top: 14px;
-            margin-top: 16px;
+        /* Feature Spotlight 1: AI Interactive Simulator */
+        .bento-ai-hero-mockup {
+            margin-top: 18px;
+            background: var(--bg);
+            border-radius: var(--radius-sub);
+            padding: 16px;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            border: 1px solid var(--border-subtle);
+        }
+
+        .mockup-tab-pill-row {
             display: flex;
             align-items: center;
-            justify-content: space-between;
+            gap: 8px;
+            flex-wrap: wrap;
         }
 
-        .card-footer-left {
-            font-family: var(--font-mono);
+        .mockup-tab-pill {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            background: var(--card-bg);
+            padding: 4px 10px;
+            border-radius: var(--radius-pill);
+            font-size: 11px;
+            font-weight: 600;
+            color: var(--text);
+        }
+
+        .mockup-tab-pill i {
+            color: var(--accent);
+            font-size: 11px;
+        }
+
+        .mockup-compare-badge {
+            background: var(--accent);
+            color: var(--accent-text);
+            padding: 3px 10px;
+            border-radius: var(--radius-pill);
             font-size: 10.5px;
             font-weight: 700;
-            color: var(--accent);
-            letter-spacing: 1px;
-            text-transform: uppercase;
         }
 
-        .card-footer-right {
+        .mockup-ai-response {
             font-size: 12px;
-            color: var(--text-muted);
-            transition: transform 0.2s ease, color 0.2s;
+            line-height: 1.5;
+            color: var(--text-secondary);
+            background: var(--card-bg);
+            padding: 12px 14px;
+            border-radius: var(--radius-sub);
+            border-left: 3px solid var(--accent);
         }
 
-        .feature-item-card:hover .card-footer-right {
-            transform: translateX(4px);
-            color: var(--accent);
-        }
-
-        /* ── Changelog / Timeline Segment ── */
-        .changelog-section {
+        /* Feature Spotlight 2: Browser Tabs Mockup */
+        .browser-tabs-mockup {
+            margin-top: 18px;
             display: flex;
             flex-direction: column;
-            gap: 16px;
-            margin-top: 10px;
+            gap: 8px;
+            background: var(--bg);
+            padding: 14px;
+            border-radius: var(--radius-sub);
+            border: 1px solid var(--border-subtle);
         }
 
-        .timeline-container {
+        .mockup-tab-card {
             display: flex;
-            flex-direction: column;
-            gap: 14px;
-        }
-
-        .timeline-card {
-            background: var(--sp-card-white);
-            border: 1px solid var(--chrome-border);
-            border-radius: var(--radius-card);
-            padding: 24px 28px;
-            box-shadow: var(--shadow-card);
-            display: flex;
-            justify-content: space-between;
             align-items: center;
-            gap: 24px;
-            transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+            justify-content: space-between;
+            background: var(--card-bg);
+            padding: 7px 12px;
+            border-radius: 8px;
+            font-size: 12px;
+            font-weight: 600;
+            color: var(--text);
+            gap: 8px;
         }
 
-        .timeline-card:hover {
+        .mockup-tab-card i {
+            color: var(--accent);
+            font-size: 11px;
+        }
+
+        .mockup-tab-dot {
+            width: 7px;
+            height: 7px;
+            border-radius: 50%;
+            background: var(--accent);
+            margin-left: auto;
+        }
+
+        .mockup-tab-tag {
+            font-size: 10px;
+            font-weight: 700;
+            color: var(--accent);
+            background: var(--accent-dim);
+            padding: 2px 7px;
+            border-radius: var(--radius-pill);
+            margin-left: auto;
+        }
+
+        .mockup-tab-features {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding-top: 4px;
+            font-size: 11px;
+            font-weight: 600;
+            color: var(--text-dim);
+        }
+
+        .mockup-tab-features i {
+            color: var(--accent);
+            font-size: 10px;
+        }
+
+        /* Feature Spotlight 4: Shield Stats Mockup */
+        .mockup-shield-stats {
+            margin-top: 14px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .shield-stat-pill {
+            flex: 1;
+            background: var(--bg);
+            padding: 8px 12px;
+            border-radius: var(--radius-sub);
+            display: flex;
+            flex-direction: column;
+            gap: 2px;
+            font-size: 11px;
+            color: var(--text-dim);
+            border: 1px solid var(--border-subtle);
+        }
+
+        .shield-stat-pill i {
+            color: var(--accent);
+            margin-bottom: 2px;
+        }
+
+        .shield-stat-pill strong {
+            font-size: 13px;
+            color: var(--text);
+            font-family: var(--font-mono);
+        }
+
+        /* ── 3-Tile Performance Matrix ── */
+        .metrics-matrix-row {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 16px;
+        }
+
+        @media (max-width: 800px) {
+            .metrics-matrix-row {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        .metric-tile {
+            background: var(--card-bg);
+            border: 1px solid var(--border-card);
+            border-radius: var(--radius-sub);
+            padding: 22px 24px;
+            display: flex;
+            align-items: center;
+            gap: 16px;
+            box-shadow: var(--shadow-subtle);
+            transition: var(--speed-smooth);
+        }
+
+        .metric-tile:hover {
             transform: translateY(-2px);
             border-color: var(--accent);
         }
 
-        .timeline-left {
-            display: flex;
-            flex-direction: column;
-            gap: 6px;
-            flex: 1;
-            min-width: 0;
-        }
-
-        .timeline-date-label {
-            font-family: var(--font-mono);
-            font-size: 10px;
-            font-weight: 800;
+        .metric-icon-wrap {
+            width: 44px;
+            height: 44px;
+            border-radius: 12px;
+            background: var(--bg);
             color: var(--accent);
-            letter-spacing: 1.5px;
-            text-transform: uppercase;
-        }
-
-        .timeline-card-title {
-            font-size: 17px;
-            font-weight: 800;
-            color: var(--text);
-            letter-spacing: -0.3px;
-        }
-
-        .timeline-card-desc {
-            font-size: 13px;
-            color: var(--text-dim);
-            line-height: 1.55;
-        }
-
-        .timeline-tags-wrap {
-            display: flex;
-            gap: 8px;
-            margin-top: 6px;
-            flex-wrap: wrap;
-        }
-
-        .timeline-card-tag {
-            font-family: var(--font-mono);
-            font-size: 10px;
-            font-weight: 700;
-            color: var(--text-dim);
-            background: rgba(148, 163, 184, 0.12);
-            border: 1px solid var(--chrome-border);
-            padding: 3px 10px;
-            border-radius: 6px;
-        }
-
-        .timeline-right-btn {
-            background: var(--accent-dim);
-            color: var(--accent);
-            border: 1px solid var(--accent-glow);
-            width: 40px;
-            height: 40px;
-            border-radius: 50%;
             display: flex;
             align-items: center;
             justify-content: center;
-            cursor: pointer;
+            font-size: 18px;
             flex-shrink: 0;
-            transition: all 0.25s;
         }
 
-        .timeline-card:hover .timeline-right-btn {
-            background: var(--accent);
-            color: var(--accent-text);
-            border-color: var(--accent);
-            transform: scale(1.08);
-        }
-
-        /* ── Empty State ── */
-        .empty-state {
-            grid-column: 1 / -1;
+        .metric-content {
             display: flex;
             flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            text-align: center;
-            padding: 60px 24px;
-            background: var(--sp-card-white);
-            border: 1px dashed var(--chrome-border);
-            border-radius: var(--radius-card);
-            color: var(--text-muted);
+            gap: 2px;
         }
 
-        .empty-state i {
-            font-size: 32px;
-            margin-bottom: 12px;
-            color: var(--accent);
-            opacity: 0.8;
+        .metric-val {
+            font-family: var(--font-mono);
+            font-size: 24px;
+            font-weight: 700;
+            color: var(--text);
+            line-height: 1.1;
         }
 
-        /* ── Floating Bottom Quick Navigation Bar (Home Page Cohesive) ── */
-        .sp-bottom-bar-container {
-            position: fixed;
-            bottom: 24px;
-            left: 0;
-            width: 100%;
+        .metric-lbl {
+            font-size: 12px;
+            font-weight: 600;
+            color: var(--text-dim);
+        }
+
+        /* ── Asymmetric 2-Pane Workstation (Left Sticky Rail + Right Grid) ── */
+        .two-pane-workstation {
             display: flex;
-            justify-content: center;
+            align-items: flex-start;
+            gap: 24px;
+            width: 100%;
+        }
+
+        @media (max-width: 960px) {
+            .two-pane-workstation {
+                flex-direction: column;
+            }
+        }
+
+        /* Left Rail: Sticky Navigator */
+        .sticky-left-rail {
+            width: 290px;
+            flex-shrink: 0;
+            position: sticky;
+            top: 20px;
+            background: var(--card-bg);
+            border: 1px solid var(--border-card);
+            border-radius: var(--radius-card);
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            gap: 18px;
+            box-shadow: var(--shadow-subtle);
+        }
+
+        @media (max-width: 960px) {
+            .sticky-left-rail {
+                width: 100%;
+                position: static;
+            }
+        }
+
+        .rail-search-box {
+            position: relative;
+            display: flex;
             align-items: center;
-            z-index: 100;
+            width: 100%;
+        }
+
+        .rail-search-box i {
+            position: absolute;
+            left: 12px;
+            color: var(--text-muted);
+            font-size: 13px;
             pointer-events: none;
         }
 
-        .sp-bottom-bar-pill {
-            pointer-events: auto;
-            background: var(--card-bg);
-            border: 1px solid var(--chrome-border);
-            padding: 8px 20px;
-            border-radius: var(--radius-pill);
-            display: flex;
-            align-items: center;
-            gap: 20px;
-            box-shadow: 0 12px 36px rgba(0, 0, 0, 0.12), 0 2px 8px rgba(0, 0, 0, 0.05);
-            backdrop-filter: blur(16px);
-            -webkit-backdrop-filter: blur(16px);
-        }
-
-        .sp-bottom-nav-btn {
-            background: none;
+        .rail-search-input {
+            width: 100%;
+            background: var(--bg);
             border: none;
-            color: var(--text-dim);
+            border-radius: var(--radius-pill);
+            padding: 8px 34px 8px 34px;
             font-family: var(--font-main);
             font-size: 12.5px;
+            font-weight: 500;
+            color: var(--text);
+            transition: var(--speed-smooth);
+        }
+
+        .rail-search-input:focus {
+            box-shadow: 0 0 0 2px var(--accent-dim);
+        }
+
+        .rail-key-badge {
+            position: absolute;
+            right: 10px;
+            font-family: var(--font-mono);
+            font-size: 10px;
+            background: var(--card-bg);
+            border: 1px solid var(--border-subtle);
+            padding: 1px 4px;
+            border-radius: 3px;
+            color: var(--text-muted);
+        }
+
+        .rail-menu-list {
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+        }
+
+        .rail-menu-item {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            background: transparent;
+            border: none;
+            border-radius: 10px;
+            padding: 9px 12px;
+            font-size: 12.5px;
+            font-weight: 600;
+            color: var(--text-secondary);
+            cursor: pointer;
+            transition: var(--speed-smooth);
+            text-align: left;
+        }
+
+        .rail-menu-item:hover {
+            background: var(--bg);
+            color: var(--text);
+        }
+
+        .rail-menu-item.active {
+            background: var(--accent);
+            color: var(--accent-text);
+        }
+
+        .rail-menu-item-left {
+            display: flex;
+            align-items: center;
+            gap: 9px;
+        }
+
+        .rail-menu-item-left i {
+            font-size: 13px;
+            width: 16px;
+            text-align: center;
+        }
+
+        .rail-item-badge {
+            font-size: 10px;
             font-weight: 700;
+            background: rgba(0, 0, 0, 0.08);
+            padding: 2px 7px;
+            border-radius: var(--radius-pill);
+        }
+
+        html[data-theme="dark"] .rail-item-badge {
+            background: rgba(255, 255, 255, 0.12);
+        }
+
+        .rail-menu-item.active .rail-item-badge {
+            background: rgba(0, 0, 0, 0.2);
+            color: var(--accent-text);
+        }
+
+        .rail-quick-jumps {
+            border-top: 1px solid var(--border-subtle);
+            padding-top: 14px;
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+        }
+
+        .rail-jump-label {
+            font-size: 10px;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.6px;
+            color: var(--text-muted);
+            margin-bottom: 4px;
+        }
+
+        .rail-jump-link {
+            font-size: 12px;
+            font-weight: 600;
+            color: var(--text-dim);
+            text-decoration: none;
             display: flex;
             align-items: center;
             gap: 8px;
-            cursor: pointer;
-            padding: 6px 12px;
-            border-radius: var(--radius-pill);
-            transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+            padding: 4px 6px;
+            border-radius: 6px;
+            transition: var(--speed-smooth);
         }
 
-        .sp-bottom-nav-btn:hover {
-            color: var(--text);
-            background: rgba(148, 163, 184, 0.12);
+        .rail-jump-link:hover {
+            color: var(--accent);
+            background: var(--bg);
         }
 
-        .sp-bottom-brand {
-            font-family: var(--font-mono);
-            font-size: 13px;
+        /* Right Pane: Dynamic Features Showcase */
+        .dynamic-right-pane {
+            flex: 1;
+            min-width: 0;
+            display: flex;
+            flex-direction: column;
+            gap: 24px;
+        }
+
+        .pane-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+
+        .pane-title-group {
+            display: flex;
+            flex-direction: column;
+            gap: 2px;
+        }
+
+        .pane-main-title {
+            font-size: 22px;
             font-weight: 800;
+            letter-spacing: -0.5px;
             color: var(--text);
-            letter-spacing: 2.5px;
-            padding: 0 8px;
-            opacity: 0.9;
+        }
+
+        .pane-sub-title {
+            font-size: 11.5px;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            color: var(--text-dim);
+        }
+
+        .features-fullwidth-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+            gap: 16px;
+        }
+
+        .feature-item-card {
+            background: var(--card-bg);
+            border: 1px solid var(--border-card);
+            border-radius: var(--radius-card);
+            padding: 24px;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            min-height: 210px;
+            box-shadow: var(--shadow-subtle);
+            cursor: pointer;
+            transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+
+        .feature-item-card:hover {
+            transform: translateY(-3px);
+            border-color: color-mix(in srgb, var(--accent) 30%, var(--border-card));
+            box-shadow: var(--shadow-float);
+        }
+
+        .card-top-row {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 12px;
+        }
+
+        .card-icon-box {
+            width: 38px;
+            height: 38px;
+            border-radius: 10px;
+            background: var(--bg);
+            color: var(--accent);
             display: flex;
             align-items: center;
             justify-content: center;
+            font-size: 15px;
+            transition: var(--speed-smooth);
+        }
+
+        .feature-item-card:hover .card-icon-box {
+            background: var(--accent);
+            color: var(--accent-text);
+            transform: scale(1.05);
+        }
+
+        .card-category-pill {
+            font-size: 10px;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            background: var(--bg);
+            color: var(--text-dim);
+            padding: 3px 9px;
+            border-radius: var(--radius-pill);
+        }
+
+        .card-feature-title {
+            font-size: 15px;
+            font-weight: 700;
+            color: var(--text);
+            line-height: 1.35;
+            margin-bottom: 8px;
+        }
+
+        .card-feature-desc {
+            font-size: 12.5px;
+            color: var(--text-secondary);
+            line-height: 1.55;
+            margin-bottom: 14px;
+            flex: 1;
+        }
+
+        .card-action-footer {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding-top: 12px;
+            border-top: 1px solid var(--border-subtle);
+            font-size: 11.5px;
+            font-weight: 600;
+            color: var(--accent);
+        }
+
+        .card-action-footer i {
+            transition: transform 0.2s ease;
+        }
+
+        .feature-item-card:hover .card-action-footer i {
+            transform: translateX(4px);
+        }
+
+        @keyframes fadeInCard {
+            from {
+                opacity: 0;
+                transform: translateY(12px) scale(0.98);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0) scale(1);
+            }
+        }
+
+        /* ── Full Changelog Timeline Section ── */
+        .changelog-block {
+            background: var(--card-bg);
+            border: 1px solid var(--border-card);
+            border-radius: var(--radius-card);
+            padding: 28px;
+            box-shadow: var(--shadow-subtle);
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+
+        .timeline-stream {
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
+        }
+
+        .timeline-entry-card {
+            background: var(--bg);
+            border-radius: var(--radius-sub);
+            padding: 20px 22px;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            transition: var(--speed-smooth);
+            border: 1px solid transparent;
+        }
+
+        .timeline-entry-card:hover {
+            background: var(--card-hover);
+            border-color: var(--accent);
+            transform: translateY(-2px);
+        }
+
+        .entry-top {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            flex-wrap: wrap;
+            gap: 8px;
+        }
+
+        .entry-version-title {
+            font-size: 15.5px;
+            font-weight: 700;
+            color: var(--text);
+        }
+
+        .entry-date {
+            font-family: var(--font-mono);
+            font-size: 11px;
+            font-weight: 700;
+            color: var(--accent);
+            background: var(--accent-dim);
+            padding: 3px 10px;
+            border-radius: var(--radius-pill);
+        }
+
+        .entry-desc {
+            font-size: 13px;
+            line-height: 1.6;
+            color: var(--text-secondary);
+        }
+
+        .entry-tags {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 6px;
+        }
+
+        .entry-tag-pill {
+            font-size: 10.5px;
+            font-weight: 600;
+            background: var(--card-bg);
+            color: var(--text-dim);
+            padding: 2.5px 8px;
+            border-radius: var(--radius-pill);
+        }
+
+        /* ── Floating Command Bottom Dock ── */
+        .floating-bottom-dock {
+            position: fixed;
+            bottom: 24px;
+            left: 50%;
+            transform: translateX(-50%);
+            z-index: 1000;
+            background: color-mix(in srgb, var(--card-bg) 85%, transparent);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border: 1px solid var(--border-card);
+            border-radius: var(--radius-pill);
+            padding: 6px 10px;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            box-shadow: 0 16px 40px rgba(0, 0, 0, 0.25);
+        }
+
+        .dock-action-btn {
+            background: transparent;
+            border: none;
+            border-radius: var(--radius-pill);
+            padding: 7px 14px;
+            font-size: 12px;
+            font-weight: 600;
+            color: var(--text);
+            cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            transition: var(--speed-smooth);
+        }
+
+        .dock-action-btn:hover {
+            background: var(--accent);
+            color: var(--accent-text);
+            transform: translateY(-2px);
+        }
+
+        .dock-divider-v {
+            width: 1px;
+            height: 16px;
+            background: var(--border-card);
         }
     </style>
 </head>
-
 <body>
-    <div class="sp-wallpaper-bg"></div>
-    <canvas class="particles-canvas" id="particles-canvas"></canvas>
-
-    <main class="sp-dashboard-wrapper">
-        <!-- ══ Header Row: Showroom Greeting & Stats Bar ══ -->
-        <header class="sp-header-row">
-            <div class="sp-user-greeting">
-                <h1 class="sp-user-name">
-                    <span class="sp-welcome-prefix">What's New in </span>
-                    <span>Ocal Browser</span>
-                </h1>
-                <div class="sp-user-subtitle">
-                    <i class="fas fa-quote-left motd-quote-icon"></i>
-                    <span>Seamless UI/UX, Instant Page Engine, Ambient Audio, Next-Gen AI & Military-Grade Password Vault</span>
+    <div class="fullwidth-workspace">
+        <!-- ══ Full-Width Header Command Hub ══ -->
+        <header class="command-header-hub">
+            <div class="hub-left">
+                <div class="brand-badge-pill">
+                    <div class="brand-logo-sq">O</div>
+                    <div class="brand-titles">
+                        <span class="brand-name">What's New in Ocal</span>
+                        <span class="brand-subtitle">Flagship Production Architecture</span>
+                    </div>
+                </div>
+                <div class="milestone-beacon-pill">
+                    <span class="beacon-pulse"></span>
+                    <span>v10.0.01 Stable</span>
                 </div>
             </div>
 
-            <!-- Dot-Matrix Stats Bar -->
-            <div class="sp-stats-bar">
-                <div class="sp-stat-item">
-                    <span class="sp-dot-num" id="version-stat">v10.0.0</span>
-                    <span class="sp-badge sp-badge-lime">Production</span>
+            <!-- Real-Time Browser State Indicators -->
+            <div class="hub-telemetry-strip">
+                <div class="telemetry-item">
+                    <i class="fas fa-shield-halved"></i>
+                    <span>Ocal Shield: Active</span>
                 </div>
-                <div class="sp-stat-item">
-                    <span class="sp-dot-num" id="features-stat">28</span>
-                    <span class="sp-badge sp-badge-gray">Features</span>
+                <div class="telemetry-divider"></div>
+                <div class="telemetry-item">
+                    <i class="fas fa-wand-magic-sparkles"></i>
+                    <span>AI Copilot: Ready</span>
                 </div>
-                <div class="sp-stat-item">
-                    <span class="sp-dot-num">100%</span>
-                    <span class="sp-badge sp-badge-gray">Encrypted</span>
+                <div class="telemetry-divider"></div>
+                <div class="telemetry-item">
+                    <i class="fas fa-puzzle-piece"></i>
+                    <span>Extensions: Supported</span>
+                </div>
+                <div class="telemetry-divider"></div>
+                <div class="telemetry-item">
+                    <i class="fas fa-lock"></i>
+                    <span>Vault: Protected</span>
                 </div>
             </div>
 
-            <!-- Top Action Buttons -->
-            <div class="sp-top-actions">
-                <a href="https://github.com/neelkanth-patel26/Ocal-Browser/releases" target="_blank" class="sp-action-btn" title="View Releases on GitHub">
+            <div class="hub-actions">
+                <a href="https://github.com/neelkanth-patel26/Ocal-Browser/releases" target="_blank" class="hub-btn" title="View Releases on GitHub">
                     <i class="fab fa-github"></i>
                     <span>Releases</span>
                 </a>
-                <div class="sp-action-card-mini">
-                    <span class="sp-ac-title">Flagship<br>Build</span>
-                    <div class="sp-pulse-ring">
-                        <div class="sp-pulse-center"></div>
-                    </div>
-                </div>
+                <button class="hub-btn primary" onclick="navigate('ocal://settings')">
+                    <i class="fas fa-sliders"></i>
+                    <span>Settings</span>
+                </button>
             </div>
         </header>
 
-        <!-- ══ Search & Category Filter Section ══ -->
-        <section class="sp-filter-section">
-            <!-- Search Pill -->
-            <div class="sp-search-pill">
-                <i class="fas fa-magnifying-glass sp-search-icon"></i>
-                <input type="text" class="sp-search-input" id="feature-search" placeholder="Search features, modules, contributors (Press '/' to focus)..." autocomplete="off">
-                <span class="sp-search-badge">/</span>
-            </div>
-
-            <!-- Category Capsule Filter Tabs -->
-            <div class="sp-category-capsules">
-                <button class="sp-cat-pill active" data-category="all" onclick="setCategory('all')">
-                    <i class="fas fa-cubes"></i>
-                    <span>All Features</span>
-                    <span class="sp-cat-badge" id="count-all">0</span>
-                </button>
-                <button class="sp-cat-pill" data-category="extensions" onclick="setCategory('extensions')">
-                    <i class="fas fa-puzzle-piece"></i>
-                    <span>Extensions & Store</span>
-                    <span class="sp-cat-badge" id="count-ext">0</span>
-                </button>
-                <button class="sp-cat-pill" data-category="multitasking" onclick="setCategory('multitasking')">
-                    <i class="fas fa-columns"></i>
-                    <span>Multitasking & AI</span>
-                    <span class="sp-cat-badge" id="count-multi">0</span>
-                </button>
-                <button class="sp-cat-pill" data-category="performance" onclick="setCategory('performance')">
-                    <i class="fas fa-bolt"></i>
-                    <span>Speed & Security</span>
-                    <span class="sp-cat-badge" id="count-perf">0</span>
-                </button>
-                <button class="sp-cat-pill" data-category="media" onclick="setCategory('media')">
-                    <i class="fas fa-photo-film"></i>
-                    <span>Better UI & Audio</span>
-                    <span class="sp-cat-badge" id="count-media">0</span>
-                </button>
-                <button class="sp-cat-pill" data-category="contributors" onclick="setCategory('contributors')">
-                    <i class="fas fa-user-group"></i>
-                    <span>Contributors</span>
-                    <span class="sp-cat-badge" id="count-team">0</span>
-                </button>
-            </div>
-        </section>
-
-        <!-- ══ Hero Showroom Bento Grid ══ -->
-        <section class="sp-hero-bento-grid">
-            <!-- Indian Flag (Tiranga) Animated Hero Showroom Card -->
-            <div class="sp-card sp-card-green-grad tiranga-hero-card">
-                <!-- 3-Stripe Indian Flag Canvas with Physics Animations -->
-                <div class="tiranga-flag-canvas" aria-hidden="true">
-                    <div class="tiranga-band saffron"></div>
-                    <div class="tiranga-band white">
-                        <!-- High-Detail Animated Ashoka Chakra (24 Spokes) -->
-                        <div class="ashoka-chakra-container">
-                            <svg class="ashoka-chakra-svg" viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg">
-                                <circle cx="100" cy="100" r="92" fill="none" stroke="#000080" stroke-width="4.5" />
-                                <circle cx="100" cy="100" r="86" fill="none" stroke="#000080" stroke-width="1.5" />
-                                <circle cx="100" cy="100" r="18" fill="#000080" />
-                                <circle cx="100" cy="100" r="7" fill="#FFFFFF" />
-                                <g stroke="#000080" stroke-width="2.5" stroke-linecap="round">
-                                    <line x1="100" y1="100" x2="100" y2="12" />
-                                    <line x1="100" y1="100" x2="100" y2="12" transform="rotate(15 100 100)" />
-                                    <line x1="100" y1="100" x2="100" y2="12" transform="rotate(30 100 100)" />
-                                    <line x1="100" y1="100" x2="100" y2="12" transform="rotate(45 100 100)" />
-                                    <line x1="100" y1="100" x2="100" y2="12" transform="rotate(60 100 100)" />
-                                    <line x1="100" y1="100" x2="100" y2="12" transform="rotate(75 100 100)" />
-                                    <line x1="100" y1="100" x2="100" y2="12" transform="rotate(90 100 100)" />
-                                    <line x1="100" y1="100" x2="100" y2="12" transform="rotate(105 100 100)" />
-                                    <line x1="100" y1="100" x2="100" y2="12" transform="rotate(120 100 100)" />
-                                    <line x1="100" y1="100" x2="100" y2="12" transform="rotate(135 100 100)" />
-                                    <line x1="100" y1="100" x2="100" y2="12" transform="rotate(150 100 100)" />
-                                    <line x1="100" y1="100" x2="100" y2="12" transform="rotate(165 100 100)" />
-                                    <line x1="100" y1="100" x2="100" y2="12" transform="rotate(180 100 100)" />
-                                    <line x1="100" y1="100" x2="100" y2="12" transform="rotate(195 100 100)" />
-                                    <line x1="100" y1="100" x2="100" y2="12" transform="rotate(210 100 100)" />
-                                    <line x1="100" y1="100" x2="100" y2="12" transform="rotate(225 100 100)" />
-                                    <line x1="100" y1="100" x2="100" y2="12" transform="rotate(240 100 100)" />
-                                    <line x1="100" y1="100" x2="100" y2="12" transform="rotate(255 100 100)" />
-                                    <line x1="100" y1="100" x2="100" y2="12" transform="rotate(270 100 100)" />
-                                    <line x1="100" y1="100" x2="100" y2="12" transform="rotate(285 100 100)" />
-                                    <line x1="100" y1="100" x2="100" y2="12" transform="rotate(300 100 100)" />
-                                    <line x1="100" y1="100" x2="100" y2="12" transform="rotate(315 100 100)" />
-                                    <line x1="100" y1="100" x2="100" y2="12" transform="rotate(330 100 100)" />
-                                    <line x1="100" y1="100" x2="100" y2="12" transform="rotate(345 100 100)" />
-                                </g>
-                                <g fill="#000080">
-                                    <circle cx="100" cy="13" r="2.8" transform="rotate(7.5 100 100)" />
-                                    <circle cx="100" cy="13" r="2.8" transform="rotate(22.5 100 100)" />
-                                    <circle cx="100" cy="13" r="2.8" transform="rotate(37.5 100 100)" />
-                                    <circle cx="100" cy="13" r="2.8" transform="rotate(52.5 100 100)" />
-                                    <circle cx="100" cy="13" r="2.8" transform="rotate(67.5 100 100)" />
-                                    <circle cx="100" cy="13" r="2.8" transform="rotate(82.5 100 100)" />
-                                    <circle cx="100" cy="13" r="2.8" transform="rotate(97.5 100 100)" />
-                                    <circle cx="100" cy="13" r="2.8" transform="rotate(112.5 100 100)" />
-                                    <circle cx="100" cy="13" r="2.8" transform="rotate(127.5 100 100)" />
-                                    <circle cx="100" cy="13" r="2.8" transform="rotate(142.5 100 100)" />
-                                    <circle cx="100" cy="13" r="2.8" transform="rotate(157.5 100 100)" />
-                                    <circle cx="100" cy="13" r="2.8" transform="rotate(172.5 100 100)" />
-                                    <circle cx="100" cy="13" r="2.8" transform="rotate(187.5 100 100)" />
-                                    <circle cx="100" cy="13" r="2.8" transform="rotate(202.5 100 100)" />
-                                    <circle cx="100" cy="13" r="2.8" transform="rotate(217.5 100 100)" />
-                                    <circle cx="100" cy="13" r="2.8" transform="rotate(232.5 100 100)" />
-                                    <circle cx="100" cy="13" r="2.8" transform="rotate(247.5 100 100)" />
-                                    <circle cx="100" cy="13" r="2.8" transform="rotate(262.5 100 100)" />
-                                    <circle cx="100" cy="13" r="2.8" transform="rotate(277.5 100 100)" />
-                                    <circle cx="100" cy="13" r="2.8" transform="rotate(292.5 100 100)" />
-                                    <circle cx="100" cy="13" r="2.8" transform="rotate(307.5 100 100)" />
-                                    <circle cx="100" cy="13" r="2.8" transform="rotate(322.5 100 100)" />
-                                    <circle cx="100" cy="13" r="2.8" transform="rotate(337.5 100 100)" />
-                                    <circle cx="100" cy="13" r="2.8" transform="rotate(352.5 100 100)" />
-                                </g>
-                            </svg>
+        <!-- ══ 12-Column Asymmetric Bento Grid ══ -->
+        <section class="bento-master-grid" id="hero-bento">
+            <!-- Spotlight 1: AI Evolution & Tab-Aware Intelligence (Span 7) -->
+            <div class="bento-cell span-7" onclick="navigate('ocal://home')">
+                <div>
+                    <span class="bento-cell-tag"><i class="fas fa-wand-magic-sparkles"></i> Milestone Flagship Feature</span>
+                    <h2 class="bento-cell-title">Tab-Aware AI Copilot & Multi-Tab Comparative Analysis</h2>
+                    <p class="bento-cell-desc">Seamlessly mention and attach active tabs using @tab autocomplete. Compare multiple live web pages side-by-side, analyze differences, pros/cons, and synthesize research offline with zero cloud dependency.</p>
+                    
+                    <div class="bento-ai-hero-mockup">
+                        <div class="mockup-tab-pill-row">
+                            <span class="mockup-tab-pill"><i class="fas fa-globe"></i> GitHub Repository</span>
+                            <span class="mockup-tab-pill"><i class="fas fa-globe"></i> Wikipedia Docs</span>
+                            <span class="mockup-compare-badge"><i class="fas fa-code-compare"></i> Comparing 2 Tabs</span>
+                        </div>
+                        <div class="mockup-ai-response">
+                            <strong>Ocal AI Synthesis:</strong> Analyzed open tabs. Tab 1 focuses on binary releases and CI workflows; Tab 2 provides reference architectural history.
                         </div>
                     </div>
-                    <div class="tiranga-band green"></div>
-
-                    <!-- Animated Wind Ripples & Silk Sheen -->
-                    <div class="tiranga-wind-ripples"></div>
-                    <div class="tiranga-sheen-sweep"></div>
                 </div>
-
-                <div class="sp-hero-content-flex">
-                    <div class="sp-hero-left sp-hero-glass-plate">
-                        <div class="sp-hero-tag">
-                            <span class="tiranga-mini-pill" title="National Flag of India">
-                                <span class="tmp-saffron"></span>
-                                <span class="tmp-white"></span>
-                                <span class="tmp-green"></span>
-                            </span>
-                            <i class="fas fa-circle-check"></i>
-                            <span>v10.0.0 Milestone Release</span>
-                        </div>
-                        <h2 class="sp-hero-title">Version 10.0.0: Certified Authenticode Publisher, Microsoft Store Compliance & Agentic AI Evolution</h2>
-                        <p class="sp-hero-desc" id="hero-desc">Full SHA-256 Authenticode signing across all Portable Executables (PE), official Microsoft Store Policy 10.2.9 compliance under Gaming Network Studio, rich AI markdown representation, and production dual-format distributions.</p>
-                    </div>
-                    <div class="sp-hero-right-visual">
-                        <div class="chakra-mini-badge" title="Ashoka Chakra - 24 Spokes of Progress">
-                            <svg class="chakra-svg-mini" viewBox="0 0 200 200" width="30" height="30" xmlns="http://www.w3.org/2000/svg">
-                                <circle cx="100" cy="100" r="92" fill="none" stroke="#000080" stroke-width="6" />
-                                <circle cx="100" cy="100" r="20" fill="#000080" />
-                                <circle cx="100" cy="100" r="8" fill="#FFFFFF" />
-                                <g stroke="#000080" stroke-width="3.5" stroke-linecap="round">
-                                    <line x1="100" y1="100" x2="100" y2="12" />
-                                    <line x1="100" y1="100" x2="100" y2="12" transform="rotate(15 100 100)" />
-                                    <line x1="100" y1="100" x2="100" y2="12" transform="rotate(30 100 100)" />
-                                    <line x1="100" y1="100" x2="100" y2="12" transform="rotate(45 100 100)" />
-                                    <line x1="100" y1="100" x2="100" y2="12" transform="rotate(60 100 100)" />
-                                    <line x1="100" y1="100" x2="100" y2="12" transform="rotate(75 100 100)" />
-                                    <line x1="100" y1="100" x2="100" y2="12" transform="rotate(90 100 100)" />
-                                    <line x1="100" y1="100" x2="100" y2="12" transform="rotate(105 100 100)" />
-                                    <line x1="100" y1="100" x2="100" y2="12" transform="rotate(120 100 100)" />
-                                    <line x1="100" y1="100" x2="100" y2="12" transform="rotate(135 100 100)" />
-                                    <line x1="100" y1="100" x2="100" y2="12" transform="rotate(150 100 100)" />
-                                    <line x1="100" y1="100" x2="100" y2="12" transform="rotate(165 100 100)" />
-                                    <line x1="100" y1="100" x2="100" y2="12" transform="rotate(180 100 100)" />
-                                    <line x1="100" y1="100" x2="100" y2="12" transform="rotate(195 100 100)" />
-                                    <line x1="100" y1="100" x2="100" y2="12" transform="rotate(210 100 100)" />
-                                    <line x1="100" y1="100" x2="100" y2="12" transform="rotate(225 100 100)" />
-                                    <line x1="100" y1="100" x2="100" y2="12" transform="rotate(240 100 100)" />
-                                    <line x1="100" y1="100" x2="100" y2="12" transform="rotate(255 100 100)" />
-                                    <line x1="100" y1="100" x2="100" y2="12" transform="rotate(270 100 100)" />
-                                    <line x1="100" y1="100" x2="100" y2="12" transform="rotate(285 100 100)" />
-                                    <line x1="100" y1="100" x2="100" y2="12" transform="rotate(300 100 100)" />
-                                    <line x1="100" y1="100" x2="100" y2="12" transform="rotate(315 100 100)" />
-                                    <line x1="100" y1="100" x2="100" y2="12" transform="rotate(330 100 100)" />
-                                    <line x1="100" y1="100" x2="100" y2="12" transform="rotate(345 100 100)" />
-                                </g>
-                            </svg>
-                        </div>
-                        <div class="radial-metric-title">10.0.0</div>
-                        <div class="radial-metric-status">Milestone Build</div>
-                        <div class="sparkline-dots">
-                            <span class="spark-dot"></span>
-                            <span class="spark-dot"></span>
-                            <span class="spark-dot"></span>
-                            <span class="spark-dot active"></span>
-                            <span class="spark-dot active"></span>
-                        </div>
-                    </div>
+                <div style="margin-top: 18px; display: flex; align-items: center; justify-content: space-between; font-size: 12px; font-weight: 700; color: var(--accent);">
+                    <span>Launch AI Copilot</span>
+                    <i class="fas fa-arrow-right"></i>
                 </div>
             </div>
 
-            <!-- 4 Quick Metric Bento Tiles -->
-            <div class="sp-stats-grid" id="stats-row">
-                <div class="sp-card-white">
-                    <div class="stat-card-header">
-                        <span class="stat-num"><span class="counter" data-target="60">0</span>%</span>
-                        <div class="stat-icon-bubble"><i class="fas fa-bolt"></i></div>
-                    </div>
-                    <div class="stat-card-body">
-                        <div class="stat-card-title">Faster Load Times</div>
-                        <div class="stat-card-desc">Zero-overhead ad-blocking & pre-rendered DOM pipelines</div>
-                    </div>
-                    <div class="stat-visual-line">
-                        <span class="stat-dot active"></span>
-                        <span class="stat-dot active"></span>
-                        <span class="stat-dot active"></span>
-                        <span class="stat-dot active"></span>
-                        <span class="stat-dot active"></span>
+            <!-- Spotlight 2: Fluid Tabs & Split-Screen Workspace (Span 5) -->
+            <div class="bento-cell span-5" onclick="navigate('ocal://settings')">
+                <div>
+                    <span class="bento-cell-tag"><i class="fas fa-table-columns"></i> Multitasking & Tabs</span>
+                    <h2 class="bento-cell-title">Fluid Tabs & Split-Screen Workspace</h2>
+                    <p class="bento-cell-desc">Customize your browsing layout with floating horizontal tabs or collapsible vertical tab groups, and view multiple pages side-by-side with instant snap.</p>
+
+                    <div class="browser-tabs-mockup">
+                        <div class="mockup-tab-card active">
+                            <i class="fas fa-file-code"></i>
+                            <span>Active Project Tab</span>
+                            <span class="mockup-tab-dot"></span>
+                        </div>
+                        <div class="mockup-tab-card">
+                            <i class="fas fa-compass"></i>
+                            <span>Reference Research</span>
+                            <span class="mockup-tab-tag">Split 50%</span>
+                        </div>
+                        <div class="mockup-tab-features">
+                            <span><i class="fas fa-check"></i> Vertical Tabs</span>
+                            <span><i class="fas fa-check"></i> Split Screen</span>
+                            <span><i class="fas fa-check"></i> Fast Switching</span>
+                        </div>
                     </div>
                 </div>
+                <div style="margin-top: 18px; display: flex; align-items: center; justify-content: space-between; font-size: 12px; font-weight: 700; color: var(--accent);">
+                    <span>Configure Tab Layout</span>
+                    <i class="fas fa-arrow-right"></i>
+                </div>
+            </div>
 
-                <div class="sp-card-white">
-                    <div class="stat-card-header">
-                        <span class="stat-num"><span class="counter" data-target="100">0</span>%</span>
-                        <div class="stat-icon-bubble"><i class="fas fa-wand-magic-sparkles"></i></div>
-                    </div>
-                    <div class="stat-card-body">
-                        <div class="stat-card-title">Better UI & Smooth UX</div>
-                        <div class="stat-card-desc">Zero-jitter hover physics, clean shadowless cards & modals</div>
-                    </div>
-                    <div class="stat-visual-line">
-                        <span class="stat-dot active"></span>
-                        <span class="stat-dot active"></span>
-                        <span class="stat-dot active"></span>
-                        <span class="stat-dot active"></span>
-                        <span class="stat-dot active"></span>
+            <!-- Spotlight 3: Universal Chrome Extension Polyfills (Span 4) -->
+            <div class="bento-cell span-4" onclick="navigate('ocal://store')">
+                <div>
+                    <span class="bento-cell-tag"><i class="fas fa-puzzle-piece"></i> Extension Ecosystem</span>
+                    <h3 class="bento-cell-title">Chrome Extension Support & Store</h3>
+                    <p class="bento-cell-desc">Universal polyfills for chrome.windows, chrome.storage, and chrome.action. Features a topbar capsule with smart overflow and dynamic popup auto-sizing.</p>
+                </div>
+                <div style="margin-top: 18px; display: flex; align-items: center; justify-content: space-between; font-size: 12px; font-weight: 700; color: var(--accent);">
+                    <span>Browse Extension Store</span>
+                    <i class="fas fa-arrow-right"></i>
+                </div>
+            </div>
+
+            <!-- Spotlight 4: Built-in Ocal Shield & Tracker Protection (Span 4) -->
+            <div class="bento-cell span-4" onclick="navigate('ocal://settings')">
+                <div>
+                    <span class="bento-cell-tag"><i class="fas fa-shield-halved"></i> Privacy & Speed</span>
+                    <h3 class="bento-cell-title">Built-in Ocal Shield & Tracker Protection</h3>
+                    <p class="bento-cell-desc">Block intrusive video ads, popups, and invasive cross-site tracking scripts automatically. Browse faster with zero third-party extensions required.</p>
+                    
+                    <div class="mockup-shield-stats">
+                        <div class="shield-stat-pill">
+                            <i class="fas fa-ban"></i>
+                            <span>Ads Blocked</span>
+                            <strong>100% Clean</strong>
+                        </div>
+                        <div class="shield-stat-pill">
+                            <i class="fas fa-user-shield"></i>
+                            <span>Trackers</span>
+                            <strong>Neutralized</strong>
+                        </div>
                     </div>
                 </div>
-
-                <div class="sp-card-white">
-                    <div class="stat-card-header">
-                        <span class="stat-num"><span class="counter" data-target="22">0</span>+</span>
-                        <div class="stat-icon-bubble"><i class="fas fa-puzzle-piece"></i></div>
-                    </div>
-                    <div class="stat-card-body">
-                        <div class="stat-card-title">Chrome Extension Support</div>
-                        <div class="stat-card-desc">Universal polyfills, topbar capsule, dynamic popup sizing</div>
-                    </div>
-                    <div class="stat-visual-line">
-                        <span class="stat-dot active"></span>
-                        <span class="stat-dot active"></span>
-                        <span class="stat-dot active"></span>
-                        <span class="stat-dot active"></span>
-                        <span class="stat-dot active"></span>
-                    </div>
+                <div style="margin-top: 18px; display: flex; align-items: center; justify-content: space-between; font-size: 12px; font-weight: 700; color: var(--accent);">
+                    <span>Shield Settings</span>
+                    <i class="fas fa-arrow-right"></i>
                 </div>
+            </div>
 
-                <div class="sp-card-white">
-                    <div class="stat-card-header">
-                        <span class="stat-num"><span class="counter" data-target="256">0</span>-Bit</span>
-                        <div class="stat-icon-bubble"><i class="fas fa-shield-halved"></i></div>
-                    </div>
-                    <div class="stat-card-body">
-                        <div class="stat-card-title">Vault Encryption</div>
-                        <div class="stat-card-desc">Hardware biometrics, Windows Hello & smart autofill</div>
-                    </div>
-                    <div class="stat-visual-line">
-                        <span class="stat-dot active"></span>
-                        <span class="stat-dot active"></span>
-                        <span class="stat-dot active"></span>
-                        <span class="stat-dot active"></span>
-                        <span class="stat-dot active"></span>
-                    </div>
+            <!-- Spotlight 5: 256-Bit Vault & Cookie Eraser (Span 4) -->
+            <div class="bento-cell span-4" onclick="navigate('ocal://settings')">
+                <div>
+                    <span class="bento-cell-tag"><i class="fas fa-vault"></i> Military-Grade Guard</span>
+                    <h3 class="bento-cell-title">Biometric Vault & Cookie Eraser</h3>
+                    <p class="bento-cell-desc">AES-GCM-256 encryption with Windows Hello hardware biometrics and thorough multi-partition cookie purging with zero background network leaks.</p>
+                </div>
+                <div style="margin-top: 18px; display: flex; align-items: center; justify-content: space-between; font-size: 12px; font-weight: 700; color: var(--accent);">
+                    <span>Open Password Vault</span>
+                    <i class="fas fa-arrow-right"></i>
                 </div>
             </div>
         </section>
 
-        <!-- ══ Feature Directory Showcase Grid ══ -->
-        <section class="features-section">
-            <div class="sp-section-header">
-                <div class="sp-section-titles">
-                    <h2 id="dir-title">All Features & Enhancements</h2>
-                    <p id="dir-subtitle">SHOWING ALL MAJOR UPGRADES IN V10.0.0 MILESTONE</p>
+        <!-- ══ 3-Tile Performance Matrix ══ -->
+        <section class="metrics-matrix-row" id="stats-section">
+            <div class="metric-tile">
+                <div class="metric-icon-wrap"><i class="fas fa-bolt"></i></div>
+                <div class="metric-content">
+                    <span class="metric-val"><span class="counter" data-target="60">0</span>%</span>
+                    <span class="metric-lbl">Faster Page Loading</span>
                 </div>
             </div>
-            <div class="features-grid" id="directory-grid" style="margin-top: 20px;"></div>
-        </section>
-
-        <!-- ══ Recent Changelog Segment ══ -->
-        <section class="changelog-section">
-            <div class="sp-section-header">
-                <div class="sp-section-titles">
-                    <h2>Release History & Changelog</h2>
-                    <p>OFFICIAL VERSION RECORDS & PATCH NOTES</p>
+            <div class="metric-tile">
+                <div class="metric-icon-wrap"><i class="fas fa-lock"></i></div>
+                <div class="metric-content">
+                    <span class="metric-val">256-Bit</span>
+                    <span class="metric-lbl">AES-GCM Biometric Vault</span>
                 </div>
             </div>
-            <div class="timeline-container" id="timeline" style="margin-top: 20px;"></div>
-        </section>
-    </main>
-
-    <!-- ══ Showroom Floating Bottom Quick Bar ══ -->
-    <div class="sp-bottom-bar-container">
-        <div class="sp-bottom-bar-pill">
-            <button class="sp-bottom-nav-btn" onclick="navigate('ocal://home')" title="Go to Home Page">
-                <i class="fas fa-house"></i>
-                <span>Home</span>
-            </button>
-            
-            <div class="sp-bottom-brand">
-                <span>OCAL</span>
+            <div class="metric-tile">
+                <div class="metric-icon-wrap"><i class="fas fa-cubes"></i></div>
+                <div class="metric-content">
+                    <span class="metric-val"><span class="counter" data-target="28">0</span>+</span>
+                    <span class="metric-lbl">Major Upgrades</span>
+                </div>
             </div>
-            
-            <button class="sp-bottom-nav-btn" onclick="navigate('ocal://settings')" title="Browser Settings">
-                <i class="fas fa-gear"></i>
-                <span>Settings</span>
-            </button>
+        </section>
+
+        <!-- ══ Asymmetric 2-Pane Workstation (Left Sticky Rail + Right Grid) ══ -->
+        <div class="two-pane-workstation">
+            <!-- Left Sticky Command Rail -->
+            <aside class="sticky-left-rail">
+                <div class="rail-search-box">
+                    <i class="fas fa-search"></i>
+                    <input type="text" id="feature-search" class="rail-search-input" placeholder="Search features..." autocomplete="off">
+                    <span class="rail-key-badge">/</span>
+                </div>
+
+                <div class="rail-menu-list">
+                    <button class="rail-menu-item active" data-category="all" onclick="setCategory('all')">
+                        <span class="rail-menu-item-left"><i class="fas fa-layer-group"></i> <span>All Features</span></span>
+                        <span class="rail-item-badge" id="count-all">0</span>
+                    </button>
+                    <button class="rail-menu-item" data-category="multitasking" onclick="setCategory('multitasking')">
+                        <span class="rail-menu-item-left"><i class="fas fa-wand-magic-sparkles"></i> <span>AI & Multitasking</span></span>
+                        <span class="rail-item-badge" id="count-multi">0</span>
+                    </button>
+                    <button class="rail-menu-item" data-category="extensions" onclick="setCategory('extensions')">
+                        <span class="rail-menu-item-left"><i class="fas fa-puzzle-piece"></i> <span>Extensions</span></span>
+                        <span class="rail-item-badge" id="count-ext">0</span>
+                    </button>
+                    <button class="rail-menu-item" data-category="performance" onclick="setCategory('performance')">
+                        <span class="rail-menu-item-left"><i class="fas fa-bolt"></i> <span>Speed & Security</span></span>
+                        <span class="rail-item-badge" id="count-perf">0</span>
+                    </button>
+                    <button class="rail-menu-item" data-category="media" onclick="setCategory('media')">
+                        <span class="rail-menu-item-left"><i class="fas fa-palette"></i> <span>UI & Audio</span></span>
+                        <span class="rail-item-badge" id="count-media">0</span>
+                    </button>
+                    <button class="rail-menu-item" data-category="contributors" onclick="setCategory('contributors')">
+                        <span class="rail-menu-item-left"><i class="fas fa-user-group"></i> <span>Architects</span></span>
+                        <span class="rail-item-badge" id="count-team">0</span>
+                    </button>
+                </div>
+
+                <div class="rail-quick-jumps">
+                    <span class="rail-jump-label">Jump to Section</span>
+                    <a href="#hero-bento" class="rail-jump-link"><i class="fas fa-star"></i> <span>Milestone Spotlight</span></a>
+                    <a href="#directory-section" class="rail-jump-link"><i class="fas fa-cubes"></i> <span>Feature Directory</span></a>
+                    <a href="#changelog-section" class="rail-jump-link"><i class="fas fa-clock-rotate-left"></i> <span>Changelog Timeline</span></a>
+                </div>
+            </aside>
+
+            <!-- Right Dynamic Showcase Area -->
+            <main class="dynamic-right-pane">
+                <section id="directory-section">
+                    <div class="pane-header">
+                        <div class="pane-title-group">
+                            <h2 class="pane-main-title" id="dir-title">All Features & Enhancements</h2>
+                            <span class="pane-sub-title" id="dir-subtitle">Showing all upgrades in v10.0.01 Stable Release</span>
+                        </div>
+                    </div>
+                    <div class="features-fullwidth-grid" id="directory-grid" style="margin-top: 18px;"></div>
+                </section>
+
+                <section id="changelog-section" class="changelog-block">
+                    <div class="pane-title-group">
+                        <h2 class="pane-main-title">Release History & Changelog</h2>
+                        <span class="pane-sub-title">Official Version Records & Milestone Notes</span>
+                    </div>
+                    <div class="timeline-stream" id="timeline"></div>
+                </section>
+            </main>
         </div>
+    </div>
+
+    <!-- ══ Floating Command Bottom Dock ══ -->
+    <div class="floating-bottom-dock">
+        <button class="dock-action-btn" onclick="navigate('ocal://home')" title="Go to Home Page">
+            <i class="fas fa-house"></i>
+            <span>Home</span>
+        </button>
+        <div class="dock-divider-v"></div>
+        <button class="dock-action-btn" onclick="navigate('ocal://store')" title="Extension Store">
+            <i class="fas fa-store"></i>
+            <span>Store</span>
+        </button>
+        <div class="dock-divider-v"></div>
+        <button class="dock-action-btn" onclick="navigate('ocal://settings')" title="Browser Settings">
+            <i class="fas fa-gear"></i>
+            <span>Settings</span>
+        </button>
+        <div class="dock-divider-v"></div>
+        <button class="dock-action-btn" onclick="window.scrollTo({ top: 0, behavior: 'smooth' })" title="Scroll to Top">
+            <i class="fas fa-arrow-up"></i>
+        </button>
     </div>
 
     <!-- ══ Controller Script ══ -->
@@ -1641,7 +1350,7 @@
             const a = localStorage.getItem('ocal-settings-accent');
             if (a) {
                 document.documentElement.style.setProperty('--accent', a);
-                document.documentElement.style.setProperty('--accent-glow', `color-mix(in srgb, ${a} 28%, transparent)`);
+                document.documentElement.style.setProperty('--accent-glow', `color-mix(in srgb, ${a} 25%, transparent)`);
                 document.documentElement.style.setProperty('--accent-dim', `color-mix(in srgb, ${a} 12%, transparent)`);
             }
         })();
@@ -1651,11 +1360,13 @@
             document.body.classList.add('loaded');
         });
 
-        // ── Navigation ──
+        // ── Navigation Helper ──
         function navigate(url) {
             try {
                 if (window.electronAPI && window.electronAPI.navigateTo) {
                     window.electronAPI.navigateTo(url);
+                } else if (window.electronAPI && window.electronAPI.send) {
+                    window.electronAPI.send('new-tab', url);
                 } else {
                     window.location.href = url;
                 }
@@ -1664,32 +1375,13 @@
             }
         }
 
-        // ── Typing Animation ──
-        // Short, concise description for a clean, minimalist hero presentation.
-        // (Uncomment the original extended paragraph below if you wish to restore it)
-        /*
-        const heroText = "Ocal Browser v9.8.00 delivers enterprise-grade direct hardware acceleration via Direct3D 11 and passthrough command decoder, 4K/60FPS zero-copy video decode, and ultra-smooth compositor pipelines. Features a clean, flat, minimalist overhaul of the Extension Store (ocal://store), flush AI sidebar layout with seamless bounds, and dynamic luminance-based text contrast for omnibox shields and badges.";
-        */
-        const heroText = "Direct3D 11 GPU acceleration, 4K/60FPS video decode, and a refreshed minimalist Extension Store.";
-        const heroDesc = document.getElementById('hero-desc');
-        let charIndex = 0;
-
-        function typeHero() {
-            if (charIndex < heroText.length) {
-                heroDesc.textContent = heroText.slice(0, charIndex + 1);
-                charIndex++;
-                setTimeout(typeHero, 15 + Math.random() * 8);
-            }
-        }
-        setTimeout(typeHero, 400);
-
         // ── Animated Counters ──
         const counterObserver = new IntersectionObserver((entries) => {
             entries.forEach(entry => {
                 if (entry.isIntersecting) {
                     const counters = entry.target.querySelectorAll('.counter');
                     counters.forEach(counter => {
-                        const target = parseInt(counter.getAttribute('data-target'));
+                        const target = parseInt(counter.getAttribute('data-target'), 10);
                         const duration = 1200;
                         const start = performance.now();
 
@@ -1707,75 +1399,85 @@
             });
         }, { threshold: 0.2 });
 
-        const statsRow = document.getElementById('stats-row');
-        if (statsRow) counterObserver.observe(statsRow);
+        const statsSection = document.getElementById('stats-section');
+        if (statsSection) counterObserver.observe(statsSection);
 
-        // ── Particles Canvas ──
-        (function () {
-            const canvas = document.getElementById('particles-canvas');
-            if (!canvas) return;
-            const ctx = canvas.getContext('2d');
-            let particles = [];
-
-            function resize() {
-                canvas.width = window.innerWidth;
-                canvas.height = window.innerHeight;
-            }
-            resize();
-            window.addEventListener('resize', resize);
-
-            function createParticles() {
-                particles = [];
-                const count = Math.floor(window.innerWidth / 45);
-                for (let i = 0; i < count; i++) {
-                    particles.push({
-                        x: Math.random() * canvas.width,
-                        y: Math.random() * canvas.height,
-                        size: Math.random() * 1.5 + 0.5,
-                        speedY: -(Math.random() * 0.12 + 0.04),
-                        speedX: (Math.random() - 0.5) * 0.1,
-                        opacity: Math.random() * 0.25 + 0.08
-                    });
+        // ── Interactive 3D Card Hover Physics ──
+        document.addEventListener('mousemove', (e) => {
+            const cards = document.querySelectorAll('.bento-cell, .feature-item-card, .metric-tile');
+            cards.forEach(card => {
+                const rect = card.getBoundingClientRect();
+                if (e.clientX >= rect.left && e.clientX <= rect.right && e.clientY >= rect.top && e.clientY <= rect.bottom) {
+                    const x = e.clientX - rect.left;
+                    const y = e.clientY - rect.top;
+                    const centerX = rect.width / 2;
+                    const centerY = rect.height / 2;
+                    const rotateX = ((y - centerY) / centerY) * -4.5;
+                    const rotateY = ((x - centerX) / centerX) * 4.5;
+                    card.style.transform = `perspective(1000px) rotateX(${rotateX.toFixed(2)}deg) rotateY(${rotateY.toFixed(2)}deg) translateY(-3px)`;
+                } else if (card.style.transform && card.style.transform.includes('perspective')) {
+                    card.style.transform = '';
                 }
-            }
-            createParticles();
+            });
+        });
 
-            function animateParticles() {
-                ctx.clearRect(0, 0, canvas.width, canvas.height);
-                const accentColor = getComputedStyle(document.documentElement).getPropertyValue('--accent').trim() || '#09f0a0';
-
-                particles.forEach(p => {
-                    p.x += p.speedX;
-                    p.y += p.speedY;
-                    if (p.y < -10) {
-                        p.y = canvas.height + 10;
-                        p.x = Math.random() * canvas.width;
-                    }
-                    if (p.x < -10) p.x = canvas.width + 10;
-                    if (p.x > canvas.width + 10) p.x = -10;
-
-                    ctx.beginPath();
-                    ctx.arc(p.x, p.y, p.size, 0, Math.PI * 2);
-                    ctx.fillStyle = accentColor;
-                    ctx.globalAlpha = p.opacity;
-                    ctx.fill();
-                });
-                ctx.globalAlpha = 1;
-                requestAnimationFrame(animateParticles);
-            }
-            animateParticles();
-        })();
-
-        // ── Features & Team Data ──
+        // ── Data: Features & Changelog ──
         const items = [
+            // ══ v10.0.01 Stable Feature Upgrades ══
+            { 
+                type: 'feature', 
+                category: 'multitasking', 
+                icon: 'fa-compass', 
+                title: 'Introducing Fresh Setup Onboarding (ocal://onboarding)', 
+                desc: 'Clean, elegant welcome tour exclusively loaded for fresh profile setups. Guides first-time users through search engine choice, dark/light themes, and privacy shields, while returning users boot straight into their home tab with zero latency.', 
+                actionText: 'Preview Onboarding', 
+                targetUrl: 'ocal://onboarding' 
+            },
+            { 
+                type: 'feature', 
+                category: 'multitasking', 
+                icon: 'fa-at', 
+                title: 'AI Copilot @tab Context Command', 
+                desc: 'Mention and ingest active webpage context in real-time by typing @tab into the AI Copilot. Enables instant cross-examination, live multi-tab comparative synthesis, and automated executive summaries.', 
+                actionText: 'Try @tab Command', 
+                targetUrl: 'ocal://home' 
+            },
+            { 
+                type: 'feature', 
+                category: 'performance', 
+                icon: 'fa-microchip', 
+                title: 'Latest Chromium Engine & Modern Runtime', 
+                desc: 'Upgraded underlying Chromium and Electron runtime stack with cutting-edge V8 JIT performance, AV1/HEVC hardware video decoding, WebGPU acceleration, and improved web standards compliance.', 
+                actionText: 'Engine Matrix', 
+                targetUrl: 'ocal://settings' 
+            },
+            { 
+                type: 'feature', 
+                category: 'performance', 
+                icon: 'fa-gauge-high', 
+                title: 'Core Performance Improvements & Memory Optimization', 
+                desc: 'Instant startup allocation, intelligent background tab sleeping to reduce inactive memory footprint by up to 60%, and hardware-accelerated D3D11 graphics rendering for stutter-free scrolling.', 
+                actionText: 'Performance Settings', 
+                targetUrl: 'ocal://settings' 
+            },
+            { 
+                type: 'feature', 
+                category: 'media', 
+                icon: 'fa-sliders', 
+                title: 'UI Polishing, Modern Setup Buttons & Bug Fixes', 
+                desc: 'Modernized Windows installer with native button controls for Terms, Privacy Policy, and EULA. Polished high-DPI scaling, fixed right-click context menu alignment, and eliminated split-view borders.', 
+                actionText: 'Changelog', 
+                targetUrl: 'ocal://whats-new#changelog-section' 
+            },
+
             // ══ v10.0.0 Milestone Feature Upgrades ══
             { 
                 type: 'feature', 
                 category: 'performance', 
-                icon: 'fa-certificate', 
-                title: 'Microsoft Store Certified Authenticode Signing', 
-                desc: 'Full SHA-256 digital certificate signing across the main application binary, installer, and all companion PE components using Gaming Network Studio certificate with RFC 3161 timestamps, satisfying Microsoft Store Policy 10.2.9.', 
-                actionText: 'Security Details', 
+                icon: 'fa-shield-halved', 
+                title: 'Built-in Ocal Shield & Tracker Protection', 
+                desc: 'Real-time protection against intrusive ads, popups, and invasive cross-site tracking scripts. Preserves your privacy and speeds up page loading across the web.', 
+                actionText: 'Shield Settings', 
                 targetUrl: 'ocal://settings' 
             },
             { 
@@ -1801,21 +1503,21 @@
             { 
                 type: 'feature', 
                 category: 'performance', 
-                icon: 'fa-box-check', 
-                title: 'Signed Exe & MSIX Dual-Format Packaging', 
-                desc: 'Updated production distributions including standalone Inno Setup executable and Microsoft Store-compliant MSIX package with built-in Authenticode certificate verification.', 
-                actionText: 'Releases', 
-                targetUrl: 'https://github.com/neelkanth-patel26/Ocal-Browser/releases' 
+                icon: 'fa-gauge-high', 
+                title: 'Resource Saver & Tab Memory Freezer', 
+                desc: 'Intelligently puts inactive background tabs to sleep to free up system memory and extend battery life on laptops without losing your tab scroll positions.', 
+                actionText: 'Performance Settings', 
+                targetUrl: 'ocal://settings' 
             },
 
             // ══ v9.8.00 Feature Upgrades ══
             { 
                 type: 'feature', 
-                category: 'performance', 
-                icon: 'fa-microchip', 
-                title: 'Hardware Acceleration & Direct GPU Pipeline', 
-                desc: 'Direct GPU driver communication via Direct3D 11 ANGLE backend, passthrough command decoder, out-of-process GPU rasterization, zero-copy tile memory buffers, and 4K 60FPS hardware-accelerated video decode/encode pipelines.', 
-                actionText: 'GPU Benchmark', 
+                category: 'multitasking', 
+                icon: 'fa-table-columns', 
+                title: 'Fluid Tabs & Split-Screen Workspace', 
+                desc: 'Customize your browsing layout with floating horizontal tabs or collapsible vertical tab groups, and view multiple pages side-by-side with instant snap.', 
+                actionText: 'Tab Layout', 
                 targetUrl: 'ocal://settings' 
             },
             { 
@@ -1851,8 +1553,8 @@
                 type: 'feature', 
                 category: 'media', 
                 icon: 'fa-box-archive', 
-                title: 'Custom Installer Architecture Overhaul', 
-                desc: 'Completely redesigned Inno Setup installer with a 560px grid, seamless Windows 11 titlebar integration with rounded corners, interactive bento feature cards, expandable installation options card, and an overhauled uninstaller with direct feedback capabilities.', 
+                title: 'Custom Modern Windows 11 Installer', 
+                desc: 'Streamlined, modern installer with rounded corners, interactive feature preview cards, and seamless Windows 11 titlebar integration.', 
                 actionText: 'Installer Overhaul', 
                 targetUrl: 'ocal://settings' 
             },
@@ -1868,9 +1570,9 @@
             { 
                 type: 'feature', 
                 category: 'performance', 
-                icon: 'fa-certificate', 
-                title: 'Electron 43.7.2 & Authenticode Code Signing', 
-                desc: 'Upgraded Electron runtime engine to 43.7.2 with updated three.js, adm-zip, thinking-orbs, and voice-glow dependencies. Bundles full SHA-256 Authenticode code signing with DigiCert RFC 3161 timestamping.', 
+                icon: 'fa-microchip', 
+                title: 'Modern Web Engine & Enhanced Performance', 
+                desc: 'Upgraded modern browser engine with faster V8 JavaScript execution, hardware-accelerated 60 FPS video playback, and smooth page scrolling.', 
                 actionText: 'Release Notes', 
                 targetUrl: 'ocal://whats-new' 
             },
@@ -2007,8 +1709,13 @@
             { type: 'contributor', category: 'contributors', icon: 'fa-palette', title: 'Sneha Kulkarni', desc: 'Engineered dynamic CSS custom property harmonizer and 25+ high-contrast showroom accent themes.', role: 'Theme & Color Systems Dev' },
             { type: 'contributor', category: 'contributors', icon: 'fa-bolt-lightning', title: 'Liam Chen', desc: 'Optimized Chromium multi-process lifecycle, reduced memory idle footprint, and eliminated layout thrashing.', role: 'Performance & Engine Engineer' }
         ];
-
         const changelog = [
+            { 
+                date: 'October 2026', 
+                title: 'v10.0.01 Stable — Onboarding Suite, Chromium Runtime, @tab AI Intelligence & Performance', 
+                desc: 'Official v10.0.01 release introducing the fresh user Onboarding experience (ocal://onboarding) strictly on first-time setup, upgraded latest Chromium & Electron engine core, rich AI Copilot enhancements with @tab context command and multi-tab comparison, significant memory & startup performance improvements, native Windows 11 button controls in installer, and comprehensive UI bug fixes.', 
+                tags: ['v10.0.01 Stable', 'Onboarding Page', 'Latest Chromium', 'Performance', 'AI @tab Command', 'UI & Bug Fixes'] 
+            },
             { 
                 date: 'October 2026', 
                 title: 'v10.0.0 Milestone — Microsoft Store Authenticode Certification, Rich AI Representation & Production Release', 
@@ -2073,6 +1780,7 @@
         // ── Render Features Showcase Grid ──
         function renderGrid() {
             const grid = document.getElementById('directory-grid');
+            if (!grid) return;
             grid.innerHTML = '';
 
             let filtered = items.filter(item => {
@@ -2090,28 +1798,34 @@
             }
 
             // Update Counts
-            document.getElementById('count-all').textContent = items.filter(i => i.type === 'feature').length;
+            const countAll = document.getElementById('count-all');
+            if (countAll) countAll.textContent = items.filter(i => i.type === 'feature').length;
             const countExt = document.getElementById('count-ext');
             if (countExt) countExt.textContent = items.filter(i => i.category === 'extensions').length;
-            document.getElementById('count-multi').textContent = items.filter(i => i.category === 'multitasking').length;
-            document.getElementById('count-perf').textContent = items.filter(i => i.category === 'performance').length;
-            document.getElementById('count-media').textContent = items.filter(i => i.category === 'media').length;
-            document.getElementById('count-team').textContent = items.filter(i => i.category === 'contributors').length;
+            const countMulti = document.getElementById('count-multi');
+            if (countMulti) countMulti.textContent = items.filter(i => i.category === 'multitasking').length;
+            const countPerf = document.getElementById('count-perf');
+            if (countPerf) countPerf.textContent = items.filter(i => i.category === 'performance').length;
+            const countMedia = document.getElementById('count-media');
+            if (countMedia) countMedia.textContent = items.filter(i => i.category === 'media').length;
+            const countTeam = document.getElementById('count-team');
+            if (countTeam) countTeam.textContent = items.filter(i => i.category === 'contributors').length;
 
             if (filtered.length === 0) {
                 grid.innerHTML = `
-                    <div class="empty-state">
-                        <i class="fas fa-magnifying-glass"></i>
-                        <h4 style="font-size: 16px; font-weight: 700; color: var(--text); margin-bottom: 4px;">No matching features found</h4>
-                        <p style="font-size: 13px;">Try searching for another keyword or switch category filters.</p>
+                    <div style="grid-column: 1 / -1; padding: 60px 20px; text-align: center; color: var(--text-dim);">
+                        <i class="fas fa-search" style="font-size: 32px; color: var(--accent); margin-bottom: 12px; display: block;"></i>
+                        <h4 style="font-size: 16px; font-weight: 700; color: var(--text);">No matching features found</h4>
+                        <p style="font-size: 13px; margin-top: 4px;">Try searching with different terms or select another category.</p>
                     </div>
                 `;
                 return;
             }
 
-            filtered.forEach((item) => {
+            filtered.forEach((item, index) => {
                 const card = document.createElement('div');
                 card.className = 'feature-item-card';
+                card.style.animation = `fadeInCard 0.35s cubic-bezier(0.16, 1, 0.3, 1) ${Math.min(index * 0.025, 0.35)}s both`;
                 
                 card.onclick = () => {
                     if (item.targetUrl) {
@@ -2119,23 +1833,23 @@
                     }
                 };
 
-                const footLeft = item.type === 'contributor' ? item.role : item.actionText;
-                const catLabel = item.type === 'contributor' ? 'Contributor' : (item.category === 'extensions' ? 'Extensions' : item.category);
+                const footLeft = item.type === 'contributor' ? (item.role || 'Contributor') : (item.actionText || 'Explore');
+                const catLabel = item.type === 'contributor' ? 'Team' : (item.category === 'extensions' ? 'Extensions' : item.category);
 
                 card.innerHTML = `
-                    <div class="card-top">
-                        <div class="card-visual-header">
-                            <div class="card-icon-bubble">
+                    <div>
+                        <div class="card-top-row">
+                            <div class="card-icon-box">
                                 <i class="fas ${item.icon}"></i>
                             </div>
-                            <span class="card-category-badge">${catLabel}</span>
+                            <span class="card-category-pill">${catLabel}</span>
                         </div>
-                        <h4 class="card-title-text">${item.title}</h4>
-                        <p class="card-desc-text">${item.desc}</p>
+                        <h4 class="card-feature-title">${item.title}</h4>
+                        <p class="card-feature-desc">${item.desc}</p>
                     </div>
-                    <div class="card-footer">
-                        <span class="card-footer-left">${footLeft}</span>
-                        <i class="fas fa-arrow-right card-footer-right"></i>
+                    <div class="card-action-footer">
+                        <span>${footLeft}</span>
+                        <i class="fas fa-arrow-right"></i>
                     </div>
                 `;
                 grid.appendChild(card);
@@ -2145,21 +1859,19 @@
         // ── Render Timeline Changelog ──
         function renderTimeline() {
             const timeline = document.getElementById('timeline');
+            if (!timeline) return;
             timeline.innerHTML = '';
             changelog.forEach(entry => {
                 const card = document.createElement('div');
-                card.className = 'timeline-card';
+                card.className = 'timeline-entry-card';
                 card.innerHTML = `
-                    <div class="timeline-left">
-                        <span class="timeline-date-label">${entry.date}</span>
-                        <h4 class="timeline-card-title">${entry.title}</h4>
-                        <p class="timeline-card-desc">${entry.desc}</p>
-                        <div class="timeline-tags-wrap">
-                            ${entry.tags.map(t => `<span class="timeline-card-tag">${t}</span>`).join('')}
-                        </div>
+                    <div class="entry-top">
+                        <span class="entry-version-title">${entry.title}</span>
+                        <span class="entry-date">${entry.date}</span>
                     </div>
-                    <div class="timeline-right-btn" title="View details">
-                        <i class="fas fa-chevron-right"></i>
+                    <p class="entry-desc">${entry.desc}</p>
+                    <div class="entry-tags">
+                        ${entry.tags.map(t => `<span class="entry-tag-pill">${t}</span>`).join('')}
                     </div>
                 `;
                 timeline.appendChild(card);
@@ -2169,23 +1881,25 @@
         // ── Switch Category ──
         window.setCategory = function (cat) {
             currentCategory = cat;
-            const tabs = document.querySelectorAll('.sp-cat-pill');
+            const tabs = document.querySelectorAll('.rail-menu-item');
             tabs.forEach(tab => {
                 tab.classList.toggle('active', tab.getAttribute('data-category') === cat);
             });
 
             const map = {
-                all: ['All Features & Enhancements', 'SHOWING ALL MAJOR UPGRADES IN V9.5.00 STABLE'],
-                extensions: ['Google Extensions & Store', 'UNIVERSAL CHROME EXTENSIONS ENGINE, TOPBAR CAPSULE & POPUPS'],
-                multitasking: ['Multitasking & AI Studio', 'BENTO FILE MANAGER, FLUX MASTERWORK AI & FLUID TABS'],
-                performance: ['Speed & Security Vault', 'TURBO PAGE LOADER, FASTER AD BLOCKER & 256-BIT PASSWORD VAULT'],
-                media: ['Better UI, Audio & Shaders', 'REFINED SHADOWLESS UI, AMBIENT SOUNDSCAPES & SHOWROOM THEMES'],
-                contributors: ['Lead Contributors & Architects', 'THE CORE TEAM SHAPING OCAL BROWSER']
+                all: ['All Features & Enhancements', 'Showing all major upgrades in v10.0.0 Milestone'],
+                multitasking: ['AI Intelligence & Multitasking', 'Tab-Aware AI, Multi-Tab Compare, Bento File Manager & Split Screen'],
+                extensions: ['Extensions & Store Engine', 'Chrome Web Store Polyfills, Topbar Capsule & Dynamic Popups'],
+                performance: ['Speed & Security Vault', 'Direct3D 11 GPU Acceleration, Authenticode Signing & 256-Bit Vault'],
+                media: ['Better UI & Ambient Soundscapes', 'Refined Shadowless Aesthetics, Dynamic Contrast & Audio System'],
+                contributors: ['Lead Architects & Team', 'The core engineering team behind Ocal Browser']
             };
 
             const [title, subtitle] = map[cat] || map.all;
-            document.getElementById('dir-title').textContent = title;
-            document.getElementById('dir-subtitle').textContent = subtitle;
+            const dirTitle = document.getElementById('dir-title');
+            if (dirTitle) dirTitle.textContent = title;
+            const dirSubtitle = document.getElementById('dir-subtitle');
+            if (dirSubtitle) dirSubtitle.textContent = subtitle;
 
             renderGrid();
         };
@@ -2198,7 +1912,6 @@
                 renderGrid();
             });
 
-            // Keyboard shortcut '/'
             document.addEventListener('keydown', (e) => {
                 if (e.key === '/' && document.activeElement !== searchInput) {
                     e.preventDefault();
@@ -2218,5 +1931,4 @@
         renderTimeline();
     </script>
 </body>
-
 </html>

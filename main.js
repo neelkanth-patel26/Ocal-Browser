@@ -1,3 +1,13 @@
+// Suppress development Electron security warnings in terminal while maintaining strict page-level CSP policies
+process.env.ELECTRON_DISABLE_SECURITY_WARNINGS = 'true';
+
+process.on('uncaughtException', (err) => {
+    console.error('[CRITICAL][uncaughtException]:', err);
+});
+process.on('unhandledRejection', (reason, promise) => {
+    console.error('[CRITICAL][unhandledRejection]:', reason);
+});
+
 const electron = require('electron');
 
 // Environment Check: Ensure we are running in the Electron Main Process
@@ -151,8 +161,8 @@ app.commandLine.appendSwitch('disable-backgrounding-occluded-windows');
 // Disable the default Electron menu bar on Windows/Linux to prevent UI shifting
 Menu.setApplicationMenu(null);
 
-const chromeVersion = (process.versions && process.versions.chrome) || '134.0.0.0';
-const chromeMajor = chromeVersion.split('.')[0] || '134';
+const chromeVersion = (process.versions && process.versions.chrome) || '156.0.8078.48';
+const chromeMajor = chromeVersion.split('.')[0] || '156';
 const OCAL_USER_AGENT = `Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/${chromeVersion} Safari/537.36`;
 app.userAgentFallback = OCAL_USER_AGENT;
 
@@ -271,7 +281,9 @@ function loadSettings() {
     try {
         if (fs.existsSync(settingsPath)) {
             const data = fs.readFileSync(settingsPath, 'utf8');
-            return JSON.parse(data);
+            if (data && data.trim()) {
+                return JSON.parse(data);
+            }
         }
     } catch (e) {
         console.error('Failed to load settings:', e);
@@ -435,6 +447,7 @@ let userSettings = loadSettings() || {
     accentColor: '#09f0a0',
     compactMode: false,
     trackingProtection: true,
+    fingerprintProtection: true,
     forceShieldIcon: true,
     profiles: [{ id: 'default', name: 'Personal', icon: 'fa-user' }],
     history: [],
@@ -596,9 +609,14 @@ function applyThemeModeGlobally(mode) {
     if (nativeTheme) {
         nativeTheme.themeSource = isLight ? 'light' : 'dark';
     }
-    const bgColor = isLight ? '#EDEDF0' : '#18181B';
+    let bgColor = isLight ? '#EDEDF0' : '#18181B';
+    if (userSettings.activeThemeCombo && userSettings.activeThemeCombo.chrome && /^#[0-9A-Fa-f]{6}$/.test(userSettings.activeThemeCombo.chrome)) {
+        bgColor = userSettings.activeThemeCombo.chrome;
+    }
     if (typeof mainWindow !== 'undefined' && mainWindow && !mainWindow.isDestroyed()) {
-        mainWindow.setBackgroundColor(bgColor);
+        try {
+            mainWindow.setBackgroundColor(bgColor);
+        } catch (e) {}
     }
     if (typeof views !== 'undefined' && Array.isArray(views)) {
         views.forEach(v => {
@@ -1118,13 +1136,13 @@ function applyShieldSettings() {
         if (url.startsWith('ocal://')) {
             if (!headers['content-security-policy'] && !headers['Content-Security-Policy']) {
                 headers['Content-Security-Policy'] = [
-                    "default-src 'self' 'unsafe-inline' 'unsafe-eval' data: blob: ocal: *; " +
-                    "script-src 'self' 'unsafe-inline' 'unsafe-eval' data: blob: https:; " +
+                    "default-src 'self' data: blob: ocal:; " +
+                    "script-src 'self' 'unsafe-inline' data: blob: https:; " +
                     "style-src 'self' 'unsafe-inline' https:; " +
-                    "img-src 'self' data: blob: https: *; " +
+                    "img-src 'self' data: blob: https: http: chrome-extension:; " +
                     "font-src 'self' data: https:; " +
-                    "connect-src 'self' https: wss: *; " +
-                    "media-src 'self' data: blob: https: *; " +
+                    "connect-src 'self' https: wss: http: blob:; " +
+                    "media-src 'self' data: blob: https:; " +
                     "worker-src 'self' blob:;"
                 ];
             }
@@ -1270,31 +1288,28 @@ ipcMain.on('print-document', (event) => {
 });
 
 function applyCyberStealth(webContents) {
-    if (!userSettings.cyberStealthEnabled) return;
+    if (userSettings.fingerprintProtection === false && !userSettings.cyberStealthEnabled) return;
+    if (!webContents || webContents.isDestroyed()) return;
 
-    // Advanced Bot-Detection Bypass (Randomized delays and clean traces)
+    try {
+        const { ANTI_FINGERPRINT_SCRIPT } = require('./anti-fingerprint.js');
+        if (ANTI_FINGERPRINT_SCRIPT) {
+            webContents.executeJavaScript(ANTI_FINGERPRINT_SCRIPT).catch(() => {});
+        }
+    } catch (e) {}
+
+    // Additional Shadow DOM trace removal for stealth
     const stealthScript = `
         (function() {
-            // Shadow DOM trace removal
-            const originalAttachShadow = Element.prototype.attachShadow;
-            Element.prototype.attachShadow = function(options) {
-                return originalAttachShadow.call(this, { ...options, mode: 'open' });
-            };
-
-            // Canvas poisoning prevention
-            const originalGetImageData = CanvasRenderingContext2D.prototype.getImageData;
-            CanvasRenderingContext2D.prototype.getImageData = function(x, y, w, h) {
-                const data = originalGetImageData.call(this, x, y, w, h);
-                // Subtle noise to avoid fingerprinting
-                if (data.data.length > 0) data.data[0] = data.data[0] ^ 1;
-                return data;
-            };
-
-            console.log('[CyberStealth] Active: Traces sanitized, Fingerprinting guarded.');
+            try {
+                const originalAttachShadow = Element.prototype.attachShadow;
+                Element.prototype.attachShadow = function(options) {
+                    return originalAttachShadow.call(this, { ...options, mode: 'open' });
+                };
+            } catch(e) {}
         })();
     `;
-
-    webContents.executeJavaScript(stealthScript).catch(() => { });
+    webContents.executeJavaScript(stealthScript).catch(() => {});
 }
 
 function setupSecurityHeadersFix() {
@@ -1331,6 +1346,7 @@ function getAppIconPath() {
     return icoPath;
 }
 
+
 function createMainWindow() {
     const appIcon = getAppIcon();
     const appIconPath = getAppIconPath();
@@ -1338,8 +1354,8 @@ function createMainWindow() {
     mainWindow = new BrowserWindow({
         width: 1350,
         height: 900,
-        minWidth: 450,
-        minHeight: 500,
+        minWidth: 360,
+        minHeight: 360,
         title: 'Ocal Browser',
         icon: process.platform === 'win32' ? appIconPath : (appIcon || appIconPath),
         frame: false,
@@ -1372,6 +1388,7 @@ function createMainWindow() {
     });
 
     mainWindow.loadFile('index.html');
+    setTimeout(createSnapFlyoutWindow, 1500);
 
     splitOverlayView = new BrowserView({
         webPreferences: {
@@ -1385,21 +1402,12 @@ function createMainWindow() {
     splitOverlayView.setBackgroundColor('#00000000');
     splitOverlayView.webContents.loadURL('file:///' + path.join(__dirname, 'home.html#drag-overlay').replace(/\\/g, '/'));
 
-    if (!userSettings.setupComplete && fs.existsSync(path.join(__dirname, 'welcome.html'))) {
-        importChromiumBookmarks();
-        showWelcomeWizard();
-    } else {
-        userSettings.setupComplete = true;
-        saveSettings(userSettings);
-    }
+
 
     mainWindow.setMaxListeners(50);
     mainWindow.on('resize', () => {
         updateViewBounds();
-        if (welcomeView) {
-            const { width, height } = mainWindow.getContentBounds();
-            welcomeView.setBounds({ x: 0, y: 0, width, height });
-        }
+
     });
 
     mainWindow.on('move', () => {
@@ -1435,19 +1443,16 @@ function createMainWindow() {
         if (!pageContextView) createPageContextView();
         if (!mediaMasterView) createMediaMasterView();
         if (!bmDropdownView) createBMDropdownView();
-        // Always open a tab on startup
+        // Always open a tab on startup: onboarding only on fresh setup, otherwise home tab
         if (views.length === 0) {
             const startupUrl = getArgumentURL(process.argv);
+            const isFreshSetup = !userSettings.setupComplete || process.argv.includes('--install');
             if (startupUrl) {
                 createNewTab(startupUrl);
+            } else if (isFreshSetup) {
+                createNewTab('ocal://onboarding');
             } else {
-                if (userSettings.lastVersion !== '7.7.04') {
-                    userSettings.lastVersion = '7.7.04';
-                    saveSettings(userSettings);
-                    createNewTab('ocal://whats-new');
-                } else {
-                    createNewTab();
-                }
+                createNewTab();
             }
         }
 
@@ -1457,9 +1462,29 @@ function createMainWindow() {
 
     mainWindow.on('maximize', () => {
         mainWindow.webContents.send('window-is-maximized', true);
+        updateViewBounds();
+        setTimeout(updateViewBounds, 40);
+        setTimeout(updateViewBounds, 150);
     });
     mainWindow.on('unmaximize', () => {
         mainWindow.webContents.send('window-is-maximized', false);
+        updateViewBounds();
+        setTimeout(updateViewBounds, 40);
+        setTimeout(updateViewBounds, 150);
+    });
+    mainWindow.on('enter-full-screen', () => {
+        mainWindow.webContents.send('html-fullscreen', true);
+        mainWindow.webContents.send('window-is-fullscreen', true);
+        updateViewBounds();
+        setTimeout(updateViewBounds, 40);
+        setTimeout(updateViewBounds, 150);
+    });
+    mainWindow.on('leave-full-screen', () => {
+        mainWindow.webContents.send('html-fullscreen', false);
+        mainWindow.webContents.send('window-is-fullscreen', false);
+        updateViewBounds();
+        setTimeout(updateViewBounds, 40);
+        setTimeout(updateViewBounds, 150);
     });
 
     mainWindow.on('close', (e) => {
@@ -2239,6 +2264,7 @@ function resolveInternalURL(url) {
         return getFilePath('settings.html') + '#extensions';
     }
     if (cleanBase === 'store' || cleanBase === 'ocal://store' || cleanBase === 'ocal://webstore' || cleanBase === 'ocal://extension-store') return getFilePath('extension-store.html');
+    if (cleanBase === 'themes' || cleanBase === 'ocal://themes' || cleanBase === 'theme-store' || cleanBase === 'ocal://theme-store') return getFilePath('settings.html') + '#appearance';
     if (cleanBase === 'file-manager' || cleanBase === 'ocal://file-manager') return getFilePath('file-manager.html');
     if (cleanBase === 'ocal://music-player' || cleanBase === 'ocal://music' || cleanBase === 'music-player') {
         const qIdx = url.indexOf('?');
@@ -2260,6 +2286,9 @@ function resolveInternalURL(url) {
         return 'file://' + path.join(__dirname, 'home.html');
     }
     if (cleanBase === 'ocal://whats-new' || cleanBase === 'whats-new') return 'file://' + path.join(__dirname, 'whats-new.html');
+    if (cleanBase === 'ocal://onboarding' || cleanBase === 'onboarding' || cleanBase === 'ocal://welcome' || cleanBase === 'welcome') {
+        return getFilePath('onboarding.html');
+    }
     if (cleanBase === 'ocal://ssl-warning') {
         const qIdx = url.indexOf('?');
         return 'file://' + path.join(__dirname, 'ssl-warning.html') + (qIdx !== -1 ? url.substring(qIdx) : '');
@@ -2423,6 +2452,9 @@ function formatDisplayUrl(url) {
     if (display.includes('extension-store.html') || display.startsWith('ocal://store') || display.startsWith('ocal://webstore') || display.startsWith('ocal://extension-store')) {
         return 'ocal://store';
     }
+    if (display.includes('theme-store.html') || display.startsWith('ocal://themes') || display.startsWith('ocal://theme-store')) {
+        return 'ocal://settings#appearance';
+    }
     if (display.includes('extensions.html') || display.startsWith('ocal://extensions')) {
         return 'ocal://settings#extensions';
     }
@@ -2561,6 +2593,9 @@ let cachedAdShieldScript = null;
 
 function setupViewEvents(tabId, view, side = 'left') {
     const webContents = view.webContents;
+    if (webContents && typeof webContents.setMaxListeners === 'function') {
+        webContents.setMaxListeners(50);
+    }
 
     // Apply corner rounding immediately on navigation and loading start (so it curves during load)
     webContents.on('did-start-navigation', (e, url, isInPlace) => {
@@ -2589,7 +2624,7 @@ function setupViewEvents(tabId, view, side = 'left') {
 
         if (isInternal) {
             // Pages that need scrolling get a different treatment
-            const needsScroll = url.includes('whats-new.html') || url.includes('settings.html') || url.includes('site-settings.html') || url.includes('games.html') || url.includes('extension-store.html');
+            const needsScroll = url.includes('whats-new.html') || url.includes('settings.html') || url.includes('site-settings.html') || url.includes('games.html') || url.includes('extension-store.html') || url.includes('onboarding.html') || url.includes('welcome.html');
             if (needsScroll) {
                 webContents.insertCSS(`
                     html {
@@ -3136,6 +3171,13 @@ function broadcastTabs() {
             groups: userSettings.tabGroups
         });
     }
+    if (typeof aiSidebarView !== 'undefined' && aiSidebarView && !aiSidebarView.webContents.isDestroyed()) {
+        aiSidebarView.webContents.send('tabs-changed', {
+            tabs: tabData,
+            activeTabId: activeViewId,
+            groups: userSettings.tabGroups
+        });
+    }
 }
 
 function setActiveTab(id) {
@@ -3227,11 +3269,21 @@ function isHomeURL(url) {
 }
 
 function updateViewBounds(forcedUrl = null) {
-    if (typeof isAnimatingBounds !== 'undefined' && isAnimatingBounds) return;
+    if (typeof isAnimatingBounds !== 'undefined' && isAnimatingBounds) {
+        if (!updateViewBounds._animStart) updateViewBounds._animStart = Date.now();
+        if (Date.now() - updateViewBounds._animStart > 600) {
+            isAnimatingBounds = false;
+            updateViewBounds._animStart = null;
+        } else {
+            return;
+        }
+    } else {
+        updateViewBounds._animStart = null;
+    }
     if (!mainWindow || mainWindow.isDestroyed()) return;
     const isMaximized = mainWindow.isMaximized();
     const { width, height } = mainWindow.getContentBounds();
-    const isFullscreen = !!htmlFullscreenViewId;
+    const isFullscreen = !!htmlFullscreenViewId || (!!mainWindow && !mainWindow.isDestroyed() && mainWindow.isFullScreen());
     const zoom = getOptimalZoomFactor();
 
     const winOffset = 0; // Simplified for modern Electron styling
@@ -4270,6 +4322,368 @@ ipcMain.on('bypass-security', (event, domain, url) => {
 
 ipcMain.on('window-minimize', () => mainWindow.minimize());
 ipcMain.on('window-maximize', () => { if (mainWindow.isMaximized()) mainWindow.unmaximize(); else mainWindow.maximize(); });
+
+// Windows 11 Snap Layouts & Resizing Handler (Multi-App Tiling Engine)
+function tileOtherApplications(excludeWin, companionBounds) {
+    if (process.platform !== 'win32' || !companionBounds || companionBounds.length === 0) return;
+    try {
+        const helperExe = path.join(__dirname, 'bin', 'snap-tile-helper.exe');
+        if (!fs.existsSync(helperExe)) return;
+
+        let hwnd = '0';
+        try {
+            if (excludeWin && !excludeWin.isDestroyed()) {
+                const handleBuf = excludeWin.getNativeWindowHandle();
+                hwnd = handleBuf.length >= 8 ? handleBuf.readBigInt64LE(0).toString() : handleBuf.readInt32LE(0).toString();
+            }
+        } catch (e) {
+            hwnd = '0';
+        }
+
+        const b1 = companionBounds[0];
+        const args = [hwnd, Math.round(b1.x).toString(), Math.round(b1.y).toString(), Math.round(b1.width).toString(), Math.round(b1.height).toString()];
+        if (companionBounds.length > 1) {
+            const b2 = companionBounds[1];
+            args.push(Math.round(b2.x).toString(), Math.round(b2.y).toString(), Math.round(b2.width).toString(), Math.round(b2.height).toString());
+        }
+
+        const { spawn } = require('child_process');
+        const child = spawn(helperExe, args, { windowsHide: true, detached: true, stdio: 'ignore' });
+        child.unref();
+    } catch (err) {
+        // Optional companion tiling
+    }
+}
+
+function calculateSnapBounds(win, zone) {
+    if (!win || win.isDestroyed()) return null;
+    try {
+        const { screen } = require('electron');
+        const winBounds = win.getBounds();
+        const currentDisplay = screen.getDisplayMatching(winBounds);
+        const { x, y, width, height } = currentDisplay.workArea;
+
+        let targetBounds = null;
+        let companionBounds = [];
+        let zoneName = '';
+
+        switch (zone) {
+            case 'left-half':
+                targetBounds = { x, y, width: Math.round(width / 2), height };
+                companionBounds = [{ x: x + Math.round(width / 2), y, width: width - Math.round(width / 2), height }];
+                zoneName = 'Left Half (50%)';
+                break;
+            case 'right-half':
+                targetBounds = { x: x + Math.round(width / 2), y, width: width - Math.round(width / 2), height };
+                companionBounds = [{ x, y, width: Math.round(width / 2), height }];
+                zoneName = 'Right Half (50%)';
+                break;
+            case 'left-two-thirds':
+                targetBounds = { x, y, width: Math.round(width * 0.666), height };
+                companionBounds = [{ x: x + Math.round(width * 0.666), y, width: width - Math.round(width * 0.666), height }];
+                zoneName = 'Two-Thirds Left (67%)';
+                break;
+            case 'right-one-third':
+                targetBounds = { x: x + Math.round(width * 0.666), y, width: width - Math.round(width * 0.666), height };
+                companionBounds = [{ x, y, width: Math.round(width * 0.666), height }];
+                zoneName = 'One-Third Right (33%)';
+                break;
+            case 'three-left':
+                targetBounds = { x, y, width: Math.round(width / 3), height };
+                companionBounds = [
+                    { x: x + Math.round(width / 3), y, width: Math.round(width / 3), height },
+                    { x: x + Math.round(width * 2 / 3), y, width: width - Math.round(width * 2 / 3), height }
+                ];
+                zoneName = 'Left Column (33%)';
+                break;
+            case 'three-center':
+                targetBounds = { x: x + Math.round(width / 3), y, width: Math.round(width / 3), height };
+                companionBounds = [
+                    { x, y, width: Math.round(width / 3), height },
+                    { x: x + Math.round(width * 2 / 3), y, width: width - Math.round(width * 2 / 3), height }
+                ];
+                zoneName = 'Center Column (33%)';
+                break;
+            case 'three-right':
+                targetBounds = { x: x + Math.round(width * 2 / 3), y, width: width - Math.round(width * 2 / 3), height };
+                companionBounds = [
+                    { x, y, width: Math.round(width / 3), height },
+                    { x: x + Math.round(width / 3), y, width: Math.round(width / 3), height }
+                ];
+                zoneName = 'Right Column (33%)';
+                break;
+            case 'top-left':
+                targetBounds = { x, y, width: Math.round(width / 2), height: Math.round(height / 2) };
+                companionBounds = [
+                    { x: x + Math.round(width / 2), y, width: width - Math.round(width / 2), height: Math.round(height / 2) },
+                    { x, y: y + Math.round(height / 2), width, height: height - Math.round(height / 2) }
+                ];
+                zoneName = 'Top-Left Quadrant (25%)';
+                break;
+            case 'top-right':
+                targetBounds = { x: x + Math.round(width / 2), y, width: width - Math.round(width / 2), height: Math.round(height / 2) };
+                companionBounds = [
+                    { x, y, width: Math.round(width / 2), height: Math.round(height / 2) },
+                    { x, y: y + Math.round(height / 2), width, height: height - Math.round(height / 2) }
+                ];
+                zoneName = 'Top-Right Quadrant (25%)';
+                break;
+            case 'bottom-left':
+                targetBounds = { x, y: y + Math.round(height / 2), width: Math.round(width / 2), height: height - Math.round(height / 2) };
+                companionBounds = [
+                    { x: x + Math.round(width / 2), y: y + Math.round(height / 2), width: width - Math.round(width / 2), height: height - Math.round(height / 2) },
+                    { x, y, width, height: Math.round(height / 2) }
+                ];
+                zoneName = 'Bottom-Left Quadrant (25%)';
+                break;
+            case 'bottom-right':
+                targetBounds = { x: x + Math.round(width / 2), y: y + Math.round(height / 2), width: width - Math.round(width / 2), height: height - Math.round(height / 2) };
+                companionBounds = [
+                    { x, y: y + Math.round(height / 2), width: Math.round(width / 2), height: height - Math.round(height / 2) },
+                    { x, y, width, height: Math.round(height / 2) }
+                ];
+                zoneName = 'Bottom-Right Quadrant (25%)';
+                break;
+            case 'top-half':
+                targetBounds = { x, y, width, height: Math.round(height / 2) };
+                companionBounds = [{ x, y: y + Math.round(height / 2), width, height: height - Math.round(height / 2) }];
+                zoneName = 'Top Half (50%)';
+                break;
+            case 'bottom-half':
+                targetBounds = { x, y: y + Math.round(height / 2), width, height: height - Math.round(height / 2) };
+                companionBounds = [{ x, y, width, height: Math.round(height / 2) }];
+                zoneName = 'Bottom Half (50%)';
+                break;
+            default:
+                return null;
+        }
+
+        return { targetBounds, companionBounds, zoneName };
+    } catch (e) {
+        return null;
+    }
+}
+
+function snapWindowToZone(win, zone) {
+    if (!win || win.isDestroyed()) return;
+    try {
+        const snapData = calculateSnapBounds(win, zone);
+        if (!snapData || !snapData.targetBounds) return;
+
+        if (win.isMaximized()) {
+            win.unmaximize();
+        }
+        win.setBounds(snapData.targetBounds, true);
+        if (win === mainWindow && typeof updateViewBounds === 'function') {
+            updateViewBounds();
+        } else if (typeof privateWindow !== 'undefined' && win === privateWindow && typeof updatePrivateViewBounds === 'function') {
+            updatePrivateViewBounds();
+        }
+
+        // Also resize and tile other open desktop applications into the complementary zone(s)
+        tileOtherApplications(win, snapData.companionBounds);
+    } catch (err) {
+        console.error('[SnapWindow] Failed to snap window:', err);
+    }
+}
+
+let snapFlyoutWindow = null;
+let snapFlyoutTargetWin = null;
+let snapFlyoutHideTimer = null;
+let snapPreviewWindow = null;
+
+function createSnapPreviewWindow() {
+    if (snapPreviewWindow && !snapPreviewWindow.isDestroyed()) return snapPreviewWindow;
+
+    snapPreviewWindow = new BrowserWindow({
+        frame: false,
+        transparent: true,
+        resizable: false,
+        show: false,
+        alwaysOnTop: true,
+        skipTaskbar: true,
+        focusable: false,
+        hasShadow: false,
+        backgroundColor: '#00000000',
+        webPreferences: {
+            preload: path.join(__dirname, 'preload.js'),
+            contextIsolation: true,
+            nodeIntegration: false
+        }
+    });
+
+    snapPreviewWindow.setAlwaysOnTop(true, 'screen-saver');
+    snapPreviewWindow.setIgnoreMouseEvents(true);
+    snapPreviewWindow.loadFile(path.join(__dirname, 'snap-preview.html'));
+
+    return snapPreviewWindow;
+}
+
+function showSnapPreview(zone) {
+    const targetWin = (snapFlyoutTargetWin && !snapFlyoutTargetWin.isDestroyed())
+        ? snapFlyoutTargetWin
+        : (mainWindow && !mainWindow.isDestroyed() ? mainWindow : null);
+    if (!targetWin) return;
+
+    const snapData = calculateSnapBounds(targetWin, zone);
+    if (!snapData || !snapData.targetBounds) return;
+
+    const preview = createSnapPreviewWindow();
+    preview.setBounds(snapData.targetBounds);
+
+    const isPrivate = (targetWin === (typeof privateWindow !== 'undefined' ? privateWindow : null));
+    if (preview.webContents) {
+        preview.webContents.send('set-preview-info', {
+            zone: zone,
+            zoneName: snapData.zoneName,
+            isPrivate: isPrivate,
+            themeMode: userSettings.themeMode || 'dark'
+        });
+    }
+
+    preview.showInactive();
+    if (snapFlyoutWindow && !snapFlyoutWindow.isDestroyed() && snapFlyoutWindow.isVisible()) {
+        snapFlyoutWindow.moveTop();
+    }
+}
+
+function hideSnapPreview() {
+    if (snapPreviewWindow && !snapPreviewWindow.isDestroyed() && snapPreviewWindow.isVisible()) {
+        try { snapPreviewWindow.hide(); } catch (e) {}
+    }
+}
+
+function createSnapFlyoutWindow() {
+    if (snapFlyoutWindow && !snapFlyoutWindow.isDestroyed()) return snapFlyoutWindow;
+
+    snapFlyoutWindow = new BrowserWindow({
+        width: 334,
+        height: 104,
+        frame: false,
+        transparent: true,
+        resizable: false,
+        show: false,
+        alwaysOnTop: true,
+        skipTaskbar: true,
+        hasShadow: false,
+        backgroundColor: '#00000000',
+        webPreferences: {
+            preload: path.join(__dirname, 'preload.js'),
+            contextIsolation: true,
+            nodeIntegration: false
+        }
+    });
+
+    snapFlyoutWindow.setAlwaysOnTop(true, 'screen-saver');
+    snapFlyoutWindow.loadFile(path.join(__dirname, 'snap-flyout.html'));
+
+    return snapFlyoutWindow;
+}
+
+function hideSnapFlyoutWindow(delay = 300) {
+    clearTimeout(snapFlyoutHideTimer);
+    hideSnapPreview();
+    if (!snapFlyoutWindow || snapFlyoutWindow.isDestroyed() || !snapFlyoutWindow.isVisible()) return;
+
+    if (delay === 0) {
+        try { snapFlyoutWindow.hide(); } catch (e) {}
+        return;
+    }
+
+    snapFlyoutHideTimer = setTimeout(() => {
+        try {
+            if (snapFlyoutWindow && !snapFlyoutWindow.isDestroyed()) {
+                const { screen } = require('electron');
+                const pt = screen.getCursorScreenPoint();
+                const b = snapFlyoutWindow.getBounds();
+                if (pt.x >= b.x && pt.x <= b.x + b.width && pt.y >= b.y && pt.y <= b.y + b.height) {
+                    return; // Cursor is inside the flyout, keep open
+                }
+                snapFlyoutWindow.hide();
+                hideSnapPreview();
+            }
+        } catch (e) {}
+    }, delay);
+}
+
+ipcMain.on('show-snap-flyout', (event, bounds) => {
+    clearTimeout(snapFlyoutHideTimer);
+    snapFlyoutHideTimer = null;
+
+    const senderWin = BrowserWindow.fromWebContents(event.sender) || mainWindow;
+    snapFlyoutTargetWin = senderWin;
+
+    const winBounds = senderWin.getBounds();
+    const btnScreenX = winBounds.x + Math.round((bounds && bounds.x) || 0);
+    const btnScreenY = winBounds.y + Math.round((bounds && bounds.y) || 0);
+    const btnW = Math.round((bounds && bounds.width) || 46);
+    const btnH = Math.round((bounds && bounds.height) || 36);
+
+    const flyout = createSnapFlyoutWindow();
+    const flyoutW = 334;
+    const flyoutH = 104;
+
+    let flyoutX = (btnScreenX + btnW) - flyoutW + 4;
+    let flyoutY = btnScreenY + btnH + 6;
+
+    const { screen } = require('electron');
+    const currentDisplay = screen.getDisplayMatching(winBounds);
+    const workArea = currentDisplay.workArea;
+
+    if (flyoutX + flyoutW > workArea.x + workArea.width) {
+        flyoutX = workArea.x + workArea.width - flyoutW - 8;
+    }
+    if (flyoutX < workArea.x) {
+        flyoutX = workArea.x + 8;
+    }
+    if (flyoutY + flyoutH > workArea.y + workArea.height) {
+        flyoutY = btnScreenY - flyoutH - 4;
+    }
+
+    flyout.setBounds({
+        x: Math.round(flyoutX),
+        y: Math.round(flyoutY),
+        width: flyoutW,
+        height: flyoutH
+    });
+
+    if (flyout.webContents) {
+        flyout.webContents.send('set-theme', {
+            themeMode: userSettings.themeMode || 'dark',
+            isPrivate: (senderWin === (typeof privateWindow !== 'undefined' ? privateWindow : null))
+        });
+    }
+
+    flyout.showInactive();
+});
+
+ipcMain.on('hide-snap-flyout', (event, customDelay) => {
+    const delay = (typeof customDelay === 'number') ? customDelay : 450;
+    hideSnapFlyoutWindow(delay);
+});
+
+ipcMain.on('cancel-hide-snap-flyout', () => {
+    clearTimeout(snapFlyoutHideTimer);
+    snapFlyoutHideTimer = null;
+});
+
+ipcMain.on('show-snap-preview', (event, zone) => {
+    showSnapPreview(zone);
+});
+
+ipcMain.on('hide-snap-preview', () => {
+    hideSnapPreview();
+});
+
+ipcMain.on('snap-window', (e, zone) => {
+    const targetWin = (snapFlyoutTargetWin && !snapFlyoutTargetWin.isDestroyed())
+        ? snapFlyoutTargetWin
+        : (BrowserWindow.fromWebContents(e.sender) || mainWindow);
+    hideSnapPreview();
+    snapWindowToZone(targetWin, zone);
+    hideSnapFlyoutWindow(0);
+});
+
 ipcMain.on('window-close', () => {
     isQuitting = true;
     if (mainWindow && !mainWindow.isDestroyed()) {
@@ -4825,6 +5239,107 @@ async function executeBrowserAction(action) {
     }
 }
 
+ipcMain.handle('get-open-tabs', () => {
+    try {
+        const tabList = (views || []).map(v => {
+            let t1 = '';
+            let u1 = '';
+            let f1 = v.favicon || null;
+            if (v.view && !v.view.webContents.isDestroyed()) {
+                t1 = v.view.webContents.getTitle();
+                u1 = v.view.webContents.getURL();
+            }
+            return {
+                id: v.id,
+                title: t1 || 'New Tab',
+                url: u1 || '',
+                favicon: f1,
+                isActive: v.id === activeViewId,
+                isSplit: !!v.isSplit
+            };
+        });
+        return { tabs: tabList, activeTabId: activeViewId };
+    } catch (e) {
+        return { tabs: [], activeTabId: activeViewId };
+    }
+});
+
+ipcMain.handle('get-tab-content', async (event, targetTabId) => {
+    try {
+        const idToFind = targetTabId || activeViewId;
+        const entry = (views || []).find(v => v.id === idToFind) || (views || []).find(v => v.id === activeViewId);
+        if (!entry || !entry.view || entry.view.webContents.isDestroyed()) {
+            return null;
+        }
+        const wc = entry.view.webContents;
+        const url = wc.getURL() || '';
+        const title = wc.getTitle() || '';
+
+        const scrapeScript = `
+            (function() {
+                try {
+                    const sel = (s) => document.querySelector(s)?.content || document.querySelector(s)?.innerText || '';
+                    const meta = {
+                        title: document.title || '',
+                        description: sel('meta[name="description"]') || sel('meta[property="og:description"]') || '',
+                        hostname: window.location.hostname || '',
+                        url: window.location.href || ''
+                    };
+
+                    const clone = document.body ? document.body.cloneNode(true) : null;
+                    if (!clone) return { meta, headings: [], text: '' };
+
+                    ['script', 'style', 'noscript', 'iframe', 'svg', 'canvas', 'nav', 'footer', 'aside', '.ad', '.cookie-banner'].forEach(s => {
+                        try { clone.querySelectorAll(s).forEach(e => e.remove()); } catch(e) {}
+                    });
+
+                    const headings = [];
+                    clone.querySelectorAll('h1, h2, h3, h4').forEach(h => {
+                        const t = (h.innerText || '').trim();
+                        if (t.length > 2 && t.length < 150) headings.push(t);
+                    });
+
+                    const paragraphs = [];
+                    clone.querySelectorAll('p, li, article, section').forEach(p => {
+                        const t = (p.innerText || '').trim();
+                        if (t.length > 25) paragraphs.push(t);
+                    });
+
+                    const unique = Array.from(new Set(paragraphs));
+                    const fullText = (unique.length > 0 ? unique.slice(0, 35).join('\n\n') : (clone.innerText || '')).substring(0, 10000);
+
+                    return {
+                        meta,
+                        headings: headings.slice(0, 15),
+                        text: fullText
+                    };
+                } catch(e) {
+                    return { meta: { title: document.title, url: window.location.href }, headings: [], text: document.body ? document.body.innerText.substring(0, 5000) : '' };
+                }
+            })()
+        `;
+
+        const scraped = await wc.executeJavaScript(scrapeScript).catch(() => null);
+
+        let host = '';
+        try { if (url) host = new URL(url).hostname; } catch(e) {}
+
+        return {
+            id: entry.id,
+            title: title || scraped?.meta?.title || 'Web Page',
+            url: url || scraped?.meta?.url || '',
+            hostname: scraped?.meta?.hostname || host,
+            description: scraped?.meta?.description || '',
+            headings: scraped?.headings || [],
+            text: scraped?.text || '',
+            favicon: entry.favicon || null
+        };
+    } catch (err) {
+        console.error('[get-tab-content error]:', err);
+        return null;
+    }
+});
+
 ipcMain.handle('ai-agent-execute', async (event, query) => {
     let prompt = '';
     let fileObj = null;
@@ -4834,6 +5349,7 @@ ipcMain.handle('ai-agent-execute', async (event, query) => {
     let rawUsername = userSettings.aiUserName || userSettings.userName || 'Gaming';
 
     let historyList = [];
+    let attachedTabs = [];
 
     if (query && typeof query === 'object') {
         prompt = query.query || 'Analyze this file';
@@ -4843,6 +5359,7 @@ ipcMain.handle('ai-agent-execute', async (event, query) => {
         customConfig = query.customConfig || {};
         rawUsername = query.username || userSettings.aiUserName || userSettings.userName || 'Gaming';
         historyList = Array.isArray(query.history) ? query.history : [];
+        attachedTabs = Array.isArray(query.attachedTabs) ? query.attachedTabs : [];
     } else {
         prompt = query || '';
     }
@@ -4923,6 +5440,19 @@ Supported Commands:
 
         let finalPrompt = fullLLMPrompt;
         // Inject document if present and not already embedded in promptText
+        if (attachedTabs.length > 0) {
+            let tabCtx = `[ATTACHED BROWSER TAB CONTEXT (${attachedTabs.length} tab${attachedTabs.length > 1 ? 's' : ''} attached for comparison & deep analysis)]:\n`;
+            attachedTabs.forEach((t, idx) => {
+                tabCtx += `\n=== TAB ${idx + 1}: "${t.title || 'Untitled'}" (${t.url || 'local'}) ===\n`;
+                if (t.hostname) tabCtx += `Source Hostname: ${t.hostname}\n`;
+                if (t.description) tabCtx += `Description/Summary: ${t.description}\n`;
+                if (t.headings && t.headings.length) tabCtx += `Key Headings & Topics: ${t.headings.slice(0, 10).join(' | ')}\n`;
+                if (t.text) tabCtx += `Extracted Page Content:\n${t.text.substring(0, 8000)}\n`;
+            });
+            tabCtx += `\n[END OF ATTACHED TABS CONTEXT]\n\n`;
+            fullLLMPrompt = `${tabCtx}${fullLLMPrompt}`;
+        }
+
         if (fileObj && fileObj.type === 'text' && fileObj.data && !promptText.includes('[ATTACHED DOCUMENT') && !promptText.includes('[User attached')) {
             finalPrompt = `[ATTACHED DOCUMENT - File Name: "${fileObj.name}"]:\n\n${fileObj.data}\n\n[USER INSTRUCTION]:\n${fullLLMPrompt}`;
         }
@@ -8341,19 +8871,24 @@ ipcMain.on('update-setting', (e, key, val) => {
     userSettings[key] = val;
 
     if (key === 'accentColor') {
-        if (userSettings.themeMode === 'light') {
-            userSettings.accentColorLight = val;
-        } else {
-            userSettings.accentColorDark = val;
-        }
+        userSettings.accentColor = val;
+        userSettings.accentColorLight = val;
+        userSettings.accentColorDark = val;
     }
 
     if (key === 'themeMode') {
         applyThemeModeGlobally(val);
-        if (val === 'light') {
-            userSettings.accentColor = userSettings.accentColorLight || '#058f60';
-        } else {
-            userSettings.accentColor = userSettings.accentColorDark || '#09f0a0';
+        if (!userSettings.accentColor) {
+            userSettings.accentColor = val === 'light' ? '#058f60' : '#09f0a0';
+        }
+    }
+
+    if (key === 'activeThemeCombo') {
+        userSettings.activeThemeCombo = val;
+        if (val && val.chrome && /^#[0-9A-Fa-f]{6}$/.test(val.chrome)) {
+            if (typeof mainWindow !== 'undefined' && mainWindow && !mainWindow.isDestroyed()) {
+                try { mainWindow.setBackgroundColor(val.chrome); } catch (e) {}
+            }
         }
     }
 
@@ -8553,6 +9088,40 @@ function handleShortcuts(event, input) {
 
 
     const cmdOrCtrl = process.platform === 'darwin' ? input.meta : input.control;
+
+    // F11: Toggle Fullscreen
+    if (input.key === 'F11') {
+        event.preventDefault();
+        if (mainWindow && !mainWindow.isDestroyed()) {
+            const nextFs = !mainWindow.isFullScreen();
+            mainWindow.setFullScreen(nextFs);
+            mainWindow.webContents.send('html-fullscreen', nextFs);
+            setTimeout(updateViewBounds, 40);
+            setTimeout(updateViewBounds, 150);
+        }
+        return;
+    }
+
+    // Escape: Exit Fullscreen if currently in fullscreen
+    if (input.key === 'Escape') {
+        let didExit = false;
+        if (htmlFullscreenViewId) {
+            const fsView = views.find(v => v.id === htmlFullscreenViewId)?.view;
+            if (fsView && !fsView.webContents.isDestroyed()) {
+                fsView.webContents.executeJavaScript('if (document.fullscreenElement) document.exitFullscreen().catch(()=>{});').catch(() => {});
+            }
+            setHtmlFullscreen(htmlFullscreenViewId, false);
+            didExit = true;
+        }
+        if (mainWindow && !mainWindow.isDestroyed() && mainWindow.isFullScreen()) {
+            mainWindow.setFullScreen(false);
+            mainWindow.webContents.send('html-fullscreen', false);
+            setTimeout(updateViewBounds, 40);
+            setTimeout(updateViewBounds, 150);
+            didExit = true;
+        }
+        if (didExit) return;
+    }
 
     // Ctrl + Shift + N or Ctrl + Shift + P: New Private Window
     if (cmdOrCtrl && input.shift && (input.key.toLowerCase() === 'n' || input.key.toLowerCase() === 'p')) {
@@ -9047,6 +9616,10 @@ ipcMain.on('get-theme-info-sync', (event) => {
     };
 });
 
+ipcMain.on('get-fingerprint-protection-sync', (event) => {
+    event.returnValue = (userSettings.fingerprintProtection !== false);
+});
+
 ipcMain.handle('get-settings', () => {
     const resolvedExtensions = (userSettings.extensions || []).map(ext => resolveExtensionMetadata({ ...ext }));
     return {
@@ -9481,7 +10054,7 @@ ipcMain.on('show-shield-popup', (e, { x, y, width, height, tabId }) => {
 
     const zoom = getOptimalZoomFactor();
     const popupWidth = Math.round(284 * zoom);
-    const popupHeight = Math.round(375 * zoom);
+    const popupHeight = Math.round(425 * zoom);
     const contentBounds = mainWindow.getContentBounds();
     const winOffset = getWinOffset();
 
@@ -11646,6 +12219,15 @@ class ExtensionManager {
                 }
             }
 
+            // 5. Sanitize permissions for Electron compatibility
+            if (Array.isArray(manifest.permissions)) {
+                const cleanPerms = manifest.permissions.filter(p => typeof p === 'string' && p !== 'declarativeNetRequestFeedback');
+                if (cleanPerms.length !== manifest.permissions.length) {
+                    manifest.permissions = cleanPerms;
+                    manifestModified = true;
+                }
+            }
+
             if (manifestModified) {
                 fs.writeFileSync(manifestPath, JSON.stringify(manifest, null, 2), 'utf8');
                 console.log(`[ExtensionCompat] Updated manifest for compatibility: ${manifest.name || extPath}`);
@@ -11743,8 +12325,8 @@ class ExtensionManager {
             }
 
             if (!fs.existsSync(targetPath) || !fs.existsSync(path.join(targetPath, 'manifest.json'))) {
-                const chromeVersion = process.versions.chrome || '130.0.0.0';
-                const versionCandidates = [chromeVersion, '132.0.0.0', '120.0.6099.130', '114.0.5735.199'];
+                const chromeVersion = process.versions.chrome || '156.0.8078.48';
+                const versionCandidates = [chromeVersion, '156.0.8078.48', '140.0.0.0', '132.0.0.0', '120.0.6099.130'];
                 let buffer = null;
                 let lastErr = null;
 
@@ -11773,15 +12355,34 @@ class ExtensionManager {
                 zip.extractAllTo(targetPath, true);
             }
 
-            // 4. Patch with universal compatibility layer
-            this.patchExtensionForCompatibility(targetPath);
-
-            // 5. Load info from manifest
+            // 4. Load info from manifest and validate item type
             const manifestPath = path.join(targetPath, 'manifest.json');
             if (!fs.existsSync(manifestPath)) {
                 throw new Error('Extracted extension package is missing manifest.json');
             }
             const manifest = JSON.parse(fs.readFileSync(manifestPath, 'utf8'));
+
+            // Check if item is a Chrome Theme (Themes are not supported in Electron)
+            if (manifest.theme) {
+                if (fs.existsSync(targetPath)) {
+                    try { fs.rmSync(targetPath, { recursive: true, force: true }); } catch (e) {}
+                }
+                throw new Error('Chrome Themes cannot be installed. Themes are not supported by the extension engine. You can configure extension policies in Ocal Settings > Extensions.');
+            }
+
+            // Check if item is a legacy Chrome App
+            if (manifest.app && (!manifest.background || !manifest.content_scripts)) {
+                if (fs.existsSync(targetPath)) {
+                    try { fs.rmSync(targetPath, { recursive: true, force: true }); } catch (e) {}
+                }
+                throw new Error('Legacy Chrome Apps are not supported. Only Chrome Extensions can be installed.');
+            }
+
+            // 5. Patch with universal compatibility layer
+            this.patchExtensionForCompatibility(targetPath);
+            try {
+                manifest = JSON.parse(fs.readFileSync(manifestPath, 'utf8'));
+            } catch (e) {}
 
             const popup = (manifest.action && manifest.action.default_popup) ||
                           (manifest.browser_action && manifest.browser_action.default_popup) ||
@@ -11872,7 +12473,7 @@ class ExtensionManager {
             };
         }
 
-        const chromeVersion = process.versions.chrome || '130.0.0.0';
+        const chromeVersion = process.versions.chrome || '156.0.8078.48';
         const downloadUrl = `https://clients2.google.com/service/update2/crx?response=redirect&os=win&arch=x86-64&os_arch=x86-64&nacl_arch=x86-64&prod=chromecrx&prodchannel=&prodversion=${chromeVersion}&lang=en-US&acceptformat=crx3,crx2&x=id%3D${extensionId}%26installsource%3Dondemand%26uc`;
 
         console.log(`[ExtensionManager] Grabbing data for ${extensionId} from Google...`);
@@ -11919,9 +12520,51 @@ class ExtensionManager {
             return str;
         }
 
-        const name = localize(manifest.name) || 'Chrome Extension';
+        const name = localize(manifest.name) || (manifest.theme ? 'Chrome Theme' : 'Chrome Extension');
         const description = localize(manifest.description) || '';
         const version = manifest.version || '1.0';
+
+        // Check if item is a Chrome Theme
+        if (manifest.theme) {
+            return {
+                id: extensionId,
+                name,
+                description: description || 'Chrome Browser Theme',
+                version,
+                iconData: null,
+                author: manifest.author || 'Chrome Web Store Publisher',
+                permissions: [],
+                manifest_version: manifest.manifest_version || 2,
+                size: (buffer.length / (1024 * 1024)).toFixed(2) + ' MB',
+                hasPopup: false,
+                isInstalled: false,
+                isTheme: true,
+                isApp: false,
+                canInstall: false,
+                unsupportedReason: 'Chrome Themes cannot be installed. Themes are not supported by the extension engine. You can configure extension policies in Ocal Settings > Extensions.'
+            };
+        }
+
+        // Check if item is a legacy Chrome App
+        if (manifest.app && (!manifest.background || !manifest.content_scripts)) {
+            return {
+                id: extensionId,
+                name: localize(manifest.name) || 'Chrome App',
+                description: description || 'Legacy Chrome App',
+                version,
+                iconData: null,
+                author: manifest.author || 'Chrome Web Store Publisher',
+                permissions: [],
+                manifest_version: manifest.manifest_version || 2,
+                size: (buffer.length / (1024 * 1024)).toFixed(2) + ' MB',
+                hasPopup: false,
+                isInstalled: false,
+                isTheme: false,
+                isApp: true,
+                canInstall: false,
+                unsupportedReason: 'Legacy Chrome Apps are not supported. Only Chrome Extensions can be installed.'
+            };
+        }
 
         // Extract highest resolution icon as data URI
         let iconData = null;
@@ -11965,7 +12608,10 @@ class ExtensionManager {
             manifest_version: manifest.manifest_version || 3,
             size,
             hasPopup: Boolean(popup),
-            isInstalled: false
+            isInstalled: false,
+            isTheme: false,
+            isApp: false,
+            canInstall: true
         };
     }
 
@@ -12447,6 +13093,29 @@ ipcMain.handle('fetch-extension-info', async (e, id) => {
     return await extensionManager.fetchExtensionData(id);
 });
 
+ipcMain.handle('check-extension-store-item', async (e, id) => {
+    if (!id || typeof id !== 'string') return { canInstall: false, error: 'Invalid ID' };
+    const cleanId = id.trim().toLowerCase();
+    const isInstalled = (userSettings.extensions || []).some(x => x.id && x.id.toLowerCase() === cleanId);
+    if (isInstalled) {
+        return { id: cleanId, isInstalled: true, canInstall: true, isTheme: false, isApp: false };
+    }
+    try {
+        const info = await extensionManager.fetchExtensionData(cleanId);
+        return {
+            id: cleanId,
+            isInstalled: false,
+            canInstall: info.canInstall !== false,
+            isTheme: Boolean(info.isTheme),
+            isApp: Boolean(info.isApp),
+            name: info.name,
+            reason: info.unsupportedReason || ''
+        };
+    } catch (err) {
+        return { id: cleanId, isInstalled: false, canInstall: true, error: err.message };
+    }
+});
+
 ipcMain.handle('load-unpacked-extension', async (e) => {
     const result = await dialog.showOpenDialog(mainWindow, {
         title: 'Select Extension Directory',
@@ -12463,6 +13132,10 @@ ipcMain.handle('load-unpacked-extension', async (e) => {
         }
 
         const manifest = JSON.parse(fs.readFileSync(manifestPath, 'utf8'));
+
+        if (manifest.theme) {
+            throw new Error("Chrome Themes cannot be installed as extensions. Extension compatibility settings are in Ocal Settings > Extensions.");
+        }
 
         if (!userSettings.bookmarks) userSettings.bookmarks = [];
         if (!userSettings.folders) userSettings.folders = [];
@@ -12593,6 +13266,9 @@ ipcMain.handle('toggle-extension', async (e, { id, enabled }) => {
 ipcMain.on('install-extension-from-store', async (e, id) => {
     try {
         const info = await extensionManager.downloadAndInstall(id);
+        if (e && e.sender && !e.sender.isDestroyed()) {
+            e.sender.send('install-extension-store-result', { id, success: true, name: info.name });
+        }
         if (mainWindow && !mainWindow.isDestroyed()) {
             mainWindow.webContents.send('show-toast', {
                 message: `✓ Installed ${info.name || 'extension'}!`,
@@ -12605,15 +13281,24 @@ ipcMain.on('install-extension-from-store', async (e, id) => {
             });
         }
     } catch (err) {
+        const isTheme = err.message && err.message.toLowerCase().includes('theme');
+        if (e && e.sender && !e.sender.isDestroyed()) {
+            e.sender.send('install-extension-store-result', {
+                id,
+                success: false,
+                error: err.message,
+                isTheme
+            });
+        }
         if (mainWindow && !mainWindow.isDestroyed()) {
             mainWindow.webContents.send('show-toast', {
-                message: `Failed to install extension: ${err.message}`,
-                icon: 'fa-triangle-exclamation'
+                message: isTheme ? `Theme Unsupported: ${err.message}` : `Failed to install extension: ${err.message}`,
+                icon: isTheme ? 'fa-palette' : 'fa-triangle-exclamation'
             });
             mainWindow.webContents.send('show-modal', {
-                title: 'Installation Failed',
-                message: `Failed to install extension: ${err.message}`,
-                type: 'error'
+                title: isTheme ? 'Theme Not Supported' : 'Installation Failed',
+                message: err.message,
+                type: isTheme ? 'warning' : 'error'
             });
         }
     }
@@ -12728,6 +13413,17 @@ ipcMain.on('set-security-toggle', (e, { key, value }) => {
         if (value && fs.existsSync(focusPath)) {
             session.defaultSession.loadExtension(focusPath).catch(err => console.error('Failed to load Ocal Focus natively:', err));
         }
+    }
+
+    if (key === 'fingerprintProtection') {
+        userSettings.fingerprintProtection = !!value;
+        const allWc = webContents.getAllWebContents();
+        allWc.forEach(wc => {
+            if (wc.isDestroyed()) return;
+            const url = wc.getURL();
+            const isInternal = url.startsWith('ocal://') || url.startsWith('file://');
+            if (value && !isInternal) applyCyberStealth(wc);
+        });
     }
 
     saveSettings(userSettings);
@@ -13038,8 +13734,8 @@ ipcMain.on('toggle-volume-boost-popup', (e, bounds) => {
     mainWindow.addBrowserView(volumeBoostView);
 
     const zoom = getOptimalZoomFactor();
-    const popupWidth = Math.round(280 * zoom);
-    const popupHeight = Math.round(290 * zoom);
+    const popupWidth = Math.round(296 * zoom);
+    const popupHeight = Math.round(385 * zoom);
 
     let targetX = bounds.x + (bounds.width / 2) - (popupWidth / 2);
     const contentBounds = mainWindow.getContentBounds();
@@ -13702,8 +14398,8 @@ function openPrivateWindow(targetUrl = null) {
     privateWindow = new BrowserWindow({
         width: 1350,
         height: 900,
-        minWidth: 500,
-        minHeight: 400,
+        minWidth: 360,
+        minHeight: 360,
         title: 'Ocal Browser - Private Window',
         icon: process.platform === 'win32' ? appIconPath : (appIcon || appIconPath),
         frame: false,

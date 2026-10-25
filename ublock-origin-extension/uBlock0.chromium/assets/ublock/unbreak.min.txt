@@ -1,6 +1,6 @@
 ! Title: uBlock filters – Unbreak
 ! Expires: 5 days
-! Last modified: Wed, 19 Aug 2026 15:42:15 +0000
+! Last modified: Tue, 15 Sep 2026 10:19:46 +0000
 ! Diff-Path: %diffpath%#ublock-unbreak
 ! Diff-Expires: 317 minutes
 ! License: https://github.com/uBlockOrigin/uAssets/blob/master/LICENSE
@@ -181,6 +181,8 @@ kotaku.com#@##dfp-ad-2
 kotaku.com#@##dfp-ad-1
 ||x.kinja-static.com/assets/packaged-js/OnionAM.$script,domain=avclub.com|clickhole.com|deadspin.com|earther.com|gizmodo.com|jalopnik.com|jezebel.com|kotaku.com|lifehacker.com|splinternews.com|theinventory.com|theonion.com|theroot.com|thetakeout.com
 @@||d1xrtnyoeeet33.cloudfront.net/assets/js/lib/*$script,domain=calgaryherald.com|calgarysun.com|canoe.com|edmontonsun.com|financialpost.com|leaderpost.com|lfpress.com|montrealgazette.com|nationalpost.com|ottawacitizen.com|ottawasun.com|theprovince.com|thestarphoenix.com|torontosun.com|vancouversun.com|windsorstar.com|winnipegsun.com
+calgaryherald.com,calgarysun.com,canada.com,canoe.com,driving.ca,edmontonjournal.com,edmontonsun.com,financialpost.com,leaderpost.com,lfpress.com,montrealgazette.com,nationalpost.com,ontariofarmer.com,ottawacitizen.com,ottawasun.com,thegrowthop.com,theprovince.com,thestarphoenix.com,tj.news,torontosun.com,vancouversun.com,windsorstar.com,winnipegsun.com##+js(set, Object.prototype.adService.initialize, noopFunc)
+@@||cdn.q0losid.com/prod/pni/loader.min.js$domain=calgaryherald.com|calgarysun.com|canada.com|canoe.com|driving.ca|edmontonjournal.com|edmontonsun.com|financialpost.com|intelligencer.ca|leaderpost.com|lfpress.com|montrealgazette.com|nationalpost.com|ontariofarmer.com|ottawacitizen.com|ottawasun.com|standard-freeholder.com|thegrowthop.com|theprovince.com|thestarphoenix.com|tj.news|torontosun.com|vancouversun.com|windsorstar.com|winnipegsun.com
 @@||cbsistatic.com/*/comscore.streaming.$script,domain=cbsnews.com
 !#if !ext_ubol
 ||imasdk.googleapis.com/js/sdkloader/ima3_debug.js$domain=cbsnews.com,redirect=google-ima.js,important
@@ -584,11 +586,7 @@ as.com,caracol.com.co,los40.com##+js(set, DTM.trackAsyncPV, noopFunc)
 @@||analytics.global.sky.com/sky-tags/*/sky-tags-without-adobe.min.js$script,1p
 @@||sourcepoint.vice.com^$script,xhr,domain=video.vice.com
 @@||metacritic.com/js/omniture/uuid.js$script,1p
-metacritic.com##+js(rpnt, script, appName:"metacritic", appName:"etacritic")
-/etacritic/*$xhr,uritransform=/\/etacritic\//\/metacritic\//,domain=metacritic.com
-!#if ext_ubol
-/(.*)\/etacritic\/(.*)/$xhr,uritransform=//$1\/metacritic\/$2/,domain=metacritic.com
-!#endif
+metacritic.com##+js(rpnt, script, adsEnabled:true, adsEnabled:false)
 @@||pinpng.com^$css,1p
 @@||pngfind.com^$css,1p
 @@||automate-prod.s3.amazonaws.com/minified_logic.js$xhr,domain=kotaku.com.au
@@ -1817,7 +1815,7 @@ riteaid.com##^html > body:not(.catalogsearch-result-index):upward(1) > head > sc
 @@||js.monitor.azure.com/scripts/$script,domain=efilecabinet.net
 ! unbreak sign up on NSFW sites
 @@/signup.php?mode=async&action=show_security_code$image,1p
-@@/akam/13/*$script,xhr,1p,domain=easyjet.com|ing.nl
+@@/akam/13/*$script,xhr,1p,domain=aw-lab.com|easyjet.com|ing.nl
 @@/init.js|$script,xhr,1p,domain=crunchbase.com
 @@||collector-*.px-cloud.net/b/$xhr,domain=crunchbase.com
 @@||googletagmanager.com/gtm.js$script,domain=radiox.co.uk
@@ -2861,3 +2859,10 @@ ds.163.com##+js(set, Sentry, {})
 ds.163.com##+js(set, Sentry.init, noopFunc)
 ds.163.com##+js(set, Sentry.configureScope, noopFunc)
 @@||imasdk.googleapis.com/js/sdkloader/ima3_dai.js$script,domain=airtelxstream.in
+@@||googletagmanager.com/gtag/js$script,redirect-rule,domain=alltron.ch
+||cdn.shopify.com/extensions/*/ba_tracking.js$domain=ridge.com,important
+ridge.com##+js(set, baMet.register, noopFunc)
+hktvmall.com##+js(set, Object.prototype.componentInScreen, noopFunc)
+@@||mapper.nekostream.site/api/mal/*/*/$xhr,strict3p
+||fvrd.ca/*/AppMeasurement.js$redirect=noopjs
+@@||pagead2.googlesyndication.com/tag/js/gpt.js$script,redirect-rule,domain=kick.com

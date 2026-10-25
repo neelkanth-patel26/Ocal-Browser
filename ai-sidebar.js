@@ -1917,9 +1917,403 @@ const hideThinking = () => {
 };
 
 // Main Handler
+// ─────────────────────────────────────────────────────────────────────────────
+// TAB AWARENESS, MULTI-TAB COMPARISON & @TAB COMMANDS ENGINE
+// ─────────────────────────────────────────────────────────────────────────────
+let currentOpenTabs = [];
+let activeBrowserTab = null;
+let attachedTabs = []; // Array of attached tab objects: { id, title, url, favicon, hostname }
+let isMentionMenuOpen = false;
+let mentionMenuSelectedIndex = 0;
+let filteredMentionTabs = [];
+let activeTabDismissedId = null;
+
+const activeTabBar = document.getElementById('ai-active-tab-bar');
+const activeTabFavicon = document.getElementById('active-tab-favicon');
+const activeTabFallbackIcon = document.getElementById('active-tab-fallback-icon');
+const activeTabTitle = document.getElementById('active-tab-title');
+const activeTabHost = document.getElementById('active-tab-host');
+const btnAttachActiveTab = document.getElementById('btn-attach-active-tab');
+const btnDismissActiveTab = document.getElementById('btn-dismiss-active-tab');
+const attachedTabsTray = document.getElementById('ai-attached-tabs-tray');
+const tabMentionMenu = document.getElementById('ai-tab-mention-menu');
+const tabMentionList = document.getElementById('tab-mention-list');
+const aiTabAttachBtn = document.getElementById('ai-tab-attach-btn');
+const toolAttachTab = document.getElementById('tool-attach-tab');
+const toolCompareTabs = document.getElementById('tool-compare-tabs');
+
+function isWebTab(tab) {
+    if (!tab || !tab.url) return false;
+    const u = tab.url.toLowerCase();
+    const title = (tab.title || '').toLowerCase();
+    if (u === 'about:blank' || u.startsWith('about:') || u.startsWith('ocal://') || u.startsWith('chrome://') || u.startsWith('file://')) {
+        return false;
+    }
+    if (title === 'ocal home' || title === 'new tab' || title === 'home') {
+        return false;
+    }
+    return u.startsWith('http://') || u.startsWith('https://');
+}
+
+function getCleanHostname(rawUrl) {
+    if (!rawUrl) return '';
+    try {
+        const u = new URL(rawUrl);
+        return u.hostname.replace(/^www\./, '');
+    } catch(e) {
+        return '';
+    }
+}
+
+function handleTabsChanged(data) {
+    if (!data) return;
+    const rawTabs = Array.isArray(data.tabs) ? data.tabs : (Array.isArray(data) ? data : []);
+    const activeId = data.activeTabId;
+
+    currentOpenTabs = rawTabs.filter(t => isWebTab(t)).map(t => ({
+        ...t,
+        hostname: getCleanHostname(t.url)
+    }));
+
+    const rawActive = rawTabs.find(t => t.id === activeId);
+    activeBrowserTab = (rawActive && isWebTab(rawActive))
+        ? { ...rawActive, hostname: getCleanHostname(rawActive.url) }
+        : (currentOpenTabs.find(t => t.id === activeId) || null);
+
+    if (activeBrowserTab && activeTabDismissedId && activeBrowserTab.id !== activeTabDismissedId) {
+        activeTabDismissedId = null;
+    }
+
+    // Filter out closed tabs
+    const openIds = new Set(currentOpenTabs.map(t => t.id));
+    attachedTabs = attachedTabs.filter(t => openIds.has(t.id));
+    renderAttachedTabsTray();
+
+    updateActiveTabBarUI();
+    if (isMentionMenuOpen) {
+        renderMentionMenuList();
+    }
+}
+
+function updateActiveTabBarUI() {
+    if (!activeTabBar) return;
+    if (!isWebTab(activeBrowserTab) || (activeBrowserTab && activeTabDismissedId === activeBrowserTab.id)) {
+        activeTabBar.style.display = 'none';
+        return;
+    }
+
+    activeTabBar.style.display = 'flex';
+    if (activeTabTitle) activeTabTitle.textContent = activeBrowserTab.title || 'Active Tab';
+    if (activeTabHost) activeTabHost.textContent = activeBrowserTab.hostname ? `• ${activeBrowserTab.hostname}` : '';
+
+    if (activeBrowserTab.favicon && activeTabFavicon) {
+        activeTabFavicon.src = activeBrowserTab.favicon;
+        activeTabFavicon.style.display = 'block';
+        if (activeTabFallbackIcon) activeTabFallbackIcon.style.display = 'none';
+    } else {
+        if (activeTabFavicon) activeTabFavicon.style.display = 'none';
+        if (activeTabFallbackIcon) activeTabFallbackIcon.style.display = 'block';
+    }
+
+    const isAlreadyAttached = attachedTabs.some(t => t.id === activeBrowserTab.id);
+    if (btnAttachActiveTab) {
+        if (isAlreadyAttached) {
+            btnAttachActiveTab.innerHTML = '<i class="fas fa-check"></i> <span>Attached</span>';
+            btnAttachActiveTab.style.background = 'color-mix(in srgb, #10B981 18%, var(--card-bg))';
+            btnAttachActiveTab.style.color = '#10B981';
+        } else {
+            btnAttachActiveTab.innerHTML = '<i class="fas fa-plus"></i> <span>Add to Chat</span>';
+            btnAttachActiveTab.style.background = 'var(--accent)';
+            btnAttachActiveTab.style.color = '#FFFFFF';
+        }
+    }
+}
+
+function attachTab(tab) {
+    if (!tab) return;
+    if (attachedTabs.some(t => t.id === tab.id)) return;
+    attachedTabs.push({
+        id: tab.id,
+        title: tab.title || 'Web Tab',
+        url: tab.url || '',
+        hostname: tab.hostname || getCleanHostname(tab.url),
+        favicon: tab.favicon || null
+    });
+    renderAttachedTabsTray();
+    updateActiveTabBarUI();
+}
+
+function detachTab(tabId) {
+    attachedTabs = attachedTabs.filter(t => t.id !== tabId);
+    renderAttachedTabsTray();
+    updateActiveTabBarUI();
+}
+
+function renderAttachedTabsTray() {
+    if (!attachedTabsTray) return;
+    if (attachedTabs.length === 0) {
+        attachedTabsTray.style.display = 'none';
+        attachedTabsTray.innerHTML = '';
+        return;
+    }
+
+    attachedTabsTray.style.display = 'flex';
+    let html = '';
+
+    if (attachedTabs.length >= 2) {
+        html += `<span class="compare-badge-pill" title="Multiple tabs attached for cross-page comparison">
+            <i class="fas fa-code-compare"></i> Comparing ${attachedTabs.length} Tabs
+        </span>`;
+    }
+
+    attachedTabs.forEach(t => {
+        const iconMarkup = t.favicon 
+            ? `<img src="${t.favicon}" style="width:12px;height:12px;border-radius:2px;object-fit:contain;" alt="">`
+            : `<i class="fas fa-globe" style="color:var(--accent);font-size:11px;"></i>`;
+        
+        html += `
+            <div class="attached-tab-chip" data-id="${t.id}" title="${t.title} (${t.url})">
+                ${iconMarkup}
+                <span class="tab-chip-title">${t.title}</span>
+                <button class="tab-chip-remove" data-id="${t.id}" title="Remove tab context">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+        `;
+    });
+
+    attachedTabsTray.innerHTML = html;
+
+    attachedTabsTray.querySelectorAll('.tab-chip-remove').forEach(btn => {
+        btn.onclick = (e) => {
+            e.stopPropagation();
+            detachTab(btn.dataset.id);
+        };
+    });
+}
+
+// ── @Tab Mention Autocomplete Dropdown ──
+let currentMentionFilter = '';
+
+function openMentionMenu(filter = '') {
+    currentMentionFilter = (filter || '').toLowerCase().trim();
+    isMentionMenuOpen = true;
+    mentionMenuSelectedIndex = 0;
+    renderMentionMenuList();
+    if (tabMentionMenu) tabMentionMenu.style.display = 'flex';
+}
+
+function closeMentionMenu() {
+    isMentionMenuOpen = false;
+    if (tabMentionMenu) tabMentionMenu.style.display = 'none';
+}
+
+function renderMentionMenuList() {
+    if (!tabMentionList) return;
+    
+    filteredMentionTabs = currentOpenTabs.filter(t => {
+        if (!currentMentionFilter) return true;
+        const q = currentMentionFilter.replace(/^tab:?/, '');
+        if (!q) return true;
+        return (t.title || '').toLowerCase().includes(q) ||
+               (t.url || '').toLowerCase().includes(q) ||
+               (t.hostname || '').toLowerCase().includes(q);
+    });
+
+    let itemsHtml = '';
+
+    // Quick Option: Active Tab
+    const activeIsSelected = mentionMenuSelectedIndex === 0;
+    itemsHtml += `
+        <div class="tab-mention-item ${activeIsSelected ? 'selected' : ''}" data-type="active" data-index="0">
+            <div class="tab-mention-item-left">
+                <i class="fas fa-arrow-pointer" style="color:var(--accent);font-size:12px;width:14px;text-align:center;"></i>
+                <span class="tab-mention-item-title">Current Active Tab (@tab)</span>
+                <span class="tab-mention-item-host">${activeBrowserTab ? activeBrowserTab.title : 'Current'}</span>
+            </div>
+            <span class="tab-mention-active-badge">Active</span>
+        </div>
+    `;
+
+    // Quick Option: Compare All / Top Tabs
+    if (currentOpenTabs.length >= 2) {
+        const compareIsSelected = mentionMenuSelectedIndex === 1;
+        itemsHtml += `
+            <div class="tab-mention-item ${compareIsSelected ? 'selected' : ''}" data-type="compare" data-index="1">
+                <div class="tab-mention-item-left">
+                    <i class="fas fa-code-compare" style="color:var(--accent);font-size:12px;width:14px;text-align:center;"></i>
+                    <span class="tab-mention-item-title">Compare Tabs (@compare)</span>
+                    <span class="tab-mention-item-host">Attach active & previous tabs</span>
+                </div>
+                <span class="tab-mention-active-badge" style="background:var(--accent);color:#FFF;">2+ Tabs</span>
+            </div>
+        `;
+    }
+
+    const baseOffset = currentOpenTabs.length >= 2 ? 2 : 1;
+
+    if (filteredMentionTabs.length === 0) {
+        itemsHtml += `<div style="padding:10px 12px;font-size:11.5px;color:var(--text-muted);text-align:center;">No matching tabs found</div>`;
+    } else {
+        filteredMentionTabs.forEach((tab, i) => {
+            const itemIdx = baseOffset + i;
+            const isSelected = mentionMenuSelectedIndex === itemIdx;
+            const iconHtml = tab.favicon
+                ? `<img src="${tab.favicon}" style="width:14px;height:14px;border-radius:2px;object-fit:contain;" alt="">`
+                : `<i class="fas fa-globe" style="color:var(--text-muted);font-size:12px;width:14px;text-align:center;"></i>`;
+            
+            const isActive = activeBrowserTab && activeBrowserTab.id === tab.id;
+
+            itemsHtml += `
+                <div class="tab-mention-item ${isSelected ? 'selected' : ''}" data-type="tab" data-id="${tab.id}" data-index="${itemIdx}">
+                    <div class="tab-mention-item-left">
+                        ${iconHtml}
+                        <span class="tab-mention-item-title">${tab.title}</span>
+                        <span class="tab-mention-item-host">${tab.hostname || ''}</span>
+                    </div>
+                    ${isActive ? '<span class="tab-mention-active-badge">Active</span>' : ''}
+                </div>
+            `;
+        });
+    }
+
+    tabMentionList.innerHTML = itemsHtml;
+
+    tabMentionList.querySelectorAll('.tab-mention-item').forEach(el => {
+        el.onclick = () => {
+            selectMentionItemByIndex(parseInt(el.dataset.index, 10));
+        };
+    });
+}
+
+function selectMentionItemByIndex(index) {
+    const hasCompareOption = currentOpenTabs.length >= 2;
+    if (index === 0) {
+        if (activeBrowserTab) attachTab(activeBrowserTab);
+    } else if (hasCompareOption && index === 1) {
+        currentOpenTabs.slice(0, 2).forEach(t => attachTab(t));
+    } else {
+        const tabOffset = hasCompareOption ? 2 : 1;
+        const tab = filteredMentionTabs[index - tabOffset];
+        if (tab) attachTab(tab);
+    }
+
+    if (queryEl) {
+        const val = queryEl.value;
+        const cursorPos = queryEl.selectionStart || val.length;
+        const before = val.substring(0, cursorPos);
+        const after = val.substring(cursorPos);
+        const atIdx = before.lastIndexOf('@');
+        if (atIdx !== -1) {
+            queryEl.value = (before.substring(0, atIdx) + after).trim();
+            queryEl.focus();
+        }
+    }
+
+    closeMentionMenu();
+}
+
+btnDismissActiveTab?.addEventListener('click', (e) => {
+    e.stopPropagation();
+    if (activeBrowserTab) {
+        activeTabDismissedId = activeBrowserTab.id;
+    }
+    if (activeTabBar) activeTabBar.style.display = 'none';
+});
+
+btnAttachActiveTab?.addEventListener('click', () => {
+    if (activeBrowserTab) {
+        if (attachedTabs.some(t => t.id === activeBrowserTab.id)) {
+            detachTab(activeBrowserTab.id);
+        } else {
+            attachTab(activeBrowserTab);
+        }
+    }
+});
+
+aiTabAttachBtn?.addEventListener('click', (e) => {
+    e.stopPropagation();
+    if (isMentionMenuOpen) {
+        closeMentionMenu();
+    } else {
+        openMentionMenu();
+        queryEl?.focus();
+    }
+});
+
+toolAttachTab?.addEventListener('click', () => {
+    if (isMentionMenuOpen) {
+        closeMentionMenu();
+    } else {
+        openMentionMenu();
+        queryEl?.focus();
+    }
+});
+
+toolCompareTabs?.addEventListener('click', () => {
+    if (currentOpenTabs.length >= 2) {
+        currentOpenTabs.slice(0, 2).forEach(t => attachTab(t));
+        if (queryEl && !queryEl.value.trim()) {
+            queryEl.value = "Compare these pages: analyze the key differences, unique features, pros/cons, and structured breakdown.";
+        }
+        queryEl?.focus();
+    } else if (activeBrowserTab) {
+        attachTab(activeBrowserTab);
+        openMentionMenu();
+    }
+});
+
+document.addEventListener('click', (e) => {
+    if (isMentionMenuOpen && tabMentionMenu && !tabMentionMenu.contains(e.target) && e.target !== aiTabAttachBtn) {
+        closeMentionMenu();
+    }
+});
+
+try {
+    const { ipcRenderer } = require('electron');
+    ipcRenderer.on('tabs-changed', (e, d) => handleTabsChanged(d));
+    ipcRenderer.invoke('get-open-tabs').then(d => handleTabsChanged(d)).catch(() => {});
+} catch(e) {
+    if (window.electronAPI?.onTabsChanged) {
+        window.electronAPI.onTabsChanged(d => handleTabsChanged(d));
+        window.electronAPI.invoke?.('get-open-tabs').then(d => handleTabsChanged(d)).catch(() => {});
+    }
+}
+
+
 const handleSend = async (customQuery = null) => {
     let q = (customQuery || queryEl.value).trim();
-    if (!q && !attachedFile && !currentSession?.activeDocument) return;
+    if (!q && !attachedFile && !currentSession?.activeDocument && attachedTabs.length === 0) return;
+
+    // Auto-resolve @tab or @current or @compare in query string if no tabs explicitly attached
+    let effectiveTabs = [...attachedTabs];
+    if (effectiveTabs.length === 0 && activeBrowserTab) {
+        if (/\b@tabs?\b/i.test(q) || /\b@current\b/i.test(q)) {
+            effectiveTabs.push({ ...activeBrowserTab });
+        } else if (/\b@compare\b/i.test(q) && currentOpenTabs.length >= 2) {
+            effectiveTabs = currentOpenTabs.slice(0, 2);
+        }
+    }
+
+    // Clean up @tab markers from query text for natural conversation
+    q = q.replace(/@tab(?::\S+)?/gi, '').replace(/@current/gi, '').replace(/@compare/gi, '').trim();
+
+    // Fetch rich tab content for each attached tab in parallel
+    let enrichedTabs = [];
+    if (effectiveTabs.length > 0) {
+        try {
+            const { ipcRenderer } = require('electron');
+            const tabPromises = effectiveTabs.map(async (t) => {
+                try {
+                    const content = await ipcRenderer.invoke('get-tab-content', t.id);
+                    return content || t;
+                } catch(e) {
+                    return t;
+                }
+            });
+            enrichedTabs = await Promise.all(tabPromises);
+        } catch(e) {}
+    }
 
     if (!customQuery) {
         queryEl.value = '';
@@ -1945,6 +2339,12 @@ const handleSend = async (customQuery = null) => {
     }
 
     let userBubbleText = q;
+    if (effectiveTabs.length > 0) {
+        const tabPills = effectiveTabs.map(t =>
+            `<div class="attached-tab-bubble-pill" title="${t.url || ''}"><i class="fas fa-globe"></i> <b>${t.title}</b> ${t.hostname ? `<span class="tab-host">${t.hostname}</span>` : ''}</div>`
+        ).join('');
+        userBubbleText = `${tabPills}\n\n${q || 'Analyze and compare the attached tabs.'}`;
+    }
     if (isNewFileAttached && effectiveDoc) {
         let fileMarkup = '';
         if (effectiveDoc.type === 'image') {
@@ -1982,14 +2382,20 @@ const handleSend = async (customQuery = null) => {
     const customConfig = getCustomCompanionConfig();
 
     const payload = {
-        query: q,
+        query: q || 'Please compare and analyze the attached browser tabs.',
         persona: personaKey,
         memory: memoryFacts,
         customConfig: customConfig,
         username: getUsername(),
         history: historyList,
-        file: effectiveDoc
+        file: effectiveDoc,
+        attachedTabs: enrichedTabs
     };
+
+    // Reset attached tabs tray after sending
+    attachedTabs = [];
+    renderAttachedTabsTray();
+    updateActiveTabBarUI();
 
     // Reset pending file preview (document stays preserved in active session memory)
     attachedFile = null;
@@ -2022,6 +2428,29 @@ const handleSend = async (customQuery = null) => {
 sendBtn?.addEventListener('click', () => handleSend());
 
 queryEl?.addEventListener('keydown', (e) => {
+    if (isMentionMenuOpen) {
+        const totalItems = (currentOpenTabs.length >= 2 ? 2 : 1) + filteredMentionTabs.length;
+        if (e.key === 'ArrowDown') {
+            e.preventDefault();
+            mentionMenuSelectedIndex = (mentionMenuSelectedIndex + 1) % totalItems;
+            renderMentionMenuList();
+            return;
+        } else if (e.key === 'ArrowUp') {
+            e.preventDefault();
+            mentionMenuSelectedIndex = (mentionMenuSelectedIndex - 1 + totalItems) % totalItems;
+            renderMentionMenuList();
+            return;
+        } else if (e.key === 'Enter' || e.key === 'Tab') {
+            e.preventDefault();
+            selectMentionItemByIndex(mentionMenuSelectedIndex);
+            return;
+        } else if (e.key === 'Escape') {
+            e.preventDefault();
+            closeMentionMenu();
+            return;
+        }
+    }
+
     if (e.key === 'Enter' && !e.shiftKey) {
         e.preventDefault();
         handleSend();
@@ -2031,6 +2460,18 @@ queryEl?.addEventListener('keydown', (e) => {
 queryEl?.addEventListener('input', () => {
     queryEl.style.height = 'auto';
     queryEl.style.height = (queryEl.scrollHeight) + 'px';
+
+    const val = queryEl.value;
+    const cursorPos = queryEl.selectionStart || val.length;
+    const textBefore = val.substring(0, cursorPos);
+    const atMatch = textBefore.match(/(?:^|\s)@([a-zA-Z0-9_\-\.:]*)$/);
+
+    if (atMatch) {
+        const queryTerm = atMatch[1];
+        openMentionMenu(queryTerm);
+    } else if (isMentionMenuOpen) {
+        closeMentionMenu();
+    }
 });
 
 clearBtn?.addEventListener('click', () => {

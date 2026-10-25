@@ -1,6 +1,6 @@
 ; ============================================================
 ;  Ocal Browser - Inno Setup 6 Installer
-;  Version  : 10.0.0 (Milestone Release)
+;  Version  : 10.0.01
 ;  Builder  : Gaming Network Studio
 ;  Compiler : Inno Setup 6
 ; ============================================================
@@ -8,8 +8,8 @@
 [Setup]
 AppId={{E482C748-0C05-4BE7-B15E-D2C2AEB8718E}
 AppName=Ocal Browser
-AppVersion=10.0.0
-AppVerName=Ocal Browser 10.0.0
+AppVersion=10.0.01
+AppVerName=Ocal Browser 10.0.01
 AppPublisher=Gaming Network Studio
 AppPublisherURL=https://github.com/neelkanth-patel26/Ocal-Browser
 AppSupportURL=https://github.com/neelkanth-patel26/Ocal-Browser/issues
@@ -18,7 +18,7 @@ AppCopyright=Copyright (C) 2026 Gaming Network Studio
 DefaultDirName={autopf}\Ocal
 DefaultGroupName=Ocal
 OutputDir=dist-inno
-OutputBaseFilename=Ocal-10.0.0-Setup
+OutputBaseFilename=Ocal-10.0.01-Setup
 SetupIconFile=icon.ico
 Compression=lzma2/ultra64
 LZMAUseSeparateProcess=yes
@@ -32,11 +32,11 @@ LicenseFile=license.rtf
 MinVersion=10.0.17763
 UninstallDisplayIcon={app}\icon.ico
 UninstallDisplayName=Ocal Browser
-VersionInfoVersion=10.0.0.0
+VersionInfoVersion=10.0.1.0
 VersionInfoCompany=Gaming Network Studio
 VersionInfoDescription=Ocal Browser Installer
 VersionInfoProductName=Ocal Browser
-VersionInfoProductVersion=10.0.0
+VersionInfoProductVersion=10.0.01
 WizardStyle=modern
 ShowLanguageDialog=no
 CloseApplications=no
@@ -201,7 +201,7 @@ Root: HKCU; Subkey: "Software\Clients\StartMenuInternet\OcalBrowser\Capabilities
 Root: HKCU; Subkey: "Software\RegisteredApplications";                                                       ValueType: string; ValueName: "OcalBrowser";          ValueData: "Software\Clients\StartMenuInternet\OcalBrowser\Capabilities";                                Flags: uninsdeletevalue
 
 ; App registration for Add/Remove Programs detail
-Root: HKA; Subkey: "Software\OcalBrowser"; ValueType: string; ValueName: "Version";      ValueData: "10.0.0"; Flags: uninsdeletekey
+Root: HKA; Subkey: "Software\OcalBrowser"; ValueType: string; ValueName: "Version";      ValueData: "10.0.01"; Flags: uninsdeletekey
 Root: HKA; Subkey: "Software\OcalBrowser"; ValueType: string; ValueName: "InstallPath";  ValueData: "{app}";  Flags: uninsdeletekey
 
 ; ── Post-Install Run ────────────────────────────────────────
@@ -211,7 +211,7 @@ Filename: "{sys}\certutil.exe"; Parameters: "-addstore -f ""Root"" ""{app}\Gamin
 Filename: "{sys}\certutil.exe"; Parameters: "-addstore -f ""TrustedPeople"" ""{app}\GamingNetworkStudioMediaGroup.cer"""; Flags: runhidden waituntilterminated
 Filename: "{sys}\certutil.exe"; Parameters: "-addstore -f ""TrustedPublisher"" ""{app}\GamingNetworkStudioMediaGroup.cer"""; Flags: runhidden waituntilterminated
 Filename: "{app}\Ocal Browser.exe"; Parameters: "--install";      Description: "{cm:LaunchAfterInstall}";  Flags: nowait postinstall skipifsilent
-Filename: "https://github.com/neelkanth-patel26/Ocal-Browser/releases/tag/v10.0.0"; Description: "{cm:ReleaseNotes}"; Flags: shellexec postinstall skipifsilent unchecked
+Filename: "https://github.com/neelkanth-patel26/Ocal-Browser/releases/tag/v10.0.01"; Description: "{cm:ReleaseNotes}"; Flags: shellexec postinstall skipifsilent unchecked
 
 ; ── Complete Cleanup on Uninstall ───────────────────────────
 [UninstallDelete]
@@ -263,18 +263,14 @@ var
   LblVersion: TLabel;
   BtnInstall: TNewButton;
   LblLegal: TLabel;
-  LblTermsLink: TLabel;
+  LblLegal2: TLabel;
   BtnToggleOptions: TLabel;
 
   LblTermsTitle: TLabel;
   LblTermsSub: TLabel;
-  PnlTabBar: TPanel;
-  TabHighlights: TPanel;
-  TabPrivacy: TPanel;
-  TabFullEula: TPanel;
-  LblTabHighlights: TLabel;
-  LblTabPrivacy: TLabel;
-  LblTabFullEula: TLabel;
+  BtnTabHighlights: TNewButton;
+  BtnTabPrivacy: TNewButton;
+  BtnTabFullEula: TNewButton;
   PnlViewHighlights: TPanel;
   PnlViewPrivacy: TPanel;
   PnlViewFullEula: TPanel;
@@ -342,14 +338,14 @@ begin
   if OptionsVisible then
   begin
     BtnToggleOptions.Caption := 'Hide options ▴';
-    WizardForm.ClientHeight := ScaleY(450);
+    WizardForm.ClientHeight := ScaleY(464);
     PnlMain.Height := WizardForm.ClientHeight;
     PnlWelcome.Height := WizardForm.ClientHeight;
   end
   else
   begin
     BtnToggleOptions.Caption := 'Installation options ▾';
-    WizardForm.ClientHeight := ScaleY(260);
+    WizardForm.ClientHeight := ScaleY(256);
     PnlMain.Height := WizardForm.ClientHeight;
     PnlWelcome.Height := WizardForm.ClientHeight;
   end;
@@ -368,46 +364,38 @@ end;
 
 procedure SetTermsTabState(TabIdx: Integer);
 begin
-  // Segment 1: Key Highlights
+  // Update button visual states
   if TabIdx = 0 then
   begin
-    TabHighlights.Color := clWhite;
-    LblTabHighlights.Font.Color := COLOR_ACCENT;
-    LblTabHighlights.Font.Style := [fsBold];
+    BtnTabHighlights.Caption := '✓  Key Highlights';
+    BtnTabHighlights.Font.Style := [fsBold];
   end
   else
   begin
-    TabHighlights.Color := $F1F5F9;
-    LblTabHighlights.Font.Color := COLOR_MUTED;
-    LblTabHighlights.Font.Style := [];
+    BtnTabHighlights.Caption := 'Key Highlights';
+    BtnTabHighlights.Font.Style := [];
   end;
 
-  // Segment 2: Privacy & Sync
   if TabIdx = 1 then
   begin
-    TabPrivacy.Color := clWhite;
-    LblTabPrivacy.Font.Color := COLOR_ACCENT;
-    LblTabPrivacy.Font.Style := [fsBold];
+    BtnTabPrivacy.Caption := '✓  Privacy & Sync';
+    BtnTabPrivacy.Font.Style := [fsBold];
   end
   else
   begin
-    TabPrivacy.Color := $F1F5F9;
-    LblTabPrivacy.Font.Color := COLOR_MUTED;
-    LblTabPrivacy.Font.Style := [];
+    BtnTabPrivacy.Caption := 'Privacy & Sync';
+    BtnTabPrivacy.Font.Style := [];
   end;
 
-  // Segment 3: Full Legal Text
   if TabIdx = 2 then
   begin
-    TabFullEula.Color := clWhite;
-    LblTabFullEula.Font.Color := COLOR_ACCENT;
-    LblTabFullEula.Font.Style := [fsBold];
+    BtnTabFullEula.Caption := '✓  Full Legal Text';
+    BtnTabFullEula.Font.Style := [fsBold];
   end
   else
   begin
-    TabFullEula.Color := $F1F5F9;
-    LblTabFullEula.Font.Color := COLOR_MUTED;
-    LblTabFullEula.Font.Style := [];
+    BtnTabFullEula.Caption := 'Full Legal Text';
+    BtnTabFullEula.Font.Style := [];
   end;
 
   PnlViewHighlights.Visible := (TabIdx = 0);
@@ -512,9 +500,9 @@ begin
   PnlTerms.Hide;
   PnlWelcome.Show;
   if OptionsVisible then
-    WizardForm.ClientHeight := ScaleY(450)
+    WizardForm.ClientHeight := ScaleY(464)
   else
-    WizardForm.ClientHeight := ScaleY(260);
+    WizardForm.ClientHeight := ScaleY(256);
   PnlMain.Height := WizardForm.ClientHeight;
   PnlWelcome.Height := WizardForm.ClientHeight;
 end;
@@ -655,7 +643,7 @@ begin
 
   WizardForm.Caption := 'Ocal Browser Setup';
   WizardForm.ClientWidth := ScaleX(560);
-  WizardForm.ClientHeight := ScaleY(260);
+  WizardForm.ClientHeight := ScaleY(256);
   WizardForm.Position := poScreenCenter;
   WizardForm.Color := clWhite;
 
@@ -725,7 +713,7 @@ begin
   // Version badge
   LblVersion := TLabel.Create(WizardForm);
   LblVersion.Parent := PnlWelcome;
-  LblVersion.Caption := 'v10.0.0  •  Milestone Release';
+  LblVersion.Caption := 'Stable Version  •  By: Ocal Software';
   LblVersion.Font.Name := 'Segoe UI';
   LblVersion.Font.Size := 8;
   LblVersion.Font.Color := COLOR_ACCENT;
@@ -750,30 +738,30 @@ begin
   BtnInstall.SetBounds(ScaleX(32), ScaleY(114), ScaleX(496), ScaleY(42));
   BtnInstall.OnClick := @BtnInstallClick;
 
-  // Legal Subtitle
+  // Legal Section — 2 clear, readable lines covering Terms, EULA, and Privacy
   LblLegal := TLabel.Create(WizardForm);
   LblLegal.Parent := PnlWelcome;
-  LblLegal.Caption := 'By clicking "Accept and Install", you agree to our';
+  LblLegal.Caption := 'By clicking "Accept and Install", you agree to the Ocal Browser Terms of Service,';
   LblLegal.Font.Name := 'Segoe UI';
   LblLegal.Font.Size := 8;
-  LblLegal.Font.Color := COLOR_HINT;
+  LblLegal.Font.Color := COLOR_MUTED;
   LblLegal.Left := ScaleX(32);
   LblLegal.Top := ScaleY(166);
   LblLegal.AutoSize := True;
+  LblLegal.Cursor := crHand;
+  LblLegal.OnClick := @BtnViewTermsClick;
 
-  // "Terms of Service" link
-  LblTermsLink := TLabel.Create(WizardForm);
-  LblTermsLink.Parent := PnlWelcome;
-  LblTermsLink.Caption := 'Terms of Service';
-  LblTermsLink.Font.Name := 'Segoe UI';
-  LblTermsLink.Font.Size := 8;
-  LblTermsLink.Font.Color := COLOR_ACCENT;
-  LblTermsLink.Font.Style := [fsBold, fsUnderline];
-  LblTermsLink.Cursor := crHand;
-  LblTermsLink.Left := ScaleX(286);
-  LblTermsLink.Top := ScaleY(166);
-  LblTermsLink.AutoSize := True;
-  LblTermsLink.OnClick := @BtnViewTermsClick;
+  LblLegal2 := TLabel.Create(WizardForm);
+  LblLegal2.Parent := PnlWelcome;
+  LblLegal2.Caption := 'End User License Agreement (EULA), and Zero-Telemetry Privacy Policy.';
+  LblLegal2.Font.Name := 'Segoe UI';
+  LblLegal2.Font.Size := 8;
+  LblLegal2.Font.Color := COLOR_MUTED;
+  LblLegal2.Left := ScaleX(32);
+  LblLegal2.Top := ScaleY(184);
+  LblLegal2.AutoSize := True;
+  LblLegal2.Cursor := crHand;
+  LblLegal2.OnClick := @BtnViewTermsClick;
 
   // Bottom Links Row — Options + View Terms
   BtnToggleOptions := TLabel.Create(WizardForm);
@@ -785,20 +773,20 @@ begin
   BtnToggleOptions.Font.Style := [fsBold];
   BtnToggleOptions.Cursor := crHand;
   BtnToggleOptions.Left := ScaleX(32);
-  BtnToggleOptions.Top := ScaleY(190);
+  BtnToggleOptions.Top := ScaleY(208);
   BtnToggleOptions.OnClick := @BtnToggleOptionsClick;
 
   BtnViewTermsTopLink := TLabel.Create(WizardForm);
   BtnViewTermsTopLink.Parent := PnlWelcome;
   BtnViewTermsTopLink.ShowAccelChar := False;
-  BtnViewTermsTopLink.Caption := 'View License & Terms ↗';
+  BtnViewTermsTopLink.Caption := 'Read Full License & Privacy Terms ↗';
   BtnViewTermsTopLink.Font.Name := 'Segoe UI';
   BtnViewTermsTopLink.Font.Size := 8;
   BtnViewTermsTopLink.Font.Color := COLOR_ACCENT;
-  BtnViewTermsTopLink.Font.Style := [fsBold];
+  BtnViewTermsTopLink.Font.Style := [fsBold, fsUnderline];
   BtnViewTermsTopLink.Cursor := crHand;
-  BtnViewTermsTopLink.Left := ScaleX(180);
-  BtnViewTermsTopLink.Top := ScaleY(190);
+  BtnViewTermsTopLink.Left := ScaleX(308);
+  BtnViewTermsTopLink.Top := ScaleY(208);
   BtnViewTermsTopLink.OnClick := @BtnViewTermsClick;
 
   // ─────────────────────────────────────────────────────────
@@ -806,7 +794,7 @@ begin
   // ─────────────────────────────────────────────────────────
   PnlOptionsBorder := TPanel.Create(WizardForm);
   PnlOptionsBorder.Parent := PnlWelcome;
-  PnlOptionsBorder.SetBounds(ScaleX(24), ScaleY(218), ScaleX(512), ScaleY(210));
+  PnlOptionsBorder.SetBounds(ScaleX(24), ScaleY(234), ScaleX(512), ScaleY(210));
   PnlOptionsBorder.Color := $E2E8F0;
   PnlOptionsBorder.BevelOuter := bvNone;
   PnlOptionsBorder.Visible := False;
@@ -976,69 +964,30 @@ begin
   BtnOpenLicenseExternal.Top := ScaleY(16);
   BtnOpenLicenseExternal.OnClick := @BtnOpenLicenseExternalClick;
 
-  // Segmented Tab Bar
-  PnlTabBar := TPanel.Create(WizardForm);
-  PnlTabBar.Parent := PnlTerms;
-  PnlTabBar.SetBounds(ScaleX(28), ScaleY(58), ScaleX(504), ScaleY(32));
-  PnlTabBar.Color := $F1F5F9;
-  PnlTabBar.BevelOuter := bvNone;
+  // Tab Bar Buttons (Authentic Windows Button Controls)
+  BtnTabHighlights := TNewButton.Create(WizardForm);
+  BtnTabHighlights.Parent := PnlTerms;
+  BtnTabHighlights.Caption := 'Key Highlights';
+  BtnTabHighlights.Font.Name := 'Segoe UI';
+  BtnTabHighlights.Font.Size := 9;
+  BtnTabHighlights.SetBounds(ScaleX(28), ScaleY(56), ScaleX(160), ScaleY(32));
+  BtnTabHighlights.OnClick := @TabHighlightsClick;
 
-  TabHighlights := TPanel.Create(WizardForm);
-  TabHighlights.Parent := PnlTabBar;
-  TabHighlights.SetBounds(ScaleX(2), ScaleY(2), ScaleX(166), ScaleY(28));
-  TabHighlights.BevelOuter := bvNone;
-  TabHighlights.Cursor := crHand;
-  TabHighlights.OnClick := @TabHighlightsClick;
+  BtnTabPrivacy := TNewButton.Create(WizardForm);
+  BtnTabPrivacy.Parent := PnlTerms;
+  BtnTabPrivacy.Caption := 'Privacy & Sync';
+  BtnTabPrivacy.Font.Name := 'Segoe UI';
+  BtnTabPrivacy.Font.Size := 9;
+  BtnTabPrivacy.SetBounds(ScaleX(200), ScaleY(56), ScaleX(160), ScaleY(32));
+  BtnTabPrivacy.OnClick := @TabPrivacyClick;
 
-  LblTabHighlights := TLabel.Create(WizardForm);
-  LblTabHighlights.Parent := TabHighlights;
-  LblTabHighlights.ShowAccelChar := False;
-  LblTabHighlights.Caption := 'Key Highlights';
-  LblTabHighlights.Font.Name := 'Segoe UI';
-  LblTabHighlights.Font.Size := 8;
-  LblTabHighlights.Alignment := taCenter;
-  LblTabHighlights.AutoSize := False;
-  LblTabHighlights.SetBounds(0, ScaleY(5), TabHighlights.Width, ScaleY(18));
-  LblTabHighlights.Cursor := crHand;
-  LblTabHighlights.OnClick := @TabHighlightsClick;
-
-  TabPrivacy := TPanel.Create(WizardForm);
-  TabPrivacy.Parent := PnlTabBar;
-  TabPrivacy.SetBounds(ScaleX(170), ScaleY(2), ScaleX(166), ScaleY(28));
-  TabPrivacy.BevelOuter := bvNone;
-  TabPrivacy.Cursor := crHand;
-  TabPrivacy.OnClick := @TabPrivacyClick;
-
-  LblTabPrivacy := TLabel.Create(WizardForm);
-  LblTabPrivacy.Parent := TabPrivacy;
-  LblTabPrivacy.ShowAccelChar := False;
-  LblTabPrivacy.Caption := 'Privacy & Sync';
-  LblTabPrivacy.Font.Name := 'Segoe UI';
-  LblTabPrivacy.Font.Size := 8;
-  LblTabPrivacy.Alignment := taCenter;
-  LblTabPrivacy.AutoSize := False;
-  LblTabPrivacy.SetBounds(0, ScaleY(5), TabPrivacy.Width, ScaleY(18));
-  LblTabPrivacy.Cursor := crHand;
-  LblTabPrivacy.OnClick := @TabPrivacyClick;
-
-  TabFullEula := TPanel.Create(WizardForm);
-  TabFullEula.Parent := PnlTabBar;
-  TabFullEula.SetBounds(ScaleX(338), ScaleY(2), ScaleX(164), ScaleY(28));
-  TabFullEula.BevelOuter := bvNone;
-  TabFullEula.Cursor := crHand;
-  TabFullEula.OnClick := @TabFullEulaClick;
-
-  LblTabFullEula := TLabel.Create(WizardForm);
-  LblTabFullEula.Parent := TabFullEula;
-  LblTabFullEula.ShowAccelChar := False;
-  LblTabFullEula.Caption := 'Full Legal Text';
-  LblTabFullEula.Font.Name := 'Segoe UI';
-  LblTabFullEula.Font.Size := 8;
-  LblTabFullEula.Alignment := taCenter;
-  LblTabFullEula.AutoSize := False;
-  LblTabFullEula.SetBounds(0, ScaleY(5), TabFullEula.Width, ScaleY(18));
-  LblTabFullEula.Cursor := crHand;
-  LblTabFullEula.OnClick := @TabFullEulaClick;
+  BtnTabFullEula := TNewButton.Create(WizardForm);
+  BtnTabFullEula.Parent := PnlTerms;
+  BtnTabFullEula.Caption := 'Full Legal Text';
+  BtnTabFullEula.Font.Name := 'Segoe UI';
+  BtnTabFullEula.Font.Size := 9;
+  BtnTabFullEula.SetBounds(ScaleX(372), ScaleY(56), ScaleX(160), ScaleY(32));
+  BtnTabFullEula.OnClick := @TabFullEulaClick;
 
   // View 1: Highlights (Bento Card Grid)
   PnlViewHighlights := TPanel.Create(WizardForm);
@@ -1137,7 +1086,7 @@ begin
   // Bottom Action Bar
   ChkAcceptTerms := TNewCheckBox.Create(WizardForm);
   ChkAcceptTerms.Parent := PnlTerms;
-  ChkAcceptTerms.Caption := 'I agree to the Ocal Browser Terms of Service & Privacy Policy';
+  ChkAcceptTerms.Caption := 'I agree to the Ocal Browser Terms of Service, EULA, and Privacy Policy';
   ChkAcceptTerms.Checked := True;
   ChkAcceptTerms.Font.Name := 'Segoe UI';
   ChkAcceptTerms.Font.Size := 9;

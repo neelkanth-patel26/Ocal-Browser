@@ -18,7 +18,45 @@
 
     // Window controls
     if (winMinBtn) winMinBtn.onclick = () => window.electronAPI.send('private-window-minimize');
-    if (winMaxBtn) winMaxBtn.onclick = () => window.electronAPI.send('private-window-maximize');
+    if (winMaxBtn) {
+        winMaxBtn.onclick = () => window.electronAPI.send('private-window-maximize');
+        let hoverTimer = null;
+        const triggerPrivateFlyout = () => {
+            clearTimeout(hoverTimer);
+            const rect = winMaxBtn.getBoundingClientRect();
+            window.electronAPI.send('show-snap-flyout', {
+                x: rect.left,
+                y: rect.top,
+                width: rect.width,
+                height: rect.height
+            });
+        };
+
+        winMaxBtn.addEventListener('mouseenter', () => {
+            clearTimeout(hoverTimer);
+            hoverTimer = setTimeout(triggerPrivateFlyout, 150);
+        });
+        winMaxBtn.addEventListener('mousemove', () => {
+            if (!hoverTimer) hoverTimer = setTimeout(triggerPrivateFlyout, 150);
+        });
+        winMaxBtn.addEventListener('mouseleave', () => {
+            clearTimeout(hoverTimer);
+            window.electronAPI.send('hide-snap-flyout', 450);
+        });
+        winMaxBtn.addEventListener('contextmenu', (e) => {
+            e.preventDefault();
+            triggerPrivateFlyout();
+        });
+
+        window.addEventListener('keydown', (e) => {
+            if (e.altKey && (e.key === 'z' || e.key === 'Z')) {
+                e.preventDefault();
+                triggerPrivateFlyout();
+            } else if (e.key === 'Escape') {
+                window.electronAPI.send('hide-snap-flyout', 0);
+            }
+        });
+    }
     if (winCloseBtn) winCloseBtn.onclick = () => window.electronAPI.send('private-window-close');
 
     // Tab interactions
@@ -178,8 +216,93 @@
         } else if (e.altKey && e.key === 'ArrowRight') {
             e.preventDefault();
             window.electronAPI.send('private-forward');
+        } else if (e.altKey && (e.key === 'z' || e.key === 'Z')) {
+            e.preventDefault();
+            toggleSnapFlyout();
+        } else if (e.key === 'Escape') {
+            hideSnapFlyout();
         }
     });
+
+    // ── Windows 11 Snap Layouts Flyout Engine ────────────────────────
+    const snapFlyout = document.getElementById('win11-snap-flyout');
+    let showTimer = null;
+    let hideTimer = null;
+
+    function showSnapFlyout() {
+        if (!snapFlyout || !winMaxBtn) return;
+        clearTimeout(hideTimer);
+        clearTimeout(showTimer);
+        const rect = winMaxBtn.getBoundingClientRect();
+        snapFlyout.style.display = 'block';
+        const rightMargin = Math.max(10, window.innerWidth - rect.right - 20);
+        snapFlyout.style.right = rightMargin + 'px';
+        snapFlyout.style.top = (rect.bottom + 6) + 'px';
+    }
+
+    function hideSnapFlyout(delay = 0) {
+        clearTimeout(showTimer);
+        clearTimeout(hideTimer);
+        if (delay > 0) {
+            hideTimer = setTimeout(() => {
+                if (snapFlyout) snapFlyout.style.display = 'none';
+            }, delay);
+        } else {
+            if (snapFlyout) snapFlyout.style.display = 'none';
+        }
+    }
+
+    function toggleSnapFlyout() {
+        if (!snapFlyout) return;
+        if (snapFlyout.style.display === 'none' || !snapFlyout.style.display) {
+            showSnapFlyout();
+        } else {
+            hideSnapFlyout();
+        }
+    }
+
+    if (winMaxBtn && snapFlyout) {
+        winMaxBtn.addEventListener('mouseenter', () => {
+            clearTimeout(hideTimer);
+            clearTimeout(showTimer);
+            showTimer = setTimeout(showSnapFlyout, 320);
+        });
+
+        winMaxBtn.addEventListener('mouseleave', () => {
+            hideSnapFlyout(260);
+        });
+
+        winMaxBtn.addEventListener('contextmenu', (e) => {
+            e.preventDefault();
+            showSnapFlyout();
+        });
+
+        snapFlyout.addEventListener('mouseenter', () => {
+            clearTimeout(hideTimer);
+            clearTimeout(showTimer);
+        });
+
+        snapFlyout.addEventListener('mouseleave', () => {
+            hideSnapFlyout(220);
+        });
+
+        snapFlyout.querySelectorAll('.snap-zone').forEach(zoneEl => {
+            zoneEl.addEventListener('click', (e) => {
+                e.stopPropagation();
+                const zone = zoneEl.getAttribute('data-zone');
+                if (zone && window.electronAPI && typeof window.electronAPI.snapWindow === 'function') {
+                    window.electronAPI.snapWindow(zone);
+                }
+                hideSnapFlyout();
+            });
+        });
+
+        document.addEventListener('pointerdown', (e) => {
+            if (snapFlyout.style.display !== 'none' && !snapFlyout.contains(e.target) && e.target !== winMaxBtn) {
+                hideSnapFlyout();
+            }
+        });
+    }
 
     // Initial ready signal to request tabs
     window.electronAPI?.send?.('private-window-ready');

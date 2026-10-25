@@ -943,6 +943,7 @@ function formatDisplayUrl(url) {
     if (url.includes('tetris.html')) return 'ocal://tetris';
     if (url.includes('game.html')) return 'ocal://runner';
     if (url.includes('whats-new.html')) return 'ocal://whats-new';
+    if (url.includes('onboarding.html') || url.includes('welcome.html')) return 'ocal://onboarding';
     if (url.includes('suspended.html')) return 'ocal://suspended';
     if (url.includes('ssl-warning.html') || url.startsWith('ocal://ssl-warning')) {
         try {
@@ -1000,6 +1001,7 @@ function getSimplifiedTitle(title, url) {
     if (url.includes('history.html') || url.startsWith('ocal://history')) return 'History';
     if (url.includes('games.html') || url.startsWith('ocal://games')) return 'Games';
     if (url.includes('whats-new.html') || url.startsWith('ocal://whats-new')) return "What's New";
+    if (url.includes('onboarding.html') || url.includes('welcome.html') || url.startsWith('ocal://onboarding') || url.startsWith('ocal://welcome')) return "Welcome to Ocal";
     if (url.includes('certificate-viewer.html') || url.startsWith('ocal://certificate-viewer')) return "Certificate Explorer";
     if (url.includes('offline.html') || url.startsWith('ocal://offline')) return "No Internet";
     if (url.includes('suspended.html') || url.startsWith('ocal://suspended')) {
@@ -1102,6 +1104,7 @@ function getTabIconHtml(tab, tintColor) {
     if (url.includes('bookmarks.html') || url.startsWith('ocal://bookmarks') || url.startsWith('ocal://saves')) return `<i class="fas fa-bookmark tab-favicon solid-icon" style="color:${accentColor}"></i>`;
     if (url.includes('history.html') || url.startsWith('ocal://history')) return `<i class="fas fa-clock-rotate-left tab-favicon solid-icon" style="color:${accentColor}"></i>`;
     if (url.includes('whats-new.html') || url.startsWith('ocal://whats-new')) return `<i class="fas fa-wand-magic-sparkles tab-favicon solid-icon" style="color:${accentColor}"></i>`;
+    if (url.includes('onboarding.html') || url.includes('welcome.html') || url.startsWith('ocal://onboarding') || url.startsWith('ocal://welcome')) return `<i class="fas fa-compass tab-favicon solid-icon" style="color:${accentColor}"></i>`;
     if (url.includes('certificate-viewer.html') || url.startsWith('ocal://certificate-viewer')) return `<i class="fas fa-shield-halved tab-favicon solid-icon" style="color:${accentColor}"></i>`;
     if (url.includes('photo-editor.html') || url.startsWith('ocal://photo-view') || url.startsWith('ocal://photo-editor') || url.startsWith('ocal://image-viewer')) return `<i class="fas fa-image tab-favicon solid-icon" style="color:${accentColor}"></i>`;
     if (url.includes('offline.html') || url.startsWith('ocal://offline')) return `<i class="fas fa-bolt tab-favicon solid-icon" style="color:${accentColor}"></i>`;
@@ -1208,6 +1211,10 @@ function updateOmniboxIcon(url) {
     }
     if (url && (url.includes('whats-new.html') || url.startsWith('ocal://whats-new'))) {
         iconContainer.innerHTML = '<i class="fas fa-wand-magic-sparkles" style="color:var(--accent)"></i>';
+        return;
+    }
+    if (url && (url.includes('onboarding.html') || url.includes('welcome.html') || url.startsWith('ocal://onboarding') || url.startsWith('ocal://welcome'))) {
+        iconContainer.innerHTML = '<i class="fas fa-compass" style="color:var(--accent)"></i>';
         return;
     }
     if (url && (url.includes('certificate-viewer.html') || url.startsWith('ocal://certificate-viewer'))) {
@@ -1421,11 +1428,74 @@ document.addEventListener('DOMContentLoaded', () => {
     if (navMinBtn)   navMinBtn.onclick   = () => window.electronAPI.minimize();
     if (navMaxBtn)   navMaxBtn.onclick   = () => window.electronAPI.maximize();
     if (navCloseBtn) navCloseBtn.onclick = () => window.electronAPI.close();
-    
 
+    // ── Windows 11 Snap Layouts & Resizing Engine ──────────────────────────
+    function initWin11SnapLayouts() {
+        let showTimer = null;
 
+        function triggerFlyout(btn) {
+            clearTimeout(showTimer);
+            if (!btn) return;
+            const rect = btn.getBoundingClientRect();
+            if (window.electronAPI && typeof window.electronAPI.showSnapFlyout === 'function') {
+                window.electronAPI.showSnapFlyout({
+                    x: rect.left,
+                    y: rect.top,
+                    width: rect.width,
+                    height: rect.height
+                });
+            } else if (window.electronAPI && typeof window.electronAPI.send === 'function') {
+                window.electronAPI.send('show-snap-flyout', {
+                    x: rect.left,
+                    y: rect.top,
+                    width: rect.width,
+                    height: rect.height
+                });
+            }
+        }
 
+        function cancelShow() {
+            clearTimeout(showTimer);
+            if (window.electronAPI && typeof window.electronAPI.hideSnapFlyout === 'function') {
+                window.electronAPI.hideSnapFlyout(450);
+            } else if (window.electronAPI && typeof window.electronAPI.send === 'function') {
+                window.electronAPI.send('hide-snap-flyout', 450);
+            }
+        }
 
+        // Attach hover & right-click listeners to both horizontal maxBtn and vertical navMaxBtn
+        [maxBtn, navMaxBtn].filter(Boolean).forEach(btn => {
+            btn.addEventListener('mouseenter', () => {
+                clearTimeout(showTimer);
+                showTimer = setTimeout(() => triggerFlyout(btn), 150);
+            });
+            btn.addEventListener('mousemove', () => {
+                if (!showTimer) {
+                    showTimer = setTimeout(() => triggerFlyout(btn), 150);
+                }
+            });
+            btn.addEventListener('mouseleave', () => {
+                cancelShow();
+            });
+            btn.addEventListener('contextmenu', (e) => {
+                e.preventDefault();
+                triggerFlyout(btn);
+            });
+        });
+
+        // Keyboard Shortcut: Alt + Z to toggle Windows 11 Snap Flyout
+        window.addEventListener('keydown', (e) => {
+            if (e.altKey && (e.key === 'z' || e.key === 'Z')) {
+                e.preventDefault();
+                const target = (navMaxBtn && navMaxBtn.offsetParent) ? navMaxBtn : maxBtn;
+                triggerFlyout(target);
+            } else if (e.key === 'Escape') {
+                cancelShow();
+            }
+        });
+    }
+
+    initWin11SnapLayouts();
 
     // ── Navigation Controls ─────────────────────────────
     const backBtn    = document.getElementById('back-btn');
@@ -1438,9 +1508,11 @@ document.addEventListener('DOMContentLoaded', () => {
 
     window.electronAPI.onMaximized((isMax) => {
         document.body.classList.toggle('maximized', isMax);
-        if (maxBtn) maxBtn.innerHTML = isMax
+        const maxIcon = isMax
             ? '<svg width="12" height="12" viewBox="0 0 12 12"><path d="M4 4V2.5h5.5V8H8 M2.5 4h5.5v5.5H2.5z" fill="none" stroke="currentColor" stroke-width="1.2"/></svg>'
             : '<svg width="12" height="12" viewBox="0 0 12 12"><rect x="2.5" y="2.5" width="7" height="7" fill="none" stroke="currentColor" stroke-width="1.2"/></svg>';
+        if (maxBtn) maxBtn.innerHTML = maxIcon;
+        if (navMaxBtn) navMaxBtn.innerHTML = maxIcon;
     });
 
     const aiBtn  = document.getElementById('ai-toolbar-btn');
@@ -1831,6 +1903,14 @@ document.addEventListener('DOMContentLoaded', () => {
             pStatus.style.display = 'none'; // Feature removed
         }
     });
+
+    if (window.electronAPI && window.electronAPI.onSettingsChanged) {
+        window.electronAPI.onSettingsChanged((s) => {
+            if (s) {
+                applyGlobalSettings(s);
+            }
+        });
+    }
 });
 
 function hexToRgba(hex, alpha) {
@@ -1876,24 +1956,33 @@ function getModeAccent(color, isLight) {
 // ── Settings ───────────────────────────────────────────────────────────────
 function applyGlobalSettings(s) {
     lastSettings = s;
-    const isLight = s.themeMode === 'light';
-    const activeAccent = s.accentColor ? getModeAccent(s.accentColor, isLight) : getModeAccent(null, isLight);
-    const contrastColor = getContrastColor(activeAccent);
+    const theme = s.themeMode || 'dark';
+    const isLight = theme === 'light';
+    const baseAccent = s.accentColor || (isLight ? '#15AC49' : '#09F0A0');
 
-    document.documentElement.style.setProperty('--accent', activeAccent);
-    document.documentElement.style.setProperty('--accent-glow', 'transparent');
-    document.documentElement.style.setProperty('--accent-dim', hexToRgba(activeAccent, 0.15));
-    document.documentElement.style.setProperty('--accent-border', hexToRgba(activeAccent, 0.4));
-    document.documentElement.style.setProperty('--accent-text', contrastColor);
+    if (s.activeThemeCombo && window.OcalColorHarmonizer && window.OcalColorHarmonizer.applyComboTheme) {
+        window.OcalColorHarmonizer.applyComboTheme(s.activeThemeCombo.id, s.activeThemeCombo.mode);
+    } else if (window.OcalColorHarmonizer && window.OcalColorHarmonizer.applyHarmonizedTheme) {
+        window.OcalColorHarmonizer.applyHarmonizedTheme(baseAccent, theme, document);
+    } else {
+        const activeAccent = baseAccent;
+        const contrastColor = getContrastColor(activeAccent);
 
-    document.body.style.setProperty('--accent', activeAccent);
-    document.body.style.setProperty('--accent-glow', 'transparent');
-    document.body.style.setProperty('--accent-dim', hexToRgba(activeAccent, 0.15));
-    document.body.style.setProperty('--accent-border', hexToRgba(activeAccent, 0.4));
-    document.body.style.setProperty('--accent-text', contrastColor);
+        document.documentElement.style.setProperty('--accent', activeAccent);
+        document.documentElement.style.setProperty('--accent-glow', `color-mix(in srgb, ${activeAccent} 30%, transparent)`);
+        document.documentElement.style.setProperty('--accent-dim', hexToRgba(activeAccent, 0.15));
+        document.documentElement.style.setProperty('--accent-border', hexToRgba(activeAccent, 0.4));
+        document.documentElement.style.setProperty('--accent-text', contrastColor);
+
+        document.body.style.setProperty('--accent', activeAccent);
+        document.body.style.setProperty('--accent-glow', `color-mix(in srgb, ${activeAccent} 30%, transparent)`);
+        document.body.style.setProperty('--accent-dim', hexToRgba(activeAccent, 0.15));
+        document.body.style.setProperty('--accent-border', hexToRgba(activeAccent, 0.4));
+        document.body.style.setProperty('--accent-text', contrastColor);
+    }
+
     document.body.classList.toggle('compact-mode', !!s.compactMode);
     document.body.classList.toggle('battery-saver', !!s.batterySaver);
-    const theme = s.themeMode || 'dark';
     document.documentElement.setAttribute('data-theme', theme);
     document.body.setAttribute('data-theme', theme);
     if (window.OcalColorHarmonizer && window.OcalColorHarmonizer.updateLogoElements) {
@@ -2468,11 +2557,14 @@ function getEmojiSvgUrl(emoji) {
 (function() {
     function syncMainAppThemeAndLogo() {
         const theme = localStorage.getItem('ocal-settings-theme') || (window.lastSettings && window.lastSettings.themeMode) || 'dark';
-        const accent = localStorage.getItem('ocal-settings-accent') || (window.lastSettings && window.lastSettings.accentColor) || (theme === 'light' ? '#15AC49' : '#09F0A0');
         document.documentElement.setAttribute('data-theme', theme);
-        if (document.body) document.body.setAttribute('data-theme', theme);
-        if (window.OcalColorHarmonizer) {
-            window.OcalColorHarmonizer.applyHarmonizedTheme(accent, theme);
+        document.documentElement.removeAttribute('data-theme-combo');
+        if (document.body) {
+            document.body.setAttribute('data-theme', theme);
+            document.body.removeAttribute('data-theme-combo');
+        }
+        if (window.OcalColorHarmonizer && window.OcalColorHarmonizer.updateLogoElements) {
+            window.OcalColorHarmonizer.updateLogoElements(document, theme);
         }
     }
 
@@ -2484,21 +2576,16 @@ function getEmojiSvgUrl(emoji) {
         }
     });
 
-    if (window.electronAPI && window.electronAPI.onSettingsChanged) {
-        try {
-            window.electronAPI.onSettingsChanged((s) => {
-                if (s) {
-                    const theme = s.themeMode || localStorage.getItem('ocal-settings-theme') || 'dark';
-                    const accent = s.accentColor || localStorage.getItem('ocal-settings-accent') || (theme === 'light' ? '#15AC49' : '#09F0A0');
-                    document.documentElement.setAttribute('data-theme', theme);
-                    if (document.body) document.body.setAttribute('data-theme', theme);
-                    if (window.OcalColorHarmonizer) {
-                        window.OcalColorHarmonizer.applyHarmonizedTheme(accent, theme);
-                    }
-                }
-            });
-        } catch (e) {}
-    }
+    window.addEventListener('ocal-theme-harmonized', (e) => {
+        const d = e && e.detail;
+        if (d && d.theme) {
+            document.documentElement.setAttribute('data-theme', d.theme);
+            if (document.body) document.body.setAttribute('data-theme', d.theme);
+        }
+        if (window.OcalColorHarmonizer && window.OcalColorHarmonizer.updateLogoElements) {
+            window.OcalColorHarmonizer.updateLogoElements(document, (d && d.theme) || 'dark');
+        }
+    });
 
     // ── Pinned Extensions Toolbar Bar ──────────────────────────────────────────
     async function renderPinnedExtensions() {

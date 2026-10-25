@@ -95,6 +95,27 @@ body[data-theme="dark"] {
     --badge-text: #A1A1AA;
 }
 
+:root[data-theme-combo],
+html[data-theme-combo],
+body[data-theme-combo] {
+    --bg: var(--chrome, #18181B);
+    --panel-bg: var(--chrome, #222226);
+    --sidebar-bg: var(--chrome, #222226);
+    --border: var(--border, rgba(255, 255, 255, 0.08));
+    --border-subtle: var(--border, rgba(255, 255, 255, 0.04));
+    --hover: var(--surface-card, rgba(255, 255, 255, 0.06));
+    --card-bg: var(--surface, #28282D);
+    --card-border: var(--border, rgba(255, 255, 255, 0.08));
+    --card-hover-bg: var(--surface-card, #2E2E34);
+    --card-hover-border: var(--accent);
+    --input-bg: var(--surface, #28282D);
+    --input-border: var(--border, rgba(255, 255, 255, 0.08));
+    --tab-strip-bg: var(--chrome, #18181B);
+    --text: var(--text, #F4F4F5);
+    --text-dim: var(--text-dim, #A1A1AA);
+    --accent: var(--accent);
+}
+
 :root[data-theme="light"],
 html[data-theme="light"],
 body[data-theme="light"] {

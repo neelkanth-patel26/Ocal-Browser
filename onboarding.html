@@ -1,0 +1,2510 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="Content-Security-Policy"
+        content="default-src 'self'; script-src 'self' 'unsafe-inline' https:; style-src 'self' 'unsafe-inline' https:; font-src 'self' https: data:; img-src 'self' data: https: blob:; connect-src 'self' https: http:;">
+    <title>Welcome to Ocal Browser</title>
+    <!-- ANTI-FLASH: must be FIRST in head, before any stylesheet -->
+    <script>
+        (function () {
+            var t = localStorage.getItem('ocal-settings-theme') || 'dark';
+            document.documentElement.setAttribute('data-theme', t);
+            document.documentElement.style.colorScheme = t;
+            var bg = (t === 'light') ? '#F3F4F6' : '#141416';
+            document.documentElement.style.backgroundColor = bg;
+        })();
+    </script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="assets/fontawesome/css/all.min.css">
+
+    <style>
+        /* ── Reset & Cohesive Design System ─────────────────────────────────── */
+        *, *::before, *::after {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            outline: none;
+        }
+
+        :root {
+            --bg: #F3F4F6;
+            --bg-canvas: #EDEDF0;
+            --card-bg: #FFFFFF;
+            --card-subtle: #F8F9FA;
+            --card-border: rgba(0, 0, 0, 0.08);
+            --card-border-hover: rgba(0, 0, 0, 0.16);
+            --chrome-border: rgba(0, 0, 0, 0.08);
+            --topbar-bg: rgba(243, 244, 246, 0.90);
+            --footer-bg: rgba(243, 244, 246, 0.94);
+            --text-heading: #0F172A;
+            --text-body: #334155;
+            --text-dim: #64748B;
+            --text-muted: #94A3B8;
+            --accent: #09F0A0;
+            --accent-dim: rgba(9, 240, 160, 0.14);
+            --accent-glow: rgba(9, 240, 160, 0.35);
+            --accent-text: #0F172A;
+            --font-main: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, sans-serif;
+            --font-mono: 'Space Mono', monospace;
+            --shadow-sm: 0 2px 8px rgba(0, 0, 0, 0.04);
+            --shadow-card: 0 14px 38px rgba(0, 0, 0, 0.07), 0 2px 8px rgba(0, 0, 0, 0.03);
+            --radius-pill: 100px;
+            --radius-card: 24px;
+            --radius-sub: 14px;
+        }
+
+        html[data-theme="dark"],
+        body[data-theme="dark"] {
+            --bg: #141416;
+            --bg-canvas: #18181B;
+            --card-bg: #1E1E22;
+            --card-subtle: #26262B;
+            --card-border: rgba(255, 255, 255, 0.08);
+            --card-border-hover: rgba(255, 255, 255, 0.18);
+            --chrome-border: rgba(255, 255, 255, 0.08);
+            --topbar-bg: rgba(20, 20, 22, 0.90);
+            --footer-bg: rgba(20, 20, 22, 0.94);
+            --text-heading: #FFFFFF;
+            --text-body: #E2E8F0;
+            --text-dim: #94A3B8;
+            --text-muted: #64748B;
+            --accent: #09F0A0;
+            --accent-dim: rgba(9, 240, 160, 0.16);
+            --accent-glow: rgba(9, 240, 160, 0.35);
+            --accent-text: #141416;
+            --shadow-sm: 0 4px 16px rgba(0, 0, 0, 0.35);
+            --shadow-card: 0 18px 44px rgba(0, 0, 0, 0.48), 0 2px 10px rgba(0, 0, 0, 0.28);
+            color-scheme: dark;
+        }
+
+        html {
+            width: 100%;
+            height: 100%;
+            background-color: var(--bg) !important;
+            overflow-x: hidden;
+            overflow-y: auto !important;
+            scrollbar-width: thin;
+        }
+
+        body {
+            width: 100%;
+            min-height: 100vh;
+            background-color: var(--bg) !important;
+            font-family: var(--font-main);
+            color: var(--text-body);
+            overflow-x: hidden;
+            overflow-y: auto !important;
+            -webkit-font-smoothing: antialiased;
+            user-select: none;
+            -webkit-user-select: none;
+            opacity: 0;
+            transition: opacity 0.2s ease;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+        }
+
+        body.loaded {
+            opacity: 1;
+        }
+
+        /* ── Top Bar ────────────────────────────────────────────────────────── */
+        .onboarding-topbar {
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            background: var(--topbar-bg);
+            border-bottom: 1px solid var(--chrome-border);
+            padding: 12px 28px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 16px;
+        }
+
+        .brand-cluster {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            min-width: 180px;
+        }
+
+        .brand-logo-wrap {
+            width: 36px;
+            height: 36px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
+        }
+
+        .brand-logo-img {
+            width: 32px;
+            height: 32px;
+            object-fit: contain;
+            transition: transform 0.2s ease;
+        }
+
+        .brand-info {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .brand-title {
+            font-size: 15px;
+            font-weight: 800;
+            letter-spacing: -0.3px;
+            color: var(--text-heading);
+            line-height: 1.2;
+            display: flex;
+            align-items: center;
+            gap: 7px;
+        }
+
+        .brand-badge {
+            font-family: var(--font-mono);
+            font-size: 9.5px;
+            font-weight: 700;
+            padding: 2px 6px;
+            border-radius: var(--radius-pill);
+            background: var(--accent-dim);
+            color: var(--accent);
+            letter-spacing: 0.5px;
+            text-transform: uppercase;
+        }
+
+        .brand-subtitle {
+            font-size: 11px;
+            color: var(--text-dim);
+            font-weight: 500;
+        }
+
+        /* ── Stepper Nav (Balanced pill container with generous padding) ─────── */
+        .stepper-nav {
+            display: flex;
+            align-items: center;
+            gap: 4px;
+            background: var(--card-bg);
+            padding: 4px 10px;
+            border-radius: var(--radius-pill);
+            border: 1px solid var(--chrome-border);
+            box-shadow: var(--shadow-sm);
+        }
+
+        .step-pill {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            padding: 5px 11px;
+            border-radius: var(--radius-pill);
+            font-size: 11.5px;
+            font-weight: 600;
+            color: var(--text-dim);
+            cursor: pointer;
+            transition: all 0.18s ease;
+            border: 1px solid transparent;
+            background: transparent;
+            white-space: nowrap;
+            flex-shrink: 0;
+        }
+
+        .step-pill:hover {
+            color: var(--text-heading);
+            background: rgba(120, 120, 120, 0.08);
+        }
+
+        .step-pill.active {
+            background: var(--accent-dim);
+            color: var(--accent);
+            border-color: transparent;
+            font-weight: 700;
+        }
+
+        .step-pill.completed {
+            color: var(--text-heading);
+        }
+
+        .step-pill.completed .step-num {
+            background: var(--accent);
+            color: var(--accent-text);
+        }
+
+        .step-num {
+            width: 17px;
+            height: 17px;
+            border-radius: 50%;
+            background: var(--chrome-border);
+            font-size: 10px;
+            font-weight: 700;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.18s ease;
+        }
+
+        .step-pill.active .step-num {
+            background: var(--accent);
+            color: var(--accent-text);
+        }
+
+        .topbar-actions {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            min-width: 180px;
+            justify-content: flex-end;
+        }
+
+        .action-icon-btn {
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            background: var(--card-bg);
+            border: 1px solid var(--chrome-border);
+            color: var(--text-dim);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 13.5px;
+            cursor: pointer;
+            transition: all 0.18s ease;
+        }
+
+        .action-icon-btn:hover {
+            color: var(--text-heading);
+            border-color: var(--accent);
+            transform: translateY(-1px);
+        }
+
+        .skip-btn {
+            font-size: 12px;
+            font-weight: 600;
+            color: var(--text-dim);
+            background: transparent;
+            border: none;
+            padding: 7px 13px;
+            border-radius: var(--radius-pill);
+            cursor: pointer;
+            transition: all 0.18s ease;
+        }
+
+        .skip-btn:hover {
+            color: var(--text-heading);
+            background: var(--card-bg);
+        }
+
+        /* ── Unified Wizard Structure ─────────────────────────────────────── */
+        .wizard-main {
+            max-width: 890px;
+            width: 100%;
+            margin: 0 auto;
+            padding: 32px 20px 105px;
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+        }
+
+        .step-container {
+            display: none;
+            animation: fadeInStep 0.22s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+        }
+
+        .step-container.active {
+            display: block;
+        }
+
+        @keyframes fadeInStep {
+            from {
+                opacity: 0;
+                transform: translateY(6px) scale(0.995);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0) scale(1);
+            }
+        }
+
+        /* ── Consistent Wizard Card Shell (Used across EVERY step) ────────── */
+        .wizard-card {
+            background: var(--card-bg);
+            border: 1px solid var(--card-border);
+            border-radius: var(--radius-card);
+            padding: 36px 36px 40px;
+            box-shadow: var(--shadow-card);
+            width: 100%;
+            margin: 0 auto;
+            position: relative;
+            text-align: center;
+        }
+
+        /* ── Step Headers ────────────────────────────────────────────────── */
+        .step-header {
+            text-align: center;
+            margin-bottom: 28px;
+        }
+
+        .step-eyebrow {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            font-family: var(--font-mono);
+            font-size: 10.5px;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            color: var(--accent);
+            background: var(--accent-dim);
+            padding: 4px 13px;
+            border-radius: var(--radius-pill);
+            margin-bottom: 12px;
+            border: none;
+        }
+
+        .step-title {
+            font-size: clamp(26px, 3.6vw, 32px);
+            font-weight: 800;
+            letter-spacing: -0.7px;
+            line-height: 1.2;
+            color: var(--text-heading);
+            margin-bottom: 8px;
+        }
+
+        .step-desc {
+            font-size: 14.5px;
+            color: var(--text-dim);
+            max-width: 580px;
+            margin: 0 auto;
+            line-height: 1.55;
+        }
+
+        /* ── Hero Avatar (Step 1) ─────────────────────────────────────────── */
+        .hero-avatar {
+            width: 84px;
+            height: 84px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 16px;
+            position: relative;
+        }
+
+        .hero-avatar img {
+            width: 76px;
+            height: 76px;
+            object-fit: contain;
+            transition: transform 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+
+        .hero-avatar img:hover {
+            transform: scale(1.06) translateY(-2px);
+        }
+
+        /* ── Dynamic Dark / Light Logo Support ───────────────────────────── */
+        html[data-theme="light"] #topbar-logo-img,
+        html[data-theme="light"] #hero-logo-img,
+        html[data-theme="light"] .brand-logo-img,
+        html[data-theme="light"] .hero-avatar img {
+            content: url('assets/Light.png');
+        }
+        html[data-theme="dark"] #topbar-logo-img,
+        html[data-theme="dark"] #hero-logo-img,
+        html[data-theme="dark"] .brand-logo-img,
+        html[data-theme="dark"] .hero-avatar img {
+            content: url('assets/Dark.png');
+        }
+
+        .features-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 14px;
+            margin-top: 24px;
+            text-align: left;
+        }
+
+        .feature-card {
+            background: var(--card-subtle);
+            border: 1px solid var(--card-border);
+            border-radius: var(--radius-sub);
+            padding: 18px 20px;
+            transition: all 0.18s ease;
+        }
+
+        .feature-card:hover {
+            transform: translateY(-2px);
+            border-color: var(--accent);
+            box-shadow: var(--shadow-sm);
+        }
+
+        .feature-icon-box {
+            width: 36px;
+            height: 36px;
+            border-radius: 10px;
+            background: var(--accent-dim);
+            color: var(--accent);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 16px;
+            margin-bottom: 10px;
+        }
+
+        .feature-title {
+            font-size: 14px;
+            font-weight: 700;
+            color: var(--text-heading);
+            margin-bottom: 3px;
+        }
+
+        .feature-desc {
+            font-size: 12px;
+            color: var(--text-dim);
+            line-height: 1.45;
+        }
+
+        /* ── Step 2: Atmosphere (Theme Cards & Accent Swatches) ────────────── */
+        .theme-cards-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 16px;
+            margin-bottom: 22px;
+            text-align: left;
+        }
+
+        .theme-select-card {
+            background: var(--card-subtle);
+            border: 2px solid var(--card-border);
+            border-radius: var(--radius-sub);
+            padding: 20px;
+            box-shadow: var(--shadow-sm);
+            cursor: pointer;
+            transition: border-color 0.18s ease, transform 0.18s ease, box-shadow 0.18s ease;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            position: relative;
+        }
+
+        .theme-select-card:hover {
+            border-color: var(--card-border-hover);
+            transform: translateY(-2px);
+        }
+
+        .theme-select-card.selected {
+            border-color: var(--accent);
+            background: var(--card-bg);
+            box-shadow: 0 0 0 1px var(--accent), 0 8px 24px var(--accent-glow);
+            transform: translateY(-2px);
+        }
+
+        .card-top-row {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 10px;
+        }
+
+        .mode-icon-circle {
+            width: 38px;
+            height: 38px;
+            border-radius: 11px;
+            background: var(--card-bg);
+            border: 1px solid var(--card-border);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 16px;
+            color: var(--text-heading);
+            transition: all 0.18s ease;
+        }
+
+        .theme-select-card.selected .mode-icon-circle,
+        .workspace-card.selected .mode-icon-circle {
+            background: var(--accent);
+            color: var(--accent-text);
+            border-color: var(--accent);
+        }
+
+        .radio-badge {
+            width: 22px;
+            height: 22px;
+            border-radius: 50%;
+            border: 2px solid var(--card-border);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.18s ease;
+        }
+
+        .theme-select-card.selected .radio-badge,
+        .workspace-card.selected .radio-badge,
+        .selected .radio-badge {
+            border-color: var(--accent);
+            background: var(--accent);
+            color: var(--accent-text);
+            box-shadow: 0 2px 8px var(--accent-glow);
+        }
+
+        .radio-badge i {
+            font-size: 10px;
+            line-height: 1;
+            display: none;
+        }
+
+        .theme-select-card.selected .radio-badge i,
+        .workspace-card.selected .radio-badge i,
+        .selected .radio-badge i {
+            display: block;
+        }
+
+        .theme-card-name {
+            font-size: 16px;
+            font-weight: 800;
+            color: var(--text-heading);
+            margin-bottom: 3px;
+        }
+
+        .theme-card-caption {
+            font-size: 12.5px;
+            color: var(--text-dim);
+            line-height: 1.45;
+            margin-bottom: 14px;
+        }
+
+        /* ── Mini Browser Wireframe Mockups ───────────────────────────────── */
+        .mini-browser-mockup {
+            width: 100%;
+            border-radius: 10px;
+            padding: 8px 10px 10px;
+            display: flex;
+            flex-direction: column;
+            gap: 7px;
+            border: 1px solid rgba(120, 120, 120, 0.15);
+            transition: all 0.18s ease;
+        }
+
+        .mockup-dark {
+            background: #141416;
+            color: #E2E8F0;
+            border-color: rgba(255, 255, 255, 0.1);
+        }
+
+        .mockup-light {
+            background: #FFFFFF;
+            color: #0F172A;
+            border-color: rgba(0, 0, 0, 0.1);
+        }
+
+        .mockup-header-bar {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .mockup-dots {
+            display: flex;
+            align-items: center;
+            gap: 4px;
+        }
+
+        .mockup-dot {
+            width: 6px;
+            height: 6px;
+            border-radius: 50%;
+        }
+
+        .mockup-tabs-strip {
+            display: flex;
+            align-items: center;
+            gap: 4px;
+            flex: 1;
+            margin-left: 4px;
+        }
+
+        .mockup-tab {
+            font-size: 8.5px;
+            font-weight: 700;
+            padding: 2px 7px;
+            border-radius: 4px;
+            background: rgba(120, 120, 120, 0.15);
+            display: flex;
+            align-items: center;
+            gap: 4px;
+        }
+
+        .mockup-tab.active-tab {
+            background: var(--accent);
+            color: var(--accent-text);
+        }
+
+        .mockup-omnibox {
+            height: 17px;
+            border-radius: 4px;
+            display: flex;
+            align-items: center;
+            padding: 0 7px;
+            gap: 5px;
+            font-size: 8.5px;
+            font-family: var(--font-mono);
+            background: rgba(120, 120, 120, 0.12);
+        }
+
+        .mockup-canvas {
+            height: 42px;
+            border-radius: 5px;
+            padding: 7px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            gap: 5px;
+            background: rgba(120, 120, 120, 0.06);
+        }
+
+        .mockup-line {
+            height: 4px;
+            border-radius: 2px;
+            background: rgba(120, 120, 120, 0.18);
+        }
+
+        .mockup-line.short {
+            width: 45%;
+        }
+
+        .mockup-line.accented {
+            background: var(--accent);
+            opacity: 0.85;
+            width: 70%;
+        }
+
+        /* ── Signature Accent Swatches Section ───────────────────────────── */
+        .accent-palette-box {
+            background: var(--card-subtle);
+            border: 1px solid var(--card-border);
+            border-radius: var(--radius-sub);
+            padding: 20px 24px;
+            text-align: left;
+        }
+
+        .palette-header-row {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 16px;
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+
+        .palette-title-box h3 {
+            font-size: 15px;
+            font-weight: 800;
+            color: var(--text-heading);
+            margin-bottom: 2px;
+        }
+
+        .palette-title-box p {
+            font-size: 12.5px;
+            color: var(--text-dim);
+        }
+
+        .current-color-badge {
+            font-family: var(--font-mono);
+            font-size: 11.5px;
+            font-weight: 700;
+            padding: 3px 10px;
+            border-radius: var(--radius-pill);
+            background: var(--accent-dim);
+            color: var(--accent);
+            border: none;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .current-color-badge::before {
+            content: '';
+            width: 7px;
+            height: 7px;
+            border-radius: 50%;
+            background: var(--accent);
+        }
+
+        .swatches-flex {
+            display: flex;
+            align-items: center;
+            gap: 11px;
+            flex-wrap: wrap;
+        }
+
+        .swatch-circle {
+            width: 42px;
+            height: 42px;
+            border-radius: 50%;
+            border: 2px solid rgba(0, 0, 0, 0.08);
+            cursor: pointer;
+            transition: transform 0.18s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.18s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 13.5px;
+            position: relative;
+            outline: none;
+        }
+
+        html[data-theme="dark"] .swatch-circle {
+            border: 2px solid rgba(255, 255, 255, 0.12);
+        }
+
+        .swatch-circle:hover {
+            transform: scale(1.12) translateY(-2px);
+            box-shadow: 0 6px 16px rgba(0, 0, 0, 0.2);
+        }
+
+        .swatch-circle.active {
+            transform: scale(1.14);
+            box-shadow: 0 0 0 3px var(--card-bg), 0 0 0 5px var(--accent), 0 8px 20px var(--accent-glow);
+        }
+
+        .swatch-circle i {
+            display: none;
+            filter: drop-shadow(0 1px 2px rgba(0, 0, 0, 0.4));
+        }
+
+        .swatch-circle.active i {
+            display: block;
+        }
+
+        .custom-color-btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 7px;
+            padding: 7px 15px;
+            border-radius: var(--radius-pill);
+            background: var(--card-bg);
+            border: 1px solid var(--card-border);
+            font-size: 12px;
+            font-weight: 700;
+            color: var(--text-heading);
+            cursor: pointer;
+            transition: all 0.18s ease;
+            position: relative;
+        }
+
+        .custom-color-btn:hover {
+            border-color: var(--accent);
+            transform: translateY(-1px);
+        }
+
+        .color-input-hidden {
+            position: absolute;
+            opacity: 0;
+            width: 100%;
+            height: 100%;
+            top: 0;
+            left: 0;
+            cursor: pointer;
+        }
+
+        /* ── Step 3: Workspace Options ───────────────────────────────────── */
+        .section-sublabel {
+            font-size: 13.5px;
+            font-weight: 800;
+            color: var(--text-heading);
+            margin: 18px 0 10px;
+            text-align: left;
+            display: flex;
+            align-items: center;
+            gap: 7px;
+        }
+
+        .section-sublabel:first-child {
+            margin-top: 0;
+        }
+
+        .workspace-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 16px;
+            margin-bottom: 8px;
+            text-align: left;
+        }
+
+        .workspace-card {
+            background: var(--card-subtle);
+            border: 2px solid var(--card-border);
+            border-radius: var(--radius-sub);
+            padding: 18px;
+            cursor: pointer;
+            transition: all 0.18s ease;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+        }
+
+        .workspace-card:hover {
+            border-color: var(--card-border-hover);
+            transform: translateY(-2px);
+        }
+
+        .workspace-card.selected {
+            border-color: var(--accent);
+            background: var(--card-bg);
+            box-shadow: 0 0 0 1px var(--accent), 0 8px 24px var(--accent-glow);
+        }
+
+        .ws-card-title {
+            font-size: 15px;
+            font-weight: 800;
+            color: var(--text-heading);
+            margin-bottom: 3px;
+        }
+
+        .ws-card-desc {
+            font-size: 12px;
+            color: var(--text-dim);
+            line-height: 1.45;
+            margin-bottom: 12px;
+        }
+
+        /* ── Step 4: Search Engine List ──────────────────────────────────── */
+        .search-engine-row {
+            background: var(--card-subtle);
+            border: 2px solid var(--card-border);
+            border-radius: var(--radius-sub);
+            padding: 14px 18px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 16px;
+            cursor: pointer;
+            transition: all 0.18s ease;
+            margin-bottom: 10px;
+            text-align: left;
+        }
+
+        .search-engine-row:last-child {
+            margin-bottom: 0;
+        }
+
+        .search-engine-row:hover {
+            border-color: var(--card-border-hover);
+            transform: translateY(-1px);
+        }
+
+        .search-engine-row.selected {
+            border-color: var(--accent);
+            background: var(--card-bg);
+            box-shadow: 0 0 0 1px var(--accent), 0 6px 20px var(--accent-glow);
+        }
+
+        .se-meta {
+            display: flex;
+            align-items: center;
+            gap: 14px;
+        }
+
+        .se-logo-box {
+            width: 38px;
+            height: 38px;
+            border-radius: 10px;
+            background: var(--card-bg);
+            border: 1px solid var(--card-border);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 18px;
+            flex-shrink: 0;
+        }
+
+        .se-name {
+            font-size: 14.5px;
+            font-weight: 700;
+            color: var(--text-heading);
+            margin-bottom: 2px;
+        }
+
+        .se-tagline {
+            font-size: 12px;
+            color: var(--text-dim);
+        }
+
+        .se-status-pill {
+            font-size: 10.5px;
+            font-weight: 700;
+            padding: 3px 9px;
+            border-radius: var(--radius-pill);
+            background: var(--card-bg);
+            color: var(--text-muted);
+            border: 1px solid var(--card-border);
+        }
+
+        .search-engine-row.selected .se-status-pill {
+            background: var(--accent-dim);
+            color: var(--accent);
+            border-color: transparent;
+        }
+
+        /* ── Step 5: Bookmarks Import ────────────────────────────────────── */
+        .import-box {
+            text-align: left;
+        }
+
+        .import-card-row {
+            background: var(--card-subtle);
+            border: 1px solid var(--card-border);
+            border-radius: var(--radius-sub);
+            padding: 16px 20px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 16px;
+            margin-bottom: 12px;
+            transition: all 0.18s ease;
+        }
+
+        .import-card-row:hover {
+            border-color: var(--accent);
+            transform: translateY(-1px);
+        }
+
+        .import-title {
+            font-size: 14.5px;
+            font-weight: 700;
+            color: var(--text-heading);
+            margin-bottom: 2px;
+        }
+
+        .import-sub {
+            font-size: 12px;
+            color: var(--text-dim);
+        }
+
+        .action-pill-btn {
+            background: var(--card-bg);
+            color: var(--text-heading);
+            border: 1px solid var(--card-border);
+            padding: 8px 16px;
+            border-radius: var(--radius-pill);
+            font-size: 12.5px;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.18s ease;
+            display: inline-flex;
+            align-items: center;
+            gap: 7px;
+            white-space: nowrap;
+        }
+
+        .action-pill-btn:hover {
+            background: var(--accent);
+            color: var(--accent-text);
+            border-color: var(--accent);
+            transform: translateY(-1px);
+        }
+
+        .status-alert-box {
+            display: none;
+            padding: 12px 16px;
+            border-radius: var(--radius-sub);
+            font-size: 12.5px;
+            font-weight: 600;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 16px;
+        }
+
+        .status-alert-box.success {
+            display: flex;
+            background: rgba(9, 240, 160, 0.12);
+            border: 1px solid rgba(9, 240, 160, 0.3);
+            color: var(--text-heading);
+        }
+
+        .status-alert-box.error {
+            display: flex;
+            background: rgba(244, 63, 94, 0.12);
+            border: 1px solid rgba(244, 63, 94, 0.3);
+            color: var(--text-heading);
+        }
+
+        .status-alert-box.loading {
+            display: flex;
+            background: var(--card-subtle);
+            border: 1px solid var(--card-border);
+            color: var(--text-dim);
+        }
+
+        /* ── Step 6: Shields & Intelligence ──────────────────────────────── */
+        .toggles-stack {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            text-align: left;
+        }
+
+        .toggle-row-card {
+            background: var(--card-subtle);
+            border: 1px solid var(--card-border);
+            border-radius: var(--radius-sub);
+            padding: 16px 20px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 16px;
+            cursor: pointer;
+            transition: all 0.18s ease;
+        }
+
+        .toggle-row-card:hover {
+            border-color: var(--accent);
+            transform: translateY(-1px);
+        }
+
+        .switch-capsule {
+            width: 42px;
+            height: 23px;
+            border-radius: var(--radius-pill);
+            background: rgba(120, 120, 120, 0.25);
+            position: relative;
+            transition: background 0.18s ease;
+            flex-shrink: 0;
+        }
+
+        .switch-capsule::after {
+            content: '';
+            position: absolute;
+            top: 2.5px;
+            left: 2.5px;
+            width: 18px;
+            height: 18px;
+            border-radius: 50%;
+            background: #FFFFFF;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.3);
+            transition: transform 0.18s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+
+        .toggle-row-card.active .switch-capsule {
+            background: var(--accent);
+        }
+
+        .toggle-row-card.active .switch-capsule::after {
+            transform: translateX(19px);
+            background: var(--accent-text);
+        }
+
+        /* ── Step 7: Ready Summary Grid & Shortcuts ───────────────────────── */
+        .ready-check-icon {
+            width: 64px;
+            height: 64px;
+            border-radius: 50%;
+            background: var(--accent-dim);
+            color: var(--accent);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 28px;
+            margin: 0 auto 16px;
+            border: none;
+            box-shadow: 0 0 24px var(--accent-glow);
+        }
+
+        .summary-cards-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 12px;
+            margin: 22px 0 20px;
+            text-align: left;
+        }
+
+        .summary-card-tile {
+            background: var(--card-subtle);
+            border: 1px solid var(--card-border);
+            border-radius: var(--radius-sub);
+            padding: 12px 14px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            transition: all 0.18s ease;
+        }
+
+        .summary-card-tile:hover {
+            border-color: var(--accent);
+            transform: translateY(-1px);
+        }
+
+        .sum-tile-icon {
+            width: 36px;
+            height: 36px;
+            border-radius: 10px;
+            background: var(--accent-dim);
+            color: var(--accent);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 15px;
+            flex-shrink: 0;
+        }
+
+        .sum-tile-text {
+            display: flex;
+            flex-direction: column;
+            min-width: 0;
+        }
+
+        .sum-tile-label {
+            font-size: 10.5px;
+            font-weight: 700;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            line-height: 1.2;
+        }
+
+        .sum-tile-value {
+            font-size: 12.5px;
+            font-weight: 800;
+            color: var(--text-heading);
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            margin-top: 2px;
+        }
+
+        .shortcut-banner {
+            background: var(--card-subtle);
+            border: 1px solid var(--card-border);
+            border-radius: var(--radius-sub);
+            padding: 16px 20px;
+            text-align: left;
+        }
+
+        .shortcut-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 8px 32px;
+        }
+
+        .shortcut-pair {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            font-size: 12.5px;
+            color: var(--text-body);
+            padding: 2px 0;
+        }
+
+        .shortcut-pair span:first-child {
+            font-weight: 500;
+            white-space: nowrap;
+        }
+
+        .kbd-chip {
+            font-family: var(--font-mono);
+            font-size: 11px;
+            padding: 3px 8px;
+            border-radius: 6px;
+            background: var(--card-bg);
+            border: 1px solid var(--card-border);
+            color: var(--text-heading);
+            font-weight: 700;
+            white-space: nowrap;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+        }
+
+        /* ── Floating Footer ──────────────────────────────────────────────── */
+        .wizard-footer {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            background: var(--footer-bg);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border-top: 1px solid var(--chrome-border);
+            padding: 13px 32px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            z-index: 100;
+        }
+
+        .footer-btn-back {
+            background: var(--card-bg);
+            color: var(--text-heading);
+            border: 1px solid var(--card-border);
+            padding: 9px 20px;
+            border-radius: var(--radius-pill);
+            font-size: 13px;
+            font-weight: 700;
+            cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            transition: all 0.18s ease;
+        }
+
+        .footer-btn-back:hover:not(:disabled) {
+            border-color: var(--accent);
+            transform: translateX(-2px);
+        }
+
+        .footer-btn-back:disabled {
+            opacity: 0.35;
+            cursor: not-allowed;
+        }
+
+        .footer-step-indicator {
+            font-family: var(--font-mono);
+            font-size: 11.5px;
+            color: var(--text-dim);
+            font-weight: 700;
+            letter-spacing: 0.5px;
+        }
+
+        .footer-btn-next {
+            background: var(--accent);
+            color: var(--accent-text);
+            border: 1px solid var(--accent);
+            padding: 9px 26px;
+            border-radius: var(--radius-pill);
+            font-size: 13px;
+            font-weight: 800;
+            cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+            gap: 9px;
+            box-shadow: 0 4px 16px var(--accent-glow);
+            transition: all 0.18s ease;
+        }
+
+        .footer-btn-next:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 22px var(--accent-glow);
+        }
+
+        .footer-btn-next:active {
+            transform: scale(0.98);
+        }
+
+        /* ── Responsive Rules ─────────────────────────────────────────────── */
+        @media (max-width: 768px) {
+            .stepper-nav {
+                display: none;
+            }
+            .features-grid,
+            .theme-cards-grid,
+            .workspace-grid,
+            .summary-cards-grid,
+            .shortcut-grid {
+                grid-template-columns: 1fr;
+            }
+            .onboarding-topbar,
+            .wizard-footer {
+                padding: 12px 16px;
+            }
+            .wizard-main {
+                padding: 20px 14px 85px;
+            }
+            .wizard-card {
+                padding: 26px 20px 30px;
+            }
+        }
+    </style>
+</head>
+
+<body>
+
+    <!-- ── Topbar with Stepper ──────────────────────────────────────────── -->
+    <header class="onboarding-topbar">
+        <div class="brand-cluster">
+            <div class="brand-logo-wrap">
+                <img src="assets/Dark.png" class="brand-logo-img" id="topbar-logo-img" alt="Ocal Browser">
+            </div>
+            <div class="brand-info">
+                <div class="brand-title">
+                    Ocal Browser
+                    <span class="brand-badge">Setup</span>
+                </div>
+                <div class="brand-subtitle">Personalize your workspace</div>
+            </div>
+        </div>
+
+        <nav class="stepper-nav" id="stepper-nav">
+            <button class="step-pill active" data-step="1">
+                <span class="step-num">1</span>
+                <span>Welcome</span>
+            </button>
+            <button class="step-pill" data-step="2">
+                <span class="step-num">2</span>
+                <span>Atmosphere</span>
+            </button>
+            <button class="step-pill" data-step="3">
+                <span class="step-num">3</span>
+                <span>Workspace</span>
+            </button>
+            <button class="step-pill" data-step="4">
+                <span class="step-num">4</span>
+                <span>Search</span>
+            </button>
+            <button class="step-pill" data-step="5">
+                <span class="step-num">5</span>
+                <span>Bookmarks</span>
+            </button>
+            <button class="step-pill" data-step="6">
+                <span class="step-num">6</span>
+                <span>Shields</span>
+            </button>
+            <button class="step-pill" data-step="7">
+                <span class="step-num">7</span>
+                <span>Ready</span>
+            </button>
+        </nav>
+
+        <div class="topbar-actions">
+            <button class="action-icon-btn" id="quick-theme-toggle" title="Toggle Light/Dark Theme">
+                <i class="fas fa-sun" id="quick-theme-icon"></i>
+            </button>
+            <button class="skip-btn" id="btn-skip-setup" title="Skip to finish">Skip Setup</button>
+        </div>
+    </header>
+
+    <!-- ── Main Wizard Container ────────────────────────────────────────── -->
+    <main class="wizard-main">
+
+        <!-- ── STEP 1: WELCOME ──────────────────────────────────────────── -->
+        <section class="step-container active" id="step-1">
+            <div class="wizard-card">
+                <div class="hero-avatar">
+                    <img src="assets/Dark.png" class="hero-logo-img" id="hero-logo-img" alt="Ocal Browser">
+                </div>
+                <div class="step-header">
+                    <div class="step-eyebrow">FIRST-RUN EXPERIENCE</div>
+                    <h1 class="step-title">Welcome to Ocal Browser</h1>
+                    <p class="step-desc">
+                        Fast, secure, and tailored to you. Let's configure your browsing atmosphere, import your bookmarks, and customize your layout in just a few quick taps.
+                    </p>
+                </div>
+
+                <div class="features-grid">
+                    <div class="feature-card">
+                        <div class="feature-icon-box"><i class="fas fa-bolt"></i></div>
+                        <div class="feature-title">Ultra-Fast Performance</div>
+                        <div class="feature-desc">Fine-tuned Chromium foundation with resource isolation and instant tab recovery.</div>
+                    </div>
+                    <div class="feature-card">
+                        <div class="feature-icon-box"><i class="fas fa-shield-halved"></i></div>
+                        <div class="feature-title">Ocal Shield</div>
+                        <div class="feature-desc">Active ad blocker, tracking prevention, and digital fingerprint shielding built right in.</div>
+                    </div>
+                    <div class="feature-card">
+                        <div class="feature-icon-box"><i class="fas fa-layer-group"></i></div>
+                        <div class="feature-title">Flexible Workspaces</div>
+                        <div class="feature-desc">Switch between horizontal and vertical tabs, split screens, and pinned sidebars.</div>
+                    </div>
+                    <div class="feature-card">
+                        <div class="feature-icon-box"><i class="fas fa-wand-magic-sparkles"></i></div>
+                        <div class="feature-title">Ocal AI Companion</div>
+                        <div class="feature-desc">On-demand sidebar for instantaneous summaries, writing assistance, and intelligent search.</div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- ── STEP 2: ATMOSPHERE (THEME & COLOR) ───────────────────────── -->
+        <section class="step-container" id="step-2">
+            <div class="wizard-card">
+                <div class="step-header">
+                    <div class="step-eyebrow">STEP 2 OF 7 • ATMOSPHERE</div>
+                    <h2 class="step-title">Choose Your Atmosphere</h2>
+                    <p class="step-desc">Pick your base theme and signature accent color. Changes apply live to your browser frame with zero flicker.</p>
+                </div>
+
+                <!-- Mode Selector Cards -->
+                <div class="theme-cards-grid">
+                    <!-- Dark Mode -->
+                    <div class="theme-select-card" id="card-theme-dark" data-theme="dark">
+                        <div>
+                            <div class="card-top-row">
+                                <div class="mode-icon-circle"><i class="fas fa-moon"></i></div>
+                                <div class="radio-badge"><i class="fas fa-check"></i></div>
+                            </div>
+                            <div class="theme-card-name">Dark Mode</div>
+                            <div class="theme-card-caption">Deep onyx canvas designed for high focus and comfortable night viewing.</div>
+                        </div>
+                        <div class="mini-browser-mockup mockup-dark">
+                            <div class="mockup-header-bar">
+                                <div class="mockup-dots">
+                                    <span class="mockup-dot" style="background:#FF5F56;"></span>
+                                    <span class="mockup-dot" style="background:#FFBD2E;"></span>
+                                    <span class="mockup-dot" style="background:#27C93F;"></span>
+                                </div>
+                                <div class="mockup-tabs-strip">
+                                    <span class="mockup-tab active-tab"><i class="fas fa-circle" style="font-size:5px;"></i> Ocal</span>
+                                    <span class="mockup-tab" style="background:#27272A; color:#A1A1AA;">New Tab</span>
+                                </div>
+                            </div>
+                            <div class="mockup-omnibox">
+                                <i class="fas fa-lock" style="color:var(--accent); font-size:8px;"></i>
+                                <span style="color:#A1A1AA;">ocal://atmosphere</span>
+                            </div>
+                            <div class="mockup-canvas" style="background:#1E1E22;">
+                                <div class="mockup-line accented"></div>
+                                <div class="mockup-line short" style="background:#3F3F46;"></div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Light Mode -->
+                    <div class="theme-select-card" id="card-theme-light" data-theme="light">
+                        <div>
+                            <div class="card-top-row">
+                                <div class="mode-icon-circle"><i class="fas fa-sun"></i></div>
+                                <div class="radio-badge"><i class="fas fa-check"></i></div>
+                            </div>
+                            <div class="theme-card-name">Light Mode</div>
+                            <div class="theme-card-caption">Crisp porcelain daylight canvas with high contrast and timeless clarity.</div>
+                        </div>
+                        <div class="mini-browser-mockup mockup-light">
+                            <div class="mockup-header-bar">
+                                <div class="mockup-dots">
+                                    <span class="mockup-dot" style="background:#FF5F56;"></span>
+                                    <span class="mockup-dot" style="background:#FFBD2E;"></span>
+                                    <span class="mockup-dot" style="background:#27C93F;"></span>
+                                </div>
+                                <div class="mockup-tabs-strip">
+                                    <span class="mockup-tab active-tab"><i class="fas fa-circle" style="font-size:5px;"></i> Ocal</span>
+                                    <span class="mockup-tab" style="background:#E2E8F0; color:#475569;">New Tab</span>
+                                </div>
+                            </div>
+                            <div class="mockup-omnibox" style="background:#E2E8F0; color:#334155;">
+                                <i class="fas fa-lock" style="color:var(--accent); font-size:8px;"></i>
+                                <span>ocal://atmosphere</span>
+                            </div>
+                            <div class="mockup-canvas" style="background:#F1F5F9;">
+                                <div class="mockup-line accented"></div>
+                                <div class="mockup-line short" style="background:#CBD5E1;"></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Signature Accent Swatches Box -->
+                <div class="accent-palette-box">
+                    <div class="palette-header-row">
+                        <div class="palette-title-box">
+                            <h3>Signature Accent Glow</h3>
+                            <p>Select the highlight glow for active tabs, omnibox indicators, and controls.</p>
+                        </div>
+                        <div class="current-color-badge" id="current-hex-badge">
+                            #09F0A0
+                        </div>
+                    </div>
+
+                    <div class="swatches-flex" id="swatches-container">
+                        <button class="swatch-circle active" data-color="#09F0A0" style="background:#09F0A0; color:#0F172A;" title="Mint Emerald">
+                            <i class="fas fa-check"></i>
+                        </button>
+                        <button class="swatch-circle" data-color="#8B5CF6" style="background:#8B5CF6; color:#FFFFFF;" title="Neon Violet">
+                            <i class="fas fa-check"></i>
+                        </button>
+                        <button class="swatch-circle" data-color="#4F46E5" style="background:#4F46E5; color:#FFFFFF;" title="Cyber Indigo">
+                            <i class="fas fa-check"></i>
+                        </button>
+                        <button class="swatch-circle" data-color="#F43F5E" style="background:#F43F5E; color:#FFFFFF;" title="Crimson Red">
+                            <i class="fas fa-check"></i>
+                        </button>
+                        <button class="swatch-circle" data-color="#F59E0B" style="background:#F59E0B; color:#0F172A;" title="Sunset Amber">
+                            <i class="fas fa-check"></i>
+                        </button>
+                        <button class="swatch-circle" data-color="#06B6D4" style="background:#06B6D4; color:#0F172A;" title="Ocean Cyan">
+                            <i class="fas fa-check"></i>
+                        </button>
+                        <button class="swatch-circle" data-color="#EC4899" style="background:#EC4899; color:#FFFFFF;" title="Electric Pink">
+                            <i class="fas fa-check"></i>
+                        </button>
+                        <button class="swatch-circle" data-color="#64748B" style="background:#64748B; color:#FFFFFF;" title="Titanium Slate">
+                            <i class="fas fa-check"></i>
+                        </button>
+
+                        <!-- Custom Color Trigger -->
+                        <div class="custom-color-btn" title="Pick any custom color">
+                            <i class="fas fa-palette" style="color:var(--accent);"></i>
+                            <span>Custom</span>
+                            <input type="color" id="native-color-picker" class="color-input-hidden" value="#09F0A0">
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- ── STEP 3: WORKSPACE & LAYOUT ───────────────────────────── -->
+        <section class="step-container" id="step-3">
+            <div class="wizard-card">
+                <div class="step-header">
+                    <div class="step-eyebrow">STEP 3 OF 7 • WORKSPACE</div>
+                    <h2 class="step-title">Structure Your Workspace</h2>
+                    <p class="step-desc">Choose your preferred tab orientation and productivity sidebar configuration.</p>
+                </div>
+
+                <!-- Tab Layout Grid -->
+                <div class="section-sublabel">
+                    <i class="fas fa-table-columns" style="color:var(--accent);"></i> Tab Alignment
+                </div>
+                <div class="workspace-grid">
+                    <!-- Horizontal Tabs -->
+                    <div class="workspace-card selected" id="card-tab-horizontal" data-tab-layout="horizontal">
+                        <div>
+                            <div class="card-top-row">
+                                <div class="mode-icon-circle"><i class="fas fa-window-maximize"></i></div>
+                                <div class="radio-badge"><i class="fas fa-check"></i></div>
+                            </div>
+                            <div class="ws-card-title">Horizontal Tabs (Classic)</div>
+                            <div class="ws-card-desc">Standard top tab strip. Familiar, spacious, and perfect for conventional browsing.</div>
+                        </div>
+                        <div class="mini-browser-mockup" style="background:var(--card-bg);">
+                            <div class="mockup-header-bar">
+                                <div class="mockup-tabs-strip">
+                                    <span class="mockup-tab active-tab">Active Tab</span>
+                                    <span class="mockup-tab">Tab 2</span>
+                                </div>
+                            </div>
+                            <div class="mockup-canvas" style="height:30px;"></div>
+                        </div>
+                    </div>
+
+                    <!-- Vertical Tabs -->
+                    <div class="workspace-card" id="card-tab-vertical" data-tab-layout="vertical">
+                        <div>
+                            <div class="card-top-row">
+                                <div class="mode-icon-circle"><i class="fas fa-bars-staggered"></i></div>
+                                <div class="radio-badge"><i class="fas fa-check"></i></div>
+                            </div>
+                            <div class="ws-card-title">Vertical Tabs (Arc Rail)</div>
+                            <div class="ws-card-desc">Left sidebar tabs rail. Maximizes vertical viewport and neatly handles 30+ tabs.</div>
+                        </div>
+                        <div class="mini-browser-mockup" style="background:var(--card-bg); flex-direction:row; padding:6px;">
+                            <div style="width:36px; display:flex; flex-direction:column; gap:3px; padding-right:4px; border-right:1px solid var(--card-border);">
+                                <span class="mockup-tab active-tab" style="padding:2px 4px; font-size:7px;">T1</span>
+                                <span class="mockup-tab" style="padding:2px 4px; font-size:7px;">T2</span>
+                                <span class="mockup-tab" style="padding:2px 4px; font-size:7px;">T3</span>
+                            </div>
+                            <div style="flex:1; display:flex; flex-direction:column; gap:4px; padding-left:4px;">
+                                <div class="mockup-omnibox" style="height:14px;"></div>
+                                <div class="mockup-canvas" style="height:22px;"></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Sidebar Dock Grid -->
+                <div class="section-sublabel">
+                    <i class="fas fa-bars" style="color:var(--accent);"></i> Sidebar Hub Dock
+                </div>
+                <div class="workspace-grid">
+                    <!-- Visible Sidebar -->
+                    <div class="workspace-card selected" id="card-sidebar-visible" data-sidebar="visible">
+                        <div>
+                            <div class="card-top-row">
+                                <div class="mode-icon-circle"><i class="fas fa-compass"></i></div>
+                                <div class="radio-badge"><i class="fas fa-check"></i></div>
+                            </div>
+                            <div class="ws-card-title">Enable Sidebar Hub (Recommended)</div>
+                            <div class="ws-card-desc">Quick-access dock for AI assistant, bookmarks, downloads, and extension panels.</div>
+                        </div>
+                        <div class="mini-browser-mockup" style="background:var(--card-bg); flex-direction:row; gap:6px;">
+                            <div style="width:20px; border-radius:4px; background:var(--accent-dim); display:flex; flex-direction:column; align-items:center; justify-content:center; gap:4px;">
+                                <div style="width:6px; height:6px; border-radius:50%; background:var(--accent);"></div>
+                                <div style="width:6px; height:6px; border-radius:50%; background:var(--accent);"></div>
+                            </div>
+                            <div style="flex:1; display:flex; flex-direction:column; gap:4px;">
+                                <div class="mockup-omnibox" style="height:14px;"></div>
+                                <div class="mockup-canvas" style="height:22px;"></div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Hidden Sidebar -->
+                    <div class="workspace-card" id="card-sidebar-hidden" data-sidebar="hidden">
+                        <div>
+                            <div class="card-top-row">
+                                <div class="mode-icon-circle"><i class="fas fa-border-none"></i></div>
+                                <div class="radio-badge"><i class="fas fa-check"></i></div>
+                            </div>
+                            <div class="ws-card-title">Keep Sidebar Hidden</div>
+                            <div class="ws-card-desc">Minimalist edge-to-edge layout with maximum horizontal screen width.</div>
+                        </div>
+                        <div class="mini-browser-mockup" style="background:var(--card-bg);">
+                            <div class="mockup-omnibox" style="height:14px;"></div>
+                            <div class="mockup-canvas" style="height:28px;"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- ── STEP 4: DEFAULT SEARCH ENGINE ────────────────────────── -->
+        <section class="step-container" id="step-4">
+            <div class="wizard-card">
+                <div class="step-header">
+                    <div class="step-eyebrow">STEP 4 OF 7 • SEARCH ENGINE</div>
+                    <h2 class="step-title">Choose Your Search Engine</h2>
+                    <p class="step-desc">Pick the default search engine used for queries typed into the omnibox address bar.</p>
+                </div>
+
+                <!-- Google -->
+                <div class="search-engine-row selected" data-engine="google">
+                    <div class="se-meta">
+                        <div class="se-logo-box" style="color:#4285F4;"><i class="fab fa-google"></i></div>
+                        <div>
+                            <div class="se-name">Google</div>
+                            <div class="se-tagline">Fast, comprehensive global search with rich answers.</div>
+                        </div>
+                    </div>
+                    <div class="se-status-pill">Default</div>
+                </div>
+
+                <!-- Bing -->
+                <div class="search-engine-row" data-engine="bing">
+                    <div class="se-meta">
+                        <div class="se-logo-box" style="color:#008373;"><i class="fab fa-microsoft"></i></div>
+                        <div>
+                            <div class="se-name">Microsoft Bing</div>
+                            <div class="se-tagline">Powered by Copilot AI, image search, and rewards.</div>
+                        </div>
+                    </div>
+                    <div class="se-status-pill">Available</div>
+                </div>
+
+                <!-- DuckDuckGo -->
+                <div class="search-engine-row" data-engine="duckduckgo">
+                    <div class="se-meta">
+                        <div class="se-logo-box" style="color:#DE5833;"><i class="fas fa-shield-cat"></i></div>
+                        <div>
+                            <div class="se-name">DuckDuckGo</div>
+                            <div class="se-tagline">Privacy first: zero search history tracking or profiling.</div>
+                        </div>
+                    </div>
+                    <div class="se-status-pill">Private</div>
+                </div>
+
+                <!-- Brave Search -->
+                <div class="search-engine-row" data-engine="brave">
+                    <div class="se-meta">
+                        <div class="se-logo-box" style="color:#FB542B;"><i class="fas fa-shield"></i></div>
+                        <div>
+                            <div class="se-name">Brave Search</div>
+                            <div class="se-tagline">Independent search index that preserves privacy.</div>
+                        </div>
+                    </div>
+                    <div class="se-status-pill">Private</div>
+                </div>
+
+                <!-- Yahoo -->
+                <div class="search-engine-row" data-engine="yahoo">
+                    <div class="se-meta">
+                        <div class="se-logo-box" style="color:#6001D2;"><i class="fab fa-yahoo"></i></div>
+                        <div>
+                            <div class="se-name">Yahoo</div>
+                            <div class="se-tagline">Classic web search integrated with global news.</div>
+                        </div>
+                    </div>
+                    <div class="se-status-pill">Available</div>
+                </div>
+            </div>
+        </section>
+
+        <!-- ── STEP 5: BOOKMARKS IMPORT ─────────────────────────────── -->
+        <section class="step-container" id="step-5">
+            <div class="wizard-card">
+                <div class="step-header">
+                    <div class="step-eyebrow">STEP 5 OF 7 • BOOKMARKS IMPORT</div>
+                    <h2 class="step-title">Bring Your Bookmarks</h2>
+                    <p class="step-desc">Seamlessly import your saved websites and folders from existing installed browsers.</p>
+                </div>
+
+                <div class="import-box">
+                    <!-- Status Banner -->
+                    <div class="status-alert-box" id="import-status-box">
+                        <i class="fas fa-circle-check" id="import-status-icon"></i>
+                        <span id="import-status-text">Ready to import</span>
+                    </div>
+
+                    <!-- Chrome -->
+                    <div class="import-card-row">
+                        <div class="se-meta">
+                            <div class="se-logo-box" style="color:#4285F4;"><i class="fab fa-chrome"></i></div>
+                            <div>
+                                <div class="import-title">Google Chrome</div>
+                                <div class="import-sub">Import bookmarks and folders from Chrome Default profile.</div>
+                            </div>
+                        </div>
+                        <button class="action-pill-btn" id="btn-import-chrome">
+                            <i class="fas fa-file-import"></i>
+                            <span>Import from Chrome</span>
+                        </button>
+                    </div>
+
+                    <!-- Edge -->
+                    <div class="import-card-row">
+                        <div class="se-meta">
+                            <div class="se-logo-box" style="color:#0078D7;"><i class="fab fa-edge"></i></div>
+                            <div>
+                                <div class="import-title">Microsoft Edge</div>
+                                <div class="import-sub">Import bookmarks and folders from Edge Default profile.</div>
+                            </div>
+                        </div>
+                        <button class="action-pill-btn" id="btn-import-edge">
+                            <i class="fas fa-file-import"></i>
+                            <span>Import from Edge</span>
+                        </button>
+                    </div>
+
+                    <!-- File -->
+                    <div class="import-card-row">
+                        <div class="se-meta">
+                            <div class="se-logo-box" style="color:var(--accent);"><i class="fas fa-folder-open"></i></div>
+                            <div>
+                                <div class="import-title">HTML / JSON File</div>
+                                <div class="import-sub">Import any exported bookmarks backup file from disk.</div>
+                            </div>
+                        </div>
+                        <button class="action-pill-btn" id="btn-import-file">
+                            <i class="fas fa-upload"></i>
+                            <span>Select File</span>
+                        </button>
+                    </div>
+
+                    <div style="text-align:center; margin-top:20px;">
+                        <button class="skip-btn" id="btn-skip-import">I'll start fresh with no bookmarks</button>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- ── STEP 6: SHIELDS & TOOLS ──────────────────────────────── -->
+        <section class="step-container" id="step-6">
+            <div class="wizard-card">
+                <div class="step-header">
+                    <div class="step-eyebrow">STEP 6 OF 7 • SHIELDS & DEFENSE</div>
+                    <h2 class="step-title">Shields & Intelligence</h2>
+                    <p class="step-desc">Configure built-in security defenses and modern workspace intelligence features.</p>
+                </div>
+
+                <div class="toggles-stack">
+                    <!-- Adblock -->
+                    <div class="toggle-row-card active" id="toggle-adblock">
+                        <div class="se-meta">
+                            <div class="se-logo-box" style="color:var(--accent);"><i class="fas fa-shield-halved"></i></div>
+                            <div>
+                                <div class="import-title">Ocal Shield (Ad & Tracker Blocker)</div>
+                                <div class="import-sub">Blocks popup ads, video commercials, and tracking scripts across web pages.</div>
+                            </div>
+                        </div>
+                        <div class="switch-capsule"></div>
+                    </div>
+
+                    <!-- Anti-Fingerprint -->
+                    <div class="toggle-row-card active" id="toggle-fingerprint">
+                        <div class="se-meta">
+                            <div class="se-logo-box" style="color:var(--accent);"><i class="fas fa-user-secret"></i></div>
+                            <div>
+                                <div class="import-title">Anti-Fingerprinting Engine</div>
+                                <div class="import-sub">Randomizes canvas, audio, and hardware telemetry to stop digital profiling.</div>
+                            </div>
+                        </div>
+                        <div class="switch-capsule"></div>
+                    </div>
+
+                    <!-- AI -->
+                    <div class="toggle-row-card active" id="toggle-ai">
+                        <div class="se-meta">
+                            <div class="se-logo-box" style="color:var(--accent);"><i class="fas fa-wand-magic-sparkles"></i></div>
+                            <div>
+                                <div class="import-title">Ocal AI Assistant Hub</div>
+                                <div class="import-sub">Instant access to webpage summarization, writing assistance, and smart chat.</div>
+                            </div>
+                        </div>
+                        <div class="switch-capsule"></div>
+                    </div>
+
+                    <!-- Resource Limiter -->
+                    <div class="toggle-row-card active" id="toggle-resource">
+                        <div class="se-meta">
+                            <div class="se-logo-box" style="color:var(--accent);"><i class="fas fa-microchip"></i></div>
+                            <div>
+                                <div class="import-title">Hardware & Resource Limiter</div>
+                                <div class="import-sub">Throttles background inactive tabs to ensure low memory consumption on your device.</div>
+                            </div>
+                        </div>
+                        <div class="switch-capsule"></div>
+                    </div>
+
+                    <!-- Default Browser -->
+                    <div class="toggle-row-card" id="toggle-default-browser" style="cursor:default;">
+                        <div class="se-meta">
+                            <div class="se-logo-box" style="color:var(--accent);"><i class="fas fa-globe"></i></div>
+                            <div>
+                                <div class="import-title">Set Ocal as Default Browser</div>
+                                <div class="import-sub">Automatically open links from emails and apps in your high-speed Ocal workspace.</div>
+                            </div>
+                        </div>
+                        <button class="action-pill-btn" id="btn-set-default" style="flex-shrink:0;">
+                            <i class="fas fa-check"></i>
+                            <span id="btn-set-default-text">Set as Default</span>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- ── STEP 7: READY / ALL SET ──────────────────────────────── -->
+        <section class="step-container" id="step-7">
+            <div class="wizard-card">
+                <div class="ready-check-icon"><i class="fas fa-check"></i></div>
+                <div class="step-header">
+                    <div class="step-eyebrow">STEP 7 OF 7 • ALL SET</div>
+                    <h2 class="step-title">You're All Set!</h2>
+                    <p class="step-desc">
+                        Your personal browsing workstation is configured and primed. Here is a snapshot of your custom setup:
+                    </p>
+                </div>
+
+                <!-- Structured 3x2 Summary Matrix -->
+                <div class="summary-cards-grid">
+                    <div class="summary-card-tile">
+                        <div class="sum-tile-icon"><i class="fas fa-palette" id="sum-theme-icon"></i></div>
+                        <div class="sum-tile-text">
+                            <span class="sum-tile-label">Appearance</span>
+                            <span class="sum-tile-value" id="sum-theme-val">Dark Theme</span>
+                        </div>
+                    </div>
+                    <div class="summary-card-tile">
+                        <div class="sum-tile-icon" id="sum-accent-tile-icon"><i class="fas fa-wand-magic-sparkles"></i></div>
+                        <div class="sum-tile-text">
+                            <span class="sum-tile-label">Signature Glow</span>
+                            <span class="sum-tile-value" id="sum-accent-val">#09F0A0</span>
+                        </div>
+                    </div>
+                    <div class="summary-card-tile">
+                        <div class="sum-tile-icon"><i class="fas fa-window-maximize" id="sum-tab-icon"></i></div>
+                        <div class="sum-tile-text">
+                            <span class="sum-tile-label">Tab Layout</span>
+                            <span class="sum-tile-value" id="sum-tab-val">Horizontal Tabs</span>
+                        </div>
+                    </div>
+                    <div class="summary-card-tile">
+                        <div class="sum-tile-icon"><i class="fas fa-bars" id="sum-sidebar-icon"></i></div>
+                        <div class="sum-tile-text">
+                            <span class="sum-tile-label">Sidebar Hub</span>
+                            <span class="sum-tile-value" id="sum-sidebar-val">Dock Enabled</span>
+                        </div>
+                    </div>
+                    <div class="summary-card-tile">
+                        <div class="sum-tile-icon"><i class="fas fa-magnifying-glass" id="sum-search-icon"></i></div>
+                        <div class="sum-tile-text">
+                            <span class="sum-tile-label">Default Search</span>
+                            <span class="sum-tile-value" id="sum-search-val">Google</span>
+                        </div>
+                    </div>
+                    <div class="summary-card-tile">
+                        <div class="sum-tile-icon"><i class="fas fa-shield-halved" id="sum-shield-icon"></i></div>
+                        <div class="sum-tile-text">
+                            <span class="sum-tile-label">Shields & Security</span>
+                            <span class="sum-tile-value" id="sum-shields-val">Protection Active</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 2-Column Balanced Essential Shortcuts -->
+                <div class="shortcut-banner">
+                    <div style="font-size:12px; font-weight:800; color:var(--text-heading); text-transform:uppercase; letter-spacing:0.5px; margin-bottom:12px; display:flex; align-items:center; gap:8px;">
+                        <i class="fas fa-keyboard" style="color:var(--accent);"></i>
+                        <span>Essential Shortcuts</span>
+                    </div>
+                    <div class="shortcut-grid">
+                        <div class="shortcut-pair"><span>New Tab</span> <span class="kbd-chip">Ctrl + T</span></div>
+                        <div class="shortcut-pair"><span>Toggle Vertical Tabs</span> <span class="kbd-chip">Ctrl + Shift + V</span></div>
+                        <div class="shortcut-pair"><span>Close Tab</span> <span class="kbd-chip">Ctrl + W</span></div>
+                        <div class="shortcut-pair"><span>Toggle Sidebar</span> <span class="kbd-chip">Ctrl + B</span></div>
+                        <div class="shortcut-pair"><span>Split Screen</span> <span class="kbd-chip">Ctrl + \</span></div>
+                        <div class="shortcut-pair"><span>Open Settings</span> <span class="kbd-chip">Ctrl + ,</span></div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+    </main>
+
+    <!-- ── Floating Bottom Navigation ───────────────────────────────────── -->
+    <footer class="wizard-footer">
+        <div class="footer-left">
+            <button class="footer-btn-back" id="btn-back" disabled>
+                <i class="fas fa-arrow-left"></i>
+                <span>Back</span>
+            </button>
+        </div>
+
+        <div class="footer-step-indicator" id="footer-step-counter">
+            STEP 1 OF 7
+        </div>
+
+        <div class="footer-right">
+            <button class="footer-btn-next" id="btn-next">
+                <span>Get Started</span>
+                <i class="fas fa-arrow-right"></i>
+            </button>
+        </div>
+    </footer>
+
+    <!-- ── Script Logic ─────────────────────────────────────────────────── -->
+    <script>
+        (function () {
+            'use strict';
+
+            let currentStep = 1;
+            const totalSteps = 7;
+            let isMutingIPC = false; // Prevents recursive IPC ping-pong loops
+
+            let currentSettings = {
+                themeMode: 'dark',
+                accentColor: '#09F0A0',
+                tabLayout: 'horizontal',
+                sidebarMode: 'visible',
+                searchEngine: 'google',
+                adBlockEnabled: true,
+                fingerprintProtection: true,
+                aiAssistantEnabled: true,
+                resourceLimiterEnabled: true
+            };
+
+            // DOM Elements
+            const stepperPills = document.querySelectorAll('.step-pill');
+            const stepContainers = document.querySelectorAll('.step-container');
+            const btnBack = document.getElementById('btn-back');
+            const btnNext = document.getElementById('btn-next');
+            const footerCounter = document.getElementById('footer-step-counter');
+            const btnSkipSetup = document.getElementById('btn-skip-setup');
+            const quickThemeToggle = document.getElementById('quick-theme-toggle');
+            const quickThemeIcon = document.getElementById('quick-theme-icon');
+            const currentHexBadge = document.getElementById('current-hex-badge');
+
+            // ── Contrast Calculator ──────────────────────────────────────────
+            function getContrastColor(hex) {
+                if (!hex) return '#FFFFFF';
+                hex = hex.replace('#', '');
+                if (hex.length === 3) hex = hex.split('').map(c => c + c).join('');
+                const r = parseInt(hex.substr(0, 2), 16) || 0;
+                const g = parseInt(hex.substr(2, 2), 16) || 0;
+                const b = parseInt(hex.substr(4, 2), 16) || 0;
+                const yiq = ((r * 299) + (g * 587) + (b * 114)) / 1000;
+                return (yiq >= 150) ? '#0F172A' : '#FFFFFF';
+            }
+
+            // ── DOM Theme Applicator ─────────────────────────────────────────
+            function applyThemeDOM(mode) {
+                const isDark = (mode !== 'light');
+                const themeName = isDark ? 'dark' : 'light';
+                const bg = isDark ? '#141416' : '#F3F4F6';
+
+                currentSettings.themeMode = themeName;
+                document.documentElement.setAttribute('data-theme', themeName);
+                document.documentElement.style.colorScheme = themeName;
+                document.documentElement.style.backgroundColor = bg;
+                if (document.body) {
+                    document.body.setAttribute('data-theme', themeName);
+                    document.body.style.backgroundColor = bg;
+                }
+                localStorage.setItem('ocal-settings-theme', themeName);
+
+                if (quickThemeIcon) {
+                    quickThemeIcon.className = isDark ? 'fas fa-sun' : 'fas fa-moon';
+                }
+
+                const cardDark = document.getElementById('card-theme-dark');
+                const cardLight = document.getElementById('card-theme-light');
+                if (cardDark) cardDark.classList.toggle('selected', isDark);
+                if (cardLight) cardLight.classList.toggle('selected', !isDark);
+
+                // Update dark/light logo images
+                const targetLogo = isDark ? 'assets/Dark.png' : 'assets/Light.png';
+                const topbarLogo = document.getElementById('topbar-logo-img');
+                if (topbarLogo) topbarLogo.src = targetLogo;
+                const heroLogo = document.getElementById('hero-logo-img');
+                if (heroLogo) heroLogo.src = targetLogo;
+
+                updateSummaryView();
+            }
+
+            // ── Pure UI Color Applicator ─────────────────────────────────────
+            function renderAccentColorStyles(hex) {
+                if (!hex) return;
+                currentSettings.accentColor = hex;
+                document.documentElement.style.setProperty('--accent', hex);
+                document.documentElement.style.setProperty('--accent-dim', hex + '26');
+                document.documentElement.style.setProperty('--accent-glow', hex + '44');
+
+                const contrast = getContrastColor(hex);
+                document.documentElement.style.setProperty('--accent-text', contrast);
+
+                if (document.body) {
+                    document.body.style.setProperty('--accent', hex);
+                    document.body.style.setProperty('--accent-dim', hex + '26');
+                    document.body.style.setProperty('--accent-glow', hex + '44');
+                    document.body.style.setProperty('--accent-text', contrast);
+                }
+
+                if (currentHexBadge) {
+                    currentHexBadge.textContent = hex.toUpperCase();
+                }
+
+                // Update swatch circle states
+                const swatches = document.querySelectorAll('.swatch-circle');
+                let foundSwatch = false;
+                swatches.forEach(btn => {
+                    const match = (btn.dataset.color.toLowerCase() === hex.toLowerCase());
+                    btn.classList.toggle('active', match);
+                    if (match) foundSwatch = true;
+                });
+
+                const picker = document.getElementById('native-color-picker');
+                if (picker && !foundSwatch) {
+                    picker.value = hex;
+                }
+
+                updateSummaryView();
+            }
+
+            // ── User Action: Select Theme ────────────────────────────────────
+            function userSelectTheme(mode) {
+                applyThemeDOM(mode);
+
+                // Send IPC with guard
+                isMutingIPC = true;
+                if (window.electronAPI && window.electronAPI.updateSetting) {
+                    window.electronAPI.updateSetting('themeMode', mode);
+                }
+                setTimeout(() => { isMutingIPC = false; }, 250);
+            }
+
+            // ── User Action: Select Accent ───────────────────────────────────
+            function userSelectAccent(hex) {
+                if (!hex) return;
+                renderAccentColorStyles(hex);
+
+                // Send single IPC call with guard
+                isMutingIPC = true;
+                if (window.electronAPI && window.electronAPI.updateSetting) {
+                    window.electronAPI.updateSetting('accentColor', hex);
+                }
+                setTimeout(() => { isMutingIPC = false; }, 250);
+            }
+
+            // ── Step Navigation ──────────────────────────────────────────────
+            function goToStep(step) {
+                if (step < 1 || step > totalSteps) return;
+                currentStep = step;
+
+                stepContainers.forEach(c => {
+                    c.classList.remove('active');
+                    if (c.id === `step-${step}`) c.classList.add('active');
+                });
+
+                stepperPills.forEach(pill => {
+                    const s = parseInt(pill.dataset.step, 10);
+                    pill.classList.toggle('active', s === step);
+                    pill.classList.toggle('completed', s < step);
+                });
+
+                btnBack.disabled = (step === 1);
+                footerCounter.textContent = `STEP ${step} OF ${totalSteps}`;
+
+                if (step === totalSteps) {
+                    btnNext.innerHTML = `<span>Start Browsing</span> <i class="fas fa-rocket"></i>`;
+                    updateSummaryView();
+                } else if (step === 1) {
+                    btnNext.innerHTML = `<span>Get Started</span> <i class="fas fa-arrow-right"></i>`;
+                } else {
+                    btnNext.innerHTML = `<span>Continue</span> <i class="fas fa-arrow-right"></i>`;
+                }
+
+                window.scrollTo({ top: 0, behavior: 'smooth' });
+            }
+
+            // ── Summary Details (Step 7) ─────────────────────────────────────
+            function updateSummaryView() {
+                const isDark = (currentSettings.themeMode !== 'light');
+                const themeVal = document.getElementById('sum-theme-val');
+                const themeIcon = document.getElementById('sum-theme-icon');
+                if (themeVal) themeVal.textContent = isDark ? 'Dark Theme' : 'Light Theme';
+                if (themeIcon) themeIcon.className = `fas fa-${isDark ? 'moon' : 'sun'}`;
+
+                const accentVal = document.getElementById('sum-accent-val');
+                const accentIcon = document.getElementById('sum-accent-tile-icon');
+                const hex = currentSettings.accentColor || '#09F0A0';
+                if (accentVal) accentVal.textContent = hex.toUpperCase();
+                if (accentIcon) accentIcon.style.color = hex;
+
+                const tabVal = document.getElementById('sum-tab-val');
+                const isVert = (currentSettings.tabLayout === 'vertical');
+                if (tabVal) tabVal.textContent = isVert ? 'Vertical (Arc Rail)' : 'Horizontal (Classic)';
+
+                const sidebarVal = document.getElementById('sum-sidebar-val');
+                const isVis = (currentSettings.sidebarMode === 'visible');
+                if (sidebarVal) sidebarVal.textContent = isVis ? 'Dock Enabled' : 'Sidebar Hidden';
+
+                const searchVal = document.getElementById('sum-search-val');
+                const eng = (currentSettings.searchEngine || 'google');
+                const capitalized = eng.charAt(0).toUpperCase() + eng.slice(1);
+                if (searchVal) searchVal.textContent = capitalized;
+
+                const shieldsVal = document.getElementById('sum-shields-val');
+                const active = (currentSettings.adBlockEnabled !== false);
+                if (shieldsVal) shieldsVal.textContent = active ? 'All Active (4/4)' : 'Shields Disabled';
+            }
+
+            // ── Render All Settings to UI ────────────────────────────────────
+            function renderAllUI() {
+                applyThemeDOM(currentSettings.themeMode || 'dark');
+                renderAccentColorStyles(currentSettings.accentColor || '#09F0A0');
+
+                // Tab Layout
+                const isVertical = (currentSettings.tabLayout === 'vertical');
+                const cardTabH = document.getElementById('card-tab-horizontal');
+                const cardTabV = document.getElementById('card-tab-vertical');
+                if (cardTabH) cardTabH.classList.toggle('selected', !isVertical);
+                if (cardTabV) cardTabV.classList.toggle('selected', isVertical);
+
+                // Sidebar Mode
+                const isSidebarVisible = (currentSettings.sidebarMode === 'visible');
+                const cardSbVis = document.getElementById('card-sidebar-visible');
+                const cardSbHid = document.getElementById('card-sidebar-hidden');
+                if (cardSbVis) cardSbVis.classList.toggle('selected', isSidebarVisible);
+                if (cardSbHid) cardSbHid.classList.toggle('selected', !isSidebarVisible);
+
+                // Search Engine
+                const engine = currentSettings.searchEngine || 'google';
+                const seRows = document.querySelectorAll('.search-engine-row');
+                seRows.forEach(row => {
+                    const match = (row.dataset.engine === engine);
+                    row.classList.toggle('selected', match);
+                    const pill = row.querySelector('.se-status-pill');
+                    if (pill) pill.textContent = match ? 'Default' : (row.dataset.engine.includes('duck') || row.dataset.engine.includes('brave') ? 'Private' : 'Available');
+                });
+
+                // Shields
+                setToggleRowState('toggle-adblock', currentSettings.adBlockEnabled !== false);
+                setToggleRowState('toggle-fingerprint', currentSettings.fingerprintProtection !== false);
+                setToggleRowState('toggle-ai', currentSettings.aiAssistantEnabled !== false);
+                setToggleRowState('toggle-resource', currentSettings.resourceLimiterEnabled !== false);
+
+                updateSummaryView();
+            }
+
+            // ── Boot Initialization ──────────────────────────────────────────
+            async function initSettings() {
+                if (window.electronAPI && window.electronAPI.getSettings) {
+                    try {
+                        const s = await window.electronAPI.getSettings();
+                        if (s) {
+                            currentSettings = Object.assign({}, currentSettings, s);
+                        }
+                    } catch (e) {
+                        console.warn('[Onboarding] Error loading settings:', e);
+                    }
+                }
+                renderAllUI();
+                checkDefaultBrowserStatus();
+                document.body.classList.add('loaded');
+            }
+
+            // ── Event Handlers & Clicks ──────────────────────────────────────
+            btnNext.onclick = () => {
+                if (currentStep < totalSteps) {
+                    goToStep(currentStep + 1);
+                } else {
+                    finishOnboarding();
+                }
+            };
+
+            btnBack.onclick = () => {
+                if (currentStep > 1) goToStep(currentStep - 1);
+            };
+
+            btnSkipSetup.onclick = () => {
+                finishOnboarding();
+            };
+
+            stepperPills.forEach(pill => {
+                pill.onclick = () => {
+                    const s = parseInt(pill.dataset.step, 10);
+                    goToStep(s);
+                };
+            });
+
+            // Quick Theme Toggle
+            quickThemeToggle.onclick = () => {
+                const next = (currentSettings.themeMode === 'light') ? 'dark' : 'light';
+                userSelectTheme(next);
+            };
+
+            // Theme Cards click
+            const cardThemeDark = document.getElementById('card-theme-dark');
+            const cardThemeLight = document.getElementById('card-theme-light');
+            if (cardThemeDark) cardThemeDark.onclick = () => userSelectTheme('dark');
+            if (cardThemeLight) cardThemeLight.onclick = () => userSelectTheme('light');
+
+            // Swatches click
+            const swatches = document.querySelectorAll('.swatch-circle');
+            swatches.forEach(btn => {
+                btn.onclick = () => userSelectAccent(btn.dataset.color);
+            });
+
+            // Native color picker (smooth preview + debounced persistence)
+            const nativePicker = document.getElementById('native-color-picker');
+            if (nativePicker) {
+                nativePicker.oninput = (e) => {
+                    renderAccentColorStyles(e.target.value);
+                };
+                nativePicker.onchange = (e) => {
+                    userSelectAccent(e.target.value);
+                };
+            }
+
+            // Tab Layout
+            const cardTabH = document.getElementById('card-tab-horizontal');
+            const cardTabV = document.getElementById('card-tab-vertical');
+            if (cardTabH) {
+                cardTabH.onclick = () => {
+                    currentSettings.tabLayout = 'horizontal';
+                    cardTabH.classList.add('selected');
+                    if (cardTabV) cardTabV.classList.remove('selected');
+                    isMutingIPC = true;
+                    if (window.electronAPI && window.electronAPI.updateSetting) {
+                        window.electronAPI.updateSetting('tabLayout', 'horizontal');
+                    }
+                    setTimeout(() => { isMutingIPC = false; }, 100);
+                    updateSummaryView();
+                };
+            }
+            if (cardTabV) {
+                cardTabV.onclick = () => {
+                    currentSettings.tabLayout = 'vertical';
+                    cardTabV.classList.add('selected');
+                    if (cardTabH) cardTabH.classList.remove('selected');
+                    isMutingIPC = true;
+                    if (window.electronAPI && window.electronAPI.updateSetting) {
+                        window.electronAPI.updateSetting('tabLayout', 'vertical');
+                    }
+                    setTimeout(() => { isMutingIPC = false; }, 100);
+                    updateSummaryView();
+                };
+            }
+
+            // Sidebar Mode
+            const cardSbVis = document.getElementById('card-sidebar-visible');
+            const cardSbHid = document.getElementById('card-sidebar-hidden');
+            if (cardSbVis) {
+                cardSbVis.onclick = () => {
+                    currentSettings.sidebarMode = 'visible';
+                    cardSbVis.classList.add('selected');
+                    if (cardSbHid) cardSbHid.classList.remove('selected');
+                    isMutingIPC = true;
+                    if (window.electronAPI && window.electronAPI.updateSetting) {
+                        window.electronAPI.updateSetting('sidebarMode', 'visible');
+                        window.electronAPI.updateSetting('forceHideSidebar', false);
+                    }
+                    setTimeout(() => { isMutingIPC = false; }, 100);
+                    updateSummaryView();
+                };
+            }
+            if (cardSbHid) {
+                cardSbHid.onclick = () => {
+                    currentSettings.sidebarMode = 'hidden';
+                    cardSbHid.classList.add('selected');
+                    if (cardSbVis) cardSbVis.classList.remove('selected');
+                    isMutingIPC = true;
+                    if (window.electronAPI && window.electronAPI.updateSetting) {
+                        window.electronAPI.updateSetting('sidebarMode', 'hidden');
+                        window.electronAPI.updateSetting('forceHideSidebar', true);
+                    }
+                    setTimeout(() => { isMutingIPC = false; }, 100);
+                    updateSummaryView();
+                };
+            }
+
+            // Search Engines
+            const seRows = document.querySelectorAll('.search-engine-row');
+            seRows.forEach(row => {
+                row.onclick = () => {
+                    const engine = row.dataset.engine;
+                    currentSettings.searchEngine = engine;
+                    seRows.forEach(r => {
+                        const match = (r === row);
+                        r.classList.toggle('selected', match);
+                        const pill = r.querySelector('.se-status-pill');
+                        if (pill) pill.textContent = match ? 'Default' : (r.dataset.engine.includes('duck') || r.dataset.engine.includes('brave') ? 'Private' : 'Available');
+                    });
+                    isMutingIPC = true;
+                    if (window.electronAPI && window.electronAPI.updateSetting) {
+                        window.electronAPI.updateSetting('searchEngine', engine);
+                    }
+                    setTimeout(() => { isMutingIPC = false; }, 100);
+                    updateSummaryView();
+                };
+            });
+
+            // Bookmarks Import
+            const statusBox = document.getElementById('import-status-box');
+            const statusIcon = document.getElementById('import-status-icon');
+            const statusText = document.getElementById('import-status-text');
+
+            function showStatus(type, msg) {
+                statusBox.className = `status-alert-box ${type}`;
+                statusText.textContent = msg;
+                if (type === 'loading') {
+                    statusIcon.className = 'fas fa-spinner fa-spin';
+                } else if (type === 'success') {
+                    statusIcon.className = 'fas fa-circle-check';
+                } else {
+                    statusIcon.className = 'fas fa-circle-exclamation';
+                }
+            }
+
+            const btnImportChrome = document.getElementById('btn-import-chrome');
+            if (btnImportChrome) {
+                btnImportChrome.onclick = async () => {
+                    showStatus('loading', 'Importing Chrome bookmarks...');
+                    if (window.electronAPI && window.electronAPI.importBookmarks) {
+                        const res = await window.electronAPI.importBookmarks('chrome');
+                        if (res && res.success) {
+                            showStatus('success', `Import complete! Successfully imported ${res.count || 0} bookmarks.`);
+                        } else {
+                            showStatus('error', res?.error || 'Chrome bookmarks not found on this system.');
+                        }
+                    }
+                };
+            }
+
+            const btnImportEdge = document.getElementById('btn-import-edge');
+            if (btnImportEdge) {
+                btnImportEdge.onclick = async () => {
+                    showStatus('loading', 'Importing Microsoft Edge bookmarks...');
+                    if (window.electronAPI && window.electronAPI.importBookmarks) {
+                        const res = await window.electronAPI.importBookmarks('edge');
+                        if (res && res.success) {
+                            showStatus('success', `Import complete! Successfully imported ${res.count || 0} bookmarks.`);
+                        } else {
+                            showStatus('error', res?.error || 'Edge bookmarks not found on this system.');
+                        }
+                    }
+                };
+            }
+
+            const btnImportFile = document.getElementById('btn-import-file');
+            if (btnImportFile) {
+                btnImportFile.onclick = async () => {
+                    if (window.electronAPI && window.electronAPI.importBookmarkFile) {
+                        const res = await window.electronAPI.importBookmarkFile();
+                        if (res && res.success) {
+                            showStatus('success', `Import complete! Successfully imported ${res.count || 0} bookmarks.`);
+                        } else if (res && res.error !== 'Cancelled') {
+                            showStatus('error', res?.error || 'Could not parse bookmarks file.');
+                        }
+                    }
+                };
+            }
+
+            const btnSkipImport = document.getElementById('btn-skip-import');
+            if (btnSkipImport) {
+                btnSkipImport.onclick = () => goToStep(6);
+            }
+
+            // Toggles
+            function setToggleRowState(id, isActive) {
+                const el = document.getElementById(id);
+                if (el) el.classList.toggle('active', isActive);
+            }
+
+            function setupToggleRow(id, settingKey) {
+                const el = document.getElementById(id);
+                if (!el) return;
+                el.onclick = () => {
+                    const newState = !el.classList.contains('active');
+                    el.classList.toggle('active', newState);
+                    currentSettings[settingKey] = newState;
+                    isMutingIPC = true;
+                    if (window.electronAPI && window.electronAPI.updateSetting) {
+                        window.electronAPI.updateSetting(settingKey, newState);
+                    }
+                    setTimeout(() => { isMutingIPC = false; }, 100);
+                    updateSummaryView();
+                };
+            }
+
+            setupToggleRow('toggle-adblock', 'adBlockEnabled');
+            setupToggleRow('toggle-fingerprint', 'fingerprintProtection');
+            setupToggleRow('toggle-ai', 'aiAssistantEnabled');
+            setupToggleRow('toggle-resource', 'resourceLimiterEnabled');
+
+            // Default Browser
+            async function checkDefaultBrowserStatus() {
+                if (window.electronAPI && window.electronAPI.checkDefaultBrowser) {
+                    try {
+                        const isDef = await window.electronAPI.checkDefaultBrowser();
+                        const btnText = document.getElementById('btn-set-default-text');
+                        const btnDef = document.getElementById('btn-set-default');
+                        if (isDef && btnText && btnDef) {
+                            btnText.textContent = 'Default Browser';
+                            btnDef.style.background = 'var(--accent)';
+                            btnDef.style.color = 'var(--accent-text)';
+                            btnDef.disabled = true;
+                        }
+                    } catch (e) {}
+                }
+            }
+
+            const btnSetDefault = document.getElementById('btn-set-default');
+            if (btnSetDefault) {
+                btnSetDefault.onclick = async () => {
+                    if (window.electronAPI && window.electronAPI.setAsDefaultBrowser) {
+                        btnSetDefault.innerHTML = `<i class="fas fa-spinner fa-spin"></i> <span>Setting...</span>`;
+                        await window.electronAPI.setAsDefaultBrowser();
+                        setTimeout(checkDefaultBrowserStatus, 800);
+                    }
+                };
+            }
+
+            // Finish Onboarding
+            function finishOnboarding() {
+                if (window.electronAPI && window.electronAPI.updateSetting) {
+                    window.electronAPI.updateSetting('setupComplete', true);
+                }
+                if (window.electronAPI && window.electronAPI.navigateTo) {
+                    window.electronAPI.navigateTo('ocal://home');
+                } else {
+                    window.location.href = 'home.html';
+                }
+            }
+
+            // Sync from external setting updates (ONLY update UI, never re-emit!)
+            if (window.electronAPI && window.electronAPI.onSettingsChanged) {
+                window.electronAPI.onSettingsChanged((s) => {
+                    if (s && !isMutingIPC) {
+                        currentSettings = Object.assign({}, currentSettings, s);
+                        renderAllUI();
+                    }
+                });
+            }
+
+            initSettings();
+
+        })();
+    </script>
+</body>
+
+</html>

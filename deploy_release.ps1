@@ -31,7 +31,9 @@ try {
     
     if ($release) {
         $releaseId = $release.id
-        Write-Output "Existing release found. ID: $releaseId"
+        Write-Output "Existing release found. ID: $releaseId - Syncing release notes..."
+        $rawJson = [System.IO.File]::ReadAllText("release_info.json", [System.Text.Encoding]::UTF8)
+        Invoke-RestMethod -Uri "https://api.github.com/repos/$owner/$repo/releases/$releaseId" -Method Patch -Headers $headers -Body $rawJson -ContentType "application/json; charset=utf-8" | Out-Null
         # Fetch full release data to get all assets
         $release = Invoke-RestMethod -Uri "https://api.github.com/repos/$owner/$repo/releases/$releaseId" -Method Get -Headers $headers
     } else {
@@ -47,7 +49,11 @@ try {
         "dist-inno/Ocal-$version-Setup.exe"
     )
 
-    $storeFiles = Get-ChildItem "dist-store\*.appx", "dist-store\*.msix", "dist-store\*.exe" -ErrorAction SilentlyContinue
+    if (Test-Path "GamingNetworkStudioMediaGroup.cer") {
+        $artifacts += "GamingNetworkStudioMediaGroup.cer"
+    }
+
+    $storeFiles = Get-ChildItem "dist-store\*$version*.appx", "dist-store\*$version*.msix", "dist-store\Ocal-MSIX-Setup.exe" -ErrorAction SilentlyContinue
     if ($storeFiles) {
         foreach ($sf in $storeFiles) {
             $artifacts += $sf.FullName

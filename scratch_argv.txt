@@ -1,0 +1,5 @@
+[
+  "C:\\Project\\Gaming Network\\Software\\Brower\\node_modules\\electron\\dist\\electron.exe",
+  "scratch_test.js",
+  "--installer"
+]

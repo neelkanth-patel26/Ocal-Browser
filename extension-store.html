@@ -3,6 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="Content-Security-Policy" content="default-src 'self' ocal:; script-src 'self' 'unsafe-inline' https://cdnjs.cloudflare.com https://unpkg.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com https://cdnjs.cloudflare.com https://cdn.jsdelivr.net; font-src 'self' https://fonts.gstatic.com https://cdnjs.cloudflare.com https://cdn.jsdelivr.net; img-src 'self' data: https: http: chrome-extension: blob:; connect-src 'self' https: wss: http: blob:;">
     <title>Ocal Web Store — Extensions & Add-ons</title>
     <!-- ANTI-FLASH & AI COLOR HARMONIZER: must be FIRST in head, before any stylesheet -->
     <script src="color-harmonizer.js"></script>
@@ -54,6 +55,19 @@
             --store-text-dim: #64748B;
             --store-input-bg: #141418;
             --store-input-border: rgba(255, 255, 255, 0.08);
+        }
+
+        html[data-theme-combo],
+        body[data-theme-combo] {
+            --store-bg: var(--background);
+            --store-card-bg: var(--surface);
+            --store-card-border: var(--border, rgba(255, 255, 255, 0.08));
+            --store-text: var(--text);
+            --store-text-muted: var(--text-dim, #9CA3AF);
+            --store-text-dim: var(--text-dim, #64748B);
+            --store-input-bg: var(--chrome, #141418);
+            --store-input-border: var(--border, rgba(255, 255, 255, 0.08));
+            --accent: var(--accent);
         }
 
         /* ── Absolute Strict Rules: Zero Gradients, Zero Shadows ── */

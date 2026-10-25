@@ -7,6 +7,7 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="assets/fontawesome/css/all.min.css">
+    <script src="color-harmonizer.js"></script>
     <style>
         :root {
             --background: #16181D;
@@ -36,6 +37,16 @@
             --text-dim: #A1A1AA;
             --hover: #2E2E33;
             --border: rgba(255, 255, 255, 0.08);
+        }
+
+        body[data-theme-combo], html[data-theme-combo] {
+            --background: var(--chrome, #222226);
+            --foreground: var(--text, #F4F4F5);
+            --text: var(--text, #F4F4F5);
+            --text-dim: var(--text-dim, #A1A1AA);
+            --hover: var(--surface, #2E2E33);
+            --border: var(--border, rgba(255, 255, 255, 0.1));
+            --accent: var(--accent);
         }
 
         body {

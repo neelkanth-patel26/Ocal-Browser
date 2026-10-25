@@ -1,5 +1,5 @@
 #define MyAppName "Ocal Browser"
-#define MyAppVersion "9.8.9"
+#define MyAppVersion "10.0.01"
 #define MyAppPublisher "Gaming Network Studio"
 #define MyAppURL "https://github.com/neelkanth-patel26/Ocal-Browser"
 

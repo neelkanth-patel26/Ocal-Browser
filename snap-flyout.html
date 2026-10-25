@@ -1,0 +1,286 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            user-select: none;
+            -webkit-user-select: none;
+        }
+
+        html, body {
+            width: 100%;
+            height: 100%;
+            overflow: hidden;
+            background: transparent !important;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+        }
+
+        .flyout-wrap {
+            width: 100%;
+            height: 100%;
+            padding: 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-sizing: border-box;
+        }
+
+        .win11-snap-card {
+            background: rgba(28, 29, 36, 0.96);
+            backdrop-filter: blur(28px) saturate(190%);
+            -webkit-backdrop-filter: blur(28px) saturate(190%);
+            border: 1px solid rgba(255, 255, 255, 0.16);
+            border-radius: 8px;
+            padding: 7px 9px 8px;
+            box-shadow: none !important;
+            width: 100%;
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            box-sizing: border-box;
+            animation: snapIn 0.12s cubic-bezier(0.1, 0.9, 0.2, 1);
+        }
+
+        @keyframes snapIn {
+            from { opacity: 0; transform: scale(0.97) translateY(-3px); }
+            to { opacity: 1; transform: scale(1) translateY(0); }
+        }
+
+        body.light-mode .win11-snap-card {
+            background: rgba(246, 246, 250, 0.97);
+            border-color: rgba(0, 0, 0, 0.16);
+            box-shadow: none !important;
+        }
+
+        .snap-header {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            font-size: 9.5px;
+            font-weight: 700;
+            letter-spacing: 0.6px;
+            color: #94a3b8;
+            text-transform: uppercase;
+            opacity: 0.9;
+            margin-bottom: 5px;
+        }
+
+        body.light-mode .snap-header {
+            color: #64748b;
+        }
+
+        .snap-grid {
+            display: flex;
+            align-items: center;
+            gap: 6.5px;
+            flex: 1;
+        }
+
+        .snap-layout-card {
+            flex: 1;
+            height: 48px;
+            background: rgba(0, 0, 0, 0.32);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            border-radius: 5px;
+            padding: 2.5px;
+            display: flex;
+            gap: 2.5px;
+            box-sizing: border-box;
+            transition: border-color 0.15s ease, background 0.15s ease;
+        }
+
+        body.light-mode .snap-layout-card {
+            background: rgba(0, 0, 0, 0.04);
+            border-color: rgba(0, 0, 0, 0.08);
+        }
+
+        .snap-layout-card:hover {
+            border-color: rgba(255, 255, 255, 0.25);
+        }
+
+        body.light-mode .snap-layout-card:hover {
+            border-color: rgba(0, 0, 0, 0.22);
+        }
+
+        .snap-zone {
+            background: rgba(255, 255, 255, 0.14);
+            border-radius: 2.5px;
+            transition: background 0.12s ease, box-shadow 0.12s ease, border-color 0.12s ease;
+            flex: 1;
+            cursor: pointer;
+            border: 1px solid transparent;
+        }
+
+        body.light-mode .snap-zone {
+            background: rgba(0, 0, 0, 0.08);
+        }
+
+        .snap-zone:hover {
+            background: #0078d4 !important;
+            border-color: rgba(255, 255, 255, 0.5);
+            box-shadow: none !important;
+        }
+
+        body.private-mode .snap-zone:hover {
+            background: #8b5cf6 !important;
+            border-color: rgba(255, 255, 255, 0.5);
+            box-shadow: none !important;
+        }
+
+        .layout-67-33 .snap-zone:first-child { flex: 2; }
+        .layout-67-33 .snap-zone:last-child { flex: 1; }
+        .layout-three .snap-zone { flex: 1; }
+
+        .layout-quad {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            grid-template-rows: 1fr 1fr;
+            gap: 2.5px;
+        }
+        .layout-quad .snap-zone {
+            width: 100%;
+            height: 100%;
+        }
+    </style>
+</head>
+<body>
+    <div class="flyout-wrap">
+        <div class="win11-snap-card">
+            <div class="snap-header">
+                <div style="display: flex; align-items: center; gap: 5px;">
+                    <svg width="10" height="10" viewBox="0 0 16 16" fill="currentColor">
+                        <path d="M0 2a2 2 0 0 1 2-2h12a2 2 0 0 1 2 2v12a2 2 0 0 1-2 2H2a2 2 0 0 1-2-2V2zm1 2v10a1 1 0 0 0 1 1h5V4H1zm7 0v11h6a1 1 0 0 0 1-1V4H8zm-7-1h14V2a1 1 0 0 0-1-1H2a1 1 0 0 0-1 1v1z"/>
+                    </svg>
+                    <span>Snap Layouts</span>
+                </div>
+                <span style="margin-left: auto; font-size: 8px; font-weight: 600; opacity: 0.85; text-transform: uppercase; letter-spacing: 0.4px; color: var(--accent, #0078d4); display: flex; align-items: center; gap: 3px;">
+                    <span style="display: inline-block; width: 4px; height: 4px; border-radius: 50%; background: #10b981;"></span>
+                    Multi-App Tile
+                </span>
+            </div>
+            <div class="snap-grid">
+                <!-- Layout 1: 50 / 50 -->
+                <div class="snap-layout-card" title="Snap 50/50: Tiles Ocal Browser and resizes other open application side-by-side">
+                    <div class="snap-zone" data-zone="left-half" title="Left Half (Tiles other app to Right Half)"></div>
+                    <div class="snap-zone" data-zone="right-half" title="Right Half (Tiles other app to Left Half)"></div>
+                </div>
+
+                <!-- Layout 2: 67 / 33 -->
+                <div class="snap-layout-card layout-67-33" title="Snap 67/33: Priority split for Ocal Browser and other open app">
+                    <div class="snap-zone" data-zone="left-two-thirds" title="Two-Thirds Left (Tiles other app to Right 33%)"></div>
+                    <div class="snap-zone" data-zone="right-one-third" title="One-Third Right (Tiles other app to Left 67%)"></div>
+                </div>
+
+                <!-- Layout 3: 3 Columns -->
+                <div class="snap-layout-card layout-three" title="Snap 3-Columns: Tiles Ocal Browser and resizes other open desktop apps across 3 columns">
+                    <div class="snap-zone" data-zone="three-left" title="Left Column (Tiles other apps across Center & Right)"></div>
+                    <div class="snap-zone" data-zone="three-center" title="Center Column (Tiles other apps Left & Right)"></div>
+                    <div class="snap-zone" data-zone="three-right" title="Right Column (Tiles other apps across Left & Center)"></div>
+                </div>
+
+                <!-- Layout 4: 4 Quadrants -->
+                <div class="snap-layout-card layout-quad" title="Snap 4 Quadrants: Tiles Ocal Browser and resizes other apps into 2x2 grid">
+                    <div class="snap-zone" data-zone="top-left" title="Top-Left Quadrant"></div>
+                    <div class="snap-zone" data-zone="top-right" title="Top-Right Quadrant"></div>
+                    <div class="snap-zone" data-zone="bottom-left" title="Bottom-Left Quadrant"></div>
+                    <div class="snap-zone" data-zone="bottom-right" title="Bottom-Right Quadrant"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        function cancelHide() {
+            if (window.electronAPI && typeof window.electronAPI.cancelHideSnapFlyout === 'function') {
+                window.electronAPI.cancelHideSnapFlyout();
+            } else if (window.electronAPI && typeof window.electronAPI.send === 'function') {
+                window.electronAPI.send('cancel-hide-snap-flyout');
+            }
+        }
+
+        function requestHide(delay = 400) {
+            if (window.electronAPI && typeof window.electronAPI.hideSnapFlyout === 'function') {
+                window.electronAPI.hideSnapFlyout(delay);
+            } else if (window.electronAPI && typeof window.electronAPI.send === 'function') {
+                window.electronAPI.send('hide-snap-flyout', delay);
+            }
+        }
+
+        // Cancel hide immediately on any mouse presence over the flyout window
+        document.addEventListener('mouseenter', cancelHide, true);
+        document.addEventListener('mouseover', cancelHide, true);
+        document.addEventListener('mousemove', cancelHide, true);
+        document.addEventListener('pointerenter', cancelHide, true);
+        document.addEventListener('pointermove', cancelHide, true);
+
+        // Hide when mouse genuinely departs the window
+        document.addEventListener('mouseleave', (e) => {
+            if (!e.relatedTarget && e.clientY !== undefined) {
+                requestHide(350);
+            }
+        });
+
+        document.querySelectorAll('.snap-zone').forEach(zone => {
+            const zoneType = zone.getAttribute('data-zone');
+
+            zone.addEventListener('mouseenter', () => {
+                if (zoneType && window.electronAPI) {
+                    if (typeof window.electronAPI.showSnapPreview === 'function') {
+                        window.electronAPI.showSnapPreview(zoneType);
+                    } else if (typeof window.electronAPI.send === 'function') {
+                        window.electronAPI.send('show-snap-preview', zoneType);
+                    }
+                }
+            });
+
+            zone.addEventListener('mouseleave', () => {
+                if (window.electronAPI) {
+                    if (typeof window.electronAPI.hideSnapPreview === 'function') {
+                        window.electronAPI.hideSnapPreview();
+                    } else if (typeof window.electronAPI.send === 'function') {
+                        window.electronAPI.send('hide-snap-preview');
+                    }
+                }
+            });
+
+            zone.addEventListener('click', (e) => {
+                e.stopPropagation();
+                if (zoneType && window.electronAPI) {
+                    if (typeof window.electronAPI.snapWindow === 'function') {
+                        window.electronAPI.snapWindow(zoneType);
+                    } else if (typeof window.electronAPI.send === 'function') {
+                        window.electronAPI.send('snap-window', zoneType);
+                    }
+                }
+            });
+        });
+
+        window.addEventListener('keydown', (e) => {
+            if (e.key === 'Escape') {
+                requestHide(0);
+            }
+        });
+
+        if (window.electronAPI && typeof window.electronAPI.on === 'function') {
+            window.electronAPI.on('set-theme', (e, data) => {
+                if (data && data.themeMode === 'light') {
+                    document.body.classList.add('light-mode');
+                } else {
+                    document.body.classList.remove('light-mode');
+                }
+                if (data && data.isPrivate) {
+                    document.body.classList.add('private-mode');
+                } else {
+                    document.body.classList.remove('private-mode');
+                }
+            });
+        }
+    </script>
+</body>
+</html>

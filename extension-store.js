@@ -186,7 +186,7 @@
             name: 'uBlock Origin',
             author: 'Raymond Hill',
             verified: true,
-            version: '1.60.0',
+            version: '1.75.0',
             rating: 4.9,
             reviews: '28,450',
             users: '30,000,000+',
@@ -246,7 +246,7 @@
             name: 'Return YouTube Dislike',
             author: 'returnyoutubedislike.com',
             verified: true,
-            version: '4.0.4',
+            version: '4.0.6',
             rating: 4.9,
             reviews: '18,200',
             users: '4,000,000+',
@@ -1567,22 +1567,55 @@
                 }
 
                 if (btnInstallGrabbed) {
-                    const isInst = installedIds.has(data.id.toLowerCase()) || data.isInstalled;
-                    btnInstallGrabbed.className = isInst ? 'btn-direct-submit installed' : 'btn-direct-submit';
-                    btnInstallGrabbed.innerHTML = isInst ? '<i class="fas fa-check"></i> <span>Installed</span>' : '<i class="fas fa-plus"></i> <span>Install to Ocal</span>';
-                    btnInstallGrabbed.onclick = () => {
-                        if (!installedIds.has(data.id.toLowerCase())) {
-                            installExtension(data.id, btnInstallGrabbed);
-                        } else {
-                            showToast(`${data.name} is already installed.`);
-                        }
-                    };
+                    if (data.isTheme) {
+                        btnInstallGrabbed.className = 'btn-direct-submit disabled';
+                        btnInstallGrabbed.disabled = true;
+                        btnInstallGrabbed.style.background = 'rgba(245, 158, 11, 0.15)';
+                        btnInstallGrabbed.style.color = '#f59e0b';
+                        btnInstallGrabbed.style.borderColor = 'rgba(245, 158, 11, 0.3)';
+                        btnInstallGrabbed.style.cursor = 'not-allowed';
+                        btnInstallGrabbed.innerHTML = '<i class="fas fa-ban"></i> <span>Theme Unsupported</span>';
+                        btnInstallGrabbed.onclick = () => {
+                            showToast('Chrome Themes cannot be installed. Use Settings > Appearance to customize themes.', true);
+                        };
+                    } else if (data.isApp) {
+                        btnInstallGrabbed.className = 'btn-direct-submit disabled';
+                        btnInstallGrabbed.disabled = true;
+                        btnInstallGrabbed.style.background = 'rgba(239, 68, 68, 0.15)';
+                        btnInstallGrabbed.style.color = '#ef4444';
+                        btnInstallGrabbed.style.borderColor = 'rgba(239, 68, 68, 0.3)';
+                        btnInstallGrabbed.style.cursor = 'not-allowed';
+                        btnInstallGrabbed.innerHTML = '<i class="fas fa-ban"></i> <span>App Incompatible</span>';
+                        btnInstallGrabbed.onclick = () => {
+                            showToast('Legacy Chrome Apps are not supported. Only Chrome Extensions can be installed.', true);
+                        };
+                    } else {
+                        const isInst = installedIds.has(data.id.toLowerCase()) || data.isInstalled;
+                        btnInstallGrabbed.className = isInst ? 'btn-direct-submit installed' : 'btn-direct-submit';
+                        btnInstallGrabbed.disabled = false;
+                        btnInstallGrabbed.style.background = '';
+                        btnInstallGrabbed.style.color = '';
+                        btnInstallGrabbed.style.borderColor = '';
+                        btnInstallGrabbed.style.cursor = 'pointer';
+                        btnInstallGrabbed.innerHTML = isInst ? '<i class="fas fa-check"></i> <span>Installed</span>' : '<i class="fas fa-plus"></i> <span>Install to Ocal</span>';
+                        btnInstallGrabbed.onclick = () => {
+                            if (!installedIds.has(data.id.toLowerCase())) {
+                                installExtension(data.id, btnInstallGrabbed);
+                            } else {
+                                showToast(`${data.name} is already installed.`);
+                            }
+                        };
+                    }
                 }
 
                 grabbedCard.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
             }
 
-            showToast(`✓ Retrieved live data for "${data.name}" from Google!`);
+            if (data.isTheme) {
+                showToast(`⚠ "${data.name}" is a Theme. Themes cannot be installed as extensions.`, true);
+            } else {
+                showToast(`✓ Retrieved live data for "${data.name}" from Google!`);
+            }
             return data;
         } catch (err) {
             console.error('Error grabbing extension data:', err);
@@ -1604,6 +1637,10 @@
                 directInput.focus();
                 return;
             }
+            if (raw.toLowerCase().includes('/category/themes') || raw.toLowerCase().includes('/theme/')) {
+                showToast('⚠ Chrome Themes cannot be installed. Customize themes in Settings > Appearance.', true);
+                return;
+            }
             grabExtensionData(raw, btnGrabData);
         };
     }
@@ -1612,6 +1649,10 @@
         directInput.addEventListener('paste', () => {
             setTimeout(() => {
                 const val = directInput.value.trim();
+                if (val.toLowerCase().includes('/category/themes') || val.toLowerCase().includes('/theme/')) {
+                    showToast('⚠ Chrome Themes cannot be installed. Use Settings > Appearance.', true);
+                    return;
+                }
                 const match = val.match(/([a-p]{32})/i);
                 if (match) {
                     grabExtensionData(match[1]);
@@ -1625,6 +1666,10 @@
         const triggerDirect = () => {
             const raw = directInput.value.trim();
             if (!raw) return;
+            if (raw.toLowerCase().includes('/category/themes') || raw.toLowerCase().includes('/theme/')) {
+                showToast('⚠ Chrome Themes cannot be installed. Themes are excluded.', true);
+                return;
+            }
             const match = raw.match(/([a-p]{32})/i);
             const id = match ? match[1].toLowerCase() : raw;
             installExtension(id, directBtn);

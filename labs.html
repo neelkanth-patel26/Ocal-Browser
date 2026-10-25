@@ -3,6 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="Content-Security-Policy" content="default-src 'self' ocal:; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com data:; img-src 'self' data: https: blob:; connect-src 'self';">
     <title>Ocal Labs - Power-Ups</title>
     <link rel="stylesheet" href="assets/fontawesome/css/all.min.css">
     <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
@@ -44,7 +45,7 @@
         }
 
         body[data-theme="light"] { background: #ffffff !important; }
-        body[data-theme="light"] h1 { background: linear-gradient(135deg, #000 0%, var(--accent) 100%); -webkit-background-clip: text; }
+        body[data-theme="light"] h1 { background: linear-gradient(135deg, #000 0%, var(--accent) 100%); -webkit-background-clip: text; background-clip: text; }
         body[data-theme="light"] .lab-card { background: #ffffff !important; border-color: rgba(0,0,0,0.1) !important; box-shadow: 0 4px 20px rgba(0,0,0,0.03) !important; }
         body[data-theme="light"] .lab-card:hover { border-color: var(--accent) !important; box-shadow: 0 10px 40px rgba(0,0,0,0.06) !important; background: #fcfcfc !important; }
         body[data-theme="light"] .lab-icon { background: #f3f4f6 !important; border: 1px solid rgba(0,0,0,0.05); }

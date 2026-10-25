@@ -246,6 +246,41 @@
         onSignInChanged: createEventObject()
     };
 
+    // ── chrome.contextMenus & chrome.menus API (Missing in Electron) ───────────
+    const createContextMenuShim = () => ({
+        create: function (createProperties, cb) { if (typeof cb === 'function') cb(); return 'menu_item_id'; },
+        update: function (id, updateProperties, cb) { if (typeof cb === 'function') cb(); return Promise.resolve(); },
+        remove: function (menuItemId, cb) { if (typeof cb === 'function') cb(); return Promise.resolve(); },
+        removeAll: function (cb) { if (typeof cb === 'function') cb(); return Promise.resolve(); },
+        onClicked: createEventObject(),
+        ACTION_MENU_TOP_LEVEL_LIMIT: 6
+    });
+    if (!chrome.contextMenus) chrome.contextMenus = createContextMenuShim();
+    if (!chrome.menus) chrome.menus = chrome.contextMenus;
+
+    // ── chrome.notifications API ──────────────────────────────────────────────
+    if (!chrome.notifications) {
+        chrome.notifications = {
+            create: function (notificationId, options, cb) { if (typeof cb === 'function') cb(notificationId || 'id'); return Promise.resolve(notificationId || 'id'); },
+            update: function (notificationId, options, cb) { if (typeof cb === 'function') cb(true); return Promise.resolve(true); },
+            clear: function (notificationId, cb) { if (typeof cb === 'function') cb(true); return Promise.resolve(true); },
+            getAll: function (cb) { if (typeof cb === 'function') cb({}); return Promise.resolve({}); },
+            getPermissionLevel: function (cb) { if (typeof cb === 'function') cb('granted'); return Promise.resolve('granted'); },
+            onClicked: createEventObject(),
+            onButtonClicked: createEventObject(),
+            onClosed: createEventObject()
+        };
+    }
+
+    // ── chrome.alarms API ─────────────────────────────────────────────────────
+    if (!chrome.alarms) chrome.alarms = {};
+    if (!chrome.alarms.get) chrome.alarms.get = function(name, cb) { const callback = typeof name === 'function' ? name : cb; if (typeof callback === 'function') setTimeout(() => callback(null), 0); return Promise.resolve(null); };
+    if (!chrome.alarms.getAll) chrome.alarms.getAll = function(cb) { if (typeof cb === 'function') setTimeout(() => cb([]), 0); return Promise.resolve([]); };
+    if (!chrome.alarms.clear) chrome.alarms.clear = function(name, cb) { const callback = typeof name === 'function' ? name : cb; if (typeof callback === 'function') setTimeout(() => callback(true), 0); return Promise.resolve(true); };
+    if (!chrome.alarms.clearAll) chrome.alarms.clearAll = function(cb) { if (typeof cb === 'function') setTimeout(() => cb(true), 0); return Promise.resolve(true); };
+    if (!chrome.alarms.create) chrome.alarms.create = function() {};
+    if (!chrome.alarms.onAlarm) chrome.alarms.onAlarm = createEventObject();
+
     // ── 4. chrome.scripting API (MV3 Script Injection) ────────────────────────
     if (!chrome.scripting) {
         chrome.scripting = {
@@ -498,15 +533,297 @@
         };
     }
 
+    // ── 16. chrome.declarativeNetRequest API (MV3 Rule & Adblock Engine) ──────
+    if (!chrome.declarativeNetRequest) chrome.declarativeNetRequest = {};
+    const dnr = chrome.declarativeNetRequest;
+    dnr.RuleActionType = {
+        BLOCK: 'block',
+        REDIRECT: 'redirect',
+        ALLOW: 'allow',
+        UPGRADE_SCHEME: 'upgradeScheme',
+        MODIFY_HEADERS: 'modifyHeaders',
+        ALLOW_ALL_REQUESTS: 'allowAllRequests'
+    };
+    dnr.HeaderOperation = { APPEND: 'append', SET: 'set', REMOVE: 'remove' };
+    dnr.ResourceType = {
+        MAIN_FRAME: 'main_frame',
+        SUB_FRAME: 'sub_frame',
+        STYLESHEET: 'stylesheet',
+        SCRIPT: 'script',
+        IMAGE: 'image',
+        FONT: 'font',
+        OBJECT: 'object',
+        XMLHTTPREQUEST: 'xmlhttprequest',
+        PING: 'ping',
+        CSP_REPORT: 'csp_report',
+        MEDIA: 'media',
+        WEBSOCKET: 'websocket',
+        WEBTRANSPORT: 'webtransport',
+        WEBBUNDLE: 'webbundle',
+        OTHER: 'other'
+    };
+    dnr.DomainType = { FIRST_PARTY: 'firstParty', THIRD_PARTY: 'thirdParty' };
+    dnr.DYNAMIC_RULE_LIMIT = 30000;
+    dnr.SESSION_RULE_LIMIT = 5000;
+    dnr.MAX_NUMBER_OF_DYNAMIC_AND_SESSION_RULES = 30000;
+
+    if (!dnr.onRuleMatchedDebug) dnr.onRuleMatchedDebug = createEventObject();
+    if (!dnr.updateDynamicRules) {
+        dnr.updateDynamicRules = function (options, cb) {
+            if (typeof cb === 'function') setTimeout(() => cb(), 0);
+            return Promise.resolve();
+        };
+    }
+    if (!dnr.getDynamicRules) {
+        dnr.getDynamicRules = function (cb) {
+            if (typeof cb === 'function') setTimeout(() => cb([]), 0);
+            return Promise.resolve([]);
+        };
+    }
+    if (!dnr.updateSessionRules) {
+        dnr.updateSessionRules = function (options, cb) {
+            if (typeof cb === 'function') setTimeout(() => cb(), 0);
+            return Promise.resolve();
+        };
+    }
+    if (!dnr.getSessionRules) {
+        dnr.getSessionRules = function (cb) {
+            if (typeof cb === 'function') setTimeout(() => cb([]), 0);
+            return Promise.resolve([]);
+        };
+    }
+    if (!dnr.updateEnabledRulesets) {
+        dnr.updateEnabledRulesets = function (options, cb) {
+            if (typeof cb === 'function') setTimeout(() => cb(), 0);
+            return Promise.resolve();
+        };
+    }
+    if (!dnr.getEnabledRulesets) {
+        dnr.getEnabledRulesets = function (cb) {
+            if (typeof cb === 'function') setTimeout(() => cb([]), 0);
+            return Promise.resolve([]);
+        };
+    }
+    if (!dnr.getMatchedStyles) {
+        dnr.getMatchedStyles = function (options, cb) {
+            if (typeof cb === 'function') setTimeout(() => cb([]), 0);
+            return Promise.resolve([]);
+        };
+    }
+    if (!dnr.setExtensionActionOptions) {
+        dnr.setExtensionActionOptions = function (options, cb) {
+            if (typeof cb === 'function') setTimeout(() => cb(), 0);
+            return Promise.resolve();
+        };
+    }
+    if (!dnr.isRegexSupported) {
+        dnr.isRegexSupported = function (regexOptions, cb) {
+            const res = { isSupported: true };
+            if (typeof cb === 'function') setTimeout(() => cb(res), 0);
+            return Promise.resolve(res);
+        };
+    }
+    if (!dnr.testMatchOutcome) {
+        dnr.testMatchOutcome = function (request, cb) {
+            const res = { matchedRules: [] };
+            if (typeof cb === 'function') setTimeout(() => cb(res), 0);
+            return Promise.resolve(res);
+        };
+    }
+
+    // ── 17. chrome.sidePanel API (MV3 Side Panels) ───────────────────────────
+    if (!chrome.sidePanel) {
+        chrome.sidePanel = {
+            setOptions: function (options, cb) {
+                if (typeof cb === 'function') setTimeout(() => cb(), 0);
+                return Promise.resolve();
+            },
+            getOptions: function (options, cb) {
+                const res = { enabled: true };
+                if (typeof cb === 'function') setTimeout(() => cb(res), 0);
+                return Promise.resolve(res);
+            },
+            setPanelBehavior: function (behavior, cb) {
+                if (typeof cb === 'function') setTimeout(() => cb(), 0);
+                return Promise.resolve();
+            },
+            getPanelBehavior: function (cb) {
+                const res = { openPanelOnActionClick: true };
+                if (typeof cb === 'function') setTimeout(() => cb(res), 0);
+                return Promise.resolve(res);
+            },
+            open: function (options, cb) {
+                if (typeof cb === 'function') setTimeout(() => cb(), 0);
+                return Promise.resolve();
+            }
+        };
+    }
+
+    // ── 18. chrome.offscreen API (MV3 Audio & DOM Workers) ───────────────────
+    if (!chrome.offscreen) {
+        chrome.offscreen = {
+            Reason: {
+                TESTING: 'TESTING',
+                AUDIO_PLAYBACK: 'AUDIO_PLAYBACK',
+                IFRAME_SCRIPTING: 'IFRAME_SCRIPTING',
+                DOM_SCRAPING: 'DOM_SCRAPING',
+                BLOBS: 'BLOBS',
+                DOM_PARSER: 'DOM_PARSER',
+                USER_MEDIA: 'USER_MEDIA',
+                DISPLAY_MEDIA: 'DISPLAY_MEDIA',
+                WEB_RTC: 'WEB_RTC',
+                CLIPBOARD: 'CLIPBOARD',
+                LOCAL_STORAGE: 'LOCAL_STORAGE',
+                WORKERS: 'WORKERS',
+                BATTERY_STATUS: 'BATTERY_STATUS',
+                MATCH_MEDIA: 'MATCH_MEDIA',
+                GEOLOCATION: 'GEOLOCATION'
+            },
+            createDocument: function (parameters, cb) {
+                if (typeof cb === 'function') setTimeout(() => cb(), 0);
+                return Promise.resolve();
+            },
+            closeDocument: function (cb) {
+                if (typeof cb === 'function') setTimeout(() => cb(), 0);
+                return Promise.resolve();
+            },
+            hasDocument: function (cb) {
+                if (typeof cb === 'function') setTimeout(() => cb(false), 0);
+                return Promise.resolve(false);
+            }
+        };
+    }
+
+    // ── 19. chrome.cookies API ────────────────────────────────────────────────
+    if (!chrome.cookies) {
+        chrome.cookies = {
+            onChanged: createEventObject(),
+            get: function (details, cb) {
+                if (typeof cb === 'function') setTimeout(() => cb(null), 0);
+                return Promise.resolve(null);
+            },
+            getAll: function (details, cb) {
+                if (typeof cb === 'function') setTimeout(() => cb([]), 0);
+                return Promise.resolve([]);
+            },
+            set: function (details, cb) {
+                if (typeof cb === 'function') setTimeout(() => cb(null), 0);
+                return Promise.resolve(null);
+            },
+            remove: function (details, cb) {
+                if (typeof cb === 'function') setTimeout(() => cb(null), 0);
+                return Promise.resolve(null);
+            },
+            getAllCookieStores: function (cb) {
+                const stores = [{ id: '0', tabIds: [] }];
+                if (typeof cb === 'function') setTimeout(() => cb(stores), 0);
+                return Promise.resolve(stores);
+            }
+        };
+    }
+
+    // ── 20. chrome.downloads API ──────────────────────────────────────────────
+    if (!chrome.downloads) {
+        chrome.downloads = {
+            onCreated: createEventObject(),
+            onErased: createEventObject(),
+            onChanged: createEventObject(),
+            download: function (options, cb) {
+                const id = Math.floor(Math.random() * 1000000);
+                if (typeof cb === 'function') setTimeout(() => cb(id), 0);
+                return Promise.resolve(id);
+            },
+            search: function (query, cb) {
+                if (typeof cb === 'function') setTimeout(() => cb([]), 0);
+                return Promise.resolve([]);
+            },
+            pause: function (downloadId, cb) {
+                if (typeof cb === 'function') setTimeout(() => cb(), 0);
+                return Promise.resolve();
+            },
+            resume: function (downloadId, cb) {
+                if (typeof cb === 'function') setTimeout(() => cb(), 0);
+                return Promise.resolve();
+            },
+            cancel: function (downloadId, cb) {
+                if (typeof cb === 'function') setTimeout(() => cb(), 0);
+                return Promise.resolve();
+            },
+            open: function (downloadId) {},
+            show: function (downloadId) {},
+            erase: function (query, cb) {
+                if (typeof cb === 'function') setTimeout(() => cb([]), 0);
+                return Promise.resolve([]);
+            }
+        };
+    }
+
+    // ── 21. chrome.omnibox API ────────────────────────────────────────────────
+    if (!chrome.omnibox) {
+        chrome.omnibox = {
+            onInputStarted: createEventObject(),
+            onInputChanged: createEventObject(),
+            onInputEntered: createEventObject(),
+            onInputCancelled: createEventObject(),
+            setDefaultSuggestion: function (suggestion) {}
+        };
+    }
+
+    // ── 22. chrome.i18n Safe Fallbacks ────────────────────────────────────────
+    if (!chrome.i18n) chrome.i18n = {};
+    if (!chrome.i18n.getMessage) {
+        chrome.i18n.getMessage = function (messageName, substitutions) {
+            return messageName || '';
+        };
+    } else {
+        const origGetMessage = chrome.i18n.getMessage.bind(chrome.i18n);
+        chrome.i18n.getMessage = function (messageName, substitutions) {
+            try {
+                const res = origGetMessage(messageName, substitutions);
+                return res || messageName || '';
+            } catch (e) {
+                return messageName || '';
+            }
+        };
+    }
+    if (!chrome.i18n.getUILanguage) {
+        chrome.i18n.getUILanguage = function () { return 'en-US'; };
+    }
+    if (!chrome.i18n.getAcceptLanguages) {
+        chrome.i18n.getAcceptLanguages = function (cb) {
+            const langs = ['en-US', 'en'];
+            if (typeof cb === 'function') setTimeout(() => cb(langs), 0);
+            return Promise.resolve(langs);
+        };
+    }
+
     // Sync global browser with chrome if in webext environment
     if (typeof g.browser === 'undefined') {
         try { g.browser = g.chrome; } catch (e) {}
     } else if (g.browser && typeof g.browser === 'object') {
+        if (!g.browser.action) g.browser.action = chrome.action;
+        else {
+            for (const k in shimAction) {
+                if (typeof g.browser.action[k] === 'undefined') g.browser.action[k] = shimAction[k];
+            }
+        }
+        if (!g.browser.browserAction) g.browser.browserAction = chrome.browserAction || chrome.action;
+        else {
+            for (const k in shimAction) {
+                if (typeof g.browser.browserAction[k] === 'undefined') g.browser.browserAction[k] = shimAction[k];
+            }
+        }
         if (!g.browser.webNavigation) g.browser.webNavigation = chrome.webNavigation;
         else {
             navEvents.forEach(evt => {
                 if (!g.browser.webNavigation[evt]) g.browser.webNavigation[evt] = chrome.webNavigation[evt];
             });
         }
+        if (!g.browser.declarativeNetRequest) g.browser.declarativeNetRequest = chrome.declarativeNetRequest;
+        if (!g.browser.sidePanel) g.browser.sidePanel = chrome.sidePanel;
+        if (!g.browser.contextMenus) g.browser.contextMenus = chrome.contextMenus;
+        if (!g.browser.menus) g.browser.menus = chrome.menus;
+        if (!g.browser.notifications) g.browser.notifications = chrome.notifications;
+        if (!g.browser.alarms) g.browser.alarms = chrome.alarms;
     }
 })();

@@ -33,6 +33,16 @@
     }
 
     function rgbToHsl(r, g, b) {
+        if (typeof r === 'string') {
+            const parsed = hexToRgb(r);
+            r = parsed.r; g = parsed.g; b = parsed.b;
+        } else if (typeof r === 'object' && r !== null) {
+            g = r.g; b = r.b; r = r.r;
+        }
+        r = Number(r) || 0;
+        g = Number(g) || 0;
+        b = Number(b) || 0;
+
         r /= 255; g /= 255; b /= 255;
         const max = Math.max(r, g, b), min = Math.min(r, g, b);
         let h = 0, s = 0;
@@ -48,7 +58,11 @@
             }
             h *= 60;
         }
-        return { h: Math.round(h), s: Math.round(s * 100), l: Math.round(l * 100) };
+        return { 
+            h: isNaN(h) ? 0 : Math.round(h), 
+            s: isNaN(s) ? 0 : Math.round(s * 100), 
+            l: isNaN(l) ? 50 : Math.round(l * 100) 
+        };
     }
 
     function hslToRgb(h, s, l) {
@@ -85,6 +99,9 @@
         const luma = 0.2126 * rgb.r + 0.7152 * rgb.g + 0.0722 * rgb.b;
         return luma > 145 ? '#111111' : '#FFFFFF';
     }
+
+    // ── Exclusive Theme Store Dual-Tone Color Combos (Disabled) ─────────────
+    const STORE_COMBOS = [];
 
     // ── Curated Preset Harmony Palette Catalog ───────────────────────────────
     const CURATED_PRESETS = [
@@ -267,73 +284,123 @@
         return 'none';
     }
 
+    let _isHarmonizing = false;
+    let _lastBroadcastTheme = null;
+    let _lastBroadcastAccent = null;
+
     // ── Apply & Sync to DOM ──────────────────────────────────────────────────
-    function applyHarmonizedTheme(accentHex, themeMode, targetDoc) {
-        const doc = targetDoc || document;
-        const currentTheme = themeMode || (doc.documentElement ? doc.documentElement.getAttribute('data-theme') : null) || (doc.body ? doc.body.getAttribute('data-theme') : null) || (typeof localStorage !== 'undefined' ? localStorage.getItem('ocal-settings-theme') : null) || 'dark';
-        const isLight = (currentTheme === 'light');
-        const baseColor = accentHex || (isLight ? '#15AC49' : '#09F0A0');
-
-        // Synthesize harmonic gradients and logo color filter
-        const harmony = synthesizeHarmonicGradients(baseColor);
-        const contrastText = getContrastColor(baseColor);
-        const logoFilter = calculateLogoFilter(baseColor);
-        const logoGlow = `0 0 16px ${baseColor}`;
-
-        // Apply CSS custom properties to documentElement & body
-        const root = doc.documentElement;
-        const body = doc.body;
-
-        const setProps = (el) => {
-            if (!el) return;
-            el.style.setProperty('--accent', baseColor);
-            el.style.setProperty('--accent-border', baseColor);
-            el.style.setProperty('--accent-glow', `color-mix(in srgb, ${baseColor} 30%, transparent)`);
-            el.style.setProperty('--accent-dim', `color-mix(in srgb, ${baseColor} 12%, transparent)`);
-            el.style.setProperty('--accent-text', contrastText);
-
-            el.style.setProperty('--sp-primary-grad', harmony.primary);
-            el.style.setProperty('--sp-green-grad', harmony.primary);
-            el.style.setProperty('--sp-secondary-grad', harmony.secondary);
-            el.style.setProperty('--sp-orange-grad', harmony.secondary);
-            el.style.setProperty('--sp-accent-grad', harmony.accentGrad);
-
-            el.style.setProperty('--logo-filter', logoFilter);
-            el.style.setProperty('--logo-glow', logoGlow);
-        };
-
-        setProps(root);
-        if (body) setProps(body);
-
-        // Dynamically update any logo images on the page directly with preset Dark.png/Light.png
-        updateLogoElements(doc, currentTheme);
-
-        // Save to localStorage for instant non-flash cross-tab synchronization
+    function applyHarmonizedTheme(accentHex, themeMode, targetDoc, broadcastToElectron = false) {
+        if (_isHarmonizing) return;
+        _isHarmonizing = true;
         try {
-            localStorage.setItem('ocal-settings-accent', baseColor);
-            localStorage.setItem('ocal-settings-theme', currentTheme);
-            localStorage.setItem('ocal-settings-primary-grad', harmony.primary);
-            localStorage.setItem('ocal-settings-secondary-grad', harmony.secondary);
-            localStorage.setItem('ocal-settings-accent-grad', harmony.accentGrad);
-            localStorage.setItem('ocal-settings-logo-filter', logoFilter);
-        } catch (e) {}
+            const doc = targetDoc || (typeof document !== 'undefined' ? document : null);
+            if (!doc) return;
 
-        // Dispatch notification event in the local window
-        try {
-            const event = new CustomEvent('ocal-theme-harmonized', {
-                detail: {
-                    accent: baseColor,
-                    theme: currentTheme,
-                    primaryGrad: harmony.primary,
-                    secondaryGrad: harmony.secondary,
-                    accentGrad: harmony.accentGrad,
-                    logoFilter: logoFilter
+            const storedTheme = (typeof localStorage !== 'undefined' ? localStorage.getItem('ocal-settings-theme') : null);
+            const currentTheme = themeMode || (doc.documentElement ? doc.documentElement.getAttribute('data-theme') : null) || (doc.body ? doc.body.getAttribute('data-theme') : null) || storedTheme || 'dark';
+            const isLight = (currentTheme === 'light');
+
+            const storedAccent = (typeof localStorage !== 'undefined' ? localStorage.getItem('ocal-settings-accent') : null);
+            let baseColor = accentHex || storedAccent || (isLight ? '#15AC49' : '#09F0A0');
+            if (typeof baseColor === 'string') {
+                baseColor = baseColor.trim();
+                if (!/^#[0-9A-Fa-f]{3,8}$/.test(baseColor)) {
+                    baseColor = isLight ? '#15AC49' : '#09F0A0';
                 }
-            });
-            window.dispatchEvent(event);
-        } catch (e) {}
+            }
 
-        return harmony;
+            const root = doc.documentElement;
+            const body = doc.body;
+
+            // Avoid redundant styling if already identical
+            if (root && root.getAttribute('data-theme') === currentTheme && root.style.getPropertyValue('--accent') === baseColor) {
+                return;
+            }
+
+            // Synthesize harmonic gradients and logo color filter
+            const harmony = synthesizeHarmonicGradients(baseColor);
+            const contrastText = getContrastColor(baseColor);
+            const logoFilter = calculateLogoFilter(baseColor);
+            const logoGlow = `0 0 16px ${baseColor}`;
+
+            if (root) {
+                root.setAttribute('data-theme', currentTheme);
+                root.removeAttribute('data-theme-combo');
+            }
+            if (body) {
+                body.setAttribute('data-theme', currentTheme);
+                body.removeAttribute('data-theme-combo');
+            }
+
+            const setProps = (el) => {
+                if (!el) return;
+                el.style.setProperty('--accent', baseColor);
+                el.style.setProperty('--accent-border', baseColor);
+                el.style.setProperty('--accent-glow', `color-mix(in srgb, ${baseColor} 30%, transparent)`);
+                el.style.setProperty('--accent-dim', `color-mix(in srgb, ${baseColor} 12%, transparent)`);
+                el.style.setProperty('--accent-text', contrastText);
+
+                el.style.setProperty('--sp-primary-grad', harmony.primary);
+                el.style.setProperty('--sp-green-grad', harmony.primary);
+                el.style.setProperty('--sp-secondary-grad', harmony.secondary);
+                el.style.setProperty('--sp-orange-grad', harmony.secondary);
+                el.style.setProperty('--sp-accent-grad', harmony.accentGrad);
+
+                el.style.setProperty('--logo-filter', logoFilter);
+                el.style.setProperty('--logo-glow', logoGlow);
+            };
+
+            setProps(root);
+            if (body) setProps(body);
+
+            // Dynamically update any logo images on the page directly with preset Dark.png/Light.png
+            updateLogoElements(doc, currentTheme);
+
+            // Save to localStorage ONLY if changed (prevents cross-tab storage ping-pong)
+            try {
+                if (localStorage.getItem('ocal-settings-accent') !== baseColor) {
+                    localStorage.setItem('ocal-settings-accent', baseColor);
+                }
+                if (localStorage.getItem('ocal-settings-theme') !== currentTheme) {
+                    localStorage.setItem('ocal-settings-theme', currentTheme);
+                }
+                localStorage.setItem('ocal-settings-primary-grad', harmony.primary);
+                localStorage.setItem('ocal-settings-secondary-grad', harmony.secondary);
+                localStorage.setItem('ocal-settings-accent-grad', harmony.accentGrad);
+                localStorage.setItem('ocal-settings-logo-filter', logoFilter);
+            } catch (e) {}
+
+            // ONLY send IPC if broadcastToElectron was explicitly requested (e.g. user action in Settings)
+            if (broadcastToElectron && typeof window !== 'undefined' && window.electronAPI && window.electronAPI.updateSetting) {
+                if (_lastBroadcastTheme !== currentTheme) {
+                    _lastBroadcastTheme = currentTheme;
+                    window.electronAPI.updateSetting('themeMode', currentTheme);
+                }
+                if (_lastBroadcastAccent !== baseColor) {
+                    _lastBroadcastAccent = baseColor;
+                    window.electronAPI.updateSetting('accentColor', baseColor);
+                }
+            }
+
+            // Dispatch notification event in the local window
+            try {
+                const event = new CustomEvent('ocal-theme-harmonized', {
+                    detail: {
+                        accent: baseColor,
+                        theme: currentTheme,
+                        primaryGrad: harmony.primary,
+                        secondaryGrad: harmony.secondary,
+                        accentGrad: harmony.accentGrad,
+                        logoFilter: logoFilter
+                    }
+                });
+                window.dispatchEvent(event);
+            } catch (e) {}
+
+            return harmony;
+        } finally {
+            _isHarmonizing = false;
+        }
     }
 
     // ── AI Color Intelligence & Palette Suggestion Engine ─────────────────────
@@ -428,10 +495,208 @@
         };
     }
 
+    // ── Theme Store Combo Theme Engine (Reverted / Disabled) ─────────────────
+    function getStoreCombos() {
+        return [];
+    }
+
+    function applyComboTheme() {
+        return null;
+    }
+
+    function clearComboTheme(targetDoc) {
+        const doc = targetDoc || (typeof document !== 'undefined' ? document : null);
+        if (doc) {
+            if (doc.documentElement) doc.documentElement.removeAttribute('data-theme-combo');
+            if (doc.body) doc.body.removeAttribute('data-theme-combo');
+        }
+
+        try {
+            if (typeof localStorage !== 'undefined') {
+                localStorage.removeItem('ocal-theme-combo');
+                localStorage.removeItem('ocal-theme-combo-mode');
+                localStorage.removeItem('ocal-theme-combo-data');
+                localStorage.removeItem('ocal-custom-combos');
+            }
+        } catch (e) {}
+
+        const storedTheme = (typeof localStorage !== 'undefined' ? localStorage.getItem('ocal-settings-theme') : null) || 'dark';
+        const defaultAccent = (storedTheme === 'light' ? '#15AC49' : '#09F0A0');
+        const storedAccent = (typeof localStorage !== 'undefined' ? localStorage.getItem('ocal-settings-accent') : null) || defaultAccent;
+        applyHarmonizedTheme(storedAccent, storedTheme, doc);
+    }
+
+    function createCustomCombo() {
+        return null;
+    }
+
+    function getCustomCombos() {
+        return [];
+    }
+
+    function deleteCustomCombo() {
+        return true;
+    }
+
+    // ── Wallpaper Helpers & Adaptive Palette Extraction ─────────────────────
+    function extractWallpaperPalette(imageUrl, callback) {
+        if (!imageUrl || imageUrl === 'none' || typeof Image === 'undefined') {
+            if (callback) callback(null);
+            return;
+        }
+        try {
+            const img = new Image();
+            img.crossOrigin = 'Anonymous';
+            img.onload = function() {
+                try {
+                    const canvas = document.createElement('canvas');
+                    canvas.width = 32;
+                    canvas.height = 32;
+                    const ctx = canvas.getContext('2d', { willReadFrequently: true });
+                    ctx.drawImage(img, 0, 0, 32, 32);
+                    const data = ctx.getImageData(0, 0, 32, 32).data;
+
+                    let totalR = 0, totalG = 0, totalB = 0, count = 0;
+                    let maxSat = -1;
+                    let bestHex = null;
+
+                    for (let i = 0; i < data.length; i += 4) {
+                        const r = data[i];
+                        const g = data[i + 1];
+                        const b = data[i + 2];
+                        totalR += r;
+                        totalG += g;
+                        totalB += b;
+                        count++;
+
+                        const hsl = rgbToHsl(r, g, b);
+                        if (hsl.s >= 25 && hsl.l >= 25 && hsl.l <= 80) {
+                            if (hsl.s > maxSat) {
+                                maxSat = hsl.s;
+                                bestHex = rgbToHex(r, g, b);
+                            }
+                        }
+                    }
+
+                    const avgR = Math.round(totalR / count);
+                    const avgG = Math.round(totalG / count);
+                    const avgB = Math.round(totalB / count);
+                    const avgLuma = (0.2126 * avgR + 0.7152 * avgG + 0.0722 * avgB) / 255;
+                    const dominantHex = bestHex || rgbToHex(avgR, avgG, avgB);
+
+                    if (callback) {
+                        callback({
+                            accent: dominantHex,
+                            isDark: avgLuma < 0.58,
+                            avgLuma: avgLuma,
+                            rgb: { r: avgR, g: avgG, b: avgB }
+                        });
+                    }
+                } catch(e) {
+                    if (callback) callback(null);
+                }
+            };
+            img.onerror = function() {
+                if (callback) callback(null);
+            };
+            img.src = imageUrl;
+        } catch(e) {
+            if (callback) callback(null);
+        }
+    }
+
+    let _lastExtractedWpUrl = null;
+
+    function applySavedWallpaper(targetDoc) {
+        const doc = targetDoc || (typeof document !== 'undefined' ? document : null);
+        if (!doc) return;
+        const bg = doc.querySelector('.sp-wallpaper-bg');
+        const root = doc.documentElement;
+        const body = doc.body;
+
+        try {
+            const wp = (typeof localStorage !== 'undefined' ? localStorage.getItem('ocal-home-wallpaper') : null);
+            const blur = (typeof localStorage !== 'undefined' ? localStorage.getItem('ocal-home-wallpaper-blur') : null) || '0';
+            const dim = (typeof localStorage !== 'undefined' ? localStorage.getItem('ocal-home-wallpaper-dim') : null) || '20';
+
+            if (wp && wp !== 'none') {
+                const blurPx = `${blur}px`;
+                const dimVal = `${parseInt(dim, 10) / 100}`;
+                if (bg) {
+                    if (bg.style.backgroundImage !== `url("${wp}")`) {
+                        bg.style.backgroundImage = `url("${wp}")`;
+                    }
+                    bg.style.setProperty('--wp-blur', blurPx);
+                    bg.style.setProperty('--wp-dim', dimVal);
+                    bg.classList.add('has-custom-wallpaper');
+                }
+                if (root) {
+                    root.style.setProperty('--wp-blur', blurPx);
+                    root.style.setProperty('--wp-dim', dimVal);
+                    root.classList.add('has-custom-wallpaper');
+                }
+                if (body) {
+                    body.classList.add('has-custom-wallpaper');
+                }
+
+                // If this wallpaper was already analyzed, avoid re-running analysis
+                if (_lastExtractedWpUrl === wp) return;
+                _lastExtractedWpUrl = wp;
+
+                // Subtle contrast helper for title text readability over wallpaper
+                // Strictly preserves the user's chosen Theme and Accent Color!
+                extractWallpaperPalette(wp, (palette) => {
+                    if (!palette || !body) return;
+                    if (palette.isDark) {
+                        body.classList.add('wallpaper-dark-tone');
+                        body.classList.remove('wallpaper-light-tone');
+                    } else {
+                        body.classList.add('wallpaper-light-tone');
+                        body.classList.remove('wallpaper-dark-tone');
+                    }
+                });
+            } else {
+                _lastExtractedWpUrl = null;
+                if (bg) {
+                    bg.style.backgroundImage = 'none';
+                    bg.classList.remove('has-custom-wallpaper');
+                }
+                if (root) {
+                    root.classList.remove('has-custom-wallpaper');
+                }
+                if (body) {
+                    body.classList.remove('has-custom-wallpaper', 'wallpaper-dark-tone', 'wallpaper-light-tone');
+                }
+            }
+        } catch (e) {}
+    }
+
+    function setWallpaper(url, blur, dim) {
+        try {
+            if (url && url !== 'none') {
+                localStorage.setItem('ocal-home-wallpaper', url);
+            } else {
+                localStorage.removeItem('ocal-home-wallpaper');
+            }
+            if (blur !== undefined && blur !== null) localStorage.setItem('ocal-home-wallpaper-blur', String(blur));
+            if (dim !== undefined && dim !== null) localStorage.setItem('ocal-home-wallpaper-dim', String(dim));
+            applySavedWallpaper();
+        } catch (e) {}
+    }
+
+    function clearWallpaper() {
+        try {
+            localStorage.removeItem('ocal-home-wallpaper');
+            applySavedWallpaper();
+        } catch (e) {}
+    }
+
     // ── Auto-Initialize on script load ────────────────────────────────────────
     function initAutoSync() {
         // Initial application from storage
         try {
+            applySavedWallpaper();
+
             const storedTheme = (typeof localStorage !== 'undefined' ? localStorage.getItem('ocal-settings-theme') : null) || 'dark';
             const defaultAccent = (storedTheme === 'light' ? '#15AC49' : '#09F0A0');
             const storedAccent = (typeof localStorage !== 'undefined' ? localStorage.getItem('ocal-settings-accent') : null) || defaultAccent;
@@ -440,13 +705,16 @@
 
         if (typeof window !== 'undefined') {
             window.addEventListener('storage', (e) => {
-                if (e.key === 'ocal-settings-accent' || e.key === 'ocal-settings-theme' || 
-                    e.key === 'ocal-settings-logo-filter' || e.key === 'ocal-icon-sync-theme' || 
-                    e.key === 'ocal-icon-hue-adjust' || e.key === 'ocal-icon-sat-adjust') {
-                    const t = (typeof localStorage !== 'undefined' ? localStorage.getItem('ocal-settings-theme') : null) || 'dark';
-                    const defAcc = (t === 'light' ? '#15AC49' : '#09F0A0');
-                    const a = (typeof localStorage !== 'undefined' ? localStorage.getItem('ocal-settings-accent') : null) || defAcc;
-                    applyHarmonizedTheme(a, t);
+                if (e.key === 'ocal-home-wallpaper' || e.key === 'ocal-home-wallpaper-blur' || e.key === 'ocal-home-wallpaper-dim') {
+                    applySavedWallpaper();
+                } else if (e.key === 'ocal-settings-accent' || e.key === 'ocal-settings-theme') {
+                    const stTheme = (typeof localStorage !== 'undefined' ? localStorage.getItem('ocal-settings-theme') : null) || 'dark';
+                    const stAccent = (typeof localStorage !== 'undefined' ? localStorage.getItem('ocal-settings-accent') : null) || (stTheme === 'light' ? '#15AC49' : '#09F0A0');
+                    const root = typeof document !== 'undefined' ? document.documentElement : null;
+                    if (root && root.getAttribute('data-theme') === stTheme && root.style.getPropertyValue('--accent') === stAccent) {
+                        return;
+                    }
+                    applyHarmonizedTheme(stAccent, stTheme);
                 }
             });
         }
@@ -503,7 +771,17 @@
         updateLogoElements,
         synthesizeHarmonicGradients,
         analyzeColorIntelligence,
-        applyHarmonizedTheme
+        applyHarmonizedTheme,
+        STORE_COMBOS,
+        getStoreCombos,
+        applyComboTheme,
+        clearComboTheme,
+        createCustomCombo,
+        getCustomCombos,
+        deleteCustomCombo,
+        applySavedWallpaper,
+        setWallpaper,
+        clearWallpaper
     };
 
     global.OcalColorHarmonizer = OcalColorHarmonizer;

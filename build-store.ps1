@@ -46,6 +46,14 @@ if ($generatedAppx) {
         Copy-Item -Path $generatedAppx.FullName -Destination $msixName -Force
         Write-Host "Generated matching MSIX package: $(Split-Path $msixName -Leaf)" -ForegroundColor Green
     }
+    $targetMsix = "dist-store\Ocal Browser $version.msix"
+    $targetAppx = "dist-store\Ocal Browser $version.appx"
+    if (-not (Test-Path $targetMsix) -and (Test-Path $msixName)) {
+        Copy-Item -Path $msixName -Destination $targetMsix -Force
+    }
+    if (-not (Test-Path $targetAppx)) {
+        Copy-Item -Path $generatedAppx.FullName -Destination $targetAppx -Force
+    }
 }
 
 # Sign packages with certificate.pfx and RFC 3161 timestamping

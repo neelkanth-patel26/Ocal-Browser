@@ -1,4 +1,68 @@
 OCAL BROWSER - UPDATE CATALOG
+Version: 10.0.01 Stable
+Release Date: October 19, 2026
+
+-------------------------------------------------------------------------------
+[INTRODUCING ONBOARDING PAGE FOR FRESH USERS]
+-------------------------------------------------------------------------------
+* FRESH SETUP ONBOARDING: Brand new onboarding welcome suite (ocal://onboarding) 
+  presented exclusively for first-time installations and fresh user profiles.
+* SEAMLESS SUBSEQUENT BOOT: Standard browser launches skip the welcome tour and boot 
+  directly into your Home tab or restored session with zero latency.
+* GUIDED PREFERENCES: Interactive setup for search engine selection, dark/light theme,
+  accent colors, and privacy shields right from the first launch.
+
+-------------------------------------------------------------------------------
+[UI ENHANCEMENTS & BUG FIXES]
+-------------------------------------------------------------------------------
+* WINDOWS 11 MODERN INSTALLER CONTROLS: Replaced plain text links with native 
+  Windows interactive button controls (TNewButton) for Terms, Privacy Policy, and EULA.
+* DETAILED LEGAL & EULA DISCLOSURE: Overhauled legal disclosures with structured EULA, 
+  Terms of Service, and Zero-Telemetry Privacy Policy tabs with clear scrolling.
+* STABLE RELEASE BADGE: Replaced build version numbers on installer banner with clean 
+  "Stable Version • By: Ocal Software" badge.
+* CURATED 4K MINIMAL WALLPAPERS: Refined presets to 3 clean backdrops (Nordic Mist, Fluid Wave, 
+  Monochrome) upgraded to uncompressed 4K UHD (3840px @ 95% quality) with centered composition.
+* THEME HARMONIZATION STABILITY: Wallpaper selection operates without overriding user theme 
+  preferences or accent colors, eliminating UI flashing and slider lag.
+* CONTEXT MENU & UI ALIGNMENT: Fixed DPI coordinate distortion on high-DPI displays,
+  prevented right-click listener cancellation, and eliminated black borders in split-view.
+
+-------------------------------------------------------------------------------
+[CHROMIUM ENGINE UPGRADE]
+-------------------------------------------------------------------------------
+* LATEST CHROMIUM CORE: Upgraded the underlying Electron/Chromium engine stack 
+  to the latest modern runtime (Electron ^44.9.0 / Chromium 134+).
+* MODERN V8 JIT & CODECS: High-efficiency JavaScript execution, AV1/HEVC hardware video
+  decoding, enhanced WebGPU pipelines, and superior HTML5/CSS standards support.
+* EXTENSION RUNTIME ENHANCEMENTS: Upgraded Chrome Extension Manifest V3 polyfills,
+  background service worker longevity, and chrome.action popup auto-resizing.
+
+-------------------------------------------------------------------------------
+[PERFORMANCE IMPROVEMENTS]
+-------------------------------------------------------------------------------
+* ZERO-DELAY STARTUP: Streamlined window initialization and tab allocation pipeline 
+  ensuring instant window render on Windows 10 and 11.
+* MEMORY SAVER & BACKGROUND TAB FREEZING: Intelligent sleeping of idle background 
+  tabs to reduce RAM consumption by up to 60% without losing scroll state.
+* HARDWARE-ACCELERATED ANGLE D3D11: Passthrough GPU command decoder and zero-copy 
+  swap chains for stutter-free 60+ FPS window rendering and scrolling.
+* SECURE DPAPI STORAGE: Hardware-backed AES-256 local credential and session encryption 
+  via Windows Data Protection API (DPAPI).
+
+-------------------------------------------------------------------------------
+[AI COPILOT ENHANCEMENT WITH @TAB COMMAND]
+-------------------------------------------------------------------------------
+* CONTEXT-AWARE @TAB COMMAND: Mention and query active web pages in real-time 
+  by simply typing "@tab" into the AI query box or clicking the @ button.
+* MULTI-TAB COMPARATIVE REASONING: Compare multiple live tabs side-by-side to synthesize 
+  contrasting perspectives, extract pros and cons, or summarize complex technical docs.
+* INSTANT DOM SCRAPER: Lightning-fast offline content extraction pulling page headings, 
+  article body, OpenGraph meta, and structured data with zero cloud leakage.
+* STREAMLINED CONVERSATIONAL PROMPT: Automatic sanitization and parsing of tab mentions 
+  delivering clean, formatted markdown responses with GFM alert cards and copy actions.
+
+-------------------------------------------------------------------------------
 Version: 8.6.00 Stable
 Release Date: August 16, 2026
 

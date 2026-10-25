@@ -130,8 +130,8 @@ function initPrivateModeHome() {
     const trackerActionCard = document.querySelector('.sp-connect-tracker-mini');
     if (trackerActionCard) {
         trackerActionCard.classList.add('sp-private-stealth-pill');
-        const acTitle = trackerActionCard.querySelector('.sp-ac-title');
-        if (acTitle) acTitle.innerHTML = 'Zero-Trace<br>Isolated';
+        const acTitle = trackerActionCard.querySelector('.act-btn-text') || trackerActionCard.querySelector('.sp-ac-title');
+        if (acTitle) acTitle.innerHTML = 'Zero-Trace';
     }
 
     // Swap regular productivity widgets with Private Benefits Bento Grid
@@ -834,9 +834,34 @@ class FocusTimer {
             const offset = 471 - (471 * (this.timeLeft / this.totalSeconds));
             this.progressEl.style.strokeDashoffset = offset;
         }
+        const hBtn = document.getElementById('header-focus-trigger');
+        if (hBtn) {
+            if (this.timerId) {
+                hBtn.title = `Focus Flow: ${String(mins).padStart(2, '0')}:${String(secs).padStart(2, '0')} (Click to view)`;
+            } else {
+                hBtn.title = 'Jump to Focus Flow';
+            }
+        }
     }
 }
-new FocusTimer();
+const globalFocusTimer = new FocusTimer();
+
+// Header Focus Trigger Navigation
+(function initHeaderFocusTrigger() {
+    const headerFocusTrigger = document.getElementById('header-focus-trigger');
+    if (headerFocusTrigger) {
+        headerFocusTrigger.addEventListener('click', (e) => {
+            e.preventDefault();
+            const focusCard = document.querySelector('.sp-focus-card');
+            if (focusCard) {
+                focusCard.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                focusCard.classList.remove('focus-card-highlight');
+                void focusCard.offsetWidth;
+                focusCard.classList.add('focus-card-highlight');
+            }
+        });
+    }
+})();
 
 // ── Global Weather Integration Bridge ──
 function updateWeather() {
@@ -996,14 +1021,22 @@ function getModeAccent(color, isLight) {
 function applySettings(s) {
     if (!s) return;
     const root = document.documentElement;
-    const isLight = s.themeMode === 'light';
-    if (s.accentColor) {
+    const theme = s.themeMode || 'dark';
+
+    if (s.activeThemeCombo && window.OcalColorHarmonizer && window.OcalColorHarmonizer.applyComboTheme) {
+        window.OcalColorHarmonizer.applyComboTheme(s.activeThemeCombo.id, s.activeThemeCombo.mode);
+    } else if (window.OcalColorHarmonizer && window.OcalColorHarmonizer.applyHarmonizedTheme) {
+        window.OcalColorHarmonizer.applyHarmonizedTheme(s.accentColor, theme, document);
+    } else if (s.accentColor) {
+        const isLight = theme === 'light';
         const activeAccent = getModeAccent(s.accentColor, isLight);
         root.style.setProperty('--accent', activeAccent);
         root.style.setProperty('--accent-glow', 'transparent');
         root.style.setProperty('--accent-dim', hexToRgba(activeAccent, 0.15));
         root.style.setProperty('--accent-border', hexToRgba(activeAccent, 0.4));
     }
+    root.setAttribute('data-theme', theme);
+    if (document.body) document.body.setAttribute('data-theme', theme);
 
     if (s.homeLayout && dashMain) {
         dashMain.classList.remove('layout-top', 'layout-center', 'layout-bottom');
@@ -1061,7 +1094,6 @@ function applySettings(s) {
     }
 
     document.body.classList.toggle('battery-saver', !!s.batterySaver);
-    document.body.setAttribute('data-theme', s.themeMode || 'dark');
 }
 
 
@@ -1187,11 +1219,15 @@ class StyleCustomizer {
             document.body.setAttribute('data-font-style', val);
             localStorage.setItem('ocal-custom-font', val);
         } else if (type === 'theme') {
+            document.documentElement.setAttribute('data-theme', val);
             document.body.setAttribute('data-theme', val);
+            if (window.OcalColorHarmonizer && window.OcalColorHarmonizer.applyHarmonizedTheme) {
+                window.OcalColorHarmonizer.applyHarmonizedTheme(null, val, document);
+            }
             if (window.electronAPI && window.electronAPI.updateSetting) {
                 window.electronAPI.updateSetting('themeMode', val);
             } else {
-                localStorage.setItem('ocal-custom-theme', val);
+                try { localStorage.setItem('ocal-settings-theme', val); } catch (e) {}
             }
         }
     }
@@ -1200,16 +1236,14 @@ class StyleCustomizer {
         this.accentDots.forEach(dot => {
             dot.classList.toggle('active', dot.dataset.color.toLowerCase() === color.toLowerCase());
         });
+        const theme = document.documentElement.getAttribute('data-theme') || 'dark';
+        if (window.OcalColorHarmonizer && window.OcalColorHarmonizer.applyHarmonizedTheme) {
+            window.OcalColorHarmonizer.applyHarmonizedTheme(color, theme, document);
+        }
         if (window.electronAPI && window.electronAPI.updateSetting) {
             window.electronAPI.updateSetting('accentColor', color);
         } else {
-            const root = document.documentElement;
-            const isLight = document.body.getAttribute('data-theme') === 'light';
-            const activeAccent = getModeAccent(color, isLight);
-            root.style.setProperty('--accent', activeAccent);
-            root.style.setProperty('--accent-glow', 'transparent');
-            root.style.setProperty('--accent-dim', hexToRgba(activeAccent, 0.15));
-            root.style.setProperty('--accent-border', hexToRgba(activeAccent, 0.4));
+            try { localStorage.setItem('ocal-settings-accent', color); } catch (e) {}
         }
     }
 
@@ -1870,7 +1904,11 @@ function initNewsHubEngine() {
         } catch (err) {
             console.warn('[Weather Hub] API error:', err);
             if (statusSub) {
-                statusSub.innerHTML = `<i class="fas fa-triangle-exclamation" style="color: #ef4444; margin-right: 6px;"></i> Telemetry offline. Check network connection.`;
+                if (lastFetchedWeather) {
+                    statusSub.innerHTML = `<i class="fas fa-signal" style="color: var(--accent); margin-right: 6px;"></i> Meteorological telemetry active &bull; ${currentCityName || 'Ahmedabad, Gujarat, India'}`;
+                } else {
+                    statusSub.innerHTML = `<i class="fas fa-satellite-dish" style="color: var(--accent); margin-right: 6px;"></i> Reconnecting telemetry &bull; ${currentCityName || 'Local Region'}`;
+                }
             }
             if (!lastFetchedWeather) {
                 const homeCity = document.getElementById('weather-city');
@@ -2135,30 +2173,176 @@ function initNewsHubEngine() {
     }, true);
 })();
 
-// ── Real-Time Theme & AI Gradient Synchronization ──────────────────
+// ── Real-Time Theme, Theme Combo & AI Gradient Synchronization ────
 (function() {
     function syncHomeThemeAndGradients() {
-        const t = localStorage.getItem('ocal-settings-theme') || 'light';
+        const combo = localStorage.getItem('ocal-theme-combo');
+        const mode = localStorage.getItem('ocal-theme-combo-mode');
+        if (combo && window.OcalColorHarmonizer) {
+            window.OcalColorHarmonizer.applyComboTheme(combo, mode);
+            return;
+        }
+        const t = localStorage.getItem('ocal-settings-theme') || 'dark';
         const a = localStorage.getItem('ocal-settings-accent');
         if (window.OcalColorHarmonizer) {
             window.OcalColorHarmonizer.applyHarmonizedTheme(a, t);
         }
     }
     window.addEventListener('storage', (e) => {
-        if (e.key === 'ocal-settings-accent' || e.key === 'ocal-settings-theme') {
+        if (e.key === 'ocal-settings-accent' || e.key === 'ocal-settings-theme' ||
+            e.key === 'ocal-theme-combo' || e.key === 'ocal-theme-combo-mode') {
+            const root = document.documentElement;
+            const t = localStorage.getItem('ocal-settings-theme') || 'dark';
+            const a = localStorage.getItem('ocal-settings-accent');
+            if (root && root.getAttribute('data-theme') === t && (!a || root.style.getPropertyValue('--accent') === a)) {
+                return;
+            }
             syncHomeThemeAndGradients();
         }
     });
-    if (window.electronAPI && window.electronAPI.onSettingsChanged) {
-        try {
-            window.electronAPI.onSettingsChanged((s) => {
-                if (s && (s.accentColor || s.themeMode)) {
-                    if (window.OcalColorHarmonizer) {
-                        window.OcalColorHarmonizer.applyHarmonizedTheme(s.accentColor, s.themeMode);
-                    }
+})();
+
+// ── Theme Store & Home Wallpaper Atmosphere Controller ─────────────
+(function initHomeThemeAndWallpaper() {
+    const PRESETS = {
+        'aurora': 'https://images.unsplash.com/photo-1487260211189-670c54da558d?auto=format&fit=crop&w=3840&q=95',
+        'silk': 'https://images.unsplash.com/photo-1635776062360-af423602aff3?auto=format&fit=crop&w=3840&q=95',
+        'midnight': 'https://images.unsplash.com/photo-1500238969924-795042f75b7f?auto=format&fit=crop&w=3840&q=95'
+    };
+    const wpTrigger = document.getElementById('home-wallpaper-trigger');
+    const wpOverlay = document.getElementById('wallpaper-modal-overlay');
+    const wpCloseBtn = document.getElementById('wallpaper-close-btn');
+    const wpSaveBtn = document.getElementById('home-wp-save-btn');
+    const wpClearBtn = document.getElementById('home-wp-clear-btn');
+    const wpFileInput = document.getElementById('home-wp-file-input');
+    const blurSlider = document.getElementById('home-wp-blur-slider');
+    const blurVal = document.getElementById('home-wp-blur-val');
+    const dimSlider = document.getElementById('home-wp-dim-slider');
+    const dimVal = document.getElementById('home-wp-dim-val');
+    const presetCards = document.querySelectorAll('#home-wp-presets-grid .wp-preset-card');
+
+    function openWallpaperModal() {
+        if (!wpOverlay) return;
+        wpOverlay.style.display = 'flex';
+        void wpOverlay.offsetWidth;
+        wpOverlay.classList.add('active');
+
+        const currentWp = localStorage.getItem('ocal-home-wallpaper') || 'none';
+        const currentBlur = localStorage.getItem('ocal-home-wallpaper-blur') || '0';
+        const currentDim = localStorage.getItem('ocal-home-wallpaper-dim') || '20';
+
+        if (blurSlider) {
+            blurSlider.value = currentBlur;
+            if (blurVal) blurVal.textContent = `${currentBlur}px`;
+        }
+        if (dimSlider) {
+            dimSlider.value = currentDim;
+            if (dimVal) dimVal.textContent = `${currentDim}%`;
+        }
+
+        presetCards.forEach(card => {
+            const pKey = card.getAttribute('data-preset');
+            if (pKey === 'none' && (!currentWp || currentWp === 'none')) {
+                card.classList.add('active');
+            } else if (pKey && PRESETS[pKey] === currentWp) {
+                card.classList.add('active');
+            } else {
+                card.classList.remove('active');
+            }
+        });
+    }
+
+    function closeWallpaperModal() {
+        if (!wpOverlay) return;
+        wpOverlay.classList.remove('active');
+        setTimeout(() => {
+            if (!wpOverlay.classList.contains('active')) {
+                wpOverlay.style.display = 'none';
+            }
+        }, 250);
+    }
+
+    if (wpTrigger) wpTrigger.addEventListener('click', openWallpaperModal);
+    if (wpCloseBtn) wpCloseBtn.addEventListener('click', closeWallpaperModal);
+    if (wpSaveBtn) wpSaveBtn.addEventListener('click', closeWallpaperModal);
+
+    if (wpOverlay) {
+        wpOverlay.addEventListener('click', (e) => {
+            if (e.target === wpOverlay) closeWallpaperModal();
+        });
+    }
+
+    presetCards.forEach(card => {
+        card.addEventListener('click', () => {
+            presetCards.forEach(c => c.classList.remove('active'));
+            card.classList.add('active');
+            const pKey = card.getAttribute('data-preset');
+            const targetUrl = (pKey === 'none' ? 'none' : PRESETS[pKey]);
+            const blur = blurSlider ? blurSlider.value : 0;
+            const dim = dimSlider ? dimSlider.value : 20;
+
+            if (window.OcalColorHarmonizer) {
+                window.OcalColorHarmonizer.setWallpaper(targetUrl, blur, dim);
+            }
+        });
+    });
+
+    if (wpFileInput) {
+        wpFileInput.addEventListener('change', (e) => {
+            const file = e.target.files && e.target.files[0];
+            if (!file) return;
+            const reader = new FileReader();
+            reader.onload = (event) => {
+                const dataUrl = event.target.result;
+                presetCards.forEach(c => c.classList.remove('active'));
+                const blur = blurSlider ? blurSlider.value : 0;
+                const dim = dimSlider ? dimSlider.value : 20;
+                if (window.OcalColorHarmonizer) {
+                    window.OcalColorHarmonizer.setWallpaper(dataUrl, blur, dim);
                 }
-            });
-        } catch (e) {}
+            };
+            reader.readAsDataURL(file);
+        });
+    }
+
+    if (blurSlider) {
+        blurSlider.addEventListener('input', () => {
+            const val = blurSlider.value;
+            if (blurVal) blurVal.textContent = `${val}px`;
+            const currentWp = localStorage.getItem('ocal-home-wallpaper');
+            const currentDim = dimSlider ? dimSlider.value : 20;
+            if (window.OcalColorHarmonizer && currentWp && currentWp !== 'none') {
+                window.OcalColorHarmonizer.setWallpaper(currentWp, val, currentDim);
+            }
+        });
+    }
+
+    if (dimSlider) {
+        dimSlider.addEventListener('input', () => {
+            const val = dimSlider.value;
+            if (dimVal) dimVal.textContent = `${val}%`;
+            const currentWp = localStorage.getItem('ocal-home-wallpaper');
+            const currentBlur = blurSlider ? blurSlider.value : 0;
+            if (window.OcalColorHarmonizer && currentWp && currentWp !== 'none') {
+                window.OcalColorHarmonizer.setWallpaper(currentWp, currentBlur, val);
+            }
+        });
+    }
+
+    if (wpClearBtn) {
+        wpClearBtn.addEventListener('click', () => {
+            presetCards.forEach(c => c.classList.remove('active'));
+            const noneCard = document.querySelector('#home-wp-presets-grid .wp-preset-card[data-preset="none"]');
+            if (noneCard) noneCard.classList.add('active');
+            if (window.OcalColorHarmonizer) {
+                window.OcalColorHarmonizer.clearWallpaper();
+            }
+        });
+    }
+
+    if (window.OcalColorHarmonizer) {
+        window.OcalColorHarmonizer.applySavedWallpaper();
     }
 })();
+
 

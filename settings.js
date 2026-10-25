@@ -460,6 +460,10 @@ window.installExtFromSettings = async function() {
     const input = document.getElementById('ext-cws-input');
     const id = input?.value.trim();
     if (!id) return;
+    if (id.toLowerCase().includes('/category/themes') || id.toLowerCase().includes('/theme/')) {
+        alert('Chrome Themes cannot be installed as extensions. You can customize colors and appearance under the Appearance section above.');
+        return;
+    }
     const loader = document.getElementById('ext-install-loader');
     if (loader) loader.style.display = 'flex';
     try {
@@ -468,7 +472,7 @@ window.installExtFromSettings = async function() {
         window.electronAPI.getSettings().then(s => renderExtensions(s));
         alert(`Successfully installed ${result.name}!`);
     } catch (err) {
-        alert('Failed to install extension. Please check the ID or URL.');
+        alert(`Failed to install: ${err.message || 'Please check the ID or URL.'}`);
     } finally {
         if (loader) loader.style.display = 'none';
     }
@@ -1094,18 +1098,24 @@ const formatGitHubMarkdown = (markdown) => {
 
 const currentVersionHighlights = `
     <div style="font-family: var(--font-mono); font-size: 11.5px; color: var(--text-dim); white-space: pre-wrap; line-height: 1.6;">
-<div style="font-family: var(--font-title); font-size: 14px; font-weight: 800; color: var(--accent); margin-bottom: 8px;">OCAL BROWSER v7.9.00 STABLE</div>
-<div style="color: var(--text); font-weight: 700; margin-bottom: 12px;">Release Highlights & Mega Update</div>
+<div style="font-family: var(--font-title); font-size: 14px; font-weight: 800; color: var(--accent); margin-bottom: 8px;">OCAL BROWSER v10.0.01 STABLE</div>
+<div style="color: var(--text); font-weight: 700; margin-bottom: 12px;">Official Production Release Highlights</div>
 
-<div style="font-family: var(--font-title); font-size: 12.5px; font-weight: 700; color: var(--accent); margin-top: 10px; margin-bottom: 4px;">🚀 New Features & UI Enhancements</div>
-• 500% Volume Booster: Integrated an advanced volume boosting extension allowing users to safely amplify media up to 500% directly within the browser.
-• Intelligent Sidebar Theming: Redesigned the sidebar social panel to match the selected theme mode perfectly.
-• Refined Aesthetics: Removed distracting zoom-in scaling effects on navigation and address bar buttons for a sleek, responsive experience.
-• Improved UI Controls: Standardized close button alignments and tab navigation interactions across all views.
+<div style="font-family: var(--font-title); font-size: 12.5px; font-weight: 700; color: var(--accent); margin-top: 10px; margin-bottom: 4px;">🧭 Introducing Onboarding Page for Fresh Users</div>
+• Brand new first-run onboarding screen (ocal://onboarding) for fresh profiles with instant search and theme customization.
+• Zero-delay subsequent startups: standard launches skip onboarding and boot directly to your home tab.
 
-<div style="font-family: var(--font-title); font-size: 12.5px; font-weight: 700; color: var(--accent); margin-top: 12px; margin-bottom: 4px;">🛠️ Bug Fixes & Reliability</div>
-• Native In-App PDF Printing: Fixed PDF printing to handle documents completely natively inside Ocal Browser.
-• PDF Print Preview Support: Enabled Chrome-style print preview dialogs for PDF documents.
+<div style="font-family: var(--font-title); font-size: 12.5px; font-weight: 700; color: var(--accent); margin-top: 12px; margin-bottom: 4px;">🤖 AI Copilot & @tab Command</div>
+• Real-time tab awareness: mention @tab in the AI Copilot to query, summarize, and cross-compare live pages.
+• Multi-tab synthesis: compare research tabs side-by-side with zero cloud data retention.
+
+<div style="font-family: var(--font-title); font-size: 12.5px; font-weight: 700; color: var(--accent); margin-top: 12px; margin-bottom: 4px;">⚡ Modern Chromium Runtime & Performance</div>
+• Upgraded engine to latest modern Chromium & Electron runtime for enhanced V8 execution and AV1/HEVC media playback.
+• Background tab memory saver frees inactive RAM by up to 60% without losing tab session states.
+
+<div style="font-family: var(--font-title); font-size: 12.5px; font-weight: 700; color: var(--accent); margin-top: 12px; margin-bottom: 4px;">🎨 UI Polish & Bug Fixes</div>
+• Converted installer Terms and Privacy tabs into native interactive Windows button controls.
+• Restored clean "Stable Version • By: Ocal Software" branding and fixed DPI context menu scaling.
     </div>
 `;
 
@@ -1997,18 +2007,18 @@ function updateProtectionLevel(s) {
     
     if (score >= 3) {
         if (badge) {
-            badge.innerHTML = '<i class="fas fa-circle-check"></i> MAXIMUM PROTECTION';
-            badge.className = "hbc-badge security-shield";
-            badge.style.background = "rgba(9, 240, 160, 0.12)";
+            badge.innerHTML = '<span class="status-dot"></span><span>MAXIMUM PROTECTION</span>';
+            badge.className = "engine-active-indicator";
+            badge.style.background = "color-mix(in srgb, var(--accent) 12%, transparent)";
             badge.style.color = "var(--accent, #09f0a0)";
-            badge.style.borderColor = "rgba(9, 240, 160, 0.25)";
+            badge.style.borderColor = "color-mix(in srgb, var(--accent) 25%, transparent)";
         }
         if (statShield) statShield.innerText = "Maximum";
         if (statTier) statTier.innerText = "Tier 3";
     } else if (score >= 1) {
         if (badge) {
-            badge.innerHTML = '<i class="fas fa-circle-exclamation"></i> STANDARD PROTECTION';
-            badge.className = "hbc-badge security-shield";
+            badge.innerHTML = '<span class="status-dot" style="background:#eab308;"></span><span>STANDARD PROTECTION</span>';
+            badge.className = "engine-active-indicator";
             badge.style.background = "rgba(234, 179, 8, 0.12)";
             badge.style.color = "#eab308";
             badge.style.borderColor = "rgba(234, 179, 8, 0.25)";
@@ -2017,8 +2027,8 @@ function updateProtectionLevel(s) {
         if (statTier) statTier.innerText = "Tier 2";
     } else {
         if (badge) {
-            badge.innerHTML = '<i class="fas fa-triangle-exclamation"></i> PROTECTION REDUCED';
-            badge.className = "hbc-badge security-shield";
+            badge.innerHTML = '<span class="status-dot" style="background:#ef4444;"></span><span>PROTECTION REDUCED</span>';
+            badge.className = "engine-active-indicator";
             badge.style.background = "rgba(239, 68, 68, 0.15)";
             badge.style.color = "#ef4444";
             badge.style.borderColor = "rgba(239, 68, 68, 0.25)";
@@ -2212,6 +2222,13 @@ async function renderExtensions(s = null) {
         }
     });
 
+    // Extension engine & theme guard toggles
+    const googleExtCb = document.getElementById('google-ext-install-toggle-cb');
+    if (googleExtCb && s.googleExtensionsEnabled !== undefined) googleExtCb.checked = (s.googleExtensionsEnabled !== false);
+
+    const themeGuardCb = document.getElementById('theme-guard-toggle-cb');
+    if (themeGuardCb && s.themeGuardEnabled !== undefined) themeGuardCb.checked = (s.themeGuardEnabled !== false);
+
     // Dynamic (installed) extensions from Store or Unpacked
     const grid = document.getElementById('ext-settings-grid');
     const emptyRow = document.getElementById('no-installed-exts');
@@ -2393,8 +2410,13 @@ window.toggleSecurityFeature = (key, valOrEl) => {
     }
     window.electronAPI.updateSetting(key, value);
     window.electronAPI.send('set-security-toggle', { key, value });
+    if (key === 'fingerprintProtection') {
+        window.electronAPI.updateSetting('trackingProtection', value);
+        window.electronAPI.send('set-security-toggle', { key: 'trackingProtection', value });
+    }
     if (window.currentSettings) {
         window.currentSettings[key] = value;
+        if (key === 'fingerprintProtection') window.currentSettings.trackingProtection = value;
         renderSecuritySettings(window.currentSettings);
     }
 };
@@ -2411,8 +2433,32 @@ function initDNSGrid() {
     dnsGrid.querySelectorAll('.choice-item').forEach(item => {
         item.onclick = () => {
             const val = item.dataset.value;
-            dnsGrid.querySelectorAll('.choice-item').forEach(i => i.classList.remove('active'));
+            dnsGrid.querySelectorAll('.choice-item').forEach(i => {
+                i.classList.remove('active');
+                const st = i.querySelector('.spc-status');
+                if (st) {
+                    st.classList.remove('active');
+                    const txt = st.querySelector('span:last-child');
+                    if (txt) txt.textContent = 'Available';
+                }
+                const btn = i.querySelector('.spc-action-btn');
+                if (btn) {
+                    btn.classList.remove('active');
+                    btn.innerHTML = '<span>Select</span>';
+                }
+            });
             item.classList.add('active');
+            const activeSt = item.querySelector('.spc-status');
+            if (activeSt) {
+                activeSt.classList.add('active');
+                const txt = activeSt.querySelector('span:last-child');
+                if (txt) txt.textContent = 'Active';
+            }
+            const activeBtn = item.querySelector('.spc-action-btn');
+            if (activeBtn) {
+                activeBtn.classList.add('active');
+                activeBtn.innerHTML = '<i class="fas fa-check"></i><span>Active</span>';
+            }
             window.electronAPI.updateSetting('dnsProvider', val);
             window.electronAPI.updateSetting('dns', val);
             window.electronAPI.send('set-dns-provider', val);
@@ -2432,6 +2478,20 @@ function renderSecuritySettings(s) {
     const safeCb = document.getElementById('safe-browsing-toggle-cb');
     if (safeCb && s.safeBrowsingEnabled !== undefined) safeCb.checked = !!s.safeBrowsingEnabled;
 
+    const fpCb = document.getElementById('fingerprint-protection-toggle-cb');
+    if (fpCb && (s.fingerprintProtection !== undefined || s.trackingProtection !== undefined)) {
+        fpCb.checked = (s.fingerprintProtection !== false && s.trackingProtection !== false);
+    }
+
+    const cyberCb = document.getElementById('cyber-stealth-security-cb');
+    if (cyberCb && s.cyberStealthEnabled !== undefined) cyberCb.checked = !!s.cyberStealthEnabled;
+
+    const googleExtCb = document.getElementById('google-ext-install-toggle-cb');
+    if (googleExtCb && s.googleExtensionsEnabled !== undefined) googleExtCb.checked = (s.googleExtensionsEnabled !== false);
+
+    const themeGuardCb = document.getElementById('theme-guard-toggle-cb');
+    if (themeGuardCb && s.themeGuardEnabled !== undefined) themeGuardCb.checked = (s.themeGuardEnabled !== false);
+
     const trackCb = document.getElementById('tracking-toggle-security-cb');
     if (trackCb && s.trackingProtection !== undefined) trackCb.checked = (s.trackingProtection !== false);
 
@@ -2449,19 +2509,36 @@ function renderSecuritySettings(s) {
     const dnsGrid = document.getElementById('dns-grid');
     if (dnsGrid) {
         dnsGrid.querySelectorAll('.choice-item').forEach(item => {
-            item.classList.toggle('active', item.dataset.value === activeDns);
+            const isActive = item.dataset.value === activeDns;
+            item.classList.toggle('active', isActive);
+            const st = item.querySelector('.spc-status');
+            if (st) {
+                st.classList.toggle('active', isActive);
+                const txt = st.querySelector('span:last-child');
+                if (txt) txt.textContent = isActive ? 'Active' : 'Available';
+            }
+            const btn = item.querySelector('.spc-action-btn');
+            if (btn) {
+                btn.classList.toggle('active', isActive);
+                btn.innerHTML = isActive ? '<i class="fas fa-check"></i><span>Active</span>' : '<span>Select</span>';
+            }
         });
+    }
+
+    const currentDnsPill = document.getElementById('current-dns-name');
+    const dnsLabels = {
+        'default': 'System Default',
+        'cloudflare': 'Cloudflare 1.1.1.1',
+        'google': 'Google Public DNS',
+        'quad9': 'Quad9 DNS'
+    };
+    if (currentDnsPill) {
+        currentDnsPill.innerText = dnsLabels[activeDns] || 'System Default';
     }
 
     // Update DNS Stat pill
     const statDns = document.getElementById('security-stat-dns');
     if (statDns) {
-        const dnsLabels = {
-            'default': 'System',
-            'cloudflare': '1.1.1.1 DoH',
-            'google': '8.8.8.8 DoH',
-            'quad9': '9.9.9.9 DoH'
-        };
         statDns.innerText = dnsLabels[activeDns] || 'DoH Secure';
     }
 
@@ -2730,7 +2807,7 @@ function updateVaultAuthUI(isUnlocked) {
             toggleBtn.innerHTML = '<i class="fas fa-lock-open" style="color: #4ade80;"></i> <span id="vault-auth-status-text">Lock Vault</span>';
         }
         if (badge) {
-            badge.innerHTML = '<i class="fas fa-lock-open"></i> VAULT UNLOCKED';
+            badge.innerHTML = '<span class="status-dot" style="background:#4ade80;"></span><span>VAULT UNLOCKED</span>';
             badge.style.color = '#4ade80';
             badge.style.background = 'rgba(74, 222, 128, 0.12)';
             badge.style.borderColor = 'rgba(74, 222, 128, 0.25)';
@@ -2741,7 +2818,7 @@ function updateVaultAuthUI(isUnlocked) {
             toggleBtn.innerHTML = '<i class="fas fa-key" style="color: var(--accent);"></i> <span id="vault-auth-status-text">Unlock with Windows</span>';
         }
         if (badge) {
-            badge.innerHTML = '<i class="fas fa-lock"></i> WINDOWS PROTECTED';
+            badge.innerHTML = '<span class="status-dot"></span><span>WINDOWS PROTECTED</span>';
             badge.style.color = 'var(--accent)';
             badge.style.background = 'color-mix(in srgb, var(--accent) 12%, transparent)';
             badge.style.borderColor = 'color-mix(in srgb, var(--accent) 25%, transparent)';

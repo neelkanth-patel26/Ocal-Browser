@@ -37,6 +37,22 @@ body[data-theme="dark"] {
     --lime-accent: var(--accent);
 }
 
+:root[data-theme-combo],
+body[data-theme-combo] {
+    --bg: var(--background);
+    --card-bg: var(--surface);
+    --header-bg: var(--chrome);
+    --sidebar-bg: var(--chrome);
+    --text: var(--text);
+    --text-dim: var(--text-dim, #9CA3AF);
+    --text-muted: var(--text-dim, #6B7280);
+    --chrome-border: var(--border, rgba(255, 255, 255, 0.08));
+    --nav-hover-bg: var(--surface-card, #2E2E33);
+    --nav-active-bg: var(--accent);
+    --accent-border: var(--accent);
+    --lime-accent: var(--accent);
+}
+
 /* ── Light Theme ── */
 :root[data-theme="light"],
 body[data-theme="light"] {
