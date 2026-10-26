@@ -1,5 +1,26 @@
-// Private Window Client Logic
+// Private Window Client Logic (Locked Dark Theme & Native Layout)
 (function() {
+    // ── Enforce & Permanently Lock Dark Theme ─────────────────────────
+    function enforceDarkTheme() {
+        if (document.documentElement.getAttribute('data-theme') !== 'dark') {
+            document.documentElement.setAttribute('data-theme', 'dark');
+        }
+        if (document.body && document.body.getAttribute('data-theme') !== 'dark') {
+            document.body.setAttribute('data-theme', 'dark');
+        }
+    }
+    enforceDarkTheme();
+
+    // Guard against any external or harmonizer theme mutations
+    try {
+        const themeObserver = new MutationObserver(() => {
+            if (document.documentElement.getAttribute('data-theme') !== 'dark') {
+                document.documentElement.setAttribute('data-theme', 'dark');
+            }
+        });
+        themeObserver.observe(document.documentElement, { attributes: true, attributeFilter: ['data-theme', 'style'] });
+    } catch (e) {}
+
     const tabsStrip = document.getElementById('tabs-strip');
     const btnNewTab = document.getElementById('btn-new-tab');
     const winMinBtn = document.getElementById('win-min-btn');
@@ -11,13 +32,19 @@
     const btnReload = document.getElementById('btn-reload');
     const btnHome = document.getElementById('btn-home');
     const urlInput = document.getElementById('url-input');
+    const btnClearOmnibar = document.getElementById('btn-clear-omnibar');
+    const identityBtn = document.getElementById('identity-btn');
+    const siteLockIcon = document.getElementById('site-lock-icon');
     const trackerCounter = document.getElementById('tracker-counter');
 
     let currentTabs = [];
     let currentActiveId = null;
+    let currentUrl = '';
 
-    // Window controls
+    // ── Apple macOS Window Controls ──────────────────────────────────
     if (winMinBtn) winMinBtn.onclick = () => window.electronAPI.send('private-window-minimize');
+    if (winCloseBtn) winCloseBtn.onclick = () => window.electronAPI.send('private-window-close');
+
     if (winMaxBtn) {
         winMaxBtn.onclick = () => window.electronAPI.send('private-window-maximize');
         let hoverTimer = null;
@@ -47,28 +74,102 @@
             e.preventDefault();
             triggerPrivateFlyout();
         });
+    }
 
-        window.addEventListener('keydown', (e) => {
-            if (e.altKey && (e.key === 'z' || e.key === 'Z')) {
-                e.preventDefault();
-                triggerPrivateFlyout();
-            } else if (e.key === 'Escape') {
-                window.electronAPI.send('hide-snap-flyout', 0);
+    // ── Omnibar Clear Button Controller ──────────────────────────────
+    function updateClearBtnVisibility() {
+        if (!btnClearOmnibar) return;
+        if (urlInput && urlInput.value && urlInput.value.trim().length > 0) {
+            btnClearOmnibar.style.display = 'flex';
+        } else {
+            btnClearOmnibar.style.display = 'none';
+        }
+    }
+
+    if (urlInput) {
+        urlInput.addEventListener('input', updateClearBtnVisibility);
+        urlInput.addEventListener('focus', updateClearBtnVisibility);
+    }
+
+    if (btnClearOmnibar) {
+        btnClearOmnibar.addEventListener('click', (e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            if (urlInput) {
+                urlInput.value = '';
+                urlInput.focus();
+                updateClearBtnVisibility();
             }
         });
     }
-    if (winCloseBtn) winCloseBtn.onclick = () => window.electronAPI.send('private-window-close');
 
-    // Tab interactions
+    function updateSiteLock(url) {
+        if (!identityBtn) return;
+        currentUrl = url || '';
+
+        const isHome = !url || url.includes('home.html') || url.includes('private-home.html') || url.startsWith('ocal://');
+        if (isHome) {
+            identityBtn.innerHTML = `
+                <svg width="18" height="18" viewBox="0 0 32 32" style="display: block; flex-shrink: 0;" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+                    <g transform="matrix(.266667 0 0 .266667 -17.954934 -5.057333)">
+                        <circle cx="127.332" cy="78.966" r="51.15" fill="#de5833"/>
+                        <defs>
+                            <path id="ddg_nav_A" d="M178.684 78.824c0 28.316-23.035 51.354-51.354 51.354-28.313 0-51.348-23.04-51.348-51.354s23.036-51.35 51.348-51.35c28.318 0 51.354 23.036 51.354 51.35z"/>
+                        </defs>
+                        <clipPath id="ddg_nav_B"><use xlink:href="#ddg_nav_A" href="#ddg_nav_A"/></clipPath>
+                        <g clip-path="url(#ddg_nav_B)">
+                            <path d="M148.293 155.158c-1.8-8.285-12.262-27.04-16.23-34.97s-7.938-19.1-6.13-26.322c.328-1.312-3.436-11.308-2.354-12.015 8.416-5.5 10.632.6 14.002-1.862 1.734-1.273 4.1 1.047 4.7-1.06 2.158-7.567-3.006-20.76-8.77-26.526-1.885-1.88-4.77-3.06-8.03-3.687-1.254-1.713-3.275-3.36-6.138-4.88-3.188-1.697-10.12-3.938-13.717-4.535-2.492-.4-3.055.287-4.12.46.992.088 5.7 2.414 6.615 2.55-.916.62-3.607-.028-5.324.742-.865.392-1.512 1.877-1.506 2.58 4.9-.496 12.574-.016 17.1 2-3.602.4-9.08.867-11.436 2.105-6.848 3.608-9.873 12.035-8.07 22.133 1.804 10.075 9.738 46.85 12.262 59.13 2.525 12.264-5.408 20.2-10.455 22.354l5.408.363-1.8 3.967c6.484.72 13.695-1.44 13.695-1.44-1.438 3.965-11.176 5.412-11.176 5.412s4.7 1.438 12.258-1.447l12.263-4.688 3.604 9.373 6.854-6.847 2.885 7.2c.014-.001 5.424-1.808 3.62-10.103z" fill="#d5d7d8"/>
+                            <path d="M150.47 153.477c-1.795-8.3-12.256-27.043-16.228-34.98s-7.935-19.112-6.13-26.32c.335-1.3.34-6.668 1.43-7.38 8.4-5.494 7.812-.184 11.187-2.645 1.74-1.27 3.133-2.806 3.738-4.912 2.164-7.572-3.006-20.76-8.773-26.53-1.88-1.88-4.768-3.062-8.023-3.686-1.252-1.718-3.27-3.36-6.13-4.882-5.4-2.862-12.074-4.006-18.266-2.883 1 .1 3.256 2.138 4.168 2.273-1.38.936-5.053.815-5.03 2.896 4.916-.492 10.303.285 14.834 2.297-3.602.4-6.955 1.3-9.3 2.543-6.854 3.603-8.656 10.812-6.854 20.914 1.807 10.097 9.742 46.873 12.256 59.126 2.527 12.26-5.402 20.188-10.45 22.354l5.408.36-1.8 3.973c6.484.72 13.695-1.44 13.695-1.44-1.438 3.974-11.176 5.406-11.176 5.406s4.686 1.44 12.258-1.445l12.27-4.688 3.604 9.373 6.852-6.85 2.9 7.215c-.016.007 5.388-1.797 3.58-10.088z" fill="#fff"/>
+                            <path d="M109.02 70.69c0-2.093 1.693-3.787 3.79-3.787 2.1 0 3.785 1.694 3.785 3.787s-1.695 3.786-3.785 3.786c-2.096.001-3.79-1.692-3.79-3.786z" fill="#2d4f8e"/>
+                            <path d="M113.507 69.43a.98.98 0 0 1 .98-.983c.543 0 .984.438.984.983s-.44.984-.984.984c-.538.001-.98-.44-.98-.984z" fill="#fff"/>
+                            <path d="M134.867 68.445c0-1.793 1.46-3.25 3.252-3.25 1.8 0 3.256 1.457 3.256 3.25 0 1.8-1.455 3.258-3.256 3.258a3.26 3.26 0 0 1-3.252-3.258z" fill="#2d4f8e"/>
+                            <path d="M138.725 67.363c0-.463.38-.843.838-.843a.84.84 0 0 1 .846.843c0 .47-.367.842-.846.842a.84.84 0 0 1-.838-.842z" fill="#fff"/>
+                            <linearGradient id="ddg_nav_C" gradientUnits="userSpaceOnUse" x1="105.318" y1="60.979" x2="113.887" y2="60.979"><stop offset=".006" stop-color="#6176b9"/><stop offset=".691" stop-color="#394a9f"/></linearGradient>
+                            <path d="M113.886 59.718s-2.854-1.3-5.63.453-2.668 3.523-2.668 3.523-1.473-3.283 2.453-4.892 5.844.916 5.844.916z" fill="url(#ddg_nav_C)"/>
+                            <linearGradient id="ddg_nav_D" gradientUnits="userSpaceOnUse" x1="132.273" y1="58.371" x2="140.078" y2="58.371"><stop offset=".006" stop-color="#6176b9"/><stop offset=".691" stop-color="#394a9f"/></linearGradient>
+                            <path d="M140.078 59.458s-2.05-1.172-3.643-1.152c-3.27.043-4.162 1.488-4.162 1.488s.55-3.445 4.732-2.754c2.268.377 3.073 2.418 3.073 2.418z" fill="url(#ddg_nav_D)"/>
+                        </g>
+                        <path d="M124.4 85.295c.38-2.3 6.3-6.625 10.5-6.887 4.2-.265 5.5-.205 9-1.043s12.535-3.088 15.033-4.242c2.504-1.156 13.104.572 5.63 4.738-3.232 1.8-11.943 5.13-18.172 6.987-6.22 1.86-10-1.776-12.06 1.28-1.646 2.432-.334 5.762 7.1 6.453 10.037.93 19.66-4.52 20.72-1.625s-8.625 6.508-14.525 6.623c-5.893.1-17.77-3.896-19.555-5.137s-4.165-4.13-3.67-7.148z" fill="#fdd20a"/>
+                        <path d="M128.943 115.592s-14.102-7.52-14.332-4.47c-.238 3.056 0 15.5 1.643 16.45s13.396-6.108 13.396-6.108zm5.403-.474s9.635-7.285 11.754-6.815c2.1.48 2.582 15.5.7 16.23-1.88.7-12.908-3.813-12.908-3.813z" fill="#65bc46"/>
+                        <path d="M125.53 116.4c0 4.932-.7 7.05 1.4 7.52s6.104 0 7.518-.938.232-7.28-.232-8.465c-.477-1.174-8.696-.232-8.696 1.884z" fill="#43a244"/>
+                        <path d="M126.426 115.292c0 4.933-.707 7.05 1.4 7.52 2.106.48 6.104 0 7.52-.938 1.4-.94.23-7.28-.236-8.466-.473-1.173-8.692-.227-8.692 1.885z" fill="#65bc46"/>
+                    </g>
+                </svg>
+            `;
+            identityBtn.title = 'InPrivate Search with DuckDuckGo — Zero History & Data Saved';
+        } else if (url.startsWith('http://')) {
+            identityBtn.innerHTML = '<i class="fas fa-lock-open site-lock-icon insecure" id="site-lock-icon"></i>';
+            identityBtn.title = 'Connection is not secure (HTTP)';
+        } else {
+            identityBtn.innerHTML = '<i class="fas fa-lock site-lock-icon secure" id="site-lock-icon"></i>';
+            identityBtn.title = 'Connection is secure (HTTPS)';
+        }
+    }
+
+    if (identityBtn) {
+        identityBtn.addEventListener('click', (e) => {
+            e.stopPropagation();
+            const rect = identityBtn.getBoundingClientRect();
+            // Show modular site security & permissions info
+            window.electronAPI.send('show-site-info', {
+                x: rect.left,
+                y: rect.top,
+                width: rect.width,
+                height: rect.height
+            });
+        });
+    }
+
+    // ── Tab Interactions ─────────────────────────────────────────────
     if (btnNewTab) btnNewTab.onclick = () => window.electronAPI.send('private-new-tab');
 
-    // Nav interactions
+    // ── Nav Interactions ─────────────────────────────────────────────
     if (btnBack) btnBack.onclick = () => window.electronAPI.send('private-back');
     if (btnForward) btnForward.onclick = () => window.electronAPI.send('private-forward');
     if (btnReload) btnReload.onclick = () => window.electronAPI.send('private-reload');
     if (btnHome) btnHome.onclick = () => window.electronAPI.send('private-home');
 
-    let privateEngine = 'ocal';
+    let privateEngine = 'duckduckgo';
     if (window.electronAPI?.getSettings) {
         window.electronAPI.getSettings().then(s => {
             if (s?.searchEngine) privateEngine = s.searchEngine;
@@ -89,12 +190,12 @@
         } else {
             if (privateEngine === 'ocal') {
                 target = `http://localhost:8080/search?q=${encodeURIComponent(raw)}`;
-            } else if (privateEngine === 'duckduckgo') {
-                target = `https://duckduckgo.com/?q=${encodeURIComponent(raw)}`;
             } else if (privateEngine === 'brave') {
                 target = `https://search.brave.com/search?q=${encodeURIComponent(raw)}`;
-            } else {
+            } else if (privateEngine === 'google') {
                 target = `https://www.google.com/search?q=${encodeURIComponent(raw)}`;
+            } else {
+                target = `https://duckduckgo.com/?q=${encodeURIComponent(raw)}`;
             }
         }
 
@@ -109,14 +210,14 @@
         currentTabs.forEach(tab => {
             const tabEl = document.createElement('div');
             tabEl.className = `private-tab ${tab.id === activeId ? 'active' : ''}`;
-            tabEl.title = tab.title || 'Private Tab';
+            tabEl.title = tab.title || 'InPrivate Tab';
 
             // Favicon
             const favEl = document.createElement('div');
             favEl.className = 'tab-favicon';
             const isHome = tab.url && (tab.url.includes('home.html') || tab.url.includes('private-home.html'));
             if (isHome) {
-                favEl.innerHTML = `<i class="fa-solid fa-user-secret" style="color: #c084fc;"></i>`;
+                favEl.innerHTML = `<i class="fas fa-user-secret" style="color: #c084fc;"></i>`;
             } else if (tab.favicon && !tab.favicon.includes('default')) {
                 favEl.innerHTML = `<img src="${tab.favicon}" alt="" onerror="this.parentElement.innerHTML='<i class=\\'fas fa-shield-halved\\'></i>'">`;
             } else {
@@ -158,7 +259,7 @@
         }
     }
 
-    // IPC Listeners
+    // ── IPC Listeners ─────────────────────────────────────────────────
     window.electronAPI?.on?.('private-tabs-updated', (event, data) => {
         if (!data) return;
         renderTabs(data.tabs, data.activeTabId);
@@ -166,35 +267,43 @@
 
     window.electronAPI?.on?.('private-tab-state', (event, state) => {
         if (!state) return;
-        btnBack.disabled = !state.canGoBack;
-        btnForward.disabled = !state.canGoForward;
+        if (btnBack) btnBack.disabled = !state.canGoBack;
+        if (btnForward) btnForward.disabled = !state.canGoForward;
+
+        const url = state.url || '';
+        updateSiteLock(url);
 
         if (document.activeElement !== urlInput) {
-            if (state.url && !state.url.includes('home.html') && !state.url.includes('private-home.html')) {
-                urlInput.value = state.url;
+            if (url && !url.includes('home.html') && !url.includes('private-home.html')) {
+                urlInput.value = url;
             } else {
                 urlInput.value = '';
             }
+            updateClearBtnVisibility();
         }
-        if (state.trackersBlocked !== undefined) {
+        if (state.trackersBlocked !== undefined && trackerCounter) {
             trackerCounter.textContent = `${state.trackersBlocked} Blocked`;
         }
     });
 
     window.electronAPI?.on?.('private-trackers-updated', (event, count) => {
-        if (count !== undefined) {
+        if (count !== undefined && trackerCounter) {
             trackerCounter.textContent = `${count} Blocked`;
         }
     });
 
     window.electronAPI?.on?.('window-is-maximized', (event, isMax) => {
         if (winMaxBtn) {
-            winMaxBtn.innerHTML = isMax ? '<i class="far fa-window-restore"></i>' : '<i class="far fa-square"></i>';
             winMaxBtn.title = isMax ? 'Restore' : 'Maximize';
+            if (isMax) {
+                winMaxBtn.innerHTML = '<svg width="7" height="7" viewBox="0 0 10 10"><rect x="3" y="1.5" width="5.5" height="5.5" rx="1.2" fill="none" stroke="currentColor" stroke-width="1.3"/><rect x="1.5" y="3" width="5.5" height="5.5" rx="1.2" fill="none" stroke="currentColor" stroke-width="1.3"/></svg>';
+            } else {
+                winMaxBtn.innerHTML = '<svg width="7" height="7" viewBox="0 0 10 10"><rect x="1.5" y="1.5" width="7" height="7" rx="1.5" fill="none" stroke="currentColor" stroke-width="1.5"/></svg>';
+            }
         }
     });
 
-    // Keyboard Shortcuts for Private Window
+    // ── Keyboard Shortcuts for Private Window ─────────────────────────
     window.addEventListener('keydown', (e) => {
         const cmdOrCtrl = e.metaKey || e.ctrlKey;
         if (cmdOrCtrl && e.key.toLowerCase() === 't') {
@@ -218,92 +327,20 @@
             window.electronAPI.send('private-forward');
         } else if (e.altKey && (e.key === 'z' || e.key === 'Z')) {
             e.preventDefault();
-            toggleSnapFlyout();
+            if (winMaxBtn) {
+                const rect = winMaxBtn.getBoundingClientRect();
+                window.electronAPI.send('show-snap-flyout', {
+                    x: rect.left,
+                    y: rect.top,
+                    width: rect.width,
+                    height: rect.height
+                });
+            }
         } else if (e.key === 'Escape') {
-            hideSnapFlyout();
+            window.electronAPI.send('hide-snap-flyout', 0);
         }
     });
 
-    // ── Windows 11 Snap Layouts Flyout Engine ────────────────────────
-    const snapFlyout = document.getElementById('win11-snap-flyout');
-    let showTimer = null;
-    let hideTimer = null;
-
-    function showSnapFlyout() {
-        if (!snapFlyout || !winMaxBtn) return;
-        clearTimeout(hideTimer);
-        clearTimeout(showTimer);
-        const rect = winMaxBtn.getBoundingClientRect();
-        snapFlyout.style.display = 'block';
-        const rightMargin = Math.max(10, window.innerWidth - rect.right - 20);
-        snapFlyout.style.right = rightMargin + 'px';
-        snapFlyout.style.top = (rect.bottom + 6) + 'px';
-    }
-
-    function hideSnapFlyout(delay = 0) {
-        clearTimeout(showTimer);
-        clearTimeout(hideTimer);
-        if (delay > 0) {
-            hideTimer = setTimeout(() => {
-                if (snapFlyout) snapFlyout.style.display = 'none';
-            }, delay);
-        } else {
-            if (snapFlyout) snapFlyout.style.display = 'none';
-        }
-    }
-
-    function toggleSnapFlyout() {
-        if (!snapFlyout) return;
-        if (snapFlyout.style.display === 'none' || !snapFlyout.style.display) {
-            showSnapFlyout();
-        } else {
-            hideSnapFlyout();
-        }
-    }
-
-    if (winMaxBtn && snapFlyout) {
-        winMaxBtn.addEventListener('mouseenter', () => {
-            clearTimeout(hideTimer);
-            clearTimeout(showTimer);
-            showTimer = setTimeout(showSnapFlyout, 320);
-        });
-
-        winMaxBtn.addEventListener('mouseleave', () => {
-            hideSnapFlyout(260);
-        });
-
-        winMaxBtn.addEventListener('contextmenu', (e) => {
-            e.preventDefault();
-            showSnapFlyout();
-        });
-
-        snapFlyout.addEventListener('mouseenter', () => {
-            clearTimeout(hideTimer);
-            clearTimeout(showTimer);
-        });
-
-        snapFlyout.addEventListener('mouseleave', () => {
-            hideSnapFlyout(220);
-        });
-
-        snapFlyout.querySelectorAll('.snap-zone').forEach(zoneEl => {
-            zoneEl.addEventListener('click', (e) => {
-                e.stopPropagation();
-                const zone = zoneEl.getAttribute('data-zone');
-                if (zone && window.electronAPI && typeof window.electronAPI.snapWindow === 'function') {
-                    window.electronAPI.snapWindow(zone);
-                }
-                hideSnapFlyout();
-            });
-        });
-
-        document.addEventListener('pointerdown', (e) => {
-            if (snapFlyout.style.display !== 'none' && !snapFlyout.contains(e.target) && e.target !== winMaxBtn) {
-                hideSnapFlyout();
-            }
-        });
-    }
-
-    // Initial ready signal to request tabs
+    // Request tabs and view bounds from main
     window.electronAPI?.send?.('private-window-ready');
 })();

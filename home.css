@@ -113,14 +113,25 @@ body,
     display: none !important;
 }
 
-body.sp-private-mode {
-    background: #0f1015 !important;
+html.sp-private-mode,
+html.sp-private-mode body,
+body.sp-private-mode,
+body.sp-private-mode[data-theme="dark"],
+html[data-theme="dark"] body.sp-private-mode,
+body.sp-private-mode .sp-dashboard-body {
+    background: #0c0d12 !important;
+    background-color: #0c0d12 !important;
     color: #ffffff !important;
     overflow-x: hidden !important;
 }
 
-body.sp-private-mode .sp-wallpaper-bg {
-    background: #0f1015 !important;
+html.sp-private-mode .sp-wallpaper-bg,
+body.sp-private-mode .sp-wallpaper-bg,
+body.sp-private-mode[data-theme="dark"] .sp-wallpaper-bg,
+html[data-theme="dark"] body.sp-private-mode .sp-wallpaper-bg,
+html[data-theme="dark"].sp-private-mode .sp-wallpaper-bg {
+    background: #0c0d12 !important;
+    background-color: #0c0d12 !important;
 }
 
 /* Centered Clean Dashboard Wrapper in Private Mode (Matches Edge clean aesthetic) */
@@ -371,13 +382,16 @@ body.sp-private-mode .sp-timeline-pill .sp-tp-sub {
 
 /* Solid Search Bar */
 body.sp-private-mode .sp-search-pill {
-    background: #161722 !important;
-    border: 1px solid #282a3a !important;
-    box-shadow: none !important;
+    background: #141520 !important;
+    border: 1px solid #282a3c !important;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.25) !important;
+    border-radius: 100px !important;
+    transition: all 0.22s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
 body.sp-private-mode .sp-search-pill:focus-within {
-    border-color: #8b5cf6 !important;
+    border-color: #a855f7 !important;
+    box-shadow: 0 0 0 3px rgba(168, 85, 247, 0.25), 0 6px 24px rgba(0, 0, 0, 0.35) !important;
 }
 
 body.sp-private-mode .sp-search-input {
@@ -389,12 +403,13 @@ body.sp-private-mode .sp-search-input::placeholder {
 }
 
 body.sp-private-mode .sp-search-btn {
-    background: #8b5cf6 !important;
+    background: #a855f7 !important;
     color: #ffffff !important;
 }
 
 body.sp-private-mode .sp-search-btn:hover {
-    background: #7c3aed !important;
+    background: #9333ea !important;
+    transform: scale(1.05);
 }
 
 /* ── Solid-Color Bento Benefit Cards ─────────────────────────── */
@@ -406,38 +421,40 @@ body.sp-private-mode .sp-search-btn:hover {
 
 /* ── Clean Dual-Card Minimal InPrivate Styling (Inspired by Edge) ── */
 .sp-private-dual-card {
-    background: #161722;
-    border: 1px solid #282a3a;
+    background: #141520;
+    border: 1px solid #232536;
     border-radius: 16px;
-    padding: 22px 26px;
+    padding: 24px 28px;
     display: flex;
     flex-direction: column;
     gap: 14px;
-    transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+    transition: all 0.22s cubic-bezier(0.16, 1, 0.3, 1);
     box-sizing: border-box;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.25);
 }
 
 .sp-private-dual-card:hover {
-    background: #1a1c29;
-    border-color: #3b3f54;
-    transform: translateY(-1px);
+    background: #181a28;
+    border-color: rgba(168, 85, 247, 0.35);
+    transform: translateY(-2px);
+    box-shadow: 0 8px 30px rgba(0, 0, 0, 0.35);
 }
 
 .sp-pdc-header {
     display: flex;
     align-items: center;
-    gap: 10px;
+    gap: 12px;
 }
 
 .sp-pdc-check {
-    color: #38bdf8;
-    font-size: 16px;
+    color: #34d399; /* Emerald Green */
+    font-size: 17px;
     flex-shrink: 0;
 }
 
 .sp-pdc-cross {
-    color: #38bdf8;
-    font-size: 16px;
+    color: #f43f5e; /* Rose Red */
+    font-size: 17px;
     flex-shrink: 0;
 }
 

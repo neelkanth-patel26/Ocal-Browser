@@ -1312,6 +1312,16 @@ function applyCyberStealth(webContents) {
     webContents.executeJavaScript(stealthScript).catch(() => {});
 }
 
+function applyBrowserPromoShield(webContents) {
+    if (!webContents || webContents.isDestroyed()) return;
+    try {
+        const { injectBrowserPromoShield } = require('./browser-promo-shield.js');
+        if (injectBrowserPromoShield) {
+            injectBrowserPromoShield(webContents);
+        }
+    } catch (e) {}
+}
+
 function setupSecurityHeadersFix() {
     // Header policy, stealth sanitization, and YouTube stream bypass are unified into applyShieldSettings()
 }
@@ -2757,6 +2767,11 @@ function setupViewEvents(tabId, view, side = 'left') {
             `;
             webContents.executeJavaScript(injectScript).catch(() => {});
         }
+        applyBrowserPromoShield(webContents);
+    });
+
+    webContents.on('did-create-document-element', () => {
+        applyBrowserPromoShield(webContents);
     });
 
     // Inject Robust YouTube Enhancer (AdShield + Dislike Recovery) & Battery Saver
@@ -8868,6 +8883,13 @@ ipcMain.on('ungroup', (e, groupId) => {
 });
 
 ipcMain.on('update-setting', (e, key, val) => {
+    // Security check: Private window / private tabs must NEVER mutate persistent userSettings!
+    const isFromPrivate = (typeof privateWindow !== 'undefined' && privateWindow && !privateWindow.isDestroyed() && e.sender === privateWindow.webContents) ||
+        (typeof privateViews !== 'undefined' && privateViews.some(v => v.view && !v.view.webContents.isDestroyed() && v.view.webContents === e.sender));
+    if (isFromPrivate && (key === 'accentColor' || key === 'themeMode' || key === 'activeThemeCombo')) {
+        return;
+    }
+
     userSettings[key] = val;
 
     if (key === 'accentColor') {
@@ -9617,6 +9639,11 @@ ipcMain.on('get-theme-info-sync', (event) => {
 });
 
 ipcMain.on('get-fingerprint-protection-sync', (event) => {
+    // InPrivate browsing tabs always have strict fingerprint protection active by default
+    if (typeof privateViews !== 'undefined' && Array.isArray(privateViews) && privateViews.some(v => v.view && !v.view.webContents.isDestroyed() && v.view.webContents.id === event.sender.id)) {
+        event.returnValue = true;
+        return;
+    }
     event.returnValue = (userSettings.fingerprintProtection !== false);
 });
 
@@ -10706,26 +10733,38 @@ function createSiteInfoView() {
 }
 
 function hideSiteInfo() {
-    if (!siteInfoView || !mainWindow) return;
-    if (mainWindow.getBrowserViews().includes(siteInfoView)) {
+    if (!siteInfoView) return;
+    if (mainWindow && !mainWindow.isDestroyed() && mainWindow.getBrowserViews().includes(siteInfoView)) {
         mainWindow.removeBrowserView(siteInfoView);
+    }
+    if (privateWindow && !privateWindow.isDestroyed() && privateWindow.getBrowserViews().includes(siteInfoView)) {
+        privateWindow.removeBrowserView(siteInfoView);
     }
 }
 
 ipcMain.on('show-site-info', (e, bounds) => {
-    if (!mainWindow || mainWindow.isDestroyed()) return;
+    const isPrivate = (privateWindow && !privateWindow.isDestroyed() && e.sender === privateWindow.webContents);
+    const targetWin = isPrivate ? privateWindow : mainWindow;
+    if (!targetWin || targetWin.isDestroyed()) return;
     if (!siteInfoView) createSiteInfoView();
 
-    if (mainWindow.getBrowserViews().includes(siteInfoView)) {
-        mainWindow.removeBrowserView(siteInfoView);
+    if (targetWin.getBrowserViews().includes(siteInfoView)) {
+        targetWin.removeBrowserView(siteInfoView);
         return;
     }
 
-    const activeView = views.find(v => v.id === activeViewId)?.view;
-    const url = activeView && !activeView.webContents.isDestroyed() ? activeView.webContents.getURL() : '';
+    let url = '';
+    if (isPrivate) {
+        const activeEntry = privateViews.find(v => v.id === activePrivateTabId);
+        url = activeEntry && activeEntry.view && !activeEntry.view.webContents.isDestroyed() ? activeEntry.view.webContents.getURL() : '';
+    } else {
+        const activeView = views.find(v => v.id === activeViewId)?.view;
+        url = activeView && !activeView.webContents.isDestroyed() ? activeView.webContents.getURL() : '';
+    }
 
     hidePopups();
-    mainWindow.addBrowserView(siteInfoView);
+    hideSiteInfo();
+    targetWin.addBrowserView(siteInfoView);
 
     // Position below the address bar identity area with reduced gap
     const zoom = getOptimalZoomFactor();
@@ -10739,7 +10778,7 @@ ipcMain.on('show-site-info', (e, bounds) => {
         height: popupHeight
     });
 
-    mainWindow.setTopBrowserView(siteInfoView);
+    targetWin.setTopBrowserView(siteInfoView);
 
     // Fetch permissions for this origin to pass to the popup
     let permissions = { notifications: 'allow', popups: 'allow', audio: 'allow' };
@@ -10751,7 +10790,7 @@ ipcMain.on('show-site-info', (e, bounds) => {
     } catch (e) { }
 
     const sendUpdate = () => {
-        siteInfoView.webContents.send('update-site-info', { url, permissions });
+        siteInfoView.webContents.send('update-site-info', { url, permissions, isPrivate });
     };
 
     if (siteInfoView.webContents.isLoading()) {
@@ -14335,44 +14374,137 @@ function getPrivateSession() {
         const partition = 'private-session-' + Date.now();
         privateSession = session.fromPartition(partition);
 
-        // Strict third-party tracker, telemetry, and analytics interception
-        const trackerPatterns = [
-            '*://*.google-analytics.com/*',
-            '*://*.googletagmanager.com/*',
-            '*://*.doubleclick.net/*',
-            '*://*.facebook.com/tr/*',
-            '*://*.connect.facebook.net/*',
-            '*://*.criteo.com/*',
-            '*://*.criteo.net/*',
-            '*://*.hotjar.com/*',
-            '*://*.clarity.ms/*',
-            '*://*.scorecardresearch.com/*',
-            '*://*.segment.com/*',
-            '*://*.segment.io/*',
-            '*://*.mixpanel.com/*',
-            '*://*.amplitude.com/*',
-            '*://*.taboola.com/*',
-            '*://*.outbrain.com/*',
-            '*://*.adnxs.com/*',
-            '*://*.quantserve.com/*',
-            '*://*.pubmatic.com/*'
-        ];
-
+        // 1. Native Turbo Tracker & Ad Blocker + HTTPS Upgrade + Clean Tracking Params
         try {
-            privateSession.webRequest.onBeforeRequest({ urls: trackerPatterns }, (details, callback) => {
-                if (activePrivateTabId) {
-                    const tab = privateViews.find(t => t.id === activePrivateTabId);
+            privateSession.webRequest.onBeforeRequest({ urls: ['*://*/*'] }, (details, callback) => {
+                const { url, resourceType, webContentsId } = details;
+                if (!url) return callback({});
+
+                // Internal URLs are always permitted
+                if (url.startsWith('ocal://') || url.startsWith('file://') || url.startsWith('chrome-extension://') || url.startsWith('devtools://')) {
+                    return callback({});
+                }
+
+                // A. HTTPS Upgrade for mainFrame navigation (excluding localhost/127.0.0.1)
+                if (resourceType === 'mainFrame' && url.startsWith('http://') && !url.includes('localhost') && !url.includes('127.0.0.1')) {
+                    try {
+                        const upgradeUrl = new URL(url);
+                        upgradeUrl.protocol = 'https:';
+                        return callback({ redirectURL: upgradeUrl.toString() });
+                    } catch (e) {}
+                }
+
+                // B. Tracking Parameter Stripper (fbclid, gclid, utm_*, etc.)
+                if (resourceType === 'mainFrame' && url.includes('?')) {
+                    const cleaned = cleanTrackingParameters(url);
+                    if (cleaned !== url) {
+                        return callback({ redirectURL: cleaned });
+                    }
+                }
+
+                // C. Tracker and Ad Blocker Enabled by Default in Private Mode
+                const blockType = isAdOrTrackerUrl(url);
+                if (blockType) {
+                    let tab = null;
+                    if (webContentsId) {
+                        tab = privateViews.find(t => t.view && !t.view.webContents.isDestroyed() && t.view.webContents.id === webContentsId);
+                    }
+                    if (!tab && activePrivateTabId) {
+                        tab = privateViews.find(t => t.id === activePrivateTabId);
+                    }
                     if (tab) {
                         tab.trackersBlocked = (tab.trackersBlocked || 0) + 1;
                         if (privateWindow && !privateWindow.isDestroyed()) {
                             privateWindow.webContents.send('private-trackers-updated', tab.trackersBlocked);
                         }
                     }
+                    return callback({ cancel: true });
                 }
-                callback({ cancel: true });
+
+                callback({});
             });
         } catch (err) {
-            console.error('[PrivateWindow] Error setting up tracker interceptor:', err);
+            console.error('[PrivateWindow] Error setting up onBeforeRequest interceptor:', err);
+        }
+
+        // 2. Cookie Isolation & Privacy Headers in Outgoing Requests
+        try {
+            privateSession.webRequest.onBeforeSendHeaders({ urls: ['*://*/*'] }, (details, callback) => {
+                const headers = details.requestHeaders || {};
+                const url = details.url || '';
+                const resourceType = details.resourceType || '';
+                const initiator = details.initiator || '';
+
+                // Enforce strict Privacy Signals
+                headers['DNT'] = '1';
+                headers['Sec-GPC'] = '1';
+                headers['Sec-CH-Prefers-Color-Scheme'] = '"dark"';
+
+                // Strip Electron runtime signatures
+                delete headers['X-Requested-With'];
+                delete headers['X-Electron-Id'];
+                delete headers['X-Electron-Version'];
+
+                // ── Cookie Isolation: Block third-party / cross-site cookies ──
+                if (resourceType !== 'mainFrame' && initiator) {
+                    try {
+                        const initHost = new URL(initiator).hostname.toLowerCase();
+                        const targetHost = new URL(url).hostname.toLowerCase();
+                        const getBaseDomain = (h) => {
+                            const p = h.split('.');
+                            return p.length > 2 ? p.slice(-2).join('.') : h;
+                        };
+                        if (getBaseDomain(initHost) !== getBaseDomain(targetHost)) {
+                            delete headers['Cookie'];
+                            delete headers['cookie'];
+                        }
+                    } catch (e) {}
+                }
+
+                // Standard Chromium User-Agent & Client Hints
+                if (!url.startsWith('ocal://') && !url.startsWith('file://')) {
+                    headers['User-Agent'] = OCAL_USER_AGENT;
+                    headers['Sec-CH-UA'] = `"Chromium";v="${chromeMajor}", "Google Chrome";v="${chromeMajor}", "Not?A_Brand";v="99"`;
+                    headers['Sec-CH-UA-Mobile'] = '?0';
+                    headers['Sec-CH-UA-Platform'] = '"Windows"';
+                    headers['Sec-CH-UA-Platform-Version'] = '"15.0.0"';
+                    headers['Upgrade-Insecure-Requests'] = '1';
+                }
+
+                callback({ requestHeaders: headers });
+            });
+        } catch (err) {
+            console.error('[PrivateWindow] Error setting up onBeforeSendHeaders:', err);
+        }
+
+        // 3. Cookie Isolation: Block third-party Set-Cookie in Responses
+        try {
+            privateSession.webRequest.onHeadersReceived({ urls: ['*://*/*'] }, (details, callback) => {
+                const headers = details.responseHeaders || {};
+                const url = details.url || '';
+                const resourceType = details.resourceType || '';
+                const initiator = details.initiator || '';
+
+                // ── Cookie Isolation: Strip third-party Set-Cookie headers ──
+                if (resourceType !== 'mainFrame' && initiator) {
+                    try {
+                        const initHost = new URL(initiator).hostname.toLowerCase();
+                        const targetHost = new URL(url).hostname.toLowerCase();
+                        const getBaseDomain = (h) => {
+                            const p = h.split('.');
+                            return p.length > 2 ? p.slice(-2).join('.') : h;
+                        };
+                        if (getBaseDomain(initHost) !== getBaseDomain(targetHost)) {
+                            delete headers['Set-Cookie'];
+                            delete headers['set-cookie'];
+                        }
+                    } catch (e) {}
+                }
+
+                callback({ responseHeaders: headers });
+            });
+        } catch (err) {
+            console.error('[PrivateWindow] Error setting up onHeadersReceived:', err);
         }
 
         // Isolated downloads handling
@@ -14403,12 +14535,13 @@ function openPrivateWindow(targetUrl = null) {
         title: 'Ocal Browser - Private Window',
         icon: process.platform === 'win32' ? appIconPath : (appIcon || appIconPath),
         frame: false,
-        backgroundColor: '#0f1015',
+        backgroundColor: '#0c0d12',
         resizable: true,
         thickFrame: true,
         titleBarStyle: 'hidden',
         webPreferences: {
             preload: path.join(__dirname, 'preload.js'),
+            session: getPrivateSession(),
             contextIsolation: true,
             nodeIntegration: false,
             devTools: true
@@ -14516,8 +14649,38 @@ function createPrivateTab(url = null) {
         }
     });
 
-    view.setBackgroundColor('#0f1015');
+    view.setBackgroundColor('#0c0d12');
     view.webContents.setUserAgent(OCAL_USER_AGENT);
+
+    // Strict Anti-Fingerprinting Shield injected into every private tab by default
+    const injectAntiFingerprint = () => {
+        if (!view || !view.webContents || view.webContents.isDestroyed()) return;
+        try {
+            const { ANTI_FINGERPRINT_SCRIPT } = require('./anti-fingerprint.js');
+            if (ANTI_FINGERPRINT_SCRIPT) {
+                view.webContents.executeJavaScript(ANTI_FINGERPRINT_SCRIPT).catch(() => {});
+            }
+        } catch (e) {}
+        try {
+            const stealthScript = `
+                (function() {
+                    try {
+                        const originalAttachShadow = Element.prototype.attachShadow;
+                        Element.prototype.attachShadow = function(options) {
+                            return originalAttachShadow.call(this, { ...options, mode: 'open' });
+                        };
+                    } catch(e) {}
+                })();
+            `;
+            view.webContents.executeJavaScript(stealthScript).catch(() => {});
+        } catch (e) {}
+        try {
+            applyBrowserPromoShield(view.webContents);
+        } catch (e) {}
+    };
+
+    view.webContents.on('did-create-document-element', injectAntiFingerprint);
+    view.webContents.on('dom-ready', injectAntiFingerprint);
 
     // Context menu support inside private tab
     setupContextMenu(view.webContents);

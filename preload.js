@@ -198,8 +198,49 @@ if (_stealthWebFrame && !_isInternalEarly) {
                 _stealthWebFrame.executeJavaScript(ANTI_FINGERPRINT_SCRIPT);
             }
         }
+
+        // ── Browser Promo Shield (Search Engine Download Promo Killer) ──
+        try {
+            const { BROWSER_PROMO_CSS, BROWSER_PROMO_CLEANER_SCRIPT } = require('./browser-promo-shield.js');
+            if (_stealthWebFrame && BROWSER_PROMO_CSS) {
+                _stealthWebFrame.insertCSS(BROWSER_PROMO_CSS);
+            }
+            if (_stealthWebFrame && BROWSER_PROMO_CLEANER_SCRIPT) {
+                _stealthWebFrame.executeJavaScript(BROWSER_PROMO_CLEANER_SCRIPT);
+            }
+        } catch (e) {}
     } catch (e) {}
 }
+
+// ── Browser Promo Shield Early DOM Style Injection ──
+(function initEarlyPromoShield() {
+    try {
+        const url = (typeof window !== 'undefined' && window.location && window.location.href) || '';
+        const isInternal = url.startsWith('ocal://') || 
+                           url.startsWith('file://') || 
+                           url.includes('home.html') ||
+                           url.startsWith('chrome-extension://');
+        if (isInternal) return;
+
+        const { BROWSER_PROMO_CSS } = require('./browser-promo-shield.js');
+        if (BROWSER_PROMO_CSS) {
+            const applyPromoStyle = () => {
+                if (document.getElementById('ocal-browser-promo-shield-style')) return;
+                const style = document.createElement('style');
+                style.id = 'ocal-browser-promo-shield-style';
+                style.textContent = BROWSER_PROMO_CSS;
+                const target = document.head || document.documentElement;
+                if (target) target.appendChild(style);
+            };
+            if (document.head || document.documentElement) {
+                applyPromoStyle();
+            } else {
+                document.addEventListener('DOMContentLoaded', applyPromoStyle, { once: true });
+            }
+        }
+    } catch (e) {}
+})();
+
 
 // ── Seamless Early Webview Corner Rounding & Scrollbar Masking (Active Before Page Loads) ──
 (function initEarlyCornerMasks() {
@@ -1741,56 +1782,70 @@ window.addEventListener('DOMContentLoaded', () => {
     
     // Global internal page theme synchronization
     if (window.location.protocol === 'file:' || window.location.protocol === 'ocal:') {
-        function getContrastColor(color) {
-            if (!color) return '#FFFFFF';
-            let hex = color.replace('#', '');
-            if (hex.length === 3) hex = hex.split('').map(c => c + c).join('');
-            const r = parseInt(hex.substring(0, 2), 16) || 0;
-            const g = parseInt(hex.substring(2, 4), 16) || 0;
-            const b = parseInt(hex.substring(4, 6), 16) || 0;
-            const yiq = (r * 299 + g * 587 + b * 114) / 1000;
-            return yiq >= 150 ? '#111111' : '#FFFFFF';
-        }
+        const isPrivatePage = (function() {
+            try {
+                if (window.location.search && window.location.search.includes('private=true')) return true;
+                if (window.location.hash && window.location.hash.includes('private')) return true;
+                if (window.location.pathname && (window.location.pathname.includes('private-window') || window.location.pathname.includes('private-home'))) return true;
+                if (window.location.href && (window.location.href.includes('private=true') || window.location.href.includes('private-window') || window.location.href.includes('private-home'))) return true;
+                if (document.documentElement && (document.documentElement.classList.contains('sp-private-mode') || document.documentElement.classList.contains('private-mode'))) return true;
+            } catch (e) {}
+            return false;
+        })();
 
-        function applyGlobalTheme(s) {
-            if (!s) return;
-            const theme = s.themeMode || 'dark';
-            document.documentElement.setAttribute('data-theme', theme);
-            if (document.body) document.body.setAttribute('data-theme', theme);
-            try { localStorage.setItem('ocal-settings-theme', theme); } catch (e) {}
-
-            if (s.accentColor) {
-                try { localStorage.setItem('ocal-settings-accent', s.accentColor); } catch (e) {}
+        if (!isPrivatePage) {
+            function getContrastColor(color) {
+                if (!color) return '#FFFFFF';
+                let hex = color.replace('#', '');
+                if (hex.length === 3) hex = hex.split('').map(c => c + c).join('');
+                const r = parseInt(hex.substring(0, 2), 16) || 0;
+                const g = parseInt(hex.substring(2, 4), 16) || 0;
+                const b = parseInt(hex.substring(4, 6), 16) || 0;
+                const yiq = (r * 299 + g * 587 + b * 114) / 1000;
+                return yiq >= 150 ? '#111111' : '#FFFFFF';
             }
 
-            if (s.activeThemeCombo && window.OcalColorHarmonizer && window.OcalColorHarmonizer.applyComboTheme) {
-                try {
-                    window.OcalColorHarmonizer.applyComboTheme(s.activeThemeCombo.id, s.activeThemeCombo.mode);
-                    return;
-                } catch(e) {}
-            }
+            function applyGlobalTheme(s) {
+                if (!s) return;
+                if (document.documentElement && (document.documentElement.classList.contains('sp-private-mode') || document.documentElement.classList.contains('private-mode'))) return;
+                const theme = s.themeMode || 'dark';
+                document.documentElement.setAttribute('data-theme', theme);
+                if (document.body) document.body.setAttribute('data-theme', theme);
+                try { localStorage.setItem('ocal-settings-theme', theme); } catch (e) {}
 
-            if (window.OcalColorHarmonizer && window.OcalColorHarmonizer.applyHarmonizedTheme) {
-                window.OcalColorHarmonizer.applyHarmonizedTheme(s.accentColor, theme, document);
-            } else if (s.accentColor) {
-                const contrast = getContrastColor(s.accentColor);
-                document.documentElement.style.setProperty('--accent', s.accentColor);
-                document.documentElement.style.setProperty('--accent-glow', `color-mix(in srgb, ${s.accentColor} 30%, transparent)`);
-                document.documentElement.style.setProperty('--accent-dim', `color-mix(in srgb, ${s.accentColor} 12%, transparent)`);
-                document.documentElement.style.setProperty('--accent-border', s.accentColor);
-                document.documentElement.style.setProperty('--accent-text', contrast);
+                if (s.accentColor) {
+                    try { localStorage.setItem('ocal-settings-accent', s.accentColor); } catch (e) {}
+                }
 
-                if (document.body) {
-                    document.body.style.setProperty('--accent', s.accentColor);
-                    document.body.style.setProperty('--accent-glow', `color-mix(in srgb, ${s.accentColor} 30%, transparent)`);
-                    document.body.style.setProperty('--accent-dim', `color-mix(in srgb, ${s.accentColor} 12%, transparent)`);
-                    document.body.style.setProperty('--accent-border', s.accentColor);
-                    document.body.style.setProperty('--accent-text', contrast);
+                if (s.activeThemeCombo && window.OcalColorHarmonizer && window.OcalColorHarmonizer.applyComboTheme) {
+                    try {
+                        window.OcalColorHarmonizer.applyComboTheme(s.activeThemeCombo.id, s.activeThemeCombo.mode);
+                        return;
+                    } catch(e) {}
+                }
+
+                if (window.OcalColorHarmonizer && window.OcalColorHarmonizer.applyHarmonizedTheme) {
+                    window.OcalColorHarmonizer.applyHarmonizedTheme(s.accentColor, theme, document, false, false);
+                } else if (s.accentColor) {
+                    const contrast = getContrastColor(s.accentColor);
+                    document.documentElement.style.setProperty('--accent', s.accentColor);
+                    document.documentElement.style.setProperty('--accent-glow', `color-mix(in srgb, ${s.accentColor} 30%, transparent)`);
+                    document.documentElement.style.setProperty('--accent-dim', `color-mix(in srgb, ${s.accentColor} 12%, transparent)`);
+                    document.documentElement.style.setProperty('--accent-border', s.accentColor);
+                    document.documentElement.style.setProperty('--accent-text', contrast);
+
+                    if (document.body) {
+                        document.body.style.setProperty('--accent', s.accentColor);
+                        document.body.style.setProperty('--accent-glow', `color-mix(in srgb, ${s.accentColor} 30%, transparent)`);
+                        document.body.style.setProperty('--accent-dim', `color-mix(in srgb, ${s.accentColor} 12%, transparent)`);
+                        document.body.style.setProperty('--accent-border', s.accentColor);
+                        document.body.style.setProperty('--accent-text', contrast);
+                    }
                 }
             }
+            ipcRenderer.invoke('get-settings').then(applyGlobalTheme).catch(() => {});
+            ipcRenderer.on('settings-changed', (e, s) => applyGlobalTheme(s));
         }
-        ipcRenderer.invoke('get-settings').then(applyGlobalTheme).catch(() => {});
-        ipcRenderer.on('settings-changed', (e, s) => applyGlobalTheme(s));
     } else if (window.location.protocol === 'http:' || window.location.protocol === 'https:') {
         function syncExternalPageTheme(s) {
             if (!s) return;

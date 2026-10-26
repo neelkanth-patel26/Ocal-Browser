@@ -288,24 +288,50 @@
     let _lastBroadcastTheme = null;
     let _lastBroadcastAccent = null;
 
+    // ── Helper to detect if a document or window is in InPrivate / Private Mode ──
+    function isPrivateContext(targetDoc) {
+        const doc = targetDoc || (typeof document !== 'undefined' ? document : null);
+        try {
+            const win = (doc && doc.defaultView) || (typeof window !== 'undefined' ? window : null);
+            if (win && win.location) {
+                const loc = win.location;
+                if (loc.search && loc.search.includes('private=true')) return true;
+                if (loc.hash && loc.hash.includes('private')) return true;
+                if (loc.pathname && (loc.pathname.includes('private-window') || loc.pathname.includes('private-home'))) return true;
+                if (loc.href && (loc.href.includes('private=true') || loc.href.includes('private-window') || loc.href.includes('private-home'))) return true;
+            }
+            if (doc && doc.documentElement) {
+                const cl = doc.documentElement.classList;
+                if (cl.contains('sp-private-mode') || cl.contains('private-mode')) return true;
+            }
+            if (doc && doc.body) {
+                const bl = doc.body.classList;
+                if (bl.contains('sp-private-mode') || bl.contains('private-mode')) return true;
+            }
+        } catch (e) {}
+        return false;
+    }
+
     // ── Apply & Sync to DOM ──────────────────────────────────────────────────
-    function applyHarmonizedTheme(accentHex, themeMode, targetDoc, broadcastToElectron = false) {
+    function applyHarmonizedTheme(accentHex, themeMode, targetDoc, broadcastToElectron = false, isPrivateOverride = null) {
         if (_isHarmonizing) return;
         _isHarmonizing = true;
         try {
             const doc = targetDoc || (typeof document !== 'undefined' ? document : null);
             if (!doc) return;
 
-            const storedTheme = (typeof localStorage !== 'undefined' ? localStorage.getItem('ocal-settings-theme') : null);
-            const currentTheme = themeMode || (doc.documentElement ? doc.documentElement.getAttribute('data-theme') : null) || (doc.body ? doc.body.getAttribute('data-theme') : null) || storedTheme || 'dark';
+            const isPrivate = (isPrivateOverride !== null) ? !!isPrivateOverride : isPrivateContext(doc);
+
+            const storedTheme = !isPrivate && (typeof localStorage !== 'undefined' ? localStorage.getItem('ocal-settings-theme') : null);
+            const currentTheme = isPrivate ? 'dark' : (themeMode || (doc.documentElement ? doc.documentElement.getAttribute('data-theme') : null) || (doc.body ? doc.body.getAttribute('data-theme') : null) || storedTheme || 'dark');
             const isLight = (currentTheme === 'light');
 
-            const storedAccent = (typeof localStorage !== 'undefined' ? localStorage.getItem('ocal-settings-accent') : null);
-            let baseColor = accentHex || storedAccent || (isLight ? '#15AC49' : '#09F0A0');
+            const storedAccent = !isPrivate && (typeof localStorage !== 'undefined' ? localStorage.getItem('ocal-settings-accent') : null);
+            let baseColor = accentHex || (isPrivate ? '#a855f7' : (storedAccent || (isLight ? '#15AC49' : '#09F0A0')));
             if (typeof baseColor === 'string') {
                 baseColor = baseColor.trim();
                 if (!/^#[0-9A-Fa-f]{3,8}$/.test(baseColor)) {
-                    baseColor = isLight ? '#15AC49' : '#09F0A0';
+                    baseColor = isPrivate ? '#a855f7' : (isLight ? '#15AC49' : '#09F0A0');
                 }
             }
 
@@ -313,7 +339,7 @@
             const body = doc.body;
 
             // Avoid redundant styling if already identical
-            if (root && root.getAttribute('data-theme') === currentTheme && root.style.getPropertyValue('--accent') === baseColor) {
+            if (root && root.getAttribute('data-theme') === currentTheme && root.style.getPropertyValue('--accent') === baseColor && (!isPrivate || root.classList.contains('sp-private-mode'))) {
                 return;
             }
 
@@ -326,10 +352,16 @@
             if (root) {
                 root.setAttribute('data-theme', currentTheme);
                 root.removeAttribute('data-theme-combo');
+                if (isPrivate && !root.classList.contains('sp-private-mode')) {
+                    root.classList.add('sp-private-mode');
+                }
             }
             if (body) {
                 body.setAttribute('data-theme', currentTheme);
                 body.removeAttribute('data-theme-combo');
+                if (isPrivate && !body.classList.contains('sp-private-mode')) {
+                    body.classList.add('sp-private-mode');
+                }
             }
 
             const setProps = (el) => {
@@ -356,22 +388,25 @@
             // Dynamically update any logo images on the page directly with preset Dark.png/Light.png
             updateLogoElements(doc, currentTheme);
 
-            // Save to localStorage ONLY if changed (prevents cross-tab storage ping-pong)
-            try {
-                if (localStorage.getItem('ocal-settings-accent') !== baseColor) {
-                    localStorage.setItem('ocal-settings-accent', baseColor);
-                }
-                if (localStorage.getItem('ocal-settings-theme') !== currentTheme) {
-                    localStorage.setItem('ocal-settings-theme', currentTheme);
-                }
-                localStorage.setItem('ocal-settings-primary-grad', harmony.primary);
-                localStorage.setItem('ocal-settings-secondary-grad', harmony.secondary);
-                localStorage.setItem('ocal-settings-accent-grad', harmony.accentGrad);
-                localStorage.setItem('ocal-settings-logo-filter', logoFilter);
-            } catch (e) {}
+            // Save to localStorage ONLY if NOT in private mode and values changed
+            // (Private mode must NEVER mutate normal browser localStorage or dispatch cross-tab storage events!)
+            if (!isPrivate) {
+                try {
+                    if (localStorage.getItem('ocal-settings-accent') !== baseColor) {
+                        localStorage.setItem('ocal-settings-accent', baseColor);
+                    }
+                    if (localStorage.getItem('ocal-settings-theme') !== currentTheme) {
+                        localStorage.setItem('ocal-settings-theme', currentTheme);
+                    }
+                    localStorage.setItem('ocal-settings-primary-grad', harmony.primary);
+                    localStorage.setItem('ocal-settings-secondary-grad', harmony.secondary);
+                    localStorage.setItem('ocal-settings-accent-grad', harmony.accentGrad);
+                    localStorage.setItem('ocal-settings-logo-filter', logoFilter);
+                } catch (e) {}
+            }
 
-            // ONLY send IPC if broadcastToElectron was explicitly requested (e.g. user action in Settings)
-            if (broadcastToElectron && typeof window !== 'undefined' && window.electronAPI && window.electronAPI.updateSetting) {
+            // ONLY send IPC if broadcastToElectron was explicitly requested AND not in private mode
+            if (!isPrivate && broadcastToElectron && typeof window !== 'undefined' && window.electronAPI && window.electronAPI.updateSetting) {
                 if (_lastBroadcastTheme !== currentTheme) {
                     _lastBroadcastTheme = currentTheme;
                     window.electronAPI.updateSetting('themeMode', currentTheme);
@@ -391,7 +426,8 @@
                         primaryGrad: harmony.primary,
                         secondaryGrad: harmony.secondary,
                         accentGrad: harmony.accentGrad,
-                        logoFilter: logoFilter
+                        logoFilter: logoFilter,
+                        isPrivate: isPrivate
                     }
                 });
                 window.dispatchEvent(event);
@@ -693,23 +729,44 @@
 
     // ── Auto-Initialize on script load ────────────────────────────────────────
     function initAutoSync() {
+        if (typeof document !== 'undefined' && isPrivateContext(document)) {
+            // In private mode: do NOT pull normal user settings from localStorage!
+            // Apply signature private theme locally without touching localStorage:
+            try {
+                applyHarmonizedTheme('#a855f7', 'dark', document, false, true);
+            } catch (e) {}
+            return; // Do NOT attach normal storage listener in private context!
+        }
+
         // Initial application from storage
         try {
             applySavedWallpaper();
 
             const storedTheme = (typeof localStorage !== 'undefined' ? localStorage.getItem('ocal-settings-theme') : null) || 'dark';
             const defaultAccent = (storedTheme === 'light' ? '#15AC49' : '#09F0A0');
-            const storedAccent = (typeof localStorage !== 'undefined' ? localStorage.getItem('ocal-settings-accent') : null) || defaultAccent;
+            let storedAccent = (typeof localStorage !== 'undefined' ? localStorage.getItem('ocal-settings-accent') : null) || defaultAccent;
+            // Clean up any stale private purple value that previously leaked into localStorage
+            if (storedAccent === '#a855f7' || storedAccent === '#8b5cf6') {
+                storedAccent = (storedTheme === 'light' ? '#15AC49' : '#09F0A0');
+            }
             applyHarmonizedTheme(storedAccent, storedTheme);
         } catch (e) {}
 
         if (typeof window !== 'undefined') {
             window.addEventListener('storage', (e) => {
+                if (isPrivateContext(typeof document !== 'undefined' ? document : null)) return;
+
                 if (e.key === 'ocal-home-wallpaper' || e.key === 'ocal-home-wallpaper-blur' || e.key === 'ocal-home-wallpaper-dim') {
                     applySavedWallpaper();
                 } else if (e.key === 'ocal-settings-accent' || e.key === 'ocal-settings-theme') {
+                    // Ignore private purple values if they somehow arrived via storage
+                    if (e.newValue === '#a855f7' || e.newValue === '#8b5cf6') return;
+
                     const stTheme = (typeof localStorage !== 'undefined' ? localStorage.getItem('ocal-settings-theme') : null) || 'dark';
-                    const stAccent = (typeof localStorage !== 'undefined' ? localStorage.getItem('ocal-settings-accent') : null) || (stTheme === 'light' ? '#15AC49' : '#09F0A0');
+                    let stAccent = (typeof localStorage !== 'undefined' ? localStorage.getItem('ocal-settings-accent') : null) || (stTheme === 'light' ? '#15AC49' : '#09F0A0');
+                    if (stAccent === '#a855f7' || stAccent === '#8b5cf6') {
+                        stAccent = (stTheme === 'light' ? '#15AC49' : '#09F0A0');
+                    }
                     const root = typeof document !== 'undefined' ? document.documentElement : null;
                     if (root && root.getAttribute('data-theme') === stTheme && root.style.getPropertyValue('--accent') === stAccent) {
                         return;
@@ -772,6 +829,7 @@
         synthesizeHarmonicGradients,
         analyzeColorIntelligence,
         applyHarmonizedTheme,
+        isPrivateContext,
         STORE_COMBOS,
         getStoreCombos,
         applyComboTheme,
