@@ -1904,12 +1904,15 @@ body {
     border-radius: 12px;
     box-shadow: var(--shadow-lg);
     padding: 6px;
-    min-width: 180px;
+    min-width: 190px;
     z-index: 9999;
     display: flex;
     flex-direction: column;
     gap: 2px;
     backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    user-select: none;
+    -webkit-user-select: none;
     animation: menuFadeIn 0.12s cubic-bezier(0.16, 1, 0.3, 1);
 }
 

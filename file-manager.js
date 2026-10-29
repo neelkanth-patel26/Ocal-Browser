@@ -1299,32 +1299,57 @@ function showModalError(msg) {
 
 // ── Custom Glass Context Menu ──────────────────────────────────────────────
 function showContextMenu(e, item) {
-    if (!contextMenu) return;
-    contextMenu.style.display = 'flex';
-    
-    // Position within viewport boundaries
-    const menuWidth = 200;
-    const menuHeight = 220;
-    const x = Math.min(e.clientX, window.innerWidth - menuWidth - 10);
-    const y = Math.min(e.clientY, window.innerHeight - menuHeight - 10);
-    
-    contextMenu.style.left = `${x}px`;
-    contextMenu.style.top = `${y}px`;
+    if (!contextMenu || !item) return;
+    const safePath = escapePath(item.path);
 
     const ext = getExtension(item.name);
     const isAudio = ['mp3', 'wav', 'flac', 'ogg', 'm4a', 'aac', 'wma'].includes(ext);
+    const isImage = isImageFile(item.name);
+    const isVideo = ['mp4', 'webm', 'mov', 'mkv', 'avi'].includes(ext);
+
+    let specificOptions = '';
+    if (!item.isDirectory) {
+        if (isAudio) {
+            specificOptions = `
+                <div class="context-menu-item" onclick="window.handleOpenInMusicPlayer('${safePath}')">
+                    <i class="fas fa-compact-disc"></i> Open in Music Player
+                </div>
+                <div class="context-menu-item" onclick="window.handleOpenInTab('${safePath}')">
+                    <i class="fas fa-table-columns"></i> Open in New Tab
+                </div>
+            `;
+        } else if (isImage) {
+            specificOptions = `
+                <div class="context-menu-item" onclick="window.handleOpenInPhotoEditor('${safePath}')">
+                    <i class="fas fa-crop-simple"></i> Open in Photo Studio
+                </div>
+                <div class="context-menu-item" onclick="window.handleOpenInTab('${safePath}')">
+                    <i class="fas fa-table-columns"></i> Open in New Tab
+                </div>
+            `;
+        } else if (isVideo) {
+            specificOptions = `
+                <div class="context-menu-item" onclick="window.handleOpenItem('${safePath}', false)">
+                    <i class="fas fa-play"></i> Play Video
+                </div>
+                <div class="context-menu-item" onclick="window.handleOpenInTab('${safePath}')">
+                    <i class="fas fa-table-columns"></i> Open in New Tab
+                </div>
+            `;
+        } else {
+            specificOptions = `
+                <div class="context-menu-item" onclick="window.handleOpenInTab('${safePath}')">
+                    <i class="fas fa-table-columns"></i> Open in New Tab
+                </div>
+            `;
+        }
+    }
 
     contextMenu.innerHTML = `
         <div class="context-menu-item" onclick="window.handleOpenItem('${safePath}', ${item.isDirectory})">
             <i class="fas fa-arrow-up-right-from-square"></i> Open
         </div>
-        ${!item.isDirectory ? (isAudio ? `
-        <div class="context-menu-item" onclick="window.handleOpenInMusicPlayer('${safePath}')">
-            <i class="fas fa-compact-disc"></i> Open in Music Player
-        </div>` : `
-        <div class="context-menu-item" onclick="window.handleOpenInTab('${safePath}')">
-            <i class="fas fa-table-columns"></i> Open in New Tab
-        </div>`) : ''}
+        ${specificOptions}
         <div class="context-menu-item" onclick="window.handleShowFolder('${safePath}')">
             <i class="fas fa-folder-open"></i> Show in Folder
         </div>
@@ -1339,6 +1364,52 @@ function showContextMenu(e, item) {
             <i class="fas fa-trash"></i> Move to Trash
         </div>
     `;
+
+    contextMenu.style.display = 'flex';
+
+    // Position within viewport boundaries accurately
+    const menuWidth = contextMenu.offsetWidth || 210;
+    const menuHeight = contextMenu.offsetHeight || 250;
+    const x = Math.max(10, Math.min(e.clientX, window.innerWidth - menuWidth - 14));
+    const y = Math.max(10, Math.min(e.clientY, window.innerHeight - menuHeight - 14));
+
+    contextMenu.style.left = `${x}px`;
+    contextMenu.style.top = `${y}px`;
+}
+
+function showBackgroundContextMenu(e) {
+    if (!contextMenu) return;
+    const safeDirPath = escapePath(currentDirectory);
+
+    contextMenu.innerHTML = `
+        <div class="context-menu-item" onclick="window.handlePromptNewFolder()">
+            <i class="fas fa-folder-plus"></i> New Folder
+        </div>
+        <div class="context-menu-item" onclick="window.handleRefreshCurrent()">
+            <i class="fas fa-arrow-rotate-right"></i> Refresh
+        </div>
+        <div class="context-menu-divider"></div>
+        <div class="context-menu-item" onclick="window.handleCopyPath('${safeDirPath}')">
+            <i class="fas fa-copy"></i> Copy Path
+        </div>
+        <div class="context-menu-item" onclick="window.handleShowFolder('${safeDirPath}')">
+            <i class="fas fa-folder-open"></i> Show in Folder
+        </div>
+        <div class="context-menu-divider"></div>
+        <div class="context-menu-item" onclick="window.handleSelectAll()">
+            <i class="fas fa-check-double"></i> Select All
+        </div>
+    `;
+
+    contextMenu.style.display = 'flex';
+
+    const menuWidth = contextMenu.offsetWidth || 210;
+    const menuHeight = contextMenu.offsetHeight || 220;
+    const x = Math.max(10, Math.min(e.clientX, window.innerWidth - menuWidth - 14));
+    const y = Math.max(10, Math.min(e.clientY, window.innerHeight - menuHeight - 14));
+
+    contextMenu.style.left = `${x}px`;
+    contextMenu.style.top = `${y}px`;
 }
 
 // ── Global Event Handlers & Window Binds ───────────────────────────────────
@@ -1348,10 +1419,20 @@ function setupGlobalShortcuts() {
         if (sortDropdownMenu && !e.target.closest('.sort-menu-wrap')) {
             sortDropdownMenu.classList.remove('open');
         }
-        if (!e.target.closest('.file-item') && !e.target.closest('#preview-inspector') && !e.target.closest('.content-header') && !e.target.closest('.sidebar')) {
+        if (!e.target.closest('.file-item') && !e.target.closest('#preview-inspector') && !e.target.closest('.content-header') && !e.target.closest('.sidebar') && !e.target.closest('#context-menu')) {
             clearSelection();
         }
     });
+
+    const contentArea = document.querySelector('.content-area') || document.getElementById('files-container');
+    if (contentArea) {
+        contentArea.addEventListener('contextmenu', (e) => {
+            if (e.target.closest('.file-item') || e.target.closest('.card-action-mini-btn') || e.target.closest('.list-action-btn') || e.target.closest('button') || e.target.closest('input')) return;
+            e.preventDefault();
+            e.stopPropagation();
+            showBackgroundContextMenu(e);
+        });
+    }
 
     document.addEventListener('keydown', (e) => {
         // Ctrl+F or F3 to Search
@@ -1463,7 +1544,8 @@ function setupGlobalShortcuts() {
         }
         // Escape to dismiss
         else if (e.key === 'Escape') {
-            if (inputModal && inputModal.style.display !== 'none') closeInputModal();
+            if (contextMenu && contextMenu.style.display !== 'none') contextMenu.style.display = 'none';
+            else if (inputModal && inputModal.style.display !== 'none') closeInputModal();
             else if (mediaPlayerModal && mediaPlayerModal.style.display !== 'none') closeMediaModal();
             else if (photoEditorModal && photoEditorModal.style.display !== 'none') photoEditorModal.style.display = 'none';
             else clearSelection();
@@ -1499,6 +1581,11 @@ window.handleOpenInMusicPlayer = (pathStr) => {
     }
 };
 
+window.handleOpenInPhotoEditor = (pathStr) => {
+    const item = currentItems.find(i => i.path === pathStr) || { name: pathStr.split(/[\\\/]/).pop(), path: pathStr, isDirectory: false };
+    openPhotoStudio(item);
+};
+
 window.handleShowFolder = (pathStr) => {
     showInNativeFolder(pathStr);
 };
@@ -1514,6 +1601,14 @@ window.handleDeleteItem = (pathStr) => {
 window.handleRenameItem = (pathStr) => {
     const item = currentItems.find(i => i.path === pathStr);
     if (item) promptRename(item);
+};
+
+window.handlePromptNewFolder = () => promptNewFolder();
+window.handleRefreshCurrent = () => refreshCurrentDirectory();
+window.handleSelectAll = () => {
+    currentItems.forEach(i => selectedItems.add(i.path));
+    document.querySelectorAll('.file-item').forEach(el => el.classList.add('selected'));
+    updateSelectedSummary();
 };
 
 window.toggleSortColumn = (field) => {
