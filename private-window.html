@@ -624,6 +624,88 @@
             width: 100%;
             height: 100%;
         }
+        /* ── Private Session Close Confirmation Modal ── */
+        .private-modal-overlay {
+            position: fixed;
+            inset: 0;
+            background: rgba(0, 0, 0, 0.65);
+            backdrop-filter: blur(8px);
+            -webkit-backdrop-filter: blur(8px);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 10000;
+        }
+        .private-modal-card {
+            background: #14111d;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 20px;
+            padding: 32px;
+            width: 360px;
+            text-align: center;
+            box-shadow: 0 16px 48px rgba(0, 0, 0, 0.5);
+            animation: modalScaleIn 0.25s cubic-bezier(0.34, 1.56, 0.64, 1);
+        }
+        .private-modal-icon {
+            width: 56px;
+            height: 56px;
+            background: rgba(239, 68, 68, 0.14);
+            border: 1.5px solid rgba(239, 68, 68, 0.3);
+            color: #ef4444;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 22px;
+            margin: 0 auto 18px auto;
+            box-shadow: 0 0 16px rgba(239, 68, 68, 0.25);
+        }
+        .private-modal-card h3 {
+            color: #f3f4f6;
+            font-size: 18px;
+            font-weight: 600;
+            margin: 0 0 10px 0;
+            font-family: inherit;
+        }
+        .private-modal-card p {
+            color: #9ca3af;
+            font-size: 13px;
+            line-height: 1.5;
+            margin: 0 0 24px 0;
+        }
+        .private-modal-actions {
+            display: flex;
+            gap: 12px;
+            justify-content: center;
+        }
+        .private-modal-actions .modal-btn {
+            padding: 10px 22px;
+            border-radius: 24px;
+            font-size: 13px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            flex: 1;
+        }
+        .private-modal-actions .cancel-btn {
+            background: #242428;
+            border: 1px solid rgba(255, 255, 255, 0.12);
+            color: #e4e4e7;
+        }
+        .private-modal-actions .cancel-btn:hover {
+            background: #323238;
+            color: #ffffff;
+        }
+        .private-modal-actions .danger-btn {
+            background: #ef4444;
+            border: none;
+            color: #ffffff;
+        }
+        .private-modal-actions .danger-btn:hover {
+            background: #dc2626;
+            box-shadow: 0 4px 14px rgba(239, 68, 68, 0.4);
+            transform: translateY(-1px);
+        }
     </style>
 </head>
 <body data-theme="dark">
@@ -725,6 +807,21 @@
 
     <!-- ── Active View Anchor ── -->
     <div class="content-area" id="content-area"></div>
+
+    <!-- Private Session Close Confirmation Modal -->
+    <div class="private-modal-overlay" id="private-session-confirm-modal" style="display: none;">
+        <div class="private-modal-card">
+            <div class="private-modal-icon">
+                <i class="fas fa-triangle-exclamation"></i>
+            </div>
+            <h3>Close Private Window?</h3>
+            <p id="private-session-confirm-desc">You have multiple private tabs open. Are you sure you want to close this window and end your private session?</p>
+            <div class="private-modal-actions">
+                <button class="modal-btn cancel-btn" id="private-session-cancel-btn">Cancel</button>
+                <button class="modal-btn danger-btn" id="private-session-close-btn">Close Tabs</button>
+            </div>
+        </div>
+    </div>
 
     <script src="private-window.js"></script>
 </body>

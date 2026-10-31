@@ -45,6 +45,79 @@
     if (winMinBtn) winMinBtn.onclick = () => window.electronAPI.send('private-window-minimize');
     if (winCloseBtn) winCloseBtn.onclick = () => window.electronAPI.send('private-window-close');
 
+    // ── Private Session Close Confirmation ──
+    const privateModal = document.getElementById('private-session-confirm-modal');
+    const privateTitle = document.querySelector('#private-session-confirm-modal h3');
+    const privateDesc = document.getElementById('private-session-confirm-desc');
+    const privateCloseBtn = document.getElementById('private-session-close-btn');
+    const privateCancelBtn = document.getElementById('private-session-cancel-btn');
+
+    function hidePrivateModal() {
+        if (privateModal) privateModal.style.display = 'none';
+    }
+
+    if (window.electronAPI && window.electronAPI.on) {
+        window.electronAPI.on('confirm-private-session-close', (e, data) => {
+            const count = data && typeof data.tabCount === 'number' ? data.tabCount : currentTabs.length;
+            if (privateTitle) {
+                privateTitle.textContent = count > 1 ? 'Close Private Window?' : 'Exit InPrivate Session?';
+            }
+            if (privateDesc) {
+                privateDesc.textContent = count > 1
+                    ? `You have ${count} open private tabs. Are you sure you want to close this window and end your private session?`
+                    : 'Are you sure you want to close this private window and end your private browsing session?';
+            }
+            if (privateCloseBtn) {
+                privateCloseBtn.textContent = count > 1 ? 'Close Tabs' : 'Close Window';
+            }
+            if (privateModal) {
+                privateModal.style.display = 'flex';
+                if (privateCancelBtn) setTimeout(() => privateCancelBtn.focus(), 50);
+            }
+        });
+    }
+
+    if (privateCloseBtn) {
+        privateCloseBtn.onclick = () => {
+            hidePrivateModal();
+            if (window.electronAPI && window.electronAPI.send) {
+                window.electronAPI.send('private-session-close-confirmed');
+            }
+        };
+    }
+
+    if (privateCancelBtn) {
+        privateCancelBtn.onclick = () => {
+            hidePrivateModal();
+            if (window.electronAPI && window.electronAPI.send) {
+                window.electronAPI.send('private-session-close-cancelled');
+            }
+        };
+    }
+
+    if (privateModal) {
+        privateModal.addEventListener('click', (e) => {
+            if (e.target === privateModal) {
+                hidePrivateModal();
+                if (window.electronAPI && window.electronAPI.send) {
+                    window.electronAPI.send('private-session-close-cancelled');
+                }
+            }
+        });
+    }
+
+    document.addEventListener('keydown', (e) => {
+        if (privateModal && privateModal.style.display !== 'none') {
+            if (e.key === 'Escape') {
+                e.preventDefault();
+                hidePrivateModal();
+                if (window.electronAPI && window.electronAPI.send) {
+                    window.electronAPI.send('private-session-close-cancelled');
+                }
+            }
+        }
+    });
+
     if (winMaxBtn) {
         winMaxBtn.onclick = () => window.electronAPI.send('private-window-maximize');
         let hoverTimer = null;

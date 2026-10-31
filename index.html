@@ -342,6 +342,20 @@
     </div>
 
     <!-- Undo Split Tab Toast -->
+    <!-- Session Close Confirmation Modal -->
+    <div class="split-confirm-modal-overlay" id="session-confirm-modal" style="display: none;">
+        <div class="split-confirm-modal">
+            <div class="split-confirm-icon session-confirm-icon">
+                <i data-lucide="alert-triangle"></i>
+            </div>
+            <h3 id="session-confirm-title">Confirm Session Close</h3>
+            <p id="session-confirm-desc">You have multiple tabs open. Are you sure you want to close this window and end your session?</p>
+            <div class="split-confirm-actions">
+                <button class="split-confirm-btn cancel-btn" id="session-confirm-cancel-btn">Cancel</button>
+                <button class="split-confirm-btn confirm-btn session-confirm-btn" id="session-confirm-close-btn">Close Tabs</button>
+            </div>
+        </div>
+    </div>
     <div class="split-undo-toast" id="split-undo-toast">
         <div class="split-undo-content">
             <i data-lucide="columns-2"></i>

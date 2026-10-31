@@ -2482,6 +2482,86 @@ if (undoBtn) {
     };
 }
 
+// ── Session Close Confirmation Dialog ──
+const sessionConfirmModal = document.getElementById('session-confirm-modal');
+const sessionConfirmTitle = document.getElementById('session-confirm-title');
+const sessionConfirmDesc = document.getElementById('session-confirm-desc');
+const sessionConfirmCloseBtn = document.getElementById('session-confirm-close-btn');
+const sessionConfirmCancelBtn = document.getElementById('session-confirm-cancel-btn');
+
+function hideSessionConfirmModal() {
+    if (sessionConfirmModal) {
+        sessionConfirmModal.style.display = 'none';
+    }
+}
+
+if (window.electronAPI && window.electronAPI.on) {
+    window.electronAPI.on('confirm-session-close', (e, data) => {
+        const count = data && typeof data.tabCount === 'number' ? data.tabCount : 1;
+        if (sessionConfirmTitle) {
+            sessionConfirmTitle.textContent = count > 1 ? 'Confirm Session Close' : 'Exit Ocal Browser?';
+        }
+        if (sessionConfirmDesc) {
+            sessionConfirmDesc.textContent = count > 1
+                ? `You have ${count} open tabs in this window. Are you sure you want to close this window and end your session?`
+                : 'Are you sure you want to close this window and end your current browsing session?';
+        }
+        if (sessionConfirmCloseBtn) {
+            sessionConfirmCloseBtn.textContent = count > 1 ? 'Close Tabs' : 'Exit Browser';
+        }
+        if (sessionConfirmModal) {
+            sessionConfirmModal.style.display = 'flex';
+            if (window.lucide && typeof window.lucide.createIcons === 'function') {
+                window.lucide.createIcons();
+            }
+            if (sessionConfirmCancelBtn) {
+                setTimeout(() => sessionConfirmCancelBtn.focus(), 50);
+            }
+        }
+    });
+}
+
+if (sessionConfirmCloseBtn) {
+    sessionConfirmCloseBtn.onclick = () => {
+        hideSessionConfirmModal();
+        if (window.electronAPI && window.electronAPI.send) {
+            window.electronAPI.send('session-close-confirmed');
+        }
+    };
+}
+
+if (sessionConfirmCancelBtn) {
+    sessionConfirmCancelBtn.onclick = () => {
+        hideSessionConfirmModal();
+        if (window.electronAPI && window.electronAPI.send) {
+            window.electronAPI.send('session-close-cancelled');
+        }
+    };
+}
+
+if (sessionConfirmModal) {
+    sessionConfirmModal.addEventListener('click', (e) => {
+        if (e.target === sessionConfirmModal) {
+            hideSessionConfirmModal();
+            if (window.electronAPI && window.electronAPI.send) {
+                window.electronAPI.send('session-close-cancelled');
+            }
+        }
+    });
+}
+
+document.addEventListener('keydown', (e) => {
+    if (sessionConfirmModal && sessionConfirmModal.style.display !== 'none') {
+        if (e.key === 'Escape') {
+            e.preventDefault();
+            hideSessionConfirmModal();
+            if (window.electronAPI && window.electronAPI.send) {
+                window.electronAPI.send('session-close-cancelled');
+            }
+        }
+    }
+});
+
 function getEmojiSvgHtml(emoji) {
     if (!emoji) return '';
     const url = getEmojiSvgUrl(emoji);

@@ -4275,6 +4275,26 @@ body[data-theme="dark"] .split-confirm-btn.cancel-btn:hover {
 }
 
 /* ── Split Screen Undo Toast ── */
+.session-confirm-icon {
+  background: rgba(239, 68, 68, 0.12) !important;
+  border-color: rgba(239, 68, 68, 0.28) !important;
+  color: #ef4444 !important;
+  box-shadow: 0 0 16px rgba(239, 68, 68, 0.2) !important;
+}
+
+.split-confirm-btn.session-confirm-btn {
+  background: #ef4444 !important;
+  color: #ffffff !important;
+  border: none !important;
+}
+
+.split-confirm-btn.session-confirm-btn:hover {
+  background: #dc2626 !important;
+  transform: translateY(-1px);
+  box-shadow: 0 4px 14px rgba(239, 68, 68, 0.35) !important;
+}
+
+
 .split-undo-toast {
   position: fixed;
   top: 12px;

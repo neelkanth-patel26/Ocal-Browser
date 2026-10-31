@@ -1838,9 +1838,12 @@ body[data-theme="dark"] .sp-tp-sub {
     font-weight: 700 !important;
 }
 
-body[data-theme="dark"] .sp-card-white {
+body[data-theme="dark"] .sp-card-white,
+html[data-theme="dark"] .sp-card-white,
+body[data-theme="dark"] .sp-todo-card-container,
+body[data-theme="dark"] .sp-notes-card {
     background: #222226 !important;
-    border: none !important;
+    border: 1px solid rgba(255, 255, 255, 0.08) !important;
     box-shadow: none !important;
 }
 
@@ -4014,7 +4017,7 @@ body.wallpaper-dark-tone .sp-section-subtitle {
 }
 
 /* ── Standard Bento Cards when Wallpaper is NOT Active (Clean White in Light Mode) ── */
-body:not(.has-custom-wallpaper) .sp-card-white,
+body[data-theme="light"]:not(.has-custom-wallpaper) .sp-card-white,
 html[data-theme="light"] body:not(.has-custom-wallpaper) .sp-card-white,
 body[data-theme="light"]:not(.has-custom-wallpaper) .sp-card:not(.sp-card-green-grad):not(.sp-card-orange-grad):not(.sp-card-primary-grad):not(.sp-card-secondary-grad):not(.sp-focus-card):not(.sp-weather-card),
 html[data-theme="light"] body:not(.has-custom-wallpaper) .sp-card:not(.sp-card-green-grad):not(.sp-card-orange-grad):not(.sp-card-primary-grad):not(.sp-card-secondary-grad):not(.sp-focus-card):not(.sp-weather-card) {
@@ -4024,10 +4027,66 @@ html[data-theme="light"] body:not(.has-custom-wallpaper) .sp-card:not(.sp-card-g
     color: #111111 !important;
 }
 
-body:not(.has-custom-wallpaper) .sp-card-white .sp-card-title,
+body[data-theme="light"]:not(.has-custom-wallpaper) .sp-card-white .sp-card-title,
 html[data-theme="light"] body:not(.has-custom-wallpaper) .sp-card-white .sp-card-title {
     color: #111111 !important;
     text-shadow: none !important;
+}
+
+/* ── Standard Bento Cards when Wallpaper is NOT Active (Clean Dark in Dark Mode) ── */
+body[data-theme="dark"]:not(.has-custom-wallpaper) .sp-card-white,
+html[data-theme="dark"] body:not(.has-custom-wallpaper) .sp-card-white,
+body[data-theme="dark"]:not(.has-custom-wallpaper) .sp-todo-card-container,
+html[data-theme="dark"] body:not(.has-custom-wallpaper) .sp-todo-card-container,
+body[data-theme="dark"]:not(.has-custom-wallpaper) .sp-notes-card,
+html[data-theme="dark"] body:not(.has-custom-wallpaper) .sp-notes-card,
+body[data-theme="dark"]:not(.has-custom-wallpaper) .sp-card:not(.sp-card-green-grad):not(.sp-card-orange-grad):not(.sp-card-primary-grad):not(.sp-card-secondary-grad):not(.sp-focus-card):not(.sp-weather-card),
+html[data-theme="dark"] body:not(.has-custom-wallpaper) .sp-card:not(.sp-card-green-grad):not(.sp-card-orange-grad):not(.sp-card-primary-grad):not(.sp-card-secondary-grad):not(.sp-focus-card):not(.sp-weather-card) {
+    background: #222226 !important;
+    border: 1px solid rgba(255, 255, 255, 0.08) !important;
+    box-shadow: none !important;
+    color: #FFFFFF !important;
+}
+
+body[data-theme="dark"]:not(.has-custom-wallpaper) .sp-card-white .sp-card-title,
+html[data-theme="dark"] body:not(.has-custom-wallpaper) .sp-card-white .sp-card-title,
+body[data-theme="dark"]:not(.has-custom-wallpaper) .sp-todo-card-container .sp-card-title,
+html[data-theme="dark"] body:not(.has-custom-wallpaper) .sp-todo-card-container .sp-card-title,
+body[data-theme="dark"]:not(.has-custom-wallpaper) .sp-notes-card .sp-card-title,
+html[data-theme="dark"] body:not(.has-custom-wallpaper) .sp-notes-card .sp-card-title {
+    color: #FFFFFF !important;
+    text-shadow: none !important;
+}
+
+body[data-theme="dark"]:not(.has-custom-wallpaper) .sp-todo-input,
+body[data-theme="dark"]:not(.has-custom-wallpaper) .sp-notes-textarea,
+body[data-theme="dark"]:not(.has-custom-wallpaper) .todo-card {
+    background: #28282D !important;
+    border: 1px solid rgba(255, 255, 255, 0.06) !important;
+    box-shadow: none !important;
+    color: #FFFFFF !important;
+}
+
+body[data-theme="dark"] .sp-todo-input:focus,
+body[data-theme="dark"] .sp-notes-textarea:focus {
+    background: #323238 !important;
+    border-color: var(--accent) !important;
+    color: #FFFFFF !important;
+}
+
+body[data-theme="dark"] .todo-card:hover {
+    background: #323238 !important;
+}
+
+body[data-theme="dark"]:not(.has-custom-wallpaper) .sp-todo-input::placeholder,
+body[data-theme="dark"]:not(.has-custom-wallpaper) .sp-notes-textarea::placeholder {
+    color: rgba(255, 255, 255, 0.45) !important;
+}
+
+body[data-theme="dark"]:not(.has-custom-wallpaper) .sp-badge-gray {
+    background: #2E2E33 !important;
+    color: #E4E4E7 !important;
+    border: 1px solid rgba(255, 255, 255, 0.08) !important;
 }
 
 /* ── Standard Gradients on Focus Flow and Weather when Wallpaper is NOT Active ── */

@@ -570,6 +570,7 @@ if (!userSettings.customSearchUrl) userSettings.customSearchUrl = 'https://www.g
 if (userSettings.askSavePath === undefined) userSettings.askSavePath = false;
 if (!userSettings.downloads) userSettings.downloads = [];
 if (userSettings.adBlockEnabled === undefined) userSettings.adBlockEnabled = true;
+if (userSettings.confirmExit === undefined) userSettings.confirmExit = true;
 
 if (userSettings.bookmarks) {
     userSettings.bookmarks.forEach(bm => {
@@ -1498,6 +1499,11 @@ function createMainWindow() {
     });
 
     mainWindow.on('close', (e) => {
+        if (!isQuitting && userSettings.confirmExit !== false && views.length > 0) {
+            e.preventDefault();
+            promptSessionClose();
+            return;
+        }
         isQuitting = true;
         try {
             if (pipWindow && !pipWindow.isDestroyed()) {
@@ -3590,6 +3596,10 @@ function handleCloseTabRequest(id) {
 function executeCloseTab(id) {
     try {
         if (views.length === 1) {
+            if (!isQuitting && userSettings.confirmExit !== false) {
+                promptSessionClose();
+                return;
+            }
             isQuitting = true;
             if (mainWindow && !mainWindow.isDestroyed()) {
                 mainWindow.close();
@@ -4699,7 +4709,57 @@ ipcMain.on('snap-window', (e, zone) => {
     hideSnapFlyoutWindow(0);
 });
 
+let isConfirmingSessionClose = false;
+
+function promptSessionClose() {
+    if (!mainWindow || mainWindow.isDestroyed()) return;
+    if (isConfirmingSessionClose) return;
+    isConfirmingSessionClose = true;
+
+    // Temporarily remove all attached BrowserViews so the modal in index.html is on top and interactive
+    try {
+        const attachedViews = mainWindow.getBrowserViews();
+        if (Array.isArray(attachedViews)) {
+            attachedViews.forEach(v => {
+                try {
+                    mainWindow.removeBrowserView(v);
+                } catch (e) {}
+            });
+        }
+    } catch (e) {}
+
+    if (sidebarOpen && typeof hideSidebarOverlay === 'function') hideSidebarOverlay();
+    if (aiSidebarOpen && typeof hideAiSidebar === 'function') hideAiSidebar();
+
+    mainWindow.focus();
+    mainWindow.webContents.send('confirm-session-close', {
+        tabCount: views.length
+    });
+}
+
+ipcMain.on('session-close-confirmed', () => {
+    isConfirmingSessionClose = false;
+    isQuitting = true;
+    if (mainWindow && !mainWindow.isDestroyed()) {
+        mainWindow.close();
+    } else {
+        app.quit();
+    }
+});
+
+ipcMain.on('session-close-cancelled', () => {
+    isConfirmingSessionClose = false;
+    const targetId = activeViewId || (views[0] ? views[0].id : null);
+    if (targetId) {
+        setActiveTab(targetId);
+    }
+});
+
 ipcMain.on('window-close', () => {
+    if (!isQuitting && userSettings.confirmExit !== false && views.length > 0) {
+        promptSessionClose();
+        return;
+    }
     isQuitting = true;
     if (mainWindow && !mainWindow.isDestroyed()) {
         mainWindow.close();
@@ -9158,7 +9218,17 @@ function handleShortcuts(event, input) {
     // Ctrl + W: Close Tab
     else if (cmdOrCtrl && input.key.toLowerCase() === 'w') {
         event.preventDefault();
-        if (activeViewId) handleCloseTabRequest(activeViewId);
+        if (input.shift) {
+            if (!isQuitting && userSettings.confirmExit !== false && views.length > 0) {
+                promptSessionClose();
+            } else {
+                isQuitting = true;
+                if (mainWindow && !mainWindow.isDestroyed()) mainWindow.close();
+                else app.quit();
+            }
+        } else {
+            if (activeViewId) handleCloseTabRequest(activeViewId);
+        }
     }
     // Ctrl + R: Reload
     else if (cmdOrCtrl && input.key.toLowerCase() === 'r') {
@@ -14566,7 +14636,17 @@ function openPrivateWindow(targetUrl = null) {
         }
     });
 
+    privateWindow.on('close', (e) => {
+        if (!isQuittingPrivate && userSettings.confirmExit !== false && privateViews.length > 0) {
+            e.preventDefault();
+            promptPrivateSessionClose();
+            return;
+        }
+    });
+
     privateWindow.on('closed', async () => {
+        isQuittingPrivate = false;
+        isConfirmingPrivateSessionClose = false;
         try {
             if (privateSession) {
                 await privateSession.clearStorageData();
@@ -14777,6 +14857,10 @@ function switchPrivateTab(id) {
 }
 
 function closePrivateTab(id) {
+    if (privateViews.length === 1 && !isQuittingPrivate && userSettings.confirmExit !== false) {
+        promptPrivateSessionClose();
+        return;
+    }
     const idx = privateViews.findIndex(v => v.id === id);
     if (idx === -1) return;
 
@@ -14815,8 +14899,54 @@ ipcMain.on('private-window-maximize', () => {
     }
 });
 
+let isConfirmingPrivateSessionClose = false;
+let isQuittingPrivate = false;
+
+function promptPrivateSessionClose() {
+    if (!privateWindow || privateWindow.isDestroyed()) return;
+    if (isConfirmingPrivateSessionClose) return;
+    isConfirmingPrivateSessionClose = true;
+
+    try {
+        const attached = privateWindow.getBrowserViews();
+        if (Array.isArray(attached)) {
+            attached.forEach(v => {
+                try { privateWindow.removeBrowserView(v); } catch (e) {}
+            });
+        }
+    } catch (e) {}
+
+    privateWindow.focus();
+    privateWindow.webContents.send('confirm-private-session-close', {
+        tabCount: privateViews.length
+    });
+}
+
+ipcMain.on('private-session-close-confirmed', () => {
+    isConfirmingPrivateSessionClose = false;
+    isQuittingPrivate = true;
+    if (privateWindow && !privateWindow.isDestroyed()) {
+        privateWindow.close();
+    }
+});
+
+ipcMain.on('private-session-close-cancelled', () => {
+    isConfirmingPrivateSessionClose = false;
+    const targetId = activePrivateTabId || (privateViews[0] ? privateViews[0].id : null);
+    if (targetId) {
+        switchPrivateTab(targetId);
+    }
+});
+
 ipcMain.on('private-window-close', () => {
-    if (privateWindow && !privateWindow.isDestroyed()) privateWindow.close();
+    if (privateWindow && !privateWindow.isDestroyed()) {
+        if (!isQuittingPrivate && userSettings.confirmExit !== false && privateViews.length > 0) {
+            promptPrivateSessionClose();
+            return;
+        }
+        isQuittingPrivate = true;
+        privateWindow.close();
+    }
 });
 
 ipcMain.on('private-new-tab', () => {
