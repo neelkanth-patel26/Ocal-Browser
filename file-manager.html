@@ -21,12 +21,12 @@
     </script>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=Space+Mono:ital,wght@0,400;0,700;1,400&family=JetBrains+Mono:wght@300;400;500&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="assets/fontawesome/css/all.min.css">
     <link rel="stylesheet" href="file-manager.css">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
 </head>
-<body class="pro-studio" data-theme="dark">
+<body data-theme="dark">
     <script>
         (function () {
             const t = localStorage.getItem('ocal-settings-theme') || 'dark';
@@ -38,84 +38,98 @@
         })();
     </script>
 
-    <div class="app-container">
-        <!-- ── Left Sidebar Navigation ── -->
-        <aside class="sidebar" id="sidebar">
-            <div class="sidebar-header">
-                <div class="brand-cluster">
-                    <div class="brand-shell">
-                        <i class="fas fa-folder-tree brand-icon"></i>
-                    </div>
-                    <div class="brand-text">
-                        <span class="brand-eyebrow">OCAL BROWSER</span>
-                        <span class="brand-name">File Hub</span>
-                    </div>
-                </div>
-                <button class="sidebar-action-btn" id="sidebar-new-folder-btn" title="Create New Folder">
-                    <i class="fas fa-folder-plus"></i>
-                </button>
+    <!-- ── Top Fixed Header (Matching Settings Page Header) ── -->
+    <header class="settings-header">
+        <div class="header-left">
+            <div class="header-logo">
+                <img src="assets/Dark.png" class="header-logo-img" id="header-logo-img" alt="Ocal">
             </div>
-            
+            <div class="header-logo-text">Ocal File Hub</div>
+        </div>
+
+        <div class="header-search">
+            <i class="fas fa-magnifying-glass search-icon"></i>
+            <input type="text" id="file-search" placeholder="Search current folder... (Ctrl+F)" autocomplete="off" spellcheck="false">
+            <span class="search-count-badge" id="search-count-badge" style="display:none;">0</span>
+            <button class="search-clear-btn" id="search-clear-btn" style="display:none;" title="Clear Search">
+                <i class="fas fa-xmark"></i>
+            </button>
+        </div>
+
+        <div class="header-right-tools">
+            <button class="clean-mode-pill active" id="clean-mode-pill" title="Toggle Clean Mode (Suppresses clutter & desktop.ini)">
+                <i class="fas fa-sparkles"></i>
+                <span>Clean Mode</span>
+            </button>
+            <button class="action-btn primary" id="top-new-folder-btn" title="Create New Folder (Ctrl+N)">
+                <i class="fas fa-plus"></i>
+                <span>New Folder</span>
+            </button>
+        </div>
+    </header>
+
+    <div class="app-container">
+        <!-- ── Left Sidebar Navigation (Matching Settings Sidebar) ── -->
+        <aside class="sidebar" id="sidebar">
             <nav class="sidebar-nav">
                 <!-- Quick Access Section -->
-                <div class="nav-section">
-                    <div class="section-title">Quick Access</div>
-                    <button class="nav-item active" data-folder="home" id="nav-home">
-                        <div class="nav-icon-badge home-badge"><i class="fas fa-house"></i></div>
-                        <span class="nav-label">Home</span>
-                    </button>
-                    <button class="nav-item" data-folder="desktop" id="nav-desktop">
-                        <div class="nav-icon-badge desktop-badge"><i class="fas fa-desktop"></i></div>
-                        <span class="nav-label">Desktop</span>
-                    </button>
-                    <button class="nav-item" data-folder="downloads" id="nav-downloads">
-                        <div class="nav-icon-badge downloads-badge"><i class="fas fa-circle-down"></i></div>
-                        <span class="nav-label">Downloads</span>
-                    </button>
-                    <button class="nav-item" data-folder="documents" id="nav-documents">
-                        <div class="nav-icon-badge documents-badge"><i class="fas fa-file-lines"></i></div>
-                        <span class="nav-label">Documents</span>
-                    </button>
+                <div class="nav-section-label">Quick Access</div>
+                <div class="nav-item active" data-folder="home" id="nav-home">
+                    <div class="nav-item-icon"><i class="fas fa-house"></i></div>
+                    <span class="nav-label">Home</span>
                 </div>
-                
-                <!-- Media Studio Libraries -->
-                <div class="nav-section">
-                    <div class="section-title">Media Library</div>
-                    <button class="nav-item" data-folder="pictures" id="nav-pictures">
-                        <div class="nav-icon-badge pictures-badge"><i class="fas fa-image"></i></div>
-                        <span class="nav-label">Pictures</span>
-                    </button>
-                    <button class="nav-item" data-folder="videos" id="nav-videos">
-                        <div class="nav-icon-badge videos-badge"><i class="fas fa-film"></i></div>
-                        <span class="nav-label">Videos</span>
-                    </button>
-                    <button class="nav-item" data-folder="music" id="nav-music">
-                        <div class="nav-icon-badge music-badge"><i class="fas fa-music"></i></div>
-                        <span class="nav-label">Music Studio</span>
-                        <span class="nav-pill-tag">DSP</span>
-                    </button>
+                <div class="nav-item" data-folder="desktop" id="nav-desktop">
+                    <div class="nav-item-icon"><i class="fas fa-desktop"></i></div>
+                    <span class="nav-label">Desktop</span>
+                </div>
+                <div class="nav-item" data-folder="downloads" id="nav-downloads">
+                    <div class="nav-item-icon"><i class="fas fa-circle-down"></i></div>
+                    <span class="nav-label">Downloads</span>
+                </div>
+                <div class="nav-item" data-folder="documents" id="nav-documents">
+                    <div class="nav-item-icon"><i class="fas fa-file-lines"></i></div>
+                    <span class="nav-label">Documents</span>
                 </div>
 
-                <!-- Drives & Volumes -->
-                <div class="nav-section">
-                    <div class="section-title-row">
-                        <span class="section-title"><i class="fas fa-hard-drive"></i> Drives & Storage</span>
-                        <button class="section-action-btn" id="refresh-drives-btn" title="Refresh Drives">
-                            <i class="fas fa-arrows-rotate"></i>
-                        </button>
-                    </div>
-                    <div id="drives-list" class="drives-list">
-                        <!-- Dynamically filled with rich Bento storage cards -->
-                    </div>
+                <div class="nav-divider"></div>
+
+                <!-- Media Library Section -->
+                <div class="nav-section-label">Media Library</div>
+                <div class="nav-item" data-folder="pictures" id="nav-pictures">
+                    <div class="nav-item-icon"><i class="fas fa-image"></i></div>
+                    <span class="nav-label">Pictures</span>
+                </div>
+                <div class="nav-item" data-folder="videos" id="nav-videos">
+                    <div class="nav-item-icon"><i class="fas fa-film"></i></div>
+                    <span class="nav-label">Videos</span>
+                </div>
+                <div class="nav-item" data-folder="music" id="nav-music">
+                    <div class="nav-item-icon"><i class="fas fa-music"></i></div>
+                    <span class="nav-label">Music Studio</span>
+                </div>
+
+                <div class="nav-divider"></div>
+
+                <!-- Drives & Volumes Section -->
+                <div class="nav-section-row">
+                    <span class="nav-section-label">Drives & Storage</span>
+                    <button class="section-action-btn" id="refresh-drives-btn" title="Refresh Drives">
+                        <i class="fas fa-arrows-rotate"></i>
+                    </button>
+                </div>
+                <div id="drives-list" class="drives-list">
+                    <!-- Dynamically populated with Bento storage cards -->
                 </div>
             </nav>
 
             <div class="sidebar-footer">
-                <div class="storage-security-badge">
-                    <div class="sec-icon"><i class="fas fa-shield-halved"></i></div>
-                    <div class="sec-text">
-                        <strong>Zero-Cloud Local Hub</strong>
-                        <span>100% on-device indexing & DSP</span>
+                <div class="version-status-card">
+                    <div class="version-status-pill">
+                        <i class="fas fa-shield-halved" style="color: var(--accent); font-size: 13px;"></i>
+                        <span class="version-code">Local File Hub</span>
+                    </div>
+                    <div class="secure-architecture-badge">
+                        <span>100% On-Device & Private</span>
                     </div>
                 </div>
             </div>
@@ -123,10 +137,9 @@
 
         <!-- ── Main Content Explorer ── -->
         <main class="main-content">
-            <!-- Sleek Top Header Bar -->
-            <header class="content-header">
-                <!-- Location Heading & Navigation History Controls -->
-                <div class="header-nav-group">
+            <!-- Sleek Top Toolbar & Breadcrumbs Bar -->
+            <div class="content-toolbar">
+                <div class="toolbar-nav-group">
                     <div class="history-controls">
                         <button class="hist-btn" id="nav-back-btn" title="Back (Alt+Left)" disabled>
                             <i class="fas fa-chevron-left"></i>
@@ -142,54 +155,27 @@
                         </button>
                     </div>
 
-                    <div class="header-title-wrap">
-                        <div class="page-eyebrow" id="page-eyebrow">Local Storage</div>
-                        <h1 class="page-title" id="page-title">Home</h1>
-                    </div>
-                </div>
-
-                <!-- Interactive Omnibar & Path Bar -->
-                <div class="omnibar-wrap">
-                    <div class="path-display-box" id="path-display-box">
-                        <i class="fas fa-folder-open path-box-icon"></i>
-                        <div class="breadcrumbs-scroll" id="breadcrumbs">
-                            <span class="breadcrumb-item">This PC</span>
-                        </div>
-                        <input type="text" id="direct-path-input" class="direct-path-input" placeholder="Enter path (e.g. C:\Users\...)" style="display:none;" autocomplete="off" spellcheck="false">
-                        <div class="path-tools">
-                            <button class="path-tool-btn" id="edit-path-btn" title="Edit Path Directly (Ctrl+L)">
-                                <i class="fas fa-pen-to-square"></i>
-                            </button>
-                            <button class="path-tool-btn" id="copy-path-btn" title="Copy Full Path">
-                                <i class="fas fa-copy"></i>
-                            </button>
+                    <!-- Breadcrumbs & Direct Path Box -->
+                    <div class="omnibar-wrap">
+                        <div class="path-display-box" id="path-display-box">
+                            <i class="fas fa-folder-open path-box-icon"></i>
+                            <div class="breadcrumbs-scroll" id="breadcrumbs">
+                                <span class="breadcrumb-item">This PC</span>
+                            </div>
+                            <input type="text" id="direct-path-input" class="direct-path-input" placeholder="Enter path (e.g. C:\Users\...)" style="display:none;" autocomplete="off" spellcheck="false">
+                            <div class="path-tools">
+                                <button class="path-tool-btn" id="edit-path-btn" title="Edit Path Directly (Ctrl+L)">
+                                    <i class="fas fa-pen-to-square"></i>
+                                </button>
+                                <button class="path-tool-btn" id="copy-path-btn" title="Copy Full Path">
+                                    <i class="fas fa-copy"></i>
+                                </button>
+                            </div>
                         </div>
                     </div>
                 </div>
 
-                <!-- Top Header Actions -->
-                <div class="header-actions">
-                    <!-- Live Search Box -->
-                    <div class="search-box">
-                        <i class="fas fa-magnifying-glass search-icon"></i>
-                        <input type="text" id="file-search" placeholder="Search current folder... (Ctrl+F)" autocomplete="off" spellcheck="false">
-                        <span class="search-count-badge" id="search-count-badge" style="display:none;">0</span>
-                        <button class="search-clear-btn" id="search-clear-btn" style="display:none;" title="Clear Search">
-                            <i class="fas fa-xmark"></i>
-                        </button>
-                    </div>
-
-                    <!-- Clean Mode / Hidden Files Toggle Pill -->
-                    <button class="clean-mode-pill active" id="clean-mode-pill" title="Toggle Clean Mode (Suppresses unwanted OS clutter, dumps, & desktop.ini)">
-                        <i class="fas fa-sparkles"></i>
-                        <span>Clean Mode</span>
-                    </button>
-
-                    <!-- Previews Toggle -->
-                    <button class="toolbar-btn active" id="toggle-previews-btn" title="Toggle Thumbnail Previews">
-                        <i class="fas fa-eye"></i>
-                    </button>
-
+                <div class="toolbar-right-tools">
                     <!-- View Switcher (Grid / List / Compact) -->
                     <div class="view-terminal" id="view-toggles">
                         <button class="view-btn active" id="view-grid" title="Grid View (Ctrl+1)"><i class="fas fa-grip"></i></button>
@@ -216,20 +202,19 @@
                         </div>
                     </div>
 
-                    <!-- New Folder Action -->
-                    <button class="action-btn primary" id="top-new-folder-btn" title="Create New Folder (Ctrl+N)">
-                        <i class="fas fa-plus"></i>
-                        <span>New Folder</span>
+                    <!-- Previews Toggle -->
+                    <button class="toolbar-btn active" id="toggle-previews-btn" title="Toggle Thumbnail Previews">
+                        <i class="fas fa-eye"></i>
                     </button>
 
                     <!-- Toggle Inspector Panel -->
-                    <button class="toolbar-btn" id="toggle-inspector-btn" title="Toggle Inspector Panel (Ctrl+I)">
+                    <button class="toolbar-btn" id="toggle-inspector-btn" title="Toggle Details Panel (Ctrl+I)">
                         <i class="fas fa-circle-info"></i>
                     </button>
                 </div>
-            </header>
+            </div>
 
-            <!-- ── Category Filter Ribbon ── -->
+            <!-- Category Filter Ribbon -->
             <div class="category-ribbon">
                 <div class="category-pills-wrap">
                     <button class="filter-pill active" data-cat="all">
@@ -251,7 +236,7 @@
                         <i class="fas fa-film"></i> <span>Videos</span>
                     </button>
                     <button class="filter-pill" data-cat="code">
-                        <i class="fas fa-code"></i> <span>Code & Scripts</span>
+                        <i class="fas fa-code"></i> <span>Code</span>
                     </button>
                     <button class="filter-pill" data-cat="archives">
                         <i class="fas fa-file-zipper"></i> <span>Archives</span>
@@ -282,7 +267,7 @@
                             <div class="inspector-icon-wrap"><i class="fas fa-circle-info"></i></div>
                             <span class="inspector-title">Details</span>
                         </div>
-                        <button class="inspector-close" id="inspector-close-btn" title="Close Inspector (Esc)"><i class="fas fa-xmark"></i></button>
+                        <button class="inspector-close" id="inspector-close-btn" title="Close Details (Esc)"><i class="fas fa-xmark"></i></button>
                     </div>
 
                     <div class="inspector-scroll-area">
@@ -299,7 +284,7 @@
                             <span class="inspector-type-badge" id="inspector-type">Folder</span>
                         </div>
 
-                        <!-- Rich Metadata Grid -->
+                        <!-- Metadata Card -->
                         <div class="inspector-meta-card">
                             <div class="meta-field">
                                 <span class="meta-label">File Size</span>
@@ -369,7 +354,14 @@
         </main>
     </div>
 
-    <!-- ── Custom Glass Context Menu ── -->
+    <!-- Hidden compatibility hooks for JS title binding -->
+    <div style="display:none;">
+        <span id="page-eyebrow">Local Storage</span>
+        <span id="page-title">Home</span>
+        <button id="sidebar-new-folder-btn"></button>
+    </div>
+
+    <!-- ── Context Menu ── -->
     <div id="context-menu" class="custom-context-menu" style="display:none;"></div>
 
     <!-- ── Interactive New Folder / Rename Dialog Modal ── -->
@@ -394,11 +386,10 @@
         </div>
     </div>
 
-    <!-- ── Redesigned Audio & Video Media Studio Preview Modal ── -->
+    <!-- ── Audio & Video Media Studio Preview Modal ── -->
     <div id="media-player-modal" class="media-player-modal" style="display:none;">
         <div class="media-modal-backdrop" id="media-modal-backdrop"></div>
         <div class="media-modal-card">
-            <!-- Modal Header: Audio Pill, Metadata, Close Button -->
             <div class="media-modal-header">
                 <div class="media-modal-title">
                     <div class="media-icon-badge"><i id="media-modal-icon" class="fas fa-compact-disc"></i></div>
@@ -412,16 +403,13 @@
                     </div>
                 </div>
                 <div class="media-header-actions">
-                    <button class="media-modal-close" id="media-modal-close" title="Close Preview (Esc)"><i class="fas fa-xmark"></i></button>
+                    <button class="media-modal-close" id="media-modal-close" aria-label="Close Preview (Esc)"><i class="fas fa-xmark"></i></button>
                 </div>
             </div>
             
-            <!-- Modal Stage: Visualizer Deck with Ambient Glowing Vinyl -->
             <div class="media-modal-body" id="media-modal-body"></div>
 
-            <!-- Custom Audio Controls Bar -->
             <div class="custom-media-controls" id="custom-media-controls">
-                <!-- Audio Studio Enhancer Toolbar: Clean Pill Preset Switcher -->
                 <div class="audio-enhancer-toolbar" id="audio-enhancer-toolbar">
                     <div class="enhancer-toggle-row">
                         <span class="enhancer-label"><i class="fas fa-sliders"></i> Audio DSP:</span>
@@ -431,7 +419,6 @@
                         <button class="enhancer-pill-btn" id="enhancer-tab-eq" title="10-Band Graphic Equalizer"><i class="fas fa-chart-simple"></i> 10-Band EQ</button>
                     </div>
 
-                    <!-- 3D Surround Sound Control Panel -->
                     <div class="enhancer-panel" id="panel-3d" style="display: grid;">
                         <div class="fx-control-group">
                             <span class="fx-field-label"><i class="fas fa-film"></i> Stage Mode:</span>
@@ -459,7 +446,6 @@
                         </div>
                     </div>
 
-                    <!-- Music Enhancer Panel -->
                     <div class="enhancer-panel" id="panel-clarity" style="display: none;">
                         <div class="fx-control-group">
                             <span class="fx-field-label"><i class="fas fa-wand-magic-sparkles"></i> Dynamic Master:</span>
@@ -476,7 +462,6 @@
                         </div>
                     </div>
 
-                    <!-- Bass Boost Panel -->
                     <div class="enhancer-panel" id="panel-bass" style="display: none;">
                         <div class="fx-control-group fx-slider-group fx-full-width">
                             <div class="fx-slider-label-row">
@@ -489,7 +474,6 @@
                         </div>
                     </div>
 
-                    <!-- 10-Band EQ Panel -->
                     <div class="enhancer-panel" id="panel-eq" style="display: none; flex-direction: column; gap: 8px;">
                         <div class="eq-presets-row">
                             <span class="eq-preset-label"><i class="fas fa-wand-magic-sparkles"></i> Presets:</span>
@@ -515,7 +499,6 @@
                     </div>
                 </div>
 
-                <!-- Time & Seek Row -->
                 <div class="media-time-row">
                     <span id="media-time-current">0:00</span>
                     <div class="media-seek-container">
@@ -524,7 +507,6 @@
                     <span id="media-time-duration">0:00</span>
                 </div>
                 
-                <!-- Controls Row: Volume, Main Controls, and Launch Music Player Button -->
                 <div class="media-buttons-row">
                     <div class="media-vol-group">
                         <button class="media-ctrl-btn" id="media-mute-btn" title="Mute/Unmute">
@@ -561,10 +543,9 @@
         </div>
     </div>
 
-    <!-- ── Custom Photo Studio Viewer & Editor Modal ── -->
+    <!-- ── Photo Studio Viewer & Editor Modal ── -->
     <div id="photo-editor-modal" class="modal-overlay" style="display: none;">
         <div class="photo-editor-container">
-            <!-- Studio Header -->
             <div class="editor-header">
                 <div class="editor-title-cluster">
                     <div class="editor-header-icon-box">
@@ -598,19 +579,17 @@
                     <button id="editor-save-btn" class="editor-btn primary" title="Export & Save edited photo">
                         <i class="fas fa-download"></i> <span>Save Image</span>
                     </button>
-                    <button id="editor-close-btn" class="editor-btn close" title="Close (Esc)">
+                    <button id="editor-close-btn" class="editor-btn close" aria-label="Close (Esc)">
                         <i class="fas fa-xmark"></i>
                     </button>
                 </div>
             </div>
 
-            <!-- Viewport Stage with Floating Showroom HUD -->
             <div class="editor-viewport" id="editor-viewport">
                 <div class="editor-canvas-wrapper" id="editor-canvas-wrapper">
                     <img id="editor-img-target" class="editor-img-target" alt="Photo Preview" draggable="false">
                 </div>
 
-                <!-- Floating Showroom Controls HUD -->
                 <div class="editor-floating-hud">
                     <button class="hud-tool-btn" id="tool-zoom-out" title="Zoom Out (-)"><i class="fas fa-magnifying-glass-minus"></i></button>
                     <span class="hud-zoom-pill" id="val-zoom" title="Click to reset zoom to 100%">100%</span>
@@ -626,7 +605,6 @@
                 </div>
             </div>
 
-            <!-- Bottom Studio Inspector Dock -->
             <div class="editor-studio-dock">
                 <div class="dock-tabs-bar">
                     <div class="dock-segmented-tabs">
@@ -643,7 +621,6 @@
                 </div>
 
                 <div class="dock-panels-container">
-                    <!-- Tab 1: Presets & Filters -->
                     <div class="dock-panel active" id="dock-panel-presets">
                         <div class="presets-chip-grid">
                             <button class="editor-chip active" data-preset="normal">
@@ -681,7 +658,6 @@
                         </div>
                     </div>
 
-                    <!-- Tab 2: Lighting & Color Adjustments -->
                     <div class="dock-panel" id="dock-panel-lighting" style="display: none;">
                         <div class="editor-sliders-grid">
                             <div class="slider-field">
@@ -729,7 +705,6 @@
                         </div>
                     </div>
 
-                    <!-- Tab 3: Photo Metadata Details -->
                     <div class="dock-panel" id="dock-panel-info" style="display: none;">
                         <div class="photo-details-grid">
                             <div class="detail-box">

@@ -121,31 +121,34 @@
     if (winMaxBtn) {
         winMaxBtn.onclick = () => window.electronAPI.send('private-window-maximize');
         let hoverTimer = null;
-        const triggerPrivateFlyout = () => {
+        let snapTriggered = false;
+
+        const triggerNativeSnap = () => {
             clearTimeout(hoverTimer);
-            const rect = winMaxBtn.getBoundingClientRect();
-            window.electronAPI.send('show-snap-flyout', {
-                x: rect.left,
-                y: rect.top,
-                width: rect.width,
-                height: rect.height
-            });
+            snapTriggered = true;
+            if (window.electronAPI && typeof window.electronAPI.triggerNativeSnap === 'function') {
+                window.electronAPI.triggerNativeSnap();
+            } else if (window.electronAPI && typeof window.electronAPI.send === 'function') {
+                window.electronAPI.send('trigger-native-snap');
+            }
         };
 
         winMaxBtn.addEventListener('mouseenter', () => {
             clearTimeout(hoverTimer);
-            hoverTimer = setTimeout(triggerPrivateFlyout, 150);
-        });
-        winMaxBtn.addEventListener('mousemove', () => {
-            if (!hoverTimer) hoverTimer = setTimeout(triggerPrivateFlyout, 150);
+            snapTriggered = false;
+            hoverTimer = setTimeout(() => {
+                if (!snapTriggered) {
+                    triggerNativeSnap();
+                }
+            }, 280);
         });
         winMaxBtn.addEventListener('mouseleave', () => {
             clearTimeout(hoverTimer);
-            window.electronAPI.send('hide-snap-flyout', 450);
+            snapTriggered = false;
         });
         winMaxBtn.addEventListener('contextmenu', (e) => {
             e.preventDefault();
-            triggerPrivateFlyout();
+            triggerNativeSnap();
         });
     }
 
@@ -400,17 +403,7 @@
             window.electronAPI.send('private-forward');
         } else if (e.altKey && (e.key === 'z' || e.key === 'Z')) {
             e.preventDefault();
-            if (winMaxBtn) {
-                const rect = winMaxBtn.getBoundingClientRect();
-                window.electronAPI.send('show-snap-flyout', {
-                    x: rect.left,
-                    y: rect.top,
-                    width: rect.width,
-                    height: rect.height
-                });
-            }
-        } else if (e.key === 'Escape') {
-            window.electronAPI.send('hide-snap-flyout', 0);
+            window.electronAPI.send('trigger-native-snap');
         }
     });
 

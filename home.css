@@ -211,7 +211,8 @@ body.sp-private-mode .sp-timeline-pill,
 body.sp-private-mode #private-mode-banner,
 body.sp-private-mode #sp-regular-hero-cards,
 body.sp-private-mode .sp-tiles-section,
-body.sp-private-mode .sp-bottom-bar-container {
+body.sp-private-mode .sp-bottom-bar-container,
+body.sp-private-mode .sp-bottom-right-private-btn {
     display: none !important;
 }
 
@@ -3583,6 +3584,112 @@ body[data-theme="dark"] .sp-bottom-nav-btn:hover {
     transform: scale(1.1);
 }
 
+/* ── Floating Bottom-Right Private Window Trigger ── */
+.sp-bottom-right-private-btn {
+    position: fixed;
+    bottom: 24px;
+    right: 28px;
+    z-index: 100;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 8px 16px;
+    background: #FFFFFF;
+    border: 1px solid rgba(0, 0, 0, 0.08);
+    border-radius: 100px;
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.04);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    color: #475569;
+    font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    font-size: 12.5px;
+    font-weight: 600;
+    letter-spacing: -0.01em;
+    cursor: pointer;
+    user-select: none;
+    -webkit-user-select: none;
+    transition: all 0.22s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.sp-bottom-right-private-btn i {
+    font-size: 13px;
+    color: #64748B;
+    transition: transform 0.2s ease, color 0.2s ease;
+}
+
+.sp-bottom-right-private-btn:hover {
+    background: #FFFFFF;
+    border-color: rgba(0, 0, 0, 0.16);
+    color: #0F172A;
+    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.08);
+    transform: translateY(-2px);
+}
+
+.sp-bottom-right-private-btn:hover i {
+    transform: scale(1.12);
+    color: #0F172A;
+}
+
+.sp-bottom-right-private-btn:active {
+    transform: translateY(0) scale(0.97);
+}
+
+body[data-theme="dark"] .sp-bottom-right-private-btn {
+    background: #222226;
+    border-color: rgba(255, 255, 255, 0.08);
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.3);
+    color: #94A3B8;
+}
+
+body[data-theme="dark"] .sp-bottom-right-private-btn i {
+    color: #94A3B8;
+}
+
+body[data-theme="dark"] .sp-bottom-right-private-btn:hover {
+    background: #2A2A30;
+    border-color: rgba(255, 255, 255, 0.16);
+    color: #FFFFFF;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.45);
+}
+
+body[data-theme="dark"] .sp-bottom-right-private-btn:hover i {
+    color: #FFFFFF;
+}
+
+/* Custom wallpaper state */
+body.has-custom-wallpaper .sp-bottom-right-private-btn {
+    background: #FFFFFF !important;
+    border: none !important;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15) !important;
+    color: #111111 !important;
+}
+
+body[data-theme="dark"].has-custom-wallpaper .sp-bottom-right-private-btn {
+    background: #202024 !important;
+    border: none !important;
+    box-shadow: 0 8px 30px rgba(0, 0, 0, 0.45) !important;
+    color: #F8FAFC !important;
+}
+
+/* Hide when in private/stealth mode or split drag overlay */
+body.sp-private-mode .sp-bottom-right-private-btn,
+body.drag-overlay-mode .sp-bottom-right-private-btn {
+    display: none !important;
+}
+
+@media (max-width: 680px) {
+    .sp-bottom-right-private-btn span {
+        display: none;
+    }
+    .sp-bottom-right-private-btn {
+        padding: 10px;
+        border-radius: 50%;
+        bottom: 16px;
+        right: 16px;
+    }
+}
+
+
 /* ── Split Drop Zones Overlay (Opera Multitasking Style) ── */
 body.drag-overlay-mode {
   background: transparent !important;
@@ -3596,6 +3703,7 @@ body.drag-overlay-mode .sp-wallpaper-bg,
 body.drag-overlay-mode .wallpaper-bg,
 body.drag-overlay-mode .style-drawer,
 body.drag-overlay-mode .sp-bottom-bar-container,
+body.drag-overlay-mode .sp-bottom-right-private-btn,
 body.drag-overlay-mode .sp-tiles-section,
 body.drag-overlay-mode .sp-header-row,
 body.drag-overlay-mode .sp-news-drawer-backdrop {

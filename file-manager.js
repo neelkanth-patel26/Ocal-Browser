@@ -213,13 +213,23 @@ function applyAccent(accentColor) {
     document.documentElement.style.setProperty('--accent-border', hexToRgba(accentColor, 0.35));
 }
 
+function updateHeaderLogo(theme) {
+    const isDark = theme !== 'light';
+    const logo = document.getElementById('header-logo-img');
+    if (logo) logo.src = isDark ? 'assets/Dark.png' : 'assets/Light.png';
+}
+
 // ── Initialization ─────────────────────────────────────────────────────────
 document.addEventListener('DOMContentLoaded', async () => {
+    updateHeaderLogo(document.body.getAttribute('data-theme') || 'dark');
     // 1. Sync Settings (Accent & Theme)
     if (window.electronAPI && window.electronAPI.getSettings) {
         window.electronAPI.getSettings().then(s => {
             if (s) {
-                if (s.themeMode) document.body.setAttribute('data-theme', s.themeMode);
+                if (s.themeMode) {
+                    document.body.setAttribute('data-theme', s.themeMode);
+                    updateHeaderLogo(s.themeMode);
+                }
                 if (s.accentColor) applyAccent(s.accentColor);
             }
         }).catch(() => {});
@@ -228,7 +238,10 @@ document.addEventListener('DOMContentLoaded', async () => {
     if (window.electronAPI && window.electronAPI.on) {
         window.electronAPI.on('settings-changed', (s) => {
             if (s) {
-                if (s.themeMode) document.body.setAttribute('data-theme', s.themeMode);
+                if (s.themeMode) {
+                    document.body.setAttribute('data-theme', s.themeMode);
+                    updateHeaderLogo(s.themeMode);
+                }
                 if (s.accentColor) applyAccent(s.accentColor);
             }
         });
@@ -400,7 +413,7 @@ function renderDrivesList() {
             </div>
             <div class="drive-meta-sub">
                 <span class="drive-free-val">${escapeHtml(freeStr || 'Available')}</span>
-                <span class="drive-total-val">${escapeHtml(totalStr ? `${totalStr} total` : '')}</span>
+                <span class="drive-total-val">${escapeHtml(totalStr ? `of ${totalStr}` : '')}</span>
             </div>
             ` : ''}
         `;
@@ -1744,6 +1757,28 @@ function initAudioDspPipeline() {
     }
 }
 
+function drawRestingSpectrum() {
+    const canvas = document.getElementById('media-beat-canvas');
+    if (!canvas) return;
+    const ctx = canvas.getContext('2d');
+    if (!ctx) return;
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    const numBars = 32;
+    const barWidth = (canvas.width / numBars) - 2;
+    const accentColor = getComputedStyle(document.body).getPropertyValue('--accent').trim() || '#15AC49';
+    for (let i = 0; i < numBars; i++) {
+        const x = i * (barWidth + 2);
+        const barHeight = 4;
+        const y = canvas.height - barHeight;
+        ctx.fillStyle = accentColor;
+        ctx.globalAlpha = 0.22;
+        ctx.beginPath();
+        ctx.roundRect(x, y, barWidth, barHeight, 2);
+        ctx.fill();
+    }
+    ctx.globalAlpha = 1;
+}
+
 function startBeatVisualizer() {
     stopBeatVisualizer();
     if (!analyserNode) return;
@@ -1758,30 +1793,11 @@ function startBeatVisualizer() {
 
     const tick = () => {
         if (!activeAudio || activeAudio.paused || !analyserNode) {
-            const vinyl = document.getElementById('spinning-vinyl');
-            if (vinyl) {
-                vinyl.style.boxShadow = '';
-                vinyl.style.transform = '';
-            }
-            if (ctx && canvas) {
-                ctx.clearRect(0, 0, canvas.width, canvas.height);
-            }
+            drawRestingSpectrum();
             return;
         }
 
         analyserNode.getByteFrequencyData(dataArray);
-
-        // Sub-bass frequency reactive beat pump
-        let bassSum = 0;
-        for (let i = 0; i < 4; i++) bassSum += dataArray[i];
-        const bassAvg = bassSum / 4;
-        const pumpScale = 1 + (bassAvg / 255) * 0.07;
-
-        const vinyl = document.getElementById('spinning-vinyl');
-        if (vinyl) {
-            vinyl.style.transform = `scale(${pumpScale})`;
-            vinyl.style.boxShadow = `0 8px ${24 + bassAvg * 0.25}px var(--accent-glow)`;
-        }
 
         // 8D spatial orbit panning
         if (surroundMode === 'spatial8d' && pannerNode) {
@@ -1801,7 +1817,7 @@ function startBeatVisualizer() {
             for (let i = 0; i < numBars; i++) {
                 const val = dataArray[i * 2] || 0;
                 const percent = val / 255;
-                const barHeight = Math.max(3, percent * (canvas.height - 4));
+                const barHeight = Math.max(4, percent * (canvas.height - 4));
                 const x = i * (barWidth + 2);
                 const y = canvas.height - barHeight;
 
@@ -1846,16 +1862,12 @@ function openAudioStudio(item) {
 
     if (mediaModalBody) {
         mediaModalBody.innerHTML = `
-            <div class="spinning-vinyl paused" id="spinning-vinyl">
-                <div class="vinyl-groove groove-1"></div>
-                <div class="vinyl-groove groove-2"></div>
-                <div class="vinyl-center-dot">
-                    <i class="fas fa-compact-disc"></i>
-                </div>
+            <div class="audio-spectrum-container">
+                <canvas id="media-beat-canvas" width="540" height="52" class="media-beat-canvas"></canvas>
             </div>
-            <canvas id="media-beat-canvas" width="580" height="40" class="media-beat-canvas"></canvas>
             <audio id="active-media-audio" src="${fileUrl}" preload="auto"></audio>
         `;
+        drawRestingSpectrum();
     }
 
     activeAudio = document.getElementById('active-media-audio');
@@ -1881,23 +1893,23 @@ function openAudioStudio(item) {
         activeAudio.onplay = () => {
             ensureAudioContext();
             if (!audioSourceNode) initAudioDspPipeline();
-            const vinyl = document.getElementById('spinning-vinyl');
-            if (vinyl) vinyl.classList.remove('paused');
+            const badge = document.querySelector('.media-icon-badge');
+            if (badge) badge.classList.add('playing');
             if (mediaPlayBtn) mediaPlayBtn.innerHTML = '<i class="fas fa-pause"></i>';
             startBeatVisualizer();
         };
 
         activeAudio.onpause = () => {
-            const vinyl = document.getElementById('spinning-vinyl');
-            if (vinyl) vinyl.classList.add('paused');
+            const badge = document.querySelector('.media-icon-badge');
+            if (badge) badge.classList.remove('playing');
             if (mediaPlayBtn) mediaPlayBtn.innerHTML = '<i class="fas fa-play"></i>';
             stopBeatVisualizer();
         };
 
         // When track playback is done, automatically open music-player.html
         activeAudio.onended = () => {
-            const vinyl = document.getElementById('spinning-vinyl');
-            if (vinyl) vinyl.classList.add('paused');
+            const badge = document.querySelector('.media-icon-badge');
+            if (badge) badge.classList.remove('playing');
             if (mediaPlayBtn) mediaPlayBtn.innerHTML = '<i class="fas fa-play"></i>';
             stopBeatVisualizer();
             if (currentMediaItem) {
@@ -1965,6 +1977,8 @@ function openVideoStudio(item) {
 }
 
 function closeMediaModal() {
+    const badge = document.querySelector('.media-icon-badge');
+    if (badge) badge.classList.remove('playing');
     if (activeAudio) {
         activeAudio.pause();
         activeAudio.src = '';

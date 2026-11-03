@@ -18,6 +18,10 @@ if (typeof electron === 'string' || !electron.app) {
     process.exit(1);
 }
 
+const path = require('path');
+const fs = require('fs');
+const os = require('os');
+
 const {
     app, BrowserWindow, BrowserView, webContents, ipcMain, dialog,
     shell, session, Menu, MenuItem, clipboard, protocol, net,
@@ -31,9 +35,14 @@ app.name = 'Ocal Browser';
 if (process.platform === 'win32') {
     app.setAppUserModelId('com.ocal.browser.v2');
     try {
-        const electronLnk = path.join(process.env.APPDATA || '', 'Microsoft', 'Windows', 'Start Menu', 'Programs', 'Electron.lnk');
+        const programsDir = path.join(process.env.APPDATA || '', 'Microsoft', 'Windows', 'Start Menu', 'Programs');
+        const electronLnk = path.join(programsDir, 'Electron.lnk');
         if (fs.existsSync(electronLnk)) {
             try { fs.unlinkSync(electronLnk); } catch (e) {}
+        }
+        const brokenOcal = path.join(programsDir, 'Ocal Browser');
+        if (fs.existsSync(brokenOcal) && !brokenOcal.endsWith('.lnk')) {
+            try { fs.unlinkSync(brokenOcal); } catch (e) {}
         }
     } catch (e) {}
 }
@@ -45,9 +54,6 @@ process.noDeprecation = true;
 protocol.registerSchemesAsPrivileged([
     { scheme: 'ocal', privileges: { standard: true, secure: true, supportFetchAPI: true, corsEnabled: true } }
 ]);
-const path = require('path');
-const fs = require('fs');
-const os = require('os');
 const tabMediaMap = new Map(); // Stores detected media per tab ID
 const AdmZip = require('adm-zip');
 const fetch = require('cross-fetch').default || require('cross-fetch');
@@ -123,6 +129,7 @@ if (!isHwAccelEnabled) {
 
 // ── Web Loading & Rendering Speed Optimizations ──
 const enabledFeatures = [
+    'WebSpeechAPI',
     'Tls13EarlyData',
     'PrintPreview',
     'PrintWithReducedRasterization',
@@ -192,6 +199,7 @@ function hasAnyOpenOverlay() {
         if (typeof bmDropdownView !== 'undefined' && bmDropdownView && attachedViews.includes(bmDropdownView)) return true;
         if (typeof extensionDropdownView !== 'undefined' && extensionDropdownView && attachedViews.includes(extensionDropdownView)) return true;
         if (typeof siteInfoView !== 'undefined' && siteInfoView && attachedViews.includes(siteInfoView)) return true;
+        if (typeof permissionPopupView !== 'undefined' && permissionPopupView && attachedViews.includes(permissionPopupView)) return true;
         if (typeof volumeBoostView !== 'undefined' && volumeBoostView && attachedViews.includes(volumeBoostView)) return true;
         if (typeof mediaMasterView !== 'undefined' && mediaMasterView && attachedViews.includes(mediaMasterView)) return true;
         if (typeof tabgroupView !== 'undefined' && tabgroupView && attachedViews.includes(tabgroupView)) return true;
@@ -604,12 +612,37 @@ if (userSettings.accentColorLight === undefined) {
 }
 userSettings.accentColor = userSettings.themeMode === 'light' ? userSettings.accentColorLight : userSettings.accentColorDark;
 
+function syncSearchEngineCookies(isLight) {
+    const targetSession = session.defaultSession;
+    const gVal = isLight ? 'f6=9' : 'f6=8';
+    if (targetSession && targetSession.cookies) {
+        targetSession.cookies.set({ url: 'https://www.google.com', name: 'PREF', value: gVal, domain: '.google.com', path: '/' }).catch(() => {});
+        targetSession.cookies.set({ url: 'https://duckduckgo.com', name: 'kae', value: isLight ? '-1' : 'd', domain: '.duckduckgo.com', path: '/' }).catch(() => {});
+        targetSession.cookies.set({ url: 'https://www.bing.com', name: 'SRCHHPGUSR', value: `BNDDARK=${isLight ? '0' : '1'}`, domain: '.bing.com', path: '/' }).catch(() => {});
+        targetSession.cookies.set({ url: 'https://search.brave.com', name: 'brave_theme', value: isLight ? 'light' : 'dark', domain: '.brave.com', path: '/' }).catch(() => {});
+    }
+
+    try {
+        if (typeof getProfilePartition === 'function') {
+            const partSession = session.fromPartition(getProfilePartition());
+            if (partSession && partSession.cookies) {
+                partSession.cookies.set({ url: 'https://www.google.com', name: 'PREF', value: gVal, domain: '.google.com', path: '/' }).catch(() => {});
+                partSession.cookies.set({ url: 'https://duckduckgo.com', name: 'kae', value: isLight ? '-1' : 'd', domain: '.duckduckgo.com', path: '/' }).catch(() => {});
+                partSession.cookies.set({ url: 'https://www.bing.com', name: 'SRCHHPGUSR', value: `BNDDARK=${isLight ? '0' : '1'}`, domain: '.bing.com', path: '/' }).catch(() => {});
+                partSession.cookies.set({ url: 'https://search.brave.com', name: 'brave_theme', value: isLight ? 'light' : 'dark', domain: '.brave.com', path: '/' }).catch(() => {});
+            }
+        }
+    } catch (e) {}
+}
+
 function applyThemeModeGlobally(mode) {
     const isLight = mode === 'light';
     userSettings.themeMode = isLight ? 'light' : 'dark';
     if (nativeTheme) {
         nativeTheme.themeSource = isLight ? 'light' : 'dark';
     }
+    syncSearchEngineCookies(isLight);
+
     let bgColor = isLight ? '#EDEDF0' : '#18181B';
     if (userSettings.activeThemeCombo && userSettings.activeThemeCombo.chrome && /^#[0-9A-Fa-f]{6}$/.test(userSettings.activeThemeCombo.chrome)) {
         bgColor = userSettings.activeThemeCombo.chrome;
@@ -621,11 +654,16 @@ function applyThemeModeGlobally(mode) {
     }
     if (typeof views !== 'undefined' && Array.isArray(views)) {
         views.forEach(v => {
+            const viewBg = isLight ? '#EDEDF0' : '#18181B';
             if (v.view && !v.view.webContents.isDestroyed()) {
                 v.view.setBackgroundColor('#00000000');
+                v.view.webContents.send('settings-changed', userSettings);
+                v.view.webContents.insertCSS(`:root { color-scheme: ${isLight ? 'light' : 'dark'} !important; }`).catch(() => {});
             }
             if (v.isSplit && v.view2 && !v.view2.webContents.isDestroyed()) {
                 v.view2.setBackgroundColor('#00000000');
+                v.view2.webContents.send('settings-changed', userSettings);
+                v.view2.webContents.insertCSS(`:root { color-scheme: ${isLight ? 'light' : 'dark'} !important; }`).catch(() => {});
             }
         });
         if (typeof updateCornerRoundingOnAllViews === 'function') {
@@ -770,6 +808,9 @@ var aiSidebarView = null;
 
 var suggestionsView = null;
 var siteInfoView = null;
+var permissionPopupView = null;
+let activePermissionRequest = null;
+const permissionRequestQueue = [];
 var webAppView = null;
 var tabgroupView = null;
 var tabContextView = null;
@@ -1100,12 +1141,54 @@ function applyShieldSettings() {
         const isLightMode = userSettings && userSettings.themeMode === 'light';
         headers['Sec-CH-Prefers-Color-Scheme'] = isLightMode ? '"light"' : '"dark"';
 
-        // Ensure Google Search respects user theme preference instead of a stuck hardcoded cookie
-        if (url.includes('google.') && headers['Cookie']) {
-            if (isLightMode && headers['Cookie'].includes('f6=8')) {
-                headers['Cookie'] = headers['Cookie'].replace(/\bf6=8\b/g, 'f6=400');
-            } else if (!isLightMode && headers['Cookie'].includes('f6=9')) {
-                headers['Cookie'] = headers['Cookie'].replace(/\bf6=9\b/g, 'f6=400');
+        // Ensure Search Engines (Google, DuckDuckGo, Bing, Brave) respect user theme mode
+        if (url.includes('google.') && (url.includes('/search') || url.includes('google.com') || url.includes('google.co'))) {
+            const googlePref = isLightMode ? 'f6=9' : 'f6=8';
+            if (headers['Cookie']) {
+                if (/f6=\d+/.test(headers['Cookie'])) {
+                    headers['Cookie'] = headers['Cookie'].replace(/f6=\d+/g, googlePref);
+                } else if (/PREF=[^;]+/.test(headers['Cookie'])) {
+                    headers['Cookie'] = headers['Cookie'].replace(/(PREF=[^;]+)/, `$1&${googlePref}`);
+                } else {
+                    headers['Cookie'] += `; PREF=${googlePref}`;
+                }
+            } else {
+                headers['Cookie'] = `PREF=${googlePref}`;
+            }
+        } else if (url.includes('duckduckgo.com')) {
+            const ddgTheme = isLightMode ? '-1' : 'd';
+            if (headers['Cookie']) {
+                if (/kae=[^;]+/.test(headers['Cookie'])) {
+                    headers['Cookie'] = headers['Cookie'].replace(/kae=[^;]+/g, `kae=${ddgTheme}`);
+                } else {
+                    headers['Cookie'] += `; kae=${ddgTheme}`;
+                }
+            } else {
+                headers['Cookie'] = `kae=${ddgTheme}`;
+            }
+        } else if (url.includes('bing.com')) {
+            const bndVal = isLightMode ? '0' : '1';
+            if (headers['Cookie']) {
+                if (/BNDDARK=\d/.test(headers['Cookie'])) {
+                    headers['Cookie'] = headers['Cookie'].replace(/BNDDARK=\d/g, `BNDDARK=${bndVal}`);
+                } else if (/SRCHHPGUSR=[^;]+/.test(headers['Cookie'])) {
+                    headers['Cookie'] = headers['Cookie'].replace(/(SRCHHPGUSR=[^;]+)/, `$1&BNDDARK=${bndVal}`);
+                } else {
+                    headers['Cookie'] += `; SRCHHPGUSR=BNDDARK=${bndVal}`;
+                }
+            } else {
+                headers['Cookie'] = `SRCHHPGUSR=BNDDARK=${bndVal}`;
+            }
+        } else if (url.includes('search.brave.com')) {
+            const braveTheme = isLightMode ? 'light' : 'dark';
+            if (headers['Cookie']) {
+                if (/brave_theme=[^;]+/.test(headers['Cookie'])) {
+                    headers['Cookie'] = headers['Cookie'].replace(/brave_theme=[^;]+/g, `brave_theme=${braveTheme}`);
+                } else {
+                    headers['Cookie'] += `; brave_theme=${braveTheme}`;
+                }
+            } else {
+                headers['Cookie'] = `brave_theme=${braveTheme}`;
             }
         }
 
@@ -1213,43 +1296,287 @@ function applyShieldSettings() {
     console.log('Ocal Turbo-Shield: Active (Unified High-Speed Engine across all active sessions)');
 }
 
-function setupSessionHandlers() {
-    const ses = session.defaultSession;
-    ses.setUserAgent(OCAL_USER_AGENT);
-
-    const checkPermission = (origin, permission) => {
-        const sitePerms = userSettings.sitePermissions[origin];
-        if (sitePerms && sitePerms[permission]) {
-            const val = sitePerms[permission];
-            if (val === 'allow') return true;
-            if (val === 'block') return false;
-            // 'default' or 'ask' falls through to default behavior
-        }
+// --- Intelligent Permission Prompt & Persistent Origin Governance ---
+function getSavedPermission(origin, permKey) {
+    if (!userSettings.sitePermissions || !userSettings.sitePermissions[origin]) return null;
+    const sitePerms = userSettings.sitePermissions[origin];
+    if (permKey === 'camera-microphone') {
+        const cam = sitePerms['camera'];
+        const mic = sitePerms['microphone'];
+        if (cam === 'block' || mic === 'block') return 'block';
+        if (cam === 'allow' && mic === 'allow') return 'allow';
         return null;
+    }
+    const val = sitePerms[permKey];
+    if (val === 'allow' || val === 'block') return val;
+    return null;
+}
+
+function createPermissionPopupView() {
+    if (permissionPopupView && !permissionPopupView.webContents.isDestroyed()) return;
+    permissionPopupView = new BrowserView({
+        webPreferences: {
+            preload: path.join(__dirname, 'preload.js'),
+            contextIsolation: true,
+            nodeIntegration: false,
+            devTools: false,
+            sandbox: true
+        }
+    });
+    permissionPopupView.webContents.loadFile('permission-popup.html');
+    permissionPopupView.setBackgroundColor('#00000000');
+}
+
+function hidePermissionPopup() {
+    if (!permissionPopupView) return;
+    if (mainWindow && !mainWindow.isDestroyed() && mainWindow.getBrowserViews().includes(permissionPopupView)) {
+        mainWindow.removeBrowserView(permissionPopupView);
+    }
+    if (typeof privateWindow !== 'undefined' && privateWindow && !privateWindow.isDestroyed() && privateWindow.getBrowserViews().includes(permissionPopupView)) {
+        privateWindow.removeBrowserView(permissionPopupView);
+    }
+}
+
+async function showNextPermissionRequest() {
+    if (activePermissionRequest) return;
+    if (permissionRequestQueue.length === 0) {
+        hidePermissionPopup();
+        return;
+    }
+
+    const req = permissionRequestQueue.shift();
+    activePermissionRequest = req;
+
+    const wc = webContents.fromId(req.webContentsId);
+    if (!wc || wc.isDestroyed()) {
+        activePermissionRequest = null;
+        showNextPermissionRequest();
+        return;
+    }
+
+    const isPrivate = (typeof privateWindow !== 'undefined' && privateWindow && !privateWindow.isDestroyed() && BrowserWindow.fromWebContents(wc) === privateWindow);
+    const targetWin = isPrivate ? privateWindow : mainWindow;
+    if (!targetWin || targetWin.isDestroyed()) {
+        activePermissionRequest = null;
+        showNextPermissionRequest();
+        return;
+    }
+
+    createPermissionPopupView();
+
+    let bounds = { x: 140, y: 38, width: 30, height: 30 };
+    try {
+        const res = await targetWin.webContents.executeJavaScript(`
+            (() => {
+                const el = document.getElementById('identity-btn') || document.querySelector('.omnibox-identity') || document.querySelector('.url-input-container') || document.getElementById('url-input');
+                if (!el) return null;
+                const r = el.getBoundingClientRect();
+                return { x: r.left, y: r.top, width: r.width, height: r.height };
+            })()
+        `);
+        if (res && typeof res.x === 'number') {
+            bounds = res;
+        }
+    } catch (e) {}
+
+    const zoom = getOptimalZoomFactor();
+    const winOffset = getWinOffset();
+    const popupWidth = Math.round(340 * zoom);
+    const popupHeight = Math.round(145 * zoom);
+
+
+    permissionPopupView.setBounds({
+        x: Math.max(10, Math.round(bounds.x + winOffset)),
+        y: Math.round(bounds.y + bounds.height + 4 + winOffset),
+        width: popupWidth,
+        height: popupHeight
+    });
+
+    if (!targetWin.getBrowserViews().includes(permissionPopupView)) {
+        targetWin.addBrowserView(permissionPopupView);
+    }
+    targetWin.setTopBrowserView(permissionPopupView);
+
+    const sendData = () => {
+        if (!permissionPopupView || permissionPopupView.webContents.isDestroyed()) return;
+        permissionPopupView.webContents.send('show-permission-prompt', {
+            id: req.id,
+            origin: req.origin,
+            hostname: req.hostname,
+            permKey: req.permKey,
+            permLabel: req.permLabel,
+            permDesc: req.permDesc,
+            permIcon: req.permIcon,
+            themeMode: userSettings.themeMode || 'dark',
+            accentColor: userSettings.accentColor || '#09f0a0'
+        });
     };
 
-    ses.setPermissionRequestHandler((webContents, permission, callback) => {
+    if (permissionPopupView.webContents.isLoading()) {
+        permissionPopupView.webContents.once('did-finish-load', sendData);
+    } else {
+        sendData();
+    }
+}
+
+function handlePermissionRequest(webContents, permission, callback, details) {
+    try {
+        const currentUrl = (details && details.requestingUrl) || (webContents && !webContents.isDestroyed() && webContents.getURL()) || '';
+        
+        // Auto-allow internal Ocal pages and Chrome extensions
+        if (currentUrl.startsWith('ocal://') || currentUrl.startsWith('file://') || currentUrl.startsWith('chrome-extension://')) {
+            return callback(true);
+        }
+
+        // Auto-allow harmless view capabilities
+        if (['fullscreen', 'pointerLock'].includes(permission)) {
+            return callback(true);
+        }
+
+        let origin = '';
+        let hostname = '';
         try {
-            const origin = new URL(webContents.getURL()).origin;
-            const res = checkPermission(origin, permission === 'media' ? 'audio' : permission);
-            if (res !== null) return callback(res);
-        } catch (e) { }
-        // Default deny for sensitive permissions like geolocation if not explicitly allowed
-        if (permission === 'geolocation' || permission === 'notifications') {
+            const u = new URL(currentUrl);
+            origin = u.origin;
+            hostname = u.hostname;
+        } catch (e) {
+            origin = currentUrl;
+            hostname = currentUrl;
+        }
+
+        if (!origin || origin === 'null') {
             return callback(false);
         }
-        callback(true);
-    });
 
-    ses.setPermissionCheckHandler((webContents, permission, origin) => {
-        const res = checkPermission(origin, permission);
-        if (res !== null) return res;
+        let permKey = permission;
+        let permLabel = permission;
+        let permDesc = `wants permission for ${permission}`;
+        let permIcon = 'fa-shield-halved';
+
+        const mediaTypes = (details && details.mediaTypes) || [];
+
+        if (permission === 'media') {
+            const hasVideo = mediaTypes.includes('video');
+            const hasAudio = mediaTypes.includes('audio');
+            if (hasVideo && hasAudio) {
+                permKey = 'camera-microphone';
+                permLabel = 'Camera & Microphone';
+                permDesc = 'wants to use your camera and microphone';
+                permIcon = 'fa-video';
+            } else if (hasVideo || mediaTypes.length === 0) {
+                permKey = 'camera';
+                permLabel = 'Camera';
+                permDesc = 'wants to use your camera';
+                permIcon = 'fa-video';
+            } else if (hasAudio) {
+                permKey = 'microphone';
+                permLabel = 'Microphone';
+                permDesc = 'wants to use your microphone';
+                permIcon = 'fa-microphone';
+            }
+        } else if (permission === 'geolocation') {
+            permKey = 'geolocation';
+            permLabel = 'Location';
+            permDesc = 'wants to know your location';
+            permIcon = 'fa-location-dot';
+        } else if (permission === 'notifications') {
+            permKey = 'notifications';
+            permLabel = 'Notifications';
+            permDesc = 'wants to send you notifications';
+            permIcon = 'fa-bell';
+        } else if (permission === 'display-capture') {
+            permKey = 'display-capture';
+            permLabel = 'Screen Sharing';
+            permDesc = 'wants to share your screen';
+            permIcon = 'fa-desktop';
+        } else if (permission === 'clipboard-read') {
+            permKey = 'clipboard-read';
+            permLabel = 'Clipboard';
+            permDesc = 'wants to see text and images copied to clipboard';
+            permIcon = 'fa-paste';
+        } else if (permission === 'midi' || permission === 'midi-sysex') {
+            permKey = 'midi';
+            permLabel = 'MIDI Devices';
+            permDesc = 'wants to access MIDI devices';
+            permIcon = 'fa-music';
+        } else if (permission === 'sensors') {
+            permKey = 'sensors';
+            permLabel = 'Sensors';
+            permDesc = 'wants to access sensors';
+            permIcon = 'fa-compass';
+        }
+
+        // 1. Check if permission has already been remembered for this origin
+        const savedDecision = getSavedPermission(origin, permKey);
+        if (savedDecision === 'allow') {
+            return callback(true);
+        }
+        if (savedDecision === 'block') {
+            return callback(false);
+        }
+
+        // 2. Check if identical request is already pending
+        const isDuplicate = permissionRequestQueue.some(r => r.origin === origin && r.permKey === permKey) ||
+            (activePermissionRequest && activePermissionRequest.origin === origin && activePermissionRequest.permKey === permKey);
+        if (isDuplicate) {
+            return callback(false);
+        }
+
+        // 3. Queue the request and trigger prompt popup
+        const reqId = 'perm-' + Date.now() + '-' + Math.random().toString(36).substring(2, 7);
+        permissionRequestQueue.push({
+            id: reqId,
+            webContentsId: webContents.id,
+            origin,
+            hostname,
+            permKey,
+            permLabel,
+            permDesc,
+            permIcon,
+            callback,
+            details
+        });
+
+        showNextPermissionRequest();
+    } catch (err) {
+        console.warn('[PermissionRequestHandler] Error:', err);
+        callback(false);
+    }
+}
+
+function handlePermissionCheck(webContents, permission, requestingOrigin, details) {
+    if (!requestingOrigin || requestingOrigin.startsWith('ocal://') || requestingOrigin.startsWith('file://') || requestingOrigin.startsWith('chrome-extension://')) {
         return true;
-    });
+    }
+    let permKey = permission;
+    if (permission === 'media') {
+        const mediaType = (details && details.mediaType) || '';
+        if (mediaType === 'video') permKey = 'camera';
+        else if (mediaType === 'audio') permKey = 'microphone';
+        else permKey = 'camera';
+    }
+    const saved = getSavedPermission(requestingOrigin, permKey);
+    if (saved === 'allow') return true;
+    if (saved === 'block') return false;
+    return false;
+}
 
+function setupSessionHandlers() {
+    const targetSessions = typeof getActiveExtensionSessions === 'function'
+        ? getActiveExtensionSessions()
+        : [session.defaultSession, session.fromPartition(getProfilePartition())];
+
+    targetSessions.forEach(ses => {
+        try {
+            ses.setUserAgent(OCAL_USER_AGENT);
+            ses.setPermissionRequestHandler(handlePermissionRequest);
+            ses.setPermissionCheckHandler(handlePermissionCheck);
+        } catch (e) {
+            console.warn('[Permissions] Error attaching handlers to session:', e);
+        }
+    });
 
     applyShieldSettings();
-
 }
 
 // Modern Opera-Style Proxy Lifecycle
@@ -1331,15 +1658,29 @@ function setupSecurityHandlers() {
     // Handled in applyShieldSettings (masterOnBeforeRequest)
 }
 
-function getAppIcon() {
+function getAppIconPath() {
+    if (process.resourcesPath) {
+        const rootIco = path.join(process.resourcesPath, '..', 'icon.ico');
+        if (fs.existsSync(rootIco)) return rootIco;
+        const resIco = path.join(process.resourcesPath, 'icon.ico');
+        if (fs.existsSync(resIco)) return resIco;
+    }
     const icoPath = path.join(__dirname, 'icon.ico');
+    if (fs.existsSync(icoPath)) return icoPath;
     const pngPath = path.join(__dirname, 'icon.png');
+    if (fs.existsSync(pngPath)) return pngPath;
+    return icoPath;
+}
+
+function getAppIcon() {
+    const icoPath = getAppIconPath();
     if (process.platform === 'win32' && fs.existsSync(icoPath)) {
         try {
             const img = nativeImage.createFromPath(icoPath);
             if (!img.isEmpty()) return img;
         } catch (e) {}
     }
+    const pngPath = path.join(__dirname, 'icon.png');
     if (fs.existsSync(pngPath)) {
         try {
             const img = nativeImage.createFromPath(pngPath);
@@ -1349,18 +1690,12 @@ function getAppIcon() {
     return null;
 }
 
-function getAppIconPath() {
-    const icoPath = path.join(__dirname, 'icon.ico');
-    if (fs.existsSync(icoPath)) return icoPath;
-    const pngPath = path.join(__dirname, 'icon.png');
-    if (fs.existsSync(pngPath)) return pngPath;
-    return icoPath;
-}
-
 
 function createMainWindow() {
     const appIcon = getAppIcon();
     const appIconPath = getAppIconPath();
+
+    const activeWindowIcon = (appIcon && !appIcon.isEmpty()) ? appIcon : (appIconPath || undefined);
 
     mainWindow = new BrowserWindow({
         width: 1350,
@@ -1368,7 +1703,7 @@ function createMainWindow() {
         minWidth: 360,
         minHeight: 360,
         title: 'Ocal Browser',
-        icon: process.platform === 'win32' ? appIconPath : (appIcon || appIconPath),
+        icon: activeWindowIcon,
         frame: false,
         transparent: false,
         backgroundColor: userSettings.themeMode === 'light' ? '#EDEDF0' : '#18181B', // Dynamic background to match theme and prevent flashbang
@@ -1385,21 +1720,16 @@ function createMainWindow() {
         },
     });
 
-    if (process.platform === 'win32' && appIconPath) {
-        try { mainWindow.setIcon(appIconPath); } catch (e) {}
-    } else if (appIcon && !appIcon.isEmpty()) {
-        try { mainWindow.setIcon(appIcon); } catch (e) {}
+    if (activeWindowIcon) {
+        try { mainWindow.setIcon(activeWindowIcon); } catch (e) {}
     }
     mainWindow.once('ready-to-show', () => {
-        if (process.platform === 'win32' && appIconPath) {
-            try { mainWindow.setIcon(appIconPath); } catch (e) {}
-        } else if (appIcon && !appIcon.isEmpty()) {
-            try { mainWindow.setIcon(appIcon); } catch (e) {}
+        if (activeWindowIcon) {
+            try { mainWindow.setIcon(activeWindowIcon); } catch (e) {}
         }
     });
 
     mainWindow.loadFile('index.html');
-    setTimeout(createSnapFlyoutWindow, 1500);
 
     splitOverlayView = new BrowserView({
         webPreferences: {
@@ -1612,10 +1942,7 @@ app.on('certificate-error', (event, webContents, url, error, certificate, callba
 });
 
 function setupCompatibilityHandler() {
-    session.defaultSession.setPermissionRequestHandler((webContents, permission, callback) => {
-        if (['display-capture', 'media', 'fullscreen'].includes(permission)) callback(true);
-        else callback(false);
-    });
+    // Handled by setupSessionHandlers across all profile sessions
 }
 
 app.on('web-contents-created', (event, contents) => {
@@ -2493,6 +2820,13 @@ function setActiveSplitSide(tabId, side) {
         }
         const activeWc = side === 'left' ? (entry.view ? entry.view.webContents : null) : (entry.view2 ? entry.view2.webContents : null);
         if (activeWc && !activeWc.isDestroyed() && mainWindow && !mainWindow.isDestroyed()) {
+            if (!activeWc.isFocused()) {
+                activeWc.focus();
+            }
+            const activeView = side === 'left' ? entry.view : entry.view2;
+            if (activeView && mainWindow.getBrowserViews().includes(activeView)) {
+                mainWindow.setTopBrowserView(activeView);
+            }
             const url = activeWc.getURL();
             const title = activeWc.getTitle();
             mainWindow.webContents.send('url-updated', {
@@ -2615,8 +2949,21 @@ function setupViewEvents(tabId, view, side = 'left') {
 
     // Apply corner rounding immediately on navigation and loading start (so it curves during load)
     webContents.on('did-start-navigation', (e, url, isInPlace) => {
+        const isLightNav = userSettings.themeMode === 'light';
+        webContents.insertCSS(`:root { color-scheme: ${isLightNav ? 'light' : 'dark'} !important; }`).catch(() => {});
         applyCornerRoundingToWebContents(webContents);
         if (!isInPlace) {
+            if (activePermissionRequest && activePermissionRequest.webContentsId === webContents.id) {
+                hidePermissionPopup();
+                try { activePermissionRequest.callback(false); } catch(e) {}
+                activePermissionRequest = null;
+                showNextPermissionRequest();
+            }
+            for (let i = permissionRequestQueue.length - 1; i >= 0; i--) {
+                if (permissionRequestQueue[i].webContentsId === webContents.id) {
+                    permissionRequestQueue.splice(i, 1);
+                }
+            }
             tabMedia[tabId] = [];
             if (mainWindow && !mainWindow.isDestroyed()) {
                 mainWindow.webContents.send('media-master-updated', { tabId, mediaList: [] });
@@ -2704,9 +3051,13 @@ function setupViewEvents(tabId, view, side = 'left') {
         }
 
         if (!isInternal && !url.startsWith('chrome-extension://')) {
-            const maskColor = userSettings.themeMode === 'light' ? '#EDEDF0' : '#18181B';
+            const isLight = userSettings.themeMode === 'light';
+            const maskColor = isLight ? '#EDEDF0' : '#18181B';
 
             webContents.insertCSS(`
+                :root {
+                    color-scheme: ${isLight ? 'light' : 'dark'} !important;
+                }
                 #ocal-corner-masks-container, .ocal-corner-mask {
                     display: ${isNoCurve ? 'none' : 'block'} !important;
                 }
@@ -2743,6 +3094,9 @@ function setupViewEvents(tabId, view, side = 'left') {
                 }
             `).catch(() => {});
 
+            if (url.includes('google.') && (url.includes('/search') || url.includes('google.com') || url.includes('google.co'))) {
+                webContents.executeJavaScript(`try { if (document.documentElement) document.documentElement.setAttribute('data-darkmode', '${isLight ? "false" : "true"}'); } catch(e) {}`).catch(() => {});
+            }
             const injectScript = `
                 (function() {
                     if (document.getElementById('ocal-corner-masks-container')) return;
@@ -2881,8 +3235,16 @@ function setupViewEvents(tabId, view, side = 'left') {
     });
 
     // Split screen side focus & shortcut handling
+    webContents.on('focus', () => {
+        const entry = views.find(v => v.id === tabId);
+        if (entry && entry.isSplit && entry.focusedSide !== side) {
+            setActiveSplitSide(tabId, side);
+        }
+    });
+
     webContents.on('before-input-event', (event, input) => {
-        if (input.type === 'mouseDown' || input.type === 'keyDown') {
+        const entry = views.find(v => v.id === tabId);
+        if (entry && entry.isSplit && entry.focusedSide !== side) {
             setActiveSplitSide(tabId, side);
         }
         handleShortcuts(event, input);
@@ -4049,6 +4411,26 @@ ipcMain.on('focus-split-side', (e, { tabId, side }) => {
     setActiveSplitSide(tabId, side);
 });
 
+ipcMain.on('webview-clicked', (event) => {
+    const sender = event.sender;
+    if (mainWindow && (mainWindow.webContents === sender || mainWindow.isDestroyed())) return;
+    if (typeof aiSidebarView !== 'undefined' && aiSidebarView && aiSidebarView.webContents === sender) return;
+    if (typeof sidebarOverlayView !== 'undefined' && sidebarOverlayView && sidebarOverlayView.webContents === sender) return;
+
+    const entry = views.find(v => (v.view && v.view.webContents === sender) || (v.view2 && v.view2.webContents === sender));
+    if (entry) {
+        if (entry.id !== activeViewId) {
+            setActiveTab(entry.id);
+        }
+        if (entry.isSplit) {
+            const side = (entry.view2 && entry.view2.webContents === sender) ? 'right' : 'left';
+            if (entry.focusedSide !== side) {
+                setActiveSplitSide(entry.id, side);
+            }
+        }
+    }
+});
+
 let currentDraggedTabId = null;
 
 ipcMain.on('tab-drag-start', (e, tabId) => {
@@ -4274,12 +4656,13 @@ ipcMain.on('navigate-to', (e, url) => {
         else if (cleanUrl === 'extensions' || cleanUrl === 'ocal://extensions') targetUrl = 'file://' + path.join(__dirname, 'settings.html#extensions');
         else if (cleanUrl.includes('.') && !cleanUrl.includes(' ')) targetUrl = 'https://' + cleanUrl;
         else {
+            const isLightMode = userSettings && userSettings.themeMode === 'light';
             const engine = userSettings.searchEngine || 'google';
             let baseUrl = 'https://www.google.com/search?q=';
             if (engine === 'ocal') baseUrl = 'http://localhost:8080/search?q=';
-            else if (engine === 'bing') baseUrl = 'https://www.bing.com/search?q=';
-            else if (engine === 'duckduckgo') baseUrl = 'https://duckduckgo.com/?q=';
-            else if (engine === 'brave') baseUrl = 'https://search.brave.com/search?q=';
+            else if (engine === 'bing') baseUrl = `https://www.bing.com/search?bnddark=${isLightMode ? '0' : '1'}&q=`;
+            else if (engine === 'duckduckgo') baseUrl = `https://duckduckgo.com/?kae=${isLightMode ? '-1' : 'd'}&q=`;
+            else if (engine === 'brave') baseUrl = `https://search.brave.com/search?theme=${isLightMode ? 'light' : 'dark'}&q=`;
             else if (engine === 'yahoo') baseUrl = 'https://search.yahoo.com/search?p=';
 
             if (engine === 'custom' && userSettings.customSearchUrl) {
@@ -4348,366 +4731,157 @@ ipcMain.on('bypass-security', (event, domain, url) => {
 ipcMain.on('window-minimize', () => mainWindow.minimize());
 ipcMain.on('window-maximize', () => { if (mainWindow.isMaximized()) mainWindow.unmaximize(); else mainWindow.maximize(); });
 
-// Windows 11 Snap Layouts & Resizing Handler (Multi-App Tiling Engine)
-function tileOtherApplications(excludeWin, companionBounds) {
-    if (process.platform !== 'win32' || !companionBounds || companionBounds.length === 0) return;
+// ── Windows 11 Native Default Snap Tool ──
+function getTriggerSnapExe() {
+    const candidates = [
+        process.resourcesPath ? path.join(process.resourcesPath, 'bin', 'trigger-snap.exe') : null,
+        process.resourcesPath ? path.join(process.resourcesPath, 'app.asar.unpacked', 'bin', 'trigger-snap.exe') : null,
+        path.join(__dirname, 'bin', 'trigger-snap.exe'),
+        'c:\\Project\\Gaming Network\\Software\\Brower\\bin\\trigger-snap.exe'
+    ].filter(Boolean);
+    for (const c of candidates) {
+        if (fs.existsSync(c)) return c;
+    }
+    return candidates[0] || path.join(__dirname, 'bin', 'trigger-snap.exe');
+}
+
+function triggerNativeWindowsSnap(win) {
+    if (process.platform !== 'win32') return;
     try {
-        const helperExe = path.join(__dirname, 'bin', 'snap-tile-helper.exe');
-        if (!fs.existsSync(helperExe)) return;
-
-        let hwnd = '0';
-        try {
-            if (excludeWin && !excludeWin.isDestroyed()) {
-                const handleBuf = excludeWin.getNativeWindowHandle();
-                hwnd = handleBuf.length >= 8 ? handleBuf.readBigInt64LE(0).toString() : handleBuf.readInt32LE(0).toString();
-            }
-        } catch (e) {
-            hwnd = '0';
+        const targetWin = win || (mainWindow && !mainWindow.isDestroyed() ? mainWindow : null);
+        if (targetWin && !targetWin.isDestroyed()) {
+            targetWin.focus();
         }
-
-        const b1 = companionBounds[0];
-        const args = [hwnd, Math.round(b1.x).toString(), Math.round(b1.y).toString(), Math.round(b1.width).toString(), Math.round(b1.height).toString()];
-        if (companionBounds.length > 1) {
-            const b2 = companionBounds[1];
-            args.push(Math.round(b2.x).toString(), Math.round(b2.y).toString(), Math.round(b2.width).toString(), Math.round(b2.height).toString());
+        const helperExe = getTriggerSnapExe();
+        if (fs.existsSync(helperExe)) {
+            const { spawn } = require('child_process');
+            const child = spawn(helperExe, ['25'], {
+                windowsHide: true,
+                detached: true,
+                stdio: 'ignore'
+            });
+            child.unref();
         }
-
-        const { spawn } = require('child_process');
-        const child = spawn(helperExe, args, { windowsHide: true, detached: true, stdio: 'ignore' });
-        child.unref();
     } catch (err) {
-        // Optional companion tiling
+        console.error('[NativeSnap] Failed to trigger native snap tool:', err);
     }
 }
 
-function calculateSnapBounds(win, zone) {
-    if (!win || win.isDestroyed()) return null;
+function dismissNativeWindowsSnap() {
+    if (process.platform !== 'win32') return;
     try {
-        const { screen } = require('electron');
-        const winBounds = win.getBounds();
-        const currentDisplay = screen.getDisplayMatching(winBounds);
-        const { x, y, width, height } = currentDisplay.workArea;
-
-        let targetBounds = null;
-        let companionBounds = [];
-        let zoneName = '';
-
-        switch (zone) {
-            case 'left-half':
-                targetBounds = { x, y, width: Math.round(width / 2), height };
-                companionBounds = [{ x: x + Math.round(width / 2), y, width: width - Math.round(width / 2), height }];
-                zoneName = 'Left Half (50%)';
-                break;
-            case 'right-half':
-                targetBounds = { x: x + Math.round(width / 2), y, width: width - Math.round(width / 2), height };
-                companionBounds = [{ x, y, width: Math.round(width / 2), height }];
-                zoneName = 'Right Half (50%)';
-                break;
-            case 'left-two-thirds':
-                targetBounds = { x, y, width: Math.round(width * 0.666), height };
-                companionBounds = [{ x: x + Math.round(width * 0.666), y, width: width - Math.round(width * 0.666), height }];
-                zoneName = 'Two-Thirds Left (67%)';
-                break;
-            case 'right-one-third':
-                targetBounds = { x: x + Math.round(width * 0.666), y, width: width - Math.round(width * 0.666), height };
-                companionBounds = [{ x, y, width: Math.round(width * 0.666), height }];
-                zoneName = 'One-Third Right (33%)';
-                break;
-            case 'three-left':
-                targetBounds = { x, y, width: Math.round(width / 3), height };
-                companionBounds = [
-                    { x: x + Math.round(width / 3), y, width: Math.round(width / 3), height },
-                    { x: x + Math.round(width * 2 / 3), y, width: width - Math.round(width * 2 / 3), height }
-                ];
-                zoneName = 'Left Column (33%)';
-                break;
-            case 'three-center':
-                targetBounds = { x: x + Math.round(width / 3), y, width: Math.round(width / 3), height };
-                companionBounds = [
-                    { x, y, width: Math.round(width / 3), height },
-                    { x: x + Math.round(width * 2 / 3), y, width: width - Math.round(width * 2 / 3), height }
-                ];
-                zoneName = 'Center Column (33%)';
-                break;
-            case 'three-right':
-                targetBounds = { x: x + Math.round(width * 2 / 3), y, width: width - Math.round(width * 2 / 3), height };
-                companionBounds = [
-                    { x, y, width: Math.round(width / 3), height },
-                    { x: x + Math.round(width / 3), y, width: Math.round(width / 3), height }
-                ];
-                zoneName = 'Right Column (33%)';
-                break;
-            case 'top-left':
-                targetBounds = { x, y, width: Math.round(width / 2), height: Math.round(height / 2) };
-                companionBounds = [
-                    { x: x + Math.round(width / 2), y, width: width - Math.round(width / 2), height: Math.round(height / 2) },
-                    { x, y: y + Math.round(height / 2), width, height: height - Math.round(height / 2) }
-                ];
-                zoneName = 'Top-Left Quadrant (25%)';
-                break;
-            case 'top-right':
-                targetBounds = { x: x + Math.round(width / 2), y, width: width - Math.round(width / 2), height: Math.round(height / 2) };
-                companionBounds = [
-                    { x, y, width: Math.round(width / 2), height: Math.round(height / 2) },
-                    { x, y: y + Math.round(height / 2), width, height: height - Math.round(height / 2) }
-                ];
-                zoneName = 'Top-Right Quadrant (25%)';
-                break;
-            case 'bottom-left':
-                targetBounds = { x, y: y + Math.round(height / 2), width: Math.round(width / 2), height: height - Math.round(height / 2) };
-                companionBounds = [
-                    { x: x + Math.round(width / 2), y: y + Math.round(height / 2), width: width - Math.round(width / 2), height: height - Math.round(height / 2) },
-                    { x, y, width, height: Math.round(height / 2) }
-                ];
-                zoneName = 'Bottom-Left Quadrant (25%)';
-                break;
-            case 'bottom-right':
-                targetBounds = { x: x + Math.round(width / 2), y: y + Math.round(height / 2), width: width - Math.round(width / 2), height: height - Math.round(height / 2) };
-                companionBounds = [
-                    { x, y: y + Math.round(height / 2), width: Math.round(width / 2), height: height - Math.round(height / 2) },
-                    { x, y, width, height: Math.round(height / 2) }
-                ];
-                zoneName = 'Bottom-Right Quadrant (25%)';
-                break;
-            case 'top-half':
-                targetBounds = { x, y, width, height: Math.round(height / 2) };
-                companionBounds = [{ x, y: y + Math.round(height / 2), width, height: height - Math.round(height / 2) }];
-                zoneName = 'Top Half (50%)';
-                break;
-            case 'bottom-half':
-                targetBounds = { x, y: y + Math.round(height / 2), width, height: height - Math.round(height / 2) };
-                companionBounds = [{ x, y, width, height: Math.round(height / 2) }];
-                zoneName = 'Bottom Half (50%)';
-                break;
-            default:
-                return null;
+        const helperExe = getTriggerSnapExe();
+        if (fs.existsSync(helperExe)) {
+            const { spawn } = require('child_process');
+            const child = spawn(helperExe, ['dismiss'], {
+                windowsHide: true,
+                detached: true,
+                stdio: 'ignore'
+            });
+            child.unref();
         }
-
-        return { targetBounds, companionBounds, zoneName };
-    } catch (e) {
-        return null;
-    }
-}
-
-function snapWindowToZone(win, zone) {
-    if (!win || win.isDestroyed()) return;
-    try {
-        const snapData = calculateSnapBounds(win, zone);
-        if (!snapData || !snapData.targetBounds) return;
-
-        if (win.isMaximized()) {
-            win.unmaximize();
-        }
-        win.setBounds(snapData.targetBounds, true);
-        if (win === mainWindow && typeof updateViewBounds === 'function') {
-            updateViewBounds();
-        } else if (typeof privateWindow !== 'undefined' && win === privateWindow && typeof updatePrivateViewBounds === 'function') {
-            updatePrivateViewBounds();
-        }
-
-        // Also resize and tile other open desktop applications into the complementary zone(s)
-        tileOtherApplications(win, snapData.companionBounds);
     } catch (err) {
-        console.error('[SnapWindow] Failed to snap window:', err);
+        console.error('[NativeSnap] Failed to dismiss native snap tool:', err);
     }
 }
 
-let snapFlyoutWindow = null;
-let snapFlyoutTargetWin = null;
-let snapFlyoutHideTimer = null;
-let snapPreviewWindow = null;
+ipcMain.on('trigger-native-snap', (event) => {
+    const targetWin = BrowserWindow.fromWebContents(event.sender) || mainWindow;
+    triggerNativeWindowsSnap(targetWin);
+});
 
-function createSnapPreviewWindow() {
-    if (snapPreviewWindow && !snapPreviewWindow.isDestroyed()) return snapPreviewWindow;
+ipcMain.on('dismiss-native-snap', () => {
+    dismissNativeWindowsSnap();
+});
 
-    snapPreviewWindow = new BrowserWindow({
-        frame: false,
-        transparent: true,
-        resizable: false,
-        show: false,
-        alwaysOnTop: true,
-        skipTaskbar: true,
-        focusable: false,
-        hasShadow: false,
-        backgroundColor: '#00000000',
-        webPreferences: {
-            preload: path.join(__dirname, 'preload.js'),
-            contextIsolation: true,
-            nodeIntegration: false
+// Backward-compatibility: route any legacy snap calls directly to native snap
+ipcMain.on('show-snap-flyout', (event) => {
+    const targetWin = BrowserWindow.fromWebContents(event.sender) || mainWindow;
+    triggerNativeWindowsSnap(targetWin);
+});
+ipcMain.on('hide-snap-flyout', () => {
+    dismissNativeWindowsSnap();
+});
+ipcMain.on('cancel-hide-snap-flyout', () => {});
+ipcMain.on('show-snap-preview', () => {});
+
+// ── In-App Audio Dictation & Speech-to-Text Transcription ──
+ipcMain.handle('transcribe-audio', async (event, payload) => {
+    if (!payload || !payload.base64Data) return { text: '' };
+    const { base64Data, mimeType } = payload;
+
+    const groqKey = (userSettings.groqApiKey || process.env.GROQ_API_KEY || '').trim();
+    const openaiKey = (userSettings.openaiApiKey || process.env.OPENAI_API_KEY || '').trim();
+    const geminiKey = (userSettings.aiApiKey || process.env.GEMINI_API_KEY || process.env.GOOGLE_API_KEY || '').trim();
+
+    try {
+        // 1. Groq Whisper (ultra-fast transcription)
+        if (groqKey) {
+            const buffer = Buffer.from(base64Data, 'base64');
+            const FormData = require('form-data');
+            const form = new FormData();
+            form.append('file', buffer, { filename: 'audio.webm', contentType: mimeType || 'audio/webm' });
+            form.append('model', 'whisper-large-v3-turbo');
+
+            const res = await fetch('https://api.groq.com/openai/v1/audio/transcriptions', {
+                method: 'POST',
+                headers: {
+                    'Authorization': 'Bearer ' + groqKey,
+                    ...form.getHeaders()
+                },
+                body: form
+            });
+            const data = await res.json();
+            if (data && data.text) return { text: data.text.trim() };
         }
-    });
 
-    snapPreviewWindow.setAlwaysOnTop(true, 'screen-saver');
-    snapPreviewWindow.setIgnoreMouseEvents(true);
-    snapPreviewWindow.loadFile(path.join(__dirname, 'snap-preview.html'));
+        // 2. OpenAI Whisper
+        if (openaiKey) {
+            const buffer = Buffer.from(base64Data, 'base64');
+            const FormData = require('form-data');
+            const form = new FormData();
+            form.append('file', buffer, { filename: 'audio.webm', contentType: mimeType || 'audio/webm' });
+            form.append('model', 'whisper-1');
 
-    return snapPreviewWindow;
-}
-
-function showSnapPreview(zone) {
-    const targetWin = (snapFlyoutTargetWin && !snapFlyoutTargetWin.isDestroyed())
-        ? snapFlyoutTargetWin
-        : (mainWindow && !mainWindow.isDestroyed() ? mainWindow : null);
-    if (!targetWin) return;
-
-    const snapData = calculateSnapBounds(targetWin, zone);
-    if (!snapData || !snapData.targetBounds) return;
-
-    const preview = createSnapPreviewWindow();
-    preview.setBounds(snapData.targetBounds);
-
-    const isPrivate = (targetWin === (typeof privateWindow !== 'undefined' ? privateWindow : null));
-    if (preview.webContents) {
-        preview.webContents.send('set-preview-info', {
-            zone: zone,
-            zoneName: snapData.zoneName,
-            isPrivate: isPrivate,
-            themeMode: userSettings.themeMode || 'dark'
-        });
-    }
-
-    preview.showInactive();
-    if (snapFlyoutWindow && !snapFlyoutWindow.isDestroyed() && snapFlyoutWindow.isVisible()) {
-        snapFlyoutWindow.moveTop();
-    }
-}
-
-function hideSnapPreview() {
-    if (snapPreviewWindow && !snapPreviewWindow.isDestroyed() && snapPreviewWindow.isVisible()) {
-        try { snapPreviewWindow.hide(); } catch (e) {}
-    }
-}
-
-function createSnapFlyoutWindow() {
-    if (snapFlyoutWindow && !snapFlyoutWindow.isDestroyed()) return snapFlyoutWindow;
-
-    snapFlyoutWindow = new BrowserWindow({
-        width: 334,
-        height: 104,
-        frame: false,
-        transparent: true,
-        resizable: false,
-        show: false,
-        alwaysOnTop: true,
-        skipTaskbar: true,
-        hasShadow: false,
-        backgroundColor: '#00000000',
-        webPreferences: {
-            preload: path.join(__dirname, 'preload.js'),
-            contextIsolation: true,
-            nodeIntegration: false
+            const res = await fetch('https://api.openai.com/v1/audio/transcriptions', {
+                method: 'POST',
+                headers: {
+                    'Authorization': 'Bearer ' + openaiKey,
+                    ...form.getHeaders()
+                },
+                body: form
+            });
+            const data = await res.json();
+            if (data && data.text) return { text: data.text.trim() };
         }
-    });
 
-    snapFlyoutWindow.setAlwaysOnTop(true, 'screen-saver');
-    snapFlyoutWindow.loadFile(path.join(__dirname, 'snap-flyout.html'));
-
-    return snapFlyoutWindow;
-}
-
-function hideSnapFlyoutWindow(delay = 300) {
-    clearTimeout(snapFlyoutHideTimer);
-    hideSnapPreview();
-    if (!snapFlyoutWindow || snapFlyoutWindow.isDestroyed() || !snapFlyoutWindow.isVisible()) return;
-
-    if (delay === 0) {
-        try { snapFlyoutWindow.hide(); } catch (e) {}
-        return;
+        // 3. Google Gemini (Multimodal audio transcription)
+        if (geminiKey) {
+            const key = geminiKey;
+            const res = await fetch('https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=' + key, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    contents: [{
+                        parts: [
+                            { inline_data: { mime_type: mimeType || 'audio/webm', data: base64Data } },
+                            { text: 'Transcribe the spoken audio into text directly and accurately. Return ONLY the transcribed words with proper punctuation without any introductory explanation or quotes.' }
+                        ]
+                    }]
+                })
+            });
+            const data = await res.json();
+            const text = data?.candidates?.[0]?.content?.parts?.[0]?.text;
+            if (text) return { text: text.trim() };
+        }
+    } catch (err) {
+        console.warn('[VoiceToText] Transcription error:', err);
     }
 
-    snapFlyoutHideTimer = setTimeout(() => {
-        try {
-            if (snapFlyoutWindow && !snapFlyoutWindow.isDestroyed()) {
-                const { screen } = require('electron');
-                const pt = screen.getCursorScreenPoint();
-                const b = snapFlyoutWindow.getBounds();
-                if (pt.x >= b.x && pt.x <= b.x + b.width && pt.y >= b.y && pt.y <= b.y + b.height) {
-                    return; // Cursor is inside the flyout, keep open
-                }
-                snapFlyoutWindow.hide();
-                hideSnapPreview();
-            }
-        } catch (e) {}
-    }, delay);
-}
-
-ipcMain.on('show-snap-flyout', (event, bounds) => {
-    clearTimeout(snapFlyoutHideTimer);
-    snapFlyoutHideTimer = null;
-
-    const senderWin = BrowserWindow.fromWebContents(event.sender) || mainWindow;
-    snapFlyoutTargetWin = senderWin;
-
-    const winBounds = senderWin.getBounds();
-    const btnScreenX = winBounds.x + Math.round((bounds && bounds.x) || 0);
-    const btnScreenY = winBounds.y + Math.round((bounds && bounds.y) || 0);
-    const btnW = Math.round((bounds && bounds.width) || 46);
-    const btnH = Math.round((bounds && bounds.height) || 36);
-
-    const flyout = createSnapFlyoutWindow();
-    const flyoutW = 334;
-    const flyoutH = 104;
-
-    let flyoutX = (btnScreenX + btnW) - flyoutW + 4;
-    let flyoutY = btnScreenY + btnH + 6;
-
-    const { screen } = require('electron');
-    const currentDisplay = screen.getDisplayMatching(winBounds);
-    const workArea = currentDisplay.workArea;
-
-    if (flyoutX + flyoutW > workArea.x + workArea.width) {
-        flyoutX = workArea.x + workArea.width - flyoutW - 8;
-    }
-    if (flyoutX < workArea.x) {
-        flyoutX = workArea.x + 8;
-    }
-    if (flyoutY + flyoutH > workArea.y + workArea.height) {
-        flyoutY = btnScreenY - flyoutH - 4;
-    }
-
-    flyout.setBounds({
-        x: Math.round(flyoutX),
-        y: Math.round(flyoutY),
-        width: flyoutW,
-        height: flyoutH
-    });
-
-    if (flyout.webContents) {
-        flyout.webContents.send('set-theme', {
-            themeMode: userSettings.themeMode || 'dark',
-            isPrivate: (senderWin === (typeof privateWindow !== 'undefined' ? privateWindow : null))
-        });
-    }
-
-    flyout.showInactive();
+    return { text: '' };
 });
-
-ipcMain.on('hide-snap-flyout', (event, customDelay) => {
-    const delay = (typeof customDelay === 'number') ? customDelay : 450;
-    hideSnapFlyoutWindow(delay);
-});
-
-ipcMain.on('cancel-hide-snap-flyout', () => {
-    clearTimeout(snapFlyoutHideTimer);
-    snapFlyoutHideTimer = null;
-});
-
-ipcMain.on('show-snap-preview', (event, zone) => {
-    showSnapPreview(zone);
-});
-
-ipcMain.on('hide-snap-preview', () => {
-    hideSnapPreview();
-});
-
-ipcMain.on('snap-window', (e, zone) => {
-    const targetWin = (snapFlyoutTargetWin && !snapFlyoutTargetWin.isDestroyed())
-        ? snapFlyoutTargetWin
-        : (BrowserWindow.fromWebContents(e.sender) || mainWindow);
-    hideSnapPreview();
-    snapWindowToZone(targetWin, zone);
-    hideSnapFlyoutWindow(0);
-});
+ipcMain.on('hide-snap-preview', () => {});
+ipcMain.on('snap-window', () => {});
 
 let isConfirmingSessionClose = false;
 
@@ -10584,6 +10758,8 @@ function setupGoogleLoginPartition() {
 }
 
 app.whenReady().then(async () => {
+    // 0. Initialize theme mode and search engine cookie preferences globally
+    applyThemeModeGlobally(userSettings.themeMode || 'dark');
 
 
     // 1. Core Extension Loading (Highest Priority)
@@ -10851,7 +11027,7 @@ ipcMain.on('show-site-info', (e, bounds) => {
     targetWin.setTopBrowserView(siteInfoView);
 
     // Fetch permissions for this origin to pass to the popup
-    let permissions = { notifications: 'allow', popups: 'allow', audio: 'allow' };
+    let permissions = { notifications: 'default', popups: 'default', audio: 'default', camera: 'default', microphone: 'default', geolocation: 'default' };
     try {
         const origin = new URL(url).origin;
         if (userSettings.sitePermissions[origin]) {
@@ -10881,6 +11057,42 @@ ipcMain.on('update-site-permission', (e, { origin, permission, value }) => {
 });
 
 ipcMain.on('hide-site-info', () => hideSiteInfo());
+ipcMain.on('permission-response', (event, { id, decision }) => {
+    if (!activePermissionRequest || activePermissionRequest.id !== id) return;
+
+    const req = activePermissionRequest;
+    activePermissionRequest = null;
+    hidePermissionPopup();
+
+    if (decision === 'allow' || decision === 'block') {
+        if (!userSettings.sitePermissions) userSettings.sitePermissions = {};
+        if (!userSettings.sitePermissions[req.origin]) userSettings.sitePermissions[req.origin] = {};
+
+        if (req.permKey === 'camera-microphone') {
+            userSettings.sitePermissions[req.origin]['camera'] = decision;
+            userSettings.sitePermissions[req.origin]['microphone'] = decision;
+        } else {
+            userSettings.sitePermissions[req.origin][req.permKey] = decision;
+        }
+        saveSettings(userSettings);
+
+        try {
+            req.callback(decision === 'allow');
+        } catch (e) {}
+    } else {
+        // Dismissed / temporary deny
+        try {
+            req.callback(false);
+        } catch (e) {}
+    }
+
+    showNextPermissionRequest();
+});
+
+ipcMain.on('hide-permission-popup', () => {
+    hidePermissionPopup();
+});
+
 
 ipcMain.on('open-settings', (e, section) => {
     createNewTab(`ocal://settings#${section}`);
@@ -10957,7 +11169,14 @@ async function getCookiesForHost(targetOriginOrHost) {
         }
     };
 
-    const targetSessions = getAllActiveSessions();
+    // Wipe remembered permissions for these reset origins
+        if (userSettings && userSettings.sitePermissions) {
+            for (const orig of uniqueOrigins) {
+                delete userSettings.sitePermissions[orig];
+            }
+            saveSettings(userSettings);
+        }
+        const targetSessions = getAllActiveSessions();
 
     for (const ses of targetSessions) {
         try {
@@ -14024,8 +14243,8 @@ function showPageContextMenu(data, targetWin = mainWindow) {
 
     const zoom = getOptimalZoomFactor();
     const contentBounds = targetWin.getContentBounds();
-    const initialWidth = Math.round(250 * zoom);
-    const initialHeight = Math.round(280 * zoom);
+    const initialWidth = Math.round(270 * zoom);
+    const initialHeight = Math.round(170 * zoom);
 
     let initialX = data.x;
     let initialY = data.y;
@@ -14443,6 +14662,10 @@ function getPrivateSession() {
         // In-memory partition (strictly RAM only, no persist: prefix)
         const partition = 'private-session-' + Date.now();
         privateSession = session.fromPartition(partition);
+        try {
+            privateSession.setPermissionRequestHandler(handlePermissionRequest);
+            privateSession.setPermissionCheckHandler(handlePermissionCheck);
+        } catch(e) {}
 
         // 1. Native Turbo Tracker & Ad Blocker + HTTPS Upgrade + Clean Tracking Params
         try {
@@ -14597,13 +14820,14 @@ function openPrivateWindow(targetUrl = null) {
     const appIcon = getAppIcon();
     const appIconPath = getAppIconPath();
 
+    const activePrivateIcon = (appIcon && !appIcon.isEmpty()) ? appIcon : (appIconPath || undefined);
     privateWindow = new BrowserWindow({
         width: 1350,
         height: 900,
         minWidth: 360,
         minHeight: 360,
         title: 'Ocal Browser - Private Window',
-        icon: process.platform === 'win32' ? appIconPath : (appIcon || appIconPath),
+        icon: activePrivateIcon,
         frame: false,
         backgroundColor: '#0c0d12',
         resizable: true,

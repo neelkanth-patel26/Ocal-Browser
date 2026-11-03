@@ -199,7 +199,7 @@ function renderTabs() {
                 header.title = `${groupTitle} (Click to toggle collapse, right-click for options)`;
                 const tabCount = tabs.filter(t => t.groupId === group.id).length;
                 header.innerHTML = `
-                    <div class="tab-group-pill-indicator" style="background: ${group.color || '#a855f7'};"></div>
+                    <div class="tab-group-pill-indicator"></div>
                     ${group.name ? `<span class="tab-group-name">${group.name}</span>` : ''}
                     ${group.collapsed ? `<span class="tab-group-collapsed-badge">${tabCount}</span>` : ''}
                 `;
@@ -434,12 +434,14 @@ function renderTabs() {
                 return;
             }
             if (e.target.closest('.tab-close')) return;
-            if (tab.isSplit) return;
-            activeTabId = tab.id;
-            window.electronAPI.switchTab(tab.id);
-            renderTabs();
-            updatePageTimeChip(tab.id);
-            updateMediaMasterIcon(tab.id);
+            if (e.target.closest('.sub-tab-half')) return;
+            if (activeTabId !== tab.id) {
+                activeTabId = tab.id;
+                window.electronAPI.switchTab(tab.id);
+                renderTabs();
+                updatePageTimeChip(tab.id);
+                updateMediaMasterIcon(tab.id);
+            }
         };
         parentContainer.appendChild(el);
     });
@@ -642,6 +644,7 @@ function renderTabs() {
                     pane.onclick = (e) => {
                         e.stopPropagation();
                         const side = pane.getAttribute('data-side');
+                        tab.focusedSide = side;
                         window.electronAPI.send('focus-split-side', { tabId: tab.id, side });
                         if (activeTabId !== tab.id) {
                             activeTabId = tab.id;
@@ -676,12 +679,14 @@ function renderTabs() {
                     return;
                 }
                 if (e.target.closest('.vt-tab-close')) return;
-                if (tab.isSplit) return;
-                activeTabId = tab.id;
-                window.electronAPI.switchTab(tab.id);
-                renderTabs();
-                updatePageTimeChip(tab.id);
-                updateMediaMasterIcon(tab.id);
+                if (e.target.closest('.vt-split-pane')) return;
+                if (activeTabId !== tab.id) {
+                    activeTabId = tab.id;
+                    window.electronAPI.switchTab(tab.id);
+                    renderTabs();
+                    updatePageTimeChip(tab.id);
+                    updateMediaMasterIcon(tab.id);
+                }
             };
 
             // Append grouped tabs into their wrapper, ungrouped into vtTabList
@@ -725,6 +730,9 @@ window.electronAPI.onTabsChanged((data) => {
 window.electronAPI.onUpdateURL((data) => {
     const tab = tabs.find(t => t.id === data.id);
     if (tab) { 
+        if (data.side && tab.isSplit) {
+            tab.focusedSide = data.side;
+        }
         if (data.side === 'right' && tab.isSplit) {
             tab.url2 = data.url;
             if (data.title) tab.title2 = data.title;
@@ -1477,68 +1485,114 @@ document.addEventListener('DOMContentLoaded', () => {
     if (navMaxBtn)   navMaxBtn.onclick   = () => window.electronAPI.maximize();
     if (navCloseBtn) navCloseBtn.onclick = () => window.electronAPI.close();
 
-    // ── Windows 11 Snap Layouts & Resizing Engine ──────────────────────────
+    // ── Windows 11 Native Snap Tool Controller ──────────────────────────
     function initWin11SnapLayouts() {
-        let showTimer = null;
+        let hoverTimer = null;
+        let autoDismissTimer = null;
+        let leaveTimer = null;
+        let snapOpen = false;
 
-        function triggerFlyout(btn) {
-            clearTimeout(showTimer);
-            if (!btn) return;
-            const rect = btn.getBoundingClientRect();
-            if (window.electronAPI && typeof window.electronAPI.showSnapFlyout === 'function') {
-                window.electronAPI.showSnapFlyout({
-                    x: rect.left,
-                    y: rect.top,
-                    width: rect.width,
-                    height: rect.height
-                });
+        function triggerNativeSnap() {
+            clearTimeout(hoverTimer);
+            clearTimeout(autoDismissTimer);
+            clearTimeout(leaveTimer);
+            snapOpen = true;
+
+            if (window.electronAPI && typeof window.electronAPI.triggerNativeSnap === 'function') {
+                window.electronAPI.triggerNativeSnap();
             } else if (window.electronAPI && typeof window.electronAPI.send === 'function') {
-                window.electronAPI.send('show-snap-flyout', {
-                    x: rect.left,
-                    y: rect.top,
-                    width: rect.width,
-                    height: rect.height
-                });
+                window.electronAPI.send('trigger-native-snap');
             }
+
+            // Stay for some time (3.5s) then auto-dismiss if not interacted with, so it does not stick forever
+            autoDismissTimer = setTimeout(() => {
+                dismissNativeSnap();
+            }, 3500);
         }
 
-        function cancelShow() {
-            clearTimeout(showTimer);
-            if (window.electronAPI && typeof window.electronAPI.hideSnapFlyout === 'function') {
-                window.electronAPI.hideSnapFlyout(450);
+        function dismissNativeSnap() {
+            clearTimeout(hoverTimer);
+            clearTimeout(autoDismissTimer);
+            clearTimeout(leaveTimer);
+            leaveTimer = null;
+            if (!snapOpen) return;
+            snapOpen = false;
+
+            if (window.electronAPI && typeof window.electronAPI.dismissNativeSnap === 'function') {
+                window.electronAPI.dismissNativeSnap();
             } else if (window.electronAPI && typeof window.electronAPI.send === 'function') {
-                window.electronAPI.send('hide-snap-flyout', 450);
+                window.electronAPI.send('dismiss-native-snap');
             }
         }
 
         // Attach hover & right-click listeners to both horizontal maxBtn and vertical navMaxBtn
         [maxBtn, navMaxBtn].filter(Boolean).forEach(btn => {
             btn.addEventListener('mouseenter', () => {
-                clearTimeout(showTimer);
-                showTimer = setTimeout(() => triggerFlyout(btn), 150);
+                clearTimeout(hoverTimer);
+                clearTimeout(leaveTimer);
+                // Dwell time: user must stay on button for 500ms before it triggers (not on brief mouse pass)
+                hoverTimer = setTimeout(() => {
+                    triggerNativeSnap();
+                }, 500);
             });
-            btn.addEventListener('mousemove', () => {
-                if (!showTimer) {
-                    showTimer = setTimeout(() => triggerFlyout(btn), 150);
+
+            btn.addEventListener('mouseleave', () => {
+                clearTimeout(hoverTimer);
+                // When mouse leaves button, give a 1.8s grace period to click a snap zone, then auto-dismiss
+                if (snapOpen) {
+                    clearTimeout(leaveTimer);
+                    leaveTimer = setTimeout(() => {
+                        dismissNativeSnap();
+                    }, 1800);
                 }
             });
-            btn.addEventListener('mouseleave', () => {
-                cancelShow();
-            });
+
             btn.addEventListener('contextmenu', (e) => {
                 e.preventDefault();
-                triggerFlyout(btn);
+                clearTimeout(hoverTimer);
+                triggerNativeSnap();
+            });
+
+            btn.addEventListener('click', () => {
+                dismissNativeSnap();
             });
         });
 
-        // Keyboard Shortcut: Alt + Z to toggle Windows 11 Snap Flyout
+        // Dismiss if user clicks anywhere in the window
+        window.addEventListener('mousedown', () => {
+            if (snapOpen) {
+                dismissNativeSnap();
+            }
+        }, true);
+
+        // If user moves mouse away from the top-right corner where the snap tool is located
+        window.addEventListener('mousemove', (e) => {
+            if (snapOpen) {
+                const isFar = (e.clientY > 360) || (e.clientX < window.innerWidth - 420);
+                if (isFar) {
+                    if (!leaveTimer) {
+                        leaveTimer = setTimeout(() => {
+                            dismissNativeSnap();
+                        }, 500);
+                    }
+                } else {
+                    clearTimeout(leaveTimer);
+                    leaveTimer = null;
+                }
+            }
+        });
+
+        // Keyboard Shortcut: Alt + Z to toggle Windows 11 Native Snap Tool
         window.addEventListener('keydown', (e) => {
             if (e.altKey && (e.key === 'z' || e.key === 'Z')) {
                 e.preventDefault();
-                const target = (navMaxBtn && navMaxBtn.offsetParent) ? navMaxBtn : maxBtn;
-                triggerFlyout(target);
-            } else if (e.key === 'Escape') {
-                cancelShow();
+                if (snapOpen) {
+                    dismissNativeSnap();
+                } else {
+                    triggerNativeSnap();
+                }
+            } else if (e.key === 'Escape' && snapOpen) {
+                dismissNativeSnap();
             }
         });
     }

@@ -1402,32 +1402,38 @@ body.compact-mode .tab-group-container {
   box-shadow: none !important;
 }
 
-/* Group Header / Left Indicator Capsule */
+/* Group Header / Solid Left Indicator Pill */
 .tab-group-header {
   display: flex;
   align-items: center;
   justify-content: center;
-  height: 100%;
-  padding: 0 6px 0 8px;
+  height: calc(100% - 6px);
+  margin: 3px 2px 3px 3px;
+  padding: 0 8px;
   cursor: pointer;
   -webkit-app-region: no-drag;
   flex-shrink: 0;
-  background: transparent !important;
-  border: none !important;
-  border-radius: 0 !important;
-  box-shadow: none !important;
-  transition: background 0.15s ease, transform 0.1s ease;
+  background: var(--group-color, #a855f7) !important;
+  border: 1px solid var(--group-color, #a855f7) !important;
+  border-radius: 9px !important;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.2) !important;
+  transition: all 0.15s ease;
   user-select: none;
   gap: 6px;
+  color: #FFFFFF !important;
 }
 
 body.compact-mode .tab-group-header {
-  padding: 0 5px 0 6px;
+  height: calc(100% - 4px);
+  margin: 2px 1.5px 2px 2px;
+  padding: 0 6px;
   gap: 5px;
+  border-radius: 7px !important;
 }
 
 .tab-group-header:hover {
-  background: color-mix(in srgb, var(--group-color, #a855f7) 20%, transparent) !important;
+  filter: brightness(1.12);
+  transform: scale(1.02);
 }
 
 .tab-group-header:active {
@@ -1435,7 +1441,7 @@ body.compact-mode .tab-group-header {
 }
 
 .tab-group-header.drag-over {
-  background: color-mix(in srgb, var(--group-color, #a855f7) 25%, transparent) !important;
+  background: color-mix(in srgb, var(--group-color, #a855f7) 80%, #FFFFFF) !important;
 }
 
 /* The vertical pill indicator matching the user screenshot - clean without glow */
@@ -1543,15 +1549,15 @@ body.compact-mode .tab-item.grouped:not(:last-child)::after {
   font-weight: 500 !important;
 }
 
-/* Active Grouped Tab - Rounded Frosted Pill */
+/* Active Grouped Tab - Solid Vibrant Pill */
 .tab-item.grouped.active {
-  background: color-mix(in srgb, var(--group-color, #a855f7) 24%, rgba(255, 255, 255, 0.14)) !important;
-  color: #FFFFFF !important;
+  background: var(--group-color, var(--accent)) !important;
+  color: var(--accent-text, #FFFFFF) !important;
   border-radius: 9px !important;
   border: none !important;
   margin: 0 !important;
   height: 100% !important;
-  box-shadow: none !important;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.25) !important;
 }
 
 body.compact-mode .tab-item.grouped.active {
@@ -1561,8 +1567,12 @@ body.compact-mode .tab-item.grouped.active {
 }
 
 .tab-item.grouped.active .tab-title {
-  color: #FFFFFF !important;
-  font-weight: 600 !important;
+  color: var(--accent-text, #FFFFFF) !important;
+  font-weight: 650 !important;
+}
+
+.tab-item.grouped.active i.tab-favicon {
+  color: var(--accent-text, #FFFFFF) !important;
 }
 
 .tab-item.grouped.active::after {
@@ -1574,33 +1584,84 @@ body.compact-mode .tab-item.grouped.active {
   opacity: 0;
 }
 
-/* Collapsed state */
+/* Collapsed state - Solid Vibrant Group Tab */
+.tab-group-container.collapsed {
+  background: var(--group-color, #a855f7) !important;
+  border: 1px solid var(--group-color, #a855f7) !important;
+  box-shadow: 0 2px 8px color-mix(in srgb, var(--group-color, #a855f7) 40%, transparent) !important;
+  color: #FFFFFF !important;
+}
+
 .tab-group-container.collapsed .tab-item.grouped {
   display: none !important;
 }
 
 .tab-group-container.collapsed .tab-group-header {
-  padding: 0 10px 0 10px;
+  padding: 0 10px 0 10px !important;
+  background: transparent !important;
+  border: none !important;
+  box-shadow: none !important;
+  margin: 0 !important;
+  height: 100% !important;
 }
 
-/* ── Light Mode Tab Groups ────────────────────────────────────────── */
+.tab-group-container.collapsed:hover {
+  filter: brightness(1.1);
+  transform: scale(1.02);
+}
+
+.tab-group-container.collapsed .tab-group-pill-indicator,
+.tab-group-header .tab-group-pill-indicator {
+  background: #FFFFFF !important;
+  opacity: 0.95 !important;
+}
+
+.tab-group-collapsed-badge {
+  font-size: 10.5px;
+  font-weight: 700;
+  color: #FFFFFF !important;
+  background: rgba(255, 255, 255, 0.28) !important;
+  padding: 1px 6px;
+  border-radius: 9999px;
+  line-height: 1.3;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 16px;
+}
+
+/* ── Light Mode Tab Groups ── */
 body[data-theme="light"] .tab-group-container {
   background: color-mix(in srgb, var(--group-color, #a855f7) 12%, #FFFFFF) !important;
   border: 1px solid color-mix(in srgb, var(--group-color, #a855f7) 22%, rgba(0, 0, 0, 0.06)) !important;
   box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04) !important;
 }
 
-body[data-theme="light"] .tab-group-header:hover {
-  background: color-mix(in srgb, var(--group-color, #a855f7) 16%, transparent) !important;
+body[data-theme="light"] .tab-group-container.collapsed {
+  background: var(--group-color, #a855f7) !important;
+  border: 1px solid var(--group-color, #a855f7) !important;
+  box-shadow: 0 2px 8px color-mix(in srgb, var(--group-color, #a855f7) 35%, transparent) !important;
+  color: #FFFFFF !important;
+}
+
+body[data-theme="light"] .tab-group-header {
+  background: var(--group-color, #a855f7) !important;
+  border: 1px solid var(--group-color, #a855f7) !important;
+  color: #FFFFFF !important;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.12) !important;
+}
+
+body[data-theme="light"] .tab-group-header .tab-group-pill-indicator {
+  background: #FFFFFF !important;
 }
 
 body[data-theme="light"] .tab-group-name {
-  color: color-mix(in srgb, var(--group-color, #a855f7) 70%, #1E293B) !important;
+  color: #FFFFFF !important;
 }
 
 body[data-theme="light"] .tab-group-collapsed-badge {
-  background: color-mix(in srgb, var(--group-color, #a855f7) 18%, transparent);
-  color: color-mix(in srgb, var(--group-color, #a855f7) 80%, #1E293B);
+  background: rgba(255, 255, 255, 0.3) !important;
+  color: #FFFFFF !important;
 }
 
 body[data-theme="light"] .tab-item.grouped {
@@ -1617,15 +1678,19 @@ body[data-theme="light"] .tab-item.grouped:hover {
 }
 
 body[data-theme="light"] .tab-item.grouped.active {
-  background: color-mix(in srgb, var(--group-color, #a855f7) 10%, #FFFFFF) !important;
-  color: color-mix(in srgb, var(--group-color, #a855f7) 80%, #0F172A) !important;
+  background: var(--group-color, var(--accent)) !important;
+  color: var(--accent-text, #FFFFFF) !important;
   border: none !important;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05) !important;
+  box-shadow: 0 1px 5px rgba(0, 0, 0, 0.15) !important;
 }
 
 body[data-theme="light"] .tab-item.grouped.active .tab-title {
-  color: color-mix(in srgb, var(--group-color, #a855f7) 80%, #0F172A) !important;
-  font-weight: 600 !important;
+  color: var(--accent-text, #FFFFFF) !important;
+  font-weight: 650 !important;
+}
+
+body[data-theme="light"] .tab-item.grouped.active i.tab-favicon {
+  color: var(--accent-text, #FFFFFF) !important;
 }
 
 /* + new tab button */
@@ -4055,36 +4120,38 @@ body[data-theme="light"] .tab-item.split-tab .sub-tab-half:hover:not(.active) {
 
 /* ── Split Tab Active Side Highlight ── */
 .tab-item.split-tab .sub-tab-half.active {
-  background: color-mix(in srgb, var(--accent, #D4FC2B) 18%, rgba(255, 255, 255, 0.03)) !important;
-  color: var(--accent, #D4FC2B) !important;
-  font-weight: 600 !important;
-  border: 1px solid color-mix(in srgb, var(--accent, #D4FC2B) 35%, transparent) !important;
-  box-shadow: 0 1px 6px color-mix(in srgb, var(--accent, #D4FC2B) 15%, transparent) !important;
+  background: var(--group-color, var(--accent, #D4FC2B)) !important;
+  color: var(--accent-text, #ffffff) !important;
+  font-weight: 650 !important;
+  border: 1px solid var(--group-color, var(--accent, #D4FC2B)) !important;
+  box-shadow: 0 2px 8px color-mix(in srgb, var(--group-color, var(--accent, #D4FC2B)) 35%, transparent) !important;
 }
 
 body[data-theme="light"] .tab-item.split-tab .sub-tab-half.active {
-  background: color-mix(in srgb, var(--accent, #15AC49) 12%, #FFFFFF) !important;
-  color: var(--accent, #15AC49) !important;
-  font-weight: 600 !important;
-  border: 1px solid color-mix(in srgb, var(--accent, #15AC49) 30%, transparent) !important;
-  box-shadow: 0 1px 4px color-mix(in srgb, var(--accent, #15AC49) 10%, transparent) !important;
+  background: var(--group-color, var(--accent, #15AC49)) !important;
+  color: var(--accent-text, #ffffff) !important;
+  font-weight: 650 !important;
+  border: 1px solid var(--group-color, var(--accent, #15AC49)) !important;
+  box-shadow: 0 2px 8px color-mix(in srgb, var(--group-color, var(--accent, #15AC49)) 30%, transparent) !important;
 }
 
 .tab-item.split-tab .sub-tab-half.active .sub-title {
-  color: var(--accent, #D4FC2B) !important;
-  font-weight: 600 !important;
+  color: var(--accent-text, #ffffff) !important;
+  font-weight: 650 !important;
 }
 
 body[data-theme="light"] .tab-item.split-tab .sub-tab-half.active .sub-title {
-  color: var(--accent, #15AC49) !important;
+  color: var(--accent-text, #ffffff) !important;
 }
 
-.tab-item.split-tab .sub-tab-half.active i.tab-favicon {
-  color: var(--accent, #D4FC2B) !important;
+.tab-item.split-tab .sub-tab-half.active i.tab-favicon,
+.tab-item.split-tab .sub-tab-half.active .tab-favicon {
+  color: var(--accent-text, #ffffff) !important;
 }
 
-body[data-theme="light"] .tab-item.split-tab .sub-tab-half.active i.tab-favicon {
-  color: var(--accent, #15AC49) !important;
+body[data-theme="light"] .tab-item.split-tab .sub-tab-half.active i.tab-favicon,
+body[data-theme="light"] .tab-item.split-tab .sub-tab-half.active .tab-favicon {
+  color: var(--accent-text, #ffffff) !important;
 }
 
 .tab-item.split-tab .sub-tab-half .tab-favicon {
@@ -5459,9 +5526,31 @@ body[data-theme="dark"] .vt-group-header:hover {
   background: color-mix(in srgb, var(--group-color, #a855f7) 12%, rgba(255, 255, 255, 0.03));
 }
 
-/* When collapsed, hide the divider */
+/* When collapsed, hide the divider and make solid */
 .vt-group-header.collapsed {
   border-bottom-color: transparent;
+  background: var(--group-color, #a855f7) !important;
+  color: #FFFFFF !important;
+  border-radius: 10px !important;
+  margin: 3px 4px !important;
+  box-shadow: 0 2px 6px color-mix(in srgb, var(--group-color, #a855f7) 30%, transparent) !important;
+}
+
+.vt-group-header.collapsed .vt-group-name {
+  color: #FFFFFF !important;
+}
+
+.vt-group-header.collapsed .vt-group-badge {
+  background: rgba(255, 255, 255, 0.28) !important;
+  color: #FFFFFF !important;
+}
+
+.vt-group-header.collapsed .vt-group-chevron {
+  color: #FFFFFF !important;
+}
+
+.vt-group-header.collapsed .vt-group-dot {
+  background: #FFFFFF !important;
 }
 
 .vt-group-header-left {
@@ -5609,15 +5698,27 @@ body[data-theme="dark"] .vt-tab-item.grouped.active {
 }
 
 .vt-split-pane.active {
-  background: color-mix(in srgb, var(--accent) 18%, #FFFFFF) !important;
-  color: var(--accent) !important;
-  font-weight: 700;
-  border: 1px solid color-mix(in srgb, var(--accent) 35%, transparent);
+  background: var(--group-color, var(--accent)) !important;
+  color: var(--accent-text, #ffffff) !important;
+  font-weight: 650 !important;
+  border: 1px solid var(--group-color, var(--accent)) !important;
+  box-shadow: 0 2px 8px color-mix(in srgb, var(--group-color, var(--accent)) 30%, transparent) !important;
 }
 
 body[data-theme="dark"] .vt-split-pane.active {
-  background: color-mix(in srgb, var(--accent) 18%, #222226) !important;
-  color: var(--accent) !important;
+  background: var(--group-color, var(--accent)) !important;
+  color: var(--accent-text, #ffffff) !important;
+  border: 1px solid var(--group-color, var(--accent)) !important;
+}
+
+.vt-split-pane.active .vt-split-title {
+  color: var(--accent-text, #ffffff) !important;
+  font-weight: 650 !important;
+}
+
+.vt-split-pane.active i.tab-favicon,
+.vt-split-pane.active i {
+  color: var(--accent-text, #ffffff) !important;
 }
 
 .vt-split-title {

@@ -115,11 +115,11 @@ const initToggle = (id, settingKey, initialValue) => {
 function initGridSelector(gridId, settingsKey, transform = null) {
     const grid = document.getElementById(gridId);
     if (!grid) return;
-    grid.querySelectorAll('.grid-item, .choice-item').forEach(item => {
+    grid.querySelectorAll('.grid-item, .choice-item, .settings-engine-row').forEach(item => {
         item.onclick = () => {
             const rawVal = item.dataset.value;
             const val = transform ? transform(rawVal) : rawVal;
-            grid.querySelectorAll('.grid-item, .choice-item').forEach(i => i.classList.remove('active'));
+            grid.querySelectorAll('.grid-item, .choice-item, .settings-engine-row').forEach(i => i.classList.remove('active'));
             item.classList.add('active');
             
             // Check radio button if present
@@ -156,7 +156,7 @@ document.querySelectorAll('.extension-card .btn.secondary, .extension-card .btn.
 function setGridValue(gridId, value) {
     const grid = document.getElementById(gridId);
     if (!grid) return;
-    grid.querySelectorAll('.grid-item, .choice-item, .search-provider-pill').forEach(item => {
+    grid.querySelectorAll('.grid-item, .choice-item, .settings-engine-row, .search-provider-pill').forEach(item => {
         item.classList.toggle('active', item.dataset.value === value);
     });
 }
@@ -2430,10 +2430,10 @@ document.getElementById('custom-search-input')?.addEventListener('input', (e) =>
 function initDNSGrid() {
     const dnsGrid = document.getElementById('dns-grid');
     if (!dnsGrid) return;
-    dnsGrid.querySelectorAll('.choice-item').forEach(item => {
+    dnsGrid.querySelectorAll('.settings-engine-row, .dns-provider-card, .choice-item').forEach(item => {
         item.onclick = () => {
             const val = item.dataset.value;
-            dnsGrid.querySelectorAll('.choice-item').forEach(i => {
+            dnsGrid.querySelectorAll('.settings-engine-row, .dns-provider-card, .choice-item').forEach(i => {
                 i.classList.remove('active');
                 const st = i.querySelector('.spc-status');
                 if (st) {
@@ -2508,7 +2508,7 @@ function renderSecuritySettings(s) {
     const activeDns = s.dnsProvider || s.dns || 'default';
     const dnsGrid = document.getElementById('dns-grid');
     if (dnsGrid) {
-        dnsGrid.querySelectorAll('.choice-item').forEach(item => {
+        dnsGrid.querySelectorAll('.settings-engine-row, .dns-provider-card, .choice-item').forEach(item => {
             const isActive = item.dataset.value === activeDns;
             item.classList.toggle('active', isActive);
             const st = item.querySelector('.spc-status');

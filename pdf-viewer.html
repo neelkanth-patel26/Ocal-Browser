@@ -144,6 +144,18 @@
             background: var(--surface-hover);
         }
 
+        #show-sidebar.active {
+            color: var(--accent);
+            border-color: var(--accent-border);
+            background: var(--surface-hover);
+        }
+
+        #show-sidebar svg {
+            display: block;
+            pointer-events: none;
+            flex-shrink: 0;
+        }
+
         /* Document Badge Desktop Control */
         .doc-badge {
             display: flex;
@@ -549,6 +561,7 @@
             height: 100%;
             object-fit: contain;
             display: block;
+            image-rendering: -webkit-optimize-contrast;
         }
 
         .thumb-num {
@@ -713,15 +726,18 @@
             border-radius: 8px;
             border: 1px solid var(--border);
             overflow: hidden;
-            box-shadow: none !important;
+            box-shadow: 0 4px 16px rgba(0, 0, 0, 0.08);
+        }
+
+        body[data-reading-mode="invert"] .page-wrapper {
             filter: var(--canvas-filter);
-            transition: filter 0.2s ease;
         }
 
         .page-wrapper canvas.pdf-canvas {
             display: block;
             width: 100% !important;
             height: 100% !important;
+            image-rendering: -webkit-optimize-contrast;
         }
 
         .page-wrapper canvas.drawing-layer {
@@ -1260,7 +1276,10 @@
     <header class="pdf-app-bar">
         <div class="app-bar-left">
             <button id="show-sidebar" title="Toggle Sidebar (Ctrl+B)">
-                <i class="fas fa-sidebar"></i>
+                <svg width="15" height="15" viewBox="0 0 16 16" fill="none">
+                    <rect x="1.5" y="2" width="13" height="12" rx="2.5" fill="none" stroke="currentColor" stroke-width="1.6"/>
+                    <rect x="2.5" y="3" width="3.8" height="10" rx="1.2" fill="currentColor"/>
+                </svg>
             </button>
             <div class="doc-badge">
                 <div class="doc-badge-chip"><i class="fas fa-file-pdf"></i></div>

@@ -1189,7 +1189,7 @@
             <section id="specials" class="section">
                 <div class="settings-page-header">
                     <h1 class="settings-page-title">Specials & Ambient</h1>
-                    <p class="settings-page-subtitle">Acoustic background environments, smart media ducking, and real-time screen display shaders.</p>
+                    <p class="settings-page-subtitle">Acoustic background environments, smart media ducking, and high-fidelity soundscapes.</p>
                     <span id="specials-stat-state" style="display:none;"></span>
                     <span id="specials-stat-state-badge" style="display:none;"></span>
                     <span id="specials-stat-track" style="display:none;"></span>
@@ -1310,189 +1310,6 @@
                         </div>
                     </div>
 
-                    <!-- Group 3: Screen Shaders & Page Effects -->
-                    <div class="settings-group-card" id="page-fx-card">
-                        <div class="settings-group-header">
-                            <div class="group-header-text">
-                                <h3 class="group-title">Display Filters &amp; Screen Shaders</h3>
-                                <p class="group-desc">Real-time GPU screen post-processing filters rendered across browser web viewports.</p>
-                            </div>
-                            <div class="fx-header-actions">
-                                <span class="engine-active-indicator" id="fx-status-badge"><span class="status-dot"></span><span id="fx-active-name-tag">Clean / None</span></span>
-                                <label class="native-switch">
-                                    <input type="checkbox" id="page-fx-toggle-cb" onchange="handlePageFXToggle(this.checked)">
-                                    <span class="native-switch-slider"></span>
-                                </label>
-                            </div>
-                        </div>
-
-                        <div class="settings-group-body">
-                            <!-- Compact Desktop Shader Preview Bar -->
-                            <div class="desktop-shader-preview-banner" id="shader-preview-banner">
-                                <div class="fx-preview-shader-layer" id="fx-preview-shader-layer"></div>
-                                <div class="shader-preview-meta">
-                                    <span class="shader-preview-chip"><i class="fas fa-wand-magic-sparkles"></i> Live Shader Preview</span>
-                                    <span class="shader-preview-text">Active shader renders in real time on this surface and across web viewports.</span>
-                                </div>
-                            </div>
-
-                            <!-- Shader Presets Selection Grid -->
-                            <div class="page-fx-presets-grid" id="page-fx-presets-grid">
-                                <!-- None / Normal -->
-                                <div class="fx-preset-card active" data-effect="none" onclick="handlePageFXSelect('none')">
-                                    <div class="fx-card-icon-box none-bg"><i class="fas fa-ban"></i></div>
-                                    <div class="fx-card-details">
-                                        <h4>Clean / None</h4>
-                                        <p>Default web rendering with zero filters</p>
-                                    </div>
-                                    <span class="fx-select-check"><i class="fas fa-check"></i></span>
-                                </div>
-
-                                <!-- Screen Broken -->
-                                <div class="fx-preset-card" data-effect="screen-broken" onclick="handlePageFXSelect('screen-broken')">
-                                    <div class="fx-card-icon-box broken-bg"><i class="fas fa-burst"></i></div>
-                                    <div class="fx-card-details">
-                                        <h4>Screen Broken</h4>
-                                        <p>Fractured glass spiderweb pattern</p>
-                                    </div>
-                                    <span class="fx-select-check"><i class="fas fa-check"></i></span>
-                                </div>
-
-                                <!-- Cyberpunk Glitch -->
-                                <div class="fx-preset-card" data-effect="glitch" onclick="handlePageFXSelect('glitch')">
-                                    <div class="fx-card-icon-box glitch-bg"><i class="fas fa-bolt"></i></div>
-                                    <div class="fx-card-details">
-                                        <h4>Cyberpunk Glitch</h4>
-                                        <p>RGB chromatic split &amp; scanline jitter</p>
-                                    </div>
-                                    <span class="fx-select-check"><i class="fas fa-check"></i></span>
-                                </div>
-
-                                <!-- B/W Noir -->
-                                <div class="fx-preset-card" data-effect="bw" onclick="handlePageFXSelect('bw')">
-                                    <div class="fx-card-icon-box bw-bg"><i class="fas fa-film"></i></div>
-                                    <div class="fx-card-details">
-                                        <h4>B/W Noir &amp; Grain</h4>
-                                        <p>High-contrast monochrome film grain</p>
-                                    </div>
-                                    <span class="fx-select-check"><i class="fas fa-check"></i></span>
-                                </div>
-
-                                <!-- System Wave / CRT -->
-                                <div class="fx-preset-card" data-effect="system-wave" onclick="handlePageFXSelect('system-wave')">
-                                    <div class="fx-card-icon-box crt-bg"><i class="fas fa-tv"></i></div>
-                                    <div class="fx-card-details">
-                                        <h4>System Wave (CRT)</h4>
-                                        <p>Retro phosphor glow &amp; scanlines</p>
-                                    </div>
-                                    <span class="fx-select-check"><i class="fas fa-check"></i></span>
-                                </div>
-
-                                <!-- Matrix Code Rain -->
-                                <div class="fx-preset-card" data-effect="matrix" onclick="handlePageFXSelect('matrix')">
-                                    <div class="fx-card-icon-box matrix-bg"><i class="fas fa-terminal"></i></div>
-                                    <div class="fx-card-details">
-                                        <h4>Matrix Terminal</h4>
-                                        <p>Falling green digital code streams</p>
-                                    </div>
-                                    <span class="fx-select-check"><i class="fas fa-check"></i></span>
-                                </div>
-
-                                <!-- Night Vision -->
-                                <div class="fx-preset-card" data-effect="night-vision" onclick="handlePageFXSelect('night-vision')">
-                                    <div class="fx-card-icon-box night-bg"><i class="fas fa-crosshairs"></i></div>
-                                    <div class="fx-card-details">
-                                        <h4>Night Vision HUD</h4>
-                                        <p>High-gain green phosphor &amp; reticle</p>
-                                    </div>
-                                    <span class="fx-select-check"><i class="fas fa-check"></i></span>
-                                </div>
-
-                                <!-- Thermal Heatmap -->
-                                <div class="fx-preset-card" data-effect="thermal" onclick="handlePageFXSelect('thermal')">
-                                    <div class="fx-card-icon-box thermal-bg"><i class="fas fa-fire-flame-curved"></i></div>
-                                    <div class="fx-card-details">
-                                        <h4>Thermal Infrared</h4>
-                                        <p>Inverted spectrum temperature heatmap</p>
-                                    </div>
-                                    <span class="fx-select-check"><i class="fas fa-check"></i></span>
-                                </div>
-
-                                <!-- Vaporwave Neon -->
-                                <div class="fx-preset-card" data-effect="vaporwave" onclick="handlePageFXSelect('vaporwave')">
-                                    <div class="fx-card-icon-box vapor-bg"><i class="fas fa-palette"></i></div>
-                                    <div class="fx-card-details">
-                                        <h4>Vaporwave Sunset</h4>
-                                        <p>Dreamy cyan &amp; magenta neon wash</p>
-                                    </div>
-                                    <span class="fx-select-check"><i class="fas fa-check"></i></span>
-                                </div>
-
-                                <!-- Vintage Sepia -->
-                                <div class="fx-preset-card" data-effect="sepia" onclick="handlePageFXSelect('sepia')">
-                                    <div class="fx-card-icon-box sepia-bg"><i class="fas fa-scroll"></i></div>
-                                    <div class="fx-card-details">
-                                        <h4>Vintage Sepia</h4>
-                                        <p>Warm antique novel paper tones</p>
-                                    </div>
-                                    <span class="fx-select-check"><i class="fas fa-check"></i></span>
-                                </div>
-
-                                <!-- Spectral Invert -->
-                                <div class="fx-preset-card" data-effect="invert" onclick="handlePageFXSelect('invert')">
-                                    <div class="fx-card-icon-box invert-bg"><i class="fas fa-circle-half-stroke"></i></div>
-                                    <div class="fx-card-details">
-                                        <h4>Dark Invert</h4>
-                                        <p>Negative spectral color inversion</p>
-                                    </div>
-                                    <span class="fx-select-check"><i class="fas fa-check"></i></span>
-                                </div>
-                            </div>
-                        </div>
-
-                        <div class="settings-list-group">
-                            <!-- Shader Intensity Slider Row -->
-                            <div class="settings-toggle-row">
-                                <div class="str-left">
-                                    <div class="str-icon">
-                                        <i class="fas fa-wand-magic-sparkles"></i>
-                                    </div>
-                                    <div class="str-text">
-                                        <span class="str-title">Shader intensity &amp; strength</span>
-                                        <span class="str-desc" id="fx-intensity-val-label">100% (Full FX)</span>
-                                    </div>
-                                </div>
-                                <div class="str-right" style="display: flex; align-items: center; gap: 12px; flex-shrink: 0;">
-                                    <div class="intensity-slider-desktop-wrap">
-                                        <span onclick="handlePageFXIntensityPreset(20)" title="Minimum (20%)">20%</span>
-                                        <input type="range" id="fx-intensity-slider" min="20" max="100" step="5" value="100"
-                                            oninput="handlePageFXIntensityInput(this.value)" onchange="handlePageFXIntensityChange(this.value)"
-                                            style="--slider-fill: 100%;">
-                                        <span class="intensity-percent-badge" id="fx-intensity-percent-badge" title="Click to cycle intensity presets" onclick="cyclePageFXIntensityPreset()">100%</span>
-                                    </div>
-                                </div>
-                            </div>
-
-                            <!-- Apply Across Tabs Toggle Row -->
-                            <div class="settings-toggle-row">
-                                <div class="str-left">
-                                    <div class="str-icon">
-                                        <i class="fas fa-globe"></i>
-                                    </div>
-                                    <div class="str-text">
-                                        <span class="str-title">Apply across all browser tabs</span>
-                                        <span class="str-desc">Render the active shader filter across all websites, YouTube, and web views in real time</span>
-                                    </div>
-                                </div>
-                                <div class="str-right">
-                                    <label class="native-switch">
-                                        <input type="checkbox" id="fx-global-toggle-cb" checked onchange="handlePageFXGlobalToggle(this.checked)">
-                                        <span class="native-switch-slider"></span>
-                                    </label>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
                 </div>
             </section>
 
@@ -1665,7 +1482,7 @@
                         <div class="settings-list-group" id="dns-grid">
 
                             <!-- System Default -->
-                            <div class="settings-engine-row choice-item active" data-value="default">
+                            <div class="settings-engine-row dns-provider-card active" data-value="default">
                                 <div class="ser-left">
                                     <div class="ser-icon" style="color: #f59e0b; background: rgba(245, 158, 11, 0.1);">
                                         <i class="fas fa-bolt"></i>
@@ -1682,7 +1499,7 @@
                             </div>
 
                             <!-- Cloudflare DNS -->
-                            <div class="settings-engine-row choice-item" data-value="cloudflare">
+                            <div class="settings-engine-row dns-provider-card" data-value="cloudflare">
                                 <div class="ser-left">
                                     <div class="ser-icon" style="color: #f97316; background: rgba(249, 115, 22, 0.1);">
                                         <i class="fas fa-cloud"></i>
@@ -1699,7 +1516,7 @@
                             </div>
 
                             <!-- Google Public DNS -->
-                            <div class="settings-engine-row choice-item" data-value="google">
+                            <div class="settings-engine-row dns-provider-card" data-value="google">
                                 <div class="ser-left">
                                     <div class="ser-icon" style="background: rgba(66, 133, 244, 0.08);">
                                         <svg width="20" height="20" viewBox="0 0 24 24"><path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="#4285F4"/><path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98 1.06-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853"/><path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l3.66-2.84z" fill="#FBBC05"/><path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" fill="#EA4335"/></svg>
@@ -1716,7 +1533,7 @@
                             </div>
 
                             <!-- Quad9 DNS -->
-                            <div class="settings-engine-row choice-item" data-value="quad9">
+                            <div class="settings-engine-row dns-provider-card" data-value="quad9">
                                 <div class="ser-left">
                                     <div class="ser-icon" style="color: #ec4899; background: rgba(236, 72, 153, 0.1);">
                                         <i class="fas fa-shield-cat"></i>

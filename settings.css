@@ -7515,9 +7515,12 @@ body[data-theme="dark"] .ai-bento-card {
     border: 1px solid rgba(245, 158, 11, 0.25);
 }
 
-/* ── AI Provider Rows (Matched 1:1 with Search Engine Rows) ── */
+/* ── AI & DNS Provider Rows (Matched 1:1 with Search Engine Rows) ── */
 .settings-engine-row.ai-provider-row,
-.settings-engine-row.ai-provider-card {
+.settings-engine-row.ai-provider-card,
+#dns-grid .settings-engine-row,
+.settings-engine-row.dns-provider-card,
+#dns-grid .choice-item {
     display: flex !important;
     flex-direction: row !important;
     align-items: center !important;
@@ -7525,7 +7528,7 @@ body[data-theme="dark"] .ai-bento-card {
     padding: 11px 20px !important;
     cursor: pointer;
     transition: background 0.15s ease;
-    border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+    border-bottom: 1px solid rgba(0, 0, 0, 0.05) !important;
     background: transparent !important;
     border-radius: 0 !important;
     border-top: none !important;
@@ -7539,34 +7542,59 @@ body[data-theme="dark"] .ai-bento-card {
 }
 
 body[data-theme="dark"] .settings-engine-row.ai-provider-row,
-body[data-theme="dark"] .settings-engine-row.ai-provider-card {
+body[data-theme="dark"] .settings-engine-row.ai-provider-card,
+body[data-theme="dark"] #dns-grid .settings-engine-row,
+body[data-theme="dark"] .settings-engine-row.dns-provider-card,
+body[data-theme="dark"] #dns-grid .choice-item {
     border-color: rgba(255, 255, 255, 0.05) !important;
     background: transparent !important;
 }
 
 .settings-engine-row.ai-provider-row:hover,
-.settings-engine-row.ai-provider-card:hover {
+.settings-engine-row.ai-provider-card:hover,
+#dns-grid .settings-engine-row:hover,
+.settings-engine-row.dns-provider-card:hover,
+#dns-grid .choice-item:hover {
     background: rgba(0, 0, 0, 0.025) !important;
+    border-color: rgba(0, 0, 0, 0.05) !important;
     transform: none !important;
+    box-shadow: none !important;
 }
 
 body[data-theme="dark"] .settings-engine-row.ai-provider-row:hover,
-body[data-theme="dark"] .settings-engine-row.ai-provider-card:hover {
+body[data-theme="dark"] .settings-engine-row.ai-provider-card:hover,
+body[data-theme="dark"] #dns-grid .settings-engine-row:hover,
+body[data-theme="dark"] .settings-engine-row.dns-provider-card:hover,
+body[data-theme="dark"] #dns-grid .choice-item:hover {
     background: rgba(255, 255, 255, 0.035) !important;
+    border-color: rgba(255, 255, 255, 0.05) !important;
 }
 
 .settings-engine-row.ai-provider-row.active,
-.settings-engine-row.ai-provider-card.active {
+.settings-engine-row.ai-provider-card.active,
+#dns-grid .settings-engine-row.active,
+.settings-engine-row.dns-provider-card.active,
+#dns-grid .choice-item.active {
     background: color-mix(in srgb, var(--accent) 5%, transparent) !important;
+    border-color: rgba(0, 0, 0, 0.05) !important;
+    box-shadow: none !important;
 }
 
 body[data-theme="dark"] .settings-engine-row.ai-provider-row.active,
-body[data-theme="dark"] .settings-engine-row.ai-provider-card.active {
+body[data-theme="dark"] .settings-engine-row.ai-provider-card.active,
+body[data-theme="dark"] #dns-grid .settings-engine-row.active,
+body[data-theme="dark"] .settings-engine-row.dns-provider-card.active,
+body[data-theme="dark"] #dns-grid .choice-item.active {
     background: color-mix(in srgb, var(--accent) 9%, transparent) !important;
+    border-color: rgba(255, 255, 255, 0.05) !important;
+    box-shadow: none !important;
 }
 
 .settings-engine-row.ai-provider-row:last-child,
-.settings-engine-row.ai-provider-card:last-child {
+.settings-engine-row.ai-provider-card:last-child,
+#dns-grid .settings-engine-row:last-child,
+.settings-engine-row.dns-provider-card:last-child,
+#dns-grid .choice-item:last-child {
     border-bottom: none !important;
 }
 
@@ -16535,20 +16563,37 @@ body[data-theme="dark"] .sp-profile-active-title {
 }
 
 .import-desktop-row {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    gap: 16px;
-    padding: 12px 14px;
-    background: rgba(0, 0, 0, 0.02);
-    border: 1px solid rgba(0, 0, 0, 0.06);
-    border-radius: 8px;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: space-between !important;
+    gap: 16px !important;
+    padding: 13px 20px !important;
+    background: transparent !important;
+    border: none !important;
+    border-bottom: 1px solid rgba(0, 0, 0, 0.05) !important;
+    border-radius: 0 !important;
     box-shadow: none !important;
+    width: 100% !important;
+    box-sizing: border-box !important;
+    cursor: pointer !important;
+    transition: background 0.15s ease !important;
 }
 
 body[data-theme="dark"] .import-desktop-row {
-    background: rgba(255, 255, 255, 0.02);
-    border-color: rgba(255, 255, 255, 0.06);
+    background: transparent !important;
+    border-bottom-color: rgba(255, 255, 255, 0.05) !important;
+}
+
+.import-desktop-row:last-child {
+    border-bottom: none !important;
+}
+
+.import-desktop-row:hover {
+    background: rgba(0, 0, 0, 0.025) !important;
+}
+
+body[data-theme="dark"] .import-desktop-row:hover {
+    background: rgba(255, 255, 255, 0.035) !important;
 }
 
 .import-desktop-left {

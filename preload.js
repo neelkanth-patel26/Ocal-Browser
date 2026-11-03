@@ -1847,13 +1847,90 @@ window.addEventListener('DOMContentLoaded', () => {
             ipcRenderer.on('settings-changed', (e, s) => applyGlobalTheme(s));
         }
     } else if (window.location.protocol === 'http:' || window.location.protocol === 'https:') {
+        let currentThemeMode = 'dark';
+        const mediaListeners = new Set();
+
+        const injectMainWorldScheme = (theme) => {
+            try {
+                const isDark = theme !== 'light';
+                const scr = document.createElement('script');
+                scr.textContent = '(function() {' +
+                    'try {' +
+                    'const isDark = ' + isDark + ';' +
+                    'const orig = window.matchMedia;' +
+                    'if (typeof orig === "function" && !window.__ocalMatchMediaHooked) {' +
+                    'window.__ocalMatchMediaHooked = true;' +
+                    'window.matchMedia = function(q) {' +
+                    'const mql = orig.call(window, q);' +
+                    'if (typeof q === "string" && q.includes("prefers-color-scheme")) {' +
+                    'const wantDark = q.includes("dark");' +
+                    'const matches = wantDark ? isDark : !isDark;' +
+                    'return new Proxy(mql, {' +
+                    'get(t, p) {' +
+                    'if (p === "matches") return matches;' +
+                    'return typeof t[p] === "function" ? t[p].bind(t) : t[p];' +
+                    '}' +
+                    '});' +
+                    '}' +
+                    'return mql;' +
+                    '};' +
+                    '}' +
+                    '} catch(e) {}' +
+                    '})();';
+                (document.head || document.documentElement || document).appendChild(scr);
+                try { scr.remove(); } catch(e) {}
+            } catch (e) {}
+        };
+        if (document.documentElement) {
+            injectMainWorldScheme(currentThemeMode);
+        } else {
+            document.addEventListener('DOMContentLoaded', () => injectMainWorldScheme(currentThemeMode), { once: true });
+        }
+
         function syncExternalPageTheme(s) {
             if (!s) return;
             const theme = s.themeMode || 'dark';
+            const prevTheme = currentThemeMode;
+            currentThemeMode = theme;
+
             try {
+                // 1. Ensure meta[name="color-scheme"] exists and is updated
                 let meta = document.querySelector('meta[name="color-scheme"]');
-                if (meta) {
-                    meta.content = theme;
+                if (!meta) {
+                    meta = document.createElement('meta');
+                    meta.name = 'color-scheme';
+                    (document.head || document.documentElement).appendChild(meta);
+                }
+                meta.content = theme;
+
+                // 2. Set root style color-scheme
+                if (document.documentElement) {
+                    document.documentElement.style.setProperty('color-scheme', theme);
+
+                    // GitHub theme attributes
+                    if (window.location.hostname.includes('github.com')) {
+                        document.documentElement.setAttribute('data-color-mode', theme);
+                    }
+                    // Google Search theme attributes
+                    if (window.location.hostname.includes('google.')) {
+                        document.documentElement.setAttribute('data-darkmode', theme === 'dark' ? 'true' : 'false');
+                    }
+                    // Generic data-theme
+                    if (document.documentElement.hasAttribute('data-theme')) {
+                        document.documentElement.setAttribute('data-theme', theme);
+                    }
+                }
+
+                // 3. Dispatch change event to all matchMedia listeners if theme mode changed
+                if (prevTheme !== theme) {
+                    injectMainWorldScheme(theme);
+                    if (mediaListeners.size > 0) {
+                        mediaListeners.forEach(fn => {
+                            try {
+                                fn({ matches: theme === 'dark', media: '(prefers-color-scheme: dark)' });
+                            } catch (err) {}
+                        });
+                    }
                 }
             } catch (e) {}
         }

@@ -20,6 +20,9 @@ window.electronAPI.onUpdateSiteInfo((data) => {
         updateToggle('toggle-notifications', data.permissions.notifications);
         updateToggle('toggle-popups', data.permissions.popups);
         updateToggle('toggle-sound', data.permissions.audio);
+        updateToggle('toggle-camera', data.permissions.camera);
+        updateToggle('toggle-microphone', data.permissions.microphone);
+        updateToggle('toggle-geolocation', data.permissions.geolocation);
     }
 });
 
@@ -127,6 +130,14 @@ document.querySelectorAll('.sip-toggle').forEach(toggle => {
             permission: permission,
             value: isOn ? 'allow' : 'block'
         });
+    };
+});
+
+document.querySelectorAll('.sip-reset-btn').forEach(btn => {
+    btn.onclick = () => {
+        if (!currentOrigin) return;
+        window.electronAPI.send('reset-site-permissions', currentOrigin);
+        document.querySelectorAll('.sip-toggle').forEach(t => t.classList.remove('on'));
     };
 });
 

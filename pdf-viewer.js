@@ -273,11 +273,17 @@ async function loadPDF(source, name = 'document.pdf') {
         document.title = `${name} - Ocal PDF Studio`;
 
         let loadingTask;
+        const pdfLoadOptions = {
+            cMapUrl: 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/cmaps/',
+            cMapPacked: true,
+            standardFontDataUrl: 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/standard_fonts/',
+            enableXfa: true
+        };
         if (typeof source === 'string') {
-            loadingTask = pdfjsLib.getDocument({ url: source });
+            loadingTask = pdfjsLib.getDocument({ ...pdfLoadOptions, url: source });
         } else if (source instanceof ArrayBuffer || source instanceof Uint8Array) {
             currentPdfData = source;
-            loadingTask = pdfjsLib.getDocument({ data: source });
+            loadingTask = pdfjsLib.getDocument({ ...pdfLoadOptions, data: source });
         } else {
             throw new Error('Unsupported source format');
         }
@@ -515,34 +521,27 @@ async function renderOutline() {
     }
 }
 
-// ── Thumbnails ──
+// ── Thumbnails (High-Resolution Previews) ──
 let thumbRenderCounter = 0;
 async function renderThumbnails() {
     const curId = ++thumbRenderCounter;
     thumbnails.innerHTML = '';
     const dpr = window.devicePixelRatio || 1;
 
+    // 1. Build skeleton preview containers immediately for stable scrolling
+    const items = [];
     for (let i = 1; i <= pdfDoc.numPages; i++) {
-        if (curId !== thumbRenderCounter) return;
-
-        const page = await pdfDoc.getPage(i);
         const group = document.createElement('div');
         group.className = 'thumb-group';
 
         const thumbWrap = document.createElement('div');
         thumbWrap.className = `thumb ${i === pageNum ? 'active' : ''}`;
         thumbWrap.id = `thumb-${i}`;
+        thumbWrap.onclick = () => scrollToPage(i);
 
         const canvas = document.createElement('canvas');
-        const v = page.getViewport({ scale: 0.25 * dpr, rotation });
-        canvas.width = v.width;
-        canvas.height = v.height;
-
-        await page.render({ canvasContext: canvas.getContext('2d'), viewport: v }).promise;
-        if (curId !== thumbRenderCounter) return;
-
+        canvas.className = 'thumb-canvas';
         thumbWrap.appendChild(canvas);
-        thumbWrap.onclick = () => scrollToPage(i);
 
         const num = document.createElement('div');
         num.className = 'thumb-num';
@@ -551,15 +550,38 @@ async function renderThumbnails() {
         group.appendChild(thumbWrap);
         group.appendChild(num);
         thumbnails.appendChild(group);
+
+        items.push({ i, thumbWrap, canvas });
+    }
+
+    // 2. Render each preview canvas with crystal-clear high-definition resolution
+    for (const item of items) {
+        if (curId !== thumbRenderCounter) return;
+
+        const page = await pdfDoc.getPage(item.i);
+        const baseV = page.getViewport({ scale: 1.0, rotation });
+        item.thumbWrap.style.aspectRatio = `${baseV.width} / ${baseV.height}`;
+
+        // High-resolution preview: target at least 500px width (2.5x-3x supersampled)
+        // so sheet music staves, clefs, notes, text, and details render sharp and crisp
+        const targetWidth = Math.max(500, Math.round(180 * dpr * 2.5));
+        const thumbScale = targetWidth / baseV.width;
+        const v = page.getViewport({ scale: thumbScale, rotation });
+
+        item.canvas.width = v.width;
+        item.canvas.height = v.height;
+
+        await page.render({ canvasContext: item.canvas.getContext('2d'), viewport: v }).promise;
     }
 }
 
-// ── Main Page Rendering with TextLayer & Annotations ──
+// ── Main Page Rendering with High-Resolution Subpixel Backing Store ──
 async function renderAllPages() {
     const savedPage = pageNum;
     const renderId = ++renderTaskIdCounter;
-    const dpr = window.devicePixelRatio || 1;
-    const RENDER_SCALE_BOOST = 1.5;
+    const dpr = Math.max(window.devicePixelRatio || 1, 1);
+    // Target high-definition outputScale (at least 2.0x, up to 3.0x) for crystal-sharp text, tables, and vectors
+    const outputScale = Math.min(3.0, Math.max(2.0, dpr * 1.5));
 
     pageContainer.innerHTML = '';
     allExtractedText = '';
@@ -572,39 +594,52 @@ async function renderAllPages() {
 
         const page = await pdfDoc.getPage(i);
         const displayViewport = page.getViewport({ scale: scale, rotation });
-        const renderViewport = page.getViewport({ scale: scale * RENDER_SCALE_BOOST * dpr, rotation });
+        const dispW = Math.floor(displayViewport.width);
+        const dispH = Math.floor(displayViewport.height);
 
         const wrapper = document.createElement('div');
         wrapper.className = 'page-wrapper';
         wrapper.id = `wrapper-${i}`;
-        wrapper.style.width = displayViewport.width + 'px';
-        wrapper.style.height = displayViewport.height + 'px';
+        wrapper.style.width = dispW + 'px';
+        wrapper.style.height = dispH + 'px';
 
-        // Background PDF Canvas
+        // Background PDF Canvas with high-DPI pixel buffer
         const pdfCanvas = document.createElement('canvas');
         pdfCanvas.className = 'pdf-canvas';
-        pdfCanvas.width = renderViewport.width;
-        pdfCanvas.height = renderViewport.height;
+        pdfCanvas.width = Math.floor(displayViewport.width * outputScale);
+        pdfCanvas.height = Math.floor(displayViewport.height * outputScale);
+        pdfCanvas.style.width = dispW + 'px';
+        pdfCanvas.style.height = dispH + 'px';
         wrapper.appendChild(pdfCanvas);
 
         // Text Layer for real text selection & search highlight
         const textLayerDiv = document.createElement('div');
         textLayerDiv.className = 'textLayer';
-        textLayerDiv.style.width = displayViewport.width + 'px';
-        textLayerDiv.style.height = displayViewport.height + 'px';
+        textLayerDiv.style.width = dispW + 'px';
+        textLayerDiv.style.height = dispH + 'px';
         wrapper.appendChild(textLayerDiv);
 
         // Drawing / Annotations Layer
         const drawingCanvas = document.createElement('canvas');
         drawingCanvas.className = 'drawing-layer';
-        drawingCanvas.width = renderViewport.width;
-        drawingCanvas.height = renderViewport.height;
+        drawingCanvas.width = Math.floor(displayViewport.width * outputScale);
+        drawingCanvas.height = Math.floor(displayViewport.height * outputScale);
+        drawingCanvas.style.width = dispW + 'px';
+        drawingCanvas.style.height = dispH + 'px';
         drawingCanvas.style.pointerEvents = currentTool === 'hand' ? 'none' : 'auto';
-        setupDrawing(drawingCanvas, i, renderViewport);
+        setupDrawing(drawingCanvas, i, displayViewport);
         wrapper.appendChild(drawingCanvas);
 
         pageContainer.appendChild(wrapper);
-        renderTasks.push({ page, pdfCanvas, textLayerDiv, drawingCanvas, i, v: renderViewport, dv: displayViewport });
+        renderTasks.push({
+            page,
+            pdfCanvas,
+            textLayerDiv,
+            drawingCanvas,
+            i,
+            outputScale,
+            dv: displayViewport
+        });
     }
 
     // Restore scroll position
@@ -622,8 +657,21 @@ async function renderAllPages() {
     for (const task of renderTasks) {
         if (renderId !== renderTaskIdCounter) return;
 
-        // Render PDF graphics
-        await task.page.render({ canvasContext: task.pdfCanvas.getContext('2d'), viewport: task.v }).promise;
+        // Render PDF graphics using native high-DPI transform matrix & high smoothing
+        const ctx = task.pdfCanvas.getContext('2d', { alpha: false });
+        ctx.imageSmoothingEnabled = true;
+        ctx.imageSmoothingQuality = 'high';
+
+        const transform = task.outputScale !== 1
+            ? [task.outputScale, 0, 0, task.outputScale, 0, 0]
+            : null;
+
+        await task.page.render({
+            canvasContext: ctx,
+            transform: transform,
+            viewport: task.dv,
+            enableWebGL: true
+        }).promise;
 
         // Render Text Content & Extraction
         const textContent = await task.page.getTextContent();
@@ -1385,14 +1433,27 @@ pageNumInput.onchange = (e) => {
 };
 
 document.getElementById('zoom-in').onclick = () => {
-    scale = Math.min(3.5, scale + 0.2);
+    scale = Math.min(4.0, Math.round((scale + 0.25) * 100) / 100);
     applyZoom();
 };
 
 document.getElementById('zoom-out').onclick = () => {
-    scale = Math.max(0.4, scale - 0.2);
+    scale = Math.max(0.4, Math.round((scale - 0.25) * 100) / 100);
     applyZoom();
 };
+
+// Smooth Ctrl + MouseWheel zoom
+viewport.addEventListener('wheel', (e) => {
+    if (e.ctrlKey || e.metaKey) {
+        e.preventDefault();
+        const delta = e.deltaY < 0 ? 0.2 : -0.2;
+        const newScale = Math.max(0.4, Math.min(4.0, Math.round((scale + delta) * 100) / 100));
+        if (newScale !== scale) {
+            scale = newScale;
+            applyZoom();
+        }
+    }
+}, { passive: false });
 
 function applyZoom() {
     zoomVal.textContent = `${Math.round(scale * 100)}%`;
@@ -1534,8 +1595,23 @@ document.querySelectorAll('.sidebar-tab-btn').forEach(btn => {
     };
 });
 
-document.getElementById('hide-sidebar').onclick = () => document.getElementById('sidebar').classList.add('collapsed');
-document.getElementById('show-sidebar').onclick = () => document.getElementById('sidebar').classList.toggle('collapsed');
+function updateSidebarBtnState() {
+    const sidebar = document.getElementById('sidebar');
+    const btn = document.getElementById('show-sidebar');
+    if (sidebar && btn) {
+        btn.classList.toggle('active', !sidebar.classList.contains('collapsed'));
+    }
+}
+
+document.getElementById('hide-sidebar').onclick = () => {
+    document.getElementById('sidebar').classList.add('collapsed');
+    updateSidebarBtnState();
+};
+document.getElementById('show-sidebar').onclick = () => {
+    document.getElementById('sidebar').classList.toggle('collapsed');
+    updateSidebarBtnState();
+};
+updateSidebarBtnState();
 
 // Modals close triggers
 document.getElementById('close-inspector-modal').onclick = () => inspectorModal.style.display = 'none';
@@ -1643,6 +1719,7 @@ window.addEventListener('keydown', (e) => {
     else if (((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'b') || (e.altKey && e.key.toLowerCase() === 's')) {
         e.preventDefault();
         document.getElementById('sidebar')?.classList.toggle('collapsed');
+        updateSidebarBtnState();
     }
     // Ctrl+R -> Rotate 90 deg clockwise
     else if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'r') {

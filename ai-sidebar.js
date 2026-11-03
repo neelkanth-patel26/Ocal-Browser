@@ -3495,54 +3495,9 @@ document.getElementById('nav-images-btn')?.addEventListener('click', switchToStu
     });
 
     // 9. Voice Dictation in Studio Input Dock
-    let isVoiceActive = false;
-    let voiceRecognition = null;
-    const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
-
-    if (SpeechRecognition && voiceMicBtn) {
-        voiceRecognition = new SpeechRecognition();
-        voiceRecognition.continuous = false;
-        voiceRecognition.interimResults = true;
-        voiceRecognition.lang = 'en-US';
-
-        voiceRecognition.onresult = (event) => {
-            let transcript = '';
-            for (let i = event.resultIndex; i < event.results.length; i++) {
-                transcript += event.results[i][0].transcript;
-            }
-            if (promptInput) {
-                promptInput.value = (promptInput.value ? promptInput.value + ' ' : '') + transcript;
-                handlePromptInput();
-            }
-        };
-
-        voiceRecognition.onerror = () => {
-            isVoiceActive = false;
-            voiceMicBtn.classList.remove('listening');
-        };
-
-        voiceRecognition.onend = () => {
-            isVoiceActive = false;
-            voiceMicBtn.classList.remove('listening');
-        };
-
-        voiceMicBtn.addEventListener('click', () => {
-            if (!isVoiceActive) {
-                try {
-                    voiceRecognition.start();
-                    isVoiceActive = true;
-                    voiceMicBtn.classList.add('listening');
-                } catch (e) {
-                    voiceRecognition.stop();
-                    isVoiceActive = false;
-                    voiceMicBtn.classList.remove('listening');
-                }
-            } else {
-                voiceRecognition.stop();
-                isVoiceActive = false;
-                voiceMicBtn.classList.remove('listening');
-            }
-        });
+    const studioInputContainer = document.getElementById('studio-input-container');
+    if (voiceMicBtn && studioInputContainer && promptInput && window.LibrariesDevFX?.VoiceGlow) {
+        window.LibrariesDevFX.VoiceGlow.initVoiceInput(voiceMicBtn, studioInputContainer, promptInput);
     }
 
     // 10. Starter Cards Click

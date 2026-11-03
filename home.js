@@ -294,11 +294,12 @@ function executeSearch() {
     } else if (/^[\w-]+\.[a-z]{2,}/i.test(q) && !q.includes(' ')) {
         targetUrl = 'https://' + q;
     } else {
+        const isLight = document.documentElement.getAttribute('data-theme') === 'light';
         let searchUrl = 'https://www.google.com/search?q=';
         if (currentSearchEngine === 'ocal') searchUrl = 'http://localhost:8080/search?q=';
-        else if (currentSearchEngine === 'bing') searchUrl = 'https://www.bing.com/search?q=';
-        else if (currentSearchEngine === 'duckduckgo') searchUrl = 'https://duckduckgo.com/?q=';
-        else if (currentSearchEngine === 'brave') searchUrl = 'https://search.brave.com/search?q=';
+        else if (currentSearchEngine === 'bing') searchUrl = `https://www.bing.com/search?bnddark=${isLight ? '0' : '1'}&q=`;
+        else if (currentSearchEngine === 'duckduckgo') searchUrl = `https://duckduckgo.com/?kae=${isLight ? '-1' : 'd'}&q=`;
+        else if (currentSearchEngine === 'brave') searchUrl = `https://search.brave.com/search?theme=${isLight ? 'light' : 'dark'}&q=`;
         else if (currentSearchEngine === 'yahoo') searchUrl = 'https://search.yahoo.com/search?p=';
         
         targetUrl = searchUrl + encodeURIComponent(q);
@@ -1011,6 +1012,19 @@ document.querySelectorAll('.tile-item').forEach(tile => {
 
 // ── Global Actions (IPC) ───────────────────────────────────────
 const settingsBtn = document.getElementById('settings-btn');
+const homePrivateBtn = document.getElementById('home-private-window-btn');
+if (homePrivateBtn) {
+    homePrivateBtn.onclick = () => {
+        if (window.electronAPI) {
+            if (typeof window.electronAPI.openPrivateWindow === 'function') {
+                window.electronAPI.openPrivateWindow();
+            } else if (typeof window.electronAPI.send === 'function') {
+                window.electronAPI.send('open-private-window');
+            }
+        }
+    };
+}
+
 if (settingsBtn) {
     settingsBtn.onclick = () => {
         if (window.electronAPI) window.electronAPI.send('open-settings');

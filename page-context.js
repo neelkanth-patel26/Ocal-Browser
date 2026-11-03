@@ -6,7 +6,7 @@ let currentContextData = null;
 function addOption(parent, label, icon, shortcut, onClick, extraClass = '', disabled = false) {
     const opt = document.createElement('div');
     opt.className = `menu-option ${extraClass} ${disabled ? 'disabled' : ''}`.trim();
-    
+
     let iconHtml = '';
     if (icon) {
         if (icon.startsWith('fab ') || icon.startsWith('fas ') || icon.startsWith('fa-')) {
@@ -162,9 +162,6 @@ window.electronAPI?.on?.('render-page-context', (event, data) => {
         addOption(container, 'Forward', 'fa-arrow-right', 'Alt+Right', () => sendAction('forward'), '', !data.canGoForward);
         addOption(container, 'Reload', 'fa-rotate-right', 'Ctrl+R', () => sendAction('reload'));
         addSeparator(container);
-        if (!data.isPrivate) {
-            addOption(container, 'New Private Window', 'fa-user-secret', 'Ctrl+Shift+N', () => sendAction('open-private-window'));
-        }
         addOption(container, 'Print...', 'fa-print', 'Ctrl+P', () => sendAction('print'));
 
         if (!data.isLocal) {
@@ -185,10 +182,45 @@ window.electronAPI?.on?.('render-page-context', (event, data) => {
 
     // Measure required size and send resize IPC
     requestAnimationFrame(() => {
-        const rect = container.getBoundingClientRect();
+        let maxRowWidth = 0;
+        const options = document.querySelectorAll('.menu-option');
+        options.forEach(opt => {
+            const icon = opt.querySelector('.menu-icon-wrap');
+            const label = opt.querySelector('.menu-label');
+            const shortcut = opt.querySelector('.menu-shortcut');
+            const iconW = icon ? icon.offsetWidth : 18;
+            const labelW = label ? label.scrollWidth : 0;
+            const shortcutW = shortcut ? shortcut.offsetWidth : 0;
+            const totalRowW = iconW + labelW + shortcutW + 46;
+            if (totalRowW > maxRowWidth) maxRowWidth = totalRowW;
+        });
+
+        // Compute exact content height to eliminate unwanted gaps
+        let totalItemsHeight = 0;
+        const children = Array.from(container.children);
+        children.forEach(child => {
+            const style = window.getComputedStyle(child);
+            const marginTop = parseFloat(style.marginTop) || 0;
+            const marginBottom = parseFloat(style.marginBottom) || 0;
+            totalItemsHeight += child.offsetHeight + marginTop + marginBottom;
+        });
+
+        const gap = 2 * Math.max(0, children.length - 1);
+        const containerPaddingAndBorder = 12; // 5px top + 5px bottom + 2px border
+        const calculatedContentHeight = totalItemsHeight + gap + containerPaddingAndBorder;
+
+        const rectHeight = container.getBoundingClientRect().height;
+        const actualMenuHeight = (rectHeight > 0 && rectHeight < calculatedContentHeight + 10) 
+            ? rectHeight 
+            : calculatedContentHeight;
+
+        const neededWidth = Math.max(maxRowWidth + 14, 260);
+        // Add 8px for body padding (4px top + 4px bottom) + 2px buffer
+        const neededHeight = Math.ceil(actualMenuHeight) + 10;
+
         window.electronAPI?.send?.('resize-page-context', {
-            width: Math.ceil(rect.width) + 14,
-            height: Math.ceil(rect.height) + 14
+            width: neededWidth,
+            height: neededHeight
         });
     });
 });

@@ -495,10 +495,41 @@
         audioContext: null,
         analyser: null,
         microphoneStream: null,
+        mediaRecorder: null,
+        audioChunks: [],
         recognition: null,
+        speechTranscript: '',
         isRecording: false,
         activeBeam: null,
-        onTranscriptCallback: null,
+        activeTextarea: null,
+
+        getThemeColor() {
+            try {
+                const cs = getComputedStyle(document.documentElement);
+                const col = cs.getPropertyValue('--accent') || '#09F0A0';
+                return col.trim();
+            } catch (e) {
+                return '#09F0A0';
+            }
+        },
+
+        colorToRgb(str) {
+            if (!str) return { r: 9, g: 240, b: 160 };
+            str = str.trim();
+            if (str.startsWith('#')) {
+                let hex = str.slice(1);
+                if (hex.length === 3) hex = hex.split('').map(c => c + c).join('');
+                const num = parseInt(hex, 16);
+                if (!isNaN(num)) {
+                    return { r: (num >> 16) & 255, g: (num >> 8) & 255, b: num & 255 };
+                }
+            }
+            const match = str.match(/\(?(\d+)\s*,\s*(\d+)\s*,\s*(\d+)/);
+            if (match) {
+                return { r: parseInt(match[1]), g: parseInt(match[2]), b: parseInt(match[3]) };
+            }
+            return { r: 9, g: 240, b: 160 };
+        },
 
         injectStyles() {
             if (this.styleInjected) return;
@@ -507,26 +538,24 @@
             style.id = 'voice-glow-styles';
             style.textContent = `
                 @keyframes voice-glow-pulse {
-                    0%, 100% { transform: scale(1); opacity: 0.85; }
-                    50% { transform: scale(1.08); opacity: 1; }
+                    0%, 100% { transform: scale(1); opacity: 0.9; }
+                    50% { transform: scale(1.06); opacity: 1; }
                 }
                 .voice-btn-active {
                     background: var(--accent, #09F0A0) !important;
                     color: #FFFFFF !important;
-                    box-shadow: 0 0 16px var(--accent-glow, rgba(9, 240, 160, 0.45)) !important;
+                    box-shadow: 0 0 14px var(--accent-glow, rgba(9, 240, 160, 0.45)) !important;
                     animation: voice-glow-pulse 1.6s ease-in-out infinite alternate !important;
                 }
                 .voice-wave-overlay {
                     position: absolute;
-                    bottom: 0;
-                    left: 0;
-                    right: 0;
-                    height: 24px;
+                    bottom: 3px;
+                    height: 14px;
                     pointer-events: none;
                     z-index: 4;
                     opacity: 0;
-                    transition: opacity 0.25s ease;
-                    border-radius: 0 0 var(--radius-lg, 24px) var(--radius-lg, 24px);
+                    transition: opacity 0.2s ease;
+                    border-radius: 999px;
                     overflow: hidden;
                 }
                 .voice-wave-overlay.visible {
@@ -545,48 +574,51 @@
             if (!micBtn || !inputContainer) return;
             this.injectStyles();
 
-            // Create voice wave canvas overlay inside inputContainer
-            const waveOverlay = document.createElement('div');
-            waveOverlay.className = 'voice-wave-overlay';
-            const waveCanvas = document.createElement('canvas');
-            waveCanvas.className = 'voice-wave-canvas';
-            waveOverlay.appendChild(waveCanvas);
-            inputContainer.appendChild(waveOverlay);
+            // Create voice wave canvas overlay inside inputContainer if not exists
+            let waveOverlay = inputContainer.querySelector('.voice-wave-overlay');
+            let waveCanvas;
+            if (!waveOverlay) {
+                waveOverlay = document.createElement('div');
+                waveOverlay.className = 'voice-wave-overlay';
+                waveCanvas = document.createElement('canvas');
+                waveCanvas.className = 'voice-wave-canvas';
+                waveOverlay.appendChild(waveCanvas);
+                inputContainer.appendChild(waveOverlay);
+            } else {
+                waveCanvas = waveOverlay.querySelector('.voice-wave-canvas');
+            }
 
-            const waveCtx = waveCanvas.getContext('2d');
+            const waveCtx = waveCanvas ? waveCanvas.getContext('2d') : null;
             let animId = null;
 
-            // Speech Recognition setup (Web Speech API)
+            // Optional Web Speech API
             const SpeechRec = window.SpeechRecognition || window.webkitSpeechRecognition;
-            if (SpeechRec) {
-                this.recognition = new SpeechRec();
-                this.recognition.continuous = true;
-                this.recognition.interimResults = true;
-                this.recognition.lang = 'en-US';
+            if (SpeechRec && !this.recognition) {
+                try {
+                    const rec = new SpeechRec();
+                    rec.continuous = true;
+                    rec.interimResults = true;
+                    rec.lang = 'en-US';
 
-                this.recognition.onresult = (event) => {
-                    let fullTranscript = '';
-                    for (let i = event.resultIndex; i < event.results.length; ++i) {
-                        fullTranscript += event.results[i][0].transcript;
-                    }
-                    if (textareaEl && fullTranscript.trim()) {
-                        textareaEl.value = fullTranscript.trim();
-                        textareaEl.dispatchEvent(new Event('input', { bubbles: true }));
-                    }
-                };
+                    rec.onresult = (ev) => {
+                        let accumulated = '';
+                        for (let i = 0; i < ev.results.length; ++i) {
+                            accumulated += ev.results[i][0].transcript + ' ';
+                        }
+                        VoiceGlowFX.speechTranscript = accumulated.trim();
+                        const target = VoiceGlowFX.activeTextarea || textareaEl;
+                        if (target && VoiceGlowFX.speechTranscript) {
+                            target.value = VoiceGlowFX.speechTranscript;
+                            target.dispatchEvent(new Event('input', { bubbles: true }));
+                        }
+                    };
 
-                this.recognition.onerror = (err) => {
-                    console.warn('Speech recognition status:', err.error);
-                    if (err.error === 'not-allowed') {
-                        VoiceGlowFX.stopRecording(micBtn, waveOverlay, waveCanvas);
-                    }
-                };
-
-                this.recognition.onend = () => {
-                    if (VoiceGlowFX.isRecording) {
-                        try { VoiceGlowFX.recognition.start(); } catch (e) {}
-                    }
-                };
+                    rec.onerror = (err) => {
+                        console.warn('[VoiceGlowFX] SpeechRec error:', err?.error || err);
+                    };
+                    rec.onend = () => {};
+                    this.recognition = rec;
+                } catch (e) {}
             }
 
             const startAudioGlow = async () => {
@@ -603,35 +635,59 @@
                     const bufferLength = VoiceGlowFX.analyser.frequencyBinCount;
                     const dataArray = new Uint8Array(bufferLength);
 
-                    // Resize canvas
-                    const rect = waveCanvas.getBoundingClientRect();
-                    const dpr = window.devicePixelRatio || 1;
-                    waveCanvas.width = (rect.width || 300) * dpr;
-                    waveCanvas.height = 24 * dpr;
+                    if (waveCanvas) {
+                        const rect = waveCanvas.getBoundingClientRect();
+                        const dpr = window.devicePixelRatio || 1;
+                        waveCanvas.width = (rect.width || 240) * dpr;
+                        waveCanvas.height = 14 * dpr;
 
-                    function drawWave() {
-                        if (!VoiceGlowFX.isRecording) return;
-                        animId = requestAnimationFrame(drawWave);
-                        VoiceGlowFX.analyser.getByteFrequencyData(dataArray);
+                        function drawWave() {
+                            if (!VoiceGlowFX.isRecording) return;
+                            animId = requestAnimationFrame(drawWave);
+                            VoiceGlowFX.analyser.getByteFrequencyData(dataArray);
 
-                        const w = waveCanvas.width;
-                        const h = waveCanvas.height;
-                        waveCtx.clearRect(0, 0, w, h);
+                            const w = waveCanvas.width;
+                            const h = waveCanvas.height;
+                            waveCtx.clearRect(0, 0, w, h);
 
-                        // Draw reactive multi-color audio waves
-                        const barWidth = w / bufferLength;
-                        let x = 0;
-                        for (let i = 0; i < bufferLength; i++) {
-                            const barHeight = (dataArray[i] / 255) * h * 0.9;
-                            const hue = (i / bufferLength) * 120 + 130; // Emerald to Cyan glow
-                            waveCtx.fillStyle = `hsla(${hue}, 90%, 55%, 0.75)`;
-                            waveCtx.fillRect(x, h - barHeight, barWidth - 1, barHeight);
-                            x += barWidth;
+                            const themeColor = VoiceGlowFX.getThemeColor();
+                            const rgb = VoiceGlowFX.colorToRgb(themeColor);
+
+                            const barWidth = w / bufferLength;
+                            let x = 0;
+                            for (let i = 0; i < bufferLength; i++) {
+                                const barHeight = Math.max(2, (dataArray[i] / 255) * h * 0.95);
+                                const alpha = 0.45 + (dataArray[i] / 255) * 0.55;
+                                waveCtx.fillStyle = `rgba(${rgb.r}, ${rgb.g}, ${rgb.b}, ${alpha})`;
+                                const bw = Math.max(2, barWidth - 2);
+                                waveCtx.fillRect(x, h - barHeight, bw, barHeight);
+                                x += barWidth;
+                            }
+                        }
+                        drawWave();
+                    }
+
+                    // Start MediaRecorder for audio capture
+                    if (window.MediaRecorder) {
+                        try {
+                            const mime = MediaRecorder.isTypeSupported('audio/webm;codecs=opus')
+                                ? 'audio/webm;codecs=opus'
+                                : (MediaRecorder.isTypeSupported('audio/webm') ? 'audio/webm' : '');
+                            const recorder = mime ? new MediaRecorder(stream, { mimeType: mime }) : new MediaRecorder(stream);
+                            VoiceGlowFX.mediaRecorder = recorder;
+                            VoiceGlowFX.audioChunks = [];
+                            recorder.ondataavailable = (ev) => {
+                                if (ev.data && ev.data.size > 0) {
+                                    VoiceGlowFX.audioChunks.push(ev.data);
+                                }
+                            };
+                            recorder.start(250);
+                        } catch (recErr) {
+                            console.warn('[VoiceGlowFX] MediaRecorder error:', recErr);
                         }
                     }
-                    drawWave();
                 } catch (err) {
-                    console.warn('Audio capture not permitted or failed:', err);
+                    console.warn('[VoiceGlowFX] Audio capture error:', err);
                 }
             };
 
@@ -640,34 +696,58 @@
                 if (!VoiceGlowFX.isRecording) {
                     // START
                     VoiceGlowFX.isRecording = true;
-                    micBtn.classList.add('voice-btn-active');
-                    micBtn.setAttribute('title', 'Listening... Click to stop');
-                    waveOverlay.classList.add('visible');
+                    VoiceGlowFX.activeTextarea = textareaEl;
+                    VoiceGlowFX.speechTranscript = '';
 
-                    // Attach border beam glow during voice active
+                    micBtn.classList.add('voice-btn-active');
+                    micBtn.setAttribute('title', 'Listening... Speak now (Click to finish)');
+
+                    // Align wave overlay directly under textarea
+                    if (waveOverlay && textareaEl) {
+                        const cRect = inputContainer.getBoundingClientRect();
+                        const tRect = textareaEl.getBoundingClientRect();
+                        const left = Math.max(10, Math.round(tRect.left - cRect.left));
+                        const width = Math.max(80, Math.round(tRect.width));
+                        waveOverlay.style.left = `${left}px`;
+                        waveOverlay.style.width = `${width}px`;
+                        waveOverlay.style.right = 'auto';
+                        waveOverlay.classList.add('visible');
+                    }
+
+                    // Focus target input
+                    if (textareaEl) {
+                        textareaEl.focus();
+                        const len = textareaEl.value ? textareaEl.value.length : 0;
+                        try { textareaEl.setSelectionRange(len, len); } catch(e) {}
+                    }
+
+                    // Attach border beam glow matching theme accent color
                     VoiceGlowFX.activeBeam = BorderBeamFX.attach(inputContainer, {
-                        preset: 'ocean',
+                        preset: 'accent',
                         duration: '2.5s',
-                        width: '3px',
+                        width: '2px',
                         pulse: true
                     });
 
                     if (VoiceGlowFX.recognition) {
                         try { VoiceGlowFX.recognition.start(); } catch (e) {}
                     }
+
                     await startAudioGlow();
                 } else {
                     // STOP
-                    VoiceGlowFX.stopRecording(micBtn, waveOverlay, waveCanvas);
+                    VoiceGlowFX.stopRecording(micBtn, waveOverlay, waveCanvas, textareaEl);
                 }
             });
         },
 
-        stopRecording(micBtn, waveOverlay, waveCanvas) {
+        stopRecording(micBtn, waveOverlay, waveCanvas, textareaEl) {
             VoiceGlowFX.isRecording = false;
+            const targetEl = textareaEl || VoiceGlowFX.activeTextarea;
+
             if (micBtn) {
                 micBtn.classList.remove('voice-btn-active');
-                micBtn.setAttribute('title', 'Voice Dictation');
+                micBtn.setAttribute('title', 'Voice Dictation (Click to speak)');
             }
             if (waveOverlay) waveOverlay.classList.remove('visible');
 
@@ -678,6 +758,60 @@
 
             if (VoiceGlowFX.recognition) {
                 try { VoiceGlowFX.recognition.stop(); } catch (e) {}
+            }
+
+            // Stop MediaRecorder and transcribe collected audio
+            if (VoiceGlowFX.mediaRecorder && VoiceGlowFX.mediaRecorder.state !== 'inactive') {
+                try {
+                    const recorder = VoiceGlowFX.mediaRecorder;
+                    recorder.onstop = async () => {
+                        const chunks = VoiceGlowFX.audioChunks || [];
+                        VoiceGlowFX.audioChunks = [];
+
+                        // If SpeechRecognition already gave live transcript
+                        if (VoiceGlowFX.speechTranscript && targetEl) {
+                            targetEl.value = VoiceGlowFX.speechTranscript;
+                            targetEl.dispatchEvent(new Event('input', { bubbles: true }));
+                        }
+
+                        if (chunks.length > 0 && window.electronAPI && typeof window.electronAPI.transcribeAudio === 'function') {
+                            const mime = recorder.mimeType || 'audio/webm';
+                            const audioBlob = new Blob(chunks, { type: mime });
+
+                            if (audioBlob.size > 800) {
+                                try {
+                                    const reader = new FileReader();
+                                    reader.onloadend = async () => {
+                                        try {
+                                            const base64Data = (reader.result || '').split(',')[1];
+                                            if (base64Data) {
+                                                const res = await window.electronAPI.transcribeAudio({ base64Data, mimeType: mime });
+                                                if (res && res.text && res.text.trim()) {
+                                                    const cleanText = res.text.trim();
+                                                    if (targetEl) {
+                                                        targetEl.value = cleanText;
+                                                        targetEl.dispatchEvent(new Event('input', { bubbles: true }));
+                                                    }
+                                                }
+                                            }
+                                        } catch (e) {
+                                            console.warn('[VoiceGlowFX] transcribeAudio error:', e);
+                                        }
+                                    };
+                                    reader.readAsDataURL(audioBlob);
+                                } catch (e) {}
+                            }
+                        }
+                    };
+                    recorder.stop();
+                } catch (e) {
+                    console.warn('[VoiceGlowFX] Error stopping mediaRecorder:', e);
+                }
+            } else {
+                if (VoiceGlowFX.speechTranscript && targetEl) {
+                    targetEl.value = VoiceGlowFX.speechTranscript;
+                    targetEl.dispatchEvent(new Event('input', { bubbles: true }));
+                }
             }
 
             if (VoiceGlowFX.microphoneStream) {
