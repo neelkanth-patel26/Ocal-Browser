@@ -1098,7 +1098,7 @@ const formatGitHubMarkdown = (markdown) => {
 
 const currentVersionHighlights = `
     <div style="font-family: var(--font-mono); font-size: 11.5px; color: var(--text-dim); white-space: pre-wrap; line-height: 1.6;">
-<div style="font-family: var(--font-title); font-size: 14px; font-weight: 800; color: var(--accent); margin-bottom: 8px;">OCAL BROWSER v10.0.01 STABLE</div>
+<div style="font-family: var(--font-title); font-size: 14px; font-weight: 800; color: var(--accent); margin-bottom: 8px;">OCAL BROWSER v10.1.23 STABLE</div>
 <div style="color: var(--text); font-weight: 700; margin-bottom: 12px;">Official Production Release Highlights</div>
 
 <div style="font-family: var(--font-title); font-size: 12.5px; font-weight: 700; color: var(--accent); margin-top: 10px; margin-bottom: 4px;">🧭 Introducing Onboarding Page for Fresh Users</div>

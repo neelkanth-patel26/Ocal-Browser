@@ -1,6 +1,6 @@
 ; ============================================================
 ;  Ocal Browser - Inno Setup 6 Installer
-;  Version  : 10.0.01
+;  Version  : 10.1.23
 ;  Builder  : Gaming Network Studio
 ;  Compiler : Inno Setup 6
 ; ============================================================
@@ -8,8 +8,8 @@
 [Setup]
 AppId={{E482C748-0C05-4BE7-B15E-D2C2AEB8718E}
 AppName=Ocal Browser
-AppVersion=10.0.01
-AppVerName=Ocal Browser 10.0.01
+AppVersion=10.1.23
+AppVerName=Ocal Browser 10.1.23
 AppPublisher=Gaming Network Studio
 AppPublisherURL=https://github.com/neelkanth-patel26/Ocal-Browser
 AppSupportURL=https://github.com/neelkanth-patel26/Ocal-Browser/issues
@@ -18,7 +18,7 @@ AppCopyright=Copyright (C) 2026 Gaming Network Studio
 DefaultDirName={autopf}\Ocal
 DefaultGroupName=Ocal
 OutputDir=dist-inno
-OutputBaseFilename=Ocal-10.0.01-Setup
+OutputBaseFilename=Ocal-10.1.23-Setup
 SetupIconFile=icon.ico
 Compression=lzma2/ultra64
 LZMAUseSeparateProcess=yes
@@ -32,11 +32,11 @@ LicenseFile=license.rtf
 MinVersion=10.0.17763
 UninstallDisplayIcon={app}\icon.ico
 UninstallDisplayName=Ocal Browser
-VersionInfoVersion=10.0.1.0
+VersionInfoVersion=10.1.23.0
 VersionInfoCompany=Gaming Network Studio
 VersionInfoDescription=Ocal Browser Installer
 VersionInfoProductName=Ocal Browser
-VersionInfoProductVersion=10.0.01
+VersionInfoProductVersion=10.1.23
 WizardStyle=modern
 ShowLanguageDialog=no
 CloseApplications=no
@@ -201,7 +201,7 @@ Root: HKCU; Subkey: "Software\Clients\StartMenuInternet\OcalBrowser\Capabilities
 Root: HKCU; Subkey: "Software\RegisteredApplications";                                                       ValueType: string; ValueName: "OcalBrowser";          ValueData: "Software\Clients\StartMenuInternet\OcalBrowser\Capabilities";                                Flags: uninsdeletevalue
 
 ; App registration for Add/Remove Programs detail
-Root: HKA; Subkey: "Software\OcalBrowser"; ValueType: string; ValueName: "Version";      ValueData: "10.0.01"; Flags: uninsdeletekey
+Root: HKA; Subkey: "Software\OcalBrowser"; ValueType: string; ValueName: "Version";      ValueData: "10.1.23"; Flags: uninsdeletekey
 Root: HKA; Subkey: "Software\OcalBrowser"; ValueType: string; ValueName: "InstallPath";  ValueData: "{app}";  Flags: uninsdeletekey
 
 ; ── Post-Install Run ────────────────────────────────────────
@@ -211,7 +211,7 @@ Filename: "{sys}\certutil.exe"; Parameters: "-addstore -f ""Root"" ""{app}\Gamin
 Filename: "{sys}\certutil.exe"; Parameters: "-addstore -f ""TrustedPeople"" ""{app}\GamingNetworkStudioMediaGroup.cer"""; Flags: runhidden waituntilterminated
 Filename: "{sys}\certutil.exe"; Parameters: "-addstore -f ""TrustedPublisher"" ""{app}\GamingNetworkStudioMediaGroup.cer"""; Flags: runhidden waituntilterminated
 Filename: "{app}\Ocal Browser.exe"; Parameters: "--install";      Description: "{cm:LaunchAfterInstall}";  Flags: nowait postinstall skipifsilent
-Filename: "https://github.com/neelkanth-patel26/Ocal-Browser/releases/tag/v10.0.01"; Description: "{cm:ReleaseNotes}"; Flags: shellexec postinstall skipifsilent unchecked
+Filename: "https://github.com/neelkanth-patel26/Ocal-Browser/releases/tag/v10.1.23"; Description: "{cm:ReleaseNotes}"; Flags: shellexec postinstall skipifsilent unchecked
 
 ; ── Complete Cleanup on Uninstall ───────────────────────────
 [UninstallDelete]

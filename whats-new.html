@@ -1075,7 +1075,7 @@
                 </div>
                 <div class="milestone-beacon-pill">
                     <span class="beacon-pulse"></span>
-                    <span>v10.0.01 Stable</span>
+                    <span>v10.1.23 Stable</span>
                 </div>
             </div>
 
@@ -1300,7 +1300,7 @@
                     <div class="pane-header">
                         <div class="pane-title-group">
                             <h2 class="pane-main-title" id="dir-title">All Features & Enhancements</h2>
-                            <span class="pane-sub-title" id="dir-subtitle">Showing all upgrades in v10.0.01 Stable Release</span>
+                            <span class="pane-sub-title" id="dir-subtitle">Showing all upgrades in v10.1.23 Stable Release</span>
                         </div>
                     </div>
                     <div class="features-fullwidth-grid" id="directory-grid" style="margin-top: 18px;"></div>
@@ -1423,6 +1423,61 @@
 
         // ── Data: Features & Changelog ──
         const items = [
+                        // ══ v10.1.23 Stable Feature Upgrades ══
+            { 
+                type: 'feature', 
+                category: 'multitasking', 
+                icon: 'fa-folder-tree', 
+                title: 'Reworked Bento File Manager (ocal://file-manager)', 
+                desc: 'Complete architectural rework of the File Manager featuring glassmorphic bento layout, instant file and media previewing, folder tree navigation, batch operations, storage diagnostics, and lightning-fast search.', 
+                actionText: 'Explore Files', 
+                targetUrl: 'ocal://file-manager' 
+            },
+            { 
+                type: 'feature', 
+                category: 'multitasking', 
+                icon: 'fa-robot', 
+                title: 'AI Copilot Sidebar Stabilization & Bug Fixes', 
+                desc: 'Resolved response rendering glitches and streaming latency in the AI sidebar. Upgraded session persistence, live code copy blocks, input auto-focus handling, and fluid conversation navigation.', 
+                actionText: 'Try AI Copilot', 
+                targetUrl: 'ocal://home' 
+            },
+            { 
+                type: 'feature', 
+                category: 'media', 
+                icon: 'fa-file-pdf', 
+                title: 'High-Resolution PDF Reader & Visual Polish', 
+                desc: 'Restored missing sidebar and thumbnail icons, upgraded PDF canvas rasterization for ultra-crisp high-resolution zoom up to 500%, smooth multi-page scrolling, and zero-blur text rendering.', 
+                actionText: 'Open PDF Reader', 
+                targetUrl: 'ocal://pdf-viewer' 
+            },
+            { 
+                type: 'feature', 
+                category: 'performance', 
+                icon: 'fa-gauge-high', 
+                title: 'Core Engine Performance & Driver Acceleration', 
+                desc: 'Substantial runtime speedups with optimized V8 garbage collection, reduced idle background memory footprint, zero-jank smooth scrolling, and hardware-accelerated GPU shader compilation.', 
+                actionText: 'View Settings', 
+                targetUrl: 'ocal://settings' 
+            },
+            { 
+                type: 'feature', 
+                category: 'performance', 
+                icon: 'fa-shield-halved', 
+                title: 'Intelligent Permission Prompt & Persistent Memory', 
+                desc: 'Redesigned shadowless permission dialogs for camera, microphone, geolocation, and notifications. Automatically remembers site access authorizations per origin across browser sessions.', 
+                actionText: 'Privacy Controls', 
+                targetUrl: 'ocal://settings' 
+            },
+            { 
+                type: 'feature', 
+                category: 'media', 
+                icon: 'fa-circle-half-stroke', 
+                title: 'Deep Dark/Light Mode & Search Engine Sync', 
+                desc: 'Dynamically harmonizes user color-scheme preferences across browser views, web pages, and search engine query headers so search results match your active dark or light theme seamlessly.', 
+                actionText: 'Theme Settings', 
+                targetUrl: 'ocal://settings' 
+            },
             // ══ v10.0.01 Stable Feature Upgrades ══
             { 
                 type: 'feature', 
@@ -1707,9 +1762,17 @@
             { type: 'contributor', category: 'contributors', icon: 'fa-folder-tree', title: 'Kavya Patel', desc: 'Architected the Bento File Manager, drag-and-drop file pipelines, and instant media thumbnail generator.', role: 'Storage & File System Dev' },
             { type: 'contributor', category: 'contributors', icon: 'fa-shield-halved', title: 'Marcus Vance', desc: 'Optimized uBlock Origin rule engine integration, pre-DNS lookups, and DOM pre-rendering pipelines.', role: 'Network & Ad-Block Specialist' },
             { type: 'contributor', category: 'contributors', icon: 'fa-palette', title: 'Sneha Kulkarni', desc: 'Engineered dynamic CSS custom property harmonizer and 25+ high-contrast showroom accent themes.', role: 'Theme & Color Systems Dev' },
+                        { type: 'contributor', category: 'contributors', icon: 'fa-file-code', title: 'Vikram Sengupta', desc: 'Engineered high-resolution PDF rendering pipeline, multi-scale canvas viewport rasterization, and thumbnail preview generator.', role: 'Document Systems Engineer' },
+            { type: 'contributor', category: 'contributors', icon: 'fa-user-lock', title: 'Zara Al-Mansoor', desc: 'Engineered persistent origin permission memory, shadowless modal prompts, and web session security policies.', role: 'Privacy & Security Systems Dev' },
             { type: 'contributor', category: 'contributors', icon: 'fa-bolt-lightning', title: 'Liam Chen', desc: 'Optimized Chromium multi-process lifecycle, reduced memory idle footprint, and eliminated layout thrashing.', role: 'Performance & Engine Engineer' }
         ];
         const changelog = [
+            { 
+                date: 'November 2026', 
+                title: 'v10.1.23 Stable — Reworked File Manager, AI Sidebar Fixes, High-Res PDF & Performance Boost', 
+                desc: 'Milestone v10.1.23 release featuring the thoroughly reworked Bento File Manager with instant preview and folder analytics, resolved AI sidebar streaming and rendering bugs, overhauled high-resolution PDF Reader with restored icons and crisp zoom, deep dark/light mode synchronization with search engines, intelligent shadowless permission prompts with origin memory, and substantial performance improvements across the engine.', 
+                tags: ['v10.1.23 Stable', 'Reworked File Manager', 'AI Sidebar Fixes', 'High-Res PDF', 'Performance Boost', 'Theme & Search Sync', 'Permission Memory'] 
+            },
             { 
                 date: 'October 2026', 
                 title: 'v10.0.01 Stable — Onboarding Suite, Chromium Runtime, @tab AI Intelligence & Performance', 
