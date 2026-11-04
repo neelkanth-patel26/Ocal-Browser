@@ -6174,7 +6174,7 @@ svg.solid-icon {
 }
 
 /* Top Tab Bar Favicon */
-.tab-item i.tab-favicon.solid-icon {
+.tab-item:not(.active):not(.grouped) i.tab-favicon.solid-icon {
   font-size: 13px !important;
   width: 16px;
   height: 16px;
@@ -6182,6 +6182,13 @@ svg.solid-icon {
   align-items: center;
   justify-content: center;
   color: var(--accent) !important;
+}
+
+.tab-item.grouped.active i.tab-favicon.solid-icon,
+.tab-item.grouped.active i.solid-icon,
+.vt-tab-item.grouped.active i.tab-favicon.solid-icon,
+.vt-tab-item.grouped.active i.solid-icon {
+  color: #FFFFFF !important;
 }
 
 .new-tab-btn i.solid-icon {

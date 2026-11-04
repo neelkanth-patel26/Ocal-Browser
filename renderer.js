@@ -1091,8 +1091,8 @@ function getTabIconHtml(tab, tintColor) {
     }
 
     const isGroupActive = (typeof activeTabId !== 'undefined' && (tab.id == activeTabId || String(tab.id) === String(activeTabId)) && (tab.groupId || tintColor === '#FFFFFF' || tintColor === 'white')) || tintColor === '#FFFFFF' || tintColor === 'white';
-    const defaultColor = isGroupActive ? '#FFFFFF' : 'var(--accent)';
-    const accentColor = isGroupActive ? '#FFFFFF' : (tintColor || defaultColor);
+    const defaultColor = isGroupActive ? '#FFFFFF !important' : 'var(--accent)';
+    const accentColor = isGroupActive ? '#FFFFFF !important' : (tintColor ? `${tintColor} !important` : defaultColor);
 
     if (tab.loading) {
         return `<i class="fas fa-circle-notch tab-favicon spinner" style="color:${accentColor}"></i>`;

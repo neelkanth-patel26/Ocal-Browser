@@ -5,14 +5,15 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta http-equiv="Content-Security-Policy" content="default-src 'self' ocal:; script-src 'self' 'unsafe-inline' https://cdnjs.cloudflare.com https://unpkg.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com https://cdnjs.cloudflare.com https://cdn.jsdelivr.net; font-src 'self' https://fonts.gstatic.com https://cdnjs.cloudflare.com https://cdn.jsdelivr.net; img-src 'self' data: https: http: chrome-extension: blob:; connect-src 'self' https: wss: http: blob:;">
     <title>Ocal Web Store — Extensions & Add-ons</title>
-    <!-- ANTI-FLASH & AI COLOR HARMONIZER: must be FIRST in head, before any stylesheet -->
+
+    <!-- ANTI-FLASH & COLOR HARMONIZER -->
     <script src="color-harmonizer.js"></script>
     <script>
         (function () {
-            var t = localStorage.getItem('ocal-settings-theme') || 'light';
+            var t = localStorage.getItem('ocal-settings-theme') || 'dark';
             document.documentElement.setAttribute('data-theme', t);
             if (t === 'dark') {
-                document.documentElement.style.background = '#0E0F14';
+                document.documentElement.style.background = '#18181B';
                 document.documentElement.style.colorScheme = 'dark';
             }
             var a = localStorage.getItem('ocal-settings-accent');
@@ -21,40 +22,43 @@
             }
         })();
     </script>
+
+    <!-- Fonts & Icons -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800;900&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="assets/fontawesome/css/all.min.css">
-    <link rel="stylesheet" href="home.css">
+    <link rel="stylesheet" href="settings.css">
+
     <style>
-        /* ══════════════════════════════════════════════════════════════════════════
-           OCAL STORE — CLEAN BENTO GRID DESIGN SYSTEM (MATCHING HOME PAGE)
-           Strict rules: Zero gradients, Zero shadows, Crisp borders, Bento cards
-           ══════════════════════════════════════════════════════════════════════════ */
+        /* ══════════════════════════════════════════════════════════════════════
+           OCAL WEB STORE — NATIVE DESKTOP SETTINGS HARMONY
+           Clean Bento architecture • High legibility • Solid accents
+           ══════════════════════════════════════════════════════════════════════ */
+
         :root {
             --store-bg: #EDEDF0;
             --store-card-bg: #FFFFFF;
-            --store-card-border: rgba(0, 0, 0, 0.06);
+            --store-card-border: rgba(0, 0, 0, 0.07);
             --store-text: #111111;
             --store-text-muted: #4B5563;
             --store-text-dim: #94A3B8;
             --store-input-bg: #F4F5F7;
             --store-input-border: rgba(0, 0, 0, 0.08);
-            --radius-outer: 24px;
-            --radius-inner: 16px;
-            --radius-pill: 100px;
+            --store-hover-bg: rgba(0, 0, 0, 0.035);
         }
 
         html[data-theme="dark"],
         body[data-theme="dark"] {
             --store-bg: #18181B;
-            --store-card-bg: #1E1E23;
+            --store-card-bg: #222226;
             --store-card-border: rgba(255, 255, 255, 0.08);
             --store-text: #F8FAFC;
             --store-text-muted: #9CA3AF;
             --store-text-dim: #64748B;
-            --store-input-bg: #141418;
-            --store-input-border: rgba(255, 255, 255, 0.08);
+            --store-input-bg: #1B1B1F;
+            --store-input-border: rgba(255, 255, 255, 0.09);
+            --store-hover-bg: rgba(255, 255, 255, 0.04);
         }
 
         html[data-theme-combo],
@@ -65,273 +69,404 @@
             --store-text: var(--text);
             --store-text-muted: var(--text-dim, #9CA3AF);
             --store-text-dim: var(--text-dim, #64748B);
-            --store-input-bg: var(--chrome, #141418);
-            --store-input-border: var(--border, rgba(255, 255, 255, 0.08));
-            --accent: var(--accent);
+            --store-input-bg: var(--chrome, #1B1B1F);
+            --store-input-border: var(--border, rgba(255, 255, 255, 0.09));
+            --store-hover-bg: rgba(255, 255, 255, 0.04);
         }
 
-        /* ── Absolute Strict Rules: Zero Gradients, Zero Shadows ── */
-        *, *::before, *::after {
-            background-image: none !important;
-            box-shadow: none !important;
-            text-shadow: none !important;
-        }
-
-        /* ── Base Canvas & Dashboard Container ── */
-        html {
-            background: var(--store-bg);
-            scrollbar-width: thin;
-        }
-
-        body.sp-dashboard-body {
+        body {
             background: var(--store-bg);
             color: var(--store-text);
-            min-height: 100vh;
             font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, sans-serif;
-            overflow-x: hidden;
-            overflow-y: auto;
-            -webkit-font-smoothing: antialiased;
+            overflow: hidden;
+            height: 100vh;
         }
 
-        .sp-wallpaper-bg {
-            position: fixed;
-            inset: 0;
-            z-index: -1;
-            background: var(--store-bg);
+        /* ── Header Customizations ── */
+        .settings-header {
+            background: var(--store-bg) !important;
+            border-bottom: 1px solid var(--chrome-border);
+            z-index: 1000;
         }
 
-        .sp-dashboard-wrapper {
-            max-width: 1560px;
-            width: 100%;
-            margin: 0 auto;
-            padding: 20px 32px 60px;
-            display: flex;
-            flex-direction: column;
-            gap: 22px;
-        }
-
-        /* ── Custom Scrollbar ── */
-        ::-webkit-scrollbar {
-            width: 7px;
-            height: 7px;
-        }
-        ::-webkit-scrollbar-track {
-            background: transparent;
-        }
-        ::-webkit-scrollbar-thumb {
-            background: rgba(148, 163, 184, 0.35);
-            border-radius: 10px;
-        }
-        ::-webkit-scrollbar-thumb:hover {
-            background: var(--accent, #15AC49);
-        }
-
-        /* ── 1. Header Row (Brand & Badges) ── */
-        .store-header-row {
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            gap: 20px;
-            flex-wrap: wrap;
-        }
-
-        .store-brand-group {
-            display: flex;
-            align-items: center;
-            gap: 16px;
-        }
-
-        .store-brand-icon-halo {
-            width: 48px;
-            height: 48px;
-            border-radius: 16px;
-            background: color-mix(in srgb, var(--accent, #15AC49) 12%, transparent);
-            border: 1px solid color-mix(in srgb, var(--accent, #15AC49) 25%, transparent);
-            color: var(--accent, #15AC49);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 22px;
-            flex-shrink: 0;
-            transition: transform 0.2s cubic-bezier(0.16, 1, 0.3, 1);
-        }
-
-        .store-brand-icon-halo:hover {
-            transform: scale(1.05);
-        }
-
-        .store-title-meta {
-            display: flex;
-            flex-direction: column;
-            gap: 3px;
-        }
-
-        .store-main-title {
-            font-size: 28px;
-            font-weight: 700;
-            letter-spacing: -0.6px;
-            line-height: 1.2;
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            color: var(--store-text);
-            margin: 0;
-        }
-
-        .store-title-prefix {
-            font-weight: 500;
-            color: var(--store-text-muted);
-        }
-
-        .store-sub-desc {
-            font-size: 13px;
-            font-weight: 600;
-            color: var(--store-text-muted);
-            display: flex;
-            align-items: center;
-            gap: 7px;
-        }
-
-        .store-sub-desc i {
-            color: var(--accent, #15AC49);
-            font-size: 12px;
-        }
-
-        .store-header-right {
-            display: flex;
-            align-items: center;
-            gap: 12px;
-            flex-wrap: wrap;
-        }
-
-        /* Stats Bar (Matching .sp-stats-bar in home.css) */
-        .store-stat-pill-bar {
-            height: 44px;
-            display: flex;
-            align-items: center;
-            gap: 16px;
-            background: var(--store-card-bg);
-            border: 1px solid var(--store-card-border);
-            border-radius: var(--radius-pill);
-            padding: 0 18px;
-        }
-
-        .store-stat-pill-item {
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            font-size: 12px;
-            font-weight: 700;
-        }
-
-        .store-stat-pill-item .val {
-            font-family: 'Space Mono', monospace;
-            font-size: 13px;
-            font-weight: 700;
-            color: var(--store-text);
-        }
-
-        .store-stat-pill-item .badge-tag {
+        .header-store-badge {
             font-size: 10.5px;
             font-weight: 700;
-            padding: 2px 8px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            padding: 2.5px 8px;
             border-radius: 100px;
             background: color-mix(in srgb, var(--accent, #15AC49) 12%, transparent);
             color: var(--accent, #15AC49);
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
+            border: 1px solid color-mix(in srgb, var(--accent, #15AC49) 25%, transparent);
+            margin-left: 8px;
         }
 
-        /* Nav Action Buttons (Matching Home Page Pill Actions) */
+        .header-search {
+            position: absolute;
+            left: 50%;
+            transform: translateX(-50%);
+            max-width: 460px;
+            width: calc(100% - 380px);
+            display: flex;
+            align-items: center;
+        }
+
+        .header-search .search-icon {
+            position: absolute;
+            left: 14px;
+            color: var(--text-dim);
+            font-size: 13px;
+            pointer-events: none;
+            z-index: 2;
+        }
+
+        .header-search input[type="text"] {
+            width: 100%;
+            height: 38px;
+            background: var(--store-card-bg);
+            border: 1px solid var(--store-card-border);
+            border-radius: 12px;
+            padding: 0 40px 0 38px !important;
+            color: var(--store-text);
+            font-family: inherit;
+            font-size: 13px;
+            font-weight: 550;
+            outline: none;
+            transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+
+        .header-search input[type="text"]:focus {
+            border-color: var(--accent);
+            box-shadow: 0 0 0 3px color-mix(in srgb, var(--accent) 18%, transparent);
+        }
+
+        .store-search-clear-btn {
+            position: absolute;
+            right: 32px;
+            background: transparent;
+            border: none;
+            color: var(--text-dim);
+            cursor: pointer;
+            padding: 4px;
+            display: none;
+            align-items: center;
+            justify-content: center;
+            font-size: 13px;
+            transition: color 0.15s ease;
+        }
+
+        .store-search-clear-btn:hover {
+            color: var(--store-text);
+        }
+
+        .store-search-kbd-badge {
+            position: absolute;
+            right: 12px;
+            font-family: 'Space Mono', monospace;
+            font-size: 10px;
+            font-weight: 700;
+            padding: 1px 6px;
+            border-radius: 4px;
+            background: var(--store-input-bg);
+            color: var(--text-dim);
+            border: 1px solid var(--store-card-border);
+            pointer-events: none;
+        }
+
+        .header-tools {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .store-sort-pill {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            height: 34px;
+            padding: 0 10px 0 12px;
+            border-radius: 10px;
+            background: var(--store-card-bg);
+            border: 1px solid var(--store-card-border);
+            color: var(--store-text-muted);
+            font-size: 12px;
+            font-weight: 600;
+        }
+
+        .store-sort-pill i {
+            color: var(--accent);
+            font-size: 11px;
+        }
+
+        .store-sort-select {
+            background: transparent;
+            border: none;
+            color: var(--store-text);
+            font-family: inherit;
+            font-size: 12px;
+            font-weight: 650;
+            outline: none;
+            cursor: pointer;
+        }
+
+        .store-sort-select option {
+            background: var(--store-card-bg);
+            color: var(--store-text);
+        }
+
         .btn-store-nav {
-            height: 44px;
-            padding: 0 18px;
-            border-radius: var(--radius-pill);
+            height: 34px;
+            padding: 0 13px;
+            border-radius: 10px;
             background: var(--store-card-bg);
             border: 1px solid var(--store-card-border);
             color: var(--store-text);
-            font-size: 13px;
-            font-weight: 700;
+            font-family: inherit;
+            font-size: 12px;
+            font-weight: 650;
             cursor: pointer;
             display: inline-flex;
             align-items: center;
-            gap: 8px;
-            transition: border-color 0.2s, transform 0.2s, color 0.2s;
-            user-select: none;
+            gap: 7px;
+            transition: all 0.18s cubic-bezier(0.16, 1, 0.3, 1);
+            text-decoration: none;
         }
 
         .btn-store-nav:hover {
-            transform: translateY(-1.5px);
-            border-color: var(--accent, #15AC49);
-            color: var(--accent, #15AC49);
+            transform: translateY(-1px);
+            border-color: color-mix(in srgb, var(--accent) 35%, transparent);
+            background: var(--store-hover-bg);
         }
 
         .btn-store-nav.accent-fill {
-            background: var(--accent, #15AC49);
-            color: var(--accent-text, #FFFFFF);
-            border: 1px solid var(--accent, #15AC49);
+            background: var(--accent) !important;
+            border-color: var(--accent) !important;
+            color: var(--accent-text, #FFFFFF) !important;
         }
 
         .btn-store-nav.accent-fill:hover {
-            opacity: 0.92;
-            transform: translateY(-1.5px);
-            color: var(--accent-text, #FFFFFF);
+            filter: brightness(1.08);
         }
 
-        /* ── 2. Hero Showroom Grid (Spotlight & Sideload) ── */
+        /* ── Two-Column Layout Container ── */
+        .settings-container {
+            display: flex;
+            margin-top: 60px;
+            height: calc(100vh - 60px);
+            width: 100%;
+            overflow: hidden;
+        }
+
+        /* ── Sidebar Navigation ── */
+        .sidebar {
+            width: 250px;
+            min-width: 250px;
+            height: 100%;
+            background: var(--store-bg);
+            border-right: 1px solid var(--chrome-border);
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            padding: 16px 12px 20px;
+            box-sizing: border-box;
+            overflow-y: auto;
+            scrollbar-width: none;
+        }
+
+        .sidebar-nav {
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+        }
+
+        .sidebar-category-header {
+            font-size: 10.5px;
+            font-weight: 750;
+            text-transform: uppercase;
+            letter-spacing: 0.6px;
+            color: var(--text-dim);
+            padding: 8px 12px 4px;
+        }
+
+        .nav-item.cat-pill {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 9px 12px;
+            border-radius: 10px;
+            color: var(--store-text-muted);
+            font-size: 13px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.16s ease;
+            user-select: none;
+            border: 1px solid transparent;
+        }
+
+        .cat-pill-left {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            min-width: 0;
+        }
+
+        .cat-pill-left i {
+            font-size: 13px;
+            width: 16px;
+            text-align: center;
+            color: var(--text-dim);
+            transition: color 0.16s ease;
+        }
+
+        .cat-pill-left span {
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .cat-pill:hover {
+            background: var(--store-hover-bg);
+            color: var(--store-text);
+        }
+
+        .cat-pill:hover .cat-pill-left i {
+            color: var(--store-text);
+        }
+
+        .cat-pill.active {
+            background: var(--accent) !important;
+            color: var(--accent-text, #FFFFFF) !important;
+            font-weight: 700;
+            border-color: var(--accent) !important;
+        }
+
+        .cat-pill.active .cat-pill-left i {
+            color: var(--accent-text, #FFFFFF) !important;
+        }
+
+        .cat-pill-count {
+            font-family: 'Space Mono', monospace;
+            font-size: 10.5px;
+            font-weight: 700;
+            padding: 1px 6px;
+            border-radius: 6px;
+            background: var(--store-hover-bg);
+            color: var(--text-dim);
+            transition: all 0.16s ease;
+        }
+
+        .cat-pill.active .cat-pill-count {
+            background: rgba(255, 255, 255, 0.28);
+            color: #FFFFFF;
+        }
+
+        .sidebar-footer {
+            margin-top: 16px;
+            padding-top: 14px;
+            border-top: 1px solid var(--chrome-border);
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        .sidebar-status-card {
+            background: var(--store-card-bg);
+            border: 1px solid var(--store-card-border);
+            border-radius: 12px;
+            padding: 12px 14px;
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+        }
+
+        .sidebar-status-title {
+            font-size: 10.5px;
+            font-weight: 750;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            color: var(--text-dim);
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+
+        .sidebar-status-item {
+            font-size: 11.5px;
+            font-weight: 600;
+            color: var(--store-text);
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .sidebar-status-item i {
+            font-size: 11px;
+            color: var(--accent);
+        }
+
+        /* ── Main Content Area ── */
+        .content {
+            flex: 1;
+            height: 100%;
+            overflow-y: auto;
+            overflow-x: hidden;
+            padding: 24px 32px 48px;
+            box-sizing: border-box;
+            display: flex;
+            flex-direction: column;
+            gap: 24px;
+            scrollbar-width: thin;
+        }
+
+        /* ── Showroom Grid (Spotlight Banner & Direct Sideload) ── */
         .store-hero-grid {
             display: grid;
-            grid-template-columns: 1.55fr 1fr;
-            gap: 20px;
+            grid-template-columns: 1.15fr 0.85fr;
+            gap: 16px;
             width: 100%;
         }
 
-        @media (max-width: 1180px) {
+        @media (max-width: 1080px) {
             .store-hero-grid {
                 grid-template-columns: 1fr;
             }
         }
 
-        /* Spotlight Bento Card */
+        /* 1. Featured Spotlight Showroom */
         .store-spotlight-card {
             background: var(--store-card-bg);
             border: 1px solid var(--store-card-border);
-            border-radius: var(--radius-outer);
-            padding: 24px 26px;
-            position: relative;
-            overflow: hidden;
+            border-radius: 18px;
+            padding: 22px;
             display: flex;
             flex-direction: column;
             justify-content: space-between;
-            min-height: 270px;
-            transition: transform 0.22s cubic-bezier(0.16, 1, 0.3, 1), border-color 0.22s;
-        }
-
-        .store-spotlight-card:hover {
-            transform: translateY(-2px);
-            border-color: rgba(16, 185, 129, 0.35);
+            gap: 16px;
+            position: relative;
+            transition: border-color 0.2s ease;
         }
 
         .spotlight-top-bar {
             display: flex;
             align-items: center;
             justify-content: space-between;
-            margin-bottom: 16px;
+            gap: 10px;
         }
 
         .spotlight-label-chip {
             display: inline-flex;
             align-items: center;
-            gap: 7px;
+            gap: 6px;
             font-size: 11px;
-            font-weight: 700;
+            font-weight: 750;
+            color: var(--accent);
+            background: color-mix(in srgb, var(--accent) 10%, transparent);
+            border: 1px solid color-mix(in srgb, var(--accent) 22%, transparent);
+            padding: 4px 10px;
+            border-radius: 100px;
             text-transform: uppercase;
             letter-spacing: 0.5px;
-            color: var(--accent, #15AC49);
-            background: color-mix(in srgb, var(--accent, #15AC49) 10%, transparent);
-            border: 1px solid color-mix(in srgb, var(--accent, #15AC49) 20%, transparent);
-            padding: 4px 12px;
-            border-radius: var(--radius-pill);
         }
 
         .spotlight-cycle-nav {
@@ -341,44 +476,38 @@
         }
 
         .spotlight-dot {
-            width: 7px;
-            height: 7px;
-            border-radius: 50%;
-            background: var(--store-text-dim);
+            width: 8px;
+            height: 8px;
+            border-radius: 100px;
+            background: var(--text-dim);
             opacity: 0.35;
             cursor: pointer;
-            transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+            transition: all 0.2s ease;
         }
 
         .spotlight-dot.active {
-            opacity: 1;
             width: 22px;
-            border-radius: 100px;
-            background: var(--accent, #15AC49);
+            background: var(--accent);
+            opacity: 1;
         }
 
         .spotlight-main-content {
             display: flex;
             align-items: flex-start;
-            gap: 20px;
+            gap: 16px;
         }
 
         .spotlight-icon-box {
-            width: 68px;
-            height: 68px;
-            border-radius: 18px;
-            background: transparent;
-            border: none;
+            width: 60px;
+            height: 60px;
+            border-radius: 16px;
+            background: var(--store-input-bg);
+            border: 1px solid var(--store-card-border);
+            overflow: hidden;
             display: flex;
             align-items: center;
             justify-content: center;
             flex-shrink: 0;
-            overflow: hidden;
-            transition: transform 0.2s;
-        }
-
-        .store-spotlight-card:hover .spotlight-icon-box {
-            transform: scale(1.04);
         }
 
         .spotlight-icon-box img,
@@ -386,42 +515,35 @@
             width: 100%;
             height: 100%;
             object-fit: contain;
-            border-radius: 16px;
-            border: none;
-            background: transparent;
+            border-radius: 14px;
         }
 
         .spotlight-info-col {
-            flex: 1;
-            min-width: 0;
             display: flex;
             flex-direction: column;
             gap: 4px;
+            min-width: 0;
+            flex: 1;
         }
 
         .spotlight-title-row {
             display: flex;
             align-items: center;
-            gap: 10px;
+            gap: 8px;
             flex-wrap: wrap;
         }
 
         .spotlight-title-text {
-            font-size: 22px;
-            font-weight: 700;
+            font-size: 18px;
+            font-weight: 800;
             color: var(--store-text);
-            line-height: 1.25;
-            letter-spacing: -0.4px;
+            letter-spacing: -0.3px;
         }
 
         .spotlight-verified-tag {
-            font-size: 11px;
+            font-size: 10.5px;
             font-weight: 700;
             color: #3B82F6;
-            background: rgba(59, 130, 246, 0.1);
-            border: 1px solid rgba(59, 130, 246, 0.2);
-            padding: 2px 8px;
-            border-radius: 100px;
             display: inline-flex;
             align-items: center;
             gap: 4px;
@@ -430,24 +552,24 @@
         .spotlight-metrics-row {
             display: flex;
             align-items: center;
-            gap: 10px;
-            font-size: 12.5px;
-            font-weight: 600;
+            gap: 8px;
+            font-size: 12px;
             color: var(--store-text-muted);
-            margin-top: 2px;
+            flex-wrap: wrap;
         }
 
         .spotlight-stars {
             color: #F59E0B;
+            font-weight: 700;
             display: inline-flex;
             align-items: center;
-            gap: 4px;
+            gap: 3px;
         }
 
         .spotlight-desc-text {
-            font-size: 13px;
-            line-height: 1.5;
+            font-size: 12.5px;
             color: var(--store-text-muted);
+            line-height: 1.5;
             margin-top: 4px;
             display: -webkit-box;
             -webkit-line-clamp: 2;
@@ -460,10 +582,10 @@
             display: flex;
             align-items: center;
             justify-content: space-between;
-            gap: 14px;
-            margin-top: 18px;
-            padding-top: 16px;
+            gap: 12px;
+            padding-top: 10px;
             border-top: 1px solid var(--store-card-border);
+            flex-wrap: wrap;
         }
 
         .spotlight-tags-group {
@@ -474,21 +596,21 @@
         }
 
         .spotlight-pill-tag {
-            font-size: 11px;
-            font-weight: 700;
-            padding: 4px 10px;
-            border-radius: 100px;
-            background: var(--store-input-bg);
+            font-size: 10.5px;
+            font-weight: 650;
             color: var(--store-text-muted);
+            background: var(--store-input-bg);
             border: 1px solid var(--store-card-border);
+            padding: 3px 8px;
+            border-radius: 6px;
             display: inline-flex;
             align-items: center;
-            gap: 6px;
+            gap: 4px;
         }
 
         .spotlight-pill-tag i {
-            color: var(--accent, #15AC49);
-            font-size: 10.5px;
+            color: var(--accent);
+            font-size: 9.5px;
         }
 
         .spotlight-btn-group {
@@ -498,75 +620,66 @@
         }
 
         .btn-spotlight-action {
-            height: 38px;
-            padding: 0 18px;
-            border-radius: var(--radius-pill);
+            height: 34px;
+            padding: 0 16px;
+            border-radius: 10px;
+            font-family: inherit;
             font-size: 12.5px;
             font-weight: 700;
-            border: none;
             cursor: pointer;
             display: inline-flex;
             align-items: center;
-            gap: 7px;
-            transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
-            user-select: none;
-        }
-
-        .btn-spotlight-action.primary {
-            background: var(--accent, #15AC49);
-            color: var(--accent-text, #FFFFFF);
-            border: 1px solid var(--accent, #15AC49);
-        }
-
-        .btn-spotlight-action.primary:hover {
-            opacity: 0.92;
-            transform: translateY(-1px);
+            gap: 6px;
+            transition: all 0.16s ease;
+            outline: none;
         }
 
         .btn-spotlight-action.secondary {
             background: var(--store-input-bg);
-            color: var(--store-text);
             border: 1px solid var(--store-card-border);
+            color: var(--store-text);
         }
 
         .btn-spotlight-action.secondary:hover {
-            background: color-mix(in srgb, var(--accent, #15AC49) 10%, transparent);
-            color: var(--accent, #15AC49);
-            border-color: color-mix(in srgb, var(--accent, #15AC49) 30%, transparent);
+            background: var(--store-hover-bg);
         }
 
-        /* Sideload Bento Card */
+        .btn-spotlight-action.primary {
+            background: var(--accent) !important;
+            border: 1px solid var(--accent) !important;
+            color: var(--accent-text, #FFFFFF) !important;
+        }
+
+        .btn-spotlight-action.primary:hover {
+            filter: brightness(1.08);
+            transform: translateY(-1px);
+        }
+
+        /* 2. Chrome Web Store Direct Sideload Card */
         .store-sideload-card {
             background: var(--store-card-bg);
             border: 1px solid var(--store-card-border);
-            border-radius: var(--radius-outer);
-            padding: 24px;
+            border-radius: 18px;
+            padding: 22px;
             display: flex;
             flex-direction: column;
             justify-content: space-between;
-            position: relative;
-            overflow: hidden;
-            transition: transform 0.22s, border-color 0.22s;
-        }
-
-        .store-sideload-card:hover {
-            transform: translateY(-2px);
-            border-color: rgba(16, 185, 129, 0.35);
+            gap: 14px;
         }
 
         .sideload-header {
             display: flex;
             align-items: center;
             justify-content: space-between;
-            margin-bottom: 8px;
+            gap: 10px;
         }
 
         .sideload-title-box {
             display: flex;
             align-items: center;
             gap: 8px;
-            font-size: 15px;
-            font-weight: 700;
+            font-size: 14px;
+            font-weight: 750;
             color: var(--store-text);
         }
 
@@ -576,92 +689,89 @@
         }
 
         .sideload-lead-text {
-            font-size: 12.5px;
+            font-size: 12px;
             color: var(--store-text-muted);
             line-height: 1.45;
-            margin-bottom: 12px;
+            margin-top: 4px;
         }
 
         .sideload-input-box {
             display: flex;
             align-items: center;
-            background: var(--store-input-bg);
-            border: 1px solid var(--store-input-border);
-            border-radius: var(--radius-pill);
-            padding: 3px 5px 3px 14px;
             gap: 8px;
-            transition: border-color 0.2s;
+            background: var(--store-input-bg);
+            border: 1px solid var(--store-card-border);
+            border-radius: 12px;
+            padding: 4px 6px 4px 12px;
+            margin-top: 10px;
+            transition: border-color 0.2s ease;
         }
 
         .sideload-input-box:focus-within {
-            border-color: var(--accent, #15AC49);
+            border-color: var(--accent);
         }
 
         .sideload-input-field {
             flex: 1;
-            border: none;
             background: transparent;
-            font-size: 12.5px;
-            font-weight: 600;
-            color: var(--store-text);
+            border: none;
             outline: none;
+            color: var(--store-text);
+            font-family: inherit;
+            font-size: 12.5px;
+            font-weight: 550;
             min-width: 0;
-        }
-
-        .sideload-input-field::placeholder {
-            color: var(--store-text-dim);
-            font-weight: 500;
         }
 
         .sideload-btn-pair {
             display: flex;
             align-items: center;
-            gap: 5px;
+            gap: 6px;
+            flex-shrink: 0;
         }
 
         .btn-sideload-action {
-            height: 34px;
-            padding: 0 14px;
-            border-radius: var(--radius-pill);
-            font-size: 12px;
+            height: 30px;
+            padding: 0 12px;
+            border-radius: 8px;
+            font-family: inherit;
+            font-size: 11.5px;
             font-weight: 700;
-            border: none;
             cursor: pointer;
             display: inline-flex;
             align-items: center;
             gap: 5px;
-            transition: opacity 0.2s, transform 0.2s;
-            white-space: nowrap;
+            transition: all 0.16s ease;
+            outline: none;
         }
 
         .btn-sideload-action.grab-btn {
-            background: #4285F4;
-            color: #FFFFFF;
+            background: var(--store-card-bg);
+            border: 1px solid var(--store-card-border);
+            color: var(--store-text);
         }
 
         .btn-sideload-action.grab-btn:hover {
-            opacity: 0.92;
-            transform: translateY(-1px);
+            background: var(--store-hover-bg);
         }
 
         .btn-sideload-action.deploy-btn {
-            background: var(--accent, #15AC49);
-            color: var(--accent-text, #FFFFFF);
+            background: var(--accent) !important;
+            border: 1px solid var(--accent) !important;
+            color: var(--accent-text, #FFFFFF) !important;
         }
 
         .btn-sideload-action.deploy-btn:hover {
-            opacity: 0.92;
-            transform: translateY(-1px);
+            filter: brightness(1.08);
         }
 
         #grabbedExtensionCard {
             display: none;
-            margin-top: 12px;
-            padding: 14px;
-            border-radius: 16px;
+            margin-top: 10px;
+            padding: 12px 14px;
+            border-radius: 12px;
             background: var(--store-input-bg);
             border: 1px solid var(--store-card-border);
-            animation: fadeIn 0.2s ease-out;
         }
 
         .sideload-chips-bar {
@@ -669,234 +779,45 @@
             align-items: center;
             gap: 6px;
             flex-wrap: wrap;
-            margin-top: 14px;
+            padding-top: 8px;
+            border-top: 1px solid var(--store-card-border);
         }
 
         .sideload-chips-label {
             font-size: 11px;
             font-weight: 700;
-            color: var(--store-text-dim);
+            color: var(--text-dim);
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
         }
 
         .sideload-chip-btn {
             font-size: 11px;
             font-weight: 600;
-            padding: 3px 10px;
-            border-radius: var(--radius-pill);
-            background: var(--store-input-bg);
             color: var(--store-text-muted);
+            background: var(--store-input-bg);
             border: 1px solid var(--store-card-border);
+            border-radius: 6px;
+            padding: 3px 8px;
             cursor: pointer;
-            transition: all 0.16s ease;
-            user-select: none;
+            transition: all 0.15s ease;
         }
 
         .sideload-chip-btn:hover {
-            color: var(--accent, #15AC49);
-            border-color: var(--accent, #15AC49);
-            transform: translateY(-1px);
-        }
-
-        /* ── 3. Search & Category Filter Section ── */
-        .store-controls-section {
-            display: flex;
-            flex-direction: column;
-            gap: 14px;
-            width: 100%;
-        }
-
-        .store-search-and-sort-row {
-            display: flex;
-            align-items: center;
-            gap: 14px;
-            width: 100%;
-        }
-
-        /* Search Pill (Directly matching .sp-search-pill in home.css) */
-        .store-search-pill-box {
-            flex: 1;
-            height: 48px;
-            background: var(--store-card-bg);
-            border: 1px solid var(--store-card-border);
-            border-radius: var(--radius-pill);
-            padding: 0 16px;
-            display: flex;
-            align-items: center;
-            gap: 12px;
-            transition: border-color 0.2s;
-        }
-
-        .store-search-pill-box:focus-within {
-            border-color: var(--accent, #15AC49);
-        }
-
-        .store-search-badge-icon {
-            width: 32px;
-            height: 32px;
-            border-radius: 50%;
-            background: #111111;
-            color: #FFFFFF;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 12px;
-            flex-shrink: 0;
-        }
-
-        html[data-theme="dark"] .store-search-badge-icon,
-        body[data-theme="dark"] .store-search-badge-icon {
-            background: var(--accent, #15AC49);
-            color: #FFFFFF;
-        }
-
-        .store-search-input {
-            flex: 1;
-            border: none;
-            background: transparent;
-            font-size: 14px;
-            font-weight: 600;
             color: var(--store-text);
-            outline: none;
-            min-width: 0;
+            border-color: color-mix(in srgb, var(--accent) 35%, transparent);
+            background: var(--store-hover-bg);
         }
 
-        .store-search-input::placeholder {
-            color: var(--store-text-dim);
-            font-weight: 500;
-        }
-
-        .store-search-clear-btn {
-            background: none;
-            border: none;
-            color: var(--store-text-dim);
-            cursor: pointer;
-            font-size: 14px;
-            display: none;
-            padding: 4px;
-            border-radius: 50%;
-            transition: color 0.15s;
-        }
-
-        .store-search-clear-btn:hover {
-            color: var(--store-text);
-        }
-
-        .store-search-kbd-badge {
-            font-family: 'Space Mono', monospace;
-            font-size: 11px;
-            font-weight: 700;
-            padding: 2px 8px;
-            border-radius: 6px;
-            background: var(--store-input-bg);
-            color: var(--store-text-muted);
-            border: 1px solid var(--store-card-border);
-            user-select: none;
-        }
-
-        /* Sort Dropdown Pill */
-        .store-sort-pill {
-            height: 48px;
-            padding: 0 18px;
-            background: var(--store-card-bg);
-            border: 1px solid var(--store-card-border);
-            border-radius: var(--radius-pill);
-            display: flex;
-            align-items: center;
-            gap: 10px;
-            flex-shrink: 0;
-            font-size: 13px;
-            font-weight: 700;
-            color: var(--store-text);
-            cursor: pointer;
-            transition: border-color 0.2s;
-        }
-
-        .store-sort-pill:focus-within {
-            border-color: var(--accent, #15AC49);
-        }
-
-        .store-sort-pill i {
-            color: var(--accent, #15AC49);
-            font-size: 13px;
-        }
-
-        .store-sort-select {
-            border: none;
-            background: transparent;
-            font-family: inherit;
-            font-size: 13px;
-            font-weight: 700;
-            color: inherit;
-            outline: none;
-            cursor: pointer;
-        }
-
-        /* Category Filter Capsules */
-        .store-category-bar {
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            overflow-x: auto;
-            padding-bottom: 2px;
-            scrollbar-width: none;
-        }
-
-        .store-category-bar::-webkit-scrollbar {
-            display: none;
-        }
-
-        .cat-pill {
-            height: 38px;
-            padding: 0 16px;
-            border-radius: var(--radius-pill);
-            font-size: 12.5px;
-            font-weight: 700;
-            background: var(--store-card-bg);
-            color: var(--store-text-muted);
-            border: 1px solid var(--store-card-border);
-            display: inline-flex;
-            align-items: center;
-            gap: 8px;
-            cursor: pointer;
-            white-space: nowrap;
-            transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
-            user-select: none;
-            flex-shrink: 0;
-        }
-
-        .cat-pill:hover {
-            transform: translateY(-1px);
-            color: var(--store-text);
-            border-color: var(--accent, #15AC49);
-        }
-
-        .cat-pill.active {
-            background: var(--accent, #15AC49) !important;
-            color: var(--accent-text, #FFFFFF) !important;
-            border-color: var(--accent, #15AC49) !important;
-        }
-
-        .cat-pill-count {
-            font-family: 'Space Mono', monospace;
-            font-size: 10px;
-            font-weight: 700;
-            padding: 1px 6px;
-            border-radius: 100px;
-            background: var(--store-input-bg);
-            color: var(--store-text-dim);
-        }
-
-        .cat-pill.active .cat-pill-count {
-            background: rgba(0, 0, 0, 0.2);
-            color: #FFFFFF;
-        }
-
-        /* ── 4. Catalog Bento Cards Grid ── */
+        /* ── Catalog Section Header ── */
         .store-catalog-header {
             display: flex;
             align-items: center;
             justify-content: space-between;
+            gap: 12px;
             margin-top: 4px;
+            flex-wrap: wrap;
         }
 
         .catalog-title-wrap {
@@ -906,16 +827,15 @@
         }
 
         .catalog-section-title {
-            font-size: 20px;
-            font-weight: 700;
-            letter-spacing: -0.4px;
+            font-size: 17px;
+            font-weight: 800;
             color: var(--store-text);
             margin: 0;
+            letter-spacing: -0.3px;
         }
 
         .catalog-section-sub {
-            font-size: 13px;
-            font-weight: 500;
+            font-size: 12px;
             color: var(--store-text-muted);
         }
 
@@ -923,70 +843,58 @@
             font-family: 'Space Mono', monospace;
             font-size: 11px;
             font-weight: 700;
-            padding: 4px 12px;
-            border-radius: var(--radius-pill);
-            background: var(--store-card-bg);
             color: var(--store-text-muted);
+            background: var(--store-card-bg);
             border: 1px solid var(--store-card-border);
+            padding: 4px 10px;
+            border-radius: 100px;
         }
 
+        /* ── Extension Bento Cards Grid ── */
         .store-extensions-grid {
             display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
-            gap: 18px;
+            grid-template-columns: repeat(auto-fill, minmax(310px, 1fr));
+            gap: 14px;
             width: 100%;
         }
 
-        @media (max-width: 768px) {
-            .store-extensions-grid {
-                grid-template-columns: 1fr;
-            }
-        }
-
-        /* Clean Bento Extension Card (Matching .sp-card-white in home.css) */
         .ext-card {
             background: var(--store-card-bg);
             border: 1px solid var(--store-card-border);
-            border-radius: 20px;
-            padding: 20px;
+            border-radius: 16px;
+            padding: 16px 18px;
             display: flex;
             flex-direction: column;
             justify-content: space-between;
-            gap: 14px;
-            min-height: 195px;
+            gap: 12px;
             cursor: pointer;
+            transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
             position: relative;
-            user-select: none;
-            transition: transform 0.22s cubic-bezier(0.16, 1, 0.3, 1), border-color 0.22s;
         }
 
         .ext-card:hover {
             transform: translateY(-2px);
-            border-color: rgba(16, 185, 129, 0.35);
+            border-color: color-mix(in srgb, var(--accent) 45%, transparent);
+            background: var(--store-card-bg);
         }
 
         .ext-card-header {
             display: flex;
             align-items: flex-start;
-            gap: 12px;
+            gap: 13px;
         }
 
         .ext-card-icon {
-            width: 48px;
-            height: 48px;
-            border-radius: 14px;
-            background: transparent;
-            border: none;
+            width: 44px;
+            height: 44px;
+            border-radius: 12px;
+            background: var(--store-input-bg);
+            border: 1px solid var(--store-card-border);
+            overflow: hidden;
             display: flex;
             align-items: center;
             justify-content: center;
             flex-shrink: 0;
-            overflow: hidden;
-            transition: transform 0.2s cubic-bezier(0.16, 1, 0.3, 1);
-        }
-
-        .ext-card:hover .ext-card-icon {
-            transform: scale(1.04);
         }
 
         .ext-card-icon img,
@@ -994,103 +902,92 @@
             width: 100%;
             height: 100%;
             object-fit: contain;
-            border-radius: 12px;
-            border: none;
-            background: transparent;
-            display: block;
-        }
-
-        .ext-card-icon svg {
-            width: 100%;
-            height: 100%;
+            border-radius: 10px;
         }
 
         .ext-card-meta {
-            flex: 1;
-            min-width: 0;
             display: flex;
             flex-direction: column;
-            gap: 3px;
+            gap: 2px;
+            min-width: 0;
+            flex: 1;
         }
 
         .ext-card-title {
-            font-size: 14.5px;
-            font-weight: 700;
+            font-size: 14px;
+            font-weight: 750;
             color: var(--store-text);
+            letter-spacing: -0.2px;
             white-space: nowrap;
             overflow: hidden;
             text-overflow: ellipsis;
-            line-height: 1.25;
-            transition: color 0.16s;
-        }
-
-        .ext-card:hover .ext-card-title {
-            color: var(--accent, #15AC49);
         }
 
         .ext-card-author {
-            font-size: 12px;
-            font-weight: 600;
+            font-size: 11.5px;
             color: var(--store-text-muted);
             display: flex;
             align-items: center;
             gap: 5px;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
         }
 
         .author-verified {
             color: #3B82F6;
-            font-size: 11px;
+            font-size: 10.5px;
         }
 
         .ext-card-rating-row {
             display: flex;
             align-items: center;
-            gap: 5px;
-            margin-top: 3px;
-            font-size: 11.5px;
-            font-weight: 600;
+            gap: 6px;
+            margin-top: 2px;
+            font-size: 11px;
+            color: var(--store-text-muted);
+            flex-wrap: wrap;
         }
 
         .rating-stars {
             color: #F59E0B;
-            font-size: 10.5px;
-            letter-spacing: 0.5px;
+            display: inline-flex;
+            gap: 2px;
+            font-size: 10px;
         }
 
         .rating-num {
             font-weight: 700;
             color: var(--store-text);
-            margin-left: 2px;
         }
 
         .rating-count {
             color: var(--store-text-dim);
             font-size: 10.5px;
-            font-weight: 500;
         }
 
         .user-count-chip {
-            margin-left: auto;
-            font-size: 10.5px;
+            font-family: 'Space Mono', monospace;
+            font-size: 9.5px;
             font-weight: 700;
-            padding: 2px 7px;
-            border-radius: 100px;
             background: var(--store-input-bg);
-            color: var(--store-text-muted);
             border: 1px solid var(--store-card-border);
+            padding: 1px 6px;
+            border-radius: 100px;
+            color: var(--store-text-muted);
+            margin-left: auto;
         }
 
         .ext-card-desc {
-            font-size: 12.5px;
-            line-height: 1.45;
+            font-size: 12px;
             color: var(--store-text-muted);
+            line-height: 1.45;
             display: -webkit-box;
             -webkit-line-clamp: 2;
             line-clamp: 2;
             -webkit-box-orient: vertical;
             overflow: hidden;
-            text-overflow: ellipsis;
-            min-height: 36px;
+            min-height: 34px;
         }
 
         .ext-card-footer {
@@ -1098,258 +995,218 @@
             align-items: center;
             justify-content: space-between;
             gap: 8px;
-            padding-top: 12px;
+            padding-top: 10px;
             border-top: 1px solid var(--store-card-border);
         }
 
         .ext-cat-tag {
-            font-size: 10px;
+            font-size: 10.5px;
             font-weight: 700;
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
-            padding: 3px 9px;
-            border-radius: var(--radius-pill);
+            text-transform: capitalize;
+            color: var(--store-text-dim);
             background: var(--store-input-bg);
-            color: var(--store-text-muted);
             border: 1px solid var(--store-card-border);
+            padding: 2.5px 8px;
+            border-radius: 6px;
         }
 
         .btn-card-install {
-            height: 34px;
-            padding: 0 16px;
-            border-radius: var(--radius-pill);
-            font-size: 12px;
+            height: 30px;
+            padding: 0 13px;
+            border-radius: 8px;
+            font-family: inherit;
+            font-size: 11.5px;
             font-weight: 700;
-            background: var(--accent, #15AC49);
-            color: var(--accent-text, #FFFFFF);
-            border: 1px solid var(--accent, #15AC49);
             cursor: pointer;
             display: inline-flex;
             align-items: center;
-            gap: 6px;
-            transition: opacity 0.2s, transform 0.2s;
+            gap: 5px;
+            transition: all 0.16s ease;
             outline: none;
-            flex-shrink: 0;
+            background: var(--accent) !important;
+            border: 1px solid var(--accent) !important;
+            color: var(--accent-text, #FFFFFF) !important;
         }
 
         .btn-card-install:hover {
-            opacity: 0.92;
+            filter: brightness(1.08);
             transform: translateY(-1px);
         }
 
         .btn-card-install.installed {
-            background: rgba(16, 185, 129, 0.1) !important;
-            color: #10B981 !important;
-            border: 1px solid rgba(16, 185, 129, 0.25) !important;
-            cursor: pointer;
+            background: var(--store-input-bg) !important;
+            border-color: var(--store-card-border) !important;
+            color: var(--store-text-muted) !important;
         }
 
         .btn-card-install.installed:hover {
-            background: rgba(16, 185, 129, 0.18) !important;
+            color: var(--store-text) !important;
+            border-color: var(--accent) !important;
         }
 
-        /* ── 5. Extension Detail Modal (Reworked Theme Blur & Premium Modern UI) ── */
-        html.modal-open,
-        body.modal-open {
-            overflow: hidden !important;
-            height: 100vh !important;
-        }
-
+        /* ── Detail Modal Overlay ── */
         .store-modal-overlay {
-            position: fixed !important;
-            inset: 0 !important;
-            z-index: 99999 !important;
-            background: rgba(255, 255, 255, 0.72) !important;
-            backdrop-filter: blur(24px) saturate(180%) !important;
-            -webkit-backdrop-filter: blur(24px) saturate(180%) !important;
+            position: fixed;
+            inset: 0;
+            background: rgba(0, 0, 0, 0.45);
+            backdrop-filter: blur(8px);
+            -webkit-backdrop-filter: blur(8px);
+            z-index: 2000;
             display: none;
             align-items: center;
             justify-content: center;
-            padding: 30px 20px;
+            padding: 24px;
             box-sizing: border-box;
-            overflow-y: auto;
-            transition: background 0.25s ease, opacity 0.2s ease;
+            animation: fadeIn 0.2s ease;
         }
 
-        html[data-theme="dark"] .store-modal-overlay,
-        body[data-theme="dark"] .store-modal-overlay {
-            background: rgba(10, 11, 16, 0.8) !important;
-            backdrop-filter: blur(24px) saturate(180%) !important;
-            -webkit-backdrop-filter: blur(24px) saturate(180%) !important;
-        }
-
-        .store-modal-overlay.active {
-            display: flex !important;
-            animation: modalFadeIn 0.22s cubic-bezier(0.16, 1, 0.3, 1);
-        }
-
-        @keyframes modalFadeIn {
+        @keyframes fadeIn {
             from { opacity: 0; }
             to { opacity: 1; }
-        }
-
-        @keyframes modalSlideUp {
-            from { opacity: 0; transform: scale(0.96) translateY(18px); }
-            to { opacity: 1; transform: scale(1) translateY(0); }
         }
 
         .store-modal-card {
             background: var(--store-card-bg);
             border: 1px solid var(--store-card-border);
-            border-radius: 28px;
-            width: min(940px, 94vw);
-            max-width: 940px;
-            max-height: 90vh;
-            overflow-y: auto;
-            padding: 30px 36px 36px;
-            animation: modalSlideUp 0.26s cubic-bezier(0.16, 1, 0.3, 1);
-            position: relative;
-            margin: auto !important;
-            box-sizing: border-box;
-            color: var(--store-text);
-            box-shadow: 0 24px 70px rgba(0, 0, 0, 0.12), 0 8px 24px rgba(0, 0, 0, 0.05);
+            border-radius: 20px;
+            width: 100%;
+            max-width: 760px;
+            max-height: 86vh;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+            box-shadow: 0 24px 60px rgba(0, 0, 0, 0.25);
+            animation: slideUp 0.25s cubic-bezier(0.16, 1, 0.3, 1);
         }
 
-        html[data-theme="dark"] .store-modal-card,
-        body[data-theme="dark"] .store-modal-card {
-            background: #191A22;
-            border-color: rgba(255, 255, 255, 0.09);
-            box-shadow: 0 28px 80px rgba(0, 0, 0, 0.75), 0 0 0 1px rgba(255, 255, 255, 0.06);
-        }
-
-        .store-modal-card::-webkit-scrollbar {
-            width: 6px;
-        }
-        .store-modal-card::-webkit-scrollbar-thumb {
-            background: rgba(148, 163, 184, 0.35);
-            border-radius: 10px;
+        @keyframes slideUp {
+            from { transform: translateY(16px); opacity: 0; }
+            to { transform: translateY(0); opacity: 1; }
         }
 
         .store-modal-header {
+            padding: 16px 22px;
             display: flex;
             align-items: center;
             justify-content: space-between;
-            padding-bottom: 16px;
             border-bottom: 1px solid var(--store-card-border);
+            background: var(--store-card-bg);
         }
 
         .modal-header-badges {
             display: flex;
             align-items: center;
             gap: 8px;
-            flex-wrap: wrap;
         }
 
         .modal-badge-verified {
             font-size: 11px;
-            font-weight: 700;
+            font-weight: 750;
             color: #10B981;
             background: rgba(16, 185, 129, 0.1);
-            border: 1px solid rgba(16, 185, 129, 0.22);
-            padding: 4px 11px;
+            border: 1px solid rgba(16, 185, 129, 0.25);
+            padding: 3px 9px;
             border-radius: 100px;
             display: inline-flex;
             align-items: center;
-            gap: 6px;
-            letter-spacing: 0.3px;
+            gap: 5px;
         }
 
         .modal-badge-cat {
             font-size: 11px;
             font-weight: 700;
-            color: var(--accent, #15AC49);
-            background: color-mix(in srgb, var(--accent, #15AC49) 10%, transparent);
-            border: 1px solid color-mix(in srgb, var(--accent, #15AC49) 20%, transparent);
-            padding: 4px 11px;
+            color: var(--store-text-dim);
+            background: var(--store-input-bg);
+            border: 1px solid var(--store-card-border);
+            padding: 3px 9px;
             border-radius: 100px;
             display: inline-flex;
             align-items: center;
-            gap: 6px;
+            gap: 5px;
             text-transform: capitalize;
-            letter-spacing: 0.3px;
         }
 
         .store-modal-close {
-            width: 36px;
-            height: 36px;
+            width: 32px;
+            height: 32px;
             border-radius: 50%;
             background: var(--store-input-bg);
             border: 1px solid var(--store-card-border);
+            color: var(--store-text-muted);
             cursor: pointer;
             display: flex;
             align-items: center;
             justify-content: center;
-            color: var(--store-text-muted);
-            transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
-            outline: none;
-            font-size: 14px;
+            font-size: 13px;
+            transition: all 0.15s ease;
         }
 
         .store-modal-close:hover {
             color: var(--store-text);
-            background: color-mix(in srgb, var(--accent, #15AC49) 14%, transparent);
-            transform: scale(1.06) rotate(90deg);
+            background: var(--store-hover-bg);
         }
 
-        /* ── Hero Identity ── */
+        #modalBody {
+            padding: 22px;
+            overflow-y: auto;
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            gap: 18px;
+        }
+
+        /* Modal Body Internals */
         .modal-ext-hero {
             display: flex;
             align-items: flex-start;
-            gap: 22px;
-            margin-top: 18px;
-            margin-bottom: 22px;
+            gap: 16px;
         }
 
         .modal-ext-icon {
-            width: 80px;
-            height: 80px;
-            border-radius: 20px;
+            width: 64px;
+            height: 64px;
+            border-radius: 16px;
+            background: var(--store-input-bg);
+            border: 1px solid var(--store-card-border);
             overflow: hidden;
-            flex-shrink: 0;
             display: flex;
             align-items: center;
             justify-content: center;
-            background: transparent;
-            border: none;
+            flex-shrink: 0;
         }
 
         .modal-ext-icon img,
-        .modal-ext-icon .real-ext-icon {
+        .modal-ext-icon .real-ext-icon,
+        .modal-ext-icon .modal-real-icon {
             width: 100%;
             height: 100%;
             object-fit: contain;
-            border-radius: 18px;
-            border: none;
-            background: transparent;
-            display: block;
-            filter: drop-shadow(0 6px 16px rgba(0, 0, 0, 0.1));
+            border-radius: 14px;
         }
 
         .modal-ext-main {
             flex: 1;
             min-width: 0;
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
         }
 
         .modal-ext-title {
-            font-size: 22px;
+            font-size: 19px;
             font-weight: 800;
-            letter-spacing: -0.4px;
             color: var(--store-text);
-            line-height: 1.25;
-            margin: 0 0 6px 0;
+            margin: 0;
+            letter-spacing: -0.3px;
         }
 
         .modal-ext-byline {
             display: flex;
             align-items: center;
             gap: 8px;
-            font-size: 13px;
+            font-size: 12.5px;
             color: var(--store-text-muted);
             flex-wrap: wrap;
-        }
-
-        .modal-ext-byline strong {
-            color: var(--store-text);
         }
 
         .author-verified-chip {
@@ -1357,305 +1214,207 @@
             font-size: 12px;
             display: inline-flex;
             align-items: center;
-            gap: 4px;
+            gap: 3px;
         }
 
         .modal-version-tag {
+            font-family: 'Space Mono', monospace;
             font-size: 11px;
             font-weight: 700;
+            color: var(--store-text-muted);
+            background: var(--store-input-bg);
+            border: 1px solid var(--store-card-border);
             padding: 1px 7px;
             border-radius: 6px;
-            background: var(--store-input-bg);
-            color: var(--store-text-muted);
-            border: 1px solid var(--store-card-border);
-            font-family: 'Space Mono', monospace;
         }
 
         .modal-ext-stats {
             display: flex;
             align-items: center;
-            gap: 12px;
-            margin-top: 8px;
-            font-size: 13px;
+            gap: 10px;
+            margin-top: 4px;
+            font-size: 12px;
+            color: var(--store-text-muted);
             flex-wrap: wrap;
         }
 
         .modal-stars-wrap {
-            display: flex;
-            align-items: center;
-            gap: 4px;
             color: #F59E0B;
-            font-size: 12px;
+            font-weight: 700;
+            display: inline-flex;
+            align-items: center;
+            gap: 3px;
         }
 
         .modal-rating-val {
             color: var(--store-text);
-            font-weight: 700;
-            font-size: 13.5px;
+            font-weight: 750;
             margin-left: 2px;
         }
 
         .modal-rating-count {
             color: var(--store-text-dim);
-            font-weight: 500;
-            font-size: 12px;
+            font-size: 11.5px;
         }
 
         .modal-users-chip {
             font-weight: 700;
+            font-size: 11.5px;
             color: var(--store-text-muted);
-            font-size: 12px;
             background: var(--store-input-bg);
-            padding: 4px 10px;
-            border-radius: 100px;
             border: 1px solid var(--store-card-border);
+            padding: 2px 8px;
+            border-radius: 100px;
             display: inline-flex;
             align-items: center;
-            gap: 6px;
+            gap: 5px;
         }
 
-        /* ── Action Toolbar ── */
         .modal-action-bar {
             display: flex;
             align-items: center;
             gap: 10px;
-            margin-bottom: 22px;
             flex-wrap: wrap;
+            padding: 4px 0;
         }
 
         .btn-modal-install {
             flex: 1;
-            min-width: 180px;
-            height: 44px;
-            padding: 0 24px;
-            border-radius: 14px;
-            font-size: 13.5px;
-            font-weight: 700;
-            background: var(--accent, #15AC49);
-            color: var(--accent-text, #FFFFFF);
-            border: 1px solid var(--accent, #15AC49);
-            cursor: pointer;
-            display: inline-flex;
-            align-items: center;
-            justify-content: center;
-            gap: 8px;
-            transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
-            outline: none;
-            box-shadow: 0 4px 14px color-mix(in srgb, var(--accent, #15AC49) 25%, transparent);
-        }
-
-        .btn-modal-install:hover {
-            transform: translateY(-1px);
-            filter: brightness(1.06);
-            box-shadow: 0 6px 18px color-mix(in srgb, var(--accent, #15AC49) 35%, transparent);
-        }
-
-        .btn-modal-install.installed {
-            background: rgba(16, 185, 129, 0.12) !important;
-            color: #10B981 !important;
-            border: 1px solid rgba(16, 185, 129, 0.3) !important;
-            box-shadow: none !important;
-        }
-
-        .btn-modal-install.installed:hover {
-            background: rgba(16, 185, 129, 0.18) !important;
-        }
-
-        .btn-modal-google {
-            height: 44px;
-            padding: 0 18px;
-            border-radius: 14px;
+            min-width: 170px;
+            height: 38px;
+            padding: 0 20px;
+            border-radius: 10px;
+            font-family: inherit;
             font-size: 13px;
             font-weight: 700;
-            background: var(--store-input-bg);
-            color: var(--store-text);
-            border: 1px solid var(--store-card-border);
+            background: var(--accent) !important;
+            border: 1px solid var(--accent) !important;
+            color: var(--accent-text, #FFFFFF) !important;
             cursor: pointer;
-            display: inline-flex;
-            align-items: center;
-            justify-content: center;
-            gap: 8px;
-            white-space: nowrap;
-            transition: all 0.2s;
-            outline: none;
-        }
-
-        .btn-modal-google:hover {
-            background: #4285F4;
-            color: #FFFFFF;
-            border-color: #4285F4;
-            transform: translateY(-1px);
-        }
-
-        .btn-modal-external {
-            height: 44px;
-            padding: 0 16px;
-            border-radius: 14px;
-            font-size: 13px;
-            font-weight: 700;
-            background: var(--store-input-bg);
-            color: var(--store-text-muted);
-            border: 1px solid var(--store-card-border);
-            text-decoration: none;
             display: inline-flex;
             align-items: center;
             justify-content: center;
             gap: 7px;
-            white-space: nowrap;
-            transition: all 0.2s;
-            cursor: pointer;
+            transition: all 0.16s ease;
         }
 
-        .btn-modal-external:hover {
-            color: var(--store-text);
-            border-color: var(--store-text-dim);
+        .btn-modal-install:hover {
+            filter: brightness(1.08);
             transform: translateY(-1px);
         }
 
-        /* ── Framed Mockup Window Preview ── */
-        .modal-preview-frame {
-            border-radius: 18px;
-            overflow: hidden;
-            margin: 20px 0 24px 0;
-            background: #111216;
-            border: 1px solid var(--store-card-border);
-            box-shadow: 0 8px 24px rgba(0, 0, 0, 0.08);
+        .btn-modal-install.installed {
+            background: var(--store-input-bg) !important;
+            border-color: var(--store-card-border) !important;
+            color: var(--store-text) !important;
         }
 
-        html[data-theme="dark"] .modal-preview-frame {
-            background: #0E0F14;
-            box-shadow: 0 12px 30px rgba(0, 0, 0, 0.4);
+        .btn-modal-google, .btn-modal-external {
+            height: 38px;
+            padding: 0 14px;
+            border-radius: 10px;
+            background: var(--store-input-bg);
+            border: 1px solid var(--store-card-border);
+            color: var(--store-text);
+            font-family: inherit;
+            font-size: 12px;
+            font-weight: 650;
+            cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            text-decoration: none;
+            transition: all 0.16s ease;
+        }
+
+        .btn-modal-google:hover, .btn-modal-external:hover {
+            background: var(--store-hover-bg);
+        }
+
+        .modal-preview-frame {
+            border: 1px solid var(--store-card-border);
+            border-radius: 14px;
+            background: var(--store-input-bg);
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
         }
 
         .preview-frame-header {
+            padding: 8px 14px;
+            border-bottom: 1px solid var(--store-card-border);
             display: flex;
             align-items: center;
             justify-content: space-between;
-            padding: 10px 16px;
-            background: rgba(255, 255, 255, 0.04);
-            border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+            font-size: 11px;
+            font-weight: 700;
+            color: var(--store-text-dim);
+            background: var(--store-card-bg);
         }
 
         .preview-traffic-dots {
             display: flex;
             align-items: center;
-            gap: 6px;
+            gap: 5px;
         }
 
         .preview-traffic-dots span {
-            width: 10px;
-            height: 10px;
+            width: 8px;
+            height: 8px;
             border-radius: 50%;
-            display: inline-block;
         }
 
-        .preview-traffic-dots .dot-red { background: #FF5F56; }
-        .preview-traffic-dots .dot-yellow { background: #FFBD2E; }
-        .preview-traffic-dots .dot-green { background: #27C93F; }
-
-        .preview-frame-caption {
-            font-size: 11.5px;
-            font-weight: 600;
-            color: #94A3B8;
-            display: flex;
-            align-items: center;
-            gap: 6px;
-        }
-
-        .preview-frame-tag {
-            font-size: 10px;
-            font-weight: 700;
-            color: #10B981;
-            background: rgba(16, 185, 129, 0.15);
-            padding: 2px 7px;
-            border-radius: 6px;
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
-        }
+        .dot-red { background: #EF4444; }
+        .dot-yellow { background: #F59E0B; }
+        .dot-green { background: #10B981; }
 
         .preview-frame-body {
-            aspect-ratio: 600 / 320;
+            padding: 16px;
             display: flex;
             align-items: center;
             justify-content: center;
-            overflow: hidden;
+            min-height: 180px;
         }
 
         .preview-frame-body svg {
-            width: 100%;
-            height: 100%;
-            display: block;
+            max-width: 100%;
+            height: auto;
+            border-radius: 8px;
         }
 
-        /* ── Overview & Features ── */
         .modal-overview-wrap {
-            margin-bottom: 22px;
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
         }
 
         .modal-section-heading {
-            font-size: 15px;
-            font-weight: 700;
+            font-size: 13.5px;
+            font-weight: 750;
             color: var(--store-text);
+            margin: 0;
             display: flex;
             align-items: center;
-            gap: 8px;
-            margin-bottom: 10px;
+            gap: 7px;
         }
 
         .modal-desc-body {
-            font-size: 13.5px;
-            line-height: 1.6;
+            font-size: 12.5px;
             color: var(--store-text-muted);
-        }
-
-        .modal-desc-p {
-            margin: 0 0 10px 0;
-            font-size: 13.5px;
             line-height: 1.6;
-            color: var(--store-text-muted);
         }
 
-        .modal-feature-bullet {
-            display: flex;
-            align-items: flex-start;
-            gap: 10px;
-            padding: 8px 12px;
-            margin-bottom: 6px;
-            border-radius: 10px;
-            background: var(--store-input-bg);
-            border: 1px solid var(--store-card-border);
-            font-size: 13px;
-            color: var(--store-text);
-            transition: background 0.15s;
-        }
-
-        .modal-feature-bullet:hover {
-            background: color-mix(in srgb, var(--accent, #15AC49) 8%, var(--store-input-bg));
-        }
-
-        .modal-feature-bullet i {
-            color: #10B981;
-            font-size: 13px;
-            margin-top: 3px;
-            flex-shrink: 0;
-        }
-
-        /* ── Permissions Section ── */
         .modal-perms-wrap {
-            margin: 18px 0;
-            padding: 14px 16px;
-            border-radius: 14px;
-            background: var(--store-input-bg);
-            border: 1px solid var(--store-card-border);
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
         }
 
         .modal-subheading {
-            font-size: 12px;
-            font-weight: 700;
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
-            color: var(--store-text-dim);
-            margin: 0 0 10px 0;
+            font-size: 12.5px;
+            font-weight: 750;
+            color: var(--store-text);
+            margin: 0;
             display: flex;
             align-items: center;
             gap: 6px;
@@ -1670,432 +1429,373 @@
         .perm-chip {
             font-size: 11px;
             font-weight: 600;
-            padding: 4px 10px;
-            border-radius: 8px;
-            background: var(--store-card-bg);
-            color: var(--store-text);
+            color: var(--store-text-muted);
+            background: var(--store-input-bg);
             border: 1px solid var(--store-card-border);
+            padding: 3px 8px;
+            border-radius: 6px;
             display: inline-flex;
             align-items: center;
             gap: 5px;
         }
 
         .perm-chip i {
-            color: #10B981;
+            color: var(--accent);
             font-size: 10px;
         }
 
-        /* ── Specifications Bento Grid ── */
         .modal-spec-grid {
             display: grid;
-            grid-template-columns: repeat(4, 1fr);
+            grid-template-columns: repeat(3, 1fr);
             gap: 10px;
-            margin-top: 22px;
-            padding-top: 20px;
-            border-top: 1px solid var(--store-card-border);
-        }
-
-        @media (max-width: 680px) {
-            .modal-spec-grid {
-                grid-template-columns: repeat(2, 1fr);
-            }
-            .modal-action-bar {
-                flex-direction: column;
-            }
-            .btn-modal-install, .btn-modal-google, .btn-modal-external {
-                width: 100%;
-            }
         }
 
         .spec-card {
             background: var(--store-input-bg);
             border: 1px solid var(--store-card-border);
-            border-radius: 14px;
+            border-radius: 10px;
             padding: 10px 12px;
             display: flex;
             align-items: center;
             gap: 10px;
-            transition: transform 0.15s;
-        }
-
-        .spec-card:hover {
-            transform: translateY(-1px);
         }
 
         .spec-icon {
-            width: 32px;
-            height: 32px;
-            border-radius: 10px;
-            background: color-mix(in srgb, var(--accent, #15AC49) 12%, transparent);
-            color: var(--accent, #15AC49);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 13px;
-            flex-shrink: 0;
+            font-size: 14px;
+            color: var(--accent);
         }
 
         .spec-meta {
             display: flex;
             flex-direction: column;
             gap: 2px;
-            min-width: 0;
-            flex: 1;
         }
 
-        .spec-label {
+        .spec-meta span:first-child {
             font-size: 10px;
-            font-weight: 700;
             color: var(--store-text-dim);
             text-transform: uppercase;
-            letter-spacing: 0.5px;
+            font-weight: 700;
         }
 
-        .spec-val {
-            font-size: 12.5px;
+        .spec-meta span:last-child {
+            font-size: 12px;
             font-weight: 700;
             color: var(--store-text);
-            white-space: nowrap;
-            overflow: hidden;
-            text-overflow: ellipsis;
         }
 
-        .spec-val.font-mono {
-            font-family: 'Space Mono', monospace;
-            font-size: 11px;
-            font-weight: 600;
-        }
-
-        .btn-copy-id {
-            background: transparent;
-            border: none;
-            color: var(--store-text-muted);
-            cursor: pointer;
-            padding: 4px;
-            border-radius: 6px;
-            font-size: 11px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            transition: color 0.15s, background 0.15s;
-        }
-
-        .btn-copy-id:hover {
-            color: var(--store-text);
-            background: rgba(0, 0, 0, 0.05);
-        }
-        html[data-theme="dark"] .btn-copy-id:hover {
-            background: rgba(255, 255, 255, 0.08);
-        }
-
-        /* ── 6. Toast Notification ── */
+        /* ── Toast Notification ── */
         .store-toast {
             position: fixed;
             bottom: 24px;
-            right: 24px;
+            right: 28px;
             background: var(--store-card-bg);
-            color: var(--store-text);
-            padding: 10px 20px;
-            border-radius: var(--radius-pill);
-            font-size: 12.5px;
-            font-weight: 700;
+            border: 1.5px solid var(--accent);
+            border-radius: 12px;
+            padding: 12px 18px;
             display: none;
             align-items: center;
-            gap: 8px;
-            border: 1px solid var(--accent, #15AC49);
-            z-index: 100000;
-            animation: slideUpToast 0.22s cubic-bezier(0.16, 1, 0.3, 1);
-        }
-
-        @keyframes fadeIn {
-            from { opacity: 0; }
-            to { opacity: 1; }
-        }
-        @keyframes slideUpModal {
-            from { opacity: 0; transform: scale(0.97) translateY(14px); }
-            to { opacity: 1; transform: scale(1) translateY(0); }
-        }
-        @keyframes slideUpToast {
-            from { opacity: 0; transform: translateY(10px); }
-            to { opacity: 1; transform: translateY(0); }
+            gap: 10px;
+            box-shadow: 0 12px 32px rgba(0, 0, 0, 0.25);
+            font-size: 13px;
+            font-weight: 650;
+            color: var(--store-text);
+            z-index: 3000;
+            animation: slideUp 0.2s ease;
         }
     </style>
 </head>
-<body class="sp-dashboard-body">
-    <div class="sp-wallpaper-bg"></div>
 
-    <!-- Main Dashboard Container -->
-    <main class="sp-dashboard-wrapper" id="dashboard-main">
-
-        <!-- ══ Header Row: Store Brand & Metric Badges ══ -->
-        <header class="store-header-row">
-            <div class="store-brand-group">
-                <div class="store-brand-icon-halo">
-                    <i class="fas fa-cubes-stacked"></i>
-                </div>
-                <div class="store-title-meta">
-                    <h1 class="store-main-title">
-                        <span class="store-title-prefix">Web Store /</span>
-                        <span>Chrome Extensions</span>
-                    </h1>
-                    <div class="store-sub-desc">
-                        <i class="fas fa-shield-halved"></i>
-                        <span>Native Manifest V3 & V2 engine &bull; Zero-trust sandboxed profile sessions &bull; 1-Click install</span>
-                    </div>
-                </div>
+<body data-theme="dark">
+    <!-- ══ Top Header Toolbar (Native Settings & What's New Design) ══ -->
+    <header class="settings-header">
+        <div class="header-left">
+            <div class="header-logo">
+                <img src="assets/Dark.png" class="header-logo-img" id="header-logo-img" alt="Ocal">
             </div>
+            <div class="header-logo-text">Ocal Web Store</div>
+            <span class="header-store-badge">MV3 & MV2 Native</span>
+        </div>
 
-            <!-- Stats Bar & Quick Action Buttons -->
-            <div class="store-header-right">
-                <div class="store-stat-pill-bar">
-                    <div class="store-stat-pill-item">
-                        <span class="val" id="stat-catalog-count">32+</span>
-                        <span class="badge-tag">Verified</span>
-                    </div>
-                    <div class="store-stat-pill-item">
-                        <span class="val">Native</span>
-                        <span class="badge-tag">MV3 / MV2</span>
-                    </div>
-                    <div class="store-stat-pill-item">
-                        <span class="val">Isolated</span>
-                        <span class="badge-tag">Sandbox</span>
-                    </div>
-                </div>
+        <!-- Center Search Omnibox -->
+        <div class="header-search">
+            <i class="fas fa-magnifying-glass search-icon"></i>
+            <input type="text" id="storeSearchInput" placeholder="Search extensions by name, keyword, or author... (/)" autocomplete="off" spellcheck="false">
+            <button class="store-search-clear-btn" id="storeSearchClearBtn" title="Clear Search">
+                <i class="fas fa-xmark"></i>
+            </button>
+            <span class="store-search-kbd-badge">/</span>
+        </div>
 
-                <button class="btn-store-nav" onclick="openMyExtensions()" title="Manage active extensions in Ocal Settings">
-                    <i class="fas fa-puzzle-piece" style="color: var(--accent, #15AC49);"></i>
-                    <span>My Extensions</span>
-                </button>
-                <button class="btn-store-nav accent-fill" id="btnCustomInstallModal" title="Jump to Sideload & CRX Deployer">
-                    <i class="fas fa-cloud-arrow-down"></i>
-                    <span>Sideload CRX</span>
-                </button>
+        <!-- Header Actions: Sort Dropdown & Quick Nav -->
+        <div class="header-tools">
+            <div class="store-sort-pill">
+                <i class="fas fa-arrow-down-wide-short"></i>
+                <select class="store-sort-select" id="storeSortSelect" title="Sort extensions">
+                    <option value="featured">✨ Editors' Pick</option>
+                    <option value="rating">⭐ Highest Rated</option>
+                    <option value="users">🔥 Most Popular</option>
+                    <option value="name">🔤 Name (A to Z)</option>
+                </select>
             </div>
-        </header>
+            <button class="btn-store-nav" onclick="openMyExtensions()" title="Manage installed extensions in Settings">
+                <i class="fas fa-puzzle-piece" style="color: var(--accent);"></i>
+                <span>My Extensions</span>
+            </button>
+            <button class="btn-store-nav accent-fill" id="btnCustomInstallModal" title="Jump to Sideload & CRX Deployer">
+                <i class="fas fa-cloud-arrow-down"></i>
+                <span>Sideload CRX</span>
+            </button>
+        </div>
+    </header>
 
-        <!-- ══ Flagship Showroom Grid: Spotlight & Sideload Engine ══ -->
-        <section class="store-hero-grid">
-
-            <!-- Card 1: Featured Spotlight Showroom -->
-            <div class="store-spotlight-card" id="heroSpotlight">
-                <div class="spotlight-top-bar">
-                    <div class="spotlight-label-chip">
-                        <i class="fas fa-wand-magic-sparkles"></i>
-                        <span>Featured Spotlight &bull; Editors' Choice</span>
+    <!-- ══ Two-Column Workspace Container ══ -->
+    <div class="settings-container">
+        
+        <!-- ── Left Sidebar: Category Navigation ── -->
+        <aside class="sidebar">
+            <nav class="sidebar-nav" id="categoryBar">
+                <div class="sidebar-category-header">Categories</div>
+                
+                <div class="nav-item cat-pill active" data-cat="all">
+                    <div class="cat-pill-left">
+                        <i class="fas fa-border-all"></i>
+                        <span>All Extensions</span>
                     </div>
-                    <div class="spotlight-cycle-nav" id="spotlightDots">
-                        <span class="spotlight-dot active" data-idx="0" title="Dark Reader"></span>
-                        <span class="spotlight-dot" data-idx="1" title="uBlock Origin"></span>
-                        <span class="spotlight-dot" data-idx="2" title="Bitwarden"></span>
-                    </div>
-                </div>
-
-                <div class="spotlight-main-content">
-                    <div class="spotlight-icon-box" id="heroIconBox">
-                        <img src="assets/extension-icons/eimadpbcbfnmbkopoojfekhnkhdbieeh.png" alt="Dark Reader" class="real-ext-icon">
-                    </div>
-                    <div class="spotlight-info-col">
-                        <div class="spotlight-title-row">
-                            <span class="spotlight-title-text" id="heroTitle">Dark Reader</span>
-                            <span class="spotlight-verified-tag">
-                                <i class="fas fa-certificate"></i> Verified Publisher
-                            </span>
-                        </div>
-                        <div class="spotlight-metrics-row">
-                            <span class="spotlight-stars" id="heroRating">
-                                <i class="fas fa-star"></i> 4.8
-                            </span>
-                            <span id="heroReviews">(14,800+ reviews)</span>
-                            <span>&bull;</span>
-                            <span id="heroUsers">5M+ active users</span>
-                        </div>
-                        <div class="spotlight-desc-text" id="heroDesc">
-                            Invert bright colors and apply dark themes across all websites automatically with custom brightness, contrast, and font smoothing controls.
-                        </div>
-                    </div>
-                </div>
-
-                <div class="spotlight-footer-row">
-                    <div class="spotlight-tags-group">
-                        <span class="spotlight-pill-tag"><i class="fas fa-check"></i> Verified Safe</span>
-                        <span class="spotlight-pill-tag"><i class="fas fa-lock"></i> Zero Telemetry</span>
-                        <span class="spotlight-pill-tag"><i class="fas fa-code"></i> Open Source</span>
-                    </div>
-                    <div class="spotlight-btn-group">
-                        <button class="btn-spotlight-action secondary" id="heroDetailsBtn">
-                            <i class="fas fa-circle-info"></i>
-                            <span>Details</span>
-                        </button>
-                        <button class="btn-spotlight-action primary" id="heroInstallBtn" data-ext-id="eimadpbcbfnmbkopoojfekhnkhdbieeh">
-                            <i class="fas fa-plus"></i>
-                            <span>Add to Ocal</span>
-                        </button>
-                    </div>
-                </div>
-                <!-- Hidden holder for JS compatibility -->
-                <div id="heroPreview" style="display: none;"></div>
-            </div>
-
-            <!-- Card 2: Chrome Web Store Direct Sideload Engine -->
-            <div class="store-sideload-card" id="sideloadCard">
-                <div>
-                    <div class="sideload-header">
-                        <div class="sideload-title-box">
-                            <i class="fab fa-chrome"></i>
-                            <span>Chrome Web Store Sideload</span>
-                        </div>
-                        <span class="spotlight-pill-tag"><i class="fas fa-bolt"></i> Instant Deploy</span>
-                    </div>
-                    <div class="sideload-lead-text">
-                        Paste any Chrome Web Store link or 32-character ID to inspect live metadata from Google and deploy into your active profile:
-                    </div>
-
-                    <div class="sideload-input-box">
-                        <i class="fas fa-link" style="color: var(--accent, #15AC49); font-size: 13px;"></i>
-                        <input type="text" class="sideload-input-field" id="directInstallInput" placeholder="Paste Chrome URL or extension ID (e.g. nngceckbapebfimnlniiiahkandclblb)..." autocomplete="off" spellcheck="false">
-                        <div class="sideload-btn-pair">
-                            <button class="btn-sideload-action grab-btn" id="btnGrabData" title="Grab live metadata directly from Google Chrome extension">
-                                <i class="fas fa-satellite-dish"></i>
-                                <span>Grab Info</span>
-                            </button>
-                            <button class="btn-sideload-action deploy-btn" id="btnDirectInstall" title="Download & Install CRX directly">
-                                <i class="fas fa-cloud-arrow-down"></i>
-                                <span>Deploy</span>
-                            </button>
-                        </div>
-                    </div>
-
-                    <!-- Live Grabbed Extension Preview Deck -->
-                    <div id="grabbedExtensionCard">
-                        <div style="display: flex; align-items: flex-start; justify-content: space-between; gap: 14px;">
-                            <div style="display: flex; align-items: flex-start; gap: 12px; min-width: 0;">
-                                <div id="grabbedIcon" style="width: 44px; height: 44px; border-radius: 12px; overflow: hidden; flex-shrink: 0; background: transparent; display: flex; align-items: center; justify-content: center; border: none;">
-                                    <i class="fab fa-chrome" style="color: #4285f4; font-size: 22px;"></i>
-                                </div>
-                                <div style="min-width: 0;">
-                                    <div style="display: flex; align-items: center; gap: 8px; flex-wrap: wrap;">
-                                        <h4 id="grabbedTitle" style="font-size: 14px; font-weight: 800; color: var(--store-text); margin: 0;">Extension Title</h4>
-                                        <span id="grabbedVersionBadge" style="font-size: 10px; font-weight: 700; padding: 2px 8px; border-radius: 100px; background: rgba(66,133,244,0.15); color: #4285f4;">v1.0</span>
-                                    </div>
-                                    <div id="grabbedAuthor" style="font-size: 11.5px; color: var(--store-text-muted); margin-top: 2px;">Developer Name</div>
-                                    <div id="grabbedDesc" style="font-size: 12px; line-height: 1.4; color: var(--store-text-muted); margin-top: 4px; display: -webkit-box; -webkit-line-clamp: 2; line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden;">Extension description...</div>
-                                    <div id="grabbedPermsRow" style="display: flex; gap: 4px; flex-wrap: wrap; margin-top: 6px;"></div>
-                                </div>
-                            </div>
-                            <div style="display: flex; flex-direction: column; align-items: flex-end; gap: 6px; flex-shrink: 0;">
-                                <button id="btnInstallGrabbed" class="btn-sideload-action deploy-btn" style="padding: 0 16px; height: 34px; font-size: 12px;">
-                                    <i class="fas fa-plus"></i>
-                                    <span>Install</span>
-                                </button>
-                                <span id="grabbedSize" style="font-size: 11px; font-weight: 600; color: var(--store-text-dim);">-- MB</span>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- 1-Click Popular Sideload Chips -->
-                <div class="sideload-chips-bar">
-                    <span class="sideload-chips-label"><i class="fas fa-fire-flame-curved" style="color: #F97316;"></i> Quick:</span>
-                    <button class="sideload-chip-btn" onclick="document.getElementById('directInstallInput').value='cjpalhdlnbpafiamejdnhcphjbkeiagm'; document.getElementById('btnGrabData').click();">uBlock Origin</button>
-                    <button class="sideload-chip-btn" onclick="document.getElementById('directInstallInput').value='dhdgffkkebhmkfjojejmpbldmpobfkfo'; document.getElementById('btnGrabData').click();">Tampermonkey</button>
-                    <button class="sideload-chip-btn" onclick="document.getElementById('directInstallInput').value='nngceckbapebfimnlniiiahkandclblb'; document.getElementById('btnGrabData').click();">Bitwarden</button>
-                    <button class="sideload-chip-btn" onclick="document.getElementById('directInstallInput').value='bgnkhhnnamicmpeenaelnjfhikgbkllg'; document.getElementById('btnGrabData').click();">AdGuard</button>
-                    <button class="sideload-chip-btn" onclick="document.getElementById('directInstallInput').value='cofdbpoegempjloogbagkncekinflcnj'; document.getElementById('btnGrabData').click();">DeepL</button>
-                    <button class="sideload-chip-btn" onclick="document.getElementById('directInstallInput').value='mnjggqmfldjflhhcmfdnddlhafdhhime'; document.getElementById('btnGrabData').click();">SponsorBlock</button>
-                </div>
-            </div>
-
-        </section>
-
-        <!-- ══ Search, Sort & Category Filter Bar ══ -->
-        <section class="store-controls-section">
-            <div class="store-search-and-sort-row">
-                <!-- Search Pill -->
-                <div class="store-search-pill-box">
-                    <div class="store-search-badge-icon">
-                        <i class="fas fa-magnifying-glass"></i>
-                    </div>
-                    <input type="text" class="store-search-input" id="storeSearchInput" placeholder="Search extensions by name, feature, or keyword (Press '/' to focus)..." autocomplete="off" spellcheck="false">
-                    <button class="store-search-clear-btn" id="storeSearchClearBtn" title="Clear Search">
-                        <i class="fas fa-circle-xmark"></i>
-                    </button>
-                    <span class="store-search-kbd-badge">/</span>
-                </div>
-
-                <!-- Sort Dropdown Pill -->
-                <div class="store-sort-pill">
-                    <i class="fas fa-arrow-down-wide-short"></i>
-                    <select class="store-sort-select" id="storeSortSelect" title="Sort extensions">
-                        <option value="featured">✨ Editors' Pick</option>
-                        <option value="rating">⭐ Highest Rated</option>
-                        <option value="users">🔥 Most Popular</option>
-                        <option value="name">🔤 Name (A to Z)</option>
-                    </select>
-                </div>
-            </div>
-
-            <!-- Category Pills Bar with Dynamic Count Badges -->
-            <div class="store-category-bar" id="categoryBar">
-                <button class="cat-pill active" data-cat="all">
-                    <i class="fas fa-border-all"></i>
-                    <span>All Extensions</span>
                     <span class="cat-pill-count" id="count-all">0</span>
-                </button>
-                <button class="cat-pill" data-cat="featured">
-                    <i class="fas fa-wand-magic-sparkles"></i>
-                    <span>Featured</span>
-                    <span class="cat-pill-count" id="count-featured">0</span>
-                </button>
-                <button class="cat-pill" data-cat="adblock">
-                    <i class="fas fa-shield-halved"></i>
-                    <span>Ad Blockers & Privacy</span>
-                    <span class="cat-pill-count" id="count-adblock">0</span>
-                </button>
-                <button class="cat-pill" data-cat="productivity">
-                    <i class="fas fa-bolt-lightning"></i>
-                    <span>Productivity & AI</span>
-                    <span class="cat-pill-count" id="count-productivity">0</span>
-                </button>
-                <button class="cat-pill" data-cat="developer">
-                    <i class="fas fa-code"></i>
-                    <span>Developer Tools</span>
-                    <span class="cat-pill-count" id="count-developer">0</span>
-                </button>
-                <button class="cat-pill" data-cat="media">
-                    <i class="fas fa-circle-play"></i>
-                    <span>Video & Media</span>
-                    <span class="cat-pill-count" id="count-media">0</span>
-                </button>
-                <button class="cat-pill" data-cat="utilities">
-                    <i class="fas fa-sliders"></i>
-                    <span>Utilities</span>
-                    <span class="cat-pill-count" id="count-utilities">0</span>
-                </button>
-                <button class="cat-pill" data-cat="installed">
-                    <i class="fas fa-circle-check"></i>
-                    <span>Installed</span>
-                    <span class="cat-pill-count" id="count-installed">0</span>
-                </button>
-            </div>
-        </section>
-
-        <!-- ══ Catalog Header & Bento Cards Grid ══ -->
-        <section class="sp-tiles-section">
-            <div class="store-catalog-header">
-                <div class="catalog-title-wrap">
-                    <h2 class="catalog-section-title">Curated Extensions Catalog</h2>
-                    <span class="catalog-section-sub">Verified Chrome Web Store packages with sandboxed runtime and 1-click install.</span>
                 </div>
-                <span class="catalog-count-badge" id="gridCountBadge">Showing 32 extensions</span>
-            </div>
 
-            <!-- Extensions Bento Grid -->
-            <div class="store-extensions-grid" id="extensionsGrid" style="margin-top: 18px;">
-                <!-- Dynamically rendered by extension-store.js -->
-            </div>
-        </section>
+                <div class="nav-item cat-pill" data-cat="featured">
+                    <div class="cat-pill-left">
+                        <i class="fas fa-wand-magic-sparkles"></i>
+                        <span>Featured</span>
+                    </div>
+                    <span class="cat-pill-count" id="count-featured">0</span>
+                </div>
 
-    </main>
+                <div class="nav-item cat-pill" data-cat="adblock">
+                    <div class="cat-pill-left">
+                        <i class="fas fa-shield-halved"></i>
+                        <span>Privacy & Adblock</span>
+                    </div>
+                    <span class="cat-pill-count" id="count-adblock">0</span>
+                </div>
+
+                <div class="nav-item cat-pill" data-cat="productivity">
+                    <div class="cat-pill-left">
+                        <i class="fas fa-bolt-lightning"></i>
+                        <span>Productivity & AI</span>
+                    </div>
+                    <span class="cat-pill-count" id="count-productivity">0</span>
+                </div>
+
+                <div class="nav-item cat-pill" data-cat="developer">
+                    <div class="cat-pill-left">
+                        <i class="fas fa-code"></i>
+                        <span>Developer Tools</span>
+                    </div>
+                    <span class="cat-pill-count" id="count-developer">0</span>
+                </div>
+
+                <div class="nav-item cat-pill" data-cat="media">
+                    <div class="cat-pill-left">
+                        <i class="fas fa-circle-play"></i>
+                        <span>Video & Media</span>
+                    </div>
+                    <span class="cat-pill-count" id="count-media">0</span>
+                </div>
+
+                <div class="nav-item cat-pill" data-cat="utilities">
+                    <div class="cat-pill-left">
+                        <i class="fas fa-sliders"></i>
+                        <span>Utilities</span>
+                    </div>
+                    <span class="cat-pill-count" id="count-utilities">0</span>
+                </div>
+
+                <div class="nav-item cat-pill" data-cat="installed">
+                    <div class="cat-pill-left">
+                        <i class="fas fa-circle-check"></i>
+                        <span>Installed</span>
+                    </div>
+                    <span class="cat-pill-count" id="count-installed">0</span>
+                </div>
+            </nav>
+
+            <!-- Sidebar Footer Status Card -->
+            <div class="sidebar-footer">
+                <div class="sidebar-status-card">
+                    <div class="sidebar-status-title">
+                        <i class="fas fa-shield-halved" style="color: var(--accent);"></i>
+                        <span>Store Engine</span>
+                    </div>
+                    <div class="sidebar-status-item">
+                        <i class="fas fa-check"></i>
+                        <span>Manifest V3 & V2 Native</span>
+                    </div>
+                    <div class="sidebar-status-item">
+                        <i class="fas fa-lock"></i>
+                        <span>Zero-Trust Sandbox</span>
+                    </div>
+                </div>
+            </div>
+        </aside>
+
+        <!-- ── Main Scrollable Content ── -->
+        <main class="content" id="dashboard-main">
+
+            <!-- ══ Flagship Showroom Grid: Spotlight & Sideload Engine ══ -->
+            <section class="store-hero-grid">
+
+                <!-- 1. Featured Spotlight Showroom -->
+                <div class="store-spotlight-card" id="heroSpotlight">
+                    <div class="spotlight-top-bar">
+                        <div class="spotlight-label-chip">
+                            <i class="fas fa-wand-magic-sparkles"></i>
+                            <span>Featured Spotlight &bull; Editors' Choice</span>
+                        </div>
+                        <div class="spotlight-cycle-nav" id="spotlightDots">
+                            <span class="spotlight-dot active" data-idx="0" title="Dark Reader"></span>
+                            <span class="spotlight-dot" data-idx="1" title="uBlock Origin"></span>
+                            <span class="spotlight-dot" data-idx="2" title="Bitwarden"></span>
+                        </div>
+                    </div>
+
+                    <div class="spotlight-main-content">
+                        <div class="spotlight-icon-box" id="heroIconBox">
+                            <img src="assets/extension-icons/eimadpbcbfnmbkopoojfekhnkhdbieeh.png" alt="Dark Reader" class="real-ext-icon">
+                        </div>
+                        <div class="spotlight-info-col">
+                            <div class="spotlight-title-row">
+                                <span class="spotlight-title-text" id="heroTitle">Dark Reader</span>
+                                <span class="spotlight-verified-tag">
+                                    <i class="fas fa-certificate"></i> Verified Publisher
+                                </span>
+                            </div>
+                            <div class="spotlight-metrics-row">
+                                <span class="spotlight-stars" id="heroRating">
+                                    <i class="fas fa-star"></i> 4.8
+                                </span>
+                                <span id="heroReviews">(14,800+ reviews)</span>
+                                <span>&bull;</span>
+                                <span id="heroUsers">5M+ active users</span>
+                            </div>
+                            <div class="spotlight-desc-text" id="heroDesc">
+                                Invert bright colors and apply dark themes across all websites automatically with custom brightness, contrast, and font smoothing controls.
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="spotlight-footer-row">
+                        <div class="spotlight-tags-group">
+                            <span class="spotlight-pill-tag"><i class="fas fa-check"></i> Verified Safe</span>
+                            <span class="spotlight-pill-tag"><i class="fas fa-lock"></i> Zero Telemetry</span>
+                            <span class="spotlight-pill-tag"><i class="fas fa-code"></i> Open Source</span>
+                        </div>
+                        <div class="spotlight-btn-group">
+                            <button class="btn-spotlight-action secondary" id="heroDetailsBtn">
+                                <i class="fas fa-circle-info"></i>
+                                <span>Details</span>
+                            </button>
+                            <button class="btn-spotlight-action primary" id="heroInstallBtn" data-ext-id="eimadpbcbfnmbkopoojfekhnkhdbieeh">
+                                <i class="fas fa-plus"></i>
+                                <span>Add to Ocal</span>
+                            </button>
+                        </div>
+                    </div>
+                    <!-- Hidden holder for JS compatibility -->
+                    <div id="heroPreview" style="display: none;"></div>
+                </div>
+
+                <!-- 2. Chrome Web Store Direct Sideload Engine -->
+                <div class="store-sideload-card" id="sideloadCard">
+                    <div>
+                        <div class="sideload-header">
+                            <div class="sideload-title-box">
+                                <i class="fab fa-chrome"></i>
+                                <span>Chrome Web Store Sideload</span>
+                            </div>
+                            <span class="spotlight-pill-tag"><i class="fas fa-bolt"></i> Instant Deploy</span>
+                        </div>
+                        <div class="sideload-lead-text">
+                            Paste any Chrome Web Store link or 32-character ID to inspect live metadata from Google and deploy into your active profile:
+                        </div>
+
+                        <div class="sideload-input-box">
+                            <i class="fas fa-link" style="color: var(--accent); font-size: 13px;"></i>
+                            <input type="text" class="sideload-input-field" id="directInstallInput" placeholder="Paste Chrome URL or extension ID (e.g. nngceckbapebfimnlniiiahkandclblb)..." autocomplete="off" spellcheck="false">
+                            <div class="sideload-btn-pair">
+                                <button class="btn-sideload-action grab-btn" id="btnGrabData" title="Grab live metadata directly from Google Chrome extension">
+                                    <i class="fas fa-satellite-dish"></i>
+                                    <span>Grab Info</span>
+                                </button>
+                                <button class="btn-sideload-action deploy-btn" id="btnDirectInstall" title="Download & Install CRX directly">
+                                    <i class="fas fa-cloud-arrow-down"></i>
+                                    <span>Deploy</span>
+                                </button>
+                            </div>
+                        </div>
+
+                        <!-- Live Grabbed Extension Preview Deck -->
+                        <div id="grabbedExtensionCard">
+                            <div style="display: flex; align-items: flex-start; justify-content: space-between; gap: 14px;">
+                                <div style="display: flex; align-items: flex-start; gap: 12px; min-width: 0;">
+                                    <div id="grabbedIcon" style="width: 44px; height: 44px; border-radius: 12px; overflow: hidden; flex-shrink: 0; background: transparent; display: flex; align-items: center; justify-content: center; border: none;">
+                                        <i class="fab fa-chrome" style="color: #4285f4; font-size: 22px;"></i>
+                                    </div>
+                                    <div style="min-width: 0;">
+                                        <div style="display: flex; align-items: center; gap: 8px; flex-wrap: wrap;">
+                                            <h4 id="grabbedTitle" style="font-size: 14px; font-weight: 800; color: var(--store-text); margin: 0;">Extension Title</h4>
+                                            <span id="grabbedVersionBadge" style="font-size: 10px; font-weight: 700; padding: 2px 8px; border-radius: 100px; background: rgba(66,133,244,0.15); color: #4285f4;">v1.0</span>
+                                        </div>
+                                        <div id="grabbedAuthor" style="font-size: 11.5px; color: var(--store-text-muted); margin-top: 2px;">Developer Name</div>
+                                        <div id="grabbedDesc" style="font-size: 12px; line-height: 1.4; color: var(--store-text-muted); margin-top: 4px; display: -webkit-box; -webkit-line-clamp: 2; line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden;">Extension description...</div>
+                                        <div id="grabbedPermsRow" style="display: flex; gap: 4px; flex-wrap: wrap; margin-top: 6px;"></div>
+                                    </div>
+                                </div>
+                                <div style="display: flex; flex-direction: column; align-items: flex-end; gap: 6px; flex-shrink: 0;">
+                                    <button id="btnInstallGrabbed" class="btn-sideload-action deploy-btn" style="padding: 0 16px; height: 32px; font-size: 11.5px;">
+                                        <i class="fas fa-plus"></i>
+                                        <span>Install</span>
+                                    </button>
+                                    <span id="grabbedSize" style="font-size: 11px; font-weight: 600; color: var(--store-text-dim);">-- MB</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- 1-Click Popular Sideload Chips -->
+                    <div class="sideload-chips-bar">
+                        <span class="sideload-chips-label"><i class="fas fa-fire-flame-curved" style="color: #F97316;"></i> Quick:</span>
+                        <button class="sideload-chip-btn" onclick="document.getElementById('directInstallInput').value='cjpalhdlnbpafiamejdnhcphjbkeiagm'; document.getElementById('btnGrabData').click();">uBlock Origin</button>
+                        <button class="sideload-chip-btn" onclick="document.getElementById('directInstallInput').value='dhdgffkkebhmkfjojejmpbldmpobfkfo'; document.getElementById('btnGrabData').click();">Tampermonkey</button>
+                        <button class="sideload-chip-btn" onclick="document.getElementById('directInstallInput').value='nngceckbapebfimnlniiiahkandclblb'; document.getElementById('btnGrabData').click();">Bitwarden</button>
+                        <button class="sideload-chip-btn" onclick="document.getElementById('directInstallInput').value='bgnkhhnnamicmpeenaelnjfhikgbkllg'; document.getElementById('btnGrabData').click();">AdGuard</button>
+                        <button class="sideload-chip-btn" onclick="document.getElementById('directInstallInput').value='cofdbpoegempjloogbagkncekinflcnj'; document.getElementById('btnGrabData').click();">DeepL</button>
+                        <button class="sideload-chip-btn" onclick="document.getElementById('directInstallInput').value='mnjggqmfldjflhhcmfdnddlhafdhhime'; document.getElementById('btnGrabData').click();">SponsorBlock</button>
+                    </div>
+                </div>
+
+            </section>
+
+            <!-- ══ Curated Catalog Section ══ -->
+            <section class="store-catalog-section">
+                <div class="store-catalog-header">
+                    <div class="catalog-title-wrap">
+                        <h2 class="catalog-section-title">Verified Extensions Catalog</h2>
+                        <span class="catalog-section-sub">Sandboxed runtime with direct 1-click install from the Chrome Web Store network.</span>
+                    </div>
+                    <span class="catalog-count-badge" id="gridCountBadge">Loading extensions...</span>
+                </div>
+
+                <!-- Extensions Bento Grid -->
+                <div class="store-extensions-grid" id="extensionsGrid" style="margin-top: 14px;">
+                    <!-- Injected dynamically by extension-store.js -->
+                </div>
+            </section>
+
+        </main>
+    </div>
 
     <!-- ══ Extension Detail Modal Overlay ══ -->
     <div class="store-modal-overlay" id="detailModal">
@@ -2115,7 +1815,7 @@
 
     <!-- ══ Floating Toast Notification ══ -->
     <div class="store-toast" id="storeToast">
-        <i class="fas fa-circle-check" style="color: var(--accent, #15AC49); font-size: 16px;"></i>
+        <i class="fas fa-circle-check" style="color: var(--accent); font-size: 16px;"></i>
         <span id="toastMsg">Extension installed!</span>
     </div>
 
