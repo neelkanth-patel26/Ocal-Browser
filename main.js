@@ -9236,7 +9236,9 @@ ipcMain.on('update-setting', (e, key, val) => {
     broadcastSettings(userSettings);
 
     if (key === 'verticalTabsCollapsed') {
-        animateVerticalTabsCollapse(val);
+        if (mainWindow && !mainWindow.isDestroyed()) {
+            mainWindow.webContents.send('trigger-vt-collapse-anim', val);
+        }
     } else if (key === 'compactMode' || key === 'bookmarkBarMode' || key === 'sidebarMode' || key === 'tabLayout' || key === 'verticalTabsWidth') {
         updateViewBounds();
     }
@@ -9248,61 +9250,103 @@ ipcMain.on('update-setting', (e, key, val) => {
     }
 });
 
-let vtCurrentWidth = null;
-let vtAnimInterval = null;
-
-function animateVerticalTabsCollapse(targetCollapsed) {
-    if (vtAnimInterval) {
-        clearInterval(vtAnimInterval);
-        vtAnimInterval = null;
-    }
+function setViewBoundsVtWidth(overrideVtWidth) {
     if (!mainWindow || mainWindow.isDestroyed()) return;
-    if (userSettings.tabLayout !== 'vertical') {
-        updateViewBounds();
-        return;
+    const activeViewEntry = views.find(v => v.id === activeViewId);
+    if (!activeViewEntry || !activeViewEntry.view || activeViewEntry.view.webContents.isDestroyed()) return;
+    if (!mainWindow.getBrowserViews().includes(activeViewEntry.view)) return;
+
+    const isFullscreen = !!htmlFullscreenViewId || (!!mainWindow && !mainWindow.isDestroyed() && mainWindow.isFullScreen());
+    if (isFullscreen) return;
+
+    const { width, height } = mainWindow.getContentBounds();
+    const zoom = getOptimalZoomFactor();
+
+    const isHideMode = (userSettings.sidebarMode === 'hidden' || userSettings.sidebarMode === 'autohide');
+    const wSidebar = isHideMode ? 0 : Math.round(48 * zoom);
+    const wVertTabs = Math.round(overrideVtWidth * zoom);
+    const wSidebarTotal = wSidebar + wVertTabs;
+
+    const hTabs = 0;
+    const hNav = Math.round((userSettings.compactMode ? 40 : 52) * zoom);
+    let isBmVisible = bookmarkBarVisible;
+    if (userSettings.bookmarkBarMode === 'always') isBmVisible = true;
+    else if (userSettings.bookmarkBarMode === 'never') isBmVisible = false;
+    else if (userSettings.bookmarkBarMode === 'auto') {
+        const url = activeViewEntry.view.webContents.getURL();
+        isBmVisible = isHomeURL(url);
     }
-    const expandedWidth = userSettings.verticalTabsWidth || 240;
-    const collapsedWidth = 56;
-    const targetWidth = targetCollapsed ? collapsedWidth : expandedWidth;
+    const hBm = !isBmVisible ? 0 : Math.round((userSettings.compactMode ? 32 : 40) * zoom);
+    const yPadding = (process.platform === 'win32') ? 1 : 0;
+    const yOffset = hTabs + hNav + hBm + yPadding;
 
-    const startWidth = (vtCurrentWidth !== null) ? vtCurrentWidth : (targetCollapsed ? expandedWidth : collapsedWidth);
+    const sideGap = isHideMode ? 0 : Math.round(6 * zoom);
+    const topGap = isHideMode ? 0 : Math.round(4 * zoom);
+    const bottomGap = isHideMode ? 0 : Math.round(6 * zoom);
 
-    if (startWidth === targetWidth) {
-        vtCurrentWidth = null;
-        updateViewBounds();
-        return;
+    const xBase = Math.round(wSidebarTotal + sideGap);
+    const yBase = Math.round(yOffset + topGap);
+    const totalWidth = Math.max(10, Math.round(width - wSidebarTotal - (sideGap * 2)));
+    const totalHeight = Math.max(10, Math.round(height - yOffset - topGap - bottomGap));
+
+    if (activeViewEntry.isSplit && activeViewEntry.view2 && !activeViewEntry.view2.webContents.isDestroyed()) {
+        const gap = Math.round(4 * zoom);
+        if (activeViewEntry.splitDirection === 'vertical') {
+            const halfHeight = Math.floor((totalHeight - gap) / 2);
+            activeViewEntry.view.setBounds({
+                x: xBase,
+                y: yBase,
+                width: totalWidth,
+                height: halfHeight
+            });
+            if (mainWindow.getBrowserViews().includes(activeViewEntry.view2)) {
+                activeViewEntry.view2.setBounds({
+                    x: xBase,
+                    y: yBase + halfHeight + gap,
+                    width: totalWidth,
+                    height: totalHeight - halfHeight - gap
+                });
+            }
+        } else {
+            const halfWidth = Math.floor((totalWidth - gap) / 2);
+            activeViewEntry.view.setBounds({
+                x: xBase,
+                y: yBase,
+                width: halfWidth,
+                height: totalHeight
+            });
+            if (mainWindow.getBrowserViews().includes(activeViewEntry.view2)) {
+                activeViewEntry.view2.setBounds({
+                    x: xBase + halfWidth + gap,
+                    y: yBase,
+                    width: totalWidth - halfWidth - gap,
+                    height: totalHeight
+                });
+            }
+        }
+    } else {
+        activeViewEntry.view.setBounds({
+            x: xBase,
+            y: yBase,
+            width: totalWidth,
+            height: totalHeight
+        });
     }
-
-    const duration = 240; // 240ms aligns with CSS transition
-    const startTime = Date.now();
-    isAnimatingBounds = true;
-
-    vtAnimInterval = setInterval(() => {
-        if (!mainWindow || mainWindow.isDestroyed()) {
-            clearInterval(vtAnimInterval);
-            vtAnimInterval = null;
-            isAnimatingBounds = false;
-            vtCurrentWidth = null;
-            return;
-        }
-
-        const elapsed = Date.now() - startTime;
-        const progress = Math.min(1, elapsed / duration);
-        // Cubic ease-out: 1 - (1 - progress)^3
-        const eased = 1 - Math.pow(1 - progress, 3);
-        vtCurrentWidth = Math.round(startWidth + (targetWidth - startWidth) * eased);
-
-        updateViewBounds(null, vtCurrentWidth);
-
-        if (progress >= 1) {
-            clearInterval(vtAnimInterval);
-            vtAnimInterval = null;
-            isAnimatingBounds = false;
-            vtCurrentWidth = null;
-            updateViewBounds();
-        }
-    }, 16);
 }
+
+// ── Hardware V-Sync Synchronized Vertical Tabs Collapse/Expand ──
+ipcMain.on('vt-anim-frame', (e, currentVtWidth) => {
+    isAnimatingBounds = true;
+    setViewBoundsVtWidth(currentVtWidth);
+});
+
+ipcMain.on('vt-anim-done', (e, targetCollapsed) => {
+    userSettings.verticalTabsCollapsed = targetCollapsed;
+    saveSettings(userSettings);
+    broadcastSettings(userSettings);
+    isAnimatingBounds = false;
+    updateViewBounds();
+});
 
 ipcMain.on('toggle-vertical-tabs', () => {
     userSettings.tabLayout = userSettings.tabLayout === 'vertical' ? 'horizontal' : 'vertical';
@@ -9312,10 +9356,13 @@ ipcMain.on('toggle-vertical-tabs', () => {
 });
 
 ipcMain.on('toggle-vertical-tabs-collapse', () => {
-    userSettings.verticalTabsCollapsed = !userSettings.verticalTabsCollapsed;
+    const targetCollapsed = !userSettings.verticalTabsCollapsed;
+    userSettings.verticalTabsCollapsed = targetCollapsed;
     saveSettings(userSettings);
     broadcastSettings();
-    animateVerticalTabsCollapse(userSettings.verticalTabsCollapsed);
+    if (mainWindow && !mainWindow.isDestroyed()) {
+        mainWindow.webContents.send('trigger-vt-collapse-anim', targetCollapsed);
+    }
 });
 
 // ── Smart Media Ducking State Sync ──

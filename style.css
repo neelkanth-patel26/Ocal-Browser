@@ -5081,7 +5081,6 @@ body.tab-layout-vertical {
     "sidebar vert-tabs nav"
     "sidebar vert-tabs bookmarks"
     "sidebar vert-tabs content" !important;
-  transition: --vt-width 0.24s cubic-bezier(0.16, 1, 0.3, 1), grid-template-columns 0.24s cubic-bezier(0.16, 1, 0.3, 1) !important;
 }
 
 body.tab-layout-vertical.vertical-tabs-collapsed {
@@ -5122,7 +5121,30 @@ body.tab-layout-vertical .nav-window-controls {
   box-sizing: border-box;
   gap: 8px;
   font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, sans-serif;
-  transition: width 0.24s cubic-bezier(0.16, 1, 0.3, 1), max-width 0.24s cubic-bezier(0.16, 1, 0.3, 1), min-width 0.24s cubic-bezier(0.16, 1, 0.3, 1), padding 0.24s cubic-bezier(0.16, 1, 0.3, 1), background 0.2s ease;
+}
+
+/* While animating, disable CSS transitions to lock with requestAnimationFrame */
+body.vt-is-animating,
+body.vt-is-animating *,
+body.vt-is-animating .vertical-tabs-sidebar,
+body.vt-is-animating .vt-tab-item,
+body.vt-is-animating .vt-new-tab-btn,
+body.vt-is-animating .vt-footer-btn {
+  transition: none !important;
+}
+
+/* Tab text elements opacity controlled smoothly by --vt-text-opacity */
+body.tab-layout-vertical .vt-tab-info,
+body.tab-layout-vertical .vt-btn-text,
+body.tab-layout-vertical .vt-shortcut-hint,
+body.tab-layout-vertical .vt-header-title,
+body.tab-layout-vertical .vt-brand-badge,
+body.tab-layout-vertical .vt-tab-count,
+body.tab-layout-vertical .vt-footer-label,
+body.tab-layout-vertical .vt-tab-close {
+  opacity: var(--vt-text-opacity, 1);
+  white-space: nowrap;
+  overflow: hidden;
 }
 
 body.tab-layout-vertical .vertical-tabs-sidebar {
@@ -5830,20 +5852,20 @@ body.tab-layout-vertical.vertical-tabs-collapsed .vertical-tabs-sidebar {
   align-items: center;
 }
 
-body.tab-layout-vertical.vertical-tabs-collapsed .vt-header-title,
-body.tab-layout-vertical.vertical-tabs-collapsed .vt-tab-count,
-body.tab-layout-vertical.vertical-tabs-collapsed .vt-btn-text,
-body.tab-layout-vertical.vertical-tabs-collapsed .vt-shortcut-hint,
-body.tab-layout-vertical.vertical-tabs-collapsed .vt-tab-info,
-body.tab-layout-vertical.vertical-tabs-collapsed .vt-tab-close,
-body.tab-layout-vertical.vertical-tabs-collapsed .vt-group-name,
-body.tab-layout-vertical.vertical-tabs-collapsed .vt-group-badge,
-body.tab-layout-vertical.vertical-tabs-collapsed .vt-group-chevron,
-body.tab-layout-vertical.vertical-tabs-collapsed .vt-footer-label,
-body.tab-layout-vertical.vertical-tabs-collapsed .vt-split-title,
-body.tab-layout-vertical.vertical-tabs-collapsed .vt-split-divider,
-body.tab-layout-vertical.vertical-tabs-collapsed .vt-audio-icon,
-body.tab-layout-vertical.vertical-tabs-collapsed .vt-brand-badge {
+body.tab-layout-vertical.vertical-tabs-collapsed:not(.vt-is-animating) .vt-header-title,
+body.tab-layout-vertical.vertical-tabs-collapsed:not(.vt-is-animating) .vt-tab-count,
+body.tab-layout-vertical.vertical-tabs-collapsed:not(.vt-is-animating) .vt-btn-text,
+body.tab-layout-vertical.vertical-tabs-collapsed:not(.vt-is-animating) .vt-shortcut-hint,
+body.tab-layout-vertical.vertical-tabs-collapsed:not(.vt-is-animating) .vt-tab-info,
+body.tab-layout-vertical.vertical-tabs-collapsed:not(.vt-is-animating) .vt-tab-close,
+body.tab-layout-vertical.vertical-tabs-collapsed:not(.vt-is-animating) .vt-group-name,
+body.tab-layout-vertical.vertical-tabs-collapsed:not(.vt-is-animating) .vt-group-badge,
+body.tab-layout-vertical.vertical-tabs-collapsed:not(.vt-is-animating) .vt-group-chevron,
+body.tab-layout-vertical.vertical-tabs-collapsed:not(.vt-is-animating) .vt-footer-label,
+body.tab-layout-vertical.vertical-tabs-collapsed:not(.vt-is-animating) .vt-split-title,
+body.tab-layout-vertical.vertical-tabs-collapsed:not(.vt-is-animating) .vt-split-divider,
+body.tab-layout-vertical.vertical-tabs-collapsed:not(.vt-is-animating) .vt-audio-icon,
+body.tab-layout-vertical.vertical-tabs-collapsed:not(.vt-is-animating) .vt-brand-badge {
   display: none !important;
 }
 

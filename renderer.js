@@ -1472,7 +1472,12 @@ document.addEventListener('DOMContentLoaded', () => {
     if (vtNewTabBtn) vtNewTabBtn.onclick = () => window.electronAPI.newTab();
 
     const vtToggleCollapseBtn = document.getElementById('vt-toggle-collapse-btn');
-    if (vtToggleCollapseBtn) vtToggleCollapseBtn.onclick = () => window.electronAPI.send('toggle-vertical-tabs-collapse');
+    if (vtToggleCollapseBtn) {
+        vtToggleCollapseBtn.onclick = () => {
+            const isCurrentlyCollapsed = document.body.classList.contains('vertical-tabs-collapsed');
+            animateVerticalTabs(!isCurrentlyCollapsed);
+        };
+    }
 
     const toggleVtTopBtn = document.getElementById('toggle-vertical-tabs-top-btn');
     if (toggleVtTopBtn) toggleVtTopBtn.onclick = () => window.electronAPI.send('toggle-vertical-tabs');
@@ -2115,9 +2120,11 @@ function applyGlobalSettings(s) {
     // ── Vertical Tabs Layout Settings ──
     const isVertical = s.tabLayout === 'vertical';
     document.body.classList.toggle('tab-layout-vertical', isVertical);
-    document.body.classList.toggle('vertical-tabs-collapsed', isVertical && !!s.verticalTabsCollapsed);
-    if (s.verticalTabsWidth) {
-        document.documentElement.style.setProperty('--vt-width', `${s.verticalTabsWidth}px`);
+    if (!document.body.classList.contains('vt-is-animating')) {
+        document.body.classList.toggle('vertical-tabs-collapsed', isVertical && !!s.verticalTabsCollapsed);
+        const vtW = s.verticalTabsCollapsed ? 56 : (s.verticalTabsWidth || 240);
+        document.documentElement.style.setProperty('--vt-width', `${vtW}px`);
+        document.documentElement.style.setProperty('--vt-text-opacity', s.verticalTabsCollapsed ? '0' : '1');
     }
 
     const vtCollapseIcon = document.getElementById('vt-collapse-icon');
@@ -3250,3 +3257,87 @@ function getEmojiSvgUrl(emoji) {
     });
 })();
 
+
+
+// ── Ultra-Smooth V-Sync Butter Vertical Tabs Resizing Engine ──
+let vtAnimRaf = null;
+
+function animateVerticalTabs(targetCollapsed) {
+    if (vtAnimRaf) {
+        cancelAnimationFrame(vtAnimRaf);
+        vtAnimRaf = null;
+    }
+
+    const expandedW = (lastSettings && lastSettings.verticalTabsWidth) ? lastSettings.verticalTabsWidth : 240;
+    const collapsedW = 56;
+    const targetW = targetCollapsed ? collapsedW : expandedW;
+
+    // Read current exact pixel width
+    const currentStyleW = parseFloat(getComputedStyle(document.documentElement).getPropertyValue('--vt-width')) || (targetCollapsed ? expandedW : collapsedW);
+    const startW = currentStyleW;
+
+    if (Math.abs(startW - targetW) < 1) {
+        document.documentElement.style.setProperty('--vt-width', `${targetW}px`);
+        document.documentElement.style.setProperty('--vt-text-opacity', targetCollapsed ? '0' : '1');
+        document.body.classList.toggle('vertical-tabs-collapsed', targetCollapsed);
+        if (lastSettings) lastSettings.verticalTabsCollapsed = targetCollapsed;
+        window.electronAPI.send('vt-anim-frame', targetW);
+        window.electronAPI.send('vt-anim-done', targetCollapsed);
+        return;
+    }
+
+    // Set animation flag to prevent CSS transitions from conflicting with rAF
+    document.body.classList.add('vt-is-animating');
+    if (!targetCollapsed) {
+        document.body.classList.remove('vertical-tabs-collapsed');
+    }
+
+    const duration = 220; // 220ms gold standard butter duration
+    const startTime = performance.now();
+
+    function step(now) {
+        const elapsed = now - startTime;
+        const progress = Math.min(1, elapsed / duration);
+
+        // Quartic ease out: 1 - (1 - t)^4 (gentle start, silky glide into target)
+        const eased = 1 - Math.pow(1 - progress, 4);
+        const currentW = Math.round(startW + (targetW - startW) * eased);
+
+        // Calculate smooth text opacity
+        const textOpacity = targetCollapsed
+            ? Math.max(0, Math.min(1, (currentW - 90) / 90))
+            : Math.max(0, Math.min(1, (currentW - 90) / 90));
+
+        // Update CSS variables for layout and text opacity
+        document.documentElement.style.setProperty('--vt-width', `${currentW}px`);
+        document.documentElement.style.setProperty('--vt-text-opacity', textOpacity.toFixed(3));
+
+        // Hardware V-Sync synchronized setBounds on native BrowserView
+        window.electronAPI.send('vt-anim-frame', currentW);
+
+        if (progress < 1) {
+            vtAnimRaf = requestAnimationFrame(step);
+        } else {
+            vtAnimRaf = null;
+            document.body.classList.remove('vt-is-animating');
+            document.body.classList.toggle('vertical-tabs-collapsed', targetCollapsed);
+            document.documentElement.style.setProperty('--vt-width', `${targetW}px`);
+            document.documentElement.style.setProperty('--vt-text-opacity', targetCollapsed ? '0' : '1');
+            if (lastSettings) lastSettings.verticalTabsCollapsed = targetCollapsed;
+
+            const vtCollapseIcon = document.getElementById('vt-collapse-icon');
+            if (vtCollapseIcon) {
+                vtCollapseIcon.className = targetCollapsed ? 'fas fa-chevron-right' : 'fas fa-chevron-left';
+            }
+
+            window.electronAPI.send('vt-anim-frame', targetW);
+            window.electronAPI.send('vt-anim-done', targetCollapsed);
+        }
+    }
+
+    vtAnimRaf = requestAnimationFrame(step);
+}
+
+window.electronAPI.on('trigger-vt-collapse-anim', (e, targetCollapsed) => {
+    animateVerticalTabs(targetCollapsed);
+});
