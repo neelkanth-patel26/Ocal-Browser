@@ -4332,6 +4332,14 @@ window.handleAmbientDuckingToggle = function(checked) {
     syncAmbientSettings();
 };
 
+if (window.electronAPI && window.electronAPI.on && !window._ambientDuckingBound) {
+    window._ambientDuckingBound = true;
+    window.electronAPI.on('ambient-ducking-state', (e, isDucked) => {
+        localAmbientState.isDucked = !!isDucked;
+        updateAmbientUIState();
+    });
+}
+
 window.handleImportCustomAmbientTrack = async function() {
     if (window.electronAPI && window.electronAPI.selectCustomAmbientFile) {
         try {
@@ -4374,25 +4382,41 @@ function updateAmbientUIState() {
     const heroTitle = document.getElementById('ambient-hero-track-title');
     const heroPlayIcon = document.getElementById('ambient-hero-play-icon');
 
+    const isActuallyPlaying = localAmbientState.enabled && !localAmbientState.isDucked;
+
     if (toggleCb) toggleCb.checked = localAmbientState.enabled;
     if (card) {
         card.classList.toggle('ambient-active', localAmbientState.enabled);
     }
     if (badge) {
         if (localAmbientState.enabled) {
-            badge.innerHTML = '<i class="fas fa-wave-square"></i> PLAYING LOOP';
-            badge.classList.add('badge-playing');
+            if (localAmbientState.isDucked) {
+                badge.innerHTML = '<span class="status-dot" style="background:#F59E0B;box-shadow:0 0 8px rgba(245,158,11,0.6);"></span><span>AUTO-DUCKED</span>';
+                badge.className = 'engine-active-indicator badge-ducked';
+            } else {
+                badge.innerHTML = '<span class="status-dot"></span><span>PLAYING LOOP</span>';
+                badge.className = 'engine-active-indicator badge-playing';
+            }
         } else {
-            badge.innerHTML = '<i class="fas fa-music"></i> AMBIENT STUDIO';
-            badge.classList.remove('badge-playing');
+            badge.innerHTML = '<span class="status-dot" style="background:#6B7280;"></span><span>Studio</span>';
+            badge.className = 'engine-active-indicator';
         }
     }
     if (statState) {
-        statState.textContent = localAmbientState.enabled ? 'Playing' : 'Ready';
-        statState.style.color = localAmbientState.enabled ? 'var(--accent)' : 'inherit';
+        if (localAmbientState.enabled) {
+            statState.textContent = localAmbientState.isDucked ? 'Auto-Ducked' : 'Playing';
+            statState.style.color = localAmbientState.isDucked ? '#F59E0B' : 'var(--accent)';
+        } else {
+            statState.textContent = 'Ready';
+            statState.style.color = 'inherit';
+        }
     }
     if (statStateBadge) {
-        statStateBadge.className = localAmbientState.enabled ? 'sp-badge sp-badge-lime' : 'sp-badge sp-badge-gray';
+        if (localAmbientState.enabled) {
+            statStateBadge.className = localAmbientState.isDucked ? 'sp-badge sp-badge-amber' : 'sp-badge sp-badge-lime';
+        } else {
+            statStateBadge.className = 'sp-badge sp-badge-gray';
+        }
     }
     const found = currentAmbientTracks.find(t => t.fileName === localAmbientState.track || t.id === localAmbientState.track);
     const trackName = found ? (found.name || found.fileName) : (localAmbientState.track || 'Ocal Theme');
@@ -4407,16 +4431,16 @@ function updateAmbientUIState() {
     }
 
     if (vinylDisc) {
-        vinylDisc.classList.toggle('spinning', localAmbientState.enabled);
+        vinylDisc.classList.toggle('spinning', isActuallyPlaying);
     }
     if (eqBars) {
-        eqBars.classList.toggle('active', localAmbientState.enabled);
+        eqBars.classList.toggle('active', isActuallyPlaying);
     }
     if (heroPlayIcon) {
-        heroPlayIcon.className = localAmbientState.enabled ? 'fas fa-pause' : 'fas fa-play';
+        heroPlayIcon.className = localAmbientState.enabled ? (localAmbientState.isDucked ? 'fas fa-volume-xmark' : 'fas fa-pause') : 'fas fa-play';
     }
     if (pulseCard) {
-        const isRunning = localAmbientState.enabled || (localPageFXState && localPageFXState.enabled && localPageFXState.effect !== 'none');
+        const isRunning = isActuallyPlaying || (localPageFXState && localPageFXState.enabled && localPageFXState.effect !== 'none');
         pulseCard.style.opacity = isRunning ? '1' : '0.7';
     }
 }
@@ -4518,6 +4542,13 @@ async function renderAmbientSoundSettings(s) {
             smartDucking: s.ambientSound.smartDucking !== false,
             duckVolume: 0.0
         };
+    }
+
+    // Load initial ducking state from main process
+    if (window.electronAPI && window.electronAPI.invoke) {
+        try {
+            localAmbientState.isDucked = await window.electronAPI.invoke('get-ambient-ducking-state');
+        } catch (e) {}
     }
 
     // Load available tracks from main process

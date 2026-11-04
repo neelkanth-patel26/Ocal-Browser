@@ -3726,8 +3726,8 @@ function isHomeURL(url) {
     return url.startsWith('file://') && url.toLowerCase().includes('home.html');
 }
 
-function updateViewBounds(forcedUrl = null) {
-    if (typeof isAnimatingBounds !== 'undefined' && isAnimatingBounds) {
+function updateViewBounds(forcedUrl = null, overrideVtWidth = null) {
+    if (typeof isAnimatingBounds !== 'undefined' && isAnimatingBounds && overrideVtWidth === null) {
         if (!updateViewBounds._animStart) updateViewBounds._animStart = Date.now();
         if (Date.now() - updateViewBounds._animStart > 600) {
             isAnimatingBounds = false;
@@ -3735,7 +3735,7 @@ function updateViewBounds(forcedUrl = null) {
         } else {
             return;
         }
-    } else {
+    } else if (overrideVtWidth === null) {
         updateViewBounds._animStart = null;
     }
     if (!mainWindow || mainWindow.isDestroyed()) return;
@@ -3773,7 +3773,8 @@ function updateViewBounds(forcedUrl = null) {
 
     const isHideMode = (isFullscreen || userSettings.sidebarMode === 'hidden' || userSettings.sidebarMode === 'autohide');
     let wSidebar = isHideMode ? 0 : Math.round(48 * zoom);
-    const wVertTabs = (isFullscreen || !isVerticalTabs) ? 0 : Math.round((userSettings.verticalTabsCollapsed ? 56 : (userSettings.verticalTabsWidth || 240)) * zoom);
+    const baseVt = (overrideVtWidth !== null) ? overrideVtWidth : (userSettings.verticalTabsCollapsed ? 56 : (userSettings.verticalTabsWidth || 240));
+    const wVertTabs = (isFullscreen || !isVerticalTabs) ? 0 : Math.round(baseVt * zoom);
     const wSidebarTotal = wSidebar + wVertTabs;
 
     lastYOffset = yOffset;
@@ -9234,7 +9235,11 @@ ipcMain.on('update-setting', (e, key, val) => {
     // Broadcast to all relevant views
     broadcastSettings(userSettings);
 
-    if (key === 'compactMode' || key === 'bookmarkBarMode' || key === 'sidebarMode' || key === 'tabLayout' || key === 'verticalTabsCollapsed' || key === 'verticalTabsWidth') updateViewBounds();
+    if (key === 'verticalTabsCollapsed') {
+        animateVerticalTabsCollapse(val);
+    } else if (key === 'compactMode' || key === 'bookmarkBarMode' || key === 'sidebarMode' || key === 'tabLayout' || key === 'verticalTabsWidth') {
+        updateViewBounds();
+    }
     if (key === 'dns') console.log(`[DNS] Global resolver updated to: ${val}`);
     if (key === 'batterySaver') applyBatterySaverGlobally();
 
@@ -9242,6 +9247,62 @@ ipcMain.on('update-setting', (e, key, val) => {
         applyShieldSettings();
     }
 });
+
+let vtCurrentWidth = null;
+let vtAnimInterval = null;
+
+function animateVerticalTabsCollapse(targetCollapsed) {
+    if (vtAnimInterval) {
+        clearInterval(vtAnimInterval);
+        vtAnimInterval = null;
+    }
+    if (!mainWindow || mainWindow.isDestroyed()) return;
+    if (userSettings.tabLayout !== 'vertical') {
+        updateViewBounds();
+        return;
+    }
+    const expandedWidth = userSettings.verticalTabsWidth || 240;
+    const collapsedWidth = 56;
+    const targetWidth = targetCollapsed ? collapsedWidth : expandedWidth;
+
+    const startWidth = (vtCurrentWidth !== null) ? vtCurrentWidth : (targetCollapsed ? expandedWidth : collapsedWidth);
+
+    if (startWidth === targetWidth) {
+        vtCurrentWidth = null;
+        updateViewBounds();
+        return;
+    }
+
+    const duration = 240; // 240ms aligns with CSS transition
+    const startTime = Date.now();
+    isAnimatingBounds = true;
+
+    vtAnimInterval = setInterval(() => {
+        if (!mainWindow || mainWindow.isDestroyed()) {
+            clearInterval(vtAnimInterval);
+            vtAnimInterval = null;
+            isAnimatingBounds = false;
+            vtCurrentWidth = null;
+            return;
+        }
+
+        const elapsed = Date.now() - startTime;
+        const progress = Math.min(1, elapsed / duration);
+        // Cubic ease-out: 1 - (1 - progress)^3
+        const eased = 1 - Math.pow(1 - progress, 3);
+        vtCurrentWidth = Math.round(startWidth + (targetWidth - startWidth) * eased);
+
+        updateViewBounds(null, vtCurrentWidth);
+
+        if (progress >= 1) {
+            clearInterval(vtAnimInterval);
+            vtAnimInterval = null;
+            isAnimatingBounds = false;
+            vtCurrentWidth = null;
+            updateViewBounds();
+        }
+    }, 16);
+}
 
 ipcMain.on('toggle-vertical-tabs', () => {
     userSettings.tabLayout = userSettings.tabLayout === 'vertical' ? 'horizontal' : 'vertical';
@@ -9254,7 +9315,30 @@ ipcMain.on('toggle-vertical-tabs-collapse', () => {
     userSettings.verticalTabsCollapsed = !userSettings.verticalTabsCollapsed;
     saveSettings(userSettings);
     broadcastSettings();
-    updateViewBounds();
+    animateVerticalTabsCollapse(userSettings.verticalTabsCollapsed);
+});
+
+// ── Smart Media Ducking State Sync ──
+let isAmbientCurrentlyDucked = false;
+
+ipcMain.handle('get-ambient-ducking-state', () => isAmbientCurrentlyDucked);
+
+ipcMain.on('ambient-ducking-changed', (e, isDucked) => {
+    isAmbientCurrentlyDucked = !!isDucked;
+    views.forEach(v => {
+        if (v.view && !v.view.webContents.isDestroyed()) {
+            v.view.webContents.send('ambient-ducking-state', isAmbientCurrentlyDucked);
+        }
+        if (v.isSplit && v.view2 && !v.view2.webContents.isDestroyed()) {
+            v.view2.webContents.send('ambient-ducking-state', isAmbientCurrentlyDucked);
+        }
+    });
+    if (sidebarOverlayView && !sidebarOverlayView.webContents.isDestroyed()) {
+        sidebarOverlayView.webContents.send('ambient-ducking-state', isAmbientCurrentlyDucked);
+    }
+    if (typeof aiSidebarView !== 'undefined' && aiSidebarView && !aiSidebarView.webContents.isDestroyed()) {
+        aiSidebarView.webContents.send('ambient-ducking-state', isAmbientCurrentlyDucked);
+    }
 });
 
 

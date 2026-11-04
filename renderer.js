@@ -725,6 +725,7 @@ window.electronAPI.onTabsChanged((data) => {
     if (lastSettings) applyGlobalSettings(lastSettings);
     renderTabs();
     if (activeTabId) updateMediaMasterIcon(activeTabId);
+    if (typeof checkTabAudioDucking === 'function') checkTabAudioDucking();
 });
 
 window.electronAPI.onUpdateURL((data) => {
@@ -768,6 +769,15 @@ window.electronAPI.on('tab-audio-status-changed', (e, { id, isAudible, muted }) 
         if (muted !== undefined) tab.muted = muted;
         renderTabs();
     }
+    if (typeof checkTabAudioDucking === 'function') checkTabAudioDucking();
+});
+
+window.electronAPI.on('tab-media-status-changed', (e, { id, isPlaying }) => {
+    const tab = tabs.find(t => t.id === id);
+    if (tab) {
+        tab.isPlayingMedia = isPlaying;
+    }
+    if (typeof checkTabAudioDucking === 'function') checkTabAudioDucking();
 });
 
 window.electronAPI.on('split-side-focused', (e, { tabId, side }) => {
@@ -2137,12 +2147,144 @@ function applyGlobalSettings(s) {
 }
 
 let globalAmbientAudio = null;
+let ambientFadeInterval = null;
+let isAmbientDucked = false;
+let ambientTargetVolume = 0.35;
+
+function checkTabAudioDucking() {
+    if (!lastSettings || !lastSettings.ambientSound || !lastSettings.ambientSound.enabled) {
+        return;
+    }
+    if (lastSettings.ambientSound.smartDucking === false) {
+        if (isAmbientDucked) {
+            handleAmbientDucking(false);
+        }
+        return;
+    }
+    const isAnyTabNoisy = Array.isArray(tabs) && tabs.some(t => (t.audible || t.isPlayingMedia) && !t.muted);
+    handleAmbientDucking(isAnyTabNoisy);
+}
+
+function handleAmbientDucking(shouldDuck) {
+    if (!lastSettings || !lastSettings.ambientSound || !lastSettings.ambientSound.enabled) {
+        isAmbientDucked = false;
+        return;
+    }
+    if (lastSettings.ambientSound.smartDucking === false) {
+        if (isAmbientDucked) {
+            isAmbientDucked = false;
+            if (globalAmbientAudio && globalAmbientAudio.paused) {
+                globalAmbientAudio.volume = Math.max(0, Math.min(1, ambientTargetVolume));
+                globalAmbientAudio.play().catch(e => console.warn(e));
+            }
+            if (window.electronAPI && window.electronAPI.send) {
+                window.electronAPI.send('ambient-ducking-changed', false);
+            }
+        }
+        return;
+    }
+
+    if (shouldDuck) {
+        if (isAmbientDucked) return;
+        isAmbientDucked = true;
+
+        if (window.electronAPI && window.electronAPI.send) {
+            window.electronAPI.send('ambient-ducking-changed', true);
+        }
+
+        if (!globalAmbientAudio) return;
+
+        if (ambientFadeInterval) {
+            clearInterval(ambientFadeInterval);
+            ambientFadeInterval = null;
+        }
+
+        // Smooth fade-out over 450ms (18 steps of 25ms)
+        const fadeDuration = 450;
+        const intervalTime = 25;
+        const totalSteps = Math.round(fadeDuration / intervalTime);
+        const startVol = globalAmbientAudio.volume;
+        let step = 0;
+
+        ambientFadeInterval = setInterval(() => {
+            step++;
+            const progress = Math.min(1, step / totalSteps);
+            // Ease-out
+            const eased = 1 - Math.pow(1 - progress, 2);
+            const currentVol = Math.max(0, startVol * (1 - eased));
+            if (globalAmbientAudio) {
+                globalAmbientAudio.volume = currentVol;
+            }
+            if (step >= totalSteps || currentVol <= 0.005) {
+                clearInterval(ambientFadeInterval);
+                ambientFadeInterval = null;
+                if (globalAmbientAudio) {
+                    globalAmbientAudio.volume = 0;
+                    globalAmbientAudio.pause();
+                }
+            }
+        }, intervalTime);
+
+    } else {
+        if (!isAmbientDucked) return;
+        isAmbientDucked = false;
+
+        if (window.electronAPI && window.electronAPI.send) {
+            window.electronAPI.send('ambient-ducking-changed', false);
+        }
+
+        if (!globalAmbientAudio) return;
+
+        if (ambientFadeInterval) {
+            clearInterval(ambientFadeInterval);
+            ambientFadeInterval = null;
+        }
+
+        const targetVol = typeof ambientTargetVolume === 'number' ? ambientTargetVolume : (lastSettings.ambientSound.volume || 0.35);
+        if (targetVol <= 0) return;
+
+        globalAmbientAudio.volume = 0;
+        const p = globalAmbientAudio.play();
+        if (p !== undefined) {
+            p.catch(e => console.warn('[Ambient] Resume play warning:', e));
+        }
+
+        // Smooth fade-in over 650ms (26 steps of 25ms)
+        const fadeDuration = 650;
+        const intervalTime = 25;
+        const totalSteps = Math.round(fadeDuration / intervalTime);
+        let step = 0;
+
+        ambientFadeInterval = setInterval(() => {
+            step++;
+            const progress = Math.min(1, step / totalSteps);
+            // Ease-in
+            const eased = Math.pow(progress, 1.4);
+            const currentVol = Math.min(targetVol, targetVol * eased);
+            if (globalAmbientAudio) {
+                globalAmbientAudio.volume = currentVol;
+            }
+            if (step >= totalSteps || currentVol >= targetVol - 0.005) {
+                clearInterval(ambientFadeInterval);
+                ambientFadeInterval = null;
+                if (globalAmbientAudio) {
+                    globalAmbientAudio.volume = Math.max(0, Math.min(1, targetVol));
+                }
+            }
+        }, intervalTime);
+    }
+}
 
 function syncGlobalAmbientSound(ambient) {
     if (!ambient || !ambient.enabled) {
+        if (ambientFadeInterval) {
+            clearInterval(ambientFadeInterval);
+            ambientFadeInterval = null;
+        }
         if (globalAmbientAudio) {
             globalAmbientAudio.pause();
         }
+        isAmbientDucked = false;
         return;
     }
 
@@ -2160,8 +2302,29 @@ function syncGlobalAmbientSound(ambient) {
         globalAmbientAudio.load();
     }
 
-    const targetVol = typeof ambient.volume === 'number' ? ambient.volume : 0.35;
-    globalAmbientAudio.volume = Math.max(0, Math.min(1, targetVol));
+    ambientTargetVolume = typeof ambient.volume === 'number' ? ambient.volume : 0.35;
+
+    // Check if any tab is currently playing audio before starting or resetting volume
+    const isAnyTabNoisy = Array.isArray(tabs) && tabs.some(t => (t.audible || t.isPlayingMedia) && !t.muted);
+    if (ambient.smartDucking !== false && isAnyTabNoisy) {
+        isAmbientDucked = true;
+        if (window.electronAPI && window.electronAPI.send) {
+            window.electronAPI.send('ambient-ducking-changed', true);
+        }
+        if (globalAmbientAudio) {
+            globalAmbientAudio.volume = 0;
+            globalAmbientAudio.pause();
+        }
+        return;
+    }
+
+    if (isAmbientDucked) {
+        return;
+    }
+
+    if (!ambientFadeInterval) {
+        globalAmbientAudio.volume = Math.max(0, Math.min(1, ambientTargetVolume));
+    }
 
     if (globalAmbientAudio.paused) {
         globalAmbientAudio.play().catch(e => console.warn('[Ambient] Global playback policy:', e));

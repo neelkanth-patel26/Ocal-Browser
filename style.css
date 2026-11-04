@@ -5066,6 +5066,12 @@ body.tab-layout-vertical .vt-nav-toggle-btn {
   display: flex !important;
 }
 
+@property --vt-width {
+  syntax: '<length>';
+  inherits: true;
+  initial-value: 240px;
+}
+
 /* When Vertical Tabs Layout is Active */
 body.tab-layout-vertical {
   grid-template-columns: var(--sidebar-w, 48px) var(--vt-width, 240px) 1fr !important;
@@ -5075,6 +5081,7 @@ body.tab-layout-vertical {
     "sidebar vert-tabs nav"
     "sidebar vert-tabs bookmarks"
     "sidebar vert-tabs content" !important;
+  transition: --vt-width 0.24s cubic-bezier(0.16, 1, 0.3, 1), grid-template-columns 0.24s cubic-bezier(0.16, 1, 0.3, 1) !important;
 }
 
 body.tab-layout-vertical.vertical-tabs-collapsed {
@@ -5100,7 +5107,9 @@ body.tab-layout-vertical .nav-window-controls {
 .vertical-tabs-sidebar {
   grid-area: vert-tabs;
   grid-row: 1 / -1;
-  width: 100%;
+  width: var(--vt-width, 240px);
+  max-width: var(--vt-width, 240px);
+  min-width: var(--vt-width, 240px);
   height: 100vh;
   background: var(--vt-bg);
   border-right: 1px solid var(--vt-border);
@@ -5113,7 +5122,7 @@ body.tab-layout-vertical .nav-window-controls {
   box-sizing: border-box;
   gap: 8px;
   font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, sans-serif;
-  transition: width 0.25s cubic-bezier(0.16, 1, 0.3, 1), padding 0.25s cubic-bezier(0.16, 1, 0.3, 1), background 0.2s ease;
+  transition: width 0.24s cubic-bezier(0.16, 1, 0.3, 1), max-width 0.24s cubic-bezier(0.16, 1, 0.3, 1), min-width 0.24s cubic-bezier(0.16, 1, 0.3, 1), padding 0.24s cubic-bezier(0.16, 1, 0.3, 1), background 0.2s ease;
 }
 
 body.tab-layout-vertical .vertical-tabs-sidebar {
@@ -5814,6 +5823,9 @@ body[data-theme="dark"] .vt-footer-btn:hover {
 }
 
 body.tab-layout-vertical.vertical-tabs-collapsed .vertical-tabs-sidebar {
+  width: 56px;
+  max-width: 56px;
+  min-width: 56px;
   padding: 10px 7px 10px 7px;
   align-items: center;
 }
@@ -6261,3 +6273,26 @@ body.light-theme .snap-zone {
 
 
 
+
+
+/* ── Ambient Audio Smart Ducking & Specials Badges ── */
+.engine-active-indicator.badge-ducked {
+  background: rgba(245, 158, 11, 0.12) !important;
+  border-color: rgba(245, 158, 11, 0.35) !important;
+  color: #D97706 !important;
+}
+body[data-theme="dark"] .engine-active-indicator.badge-ducked {
+  background: rgba(245, 158, 11, 0.18) !important;
+  border-color: rgba(245, 158, 11, 0.45) !important;
+  color: #FBBF24 !important;
+}
+.sp-badge.sp-badge-amber {
+  background: rgba(245, 158, 11, 0.12) !important;
+  color: #D97706 !important;
+  border: 1px solid rgba(245, 158, 11, 0.25) !important;
+}
+body[data-theme="dark"] .sp-badge.sp-badge-amber {
+  background: rgba(245, 158, 11, 0.2) !important;
+  color: #FBBF24 !important;
+  border-color: rgba(245, 158, 11, 0.4) !important;
+}
