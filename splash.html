@@ -1,0 +1,186 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="Content-Security-Policy" content="default-src 'self' ocal:; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; font-src 'self' data:; img-src 'self' data: https: blob:; connect-src 'self';">
+    <title>Ocal</title>
+    <style>
+        :root {
+            --bg: #0D0E11;
+            --text: #F8FAFC;
+            --text-dim: #94A3B8;
+            --accent: #D4FC2B;
+            --line-track: rgba(255, 255, 255, 0.08);
+            --font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+        }
+
+        body[data-theme="light"] {
+            --bg: #F8F9FA;
+            --text: #0F172A;
+            --text-dim: #64748B;
+            --accent: #15AC49;
+            --line-track: rgba(0, 0, 0, 0.08);
+        }
+
+        *, *::before, *::after {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            user-select: none;
+            -webkit-user-select: none;
+        }
+
+        html, body {
+            width: 100vw;
+            height: 100vh;
+            overflow: hidden;
+            background-color: var(--bg);
+            color: var(--text);
+            font-family: var(--font-family);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            -webkit-app-region: drag;
+        }
+
+        .splash-center {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            gap: 16px;
+            opacity: 1;
+            transform: scale(1);
+            transition: opacity 0.3s cubic-bezier(0.16, 1, 0.3, 1), transform 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+            -webkit-app-region: no-drag;
+        }
+
+        .splash-center.dismiss {
+            opacity: 0;
+            transform: scale(0.98);
+            pointer-events: none;
+        }
+
+        .logo-wrap {
+            position: relative;
+            width: 64px;
+            height: 64px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            animation: fadeInLogo 0.4s ease-out forwards;
+        }
+
+        @keyframes fadeInLogo {
+            from { opacity: 0; transform: scale(0.92); }
+            to { opacity: 1; transform: scale(1); }
+        }
+
+        .logo-img {
+            width: 52px;
+            height: 52px;
+            object-fit: contain;
+            filter: drop-shadow(0 6px 16px rgba(0, 0, 0, 0.25));
+        }
+
+        .logo-fallback {
+            display: none;
+            font-size: 38px;
+            font-weight: 800;
+            color: var(--accent);
+            letter-spacing: -1px;
+        }
+
+        .brand-name {
+            font-size: 16px;
+            font-weight: 600;
+            letter-spacing: 2px;
+            text-transform: uppercase;
+            color: var(--text);
+            opacity: 0.9;
+            margin-top: -2px;
+        }
+
+        /* Minimalist Slender Progress Line */
+        .line-track {
+            position: relative;
+            width: 130px;
+            height: 2px;
+            border-radius: 999px;
+            background: var(--line-track);
+            overflow: hidden;
+            margin-top: 4px;
+        }
+
+        .line-fill {
+            position: absolute;
+            left: 0;
+            top: 0;
+            bottom: 0;
+            width: 45%;
+            border-radius: 999px;
+            background: var(--accent);
+            box-shadow: 0 0 8px var(--accent);
+            animation: shimmerLine 1.4s cubic-bezier(0.4, 0, 0.2, 1) infinite;
+        }
+
+        @keyframes shimmerLine {
+            0% { transform: translateX(-100%); }
+            100% { transform: translateX(300%); }
+        }
+    </style>
+</head>
+<body data-theme="dark">
+    <div class="splash-center" id="splash-center">
+        <div class="logo-wrap">
+            <img id="logo-img" class="logo-img" src="assets/Dark.png" alt="Ocal" onerror="this.style.display='none'; document.getElementById('logo-fallback').style.display='block';">
+            <span id="logo-fallback" class="logo-fallback">O</span>
+        </div>
+        <span class="brand-name">Ocal</span>
+        <div class="line-track">
+            <div class="line-fill"></div>
+        </div>
+    </div>
+
+    <script>
+        const params = new URLSearchParams(window.location.search);
+        const theme = params.get('theme') || 'dark';
+        const customAccent = params.get('accent');
+
+        document.body.setAttribute('data-theme', theme);
+        const logoImg = document.getElementById('logo-img');
+        if (logoImg) {
+            logoImg.src = theme === 'light' ? 'assets/Light.png' : 'assets/Dark.png';
+        }
+
+        if (customAccent && customAccent.startsWith('#')) {
+            document.documentElement.style.setProperty('--accent', customAccent);
+        }
+
+        const splashCenter = document.getElementById('splash-center');
+        let isDismissing = false;
+
+        function triggerDismiss() {
+            if (isDismissing) return;
+            isDismissing = true;
+            if (splashCenter) splashCenter.classList.add('dismiss');
+
+            setTimeout(() => {
+                if (window.electronAPI && typeof window.electronAPI.send === 'function') {
+                    window.electronAPI.send('splash-complete');
+                }
+            }, 300);
+        }
+
+        if (window.electronAPI && typeof window.electronAPI.on === 'function') {
+            window.electronAPI.on('splash-dismiss', triggerDismiss);
+        }
+
+        window.addEventListener('click', triggerDismiss);
+        window.addEventListener('keydown', (e) => {
+            if (e.key === 'Escape' || e.key === 'Enter') triggerDismiss();
+        });
+    </script>
+</body>
+</html>

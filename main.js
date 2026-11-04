@@ -824,6 +824,9 @@ var mediaMasterView = null;
 let isAnimatingBounds = false;
 var views = [];
 let splitOverlayView = null;
+let splashOverlayView = null;
+let isSplashDismissed = false;
+let splashStartTime = 0;
 var downloads = userSettings.downloads || [];
 function saveDownloadsToSettings() {
     userSettings.downloads = downloads;
@@ -1691,6 +1694,69 @@ function getAppIcon() {
 }
 
 
+function createSplashOverlay() {
+    if (userSettings.startupAnimation === false) return;
+    if (splashOverlayView || isSplashDismissed || !mainWindow || mainWindow.isDestroyed()) return;
+    const isLight = userSettings.themeMode === 'light';
+    splashStartTime = Date.now();
+    splashOverlayView = new BrowserView({
+        webPreferences: {
+            preload: path.join(__dirname, 'preload.js'),
+            contextIsolation: true,
+            nodeIntegration: false,
+            devTools: false,
+            sandbox: false
+        }
+    });
+    splashOverlayView.setBackgroundColor(isLight ? '#F8F9FA' : '#0D0E11');
+    const splashUrl = 'file:///' + path.join(__dirname, 'splash.html').replace(/\\/g, '/') + 
+        '?theme=' + (isLight ? 'light' : 'dark') + '&accent=' + encodeURIComponent(userSettings.accentColor || '');
+    splashOverlayView.webContents.loadURL(splashUrl);
+    mainWindow.addBrowserView(splashOverlayView);
+    const { width, height } = mainWindow.getContentBounds();
+    splashOverlayView.setBounds({ x: 0, y: 0, width, height });
+    mainWindow.setTopBrowserView(splashOverlayView);
+
+    // Failsafe timer: dismiss after 2.0s regardless of network/tab state
+    setTimeout(() => {
+        if (!isSplashDismissed) {
+            dismissSplash();
+        }
+    }, 2000);
+}
+
+function dismissSplash() {
+    if (isSplashDismissed || !splashOverlayView) return;
+    isSplashDismissed = true;
+
+    // Minimum display duration of 800ms so the user experiences the clean opening animation
+    const elapsed = Date.now() - splashStartTime;
+    const remainingMinTime = Math.max(0, 800 - elapsed);
+
+    setTimeout(() => {
+        if (!splashOverlayView || splashOverlayView.webContents.isDestroyed()) return;
+        try {
+            splashOverlayView.webContents.send('splash-dismiss');
+        } catch (e) {}
+
+        // Allow 300ms for the smooth fade-out CSS animation to play
+        setTimeout(() => {
+            try {
+                if (splashOverlayView && mainWindow && !mainWindow.isDestroyed()) {
+                    if (mainWindow.getBrowserViews().includes(splashOverlayView)) {
+                        mainWindow.removeBrowserView(splashOverlayView);
+                    }
+                    if (!splashOverlayView.webContents.isDestroyed()) {
+                        splashOverlayView.webContents.destroy();
+                    }
+                    splashOverlayView = null;
+                }
+            } catch (e) {}
+            updateViewBounds();
+        }, 300);
+    }, remainingMinTime);
+}
+
 function createMainWindow() {
     const appIcon = getAppIcon();
     const appIconPath = getAppIconPath();
@@ -1729,6 +1795,7 @@ function createMainWindow() {
         }
     });
 
+    createSplashOverlay();
     mainWindow.loadFile('index.html');
 
     splitOverlayView = new BrowserView({
@@ -1844,6 +1911,8 @@ function createMainWindow() {
     });
 
     mainWindow.on('closed', () => {
+        splashOverlayView = null;
+        isSplashDismissed = false;
         mainWindow = null;
         if (process.platform !== 'darwin') {
             app.quit();
@@ -3171,6 +3240,9 @@ function setupViewEvents(tabId, view, side = 'left') {
         if (userSettings.cyberStealthEnabled) {
             applyCyberStealth(webContents);
         }
+        if (!isSplashDismissed) {
+            dismissSplash();
+        }
     });
 
     // Intercept PDF view navigation and internal ocal:// links
@@ -3393,6 +3465,9 @@ function setupViewEvents(tabId, view, side = 'left') {
     webContents.on('did-stop-loading', () => {
         if (mainWindow && !mainWindow.isDestroyed()) {
             mainWindow.webContents.send('load-progress', { id: tabId, progress: 100 });
+        }
+        if (!isSplashDismissed) {
+            dismissSplash();
         }
     });
 
@@ -3838,6 +3913,12 @@ function updateViewBounds(forcedUrl = null) {
             height: Math.round(height - yOffset - topGap - bottomGap)
         });
         mainWindow.setTopBrowserView(webAppView);
+    }
+
+    // Stack Splash Overlay (covers the entire window during startup animation)
+    if (splashOverlayView && !splashOverlayView.webContents.isDestroyed() && mainWindow.getBrowserViews().includes(splashOverlayView)) {
+        splashOverlayView.setBounds({ x: 0, y: 0, width, height });
+        mainWindow.setTopBrowserView(splashOverlayView);
     }
 }
 
@@ -15223,5 +15304,20 @@ ipcMain.on('private-home', () => {
 
 ipcMain.on('open-private-window', (e, url) => {
     openPrivateWindow(url);
+});
+
+ipcMain.on('splash-complete', () => {
+    try {
+        if (splashOverlayView && mainWindow && !mainWindow.isDestroyed()) {
+            if (mainWindow.getBrowserViews().includes(splashOverlayView)) {
+                mainWindow.removeBrowserView(splashOverlayView);
+            }
+            if (!splashOverlayView.webContents.isDestroyed()) {
+                splashOverlayView.webContents.destroy();
+            }
+            splashOverlayView = null;
+        }
+    } catch (e) {}
+    updateViewBounds();
 });
 

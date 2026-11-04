@@ -3198,6 +3198,11 @@ window.handleBookmarksBarToggle = function(checked) {
     window.electronAPI.updateSetting('bookmarkBarMode', checked ? 'always' : 'never');
 };
 
+window.handleStartupAnimationToggle = function(checked) {
+    window.electronAPI.updateSetting('startupAnimation', checked);
+    localStorage.setItem('ocal-startup-animation', checked ? 'true' : 'false');
+};
+
 window.handleNewsToggle = function(checked) {
     window.electronAPI.updateSetting('showNewsHub', checked);
     localStorage.setItem('ocal-show-news', checked ? 'true' : 'false');
@@ -3770,6 +3775,10 @@ function renderHomepageSettings(s) {
     // Show news
     const newsCb = document.getElementById('show-news-toggle-cb');
     if (newsCb) newsCb.checked = (s.showNewsHub !== false);
+
+    // Startup opening animation
+    const startupAnimCb = document.getElementById('startup-animation-toggle-cb');
+    if (startupAnimCb) startupAnimCb.checked = (s.startupAnimation !== false);
 
     // Tab Layout
     const tabLayout = s.tabLayout || 'horizontal';
