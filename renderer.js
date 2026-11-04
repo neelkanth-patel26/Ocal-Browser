@@ -512,8 +512,8 @@ function renderTabs() {
                     const groupCount = tabs.filter(t => t.groupId === group.id).length;
                     groupHeader.innerHTML = `
                         <div class="vt-group-header-left">
-                            <span class="vt-group-dot" style="background: ${group.color};"></span>
-                            <span class="vt-group-name" style="color: ${group.color};">${groupTitle}</span>
+                            <span class="vt-group-dot"></span>
+                            <span class="vt-group-name">${groupTitle}</span>
                         </div>
                         <div class="vt-group-header-right">
                             <span class="vt-group-badge">${groupCount}</span>
@@ -658,7 +658,7 @@ function renderTabs() {
                 vtEl.innerHTML = `
                     <div class="vt-tab-favicon">${iconHtml}</div>
                     <div class="vt-tab-info">
-                        <span class="vt-tab-title" style="${group ? `color: ${group.color};` : ''}">${simplifiedTitle}</span>
+                        <span class="vt-tab-title">${simplifiedTitle}</span>
                     </div>
                     ${(tab.audible || tab.muted) ? `
                         <button class="vt-audio-btn ${tab.muted ? 'is-muted' : 'is-playing'}" data-tab-id="${tab.id}" title="${tab.muted ? 'Unmute tab' : 'Mute tab'}" aria-label="${tab.muted ? 'Unmute tab' : 'Mute tab'}">
