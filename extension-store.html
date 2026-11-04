@@ -20,6 +20,12 @@
             if (window.OcalColorHarmonizer) {
                 window.OcalColorHarmonizer.applyHarmonizedTheme(a, t);
             }
+            document.addEventListener('DOMContentLoaded', function () {
+                var logo = document.getElementById('header-logo-img');
+                if (logo) {
+                    logo.src = (t === 'dark') ? 'assets/Dark.png' : 'assets/Light.png';
+                }
+            });
         })();
     </script>
 
@@ -180,39 +186,100 @@
             gap: 10px;
         }
 
+        /* ── Unified Sort Pill (Matches btn-store-nav) ── */
         .store-sort-pill {
-            display: flex;
+            position: relative;
+            display: inline-flex;
             align-items: center;
-            gap: 6px;
+            gap: 8px;
             height: 34px;
-            padding: 0 10px 0 12px;
+            padding: 0 13px;
             border-radius: 10px;
             background: var(--store-card-bg);
             border: 1px solid var(--store-card-border);
-            color: var(--store-text-muted);
-            font-size: 12px;
-            font-weight: 600;
-        }
-
-        .store-sort-pill i {
-            color: var(--accent);
-            font-size: 11px;
-        }
-
-        .store-sort-select {
-            background: transparent;
-            border: none;
             color: var(--store-text);
             font-family: inherit;
             font-size: 12px;
             font-weight: 650;
-            outline: none;
             cursor: pointer;
+            box-sizing: border-box;
+            transition: all 0.18s cubic-bezier(0.16, 1, 0.3, 1);
+            user-select: none;
         }
 
-        .store-sort-select option {
+        .store-sort-pill:hover {
+            transform: translateY(-1px);
+            border-color: color-mix(in srgb, var(--accent) 35%, transparent);
+            background: var(--store-hover-bg);
+        }
+
+        .store-sort-pill .sort-icon {
+            font-size: 12px;
+            color: var(--accent);
+            flex-shrink: 0;
+            pointer-events: none;
+        }
+
+        .store-sort-pill .sort-label {
+            font-family: inherit;
+            font-size: 12px;
+            font-weight: 650;
+            color: var(--store-text);
+            white-space: nowrap;
+            pointer-events: none;
+        }
+
+        .store-sort-pill .sort-chevron {
+            font-size: 9px;
+            color: var(--store-text-muted);
+            margin-left: 2px;
+            pointer-events: none;
+            transition: transform 0.18s ease;
+            flex-shrink: 0;
+        }
+
+        .store-sort-pill:focus-within {
+            border-color: var(--accent);
+            box-shadow: 0 0 0 2px color-mix(in srgb, var(--accent) 18%, transparent);
+        }
+
+        .store-sort-pill:focus-within .sort-chevron {
+            color: var(--accent);
+            transform: rotate(180deg);
+        }
+
+        /* Invisible overlay select capturing all clicks and touches */
+        .store-sort-pill select.store-sort-select,
+        select#storeSortSelect {
+            position: absolute !important;
+            inset: 0 !important;
+            width: 100% !important;
+            height: 100% !important;
+            opacity: 0 !important;
+            cursor: pointer !important;
+            border: none !important;
+            background: transparent !important;
+            padding: 0 !important;
+            margin: 0 !important;
+            z-index: 5 !important;
+            -webkit-appearance: none !important;
+            appearance: none !important;
+        }
+
+        .store-sort-pill select.store-sort-select option {
             background: var(--store-card-bg);
             color: var(--store-text);
+            padding: 8px 12px;
+        }
+
+        body[data-theme="light"] .store-sort-pill select.store-sort-select option {
+            background: #FFFFFF !important;
+            color: #111827 !important;
+        }
+
+        body[data-theme="dark"] .store-sort-pill select.store-sort-select option {
+            background: #1C1D24 !important;
+            color: #F8FAFC !important;
         }
 
         .btn-store-nav {
@@ -289,76 +356,154 @@
             padding: 8px 12px 4px;
         }
 
+        /* ── Category Navigation Items (Native Ocal Settings Style) ── */
+        .sidebar-nav {
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+        }
+
         .nav-item.cat-pill {
             display: flex;
             align-items: center;
-            justify-content: space-between;
-            padding: 9px 12px;
-            border-radius: 10px;
-            color: var(--store-text-muted);
+            gap: 11px;
+            height: 38px;
+            padding: 0 10px;
+            border-radius: 8px !important;
             font-size: 13px;
-            font-weight: 600;
+            font-weight: 500;
+            letter-spacing: -0.15px;
+            color: var(--text-dim, #9ca3af) !important;
             cursor: pointer;
-            transition: all 0.16s ease;
+            transition: all 0.18s cubic-bezier(0.16, 1, 0.3, 1);
             user-select: none;
-            border: 1px solid transparent;
+            border: 1px solid transparent !important;
+            box-sizing: border-box;
         }
 
-        .cat-pill-left {
+        .nav-item.cat-pill:hover {
+            background: rgba(0, 0, 0, 0.04) !important;
+            color: var(--text, #111111) !important;
+            border-color: transparent !important;
+        }
+
+        body[data-theme="dark"] .nav-item.cat-pill:hover {
+            background: rgba(255, 255, 255, 0.05) !important;
+            color: #FFFFFF !important;
+            border-color: transparent !important;
+        }
+
+        .nav-item.cat-pill .nav-item-icon {
+            width: 26px;
+            height: 26px;
+            border-radius: 7px;
             display: flex;
             align-items: center;
-            gap: 10px;
-            min-width: 0;
+            justify-content: center;
+            font-size: 12px;
+            flex-shrink: 0;
+            background: rgba(0, 0, 0, 0.04);
+            border: 1px solid rgba(0, 0, 0, 0.06);
+            color: #64748b;
+            transition: all 0.18s ease !important;
         }
 
-        .cat-pill-left i {
-            font-size: 13px;
-            width: 16px;
-            text-align: center;
-            color: var(--text-dim);
-            transition: color 0.16s ease;
+        body[data-theme="dark"] .nav-item.cat-pill .nav-item-icon {
+            background: rgba(255, 255, 255, 0.04);
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            color: rgba(255, 255, 255, 0.65);
         }
 
-        .cat-pill-left span {
+        .nav-item.cat-pill:hover .nav-item-icon {
+            background: rgba(0, 0, 0, 0.07);
+            color: #0f172a;
+            border-color: rgba(0, 0, 0, 0.08);
+        }
+
+        body[data-theme="dark"] .nav-item.cat-pill:hover .nav-item-icon {
+            background: rgba(255, 255, 255, 0.08);
+            color: #FFFFFF;
+            border-color: rgba(255, 255, 255, 0.09);
+        }
+
+        .cat-pill-title {
+            flex: 1;
             white-space: nowrap;
             overflow: hidden;
             text-overflow: ellipsis;
-        }
-
-        .cat-pill:hover {
-            background: var(--store-hover-bg);
-            color: var(--store-text);
-        }
-
-        .cat-pill:hover .cat-pill-left i {
-            color: var(--store-text);
-        }
-
-        .cat-pill.active {
-            background: var(--accent) !important;
-            color: var(--accent-text, #FFFFFF) !important;
-            font-weight: 700;
-            border-color: var(--accent) !important;
-        }
-
-        .cat-pill.active .cat-pill-left i {
-            color: var(--accent-text, #FFFFFF) !important;
+            font-family: inherit;
+            font-size: 13px;
+            font-weight: 500;
         }
 
         .cat-pill-count {
             font-family: 'Space Mono', monospace;
-            font-size: 10.5px;
+            font-size: 11px;
             font-weight: 700;
-            padding: 1px 6px;
+            padding: 2px 7.5px;
             border-radius: 6px;
-            background: var(--store-hover-bg);
-            color: var(--text-dim);
-            transition: all 0.16s ease;
+            background: rgba(0, 0, 0, 0.05);
+            color: var(--text-dim, #64748b);
+            line-height: 1.2;
+            transition: all 0.18s ease;
+            flex-shrink: 0;
+            border: 1px solid transparent;
         }
 
-        .cat-pill.active .cat-pill-count {
-            background: rgba(255, 255, 255, 0.28);
-            color: #FFFFFF;
+        body[data-theme="dark"] .cat-pill-count {
+            background: rgba(255, 255, 255, 0.06);
+            color: rgba(255, 255, 255, 0.65);
+        }
+
+        /* ── Active State ── */
+        .nav-item.cat-pill.active,
+        body[data-theme="light"] .nav-item.cat-pill.active {
+            background: color-mix(in srgb, var(--accent) 10%, rgba(0, 0, 0, 0.02)) !important;
+            color: #0f172a !important;
+            border: 1px solid color-mix(in srgb, var(--accent) 26%, transparent) !important;
+            font-weight: 650 !important;
+            box-shadow: none !important;
+        }
+
+        body[data-theme="dark"] .nav-item.cat-pill.active {
+            background: color-mix(in srgb, var(--accent) 12%, rgba(255, 255, 255, 0.03)) !important;
+            color: #FFFFFF !important;
+            border: 1px solid color-mix(in srgb, var(--accent) 28%, transparent) !important;
+            font-weight: 650 !important;
+            box-shadow: none !important;
+        }
+
+        .nav-item.cat-pill.active .nav-item-icon,
+        body[data-theme="light"] .nav-item.cat-pill.active .nav-item-icon,
+        body[data-theme="dark"] .nav-item.cat-pill.active .nav-item-icon {
+            background: var(--accent) !important;
+            color: #FFFFFF !important;
+            border: 1px solid color-mix(in srgb, var(--accent) 80%, #ffffff) !important;
+            box-shadow: 0 1px 4px color-mix(in srgb, var(--accent) 32%, transparent) !important;
+        }
+
+        .nav-item.cat-pill.active .nav-item-icon i {
+            color: #FFFFFF !important;
+        }
+
+        .nav-item.cat-pill.active .cat-pill-title {
+            font-weight: 650;
+            color: inherit !important;
+        }
+
+        .nav-item.cat-pill.active .cat-pill-count,
+        body[data-theme="light"] .nav-item.cat-pill.active .cat-pill-count {
+            background: color-mix(in srgb, var(--accent) 18%, transparent) !important;
+            border-color: color-mix(in srgb, var(--accent) 32%, transparent) !important;
+            color: var(--accent) !important;
+            font-weight: 800 !important;
+        }
+
+        body[data-theme="dark"] .nav-item.cat-pill.active .cat-pill-count {
+            background: color-mix(in srgb, var(--accent) 26%, rgba(255, 255, 255, 0.08)) !important;
+            border-color: color-mix(in srgb, var(--accent) 36%, transparent) !important;
+            color: var(--accent) !important;
+            font-weight: 800 !important;
         }
 
         .sidebar-footer {
@@ -1529,13 +1674,15 @@
 
         <!-- Header Actions: Sort Dropdown & Quick Nav -->
         <div class="header-tools">
-            <div class="store-sort-pill">
-                <i class="fas fa-arrow-down-wide-short"></i>
-                <select class="store-sort-select" id="storeSortSelect" title="Sort extensions">
-                    <option value="featured">✨ Editors' Pick</option>
-                    <option value="rating">⭐ Highest Rated</option>
-                    <option value="users">🔥 Most Popular</option>
-                    <option value="name">🔤 Name (A to Z)</option>
+            <div class="store-sort-pill" id="storeSortPill" title="Sort extensions">
+                <i class="fas fa-arrow-down-wide-short sort-icon"></i>
+                <span class="sort-label" id="sortCurrentLabel">Editors' Pick</span>
+                <i class="fas fa-chevron-down sort-chevron"></i>
+                <select class="store-sort-select" id="storeSortSelect" aria-label="Sort extensions">
+                    <option value="featured">Editors' Pick</option>
+                    <option value="rating">Highest Rated</option>
+                    <option value="users">Most Popular</option>
+                    <option value="name">Name (A to Z)</option>
                 </select>
             </div>
             <button class="btn-store-nav" onclick="openMyExtensions()" title="Manage installed extensions in Settings">
@@ -1558,66 +1705,50 @@
                 <div class="sidebar-category-header">Categories</div>
                 
                 <div class="nav-item cat-pill active" data-cat="all">
-                    <div class="cat-pill-left">
-                        <i class="fas fa-border-all"></i>
-                        <span>All Extensions</span>
-                    </div>
+                    <div class="nav-item-icon"><i class="fas fa-border-all"></i></div>
+                    <span class="cat-pill-title">All Extensions</span>
                     <span class="cat-pill-count" id="count-all">0</span>
                 </div>
 
                 <div class="nav-item cat-pill" data-cat="featured">
-                    <div class="cat-pill-left">
-                        <i class="fas fa-wand-magic-sparkles"></i>
-                        <span>Featured</span>
-                    </div>
+                    <div class="nav-item-icon"><i class="fas fa-wand-magic-sparkles"></i></div>
+                    <span class="cat-pill-title">Featured</span>
                     <span class="cat-pill-count" id="count-featured">0</span>
                 </div>
 
                 <div class="nav-item cat-pill" data-cat="adblock">
-                    <div class="cat-pill-left">
-                        <i class="fas fa-shield-halved"></i>
-                        <span>Privacy & Adblock</span>
-                    </div>
+                    <div class="nav-item-icon"><i class="fas fa-shield-halved"></i></div>
+                    <span class="cat-pill-title">Privacy & Adblock</span>
                     <span class="cat-pill-count" id="count-adblock">0</span>
                 </div>
 
                 <div class="nav-item cat-pill" data-cat="productivity">
-                    <div class="cat-pill-left">
-                        <i class="fas fa-bolt-lightning"></i>
-                        <span>Productivity & AI</span>
-                    </div>
+                    <div class="nav-item-icon"><i class="fas fa-bolt-lightning"></i></div>
+                    <span class="cat-pill-title">Productivity & AI</span>
                     <span class="cat-pill-count" id="count-productivity">0</span>
                 </div>
 
                 <div class="nav-item cat-pill" data-cat="developer">
-                    <div class="cat-pill-left">
-                        <i class="fas fa-code"></i>
-                        <span>Developer Tools</span>
-                    </div>
+                    <div class="nav-item-icon"><i class="fas fa-code"></i></div>
+                    <span class="cat-pill-title">Developer Tools</span>
                     <span class="cat-pill-count" id="count-developer">0</span>
                 </div>
 
                 <div class="nav-item cat-pill" data-cat="media">
-                    <div class="cat-pill-left">
-                        <i class="fas fa-circle-play"></i>
-                        <span>Video & Media</span>
-                    </div>
+                    <div class="nav-item-icon"><i class="fas fa-circle-play"></i></div>
+                    <span class="cat-pill-title">Video & Media</span>
                     <span class="cat-pill-count" id="count-media">0</span>
                 </div>
 
                 <div class="nav-item cat-pill" data-cat="utilities">
-                    <div class="cat-pill-left">
-                        <i class="fas fa-sliders"></i>
-                        <span>Utilities</span>
-                    </div>
+                    <div class="nav-item-icon"><i class="fas fa-sliders"></i></div>
+                    <span class="cat-pill-title">Utilities</span>
                     <span class="cat-pill-count" id="count-utilities">0</span>
                 </div>
 
                 <div class="nav-item cat-pill" data-cat="installed">
-                    <div class="cat-pill-left">
-                        <i class="fas fa-circle-check"></i>
-                        <span>Installed</span>
-                    </div>
+                    <div class="nav-item-icon"><i class="fas fa-circle-check"></i></div>
+                    <span class="cat-pill-title">Installed</span>
                     <span class="cat-pill-count" id="count-installed">0</span>
                 </div>
             </nav>
@@ -1827,6 +1958,23 @@
                 window.location.href = 'settings.html#extensions';
             }
         }
+
+        (function() {
+            function syncSortLabel() {
+                var sel = document.getElementById('storeSortSelect');
+                var lbl = document.getElementById('sortCurrentLabel');
+                if (sel && lbl && sel.selectedIndex >= 0 && sel.options[sel.selectedIndex]) {
+                    lbl.textContent = sel.options[sel.selectedIndex].text;
+                }
+            }
+            document.addEventListener('DOMContentLoaded', function() {
+                var sel = document.getElementById('storeSortSelect');
+                if (sel) {
+                    sel.addEventListener('change', syncSortLabel);
+                    syncSortLabel();
+                }
+            });
+        })();
     </script>
     <script src="extension-store.js"></script>
 </body>

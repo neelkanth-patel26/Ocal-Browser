@@ -882,13 +882,37 @@
         }
     }
 
-    // ── Theme Sync ────────────────────────────────────────────────────────────
+    // ── Theme & Logo Sync ────────────────────────────────────────────────────────────
     function syncTheme() {
         const t = localStorage.getItem('ocal-settings-theme') || 'dark';
         document.documentElement.setAttribute('data-theme', t);
         document.body.setAttribute('data-theme', t);
+        const isDark = (t === 'dark');
+        const logo = document.getElementById('header-logo-img');
+        if (logo) {
+            logo.src = isDark ? 'assets/Dark.png' : 'assets/Light.png';
+        }
     }
     syncTheme();
+
+    if (window.electronAPI && typeof window.electronAPI.on === 'function') {
+        window.electronAPI.on('settings-updated', (settings) => {
+            if (settings && settings.themeMode) {
+                document.documentElement.setAttribute('data-theme', settings.themeMode);
+                document.body.setAttribute('data-theme', settings.themeMode);
+                try { localStorage.setItem('ocal-settings-theme', settings.themeMode); } catch (e) {}
+                syncTheme();
+            }
+            if (settings && settings.accentColor && window.OcalColorHarmonizer) {
+                window.OcalColorHarmonizer.applyHarmonizedTheme(settings.accentColor, settings.themeMode || 'dark');
+            }
+        });
+    }
+    window.addEventListener('storage', (e) => {
+        if (e.key === 'ocal-settings-theme') {
+            syncTheme();
+        }
+    });
 
     // ── Load Installed IDs ───────────────────────────────────────────────────
     async function refreshInstalledStatus() {
@@ -1492,6 +1516,10 @@
     if (sortSelect) {
         sortSelect.addEventListener('change', (e) => {
             currentSort = e.target.value;
+            const sortLabel = document.getElementById('sortCurrentLabel');
+            if (sortLabel && sortSelect.selectedIndex >= 0 && sortSelect.options[sortSelect.selectedIndex]) {
+                sortLabel.textContent = sortSelect.options[sortSelect.selectedIndex].text;
+            }
             renderGrid();
         });
     }
