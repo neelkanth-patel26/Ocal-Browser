@@ -404,18 +404,16 @@
                     <div class="news-header-icon"><i data-lucide="cloud-sun" class="fas fa-cloud-sun"></i></div>
                     <div class="news-header-text-group">
                         <div class="news-header-title-row">
-                            <h3 class="news-modal-title" id="weather-modal-location-title">Live Weather & Telemetry</h3>
-                            <span class="wh-live-badge"><span class="wh-pulse-dot"></span> LIVE</span>
-                            <a href="https://open-meteo.com/" target="_blank" class="weather-source-badge" title="Live Global Meteorological Telemetry (Open-Meteo Worldwide Network)"><i data-lucide="satellite" class="fas fa-satellite"></i> Open-Meteo <i data-lucide="external-link" class="fas fa-arrow-up-right-from-square" style="font-size: 8.5px; margin-left: 2px;"></i></a>
+                            <h3 class="news-modal-title" id="weather-modal-location-title">Weather</h3>
+                            <span class="wh-live-badge"><span class="wh-pulse-dot"></span> Live</span>
                         </div>
-                        <p class="news-modal-sub" id="weather-modal-status-sub"><i data-lucide="radio" class="fas fa-signal"></i> Meteorological telemetry active &bull; Live Sync</p>
                     </div>
                 </div>
                 
                 <div class="news-header-actions">
                     <div class="news-search-wrapper" style="position: relative;">
                         <i data-lucide="map-pin" class="fas fa-location-dot search-icon"></i>
-                        <input type="text" id="weather-city-search-input" placeholder="Search any city worldwide (e.g., London, Tokyo, NYC)..." autocomplete="off" spellcheck="false">
+                        <input type="text" id="weather-city-search-input" placeholder="Search any city worldwide..." autocomplete="off" spellcheck="false">
                         <button class="weather-search-clear-btn" id="weather-search-clear-btn" title="Clear search" style="display: none;"><i data-lucide="x" class="fas fa-xmark"></i></button>
                         <div class="weather-search-dropdown" id="weather-search-dropdown" style="display: none;"></div>
                     </div>
@@ -425,7 +423,7 @@
                     <button class="news-refresh-btn" id="news-refresh-btn" title="Refresh Live Weather">
                         <i data-lucide="rotate-cw" class="fas fa-rotate-right"></i>
                     </button>
-                    <button class="news-close-btn" id="news-close-btn" title="Close Weather Drawer">
+                    <button class="news-close-btn" id="news-close-btn" title="Close Weather">
                         <i data-lucide="x" class="fas fa-xmark"></i>
                     </button>
                 </div>
@@ -434,7 +432,7 @@
             <!-- Weather Hub Scrollable Container -->
             <div class="weather-modal-body" id="weather-modal-body">
                 
-                <!-- Section 1: Hero Overview & Detailed 10-Metric Dashboard (Wide 2-Tier Layout) -->
+                <!-- Section 1: Hero Card + Clean 6-Metric Bento Grid -->
                 <div class="weather-top-scroll-section" id="weather-top-scroll-section">
                     <div class="weather-hero-row">
                         <!-- Hero Main Temperature Panel -->
@@ -452,7 +450,7 @@
                                 </div>
                                 <div class="wh-temp-group">
                                     <span class="wh-temp-big" id="wh-main-temp">--°</span>
-                                    <span class="wh-condition-title" id="wh-main-condition">Fetching Telemetry...</span>
+                                    <span class="wh-condition-title" id="wh-main-condition">Fetching Weather...</span>
                                 </div>
                             </div>
 
@@ -463,8 +461,9 @@
                             </div>
                         </div>
 
-                        <!-- Detailed Meteorological Metrics Grid (10 Details in 5-col x 2-row Grid) -->
+                        <!-- 6 Essential Bento Metrics (3 Columns x 2 Rows) -->
                         <div class="weather-details-grid">
+                            <!-- 1. Humidity -->
                             <div class="w-detail-card">
                                 <div class="w-detail-icon-wrap"><i data-lucide="droplets" class="fas fa-droplet"></i></div>
                                 <div class="w-detail-info">
@@ -473,6 +472,7 @@
                                 </div>
                             </div>
 
+                            <!-- 2. Wind Speed -->
                             <div class="w-detail-card">
                                 <div class="w-detail-icon-wrap"><i data-lucide="wind" class="fas fa-wind"></i></div>
                                 <div class="w-detail-info">
@@ -481,22 +481,16 @@
                                 </div>
                             </div>
 
+                            <!-- 3. UV Index -->
                             <div class="w-detail-card">
                                 <div class="w-detail-icon-wrap"><i data-lucide="sun" class="fas fa-sun"></i></div>
                                 <div class="w-detail-info">
                                     <span class="w-detail-label">UV Index</span>
-                                    <span class="w-detail-val" id="wd-uv">-- (Low)</span>
+                                    <span class="w-detail-val" id="wd-uv">--</span>
                                 </div>
                             </div>
 
-                            <div class="w-detail-card">
-                                <div class="w-detail-icon-wrap"><i data-lucide="gauge" class="fas fa-gauge-high"></i></div>
-                                <div class="w-detail-info">
-                                    <span class="w-detail-label">Pressure</span>
-                                    <span class="w-detail-val" id="wd-pressure">-- hPa</span>
-                                </div>
-                            </div>
-
+                            <!-- 4. Visibility -->
                             <div class="w-detail-card">
                                 <div class="w-detail-icon-wrap"><i data-lucide="eye" class="fas fa-eye"></i></div>
                                 <div class="w-detail-info">
@@ -505,14 +499,7 @@
                                 </div>
                             </div>
 
-                            <div class="w-detail-card">
-                                <div class="w-detail-icon-wrap"><i data-lucide="thermometer" class="fas fa-temperature-low"></i></div>
-                                <div class="w-detail-info">
-                                    <span class="w-detail-label">Dew Point</span>
-                                    <span class="w-detail-val" id="wd-dew">--°</span>
-                                </div>
-                            </div>
-
+                            <!-- 5. Sunrise -->
                             <div class="w-detail-card">
                                 <div class="w-detail-icon-wrap"><i data-lucide="sunrise" class="fas fa-sun"></i></div>
                                 <div class="w-detail-info">
@@ -521,27 +508,12 @@
                                 </div>
                             </div>
 
+                            <!-- 6. Sunset -->
                             <div class="w-detail-card">
                                 <div class="w-detail-icon-wrap"><i data-lucide="sunset" class="fas fa-moon"></i></div>
                                 <div class="w-detail-info">
                                     <span class="w-detail-label">Sunset</span>
                                     <span class="w-detail-val" id="wd-sunset">--:-- PM</span>
-                                </div>
-                            </div>
-
-                            <div class="w-detail-card">
-                                <div class="w-detail-icon-wrap"><i data-lucide="cloud" class="fas fa-cloud"></i></div>
-                                <div class="w-detail-info">
-                                    <span class="w-detail-label">Cloud Cover</span>
-                                    <span class="w-detail-val" id="wd-cloud">--%</span>
-                                </div>
-                            </div>
-
-                            <div class="w-detail-card">
-                                <div class="w-detail-icon-wrap"><i data-lucide="fan" class="fas fa-fan"></i></div>
-                                <div class="w-detail-info">
-                                    <span class="w-detail-label">Wind Gusts</span>
-                                    <span class="w-detail-val" id="wd-gusts">-- km/h</span>
                                 </div>
                             </div>
                         </div>
@@ -555,7 +527,7 @@
                             <button class="weather-forecast-tab active" id="tab-hourly-forecast"><i data-lucide="clock" class="far fa-clock"></i> 24-Hour Hourly</button>
                             <button class="weather-forecast-tab" id="tab-daily-forecast"><i data-lucide="calendar" class="far fa-calendar-days"></i> 7-Day Extended</button>
                         </div>
-                        <span class="wh-sub-tag" id="wh-forecast-subtitle">Hourly Temperature, Precipitation & Wind Telemetry</span>
+                        <a href="https://open-meteo.com/" target="_blank" class="wh-open-meteo-link" title="Open-Meteo Worldwide Network">Open-Meteo <i class="fas fa-arrow-up-right-from-square" style="font-size: 9px; margin-left: 2px;"></i></a>
                     </div>
 
                     <div class="weather-hourly-slider" id="weather-hourly-slider">

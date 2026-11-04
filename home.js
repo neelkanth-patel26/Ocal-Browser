@@ -1701,7 +1701,7 @@ function initNewsHubEngine() {
             btnTemp.style.display = 'inline';
         }
 
-        // 10 Detailed Meteorological Metrics
+        // Essential Bento Metrics
         const humEl = document.getElementById('wd-humidity');
         const windEl = document.getElementById('wd-wind');
         const uvEl = document.getElementById('wd-uv');
@@ -1713,24 +1713,31 @@ function initNewsHubEngine() {
         const cloudEl = document.getElementById('wd-cloud');
         const gustEl = document.getElementById('wd-gusts');
 
-        if (humEl) humEl.textContent = `${Math.round(cur.humidity ?? 0)}%`;
-        if (windEl) windEl.textContent = formatSpeed(cur.windSpeed ?? 0);
+        const humVal = Math.round(cur.humidity ?? 0);
+        let humLevel = 'Comfortable';
+        if (humVal > 70) humLevel = 'Humid';
+        else if (humVal < 30) humLevel = 'Dry';
+        if (humEl) humEl.innerHTML = `<span class="w-val-num">${humVal}%</span> <span class="w-val-sub">${humLevel}</span>`;
+
+        if (windEl) windEl.innerHTML = `<span class="w-val-num">${formatSpeed(cur.windSpeed ?? 0)}</span>`;
         
-        const uvVal = cur.uvIndex ?? 0;
+        const uvVal = typeof cur.uvIndex === 'number' ? Number(cur.uvIndex.toFixed(1)) : (cur.uvIndex ?? 0);
         let uvLevel = 'Low';
-        if (uvVal > 8) uvLevel = 'Very High';
-        else if (uvVal > 5) uvLevel = 'High';
-        else if (uvVal > 2) uvLevel = 'Moderate';
-        if (uvEl) uvEl.textContent = `${uvVal} • ${uvLevel}`;
+        let uvBadgeClass = 'uv-low';
+        if (uvVal > 8) { uvLevel = 'Very High'; uvBadgeClass = 'uv-very-high'; }
+        else if (uvVal > 5) { uvLevel = 'High'; uvBadgeClass = 'uv-high'; }
+        else if (uvVal > 2) { uvLevel = 'Moderate'; uvBadgeClass = 'uv-mod'; }
+        if (uvEl) uvEl.innerHTML = `<span class="w-val-num">${uvVal}</span> <span class="w-val-badge ${uvBadgeClass}">${uvLevel}</span>`;
 
         if (pressEl) pressEl.textContent = `${Math.round(cur.pressure ?? 1013)} hPa`;
         
         const visKm = cur.visibility ?? 10;
-        if (visEl) visEl.textContent = currentUnit === 'F' ? `${(visKm * 0.621371).toFixed(1)} mi` : `${visKm} km`;
+        const visStr = currentUnit === 'F' ? `${(visKm * 0.621371).toFixed(1)} mi` : `${visKm} km`;
+        if (visEl) visEl.innerHTML = `<span class="w-val-num">${visStr}</span> <span class="w-val-sub">Clear</span>`;
         
+        if (srEl) srEl.innerHTML = `<span class="w-val-num">${today.sunrise || '06:00 AM'}</span>`;
+        if (ssEl) ssEl.innerHTML = `<span class="w-val-num">${today.sunset || '06:50 PM'}</span>`;
         if (dewEl) dewEl.textContent = formatTemperature(today.dewPoint ?? cur.temp);
-        if (srEl) srEl.textContent = today.sunrise || '06:00 AM';
-        if (ssEl) ssEl.textContent = today.sunset || '06:50 PM';
         if (cloudEl) cloudEl.textContent = `${Math.round(cur.cloudCover ?? 0)}%`;
         if (gustEl) gustEl.textContent = formatSpeed(today.windGusts ?? cur.windSpeed ?? 0);
 
@@ -1762,13 +1769,13 @@ function initNewsHubEngine() {
             let hourlyHtml = '';
             hourly.forEach((h, idx) => {
                 const details = getWeatherDetails(h.weatherCode, h.conditionText, h.isDay);
+                const hasPop = h.pop && h.pop > 0;
                 hourlyHtml += `
                     <div class="wh-hourly-card ${idx === 0 ? 'now-card' : ''}">
                         <span class="wh-hourly-time">${h.time}</span>
                         <span class="wh-hourly-icon">${details.icon}</span>
                         <span class="wh-hourly-temp">${formatTemperature(h.temp)}</span>
-                        <span class="wh-hourly-pop"><i class="fas fa-droplet" style="font-size: 9.5px;"></i> ${h.pop}%</span>
-                        <span class="wh-hourly-wind"><i class="fas fa-wind" style="font-size: 9px;"></i> ${formatSpeed(h.wind)}</span>
+                        ${hasPop ? `<span class="wh-hourly-pop"><i class="fas fa-droplet" style="font-size: 9px;"></i> ${h.pop}%</span>` : ''}
                     </div>
                 `;
             });
@@ -1780,6 +1787,7 @@ function initNewsHubEngine() {
             let dailyHtml = '';
             daily.forEach((d, idx) => {
                 const details = getWeatherDetails(d.weatherCode, d.conditionText, 1);
+                const hasPop = d.pop && d.pop !== '0%' && d.pop !== '0 mm';
                 dailyHtml += `
                     <div class="wh-daily-card ${idx === 0 ? 'today-card' : ''}">
                         <span class="wh-daily-day">${d.day}</span>
@@ -1789,7 +1797,7 @@ function initNewsHubEngine() {
                             <span class="wh-daily-high">${formatTemperature(d.high)}</span>
                             <span class="wh-daily-low">${formatTemperature(d.low)}</span>
                         </div>
-                        <span class="wh-daily-pop"><i class="fas fa-droplet" style="font-size: 9px;"></i> ${d.pop}</span>
+                        ${hasPop ? `<span class="wh-daily-pop"><i class="fas fa-droplet" style="font-size: 9px;"></i> ${d.pop}</span>` : ''}
                     </div>
                 `;
             });

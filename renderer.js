@@ -371,7 +371,7 @@ function renderTabs() {
             
             const fakeTab1 = { url: tab.url, favicon: tab.favicon, emoji: tab.emoji };
             const fakeTab2 = { url: tab.url2, favicon: tab.favicon2, emoji: tab.emoji2 };
-            const isGroupActive = (tab.id === activeTabId && !!(tab.groupId || (group && group.id)));
+            const isGroupActive = ((tab.id == activeTabId || String(tab.id) === String(activeTabId)) && !!(tab.groupId || (group && group.id)));
             const tint1 = (isGroupActive && activeSide === 'left') ? '#FFFFFF' : (group ? group.color : null);
             const tint2 = (isGroupActive && activeSide === 'right') ? '#FFFFFF' : (group ? group.color : null);
             const iconHtml1 = getTabIconHtml(fakeTab1, tint1);
@@ -413,7 +413,7 @@ function renderTabs() {
             });
         } else {
             el.classList.remove('split-tab');
-            const isGroupActive = (tab.id === activeTabId && !!(tab.groupId || (group && group.id)));
+            const isGroupActive = ((tab.id == activeTabId || String(tab.id) === String(activeTabId)) && !!(tab.groupId || (group && group.id)));
             const tabTint = isGroupActive ? '#FFFFFF' : (group ? group.color : null);
             const iconHtml = getTabIconHtml(tab, tabTint);
             const simplifiedTitle = getSimplifiedTitle(tab.title, tab.url);
@@ -613,13 +613,13 @@ function renderTabs() {
             };
 
             const simplifiedTitle = getSimplifiedTitle(tab.title, tab.url);
-            const isGroupActive = (tab.id === activeTabId && !!(tab.groupId || (group && group.id)));
+            const isGroupActive = ((tab.id == activeTabId || String(tab.id) === String(activeTabId)) && !!(tab.groupId || (group && group.id)));
             const tabTint = isGroupActive ? '#FFFFFF' : (group ? group.color : null);
             const iconHtml = getTabIconHtml(tab, tabTint);
 
             if (tab.isSplit) {
-                const active1 = (tab.id === activeTabId && tab.focusedSide === 'left') ? 'active' : '';
-                const active2 = (tab.id === activeTabId && tab.focusedSide === 'right') ? 'active' : '';
+                const active1 = ((tab.id == activeTabId || String(tab.id) === String(activeTabId)) && tab.focusedSide === 'left') ? 'active' : '';
+                const active2 = ((tab.id == activeTabId || String(tab.id) === String(activeTabId)) && tab.focusedSide === 'right') ? 'active' : '';
                 const fakeTab1 = { url: tab.url, favicon: tab.favicon, emoji: tab.emoji, id: tab.id, groupId: tab.groupId };
                 const fakeTab2 = { url: tab.url2, favicon: tab.favicon2, emoji: tab.emoji2, id: tab.id, groupId: tab.groupId };
                 const tint1 = (isGroupActive && tab.focusedSide === 'left') ? '#FFFFFF' : (group ? group.color : null);
@@ -1090,9 +1090,9 @@ function getTabIconHtml(tab, tintColor) {
         return `<span class="tab-favicon tab-emoji" style="font-style: normal; display: inline-flex; align-items: center; justify-content: center; font-size: 14px; width: 14px; height: 14px; line-height: 1; background: transparent;">${tab.emoji}</span>`;
     }
 
-    const isGroupActive = (typeof activeTabId !== 'undefined' && tab.id === activeTabId && (tab.groupId || tintColor === '#FFFFFF' || tintColor === 'white'));
+    const isGroupActive = (typeof activeTabId !== 'undefined' && (tab.id == activeTabId || String(tab.id) === String(activeTabId)) && (tab.groupId || tintColor === '#FFFFFF' || tintColor === 'white')) || tintColor === '#FFFFFF' || tintColor === 'white';
     const defaultColor = isGroupActive ? '#FFFFFF' : 'var(--accent)';
-    const accentColor = (isGroupActive && !tintColor) ? '#FFFFFF' : (tintColor || defaultColor);
+    const accentColor = isGroupActive ? '#FFFFFF' : (tintColor || defaultColor);
 
     if (tab.loading) {
         return `<i class="fas fa-circle-notch tab-favicon spinner" style="color:${accentColor}"></i>`;

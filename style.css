@@ -5695,6 +5695,39 @@ body[data-theme="dark"] .vt-tab-item.grouped:hover {
   color: #FFFFFF !important;
 }
 
+/* Guaranteed Pure White for Active Grouped Tabs (Vertical & Horizontal across all themes) */
+.vt-tab-item.grouped.active *,
+.vt-tab-item.grouped.active .vt-tab-favicon,
+.vt-tab-item.grouped.active .vt-tab-favicon i,
+.vt-tab-item.grouped.active .vt-tab-favicon svg,
+.vt-tab-item.grouped.active i.tab-favicon,
+.vt-tab-item.grouped.active i.solid-icon,
+.vt-tab-item.grouped.active i,
+.vt-tab-item.grouped.active span,
+body[data-theme="light"] .vt-tab-item.grouped.active *,
+body[data-theme="light"] .vt-tab-item.grouped.active .vt-tab-favicon i,
+body[data-theme="light"] .vt-tab-item.grouped.active i.solid-icon,
+body[data-theme="dark"] .vt-tab-item.grouped.active *,
+body[data-theme="dark"] .vt-tab-item.grouped.active .vt-tab-favicon i,
+body[data-theme="dark"] .vt-tab-item.grouped.active i.solid-icon,
+.tab-item.grouped.active *,
+.tab-item.grouped.active .tab-favicon,
+.tab-item.grouped.active .tab-favicon i,
+.tab-item.grouped.active .tab-favicon svg,
+.tab-item.grouped.active i.tab-favicon,
+.tab-item.grouped.active i.solid-icon,
+.tab-item.grouped.active i,
+.tab-item.grouped.active span,
+body[data-theme="light"] .tab-item.grouped.active *,
+body[data-theme="light"] .tab-item.grouped.active .tab-favicon i,
+body[data-theme="light"] .tab-item.grouped.active i.solid-icon,
+body[data-theme="dark"] .tab-item.grouped.active *,
+body[data-theme="dark"] .tab-item.grouped.active .tab-favicon i,
+body[data-theme="dark"] .tab-item.grouped.active i.solid-icon {
+  color: #FFFFFF !important;
+  fill: #FFFFFF !important;
+}
+
 .vt-tab-item.grouped.active .vt-tab-close {
   color: rgba(255, 255, 255, 0.85) !important;
 }
