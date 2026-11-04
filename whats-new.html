@@ -1,14 +1,16 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
-    <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline' https:; style-src 'self' 'unsafe-inline' https:; font-src 'self' https: data:; img-src 'self' data: https: blob:; connect-src 'self' https: http:;">
+    <meta http-equiv="Content-Security-Policy"
+        content="default-src 'self'; script-src 'self' 'unsafe-inline' https:; style-src 'self' 'unsafe-inline' https:; font-src 'self' https: data:; img-src 'self' data: https: blob:; connect-src 'self' https: http:;">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>What's New | Ocal Browser</title>
-    <!-- ANTI-FLASH: must be FIRST in head -->
+    <title>What's New in Ocal</title>
+    <!-- ANTI-FLASH: Immediate Theme & Accent Application -->
     <script>
         (function () {
-            var t = localStorage.getItem('ocal-settings-theme') || 'light';
+            var t = localStorage.getItem('ocal-settings-theme') || 'dark';
             document.documentElement.setAttribute('data-theme', t);
             if (t === 'dark') {
                 document.documentElement.style.background = '#18181B';
@@ -21,1345 +23,874 @@
                 document.documentElement.style.setProperty('--accent', a);
                 document.documentElement.style.setProperty('--accent-glow', 'color-mix(in srgb, ' + a + ' 25%, transparent)');
                 document.documentElement.style.setProperty('--accent-dim', 'color-mix(in srgb, ' + a + ' 12%, transparent)');
+                document.documentElement.style.setProperty('--accent-border', a);
             }
         })();
     </script>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+    <link
+        href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=Space+Mono:ital,wght@0,400;0,700;1,400&family=JetBrains+Mono:wght@300;400;500&family=Outfit:wght@300;400;500;600;700&family=Inter:wght@300;400;500;600;700&display=swap"
+        rel="stylesheet">
     <link rel="stylesheet" href="assets/fontawesome/css/all.min.css">
+    <link rel="stylesheet" href="settings.css">
     <script src="color-harmonizer.js"></script>
+
     <style>
-        /* ── Reset & Modern Full-Width Design System ──────────────────────────── */
-        *, *::before, *::after {
-            box-sizing: border-box;
-            margin: 0;
-            padding: 0;
-            outline: none;
+        /* ── What's New Extension Styles (Native Desktop Settings Harmony) ── */
+
+        /* Iframe embedding support: hides duplicate outer chrome when embedded in Settings */
+        body.in-iframe {
+            height: auto !important;
+            min-height: 100% !important;
+            overflow-y: auto !important;
+            background: transparent !important;
         }
 
-        :root {
-            --bg: #EDEDF0;
-            --bg-elevated: #FFFFFF;
-            --card-bg: #FFFFFF;
-            --card-hover: #F8F8FA;
-            --border-subtle: rgba(0, 0, 0, 0.05);
-            --border-card: rgba(0, 0, 0, 0.06);
-            --text: #111113;
-            --text-secondary: #4B4D54;
-            --text-dim: #6E717B;
-            --text-muted: #8E929C;
-            --accent: #15AC49;
-            --accent-dim: rgba(21, 172, 73, 0.10);
-            --accent-glow: rgba(21, 172, 73, 0.22);
-            --accent-text: #FFFFFF;
-            --font-main: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, sans-serif;
-            --font-mono: 'Space Mono', monospace;
-            --radius-pill: 999px;
-            --radius-card: 22px;
-            --radius-sub: 16px;
-            --shadow-subtle: 0 4px 20px rgba(0, 0, 0, 0.02);
-            --shadow-float: 0 16px 40px rgba(0, 0, 0, 0.06);
-            --speed-smooth: 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+        body.in-iframe .settings-header,
+        body.in-iframe .sidebar {
+            display: none !important;
         }
 
-        html[data-theme="dark"],
-        body[data-theme="dark"] {
-            --bg: #18181B;
-            --bg-elevated: #1E1E23;
-            --card-bg: #222226;
-            --card-hover: #202026;
-            --border-subtle: rgba(255, 255, 255, 0.05);
-            --border-card: rgba(255, 255, 255, 0.07);
-            --text: #F4F4F6;
-            --text-secondary: #A6A6B2;
-            --text-dim: #7B7B88;
-            --text-muted: #62626E;
-            --accent: #09F0A0;
-            --accent-dim: rgba(9, 240, 160, 0.12);
-            --accent-glow: rgba(9, 240, 160, 0.25);
-            --accent-text: #0E0E11;
+        body.in-iframe .settings-container {
+            margin-top: 0 !important;
+            height: auto !important;
+            overflow: visible !important;
         }
 
-        html[data-theme-combo],
-        body[data-theme-combo] {
-            --bg: var(--background);
-            --bg-elevated: var(--surface);
-            --card-bg: var(--surface);
-            --card-hover: var(--surface-card);
-            --border-subtle: var(--border, rgba(255, 255, 255, 0.08));
-            --border-card: var(--border, rgba(255, 255, 255, 0.1));
-            --text: var(--text);
-            --text-secondary: var(--text-dim, #A6A6B2);
-            --text-dim: var(--text-dim, #7B7B88);
-            --text-muted: var(--text-dim, #62626E);
-            --accent: var(--accent);
+        body.in-iframe .content {
+            padding: 0 !important;
+            overflow-y: visible !important;
+            height: auto !important;
+            background: transparent !important;
         }
 
-        html {
-            width: 100%;
-            min-height: 100%;
-            background: var(--bg);
-            overflow-x: hidden;
-            overflow-y: auto;
-            scroll-behavior: smooth;
-        }
-
-        body {
-            width: 100%;
-            min-height: 100vh;
-            background: var(--bg);
-            font-family: var(--font-main);
-            color: var(--text);
-            overflow-x: hidden;
-            -webkit-font-smoothing: antialiased;
-            user-select: none;
-            -webkit-user-select: none;
-            opacity: 0;
-            transition: opacity 0.3s ease, background 0.25s ease;
-        }
-
-        body.loaded {
-            opacity: 1;
-        }
-
-        /* ── Scrollbars ── */
-        ::-webkit-scrollbar {
-            width: 6px;
-            height: 6px;
-        }
-        ::-webkit-scrollbar-track {
-            background: transparent;
-        }
-        ::-webkit-scrollbar-thumb {
-            background: rgba(140, 140, 150, 0.25);
-            border-radius: 10px;
-        }
-        ::-webkit-scrollbar-thumb:hover {
-            background: var(--accent);
-        }
-
-        /* ── Full-Width Fluid Workspace ── */
-        .fullwidth-workspace {
-            width: 100%;
-            max-width: 100%;
-            padding: 24px 36px 120px;
-            display: flex;
-            flex-direction: column;
-            gap: 24px;
-        }
-
-        @media (max-width: 900px) {
-            .fullwidth-workspace {
-                padding: 16px 16px 100px;
-                gap: 18px;
-            }
-        }
-
-        /* ── Full-Width Header Command Hub ── */
-        .command-header-hub {
-            background: var(--card-bg);
-            border: 1px solid var(--border-card);
-            border-radius: var(--radius-card);
-            padding: 20px 28px;
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            flex-wrap: wrap;
-            gap: 16px;
-            box-shadow: var(--shadow-subtle);
-        }
-
-        .hub-left {
-            display: flex;
-            align-items: center;
-            gap: 18px;
-            flex-wrap: wrap;
-        }
-
-        .brand-badge-pill {
-            display: inline-flex;
-            align-items: center;
-            gap: 10px;
-        }
-
-        .brand-logo-sq {
-            width: 38px;
-            height: 38px;
-            border-radius: 10px;
-            background: var(--accent);
-            color: var(--accent-text);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 18px;
-            font-weight: 800;
-        }
-
-        .brand-titles {
-            display: flex;
-            flex-direction: column;
-            gap: 2px;
-        }
-
-        .brand-name {
-            font-size: 18px;
-            font-weight: 800;
-            letter-spacing: -0.4px;
-            color: var(--text);
-            display: flex;
-            align-items: center;
-            gap: 8px;
-        }
-
-        .brand-subtitle {
-            font-size: 11px;
-            font-weight: 600;
-            color: var(--text-dim);
-            text-transform: uppercase;
-            letter-spacing: 0.6px;
-        }
-
-        .milestone-beacon-pill {
-            display: inline-flex;
-            align-items: center;
-            gap: 8px;
-            background: var(--accent-dim);
-            color: var(--accent);
-            padding: 5px 14px;
-            border-radius: var(--radius-pill);
-            font-size: 12px;
-            font-weight: 700;
-        }
-
-        .beacon-pulse {
-            width: 8px;
-            height: 8px;
-            border-radius: 50%;
-            background: var(--accent);
-            box-shadow: 0 0 0 0 var(--accent-glow);
-            animation: pulseWave 2s infinite;
-        }
-
-        @keyframes pulseWave {
-            0% { transform: scale(0.95); box-shadow: 0 0 0 0 var(--accent-glow); }
-            70% { transform: scale(1); box-shadow: 0 0 0 8px transparent; }
-            100% { transform: scale(0.95); box-shadow: 0 0 0 0 transparent; }
-        }
-
-        .hub-telemetry-strip {
-            display: flex;
-            align-items: center;
-            gap: 16px;
-            background: var(--bg);
-            padding: 6px 18px;
-            border-radius: var(--radius-pill);
-            font-size: 11px;
-            font-weight: 600;
-            color: var(--text-dim);
-        }
-
-        @media (max-width: 1200px) {
-            .hub-telemetry-strip {
-                display: none;
-            }
-        }
-
-        .telemetry-item {
-            display: flex;
-            align-items: center;
-            gap: 6px;
-        }
-
-        .telemetry-item i {
-            color: var(--accent);
-            font-size: 10px;
-        }
-
-        .telemetry-divider {
-            width: 1px;
-            height: 12px;
-            background: var(--border-subtle);
-        }
-
-        .hub-actions {
-            display: flex;
-            align-items: center;
-            gap: 10px;
-        }
-
-        .hub-btn {
-            background: var(--bg);
-            border: none;
-            border-radius: var(--radius-pill);
-            padding: 8px 16px;
-            font-size: 12px;
-            font-weight: 600;
-            color: var(--text);
-            cursor: pointer;
-            text-decoration: none;
-            display: inline-flex;
-            align-items: center;
-            gap: 7px;
-            transition: var(--speed-smooth);
-        }
-
-        .hub-btn:hover {
-            background: var(--card-hover);
-            color: var(--accent);
-            transform: translateY(-1px);
-        }
-
-        .hub-btn.primary {
-            background: var(--accent);
-            color: var(--accent-text);
-        }
-
-        .hub-btn.primary:hover {
-            opacity: 0.92;
-            transform: translateY(-2px);
-            box-shadow: 0 8px 24px var(--accent-glow);
-        }
-
-        /* ── 12-Column Asymmetric Bento Grid ── */
-        .bento-master-grid {
+        /* ── Spotlight 4-Pillar Grid for v10.1.23 ── */
+        .spotlight-grid {
             display: grid;
-            grid-template-columns: repeat(12, 1fr);
-            gap: 16px;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 14px;
+            padding: 20px 24px 24px;
         }
 
-        .bento-cell {
-            background: var(--card-bg);
-            border: 1px solid var(--border-card);
-            border-radius: var(--radius-card);
-            padding: 28px;
-            position: relative;
-            overflow: hidden;
-            box-shadow: var(--shadow-subtle);
-            transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.3s cubic-bezier(0.16, 1, 0.3, 1), border-color 0.3s ease;
-            cursor: pointer;
-            display: flex;
-            flex-direction: column;
-            justify-content: space-between;
-        }
-
-        .bento-cell:hover {
-            border-color: color-mix(in srgb, var(--accent) 35%, var(--border-card));
-            box-shadow: var(--shadow-float);
-            transform: translateY(-3px);
-        }
-
-        /* Asymmetric Column Spans */
-        .span-7 { grid-column: span 7; }
-        .span-5 { grid-column: span 5; }
-        .span-4 { grid-column: span 4; }
-        .span-3 { grid-column: span 3; }
-        .span-6 { grid-column: span 6; }
-        .span-12 { grid-column: span 12; }
-
-        @media (max-width: 1100px) {
-            .span-7, .span-5, .span-4, .span-3, .span-6 {
-                grid-column: span 6;
-            }
-        }
-
-        @media (max-width: 720px) {
-            .span-7, .span-5, .span-4, .span-3, .span-6, .span-12 {
-                grid-column: span 12;
-            }
-        }
-
-        /* Bento Card Internal Elements */
-        .bento-cell-tag {
-            font-size: 10px;
-            font-weight: 700;
-            text-transform: uppercase;
-            letter-spacing: 0.8px;
-            color: var(--accent);
-            margin-bottom: 8px;
-            display: inline-flex;
-            align-items: center;
-            gap: 6px;
-        }
-
-        .bento-cell-title {
-            font-size: 20px;
-            font-weight: 800;
-            letter-spacing: -0.4px;
-            color: var(--text);
-            line-height: 1.25;
-            margin-bottom: 10px;
-        }
-
-        .bento-cell-desc {
-            font-size: 13.5px;
-            color: var(--text-secondary);
-            line-height: 1.6;
-        }
-
-        /* Feature Spotlight 1: AI Interactive Simulator */
-        .bento-ai-hero-mockup {
-            margin-top: 18px;
-            background: var(--bg);
-            border-radius: var(--radius-sub);
-            padding: 16px;
-            display: flex;
-            flex-direction: column;
-            gap: 10px;
-            border: 1px solid var(--border-subtle);
-        }
-
-        .mockup-tab-pill-row {
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            flex-wrap: wrap;
-        }
-
-        .mockup-tab-pill {
-            display: inline-flex;
-            align-items: center;
-            gap: 6px;
-            background: var(--card-bg);
-            padding: 4px 10px;
-            border-radius: var(--radius-pill);
-            font-size: 11px;
-            font-weight: 600;
-            color: var(--text);
-        }
-
-        .mockup-tab-pill i {
-            color: var(--accent);
-            font-size: 11px;
-        }
-
-        .mockup-compare-badge {
-            background: var(--accent);
-            color: var(--accent-text);
-            padding: 3px 10px;
-            border-radius: var(--radius-pill);
-            font-size: 10.5px;
-            font-weight: 700;
-        }
-
-        .mockup-ai-response {
-            font-size: 12px;
-            line-height: 1.5;
-            color: var(--text-secondary);
-            background: var(--card-bg);
-            padding: 12px 14px;
-            border-radius: var(--radius-sub);
-            border-left: 3px solid var(--accent);
-        }
-
-        /* Feature Spotlight 2: Browser Tabs Mockup */
-        .browser-tabs-mockup {
-            margin-top: 18px;
-            display: flex;
-            flex-direction: column;
-            gap: 8px;
-            background: var(--bg);
-            padding: 14px;
-            border-radius: var(--radius-sub);
-            border: 1px solid var(--border-subtle);
-        }
-
-        .mockup-tab-card {
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            background: var(--card-bg);
-            padding: 7px 12px;
-            border-radius: 8px;
-            font-size: 12px;
-            font-weight: 600;
-            color: var(--text);
-            gap: 8px;
-        }
-
-        .mockup-tab-card i {
-            color: var(--accent);
-            font-size: 11px;
-        }
-
-        .mockup-tab-dot {
-            width: 7px;
-            height: 7px;
-            border-radius: 50%;
-            background: var(--accent);
-            margin-left: auto;
-        }
-
-        .mockup-tab-tag {
-            font-size: 10px;
-            font-weight: 700;
-            color: var(--accent);
-            background: var(--accent-dim);
-            padding: 2px 7px;
-            border-radius: var(--radius-pill);
-            margin-left: auto;
-        }
-
-        .mockup-tab-features {
-            display: flex;
-            align-items: center;
-            gap: 12px;
-            padding-top: 4px;
-            font-size: 11px;
-            font-weight: 600;
-            color: var(--text-dim);
-        }
-
-        .mockup-tab-features i {
-            color: var(--accent);
-            font-size: 10px;
-        }
-
-        /* Feature Spotlight 4: Shield Stats Mockup */
-        .mockup-shield-stats {
-            margin-top: 14px;
-            display: flex;
-            align-items: center;
-            gap: 8px;
-        }
-
-        .shield-stat-pill {
-            flex: 1;
-            background: var(--bg);
-            padding: 8px 12px;
-            border-radius: var(--radius-sub);
-            display: flex;
-            flex-direction: column;
-            gap: 2px;
-            font-size: 11px;
-            color: var(--text-dim);
-            border: 1px solid var(--border-subtle);
-        }
-
-        .shield-stat-pill i {
-            color: var(--accent);
-            margin-bottom: 2px;
-        }
-
-        .shield-stat-pill strong {
-            font-size: 13px;
-            color: var(--text);
-            font-family: var(--font-mono);
-        }
-
-        /* ── 3-Tile Performance Matrix ── */
-        .metrics-matrix-row {
-            display: grid;
-            grid-template-columns: repeat(3, 1fr);
-            gap: 16px;
-        }
-
-        @media (max-width: 800px) {
-            .metrics-matrix-row {
+        @media (max-width: 860px) {
+            .spotlight-grid {
                 grid-template-columns: 1fr;
             }
         }
 
-        .metric-tile {
-            background: var(--card-bg);
-            border: 1px solid var(--border-card);
-            border-radius: var(--radius-sub);
-            padding: 22px 24px;
-            display: flex;
-            align-items: center;
-            gap: 16px;
-            box-shadow: var(--shadow-subtle);
-            transition: var(--speed-smooth);
-        }
-
-        .metric-tile:hover {
-            transform: translateY(-2px);
-            border-color: var(--accent);
-        }
-
-        .metric-icon-wrap {
-            width: 44px;
-            height: 44px;
-            border-radius: 12px;
-            background: var(--bg);
-            color: var(--accent);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 18px;
-            flex-shrink: 0;
-        }
-
-        .metric-content {
+        .spotlight-card {
+            background: rgba(0, 0, 0, 0.02);
+            border: 1px solid var(--border, rgba(0, 0, 0, 0.07));
+            border-radius: 14px;
+            padding: 18px 20px;
             display: flex;
             flex-direction: column;
-            gap: 2px;
-        }
-
-        .metric-val {
-            font-family: var(--font-mono);
-            font-size: 24px;
-            font-weight: 700;
-            color: var(--text);
-            line-height: 1.1;
-        }
-
-        .metric-lbl {
-            font-size: 12px;
-            font-weight: 600;
-            color: var(--text-dim);
-        }
-
-        /* ── Asymmetric 2-Pane Workstation (Left Sticky Rail + Right Grid) ── */
-        .two-pane-workstation {
-            display: flex;
-            align-items: flex-start;
-            gap: 24px;
-            width: 100%;
-        }
-
-        @media (max-width: 960px) {
-            .two-pane-workstation {
-                flex-direction: column;
-            }
-        }
-
-        /* Left Rail: Sticky Navigator */
-        .sticky-left-rail {
-            width: 290px;
-            flex-shrink: 0;
-            position: sticky;
-            top: 20px;
-            background: var(--card-bg);
-            border: 1px solid var(--border-card);
-            border-radius: var(--radius-card);
-            padding: 20px;
-            display: flex;
-            flex-direction: column;
-            gap: 18px;
-            box-shadow: var(--shadow-subtle);
-        }
-
-        @media (max-width: 960px) {
-            .sticky-left-rail {
-                width: 100%;
-                position: static;
-            }
-        }
-
-        .rail-search-box {
+            justify-content: space-between;
+            gap: 14px;
+            cursor: pointer;
+            transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
             position: relative;
-            display: flex;
-            align-items: center;
-            width: 100%;
+            overflow: hidden;
         }
 
-        .rail-search-box i {
-            position: absolute;
-            left: 12px;
-            color: var(--text-muted);
-            font-size: 13px;
-            pointer-events: none;
+        body[data-theme="dark"] .spotlight-card {
+            background: rgba(255, 255, 255, 0.025);
+            border-color: rgba(255, 255, 255, 0.07);
         }
 
-        .rail-search-input {
-            width: 100%;
-            background: var(--bg);
-            border: none;
-            border-radius: var(--radius-pill);
-            padding: 8px 34px 8px 34px;
-            font-family: var(--font-main);
-            font-size: 12.5px;
-            font-weight: 500;
-            color: var(--text);
-            transition: var(--speed-smooth);
+        .spotlight-card:hover {
+            transform: translateY(-2px);
+            border-color: color-mix(in srgb, var(--accent) 35%, transparent);
+            background: rgba(0, 0, 0, 0.035);
+            box-shadow: 0 4px 16px rgba(0, 0, 0, 0.04);
         }
 
-        .rail-search-input:focus {
-            box-shadow: 0 0 0 2px var(--accent-dim);
+        body[data-theme="dark"] .spotlight-card:hover {
+            background: rgba(255, 255, 255, 0.045);
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.25);
         }
 
-        .rail-key-badge {
-            position: absolute;
-            right: 10px;
-            font-family: var(--font-mono);
-            font-size: 10px;
-            background: var(--card-bg);
-            border: 1px solid var(--border-subtle);
-            padding: 1px 4px;
-            border-radius: 3px;
-            color: var(--text-muted);
-        }
-
-        .rail-menu-list {
-            display: flex;
-            flex-direction: column;
-            gap: 4px;
-        }
-
-        .rail-menu-item {
+        .sc-top {
             display: flex;
             align-items: center;
             justify-content: space-between;
-            background: transparent;
-            border: none;
-            border-radius: 10px;
-            padding: 9px 12px;
-            font-size: 12.5px;
-            font-weight: 600;
-            color: var(--text-secondary);
-            cursor: pointer;
-            transition: var(--speed-smooth);
-            text-align: left;
+            margin-bottom: 2px;
         }
 
-        .rail-menu-item:hover {
-            background: var(--bg);
-            color: var(--text);
-        }
-
-        .rail-menu-item.active {
-            background: var(--accent);
-            color: var(--accent-text);
-        }
-
-        .rail-menu-item-left {
-            display: flex;
-            align-items: center;
-            gap: 9px;
-        }
-
-        .rail-menu-item-left i {
-            font-size: 13px;
-            width: 16px;
-            text-align: center;
-        }
-
-        .rail-item-badge {
-            font-size: 10px;
-            font-weight: 700;
-            background: rgba(0, 0, 0, 0.08);
-            padding: 2px 7px;
-            border-radius: var(--radius-pill);
-        }
-
-        html[data-theme="dark"] .rail-item-badge {
-            background: rgba(255, 255, 255, 0.12);
-        }
-
-        .rail-menu-item.active .rail-item-badge {
-            background: rgba(0, 0, 0, 0.2);
-            color: var(--accent-text);
-        }
-
-        .rail-quick-jumps {
-            border-top: 1px solid var(--border-subtle);
-            padding-top: 14px;
-            display: flex;
-            flex-direction: column;
-            gap: 6px;
-        }
-
-        .rail-jump-label {
-            font-size: 10px;
-            font-weight: 700;
-            text-transform: uppercase;
-            letter-spacing: 0.6px;
-            color: var(--text-muted);
-            margin-bottom: 4px;
-        }
-
-        .rail-jump-link {
-            font-size: 12px;
-            font-weight: 600;
-            color: var(--text-dim);
-            text-decoration: none;
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            padding: 4px 6px;
-            border-radius: 6px;
-            transition: var(--speed-smooth);
-        }
-
-        .rail-jump-link:hover {
-            color: var(--accent);
-            background: var(--bg);
-        }
-
-        /* Right Pane: Dynamic Features Showcase */
-        .dynamic-right-pane {
-            flex: 1;
-            min-width: 0;
-            display: flex;
-            flex-direction: column;
-            gap: 24px;
-        }
-
-        .pane-header {
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            flex-wrap: wrap;
-            gap: 10px;
-        }
-
-        .pane-title-group {
-            display: flex;
-            flex-direction: column;
-            gap: 2px;
-        }
-
-        .pane-main-title {
-            font-size: 22px;
-            font-weight: 800;
-            letter-spacing: -0.5px;
-            color: var(--text);
-        }
-
-        .pane-sub-title {
-            font-size: 11.5px;
-            font-weight: 600;
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
-            color: var(--text-dim);
-        }
-
-        .features-fullwidth-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
-            gap: 16px;
-        }
-
-        .feature-item-card {
-            background: var(--card-bg);
-            border: 1px solid var(--border-card);
-            border-radius: var(--radius-card);
-            padding: 24px;
-            display: flex;
-            flex-direction: column;
-            justify-content: space-between;
-            min-height: 210px;
-            box-shadow: var(--shadow-subtle);
-            cursor: pointer;
-            transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
-        }
-
-        .feature-item-card:hover {
-            transform: translateY(-3px);
-            border-color: color-mix(in srgb, var(--accent) 30%, var(--border-card));
-            box-shadow: var(--shadow-float);
-        }
-
-        .card-top-row {
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            margin-bottom: 12px;
-        }
-
-        .card-icon-box {
-            width: 38px;
-            height: 38px;
-            border-radius: 10px;
-            background: var(--bg);
+        .sc-icon {
+            width: 36px;
+            height: 36px;
+            border-radius: 9px;
+            background: color-mix(in srgb, var(--accent) 12%, transparent);
             color: var(--accent);
             display: flex;
             align-items: center;
             justify-content: center;
-            font-size: 15px;
-            transition: var(--speed-smooth);
+            font-size: 16px;
         }
 
-        .feature-item-card:hover .card-icon-box {
-            background: var(--accent);
-            color: var(--accent-text);
-            transform: scale(1.05);
-        }
-
-        .card-category-pill {
-            font-size: 10px;
-            font-weight: 700;
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
-            background: var(--bg);
-            color: var(--text-dim);
-            padding: 3px 9px;
-            border-radius: var(--radius-pill);
-        }
-
-        .card-feature-title {
-            font-size: 15px;
-            font-weight: 700;
-            color: var(--text);
-            line-height: 1.35;
-            margin-bottom: 8px;
-        }
-
-        .card-feature-desc {
-            font-size: 12.5px;
-            color: var(--text-secondary);
-            line-height: 1.55;
-            margin-bottom: 14px;
-            flex: 1;
-        }
-
-        .card-action-footer {
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            padding-top: 12px;
-            border-top: 1px solid var(--border-subtle);
-            font-size: 11.5px;
-            font-weight: 600;
-            color: var(--accent);
-        }
-
-        .card-action-footer i {
-            transition: transform 0.2s ease;
-        }
-
-        .feature-item-card:hover .card-action-footer i {
-            transform: translateX(4px);
-        }
-
-        @keyframes fadeInCard {
-            from {
-                opacity: 0;
-                transform: translateY(12px) scale(0.98);
-            }
-            to {
-                opacity: 1;
-                transform: translateY(0) scale(1);
-            }
-        }
-
-        /* ── Full Changelog Timeline Section ── */
-        .changelog-block {
-            background: var(--card-bg);
-            border: 1px solid var(--border-card);
-            border-radius: var(--radius-card);
-            padding: 28px;
-            box-shadow: var(--shadow-subtle);
-            display: flex;
-            flex-direction: column;
-            gap: 20px;
-        }
-
-        .timeline-stream {
-            display: flex;
-            flex-direction: column;
-            gap: 16px;
-        }
-
-        .timeline-entry-card {
-            background: var(--bg);
-            border-radius: var(--radius-sub);
-            padding: 20px 22px;
-            display: flex;
-            flex-direction: column;
-            gap: 10px;
-            transition: var(--speed-smooth);
-            border: 1px solid transparent;
-        }
-
-        .timeline-entry-card:hover {
-            background: var(--card-hover);
-            border-color: var(--accent);
-            transform: translateY(-2px);
-        }
-
-        .entry-top {
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            flex-wrap: wrap;
-            gap: 8px;
-        }
-
-        .entry-version-title {
-            font-size: 15.5px;
-            font-weight: 700;
-            color: var(--text);
-        }
-
-        .entry-date {
-            font-family: var(--font-mono);
-            font-size: 11px;
-            font-weight: 700;
-            color: var(--accent);
-            background: var(--accent-dim);
-            padding: 3px 10px;
-            border-radius: var(--radius-pill);
-        }
-
-        .entry-desc {
-            font-size: 13px;
-            line-height: 1.6;
-            color: var(--text-secondary);
-        }
-
-        .entry-tags {
-            display: flex;
-            flex-wrap: wrap;
-            gap: 6px;
-        }
-
-        .entry-tag-pill {
+        .sc-pill {
+            font-family: var(--font-mono, 'Space Mono', monospace);
             font-size: 10.5px;
-            font-weight: 600;
-            background: var(--card-bg);
-            color: var(--text-dim);
-            padding: 2.5px 8px;
-            border-radius: var(--radius-pill);
+            font-weight: 700;
+            padding: 3px 9px;
+            border-radius: 6px;
+            background: color-mix(in srgb, var(--accent) 14%, transparent);
+            color: var(--accent);
+            letter-spacing: 0.3px;
         }
 
-        /* ── Floating Command Bottom Dock ── */
-        .floating-bottom-dock {
-            position: fixed;
-            bottom: 24px;
-            left: 50%;
-            transform: translateX(-50%);
-            z-index: 1000;
-            background: color-mix(in srgb, var(--card-bg) 85%, transparent);
-            backdrop-filter: blur(20px);
-            -webkit-backdrop-filter: blur(20px);
-            border: 1px solid var(--border-card);
-            border-radius: var(--radius-pill);
-            padding: 6px 10px;
+        .sc-title {
+            font-size: 15px;
+            font-weight: 700;
+            color: var(--text);
+            margin: 6px 0 4px 0;
+            letter-spacing: -0.2px;
+        }
+
+        .sc-desc {
+            font-size: 12.5px;
+            color: var(--text-dim);
+            line-height: 1.5;
+            margin: 0;
+        }
+
+        .sc-action {
             display: flex;
             align-items: center;
             gap: 6px;
-            box-shadow: 0 16px 40px rgba(0, 0, 0, 0.25);
-        }
-
-        .dock-action-btn {
-            background: transparent;
-            border: none;
-            border-radius: var(--radius-pill);
-            padding: 7px 14px;
             font-size: 12px;
             font-weight: 600;
-            color: var(--text);
+            color: var(--accent);
+            margin-top: 4px;
+        }
+
+        .sc-action i {
+            font-size: 10px;
+            transition: transform 0.15s ease;
+        }
+
+        .spotlight-card:hover .sc-action i {
+            transform: translateX(3px);
+        }
+
+        /* ── Category Filter Pills Row ── */
+        .category-filter-bar {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 16px 24px;
+            border-bottom: 1px solid var(--border, rgba(0, 0, 0, 0.06));
+            background: rgba(0, 0, 0, 0.015);
+            flex-wrap: wrap;
+        }
+
+        body[data-theme="dark"] .category-filter-bar {
+            border-bottom-color: rgba(255, 255, 255, 0.06);
+            background: rgba(255, 255, 255, 0.015);
+        }
+
+        .cat-filter-btn {
+            background: transparent;
+            border: 1px solid var(--border, rgba(0, 0, 0, 0.08));
+            border-radius: 8px;
+            padding: 6px 14px;
+            font-size: 12.5px;
+            font-weight: 600;
+            color: var(--text-dim);
             cursor: pointer;
             display: inline-flex;
             align-items: center;
-            gap: 8px;
-            transition: var(--speed-smooth);
+            gap: 7px;
+            transition: all 0.15s ease;
         }
 
-        .dock-action-btn:hover {
-            background: var(--accent);
-            color: var(--accent-text);
+        body[data-theme="dark"] .cat-filter-btn {
+            border-color: rgba(255, 255, 255, 0.08);
+        }
+
+        .cat-filter-btn:hover {
+            color: var(--text);
+            background: rgba(0, 0, 0, 0.04);
+            border-color: rgba(0, 0, 0, 0.15);
+        }
+
+        body[data-theme="dark"] .cat-filter-btn:hover {
+            background: rgba(255, 255, 255, 0.06);
+            border-color: rgba(255, 255, 255, 0.15);
+        }
+
+        .cat-filter-btn.active {
+            background: var(--accent) !important;
+            color: var(--accent-text, #FFFFFF) !important;
+            border-color: var(--accent) !important;
+            box-shadow: 0 1px 4px color-mix(in srgb, var(--accent) 30%, transparent);
+        }
+
+        .cat-counter {
+            font-family: var(--font-mono, 'Space Mono', monospace);
+            font-size: 10px;
+            opacity: 0.85;
+            padding: 1px 5px;
+            border-radius: 4px;
+            background: rgba(0, 0, 0, 0.08);
+        }
+
+        .cat-filter-btn.active .cat-counter {
+            background: rgba(255, 255, 255, 0.25);
+            color: #FFFFFF;
+        }
+
+        /* ── Feature Directory Grid ── */
+        .features-bento-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(290px, 1fr));
+            gap: 14px;
+            padding: 20px 24px 24px;
+        }
+
+        .feature-card {
+            background: rgba(0, 0, 0, 0.02);
+            border: 1px solid var(--border, rgba(0, 0, 0, 0.07));
+            border-radius: 12px;
+            padding: 16px 18px;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            gap: 12px;
+            cursor: pointer;
+            transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+
+        body[data-theme="dark"] .feature-card {
+            background: rgba(255, 255, 255, 0.02);
+            border-color: rgba(255, 255, 255, 0.06);
+        }
+
+        .feature-card:hover {
             transform: translateY(-2px);
+            border-color: color-mix(in srgb, var(--accent) 35%, transparent);
+            background: rgba(0, 0, 0, 0.035);
+            box-shadow: 0 4px 14px rgba(0, 0, 0, 0.04);
         }
 
-        .dock-divider-v {
-            width: 1px;
-            height: 16px;
-            background: var(--border-card);
+        body[data-theme="dark"] .feature-card:hover {
+            background: rgba(255, 255, 255, 0.045);
+            box-shadow: 0 4px 16px rgba(0, 0, 0, 0.2);
+        }
+
+        .fc-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 2px;
+        }
+
+        .fc-icon {
+            width: 32px;
+            height: 32px;
+            border-radius: 8px;
+            background: color-mix(in srgb, var(--accent) 10%, transparent);
+            color: var(--accent);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 14px;
+        }
+
+        .fc-category {
+            font-size: 10.5px;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            color: var(--text-dim);
+            background: rgba(0, 0, 0, 0.04);
+            padding: 2px 7px;
+            border-radius: 4px;
+        }
+
+        body[data-theme="dark"] .fc-category {
+            background: rgba(255, 255, 255, 0.06);
+        }
+
+        .fc-title {
+            font-size: 14px;
+            font-weight: 700;
+            color: var(--text);
+            margin: 4px 0 3px 0;
+            letter-spacing: -0.2px;
+            line-height: 1.35;
+        }
+
+        .fc-desc {
+            font-size: 12px;
+            color: var(--text-dim);
+            line-height: 1.5;
+            margin: 0;
+        }
+
+        .fc-footer {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            font-size: 11.5px;
+            font-weight: 600;
+            color: var(--accent);
+            padding-top: 6px;
+            border-top: 1px solid rgba(0, 0, 0, 0.04);
+        }
+
+        body[data-theme="dark"] .fc-footer {
+            border-top-color: rgba(255, 255, 255, 0.04);
+        }
+
+        .fc-footer i {
+            font-size: 10px;
+            transition: transform 0.15s ease;
+        }
+
+        .feature-card:hover .fc-footer i {
+            transform: translateX(3px);
+        }
+
+        /* ── Changelog Stream ── */
+        .changelog-stream {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            padding: 20px 24px 24px;
+        }
+
+        .timeline-card {
+            background: rgba(0, 0, 0, 0.015);
+            border: 1px solid var(--border, rgba(0, 0, 0, 0.06));
+            border-radius: 12px;
+            padding: 16px 20px;
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            transition: border-color 0.15s ease;
+        }
+
+        body[data-theme="dark"] .timeline-card {
+            background: rgba(255, 255, 255, 0.02);
+            border-color: rgba(255, 255, 255, 0.06);
+        }
+
+        .timeline-card:hover {
+            border-color: color-mix(in srgb, var(--accent) 30%, transparent);
+        }
+
+        .tc-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            flex-wrap: wrap;
+            gap: 8px;
+        }
+
+        .tc-title {
+            font-size: 14.5px;
+            font-weight: 700;
+            color: var(--text);
+            letter-spacing: -0.2px;
+        }
+
+        .tc-date {
+            font-family: var(--font-mono, 'Space Mono', monospace);
+            font-size: 11px;
+            color: var(--text-dim);
+            background: rgba(0, 0, 0, 0.04);
+            padding: 2px 8px;
+            border-radius: 5px;
+        }
+
+        body[data-theme="dark"] .tc-date {
+            background: rgba(255, 255, 255, 0.06);
+        }
+
+        .tc-desc {
+            font-size: 12.5px;
+            color: var(--text-dim);
+            line-height: 1.55;
+            margin: 0;
+        }
+
+        .tc-tags {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            flex-wrap: wrap;
+            margin-top: 4px;
+        }
+
+        .tc-tag {
+            font-size: 11px;
+            font-weight: 550;
+            color: var(--accent);
+            background: color-mix(in srgb, var(--accent) 10%, transparent);
+            padding: 2px 8px;
+            border-radius: 4px;
+        }
+
+        /* ── Contributors Grid ── */
+        .contributors-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+            gap: 12px;
+            padding: 20px 24px 24px;
+        }
+
+        .contributor-tile {
+            background: rgba(0, 0, 0, 0.015);
+            border: 1px solid var(--border, rgba(0, 0, 0, 0.06));
+            border-radius: 12px;
+            padding: 14px 16px;
+            display: flex;
+            align-items: flex-start;
+            gap: 12px;
+            transition: all 0.15s ease;
+        }
+
+        body[data-theme="dark"] .contributor-tile {
+            background: rgba(255, 255, 255, 0.02);
+            border-color: rgba(255, 255, 255, 0.06);
+        }
+
+        .contributor-tile:hover {
+            border-color: color-mix(in srgb, var(--accent) 30%, transparent);
+            transform: translateY(-1px);
+        }
+
+        .ct-avatar {
+            width: 36px;
+            height: 36px;
+            border-radius: 10px;
+            background: color-mix(in srgb, var(--accent) 12%, transparent);
+            color: var(--accent);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 15px;
+            flex-shrink: 0;
+        }
+
+        .ct-info {
+            display: flex;
+            flex-direction: column;
+            gap: 3px;
+            min-width: 0;
+        }
+
+        .ct-name-row {
+            display: flex;
+            align-items: center;
+            gap: 7px;
+            flex-wrap: wrap;
+        }
+
+        .ct-name {
+            font-size: 13.5px;
+            font-weight: 700;
+            color: var(--text);
+            letter-spacing: -0.2px;
+        }
+
+        .ct-role {
+            font-size: 10px;
+            font-weight: 600;
+            color: var(--accent);
+            background: color-mix(in srgb, var(--accent) 12%, transparent);
+            padding: 1px 6px;
+            border-radius: 4px;
+        }
+
+        .ct-desc {
+            font-size: 11.5px;
+            color: var(--text-dim);
+            line-height: 1.45;
+            margin: 0;
+        }
+
+        /* ── Header Right Tools ── */
+        .header-tools {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .tool-link-btn {
+            background: transparent;
+            border: 1px solid var(--chrome-border);
+            border-radius: 8px;
+            padding: 6px 12px;
+            font-size: 12px;
+            font-weight: 600;
+            color: var(--text-dim);
+            cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            transition: all 0.15s ease;
+            text-decoration: none;
+        }
+
+        .tool-link-btn:hover {
+            color: var(--text);
+            background: rgba(0, 0, 0, 0.04);
+            border-color: rgba(0, 0, 0, 0.15);
+        }
+
+        body[data-theme="dark"] .tool-link-btn:hover {
+            background: rgba(255, 255, 255, 0.06);
+            border-color: rgba(255, 255, 255, 0.15);
+        }
+
+        .tool-link-btn.primary {
+            background: var(--accent);
+            border-color: var(--accent);
+            color: var(--accent-text, #FFFFFF);
+        }
+
+        .tool-link-btn.primary:hover {
+            filter: brightness(1.08);
+            background: var(--accent);
         }
     </style>
 </head>
-<body>
-    <div class="fullwidth-workspace">
-        <!-- ══ Full-Width Header Command Hub ══ -->
-        <header class="command-header-hub">
-            <div class="hub-left">
-                <div class="brand-badge-pill">
-                    <div class="brand-logo-sq">O</div>
-                    <div class="brand-titles">
-                        <span class="brand-name">What's New in Ocal</span>
-                        <span class="brand-subtitle">Flagship Production Architecture</span>
-                    </div>
-                </div>
-                <div class="milestone-beacon-pill">
-                    <span class="beacon-pulse"></span>
-                    <span>v10.1.23 Stable</span>
-                </div>
-            </div>
 
-            <!-- Real-Time Browser State Indicators -->
-            <div class="hub-telemetry-strip">
-                <div class="telemetry-item">
-                    <i class="fas fa-shield-halved"></i>
-                    <span>Ocal Shield: Active</span>
-                </div>
-                <div class="telemetry-divider"></div>
-                <div class="telemetry-item">
-                    <i class="fas fa-wand-magic-sparkles"></i>
-                    <span>AI Copilot: Ready</span>
-                </div>
-                <div class="telemetry-divider"></div>
-                <div class="telemetry-item">
-                    <i class="fas fa-puzzle-piece"></i>
-                    <span>Extensions: Supported</span>
-                </div>
-                <div class="telemetry-divider"></div>
-                <div class="telemetry-item">
-                    <i class="fas fa-lock"></i>
-                    <span>Vault: Protected</span>
-                </div>
-            </div>
-
-            <div class="hub-actions">
-                <a href="https://github.com/neelkanth-patel26/Ocal-Browser/releases" target="_blank" class="hub-btn" title="View Releases on GitHub">
-                    <i class="fab fa-github"></i>
-                    <span>Releases</span>
-                </a>
-                <button class="hub-btn primary" onclick="navigate('ocal://settings')">
-                    <i class="fas fa-sliders"></i>
-                    <span>Settings</span>
-                </button>
-            </div>
-        </header>
-
-        <!-- ══ 12-Column Asymmetric Bento Grid ══ -->
-        <section class="bento-master-grid" id="hero-bento">
-            <!-- Spotlight 1: AI Evolution & Tab-Aware Intelligence (Span 7) -->
-            <div class="bento-cell span-7" onclick="navigate('ocal://home')">
-                <div>
-                    <span class="bento-cell-tag"><i class="fas fa-wand-magic-sparkles"></i> Milestone Flagship Feature</span>
-                    <h2 class="bento-cell-title">Tab-Aware AI Copilot & Multi-Tab Comparative Analysis</h2>
-                    <p class="bento-cell-desc">Seamlessly mention and attach active tabs using @tab autocomplete. Compare multiple live web pages side-by-side, analyze differences, pros/cons, and synthesize research offline with zero cloud dependency.</p>
-                    
-                    <div class="bento-ai-hero-mockup">
-                        <div class="mockup-tab-pill-row">
-                            <span class="mockup-tab-pill"><i class="fas fa-globe"></i> GitHub Repository</span>
-                            <span class="mockup-tab-pill"><i class="fas fa-globe"></i> Wikipedia Docs</span>
-                            <span class="mockup-compare-badge"><i class="fas fa-code-compare"></i> Comparing 2 Tabs</span>
-                        </div>
-                        <div class="mockup-ai-response">
-                            <strong>Ocal AI Synthesis:</strong> Analyzed open tabs. Tab 1 focuses on binary releases and CI workflows; Tab 2 provides reference architectural history.
-                        </div>
-                    </div>
-                </div>
-                <div style="margin-top: 18px; display: flex; align-items: center; justify-content: space-between; font-size: 12px; font-weight: 700; color: var(--accent);">
-                    <span>Launch AI Copilot</span>
-                    <i class="fas fa-arrow-right"></i>
-                </div>
-            </div>
-
-            <!-- Spotlight 2: Fluid Tabs & Split-Screen Workspace (Span 5) -->
-            <div class="bento-cell span-5" onclick="navigate('ocal://settings')">
-                <div>
-                    <span class="bento-cell-tag"><i class="fas fa-table-columns"></i> Multitasking & Tabs</span>
-                    <h2 class="bento-cell-title">Fluid Tabs & Split-Screen Workspace</h2>
-                    <p class="bento-cell-desc">Customize your browsing layout with floating horizontal tabs or collapsible vertical tab groups, and view multiple pages side-by-side with instant snap.</p>
-
-                    <div class="browser-tabs-mockup">
-                        <div class="mockup-tab-card active">
-                            <i class="fas fa-file-code"></i>
-                            <span>Active Project Tab</span>
-                            <span class="mockup-tab-dot"></span>
-                        </div>
-                        <div class="mockup-tab-card">
-                            <i class="fas fa-compass"></i>
-                            <span>Reference Research</span>
-                            <span class="mockup-tab-tag">Split 50%</span>
-                        </div>
-                        <div class="mockup-tab-features">
-                            <span><i class="fas fa-check"></i> Vertical Tabs</span>
-                            <span><i class="fas fa-check"></i> Split Screen</span>
-                            <span><i class="fas fa-check"></i> Fast Switching</span>
-                        </div>
-                    </div>
-                </div>
-                <div style="margin-top: 18px; display: flex; align-items: center; justify-content: space-between; font-size: 12px; font-weight: 700; color: var(--accent);">
-                    <span>Configure Tab Layout</span>
-                    <i class="fas fa-arrow-right"></i>
-                </div>
-            </div>
-
-            <!-- Spotlight 3: Universal Chrome Extension Polyfills (Span 4) -->
-            <div class="bento-cell span-4" onclick="navigate('ocal://store')">
-                <div>
-                    <span class="bento-cell-tag"><i class="fas fa-puzzle-piece"></i> Extension Ecosystem</span>
-                    <h3 class="bento-cell-title">Chrome Extension Support & Store</h3>
-                    <p class="bento-cell-desc">Universal polyfills for chrome.windows, chrome.storage, and chrome.action. Features a topbar capsule with smart overflow and dynamic popup auto-sizing.</p>
-                </div>
-                <div style="margin-top: 18px; display: flex; align-items: center; justify-content: space-between; font-size: 12px; font-weight: 700; color: var(--accent);">
-                    <span>Browse Extension Store</span>
-                    <i class="fas fa-arrow-right"></i>
-                </div>
-            </div>
-
-            <!-- Spotlight 4: Built-in Ocal Shield & Tracker Protection (Span 4) -->
-            <div class="bento-cell span-4" onclick="navigate('ocal://settings')">
-                <div>
-                    <span class="bento-cell-tag"><i class="fas fa-shield-halved"></i> Privacy & Speed</span>
-                    <h3 class="bento-cell-title">Built-in Ocal Shield & Tracker Protection</h3>
-                    <p class="bento-cell-desc">Block intrusive video ads, popups, and invasive cross-site tracking scripts automatically. Browse faster with zero third-party extensions required.</p>
-                    
-                    <div class="mockup-shield-stats">
-                        <div class="shield-stat-pill">
-                            <i class="fas fa-ban"></i>
-                            <span>Ads Blocked</span>
-                            <strong>100% Clean</strong>
-                        </div>
-                        <div class="shield-stat-pill">
-                            <i class="fas fa-user-shield"></i>
-                            <span>Trackers</span>
-                            <strong>Neutralized</strong>
-                        </div>
-                    </div>
-                </div>
-                <div style="margin-top: 18px; display: flex; align-items: center; justify-content: space-between; font-size: 12px; font-weight: 700; color: var(--accent);">
-                    <span>Shield Settings</span>
-                    <i class="fas fa-arrow-right"></i>
-                </div>
-            </div>
-
-            <!-- Spotlight 5: 256-Bit Vault & Cookie Eraser (Span 4) -->
-            <div class="bento-cell span-4" onclick="navigate('ocal://settings')">
-                <div>
-                    <span class="bento-cell-tag"><i class="fas fa-vault"></i> Military-Grade Guard</span>
-                    <h3 class="bento-cell-title">Biometric Vault & Cookie Eraser</h3>
-                    <p class="bento-cell-desc">AES-GCM-256 encryption with Windows Hello hardware biometrics and thorough multi-partition cookie purging with zero background network leaks.</p>
-                </div>
-                <div style="margin-top: 18px; display: flex; align-items: center; justify-content: space-between; font-size: 12px; font-weight: 700; color: var(--accent);">
-                    <span>Open Password Vault</span>
-                    <i class="fas fa-arrow-right"></i>
-                </div>
-            </div>
-        </section>
-
-        <!-- ══ 3-Tile Performance Matrix ══ -->
-        <section class="metrics-matrix-row" id="stats-section">
-            <div class="metric-tile">
-                <div class="metric-icon-wrap"><i class="fas fa-bolt"></i></div>
-                <div class="metric-content">
-                    <span class="metric-val"><span class="counter" data-target="60">0</span>%</span>
-                    <span class="metric-lbl">Faster Page Loading</span>
-                </div>
-            </div>
-            <div class="metric-tile">
-                <div class="metric-icon-wrap"><i class="fas fa-lock"></i></div>
-                <div class="metric-content">
-                    <span class="metric-val">256-Bit</span>
-                    <span class="metric-lbl">AES-GCM Biometric Vault</span>
-                </div>
-            </div>
-            <div class="metric-tile">
-                <div class="metric-icon-wrap"><i class="fas fa-cubes"></i></div>
-                <div class="metric-content">
-                    <span class="metric-val"><span class="counter" data-target="28">0</span>+</span>
-                    <span class="metric-lbl">Major Upgrades</span>
-                </div>
-            </div>
-        </section>
-
-        <!-- ══ Asymmetric 2-Pane Workstation (Left Sticky Rail + Right Grid) ══ -->
-        <div class="two-pane-workstation">
-            <!-- Left Sticky Command Rail -->
-            <aside class="sticky-left-rail">
-                <div class="rail-search-box">
-                    <i class="fas fa-search"></i>
-                    <input type="text" id="feature-search" class="rail-search-input" placeholder="Search features..." autocomplete="off">
-                    <span class="rail-key-badge">/</span>
-                </div>
-
-                <div class="rail-menu-list">
-                    <button class="rail-menu-item active" data-category="all" onclick="setCategory('all')">
-                        <span class="rail-menu-item-left"><i class="fas fa-layer-group"></i> <span>All Features</span></span>
-                        <span class="rail-item-badge" id="count-all">0</span>
-                    </button>
-                    <button class="rail-menu-item" data-category="multitasking" onclick="setCategory('multitasking')">
-                        <span class="rail-menu-item-left"><i class="fas fa-wand-magic-sparkles"></i> <span>AI & Multitasking</span></span>
-                        <span class="rail-item-badge" id="count-multi">0</span>
-                    </button>
-                    <button class="rail-menu-item" data-category="extensions" onclick="setCategory('extensions')">
-                        <span class="rail-menu-item-left"><i class="fas fa-puzzle-piece"></i> <span>Extensions</span></span>
-                        <span class="rail-item-badge" id="count-ext">0</span>
-                    </button>
-                    <button class="rail-menu-item" data-category="performance" onclick="setCategory('performance')">
-                        <span class="rail-menu-item-left"><i class="fas fa-bolt"></i> <span>Speed & Security</span></span>
-                        <span class="rail-item-badge" id="count-perf">0</span>
-                    </button>
-                    <button class="rail-menu-item" data-category="media" onclick="setCategory('media')">
-                        <span class="rail-menu-item-left"><i class="fas fa-palette"></i> <span>UI & Audio</span></span>
-                        <span class="rail-item-badge" id="count-media">0</span>
-                    </button>
-                    <button class="rail-menu-item" data-category="contributors" onclick="setCategory('contributors')">
-                        <span class="rail-menu-item-left"><i class="fas fa-user-group"></i> <span>Architects</span></span>
-                        <span class="rail-item-badge" id="count-team">0</span>
-                    </button>
-                </div>
-
-                <div class="rail-quick-jumps">
-                    <span class="rail-jump-label">Jump to Section</span>
-                    <a href="#hero-bento" class="rail-jump-link"><i class="fas fa-star"></i> <span>Milestone Spotlight</span></a>
-                    <a href="#directory-section" class="rail-jump-link"><i class="fas fa-cubes"></i> <span>Feature Directory</span></a>
-                    <a href="#changelog-section" class="rail-jump-link"><i class="fas fa-clock-rotate-left"></i> <span>Changelog Timeline</span></a>
-                </div>
-            </aside>
-
-            <!-- Right Dynamic Showcase Area -->
-            <main class="dynamic-right-pane">
-                <section id="directory-section">
-                    <div class="pane-header">
-                        <div class="pane-title-group">
-                            <h2 class="pane-main-title" id="dir-title">All Features & Enhancements</h2>
-                            <span class="pane-sub-title" id="dir-subtitle">Showing all upgrades in v10.1.23 Stable Release</span>
-                        </div>
-                    </div>
-                    <div class="features-fullwidth-grid" id="directory-grid" style="margin-top: 18px;"></div>
-                </section>
-
-                <section id="changelog-section" class="changelog-block">
-                    <div class="pane-title-group">
-                        <h2 class="pane-main-title">Release History & Changelog</h2>
-                        <span class="pane-sub-title">Official Version Records & Milestone Notes</span>
-                    </div>
-                    <div class="timeline-stream" id="timeline"></div>
-                </section>
-            </main>
-        </div>
-    </div>
-
-    <!-- ══ Floating Command Bottom Dock ══ -->
-    <div class="floating-bottom-dock">
-        <button class="dock-action-btn" onclick="navigate('ocal://home')" title="Go to Home Page">
-            <i class="fas fa-house"></i>
-            <span>Home</span>
-        </button>
-        <div class="dock-divider-v"></div>
-        <button class="dock-action-btn" onclick="navigate('ocal://store')" title="Extension Store">
-            <i class="fas fa-store"></i>
-            <span>Store</span>
-        </button>
-        <div class="dock-divider-v"></div>
-        <button class="dock-action-btn" onclick="navigate('ocal://settings')" title="Browser Settings">
-            <i class="fas fa-gear"></i>
-            <span>Settings</span>
-        </button>
-        <div class="dock-divider-v"></div>
-        <button class="dock-action-btn" onclick="window.scrollTo({ top: 0, behavior: 'smooth' })" title="Scroll to Top">
-            <i class="fas fa-arrow-up"></i>
-        </button>
-    </div>
-
-    <!-- ══ Controller Script ══ -->
+<body data-theme="dark">
     <script>
-        // ── Theme & Accent Synchronization ──
         (function () {
-            const t = localStorage.getItem('ocal-settings-theme') || 'light';
-            document.documentElement.setAttribute('data-theme', t);
+            const t = localStorage.getItem('ocal-settings-theme') || 'dark';
             document.body.setAttribute('data-theme', t);
-
-            const a = localStorage.getItem('ocal-settings-accent');
-            if (a) {
-                document.documentElement.style.setProperty('--accent', a);
-                document.documentElement.style.setProperty('--accent-glow', `color-mix(in srgb, ${a} 25%, transparent)`);
-                document.documentElement.style.setProperty('--accent-dim', `color-mix(in srgb, ${a} 12%, transparent)`);
+            if (window.self !== window.top) {
+                document.body.classList.add('in-iframe');
             }
         })();
+    </script>
 
-        // ── Body Loaded ──
-        requestAnimationFrame(() => {
-            document.body.classList.add('loaded');
-        });
+    <!-- ── TOP HEADER (Matching Settings Page Header) ── -->
+    <header class="settings-header">
+        <div class="header-left">
+            <div class="header-logo">
+                <img src="assets/Dark.png" class="header-logo-img" id="header-logo-img" alt="Ocal">
+            </div>
+            <div class="header-logo-text">What's New in Ocal</div>
+        </div>
 
+        <div class="header-search">
+            <i class="fas fa-magnifying-glass search-icon"></i>
+            <input type="text" id="whatsnew-search" placeholder="Search features, releases, architects... (/)">
+            <button id="search-clear-btn" style="display:none; background:transparent; border:none; color:var(--text-dim); cursor:pointer; padding:0 4px;" title="Clear Search">
+                <i class="fas fa-xmark"></i>
+            </button>
+        </div>
+
+        <div class="header-tools">
+            <button class="tool-link-btn" onclick="navigate('ocal://store')" title="Open Extension Store">
+                <i class="fas fa-store"></i> <span>Web Store</span>
+            </button>
+            <button class="tool-link-btn primary" onclick="navigate('ocal://settings')" title="Open Browser Settings">
+                <i class="fas fa-gear"></i> <span>Settings</span>
+            </button>
+        </div>
+    </header>
+
+    <div class="settings-container">
+        <!-- ── SIDEBAR (Matching Settings Sidebar) ── -->
+        <aside class="sidebar">
+            <nav class="sidebar-nav">
+                <div class="nav-item active" data-target="spotlight-section">
+                    <div class="nav-item-icon"><i class="fas fa-star"></i></div>
+                    <span>v10.1.23 Spotlight</span>
+                </div>
+                <div class="nav-item" data-target="metrics-section">
+                    <div class="nav-item-icon"><i class="fas fa-gauge-high"></i></div>
+                    <span>Performance Matrix</span>
+                </div>
+                <div class="nav-item" data-target="features-section" data-cat="all">
+                    <div class="nav-item-icon"><i class="fas fa-layer-group"></i></div>
+                    <span>All Features</span>
+                </div>
+                <div class="nav-item" data-target="features-section" data-cat="multitasking">
+                    <div class="nav-item-icon"><i class="fas fa-wand-magic-sparkles"></i></div>
+                    <span>AI & Multitasking</span>
+                </div>
+                <div class="nav-item" data-target="features-section" data-cat="performance">
+                    <div class="nav-item-icon"><i class="fas fa-shield-halved"></i></div>
+                    <span>Speed & Security</span>
+                </div>
+                <div class="nav-item" data-target="features-section" data-cat="media">
+                    <div class="nav-item-icon"><i class="fas fa-palette"></i></div>
+                    <span>UI & Audio Design</span>
+                </div>
+                <div class="nav-item" data-target="features-section" data-cat="extensions">
+                    <div class="nav-item-icon"><i class="fas fa-puzzle-piece"></i></div>
+                    <span>Extensions & Store</span>
+                </div>
+                <div class="nav-item" data-target="changelog-section">
+                    <div class="nav-item-icon"><i class="fas fa-clock-rotate-left"></i></div>
+                    <span>Release Changelog</span>
+                </div>
+                <div class="nav-item" data-target="team-section">
+                    <div class="nav-item-icon"><i class="fas fa-users"></i></div>
+                    <span>Architects & Team</span>
+                </div>
+            </nav>
+
+            <div class="sidebar-footer">
+                <div class="version-status-card">
+                    <div class="version-status-pill">
+                        <span class="version-code">v10.1.23 Stable</span>
+                    </div>
+                    <div class="secure-architecture-badge">
+                        <i class="fas fa-shield-halved"></i>
+                        <span>Production Verified</span>
+                    </div>
+                </div>
+            </div>
+        </aside>
+
+        <!-- ── MAIN CONTENT (Matching Settings Content Area) ── -->
+        <main class="content">
+            <div class="settings-page-header">
+                <h1 class="settings-page-title">What's New in Ocal</h1>
+                <p class="settings-page-subtitle">Milestone release notes, breakthrough features, engineering updates, and contributor milestones.</p>
+            </div>
+
+            <div class="page-body">
+                <!-- ══ GROUP 1: MILESTONE SPOTLIGHT (v10.1.23) ══ -->
+                <div class="settings-group-card" id="spotlight-section">
+                    <div class="about-hero-strip">
+                        <div class="ahs-left">
+                            <div class="ahs-brand-icon">
+                                <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                    <path d="M12 2C6.48 2 2 6.48 2 12C2 17.52 6.48 22 12 22C17.52 22 22 17.52 22 12C22 9.24 20.88 6.74 19.07 4.93L17.66 6.34C19.11 7.79 20 9.79 20 12C20 16.42 16.42 20 12 20C7.58 20 4 16.42 4 12C4 7.58 7.58 4 12 4C13.1 4 14.15 4.22 15.11 4.62L16.63 3.1C15.22 2.4 13.66 2 12 2Z" fill="var(--accent)" />
+                                    <path d="M12 7C9.24 7 7 9.24 7 12C7 14.76 9.24 17 12 17C14.76 17 17 14.76 17 12C17 10.9 16.64 9.88 16.03 9.06L14.61 10.48C14.86 10.92 15 11.44 15 12C15 13.66 13.66 15 12 15C10.34 15 9 13.66 9 12C9 10.34 10.34 9 12 9C12.56 9 13.08 9.14 13.52 9.39L14.94 7.97C14.12 7.36 13.1 7 12 7Z" fill="var(--accent)" />
+                                    <circle cx="12" cy="12" r="2" fill="var(--accent)" />
+                                </svg>
+                            </div>
+                            <div class="ahs-brand-info">
+                                <div class="ahs-name-row">
+                                    <span class="ahs-app-name">Ocal Browser</span>
+                                    <span class="ahs-version-pill">v10.1.23 Stable</span>
+                                    <span class="ahs-meta-pill"><i class="fas fa-cube"></i> Production Release</span>
+                                    <span class="ahs-meta-pill"><i class="fas fa-microchip"></i> 64-bit Native</span>
+                                </div>
+                                <p class="ahs-summary">Latest flagship release featuring the reworked Bento File Manager, AI sidebar stability fixes, high-resolution PDF Reader, and core engine performance boost.</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- 4 Spotlight Bento Pillars -->
+                    <div class="spotlight-grid">
+                        <!-- Pillar 1: Reworked File Manager -->
+                        <div class="spotlight-card" onclick="navigate('ocal://file-manager')">
+                            <div>
+                                <div class="sc-top">
+                                    <div class="sc-icon"><i class="fas fa-folder-tree"></i></div>
+                                    <span class="sc-pill">REWORKED</span>
+                                </div>
+                                <h3 class="sc-title">Bento File Manager</h3>
+                                <p class="sc-desc">Complete architectural rework with glassmorphic bento cards, instant media previewing, clean folder tree navigation, storage analytics, and lightning search.</p>
+                            </div>
+                            <div class="sc-action">
+                                <span>Open File Manager (ocal://file-manager)</span>
+                                <i class="fas fa-arrow-right"></i>
+                            </div>
+                        </div>
+
+                        <!-- Pillar 2: AI Sidebar Bug Fixes -->
+                        <div class="spotlight-card" onclick="navigate('ocal://home')">
+                            <div>
+                                <div class="sc-top">
+                                    <div class="sc-icon"><i class="fas fa-robot"></i></div>
+                                    <span class="sc-pill">BUG FIXES</span>
+                                </div>
+                                <h3 class="sc-title">AI Copilot Sidebar Stabilization</h3>
+                                <p class="sc-desc">Resolved response streaming latency and UI rendering bugs. Upgraded conversation persistence, 1-click code block copying, and auto-focus input handling.</p>
+                            </div>
+                            <div class="sc-action">
+                                <span>Try AI Copilot</span>
+                                <i class="fas fa-arrow-right"></i>
+                            </div>
+                        </div>
+
+                        <!-- Pillar 3: High-Res PDF Reader -->
+                        <div class="spotlight-card" onclick="navigate('ocal://pdf-viewer')">
+                            <div>
+                                <div class="sc-top">
+                                    <div class="sc-icon"><i class="fas fa-file-pdf"></i></div>
+                                    <span class="sc-pill">HIGH-RES</span>
+                                </div>
+                                <h3 class="sc-title">High-Resolution PDF Reader</h3>
+                                <p class="sc-desc">Restored missing sidebar & thumbnail icons, upgraded PDF canvas rasterization for ultra-crisp high-res zoom up to 500%, smooth multi-page scrolling, and zero-blur text.</p>
+                            </div>
+                            <div class="sc-action">
+                                <span>Open PDF Reader (ocal://pdf-viewer)</span>
+                                <i class="fas fa-arrow-right"></i>
+                            </div>
+                        </div>
+
+                        <!-- Pillar 4: Performance Improvement -->
+                        <div class="spotlight-card" onclick="navigate('ocal://settings')">
+                            <div>
+                                <div class="sc-top">
+                                    <div class="sc-icon"><i class="fas fa-gauge-high"></i></div>
+                                    <span class="sc-pill">SPEED BOOST</span>
+                                </div>
+                                <h3 class="sc-title">Core Engine Performance & Memory</h3>
+                                <p class="sc-desc">Optimized V8 garbage collection, reduced idle background tab memory, hardware-accelerated GPU shader compilation, and smooth V-Sync vertical tab resizing.</p>
+                            </div>
+                            <div class="sc-action">
+                                <span>Performance Settings</span>
+                                <i class="fas fa-arrow-right"></i>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- ══ GROUP 2: SYSTEM ARCHITECTURE & PERFORMANCE BENCHMARKS ══ -->
+                <div class="settings-group-card" id="metrics-section">
+                    <div class="settings-group-header" style="padding: 18px 24px; border-bottom: 1px solid var(--border, rgba(0,0,0,0.06)); display: flex; align-items: center; justify-content: space-between;">
+                        <div>
+                            <h3 class="group-title" style="font-size: 15px; font-weight: 700; color: var(--text); margin: 0;">System Benchmarks & Architecture Diagnostics</h3>
+                            <p class="group-desc" style="font-size: 12.5px; color: var(--text-dim); margin: 3px 0 0 0;">Hardware acceleration, rendering throughput, and biometric security metrics.</p>
+                        </div>
+                        <div class="engine-active-indicator" style="display: flex; align-items: center; gap: 6px; font-size: 11px; font-weight: 600; color: var(--accent);">
+                            <span style="width: 7px; height: 7px; border-radius: 50%; background: var(--accent); box-shadow: 0 0 6px var(--accent);"></span>
+                            <span>Hardware Accelerated</span>
+                        </div>
+                    </div>
+
+                    <div style="padding: 20px 24px 24px;">
+                        <div class="about-specs-grid">
+                            <!-- Spec Tile 1: Speed -->
+                            <div class="spec-grid-tile">
+                                <div class="sgt-header">
+                                    <div class="sgt-icon"><i class="fas fa-bolt"></i></div>
+                                    <span class="sgt-tag">Runtime</span>
+                                </div>
+                                <div class="sgt-label">Speed &amp; Startup</div>
+                                <div class="sgt-value" style="font-size: 15px; font-weight: 700; color: var(--text);">60% Faster Loading</div>
+                            </div>
+
+                            <!-- Spec Tile 2: Security -->
+                            <div class="spec-grid-tile">
+                                <div class="sgt-header">
+                                    <div class="sgt-icon"><i class="fas fa-vault"></i></div>
+                                    <span class="sgt-tag">Security</span>
+                                </div>
+                                <div class="sgt-label">Password Vault</div>
+                                <div class="sgt-value" style="font-size: 15px; font-weight: 700; color: var(--text);">256-Bit AES-GCM</div>
+                            </div>
+
+                            <!-- Spec Tile 3: Multitasking -->
+                            <div class="spec-grid-tile">
+                                <div class="sgt-header">
+                                    <div class="sgt-icon"><i class="fas fa-table-columns"></i></div>
+                                    <span class="sgt-tag">Fluid UI</span>
+                                </div>
+                                <div class="sgt-label">Vertical Tab Engine</div>
+                                <div class="sgt-value" style="font-size: 15px; font-weight: 700; color: var(--text);">V-Sync Smooth Resizing</div>
+                            </div>
+
+                            <!-- Spec Tile 4: Chromium -->
+                            <div class="spec-grid-tile">
+                                <div class="sgt-header">
+                                    <div class="sgt-icon"><i class="fab fa-chrome"></i></div>
+                                    <span class="sgt-tag">Core Engine</span>
+                                </div>
+                                <div class="sgt-label">Chromium Pipeline</div>
+                                <div class="sgt-value" style="font-size: 15px; font-weight: 700; color: var(--text);">v134.0 Hardware GPU</div>
+                            </div>
+
+                            <!-- Spec Tile 5: Audio -->
+                            <div class="spec-grid-tile">
+                                <div class="sgt-header">
+                                    <div class="sgt-icon"><i class="fas fa-music"></i></div>
+                                    <span class="sgt-tag">Audio</span>
+                                </div>
+                                <div class="sgt-label">Background Soundscapes</div>
+                                <div class="sgt-value" style="font-size: 15px; font-weight: 700; color: var(--text);">Smart Fade In / Out Ducking</div>
+                            </div>
+
+                            <!-- Spec Tile 6: Features -->
+                            <div class="spec-grid-tile">
+                                <div class="sgt-header">
+                                    <div class="sgt-icon"><i class="fas fa-cubes"></i></div>
+                                    <span class="sgt-tag">Milestones</span>
+                                </div>
+                                <div class="sgt-label">Upgrades Delivered</div>
+                                <div class="sgt-value" style="font-size: 15px; font-weight: 700; color: var(--text);">35+ Major Features</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- ══ GROUP 3: FEATURE DIRECTORY & SHOWCASES ══ -->
+                <div class="settings-group-card" id="features-section">
+                    <div class="settings-group-header" style="padding: 18px 24px; border-bottom: 1px solid var(--border, rgba(0,0,0,0.06));">
+                        <h3 class="group-title" style="font-size: 15px; font-weight: 700; color: var(--text); margin: 0;">Feature Directory &amp; Capabilities</h3>
+                        <p class="group-desc" style="font-size: 12.5px; color: var(--text-dim); margin: 3px 0 0 0;" id="dir-subtitle">Browse all major enhancements, tools, and extensions in Ocal Browser.</p>
+                    </div>
+
+                    <!-- Category Filter Buttons -->
+                    <div class="category-filter-bar">
+                        <button class="cat-filter-btn active" data-cat="all" onclick="setCategory('all')">
+                            <i class="fas fa-layer-group"></i> <span>All</span> <span class="cat-counter" id="count-all">0</span>
+                        </button>
+                        <button class="cat-filter-btn" data-cat="multitasking" onclick="setCategory('multitasking')">
+                            <i class="fas fa-wand-magic-sparkles"></i> <span>AI &amp; Multitasking</span> <span class="cat-counter" id="count-multi">0</span>
+                        </button>
+                        <button class="cat-filter-btn" data-cat="performance" onclick="setCategory('performance')">
+                            <i class="fas fa-shield-halved"></i> <span>Speed &amp; Security</span> <span class="cat-counter" id="count-perf">0</span>
+                        </button>
+                        <button class="cat-filter-btn" data-cat="media" onclick="setCategory('media')">
+                            <i class="fas fa-palette"></i> <span>UI &amp; Audio</span> <span class="cat-counter" id="count-media">0</span>
+                        </button>
+                        <button class="cat-filter-btn" data-cat="extensions" onclick="setCategory('extensions')">
+                            <i class="fas fa-puzzle-piece"></i> <span>Extensions</span> <span class="cat-counter" id="count-ext">0</span>
+                        </button>
+                    </div>
+
+                    <!-- Dynamic Features Grid -->
+                    <div class="features-bento-grid" id="features-grid"></div>
+                </div>
+
+                <!-- ══ GROUP 4: RELEASE HISTORY & CHANGELOG ══ -->
+                <div class="settings-group-card" id="changelog-section">
+                    <div class="settings-group-header" style="padding: 18px 24px; border-bottom: 1px solid var(--border, rgba(0,0,0,0.06)); display: flex; align-items: center; justify-content: space-between;">
+                        <div>
+                            <h3 class="group-title" style="font-size: 15px; font-weight: 700; color: var(--text); margin: 0;">Release History &amp; Changelog</h3>
+                            <p class="group-desc" style="font-size: 12.5px; color: var(--text-dim); margin: 3px 0 0 0;">Official build records, version history, and release archives.</p>
+                        </div>
+                        <span class="ahs-version-pill">Current: v10.1.23</span>
+                    </div>
+
+                    <div class="changelog-stream" id="changelog-stream"></div>
+                </div>
+
+                <!-- ══ GROUP 5: ARCHITECTS & TEAM CONTRIBUTORS ══ -->
+                <div class="settings-group-card" id="team-section">
+                    <div class="settings-group-header" style="padding: 18px 24px; border-bottom: 1px solid var(--border, rgba(0,0,0,0.06)); display: flex; align-items: center; justify-content: space-between;">
+                        <div>
+                            <h3 class="group-title" style="font-size: 15px; font-weight: 700; color: var(--text); margin: 0;">Architects &amp; Core Engineering Team</h3>
+                            <p class="group-desc" style="font-size: 12.5px; color: var(--text-dim); margin: 3px 0 0 0;">The engineers, designers, and contributors behind Ocal Browser.</p>
+                        </div>
+                        <span class="ahs-meta-pill"><i class="fas fa-heart" style="color:#ef4444;"></i> Independent &amp; Open</span>
+                    </div>
+
+                    <div class="contributors-grid" id="contributors-grid"></div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <!-- ══ CONTROLLER LOGIC ══ -->
+    <script>
         // ── Navigation Helper ──
         function navigate(url) {
             try {
@@ -1375,543 +906,292 @@
             }
         }
 
-        // ── Animated Counters ──
-        const counterObserver = new IntersectionObserver((entries) => {
-            entries.forEach(entry => {
-                if (entry.isIntersecting) {
-                    const counters = entry.target.querySelectorAll('.counter');
-                    counters.forEach(counter => {
-                        const target = parseInt(counter.getAttribute('data-target'), 10);
-                        const duration = 1200;
-                        const start = performance.now();
-
-                        function updateCounter(now) {
-                            const elapsed = now - start;
-                            const progress = Math.min(elapsed / duration, 1);
-                            const eased = 1 - Math.pow(1 - progress, 3);
-                            counter.textContent = Math.round(target * eased);
-                            if (progress < 1) requestAnimationFrame(updateCounter);
-                        }
-                        requestAnimationFrame(updateCounter);
-                    });
-                    counterObserver.unobserve(entry.target);
-                }
-            });
-        }, { threshold: 0.2 });
-
-        const statsSection = document.getElementById('stats-section');
-        if (statsSection) counterObserver.observe(statsSection);
-
-        // ── Interactive 3D Card Hover Physics ──
-        document.addEventListener('mousemove', (e) => {
-            const cards = document.querySelectorAll('.bento-cell, .feature-item-card, .metric-tile');
-            cards.forEach(card => {
-                const rect = card.getBoundingClientRect();
-                if (e.clientX >= rect.left && e.clientX <= rect.right && e.clientY >= rect.top && e.clientY <= rect.bottom) {
-                    const x = e.clientX - rect.left;
-                    const y = e.clientY - rect.top;
-                    const centerX = rect.width / 2;
-                    const centerY = rect.height / 2;
-                    const rotateX = ((y - centerY) / centerY) * -4.5;
-                    const rotateY = ((x - centerX) / centerX) * 4.5;
-                    card.style.transform = `perspective(1000px) rotateX(${rotateX.toFixed(2)}deg) rotateY(${rotateY.toFixed(2)}deg) translateY(-3px)`;
-                } else if (card.style.transform && card.style.transform.includes('perspective')) {
-                    card.style.transform = '';
-                }
-            });
-        });
-
-        // ── Data: Features & Changelog ──
-        const items = [
-                        // ══ v10.1.23 Stable Feature Upgrades ══
-            { 
-                type: 'feature', 
-                category: 'multitasking', 
-                icon: 'fa-folder-tree', 
-                title: 'Reworked Bento File Manager (ocal://file-manager)', 
-                desc: 'Complete architectural rework of the File Manager featuring glassmorphic bento layout, instant file and media previewing, folder tree navigation, batch operations, storage diagnostics, and lightning-fast search.', 
-                actionText: 'Explore Files', 
-                targetUrl: 'ocal://file-manager' 
+        // ── Data: Features ──
+        const features = [
+            // ══ v10.1.23 Releases ══
+            {
+                category: 'multitasking',
+                icon: 'fa-folder-tree',
+                title: 'Reworked Bento File Manager',
+                desc: 'Complete architectural rework of the File Manager featuring glassmorphic bento layout, instant file and media previewing, folder tree navigation, batch operations, storage diagnostics, and lightning-fast search.',
+                actionText: 'Explore Files',
+                targetUrl: 'ocal://file-manager'
             },
-            { 
-                type: 'feature', 
-                category: 'multitasking', 
-                icon: 'fa-robot', 
-                title: 'AI Copilot Sidebar Stabilization & Bug Fixes', 
-                desc: 'Resolved response rendering glitches and streaming latency in the AI sidebar. Upgraded session persistence, live code copy blocks, input auto-focus handling, and fluid conversation navigation.', 
-                actionText: 'Try AI Copilot', 
-                targetUrl: 'ocal://home' 
+            {
+                category: 'multitasking',
+                icon: 'fa-robot',
+                title: 'AI Copilot Sidebar Stabilization & Fixes',
+                desc: 'Resolved response rendering glitches and streaming latency in the AI sidebar. Upgraded session persistence, live code copy blocks, input auto-focus handling, and fluid conversation navigation.',
+                actionText: 'Try AI Copilot',
+                targetUrl: 'ocal://home'
             },
-            { 
-                type: 'feature', 
-                category: 'media', 
-                icon: 'fa-file-pdf', 
-                title: 'High-Resolution PDF Reader & Visual Polish', 
-                desc: 'Restored missing sidebar and thumbnail icons, upgraded PDF canvas rasterization for ultra-crisp high-resolution zoom up to 500%, smooth multi-page scrolling, and zero-blur text rendering.', 
-                actionText: 'Open PDF Reader', 
-                targetUrl: 'ocal://pdf-viewer' 
+            {
+                category: 'media',
+                icon: 'fa-file-pdf',
+                title: 'High-Resolution PDF Reader & Visual Polish',
+                desc: 'Restored missing sidebar and thumbnail icons, upgraded PDF canvas rasterization for ultra-crisp high-resolution zoom up to 500%, smooth multi-page scrolling, and zero-blur text rendering.',
+                actionText: 'Open PDF Reader',
+                targetUrl: 'ocal://pdf-viewer'
             },
-            { 
-                type: 'feature', 
-                category: 'performance', 
-                icon: 'fa-gauge-high', 
-                title: 'Core Engine Performance & Driver Acceleration', 
-                desc: 'Substantial runtime speedups with optimized V8 garbage collection, reduced idle background memory footprint, zero-jank smooth scrolling, and hardware-accelerated GPU shader compilation.', 
-                actionText: 'View Settings', 
-                targetUrl: 'ocal://settings' 
+            {
+                category: 'performance',
+                icon: 'fa-gauge-high',
+                title: 'Core Engine Performance & Driver Acceleration',
+                desc: 'Substantial runtime speedups with optimized V8 garbage collection, reduced idle background memory footprint, zero-jank smooth scrolling, and hardware-accelerated GPU shader compilation.',
+                actionText: 'View Settings',
+                targetUrl: 'ocal://settings'
             },
-            { 
-                type: 'feature', 
-                category: 'performance', 
-                icon: 'fa-shield-halved', 
-                title: 'Intelligent Permission Prompt & Persistent Memory', 
-                desc: 'Redesigned shadowless permission dialogs for camera, microphone, geolocation, and notifications. Automatically remembers site access authorizations per origin across browser sessions.', 
-                actionText: 'Privacy Controls', 
-                targetUrl: 'ocal://settings' 
+            {
+                category: 'performance',
+                icon: 'fa-shield-halved',
+                title: 'Intelligent Permission Prompt & Persistent Memory',
+                desc: 'Redesigned shadowless permission dialogs for camera, microphone, geolocation, and notifications. Automatically remembers site access authorizations per origin across browser sessions.',
+                actionText: 'Privacy Controls',
+                targetUrl: 'ocal://settings'
             },
-            { 
-                type: 'feature', 
-                category: 'media', 
-                icon: 'fa-circle-half-stroke', 
-                title: 'Deep Dark/Light Mode & Search Engine Sync', 
-                desc: 'Dynamically harmonizes user color-scheme preferences across browser views, web pages, and search engine query headers so search results match your active dark or light theme seamlessly.', 
-                actionText: 'Theme Settings', 
-                targetUrl: 'ocal://settings' 
-            },
-            // ══ v10.0.01 Stable Feature Upgrades ══
-            { 
-                type: 'feature', 
-                category: 'multitasking', 
-                icon: 'fa-compass', 
-                title: 'Introducing Fresh Setup Onboarding (ocal://onboarding)', 
-                desc: 'Clean, elegant welcome tour exclusively loaded for fresh profile setups. Guides first-time users through search engine choice, dark/light themes, and privacy shields, while returning users boot straight into their home tab with zero latency.', 
-                actionText: 'Preview Onboarding', 
-                targetUrl: 'ocal://onboarding' 
-            },
-            { 
-                type: 'feature', 
-                category: 'multitasking', 
-                icon: 'fa-at', 
-                title: 'AI Copilot @tab Context Command', 
-                desc: 'Mention and ingest active webpage context in real-time by typing @tab into the AI Copilot. Enables instant cross-examination, live multi-tab comparative synthesis, and automated executive summaries.', 
-                actionText: 'Try @tab Command', 
-                targetUrl: 'ocal://home' 
-            },
-            { 
-                type: 'feature', 
-                category: 'performance', 
-                icon: 'fa-microchip', 
-                title: 'Latest Chromium Engine & Modern Runtime', 
-                desc: 'Upgraded underlying Chromium and Electron runtime stack with cutting-edge V8 JIT performance, AV1/HEVC hardware video decoding, WebGPU acceleration, and improved web standards compliance.', 
-                actionText: 'Engine Matrix', 
-                targetUrl: 'ocal://settings' 
-            },
-            { 
-                type: 'feature', 
-                category: 'performance', 
-                icon: 'fa-gauge-high', 
-                title: 'Core Performance Improvements & Memory Optimization', 
-                desc: 'Instant startup allocation, intelligent background tab sleeping to reduce inactive memory footprint by up to 60%, and hardware-accelerated D3D11 graphics rendering for stutter-free scrolling.', 
-                actionText: 'Performance Settings', 
-                targetUrl: 'ocal://settings' 
-            },
-            { 
-                type: 'feature', 
-                category: 'media', 
-                icon: 'fa-sliders', 
-                title: 'UI Polishing, Modern Setup Buttons & Bug Fixes', 
-                desc: 'Modernized Windows installer with native button controls for Terms, Privacy Policy, and EULA. Polished high-DPI scaling, fixed right-click context menu alignment, and eliminated split-view borders.', 
-                actionText: 'Changelog', 
-                targetUrl: 'ocal://whats-new#changelog-section' 
+            {
+                category: 'media',
+                icon: 'fa-circle-half-stroke',
+                title: 'Deep Dark/Light Mode & Search Engine Sync',
+                desc: 'Dynamically harmonizes user color-scheme preferences across browser views, web pages, and search engine query headers so search results match your active dark or light theme seamlessly.',
+                actionText: 'Theme Settings',
+                targetUrl: 'ocal://settings'
             },
 
-            // ══ v10.0.0 Milestone Feature Upgrades ══
-            { 
-                type: 'feature', 
-                category: 'performance', 
-                icon: 'fa-shield-halved', 
-                title: 'Built-in Ocal Shield & Tracker Protection', 
-                desc: 'Real-time protection against intrusive ads, popups, and invasive cross-site tracking scripts. Preserves your privacy and speeds up page loading across the web.', 
-                actionText: 'Shield Settings', 
-                targetUrl: 'ocal://settings' 
+            // ══ v10.0.01 Features ══
+            {
+                category: 'multitasking',
+                icon: 'fa-compass',
+                title: 'Fresh Setup Onboarding Experience',
+                desc: 'Clean, elegant welcome tour exclusively loaded for fresh profile setups. Guides first-time users through search engine choice, dark/light themes, and privacy shields with zero startup latency.',
+                actionText: 'Preview Onboarding',
+                targetUrl: 'ocal://onboarding'
             },
-            { 
-                type: 'feature', 
-                category: 'multitasking', 
-                icon: 'fa-wand-magic-sparkles', 
-                title: 'Rich AI Markdown & Real-Time Research Synthesis', 
-                desc: 'Overhauled Ocal AI presentation engine with structured typography, GFM alert cards (Note, Tip, Important), live web intelligence synthesis, dynamic reasoning pills, and deduplicated source references.', 
-                actionText: 'Try Ocal AI', 
-                targetUrl: 'ocal://home' 
+            {
+                category: 'multitasking',
+                icon: 'fa-at',
+                title: 'AI Copilot @tab Context Command',
+                desc: 'Mention and ingest active webpage context in real-time by typing @tab into the AI Copilot. Enables instant cross-examination, live multi-tab comparative synthesis, and automated executive summaries.',
+                actionText: 'Try @tab Command',
+                targetUrl: 'ocal://home'
             },
-
-            // ══ v9.8.9 Feature Upgrades ══
-            { 
-                type: 'feature', 
-                category: 'security', 
-                icon: 'fa-shield-halved', 
-                title: 'Thorough Site Data & Cookie Eraser', 
-                desc: 'Complete purge of persistent domain cookies, session storage, and IndexedDB across all profile partitions. Automatically halts background tab network loops to guarantee full 0-byte deletion.', 
-                actionText: 'Site Settings', 
-                targetUrl: 'ocal://settings' 
+            {
+                category: 'performance',
+                icon: 'fa-microchip',
+                title: 'Latest Chromium Engine & Modern Runtime',
+                desc: 'Upgraded underlying Chromium and Electron runtime stack with cutting-edge V8 JIT performance, AV1/HEVC hardware video decoding, WebGPU acceleration, and improved web standards compliance.',
+                actionText: 'Engine Matrix',
+                targetUrl: 'ocal://settings'
             },
-            { 
-                type: 'feature', 
-                category: 'performance', 
-                icon: 'fa-gauge-high', 
-                title: 'Resource Saver & Tab Memory Freezer', 
-                desc: 'Intelligently puts inactive background tabs to sleep to free up system memory and extend battery life on laptops without losing your tab scroll positions.', 
-                actionText: 'Performance Settings', 
-                targetUrl: 'ocal://settings' 
+            {
+                category: 'performance',
+                icon: 'fa-gauge-high',
+                title: 'Resource Saver & Tab Memory Freezer',
+                desc: 'Instant startup allocation, intelligent background tab sleeping to reduce inactive memory footprint by up to 60%, and hardware-accelerated D3D11 graphics rendering for stutter-free scrolling.',
+                actionText: 'Performance Settings',
+                targetUrl: 'ocal://settings'
             },
 
-            // ══ v9.8.00 Feature Upgrades ══
-            { 
-                type: 'feature', 
-                category: 'multitasking', 
-                icon: 'fa-table-columns', 
-                title: 'Fluid Tabs & Split-Screen Workspace', 
-                desc: 'Customize your browsing layout with floating horizontal tabs or collapsible vertical tab groups, and view multiple pages side-by-side with instant snap.', 
-                actionText: 'Tab Layout', 
-                targetUrl: 'ocal://settings' 
+            // ══ Core Platform Suite ══
+            {
+                category: 'performance',
+                icon: 'fa-shield-halved',
+                title: 'Built-in Ocal Shield & Tracker Protection',
+                desc: 'Real-time protection against intrusive ads, popups, and invasive cross-site tracking scripts. Preserves your privacy and speeds up page loading across the web with zero telemetry leaks.',
+                actionText: 'Shield Settings',
+                targetUrl: 'ocal://settings'
             },
-            { 
-                type: 'feature', 
-                category: 'extensions', 
-                icon: 'fa-store', 
-                title: 'Extension Store Redesign (ocal://store)', 
-                desc: 'Clean, flat, minimalist layout overhaul removing heavy drop-shadows and gradients to seamlessly match the flagship Home Page design tokens, with sticky search bar, category chips, and live installation states.', 
-                actionText: 'Open Store', 
-                targetUrl: 'ocal://store' 
+            {
+                category: 'multitasking',
+                icon: 'fa-table-columns',
+                title: 'Fluid Tabs & Split-Screen Workspace',
+                desc: 'Customize your browsing layout with floating horizontal tabs or collapsible vertical tab groups, and view multiple pages side-by-side with instant snap and synchronized bounds.',
+                actionText: 'Tab Layout',
+                targetUrl: 'ocal://settings'
             },
-            { 
-                type: 'feature', 
-                category: 'multitasking', 
-                icon: 'fa-robot', 
-                title: 'Flush AI Sidebar Integration', 
-                desc: 'Removed left spacing gap and drag-resize handle for a flush, zero-distraction edge-to-edge AI assistant viewport that maximizes your primary tab workspace.', 
-                actionText: 'AI Sidebar', 
-                targetUrl: 'ocal://home' 
+            {
+                category: 'extensions',
+                icon: 'fa-puzzle-piece',
+                title: 'Google Chrome Extension Compatibility',
+                desc: 'Run popular Google Chrome Web Store extensions directly inside Ocal with universal runtime polyfills for chrome.windows, chrome.storage, chrome.action, and chrome.runtime.',
+                actionText: 'Browse Store',
+                targetUrl: 'ocal://store'
             },
-            { 
-                type: 'feature', 
-                category: 'media', 
-                icon: 'fa-circle-half-stroke', 
-                title: 'Dynamic Luminance Contrast Engine', 
-                desc: 'Adaptive contrast algorithm that calculates exact perceived luminance across active theme backgrounds and custom accent palettes, guaranteeing crisp legibility for omnibox shield badges and chips.', 
-                actionText: 'Color Settings', 
-                targetUrl: 'ocal://settings' 
+            {
+                category: 'extensions',
+                icon: 'fa-cubes-stacked',
+                title: 'Compact Topbar Extension Capsule',
+                desc: 'A modern, unobtrusive extension capsule in the top navigation bar that intelligently caps visible icons to 2, bundling excess addons into an interactive overflow counter badge.',
+                actionText: 'Manage Addons',
+                targetUrl: 'ocal://settings'
             },
-
-            // ══ v9.5.07 Feature Upgrades ══
-            { 
-                type: 'feature', 
-                category: 'media', 
-                icon: 'fa-box-archive', 
-                title: 'Custom Modern Windows 11 Installer', 
-                desc: 'Streamlined, modern installer with rounded corners, interactive feature preview cards, and seamless Windows 11 titlebar integration.', 
-                actionText: 'Installer Overhaul', 
-                targetUrl: 'ocal://settings' 
+            {
+                category: 'media',
+                icon: 'fa-music',
+                title: 'Ambient Background Audio & Soundscapes',
+                desc: 'Immersive background audio player featuring lo-fi beats, ambient chill-out tracks, rain sounds, and focus frequencies with automatic audio-ducking when videos play.',
+                actionText: 'Listen Now',
+                targetUrl: 'ocal://home'
             },
-            { 
-                type: 'feature', 
-                category: 'multitasking', 
-                icon: 'fa-layer-group', 
-                title: 'Card-Based Vertical Tab Groups', 
-                desc: 'Vertical tab groups now feature clean card wrappers with dynamic color-mix background tinting, subtle dividers, rounded container bounds, and modernized full-height active tab states.', 
-                actionText: 'Try Vertical Tabs', 
-                targetUrl: 'ocal://settings' 
+            {
+                category: 'performance',
+                icon: 'fa-vault',
+                title: 'Military-Grade Password Vault & Smart Autofill',
+                desc: 'Completely reworked password manager featuring AES-GCM-256 encryption, native Windows Hello hardware biometrics, zero-knowledge storage, and instant 1-click autofill.',
+                actionText: 'Password Vault',
+                targetUrl: 'ocal://settings'
             },
-            { 
-                type: 'feature', 
-                category: 'performance', 
-                icon: 'fa-microchip', 
-                title: 'Modern Web Engine & Enhanced Performance', 
-                desc: 'Upgraded modern browser engine with faster V8 JavaScript execution, hardware-accelerated 60 FPS video playback, and smooth page scrolling.', 
-                actionText: 'Release Notes', 
-                targetUrl: 'ocal://whats-new' 
+            {
+                category: 'media',
+                icon: 'fa-palette',
+                title: 'Deep Theme Harmonizer & Custom Accents',
+                desc: 'Personalize your browser with 25+ curated showroom accent palettes, dynamic contrast calculations for omnibox chips, and synchronized dark/light palettes across all internal pages.',
+                actionText: 'Color Settings',
+                targetUrl: 'ocal://settings'
             },
-
-            // ══ Ocal Connect & Mobile Suite (v9.5.00) ══
-            { 
-                type: 'feature', 
-                category: 'multitasking', 
-                icon: 'fa-qrcode', 
-                title: 'Ocal Connect: Local Mobile Sync Bridge', 
-                desc: 'Pair your Windows desktop with the upcoming Ocal Browser mobile application in seconds using a high-contrast QR code or manual 6-digit PIN. Push active tabs, sync clipboard contents, and merge bookmarks & passwords over your local Wi-Fi with zero cloud telemetry.', 
-                actionText: 'Ocal Connect', 
-                targetUrl: 'ocal://settings#sync' 
-            },
-            { 
-                type: 'feature', 
-                category: 'multitasking', 
-                icon: 'fa-mobile-screen-button', 
-                title: 'Ocal Browser for Mobile (Coming Soon)', 
-                desc: 'The official Ocal Browser Android companion app is arriving soon. Enjoy Ocal\'s hallmark ad-shield acceleration, fluid tab multitasking, dark glass aesthetic, and seamless cross-device synchronization in your pocket.', 
-                actionText: 'Mobile Preview', 
-                targetUrl: 'ocal://settings#sync' 
-            },
-            { 
-                type: 'feature', 
-                category: 'performance', 
-                icon: 'fa-wrench', 
-                title: 'Stability Core & Settings Layout Polish', 
-                desc: 'Completely overhauled settings layout geometry for sync controls, resolved IPC lifecycle bindings, implemented instant client-side QR generation, and polished dark/light mode visual consistency.', 
-                actionText: 'Settings', 
-                targetUrl: 'ocal://settings' 
-            },
-
-            // ══ Major Update 9.1.05 Highlights ══
-            { 
-                type: 'feature', 
-                category: 'extensions', 
-                icon: 'fa-puzzle-piece', 
-                title: 'Google Chrome Extension Support (Beta)', 
-                desc: 'Run popular Google Chrome Web Store extensions directly inside Ocal with universal runtime polyfills for chrome.windows, chrome.storage.sync/local, chrome.action, chrome.scripting, chrome.tabs, and chrome.runtime. Actively expanding compatibility across the Chrome ecosystem (works with most popular extensions, while complex multi-process extensions are continually being added).', 
-                actionText: 'Browse Store', 
-                targetUrl: 'ocal://store' 
-            },
-            { 
-                type: 'feature', 
-                category: 'extensions', 
-                icon: 'fa-cubes-stacked', 
-                title: 'Compact Topbar Extension Capsule', 
-                desc: 'A modern, unobtrusive extension capsule in the top navigation bar that intelligently caps visible icons to 2, bundling excess addons into an interactive +N overflow counter badge and a quick-search extensions hub dropdown.', 
-                actionText: 'Manage Addons', 
-                targetUrl: 'ocal://settings' 
-            },
-            { 
-                type: 'feature', 
-                category: 'extensions', 
-                icon: 'fa-arrows-to-dot', 
-                title: 'Dynamic Popup Auto-Sizing Engine', 
-                desc: 'Adaptive bounding and auto-sizing engine for extension popups that dynamically analyzes stylesheet rules and DOM container dimensions in real time, eliminating letterboxing, horizontal gaps, and vertical clipping.', 
-                actionText: 'Try Popups', 
-                targetUrl: 'ocal://settings' 
-            },
-            { 
-                type: 'feature', 
-                category: 'extensions', 
-                icon: 'fa-cloud-arrow-down', 
-                title: 'Chrome Web Store 1-Click Injection Banner', 
-                desc: 'Smart floating installation banner and native toolbar button injected directly into chromewebstore.google.com, with automatic installation detection and live theme mode & accent color synchronization.', 
-                actionText: 'Web Store', 
-                targetUrl: 'https://chromewebstore.google.com' 
-            },
-            { 
-                type: 'feature', 
-                category: 'media', 
-                icon: 'fa-wand-magic-sparkles', 
-                title: 'Better UI: Shadowless Showroom & Zero-Jitter Cards', 
-                desc: 'Comprehensive visual overhaul eliminating heavy drop-shadow artifacts across all popups and dropdowns. Extension cards now feature zero-jitter hover physics, crisp neutral squircle icons, and in-place state toggling without reload flicker.', 
-                actionText: 'Showroom UI', 
-                targetUrl: 'ocal://home' 
-            },
-            { 
-                type: 'feature', 
-                category: 'media', 
-                icon: 'fa-palette', 
-                title: 'Theme Mode & Accent Color Synchronization', 
-                desc: 'Seamless end-to-end visual harmony: dark/light modes and custom accent palettes now dynamically propagate to all internal pages, floating Chrome Web Store install banners, extension hub menus, and popup frames.', 
-                actionText: 'Theme Settings', 
-                targetUrl: 'ocal://settings' 
-            },
-            { 
-                type: 'feature', 
-                category: 'performance', 
-                icon: 'fa-shield-halved', 
-                title: 'Local Pages Context Menu Hardening & Stability', 
-                desc: 'Streamlined right-click context menus across all internal and local pages (ocal://*, file://*, chrome://*), cleanly removing developer inspection tools. Includes critical fixes for background worker storage and development launcher paths.', 
-                actionText: 'Security Suite', 
-                targetUrl: 'ocal://settings' 
-            },
-
-            // ══ Platform & Multi-Module Suite ══
-            { type: 'feature', category: 'performance', icon: 'fa-bolt-lightning', title: 'Turbo Page Engine & Accelerated Ad Blocker', desc: 'Re-architected request interception pipeline, zero-overhead regex filtering, and instant DOM pre-compilation for blistering page load speeds and seamless tracker neutralization.', actionText: 'Speed Benchmark', targetUrl: 'ocal://settings' },
-            { type: 'feature', category: 'multitasking', icon: 'fa-folder-open', title: 'Overhauled Bento File Manager', desc: 'All-new file explorer interface with instant file previewing, media grid view, category tagging, drag-and-drop actions, real-time storage analytics, and lightning search.', actionText: 'Open Files', targetUrl: 'ocal://file-manager' },
-            { type: 'feature', category: 'multitasking', icon: 'fa-brain', title: 'Masterwork AI Intelligence & Image Studio', desc: 'Upgraded FLUX, DALL-E 3 & LLM engines with smart master prompt auto-enhancement, camera lens optics, zero-flash background preloading, and 4K HD canvas sharpening.', actionText: 'AI Studio', targetUrl: 'ocal://home' },
-            { type: 'feature', category: 'media', icon: 'fa-palette', title: 'Deep Home Page Customization Suite', desc: 'Personalize your home screen with custom bento card ordering, dynamic background wallpapers, animated particle density, clock widgets, and 25+ curated accent themes.', actionText: 'Customize Home', targetUrl: 'ocal://home' },
-            { type: 'feature', category: 'media', icon: 'fa-music', title: 'Ambient Background Songs & Soundscapes', desc: 'Immersive background audio player featuring lo-fi beats, ambient chill-out tracks, rain sounds, and focus frequencies to keep you in the flow while browsing.', actionText: 'Listen Now', targetUrl: 'ocal://home' },
-            { type: 'feature', category: 'media', icon: 'fa-display', title: 'Real-Time Page Effects & GPU Shaders', desc: 'Dynamic visual atmosphere engine with CRT retro scanlines, liquid glass distortion, ambient light blooms, and particle matrix shaders for any webpage.', actionText: 'Shader Controls', targetUrl: 'ocal://settings' },
-            { type: 'feature', category: 'performance', icon: 'fa-vault', title: 'Military-Grade Password Vault & Smart Autofill', desc: 'Completely reworked password manager featuring AES-GCM-256 encryption, native Windows Hello biometrics, zero-knowledge storage, instant 1-click autofill, and breach auditing.', actionText: 'Password Vault', targetUrl: 'ocal://settings' },
-            
-            // Core Browser Suite
-            { type: 'feature', category: 'multitasking', icon: 'fa-table-columns', title: 'Horizontal & Vertical Fluid Tabs', desc: 'Modern floating squircle tabs, responsive adaptive auto-scaling, adjacent + new tab button, and hardware-accelerated 60FPS layout transitions without bound thrashing.', actionText: 'Tabs Suite', targetUrl: 'ocal://settings' },
-            { type: 'feature', category: 'performance', icon: 'fa-lock-open', title: 'Insecure HTTP Indicator & Unlock Badge', desc: 'Dynamic open-lock warning badge, red protocol prefixing, and a dedicated site security panel with disabled certificate warnings on unencrypted connections.', actionText: 'Security Suite', targetUrl: 'ocal://settings' },
-            { type: 'feature', category: 'performance', icon: 'fa-shield-halved', title: 'Frosted Glass SSL & Security Warnings', desc: 'Overhauled warning pages featuring modern frosted glassmorphic cards, ambient glowing halos, collapsible diagnostics, and full dark/light theme sync.', actionText: 'Security', targetUrl: 'ocal://settings' },
-            { type: 'feature', category: 'media', icon: 'fa-bookmark', title: 'Scrollable Bookmark Bar with Hidden Scrollbar', desc: 'Effortless horizontal mouse-wheel panning across extensive bookmarks and folders with zero-width invisible scrollbars.', actionText: 'Bookmarks', targetUrl: 'ocal://settings' },
-            { type: 'feature', category: 'media', icon: 'fa-traffic-light', title: 'Apple-Style Window Controls', desc: 'Refined window traffic lights (Minimize, Maximize, Close) with subtle micro-vectors that reveal on hover across both horizontal and vertical layouts.', actionText: 'Window UI', targetUrl: 'ocal://settings' },
-            { type: 'feature', category: 'multitasking', icon: 'fa-file-lines', title: 'Zero-Failure Web & SPA Summarizer', desc: 'Resilient multi-layer page scraper supporting modern Single Page Apps (Next.js/React) with OpenGraph metadata extraction and heuristic fallback cards.', actionText: 'Web AI', targetUrl: 'ocal://home' },
-            { type: 'feature', category: 'multitasking', icon: 'fa-sliders', title: 'Natural Language Browser Control', desc: 'Instruct Ocal AI in plain English to toggle dark/light modes, customize 25+ accent colors, switch search engines, and manage tabs effortlessly.', actionText: 'AI Control', targetUrl: 'ocal://home' },
-            { type: 'feature', category: 'multitasking', icon: 'fa-table-columns', title: 'Split Screen Viewport Alignment', desc: 'Precision layout calculation keeping side-by-side tabs perfectly flush under the navigation bar across both vertical and horizontal dock configurations.', actionText: 'Multitasking', targetUrl: 'ocal://home' },
-            
-            // Team Contributors
-            { type: 'contributor', category: 'contributors', icon: 'fa-user-gear', title: 'Neelkanth Patel', desc: 'Lead browser architect. Engineered browser core, tab lifecycle, AI intelligence suite, and engine packaging.', role: 'Founder & Lead Dev' },
-                        { type: 'contributor', category: 'contributors', icon: 'fa-pen-nib', title: 'Jiya Thakkar', desc: 'Lead UX designer behind 2-column AI sidebar, Glassmorphic select popovers, and dynamic contrast themes.', role: 'Lead Designer' },
-            { type: 'contributor', category: 'contributors', icon: 'fa-user-astronaut', title: 'Reese Whiteman', desc: 'Engineered AI Persona Mood Swings, anger reactivity dynamics, and creative story generation heuristics.', role: 'AI & Research Lead' },
-            { type: 'contributor', category: 'contributors', icon: 'fa-laptop-code', title: 'Urmi Thakkar', desc: 'Engineered HD upscaling, HDR color tone-mapping, and image action toolbar controls.', role: 'Lead Frontend Architect' },
-            { type: 'contributor', category: 'contributors', icon: 'fa-user-check', title: 'Josephine Alexandra', desc: 'Designed human-like typo generator, backspace fixes, and glassmorphic modal design.', role: 'UI/UX QA Specialist' },
-            { type: 'contributor', category: 'contributors', icon: 'fa-user-ninja', title: 'Aarav Sharma', desc: 'Configured FLUX.2, Stable Diffusion 3.5 Large, and Qwen-Image model matrix.', role: 'AI Integration Engineer' },
-            { type: 'contributor', category: 'contributors', icon: 'fa-user-graduate', title: 'Priya Nair', desc: 'Created 150+ typo dictionary and real-time autocorrect event bindings.', role: 'Linguistics & NLP Dev' },
-            { type: 'contributor', category: 'contributors', icon: 'fa-user-shield', title: 'Devang Shah', desc: 'Configured local port CSP connect-src rules and Electron sandbox security policies.', role: 'Security Architect' },
-            { type: 'contributor', category: 'contributors', icon: 'fa-user-gear', title: 'Meera Joshi', desc: 'Built auto-discovery probes for Ollama, ComfyUI, Fooocus, and Automatic1111.', role: 'Backend Telemetry Lead' },
-            { type: 'contributor', category: 'contributors', icon: 'fa-user-doctor', title: 'Rohan Mehta', desc: 'Developed advanced PDF text chunking, table extractor, and 2-person dialogue narrative engine.', role: 'Document Intelligence Dev' },
-            { type: 'contributor', category: 'contributors', icon: 'fa-cube', title: 'Aditya Varma', desc: 'Engineered WebGL CRT scanline shaders, ambient light bloom filters, and liquid glass distortion post-processing.', role: 'Graphics & Shader Engineer' },
-            { type: 'contributor', category: 'contributors', icon: 'fa-music', title: 'Ananya Iyer', desc: 'Designed low-latency ambient background audio engine, lo-fi frequency filters, and background soundscapes.', role: 'Audio Systems Architect' },
-            { type: 'contributor', category: 'contributors', icon: 'fa-key', title: 'Siddharth Rao', desc: 'Implemented AES-GCM-256 vault encryption, Windows Hello biometric bindings, and zero-knowledge storage.', role: 'Cryptography & Vault Engineer' },
-            { type: 'contributor', category: 'contributors', icon: 'fa-folder-tree', title: 'Kavya Patel', desc: 'Architected the Bento File Manager, drag-and-drop file pipelines, and instant media thumbnail generator.', role: 'Storage & File System Dev' },
-            { type: 'contributor', category: 'contributors', icon: 'fa-shield-halved', title: 'Marcus Vance', desc: 'Optimized uBlock Origin rule engine integration, pre-DNS lookups, and DOM pre-rendering pipelines.', role: 'Network & Ad-Block Specialist' },
-            { type: 'contributor', category: 'contributors', icon: 'fa-palette', title: 'Sneha Kulkarni', desc: 'Engineered dynamic CSS custom property harmonizer and 25+ high-contrast showroom accent themes.', role: 'Theme & Color Systems Dev' },
-                        { type: 'contributor', category: 'contributors', icon: 'fa-file-code', title: 'Vikram Sengupta', desc: 'Engineered high-resolution PDF rendering pipeline, multi-scale canvas viewport rasterization, and thumbnail preview generator.', role: 'Document Systems Engineer' },
-            { type: 'contributor', category: 'contributors', icon: 'fa-user-lock', title: 'Zara Al-Mansoor', desc: 'Engineered persistent origin permission memory, shadowless modal prompts, and web session security policies.', role: 'Privacy & Security Systems Dev' },
-            { type: 'contributor', category: 'contributors', icon: 'fa-bolt-lightning', title: 'Liam Chen', desc: 'Optimized Chromium multi-process lifecycle, reduced memory idle footprint, and eliminated layout thrashing.', role: 'Performance & Engine Engineer' }
-        ];
-        const changelog = [
-            { 
-                date: 'November 2026', 
-                title: 'v10.1.23 Stable — Reworked File Manager, AI Sidebar Fixes, High-Res PDF & Performance Boost', 
-                desc: 'Milestone v10.1.23 release featuring the thoroughly reworked Bento File Manager with instant preview and folder analytics, resolved AI sidebar streaming and rendering bugs, overhauled high-resolution PDF Reader with restored icons and crisp zoom, deep dark/light mode synchronization with search engines, intelligent shadowless permission prompts with origin memory, and substantial performance improvements across the engine.', 
-                tags: ['v10.1.23 Stable', 'Reworked File Manager', 'AI Sidebar Fixes', 'High-Res PDF', 'Performance Boost', 'Theme & Search Sync', 'Permission Memory'] 
-            },
-            { 
-                date: 'October 2026', 
-                title: 'v10.0.01 Stable — Onboarding Suite, Chromium Runtime, @tab AI Intelligence & Performance', 
-                desc: 'Official v10.0.01 release introducing the fresh user Onboarding experience (ocal://onboarding) strictly on first-time setup, upgraded latest Chromium & Electron engine core, rich AI Copilot enhancements with @tab context command and multi-tab comparison, significant memory & startup performance improvements, native Windows 11 button controls in installer, and comprehensive UI bug fixes.', 
-                tags: ['v10.0.01 Stable', 'Onboarding Page', 'Latest Chromium', 'Performance', 'AI @tab Command', 'UI & Bug Fixes'] 
-            },
-            { 
-                date: 'October 2026', 
-                title: 'v10.0.0 Milestone — Microsoft Store Authenticode Certification, Rich AI Representation & Production Release', 
-                desc: 'Milestone Version 10.0.0 release. Introduces full SHA-256 Authenticode code signing with RFC 3161 timestamps on all Portable Executable (PE) binaries and installers to comply fully with Microsoft Store Policy 10.2.9 under publisher Gaming Network Studio. Upgrades Ocal AI with formatted markdown representations, callout alerts, live research synthesis, and provides production-ready Exe and MSIX packages.', 
-                tags: ['v10.0.0 Milestone', 'Microsoft Store', 'SHA-256 Authenticode', 'Policy 10.2.9', 'Gaming Network Studio', 'Rich AI Markdown', 'Exe & MSIX'] 
-            },
-            { 
-                date: 'October 2026', 
-                title: 'v9.8.9 Stable — Comprehensive Site Data & Cookie Eraser, Privacy Guard & Production Hardening', 
-                desc: 'Resolves site data and cookie retention across all profile partitions and network sessions. Features thorough multi-domain cookie removal (including domain, host, and subdomain cookies), automated background socket termination on delete, partition-wide storage flush, native Authenticode certificate signing, and updated production builds for Windows executable and MSIX packages.', 
-                tags: ['v9.8.9 Stable', 'Cookie Eraser', 'Privacy Guard', 'Site Data Deletion', 'MSIX', 'Exe Builder', 'Code Signing'] 
-            },
-            { 
-                date: 'October 2026', 
-                title: 'v9.8.05 Stable — Native Certificate Integration, Microsoft Store Hardening & UI Precision', 
-                desc: 'Bakes public Authenticode certificate installation directly into Inno Setup and MSIX deployment routines to resolve 0x800B010A chain verification automatically. Hardens installer security against Microsoft Store Policy 10.2.9 heuristics, updates visual assets across store packaging, and refines AI settings panels and sidebar loading transitions.', 
-                tags: ['v9.8.05 Stable', 'Certificate Automation', 'Store Hardening', 'MSIX', 'Inno Setup', 'UI Precision'] 
-            },
-            { 
-                date: 'September 2026', 
-                title: 'v9.8.00 Stable — Hardware Acceleration, Direct GPU Driver Pipeline, Extension Store & UI Polish', 
-                desc: 'Major performance and visual milestone introducing direct GPU driver hardware acceleration via Direct3D 11 ANGLE backend, passthrough command decoder, zero-copy buffers, and hardware video decode/encode up to 4K 60FPS. Features a completely redesigned Extension Store (ocal://store) with clean, shadowless, flat layout matching the home page design language. Refines the AI sidebar by removing unwanted resize gaps and handles for a flush workspace, and integrates dynamic luminance-based contrast calculation for omnibox shield badges and chips across custom accent themes.', 
-                tags: ['v9.8.00 Stable', 'Hardware Acceleration', 'Direct3D 11', 'Extension Store', 'AI Sidebar', 'Theme Contrast', 'Zero-Copy', 'Performance'] 
-            },
-            { 
-                date: 'September 2026', 
-                title: 'v9.5.07 Stable — Custom Installer Overhaul, Vertical Tab Cards & UI Polish', 
-                desc: 'Major release featuring a completely redesigned custom Inno Setup installer with native Windows 11 titlebar chrome, expandable options grid, bento terms/privacy cards, and interactive uninstaller feedback dialog. Introduces card-based vertical tab group wrappers with dynamic color-mix tinting and full-height active tabs. Updates Electron to 43.7.2 with modern dependencies, full SHA-256 Authenticode code signing with DigiCert timestamping for Microsoft Partner Center compliance, and targeted bug fixes based on user feedback.', 
-                tags: ['v9.5.07 Stable', 'Installer Overhaul', 'Vertical Tab Cards', 'UI Polish', 'Electron 43.7.2', 'Code Signing', 'Bug Fixes'] 
-            },
-            { 
-                date: 'September 2026', 
-                title: 'v9.5.00 Stable — Inno Setup Detailed Catalog, Ocal Connect & UI Polish', 
-                desc: 'Official v9.5.00 release featuring ultra-compressed Inno Setup 6 standalone packaging with a rich component selection catalog (Core Runtime, Ocal Connect Sync Bridge, Native PDF Viewer, and Ocal Shield). Includes peer-to-peer local mobile LAN bridging for the upcoming Ocal Android app (Coming Soon), an ergonomic shadowless pill-shaped extension install banner, redesigned settings bento layout, and general bug fixes.', 
-                tags: ['v9.5.00 Stable', 'Inno Setup', 'Detailed Catalog', 'Ocal Connect', 'Pill UI', 'Bug Fixes'] 
-            },
-            { 
-                date: 'September 2026', 
-                title: 'v9.4.00 Stable — Ocal Connect, Mobile App (Coming Soon) & Bug Fixes', 
-                desc: 'Major update introducing Ocal Connect: a peer-to-peer zero-trust sync bridge connecting desktop and mobile. Seamlessly push active tabs, share clipboard text, merge bookmarks, and sync encrypted passwords with the upcoming Ocal Mobile Android app (Coming Soon). Includes an overhauled compact settings layout, instant QR code generation, and critical engine stability bug fixes.', 
-                tags: ['v9.4.00 Stable', 'Ocal Connect', 'Mobile Sync', 'Coming Soon', 'Bug Fixes', 'Better Layout'] 
-            },
-
-            { 
-                date: 'September 2026', 
-                title: 'v9.1.05 Stable — Google Chrome Extensions, Better UI & Bug Fixes', 
-                desc: 'Major feature update introducing Google Chrome extension compatibility via universal runtime polyfills (chrome.windows, chrome.storage.sync/session, chrome.action, chrome.tabs, chrome.runtime, chrome.scripting). Features a compact topbar Extension Capsule with smart overflow counting and instant search, theme mode & accent color synchronization across all overlays, dynamic popup auto-sizing engine, refined shadowless UI with zero-jitter cards, custom confirmation modals, and hardened local page context menus.', 
-                tags: ['v9.1.05 Stable', 'Chrome Extensions', 'Better UI', 'Extension Capsule', 'Bug Fixes', 'Theme Sync'] 
-            },
-            { date: 'September 2026', title: 'v9.0.01 Stable — Telemetry Accuracy & Reset Controls', desc: 'Resolved runaway ad neutralization counters by stripping extraneous abort-status request hooks and eliminating synthetic timer loops. Added 1-click Reset Stats control in Security settings and polished password autofill listeners.', tags: ['v9.0.01 Stable', 'Telemetry Fix', 'AdBlock', 'Autofill'] },
-            { date: 'September 2026', title: 'v9.0.00 Flagship — Seamless UI/UX, Ambient Audio, Shaders & Password Vault Rework', desc: 'Major milestone release featuring seamless UI/UX refinement across all popups and sidebars, turbocharged page loading and ad-blocker acceleration, overhauled Bento File Manager, masterwork AI Studio with FLUX flagship generation, deep Home Page customization, background ambient soundscapes & music player, GPU-accelerated page shaders, and a military-grade encrypted Password Manager with Windows Hello biometric autofill.', tags: ['v9.0.00 Major', 'Seamless UI/UX', 'Faster AdBlock', 'File Manager', 'AI Studio', 'Ambient Audio', 'Page Shaders', 'Password Vault'] },
-            { date: 'September 2026', title: 'v8.9.50 Stable — Fluid Tabs, HTTP Unlock Alerts & Glassmorphic Security', desc: 'Complete redesign of Horizontal & Vertical tabs with floating glass squircles, adaptive auto-scaling, adjacent + new tab button, and hardware-accelerated transitions. Added dynamic unlock indicators for unencrypted HTTP sites, redesigned frosted glassmorphic SSL and security warning pages with dark/light theme sync, chrome navigation protection, scrollable bookmark bar with hidden scrollbars, and upgraded to Electron 43.4.1, uBlock Origin 1.74.0, and Return YouTube Dislike 4.0.4.', tags: ['v8.9.50 Stable', 'Fluid Tabs', 'HTTP Security', 'Engine Matrix'] },
-            { date: 'August 2026', title: 'v8.9.00 — Tab Layout Overhauls & Inno Setup Packaging', desc: 'Refined vertical and horizontal tab layout geometry, added adjacent new tab button, and created ultra-compressed Inno Setup 6 standalone distributions.', tags: ['v8.9.00', 'Tab Layouts', 'Inno Setup'] },
-            { date: 'August 2026', title: 'v8.6.00 — Showroom AI Suite, Web Summarizer & Engine Matrix', desc: 'Overhauled Ocal AI Assistant with real-time browser settings control, TTS voice, code copy, and robust SPA page scraping. Restored native right-click context menu, eliminated sidebar gap and bubble layout bugs, and upgraded Electron to 43.4.0 with latest uBlock Origin and Dislike extensions.', tags: ['v8.6.00', 'AI Intelligence', 'Context Menu', 'Engine Upgrade'] },
-            { date: 'August 2026', title: 'v8.5.00 — Layout Precision & Password Vault Redesign', desc: 'Introduced force hide sidebar layout, redesigned shadowless password popover with site favicons, removed system scrollbars, and resolved all viewport black bar and padding bugs.', tags: ['v8.5.00', 'UI Polishing', 'Bug Fixes'] },
-            { date: 'August 2026', title: 'v8.2.00 — Native System App & AI Persona Moods', desc: 'Added Open in System App handler, pdf-icon.ico branding, AI Persona Moodswings & Anger, and 2-column glassmorphic AI sidebar.', tags: ['v8.2.00', 'AI Moods', 'System App'] }
+            {
+                category: 'multitasking',
+                icon: 'fa-qrcode',
+                title: 'Ocal Connect: Local Mobile Sync Bridge',
+                desc: 'Pair your Windows desktop with the upcoming Ocal Browser mobile application in seconds using a QR code. Push active tabs, sync clipboard, and merge bookmarks over local Wi-Fi with zero cloud telemetry.',
+                actionText: 'Ocal Connect',
+                targetUrl: 'ocal://settings#sync'
+            }
         ];
 
-        let currentCategory = 'all';
+        // ── Data: Changelog ──
+        const changelogs = [
+            {
+                date: 'November 2026',
+                title: 'v10.1.23 Stable — Reworked File Manager, AI Sidebar Fixes, High-Res PDF & Performance Boost',
+                desc: 'Milestone v10.1.23 release featuring the thoroughly reworked Bento File Manager with instant preview and folder analytics, resolved AI sidebar streaming and rendering bugs, overhauled high-resolution PDF Reader with restored icons and crisp zoom, deep dark/light mode synchronization with search engines, intelligent shadowless permission prompts with origin memory, and substantial performance improvements across the engine.',
+                tags: ['v10.1.23 Stable', 'Reworked File Manager', 'AI Sidebar Fixes', 'High-Res PDF', 'Performance Boost', 'Theme & Search Sync', 'Permission Memory']
+            },
+            {
+                date: 'October 2026',
+                title: 'v10.0.01 Stable — Onboarding Suite, Chromium Runtime, @tab AI Intelligence & Performance',
+                desc: 'Official v10.0.01 release introducing the fresh user Onboarding experience (ocal://onboarding) strictly on first-time setup, upgraded latest Chromium & Electron engine core, rich AI Copilot enhancements with @tab context command and multi-tab comparison, significant memory & startup performance improvements, native Windows 11 button controls in installer, and comprehensive UI bug fixes.',
+                tags: ['v10.0.01 Stable', 'Onboarding Page', 'Latest Chromium', 'Performance', 'AI @tab Command', 'UI & Bug Fixes']
+            },
+            {
+                date: 'October 2026',
+                title: 'v10.0.0 Milestone — Microsoft Store Authenticode Certification & Production Release',
+                desc: 'Milestone Version 10.0.0 release. Introduces full SHA-256 Authenticode code signing with RFC 3161 timestamps on all Portable Executable (PE) binaries and installers to comply fully with Microsoft Store Policy 10.2.9 under publisher Gaming Network Studio. Upgrades Ocal AI with formatted markdown representations, callout alerts, live research synthesis, and provides production-ready Exe and MSIX packages.',
+                tags: ['v10.0.0 Milestone', 'Microsoft Store', 'SHA-256 Authenticode', 'Policy 10.2.9', 'Gaming Network Studio', 'Rich AI Markdown', 'Exe & MSIX']
+            },
+            {
+                date: 'October 2026',
+                title: 'v9.8.9 Stable — Comprehensive Site Data & Cookie Eraser, Privacy Guard & Hardening',
+                desc: 'Resolves site data and cookie retention across all profile partitions and network sessions. Features thorough multi-domain cookie removal (including domain, host, and subdomain cookies), automated background socket termination on delete, partition-wide storage flush, native Authenticode certificate signing, and updated production builds for Windows executable and MSIX packages.',
+                tags: ['v9.8.9 Stable', 'Cookie Eraser', 'Privacy Guard', 'Site Data Deletion', 'MSIX', 'Exe Builder', 'Code Signing']
+            },
+            {
+                date: 'September 2026',
+                title: 'v9.8.00 Stable — Hardware Acceleration, Direct GPU Driver Pipeline & Extension Store',
+                desc: 'Major performance and visual milestone introducing direct GPU driver hardware acceleration via Direct3D 11 ANGLE backend, passthrough command decoder, zero-copy buffers, and hardware video decode/encode up to 4K 60FPS. Features a completely redesigned Extension Store (ocal://store) with clean, shadowless, flat layout matching the home page design language.',
+                tags: ['v9.8.00 Stable', 'Hardware Acceleration', 'Direct3D 11', 'Extension Store', 'AI Sidebar', 'Theme Contrast', 'Performance']
+            },
+            {
+                date: 'September 2026',
+                title: 'v9.5.07 Stable — Custom Installer Overhaul, Vertical Tab Cards & UI Polish',
+                desc: 'Major release featuring a completely redesigned custom Inno Setup installer with native Windows 11 titlebar chrome, expandable options grid, bento terms/privacy cards, and interactive uninstaller feedback dialog. Introduces card-based vertical tab group wrappers with dynamic color-mix tinting and full-height active tabs.',
+                tags: ['v9.5.07 Stable', 'Installer Overhaul', 'Vertical Tab Cards', 'UI Polish', 'Electron 43.7.2', 'Code Signing']
+            },
+            {
+                date: 'September 2026',
+                title: 'v9.1.05 Stable — Google Chrome Extensions, Better UI & Bug Fixes',
+                desc: 'Major feature update introducing Google Chrome extension compatibility via universal runtime polyfills. Features a compact topbar Extension Capsule with smart overflow counting and instant search, theme mode & accent color synchronization across all overlays, dynamic popup auto-sizing engine, and refined shadowless UI.',
+                tags: ['v9.1.05 Stable', 'Chrome Extensions', 'Better UI', 'Extension Capsule', 'Bug Fixes', 'Theme Sync']
+            }
+        ];
+
+        // ── Data: Contributors (Including 2 New Contributors added in v10.1.23) ──
+        const contributors = [
+            { icon: 'fa-user-gear', name: 'Neelkanth Patel', role: 'Founder & Lead Dev', desc: 'Lead browser architect. Engineered browser core, tab lifecycle, AI intelligence suite, and engine packaging.' },
+            { icon: 'fa-pen-nib', name: 'Jiya Thakkar', role: 'Lead Designer', desc: 'Lead UX designer behind 2-column AI sidebar, Glassmorphic select popovers, and dynamic contrast themes.' },
+            { icon: 'fa-user-astronaut', name: 'Reese Whiteman', role: 'AI & Research Lead', desc: 'Engineered AI Persona Mood Swings, anger reactivity dynamics, and creative story generation heuristics.' },
+            { icon: 'fa-laptop-code', name: 'Urmi Thakkar', role: 'Lead Frontend Architect', desc: 'Engineered HD upscaling, HDR color tone-mapping, and image action toolbar controls.' },
+            { icon: 'fa-user-check', name: 'Josephine Alexandra', role: 'UI/UX QA Specialist', desc: 'Designed human-like typo generator, backspace fixes, and glassmorphic modal design.' },
+            { icon: 'fa-file-code', name: 'Vikram Sengupta', role: 'Document Systems Engineer', desc: 'Engineered high-resolution PDF rendering pipeline, multi-scale canvas viewport rasterization, and thumbnail preview generator.' },
+            { icon: 'fa-user-lock', name: 'Zara Al-Mansoor', role: 'Privacy & Security Systems Dev', desc: 'Engineered persistent origin permission memory, shadowless modal prompts, and web session security policies.' },
+            { icon: 'fa-bolt-lightning', name: 'Liam Chen', role: 'Performance & Engine Engineer', desc: 'Optimized Chromium multi-process lifecycle, reduced memory idle footprint, and eliminated layout thrashing.' },
+            { icon: 'fa-user-ninja', name: 'Aarav Sharma', role: 'AI Integration Engineer', desc: 'Configured FLUX.2, Stable Diffusion 3.5 Large, and Qwen-Image model matrix.' },
+            { icon: 'fa-user-graduate', name: 'Priya Nair', role: 'Linguistics & NLP Dev', desc: 'Created 150+ typo dictionary and real-time autocorrect event bindings.' },
+            { icon: 'fa-user-shield', name: 'Devang Shah', role: 'Security Architect', desc: 'Configured local port CSP connect-src rules and Electron sandbox security policies.' },
+            { icon: 'fa-user-gear', name: 'Meera Joshi', role: 'Backend Telemetry Lead', desc: 'Built auto-discovery probes for Ollama, ComfyUI, Fooocus, and Automatic1111.' },
+            { icon: 'fa-user-doctor', name: 'Rohan Mehta', role: 'Document Intelligence Dev', desc: 'Developed advanced PDF text chunking, table extractor, and 2-person dialogue narrative engine.' },
+            { icon: 'fa-cube', name: 'Aditya Varma', role: 'Graphics & Shader Engineer', desc: 'Engineered WebGL CRT scanline shaders, ambient light bloom filters, and liquid glass distortion post-processing.' },
+            { icon: 'fa-music', name: 'Ananya Iyer', role: 'Audio Systems Architect', desc: 'Designed low-latency ambient background audio engine, lo-fi frequency filters, and background soundscapes.' },
+            { icon: 'fa-key', name: 'Siddharth Rao', role: 'Cryptography & Vault Engineer', desc: 'Implemented AES-GCM-256 vault encryption, Windows Hello biometric bindings, and zero-knowledge storage.' },
+            { icon: 'fa-folder-tree', name: 'Kavya Patel', role: 'Storage & File System Dev', desc: 'Architected the Bento File Manager, drag-and-drop file pipelines, and instant media thumbnail generator.' },
+            { icon: 'fa-shield-halved', name: 'Marcus Vance', role: 'Network & Ad-Block Specialist', desc: 'Optimized uBlock Origin rule engine integration, pre-DNS lookups, and DOM pre-rendering pipelines.' },
+            { icon: 'fa-palette', name: 'Sneha Kulkarni', role: 'Theme & Color Systems Dev', desc: 'Engineered dynamic CSS custom property harmonizer and 25+ high-contrast showroom accent themes.' }
+        ];
+
+        let activeCategory = 'all';
         let searchQuery = '';
 
-        // ── Render Features Showcase Grid ──
-        function renderGrid() {
-            const grid = document.getElementById('directory-grid');
+        // ── Render Features ──
+        function renderFeatures() {
+            const grid = document.getElementById('features-grid');
             if (!grid) return;
             grid.innerHTML = '';
 
-            let filtered = items.filter(item => {
-                if (currentCategory === 'all') return item.type === 'feature';
-                return item.category === currentCategory;
+            let list = features.filter(f => {
+                if (activeCategory === 'all') return true;
+                return f.category === activeCategory;
             });
 
             if (searchQuery) {
                 const q = searchQuery.toLowerCase();
-                filtered = filtered.filter(item =>
-                    item.title.toLowerCase().includes(q) ||
-                    item.desc.toLowerCase().includes(q) ||
-                    item.category.toLowerCase().includes(q)
+                list = list.filter(f =>
+                    f.title.toLowerCase().includes(q) ||
+                    f.desc.toLowerCase().includes(q) ||
+                    f.category.toLowerCase().includes(q)
                 );
             }
 
             // Update Counts
-            const countAll = document.getElementById('count-all');
-            if (countAll) countAll.textContent = items.filter(i => i.type === 'feature').length;
-            const countExt = document.getElementById('count-ext');
-            if (countExt) countExt.textContent = items.filter(i => i.category === 'extensions').length;
-            const countMulti = document.getElementById('count-multi');
-            if (countMulti) countMulti.textContent = items.filter(i => i.category === 'multitasking').length;
-            const countPerf = document.getElementById('count-perf');
-            if (countPerf) countPerf.textContent = items.filter(i => i.category === 'performance').length;
-            const countMedia = document.getElementById('count-media');
-            if (countMedia) countMedia.textContent = items.filter(i => i.category === 'media').length;
-            const countTeam = document.getElementById('count-team');
-            if (countTeam) countTeam.textContent = items.filter(i => i.category === 'contributors').length;
+            document.getElementById('count-all').textContent = features.length;
+            document.getElementById('count-multi').textContent = features.filter(f => f.category === 'multitasking').length;
+            document.getElementById('count-perf').textContent = features.filter(f => f.category === 'performance').length;
+            document.getElementById('count-media').textContent = features.filter(f => f.category === 'media').length;
+            document.getElementById('count-ext').textContent = features.filter(f => f.category === 'extensions').length;
 
-            if (filtered.length === 0) {
+            if (list.length === 0) {
                 grid.innerHTML = `
-                    <div style="grid-column: 1 / -1; padding: 60px 20px; text-align: center; color: var(--text-dim);">
-                        <i class="fas fa-search" style="font-size: 32px; color: var(--accent); margin-bottom: 12px; display: block;"></i>
-                        <h4 style="font-size: 16px; font-weight: 700; color: var(--text);">No matching features found</h4>
-                        <p style="font-size: 13px; margin-top: 4px;">Try searching with different terms or select another category.</p>
+                    <div style="grid-column: 1 / -1; padding: 48px 20px; text-align: center; color: var(--text-dim);">
+                        <i class="fas fa-search" style="font-size: 28px; color: var(--accent); margin-bottom: 10px; display: block;"></i>
+                        <h4 style="font-size: 15px; font-weight: 700; color: var(--text); margin: 0;">No matching features found</h4>
+                        <p style="font-size: 12.5px; margin-top: 4px;">Try searching with different terms or select another category filter.</p>
                     </div>
                 `;
                 return;
             }
 
-            filtered.forEach((item, index) => {
+            list.forEach(item => {
                 const card = document.createElement('div');
-                card.className = 'feature-item-card';
-                card.style.animation = `fadeInCard 0.35s cubic-bezier(0.16, 1, 0.3, 1) ${Math.min(index * 0.025, 0.35)}s both`;
-                
-                card.onclick = () => {
-                    if (item.targetUrl) {
-                        navigate(item.targetUrl);
-                    }
-                };
+                card.className = 'feature-card';
+                card.onclick = () => { if (item.targetUrl) navigate(item.targetUrl); };
 
-                const footLeft = item.type === 'contributor' ? (item.role || 'Contributor') : (item.actionText || 'Explore');
-                const catLabel = item.type === 'contributor' ? 'Team' : (item.category === 'extensions' ? 'Extensions' : item.category);
+                const catLabels = {
+                    multitasking: 'AI & Multitasking',
+                    performance: 'Speed & Security',
+                    media: 'UI & Audio',
+                    extensions: 'Extensions'
+                };
 
                 card.innerHTML = `
                     <div>
-                        <div class="card-top-row">
-                            <div class="card-icon-box">
-                                <i class="fas ${item.icon}"></i>
-                            </div>
-                            <span class="card-category-pill">${catLabel}</span>
+                        <div class="fc-header">
+                            <div class="fc-icon"><i class="fas ${item.icon}"></i></div>
+                            <span class="fc-category">${catLabels[item.category] || item.category}</span>
                         </div>
-                        <h4 class="card-feature-title">${item.title}</h4>
-                        <p class="card-feature-desc">${item.desc}</p>
+                        <h4 class="fc-title">${item.title}</h4>
+                        <p class="fc-desc">${item.desc}</p>
                     </div>
-                    <div class="card-action-footer">
-                        <span>${footLeft}</span>
+                    <div class="fc-footer">
+                        <span>${item.actionText || 'Explore'}</span>
                         <i class="fas fa-arrow-right"></i>
                     </div>
                 `;
@@ -1919,61 +1199,125 @@
             });
         }
 
-        // ── Render Timeline Changelog ──
-        function renderTimeline() {
-            const timeline = document.getElementById('timeline');
-            if (!timeline) return;
-            timeline.innerHTML = '';
-            changelog.forEach(entry => {
+        // ── Render Changelog ──
+        function renderChangelogs() {
+            const stream = document.getElementById('changelog-stream');
+            if (!stream) return;
+            stream.innerHTML = '';
+
+            let list = changelogs;
+            if (searchQuery) {
+                const q = searchQuery.toLowerCase();
+                list = list.filter(c =>
+                    c.title.toLowerCase().includes(q) ||
+                    c.desc.toLowerCase().includes(q) ||
+                    c.tags.some(t => t.toLowerCase().includes(q))
+                );
+            }
+
+            list.forEach(entry => {
                 const card = document.createElement('div');
-                card.className = 'timeline-entry-card';
+                card.className = 'timeline-card';
                 card.innerHTML = `
-                    <div class="entry-top">
-                        <span class="entry-version-title">${entry.title}</span>
-                        <span class="entry-date">${entry.date}</span>
+                    <div class="tc-header">
+                        <span class="tc-title">${entry.title}</span>
+                        <span class="tc-date">${entry.date}</span>
                     </div>
-                    <p class="entry-desc">${entry.desc}</p>
-                    <div class="entry-tags">
-                        ${entry.tags.map(t => `<span class="entry-tag-pill">${t}</span>`).join('')}
+                    <p class="tc-desc">${entry.desc}</p>
+                    <div class="tc-tags">
+                        ${entry.tags.map(t => `<span class="tc-tag">${t}</span>`).join('')}
                     </div>
                 `;
-                timeline.appendChild(card);
+                stream.appendChild(card);
             });
         }
 
-        // ── Switch Category ──
-        window.setCategory = function (cat) {
-            currentCategory = cat;
-            const tabs = document.querySelectorAll('.rail-menu-item');
-            tabs.forEach(tab => {
-                tab.classList.toggle('active', tab.getAttribute('data-category') === cat);
+        // ── Render Contributors ──
+        function renderContributors() {
+            const grid = document.getElementById('contributors-grid');
+            if (!grid) return;
+            grid.innerHTML = '';
+
+            let list = contributors;
+            if (searchQuery) {
+                const q = searchQuery.toLowerCase();
+                list = list.filter(c =>
+                    c.name.toLowerCase().includes(q) ||
+                    c.role.toLowerCase().includes(q) ||
+                    c.desc.toLowerCase().includes(q)
+                );
+            }
+
+            list.forEach(c => {
+                const tile = document.createElement('div');
+                tile.className = 'contributor-tile';
+                tile.innerHTML = `
+                    <div class="ct-avatar"><i class="fas ${c.icon}"></i></div>
+                    <div class="ct-info">
+                        <div class="ct-name-row">
+                            <span class="ct-name">${c.name}</span>
+                            <span class="ct-role">${c.role}</span>
+                        </div>
+                        <p class="ct-desc">${c.desc}</p>
+                    </div>
+                `;
+                grid.appendChild(tile);
             });
+        }
 
-            const map = {
-                all: ['All Features & Enhancements', 'Showing all major upgrades in v10.0.0 Milestone'],
-                multitasking: ['AI Intelligence & Multitasking', 'Tab-Aware AI, Multi-Tab Compare, Bento File Manager & Split Screen'],
-                extensions: ['Extensions & Store Engine', 'Chrome Web Store Polyfills, Topbar Capsule & Dynamic Popups'],
-                performance: ['Speed & Security Vault', 'Direct3D 11 GPU Acceleration, Authenticode Signing & 256-Bit Vault'],
-                media: ['Better UI & Ambient Soundscapes', 'Refined Shadowless Aesthetics, Dynamic Contrast & Audio System'],
-                contributors: ['Lead Architects & Team', 'The core engineering team behind Ocal Browser']
-            };
-
-            const [title, subtitle] = map[cat] || map.all;
-            const dirTitle = document.getElementById('dir-title');
-            if (dirTitle) dirTitle.textContent = title;
-            const dirSubtitle = document.getElementById('dir-subtitle');
-            if (dirSubtitle) dirSubtitle.textContent = subtitle;
-
-            renderGrid();
+        // ── Filter Category ──
+        window.setCategory = function (cat) {
+            activeCategory = cat;
+            document.querySelectorAll('.cat-filter-btn').forEach(btn => {
+                btn.classList.toggle('active', btn.getAttribute('data-cat') === cat);
+            });
+            renderFeatures();
         };
 
-        // ── Search Listener ──
-        const searchInput = document.getElementById('feature-search');
+        // ── Sidebar Navigation ──
+        document.querySelectorAll('.sidebar-nav .nav-item').forEach(item => {
+            item.onclick = () => {
+                document.querySelectorAll('.sidebar-nav .nav-item').forEach(i => i.classList.remove('active'));
+                item.classList.add('active');
+
+                const targetId = item.getAttribute('data-target');
+                const cat = item.getAttribute('data-cat');
+                if (cat) {
+                    setCategory(cat);
+                }
+                if (targetId) {
+                    const targetEl = document.getElementById(targetId);
+                    if (targetEl) {
+                        targetEl.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                    }
+                }
+            };
+        });
+
+        // ── Search Handling ──
+        const searchInput = document.getElementById('whatsnew-search');
+        const clearBtn = document.getElementById('search-clear-btn');
+
         if (searchInput) {
-            searchInput.addEventListener('input', (e) => {
+            searchInput.oninput = (e) => {
                 searchQuery = e.target.value.trim();
-                renderGrid();
-            });
+                if (clearBtn) clearBtn.style.display = searchQuery ? 'block' : 'none';
+                renderFeatures();
+                renderChangelogs();
+                renderContributors();
+            };
+
+            if (clearBtn) {
+                clearBtn.onclick = () => {
+                    searchInput.value = '';
+                    searchQuery = '';
+                    clearBtn.style.display = 'none';
+                    searchInput.focus();
+                    renderFeatures();
+                    renderChangelogs();
+                    renderContributors();
+                };
+            }
 
             document.addEventListener('keydown', (e) => {
                 if (e.key === '/' && document.activeElement !== searchInput) {
@@ -1981,17 +1325,71 @@
                     searchInput.focus();
                 }
                 if (e.key === 'Escape' && document.activeElement === searchInput) {
-                    searchInput.blur();
                     searchInput.value = '';
                     searchQuery = '';
-                    renderGrid();
+                    if (clearBtn) clearBtn.style.display = 'none';
+                    searchInput.blur();
+                    renderFeatures();
+                    renderChangelogs();
+                    renderContributors();
                 }
             });
         }
 
-        // ── Init ──
-        renderGrid();
-        renderTimeline();
+        // ── Live Theme & Logo Sync ──
+        function syncTheme() {
+            const isDark = (document.documentElement.getAttribute('data-theme') === 'dark');
+            const logo = document.getElementById('header-logo-img');
+            if (logo) {
+                logo.src = isDark ? 'assets/Dark.png' : 'assets/Light.png';
+            }
+        }
+        syncTheme();
+
+        // Observe parent window theme if in iframe
+        try {
+            if (window.parent && window.parent !== window && window.parent.document) {
+                const parentTheme = window.parent.document.documentElement.getAttribute('data-theme') || window.parent.document.body.getAttribute('data-theme');
+                if (parentTheme) {
+                    document.documentElement.setAttribute('data-theme', parentTheme);
+                    document.body.setAttribute('data-theme', parentTheme);
+                    syncTheme();
+                }
+                const observer = new MutationObserver(() => {
+                    const t = window.parent.document.documentElement.getAttribute('data-theme') || window.parent.document.body.getAttribute('data-theme');
+                    if (t) {
+                        document.documentElement.setAttribute('data-theme', t);
+                        document.body.setAttribute('data-theme', t);
+                        syncTheme();
+                    }
+                });
+                observer.observe(window.parent.document.documentElement, { attributes: true, attributeFilter: ['data-theme'] });
+            }
+        } catch (e) {}
+
+        window.addEventListener('storage', (e) => {
+            if (e.key === 'ocal-settings-theme') {
+                const t = e.newValue || 'dark';
+                document.documentElement.setAttribute('data-theme', t);
+                document.body.setAttribute('data-theme', t);
+                syncTheme();
+            }
+            if (e.key === 'ocal-settings-accent') {
+                const a = e.newValue;
+                if (a) {
+                    document.documentElement.style.setProperty('--accent', a);
+                    document.documentElement.style.setProperty('--accent-glow', `color-mix(in srgb, ${a} 25%, transparent)`);
+                    document.documentElement.style.setProperty('--accent-dim', `color-mix(in srgb, ${a} 12%, transparent)`);
+                    document.documentElement.style.setProperty('--accent-border', a);
+                }
+            }
+        });
+
+        // ── Initial Render ──
+        renderFeatures();
+        renderChangelogs();
+        renderContributors();
     </script>
 </body>
+
 </html>
