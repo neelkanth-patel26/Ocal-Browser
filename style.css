@@ -715,7 +715,7 @@ body[data-theme="light"] .tab-item i.tab-favicon {
   color: #64748B !important;
 }
 
-body[data-theme="light"] .tab-item.active i.tab-favicon {
+body[data-theme="light"] .tab-item.active:not(.grouped) i.tab-favicon {
   color: var(--accent) !important;
 }
 
@@ -774,7 +774,7 @@ body[data-theme="light"] .sidebar-nav-btn {
 }
 
 body[data-theme="light"] i.tab-favicon { color: #111111 !important; }
-body[data-theme="light"] .tab-item.active i.tab-favicon { color: var(--accent) !important; }
+body[data-theme="light"] .tab-item.active:not(.grouped) i.tab-favicon { color: var(--accent) !important; }
 
 body[data-theme="light"] .omni-btn { color: #555E6D !important; opacity: 1 !important; background: transparent !important; border: 1px solid transparent !important; box-shadow: none !important; }
 body[data-theme="light"] .omni-btn:hover { background: rgba(0, 0, 0, 0.05) !important; border-color: transparent !important; color: #111827 !important; }
@@ -886,7 +886,7 @@ body[data-theme-combo] .tab-item.active .tab-title {
   color: var(--text) !important;
 }
 
-body[data-theme-combo] .tab-item.active i.tab-favicon {
+body[data-theme-combo] .tab-item.active:not(.grouped) i.tab-favicon {
   color: var(--accent) !important;
 }
 
@@ -1571,7 +1571,10 @@ body.compact-mode .tab-item.grouped.active {
   font-weight: 650 !important;
 }
 
-.tab-item.grouped.active i.tab-favicon {
+.tab-item.grouped.active i.tab-favicon,
+.tab-item.grouped.active i.solid-icon,
+.tab-item.grouped.active .tab-favicon i,
+.tab-item.grouped.active i {
   color: var(--accent-text, #FFFFFF) !important;
 }
 
@@ -1689,7 +1692,10 @@ body[data-theme="light"] .tab-item.grouped.active .tab-title {
   font-weight: 650 !important;
 }
 
-body[data-theme="light"] .tab-item.grouped.active i.tab-favicon {
+body[data-theme="light"] .tab-item.grouped.active i.tab-favicon,
+body[data-theme="light"] .tab-item.grouped.active i.solid-icon,
+body[data-theme="light"] .tab-item.grouped.active .tab-favicon i,
+body[data-theme="light"] .tab-item.grouped.active i {
   color: var(--accent-text, #FFFFFF) !important;
 }
 
@@ -5452,7 +5458,7 @@ body[data-theme="dark"] .vt-tab-favicon {
   font-size: 12px;
 }
 
-.vt-tab-item.active .vt-tab-favicon i {
+.vt-tab-item.active:not(.grouped) .vt-tab-favicon i {
   color: var(--accent) !important;
 }
 
@@ -5511,28 +5517,28 @@ body[data-theme="dark"] .vt-tab-favicon {
   transform: scale(1.08);
 }
 
-/* ── Vertical Tab Groups (Modern Unified Capsule & Solid Pill Header) ── */
+/* ── Vertical Tab Groups (Bento Architecture & Modern Solid Pill Header) ── */
 
 /* Wrapper container — holds group header + grouped tabs as one capsule card */
 .vt-group-wrapper {
   display: flex;
   flex-direction: column;
-  margin: 6px 0 8px 0;
-  padding: 3px;
-  border-radius: 13px;
-  background: color-mix(in srgb, var(--group-color, #a855f7) 10%, #FFFFFF) !important;
-  border: 1px solid color-mix(in srgb, var(--group-color, #a855f7) 24%, rgba(0, 0, 0, 0.08)) !important;
-  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.04);
+  margin: 6px 0 10px 0;
+  padding: 6px;
+  border-radius: 14px;
+  background: color-mix(in srgb, var(--group-color, #a855f7) 6%, #F8F9FB) !important;
+  border: 1px solid color-mix(in srgb, var(--group-color, #a855f7) 18%, rgba(0, 0, 0, 0.08)) !important;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.03), 0 3px 10px rgba(0, 0, 0, 0.02);
   overflow: hidden;
-  gap: 2px;
+  gap: 5px;
   box-sizing: border-box;
   transition: background 0.2s ease, border-color 0.2s ease;
 }
 
 body[data-theme="dark"] .vt-group-wrapper {
-  background: color-mix(in srgb, var(--group-color, #a855f7) 14%, #18181C) !important;
-  border-color: color-mix(in srgb, var(--group-color, #a855f7) 30%, rgba(255, 255, 255, 0.08)) !important;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+  background: color-mix(in srgb, var(--group-color, #a855f7) 9%, #141417) !important;
+  border-color: color-mix(in srgb, var(--group-color, #a855f7) 25%, rgba(255, 255, 255, 0.08)) !important;
+  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.35);
 }
 
 /* Group Header — Solid Pill Header matching normal horizontal tab version */
@@ -5542,13 +5548,13 @@ body[data-theme="dark"] .vt-group-wrapper {
   justify-content: space-between;
   padding: 0 10px;
   margin: 0;
-  height: 30px;
-  min-height: 30px;
+  height: 28px;
+  min-height: 28px;
   border-radius: 9px !important;
   background: var(--group-color, #a855f7) !important;
   border: none !important;
   color: #FFFFFF !important;
-  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.15) !important;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.12) !important;
   cursor: pointer;
   user-select: none;
   box-sizing: border-box;
@@ -5619,60 +5625,86 @@ body[data-theme="dark"] .vt-group-wrapper {
   transform: rotate(-90deg);
 }
 
-/* ── Grouped Vertical Tab Items (Pills Inside Capsule) ── */
+/* ── Grouped Vertical Tab Items (Bento Cards Inside Capsule) ── */
 .vt-tab-item.grouped {
   margin: 0 !important;
   height: 34px !important;
   min-height: 34px !important;
-  border-radius: 8px !important;
-  border: 1px solid transparent !important;
+  border-radius: 9px !important;
+  border: 1px solid rgba(0, 0, 0, 0.05) !important;
   padding: 0 8px 0 10px !important;
-  background: transparent !important;
-  box-shadow: none !important;
+  background: #FFFFFF !important;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.02) !important;
   display: flex !important;
   align-items: center !important;
   gap: 8px;
   cursor: pointer;
   box-sizing: border-box;
-  color: #374151 !important;
-  transition: background 0.15s ease, color 0.15s ease, box-shadow 0.15s ease !important;
+  color: #334155 !important;
+  transition: background 0.15s ease, color 0.15s ease, border-color 0.15s ease, box-shadow 0.15s ease, transform 0.15s ease !important;
 }
 
 body[data-theme="dark"] .vt-tab-item.grouped {
+  background: rgba(255, 255, 255, 0.045) !important;
+  border-color: rgba(255, 255, 255, 0.06) !important;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.15) !important;
   color: #E2E8F0 !important;
 }
 
 .vt-tab-item.grouped:hover {
-  background: color-mix(in srgb, var(--group-color, #a855f7) 16%, rgba(0, 0, 0, 0.04)) !important;
+  background: #FFFFFF !important;
+  border-color: color-mix(in srgb, var(--group-color, #a855f7) 35%, rgba(0, 0, 0, 0.12)) !important;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.04) !important;
   color: #111111 !important;
+  transform: translateY(-0.5px);
 }
 
 body[data-theme="dark"] .vt-tab-item.grouped:hover {
-  background: color-mix(in srgb, var(--group-color, #a855f7) 20%, rgba(255, 255, 255, 0.06)) !important;
+  background: rgba(255, 255, 255, 0.075) !important;
+  border-color: color-mix(in srgb, var(--group-color, #a855f7) 35%, rgba(255, 255, 255, 0.14)) !important;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.25) !important;
   color: #FFFFFF !important;
+  transform: translateY(-0.5px);
+}
+
+/* Inactive Grouped Tab Favicon */
+.vt-tab-item.grouped:not(.active) .vt-tab-favicon i {
+  color: var(--group-color, #64748B);
 }
 
 /* Active Grouped Tab: Solid Vibrant Pill matching horizontal tab version */
 .vt-tab-item.grouped.active {
   background: var(--group-color, var(--accent)) !important;
   color: #FFFFFF !important;
-  border-radius: 8px !important;
-  border: none !important;
-  font-weight: 700 !important;
-  box-shadow: 0 2px 6px color-mix(in srgb, var(--group-color, #a855f7) 40%, rgba(0, 0, 0, 0.25)) !important;
+  border-radius: 9px !important;
+  border: 1px solid rgba(255, 255, 255, 0.22) !important;
+  font-weight: 650 !important;
+  box-shadow: 0 2px 8px color-mix(in srgb, var(--group-color, #a855f7) 45%, rgba(0, 0, 0, 0.22)) !important;
+  transform: none !important;
 }
 
 .vt-tab-item.grouped.active .vt-tab-title {
   color: #FFFFFF !important;
-  font-weight: 700 !important;
+  font-weight: 650 !important;
+}
+
+.vt-tab-item.grouped.active .vt-tab-favicon i,
+.vt-tab-item.grouped.active i.tab-favicon,
+.vt-tab-item.grouped.active i.solid-icon,
+.vt-tab-item.grouped.active i {
+  color: #FFFFFF !important;
 }
 
 .vt-tab-item.grouped.active .vt-tab-close {
-  color: rgba(255, 255, 255, 0.8) !important;
+  color: rgba(255, 255, 255, 0.85) !important;
 }
 
 .vt-tab-item.grouped.active .vt-tab-close:hover {
   background: rgba(255, 255, 255, 0.25) !important;
+  color: #FFFFFF !important;
+}
+
+.vt-tab-item.grouped.active .vt-audio-btn {
   color: #FFFFFF !important;
 }
 
