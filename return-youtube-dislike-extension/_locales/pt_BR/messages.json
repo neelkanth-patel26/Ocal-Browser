@@ -1,13 +1,4 @@
 {
-  "apiStatusLabel": {
-    "message": "Status da API:"
-  },
-  "apiStatusOffline": {
-    "message": "Offline"
-  },
-  "apiStatusOnline": {
-    "message": "Online"
-  },
   "colorTheme": {
     "message": "Tema de Cores:"
   },
@@ -34,6 +25,9 @@
   },
   "disableLoggingHover": {
     "message": "Desativa o registro de respostas da API no console."
+  },
+  "developerSettings": {
+    "message": "Opções do desenvolvedor"
   },
   "disableLoggingLabel": {
     "message": "Desativar logs no console"
@@ -74,9 +68,6 @@
   "numberFormat": {
     "message": "Formato numérico:"
   },
-  "patreonBadgePrefix": {
-    "message": "Patreon"
-  },
   "patreonLoggedOutMessage": {
     "message": "Recursos premium disponíveis para apoiadores no Patreon"
   },
@@ -86,17 +77,20 @@
   "patreonPrivacyNote": {
     "message": "As informações da sua assinatura no Patreon são usadas para verificar o acesso premium. Não recebemos os dados do seu cartão nem da sua conta bancária."
   },
+  "paidFeaturesWhy": {
+    "message": "O número de deslikes continua gratuito para todos. Os extras pagos ajudam a pagar os servidores por trás dele: mais de 15 TB de dados e cerca de 20 milhões de usuários por dia, com um orçamento de algumas centenas de dólares por mês."
+  },
   "githubLoggedOutMessage": {
-    "message": "Premium features available for GitHub contributors"
+    "message": "Recursos premium disponíveis para colaboradores no GitHub"
   },
   "githubLogin": {
-    "message": "Login with GitHub (Contributor)"
+    "message": "Entrar com o GitHub (colaborador)"
   },
   "githubLoginStartFailed": {
-    "message": "Failed to initiate GitHub login. Please try again."
+    "message": "Falha ao iniciar o login pelo GitHub. Tente novamente."
   },
   "githubLoginCompleteFailed": {
-    "message": "Failed to complete GitHub login. Please try again."
+    "message": "Não foi possível concluir o login pelo GitHub. Tente novamente."
   },
   "patreonLoginCompleteFailed": {
     "message": "Não foi possível concluir o login. Tente novamente."
@@ -135,28 +129,31 @@
     "message": "Tornar o formato de curtidas e descurtidas consistente."
   },
   "hidePremiumTeaser": {
-    "message": "Ocultar painel do teaser Premium"
+    "message": "Ocultar contagens brutas"
   },
   "hidePremiumTeaserHover": {
-    "message": "Não mostrar o teaser Premium nas páginas de exibição do YouTube."
+    "message": "Não mostrar o painel de contagens brutas nas páginas de exibição do YouTube."
   },
-  "roundNumbers": {
-    "message": "Mostrar números arredondados"
+  "hideRydComments": {
+    "message": "Ocultar comentários do RYD"
   },
-  "roundNumbersHover": {
-    "message": "Arredondar os números para baixo (comportamento padrão do YouTube)."
+  "hideRydCommentsHover": {
+    "message": "Não mostrar comentários do RYD em vídeos com os comentários do YouTube desativados."
+  },
+  "hidePremiumAnalytics": {
+    "message": "Ocultar insights premium do vídeo"
+  },
+  "hidePremiumAnalyticsHover": {
+    "message": "Ocultar o painel de insights premium do vídeo nas páginas de exibição do YouTube."
   },
   "shortsSupport": {
     "message": "Suporte a curtas do YouTube"
   },
   "showTooltipPercentage": {
-    "message": "Percentual na dica (tooltip) da barra de like/dislike."
+    "message": "Percentual na dica (tooltip) da barra de like/dislike"
   },
   "showTooltipPercentageHover": {
     "message": "Mostrar o percentual na dica (tooltip) da barra de like/dislike."
-  },
-  "textColorTheme": {
-    "message": "Tema de cores:"
   },
   "textColorTheme1": {
     "message": "Clássico"
@@ -167,23 +164,23 @@
   "textColorTheme3": {
     "message": "Néon"
   },
-  "textColorizeRatioBar": {
-    "message": "Colorir barra de proporção"
+  "textColorThemeHibiscus": {
+    "message": "Hibiscus"
   },
-  "textColorizeRatioBarHover": {
-    "message": "Usar cores personalizadas para a barra de proporção."
+  "textColorThemeCustom": {
+    "message": "Personalizado"
   },
-  "textColorizeThumbs": {
-    "message": "Colorir botões"
+  "colorThemeLight": {
+    "message": "Tema claro do YouTube"
   },
-  "textColorizeThumbsHover": {
-    "message": "Usar cores personalizadas para os botões de curtir e descurtir."
+  "colorThemeDark": {
+    "message": "Tema escuro do YouTube"
   },
-  "textConsistentFormat": {
-    "message": "Tornar o formato de curtidas e descurtidas consistente"
+  "colorThemeLike": {
+    "message": "Curtir"
   },
-  "textConsistentFormatHover": {
-    "message": "Re-formatar número de curtidas."
+  "colorThemeDislike": {
+    "message": "Não gostei"
   },
   "textDeveloper": {
     "message": "por Dmitry Selivanov & Comunidade"
@@ -191,26 +188,14 @@
   "textLikesDisabled": {
     "message": "Desativado pelo proprietário"
   },
-  "textNumberFormat": {
-    "message": "Formato numérico:"
-  },
-  "textRoundingNumbers": {
-    "message": "Arredondar as estatísticas de curtidas/descurtidas para baixo (comportamento padrão do YouTube)"
-  },
-  "textRoundingNumbersHover": {
-    "message": "Mostrar estatísticas arredondadas"
-  },
   "textSettings": {
     "message": "Desativar envio de curtidas/descurtidas"
   },
   "textSettingsHover": {
-    "message": "Para de contar suas curtidas e descurtidas."
+    "message": "Seus Gostei e Não gostei não serão contados nem aparecerão nas contagens de Não gostei."
   },
   "textTempUnavailable": {
     "message": "Temporariamente Indisponível"
-  },
-  "textUpdate": {
-    "message": "Atualizar para"
   },
   "tooltipPercentageMode": {
     "message": "Modo de porcentagem:"
@@ -219,7 +204,7 @@
     "message": "Usar exibição personalizada de porcentagem ao passar o mouse."
   },
   "version30installed": {
-    "message": "Versão 4.0.6 instalada"
+    "message": "Versão 4.1.5 instalada"
   },
   "whatsnew": {
     "message": "O que há de novo?:"
@@ -425,9 +410,6 @@
   "premiumTeaser_statRaw": {
     "message": "Contagem de dislikes brutos"
   },
-  "premiumTeaser_statDislikes": {
-    "message": "Dislikes estimados"
-  },
   "premiumTeaser_statLikes": {
     "message": "Contagem bruta de curtidas"
   },
@@ -437,21 +419,6 @@
   "premiumTeaser_statusError": {
     "message": "Não conseguimos carregar os dados de dislikes agora. Tente recarregar a página."
   },
-  "premiumTeaser_breadcrumbsAria": {
-    "message": "Como desbloquear as análises Premium"
-  },
-  "premiumTeaser_breadcrumbsTitle": {
-    "message": "Desbloqueie os insights Premium do vídeo em três passos rápidos:"
-  },
-  "premiumTeaser_breadcrumbStep1": {
-    "message": "Entre com o Patreon a partir do pop-up da extensão Return YouTube Dislike."
-  },
-  "premiumTeaser_breadcrumbStep2": {
-    "message": "Selecione o plano Premium para habilitar linhas do tempo de atividade, rankings por país e o mapa interativo."
-  },
-  "premiumTeaser_breadcrumbStep3": {
-    "message": "Recarregue o YouTube para ver tendências por hora, países em destaque e o detalhamento por estado dos EUA para cada vídeo."
-  },
   "premiumTierNotice_title": {
     "message": "Analytics Premium bloqueados"
   },
@@ -460,21 +427,6 @@
   },
   "premiumTierNotice_cta": {
     "message": "Fazer upgrade no Patreon"
-  },
-  "changelog_title": {
-    "message": "Registro de novidades do Analytics Premium · 20 de outubro de 2025"
-  },
-  "changelog_badge": {
-    "message": "Lançamento Premium"
-  },
-  "changelog_heading": {
-    "message": "Analytics Premium repensado"
-  },
-  "changelog_subheading": {
-    "message": "Explore o cronograma de atividades ao vivo, a tabela de classificação dos principais países e o mapa interativo incluídos no Return YouTube Dislike Premium."
-  },
-  "changelog_releaseDate": {
-    "message": "Lançado em 20 de outubro de 2025"
   },
   "changelog_cta_primary": {
     "message": "Fazer upgrade no Patreon"
@@ -488,23 +440,11 @@
   "changelog_feature_timeline_title": {
     "message": "Cronograma de atividades ao vivo"
   },
-  "changelog_feature_timeline_body": {
-    "message": "Assista ao fluxo de gostos e desgostos em tempo real. Alterne as predefinições de hora em hora, diariamente ou de todos os tempos sem recarregar, fixe a janela no primeiro dia ou nas votações mais recentes e limpe cada pico para ver o que desencadeou o engajamento."
-  },
   "changelog_feature_map_title": {
     "message": "Mundo interativo e mapa de calor dos EUA"
   },
-  "changelog_feature_map_body": {
-    "message": "Percorra o mundo ou mergulhe nos estados dos EUA para descobrir pontos críticos. Compare gostos, desgostos e proporções na dica atualizada e destaque as regiões que reagem primeiro aos seus uploads."
-  },
   "changelog_feature_quality_title": {
     "message": "Tabela de classificação dos principais países"
-  },
-  "changelog_feature_quality_body": {
-    "message": "Classifique cada país por atividade bruta, gostos, desgostos ou proporção. Filtre com as mesmas predefinições da linha do tempo para saber onde as campanhas chegam e planejar o que publicar em seguida."
-  },
-  "changelog_screenshot_placeholder": {
-    "message": "Captura em breve — registre esta visualização no DevTools quando estiver pronto."
   },
   "changelog_screenshot_label_timeline": {
     "message": "Marcador: visão geral da linha do tempo"
@@ -515,32 +455,8 @@
   "changelog_screenshot_label_teaser": {
     "message": "Espaço reservado: tabela de classificação dos países"
   },
-  "changelog_section_upgrade": {
-    "message": "Como desbloquear o Analytics Premium"
-  },
-  "changelog_upgrade_body": {
-    "message": "Pronto para começar? Siga estes passos e atualize sua guia do YouTube."
-  },
   "changelog_upgrade_step1": {
     "message": "Abra o pop-up do Return YouTube Dislike e entre com o Patreon."
-  },
-  "changelog_upgrade_step2": {
-    "message": "Escolha o nível Premium para ativar o envio dos dados de análise para a sua conta."
-  },
-  "changelog_upgrade_step3": {
-    "message": "Recarregue qualquer página do YouTube — linha do tempo, mapa e rankings aparecem na hora."
-  },
-  "changelog_section_release": {
-    "message": "Destaques do lançamento"
-  },
-  "changelog_release_item1": {
-    "message": "As predefinições da linha do tempo de atividades transmitem dados ao vivo com âncoras de intervalo para os primeiros e mais recentes intervalos."
-  },
-  "changelog_release_item2": {
-    "message": "A tabela de classificação do país é atualizada instantaneamente para que você possa identificar regiões em ascensão sem sair do painel."
-  },
-  "changelog_release_item3": {
-    "message": "O mapa interativo destaca pontos de acesso globais e estaduais dos EUA com dicas e métricas mais claras."
   },
   "changelog_support_heading": {
     "message": "Precisa de ajuda?"
@@ -552,21 +468,561 @@
     "message": "Pergunte à comunidade"
   },
   "hideClutterButtons": {
-    "message": "Hide clutter buttons"
+    "message": "Ocultar botões extras"
   },
   "hideClutterButtonsHelpLabel": {
-    "message": "Show before and after examples"
+    "message": "Mostrar exemplos de antes e depois"
   },
   "hideClutterButtonsDescription": {
-    "message": "Keep only Like and Dislike visible. Share, Save, Thanks, and other optional actions stay available in YouTube's three-dot More menu."
+    "message": "Manter visíveis apenas os botões Gostei e Não gostei. Compartilhar, Salvar, Valeu e outras ações opcionais continuam disponíveis no menu de três pontos Mais do YouTube."
   },
   "hideClutterButtonsBefore": {
-    "message": "Before: all action buttons are visible"
+    "message": "Antes: todos os botões de ação ficam visíveis"
   },
   "hideClutterButtonsAfter": {
-    "message": "After: only Like and Dislike stay visible"
+    "message": "Depois: apenas os botões Gostei e Não gostei continuam visíveis"
   },
   "changelog_brand_logo_alt": {
     "message": "Logo do Return YouTube Dislike"
+  },
+  "githubLoginUnavailable": {
+    "message": "O login de colaboradores pelo GitHub está indisponível no momento. O serviço precisa de uma atualização ou alteração na configuração."
+  },
+  "githubLoginNotContributor": {
+    "message": "Esta conta do GitHub não está listada como colaboradora do Return YouTube Dislike. Entre com uma conta que tenha contribuído com o projeto. Contribuições recentes podem levar algumas horas para aparecer."
+  },
+  "githubLoginBrowserUnavailable": {
+    "message": "O login pelo GitHub não está configurado para o endereço de retorno deste navegador. Entre em contato com o suporte."
+  },
+  "githubLoginExpired": {
+    "message": "Esta tentativa de login pelo GitHub expirou ou não pôde ser verificada. Inicie um novo login."
+  },
+  "githubLoginUpdateRequired": {
+    "message": "Atualize a extensão para entrar como colaborador pelo GitHub."
+  },
+  "githubLoginRateLimited": {
+    "message": "Muitas tentativas de login. Aguarde um minuto antes de tentar novamente."
+  },
+  "githubLoginDenied": {
+    "message": "A autorização do GitHub foi recusada. O login de colaboradores exige autorização."
+  },
+  "discussion_title": {
+    "message": "Comentários do RYD"
+  },
+  "discussion_subtitle": {
+    "message": "Uma discussão da comunidade hospedada pelo Return YouTube Dislike."
+  },
+  "discussion_independent": {
+    "message": "Estes comentários são independentes do YouTube."
+  },
+  "discussion_open": {
+    "message": "Abrir comentários do RYD"
+  },
+  "discussion_close": {
+    "message": "Fechar"
+  },
+  "discussion_new": {
+    "message": "Mais recentes"
+  },
+  "discussion_top": {
+    "message": "Mais relevantes"
+  },
+  "discussion_sort": {
+    "message": "Ordenar comentários"
+  },
+  "discussion_refresh": {
+    "message": "Atualizar"
+  },
+  "discussion_loading": {
+    "message": "Carregando comentários…"
+  },
+  "discussion_empty": {
+    "message": "Ainda não há comentários. Comece a conversa."
+  },
+  "discussion_comment": {
+    "message": "Comentário"
+  },
+  "discussion_post": {
+    "message": "Publicar comentário"
+  },
+  "discussion_reply": {
+    "message": "Responder"
+  },
+  "discussion_postReply": {
+    "message": "Publicar resposta"
+  },
+  "discussion_cancel": {
+    "message": "Cancelar"
+  },
+  "discussion_save": {
+    "message": "Salvar"
+  },
+  "discussion_edit": {
+    "message": "Editar"
+  },
+  "discussion_delete": {
+    "message": "Excluir"
+  },
+  "discussion_deleteConfirm": {
+    "message": "Excluir este comentário?"
+  },
+  "discussion_deleted": {
+    "message": "Comentário excluído"
+  },
+  "discussion_edited": {
+    "message": "editado"
+  },
+  "discussion_replies": {
+    "message": "Respostas ($1)"
+  },
+  "discussion_more": {
+    "message": "Carregar mais"
+  },
+  "discussion_like": {
+    "message": "Curtir"
+  },
+  "discussion_dislike": {
+    "message": "Não gostei"
+  },
+  "discussion_signInRequired": {
+    "message": "Entre pela janela da extensão para continuar."
+  },
+  "discussion_tierRequired": {
+    "message": "Membros ativos do nível Commenter ou superior podem publicar."
+  },
+  "discussion_join": {
+    "message": "Torne-se membro do nível Commenter"
+  },
+  "discussion_gate": {
+    "message": "Todos podem ler e reagir. Membros ativos do nível Commenter ou superior podem publicar."
+  },
+  "discussion_nicknameRequired": {
+    "message": "Escolha seu apelido público do RYD antes de publicar."
+  },
+  "discussion_nicknameLabel": {
+    "message": "Apelido público do RYD"
+  },
+  "discussion_nicknameHint": {
+    "message": "De 3 a 32 letras, números, espaços, pontos, hífens ou sublinhados. Este nome aparecerá nos seus comentários."
+  },
+  "discussion_nicknameSave": {
+    "message": "Salvar apelido"
+  },
+  "discussion_nicknameTaken": {
+    "message": "Este apelido já está em uso. Escolha outro."
+  },
+  "discussion_nicknameInvalid": {
+    "message": "Use de 3 a 32 letras, números, espaços, pontos, hífens ou sublinhados."
+  },
+  "discussion_nicknameChange": {
+    "message": "Alterar apelido"
+  },
+  "discussion_as": {
+    "message": "Comentando como $1"
+  },
+  "discussion_placeholder": {
+    "message": "Participe da discussão…"
+  },
+  "discussion_characters": {
+    "message": "$1 / $2"
+  },
+  "discussion_report": {
+    "message": "Denunciar"
+  },
+  "discussion_reportTitle": {
+    "message": "Denunciar comentário"
+  },
+  "discussion_reportReason": {
+    "message": "Motivo"
+  },
+  "discussion_reportSpam": {
+    "message": "Spam"
+  },
+  "discussion_reportAbuse": {
+    "message": "Assédio ou ódio"
+  },
+  "discussion_reportOther": {
+    "message": "Outro"
+  },
+  "discussion_reportDetails": {
+    "message": "Detalhes adicionais (opcional)"
+  },
+  "discussion_reportSend": {
+    "message": "Enviar denúncia"
+  },
+  "discussion_reportDone": {
+    "message": "Denúncia recebida. Obrigado."
+  },
+  "discussion_moderation": {
+    "message": "Moderação"
+  },
+  "discussion_queueEmpty": {
+    "message": "Nenhuma denúncia para analisar."
+  },
+  "discussion_hide": {
+    "message": "Ocultar comentário"
+  },
+  "discussion_restore": {
+    "message": "Restaurar comentário"
+  },
+  "discussion_dismiss": {
+    "message": "Rejeitar denúncias"
+  },
+  "discussion_ban": {
+    "message": "Banir autor"
+  },
+  "discussion_unban": {
+    "message": "Desbanir autor"
+  },
+  "discussion_moderationReason": {
+    "message": "Motivo da moderação"
+  },
+  "discussion_unavailable": {
+    "message": "Os comentários do RYD não estão disponíveis para este vídeo."
+  },
+  "discussion_commentUnavailable": {
+    "message": "Este comentário não está mais disponível."
+  },
+  "discussion_error": {
+    "message": "Não foi possível conectar. Tente novamente."
+  },
+  "discussion_rateLimited": {
+    "message": "Aguarde um momento antes de tentar novamente."
+  },
+  "discussion_conflict": {
+    "message": "Este comentário foi alterado. Atualize e tente novamente."
+  },
+  "discussion_forbidden": {
+    "message": "Esta ação não está disponível para sua conta."
+  },
+  "discussion_retry": {
+    "message": "Tentar novamente"
+  },
+  "discussion_notifications": {
+    "message": "Notificações"
+  },
+  "discussion_notificationEmpty": {
+    "message": "Você está em dia."
+  },
+  "discussion_notificationReply": {
+    "message": "$1 respondeu ao seu comentário"
+  },
+  "discussion_notificationLike": {
+    "message": "Alguém curtiu seu comentário"
+  },
+  "discussion_notificationLikes": {
+    "message": "Seu comentário recebeu $1 curtidas"
+  },
+  "discussion_someone": {
+    "message": "Alguém"
+  },
+  "discussion_markRead": {
+    "message": "Marcar como lida"
+  },
+  "discussion_markAllRead": {
+    "message": "Marcar todas como lidas"
+  },
+  "discussion_view": {
+    "message": "Ver discussão"
+  },
+  "discussion_signedOutInbox": {
+    "message": "Entre para ver respostas e curtidas nos seus comentários."
+  },
+  "discussion_discussionTab": {
+    "message": "Discussão"
+  },
+  "discussion_nickname": {
+    "message": "Apelido"
+  },
+  "discussion_reportStatus": {
+    "message": "Status da denúncia"
+  },
+  "discussion_openReports": {
+    "message": "Denúncias abertas"
+  },
+  "discussion_resolvedReports": {
+    "message": "Denúncias rejeitadas"
+  },
+  "discussion_author": {
+    "message": "Autor"
+  },
+  "discussion_saving": {
+    "message": "Salvando…"
+  },
+  "discussion_loadReplies": {
+    "message": "Mostrar respostas ($1)"
+  },
+  "patreonTierCommenter": {
+    "message": "Commenter"
+  },
+  "changelog_page_title": {
+    "message": "Boas-vindas ao Return YouTube Dislike"
+  },
+  "changelog_hero_eyebrow": {
+    "message": "Tudo pronto"
+  },
+  "changelog_hero_title": {
+    "message": "Os deslikes estão de volta."
+  },
+  "changelog_hero_body": {
+    "message": "Abra qualquer vídeo do YouTube e você verá o número de deslikes ao lado dos likes, onde ele deve estar. A versão 4.1 também apresenta os comentários do RYD, um espaço para conversar sobre vídeos fora da seção de comentários do YouTube."
+  },
+  "changelog_hero_eyebrow_counts_off": {
+    "message": "Só mais um passo"
+  },
+  "changelog_hero_body_counts_off": {
+    "message": "Ative abaixo as contagens de Não gostei para vê-las ao lado dos Gostei no YouTube. A versão 4.1 também apresenta os comentários do RYD, um espaço para conversar sobre vídeos fora da seção de comentários do YouTube."
+  },
+  "changelog_new_badge": {
+    "message": "Novidade na versão 4.1"
+  },
+  "changelog_premium_badge": {
+    "message": "Premium"
+  },
+  "changelog_comments_title": {
+    "message": "Conheça os comentários do RYD"
+  },
+  "changelog_comments_body": {
+    "message": "Um espaço de discussão abaixo de vídeos e Shorts com os comentários do YouTube desativados, hospedado pelo Return YouTube Dislike. Todos podem ler e reagir. Membros Commenter e Premium podem publicar e responder."
+  },
+  "changelog_comments_point_replies": {
+    "message": "Respostas organizadas em tópicos, com likes e deslikes"
+  },
+  "changelog_comments_point_nickname": {
+    "message": "Publique com o apelido público que você escolher"
+  },
+  "changelog_comments_point_notifications": {
+    "message": "Notificações quando alguém responde ou curte seu comentário"
+  },
+  "changelog_comments_point_moderation": {
+    "message": "Denúncias e moderação para manter o respeito"
+  },
+  "changelog_comments_shot_alt": {
+    "message": "Painel de comentários do RYD com uma discussão em tópicos abaixo de um vídeo"
+  },
+  "changelog_notifications_shot_alt": {
+    "message": "Notificações do RYD com respostas e likes nos seus comentários"
+  },
+  "changelog_sample_note": {
+    "message": "As capturas de tela mostram dados de exemplo."
+  },
+  "changelog_analytics_title": {
+    "message": "Estatísticas Premium"
+  },
+  "changelog_analytics_body": {
+    "message": "Veja como um vídeo é recebido ao longo do tempo e pelo mundo. Escolha 7, 30 ou 90 dias ou todo o período e compare likes, deslikes e a proporção entre eles."
+  },
+  "changelog_analytics_timeline_title": {
+    "message": "Linha do tempo de atividade"
+  },
+  "changelog_analytics_timeline_body": {
+    "message": "Likes e deslikes ao longo do tempo, com detalhes por hora."
+  },
+  "changelog_analytics_countries_title": {
+    "message": "Principais países"
+  },
+  "changelog_analytics_countries_body": {
+    "message": "Veja quais países dão mais likes e deslikes a um vídeo."
+  },
+  "changelog_analytics_world_title": {
+    "message": "Mapa do mundo"
+  },
+  "changelog_analytics_world_body": {
+    "message": "Compare o engajamento entre países."
+  },
+  "changelog_analytics_us_title": {
+    "message": "Estados dos EUA"
+  },
+  "changelog_analytics_us_body": {
+    "message": "Veja o engajamento por estado em detalhes."
+  },
+  "changelog_appeal_title": {
+    "message": "Um pedido pequeno e meio sem jeito"
+  },
+  "changelog_appeal_intro": {
+    "message": "Oi. Esta é a parte em que falamos de dinheiro, e, sinceramente, não somos muito bons nisso."
+  },
+  "changelog_appeal_costs": {
+    "message": "O Return YouTube Dislike é um pequeno projeto de código aberto criado por Dmitry Selivanov e pela comunidade. Todos os dias, ele atende cerca de 20 milhões de pessoas e cuida de mais de 15 TB de dados. Tudo isso funciona com algumas centenas de dólares por mês, o que não é muito para trazer de volta algo que uma empresa bilionária decidiu tirar."
+  },
+  "changelog_appeal_free": {
+    "message": "O número de deslikes é gratuito e vai continuar assim. Esse é o ponto. Mas os servidores não são, e, sinceramente, os custos de mantê-los não nos deixaram muita escolha: para manter o projeto funcionando, tivemos que lançar recursos Premium — os comentários do RYD e as estatísticas Premium. Cada assinatura ajuda a cobrir esses custos."
+  },
+  "changelog_appeal_ask": {
+    "message": "Se o RYD já te salvou de um vídeo caça-cliques ou de um tutorial que não funcionava, considere participar no Patreon. E se agora não for um bom momento, tudo bem. Obrigado por usá-lo e por votar: cada voto deixa os números um pouco mais precisos."
+  },
+  "changelog_appeal_cta": {
+    "message": "Assine no Patreon"
+  },
+  "changelog_appeal_signature": {
+    "message": "— Dmitry e a comunidade do RYD"
+  },
+  "changelog_join_title": {
+    "message": "Obtenha os recursos Premium"
+  },
+  "changelog_join_step1": {
+    "message": "Assine no Patreon. Commenter permite publicar comentários; Premium também inclui estatísticas."
+  },
+  "changelog_join_step3": {
+    "message": "Recarregue qualquer vídeo do YouTube. Seus novos recursos aparecem automaticamente."
+  },
+  "changelog_also_title": {
+    "message": "Também nesta versão"
+  },
+  "changelog_also_counts": {
+    "message": "As contagens de likes e deslikes são exibidas com mais confiabilidade na extensão e no script de usuário."
+  },
+  "changelog_also_consent": {
+    "message": "Melhorias no processo de consentimento para uso de dados no Firefox."
+  },
+  "changelog_also_translations": {
+    "message": "Traduções novas e aprimoradas."
+  },
+  "reviewPromptTitle": {
+    "message": "Gostando do RYD?"
+  },
+  "reviewPromptBody": {
+    "message": "O Google mudou as regras das notas na Chrome Web Store. Apesar de 16.000+ avaliações de cinco estrelas, algumas avaliações negativas recentes derrubaram a nota do RYD de 4,6 para 2,5.\n\nSe o RYD ajuda você, por favor, deixe uma avaliação sincera."
+  },
+  "reviewPromptAction": {
+    "message": "Deixar uma avaliação"
+  },
+  "consent_page_title": {
+    "message": "Permissões dos recursos do RYD"
+  },
+  "consent_vote_title": {
+    "message": "Faça seus votos contarem"
+  },
+  "consent_vote_body": {
+    "message": "Agora o Firefox exige que toda extensão peça sua permissão antes de compartilhar qualquer dado. Permita isso para que o RYD possa contar seus Gostei, Não gostei e reações a comentários. Esta permissão vale só para o YouTube, não para outros sites."
+  },
+  "consent_account_title": {
+    "message": "Escolher permissões da conta"
+  },
+  "consent_account_body": {
+    "message": "Entre para usar os recursos da conta, incluindo seu perfil, notificações e análises Premium."
+  },
+  "consent_next_step": {
+    "message": "Selecione Permitir no Firefox para revisar as permissões. Você pode recusar."
+  },
+  "consent_allow": {
+    "message": "Permitir no Firefox"
+  },
+  "consent_not_now": {
+    "message": "Agora não"
+  },
+  "consent_prompt_status": {
+    "message": "Escolha se deseja conceder essas permissões no Firefox."
+  },
+  "consent_granted_status": {
+    "message": "As permissões estão ativadas. Você pode voltar ao YouTube."
+  },
+  "consent_declined_status": {
+    "message": "Esses recursos opcionais continuam desativados. Você pode alterar as permissões mais tarde."
+  },
+  "consent_error_status": {
+    "message": "Não foi possível atualizar as permissões. Tente novamente."
+  },
+  "consent_details_summary": {
+    "message": "O que significam as categorias de permissões do Firefox?"
+  },
+  "consent_details_intro": {
+    "message": "O Firefox agrupa os dados em categorias amplas. Veja o que cada uma significa para o RYD:"
+  },
+  "consent_browsing_label": {
+    "message": "Atividade de navegação"
+  },
+  "consent_browsing_body": {
+    "message": "Apenas o ID do vídeo do YouTube que você abre, para carregar os Não gostei e os comentários do RYD desse vídeo. Nunca seu histórico de navegação nem outros sites."
+  },
+  "consent_content_label": {
+    "message": "Conteúdo de sites"
+  },
+  "consent_content_body": {
+    "message": "O número de Gostei exibido no vídeo do YouTube, para melhorar as estimativas de Não gostei."
+  },
+  "consent_activity_label": {
+    "message": "Atividade em sites"
+  },
+  "consent_activity_body": {
+    "message": "Seus Gostei, Não gostei e reações a comentários do RYD no YouTube, para que contem. Enviados com um ID aleatório que não está vinculado à sua conta do Google ou do YouTube."
+  },
+  "consent_identity_label": {
+    "message": "Informações de identificação pessoal"
+  },
+  "consent_identity_body": {
+    "message": "As informações do seu perfil, como nome de exibição e e-mail, somente quando você escolhe entrar."
+  },
+  "consent_auth_label": {
+    "message": "Informações de autenticação"
+  },
+  "consent_auth_body": {
+    "message": "Os dados de autorização e sessão necessários para entrar e usar os recursos da conta."
+  },
+  "consent_scope": {
+    "message": "O RYD não coleta nada fora do youtube.com e não acessa sua conta do YouTube. Não recebe nome ou e-mail a menos que você entre."
+  },
+  "consent_settings": {
+    "message": "Você pode alterar essas permissões a qualquer momento nas configurações de extensões do Firefox (about:addons)."
+  },
+  "consent_private_counts": {
+    "message": "As janelas privativas mostram apenas as contagens, usando a permissão ativada em uma janela normal. Votos, login, análises Premium e discussões não estão disponíveis nelas."
+  },
+  "consent_voter_timing": {
+    "message": "Seu ID de votação só é enviado quando você vota ou reage. Suas próprias reações a comentários são lembradas neste dispositivo."
+  },
+  "popup_signin_next_click": {
+    "message": "É necessário mais um clique: selecione seu botão de login abaixo para revisar as permissões de conta do Firefox e continuar."
+  },
+  "changelog_firefox_intro_title": {
+    "message": "As novas regras de privacidade do Firefox"
+  },
+  "changelog_firefox_intro_body": {
+    "message": "No Firefox, o RYD precisa da sua permissão para mostrar os deslikes. Veja exatamente o que essa permissão inclui — e o que não inclui."
+  },
+  "changelog_firefox_vote_granted": {
+    "message": "Obrigado. Seus votos agora contam."
+  },
+  "vote_consent_hint": {
+    "message": "Seu voto ainda não foi contado. Agora o Firefox exige sua permissão antes que o RYD possa enviá-lo. Esta permissão vale só para o YouTube, não para outros sites."
+  },
+  "vote_not_counted": {
+    "message": "Seus Gostei e Não gostei não são contados e não aparecem nas contagens de Não gostei."
+  },
+  "vote_count_mine": {
+    "message": "Contar meus votos"
+  },
+  "vote_consent_dismiss": {
+    "message": "Não perguntar novamente"
+  },
+  "discussion_reactionConsentRequired": {
+    "message": "Ative o compartilhamento de votos para reagir a comentários. Sua reação será enviada assim que ele for ativado."
+  },
+  "discussion_consentContinue": {
+    "message": "Continuar"
+  },
+  "counts_consent_toolbar": {
+    "message": "Abra o Return YouTube Dislike pelo menu de extensões do Firefox para continuar."
+  },
+  "counts_consent_declined": {
+    "message": "As contagens continuam desativadas. Você pode ativá-las aqui mais tarde."
+  },
+  "counts_consent_enabled": {
+    "message": "As contagens de Não gostei estão ativadas."
+  },
+  "counts_consent_private": {
+    "message": "Primeiro, ative as contagens de Não gostei em uma janela normal. As janelas privativas mostram apenas as contagens."
+  },
+  "data_consent_reason": {
+    "message": "Agora o Firefox exige que toda extensão peça sua permissão antes de compartilhar qualquer dado. Permita que o RYD mostre os Não gostei e conte seus votos. Esta permissão vale só para o YouTube, não para outros sites."
+  },
+  "data_consent_title": {
+    "message": "Mostre os Não gostei e faça seus votos contarem"
+  },
+  "data_consent_body": {
+    "message": "Agora o Firefox exige que toda extensão peça sua permissão antes de compartilhar qualquer dado. Ele usa os mesmos rótulos genéricos para todas as extensões, então veja o que cada um significa para o RYD:"
+  },
+  "data_consent_scope": {
+    "message": "O RYD só funciona no YouTube. Permitir isso não dá ao RYD acesso a nenhum outro site."
   }
 }

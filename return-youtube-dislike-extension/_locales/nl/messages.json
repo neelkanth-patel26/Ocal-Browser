@@ -1,13 +1,4 @@
 {
-  "apiStatusLabel": {
-    "message": "API‑status:"
-  },
-  "apiStatusOffline": {
-    "message": "Offline"
-  },
-  "apiStatusOnline": {
-    "message": "Online"
-  },
   "colorTheme": {
     "message": "Kleurenthema:"
   },
@@ -34,6 +25,9 @@
   },
   "disableLoggingHover": {
     "message": "Schakelt het loggen van API‑antwoorden in de console uit."
+  },
+  "developerSettings": {
+    "message": "Ontwikkelaarsopties"
   },
   "disableLoggingLabel": {
     "message": "Loggen naar de console uitschakelen"
@@ -74,9 +68,6 @@
   "numberFormat": {
     "message": "Getalnotatie:"
   },
-  "patreonBadgePrefix": {
-    "message": "Patreon"
-  },
   "patreonLoggedOutMessage": {
     "message": "Premiumfuncties zijn beschikbaar voor supporters op Patreon"
   },
@@ -86,17 +77,20 @@
   "patreonPrivacyNote": {
     "message": "Informatie over je Patreon-lidmaatschap wordt gebruikt om je premiumtoegang te verifiëren. We ontvangen geen kaart- of bankgegevens van je."
   },
+  "paidFeaturesWhy": {
+    "message": "Het aantal dislikes blijft voor iedereen gratis. Betaalde extra’s helpen de servers erachter te betalen: meer dan 15 TB aan data en zo’n 20 miljoen gebruikers per dag, met een budget van een paar honderd dollar per maand."
+  },
   "githubLoggedOutMessage": {
-    "message": "Premium features available for GitHub contributors"
+    "message": "Premiumfuncties zijn beschikbaar voor bijdragers op GitHub"
   },
   "githubLogin": {
-    "message": "Login with GitHub (Contributor)"
+    "message": "Inloggen met GitHub (bijdragers)"
   },
   "githubLoginStartFailed": {
-    "message": "Failed to initiate GitHub login. Please try again."
+    "message": "Inloggen via GitHub kon niet worden gestart. Probeer het opnieuw."
   },
   "githubLoginCompleteFailed": {
-    "message": "Failed to complete GitHub login. Please try again."
+    "message": "Inloggen via GitHub kon niet worden voltooid. Probeer het opnieuw."
   },
   "patreonLoginCompleteFailed": {
     "message": "Aanmelden kon niet worden voltooid. Probeer het opnieuw."
@@ -135,28 +129,31 @@
     "message": "Maak het formaat voor leuk en niet leuk consistent."
   },
   "hidePremiumTeaser": {
-    "message": "Premium-teaserpaneel verbergen"
+    "message": "Ruwe aantallen verbergen"
   },
   "hidePremiumTeaserHover": {
-    "message": "Toon de premiumteaser niet op YouTube-kijkpagina’s."
+    "message": "Toon het paneel met ruwe aantallen niet op YouTube-kijkpagina’s."
   },
-  "roundNumbers": {
-    "message": "Afgeronde getallen weergeven"
+  "hideRydComments": {
+    "message": "RYD-reacties verbergen"
   },
-  "roundNumbersHover": {
-    "message": "Rond getallen naar beneden af (standaard YouTube-gedrag)."
+  "hideRydCommentsHover": {
+    "message": "Toon geen RYD-reacties bij video’s waarvan de YouTube-reacties zijn uitgeschakeld."
+  },
+  "hidePremiumAnalytics": {
+    "message": "Premium video-inzichten verbergen"
+  },
+  "hidePremiumAnalyticsHover": {
+    "message": "Verberg het paneel met Premium video-inzichten op YouTube-kijkpagina’s."
   },
   "shortsSupport": {
     "message": "Ondersteuning voor YouTube Shorts"
   },
   "showTooltipPercentage": {
-    "message": "Percentage in de tooltip van de like/dislike‑balk."
+    "message": "Percentage in de tooltip van de like/dislike‑balk"
   },
   "showTooltipPercentageHover": {
     "message": "Percentage in de tooltip van de like/dislike‑balk weergeven."
-  },
-  "textColorTheme": {
-    "message": "Kleurenthema:"
   },
   "textColorTheme1": {
     "message": "Klassiek"
@@ -167,23 +164,23 @@
   "textColorTheme3": {
     "message": "Neon"
   },
-  "textColorizeRatioBar": {
-    "message": "Verhoudingsbalk inkleuren"
+  "textColorThemeHibiscus": {
+    "message": "Hibiscus"
   },
-  "textColorizeRatioBarHover": {
-    "message": "Gebruik aangepaste kleuren voor de verhoudingsbalk."
+  "textColorThemeCustom": {
+    "message": "Aangepast"
   },
-  "textColorizeThumbs": {
-    "message": "Duimpjes inkleuren"
+  "colorThemeLight": {
+    "message": "Licht YouTube-thema"
   },
-  "textColorizeThumbsHover": {
-    "message": "Gebruik aangepaste kleuren voor duimpictogrammen."
+  "colorThemeDark": {
+    "message": "Donker YouTube-thema"
   },
-  "textConsistentFormat": {
-    "message": "Maak het formaat voor likes en dislikes consistent"
+  "colorThemeLike": {
+    "message": "Vind ik leuk"
   },
-  "textConsistentFormatHover": {
-    "message": "Herformatteer als getallen."
+  "colorThemeDislike": {
+    "message": "Vind ik niet leuk"
   },
   "textDeveloper": {
     "message": "door Dmitry Selivanov & Gemeenschap"
@@ -191,26 +188,14 @@
   "textLikesDisabled": {
     "message": "Uitgeschakeld door eigenaar"
   },
-  "textNumberFormat": {
-    "message": "Getalnotatie:"
-  },
-  "textRoundingNumbers": {
-    "message": "Statistieken voor leuk/niet leuk naar beneden afronden (standaard YouTube-gedrag)"
-  },
-  "textRoundingNumbersHover": {
-    "message": "Afgeronde statistieken weergeven."
-  },
   "textSettings": {
     "message": "Inzending voor leuk/niet leuk uitschakelen"
   },
   "textSettingsHover": {
-    "message": "Stopt met het tellen van je leuks en niet leuks"
+    "message": "Je likes en dislikes worden niet geteld en zijn niet te zien in de aantallen dislikes."
   },
   "textTempUnavailable": {
     "message": "Tijdelijk niet beschikbaar"
-  },
-  "textUpdate": {
-    "message": "Actualiseer naar"
   },
   "tooltipPercentageMode": {
     "message": "Percentage‑modus:"
@@ -425,9 +410,6 @@
   "premiumTeaser_statRaw": {
     "message": "Aantal ruwe dislikes"
   },
-  "premiumTeaser_statDislikes": {
-    "message": "Geschatte dislikes"
-  },
   "premiumTeaser_statLikes": {
     "message": "Ruwe telling van vind-ik-leuks"
   },
@@ -437,21 +419,6 @@
   "premiumTeaser_statusError": {
     "message": "De dislikegegevens konden nu niet worden geladen. Probeer de pagina te vernieuwen."
   },
-  "premiumTeaser_breadcrumbsAria": {
-    "message": "Premium-analyses ontgrendelen"
-  },
-  "premiumTeaser_breadcrumbsTitle": {
-    "message": "Ontgrendel Premium-video-inzichten in drie snelle stappen:"
-  },
-  "premiumTeaser_breadcrumbStep1": {
-    "message": "Meld je aan met Patreon vanuit het pop-upvenster van de Return YouTube Dislike-extensie."
-  },
-  "premiumTeaser_breadcrumbStep2": {
-    "message": "Selecteer het Premium-abonnement om activiteitstijdlijnen, ranglijsten per land en de interactieve kaart te activeren."
-  },
-  "premiumTeaser_breadcrumbStep3": {
-    "message": "Laad YouTube opnieuw om uurlijkse trends, toplanden en uitsplitsingen per Amerikaanse staat te bekijken voor elke video."
-  },
   "premiumTierNotice_title": {
     "message": "Premium-analyse vergrendeld"
   },
@@ -460,21 +427,6 @@
   },
   "premiumTierNotice_cta": {
     "message": "Upgraden op Patreon"
-  },
-  "changelog_title": {
-    "message": "Wijzigingenlogboek voor Premium Analytics · 20 oktober 2025"
-  },
-  "changelog_badge": {
-    "message": "Premium-release"
-  },
-  "changelog_heading": {
-    "message": "Premium analyses, opnieuw uitgevonden"
-  },
-  "changelog_subheading": {
-    "message": "Ontdek de tijdlijn van live-activiteiten, het klassement van de beste landen en de interactieve kaart die bij Return YouTube Dislike Premium zijn inbegrepen."
-  },
-  "changelog_releaseDate": {
-    "message": "Uitgebracht op 20 oktober 2025"
   },
   "changelog_cta_primary": {
     "message": "Upgraden op Patreon"
@@ -488,23 +440,11 @@
   "changelog_feature_timeline_title": {
     "message": "Tijdlijn voor live activiteiten"
   },
-  "changelog_feature_timeline_body": {
-    "message": "Bekijk de likes en dislikes in realtime. Schakel tussen voorinstellingen per uur, per dag of altijd zonder opnieuw te laden, veranker het venster op dag één of de laatste stemmingen en scrub elke piek om te zien wat de betrokkenheid heeft veroorzaakt."
-  },
   "changelog_feature_map_title": {
     "message": "Interactieve wereld- en Amerikaanse heatmap"
   },
-  "changelog_feature_map_body": {
-    "message": "Kijk over de hele wereld of duik in Amerikaanse staten om hotspots te ontdekken. Vergelijk de likes, dislikes en ratio's in de geüpgradede tooltip en breng de regio's onder de aandacht die het eerst op uw uploads reageren."
-  },
   "changelog_feature_quality_title": {
     "message": "Leiderbord van toplanden"
-  },
-  "changelog_feature_quality_body": {
-    "message": "Rangschik elk land op ruwe activiteit, voorkeuren, antipathieën of verhoudingen. Filter met dezelfde voorinstellingen als de tijdlijn om te zien waar campagnes terechtkomen en plan wat u vervolgens gaat publiceren."
-  },
-  "changelog_screenshot_placeholder": {
-    "message": "Screenshot binnenkort beschikbaar: leg deze weergave vast in DevTools als u klaar bent."
   },
   "changelog_screenshot_label_timeline": {
     "message": "Placeholder: tijdlijnoverzicht"
@@ -515,32 +455,8 @@
   "changelog_screenshot_label_teaser": {
     "message": "Tijdelijke aanduiding: landenklassement"
   },
-  "changelog_section_upgrade": {
-    "message": "Hoe Premium-analyses te ontgrendelen"
-  },
-  "changelog_upgrade_body": {
-    "message": "Klaar om erin te duiken? Volg deze snelle stappen en vernieuw uw YouTube-tabblad."
-  },
   "changelog_upgrade_step1": {
     "message": "Open de pop-up Return YouTube Dislike en log in met Patreon."
-  },
-  "changelog_upgrade_step2": {
-    "message": "Kies de Premium-laag om het streamen van analysegegevens naar uw account in te schakelen."
-  },
-  "changelog_upgrade_step3": {
-    "message": "Laad elke YouTube-weergavepagina opnieuw: uw tijdlijn, kaart en klassementen verschijnen onmiddellijk."
-  },
-  "changelog_section_release": {
-    "message": "Hoogtepunten vrijgeven"
-  },
-  "changelog_release_item1": {
-    "message": "Voorinstellingen voor de tijdlijn van activiteiten streamen live gegevens met bereikankers voor de eerste en laatste buckets."
-  },
-  "changelog_release_item2": {
-    "message": "Het landenklassement wordt onmiddellijk vernieuwd, zodat u stijgende regio's kunt zien zonder het paneel te verlaten."
-  },
-  "changelog_release_item3": {
-    "message": "Interactieve kaart belicht hotspots in de wereld en de VS met duidelijkere tooltips en statistieken."
   },
   "changelog_support_heading": {
     "message": "Handje nodig?"
@@ -552,21 +468,561 @@
     "message": "Vraag het aan de gemeenschap"
   },
   "hideClutterButtons": {
-    "message": "Hide clutter buttons"
+    "message": "Overbodige knoppen verbergen"
   },
   "hideClutterButtonsHelpLabel": {
-    "message": "Show before and after examples"
+    "message": "Voorbeelden van voor en na tonen"
   },
   "hideClutterButtonsDescription": {
-    "message": "Keep only Like and Dislike visible. Share, Save, Thanks, and other optional actions stay available in YouTube's three-dot More menu."
+    "message": "Houd alleen ‘Vind ik leuk’ en ‘Vind ik niet leuk’ zichtbaar. ‘Delen’, ‘Opslaan’, ‘Bedankt’ en andere optionele acties blijven beschikbaar via ‘Meer acties’, het menu met drie puntjes van YouTube."
   },
   "hideClutterButtonsBefore": {
-    "message": "Before: all action buttons are visible"
+    "message": "Voor: alle actieknoppen zijn zichtbaar"
   },
   "hideClutterButtonsAfter": {
-    "message": "After: only Like and Dislike stay visible"
+    "message": "Na: alleen ‘Vind ik leuk’ en ‘Vind ik niet leuk’ blijven zichtbaar"
   },
   "changelog_brand_logo_alt": {
     "message": "Return YouTube Dislike-logo"
+  },
+  "githubLoginUnavailable": {
+    "message": "Inloggen via GitHub voor bijdragers is momenteel niet beschikbaar. De dienst heeft een update of een configuratiewijziging nodig."
+  },
+  "githubLoginNotContributor": {
+    "message": "Dit GitHub-account staat niet vermeld als bijdrager aan Return YouTube Dislike. Log in met een account dat aan het project heeft bijgedragen. Het kan enkele uren duren voordat recente bijdragen worden weergegeven."
+  },
+  "githubLoginBrowserUnavailable": {
+    "message": "Inloggen via GitHub is niet geconfigureerd voor het terugkeeradres van deze browser. Neem contact op met de ondersteuning."
+  },
+  "githubLoginExpired": {
+    "message": "Deze inlogpoging via GitHub is verlopen of kon niet worden geverifieerd. Start een nieuwe inlogpoging."
+  },
+  "githubLoginUpdateRequired": {
+    "message": "Werk de extensie bij om via GitHub als bijdrager in te loggen."
+  },
+  "githubLoginRateLimited": {
+    "message": "Te veel inlogpogingen. Wacht een minuut voordat je het opnieuw probeert."
+  },
+  "githubLoginDenied": {
+    "message": "De GitHub-autorisatie is geweigerd. Autorisatie is vereist om als bijdrager in te loggen."
+  },
+  "discussion_title": {
+    "message": "RYD-reacties"
+  },
+  "discussion_subtitle": {
+    "message": "Een discussie voor de community, gehost door Return YouTube Dislike."
+  },
+  "discussion_independent": {
+    "message": "Deze reacties staan los van YouTube."
+  },
+  "discussion_open": {
+    "message": "RYD-reacties openen"
+  },
+  "discussion_close": {
+    "message": "Sluiten"
+  },
+  "discussion_new": {
+    "message": "Nieuwste"
+  },
+  "discussion_top": {
+    "message": "Beste"
+  },
+  "discussion_sort": {
+    "message": "Reacties sorteren"
+  },
+  "discussion_refresh": {
+    "message": "Vernieuwen"
+  },
+  "discussion_loading": {
+    "message": "Reacties laden…"
+  },
+  "discussion_empty": {
+    "message": "Nog geen reacties. Begin het gesprek."
+  },
+  "discussion_comment": {
+    "message": "Reactie"
+  },
+  "discussion_post": {
+    "message": "Reactie plaatsen"
+  },
+  "discussion_reply": {
+    "message": "Beantwoorden"
+  },
+  "discussion_postReply": {
+    "message": "Antwoord plaatsen"
+  },
+  "discussion_cancel": {
+    "message": "Annuleren"
+  },
+  "discussion_save": {
+    "message": "Opslaan"
+  },
+  "discussion_edit": {
+    "message": "Bewerken"
+  },
+  "discussion_delete": {
+    "message": "Verwijderen"
+  },
+  "discussion_deleteConfirm": {
+    "message": "Deze reactie verwijderen?"
+  },
+  "discussion_deleted": {
+    "message": "Reactie verwijderd"
+  },
+  "discussion_edited": {
+    "message": "bewerkt"
+  },
+  "discussion_replies": {
+    "message": "Antwoorden ($1)"
+  },
+  "discussion_more": {
+    "message": "Meer laden"
+  },
+  "discussion_like": {
+    "message": "Vind ik leuk"
+  },
+  "discussion_dislike": {
+    "message": "Vind ik niet leuk"
+  },
+  "discussion_signInRequired": {
+    "message": "Log in via het pop-upvenster van de extensie om verder te gaan."
+  },
+  "discussion_tierRequired": {
+    "message": "Actieve leden op het niveau Commenter en hoger kunnen reacties plaatsen."
+  },
+  "discussion_join": {
+    "message": "Word lid op het niveau Commenter"
+  },
+  "discussion_gate": {
+    "message": "Iedereen kan lezen en waarderingen geven. Actieve leden op het niveau Commenter en hoger kunnen reacties plaatsen."
+  },
+  "discussion_nicknameRequired": {
+    "message": "Kies je openbare RYD-bijnaam voordat je een reactie plaatst."
+  },
+  "discussion_nicknameLabel": {
+    "message": "Openbare RYD-bijnaam"
+  },
+  "discussion_nicknameHint": {
+    "message": "3–32 letters, cijfers, spaties, punten, streepjes of onderstrepingstekens. Deze naam verschijnt bij je reacties."
+  },
+  "discussion_nicknameSave": {
+    "message": "Bijnaam opslaan"
+  },
+  "discussion_nicknameTaken": {
+    "message": "Deze bijnaam is al in gebruik. Kies een andere."
+  },
+  "discussion_nicknameInvalid": {
+    "message": "Gebruik 3–32 letters, cijfers, spaties, punten, streepjes of onderstrepingstekens."
+  },
+  "discussion_nicknameChange": {
+    "message": "Bijnaam wijzigen"
+  },
+  "discussion_as": {
+    "message": "Je reageert als $1"
+  },
+  "discussion_placeholder": {
+    "message": "Neem deel aan de discussie…"
+  },
+  "discussion_characters": {
+    "message": "$1 / $2"
+  },
+  "discussion_report": {
+    "message": "Melden"
+  },
+  "discussion_reportTitle": {
+    "message": "Reactie melden"
+  },
+  "discussion_reportReason": {
+    "message": "Reden"
+  },
+  "discussion_reportSpam": {
+    "message": "Spam"
+  },
+  "discussion_reportAbuse": {
+    "message": "Intimidatie of haat"
+  },
+  "discussion_reportOther": {
+    "message": "Overig"
+  },
+  "discussion_reportDetails": {
+    "message": "Aanvullende informatie (optioneel)"
+  },
+  "discussion_reportSend": {
+    "message": "Melding verzenden"
+  },
+  "discussion_reportDone": {
+    "message": "Melding ontvangen. Bedankt."
+  },
+  "discussion_moderation": {
+    "message": "Moderatie"
+  },
+  "discussion_queueEmpty": {
+    "message": "Geen meldingen om te beoordelen."
+  },
+  "discussion_hide": {
+    "message": "Reactie verbergen"
+  },
+  "discussion_restore": {
+    "message": "Reactie herstellen"
+  },
+  "discussion_dismiss": {
+    "message": "Meldingen afwijzen"
+  },
+  "discussion_ban": {
+    "message": "Auteur verbannen"
+  },
+  "discussion_unban": {
+    "message": "Verbanning van auteur opheffen"
+  },
+  "discussion_moderationReason": {
+    "message": "Reden voor moderatie"
+  },
+  "discussion_unavailable": {
+    "message": "RYD-reacties zijn niet beschikbaar voor deze video."
+  },
+  "discussion_commentUnavailable": {
+    "message": "Deze reactie is niet meer beschikbaar."
+  },
+  "discussion_error": {
+    "message": "Kan geen verbinding maken. Probeer het opnieuw."
+  },
+  "discussion_rateLimited": {
+    "message": "Wacht even voordat je het opnieuw probeert."
+  },
+  "discussion_conflict": {
+    "message": "Deze reactie is gewijzigd. Vernieuw en probeer het opnieuw."
+  },
+  "discussion_forbidden": {
+    "message": "Deze actie is niet beschikbaar voor je account."
+  },
+  "discussion_retry": {
+    "message": "Opnieuw proberen"
+  },
+  "discussion_notifications": {
+    "message": "Meldingen"
+  },
+  "discussion_notificationEmpty": {
+    "message": "Je bent weer helemaal bij."
+  },
+  "discussion_notificationReply": {
+    "message": "$1 heeft je reactie beantwoord"
+  },
+  "discussion_notificationLike": {
+    "message": "Iemand vindt je reactie leuk"
+  },
+  "discussion_notificationLikes": {
+    "message": "Je reactie heeft $1 likes gekregen"
+  },
+  "discussion_someone": {
+    "message": "Iemand"
+  },
+  "discussion_markRead": {
+    "message": "Markeren als gelezen"
+  },
+  "discussion_markAllRead": {
+    "message": "Alles markeren als gelezen"
+  },
+  "discussion_view": {
+    "message": "Discussie bekijken"
+  },
+  "discussion_signedOutInbox": {
+    "message": "Log in om antwoorden en likes op je reacties te zien."
+  },
+  "discussion_discussionTab": {
+    "message": "Discussie"
+  },
+  "discussion_nickname": {
+    "message": "Bijnaam"
+  },
+  "discussion_reportStatus": {
+    "message": "Status van melding"
+  },
+  "discussion_openReports": {
+    "message": "Openstaande meldingen"
+  },
+  "discussion_resolvedReports": {
+    "message": "Afgewezen meldingen"
+  },
+  "discussion_author": {
+    "message": "Auteur"
+  },
+  "discussion_saving": {
+    "message": "Opslaan…"
+  },
+  "discussion_loadReplies": {
+    "message": "Antwoorden tonen ($1)"
+  },
+  "patreonTierCommenter": {
+    "message": "Commenter"
+  },
+  "changelog_page_title": {
+    "message": "Welkom bij Return YouTube Dislike"
+  },
+  "changelog_hero_eyebrow": {
+    "message": "Je bent klaar"
+  },
+  "changelog_hero_title": {
+    "message": "Dislikes zijn terug."
+  },
+  "changelog_hero_body": {
+    "message": "Open een YouTube-video en je ziet het aantal dislikes direct naast de likes, waar het hoort. Versie 4.1 introduceert ook RYD-reacties, een plek om over video’s te praten buiten de reacties van YouTube zelf."
+  },
+  "changelog_hero_eyebrow_counts_off": {
+    "message": "Nog één stap"
+  },
+  "changelog_hero_body_counts_off": {
+    "message": "Schakel hieronder de aantallen dislikes in om ze op YouTube direct naast de likes te zien. Versie 4.1 introduceert ook RYD-reacties, een plek om over video’s te praten buiten de reacties van YouTube zelf."
+  },
+  "changelog_new_badge": {
+    "message": "Nieuw in 4.1"
+  },
+  "changelog_premium_badge": {
+    "message": "Premium"
+  },
+  "changelog_comments_title": {
+    "message": "Ontdek RYD-reacties"
+  },
+  "changelog_comments_body": {
+    "message": "Een discussieplek onder video’s en Shorts waarbij de reacties van YouTube zijn uitgeschakeld, gehost door Return YouTube Dislike. Iedereen kan meelezen en reageren met likes en dislikes. Leden met Commenter of Premium kunnen berichten en antwoorden plaatsen."
+  },
+  "changelog_comments_point_replies": {
+    "message": "Antwoorden in discussiedraden met likes en dislikes"
+  },
+  "changelog_comments_point_nickname": {
+    "message": "Plaats berichten onder een zelfgekozen openbare bijnaam"
+  },
+  "changelog_comments_point_notifications": {
+    "message": "Meldingen als iemand op je reactie antwoordt of hem liket"
+  },
+  "changelog_comments_point_moderation": {
+    "message": "Melden en modereren om gesprekken respectvol te houden"
+  },
+  "changelog_comments_shot_alt": {
+    "message": "RYD-reactiepaneel met een discussiedraad onder een video"
+  },
+  "changelog_notifications_shot_alt": {
+    "message": "RYD-meldingen met antwoorden en likes op je reacties"
+  },
+  "changelog_sample_note": {
+    "message": "De schermafbeeldingen tonen voorbeeldgegevens."
+  },
+  "changelog_analytics_title": {
+    "message": "Premium-analyses"
+  },
+  "changelog_analytics_body": {
+    "message": "Bekijk hoe een video wordt ontvangen door de tijd heen en wereldwijd. Kies 7, 30 of 90 dagen of de hele periode en vergelijk likes, dislikes en hun verhouding."
+  },
+  "changelog_analytics_timeline_title": {
+    "message": "Activiteit door de tijd"
+  },
+  "changelog_analytics_timeline_body": {
+    "message": "Likes en dislikes door de tijd heen, tot op het uur."
+  },
+  "changelog_analytics_countries_title": {
+    "message": "Toplanden"
+  },
+  "changelog_analytics_countries_body": {
+    "message": "Bekijk welke landen een video de meeste likes en dislikes geven."
+  },
+  "changelog_analytics_world_title": {
+    "message": "Wereldkaart"
+  },
+  "changelog_analytics_world_body": {
+    "message": "Vergelijk de betrokkenheid tussen landen."
+  },
+  "changelog_analytics_us_title": {
+    "message": "Amerikaanse staten"
+  },
+  "changelog_analytics_us_body": {
+    "message": "Bekijk de betrokkenheid per staat in detail."
+  },
+  "changelog_appeal_title": {
+    "message": "Een klein, ietwat ongemakkelijk verzoek"
+  },
+  "changelog_appeal_intro": {
+    "message": "Hoi. Dit is het stukje waarin we het over geld hebben, en eerlijk gezegd zijn we daar niet zo goed in."
+  },
+  "changelog_appeal_costs": {
+    "message": "Return YouTube Dislike is een klein opensourceproject, gemaakt door Dmitry Selivanov en de community. Elke dag beantwoordt het zo’n 20 miljoen mensen en beheert het meer dan 15 TB aan data. Dat draait allemaal op een paar honderd dollar per maand, en dat is niet veel om iets terug te brengen dat een miljardenbedrijf besloot weg te halen."
+  },
+  "changelog_appeal_free": {
+    "message": "Het aantal dislikes is gratis, en dat blijft zo. Daar draait het om. Maar servers zijn dat niet, en eerlijk gezegd lieten de lopende kosten ons weinig keus: om het project draaiende te houden, moesten we Premium-functies invoeren — RYD-reacties en Premium-analyses. Elk lidmaatschap helpt die kosten te dekken."
+  },
+  "changelog_appeal_ask": {
+    "message": "Als RYD je ooit heeft behoed voor een clickbaitvideo of een tutorial die niet werkte, overweeg dan om lid te worden op Patreon. En als het nu niet uitkomt, is dat helemaal oké. Bedankt dat je het gebruikt en dat je stemt: elke stem maakt de aantallen een beetje nauwkeuriger."
+  },
+  "changelog_appeal_cta": {
+    "message": "Word lid op Patreon"
+  },
+  "changelog_appeal_signature": {
+    "message": "— Dmitry en de RYD-community"
+  },
+  "changelog_join_title": {
+    "message": "Krijg Premium-functies"
+  },
+  "changelog_join_step1": {
+    "message": "Word lid op Patreon. Met Commenter kun je reacties plaatsen; Premium voegt ook analyses toe."
+  },
+  "changelog_join_step3": {
+    "message": "Laad een YouTube-video opnieuw. Je nieuwe functies verschijnen automatisch."
+  },
+  "changelog_also_title": {
+    "message": "Ook in deze versie"
+  },
+  "changelog_also_counts": {
+    "message": "Het aantal likes en dislikes wordt betrouwbaarder weergegeven, in de extensie en het gebruikersscript."
+  },
+  "changelog_also_consent": {
+    "message": "Verbeterde toestemmingsprocedure voor gegevensgebruik in Firefox."
+  },
+  "changelog_also_translations": {
+    "message": "Nieuwe en verbeterde vertalingen."
+  },
+  "reviewPromptTitle": {
+    "message": "Bevalt RYD?"
+  },
+  "reviewPromptBody": {
+    "message": "Google heeft de regels voor beoordelingen in de Chrome Web Store gewijzigd. Ondanks 16.000+ vijfsterrenreviews hebben enkele recente negatieve reviews de beoordeling van RYD verlaagd van 4,6 naar 2,5.\n\nAls RYD je helpt, laat dan een eerlijke review achter."
+  },
+  "reviewPromptAction": {
+    "message": "Review schrijven"
+  },
+  "consent_page_title": {
+    "message": "Machtigingen voor RYD-functies"
+  },
+  "consent_vote_title": {
+    "message": "Laat je stemmen tellen"
+  },
+  "consent_vote_body": {
+    "message": "Firefox verplicht nu elke extensie om je toestemming te vragen voordat ze gegevens deelt. Sta dit toe zodat RYD je likes, dislikes en waarderingen van reacties kan tellen. Deze toestemming geldt alleen voor YouTube, niet voor andere websites."
+  },
+  "consent_account_title": {
+    "message": "Accountmachtigingen kiezen"
+  },
+  "consent_account_body": {
+    "message": "Meld je aan voor accountfuncties, zoals je profiel, meldingen en Premium-analyses."
+  },
+  "consent_next_step": {
+    "message": "Selecteer Toestaan in Firefox om de machtigingen te bekijken. Je kunt weigeren."
+  },
+  "consent_allow": {
+    "message": "Toestaan in Firefox"
+  },
+  "consent_not_now": {
+    "message": "Niet nu"
+  },
+  "consent_prompt_status": {
+    "message": "Kies of je deze machtigingen in Firefox wilt toestaan."
+  },
+  "consent_granted_status": {
+    "message": "De machtigingen zijn ingeschakeld. Je kunt terug naar YouTube."
+  },
+  "consent_declined_status": {
+    "message": "Deze optionele functies blijven uitgeschakeld. Je kunt de machtigingen later wijzigen."
+  },
+  "consent_error_status": {
+    "message": "De machtigingen konden niet worden bijgewerkt. Probeer het opnieuw."
+  },
+  "consent_details_summary": {
+    "message": "Wat betekenen de machtigingscategorieën van Firefox?"
+  },
+  "consent_details_intro": {
+    "message": "Firefox groepeert gegevens in brede categorieën. Dit betekent elke categorie voor RYD:"
+  },
+  "consent_browsing_label": {
+    "message": "Browseactiviteit"
+  },
+  "consent_browsing_body": {
+    "message": "Alleen de ID van de YouTube-video die je opent, om de bijbehorende dislikes en RYD-reacties te laden. Nooit je browsegeschiedenis of andere websites."
+  },
+  "consent_content_label": {
+    "message": "Website-inhoud"
+  },
+  "consent_content_body": {
+    "message": "Het aantal likes dat bij de YouTube-video staat, om de schattingen van dislikes te verbeteren."
+  },
+  "consent_activity_label": {
+    "message": "Websiteactiviteit"
+  },
+  "consent_activity_body": {
+    "message": "Je likes, dislikes en waarderingen van RYD-reacties op YouTube, zodat ze meetellen. Verstuurd met een willekeurige ID die niet gekoppeld is aan je Google- of YouTube-account."
+  },
+  "consent_identity_label": {
+    "message": "Persoonlijk identificeerbare informatie"
+  },
+  "consent_identity_body": {
+    "message": "Je profielgegevens, zoals weergavenaam en e-mailadres, alleen als je ervoor kiest je aan te melden."
+  },
+  "consent_auth_label": {
+    "message": "Authenticatiegegevens"
+  },
+  "consent_auth_body": {
+    "message": "De autorisatie- en sessiegegevens die nodig zijn om je aan te melden en accountfuncties te gebruiken."
+  },
+  "consent_scope": {
+    "message": "RYD verzamelt niets buiten youtube.com en heeft geen toegang tot je YouTube-account. Het ontvangt geen naam of e-mailadres tenzij je je aanmeldt."
+  },
+  "consent_settings": {
+    "message": "Je kunt deze machtigingen op elk moment wijzigen in de instellingen voor add-ons van Firefox (about:addons)."
+  },
+  "consent_private_counts": {
+    "message": "Privévensters tonen alleen aantallen, met de machtiging die in een normaal venster is ingeschakeld. Stemmen, aanmelden, Premium-analyses en discussies zijn daar niet beschikbaar."
+  },
+  "consent_voter_timing": {
+    "message": "Je stem-ID wordt alleen verstuurd als je stemt of reageert. Je eigen reacties op opmerkingen worden op dit apparaat onthouden."
+  },
+  "popup_signin_next_click": {
+    "message": "Nog één klik nodig: kies hieronder je aanmeldknop om de accountmachtigingen van Firefox te bekijken en door te gaan."
+  },
+  "changelog_firefox_intro_title": {
+    "message": "De nieuwe privacyregels van Firefox"
+  },
+  "changelog_firefox_intro_body": {
+    "message": "In Firefox heeft RYD je toestemming nodig voordat het dislikes kan tonen. Hier lees je precies wat die toestemming inhoudt — en wat niet."
+  },
+  "changelog_firefox_vote_granted": {
+    "message": "Bedankt. Je stemmen tellen nu mee."
+  },
+  "vote_consent_hint": {
+    "message": "Je stem wordt nog niet geteld. Firefox vereist nu je toestemming voordat RYD hem kan versturen. Deze toestemming geldt alleen voor YouTube, niet voor andere websites."
+  },
+  "vote_not_counted": {
+    "message": "Je likes en dislikes worden niet geteld en zijn niet te zien in de aantallen dislikes."
+  },
+  "vote_count_mine": {
+    "message": "Mijn stemmen laten tellen"
+  },
+  "vote_consent_dismiss": {
+    "message": "Niet opnieuw vragen"
+  },
+  "discussion_reactionConsentRequired": {
+    "message": "Schakel het delen van stemmen in om op opmerkingen te reageren. Je reactie wordt verstuurd zodra het is ingeschakeld."
+  },
+  "discussion_consentContinue": {
+    "message": "Doorgaan"
+  },
+  "counts_consent_toolbar": {
+    "message": "Open Return YouTube Dislike via het extensiemenu van Firefox om verder te gaan."
+  },
+  "counts_consent_declined": {
+    "message": "Aantallen blijven uitgeschakeld. Je kunt ze hier later inschakelen."
+  },
+  "counts_consent_enabled": {
+    "message": "Aantallen dislikes zijn ingeschakeld."
+  },
+  "counts_consent_private": {
+    "message": "Schakel aantallen dislikes eerst in een normaal venster in. Privévensters tonen alleen aantallen."
+  },
+  "data_consent_reason": {
+    "message": "Firefox verplicht nu elke extensie om je toestemming te vragen voordat ze gegevens deelt. Sta RYD toe om dislikes te tonen en je stemmen te tellen. Deze toestemming geldt alleen voor YouTube, niet voor andere websites."
+  },
+  "data_consent_title": {
+    "message": "Toon dislikes en laat je stemmen tellen"
+  },
+  "data_consent_body": {
+    "message": "Firefox verplicht nu elke extensie om je toestemming te vragen voordat ze gegevens deelt. Daarbij gebruikt Firefox voor elke extensie dezelfde algemene labels. Dit betekent elk label voor RYD:"
+  },
+  "data_consent_scope": {
+    "message": "RYD werkt alleen op YouTube. Als je dit toestaat, krijgt RYD daardoor geen toegang tot andere websites."
   }
 }

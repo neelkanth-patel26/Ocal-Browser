@@ -1,13 +1,4 @@
 {
-  "apiStatusLabel": {
-    "message": "Status API:"
-  },
-  "apiStatusOffline": {
-    "message": "Offline"
-  },
-  "apiStatusOnline": {
-    "message": "Online"
-  },
   "colorTheme": {
     "message": "Warnai tema:"
   },
@@ -34,6 +25,9 @@
   },
   "disableLoggingHover": {
     "message": "Menonaktifkan pencatatan respons API di konsol."
+  },
+  "developerSettings": {
+    "message": "Opsi pengembang"
   },
   "disableLoggingLabel": {
     "message": "Nonaktifkan log ke konsol"
@@ -74,9 +68,6 @@
   "numberFormat": {
     "message": "Format angka:"
   },
-  "patreonBadgePrefix": {
-    "message": "Patreon"
-  },
   "patreonLoggedOutMessage": {
     "message": "Fitur premium tersedia bagi pendukung di Patreon"
   },
@@ -86,17 +77,20 @@
   "patreonPrivacyNote": {
     "message": "Informasi keanggotaan Patreon digunakan untuk memverifikasi akses premium. Kami tidak menerima detail kartu atau rekening bank Anda."
   },
+  "paidFeaturesWhy": {
+    "message": "Jumlah tidak suka tetap gratis untuk semua orang. Fitur berbayar membantu membiayai server di baliknya: lebih dari 15 TB data dan sekitar 20 juta pengguna per hari, dengan anggaran beberapa ratus dolar per bulan."
+  },
   "githubLoggedOutMessage": {
-    "message": "Premium features available for GitHub contributors"
+    "message": "Fitur premium tersedia bagi kontributor di GitHub"
   },
   "githubLogin": {
-    "message": "Login with GitHub (Contributor)"
+    "message": "Masuk dengan GitHub (kontributor)"
   },
   "githubLoginStartFailed": {
-    "message": "Failed to initiate GitHub login. Please try again."
+    "message": "Gagal memulai login GitHub. Coba lagi."
   },
   "githubLoginCompleteFailed": {
-    "message": "Failed to complete GitHub login. Please try again."
+    "message": "Gagal menyelesaikan login GitHub. Coba lagi."
   },
   "patreonLoginCompleteFailed": {
     "message": "Gagal menyelesaikan login. Coba lagi."
@@ -135,28 +129,31 @@
     "message": "Membuat format like dan dislike konsisten."
   },
   "hidePremiumTeaser": {
-    "message": "Sembunyikan panel teaser premium"
+    "message": "Sembunyikan jumlah mentah"
   },
   "hidePremiumTeaserHover": {
-    "message": "Jangan tampilkan teaser premium di halaman tonton YouTube."
+    "message": "Jangan tampilkan panel jumlah mentah di halaman tonton YouTube."
   },
-  "roundNumbers": {
-    "message": "Munculkan angka yang dibulatkan kebawah"
+  "hideRydComments": {
+    "message": "Sembunyikan komentar RYD"
   },
-  "roundNumbersHover": {
-    "message": "Bulatkan angka kebawah (bawaan YouTube)."
+  "hideRydCommentsHover": {
+    "message": "Jangan tampilkan komentar RYD di video yang komentar YouTube-nya dinonaktifkan."
+  },
+  "hidePremiumAnalytics": {
+    "message": "Sembunyikan insight video premium"
+  },
+  "hidePremiumAnalyticsHover": {
+    "message": "Sembunyikan panel insight video premium di halaman tonton YouTube."
   },
   "shortsSupport": {
     "message": "Mendukung YouTube Short"
   },
   "showTooltipPercentage": {
-    "message": "Persentase di tooltip bilah like/dislike."
+    "message": "Persentase di tooltip bilah like/dislike"
   },
   "showTooltipPercentageHover": {
     "message": "Tampilkan persentase di tooltip bilah like/dislike."
-  },
-  "textColorTheme": {
-    "message": "Warnai tema:"
   },
   "textColorTheme1": {
     "message": "Klasik"
@@ -167,23 +164,23 @@
   "textColorTheme3": {
     "message": "Neon"
   },
-  "textColorizeRatioBar": {
-    "message": "Warnai bar rasio"
+  "textColorThemeHibiscus": {
+    "message": "Hibiscus"
   },
-  "textColorizeRatioBarHover": {
-    "message": "Gunakan warna kustom bar rasio."
+  "textColorThemeCustom": {
+    "message": "Kustom"
   },
-  "textColorizeThumbs": {
-    "message": "Warnai jempol"
+  "colorThemeLight": {
+    "message": "Tema YouTube terang"
   },
-  "textColorizeThumbsHover": {
-    "message": "Gunakan warna kustom untuk ikon jempol."
+  "colorThemeDark": {
+    "message": "Tema YouTube gelap"
   },
-  "textConsistentFormat": {
-    "message": "Membuat format like dan dislike konsisten"
+  "colorThemeLike": {
+    "message": "Suka"
   },
-  "textConsistentFormatHover": {
-    "message": "Format ulang jumlah like."
+  "colorThemeDislike": {
+    "message": "Tidak suka"
   },
   "textDeveloper": {
     "message": "oleh Dmitry Selivanov & Komunitas"
@@ -191,26 +188,14 @@
   "textLikesDisabled": {
     "message": "Dimatikan oleh Pemilik"
   },
-  "textNumberFormat": {
-    "message": "Format angka:"
-  },
-  "textRoundingNumbers": {
-    "message": "Membulatkan data like/dislike kebawah (bawaan YouTube)"
-  },
-  "textRoundingNumbersHover": {
-    "message": "Munculkan data pembulatan kebawah."
-  },
   "textSettings": {
     "message": "Matikan pengiriman like/dislike"
   },
   "textSettingsHover": {
-    "message": "Memberhentikan penghitungan like dan dislikemu"
+    "message": "Suka dan tidak suka Anda tidak akan dihitung dan tidak akan terlihat dalam jumlah tidak suka."
   },
   "textTempUnavailable": {
     "message": "Tidak Ada Untuk Sementara Waktu"
-  },
-  "textUpdate": {
-    "message": "Update ke"
   },
   "tooltipPercentageMode": {
     "message": "Mode persentase:"
@@ -219,7 +204,7 @@
     "message": "Gunakan tampilan persentase kustom saat diarahkan."
   },
   "version30installed": {
-    "message": "Versi 4.0.6 terinstall"
+    "message": "Versi 4.1.5 terinstall"
   },
   "whatsnew": {
     "message": "Apa yang baru"
@@ -425,9 +410,6 @@
   "premiumTeaser_statRaw": {
     "message": "Jumlah tidak suka mentah"
   },
-  "premiumTeaser_statDislikes": {
-    "message": "Perkiraan tidak suka"
-  },
   "premiumTeaser_statLikes": {
     "message": "Jumlah suka mentah"
   },
@@ -437,21 +419,6 @@
   "premiumTeaser_statusError": {
     "message": "Data tidak suka tidak dapat dimuat saat ini. Coba muat ulang halaman."
   },
-  "premiumTeaser_breadcrumbsAria": {
-    "message": "Cara membuka analitik Premium"
-  },
-  "premiumTeaser_breadcrumbsTitle": {
-    "message": "Buka insight video Premium dalam tiga langkah cepat:"
-  },
-  "premiumTeaser_breadcrumbStep1": {
-    "message": "Masuk dengan Patreon dari pop-up ekstensi Return YouTube Dislike."
-  },
-  "premiumTeaser_breadcrumbStep2": {
-    "message": "Pilih tingkat Premium untuk mengaktifkan linimasa aktivitas, peringkat negara, dan peta interaktif."
-  },
-  "premiumTeaser_breadcrumbStep3": {
-    "message": "Muat ulang YouTube untuk melihat tren per jam, negara teratas, dan detail per negara bagian AS untuk setiap video."
-  },
   "premiumTierNotice_title": {
     "message": "Analitik premium terkunci"
   },
@@ -460,21 +427,6 @@
   },
   "premiumTierNotice_cta": {
     "message": "Tingkatkan di Patreon"
-  },
-  "changelog_title": {
-    "message": "Log Perubahan Analisis Premium · 20 Oktober 2025"
-  },
-  "changelog_badge": {
-    "message": "Rilis Premium"
-  },
-  "changelog_heading": {
-    "message": "Analisis premium, dirancang ulang"
-  },
-  "changelog_subheading": {
-    "message": "Jelajahi garis waktu aktivitas langsung, papan peringkat negara teratas, dan peta interaktif yang disertakan dengan Return YouTube Dislike Premium."
-  },
-  "changelog_releaseDate": {
-    "message": "Dirilis pada 20 Oktober 2025"
   },
   "changelog_cta_primary": {
     "message": "Tingkatkan di Patreon"
@@ -488,23 +440,11 @@
   "changelog_feature_timeline_title": {
     "message": "Garis waktu aktivitas langsung"
   },
-  "changelog_feature_timeline_body": {
-    "message": "Tonton streaming suka dan tidak suka secara real-time. Alihkan preset per jam, harian, atau sepanjang waktu tanpa memuat ulang, jangkar jendela ke hari pertama atau pemungutan suara terbaru, dan bersihkan setiap lonjakan untuk melihat apa yang memicu keterlibatan."
-  },
   "changelog_feature_map_title": {
     "message": "Dunia interaktif & peta panas AS"
   },
-  "changelog_feature_map_body": {
-    "message": "Jelajahi dunia atau jelajahi negara bagian AS untuk menemukan hotspot. Bandingkan suka, tidak suka, dan rasio di tooltip yang ditingkatkan dan soroti wilayah yang bereaksi pertama kali terhadap upload Anda."
-  },
   "changelog_feature_quality_title": {
     "message": "Papan peringkat negara teratas"
-  },
-  "changelog_feature_quality_body": {
-    "message": "Beri peringkat setiap negara berdasarkan aktivitas mentah, kesukaan, ketidaksukaan, atau rasio. Filter dengan preset yang sama dengan timeline untuk mempelajari lokasi kampanye dan merencanakan apa yang akan dipublikasikan selanjutnya."
-  },
-  "changelog_screenshot_placeholder": {
-    "message": "Tangkapan layar segera hadir—ambil gambar ini di DevTools jika sudah siap."
   },
   "changelog_screenshot_label_timeline": {
     "message": "Placeholder: ikhtisar garis waktu"
@@ -515,32 +455,8 @@
   "changelog_screenshot_label_teaser": {
     "message": "Placeholder: papan peringkat negara"
   },
-  "changelog_section_upgrade": {
-    "message": "Cara membuka kunci analitik Premium"
-  },
-  "changelog_upgrade_body": {
-    "message": "Siap untuk terjun? Ikuti langkah cepat ini dan segarkan tab YouTube Anda."
-  },
   "changelog_upgrade_step1": {
     "message": "Buka popup Kembalikan YouTube Dislike dan masuk dengan Patreon."
-  },
-  "changelog_upgrade_step2": {
-    "message": "Pilih tingkat Premium untuk mengaktifkan streaming data analitik ke akun Anda."
-  },
-  "changelog_upgrade_step3": {
-    "message": "Muat ulang laman tontonan YouTube mana pun—garis waktu, peta, dan papan peringkat Anda langsung muncul."
-  },
-  "changelog_section_release": {
-    "message": "Sorotan rilis"
-  },
-  "changelog_release_item1": {
-    "message": "Preset garis waktu aktivitas mengalirkan data langsung dengan jangkar rentang untuk keranjang pertama dan terbaru."
-  },
-  "changelog_release_item2": {
-    "message": "Papan peringkat negara langsung diperbarui sehingga Anda dapat melihat wilayah yang meningkat tanpa perlu keluar dari panel."
-  },
-  "changelog_release_item3": {
-    "message": "Peta interaktif menyoroti hotspot global dan negara bagian AS dengan tooltip dan metrik yang lebih jelas."
   },
   "changelog_support_heading": {
     "message": "Butuh bantuan?"
@@ -552,21 +468,561 @@
     "message": "Tanyakan pada komunitas"
   },
   "hideClutterButtons": {
-    "message": "Hide clutter buttons"
+    "message": "Sembunyikan tombol tambahan"
   },
   "hideClutterButtonsHelpLabel": {
-    "message": "Show before and after examples"
+    "message": "Tampilkan contoh sebelum dan sesudah"
   },
   "hideClutterButtonsDescription": {
-    "message": "Keep only Like and Dislike visible. Share, Save, Thanks, and other optional actions stay available in YouTube's three-dot More menu."
+    "message": "Tampilkan hanya tombol Suka dan Tidak suka. Bagikan, Simpan, Thanks, dan tindakan opsional lain tetap tersedia di menu tiga titik Lainnya di YouTube."
   },
   "hideClutterButtonsBefore": {
-    "message": "Before: all action buttons are visible"
+    "message": "Sebelum: semua tombol tindakan terlihat"
   },
   "hideClutterButtonsAfter": {
-    "message": "After: only Like and Dislike stay visible"
+    "message": "Sesudah: hanya tombol Suka dan Tidak suka yang tetap terlihat"
   },
   "changelog_brand_logo_alt": {
     "message": "Logo Return YouTube Dislike"
+  },
+  "githubLoginUnavailable": {
+    "message": "Login kontributor GitHub saat ini tidak tersedia. Layanan memerlukan pembaruan atau perubahan konfigurasi."
+  },
+  "githubLoginNotContributor": {
+    "message": "Akun GitHub ini tidak terdaftar sebagai kontributor Return YouTube Dislike. Login dengan akun yang telah berkontribusi. Kontribusi terbaru mungkin memerlukan beberapa jam untuk muncul."
+  },
+  "githubLoginBrowserUnavailable": {
+    "message": "Login GitHub belum dikonfigurasi untuk alamat callback browser ini. Hubungi dukungan."
+  },
+  "githubLoginExpired": {
+    "message": "Upaya login GitHub ini telah kedaluwarsa atau tidak dapat diverifikasi. Mulai login baru."
+  },
+  "githubLoginUpdateRequired": {
+    "message": "Perbarui ekstensi untuk menggunakan login kontributor GitHub."
+  },
+  "githubLoginRateLimited": {
+    "message": "Terlalu banyak upaya login. Tunggu satu menit sebelum mencoba lagi."
+  },
+  "githubLoginDenied": {
+    "message": "Otorisasi GitHub ditolak. Login kontributor memerlukan otorisasi."
+  },
+  "discussion_title": {
+    "message": "Komentar RYD"
+  },
+  "discussion_subtitle": {
+    "message": "Diskusi komunitas yang diselenggarakan oleh Return YouTube Dislike."
+  },
+  "discussion_independent": {
+    "message": "Komentar ini terpisah dari YouTube."
+  },
+  "discussion_open": {
+    "message": "Buka komentar RYD"
+  },
+  "discussion_close": {
+    "message": "Tutup"
+  },
+  "discussion_new": {
+    "message": "Terbaru"
+  },
+  "discussion_top": {
+    "message": "Teratas"
+  },
+  "discussion_sort": {
+    "message": "Urutkan komentar"
+  },
+  "discussion_refresh": {
+    "message": "Muat ulang"
+  },
+  "discussion_loading": {
+    "message": "Memuat komentar…"
+  },
+  "discussion_empty": {
+    "message": "Belum ada komentar. Mulai percakapan."
+  },
+  "discussion_comment": {
+    "message": "Komentar"
+  },
+  "discussion_post": {
+    "message": "Kirim komentar"
+  },
+  "discussion_reply": {
+    "message": "Balas"
+  },
+  "discussion_postReply": {
+    "message": "Kirim balasan"
+  },
+  "discussion_cancel": {
+    "message": "Batal"
+  },
+  "discussion_save": {
+    "message": "Simpan"
+  },
+  "discussion_edit": {
+    "message": "Edit"
+  },
+  "discussion_delete": {
+    "message": "Hapus"
+  },
+  "discussion_deleteConfirm": {
+    "message": "Hapus komentar ini?"
+  },
+  "discussion_deleted": {
+    "message": "Komentar dihapus"
+  },
+  "discussion_edited": {
+    "message": "diedit"
+  },
+  "discussion_replies": {
+    "message": "Balasan ($1)"
+  },
+  "discussion_more": {
+    "message": "Muat lebih banyak"
+  },
+  "discussion_like": {
+    "message": "Suka"
+  },
+  "discussion_dislike": {
+    "message": "Tidak suka"
+  },
+  "discussion_signInRequired": {
+    "message": "Login melalui popup ekstensi untuk melanjutkan."
+  },
+  "discussion_tierRequired": {
+    "message": "Anggota aktif tingkat Commenter ke atas dapat mengirim komentar."
+  },
+  "discussion_join": {
+    "message": "Jadi anggota Commenter"
+  },
+  "discussion_gate": {
+    "message": "Semua orang dapat membaca dan memberi reaksi. Anggota aktif tingkat Commenter ke atas dapat mengirim komentar."
+  },
+  "discussion_nicknameRequired": {
+    "message": "Pilih nama panggilan RYD publik Anda sebelum mengirim komentar."
+  },
+  "discussion_nicknameLabel": {
+    "message": "Nama panggilan RYD publik"
+  },
+  "discussion_nicknameHint": {
+    "message": "3–32 karakter berupa huruf, angka, spasi, titik, tanda hubung, atau garis bawah. Nama ini akan ditampilkan bersama komentar Anda."
+  },
+  "discussion_nicknameSave": {
+    "message": "Simpan nama panggilan"
+  },
+  "discussion_nicknameTaken": {
+    "message": "Nama panggilan ini sudah digunakan. Pilih yang lain."
+  },
+  "discussion_nicknameInvalid": {
+    "message": "Gunakan 3–32 karakter berupa huruf, angka, spasi, titik, tanda hubung, atau garis bawah."
+  },
+  "discussion_nicknameChange": {
+    "message": "Ubah nama panggilan"
+  },
+  "discussion_as": {
+    "message": "Berkomentar sebagai $1"
+  },
+  "discussion_placeholder": {
+    "message": "Ikut berdiskusi…"
+  },
+  "discussion_characters": {
+    "message": "$1 / $2"
+  },
+  "discussion_report": {
+    "message": "Laporkan"
+  },
+  "discussion_reportTitle": {
+    "message": "Laporkan komentar"
+  },
+  "discussion_reportReason": {
+    "message": "Alasan"
+  },
+  "discussion_reportSpam": {
+    "message": "Spam"
+  },
+  "discussion_reportAbuse": {
+    "message": "Pelecehan atau kebencian"
+  },
+  "discussion_reportOther": {
+    "message": "Lainnya"
+  },
+  "discussion_reportDetails": {
+    "message": "Detail tambahan (opsional)"
+  },
+  "discussion_reportSend": {
+    "message": "Kirim laporan"
+  },
+  "discussion_reportDone": {
+    "message": "Laporan diterima. Terima kasih."
+  },
+  "discussion_moderation": {
+    "message": "Moderasi"
+  },
+  "discussion_queueEmpty": {
+    "message": "Tidak ada laporan untuk ditinjau."
+  },
+  "discussion_hide": {
+    "message": "Sembunyikan komentar"
+  },
+  "discussion_restore": {
+    "message": "Pulihkan komentar"
+  },
+  "discussion_dismiss": {
+    "message": "Abaikan laporan"
+  },
+  "discussion_ban": {
+    "message": "Blokir penulis"
+  },
+  "discussion_unban": {
+    "message": "Buka blokir penulis"
+  },
+  "discussion_moderationReason": {
+    "message": "Alasan moderasi"
+  },
+  "discussion_unavailable": {
+    "message": "Komentar RYD tidak tersedia untuk video ini."
+  },
+  "discussion_commentUnavailable": {
+    "message": "Komentar ini tidak lagi tersedia."
+  },
+  "discussion_error": {
+    "message": "Tidak dapat terhubung. Coba lagi."
+  },
+  "discussion_rateLimited": {
+    "message": "Tunggu sebentar sebelum mencoba lagi."
+  },
+  "discussion_conflict": {
+    "message": "Komentar ini telah berubah. Muat ulang dan coba lagi."
+  },
+  "discussion_forbidden": {
+    "message": "Tindakan ini tidak tersedia untuk akun Anda."
+  },
+  "discussion_retry": {
+    "message": "Coba lagi"
+  },
+  "discussion_notifications": {
+    "message": "Notifikasi"
+  },
+  "discussion_notificationEmpty": {
+    "message": "Semua notifikasi sudah dibaca."
+  },
+  "discussion_notificationReply": {
+    "message": "$1 membalas komentar Anda"
+  },
+  "discussion_notificationLike": {
+    "message": "Seseorang menyukai komentar Anda"
+  },
+  "discussion_notificationLikes": {
+    "message": "Komentar Anda mendapat $1 suka"
+  },
+  "discussion_someone": {
+    "message": "Seseorang"
+  },
+  "discussion_markRead": {
+    "message": "Tandai sudah dibaca"
+  },
+  "discussion_markAllRead": {
+    "message": "Tandai semua sudah dibaca"
+  },
+  "discussion_view": {
+    "message": "Lihat diskusi"
+  },
+  "discussion_signedOutInbox": {
+    "message": "Login untuk melihat balasan dan suka pada komentar Anda."
+  },
+  "discussion_discussionTab": {
+    "message": "Diskusi"
+  },
+  "discussion_nickname": {
+    "message": "Nama panggilan"
+  },
+  "discussion_reportStatus": {
+    "message": "Status laporan"
+  },
+  "discussion_openReports": {
+    "message": "Laporan terbuka"
+  },
+  "discussion_resolvedReports": {
+    "message": "Laporan yang diabaikan"
+  },
+  "discussion_author": {
+    "message": "Penulis"
+  },
+  "discussion_saving": {
+    "message": "Menyimpan…"
+  },
+  "discussion_loadReplies": {
+    "message": "Tampilkan balasan ($1)"
+  },
+  "patreonTierCommenter": {
+    "message": "Commenter"
+  },
+  "changelog_page_title": {
+    "message": "Selamat datang di Return YouTube Dislike"
+  },
+  "changelog_hero_eyebrow": {
+    "message": "Semuanya siap"
+  },
+  "changelog_hero_title": {
+    "message": "Jumlah tidak suka kembali."
+  },
+  "changelog_hero_body": {
+    "message": "Buka video YouTube mana pun dan jumlah tidak suka akan terlihat di samping jumlah suka, di tempat semestinya. Versi 4.1 juga memperkenalkan komentar RYD, tempat membahas video di luar kolom komentar YouTube."
+  },
+  "changelog_hero_eyebrow_counts_off": {
+    "message": "Satu langkah lagi"
+  },
+  "changelog_hero_body_counts_off": {
+    "message": "Aktifkan jumlah tidak suka di bawah untuk melihatnya di samping jumlah suka di YouTube. Versi 4.1 juga memperkenalkan komentar RYD, tempat membahas video di luar kolom komentar YouTube."
+  },
+  "changelog_new_badge": {
+    "message": "Baru di 4.1"
+  },
+  "changelog_premium_badge": {
+    "message": "Premium"
+  },
+  "changelog_comments_title": {
+    "message": "Kenali komentar RYD"
+  },
+  "changelog_comments_body": {
+    "message": "Ruang diskusi komunitas di bawah video dan Shorts yang komentar YouTube-nya dinonaktifkan, dikelola oleh Return YouTube Dislike. Semua orang dapat membaca dan bereaksi. Anggota Commenter dan Premium dapat mengirim komentar dan balasan."
+  },
+  "changelog_comments_point_replies": {
+    "message": "Balasan berutas dengan suka dan tidak suka"
+  },
+  "changelog_comments_point_nickname": {
+    "message": "Gunakan nama panggilan publik pilihan Anda saat berkomentar"
+  },
+  "changelog_comments_point_notifications": {
+    "message": "Notifikasi saat seseorang membalas atau menyukai komentar Anda"
+  },
+  "changelog_comments_point_moderation": {
+    "message": "Pelaporan dan moderasi agar diskusi tetap santun"
+  },
+  "changelog_comments_shot_alt": {
+    "message": "Panel komentar RYD dengan diskusi berutas di bawah video"
+  },
+  "changelog_notifications_shot_alt": {
+    "message": "Notifikasi RYD berisi balasan dan suka pada komentar Anda"
+  },
+  "changelog_sample_note": {
+    "message": "Tangkapan layar menampilkan data contoh."
+  },
+  "changelog_analytics_title": {
+    "message": "Analitik Premium"
+  },
+  "changelog_analytics_body": {
+    "message": "Lihat tanggapan terhadap video dari waktu ke waktu dan di seluruh dunia. Pilih rentang 7, 30, atau 90 hari atau sepanjang waktu, lalu bandingkan suka, tidak suka, dan rasionya."
+  },
+  "changelog_analytics_timeline_title": {
+    "message": "Linimasa aktivitas"
+  },
+  "changelog_analytics_timeline_body": {
+    "message": "Suka dan tidak suka dari waktu ke waktu, hingga per jam."
+  },
+  "changelog_analytics_countries_title": {
+    "message": "Negara teratas"
+  },
+  "changelog_analytics_countries_body": {
+    "message": "Lihat negara yang paling banyak menyukai dan tidak menyukai video."
+  },
+  "changelog_analytics_world_title": {
+    "message": "Peta dunia"
+  },
+  "changelog_analytics_world_body": {
+    "message": "Bandingkan interaksi antarnegara."
+  },
+  "changelog_analytics_us_title": {
+    "message": "Negara bagian AS"
+  },
+  "changelog_analytics_us_body": {
+    "message": "Perbesar untuk melihat interaksi per negara bagian."
+  },
+  "changelog_appeal_title": {
+    "message": "Permintaan kecil yang agak canggung"
+  },
+  "changelog_appeal_intro": {
+    "message": "Hai. Ini bagian ketika kami membahas soal uang, dan jujur saja, kami tidak terlalu pandai melakukannya."
+  },
+  "changelog_appeal_costs": {
+    "message": "Return YouTube Dislike adalah proyek sumber terbuka kecil yang dibuat oleh Dmitry Selivanov dan komunitas. Setiap hari, proyek ini melayani sekitar 20 juta orang dan menjaga lebih dari 15 TB data. Semuanya berjalan dengan beberapa ratus dolar per bulan, jumlah yang tidak besar untuk mengembalikan sesuatu yang diputuskan untuk dihapus oleh perusahaan bernilai miliaran dolar."
+  },
+  "changelog_appeal_free": {
+    "message": "Jumlah tidak suka gratis, dan akan tetap gratis. Itulah intinya. Tapi server tidak gratis, dan jujur saja, biaya operasionalnya tidak memberi kami banyak pilihan: agar proyek ini tetap berjalan, kami harus menghadirkan fitur Premium — komentar RYD dan analitik Premium. Setiap keanggotaan membantu menutup biaya tersebut."
+  },
+  "changelog_appeal_ask": {
+    "message": "Jika RYD pernah menyelamatkanmu dari video clickbait atau tutorial yang tidak berhasil, pertimbangkan untuk bergabung di Patreon. Dan jika sekarang bukan saat yang tepat, tidak apa-apa. Terima kasih sudah menggunakannya dan memberikan suara: setiap suara membuat angkanya sedikit lebih akurat."
+  },
+  "changelog_appeal_cta": {
+    "message": "Bergabunglah di Patreon"
+  },
+  "changelog_appeal_signature": {
+    "message": "— Dmitry dan komunitas RYD"
+  },
+  "changelog_join_title": {
+    "message": "Dapatkan fitur Premium"
+  },
+  "changelog_join_step1": {
+    "message": "Bergabunglah di Patreon. Commenter memungkinkan Anda mengirim komentar; Premium juga menambahkan analitik."
+  },
+  "changelog_join_step3": {
+    "message": "Muat ulang video YouTube mana pun. Fitur baru Anda akan muncul secara otomatis."
+  },
+  "changelog_also_title": {
+    "message": "Juga dalam rilis ini"
+  },
+  "changelog_also_counts": {
+    "message": "Jumlah suka dan tidak suka tampil lebih andal di ekstensi maupun userscript."
+  },
+  "changelog_also_consent": {
+    "message": "Alur persetujuan data di Firefox telah ditingkatkan."
+  },
+  "changelog_also_translations": {
+    "message": "Terjemahan baru dan penyempurnaan terjemahan."
+  },
+  "reviewPromptTitle": {
+    "message": "Suka RYD?"
+  },
+  "reviewPromptBody": {
+    "message": "Google mengubah aturan rating di Chrome Web Store. Meskipun ada 16.000+ ulasan bintang lima, beberapa ulasan negatif terbaru menurunkan rating RYD dari 4,6 menjadi 2,5.\n\nJika RYD membantu Anda, silakan tulis ulasan yang jujur."
+  },
+  "reviewPromptAction": {
+    "message": "Tulis ulasan"
+  },
+  "consent_page_title": {
+    "message": "Izin fitur RYD"
+  },
+  "consent_vote_title": {
+    "message": "Pastikan suara Anda dihitung"
+  },
+  "consent_vote_body": {
+    "message": "Firefox kini mewajibkan setiap ekstensi meminta izin Anda sebelum membagikan data apa pun. Izinkan agar RYD dapat menghitung suka, tidak suka, dan reaksi komentar Anda. Izin ini hanya berlaku untuk YouTube, bukan situs web lain."
+  },
+  "consent_account_title": {
+    "message": "Pilih izin akun"
+  },
+  "consent_account_body": {
+    "message": "Masuk untuk menggunakan fitur akun, termasuk profil, notifikasi, dan analitik Premium."
+  },
+  "consent_next_step": {
+    "message": "Pilih Izinkan di Firefox untuk meninjau izin. Anda dapat menolak."
+  },
+  "consent_allow": {
+    "message": "Izinkan di Firefox"
+  },
+  "consent_not_now": {
+    "message": "Jangan sekarang"
+  },
+  "consent_prompt_status": {
+    "message": "Pilih apakah akan memberikan izin ini di Firefox."
+  },
+  "consent_granted_status": {
+    "message": "Izin diaktifkan. Anda dapat kembali ke YouTube."
+  },
+  "consent_declined_status": {
+    "message": "Fitur opsional ini tetap dinonaktifkan. Anda dapat mengubah izin nanti."
+  },
+  "consent_error_status": {
+    "message": "Izin tidak dapat diperbarui. Silakan coba lagi."
+  },
+  "consent_details_summary": {
+    "message": "Apa arti kategori izin Firefox?"
+  },
+  "consent_details_intro": {
+    "message": "Firefox mengelompokkan data ke dalam kategori umum. Berikut arti setiap kategori untuk RYD:"
+  },
+  "consent_browsing_label": {
+    "message": "Aktivitas penjelajahan"
+  },
+  "consent_browsing_body": {
+    "message": "Hanya ID video YouTube yang Anda buka, untuk memuat jumlah tidak suka dan komentar RYD-nya. Tidak pernah mencakup riwayat penjelajahan Anda atau situs web lain."
+  },
+  "consent_content_label": {
+    "message": "Konten situs web"
+  },
+  "consent_content_body": {
+    "message": "Jumlah suka yang ditampilkan pada video YouTube, untuk meningkatkan perkiraan jumlah tidak suka."
+  },
+  "consent_activity_label": {
+    "message": "Aktivitas situs web"
+  },
+  "consent_activity_body": {
+    "message": "Suka, tidak suka, dan reaksi Anda terhadap komentar RYD di YouTube, agar dihitung. Dikirim dengan ID acak yang tidak terhubung dengan akun Google atau YouTube Anda."
+  },
+  "consent_identity_label": {
+    "message": "Informasi pengenal pribadi"
+  },
+  "consent_identity_body": {
+    "message": "Informasi profil, seperti nama tampilan dan email, hanya jika Anda memilih untuk masuk."
+  },
+  "consent_auth_label": {
+    "message": "Informasi autentikasi"
+  },
+  "consent_auth_body": {
+    "message": "Data otorisasi dan sesi yang diperlukan untuk masuk dan menggunakan fitur akun."
+  },
+  "consent_scope": {
+    "message": "RYD tidak mengumpulkan apa pun di luar youtube.com dan tidak mengakses akun YouTube Anda. RYD tidak menerima nama atau email kecuali Anda masuk."
+  },
+  "consent_settings": {
+    "message": "Anda dapat mengubah izin ini kapan saja di pengaturan pengaya Firefox (about:addons)."
+  },
+  "consent_private_counts": {
+    "message": "Jendela pribadi hanya menampilkan jumlah dengan izin yang diaktifkan di jendela biasa. Pemungutan suara, masuk, analitik Premium, dan diskusi tidak tersedia di sana."
+  },
+  "consent_voter_timing": {
+    "message": "ID pemungutan suara Anda hanya dikirim saat Anda memberi suara atau reaksi. Reaksi Anda sendiri terhadap komentar diingat pada perangkat ini."
+  },
+  "popup_signin_next_click": {
+    "message": "Perlu satu klik lagi: pilih tombol masuk di bawah untuk meninjau izin akun Firefox dan melanjutkan."
+  },
+  "changelog_firefox_intro_title": {
+    "message": "Aturan privasi baru Firefox"
+  },
+  "changelog_firefox_intro_body": {
+    "message": "Di Firefox, RYD memerlukan izinmu sebelum dapat menampilkan jumlah tidak suka. Berikut persisnya apa yang dicakup izin itu — dan apa yang tidak."
+  },
+  "changelog_firefox_vote_granted": {
+    "message": "Terima kasih. Suara Anda kini dihitung."
+  },
+  "vote_consent_hint": {
+    "message": "Suara Anda belum dihitung. Firefox kini memerlukan izin Anda sebelum RYD dapat mengirimnya. Izin ini hanya berlaku untuk YouTube, bukan situs web lain."
+  },
+  "vote_not_counted": {
+    "message": "Suka dan tidak suka Anda tidak dihitung dan tidak akan terlihat dalam jumlah tidak suka."
+  },
+  "vote_count_mine": {
+    "message": "Hitung suara saya"
+  },
+  "vote_consent_dismiss": {
+    "message": "Jangan tanya lagi"
+  },
+  "discussion_reactionConsentRequired": {
+    "message": "Aktifkan berbagi suara untuk bereaksi terhadap komentar. Reaksi Anda dikirim setelah fitur ini aktif."
+  },
+  "discussion_consentContinue": {
+    "message": "Lanjutkan"
+  },
+  "counts_consent_toolbar": {
+    "message": "Buka Return YouTube Dislike dari menu ekstensi Firefox untuk melanjutkan."
+  },
+  "counts_consent_declined": {
+    "message": "Jumlah tetap dinonaktifkan. Anda dapat mengaktifkannya di sini nanti."
+  },
+  "counts_consent_enabled": {
+    "message": "Jumlah tidak suka diaktifkan."
+  },
+  "counts_consent_private": {
+    "message": "Aktifkan jumlah tidak suka di jendela biasa terlebih dahulu. Jendela pribadi hanya menampilkan jumlah."
+  },
+  "data_consent_reason": {
+    "message": "Firefox kini mewajibkan setiap ekstensi meminta izin Anda sebelum membagikan data apa pun. Izinkan RYD menampilkan jumlah tidak suka dan menghitung suara Anda. Izin ini hanya berlaku untuk YouTube, bukan situs web lain."
+  },
+  "data_consent_title": {
+    "message": "Tampilkan jumlah tidak suka dan pastikan suara Anda dihitung"
+  },
+  "data_consent_body": {
+    "message": "Firefox kini mewajibkan setiap ekstensi meminta izin Anda sebelum membagikan data apa pun. Firefox memakai label umum yang sama untuk setiap ekstensi, jadi berikut arti masing-masing label bagi RYD:"
+  },
+  "data_consent_scope": {
+    "message": "RYD hanya berfungsi di YouTube. Mengizinkan ini tidak memberinya akses ke situs web lain mana pun."
   }
 }

@@ -1,13 +1,4 @@
 {
-  "apiStatusLabel": {
-    "message": "Κατάσταση API:"
-  },
-  "apiStatusOffline": {
-    "message": "Εκτός λειτουργίας"
-  },
-  "apiStatusOnline": {
-    "message": "Σε λειτουργία"
-  },
   "colorTheme": {
     "message": "Χρωματικό θέμα:"
   },
@@ -34,6 +25,9 @@
   },
   "disableLoggingHover": {
     "message": "Απενεργοποιεί την καταγραφή των αποκρίσεων API στην κονσόλα."
+  },
+  "developerSettings": {
+    "message": "Επιλογές προγραμματιστή"
   },
   "disableLoggingLabel": {
     "message": "Απενεργοποίηση καταγραφής στην κονσόλα"
@@ -74,9 +68,6 @@
   "numberFormat": {
     "message": "Μορφή αριθμών:"
   },
-  "patreonBadgePrefix": {
-    "message": "Patreon"
-  },
   "patreonLoggedOutMessage": {
     "message": "Οι premium λειτουργίες είναι διαθέσιμες για υποστηρικτές στο Patreon"
   },
@@ -86,17 +77,20 @@
   "patreonPrivacyNote": {
     "message": "Οι πληροφορίες συνδρομής στο Patreon χρησιμοποιούνται για την επαλήθευση της πρόσβασης στις premium λειτουργίες. Δεν λαμβάνουμε στοιχεία της κάρτας ή του τραπεζικού σας λογαριασμού."
   },
+  "paidFeaturesWhy": {
+    "message": "Ο αριθμός των «Δεν μου αρέσει» παραμένει δωρεάν για όλους. Οι επί πληρωμή επιπλέον λειτουργίες βοηθούν να πληρώνονται οι διακομιστές που τον υποστηρίζουν: πάνω από 15 TB δεδομένων και περίπου 20 εκατομμύρια χρήστες την ημέρα, με προϋπολογισμό μερικών εκατοντάδων δολαρίων τον μήνα."
+  },
   "githubLoggedOutMessage": {
-    "message": "Premium features available for GitHub contributors"
+    "message": "Οι premium λειτουργίες είναι διαθέσιμες για συντελεστές στο GitHub"
   },
   "githubLogin": {
-    "message": "Login with GitHub (Contributor)"
+    "message": "Σύνδεση με GitHub (συντελεστής)"
   },
   "githubLoginStartFailed": {
-    "message": "Failed to initiate GitHub login. Please try again."
+    "message": "Αποτυχία έναρξης σύνδεσης μέσω GitHub. Δοκιμάστε ξανά."
   },
   "githubLoginCompleteFailed": {
-    "message": "Failed to complete GitHub login. Please try again."
+    "message": "Η σύνδεση μέσω GitHub δεν ολοκληρώθηκε. Δοκιμάστε ξανά."
   },
   "patreonLoginCompleteFailed": {
     "message": "Η σύνδεση δεν ολοκληρώθηκε. Δοκιμάστε ξανά."
@@ -135,28 +129,31 @@
     "message": "Σταθερή μορφοποίηση των likes & dislikes."
   },
   "hidePremiumTeaser": {
-    "message": "Απόκρυψη πίνακα προωθητικού Premium"
+    "message": "Απόκρυψη ανεπεξέργαστων μετρήσεων"
   },
   "hidePremiumTeaserHover": {
-    "message": "Να μην εμφανίζεται το προωθητικό Premium στις σελίδες αναπαραγωγής του YouTube."
+    "message": "Να μην εμφανίζεται ο πίνακας ανεπεξέργαστων μετρήσεων στις σελίδες αναπαραγωγής του YouTube."
   },
-  "roundNumbers": {
-    "message": "Εμφάνιση στρογγυλεμένων αριθμών"
+  "hideRydComments": {
+    "message": "Απόκρυψη σχολίων RYD"
   },
-  "roundNumbersHover": {
-    "message": "Στρογγυλοποιήστε την τιμή μέτρησης (προεπιλεγμένη επιλογή του YouTube)."
+  "hideRydCommentsHover": {
+    "message": "Να μην εμφανίζονται σχόλια RYD σε βίντεο όπου τα σχόλια του YouTube είναι απενεργοποιημένα."
+  },
+  "hidePremiumAnalytics": {
+    "message": "Απόκρυψη στατιστικών Premium για το βίντεο"
+  },
+  "hidePremiumAnalyticsHover": {
+    "message": "Απόκρυψη του πίνακα στατιστικών Premium για το βίντεο στις σελίδες αναπαραγωγής του YouTube."
   },
   "shortsSupport": {
     "message": "Υποστήριξη για YouTube Shorts"
   },
   "showTooltipPercentage": {
-    "message": "Ποσοστό στο tooltip της μπάρας like/dislike."
+    "message": "Ποσοστό στο tooltip της μπάρας like/dislike"
   },
   "showTooltipPercentageHover": {
     "message": "Εμφάνιση ποσοστού στο tooltip της μπάρας like/dislike."
-  },
-  "textColorTheme": {
-    "message": "Θέματα χρωμάτων:"
   },
   "textColorTheme1": {
     "message": "Classic"
@@ -167,23 +164,23 @@
   "textColorTheme3": {
     "message": "Neon"
   },
-  "textColorizeRatioBar": {
-    "message": "Χρωματισμός μπάρας αναλογιών."
+  "textColorThemeHibiscus": {
+    "message": "Hibiscus"
   },
-  "textColorizeRatioBarHover": {
-    "message": "Προσαρμοζόμενο χρώμα για την μπάρα αναλογιών."
+  "textColorThemeCustom": {
+    "message": "Προσαρμοσμένο"
   },
-  "textColorizeThumbs": {
-    "message": "Χρωματισμός των thumbs"
+  "colorThemeLight": {
+    "message": "Φωτεινό θέμα YouTube"
   },
-  "textColorizeThumbsHover": {
-    "message": "Προσαρμοζόμενο χρώμα για τα thumb icons."
+  "colorThemeDark": {
+    "message": "Σκοτεινό θέμα YouTube"
   },
-  "textConsistentFormat": {
-    "message": "Κάνει σταθερή την μορφοποίηση των likes & dislikes."
+  "colorThemeLike": {
+    "message": "Μου αρέσει"
   },
-  "textConsistentFormatHover": {
-    "message": "Μορφοποίηση του αριθμού των likes."
+  "colorThemeDislike": {
+    "message": "Δεν μου αρέσει"
   },
   "textDeveloper": {
     "message": "από τον Dmitry Selivanov & την κοινότητα"
@@ -191,26 +188,14 @@
   "textLikesDisabled": {
     "message": "Απενεργοποιήθηκε από τον κάτοχο"
   },
-  "textNumberFormat": {
-    "message": "Μορφή αριθμών:"
-  },
-  "textRoundingNumbers": {
-    "message": "Στρογγυλοποιήστε την τιμή μέτρησης (προεπιλεγμένη επιλογή του YouTube)."
-  },
-  "textRoundingNumbersHover": {
-    "message": "Εμφάνιση στρογγυλεμένων αριθμών."
-  },
   "textSettings": {
     "message": "Διακοπή υποβολής like/dislike"
   },
   "textSettingsHover": {
-    "message": "Σταματάει να μετράει τα likes & dislikes που κάνεις."
+    "message": "Τα «Μου αρέσει» και «Δεν μου αρέσει» σας δεν θα μετρώνται ούτε θα εμφανίζονται στους μετρητές «Δεν μου αρέσει»."
   },
   "textTempUnavailable": {
     "message": "Προσωρινά μη διαθέσιμο"
-  },
-  "textUpdate": {
-    "message": "Ενημέρωση σε"
   },
   "tooltipPercentageMode": {
     "message": "Λειτουργία ποσοστού:"
@@ -219,7 +204,7 @@
     "message": "Χρήση προσαρμοσμένης εμφάνισης ποσοστού κατά την αιώρηση."
   },
   "version30installed": {
-    "message": "Εκδοση 4.0.6 εγκαταστάθηκε"
+    "message": "Εκδοση 4.1.5 εγκαταστάθηκε"
   },
   "whatsnew": {
     "message": "Τί νέο υπάρχει"
@@ -425,9 +410,6 @@
   "premiumTeaser_statRaw": {
     "message": "Ανεπεξέργαστος αριθμός dislikes"
   },
-  "premiumTeaser_statDislikes": {
-    "message": "Εκτιμώμενα dislikes"
-  },
   "premiumTeaser_statLikes": {
     "message": "Ανεπεξέργαστος αριθμός likes"
   },
@@ -437,21 +419,6 @@
   "premiumTeaser_statusError": {
     "message": "Δεν ήταν δυνατή η φόρτωση των δεδομένων dislikes. Δοκιμάστε να ανανεώσετε τη σελίδα."
   },
-  "premiumTeaser_breadcrumbsAria": {
-    "message": "Πώς να ξεκλειδώσετε τα premium στατιστικά"
-  },
-  "premiumTeaser_breadcrumbsTitle": {
-    "message": "Ξεκλειδώστε τα premium στατιστικά βίντεο σε τρία γρήγορα βήματα:"
-  },
-  "premiumTeaser_breadcrumbStep1": {
-    "message": "Συνδεθείτε με το Patreon από το αναδυόμενο παράθυρο της επέκτασης Return YouTube Dislike."
-  },
-  "premiumTeaser_breadcrumbStep2": {
-    "message": "Επιλέξτε το επίπεδο Premium για να ενεργοποιήσετε χρονολόγια δραστηριότητας, πίνακες κατάταξης χωρών και τον διαδραστικό χάρτη."
-  },
-  "premiumTeaser_breadcrumbStep3": {
-    "message": "Ανανεώστε το YouTube για να δείτε ωριαίες τάσεις, κορυφαίες χώρες και ανάλυση πολιτειών των ΗΠΑ για κάθε βίντεο."
-  },
   "premiumTierNotice_title": {
     "message": "Οι premium αναλύσεις είναι κλειδωμένες"
   },
@@ -460,21 +427,6 @@
   },
   "premiumTierNotice_cta": {
     "message": "Αναβάθμιση στο Patreon"
-  },
-  "changelog_title": {
-    "message": "Ημερολόγιο αλλαγών Premium Analytics · 20 Οκτωβρίου 2025"
-  },
-  "changelog_badge": {
-    "message": "Κυκλοφορία Premium"
-  },
-  "changelog_heading": {
-    "message": "Premium αναλύσεις, επανασχεδιασμένες"
-  },
-  "changelog_subheading": {
-    "message": "Εξερευνήστε το χρονοδιάγραμμα της ζωντανής δραστηριότητας, τον πίνακα κορυφαίων χωρών και τον διαδραστικό χάρτη που περιλαμβάνονται στο Return YouTube Dislike Premium."
-  },
-  "changelog_releaseDate": {
-    "message": "Κυκλοφόρησε στις 20 Οκτωβρίου 2025"
   },
   "changelog_cta_primary": {
     "message": "Αναβάθμιση στο Patreon"
@@ -488,23 +440,11 @@
   "changelog_feature_timeline_title": {
     "message": "Χρονοδιάγραμμα ζωντανής δραστηριότητας"
   },
-  "changelog_feature_timeline_body": {
-    "message": "Παρακολουθήστε τη ροή \"μου αρέσει\" και \"δεν μου αρέσει\" σε πραγματικό χρόνο. Εναλλάξτε τις ωριαίες, ημερήσιες ή προεπιλογές όλων των εποχών χωρίς επαναφόρτωση, αγκυρώστε το παράθυρο στην πρώτη ημέρα ή τις πιο πρόσφατες ψηφοφορίες και σκουπίστε κάθε αιχμή για να δείτε τι ενεργοποίησε την αφοσίωση."
-  },
   "changelog_feature_map_title": {
     "message": "Διαδραστικός χάρτης θερμότητας κόσμου και ΗΠΑ"
   },
-  "changelog_feature_map_body": {
-    "message": "Μετακινηθείτε σε όλο τον κόσμο ή βουτήξτε στις πολιτείες των ΗΠΑ για να εμφανίσετε hotspot. Συγκρίνετε τις επισημάνσεις \"μου αρέσει\", \"δεν μου αρέσει\" και τις αναλογίες στην αναβαθμισμένη επεξήγηση εργαλείου και δώστε έμφαση στις περιοχές που αντιδρούν πρώτες στις μεταφορτώσεις σας."
-  },
   "changelog_feature_quality_title": {
     "message": "Κορυφαίος πίνακας κορυφαίων χωρών"
-  },
-  "changelog_feature_quality_body": {
-    "message": "Κατατάξτε κάθε χώρα κατά ακατέργαστη δραστηριότητα, \"μου αρέσει\", \"δεν μου αρέσει\" ή αναλογία. Φιλτράρετε με τις ίδιες προεπιλογές με το χρονοδιάγραμμα για να μάθετε πού προέρχονται οι καμπάνιες και να σχεδιάσετε τι θα δημοσιεύσετε στη συνέχεια."
-  },
-  "changelog_screenshot_placeholder": {
-    "message": "Το στιγμιότυπο θα προστεθεί — αποθηκεύστε αυτή την προβολή μέσω DevTools όταν είστε έτοιμοι."
   },
   "changelog_screenshot_label_timeline": {
     "message": "Placeholder: επισκόπηση χρονογραμμής"
@@ -515,32 +455,8 @@
   "changelog_screenshot_label_teaser": {
     "message": "Placeholder: leaderboard χωρών"
   },
-  "changelog_section_upgrade": {
-    "message": "Πώς να ξεκλειδώσετε τα Premium analytics"
-  },
-  "changelog_upgrade_body": {
-    "message": "Έτοιμοι; Ακολουθήστε αυτά τα βήματα και ανανεώστε την καρτέλα YouTube."
-  },
   "changelog_upgrade_step1": {
     "message": "Ανοίξτε το αναδυόμενο Return YouTube Dislike και συνδεθείτε με Patreon."
-  },
-  "changelog_upgrade_step2": {
-    "message": "Επιλέξτε τη βαθμίδα Premium ώστε τα δεδομένα analytics να ρέουν στον λογαριασμό σας."
-  },
-  "changelog_upgrade_step3": {
-    "message": "Ανανεώστε οποιαδήποτε σελίδα παρακολούθησης στο YouTube — χρονογραμμή, χάρτης και κατατάξεις εμφανίζονται άμεσα."
-  },
-  "changelog_section_release": {
-    "message": "Κύρια σημεία κυκλοφορίας"
-  },
-  "changelog_release_item1": {
-    "message": "Οι προκαθορισμένες ρυθμίσεις του χρονοδιαγράμματος δραστηριότητας μεταδίδουν ζωντανά δεδομένα με αγκυρώσεις εύρους για τον πρώτο και τον τελευταίο κάδο."
-  },
-  "changelog_release_item2": {
-    "message": "Ο πίνακας κορυφαίων χωρών ανανεώνεται αμέσως, ώστε να μπορείτε να εντοπίζετε ανερχόμενες περιοχές χωρίς να βγείτε από το πλαίσιο."
-  },
-  "changelog_release_item3": {
-    "message": "Ο διαδραστικός χάρτης υπογραμμίζει τα παγκόσμια και τις πολιτειακές εστίες των ΗΠΑ με σαφέστερες συμβουλές εργαλείων και μετρήσεις."
   },
   "changelog_support_heading": {
     "message": "Χρειάζεστε βοήθεια;"
@@ -552,21 +468,561 @@
     "message": "Ρωτήστε την κοινότητα"
   },
   "hideClutterButtons": {
-    "message": "Hide clutter buttons"
+    "message": "Απόκρυψη περιττών κουμπιών"
   },
   "hideClutterButtonsHelpLabel": {
-    "message": "Show before and after examples"
+    "message": "Εμφάνιση παραδειγμάτων πριν και μετά"
   },
   "hideClutterButtonsDescription": {
-    "message": "Keep only Like and Dislike visible. Share, Save, Thanks, and other optional actions stay available in YouTube's three-dot More menu."
+    "message": "Να μένουν ορατά μόνο τα κουμπιά «Μου αρέσει» και «Δεν μου αρέσει». Οι επιλογές «Κοινοποίηση», «Αποθήκευση», «Super Thanks» και άλλες προαιρετικές ενέργειες παραμένουν διαθέσιμες στο μενού του YouTube με τις τρεις τελείες («Περισσότερες ενέργειες»)."
   },
   "hideClutterButtonsBefore": {
-    "message": "Before: all action buttons are visible"
+    "message": "Πριν: όλα τα κουμπιά ενεργειών είναι ορατά"
   },
   "hideClutterButtonsAfter": {
-    "message": "After: only Like and Dislike stay visible"
+    "message": "Μετά: μόνο τα «Μου αρέσει» και «Δεν μου αρέσει» μένουν ορατά"
   },
   "changelog_brand_logo_alt": {
     "message": "Λογότυπο Return YouTube Dislike"
+  },
+  "githubLoginUnavailable": {
+    "message": "Η σύνδεση συντελεστών μέσω GitHub δεν είναι διαθέσιμη αυτήν τη στιγμή. Η υπηρεσία χρειάζεται ενημέρωση ή αλλαγή ρυθμίσεων."
+  },
+  "githubLoginNotContributor": {
+    "message": "Αυτός ο λογαριασμός GitHub δεν περιλαμβάνεται στους συντελεστές του Return YouTube Dislike. Συνδεθείτε με λογαριασμό συντελεστή. Οι πρόσφατες συνεισφορές μπορεί να χρειαστούν λίγες ώρες για να εμφανιστούν."
+  },
+  "githubLoginBrowserUnavailable": {
+    "message": "Η σύνδεση μέσω GitHub δεν έχει ρυθμιστεί για τη διεύθυνση επανάκλησης αυτού του προγράμματος περιήγησης. Επικοινωνήστε με την υποστήριξη."
+  },
+  "githubLoginExpired": {
+    "message": "Αυτή η προσπάθεια σύνδεσης μέσω GitHub έληξε ή δεν ήταν δυνατό να επαληθευτεί. Ξεκινήστε νέα σύνδεση."
+  },
+  "githubLoginUpdateRequired": {
+    "message": "Ενημερώστε την επέκταση για να χρησιμοποιήσετε τη σύνδεση συντελεστών μέσω GitHub."
+  },
+  "githubLoginRateLimited": {
+    "message": "Πάρα πολλές προσπάθειες σύνδεσης. Περιμένετε ένα λεπτό πριν δοκιμάσετε ξανά."
+  },
+  "githubLoginDenied": {
+    "message": "Η εξουσιοδότηση GitHub απορρίφθηκε. Η σύνδεση συντελεστών απαιτεί εξουσιοδότηση."
+  },
+  "discussion_title": {
+    "message": "Σχόλια RYD"
+  },
+  "discussion_subtitle": {
+    "message": "Μια συζήτηση της κοινότητας που φιλοξενείται από το Return YouTube Dislike."
+  },
+  "discussion_independent": {
+    "message": "Αυτά τα σχόλια είναι ανεξάρτητα από το YouTube."
+  },
+  "discussion_open": {
+    "message": "Άνοιγμα σχολίων RYD"
+  },
+  "discussion_close": {
+    "message": "Κλείσιμο"
+  },
+  "discussion_new": {
+    "message": "Νεότερα"
+  },
+  "discussion_top": {
+    "message": "Κορυφαία"
+  },
+  "discussion_sort": {
+    "message": "Ταξινόμηση σχολίων"
+  },
+  "discussion_refresh": {
+    "message": "Ανανέωση"
+  },
+  "discussion_loading": {
+    "message": "Φόρτωση σχολίων…"
+  },
+  "discussion_empty": {
+    "message": "Δεν υπάρχουν ακόμη σχόλια. Ξεκινήστε τη συζήτηση."
+  },
+  "discussion_comment": {
+    "message": "Σχόλιο"
+  },
+  "discussion_post": {
+    "message": "Δημοσίευση σχολίου"
+  },
+  "discussion_reply": {
+    "message": "Απάντηση"
+  },
+  "discussion_postReply": {
+    "message": "Δημοσίευση απάντησης"
+  },
+  "discussion_cancel": {
+    "message": "Ακύρωση"
+  },
+  "discussion_save": {
+    "message": "Αποθήκευση"
+  },
+  "discussion_edit": {
+    "message": "Επεξεργασία"
+  },
+  "discussion_delete": {
+    "message": "Διαγραφή"
+  },
+  "discussion_deleteConfirm": {
+    "message": "Να διαγραφεί αυτό το σχόλιο;"
+  },
+  "discussion_deleted": {
+    "message": "Το σχόλιο διαγράφηκε"
+  },
+  "discussion_edited": {
+    "message": "τροποποιήθηκε"
+  },
+  "discussion_replies": {
+    "message": "Απαντήσεις ($1)"
+  },
+  "discussion_more": {
+    "message": "Φόρτωση περισσότερων"
+  },
+  "discussion_like": {
+    "message": "Μου αρέσει"
+  },
+  "discussion_dislike": {
+    "message": "Δεν μου αρέσει"
+  },
+  "discussion_signInRequired": {
+    "message": "Συνδεθείτε από το αναδυόμενο παράθυρο της επέκτασης για να συνεχίσετε."
+  },
+  "discussion_tierRequired": {
+    "message": "Η δημοσίευση είναι διαθέσιμη σε ενεργά μέλη της βαθμίδας Commenter και άνω."
+  },
+  "discussion_join": {
+    "message": "Γίνετε μέλος Commenter"
+  },
+  "discussion_gate": {
+    "message": "Όλοι μπορούν να διαβάζουν και να αντιδρούν. Τα ενεργά μέλη της βαθμίδας Commenter και άνω μπορούν να δημοσιεύουν."
+  },
+  "discussion_nicknameRequired": {
+    "message": "Επιλέξτε το δημόσιο ψευδώνυμό σας στο RYD πριν δημοσιεύσετε."
+  },
+  "discussion_nicknameLabel": {
+    "message": "Δημόσιο ψευδώνυμο RYD"
+  },
+  "discussion_nicknameHint": {
+    "message": "3–32 γράμματα, αριθμοί, κενά, τελείες, παύλες ή κάτω παύλες. Αυτό το όνομα θα εμφανίζεται μαζί με τα σχόλιά σας."
+  },
+  "discussion_nicknameSave": {
+    "message": "Αποθήκευση ψευδωνύμου"
+  },
+  "discussion_nicknameTaken": {
+    "message": "Αυτό το ψευδώνυμο χρησιμοποιείται ήδη. Επιλέξτε άλλο."
+  },
+  "discussion_nicknameInvalid": {
+    "message": "Χρησιμοποιήστε 3–32 γράμματα, αριθμούς, κενά, τελείες, παύλες ή κάτω παύλες."
+  },
+  "discussion_nicknameChange": {
+    "message": "Αλλαγή ψευδωνύμου"
+  },
+  "discussion_as": {
+    "message": "Σχολιάζετε ως $1"
+  },
+  "discussion_placeholder": {
+    "message": "Συμμετέχετε στη συζήτηση…"
+  },
+  "discussion_characters": {
+    "message": "$1 / $2"
+  },
+  "discussion_report": {
+    "message": "Αναφορά"
+  },
+  "discussion_reportTitle": {
+    "message": "Αναφορά σχολίου"
+  },
+  "discussion_reportReason": {
+    "message": "Αιτία"
+  },
+  "discussion_reportSpam": {
+    "message": "Ανεπιθύμητο περιεχόμενο"
+  },
+  "discussion_reportAbuse": {
+    "message": "Παρενόχληση ή μίσος"
+  },
+  "discussion_reportOther": {
+    "message": "Άλλο"
+  },
+  "discussion_reportDetails": {
+    "message": "Πρόσθετες λεπτομέρειες (προαιρετικά)"
+  },
+  "discussion_reportSend": {
+    "message": "Αποστολή αναφοράς"
+  },
+  "discussion_reportDone": {
+    "message": "Η αναφορά παραλήφθηκε. Ευχαριστούμε."
+  },
+  "discussion_moderation": {
+    "message": "Συντονισμός"
+  },
+  "discussion_queueEmpty": {
+    "message": "Δεν υπάρχουν αναφορές για έλεγχο."
+  },
+  "discussion_hide": {
+    "message": "Απόκρυψη σχολίου"
+  },
+  "discussion_restore": {
+    "message": "Επαναφορά σχολίου"
+  },
+  "discussion_dismiss": {
+    "message": "Απόρριψη αναφορών"
+  },
+  "discussion_ban": {
+    "message": "Αποκλεισμός συντάκτη"
+  },
+  "discussion_unban": {
+    "message": "Άρση αποκλεισμού συντάκτη"
+  },
+  "discussion_moderationReason": {
+    "message": "Αιτία ενέργειας συντονισμού"
+  },
+  "discussion_unavailable": {
+    "message": "Τα σχόλια RYD δεν είναι διαθέσιμα για αυτό το βίντεο."
+  },
+  "discussion_commentUnavailable": {
+    "message": "Αυτό το σχόλιο δεν είναι πλέον διαθέσιμο."
+  },
+  "discussion_error": {
+    "message": "Δεν ήταν δυνατή η σύνδεση. Δοκιμάστε ξανά."
+  },
+  "discussion_rateLimited": {
+    "message": "Περιμένετε λίγο πριν δοκιμάσετε ξανά."
+  },
+  "discussion_conflict": {
+    "message": "Αυτό το σχόλιο άλλαξε. Ανανεώστε και δοκιμάστε ξανά."
+  },
+  "discussion_forbidden": {
+    "message": "Αυτή η ενέργεια δεν είναι διαθέσιμη για τον λογαριασμό σας."
+  },
+  "discussion_retry": {
+    "message": "Δοκιμάστε ξανά"
+  },
+  "discussion_notifications": {
+    "message": "Ειδοποιήσεις"
+  },
+  "discussion_notificationEmpty": {
+    "message": "Έχετε δει όλες τις ενημερώσεις."
+  },
+  "discussion_notificationReply": {
+    "message": "$1 απάντησε στο σχόλιό σας"
+  },
+  "discussion_notificationLike": {
+    "message": "Σε κάποιον άρεσε το σχόλιό σας"
+  },
+  "discussion_notificationLikes": {
+    "message": "Το σχόλιό σας έλαβε $1 likes"
+  },
+  "discussion_someone": {
+    "message": "Κάποιος"
+  },
+  "discussion_markRead": {
+    "message": "Επισήμανση ως αναγνωσμένη"
+  },
+  "discussion_markAllRead": {
+    "message": "Επισήμανση όλων ως αναγνωσμένων"
+  },
+  "discussion_view": {
+    "message": "Προβολή συζήτησης"
+  },
+  "discussion_signedOutInbox": {
+    "message": "Συνδεθείτε για να δείτε απαντήσεις και «Μου αρέσει» στα σχόλιά σας."
+  },
+  "discussion_discussionTab": {
+    "message": "Συζήτηση"
+  },
+  "discussion_nickname": {
+    "message": "Ψευδώνυμο"
+  },
+  "discussion_reportStatus": {
+    "message": "Κατάσταση αναφοράς"
+  },
+  "discussion_openReports": {
+    "message": "Ανοιχτές αναφορές"
+  },
+  "discussion_resolvedReports": {
+    "message": "Αναφορές που απορρίφθηκαν"
+  },
+  "discussion_author": {
+    "message": "Συντάκτης"
+  },
+  "discussion_saving": {
+    "message": "Αποθήκευση…"
+  },
+  "discussion_loadReplies": {
+    "message": "Εμφάνιση απαντήσεων ($1)"
+  },
+  "patreonTierCommenter": {
+    "message": "Commenter"
+  },
+  "changelog_page_title": {
+    "message": "Καλώς ήρθατε στο Return YouTube Dislike"
+  },
+  "changelog_hero_eyebrow": {
+    "message": "Όλα είναι έτοιμα"
+  },
+  "changelog_hero_title": {
+    "message": "Τα «Δεν μου αρέσει» επέστρεψαν."
+  },
+  "changelog_hero_body": {
+    "message": "Ανοίξτε οποιοδήποτε βίντεο στο YouTube και θα δείτε τον αριθμό των «Δεν μου αρέσει» δίπλα στα «Μου αρέσει», εκεί που ανήκει. Η έκδοση 4.1 φέρνει επίσης τα σχόλια RYD, έναν χώρο συζήτησης για βίντεο έξω από την ενότητα σχολίων του YouTube."
+  },
+  "changelog_hero_eyebrow_counts_off": {
+    "message": "Ένα ακόμη βήμα"
+  },
+  "changelog_hero_body_counts_off": {
+    "message": "Ενεργοποιήστε παρακάτω τους μετρητές «Δεν μου αρέσει» για να τους βλέπετε δίπλα στα «Μου αρέσει» στο YouTube. Η έκδοση 4.1 φέρνει επίσης τα σχόλια RYD, έναν χώρο συζήτησης για βίντεο έξω από την ενότητα σχολίων του YouTube."
+  },
+  "changelog_new_badge": {
+    "message": "Νέο στην έκδοση 4.1"
+  },
+  "changelog_premium_badge": {
+    "message": "Premium"
+  },
+  "changelog_comments_title": {
+    "message": "Γνωρίστε τα σχόλια RYD"
+  },
+  "changelog_comments_body": {
+    "message": "Μια συζήτηση της κοινότητας κάτω από βίντεο και Shorts όπου τα σχόλια του YouTube είναι απενεργοποιημένα, που φιλοξενείται από το Return YouTube Dislike. Όλοι μπορούν να διαβάζουν και να αντιδρούν. Τα μέλη Commenter και Premium μπορούν να γράφουν σχόλια και απαντήσεις."
+  },
+  "changelog_comments_point_replies": {
+    "message": "Απαντήσεις σε νήματα με «Μου αρέσει» και «Δεν μου αρέσει»"
+  },
+  "changelog_comments_point_nickname": {
+    "message": "Γράψτε με δημόσιο ψευδώνυμο της επιλογής σας"
+  },
+  "changelog_comments_point_notifications": {
+    "message": "Ειδοποιήσεις όταν κάποιος απαντά στο σχόλιό σας ή πατά «Μου αρέσει» σε αυτό"
+  },
+  "changelog_comments_point_moderation": {
+    "message": "Αναφορές και εποπτεία για πολιτισμένες συζητήσεις"
+  },
+  "changelog_comments_shot_alt": {
+    "message": "Πίνακας σχολίων RYD με συζήτηση σε νήμα κάτω από ένα βίντεο"
+  },
+  "changelog_notifications_shot_alt": {
+    "message": "Ειδοποιήσεις RYD με απαντήσεις και «Μου αρέσει» στα σχόλιά σας"
+  },
+  "changelog_sample_note": {
+    "message": "Τα στιγμιότυπα οθόνης δείχνουν ενδεικτικά δεδομένα."
+  },
+  "changelog_analytics_title": {
+    "message": "Αναλύσεις Premium"
+  },
+  "changelog_analytics_body": {
+    "message": "Δείτε την απήχηση ενός βίντεο με την πάροδο του χρόνου και σε όλο τον κόσμο. Επιλέξτε 7, 30 ή 90 ημέρες ή όλη την περίοδο και συγκρίνετε τα «Μου αρέσει», τα «Δεν μου αρέσει» και την αναλογία τους."
+  },
+  "changelog_analytics_timeline_title": {
+    "message": "Χρονοδιάγραμμα δραστηριότητας"
+  },
+  "changelog_analytics_timeline_body": {
+    "message": "«Μου αρέσει» και «Δεν μου αρέσει» με την πάροδο του χρόνου, ανά ώρα."
+  },
+  "changelog_analytics_countries_title": {
+    "message": "Κορυφαίες χώρες"
+  },
+  "changelog_analytics_countries_body": {
+    "message": "Δείτε από ποιες χώρες ένα βίντεο λαμβάνει τα περισσότερα «Μου αρέσει» και «Δεν μου αρέσει»."
+  },
+  "changelog_analytics_world_title": {
+    "message": "Παγκόσμιος χάρτης"
+  },
+  "changelog_analytics_world_body": {
+    "message": "Συγκρίνετε τη συμμετοχή του κοινού ανά χώρα."
+  },
+  "changelog_analytics_us_title": {
+    "message": "Πολιτείες των ΗΠΑ"
+  },
+  "changelog_analytics_us_body": {
+    "message": "Δείτε αναλυτικά τη συμμετοχή του κοινού ανά πολιτεία."
+  },
+  "changelog_appeal_title": {
+    "message": "Ένα μικρό, λίγο αμήχανο αίτημα"
+  },
+  "changelog_appeal_intro": {
+    "message": "Γεια. Αυτό είναι το σημείο όπου μιλάμε για χρήματα, και ειλικρινά δεν είμαστε πολύ καλοί σε αυτό."
+  },
+  "changelog_appeal_costs": {
+    "message": "Το Return YouTube Dislike είναι ένα μικρό έργο ανοιχτού κώδικα, που φτιάχνουν ο Dmitry Selivanov και η κοινότητα. Κάθε μέρα εξυπηρετεί περίπου 20 εκατομμύρια ανθρώπους και φροντίζει πάνω από 15 TB δεδομένων. Όλα αυτά λειτουργούν με μερικές εκατοντάδες δολάρια τον μήνα — όχι πολλά για να επιστρέψει κάτι που μια εταιρεία δισεκατομμυρίων αποφάσισε να αφαιρέσει."
+  },
+  "changelog_appeal_free": {
+    "message": "Ο αριθμός των «Δεν μου αρέσει» είναι δωρεάν και θα παραμείνει δωρεάν. Αυτό είναι όλο το νόημα. Οι διακομιστές όμως δεν είναι, και ειλικρινά, το κόστος λειτουργίας δεν μας άφησε πολλές επιλογές: για να συνεχίσει να λειτουργεί το έργο, χρειάστηκε να προσθέσουμε λειτουργίες Premium — τα σχόλια RYD και τις αναλύσεις Premium. Κάθε συνδρομή βοηθά να καλυφθεί αυτό το κόστος."
+  },
+  "changelog_appeal_ask": {
+    "message": "Αν το RYD σάς έχει γλιτώσει έστω και μία φορά από ένα clickbait βίντεο ή έναν οδηγό που δεν δούλεψε, σκεφτείτε να γίνετε μέλος στο Patreon. Κι αν τώρα δεν είναι η κατάλληλη στιγμή, δεν πειράζει καθόλου. Σας ευχαριστούμε που το χρησιμοποιείτε και που ψηφίζετε: κάθε ψήφος κάνει τους αριθμούς λίγο πιο ακριβείς."
+  },
+  "changelog_appeal_cta": {
+    "message": "Γίνετε μέλος στο Patreon"
+  },
+  "changelog_appeal_signature": {
+    "message": "— Ο Dmitry και η κοινότητα του RYD"
+  },
+  "changelog_join_title": {
+    "message": "Αποκτήστε τις λειτουργίες Premium"
+  },
+  "changelog_join_step1": {
+    "message": "Γίνετε μέλος στο Patreon. Το Commenter σάς επιτρέπει να γράφετε σχόλια· το Premium προσθέτει και αναλύσεις."
+  },
+  "changelog_join_step3": {
+    "message": "Φορτώστε ξανά οποιοδήποτε βίντεο στο YouTube. Οι νέες λειτουργίες εμφανίζονται αυτόματα."
+  },
+  "changelog_also_title": {
+    "message": "Επίσης σε αυτή την έκδοση"
+  },
+  "changelog_also_counts": {
+    "message": "Οι αριθμοί των «Μου αρέσει» και «Δεν μου αρέσει» εμφανίζονται πιο αξιόπιστα στην επέκταση και στο σενάριο χρήστη."
+  },
+  "changelog_also_consent": {
+    "message": "Βελτιωμένη διαδικασία συγκατάθεσης για τη χρήση δεδομένων στον Firefox."
+  },
+  "changelog_also_translations": {
+    "message": "Νέες και βελτιωμένες μεταφράσεις."
+  },
+  "reviewPromptTitle": {
+    "message": "Σας αρέσει το RYD;"
+  },
+  "reviewPromptBody": {
+    "message": "Η Google άλλαξε τους κανόνες για τις βαθμολογίες στο Chrome Web Store. Παρά τις 16.000+ κριτικές πέντε αστέρων, λίγες πρόσφατες αρνητικές κριτικές έριξαν τη βαθμολογία του RYD από 4,6 σε 2,5.\n\nΑν το RYD σας βοηθά, αφήστε μια ειλικρινή κριτική."
+  },
+  "reviewPromptAction": {
+    "message": "Γράψτε μια κριτική"
+  },
+  "consent_page_title": {
+    "message": "Δικαιώματα λειτουργιών RYD"
+  },
+  "consent_vote_title": {
+    "message": "Κάντε τις ψήφους σας να μετρήσουν"
+  },
+  "consent_vote_body": {
+    "message": "Ο Firefox απαιτεί πλέον από κάθε επέκταση να σας ρωτά πριν κοινοποιήσει οποιαδήποτε δεδομένα. Επιτρέψτε το, ώστε το RYD να μετρά τα «Μου αρέσει», τα «Δεν μου αρέσει» και τις αντιδράσεις σας σε σχόλια. Αυτή η άδεια αφορά μόνο το YouTube, όχι άλλους ιστοτόπους."
+  },
+  "consent_account_title": {
+    "message": "Επιλογή δικαιωμάτων λογαριασμού"
+  },
+  "consent_account_body": {
+    "message": "Συνδεθείτε για λειτουργίες λογαριασμού, όπως το προφίλ, οι ειδοποιήσεις και τα αναλυτικά στοιχεία Premium."
+  },
+  "consent_next_step": {
+    "message": "Επιλέξτε «Να επιτρέπεται» στο Firefox για να ελέγξετε τα δικαιώματα. Μπορείτε να αρνηθείτε."
+  },
+  "consent_allow": {
+    "message": "Να επιτρέπεται στον Firefox"
+  },
+  "consent_not_now": {
+    "message": "Όχι τώρα"
+  },
+  "consent_prompt_status": {
+    "message": "Επιλέξτε αν θέλετε να παραχωρήσετε αυτά τα δικαιώματα στον Firefox."
+  },
+  "consent_granted_status": {
+    "message": "Τα δικαιώματα ενεργοποιήθηκαν. Μπορείτε να επιστρέψετε στο YouTube."
+  },
+  "consent_declined_status": {
+    "message": "Αυτές οι προαιρετικές λειτουργίες παραμένουν απενεργοποιημένες. Μπορείτε να αλλάξετε τα δικαιώματα αργότερα."
+  },
+  "consent_error_status": {
+    "message": "Δεν ήταν δυνατή η ενημέρωση των δικαιωμάτων. Δοκιμάστε ξανά."
+  },
+  "consent_details_summary": {
+    "message": "Τι σημαίνουν οι κατηγορίες δικαιωμάτων του Firefox;"
+  },
+  "consent_details_intro": {
+    "message": "Ο Firefox ομαδοποιεί τα δεδομένα σε ευρείες κατηγορίες. Δείτε τι σημαίνει καθεμία για το RYD:"
+  },
+  "consent_browsing_label": {
+    "message": "Δραστηριότητα περιήγησης"
+  },
+  "consent_browsing_body": {
+    "message": "Μόνο το αναγνωριστικό του βίντεο YouTube που ανοίγετε, για να φορτωθούν τα «Δεν μου αρέσει» και τα σχόλια RYD του. Ποτέ το ιστορικό περιήγησής σας ή άλλοι ιστότοποι."
+  },
+  "consent_content_label": {
+    "message": "Περιεχόμενο ιστοτόπων"
+  },
+  "consent_content_body": {
+    "message": "Ο αριθμός «Μου αρέσει» στο βίντεο YouTube, για τη βελτίωση των εκτιμήσεων «Δεν μου αρέσει»."
+  },
+  "consent_activity_label": {
+    "message": "Δραστηριότητα ιστοτόπων"
+  },
+  "consent_activity_body": {
+    "message": "Τα «Μου αρέσει», τα «Δεν μου αρέσει» και οι αντιδράσεις σας σε σχόλια RYD στο YouTube, ώστε να μετρούν. Αποστέλλονται με ένα τυχαίο αναγνωριστικό που δεν συνδέεται με τον λογαριασμό σας Google ή YouTube."
+  },
+  "consent_identity_label": {
+    "message": "Προσωπικά αναγνωρίσιμες πληροφορίες"
+  },
+  "consent_identity_body": {
+    "message": "Οι πληροφορίες προφίλ σας, όπως εμφανιζόμενο όνομα και email, μόνο όταν επιλέξετε να συνδεθείτε."
+  },
+  "consent_auth_label": {
+    "message": "Πληροφορίες ελέγχου ταυτότητας"
+  },
+  "consent_auth_body": {
+    "message": "Τα δεδομένα εξουσιοδότησης και συνεδρίας που χρειάζονται για σύνδεση και χρήση λειτουργιών λογαριασμού."
+  },
+  "consent_scope": {
+    "message": "Το RYD δεν συλλέγει τίποτα εκτός του youtube.com και δεν έχει πρόσβαση στον λογαριασμό YouTube σας. Δεν λαμβάνει όνομα ή email αν δεν συνδεθείτε."
+  },
+  "consent_settings": {
+    "message": "Μπορείτε να αλλάξετε αυτά τα δικαιώματα οποιαδήποτε στιγμή στις ρυθμίσεις προσθέτων του Firefox (about:addons)."
+  },
+  "consent_private_counts": {
+    "message": "Τα ιδιωτικά παράθυρα εμφανίζουν μόνο μετρητές, χρησιμοποιώντας το δικαίωμα που ενεργοποιήθηκε σε κανονικό παράθυρο. Η ψηφοφορία, η σύνδεση, τα αναλυτικά στοιχεία Premium και οι συζητήσεις δεν είναι διαθέσιμα εκεί."
+  },
+  "consent_voter_timing": {
+    "message": "Το αναγνωριστικό ψηφοφορίας αποστέλλεται μόνο όταν ψηφίζετε ή αντιδράτε. Οι δικές σας αντιδράσεις σε σχόλια αποθηκεύονται σε αυτή τη συσκευή."
+  },
+  "popup_signin_next_click": {
+    "message": "Χρειάζεται άλλο ένα κλικ: επιλέξτε παρακάτω το κουμπί σύνδεσης για να ελέγξετε τα δικαιώματα λογαριασμού του Firefox και να συνεχίσετε."
+  },
+  "changelog_firefox_intro_title": {
+    "message": "Οι νέοι κανόνες απορρήτου του Firefox"
+  },
+  "changelog_firefox_intro_body": {
+    "message": "Στον Firefox, το RYD χρειάζεται την άδειά σας για να εμφανίζει τα «Δεν μου αρέσει». Δείτε τι ακριβώς καλύπτει αυτή η άδεια — και τι όχι."
+  },
+  "changelog_firefox_vote_granted": {
+    "message": "Ευχαριστούμε. Οι ψήφοι σας μετράνε πλέον."
+  },
+  "vote_consent_hint": {
+    "message": "Η ψήφος σας δεν έχει μετρηθεί ακόμη. Ο Firefox απαιτεί πλέον την άδειά σας πριν το RYD μπορέσει να τη στείλει. Αυτή η άδεια αφορά μόνο το YouTube, όχι άλλους ιστοτόπους."
+  },
+  "vote_not_counted": {
+    "message": "Τα «Μου αρέσει» και «Δεν μου αρέσει» σας δεν μετρώνται και δεν εμφανίζονται στους μετρητές «Δεν μου αρέσει»."
+  },
+  "vote_count_mine": {
+    "message": "Να μετράνε οι ψήφοι μου"
+  },
+  "vote_consent_dismiss": {
+    "message": "Να μη γίνει ξανά ερώτηση"
+  },
+  "discussion_reactionConsentRequired": {
+    "message": "Ενεργοποιήστε την κοινοποίηση ψήφων για να αντιδράτε σε σχόλια. Η αντίδρασή σας θα σταλεί μόλις ενεργοποιηθεί."
+  },
+  "discussion_consentContinue": {
+    "message": "Συνέχεια"
+  },
+  "counts_consent_toolbar": {
+    "message": "Ανοίξτε το Return YouTube Dislike από το μενού επεκτάσεων του Firefox για να συνεχίσετε."
+  },
+  "counts_consent_declined": {
+    "message": "Οι μετρητές παραμένουν απενεργοποιημένοι. Μπορείτε να τους ενεργοποιήσετε εδώ αργότερα."
+  },
+  "counts_consent_enabled": {
+    "message": "Οι μετρητές «Δεν μου αρέσει» είναι ενεργοποιημένοι."
+  },
+  "counts_consent_private": {
+    "message": "Ενεργοποιήστε πρώτα τους μετρητές «Δεν μου αρέσει» σε κανονικό παράθυρο. Τα ιδιωτικά παράθυρα εμφανίζουν μόνο μετρητές."
+  },
+  "data_consent_reason": {
+    "message": "Ο Firefox απαιτεί πλέον από κάθε επέκταση να σας ρωτά πριν κοινοποιήσει οποιαδήποτε δεδομένα. Επιτρέψτε στο RYD να εμφανίζει τα «Δεν μου αρέσει» και να μετρά τις ψήφους σας. Αυτή η άδεια αφορά μόνο το YouTube, όχι άλλους ιστοτόπους."
+  },
+  "data_consent_title": {
+    "message": "Εμφανίστε τα «Δεν μου αρέσει» και κάντε τις ψήφους σας να μετρήσουν"
+  },
+  "data_consent_body": {
+    "message": "Ο Firefox απαιτεί πλέον από κάθε επέκταση να σας ρωτά πριν κοινοποιήσει οποιαδήποτε δεδομένα. Χρησιμοποιεί τις ίδιες γενικές ετικέτες για όλες τις επεκτάσεις, οπότε δείτε τι σημαίνει κάθε ετικέτα για το RYD:"
+  },
+  "data_consent_scope": {
+    "message": "Το RYD λειτουργεί μόνο στο YouTube. Αν το επιτρέψετε, δεν του δίνεται πρόσβαση σε κανέναν άλλο ιστότοπο."
   }
 }

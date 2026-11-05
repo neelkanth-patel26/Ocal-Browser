@@ -2,8 +2,9 @@
   "name": "__MSG_extensionName__",
   "description": "__MSG_extensionDesc__",
   "default_locale": "en",
-  "version": "4.0.6",
+  "version": "4.1.5",
   "manifest_version": 3,
+  "minimum_chrome_version": "116",
   "background": {
     "service_worker": "ryd.background.js"
   },
@@ -12,8 +13,7 @@
     "128": "icons/icon128.png"
   },
   "host_permissions": [
-    "*://*.youtube.com/*",
-    "*://returnyoutubedislikeapi.com/*"
+    "*://*.youtube.com/*"
   ],
   "permissions": [
     "storage"
@@ -35,7 +35,6 @@
         "*://*.music.youtube.com/*"
       ],
       "js": [
-        "chrome-compat-shim.js",
         "ryd.content-script.js"
       ],
       "css": [
@@ -52,7 +51,8 @@
     {
       "resources": [
         "ryd.script.js",
-        "menu-fixer.js"
+        "menu-fixer.js",
+        "comments-bridge.js"
       ],
       "matches": [
         "*://*.youtube.com/*"
