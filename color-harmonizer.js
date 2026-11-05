@@ -449,76 +449,106 @@
         const S = hsl.s;
         const L = hsl.l;
 
-        let mood = "Harmonious & Balanced";
+        let mood = "Balanced Harmony";
         let temp = "Neutral Tone";
-        let vibrancy = S > 70 ? "Ultra Vivid" : (S > 35 ? "Balanced Resonance" : "Muted Minimal");
+        let vibrancy = S > 70 ? "Ultra Vivid" : (S > 35 ? "Balanced" : "Subtle Tone");
         let name = "Custom Shade";
 
         if (S < 15) {
-            mood = "Minimalist Titanium Flow";
-            temp = "Obsidian Neutral";
+            mood = "Titanium Slate";
+            temp = "Neutral Slate";
             name = L > 70 ? "Platinum Light" : "Obsidian Slate";
         } else if (H >= 345 || H < 15) {
-            mood = "High-Energy & Passion Focus";
+            mood = "Crimson Energy";
             temp = "Warm Crimson";
             name = "Ruby Crimson";
         } else if (H >= 15 && H < 45) {
-            mood = "Vibrant Sunset & Alertness";
+            mood = "Solar Flame";
             temp = "Warm Coral";
             name = "Solar Tangerine";
         } else if (H >= 45 && H < 70) {
-            mood = "Radiant Solar Optimism";
+            mood = "Golden Amber";
             temp = "Warm Amber";
             name = "Volt Amber";
         } else if (H >= 70 && H < 165) {
-            mood = "Restorative Deep Focus";
-            temp = "Balanced Emerald";
+            mood = "Emerald Focus";
+            temp = "Pure Emerald";
             name = "Emerald Neon";
         } else if (H >= 165 && H < 205) {
-            mood = "Lucid Oceanic Clarity";
+            mood = "Oceanic Clarity";
             temp = "Cool Cyan";
             name = "Electric Cyan";
         } else if (H >= 205 && H < 255) {
-            mood = "Deep Cognitive Flow";
+            mood = "Sapphire Focus";
             temp = "Cool Sapphire";
             name = "Sapphire Azure";
         } else if (H >= 255 && H < 315) {
-            mood = "Creative Cyberpunk Intuition";
+            mood = "Cyber Violet";
             temp = "Cool Violet";
             name = "Cyber Orchid";
         } else {
-            mood = "Vivid Velvet Radiance";
+            mood = "Neon Magenta";
             temp = "Warm Magenta";
             name = "Neon Fuchsia";
         }
 
-        // Generate 4 AI Curated Variations based on the user's chosen custom color
-        const suggestions = [
-            {
-                title: "Analogous Glow",
-                desc: "Neighbor harmonic shift",
-                color: hslToHex((H - 25 + 360) % 360, Math.min(100, S + 8), Math.max(40, Math.min(65, L))),
-                tag: "Balanced"
-            },
-            {
-                title: "Electric Neon",
-                desc: "High-vibrancy energized pop",
-                color: hslToHex(H, 100, Math.max(48, Math.min(58, L))),
-                tag: "Vibrant"
-            },
-            {
-                title: "Complementary",
-                desc: "Dynamic contrast pairing",
-                color: hslToHex((H + 145) % 360, Math.max(75, S), Math.max(42, Math.min(62, L))),
-                tag: "Contrast"
-            },
-            {
-                title: "Soft Velvet",
-                desc: "Muted luxury tone",
-                color: hslToHex(H, Math.max(28, S - 28), Math.min(76, L + 10)),
-                tag: "Subtle"
-            }
-        ];
+        // Generate 4 AI Curated Variations with mathematically sound color harmony
+        let suggestions = [];
+        if (S < 15) {
+            suggestions = [
+                {
+                    title: "Slate Blue",
+                    desc: "Harmonic subtle tint",
+                    color: hslToHex(215, 42, Math.max(46, Math.min(62, L))),
+                    tag: "Harmonic"
+                },
+                {
+                    title: "Emerald Neon",
+                    desc: "Vibrant high-energy pop",
+                    color: hslToHex(152, 75, 48),
+                    tag: "Vibrant"
+                },
+                {
+                    title: "Amber Glow",
+                    desc: "Direct contrast pairing",
+                    color: hslToHex(38, 90, 52),
+                    tag: "Contrast"
+                },
+                {
+                    title: "Soft Pewter",
+                    desc: "Muted refined luxury",
+                    color: hslToHex(220, 14, Math.min(78, Math.max(40, L + 10))),
+                    tag: "Subtle"
+                }
+            ];
+        } else {
+            suggestions = [
+                {
+                    title: "Analogous",
+                    desc: "Harmonic neighbor shift",
+                    color: hslToHex((H + 30) % 360, Math.min(96, Math.max(62, S)), Math.max(46, Math.min(58, L))),
+                    tag: "Harmonic"
+                },
+                {
+                    title: "Triadic Pop",
+                    desc: "Vibrant balanced chord",
+                    color: hslToHex((H + 120) % 360, Math.min(96, Math.max(68, S)), Math.max(46, Math.min(56, L))),
+                    tag: "Vibrant"
+                },
+                {
+                    title: "Complement",
+                    desc: "Direct contrast pairing",
+                    color: hslToHex((H + 180) % 360, Math.min(98, Math.max(72, S)), Math.max(46, Math.min(56, L))),
+                    tag: "Contrast"
+                },
+                {
+                    title: "Soft Velvet",
+                    desc: "Muted luxury UI tone",
+                    color: hslToHex(H, Math.max(26, Math.min(44, Math.round(S * 0.45))), Math.min(72, Math.max(54, Math.round(L * 1.15)))),
+                    tag: "Subtle"
+                }
+            ];
+        }
 
         return {
             name,

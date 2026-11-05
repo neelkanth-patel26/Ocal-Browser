@@ -3554,11 +3554,11 @@ function renderHomepageSettings(s) {
         const grid = document.getElementById('ccp-ai-suggestions-grid');
 
         if (badge) badge.innerText = info.mood;
-        if (subInfo) subInfo.innerHTML = `${info.temp} &bull; ${info.vibrancy} &bull; 98% Readability`;
+        if (subInfo) subInfo.innerHTML = `${info.temp} &bull; ${info.vibrancy} &bull; High Contrast UI`;
 
         if (grid && Array.isArray(info.suggestions)) {
             grid.innerHTML = info.suggestions.map(s => `
-                <div class="ccp-ai-chip" data-color="${s.color}" style="--chip-c: ${s.color};" title="Apply ${s.title}">
+                <div class="ccp-ai-chip" data-color="${s.color}" style="--chip-c: ${s.color};" title="Apply ${s.title} (${s.color})">
                     <span class="ccp-aic-dot" style="background: ${s.color};"></span>
                     <div class="ccp-aic-text">
                         <span class="ccp-aic-title">${s.title}</span>
