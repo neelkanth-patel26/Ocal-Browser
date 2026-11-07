@@ -10414,5 +10414,5161 @@ ipcMain.handle('check-for-update', async () => {
                                 const latest = (json.tag_name || '').replace(/^[vV]/, '');
                                 const current = app.getVersion();
                                 const isUpdate = isNewerVersion(latest, current);
-            
-... [truncated for diff preview]
+                                const payload = {
+                                    version: latest,
+                                    notes: json.body || '',
+                                    url: json.html_url || '',
+                                    currentVersion: current,
+                                    isUpdateAvailable: isUpdate
+                                };
+                                if (isUpdate) {
+                                    broadcastUpdateAvailable(payload);
+                                }
+                                resolve(payload);
+                            } catch (e) {
+                                resolve(null);
+                            }
+                        } else {
+                            resolve(null);
+                        }
+                    }
+                });
+            });
+            request.on('error', () => {
+                if (!resolved) {
+                    resolved = true;
+                    clearTimeout(timeout);
+                    resolve(null);
+                }
+            });
+            request.end();
+        } catch (e) {
+            if (!resolved) {
+                resolved = true;
+                clearTimeout(timeout);
+                resolve(null);
+            }
+        }
+    });
+});
+ipcMain.handle('download-update', async (event) => {
+    const broadcastProgress = (data) => {
+        try {
+            if (event && event.sender && !event.sender.isDestroyed()) {
+                event.sender.send('update-download-progress', data);
+            }
+            if (mainWindow && !mainWindow.isDestroyed()) {
+                mainWindow.webContents.send('update-download-progress', data);
+            }
+            if (Array.isArray(views)) {
+                views.forEach(v => {
+                    if (v.view && !v.view.webContents.isDestroyed()) {
+                        v.view.webContents.send('update-download-progress', data);
+                    }
+                    if (v.view2 && !v.view2.webContents.isDestroyed()) {
+                        v.view2.webContents.send('update-download-progress', data);
+                    }
+                });
+            }
+        } catch (e) { }
+    };
+
+    const downloadWithRetry = async (url, dest, knownSize = 0, retries = 3) => {
+        const { net } = require('electron');
+        return new Promise((resolve, reject) => {
+            const attempt = (remaining) => {
+                const request = net.request({
+                    method: 'GET',
+                    url: url,
+                    redirect: 'follow'
+                });
+                request.setHeader('User-Agent', 'Ocal-Browser');
+                request.on('response', (response) => {
+                    if (response.statusCode !== 200) {
+                        if (remaining > 0) return setTimeout(() => attempt(remaining - 1), 2000);
+                        return reject(new Error(`Download failed with status ${response.statusCode}`));
+                    }
+
+                    const rawLen = response.headers['content-length'] || (Array.isArray(response.headers['content-length']) ? response.headers['content-length'][0] : null);
+                    let totalBytes = parseInt(rawLen, 10);
+                    if (isNaN(totalBytes) || totalBytes <= 0) {
+                        totalBytes = knownSize || 0;
+                    }
+
+                    let receivedBytes = 0;
+                    let lastBroadcastTime = 0;
+                    const fileStream = fs.createWriteStream(dest);
+
+                    response.on('data', (chunk) => {
+                        receivedBytes += chunk.length;
+                        fileStream.write(chunk);
+
+                        const now = Date.now();
+                        if (now - lastBroadcastTime > 80 || (totalBytes > 0 && receivedBytes >= totalBytes)) {
+                            lastBroadcastTime = now;
+                            let progress = 0;
+                            if (totalBytes > 0) {
+                                progress = Math.min(100, Math.round((receivedBytes / totalBytes) * 100));
+                            } else {
+                                progress = Math.min(95, Math.round((receivedBytes / (50 * 1024 * 1024)) * 100));
+                            }
+
+                            broadcastProgress({
+                                percent: progress,
+                                loaded: (receivedBytes / (1024 * 1024)).toFixed(1),
+                                total: totalBytes > 0 ? (totalBytes / (1024 * 1024)).toFixed(1) : '?'
+                            });
+                        }
+                    });
+
+                    response.on('end', () => {
+                        fileStream.end();
+                        broadcastProgress({
+                            percent: 100,
+                            loaded: (receivedBytes / (1024 * 1024)).toFixed(1),
+                            total: (receivedBytes / (1024 * 1024)).toFixed(1)
+                        });
+                        resolve(dest);
+                    });
+                });
+                request.on('error', (err) => {
+                    if (remaining > 0) return setTimeout(() => attempt(remaining - 1), 2000);
+                    reject(err);
+                });
+                request.end();
+            };
+            attempt(retries);
+        });
+    };
+
+    try {
+        return new Promise((resolve, reject) => {
+            const { net } = require('electron');
+            const request = net.request({
+                method: 'GET',
+                url: 'https://api.github.com/repos/neelkanth-patel26/Ocal-Browser/releases/latest',
+                redirect: 'follow'
+            });
+            request.setHeader('User-Agent', 'Ocal-Browser');
+            request.on('response', (response) => {
+                let data = '';
+                response.on('data', (chunk) => data += chunk.toString());
+                response.on('end', async () => {
+                    if (response.statusCode === 200) {
+                        try {
+                            const json = JSON.parse(data);
+                            const arch = process.arch === 'x64' ? 'x64' : (process.arch === 'arm64' ? 'arm64' : '');
+                            let asset = json.assets.find(a =>
+                                a.name.startsWith('Ocal-') &&
+                                a.name.endsWith('Setup.exe') &&
+                                (arch ? a.name.includes(arch) : true)
+                            );
+                            if (!asset) asset = json.assets.find(a => a.name.startsWith('Ocal-') && a.name.endsWith('Setup.exe'));
+                            if (!asset) asset = json.assets.find(a => a.name.endsWith('.exe') && a.name.includes('Setup'));
+                            if (!asset) return reject(new Error('No compatible installer found.'));
+
+                            const tempPath = path.join(app.getPath('temp'), asset.name);
+                            resolve(await downloadWithRetry(asset.browser_download_url, tempPath, asset.size || 0));
+                        } catch (e) { reject(e); }
+                    } else { reject(new Error(`API Status ${response.statusCode}`)); }
+                });
+            });
+            request.on('error', reject);
+            request.end();
+        });
+    } catch (e) {
+        throw e;
+    }
+});
+
+ipcMain.on('apply-update', (event, installerPath) => {
+    const { spawn } = require('child_process');
+    // Run Inno Setup in silent mode
+    const child = spawn(installerPath, ['/SILENT', '/SUPPRESSMSGBOXES', '/NORESTART'], {
+        detached: true,
+        stdio: 'ignore'
+    });
+    child.unref();
+    app.quit();
+});
+
+// Bookmark IPCs
+ipcMain.handle('get-bookmarks', () => ({ bookmarks: userSettings.bookmarks, folders: userSettings.folders }));
+ipcMain.handle('get-history', () => userSettings.history || []);
+ipcMain.on('toggle-bookmark', (e, bm) => {
+    const exists = userSettings.bookmarks.find(b => b.url === bm.url);
+    if (exists) {
+        userSettings.bookmarks = userSettings.bookmarks.filter(b => b.url !== bm.url);
+    } else {
+        bm.id = Date.now().toString();
+        userSettings.bookmarks.push(bm);
+    }
+    saveSettings(userSettings);
+    broadcastBookmarks();
+});
+ipcMain.on('add-bookmark', (e, bm) => { bm.id = Date.now().toString(); userSettings.bookmarks.push(bm); saveSettings(userSettings); broadcastBookmarks(); });
+ipcMain.on('remove-bookmark', (e, url) => { userSettings.bookmarks = userSettings.bookmarks.filter(b => b.url !== url); saveSettings(userSettings); broadcastBookmarks(); });
+ipcMain.on('edit-bookmark', (e, data) => {
+    const b = userSettings.bookmarks.find(x => x.id === data.id);
+    if (b) {
+        if (data.title !== undefined) b.title = data.title;
+        if (data.url !== undefined) b.url = data.url;
+        if ('folderId' in data) b.folderId = data.folderId || undefined;
+    }
+    saveSettings(userSettings);
+    broadcastBookmarks();
+});
+ipcMain.on('reorder-bookmark', (e, { draggedId, targetId }) => {
+    const bks = userSettings.bookmarks;
+    const draggedIdx = bks.findIndex(b => b.id === draggedId);
+    const targetIdx = bks.findIndex(b => b.id === targetId);
+    if (draggedIdx > -1 && targetIdx > -1) {
+        const [dragged] = bks.splice(draggedIdx, 1);
+        bks.splice(targetIdx, 0, dragged);
+        saveSettings(userSettings);
+        broadcastBookmarks();
+    }
+});
+
+ipcMain.on('show-shield-popup', (e, { x, y, width, height, tabId }) => {
+    if (!mainWindow) return;
+    if (!shieldPopupView) createShieldPopupView();
+
+    if (mainWindow.getBrowserViews().includes(shieldPopupView)) {
+        mainWindow.removeBrowserView(shieldPopupView);
+        return;
+    }
+
+    const viewItem = tabId ? views.find(v => v.id === tabId) : null;
+    const wc = viewItem ? viewItem.view.webContents : null;
+    const isYouTube = wc ? wc.getURL().includes('youtube.com') : false;
+
+    hidePopups();
+    mainWindow.addBrowserView(shieldPopupView);
+
+    const zoom = getOptimalZoomFactor();
+    const popupWidth = Math.round(284 * zoom);
+    const popupHeight = Math.round(425 * zoom);
+    const contentBounds = mainWindow.getContentBounds();
+    const winOffset = getWinOffset();
+
+    // Anchor directly beneath the omnibox shield pill (#shield-status)
+    let targetX = Math.round(x + winOffset - 6);
+    if (targetX + popupWidth + 16 > contentBounds.width - 10) {
+        targetX = contentBounds.width - (popupWidth + 16) - 10;
+    }
+    if (targetX < 10) targetX = 10;
+
+    shieldPopupView.setBounds({
+        x: targetX,
+        y: Math.round(y + height + 6 + winOffset),
+        width: Math.round(popupWidth) + 16,
+        height: Math.round(popupHeight) + 16
+    });
+
+    mainWindow.setTopBrowserView(shieldPopupView);
+    shieldPopupShowTime = Date.now();
+
+    const sendData = () => {
+        if (!shieldPopupView || shieldPopupView.webContents.isDestroyed()) return;
+        shieldPopupView.webContents.send('show-popup', { x: 0, y: 0, tabId, isYouTube });
+        try { shieldPopupView.webContents.focus(); } catch (err) { }
+    };
+
+    if (shieldPopupView.webContents.isLoading()) {
+        shieldPopupView.webContents.once('did-finish-load', sendData);
+    } else {
+        sendData();
+    }
+});
+
+ipcMain.on('show-passwords-popover', (e, { x, y, width, height }) => {
+    if (!mainWindow) return;
+    if (!passwordsPopupView) createPasswordsPopupView();
+
+    if (mainWindow.getBrowserViews().includes(passwordsPopupView)) {
+        mainWindow.removeBrowserView(passwordsPopupView);
+        return;
+    }
+
+    hidePopups();
+    mainWindow.addBrowserView(passwordsPopupView);
+
+    const zoom = getOptimalZoomFactor();
+    const popupWidth = Math.round(290 * zoom);
+    const popupHeight = Math.round(340 * zoom);
+    const contentBounds = mainWindow.getContentBounds();
+
+    let targetX = x + (width / 2) - (popupWidth / 2);
+    if (targetX < 10) targetX = 10;
+    if (targetX + popupWidth > contentBounds.width - 10) targetX = contentBounds.width - popupWidth - 10;
+
+    const winOffset = getWinOffset();
+    passwordsPopupView.setBounds({
+        x: Math.round(targetX + winOffset),
+        y: Math.round(y + height + 6 + winOffset),
+        width: Math.round(popupWidth),
+        height: Math.round(popupHeight)
+    });
+
+    mainWindow.setTopBrowserView(passwordsPopupView);
+    passwordsPopupView.webContents.send('show-passwords-popover', {
+        theme: userSettings.themeMode || 'dark'
+    });
+    passwordsPopupView.webContents.focus();
+});
+
+ipcMain.on('hide-passwords-popover', () => {
+    if (passwordsPopupView && mainWindow && mainWindow.getBrowserViews().includes(passwordsPopupView)) {
+        mainWindow.removeBrowserView(passwordsPopupView);
+    }
+});
+
+ipcMain.on('show-bm-dropdown', (e, { x, y, bookmarks, folderId }) => {
+    if (!bmDropdownView) createBMDropdownView();
+    if (!bmDropdownView || !mainWindow || mainWindow.isDestroyed()) return;
+
+    // Toggle logic: if clicking the same folder, just hide it
+    if (activeBMFolderId === folderId) {
+        activeBMFolderId = null;
+        hidePopups();
+        return;
+    }
+
+    hidePopups();
+    activeBMFolderId = folderId;
+    if (!mainWindow.getBrowserViews().includes(bmDropdownView)) {
+        mainWindow.addBrowserView(bmDropdownView);
+    }
+
+    const zoom = getOptimalZoomFactor();
+    const winOffset = getWinOffset();
+    // Initial safe size, will be refined by dropdown-resize IPC
+    bmDropdownView.setBounds({
+        x: Math.max(10, Math.round(x + winOffset) - 10),
+        y: Math.round(y + winOffset) + 4,
+        width: Math.round(300 * zoom),
+        height: Math.round(360 * zoom)
+    });
+    bmDropdownView.webContents.send('show-bm-dropdown', { bookmarks });
+    mainWindow.setTopBrowserView(bmDropdownView);
+});
+
+ipcMain.on('resize-bm-dropdown', (e, { width, height }) => {
+    if (!bmDropdownView || !mainWindow || bmDropdownView.webContents.isDestroyed()) return;
+    if (!mainWindow.getBrowserViews().includes(bmDropdownView)) return;
+    const bounds = bmDropdownView.getBounds();
+    const zoom = getOptimalZoomFactor();
+    bmDropdownView.setBounds({
+        x: bounds.x,
+        y: bounds.y,
+        width: Math.round(width * zoom) + 30,
+        height: Math.round(height * zoom) + 30
+    });
+});
+
+ipcMain.on('hide-bm-dropdown', () => {
+    hidePopups();
+});
+
+ipcMain.on('add-folder', (e, f) => { f.id = Date.now().toString(); userSettings.folders.push(f); saveSettings(userSettings); broadcastBookmarks(); });
+ipcMain.on('remove-folder', (e, id) => { userSettings.folders = userSettings.folders.filter(f => f.id !== id); userSettings.bookmarks.forEach(b => { if (b.folderId === id) delete b.folderId; }); saveSettings(userSettings); broadcastBookmarks(); });
+ipcMain.on('edit-folder', (e, data) => { const f = userSettings.folders.find(x => x.id === data.id); if (f) Object.assign(f, data); saveSettings(userSettings); broadcastBookmarks(); });
+
+ipcMain.handle('ai-classify-bookmarks', async () => {
+    const bms = userSettings.bookmarks || [];
+    if (bms.length === 0) {
+        return { success: false, error: 'No bookmarks to classify.' };
+    }
+
+    const categories = [
+        { id: 'folder_ai', name: 'AI', icon: 'fas fa-wand-magic-sparkles' },
+        { id: 'folder_research', name: 'Research', icon: 'fas fa-graduation-cap' },
+        { id: 'folder_productivity', name: 'Productivity', icon: 'fas fa-briefcase' },
+        { id: 'folder_games', name: 'Games', icon: 'fas fa-gamepad' },
+        { id: 'folder_dev', name: 'Dev', icon: 'fas fa-code' },
+        { id: 'folder_media', name: 'Media', icon: 'fas fa-tv' },
+        { id: 'folder_social', name: 'Social', icon: 'fas fa-comments' },
+        { id: 'folder_shopping', name: 'Shopping', icon: 'fas fa-cart-shopping' },
+        { id: 'folder_news', name: 'News', icon: 'fas fa-newspaper' }
+    ];
+
+    let llmResult = '';
+    const activeEngine = userSettings.aiEngine || 'local';
+    let hasApiKey = false;
+    if (activeEngine === 'gemini' && userSettings.aiApiKey) hasApiKey = true;
+    if (activeEngine === 'openai' && userSettings.openaiApiKey) hasApiKey = true;
+
+    if (hasApiKey) {
+        const prompt = `You are an AI bookmark manager. Group these bookmarks into folders.
+The folders can be any of these predefined categories or custom ones:
+"AI" (icon: "fas fa-wand-magic-sparkles"),
+"Research" (icon: "fas fa-graduation-cap"),
+"Productivity" (icon: "fas fa-briefcase"),
+"Games" (icon: "fas fa-gamepad"),
+"Dev" (icon: "fas fa-code"),
+"Media" (icon: "fas fa-tv"),
+"Social" (icon: "fas fa-comments"),
+"Shopping" (icon: "fas fa-cart-shopping"),
+"News" (icon: "fas fa-newspaper").
+
+Here are the bookmarks to classify:
+${bms.map(b => `- ID: "${b.id}", Title: "${b.title}", URL: "${b.url}"`).join('\n')}
+
+Output JSON format strictly:
+{
+  "folders": [
+     { "id": "predefined_or_new_id", "name": "Folder Name", "icon": "font-awesome-icon-class-like-fas-fa-code" }
+  ],
+  "mappings": [
+     { "bookmarkId": "bookmark_id", "folderId": "folder_id" }
+  ]
+}
+Return ONLY valid raw JSON without any markdown formatting wrappers or explanations.`;
+
+        try {
+            if (activeEngine === 'gemini') {
+                llmResult = await tryGemini(prompt, userSettings.aiApiKey, 'formal');
+            } else if (activeEngine === 'openai') {
+                llmResult = await tryOpenAI(prompt, 'formal');
+            }
+        } catch (e) {
+            console.error('[AI Classify LLM Error]', e);
+        }
+    }
+
+    let classification = null;
+    if (llmResult) {
+        try {
+            let cleanJson = llmResult.trim();
+            if (cleanJson.startsWith('```json')) {
+                cleanJson = cleanJson.substring(7);
+            }
+            if (cleanJson.startsWith('```')) {
+                cleanJson = cleanJson.substring(3);
+            }
+            if (cleanJson.endsWith('```')) {
+                cleanJson = cleanJson.substring(0, cleanJson.length - 3);
+            }
+            classification = JSON.parse(cleanJson.trim());
+        } catch (e) {
+            console.error('[AI Classify JSON Parse Error]', e, llmResult);
+        }
+    }
+
+    if (!classification || !classification.mappings || classification.mappings.length === 0) {
+        const mappings = [];
+        const keywordMap = [
+            { id: 'folder_ai', keywords: ['ai', 'gpt', 'llm', 'claude', 'gemini', 'openai', 'midjourney', 'stable diffusion', 'copilot', 'neural', 'huggingface'] },
+            { id: 'folder_research', keywords: ['scholar', 'research', 'wiki', 'science', 'nature', 'arxiv', 'pubmed', 'journal', 'nasa', 'academic', 'thesis'] },
+            { id: 'folder_productivity', keywords: ['figma', 'notion', 'docs', 'sheet', 'drive', 'trello', 'asana', 'slack', 'zoom', 'meet', 'calendar', 'office', 'teams', 'canva', 'clickup', 'jira'] },
+            { id: 'folder_games', keywords: ['game', 'steam', 'roblox', 'epicgames', 'nintendo', 'twitch', 'discord', 'minecraft', 'playstation', 'xbox', 'arcade', 'chess', 'ign'] },
+            { id: 'folder_dev', keywords: ['github', 'gitlab', 'npm', 'stackoverflow', 'codepen', 'jsfiddle', 'mdn', 'w3schools', 'typescript', 'python', 'vercel', 'netlify', 'aws', 'docker', 'api', 'console'] },
+            { id: 'folder_media', keywords: ['youtube', 'netflix', 'spotify', 'twitch', 'disney', 'anime', 'music', 'soundcloud', 'video', 'movie', 'tv', 'hulu', 'hbo'] },
+            { id: 'folder_social', keywords: ['facebook', 'instagram', 'twitter', 'linkedin', 'reddit', 'whatsapp', 'telegram', 'messenger', 'pinterest', 'tiktok'] },
+            { id: 'folder_shopping', keywords: ['amazon', 'ebay', 'aliexpress', 'shopify', 'etsy', 'store', 'shop', 'walmart', 'target'] },
+            { id: 'folder_news', keywords: ['news', 'bbc', 'cnn', 'nytimes', 'reuters', 'guardian', 'bloomberg', 'medium', 'blog'] }
+        ];
+
+        bms.forEach(b => {
+            const titleLower = b.title.toLowerCase();
+            const urlLower = b.url.toLowerCase();
+            let matchedFolderId = null;
+            for (const map of keywordMap) {
+                if (map.keywords.some(kw => titleLower.includes(kw) || urlLower.includes(kw))) {
+                    matchedFolderId = map.id;
+                    break;
+                }
+            }
+            if (matchedFolderId) {
+                mappings.push({ bookmarkId: b.id, folderId: matchedFolderId });
+            }
+        });
+
+        classification = {
+            folders: categories,
+            mappings
+        };
+    }
+
+    if (!userSettings.folders) userSettings.folders = [];
+
+    const folderIdMap = {};
+    classification.folders.forEach(cf => {
+        let existingFolder = userSettings.folders.find(f => f.name.toLowerCase() === cf.name.toLowerCase());
+        if (!existingFolder) {
+            const newId = Date.now().toString() + Math.random().toString(36).substring(2, 5);
+            existingFolder = {
+                id: newId,
+                name: cf.name,
+                icon: cf.icon || 'fas fa-folder'
+            };
+            userSettings.folders.push(existingFolder);
+        }
+        folderIdMap[cf.id] = existingFolder.id;
+    });
+
+    let count = 0;
+    classification.mappings.forEach(m => {
+        const b = userSettings.bookmarks.find(x => x.id === m.bookmarkId);
+        if (b) {
+            const realFolderId = folderIdMap[m.folderId] || m.folderId;
+            if (userSettings.folders.some(f => f.id === realFolderId)) {
+                b.folderId = realFolderId;
+                count++;
+            }
+        }
+    });
+
+    saveSettings(userSettings);
+    broadcastBookmarks();
+
+    return { success: true, count };
+});
+
+function broadcastBookmarks() {
+    const data = { bookmarks: userSettings.bookmarks, folders: userSettings.folders };
+    mainWindow.webContents.send('bookmarks-changed', data);
+    if (sidebarOverlayView) sidebarOverlayView.webContents.send('bookmarks-changed', data);
+}
+
+// Extension Dropdown Logic
+function createExtensionDropdownView() {
+    extensionDropdownView = new BrowserView({
+        webPreferences: { preload: path.join(__dirname, 'preload.js'), contextIsolation: true, nodeIntegration: false, devTools: false, sandbox: true }
+    });
+    extensionDropdownView.webContents.loadFile('extensions-popup.html');
+    extensionDropdownView.setBackgroundColor('#00000000');
+}
+
+ipcMain.on('show-extensions-dropdown', (e, { x, y, width }) => {
+    if (!mainWindow) return;
+    if (!extensionDropdownView) createExtensionDropdownView();
+
+    if (mainWindow.getBrowserViews().includes(extensionDropdownView)) {
+        mainWindow.removeBrowserView(extensionDropdownView);
+        return;
+    }
+
+    hidePopups();
+    mainWindow.addBrowserView(extensionDropdownView);
+    // Align to the right of the button
+    const zoom = getOptimalZoomFactor();
+    const popupWidth = Math.round(320 * zoom);
+    const winOffset = getWinOffset();
+    const winBounds = mainWindow.getContentBounds ? mainWindow.getContentBounds() : mainWindow.getBounds();
+    let targetX = x + width - popupWidth;
+    if (winBounds && winBounds.width) {
+        targetX = Math.max(10, Math.min(targetX, winBounds.width - popupWidth - 20));
+    }
+
+    extensionDropdownView.setBounds({
+        x: Math.round(targetX + winOffset) - 15,
+        y: Math.round(y + 10 + winOffset),
+        width: popupWidth + 30,
+        height: Math.round(480 * zoom)
+    });
+    mainWindow.setTopBrowserView(extensionDropdownView);
+    extensionDropdownView.webContents.send('refresh-extensions');
+});
+
+ipcMain.on('hide-extensions-dropdown', () => {
+    if (extensionDropdownView && mainWindow.getBrowserViews().includes(extensionDropdownView)) {
+        mainWindow.removeBrowserView(extensionDropdownView);
+    }
+});
+
+ipcMain.on('open-extensions-page', () => {
+    hidePopups();
+    createNewTab('ocal://settings#extensions');
+});
+
+ipcMain.on('action-extension', (e, id) => {
+    hidePopups();
+    // Native extensions can handle local toggles internally or via specific IPCs.
+});
+
+ipcMain.on('toggle-adblock', (e, enabled) => {
+    userSettings.adBlockEnabled = enabled;
+    saveSettings(userSettings);
+
+    // uBlock native loading handles session injection via ExtensionManager dynamically
+    // The legacy ad blocker was removed.
+
+    broadcastSettings(userSettings);
+});
+
+// History Management
+ipcMain.on('delete-history-item', (e, timestamp) => {
+    userSettings.history = userSettings.history.filter(h => h.timestamp !== timestamp);
+    saveSettings(userSettings);
+    broadcastHistory();
+});
+
+ipcMain.on('clear-history', () => {
+    userSettings.history = [];
+    saveSettings(userSettings);
+    broadcastHistory();
+});
+
+function updateHistory(view, url) {
+    const id = views.find(v => v.view.webContents === view.webContents)?.id;
+    if (!id) return;
+
+    if (url.includes('home.html')) {
+        mainWindow.webContents.send('url-updated', { id, url: '', title: 'Ocal Home' });
+    } else {
+        const title = view.webContents.getTitle();
+        mainWindow.webContents.send('url-updated', { id, url: formatDisplayUrl(url), title });
+
+        // Find existing tab favicon to save with history
+        const entry = views.find(v => v.id === id);
+        const favicon = entry?.favicon || '';
+
+        // Check if it is an internal browser page and skip history storage
+        const isInternalPage = url.startsWith('ocal://') ||
+            (url.startsWith('file://') && url.endsWith('.html')) ||
+            [
+                'settings.html', 'site-settings.html', 'downloads.html', 'extensions.html',
+                'game.html', 'games.html', 'home.html', 'offline.html',
+                'pip.html', 'sidebars.html', 'sidepanel.html', 'suggestions.html',
+                'tab-context.html', 'tabgroup.html', 'shield-popup.html', 'site-info.html',
+                'media-popup.html', 'ai-sidebar.html', 'certificate-viewer.html',
+                'bm-dropdown.html', 'file-manager.html', 'music-player.html', 'snake.html', 'tetris.html', 'page-context.html',
+                'focus.html', 'private-home.html', 'private-window.html', '2048.html', 'pong.html', 'breakout.html', 'hexgl'
+            ].some(page => url.toLowerCase().includes(page.toLowerCase()));
+
+        if (!isInternalPage) {
+            // Don't add if the URL is the same as the last item (avoid duplicates from in-page nav)
+            if (userSettings.history.length > 0 && userSettings.history[0].url === url) return;
+
+            const historyItem = { title: title || url, url, timestamp: Date.now(), favicon };
+            if (!Array.isArray(userSettings.history)) userSettings.history = [];
+            userSettings.history = [historyItem, ...userSettings.history].slice(0, 100);
+            saveSettings(userSettings);
+            broadcastHistory();
+        }
+    }
+}
+
+function broadcastHistory() {
+    broadcastSettings(userSettings);
+}
+
+ipcMain.on('open-download', (e, filePath) => {
+    if (!filePath) return;
+    shell.openPath(filePath);
+});
+
+ipcMain.on('show-item-in-folder', (e, filePath) => {
+    if (!filePath) return;
+    shell.showItemInFolder(filePath);
+});
+
+ipcMain.on('remove-download-item', (e, id) => {
+    const index = downloads.findIndex(dl => dl.id === id);
+    if (index !== -1) {
+        downloads.splice(index, 1);
+        saveDownloadsToSettings();
+        broadcastToSidebars('download-updated', downloads);
+    }
+});
+
+function setupGoogleLoginPartition() {
+    const googleSession = session.fromPartition('persist:google_login');
+    const googleUA = OCAL_USER_AGENT;
+    googleSession.setUserAgent(googleUA);
+}
+
+app.whenReady().then(async () => {
+    // 0. Initialize theme mode and search engine cookie preferences globally
+    applyThemeModeGlobally(userSettings.themeMode || 'dark');
+
+
+    // 1. Core Extension Loading (Highest Priority)
+    await extensionManager.loadAll();
+
+    // 2. Register ocal:// protocol
+    if (protocol.handle) {
+        protocol.handle('ocal', (request) => {
+            const url = request.url;
+            try {
+                const parsed = new URL(url);
+                if (parsed.hostname === 'arcade' || parsed.hostname === 'hexgl') {
+                    const asset = require('./arcade-protocol.cjs').resolveArcadeAsset(url, __dirname);
+                    if (asset) {
+                        return net.fetch(asset).catch(() => new Response('Not found', { status: 404 }));
+                    }
+                }
+            } catch (e) { }
+            const resolved = resolveInternalURL(url);
+            if (resolved.startsWith('file://')) {
+                return require('electron').net.fetch(resolved);
+            }
+            return new Response('Protocol mismatch', { status: 404 });
+        });
+    }
+
+    setupGoogleLoginPartition();
+
+    // 3. Register Ocal Browser in Windows Registry as a recognized system web browser
+    registerWindowsDefaultBrowserRegistry();
+
+    createMainWindow();
+
+    // Initialize Ocal Connect Sync Server for cross-device mobile integration
+    try {
+        initOcalSyncServer();
+    } catch (e) {
+        console.error('[OcalSync] Failed to initialize sync server:', e);
+    }
+
+    // Update zoom factor when screen resolution or DPI metrics change (safe since app is ready)
+    screen.on('display-metrics-changed', () => {
+        updateAllUiZoomFactors();
+        updateViewBounds();
+    });
+});
+app.on('window-all-closed', () => { if (process.platform !== 'darwin') app.quit(); });
+app.on('activate', () => {
+    if (BrowserWindow.getAllWindows().length === 0) createMainWindow();
+    // Initialize Ocal Connect Sync Server for cross-device mobile integration
+    try {
+        initOcalSyncServer();
+    } catch (e) {
+        console.error('[OcalSync] Failed to initialize sync server:', e);
+    }
+});
+
+// Screenshot & Thumbnail IPCs
+ipcMain.on('capture-thumbnail', async (e) => {
+    const activeView = views.find(v => v.id === activeViewId)?.view;
+    if (!activeView) return;
+    const image = await activeView.webContents.capturePage();
+    e.sender.send('thumbnail-captured', image.toDataURL());
+});
+
+ipcMain.on('capture-screenshot', async (e, type) => {
+    const activeView = views.find(v => v.id === activeViewId)?.view;
+    if (!activeView) return;
+
+    let image;
+    let filters = [{ name: 'Images', extensions: ['png', 'jpg'] }];
+
+    if (type === 'visible') {
+        image = await activeView.webContents.capturePage();
+    } else if (type === 'full') {
+        const size = await activeView.webContents.executeJavaScript(`({w: document.documentElement.scrollWidth, h: document.documentElement.scrollHeight})`);
+        // Note: resizing for a clean full-page capture
+        const originalBounds = activeView.getBounds();
+        activeView.setBounds({ x: originalBounds.x, y: originalBounds.y, width: size.w, height: size.h });
+        image = await activeView.webContents.capturePage();
+        activeView.setBounds(originalBounds);
+    } else if (type === 'pdf') {
+        const data = await activeView.webContents.printToPDF({});
+        const { filePath } = await dialog.showSaveDialog(mainWindow, {
+            title: 'Save Page as PDF',
+            defaultPath: path.join(app.getPath('downloads'), `Screenshot_${Date.now()}.pdf`),
+            filters: [{ name: 'PDF', extensions: ['pdf'] }]
+        });
+        if (filePath) {
+            const fs = require('fs');
+            fs.writeFileSync(filePath, data);
+            e.sender.send('screenshot-saved', filePath);
+        }
+        return;
+    }
+
+    if (image) {
+        const { filePath } = await dialog.showSaveDialog(mainWindow, {
+            title: 'Save Screenshot',
+            defaultPath: path.join(app.getPath('downloads'), `Screenshot_${Date.now()}.png`),
+            filters
+        });
+        if (filePath) {
+            const fs = require('fs');
+            try {
+                fs.writeFileSync(filePath, image.toPNG());
+                mainWindow.webContents.send('screenshot-saved', filePath);
+            } catch (err) {
+                console.error("Failed to save screenshot", err);
+            }
+        }
+    }
+});
+
+// Deduplicated search utility functions removed here
+ipcMain.on('suggest-search', async (e, query) => {
+    if (!query) { hideSuggestions(); return; }
+    try {
+        let suggestions = [];
+        let refinements = [];
+        let bestMatch = null;
+
+        // 1. Online Suggestions & Refinements
+        if (userSettings.searchSuggest !== false) {
+            try {
+                const response = await fetch(`https://suggestqueries.google.com/complete/search?client=chrome&q=${encodeURIComponent(query)}`);
+                const data = await response.json();
+
+                // data[1] contains suggestions
+                if (data[1]) {
+                    suggestions = data[1].map(s => ({ text: s, type: 'search' }));
+                }
+
+                // data[3] or metadata can contain refinements
+                if (data[4] && data[4]['google:suggesttype']) {
+                    // Extract potential refinements (this is a heuristic for 'chrome' client)
+                    refinements = data[1]
+                        .filter((_, i) => data[4]['google:suggesttype'][i] === 'NAVIGATION')
+                        .slice(0, 5);
+                }
+            } catch (err) { console.error('Online suggest fetch failed'); }
+        }
+
+        // 2. History & Bookmark Integration (Smart Ranking)
+        const history = Array.isArray(userSettings.history) ? userSettings.history : [];
+        const bookmarks = Array.isArray(userSettings.bookmarks) ? userSettings.bookmarks : [];
+        const combinedSaved = [...history, ...bookmarks];
+
+        const savedMatches = combinedSaved
+            .filter(h => (h.title && h.title.toLowerCase().includes(query.toLowerCase())) || (h.url && h.url.toLowerCase().includes(query.toLowerCase())))
+            .map(h => ({
+                text: h.title || h.url,
+                url: h.url,
+                type: bookmarks.some(b => b.url === h.url) ? 'bookmark' : 'history'
+            }));
+
+        // Identify Best Match (pins exact start matches)
+        const exactMatch = savedMatches.find(m =>
+            m.text.toLowerCase().startsWith(query.toLowerCase()) ||
+            (m.url && m.url.toLowerCase().startsWith(query.toLowerCase().replace(/^https?:\/\/(www\.)?/, '')))
+        );
+
+        if (exactMatch) {
+            bestMatch = exactMatch;
+            // Remove from main list to avoid duplication
+            const idx = savedMatches.indexOf(exactMatch);
+            if (idx > -1) savedMatches.splice(idx, 1);
+        }
+
+        // Combine and limit
+        const finalSuggestions = [...savedMatches.slice(0, 3), ...suggestions].slice(0, 8);
+
+        if (finalSuggestions.length > 0 || bestMatch || refinements.length > 0) {
+            if (suggestionsView) {
+                suggestionsView.webContents.send('update-suggestions', {
+                    bestMatch,
+                    suggestions: finalSuggestions,
+                    refinements: refinements.length > 0 ? refinements : []
+                });
+            }
+        } else {
+            hideSuggestions();
+        }
+    } catch (err) { /* Silent fail */ }
+});
+
+ipcMain.on('show-suggestions', (e, bounds) => {
+    if (!suggestionsView || !mainWindow || mainWindow.isDestroyed()) return;
+    if (!mainWindow.getBrowserViews().includes(suggestionsView)) {
+        mainWindow.addBrowserView(suggestionsView);
+    }
+    const winOffset = getWinOffset();
+    const zoom = getOptimalZoomFactor();
+
+    suggestionsView.setBounds({
+        x: Math.round(bounds.x),
+        y: Math.round(bounds.y + bounds.height + 6),
+        width: Math.round(bounds.width),
+        height: Math.round(350 * zoom)
+    });
+    mainWindow.setTopBrowserView(suggestionsView);
+});
+
+ipcMain.on('resize-suggestions', (e, height) => {
+    if (!suggestionsView || !mainWindow || mainWindow.isDestroyed() || suggestionsView.webContents.isDestroyed()) return;
+    if (!mainWindow.getBrowserViews().includes(suggestionsView)) return;
+    const bounds = suggestionsView.getBounds();
+    const zoom = getOptimalZoomFactor();
+    const cappedHeight = Math.min(height, 480); // Cap at 480px for standard dropdown size
+    suggestionsView.setBounds({ ...bounds, height: Math.round(cappedHeight * zoom) });
+});
+
+ipcMain.on('hide-suggestions', () => hideSuggestions());
+
+ipcMain.on('suggestion-selected', (e, text) => {
+    hideSuggestions();
+    mainWindow.webContents.send('execute-suggestion', text);
+});
+
+// ── Site Info Popup Logic ───────────────────────────────────────────────────
+function createSiteInfoView() {
+    siteInfoView = new BrowserView({
+        webPreferences: { preload: path.join(__dirname, 'preload.js'), contextIsolation: true, nodeIntegration: false, devTools: false, sandbox: true }
+    });
+    siteInfoView.webContents.loadFile('site-info.html');
+    siteInfoView.setBackgroundColor('#00000000');
+}
+
+function hideSiteInfo() {
+    if (!siteInfoView) return;
+    if (mainWindow && !mainWindow.isDestroyed() && mainWindow.getBrowserViews().includes(siteInfoView)) {
+        mainWindow.removeBrowserView(siteInfoView);
+    }
+    if (privateWindow && !privateWindow.isDestroyed() && privateWindow.getBrowserViews().includes(siteInfoView)) {
+        privateWindow.removeBrowserView(siteInfoView);
+    }
+}
+
+ipcMain.on('show-site-info', (e, bounds) => {
+    const isPrivate = (privateWindow && !privateWindow.isDestroyed() && e.sender === privateWindow.webContents);
+    const targetWin = isPrivate ? privateWindow : mainWindow;
+    if (!targetWin || targetWin.isDestroyed()) return;
+    if (!siteInfoView) createSiteInfoView();
+
+    if (targetWin.getBrowserViews().includes(siteInfoView)) {
+        targetWin.removeBrowserView(siteInfoView);
+        return;
+    }
+
+    let url = '';
+    if (isPrivate) {
+        const activeEntry = privateViews.find(v => v.id === activePrivateTabId);
+        url = activeEntry && activeEntry.view && !activeEntry.view.webContents.isDestroyed() ? activeEntry.view.webContents.getURL() : '';
+    } else {
+        const activeView = views.find(v => v.id === activeViewId)?.view;
+        url = activeView && !activeView.webContents.isDestroyed() ? activeView.webContents.getURL() : '';
+    }
+
+    hidePopups();
+    hideSiteInfo();
+    targetWin.addBrowserView(siteInfoView);
+
+    // Position below the address bar identity area with reduced gap
+    const zoom = getOptimalZoomFactor();
+    const winOffset = getWinOffset();
+    const popupWidth = Math.round(336 * zoom);
+    const popupHeight = Math.round(480 * zoom);
+    siteInfoView.setBounds({
+        x: Math.max(10, Math.round(bounds.x + winOffset)),
+        y: Math.round(bounds.y + bounds.height + 3 + winOffset),
+        width: popupWidth,
+        height: popupHeight
+    });
+
+    targetWin.setTopBrowserView(siteInfoView);
+
+    // Fetch permissions for this origin to pass to the popup
+    let permissions = { notifications: 'default', popups: 'default', audio: 'default', camera: 'default', microphone: 'default', geolocation: 'default' };
+    try {
+        const origin = new URL(url).origin;
+        if (userSettings.sitePermissions[origin]) {
+            permissions = { ...permissions, ...userSettings.sitePermissions[origin] };
+        }
+    } catch (e) { }
+
+    const sendUpdate = () => {
+        siteInfoView.webContents.send('update-site-info', { url, permissions, isPrivate });
+    };
+
+    if (siteInfoView.webContents.isLoading()) {
+        siteInfoView.webContents.once('did-finish-load', sendUpdate);
+    } else {
+        sendUpdate();
+    }
+});
+
+ipcMain.on('update-site-permission', (e, { origin, permission, value }) => {
+    if (!origin) return;
+    if (!userSettings.sitePermissions[origin]) userSettings.sitePermissions[origin] = {};
+
+    // Map internal permission names to Electron ones if needed
+    const key = permission === 'sound' ? 'audio' : permission;
+    userSettings.sitePermissions[origin][key] = value;
+    saveSettings(userSettings);
+});
+
+ipcMain.on('hide-site-info', () => hideSiteInfo());
+ipcMain.on('permission-response', (event, { id, decision }) => {
+    if (!activePermissionRequest || activePermissionRequest.id !== id) return;
+
+    const req = activePermissionRequest;
+    activePermissionRequest = null;
+    hidePermissionPopup();
+
+    if (decision === 'allow' || decision === 'block') {
+        if (!userSettings.sitePermissions) userSettings.sitePermissions = {};
+        if (!userSettings.sitePermissions[req.origin]) userSettings.sitePermissions[req.origin] = {};
+
+        if (req.permKey === 'camera-microphone') {
+            userSettings.sitePermissions[req.origin]['camera'] = decision;
+            userSettings.sitePermissions[req.origin]['microphone'] = decision;
+        } else {
+            userSettings.sitePermissions[req.origin][req.permKey] = decision;
+        }
+        saveSettings(userSettings);
+
+        try {
+            req.callback(decision === 'allow');
+        } catch (e) { }
+    } else {
+        // Dismissed / temporary deny
+        try {
+            req.callback(false);
+        } catch (e) { }
+    }
+
+    showNextPermissionRequest();
+});
+
+ipcMain.on('hide-permission-popup', () => {
+    hidePermissionPopup();
+});
+
+
+ipcMain.on('open-settings', (e, section) => {
+    createNewTab(`ocal://settings#${section}`);
+    hideSiteInfo();
+});
+
+function getAllActiveSessions() {
+    const sessions = new Set();
+    if (session.defaultSession) sessions.add(session.defaultSession);
+    try { sessions.add(session.fromPartition('persist:google_login')); } catch (e) { }
+    try { sessions.add(session.fromPartition(getProfilePartition())); } catch (e) { }
+    if (userSettings && Array.isArray(userSettings.profiles)) {
+        userSettings.profiles.forEach(p => {
+            if (p && p.id) {
+                try { sessions.add(session.fromPartition(`persist:profile_${p.id}`)); } catch (e) { }
+            }
+        });
+    }
+    try {
+        const partitionsDir = path.join(app.getPath('userData'), 'Partitions');
+        if (fs.existsSync(partitionsDir)) {
+            const dirs = fs.readdirSync(partitionsDir);
+            for (const d of dirs) {
+                try {
+                    sessions.add(session.fromPartition(`persist:${d}`));
+                } catch (e) { }
+            }
+        }
+    } catch (e) { }
+    if (views && Array.isArray(views)) {
+        for (const v of views) {
+            try {
+                if (v && v.view && v.view.webContents && !v.view.webContents.isDestroyed() && v.view.webContents.session) {
+                    sessions.add(v.view.webContents.session);
+                }
+            } catch (e) { }
+        }
+    }
+    return Array.from(sessions);
+}
+
+async function getCookiesForHost(targetOriginOrHost) {
+    let hostname = targetOriginOrHost || '';
+    if (hostname.includes('://')) {
+        try {
+            hostname = new URL(hostname).hostname;
+        } catch (e) {
+            hostname = targetOriginOrHost;
+        }
+    }
+
+    hostname = hostname.toLowerCase().trim();
+    if (!hostname) return [];
+
+    // Derive base domain, e.g. www.electronjs.org -> electronjs.org
+    const hostParts = hostname.split('.');
+    let baseDomain = hostname;
+    if (hostParts.length > 2) {
+        const secondLast = hostParts[hostParts.length - 2];
+        const isTwoPartTLD = ['co', 'com', 'org', 'net', 'edu', 'gov'].includes(secondLast) && hostParts[hostParts.length - 1].length <= 3;
+        if (isTwoPartTLD && hostParts.length > 3) {
+            baseDomain = hostParts.slice(-3).join('.');
+        } else {
+            baseDomain = hostParts.slice(-2).join('.');
+        }
+    }
+
+    const cookieMap = new Map();
+    const addCookie = (c) => {
+        if (!c || !c.name) return;
+        const key = `${c.name}|${c.domain}|${c.path}`;
+        if (!cookieMap.has(key)) {
+            cookieMap.set(key, c);
+        }
+    };
+
+    // Wipe remembered permissions for these reset origins
+    if (userSettings && userSettings.sitePermissions) {
+        for (const orig of uniqueOrigins) {
+            delete userSettings.sitePermissions[orig];
+        }
+        saveSettings(userSettings);
+    }
+    const targetSessions = getAllActiveSessions();
+
+    for (const ses of targetSessions) {
+        try {
+            // 1. Query by URL (both HTTPS and HTTP)
+            try {
+                const httpsCookies = await ses.cookies.get({ url: `https://${hostname}` });
+                httpsCookies.forEach(addCookie);
+            } catch (e) { }
+            try {
+                const httpCookies = await ses.cookies.get({ url: `http://${hostname}` });
+                httpCookies.forEach(addCookie);
+            } catch (e) { }
+
+            // 2. Query by specific domain filters
+            try {
+                const hostCookies = await ses.cookies.get({ domain: hostname });
+                hostCookies.forEach(addCookie);
+            } catch (e) { }
+
+            if (baseDomain !== hostname) {
+                try {
+                    const baseCookies = await ses.cookies.get({ domain: baseDomain });
+                    baseCookies.forEach(addCookie);
+                } catch (e) { }
+            }
+
+            // 3. Scan all session cookies to match dot-prefixed domains (e.g. .electronjs.org) and subdomains
+            try {
+                const allCookies = await ses.cookies.get({});
+                allCookies.forEach(c => {
+                    if (!c.domain) return;
+                    const cDom = (c.domain.startsWith('.') ? c.domain.substring(1) : c.domain).toLowerCase();
+                    if (cDom === hostname || cDom === baseDomain || hostname.endsWith('.' + cDom) || cDom.endsWith('.' + baseDomain)) {
+                        addCookie(c);
+                    }
+                });
+            } catch (e) { }
+        } catch (e) { }
+    }
+
+    return Array.from(cookieMap.values());
+}
+
+ipcMain.on('get-site-data', async (event, origin) => {
+    try {
+        let hostname = origin;
+        try { hostname = new URL(origin).hostname; } catch (e) { }
+        const cookies = await getCookiesForHost(origin);
+
+        // Extract unique domains
+        let domains = [...new Set(cookies.map(c => c.domain.startsWith('.') ? c.domain.substring(1) : c.domain))];
+        if (domains.length === 0 && hostname) {
+            domains = [hostname];
+        }
+
+        event.reply('update-site-data', domains);
+    } catch (e) {
+        event.reply('update-site-data', []);
+    }
+});
+
+ipcMain.handle('get-site-usage', async (event, origin) => {
+    try {
+        let hostname = origin || '';
+        if (hostname.includes('://')) {
+            try { hostname = new URL(hostname).hostname; } catch (e) { }
+        }
+        hostname = hostname.toLowerCase().trim();
+
+        const cookies = await getCookiesForHost(hostname);
+
+        // 1. Calculate cookie data size
+        let cookieBytes = 0;
+        for (const c of cookies) {
+            cookieBytes += (c.name?.length || 0) +
+                (c.value?.length || 0) +
+                (c.domain?.length || 0) +
+                (c.path?.length || 0) +
+                256; // Storage overhead per record
+        }
+
+        // 2. Query live storage usage (localStorage, IndexedDB, CacheStorage) from open tab
+        let storageUsage = 0;
+        let storageItems = 0;
+
+        try {
+            const matchingTab = views && views.find(v => {
+                try {
+                    const u = new URL(v.view.webContents.getURL());
+                    const tabH = u.hostname.toLowerCase();
+                    return tabH === hostname || tabH.endsWith('.' + hostname) || hostname.endsWith('.' + tabH);
+                } catch (e) { return false; }
+            });
+
+            if (matchingTab && !matchingTab.view.webContents.isDestroyed()) {
+                const liveStorage = await matchingTab.view.webContents.executeJavaScript(`
+                    (async () => {
+                        let lsBytes = 0;
+                        let lsCount = 0;
+                        try {
+                            lsCount = localStorage.length;
+                            for (let i = 0; i < localStorage.length; i++) {
+                                const k = localStorage.key(i);
+                                lsBytes += (k ? k.length : 0) + (localStorage.getItem(k) ? localStorage.getItem(k).length : 0);
+                            }
+                        } catch(e) {}
+                        let estBytes = 0;
+                        try {
+                            if (navigator.storage && navigator.storage.estimate) {
+                                const est = await navigator.storage.estimate();
+                                if (est && est.usage) estBytes = est.usage;
+                            }
+                        } catch(e) {}
+                        return { bytes: Math.max(lsBytes, estBytes), count: lsCount };
+                    })()
+                `).catch(() => null);
+
+                if (liveStorage && typeof liveStorage.bytes === 'number' && liveStorage.bytes > 0) {
+                    storageUsage = liveStorage.bytes;
+                    storageItems = liveStorage.count || 0;
+                }
+            }
+        } catch (e) { }
+
+        // 3. Fallback disk check for IndexedDB directory (including profile partitions)
+        if (storageUsage === 0 && hostname) {
+            try {
+                const fs = require('fs');
+                const path = require('path');
+                const userData = app.getPath('userData');
+                const dirsToCheck = [
+                    path.join(userData, 'IndexedDB'),
+                    path.join(userData, 'Partitions')
+                ];
+                const cleanH = hostname.replace(/[^a-zA-Z0-9.-]/g, '_').toLowerCase();
+                const hostParts = hostname.split('.');
+                let baseDomain = hostname;
+                if (hostParts.length > 2) {
+                    const secondLast = hostParts[hostParts.length - 2];
+                    const isTwoPartTLD = ['co', 'com', 'org', 'net', 'edu', 'gov'].includes(secondLast) && hostParts[hostParts.length - 1].length <= 3;
+                    if (isTwoPartTLD && hostParts.length > 3) {
+                        baseDomain = hostParts.slice(-3).join('.');
+                    } else {
+                        baseDomain = hostParts.slice(-2).join('.');
+                    }
+                }
+                const cleanBase = baseDomain.replace(/[^a-zA-Z0-9.-]/g, '_').toLowerCase();
+
+                const scanDir = (dir) => {
+                    if (!fs.existsSync(dir)) return;
+                    try {
+                        const entries = fs.readdirSync(dir);
+                        for (const entry of entries) {
+                            const fullEntry = path.join(dir, entry);
+                            const lower = entry.toLowerCase();
+                            if (lower.includes(cleanH) || lower.includes(cleanBase)) {
+                                try {
+                                    const stat = fs.statSync(fullEntry);
+                                    if (stat.isDirectory()) {
+                                        const files = fs.readdirSync(fullEntry);
+                                        for (const f of files) {
+                                            try { storageUsage += fs.statSync(path.join(fullEntry, f)).size; } catch (err) { }
+                                        }
+                                    } else {
+                                        storageUsage += stat.size;
+                                    }
+                                    storageItems++;
+                                } catch (err) { }
+                            } else {
+                                try {
+                                    if (fs.statSync(fullEntry).isDirectory() && (dir.includes('Partitions') || entry === 'IndexedDB')) {
+                                        scanDir(fullEntry);
+                                    }
+                                } catch (e) { }
+                            }
+                        }
+                    } catch (e) { }
+                };
+
+                for (const d of dirsToCheck) {
+                    scanDir(d);
+                }
+            } catch (e) { }
+        }
+
+        const totalBytes = cookieBytes + storageUsage;
+
+        return {
+            bytes: totalBytes,
+            count: cookies.length,
+            storageItems: storageItems
+        };
+    } catch (e) {
+        return { bytes: 0, count: 0, storageItems: 0 };
+    }
+});
+
+ipcMain.handle('get-host-permissions', (event, origin) => {
+    return userSettings.sitePermissions[origin] || {};
+});
+
+ipcMain.on('reset-site-permissions', (event, origin) => {
+    delete userSettings.sitePermissions[origin];
+    saveSettings(userSettings);
+});
+
+ipcMain.on('open-site-settings', (event, host) => {
+    createNewTab(`ocal://site-settings?host=${host}`);
+    hideSiteInfo();
+});
+
+
+async function executeDeleteSiteData(payload) {
+    try {
+        const { origin, domain } = payload || {};
+        const rawTarget = origin || domain || '';
+        let hostname = rawTarget;
+        if (hostname.includes('://')) {
+            try { hostname = new URL(hostname).hostname; } catch (e) { }
+        }
+        hostname = hostname.toLowerCase().trim();
+        if (!hostname) return true;
+
+        // Derive base domain, e.g. www.youtube.com -> youtube.com
+        const hostParts = hostname.split('.');
+        let baseDomain = hostname;
+        if (hostParts.length > 2) {
+            const secondLast = hostParts[hostParts.length - 2];
+            const isTwoPartTLD = ['co', 'com', 'org', 'net', 'edu', 'gov'].includes(secondLast) && hostParts[hostParts.length - 1].length <= 3;
+            if (isTwoPartTLD && hostParts.length > 3) {
+                baseDomain = hostParts.slice(-3).join('.');
+            } else {
+                baseDomain = hostParts.slice(-2).join('.');
+            }
+        }
+
+        // 1. Stop and navigate away any active tabs matching this host so background workers/pings cannot re-create cookies or hold in-memory cache
+        if (views && Array.isArray(views)) {
+            for (const v of views) {
+                try {
+                    if (v && v.view && v.view.webContents && !v.view.webContents.isDestroyed()) {
+                        const tabUrl = v.view.webContents.getURL();
+                        if (!tabUrl) continue;
+                        let tabH = '';
+                        try { tabH = new URL(tabUrl).hostname.toLowerCase(); } catch (e) { }
+                        if (tabH && (tabH === hostname || tabH === baseDomain || tabH.endsWith('.' + baseDomain) || baseDomain.endsWith('.' + tabH))) {
+                            try { v.view.webContents.stop(); } catch (e) { }
+                            v.view.webContents.loadURL('about:blank');
+                        }
+                    }
+                } catch (e) { }
+            }
+        }
+
+        // 2. Build target origins for storage clearing
+        const originList = [
+            `https://${hostname}`,
+            `http://${hostname}`,
+            `https://${baseDomain}`,
+            `http://${baseDomain}`
+        ];
+        if (baseDomain !== hostname) {
+            originList.push(`https://www.${baseDomain}`, `http://www.${baseDomain}`);
+            originList.push(`https://m.${baseDomain}`, `http://m.${baseDomain}`);
+        }
+        const uniqueOrigins = [...new Set(originList)];
+        const targetSessions = getAllActiveSessions();
+
+        // 3. Clear storage across all active browser sessions (Electron requires 'indexdb' without 'e')
+        const storageTypes = ['appcache', 'cookies', 'filesystem', 'indexdb', 'localstorage', 'shadercache', 'websql', 'serviceworkers', 'cachestorage'];
+
+        for (const ses of targetSessions) {
+            for (const orig of uniqueOrigins) {
+                try {
+                    await ses.clearStorageData({
+                        origin: orig,
+                        storages: storageTypes
+                    });
+                } catch (e) { }
+                try {
+                    await ses.clearStorageData({
+                        origin: orig
+                    });
+                } catch (e) { }
+            }
+
+            // 4. Remove all matching cookies from session
+            try {
+                const allCookies = await ses.cookies.get({});
+                for (const c of allCookies) {
+                    if (!c || !c.domain) continue;
+                    const cDom = c.domain.replace(/^\.+/, '').toLowerCase();
+                    if (cDom === hostname || cDom === baseDomain || hostname.endsWith('.' + cDom) || cDom.endsWith('.' + baseDomain) || (baseDomain.length > 3 && cDom.includes(baseDomain))) {
+                        const cleanPath = (c.path && c.path.startsWith('/')) ? c.path : `/${c.path || ''}`;
+                        const candHosts = [
+                            cDom,
+                            hostname,
+                            baseDomain,
+                            `www.${baseDomain}`,
+                            `m.${baseDomain}`
+                        ];
+                        for (const h of candHosts) {
+                            if (!h) continue;
+                            for (const s of ['https', 'http']) {
+                                try { await ses.cookies.remove(`${s}://${h}${cleanPath}`, c.name); } catch (e) { }
+                                if (cleanPath !== '/') {
+                                    try { await ses.cookies.remove(`${s}://${h}/`, c.name); } catch (e) { }
+                                }
+                            }
+                        }
+                    }
+                }
+            } catch (e) { }
+
+            try { await ses.flushStorageData(); } catch (e) { }
+        }
+
+        // 5. Clean up any lingering IndexedDB directories on disk
+        try {
+            const fs = require('fs');
+            const path = require('path');
+            const userData = app.getPath('userData');
+            const dirsToCheck = [
+                path.join(userData, 'IndexedDB'),
+                path.join(userData, 'Partitions')
+            ];
+
+            const cleanH = hostname.replace(/[^a-zA-Z0-9.-]/g, '_').toLowerCase();
+            const cleanBase = baseDomain.replace(/[^a-zA-Z0-9.-]/g, '_').toLowerCase();
+
+            for (const rootDir of dirsToCheck) {
+                if (!fs.existsSync(rootDir)) continue;
+                const scanAndRemove = (dir) => {
+                    try {
+                        const entries = fs.readdirSync(dir);
+                        for (const entry of entries) {
+                            const fullEntry = path.join(dir, entry);
+                            const lowerEntry = entry.toLowerCase();
+                            if (lowerEntry.includes(cleanH) || lowerEntry.includes(cleanBase)) {
+                                try {
+                                    fs.rmSync(fullEntry, { recursive: true, force: true });
+                                } catch (err) { }
+                            } else {
+                                try {
+                                    if (fs.statSync(fullEntry).isDirectory()) {
+                                        scanAndRemove(fullEntry);
+                                    }
+                                } catch (err) { }
+                            }
+                        }
+                    } catch (err) { }
+                };
+                scanAndRemove(rootDir);
+            }
+        } catch (e) { }
+
+        // Flush once more
+        for (const ses of targetSessions) {
+            try { await ses.flushStorageData(); } catch (e) { }
+        }
+
+        return true;
+    } catch (e) {
+        console.error("Failed to thoroughly delete site data", e);
+        return false;
+    }
+}
+
+ipcMain.handle('delete-site-data', async (event, payload) => {
+    return await executeDeleteSiteData(payload);
+});
+
+ipcMain.on('delete-site-data', async (event, payload) => {
+    await executeDeleteSiteData(payload);
+});
+
+ipcMain.on('reorder-tabs', (e, { fromIndex, toIndex }) => {
+    if (fromIndex < 0 || fromIndex >= views.length || toIndex < 0 || toIndex >= views.length) return;
+    const tabEntry = views.splice(fromIndex, 1)[0];
+    views.splice(toIndex, 0, tabEntry);
+    broadcastTabs();
+});
+
+// ── File Manager (System Explorer) IPCs ─────────────────────────────────────
+ipcMain.handle('get-system-folders', () => {
+    return {
+        home: app.getPath('home'),
+        documents: app.getPath('documents'),
+        downloads: app.getPath('downloads'),
+        desktop: app.getPath('desktop'),
+        pictures: app.getPath('pictures'),
+        videos: app.getPath('videos'),
+        music: app.getPath('music')
+    };
+});
+
+ipcMain.handle('get-system-drives', async () => {
+    const drives = [];
+    if (process.platform === 'win32') {
+        const letters = 'CDEFGHIJKLMNOPQRSTUVWXYZAB';
+        for (const char of letters) {
+            const drivePath = `${char}:\\`;
+            try {
+                if (fs.existsSync(drivePath)) {
+                    let totalBytes = 0;
+                    let freeBytes = 0;
+                    let usedBytes = 0;
+                    let percentUsed = 0;
+                    try {
+                        const stat = fs.statfsSync(drivePath);
+                        totalBytes = Number(stat.blocks) * Number(stat.bsize);
+                        freeBytes = Number(stat.bavail) * Number(stat.bsize);
+                        usedBytes = Math.max(0, totalBytes - freeBytes);
+                        if (totalBytes > 0) {
+                            percentUsed = Math.min(100, Math.max(0, Math.round((usedBytes / totalBytes) * 100)));
+                        }
+                    } catch (e) { }
+
+                    drives.push({
+                        name: char === 'C' ? 'Local Disk (C:)' : `Volume (${char}:)`,
+                        path: drivePath,
+                        letter: char,
+                        isMobile: false,
+                        isDirectory: true,
+                        totalBytes,
+                        freeBytes,
+                        usedBytes,
+                        percentUsed
+                    });
+                }
+            } catch (e) { }
+        }
+    }
+
+    if (drives.length === 0) {
+        drives.push({ name: 'Root (/)', path: '/', isMobile: false, isDirectory: true, totalBytes: 0, freeBytes: 0, usedBytes: 0, percentUsed: 0 });
+    }
+
+    return drives;
+});
+
+ipcMain.handle('get-directory-entries', async (event, dirPath, options = {}) => {
+    try {
+        if (!dirPath) return [];
+        let targetPath = String(dirPath).trim();
+        if (/^[A-Z]:$/i.test(targetPath)) {
+            targetPath += '\\';
+        }
+        if (!fs.existsSync(targetPath)) return [];
+
+        const showHidden = Boolean(options && options.showHidden);
+        const entries = fs.readdirSync(targetPath, { withFileTypes: true });
+        const result = [];
+
+        // Exact blacklist of Windows system clutter, dumps, hives, and artifacts
+        const UNWANTED_EXACT = new Set([
+            'desktop.ini', 'thumbs.db', 'ehthumbs.db',
+            'system volume information', '$recycle.bin', 'recovery',
+            'config.msi', 'msocache', 'bootmgr', 'bootnxt', 'bootstat.dat',
+            'pagefile.sys', 'swapfile.sys', 'hiberfil.sys', 'dumpstack.log.tmp',
+            'dumpstack.log', 'ntuser.ini', '.ds_store', '.localized',
+            'onedrivetemp', 'documents and settings'
+        ]);
+
+        // Windows hidden junctions in user directory that are restricted or duplicate
+        const WINDOWS_JUNCTIONS = new Set([
+            'application data', 'cookies', 'local settings', 'nethood',
+            'printhood', 'recent', 'sendto', 'start menu', 'templates', 'my documents'
+        ]);
+
+        for (const dirent of entries) {
+            try {
+                const name = dirent.name;
+                const lowerName = name.toLowerCase();
+
+                // 1. Always exclude core OS files, crash dumps, and recycle bins
+                if (UNWANTED_EXACT.has(lowerName)) continue;
+                if (lowerName.startsWith('$')) continue;
+                if (lowerName.startsWith('ntuser.dat') || lowerName.startsWith('usrclass.dat')) continue;
+                if (name.startsWith('~$')) continue; // Office temporary lock files
+
+                // 2. Filter out Windows restricted junction directories
+                if (WINDOWS_JUNCTIONS.has(lowerName)) continue;
+
+                // 3. Filter out dot-files, AppData and temporary downloads when not in showHidden mode
+                if (!showHidden) {
+                    if (name.startsWith('.')) continue;
+                    if (lowerName === 'appdata') continue;
+                    if (lowerName.endsWith('.tmp') || lowerName.endsWith('.crdownload') || lowerName.endsWith('.part')) continue;
+                }
+
+                const fullPath = path.join(targetPath, name);
+                let isDir = false;
+                try {
+                    isDir = dirent.isDirectory();
+                } catch (e) { }
+
+                let stats = { size: 0, mtime: new Date(), birthtime: new Date() };
+                try {
+                    stats = fs.statSync(fullPath);
+                } catch (e) { }
+
+                result.push({
+                    name: dirent.name,
+                    path: fullPath,
+                    isDirectory: isDir,
+                    size: stats.size || 0,
+                    mtime: stats.mtime || new Date(),
+                    birthtime: stats.birthtime || stats.mtime || new Date()
+                });
+            } catch (e) {
+                // Ignore restricted system file errors
+            }
+        }
+        return result;
+    } catch (e) {
+        console.error('[File Manager] get-directory-entries error:', e);
+        return [];
+    }
+});
+
+ipcMain.handle('analyze-system-files', async () => {
+    const targets = [
+        app.getPath('downloads'),
+        app.getPath('documents'),
+        app.getPath('desktop'),
+        app.getPath('pictures'),
+        app.getPath('videos'),
+        app.getPath('music')
+    ];
+    let allPdfs = [];
+
+    const findPdfsRecursive = (dir, depth = 0) => {
+        if (depth > 3) return; // Limit depth for performance
+        try {
+            if (!fs.existsSync(dir)) return;
+            const entries = fs.readdirSync(dir, { withFileTypes: true });
+
+            for (const dirent of entries) {
+                if (dirent.name.startsWith('.') || dirent.name.startsWith('$') || dirent.name.toLowerCase() === 'appdata') continue;
+                const fullPath = path.join(dir, dirent.name);
+                if (dirent.isDirectory()) {
+                    findPdfsRecursive(fullPath, depth + 1);
+                } else if (dirent.isFile() && dirent.name.toLowerCase().endsWith('.pdf')) {
+                    try {
+                        const stats = fs.statSync(fullPath);
+                        allPdfs.push({
+                            name: dirent.name,
+                            path: fullPath,
+                            size: stats.size,
+                            mtime: stats.mtime,
+                            source: path.basename(dir)
+                        });
+                    } catch (e) { }
+                }
+            }
+        } catch (e) { }
+    };
+
+    for (const target of targets) {
+        findPdfsRecursive(target);
+    }
+
+    // Sort by most recent first and cap at a reasonable number for UI performance
+    return allPdfs.sort((a, b) => b.mtime - a.mtime).slice(0, 500);
+});
+
+ipcMain.handle('scan-system-audio', async () => {
+    const audioExts = new Set(['.mp3', '.wav', '.flac', '.ogg', '.m4a', '.aac', '.wma', '.opus', '.aiff', '.mid']);
+    const scannedTracks = [];
+    const seenPaths = new Set();
+
+    const rootDirs = [];
+    try { if (app.getPath('music')) rootDirs.push(app.getPath('music')); } catch (e) { }
+    try { if (app.getPath('downloads')) rootDirs.push(app.getPath('downloads')); } catch (e) { }
+    try { if (app.getPath('desktop')) rootDirs.push(app.getPath('desktop')); } catch (e) { }
+    try { if (app.getPath('documents')) rootDirs.push(app.getPath('documents')); } catch (e) { }
+
+    // Check workspace music folder
+    const localMusic = path.join(__dirname, 'music');
+    if (fs.existsSync(localMusic)) rootDirs.push(localMusic);
+
+    function scanDir(dir, depth = 0) {
+        if (depth > 4) return;
+        try {
+            if (!fs.existsSync(dir)) return;
+            const entries = fs.readdirSync(dir, { withFileTypes: true });
+            for (const dirent of entries) {
+                if (dirent.name.startsWith('.')) continue;
+                const fullPath = path.join(dir, dirent.name);
+                if (seenPaths.has(fullPath.toLowerCase())) continue;
+
+                if (dirent.isDirectory()) {
+                    const skipDirs = ['node_modules', 'appdata', 'windows', 'program files', '$recycle.bin', '.git', 'temp'];
+                    if (!skipDirs.includes(dirent.name.toLowerCase())) {
+                        scanDir(fullPath, depth + 1);
+                    }
+                } else if (dirent.isFile()) {
+                    const ext = path.extname(dirent.name).toLowerCase();
+                    if (audioExts.has(ext)) {
+                        seenPaths.add(fullPath.toLowerCase());
+                        try {
+                            const stat = fs.statSync(fullPath);
+                            const cleanTitle = path.basename(dirent.name, ext).replace(/^\d+[\s\-_.]*/, '').trim();
+                            const parentDir = path.basename(dir);
+
+                            let category = 'all';
+                            const lowerName = dirent.name.toLowerCase();
+                            if (lowerName.includes('chill') || lowerName.includes('relax') || lowerName.includes('lofi') || lowerName.includes('ambient') || lowerName.includes('sleep') || lowerName.includes('piano') || lowerName.includes('slow')) {
+                                category = 'chill';
+                            } else if (lowerName.includes('rock') || lowerName.includes('edm') || lowerName.includes('beat') || lowerName.includes('dance') || lowerName.includes('workout') || lowerName.includes('energy') || lowerName.includes('fast') || lowerName.includes('bass')) {
+                                category = 'energy';
+                            } else if (lowerName.includes('acoustic') || lowerName.includes('guitar') || lowerName.includes('unplugged') || lowerName.includes('vocal')) {
+                                category = 'acoustic';
+                            }
+
+                            scannedTracks.push({
+                                name: dirent.name,
+                                title: cleanTitle || dirent.name,
+                                artist: (parentDir && !['Music', 'Downloads', 'Desktop', 'Documents'].includes(parentDir)) ? parentDir : 'Local Master',
+                                path: fullPath,
+                                size: stat.size,
+                                mtime: stat.mtime,
+                                format: ext.replace('.', '').toUpperCase(),
+                                category: category
+                            });
+                        } catch (e) { }
+                    }
+                }
+            }
+        } catch (e) { }
+    }
+
+    for (const dir of rootDirs) {
+        scanDir(dir, 0);
+    }
+
+    return scannedTracks.sort((a, b) => (new Date(b.mtime).getTime()) - (new Date(a.mtime).getTime()));
+});
+
+ipcMain.handle('open-system-item', async (event, fullPath) => {
+    return await shell.openPath(fullPath);
+});
+
+ipcMain.handle('show-item-in-folder', async (event, fullPath) => {
+    try {
+        if (!fullPath) return false;
+        shell.showItemInFolder(fullPath);
+        return true;
+    } catch (e) { return false; }
+});
+
+ipcMain.handle('create-directory', async (event, dirPath) => {
+    try {
+        if (!dirPath) return false;
+        fs.mkdirSync(dirPath, { recursive: true });
+        return true;
+    } catch (e) {
+        console.error('[File Manager] create-directory error:', e);
+        return false;
+    }
+});
+
+ipcMain.handle('rename-system-item', async (event, { oldPath, newPath }) => {
+    try {
+        if (!oldPath || !newPath) return false;
+        fs.renameSync(oldPath, newPath);
+        return true;
+    } catch (e) {
+        console.error('[File Manager] rename-system-item error:', e);
+        return false;
+    }
+});
+
+ipcMain.handle('delete-system-item', async (event, fullPath) => {
+    try {
+        await shell.trashItem(fullPath);
+        return true;
+    } catch (e) { return false; }
+});
+
+ipcMain.handle('get-certificate-info', async (event, hostname) => {
+    return new Promise((resolve) => {
+        const https = require('https');
+        const options = {
+            hostname: hostname,
+            port: 443,
+            method: 'HEAD',
+            agent: false,
+            rejectUnauthorized: false
+        };
+
+        const req = https.request(options, (res) => {
+            const cert = res.socket.getPeerCertificate(true);
+            if (!cert || Object.keys(cert).length === 0) {
+                resolve({ error: "No certificate found" });
+                return;
+            }
+
+            resolve({
+                subject: cert.subject,
+                issuer: cert.issuer,
+                valid_from: cert.valid_from,
+                valid_to: cert.valid_to,
+                fingerprint: cert.fingerprint,
+                fingerprint256: cert.fingerprint256,
+                serialNumber: cert.serialNumber,
+                raw: cert.raw ? cert.raw.toString('base64') : null,
+                info: cert.info,
+                bits: cert.bits,
+                pubkey: cert.pubkey ? cert.pubkey.toString('base64') : null
+            });
+            req.destroy();
+        });
+
+        req.on('error', (e) => {
+            resolve({ error: e.message });
+        });
+
+        req.setTimeout(5000, () => {
+            req.destroy();
+            resolve({ error: "Connection timeout" });
+        });
+        req.end();
+    });
+});
+
+ipcMain.handle('read-file-content', async (e, inputPath) => {
+    try {
+        if (!inputPath) return null;
+        let filePath = String(inputPath).trim();
+        try { filePath = decodeURIComponent(filePath); } catch (e) { }
+        filePath = filePath.replace(/^file:\/\/\/?/i, '');
+        if (process.platform === 'win32') filePath = filePath.replace(/\//g, '\\');
+
+        if (!fs.existsSync(filePath)) return null;
+
+        const ext = path.extname(filePath).toLowerCase();
+
+        if (ext === '.docx' || ext === '.doc') {
+            try {
+                const AdmZip = require('adm-zip');
+                const zip = new AdmZip(filePath);
+                const docEntry = zip.getEntry('word/document.xml');
+                if (docEntry) {
+                    const xmlStr = zip.readAsText(docEntry);
+                    if (xmlStr) {
+                        const globalT = /<w:t\b[^>]*>([\s\S]*?)<\/w:t>/gi;
+                        let gMatch;
+                        const lines = [];
+                        while ((gMatch = globalT.exec(xmlStr)) !== null) {
+                            if (gMatch[1] && gMatch[1].trim()) {
+                                lines.push(gMatch[1].trim());
+                            }
+                        }
+                        if (lines.length > 0) return lines.join('\n\n');
+                    }
+                }
+            } catch (zipErr) {
+                console.warn('adm-zip extraction warning:', zipErr);
+            }
+        }
+
+        return fs.readFileSync(filePath, 'utf8');
+    } catch (err) {
+        console.warn('read-file-content error:', err);
+        return null;
+    }
+});
+
+ipcMain.handle('read-file-buffer', async (e, inputPath) => {
+    try {
+        if (!inputPath) return null;
+        let filePath = String(inputPath).trim();
+        try { filePath = decodeURIComponent(filePath); } catch (e) { }
+        filePath = filePath.replace(/^file:\/\/\/?/i, '');
+        if (process.platform === 'win32') filePath = filePath.replace(/\//g, '\\');
+
+        if (!fs.existsSync(filePath)) return null;
+
+        const buf = fs.readFileSync(filePath);
+        return buf;
+    } catch (err) {
+        console.warn('read-file-buffer error:', err);
+        return null;
+    }
+});
+
+ipcMain.handle('read-docx-structured', async (e, inputPath) => {
+    try {
+        if (!inputPath) return null;
+        let filePath = String(inputPath).trim();
+        try { filePath = decodeURIComponent(filePath); } catch (e) { }
+        filePath = filePath.replace(/^file:\/\/\/?/i, '');
+        if (process.platform === 'win32') filePath = filePath.replace(/\//g, '\\');
+
+        if (!fs.existsSync(filePath)) return null;
+
+        const AdmZip = require('adm-zip');
+        const zip = new AdmZip(filePath);
+        const docEntry = zip.getEntry('word/document.xml');
+        if (!docEntry) return null;
+
+        const xmlStr = zip.readAsText(docEntry);
+        if (!xmlStr) return null;
+
+        // Parse Image Relationships (_rels/document.xml.rels)
+        const relsMap = {};
+        try {
+            const relsEntry = zip.getEntry('word/_rels/document.xml.rels');
+            if (relsEntry) {
+                const relsXml = zip.readAsText(relsEntry);
+                const relRegex = /<Relationship\b[^>]*Id="([^"]+)"[^>]*Target="([^"]+)"/gi;
+                let rm;
+                while ((rm = relRegex.exec(relsXml)) !== null) {
+                    const id = rm[1];
+                    let target = rm[2];
+                    if (!target.startsWith('word/')) target = 'word/' + target.replace(/^\//, '');
+                    relsMap[id] = target;
+                }
+            }
+        } catch (eRels) { }
+
+        // Base64 Data URI Map for Images
+        const imageBase64Map = {};
+        Object.keys(relsMap).forEach(rId => {
+            const imgPath = relsMap[rId];
+            try {
+                const imgEntry = zip.getEntry(imgPath);
+                if (imgEntry) {
+                    const imgBuffer = zip.readAsBuffer(imgEntry);
+                    const ext = imgPath.split('.').pop().toLowerCase();
+                    const mime = (ext === 'png') ? 'image/png' : (ext === 'svg') ? 'image/svg+xml' : 'image/jpeg';
+                    imageBase64Map[rId] = `data:${mime};base64,${imgBuffer.toString('base64')}`;
+                }
+            } catch (eImg) { }
+        });
+
+        let hasDocPageBorder = /<w:pgBorders\b/i.test(xmlStr);
+        let htmlResult = hasDocPageBorder ? '<div class="docx-page-border-container">' : '';
+
+        const blockRegex = /<(w:p|w:tbl)\b[^>]*>([\s\S]*?)<\/\1>/gi;
+        let blockMatch;
+
+        while ((blockMatch = blockRegex.exec(xmlStr)) !== null) {
+            const blockType = blockMatch[1];
+            const blockContent = blockMatch[2];
+
+            if (blockType === 'w:p') {
+                let textAlign = '';
+                const jcMatch = /<w:jc\s+[^>]*w:val="([^"]+)"/i.exec(blockContent);
+                if (jcMatch) {
+                    const alignVal = jcMatch[1].toLowerCase();
+                    if (alignVal === 'center') textAlign = 'text-align: center;';
+                    else if (alignVal === 'right') textAlign = 'text-align: right;';
+                    else if (alignVal === 'both' || alignVal === 'justify') textAlign = 'text-align: justify;';
+                    else if (alignVal === 'left') textAlign = 'text-align: left;';
+                }
+
+                let pMarginTop = '';
+                let pMarginBottom = '';
+                let pLineHeight = '';
+                const spMatch = /<w:spacing\s+([^>]+)\/>/i.exec(blockContent);
+                if (spMatch) {
+                    const spAttrs = spMatch[1];
+                    const bMatch = /w:before="(\d+)"/i.exec(spAttrs);
+                    if (bMatch) pMarginTop = `margin-top: ${Math.round(parseInt(bMatch[1], 10) / 20)}pt;`;
+
+                    const aMatch = /w:after="(\d+)"/i.exec(spAttrs);
+                    if (aMatch) pMarginBottom = `margin-bottom: ${Math.round(parseInt(aMatch[1], 10) / 20)}pt;`;
+
+                    const lMatch = /w:line="(\d+)"/i.exec(spAttrs);
+                    if (lMatch) {
+                        const lineVal = parseInt(lMatch[1], 10);
+                        if (lineVal > 100) pLineHeight = `line-height: ${(lineVal / 240).toFixed(2)};`;
+                    }
+                }
+
+                let pIndentLeft = '';
+                let pTextIndent = '';
+                const indMatch = /<w:ind\s+([^>]+)\/>/i.exec(blockContent);
+                if (indMatch) {
+                    const indAttrs = indMatch[1];
+                    const leftVal = /w:left="(\d+)"/i.exec(indAttrs);
+                    if (leftVal) pIndentLeft = `margin-left: ${Math.round(parseInt(leftVal[1], 10) / 20)}pt;`;
+
+                    const flVal = /w:firstLine="(\d+)"/i.exec(indAttrs);
+                    if (flVal) pTextIndent = `text-indent: ${Math.round(parseInt(flVal[1], 10) / 20)}pt;`;
+                }
+
+                let tag = 'p';
+                if (/w:val="Heading1"/i.test(blockContent)) tag = 'h1';
+                else if (/w:val="Heading2"/i.test(blockContent)) tag = 'h2';
+                else if (/w:val="Heading3"/i.test(blockContent)) tag = 'h3';
+
+                const hasPageBreak = /<w:br\s+[^>]*w:type="page"/i.test(blockContent) || /<w:lastRenderedPageBreak\/>/i.test(blockContent);
+
+                // Extract Images inside Paragraph <a:blip r:embed="rIdX"/>
+                let paragraphImages = '';
+                const blipRegex = /<a:blip\s+[^>]*r:embed="([^"]+)"/gi;
+                let blipMatch;
+                while ((blipMatch = blipRegex.exec(blockContent)) !== null) {
+                    const rId = blipMatch[1];
+                    if (imageBase64Map[rId]) {
+                        paragraphImages += `<div style="text-align: center; margin: 16px 0;"><img src="${imageBase64Map[rId]}" style="max-width: 80%; height: auto; border-radius: 4px; display: inline-block;" /></div>`;
+                    }
+                }
+
+                let pText = '';
+                const rRegex = /<w:r\b[^>]*>([\s\S]*?)<\/w:r>/gi;
+                let rMatch;
+
+                while ((rMatch = rRegex.exec(blockContent)) !== null) {
+                    const rContent = rMatch[1];
+
+                    let isBold = /<w:b\/>|<w:b\s/i.test(rContent);
+                    let isItalic = /<w:i\/>|<w:i\s/i.test(rContent);
+                    let isUnderline = /<w:u\s/i.test(rContent);
+                    let isStrike = /<w:strike\/>|<w:strike\s/i.test(rContent);
+
+                    let fontFamily = '';
+                    const fontMatch = /<w:rFonts\s+[^>]*w:ascii="([^"]+)"/i.exec(rContent);
+                    if (fontMatch) fontFamily = `font-family: '${fontMatch[1]}', sans-serif;`;
+
+                    let fontSize = '';
+                    const szMatch = /<w:sz\s+[^>]*w:val="([^"]+)"/i.exec(rContent);
+                    if (szMatch) {
+                        const ptSize = Math.round(parseInt(szMatch[1], 10) / 2);
+                        fontSize = `font-size: ${ptSize}pt;`;
+                    }
+
+                    let textColor = '';
+                    const colorMatch = /<w:color\s+[^>]*w:val="([^"]+)"/i.exec(rContent);
+                    if (colorMatch && colorMatch[1] !== 'auto') {
+                        textColor = `color: #${colorMatch[1]};`;
+                    }
+
+                    let bgColor = '';
+                    const hlMatch = /<w:highlight\s+[^>]*w:val="([^"]+)"/i.exec(rContent);
+                    if (hlMatch && hlMatch[1] !== 'none') {
+                        bgColor = `background-color: ${hlMatch[1]};`;
+                    }
+
+                    let runInnerHtml = '';
+                    const runChildRegex = /<(w:t|w:tab|w:br)\b[^>]*>(.*?)<\/\1>|<(w:tab|w:br)\/>/gi;
+                    let childMatch;
+                    let foundTextTag = false;
+
+                    while ((childMatch = runChildRegex.exec(rContent)) !== null) {
+                        const childTagName = (childMatch[1] || childMatch[3] || '').toLowerCase();
+                        if (childTagName === 'w:t') {
+                            foundTextTag = true;
+                            let txt = childMatch[2]
+                                .replace(/&lt;/g, '<')
+                                .replace(/&gt;/g, '>')
+                                .replace(/&amp;/g, '&')
+                                .replace(/&quot;/g, '"');
+                            runInnerHtml += txt;
+                        } else if (childTagName === 'w:tab') {
+                            runInnerHtml += '&emsp;&emsp;';
+                        } else if (childTagName === 'w:br') {
+                            runInnerHtml += '<br>';
+                        }
+                    }
+
+                    if (!foundTextTag && !runInnerHtml) {
+                        const tRegex = /<w:t\b[^>]*>(.*?)<\/w:t>/gi;
+                        let tMatch;
+                        while ((tMatch = tRegex.exec(rContent)) !== null) {
+                            runInnerHtml += tMatch[1].replace(/&lt;/g, '<').replace(/&gt;/g, '>').replace(/&amp;/g, '&');
+                        }
+                    }
+
+                    if (runInnerHtml) {
+                        let styles = [fontFamily, fontSize, textColor, bgColor].filter(Boolean).join(' ');
+                        let runHtml = styles ? `<span style="${styles}">${runInnerHtml}</span>` : runInnerHtml;
+
+                        if (isBold) runHtml = `<strong>${runHtml}</strong>`;
+                        if (isItalic) runHtml = `<em>${runHtml}</em>`;
+                        if (isUnderline) runHtml = `<u>${runHtml}</u>`;
+                        if (isStrike) runHtml = `<del>${runHtml}</del>`;
+
+                        pText += runHtml;
+                    }
+                }
+
+                if (!pText) {
+                    const fallbackT = /<w:t\b[^>]*>(.*?)<\/w:t>/gi;
+                    let ftMatch;
+                    while ((ftMatch = fallbackT.exec(blockContent)) !== null) {
+                        pText += ftMatch[1].replace(/&lt;/g, '<').replace(/&gt;/g, '>').replace(/&amp;/g, '&');
+                    }
+                }
+
+                if (hasPageBreak) {
+                    htmlResult += `<div class="docx-page-break"><span class="page-break-label">--- Page Break ---</span></div>`;
+                }
+
+                if (paragraphImages) {
+                    htmlResult += paragraphImages;
+                }
+
+                if (pText.trim()) {
+                    let styles = [textAlign, pMarginTop, pMarginBottom, pLineHeight, pIndentLeft, pTextIndent].filter(Boolean).join(' ');
+                    let pStyle = styles ? ` style="${styles}"` : '';
+                    htmlResult += `<${tag}${pStyle}>${pText}</${tag}>`;
+                }
+            } else if (blockType === 'w:tbl') {
+                let tableHtml = '<table style="width:100%; border-collapse:collapse; margin:14px 0; border:1px solid var(--border);">';
+                const trRegex = /<w:tr\b[^>]*>([\s\S]*?)<\/w:tr>/gi;
+                let trMatch;
+                while ((trMatch = trRegex.exec(blockContent)) !== null) {
+                    tableHtml += '<tr>';
+                    const tcRegex = /<w:tc\b[^>]*>([\s\S]*?)<\/w:tc>/gi;
+                    let tcMatch;
+                    while ((tcMatch = tcRegex.exec(trMatch[1])) !== null) {
+                        const tcContent = tcMatch[1];
+
+                        let cellBg = '';
+                        const shdMatch = /<w:shd\s+[^>]*w:fill="([^"]+)"/i.exec(tcContent);
+                        if (shdMatch && shdMatch[1] !== 'auto') {
+                            cellBg = `background-color: #${shdMatch[1]};`;
+                        }
+
+                        let cellText = '';
+                        const tRegex = /<w:t\b[^>]*>(.*?)<\/w:t>/gi;
+                        let tMatch;
+                        while ((tMatch = tRegex.exec(tcContent)) !== null) {
+                            cellText += tMatch[1].replace(/&lt;/g, '<').replace(/&gt;/g, '>').replace(/&amp;/g, '&');
+                        }
+
+                        let cellStyle = ['border: 1px solid var(--border);', 'padding: 8px;', cellBg].filter(Boolean).join(' ');
+                        tableHtml += `<td style="${cellStyle}">${cellText}</td>`;
+                    }
+                    tableHtml += '</tr>';
+                }
+                tableHtml += '</table>';
+                htmlResult += tableHtml;
+            }
+        }
+
+        if (hasDocPageBorder) htmlResult += '</div>';
+
+        if (!htmlResult) {
+            const globalT = /<w:t\b[^>]*>([\s\S]*?)<\/w:t>/gi;
+            let gMatch;
+            const lines = [];
+            while ((gMatch = globalT.exec(xmlStr)) !== null) {
+                if (gMatch[1] && gMatch[1].trim()) {
+                    lines.push(gMatch[1].trim());
+                }
+            }
+            if (lines.length > 0) {
+                htmlResult = lines.map(l => `<p>${l.replace(/</g, '&lt;').replace(/>/g, '&gt;')}</p>`).join('');
+            }
+        }
+
+        return htmlResult || null;
+    } catch (err) {
+        console.error('read-docx-structured error:', err);
+        return null;
+    }
+});
+
+ipcMain.handle('write-file-content', async (e, filePath, content) => {
+    try {
+        if (!filePath) return false;
+        fs.writeFileSync(filePath, content, 'utf8');
+        return true;
+    } catch (err) {
+        console.warn('write-file-content error:', err);
+        return false;
+    }
+});
+
+function getLocalizedExtensionString(str, extensionPath, manifest = {}) {
+    if (typeof str !== 'string' || !str.includes('__MSG_')) return str;
+
+    return str.replace(/__MSG_([a-zA-Z0-9_@]+)__/g, (match, key) => {
+        const keyLower = key.toLowerCase();
+
+        // Standard predefined Chrome messages
+        if (keyLower === 'extension_id') return '';
+        if (keyLower === 'ui_locale') {
+            try { return app.getLocale(); } catch (e) { return 'en'; }
+        }
+        if (keyLower === 'bidi_dir') return 'ltr';
+        if (keyLower === 'bidi_reversed_dir') return 'rtl';
+        if (keyLower === 'bidi_start_edge') return 'left';
+        if (keyLower === 'bidi_end_edge') return 'right';
+
+        // Try to locate the message in locales folder
+        const localesToTry = [];
+        try {
+            const appLocale = app.getLocale();
+            if (appLocale) {
+                localesToTry.push(appLocale);
+                localesToTry.push(appLocale.replace('-', '_'));
+                const lang = appLocale.split(/[-_]/)[0];
+                if (lang) localesToTry.push(lang);
+            }
+        } catch (e) { }
+
+        if (manifest.default_locale) {
+            localesToTry.push(manifest.default_locale);
+            localesToTry.push(manifest.default_locale.replace('-', '_'));
+            const lang = manifest.default_locale.split(/[-_]/)[0];
+            if (lang) localesToTry.push(lang);
+        }
+
+        localesToTry.push('en', 'en_US', 'en-US');
+
+        const uniqueLocales = [...new Set(localesToTry)];
+
+        for (const locale of uniqueLocales) {
+            const possibleFolders = [locale, locale.toLowerCase(), locale.toUpperCase()];
+            if (locale.includes('_')) {
+                const dashed = locale.replace('_', '-');
+                possibleFolders.push(dashed, dashed.toLowerCase());
+            } else if (locale.includes('-')) {
+                const underscored = locale.replace('-', '_');
+                possibleFolders.push(underscored, underscored.toLowerCase());
+            }
+
+            const uniqueFolders = [...new Set(possibleFolders)];
+
+            for (const folderName of uniqueFolders) {
+                const localePath = path.join(extensionPath, '_locales', folderName, 'messages.json');
+                if (fs.existsSync(localePath)) {
+                    try {
+                        const content = fs.readFileSync(localePath, 'utf8');
+                        const messages = JSON.parse(content);
+                        for (const mKey of Object.keys(messages)) {
+                            if (mKey.toLowerCase() === keyLower) {
+                                if (messages[mKey] && typeof messages[mKey].message === 'string') {
+                                    return messages[mKey].message;
+                                }
+                            }
+                        }
+                    } catch (e) { }
+                }
+            }
+        }
+        return match;
+    });
+}
+
+function extractExtensionId(input) {
+    if (!input || typeof input !== 'string') return null;
+    const clean = input.trim();
+    // Chrome extension IDs are 32 chars in the alphabet a-p
+    const match = clean.match(/([a-p]{32})/i);
+    return match ? match[1].toLowerCase() : null;
+}
+
+function getActiveExtensionSessions() {
+    const sessions = [
+        session.defaultSession,
+        session.fromPartition('persist:google_login'),
+        session.fromPartition(getProfilePartition())
+    ];
+    if (userSettings && Array.isArray(userSettings.profiles)) {
+        userSettings.profiles.forEach(p => {
+            if (p && p.id) {
+                sessions.push(session.fromPartition(`persist:profile_${p.id}`));
+            }
+        });
+    }
+    return Array.from(new Set(sessions));
+}
+
+function resolveExtensionMetadata(ext) {
+    if (!ext || !ext.id) return ext;
+    const extPath = ext.isLocal ? ext.localPath : path.join(app.getPath('userData'), 'extensions-data', ext.id);
+    if (fs.existsSync(extPath)) {
+        try {
+            const manifestPath = path.join(extPath, 'manifest.json');
+            if (fs.existsSync(manifestPath)) {
+                const manifest = JSON.parse(fs.readFileSync(manifestPath, 'utf8'));
+                ext.name = getLocalizedExtensionString(manifest.name || ext.name, extPath, manifest);
+                ext.description = getLocalizedExtensionString(manifest.description || ext.description || '', extPath, manifest);
+                ext.version = manifest.version || ext.version || '1.0';
+                ext.manifest_version = manifest.manifest_version || 2;
+
+                // Extract popup action
+                const popup = (manifest.action && manifest.action.default_popup) ||
+                    (manifest.browser_action && manifest.browser_action.default_popup) ||
+                    (manifest.page_action && manifest.page_action.default_popup) || '';
+                ext.popup = popup ? popup.replace(/^\//, '') : '';
+                ext.hasPopup = Boolean(ext.popup);
+
+                // Extract options page
+                const optionsPage = (manifest.options_ui && manifest.options_ui.page) || manifest.options_page || '';
+                ext.optionsPage = optionsPage ? optionsPage.replace(/^\//, '') : '';
+                ext.hasOptions = Boolean(ext.optionsPage);
+
+                // Read and extract best available icon as Base64 Data URI
+                if (!ext.iconData) {
+                    const iconCandidates = [];
+                    if (manifest.icons) {
+                        for (const size of ['128', '64', '48', '32', '16']) {
+                            if (manifest.icons[size]) iconCandidates.push(manifest.icons[size]);
+                        }
+                    }
+                    const actionIcons = (manifest.action && manifest.action.default_icon) || (manifest.browser_action && manifest.browser_action.default_icon);
+                    if (typeof actionIcons === 'string') iconCandidates.push(actionIcons);
+                    else if (actionIcons && typeof actionIcons === 'object') {
+                        for (const size of ['128', '64', '48', '32', '16']) {
+                            if (actionIcons[size]) iconCandidates.push(actionIcons[size]);
+                        }
+                    }
+
+                    for (const relIcon of iconCandidates) {
+                        const iconFullPath = path.join(extPath, relIcon);
+                        if (fs.existsSync(iconFullPath)) {
+                            try {
+                                const extName = path.extname(iconFullPath).toLowerCase();
+                                const mimeType = extName === '.svg' ? 'image/svg+xml' : 'image/png';
+                                ext.iconData = `data:${mimeType};base64,` + fs.readFileSync(iconFullPath).toString('base64');
+                                break;
+                            } catch (e) { }
+                        }
+                    }
+                }
+            }
+        } catch (e) {
+            console.error(`Error resolving metadata for extension ${ext.id}:`, e);
+        }
+    }
+    ext.pinned = Boolean(ext.pinned);
+    return ext;
+}
+
+// Download helper with automatic redirect following and Chrome User-Agent
+function downloadBufferFromUrl(url) {
+    const https = require('https');
+    return new Promise((resolve, reject) => {
+        const fetchUrl = (currentUrl, redirectsCount = 0) => {
+            if (redirectsCount > 10) return reject(new Error('Too many redirects while downloading extension'));
+            const req = https.get(currentUrl, {
+                headers: {
+                    'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/130.0.0.0 Safari/537.36'
+                }
+            }, (res) => {
+                if (res.statusCode >= 300 && res.statusCode < 400 && res.headers.location) {
+                    return fetchUrl(res.headers.location, redirectsCount + 1);
+                }
+                if (res.statusCode !== 200) {
+                    return reject(new Error(`Failed to download extension: HTTP ${res.statusCode}`));
+                }
+                const chunks = [];
+                res.on('data', chunk => chunks.push(chunk));
+                res.on('end', () => resolve(Buffer.concat(chunks)));
+                res.on('error', reject);
+            });
+            req.on('error', reject);
+        };
+        fetchUrl(url);
+    });
+}
+
+// ── Chrome Extension Management Engine ──────────────────────────────────────
+class ExtensionManager {
+    constructor() {
+        this.extensionsPath = path.join(app.getPath('userData'), 'extensions-data');
+        if (!fs.existsSync(this.extensionsPath)) fs.mkdirSync(this.extensionsPath, { recursive: true });
+        this.loaded = new Map();
+    }
+
+    patchExtensionForCompatibility(extPath) {
+        if (!extPath || !fs.existsSync(extPath)) return;
+        try {
+            const shimSource = path.join(__dirname, 'chrome-compat-shim.js');
+            const shimDest = path.join(extPath, 'chrome-compat-shim.js');
+            if (fs.existsSync(shimSource)) {
+                try { fs.copyFileSync(shimSource, shimDest); } catch (e) { }
+            }
+
+            const manifestPath = path.join(extPath, 'manifest.json');
+            if (!fs.existsSync(manifestPath)) return;
+
+            let manifest;
+            try {
+                manifest = JSON.parse(fs.readFileSync(manifestPath, 'utf8'));
+            } catch (e) {
+                return;
+            }
+
+            let manifestModified = false;
+
+            // 1. Service Worker in MV3
+            if (manifest.background && manifest.background.service_worker) {
+                const swFile = path.join(extPath, manifest.background.service_worker);
+                if (fs.existsSync(swFile)) {
+                    try {
+                        let swContent = fs.readFileSync(swFile, 'utf8');
+                        if (!swContent.includes('chrome-compat-shim.js')) {
+                            swContent = `/* __OCAL_COMPAT_SHIM__ */\ntry { importScripts('chrome-compat-shim.js'); } catch (e) {}\n` + swContent;
+                            fs.writeFileSync(swFile, swContent, 'utf8');
+                            console.log(`[ExtensionCompat] Injected compatibility shim into service worker: ${manifest.background.service_worker}`);
+                        }
+                    } catch (err) {
+                        console.warn('[ExtensionCompat] Service worker patch error:', err.message);
+                    }
+                }
+            }
+
+            // 2. Background Scripts in MV2
+            if (manifest.background && Array.isArray(manifest.background.scripts)) {
+                if (!manifest.background.scripts.includes('chrome-compat-shim.js')) {
+                    manifest.background.scripts.unshift('chrome-compat-shim.js');
+                    manifestModified = true;
+                }
+            }
+
+            // 2b. Background HTML Page in MV2
+            if (manifest.background && manifest.background.page) {
+                const bgPageFile = path.join(extPath, manifest.background.page.replace(/^\//, ''));
+                if (fs.existsSync(bgPageFile)) {
+                    try {
+                        let html = fs.readFileSync(bgPageFile, 'utf8');
+                        if (!html.includes('chrome-compat-shim.js')) {
+                            if (html.includes('<head>')) {
+                                html = html.replace('<head>', '<head>\n<script src="chrome-compat-shim.js"></script>');
+                            } else if (html.includes('<html>')) {
+                                html = html.replace('<html>', '<html>\n<head><script src="chrome-compat-shim.js"></script></head>');
+                            } else {
+                                html = '<script src="chrome-compat-shim.js"></script>\n' + html;
+                            }
+                            fs.writeFileSync(bgPageFile, html, 'utf8');
+                            console.log(`[ExtensionCompat] Injected compatibility shim into background page: ${manifest.background.page}`);
+                        }
+                    } catch (e) { }
+                }
+            }
+
+            // 3. Content Scripts
+            if (Array.isArray(manifest.content_scripts)) {
+                manifest.content_scripts.forEach(cs => {
+                    if (Array.isArray(cs.js) && !cs.js.includes('chrome-compat-shim.js')) {
+                        cs.js.unshift('chrome-compat-shim.js');
+                        manifestModified = true;
+                    }
+                });
+            }
+
+            // 4. Action / Browser Action Popups
+            const popup = (manifest.action && manifest.action.default_popup) ||
+                (manifest.browser_action && manifest.browser_action.default_popup) ||
+                (manifest.page_action && manifest.page_action.default_popup);
+            if (popup) {
+                const popupFile = path.join(extPath, popup.replace(/^\//, ''));
+                if (fs.existsSync(popupFile)) {
+                    try {
+                        let html = fs.readFileSync(popupFile, 'utf8');
+                        if (!html.includes('chrome-compat-shim.js')) {
+                            if (html.includes('<head>')) {
+                                html = html.replace('<head>', '<head>\n<script src="chrome-compat-shim.js"></script>');
+                            } else if (html.includes('<html>')) {
+                                html = html.replace('<html>', '<html>\n<head><script src="chrome-compat-shim.js"></script></head>');
+                            } else {
+                                html = '<script src="chrome-compat-shim.js"></script>\n' + html;
+                            }
+                            fs.writeFileSync(popupFile, html, 'utf8');
+                            console.log(`[ExtensionCompat] Injected compatibility shim into popup: ${popup}`);
+                        }
+                    } catch (e) { }
+                }
+            }
+
+            // 5. Sanitize permissions for Electron compatibility
+            if (Array.isArray(manifest.permissions)) {
+                const cleanPerms = manifest.permissions.filter(p => typeof p === 'string' && p !== 'declarativeNetRequestFeedback');
+                if (cleanPerms.length !== manifest.permissions.length) {
+                    manifest.permissions = cleanPerms;
+                    manifestModified = true;
+                }
+            }
+
+            if (manifestModified) {
+                fs.writeFileSync(manifestPath, JSON.stringify(manifest, null, 2), 'utf8');
+                console.log(`[ExtensionCompat] Updated manifest for compatibility: ${manifest.name || extPath}`);
+            }
+        } catch (err) {
+            console.warn(`[ExtensionCompat] Error patching extension at ${extPath}:`, err.message);
+        }
+    }
+
+    async loadAll() {
+        const targetSessions = getActiveExtensionSessions();
+        for (const ses of targetSessions) {
+            await this.loadAllForSession(ses);
+        }
+    }
+
+    async loadAllForSession(ses) {
+        if (!ses || (ses.isDestroyed && ses.isDestroyed())) return;
+        if (!userSettings.extensions) userSettings.extensions = [];
+        const activeExtensions = userSettings.extensions.filter(e => e.enabled);
+
+        for (const ext of activeExtensions) {
+            try {
+                const extPath = ext.isLocal ? ext.localPath : path.join(this.extensionsPath, ext.id);
+                if (fs.existsSync(extPath)) {
+                    this.patchExtensionForCompatibility(extPath);
+                    await ses.loadExtension(extPath, { allowFileAccess: true });
+                    console.log(`[ExtensionManager] Loaded ${ext.name} (${ext.id}) in session ${ses.getStoragePath() || 'profile'}`);
+                }
+            } catch (err) {
+                if (!err.message || !err.message.includes('already loaded')) {
+                    console.error(`[ExtensionManager] Failed to load extension ${ext.id}:`, err.message);
+                }
+            }
+        }
+
+        // Load built-in security modules into the session
+        if (userSettings.ocalFocusEnabled) {
+            try {
+                const focusPath = path.join(__dirname, 'ocal-focus-extension');
+                if (fs.existsSync(focusPath)) {
+                    this.patchExtensionForCompatibility(focusPath);
+                    await ses.loadExtension(focusPath, { allowFileAccess: true });
+                }
+            } catch (e) { }
+        }
+        if (userSettings.adBlockEnabled !== false) {
+            try {
+                const ublockPath = path.join(__dirname, 'ublock-origin-extension', 'uBlock0.chromium');
+                if (fs.existsSync(ublockPath)) {
+                    this.patchExtensionForCompatibility(ublockPath);
+                    await ses.loadExtension(ublockPath, { allowFileAccess: true });
+                }
+            } catch (e) { }
+        }
+        if (userSettings.youtubeDislikeEnabled !== false) {
+            try {
+                const dislikePath = path.join(__dirname, 'return-youtube-dislike-extension');
+                if (fs.existsSync(dislikePath)) {
+                    this.patchExtensionForCompatibility(dislikePath);
+                    await ses.loadExtension(dislikePath, { allowFileAccess: true });
+                }
+            } catch (e) { }
+        }
+        if (userSettings.mediaMasterEnabled !== false) {
+            try {
+                const mediaPath = path.join(__dirname, 'ocal-media-master-extension');
+                if (fs.existsSync(mediaPath)) {
+                    this.patchExtensionForCompatibility(mediaPath);
+                    await ses.loadExtension(mediaPath, { allowFileAccess: true });
+                }
+            } catch (e) { }
+        }
+    }
+
+    async downloadAndInstall(idOrUrl) {
+        const extensionId = extractExtensionId(idOrUrl);
+        if (!extensionId) {
+            throw new Error('Invalid Chrome Web Store Extension ID or URL.');
+        }
+
+        const tempPath = path.join(app.getPath('temp'), `${extensionId}.crx`);
+        const targetPath = path.join(this.extensionsPath, extensionId);
+
+        try {
+            console.log(`[ExtensionManager] Installing ${extensionId} for Chrome Extension Engine...`);
+
+            // Special fallback for uBlock Origin MV2: use bundled version if Web Store blocks MV2
+            if (extensionId === 'cjpalhdlnbpafiamejdnhcphjbkeiagm') {
+                const bundledUblock = path.join(__dirname, 'ublock-origin-extension', 'uBlock0.chromium');
+                if (fs.existsSync(bundledUblock)) {
+                    if (fs.existsSync(targetPath)) fs.rmSync(targetPath, { recursive: true, force: true });
+                    fs.cpSync(bundledUblock, targetPath, { recursive: true });
+                }
+            }
+
+            if (!fs.existsSync(targetPath) || !fs.existsSync(path.join(targetPath, 'manifest.json'))) {
+                const chromeVersion = process.versions.chrome || '156.0.8078.48';
+                const versionCandidates = [chromeVersion, '156.0.8078.48', '140.0.0.0', '132.0.0.0', '120.0.6099.130'];
+                let buffer = null;
+                let lastErr = null;
+
+                for (const ver of versionCandidates) {
+                    try {
+                        const downloadUrl = `https://clients2.google.com/service/update2/crx?response=redirect&os=win&arch=x86-64&os_arch=x86-64&nacl_arch=x86-64&prod=chromecrx&prodchannel=&prodversion=${ver}&lang=en-US&acceptformat=crx3,crx2&x=id%3D${extensionId}%26installsource%3Dondemand%26uc`;
+                        buffer = await downloadBufferFromUrl(downloadUrl);
+                        if (buffer && buffer.length >= 100) break;
+                    } catch (err) {
+                        lastErr = err;
+                    }
+                }
+
+                if (!buffer || buffer.length < 100) {
+                    throw lastErr || new Error('Downloaded extension payload is empty or blocked by Google.');
+                }
+                fs.writeFileSync(tempPath, buffer);
+
+                // 2. Strip CRX header
+                const zipBuffer = this.stripCrxHeader(buffer);
+
+                // 3. Extract to userData
+                const zip = new AdmZip(zipBuffer);
+                if (fs.existsSync(targetPath)) fs.rmSync(targetPath, { recursive: true, force: true });
+                fs.mkdirSync(targetPath, { recursive: true });
+                zip.extractAllTo(targetPath, true);
+            }
+
+            // 4. Load info from manifest and validate item type
+            const manifestPath = path.join(targetPath, 'manifest.json');
+            if (!fs.existsSync(manifestPath)) {
+                throw new Error('Extracted extension package is missing manifest.json');
+            }
+            const manifest = JSON.parse(fs.readFileSync(manifestPath, 'utf8'));
+
+            // Check if item is a Chrome Theme (Themes are not supported in Electron)
+            if (manifest.theme) {
+                if (fs.existsSync(targetPath)) {
+                    try { fs.rmSync(targetPath, { recursive: true, force: true }); } catch (e) { }
+                }
+                throw new Error('Chrome Themes cannot be installed. Themes are not supported by the extension engine. You can configure extension policies in Ocal Settings > Extensions.');
+            }
+
+            // Check if item is a legacy Chrome App
+            if (manifest.app && (!manifest.background || !manifest.content_scripts)) {
+                if (fs.existsSync(targetPath)) {
+                    try { fs.rmSync(targetPath, { recursive: true, force: true }); } catch (e) { }
+                }
+                throw new Error('Legacy Chrome Apps are not supported. Only Chrome Extensions can be installed.');
+            }
+
+            // 5. Patch with universal compatibility layer
+            this.patchExtensionForCompatibility(targetPath);
+            try {
+                manifest = JSON.parse(fs.readFileSync(manifestPath, 'utf8'));
+            } catch (e) { }
+
+            const popup = (manifest.action && manifest.action.default_popup) ||
+                (manifest.browser_action && manifest.browser_action.default_popup) ||
+                (manifest.page_action && manifest.page_action.default_popup) || '';
+            const optionsPage = (manifest.options_ui && manifest.options_ui.page) || manifest.options_page || '';
+
+            const extensionInfo = {
+                id: extensionId,
+                name: getLocalizedExtensionString(manifest.name || 'Chrome Extension', targetPath, manifest),
+                version: manifest.version || '1.0',
+                description: getLocalizedExtensionString(manifest.description || '', targetPath, manifest),
+                enabled: true,
+                pinned: true, // Automatically pin newly installed extension to toolbar for convenience
+                popup: popup ? popup.replace(/^\//, '') : '',
+                hasPopup: Boolean(popup),
+                optionsPage: optionsPage ? optionsPage.replace(/^\//, '') : '',
+                icons: manifest.icons || {}
+            };
+
+            // Read icon base64
+            resolveExtensionMetadata(extensionInfo);
+
+            // 5. Register in settings
+            if (!userSettings.extensions) userSettings.extensions = [];
+            const existingIdx = userSettings.extensions.findIndex(e => e.id === extensionId);
+            if (existingIdx > -1) {
+                userSettings.extensions[existingIdx] = { ...userSettings.extensions[existingIdx], ...extensionInfo };
+            } else {
+                userSettings.extensions.push(extensionInfo);
+            }
+            saveSettings(userSettings);
+
+            // 6. Load into all active sessions
+            const targetSessions = getActiveExtensionSessions();
+            for (const ses of targetSessions) {
+                try {
+                    await ses.loadExtension(targetPath, { allowFileAccess: true });
+                } catch (e) {
+                    if (!e.message || !e.message.includes('already loaded')) {
+                        console.warn(`[ExtensionManager] Session load warning for ${extensionId}:`, e.message);
+                    }
+                }
+            }
+
+            broadcastExtensions();
+            return extensionInfo;
+        } catch (err) {
+            console.error('[ExtensionManager] Installation failed:', err);
+            throw err;
+        } finally {
+            if (fs.existsSync(tempPath)) {
+                try { fs.unlinkSync(tempPath); } catch (e) { }
+            }
+        }
+    }
+
+    stripCrxHeader(buffer) {
+        const magic = buffer.toString('utf8', 0, 4);
+        if (magic !== 'Cr24') return buffer; // Already a raw zip
+        const version = buffer.readUInt32LE(4);
+        let offset;
+        if (version === 2) {
+            const publicKeyLength = buffer.readUInt32LE(8);
+            const signatureLength = buffer.readUInt32LE(12);
+            offset = 16 + publicKeyLength + signatureLength;
+        } else if (version === 3) {
+            const headerLength = buffer.readUInt32LE(8);
+            offset = 12 + headerLength;
+        } else {
+            throw new Error(`Unsupported CRX version: ${version}`);
+        }
+        return buffer.slice(offset);
+    }
+
+    async fetchExtensionData(idOrUrl) {
+        const extensionId = extractExtensionId(idOrUrl);
+        if (!extensionId) {
+            throw new Error('Invalid Chrome Extension ID or URL');
+        }
+
+        // Check if already installed locally
+        const localExt = (userSettings.extensions || []).find(e => e.id === extensionId);
+        if (localExt) {
+            const resolved = resolveExtensionMetadata({ ...localExt });
+            return {
+                ...resolved,
+                isInstalled: true
+            };
+        }
+
+        const chromeVersion = process.versions.chrome || '156.0.8078.48';
+        const downloadUrl = `https://clients2.google.com/service/update2/crx?response=redirect&os=win&arch=x86-64&os_arch=x86-64&nacl_arch=x86-64&prod=chromecrx&prodchannel=&prodversion=${chromeVersion}&lang=en-US&acceptformat=crx3,crx2&x=id%3D${extensionId}%26installsource%3Dondemand%26uc`;
+
+        console.log(`[ExtensionManager] Grabbing data for ${extensionId} from Google...`);
+        const buffer = await downloadBufferFromUrl(downloadUrl);
+        if (!buffer || buffer.length < 100) {
+            throw new Error('Could not download extension package from Google.');
+        }
+
+        const zipBuffer = this.stripCrxHeader(buffer);
+        const zip = new AdmZip(zipBuffer);
+
+        const manifestEntry = zip.getEntry('manifest.json');
+        if (!manifestEntry) {
+            throw new Error('manifest.json not found in extension package');
+        }
+
+        const manifest = JSON.parse(manifestEntry.getData().toString('utf8'));
+
+        // Extract localized messages if available
+        let localeMsgs = {};
+        const localeCandidates = ['_locales/en/messages.json', '_locales/en_US/messages.json', '_locales/en_GB/messages.json'];
+        for (const locPath of localeCandidates) {
+            const locEntry = zip.getEntry(locPath);
+            if (locEntry) {
+                try {
+                    localeMsgs = JSON.parse(locEntry.getData().toString('utf8'));
+                    break;
+                } catch (e) { }
+            }
+        }
+        if (Object.keys(localeMsgs).length === 0) {
+            const anyLoc = zip.getEntries().find(e => e.entryName.startsWith('_locales/') && e.entryName.endsWith('messages.json'));
+            if (anyLoc) {
+                try { localeMsgs = JSON.parse(anyLoc.getData().toString('utf8')); } catch (e) { }
+            }
+        }
+
+        function localize(str) {
+            if (!str || typeof str !== 'string') return '';
+            if (str.startsWith('__MSG_') && str.endsWith('__')) {
+                const key = str.slice(6, -2);
+                if (localeMsgs[key] && localeMsgs[key].message) return localeMsgs[key].message;
+            }
+            return str;
+        }
+
+        const name = localize(manifest.name) || (manifest.theme ? 'Chrome Theme' : 'Chrome Extension');
+        const description = localize(manifest.description) || '';
+        const version = manifest.version || '1.0';
+
+        // Check if item is a Chrome Theme
+        if (manifest.theme) {
+            return {
+                id: extensionId,
+                name,
+                description: description || 'Chrome Browser Theme',
+                version,
+                iconData: null,
+                author: manifest.author || 'Chrome Web Store Publisher',
+                permissions: [],
+                manifest_version: manifest.manifest_version || 2,
+                size: (buffer.length / (1024 * 1024)).toFixed(2) + ' MB',
+                hasPopup: false,
+                isInstalled: false,
+                isTheme: true,
+                isApp: false,
+                canInstall: false,
+                unsupportedReason: 'Chrome Themes cannot be installed. Themes are not supported by the extension engine. You can configure extension policies in Ocal Settings > Extensions.'
+            };
+        }
+
+        // Check if item is a legacy Chrome App
+        if (manifest.app && (!manifest.background || !manifest.content_scripts)) {
+            return {
+                id: extensionId,
+                name: localize(manifest.name) || 'Chrome App',
+                description: description || 'Legacy Chrome App',
+                version,
+                iconData: null,
+                author: manifest.author || 'Chrome Web Store Publisher',
+                permissions: [],
+                manifest_version: manifest.manifest_version || 2,
+                size: (buffer.length / (1024 * 1024)).toFixed(2) + ' MB',
+                hasPopup: false,
+                isInstalled: false,
+                isTheme: false,
+                isApp: true,
+                canInstall: false,
+                unsupportedReason: 'Legacy Chrome Apps are not supported. Only Chrome Extensions can be installed.'
+            };
+        }
+
+        // Extract highest resolution icon as data URI
+        let iconData = null;
+        const iconCandidates = [];
+        if (manifest.icons) {
+            for (const s of ['128', '96', '64', '48', '32', '16']) {
+                if (manifest.icons[s]) iconCandidates.push(manifest.icons[s].replace(/^\//, ''));
+            }
+        }
+        const actionIcons = (manifest.action && manifest.action.default_icon) || (manifest.browser_action && manifest.browser_action.default_icon);
+        if (typeof actionIcons === 'string') iconCandidates.push(actionIcons.replace(/^\//, ''));
+        else if (actionIcons && typeof actionIcons === 'object') {
+            for (const s of ['128', '96', '64', '48', '32', '16']) {
+                if (actionIcons[s]) iconCandidates.push(actionIcons[s].replace(/^\//, ''));
+            }
+        }
+
+        for (const relIcon of iconCandidates) {
+            const iconEntry = zip.getEntry(relIcon) || zip.getEntries().find(e => e.entryName.toLowerCase() === relIcon.toLowerCase());
+            if (iconEntry) {
+                const extName = relIcon.split('.').pop().toLowerCase();
+                const mime = extName === 'svg' ? 'image/svg+xml' : 'image/png';
+                iconData = `data:${mime};base64,` + iconEntry.getData().toString('base64');
+                break;
+            }
+        }
+
+        const size = (buffer.length / (1024 * 1024)).toFixed(2) + ' MB';
+        const popup = (manifest.action && manifest.action.default_popup) ||
+            (manifest.browser_action && manifest.browser_action.default_popup) ||
+            (manifest.page_action && manifest.page_action.default_popup) || '';
+
+        return {
+            id: extensionId,
+            name,
+            description,
+            version,
+            iconData,
+            author: manifest.author || (manifest.homepage_url ? new URL(manifest.homepage_url).hostname : 'Chrome Web Store Publisher'),
+            permissions: manifest.permissions || [],
+            manifest_version: manifest.manifest_version || 3,
+            size,
+            hasPopup: Boolean(popup),
+            isInstalled: false,
+            isTheme: false,
+            isApp: false,
+            canInstall: true
+        };
+    }
+
+    async remove(id) {
+        try {
+            const targetPath = path.join(this.extensionsPath, id);
+            if (fs.existsSync(targetPath)) fs.rmSync(targetPath, { recursive: true, force: true });
+
+            userSettings.extensions = (userSettings.extensions || []).filter(e => e.id !== id);
+            saveSettings(userSettings);
+            broadcastExtensions();
+            return true;
+        } catch (err) {
+            console.error('[ExtensionManager] Failed to remove extension:', err);
+            return false;
+        }
+    }
+}
+
+const extensionManager = new ExtensionManager();
+
+// Extension Popup Window Manager
+let extensionPopupWindow = null;
+
+async function showExtensionPopup(extId, anchorBounds) {
+    if (!extId) return;
+
+    const ses = session.fromPartition(getProfilePartition());
+    await ensureSessionExtensions(ses);
+
+    // Check if it's a built-in security module with a popup
+    if (extId === 'ad-blocker' || extId === 'cjpalhdlnbpafiamejdnhcphjbkeiagm' || extId === 'ublock') {
+        const ublockPath = path.join(__dirname, 'ublock-origin-extension', 'uBlock0.chromium');
+        if (fs.existsSync(ublockPath)) {
+            const loaded = ses.getAllExtensions().find(e => (e.name && e.name.toLowerCase().includes('ublock')) || (e.path && e.path.toLowerCase().includes('ublock')));
+            if (loaded) {
+                return openExtensionWindow(loaded.id, 'popup-fenix.html', anchorBounds, 'uBlock Origin');
+            }
+        }
+    } else if (extId === 'dislike-recovery' || extId === 'gebbhagfogifgggkldgodflihgfeippi' || extId === 'dislike' || extId === 'return-youtube-dislike') {
+        const rydPath = path.join(__dirname, 'return-youtube-dislike-extension');
+        if (fs.existsSync(rydPath)) {
+            const loaded = ses.getAllExtensions().find(e => (e.name && (e.name.toLowerCase().includes('dislike') || e.name.includes('__MSG_extensionName__'))) || (e.path && e.path.toLowerCase().includes('dislike')));
+            if (loaded) {
+                return openExtensionWindow(loaded.id, 'popup.html', anchorBounds, 'Return YouTube Dislike');
+            }
+        }
+    }
+
+    const rawExt = (userSettings.extensions || []).find(e => e.id === extId);
+    if (!rawExt) return;
+    const resolved = resolveExtensionMetadata({ ...rawExt });
+
+    if (!resolved.enabled) {
+        if (mainWindow && !mainWindow.isDestroyed()) {
+            mainWindow.webContents.send('show-toast', {
+                message: `${resolved.name} is currently disabled.`,
+                icon: 'fa-pause-circle'
+            });
+        }
+        return;
+    }
+
+    // Resolve the actual extension ID registered in the session
+    const extPath = resolved.isLocal ? resolved.localPath : path.join(app.getPath('userData'), 'extensions-data', resolved.id);
+    let loaded = ses.getAllExtensions().find(e => e.id === resolved.id || (e.path && path.resolve(e.path) === path.resolve(extPath)));
+    if (!loaded && fs.existsSync(extPath)) {
+        try {
+            loaded = await ses.loadExtension(extPath, { allowFileAccess: true });
+        } catch (err) {
+            console.error('[ExtensionManager] Error loading extension into session on popup demand:', err);
+        }
+    }
+    const runtimeId = loaded ? loaded.id : resolved.id;
+
+    if (resolved.popup) {
+        openExtensionWindow(runtimeId, resolved.popup, anchorBounds, resolved.name);
+    } else {
+        // Dispatch click to extension background context or service worker
+        try {
+            const { webContents } = require('electron');
+            if (webContents && typeof webContents.getAllWebContents === 'function') {
+                webContents.getAllWebContents().forEach(wc => {
+                    try {
+                        if (!wc.isDestroyed() && wc.getURL().includes(runtimeId)) {
+                            wc.executeJavaScript(`
+                                if (typeof chrome !== 'undefined') {
+                                    const currentTab = { id: 1, active: true, url: window.location.href };
+                                    if (chrome.action && chrome.action.onClicked && chrome.action.onClicked._dispatch) {
+                                        chrome.action.onClicked._dispatch(currentTab);
+                                    }
+                                    if (chrome.browserAction && chrome.browserAction.onClicked && chrome.browserAction.onClicked._dispatch) {
+                                        chrome.browserAction.onClicked._dispatch(currentTab);
+                                    }
+                                    if (chrome.pageAction && chrome.pageAction.onClicked && chrome.pageAction.onClicked._dispatch) {
+                                        chrome.pageAction.onClicked._dispatch(currentTab);
+                                    }
+                                }
+                            `).catch(() => { });
+                        }
+                    } catch (e) { }
+                });
+            }
+        } catch (err) { }
+
+        if (resolved.optionsPage) {
+            createNewTab(`chrome-extension://${runtimeId}/${resolved.optionsPage.replace(/^\//, '')}`);
+        } else {
+            if (mainWindow && !mainWindow.isDestroyed()) {
+                mainWindow.webContents.send('show-toast', {
+                    message: `${resolved.name} is active.`,
+                    icon: 'fa-circle-check'
+                });
+            }
+        }
+    }
+}
+
+function openExtensionWindow(extensionId, popupPath, anchorBounds, title = 'Extension') {
+    if (extensionPopupWindow && !extensionPopupWindow.isDestroyed()) {
+        const prevId = extensionPopupWindow.extensionId;
+        try { extensionPopupWindow.close(); } catch (e) { }
+        extensionPopupWindow = null;
+        if (prevId === extensionId) return;
+    }
+
+    const cleanPopup = popupPath.replace(/^\//, '');
+    const popupUrl = `chrome-extension://${extensionId}/${cleanPopup}`;
+
+    const contentBounds = (mainWindow && !mainWindow.isDestroyed() && mainWindow.getContentBounds)
+        ? mainWindow.getContentBounds()
+        : (mainWindow && !mainWindow.isDestroyed() ? mainWindow.getBounds() : { x: 0, y: 0, width: 1280, height: 800 });
+    const mainX = contentBounds.x;
+    const mainY = contentBounds.y;
+    const primaryDisplay = screen.getDisplayMatching(contentBounds) || screen.getPrimaryDisplay();
+    const { x: scrX, y: scrY, width: screenW, height: screenH } = primaryDisplay.workArea;
+
+    // Initial default dimensions - will adapt dynamically to match content
+    let currentWidth = 360;
+    let currentHeight = 480;
+
+    // Elegant floating gap below toolbar button (prevents overlap, looks premium)
+    const popupVerticalGap = 14;
+
+    let posX = Math.round(mainX + (anchorBounds ? (anchorBounds.x - currentWidth + (anchorBounds.width || 30)) : (contentBounds.width - currentWidth - 20)));
+    let posY = Math.round(mainY + (anchorBounds ? (anchorBounds.y + (anchorBounds.height || 36) + popupVerticalGap) : 88));
+
+    if (posX + currentWidth > scrX + screenW - 12) posX = scrX + screenW - currentWidth - 12;
+    if (posY + currentHeight > scrY + screenH - 12) posY = scrY + screenH - currentHeight - 12;
+    if (posX < scrX + 12) posX = scrX + 12;
+    if (posY < scrY + 12) posY = scrY + 12;
+
+    extensionPopupWindow = new BrowserWindow({
+        width: currentWidth,
+        height: currentHeight,
+        x: posX,
+        y: posY,
+        frame: false,
+        resizable: false,
+        show: false,
+        alwaysOnTop: true,
+        skipTaskbar: true,
+        icon: getAppIconPath(),
+        backgroundColor: (userSettings && userSettings.themeMode === 'light') ? '#FFFFFF' : '#1A1D24',
+        parent: mainWindow,
+        hasShadow: true,
+        roundedCorners: true,
+        webPreferences: {
+            partition: getProfilePartition(),
+            nodeIntegration: false,
+            contextIsolation: true,
+            sandbox: false,
+            devTools: true
+        }
+    });
+
+    extensionPopupWindow.extensionId = extensionId;
+
+    extensionPopupWindow.webContents.setWindowOpenHandler(({ url }) => {
+        createNewTab(url);
+        if (extensionPopupWindow && !extensionPopupWindow.isDestroyed()) {
+            try { extensionPopupWindow.close(); } catch (e) { }
+            extensionPopupWindow = null;
+        }
+        return { action: 'deny' };
+    });
+
+    // Dynamic Sizing & Styling Engine conforming to Chrome Extension popup standards
+    const adjustBoundsToContent = async () => {
+        if (!extensionPopupWindow || extensionPopupWindow.isDestroyed()) return;
+        try {
+            const size = await extensionPopupWindow.webContents.executeJavaScript(`
+                (() => {
+                    const html = document.documentElement;
+                    const body = document.body;
+                    if (!html || !body) return null;
+
+                    const parsePx = (v) => {
+                        if (!v || typeof v !== 'string') return 0;
+                        const m = v.trim().match(/^([0-9.]+)px$/);
+                        return m ? Math.round(parseFloat(m[1])) : 0;
+                    };
+
+                    // 1. Check direct declared styles on html and body (inline style attributes)
+                    let explicitW = parsePx(html.style.width) || parsePx(body.style.width) ||
+                                    parsePx(html.style.minWidth) || parsePx(body.style.minWidth);
+                    let explicitH = parsePx(html.style.height) || parsePx(body.style.height) ||
+                                    parsePx(html.style.minHeight) || parsePx(body.style.minHeight);
+
+                    // 2. Check CSS stylesheets for html, body, :root rules
+                    try {
+                        for (const sheet of document.styleSheets) {
+                            try {
+                                const rules = sheet.cssRules || sheet.rules;
+                                if (!rules) continue;
+                                for (const rule of rules) {
+                                    if (rule.selectorText) {
+                                        const sel = rule.selectorText.trim().toLowerCase();
+                                        if (sel === 'html' || sel === 'body' || sel === ':root' || sel === 'html, body' || sel === 'body, html') {
+                                            const w = parsePx(rule.style.width) || parsePx(rule.style.minWidth);
+                                            const h = parsePx(rule.style.height) || parsePx(rule.style.minHeight);
+                                            if (w > 50 && !explicitW) explicitW = w;
+                                            if (h > 50 && !explicitH) explicitH = h;
+                                        }
+                                    }
+                                }
+                            } catch (e) {}
+                        }
+                    } catch (e) {}
+
+                    // 3. Inspect main container / root elements
+                    let rootW = 0;
+                    let rootH = 0;
+                    const rootCandidates = [
+                        document.getElementById('root'),
+                        document.getElementById('app'),
+                        document.querySelector('main'),
+                        document.querySelector('[class*="popup"]'),
+                        document.querySelector('[id*="popup"]'),
+                        document.querySelector('[class*="container"]'),
+                        document.querySelector('[id*="container"]'),
+                        body.firstElementChild
+                    ].filter(Boolean);
+
+                    for (const el of rootCandidates) {
+                        if (el && el !== body && el !== html) {
+                            const cs = window.getComputedStyle(el);
+                            if (cs.display === 'none') continue;
+                            const r = el.getBoundingClientRect();
+                            const w = parsePx(el.style.width) || parsePx(cs.width) || Math.round(r.width) || el.scrollWidth;
+                            const h = parsePx(el.style.height) || parsePx(cs.height) || Math.round(r.height) || el.scrollHeight;
+                            if (w > 50 && w > rootW) rootW = w;
+                            if (h > 50 && h > rootH) rootH = h;
+                        }
+                    }
+
+                    // 4. Measure visible child elements bounding box
+                    let maxChildRight = 0;
+                    let maxChildBottom = 0;
+                    const bodyRect = body.getBoundingClientRect();
+
+                    for (const child of body.children) {
+                        if (['SCRIPT', 'STYLE', 'NOSCRIPT', 'TEMPLATE'].includes(child.tagName)) continue;
+                        const cs = window.getComputedStyle(child);
+                        if (cs.display === 'none' || cs.visibility === 'hidden') continue;
+                        const r = child.getBoundingClientRect();
+                        const right = Math.round(r.right - bodyRect.left);
+                        const bottom = Math.round(r.bottom - bodyRect.top);
+                        if (right > maxChildRight) maxChildRight = right;
+                        if (bottom > maxChildBottom) maxChildBottom = bottom;
+                    }
+
+                    // 5. Compute scroll dimensions
+                    const scrollW = Math.max(body.scrollWidth, html.scrollWidth);
+                    const scrollH = Math.max(body.scrollHeight, html.scrollHeight);
+
+                    // 6. Synthesize final dimensions:
+                    let finalW = explicitW || rootW || maxChildRight || scrollW || 360;
+                    let finalH = explicitH || rootH || maxChildBottom || scrollH || 480;
+
+                    if (explicitW > 50) {
+                        finalW = Math.max(explicitW, maxChildRight);
+                    }
+                    if (explicitH > 50) {
+                        finalH = Math.max(explicitH, maxChildBottom);
+                    }
+
+                    // Chrome specifications: min 200x100, max 800x600
+                    finalW = Math.min(800, Math.max(200, Math.round(finalW)));
+                    finalH = Math.min(600, Math.max(100, Math.round(finalH)));
+
+                    return { width: finalW, height: finalH };
+                })()
+            `);
+
+            if (size && size.width > 50 && size.height > 50) {
+                const finalW = Math.min(800, Math.max(200, Math.round(size.width)));
+                const finalH = Math.min(600, Math.max(100, Math.round(size.height)));
+
+                const curContent = (mainWindow && !mainWindow.isDestroyed() && mainWindow.getContentBounds)
+                    ? mainWindow.getContentBounds()
+                    : contentBounds;
+                const curMainX = curContent.x;
+                const curMainY = curContent.y;
+
+                let targetX = Math.round(curMainX + (anchorBounds ? (anchorBounds.x - finalW + (anchorBounds.width || 30)) : (curContent.width - finalW - 20)));
+                let targetY = Math.round(curMainY + (anchorBounds ? (anchorBounds.y + (anchorBounds.height || 36) + popupVerticalGap) : 88));
+
+                if (targetX + finalW > scrX + screenW - 12) targetX = scrX + screenW - finalW - 12;
+                if (targetY + finalH > scrY + screenH - 12) targetY = scrY + screenH - finalH - 12;
+                if (targetX < scrX + 12) targetX = scrX + 12;
+                if (targetY < scrY + 12) targetY = scrY + 12;
+
+                const curBounds = extensionPopupWindow.getBounds();
+                if (Math.abs(curBounds.width - finalW) > 2 || Math.abs(curBounds.height - finalH) > 2 || Math.abs(curBounds.x - targetX) > 2) {
+                    extensionPopupWindow.setBounds({
+                        x: targetX,
+                        y: targetY,
+                        width: finalW,
+                        height: finalH
+                    });
+                }
+            }
+        } catch (e) { }
+    };
+
+    const attachContentObserver = async () => {
+        if (!extensionPopupWindow || extensionPopupWindow.isDestroyed()) return;
+        try {
+            await extensionPopupWindow.webContents.executeJavaScript(`
+                (() => {
+                    if (window.__ocalPopupObserverInstalled) return;
+                    window.__ocalPopupObserverInstalled = true;
+
+                    // Inject elegant custom scrollbar styles matching browser theme
+                    if (!document.getElementById('__ocal_popup_style')) {
+                        const style = document.createElement('style');
+                        style.id = '__ocal_popup_style';
+                        const isLightMode = ${userSettings && userSettings.themeMode === 'light'};
+                        const thumbBg = isLightMode ? 'rgba(0, 0, 0, 0.2)' : 'rgba(255, 255, 255, 0.22)';
+                        const thumbHover = isLightMode ? 'rgba(0, 0, 0, 0.35)' : 'rgba(255, 255, 255, 0.4)';
+                        style.textContent = \`
+                            html {
+                                scrollbar-width: thin !important;
+                            }
+                            ::-webkit-scrollbar {
+                                width: 6px !important;
+                                height: 6px !important;
+                            }
+                            ::-webkit-scrollbar-track {
+                                background: transparent !important;
+                            }
+                            ::-webkit-scrollbar-thumb {
+                                background: \${thumbBg} !important;
+                                border-radius: 999px !important;
+                            }
+                            ::-webkit-scrollbar-thumb:hover {
+                                background: \${thumbHover} !important;
+                            }
+                        \`;
+                        document.head.appendChild(style);
+                    }
+
+                    let debounceTimer = null;
+                    const triggerResize = () => {
+                        clearTimeout(debounceTimer);
+                        debounceTimer = setTimeout(() => {
+                            console.log('__OCAL_EXT_POPUP_RESIZE__');
+                        }, 30);
+                    };
+
+                    if (window.ResizeObserver) {
+                        const ro = new ResizeObserver(triggerResize);
+                        ro.observe(document.documentElement);
+                        if (document.body) ro.observe(document.body);
+                        const rootEl = document.getElementById('root') || document.getElementById('app') || document.querySelector('[class*="popup"]');
+                        if (rootEl) ro.observe(rootEl);
+                    }
+                    const mo = new MutationObserver(triggerResize);
+                    mo.observe(document.documentElement, { childList: true, subtree: true, attributes: true });
+                })()
+            `);
+        } catch (e) { }
+    };
+
+    extensionPopupWindow.webContents.on('console-message', (event) => {
+        if (event && event.message === '__OCAL_EXT_POPUP_RESIZE__') {
+            adjustBoundsToContent();
+        }
+    });
+
+    extensionPopupWindow.webContents.once('dom-ready', async () => {
+        await attachContentObserver();
+        await adjustBoundsToContent();
+    });
+
+    extensionPopupWindow.webContents.on('did-finish-load', async () => {
+        await attachContentObserver();
+        await adjustBoundsToContent();
+        setTimeout(adjustBoundsToContent, 80);
+        setTimeout(adjustBoundsToContent, 200);
+        setTimeout(adjustBoundsToContent, 450);
+        setTimeout(adjustBoundsToContent, 800);
+    });
+
+    // Register blur only after show to prevent premature dismissal on startup
+    extensionPopupWindow.once('ready-to-show', async () => {
+        if (extensionPopupWindow && !extensionPopupWindow.isDestroyed()) {
+            try { await adjustBoundsToContent(); } catch (e) { }
+            if (extensionPopupWindow && !extensionPopupWindow.isDestroyed()) {
+                extensionPopupWindow.show();
+                extensionPopupWindow.focus();
+                setTimeout(() => {
+                    if (extensionPopupWindow && !extensionPopupWindow.isDestroyed()) {
+                        extensionPopupWindow.on('blur', () => {
+                            if (extensionPopupWindow && !extensionPopupWindow.isDestroyed()) {
+                                try { extensionPopupWindow.close(); } catch (e) { }
+                                extensionPopupWindow = null;
+                            }
+                        });
+                    }
+                }, 350);
+            }
+        }
+    });
+
+    extensionPopupWindow.loadURL(popupUrl).then(() => {
+        if (extensionPopupWindow && !extensionPopupWindow.isDestroyed() && !extensionPopupWindow.isVisible()) {
+            adjustBoundsToContent().then(() => {
+                if (extensionPopupWindow && !extensionPopupWindow.isDestroyed()) {
+                    extensionPopupWindow.show();
+                    extensionPopupWindow.focus();
+                }
+            });
+        }
+    }).catch(err => {
+        console.error('[ExtensionManager] Failed to load extension popup URL in window:', popupUrl, err);
+        if (extensionPopupWindow && !extensionPopupWindow.isDestroyed()) {
+            try { extensionPopupWindow.close(); } catch (e) { }
+            extensionPopupWindow = null;
+        }
+        createNewTab(popupUrl);
+    });
+}
+
+function broadcastExtensions() {
+    const list = (userSettings.extensions || []).map(ext => resolveExtensionMetadata({ ...ext }));
+    try {
+        const { webContents } = require('electron');
+        if (webContents && typeof webContents.getAllWebContents === 'function') {
+            webContents.getAllWebContents().forEach(wc => {
+                if (!wc.isDestroyed()) {
+                    try { wc.send('extensions-updated', list); } catch (e) { }
+                }
+            });
+        }
+    } catch (err) { }
+    if (extensionDropdownView && !extensionDropdownView.webContents.isDestroyed()) {
+        extensionDropdownView.webContents.send('refresh-extensions', list);
+    }
+}
+
+async function ensureSessionExtensions(ses) {
+    if (!ses) return;
+    if (ses._extensionsInitialized) return;
+    ses._extensionsInitialized = true;
+    try {
+        await extensionManager.loadAllForSession(ses);
+    } catch (e) {
+        console.error('[ExtensionManager] Error initializing session extensions:', e);
+    }
+}
+
+ipcMain.handle('install-extension', async (e, id) => {
+    return await extensionManager.downloadAndInstall(id);
+});
+
+ipcMain.handle('fetch-extension-info', async (e, id) => {
+    return await extensionManager.fetchExtensionData(id);
+});
+
+ipcMain.handle('check-extension-store-item', async (e, id) => {
+    if (!id || typeof id !== 'string') return { canInstall: false, error: 'Invalid ID' };
+    const cleanId = id.trim().toLowerCase();
+    const isInstalled = (userSettings.extensions || []).some(x => x.id && x.id.toLowerCase() === cleanId);
+    if (isInstalled) {
+        return { id: cleanId, isInstalled: true, canInstall: true, isTheme: false, isApp: false };
+    }
+    try {
+        const info = await extensionManager.fetchExtensionData(cleanId);
+        return {
+            id: cleanId,
+            isInstalled: false,
+            canInstall: info.canInstall !== false,
+            isTheme: Boolean(info.isTheme),
+            isApp: Boolean(info.isApp),
+            name: info.name,
+            reason: info.unsupportedReason || ''
+        };
+    } catch (err) {
+        return { id: cleanId, isInstalled: false, canInstall: true, error: err.message };
+    }
+});
+
+ipcMain.handle('load-unpacked-extension', async (e) => {
+    const result = await dialog.showOpenDialog(mainWindow, {
+        title: 'Select Extension Directory',
+        properties: ['openDirectory']
+    });
+
+    if (result.canceled || result.filePaths.length === 0) return null;
+    const dirPath = result.filePaths[0];
+
+    try {
+        const manifestPath = path.join(dirPath, 'manifest.json');
+        if (!fs.existsSync(manifestPath)) {
+            throw new Error("No manifest.json found in directory");
+        }
+
+        const manifest = JSON.parse(fs.readFileSync(manifestPath, 'utf8'));
+
+        if (manifest.theme) {
+            throw new Error("Chrome Themes cannot be installed as extensions. Extension compatibility settings are in Ocal Settings > Extensions.");
+        }
+
+        if (!userSettings.bookmarks) userSettings.bookmarks = [];
+        if (!userSettings.folders) userSettings.folders = [];
+        if (!userSettings.history) userSettings.history = [];
+        if (!userSettings.downloads) userSettings.downloads = [];
+
+        const extensionId = require('crypto').createHash('md5').update(dirPath).digest('hex');
+
+        const popup = (manifest.action && manifest.action.default_popup) ||
+            (manifest.browser_action && manifest.browser_action.default_popup) ||
+            (manifest.page_action && manifest.page_action.default_popup) || '';
+        const optionsPage = (manifest.options_ui && manifest.options_ui.page) || manifest.options_page || '';
+
+        const extensionInfo = {
+            id: extensionId,
+            name: getLocalizedExtensionString(manifest.name, dirPath, manifest),
+            version: manifest.version,
+            description: getLocalizedExtensionString(manifest.description || 'Unpacked Extension', dirPath, manifest),
+            enabled: true,
+            pinned: true,
+            popup: popup ? popup.replace(/^\//, '') : '',
+            hasPopup: Boolean(popup),
+            optionsPage: optionsPage ? optionsPage.replace(/^\//, '') : '',
+            icons: manifest.icons || {},
+            isLocal: true,
+            localPath: dirPath
+        };
+
+        resolveExtensionMetadata(extensionInfo);
+
+        if (!userSettings.extensions) userSettings.extensions = [];
+        const existingIdx = userSettings.extensions.findIndex(ext => ext.id === extensionId);
+        if (existingIdx > -1) userSettings.extensions[existingIdx] = extensionInfo;
+        else userSettings.extensions.push(extensionInfo);
+
+        saveSettings(userSettings);
+
+        extensionManager.patchExtensionForCompatibility(dirPath);
+        const targetSessions = getActiveExtensionSessions();
+        for (const ses of targetSessions) {
+            try {
+                await ses.loadExtension(dirPath, { allowFileAccess: true });
+            } catch (e) { }
+        }
+
+        broadcastExtensions();
+        return extensionInfo;
+    } catch (err) {
+        console.error('Local extension error:', err);
+        throw err;
+    }
+});
+
+ipcMain.handle('get-extensions', () => {
+    return (userSettings.extensions || []).map(ext => resolveExtensionMetadata({ ...ext }));
+});
+
+ipcMain.handle('get-all-extensions', () => {
+    const native = [
+        { id: 'ai-assistant', name: 'Ocal AI Assistant', desc: 'AI-powered productivity and browsing assistant.', enabled: userSettings.aiAssistantEnabled, type: 'native', icon: 'fa-wand-magic-sparkles' },
+        { id: 'cyber-stealth', name: 'Cyber Stealth', desc: 'Fingerprint protection and cross-request anonymity.', enabled: userSettings.cyberStealthEnabled, type: 'native', icon: 'fa-user-secret' },
+        { id: 'ad-blocker', name: 'uBlock Origin', desc: 'An efficient ad blocker. Easy on CPU and memory.', enabled: userSettings.adBlockEnabled, type: 'native', icon: 'fa-shield-halved', hasPopup: true },
+        { id: 'dislike-recovery', name: 'Return YouTube Dislike', desc: 'Standalone extension to restore dislike counts on YouTube.', enabled: userSettings.youtubeDislikeEnabled, type: 'native', icon: 'fa-thumbs-down', hasPopup: true },
+        { id: 'media-master', name: 'Ocal Media Master', desc: 'Professional video and image downloader for all sites.', enabled: userSettings.mediaMasterEnabled, type: 'native', icon: 'fa-download' },
+        { id: 'asset-vault', name: 'Asset Vault', desc: 'High-performance local resource caching.', enabled: userSettings.assetVaultEnabled, type: 'native', icon: 'fa-vault' }
+    ];
+    const marketplace = (userSettings.extensions || []).map(e => ({
+        ...resolveExtensionMetadata({ ...e }),
+        type: 'marketplace'
+    }));
+    return [...native, ...marketplace];
+});
+
+ipcMain.handle('toggle-pin-extension', (e, id) => {
+    if (!userSettings.extensions) userSettings.extensions = [];
+    const ext = userSettings.extensions.find(x => x.id === id);
+    if (ext) {
+        ext.pinned = !ext.pinned;
+        saveSettings(userSettings);
+        broadcastExtensions();
+        return ext.pinned;
+    }
+    return false;
+});
+
+ipcMain.on('open-extension-popup', async (e, { id, bounds }) => {
+    hidePopups();
+    await showExtensionPopup(id, bounds);
+});
+
+ipcMain.handle('toggle-native-extension', (e, { id, enabled }) => {
+    if (id === 'ai-assistant') userSettings.aiAssistantEnabled = enabled;
+    else if (id === 'cyber-stealth') userSettings.cyberStealthEnabled = enabled;
+    else if (id === 'ad-blocker') userSettings.adBlockEnabled = enabled;
+    else if (id === 'dislike-recovery') userSettings.youtubeDislikeEnabled = enabled;
+    else if (id === 'media-master') userSettings.mediaMasterEnabled = enabled;
+    else if (id === 'asset-vault') userSettings.assetVaultEnabled = enabled;
+
+    saveSettings(userSettings);
+    broadcastSettings(userSettings);
+    broadcastExtensions();
+    return true;
+});
+
+ipcMain.handle('remove-extension', async (e, id) => {
+    return await extensionManager.remove(id);
+});
+
+ipcMain.handle('toggle-extension', async (e, { id, enabled }) => {
+    const ext = (userSettings.extensions || []).find(x => x.id === id);
+    if (ext) {
+        ext.enabled = enabled;
+        saveSettings(userSettings);
+        if (enabled) {
+            const extPath = ext.isLocal ? ext.localPath : path.join(extensionManager.extensionsPath, ext.id);
+            if (fs.existsSync(extPath)) {
+                for (const ses of getActiveExtensionSessions()) {
+                    try { await ses.loadExtension(extPath, { allowFileAccess: true }); } catch (err) { }
+                }
+            }
+        }
+        broadcastExtensions();
+        return true;
+    }
+    return false;
+});
+
+ipcMain.on('install-extension-from-store', async (e, id) => {
+    try {
+        const info = await extensionManager.downloadAndInstall(id);
+        if (e && e.sender && !e.sender.isDestroyed()) {
+            e.sender.send('install-extension-store-result', { id, success: true, name: info.name });
+        }
+        if (mainWindow && !mainWindow.isDestroyed()) {
+            mainWindow.webContents.send('show-toast', {
+                message: `✓ Installed ${info.name || 'extension'}!`,
+                icon: 'fa-puzzle-piece'
+            });
+            mainWindow.webContents.send('show-modal', {
+                title: 'Success',
+                message: `Extension ${info.name || id} installed successfully!`,
+                type: 'success'
+            });
+        }
+    } catch (err) {
+        const isTheme = err.message && err.message.toLowerCase().includes('theme');
+        if (e && e.sender && !e.sender.isDestroyed()) {
+            e.sender.send('install-extension-store-result', {
+                id,
+                success: false,
+                error: err.message,
+                isTheme
+            });
+        }
+        if (mainWindow && !mainWindow.isDestroyed()) {
+            mainWindow.webContents.send('show-toast', {
+                message: isTheme ? `Theme Unsupported: ${err.message}` : `Failed to install extension: ${err.message}`,
+                icon: isTheme ? 'fa-palette' : 'fa-triangle-exclamation'
+            });
+            mainWindow.webContents.send('show-modal', {
+                title: isTheme ? 'Theme Not Supported' : 'Installation Failed',
+                message: err.message,
+                type: isTheme ? 'warning' : 'error'
+            });
+        }
+    }
+});
+
+async function createPipWindow(contents) {
+    if (pipWindow && !pipWindow.isDestroyed()) {
+        pipWindow.focus();
+        return;
+    }
+
+    // We KEEP the view in the main window! No more crashes or broken tabs.
+    pipSourceContents = contents;
+
+    pipWindow = new BrowserWindow({
+        width: 480,
+        height: 270,
+        frame: false,
+        resizable: true,
+        alwaysOnTop: true,
+        backgroundColor: '#000000',
+        minWidth: 320,
+        minHeight: 180,
+        show: false,
+        webPreferences: {
+            nodeIntegration: true,
+            contextIsolation: false
+        }
+    });
+
+    pipWindow.loadFile('pip.html');
+
+    pipWindow.once('ready-to-show', () => {
+        if (!pipWindow || pipWindow.isDestroyed()) return;
+        pipWindow.show();
+
+        // Notify source tab that custom PiP is active (to avoid local duplicate render)
+        if (pipSourceContents && !pipSourceContents.isDestroyed()) {
+            pipSourceContents.send('pip-activated');
+        }
+
+        // Setup High-Speed MessageChannel Direct-Link
+        const { MessageChannelMain } = electron;
+        const { port1, port2 } = new MessageChannelMain();
+
+        // Pipe port1 to the YouTube video tab
+        if (!contents.isDestroyed()) {
+            contents.postMessage('pip-port', null, [port1]);
+        }
+
+        // Pipe port2 to the floating PiP window
+        pipWindow.webContents.postMessage('pip-port', null, [port2]);
+    });
+
+    pipWindow.on('closed', () => {
+        if (pipSourceContents && !pipSourceContents.isDestroyed()) {
+            pipSourceContents.send('pip-stop-monitoring');
+        }
+        pipWindow = null;
+        pipSourceContents = null;
+    });
+}
+
+ipcMain.on('trigger-pip', (e) => {
+    e.sender.send('request-smart-pip');
+});
+
+ipcMain.on('trigger-smart-pip', (e) => {
+    if (e.sender.isDestroyed()) return;
+    const activeView = views.find(v => v.id === activeViewId)?.view;
+    if (activeView && !activeView.webContents.isDestroyed()) {
+        activeView.webContents.send('request-smart-pip');
+        return;
+    }
+    e.sender.send('request-smart-pip');
+});
+
+ipcMain.on('video-detected', (e, isPlaying) => {
+    if (e.sender.isDestroyed()) return;
+    updateTabShieldStats(e.sender.id, 'isPlaying', isPlaying);
+    if (mainWindow && !mainWindow.isDestroyed()) {
+        mainWindow.webContents.send('video-detected', isPlaying);
+    }
+});
+
+// Security Hub IPCs
+ipcMain.on('set-security-toggle', (e, { key, value }) => {
+    userSettings[key] = value;
+    // Special Sync: Tracking Protection in Security <-> Ad Shield in Extensions
+    // Sync both sessions for AdBlock toggle
+    if (key === 'adBlockEnabled' || key === 'trackingProtection') {
+        const ublockEnabled = userSettings.adBlockEnabled !== false;
+        const ublockPath = path.join(__dirname, 'ublock-origin-extension', 'uBlock0.chromium');
+
+        const sessions = [session.defaultSession, session.fromPartition('persist:google_login')];
+        sessions.forEach(ses => {
+            if (ublockEnabled && fs.existsSync(ublockPath)) {
+                ses.loadExtension(ublockPath).catch(err => console.error(`Failed to reload uBlock in session ${ses.getStoragePath()}:`, err));
+            }
+        });
+    }
+
+    if (key === 'youtubeDislikeEnabled') {
+        const dislikePath = path.join(__dirname, 'return-youtube-dislike-extension');
+        if (value && fs.existsSync(dislikePath)) {
+            session.defaultSession.loadExtension(dislikePath).catch(err => console.error('Failed to load Dislike Extension:', err));
+        }
+    }
+
+    if (key === 'ocalFocusEnabled') {
+        const focusPath = path.join(__dirname, 'ocal-focus-extension');
+        if (value && fs.existsSync(focusPath)) {
+            session.defaultSession.loadExtension(focusPath).catch(err => console.error('Failed to load Ocal Focus natively:', err));
+        }
+    }
+
+    if (key === 'fingerprintProtection') {
+        userSettings.fingerprintProtection = !!value;
+        const allWc = webContents.getAllWebContents();
+        allWc.forEach(wc => {
+            if (wc.isDestroyed()) return;
+            const url = wc.getURL();
+            const isInternal = url.startsWith('ocal://') || url.startsWith('file://');
+            if (value && !isInternal) applyCyberStealth(wc);
+        });
+    }
+
+    saveSettings(userSettings);
+    broadcastSettings();
+
+    // Apply Cyber Stealth if toggled
+    if (key === 'cyberStealthEnabled') {
+        const allWc = webContents.getAllWebContents();
+        allWc.forEach(wc => {
+            if (wc.isDestroyed()) return;
+            const url = wc.getURL();
+            const isInternal = url.startsWith('ocal://') || url.startsWith('file://');
+            if (value && !isInternal) applyCyberStealth(wc);
+            else if (!value) wc.reload(); // Reload to clear the forced dark mode
+        });
+    }
+});
+ipcMain.on('set-dns-provider', (e, provider) => {
+    userSettings.dnsProvider = provider;
+    saveSettings(userSettings);
+    broadcastSettings();
+});
+
+// ── Profile Management APIs ────────────────────────────────────────────────
+ipcMain.on('switch-profile', (e, profileId) => {
+    const profile = (userSettings.profiles || []).find(p => p.id === profileId);
+    if (!profile) return;
+
+    // 1. Save data for current profile
+    saveCurrentProfileData();
+
+    // 2. Switch active profile ID
+    userSettings.currentProfileId = profileId;
+
+    // 3. Load bookmarks, folders, history, accent colors for new profile
+    loadProfileData(profileId);
+
+    // 4. Save and broadcast updates across all renderer views
+    saveSettings(userSettings);
+    broadcastSettings();
+    broadcastBookmarks();
+    broadcastHistory();
+
+    if (mainWindow) {
+        mainWindow.webContents.send('show-modal', {
+            title: 'Identity Switched',
+            message: `Now browsing as ${profile.name}. Bookmarks, history, and logins are isolated.`,
+            type: 'success'
+        });
+    }
+});
+
+ipcMain.handle('create-profile', (e, { name, icon, color }) => {
+    const id = 'profile_' + Date.now();
+    const profileColor = color || (userSettings && userSettings.accentColor) || '#4F46E5';
+    const newProfile = { id, name: name || 'New Profile', icon: icon || 'fa-user', color: profileColor };
+
+    if (!userSettings.profiles) userSettings.profiles = [];
+    userSettings.profiles.push(newProfile);
+
+    if (!userSettings.profilesData) userSettings.profilesData = {};
+    userSettings.profilesData[id] = {
+        bookmarks: [],
+        folders: [],
+        history: [],
+        accentColor: profileColor,
+        accentColorDark: profileColor,
+        accentColorLight: '#058f60',
+        themeMode: userSettings.themeMode || 'dark',
+        searchEngine: 'google',
+        customSearchUrl: 'https://www.google.com/search?q=%s'
+    };
+
+    saveSettings(userSettings);
+    broadcastSettings();
+    return newProfile;
+});
+
+ipcMain.on('delete-profile', (e, profileId) => {
+    if (profileId === 'default') return; // Cannot delete primary
+
+    // Clear session cookies/cache for that profile partition
+    try {
+        const ses = session.fromPartition('persist:profile_' + profileId);
+        if (ses) {
+            ses.clearStorageData().catch(() => { });
+        }
+    } catch (err) { }
+
+    if (userSettings.currentProfileId === profileId) {
+        userSettings.currentProfileId = 'default';
+        loadProfileData('default');
+    }
+
+    if (userSettings.profilesData) {
+        delete userSettings.profilesData[profileId];
+    }
+
+    userSettings.profiles = (userSettings.profiles || []).filter(p => p.id !== profileId);
+    saveSettings(userSettings);
+    broadcastSettings();
+    broadcastBookmarks();
+    broadcastHistory();
+});
+
+ipcMain.on('edit-profile', (e, { id, name, icon, color }) => {
+    const profile = (userSettings.profiles || []).find(p => p.id === id);
+    if (profile) {
+        if (name) profile.name = name;
+        if (icon) profile.icon = icon;
+        if (color) {
+            profile.color = color;
+            if (userSettings.profilesData && userSettings.profilesData[id]) {
+                userSettings.profilesData[id].accentColor = color;
+                userSettings.profilesData[id].accentColorDark = color;
+            }
+            if (userSettings.currentProfileId === id) {
+                userSettings.accentColor = color;
+                userSettings.accentColorDark = color;
+            }
+        }
+        saveSettings(userSettings);
+        broadcastSettings();
+    }
+});
+
+ipcMain.on('clear-profile-data', async (e, profileId) => {
+    const targetId = profileId || userSettings.currentProfileId || 'default';
+    try {
+        const ses = session.fromPartition('persist:profile_' + targetId);
+        if (ses) {
+            await ses.clearStorageData();
+        }
+    } catch (err) { }
+
+    if (userSettings.profilesData && userSettings.profilesData[targetId]) {
+        userSettings.profilesData[targetId].history = [];
+    }
+    if (userSettings.currentProfileId === targetId) {
+        userSettings.history = [];
+        broadcastHistory();
+    }
+
+    saveSettings(userSettings);
+    broadcastSettings();
+
+    if (mainWindow) {
+        mainWindow.webContents.send('show-modal', {
+            title: 'Profile Data Cleared',
+            message: `Session cookies, storage, and history cleared for this profile.`,
+            type: 'success'
+        });
+    }
+});
+
+// ── Volume Booster IPC ──────────────────────────────────────────────────
+// Stores per-tab volume boost level (1.0 = 100%, 5.0 = 500%)
+const tabVolumeBoost = {};
+
+ipcMain.on('set-volume-boost', (e, { gain }) => {
+    const entry = views.find(v => v.id === activeViewId);
+    if (!entry) return;
+
+    const clampedGain = Math.max(1, Math.min(5, gain));
+    tabVolumeBoost[activeViewId] = clampedGain;
+
+    // The Web Audio API GainNode injection script
+    const boostScript = `
+        (function() {
+            // Prevent double-init
+            if (window.__ocalVolumeBoostCtx) {
+                // Just update the gain
+                window.__ocalVolumeBoostGain.gain.value = ${clampedGain};
+                // Also update any new media elements
+                window.__ocalBoostNewMedia && window.__ocalBoostNewMedia();
+                return;
+            }
+
+            const AudioContext = window.AudioContext || window.webkitAudioContext;
+            if (!AudioContext) return;
+
+            const ctx = new AudioContext();
+            const gainNode = ctx.createGain();
+            gainNode.gain.value = ${clampedGain};
+            gainNode.connect(ctx.destination);
+
+            window.__ocalVolumeBoostCtx = ctx;
+            window.__ocalVolumeBoostGain = gainNode;
+            window.__ocalBoostedElements = new WeakSet();
+
+            function boostElement(el) {
+                if (window.__ocalBoostedElements.has(el)) return;
+                try {
+                    if (ctx.state === 'suspended') ctx.resume();
+                    const source = ctx.createMediaElementSource(el);
+                    source.connect(gainNode);
+                    window.__ocalBoostedElements.add(el);
+                } catch (e) {
+                    // Element might already have a source in another context
+                }
+            }
+
+            // Boost all existing audio/video elements
+            function boostAll() {
+                document.querySelectorAll('audio, video').forEach(boostElement);
+            }
+            boostAll();
+
+            // Watch for dynamically added elements
+            const observer = new MutationObserver((mutations) => {
+                for (const mutation of mutations) {
+                    for (const node of mutation.addedNodes) {
+                        if (node.nodeType !== 1) continue;
+                        if (node.tagName === 'AUDIO' || node.tagName === 'VIDEO') {
+                            boostElement(node);
+                        }
+                        // Check children too
+                        if (node.querySelectorAll) {
+                            node.querySelectorAll('audio, video').forEach(boostElement);
+                        }
+                    }
+                }
+            });
+            observer.observe(document.documentElement, { childList: true, subtree: true });
+
+            window.__ocalBoostNewMedia = boostAll;
+            window.__ocalVolumeBoostObserver = observer;
+        })();
+    `;
+
+    // Inject into the active view's webContents
+    const wc = entry.view.webContents;
+    if (wc && !wc.isDestroyed()) {
+        wc.executeJavaScript(boostScript).catch(() => { });
+    }
+
+    // Also boost split view if present
+    if (entry.isSplit && entry.view2 && !entry.view2.webContents.isDestroyed()) {
+        entry.view2.webContents.executeJavaScript(boostScript).catch(() => { });
+    }
+
+    // Notify renderer of the current boost level
+    if (mainWindow && !mainWindow.isDestroyed()) {
+        mainWindow.webContents.send('volume-boost-changed', { tabId: activeViewId, gain: clampedGain });
+    }
+});
+
+ipcMain.handle('get-volume-boost', () => {
+    return tabVolumeBoost[activeViewId] || 1.0;
+});
+
+// Reset volume boost script (called when gain returns to 1.0)
+ipcMain.on('reset-volume-boost', () => {
+    const entry = views.find(v => v.id === activeViewId);
+    if (!entry) return;
+
+    tabVolumeBoost[activeViewId] = 1.0;
+
+    const resetScript = `
+        (function() {
+            if (window.__ocalVolumeBoostGain) {
+                window.__ocalVolumeBoostGain.gain.value = 1.0;
+            }
+        })();
+    `;
+
+    const wc = entry.view.webContents;
+    if (wc && !wc.isDestroyed()) {
+        wc.executeJavaScript(resetScript).catch(() => { });
+    }
+    if (entry.isSplit && entry.view2 && !entry.view2.webContents.isDestroyed()) {
+        entry.view2.webContents.executeJavaScript(resetScript).catch(() => { });
+    }
+
+    if (mainWindow && !mainWindow.isDestroyed()) {
+        mainWindow.webContents.send('volume-boost-changed', { tabId: activeViewId, gain: 1.0 });
+    }
+});
+
+let volumeBoostShowTime = 0;
+function createVolumeBoostView() {
+    if (volumeBoostView) return;
+    volumeBoostView = new BrowserView({
+        webPreferences: { preload: path.join(__dirname, 'preload.js'), contextIsolation: false, nodeIntegration: true }
+    });
+    volumeBoostView.webContents.loadFile('volume-booster.html');
+    volumeBoostView.setBackgroundColor('#00000000');
+
+    // Auto-hide on blur with grace period
+    volumeBoostView.webContents.on('blur', () => {
+        if (Date.now() - volumeBoostShowTime < 500) return;
+        if (volumeBoostView && mainWindow && !mainWindow.isDestroyed() && mainWindow.getBrowserViews().includes(volumeBoostView)) {
+            mainWindow.removeBrowserView(volumeBoostView);
+        }
+    });
+}
+
+ipcMain.on('toggle-volume-boost-popup', (e, bounds) => {
+    if (!mainWindow) return;
+    if (!volumeBoostView) createVolumeBoostView();
+
+    if (mainWindow.getBrowserViews().includes(volumeBoostView)) {
+        mainWindow.removeBrowserView(volumeBoostView);
+        return;
+    }
+
+    hidePopups();
+    mainWindow.addBrowserView(volumeBoostView);
+
+    const zoom = getOptimalZoomFactor();
+    const popupWidth = Math.round(296 * zoom);
+    const popupHeight = Math.round(385 * zoom);
+
+    let targetX = bounds.x + (bounds.width / 2) - (popupWidth / 2);
+    const contentBounds = mainWindow.getContentBounds();
+    if (targetX + popupWidth > contentBounds.width - 10) targetX = contentBounds.width - popupWidth - 10;
+    if (targetX < 10) targetX = 10;
+
+    const winOffset = getWinOffset();
+    volumeBoostView.setBounds({
+        x: Math.round(targetX + winOffset) - 15,
+        y: Math.round(bounds.y + bounds.height + 6 + winOffset),
+        width: Math.round(popupWidth) + 30,
+        height: Math.round(popupHeight) + 30
+    });
+
+    mainWindow.setTopBrowserView(volumeBoostView);
+    volumeBoostShowTime = Date.now();
+
+    const sendVbData = () => {
+        if (!volumeBoostView || volumeBoostView.webContents.isDestroyed()) return;
+        volumeBoostView.webContents.send('show-popup', { tabId: activeViewId });
+        try { volumeBoostView.webContents.focus(); } catch (err) { }
+    };
+
+    if (volumeBoostView.webContents.isLoading()) {
+        volumeBoostView.webContents.once('did-finish-load', sendVbData);
+    } else {
+        sendVbData();
+    }
+});
+
+ipcMain.on('hide-volume-boost-popup', () => {
+    if (volumeBoostView && mainWindow && mainWindow.getBrowserViews().includes(volumeBoostView)) {
+        mainWindow.removeBrowserView(volumeBoostView);
+    }
+});
+
+function broadcastSettings() {
+    const resolvedExtensions = (userSettings.extensions || []).map(ext => resolveExtensionMetadata({ ...ext }));
+    const settingsToSend = { ...userSettings, extensions: resolvedExtensions };
+    if (mainWindow && !mainWindow.isDestroyed()) {
+        mainWindow.webContents.send('settings-changed', settingsToSend);
+    }
+    // Also notify the sidebar
+    if (sidebarOverlayView && !sidebarOverlayView.webContents.isDestroyed()) {
+        sidebarOverlayView.webContents.send('settings-changed', settingsToSend);
+    }
+    // Also notify the AI sidebar
+    if (aiSidebarView && !aiSidebarView.webContents.isDestroyed()) {
+        aiSidebarView.webContents.send('settings-changed', settingsToSend);
+    }
+    // Notify all active views
+    views.forEach(v => {
+        if (v.view && !v.view.webContents.isDestroyed()) {
+            v.view.webContents.send('settings-changed', settingsToSend);
+        }
+        if (v.isSplit && v.view2 && !v.view2.webContents.isDestroyed()) {
+            v.view2.webContents.send('settings-changed', settingsToSend);
+        }
+    });
+    // Notify all popups and dropdown panels
+    const overlayViews = [
+        shieldPopupView,
+        extensionDropdownView,
+        siteInfoView,
+        volumeBoostView,
+        suggestionsView,
+        tabgroupView,
+        tabContextView,
+        bmDropdownView,
+        downloadsView,
+        pageContextView
+    ];
+    overlayViews.forEach(v => {
+        if (v && !v.webContents.isDestroyed()) {
+            v.webContents.send('settings-changed', settingsToSend);
+        }
+    });
+}
+
+// ── Dashboard Real-time Telemetry ──
+setInterval(async () => {
+    try {
+        const memory = await process.getProcessMemoryInfo();
+        const systemMemory = process.getSystemMemoryInfo();
+
+        // Broadcast combined shield and system stats
+        const payload = {
+            ...userSettings.shieldStats,
+            memory,
+            systemMemory,
+            uptime: Date.now() - (app.uptimeStart || Date.now()) // Calculated from init
+        };
+
+        const allWebContents = webContents.getAllWebContents();
+        allWebContents.forEach(wc => {
+            if (!wc.isDestroyed() && wc.getURL().includes('settings.html')) {
+                wc.send('shield-stats-updated', payload);
+            }
+        });
+    } catch (e) {
+        // Silently handle errors if process info is temporarily unavailable
+    }
+}, 3000);
+
+function isLocalPageContents(contents, props) {
+    if (!contents || contents.isDestroyed()) return true;
+
+    // 1. Internal application views and shell windows
+    if (mainWindow && contents === mainWindow.webContents) return true;
+    if (typeof sidebarOverlayView !== 'undefined' && sidebarOverlayView && !sidebarOverlayView.webContents.isDestroyed() && contents === sidebarOverlayView.webContents) return true;
+    if (typeof aiSidebarView !== 'undefined' && aiSidebarView && !aiSidebarView.webContents.isDestroyed() && contents === aiSidebarView.webContents) return true;
+    if (typeof downloadsView !== 'undefined' && downloadsView && !downloadsView.webContents.isDestroyed() && contents === downloadsView.webContents) return true;
+    if (typeof welcomeView !== 'undefined' && welcomeView && !welcomeView.webContents.isDestroyed() && contents === welcomeView.webContents) return true;
+    if (typeof webAppView !== 'undefined' && webAppView && !webAppView.webContents.isDestroyed() && contents === webAppView.webContents) return true;
+
+    // 2. URL inspection from contents and context menu props
+    let url = '';
+    try {
+        url = (contents.getURL ? contents.getURL() : '') || (props && (props.pageURL || props.frameURL)) || '';
+    } catch (err) { }
+
+    url = (url || '').toLowerCase().trim();
+    if (!url) return true;
+
+    // 3. Match all local / internal schemes and file paths
+    if (
+        url.startsWith('ocal://') ||
+        url.startsWith('file://') ||
+        url.startsWith('chrome://') ||
+        url.startsWith('chrome-extension://') ||
+        url.startsWith('about:') ||
+        url.startsWith('data:') ||
+        /^[a-z]:[/\\]/i.test(url)
+    ) {
+        return true;
+    }
+
+    return false;
+}
+
+function openAiSidebar(promptText) {
+    aiSidebarOpen = true;
+    showAiSidebar();
+    if (promptText && aiSidebarView && !aiSidebarView.webContents.isDestroyed()) {
+        const sendPrompt = () => {
+            if (aiSidebarView && !aiSidebarView.webContents.isDestroyed()) {
+                aiSidebarView.webContents.send('submit-external-prompt', promptText);
+            }
+        };
+        if (aiSidebarView.webContents.isLoading()) {
+            aiSidebarView.webContents.once('dom-ready', () => {
+                setTimeout(sendPrompt, 250);
+            });
+        } else {
+            setTimeout(sendPrompt, 150);
+        }
+    }
+}
+
+function showPageContextMenu(data, targetWin = mainWindow) {
+    if (!targetWin || targetWin.isDestroyed()) return;
+    if (!pageContextView) createPageContextView();
+    closeOverlays();
+
+    pageContextTargetContentsId = data.targetContentsId;
+    pageContextView._x = data.x;
+    pageContextView._y = data.y;
+    pageContextView._parentWindow = targetWin;
+
+    // Dynamically inject active theme mode and accent color
+    const currentMode = userSettings.themeMode || 'dark';
+    data.themeMode = currentMode;
+    data.accentColor = (currentMode === 'light' ? userSettings.accentColorLight : userSettings.accentColorDark) || userSettings.accentColor || '#15AC49';
+    data.accentColorLight = userSettings.accentColorLight || '#058f60';
+    data.accentColorDark = userSettings.accentColorDark || userSettings.accentColor || '#09f0a0';
+    data.isPrivate = (typeof privateWindow !== 'undefined' && targetWin === privateWindow) || !!data.isPrivate;
+
+    const zoom = getOptimalZoomFactor();
+    const contentBounds = targetWin.getContentBounds();
+    const initialWidth = Math.round(270 * zoom);
+    const initialHeight = Math.round(170 * zoom);
+
+    let initialX = data.x;
+    let initialY = data.y;
+    if (initialX + initialWidth > contentBounds.width) initialX = contentBounds.width - initialWidth - 8;
+    if (initialY + initialHeight > contentBounds.height) initialY = contentBounds.height - initialHeight - 8;
+    if (initialX < 8) initialX = 8;
+    if (initialY < 8) initialY = 8;
+
+    pageContextView.setBounds({
+        x: Math.round(initialX),
+        y: Math.round(initialY),
+        width: initialWidth,
+        height: initialHeight
+    });
+
+    const dispatchRender = () => {
+        if (!targetWin || targetWin.isDestroyed() || !pageContextView || pageContextView.webContents.isDestroyed()) return;
+        if (mainWindow && !mainWindow.isDestroyed() && targetWin !== mainWindow && mainWindow.getBrowserViews().includes(pageContextView)) {
+            mainWindow.removeBrowserView(pageContextView);
+        }
+        if (typeof privateWindow !== 'undefined' && privateWindow && !privateWindow.isDestroyed() && targetWin !== privateWindow && privateWindow.getBrowserViews().includes(pageContextView)) {
+            privateWindow.removeBrowserView(pageContextView);
+        }
+
+        if (!targetWin.getBrowserViews().includes(pageContextView)) {
+            targetWin.addBrowserView(pageContextView);
+        }
+        targetWin.setTopBrowserView(pageContextView);
+        pageContextView.webContents.send('render-page-context', data);
+    };
+
+    if (pageContextView.webContents.isLoading()) {
+        pageContextView.webContents.once('did-finish-load', dispatchRender);
+    } else {
+        dispatchRender();
+    }
+}
+
+function hidePageContextMenu() {
+    if (pageContextView) {
+        if (mainWindow && !mainWindow.isDestroyed() && mainWindow.getBrowserViews().includes(pageContextView)) {
+            mainWindow.removeBrowserView(pageContextView);
+        }
+        if (typeof privateWindow !== 'undefined' && privateWindow && !privateWindow.isDestroyed() && privateWindow.getBrowserViews().includes(pageContextView)) {
+            privateWindow.removeBrowserView(pageContextView);
+        }
+    }
+}
+
+function setupContextMenu(contents) {
+    if (!contents || contents.isDestroyed()) return;
+    if (contents._hasOcalContextMenu) return;
+    contents._hasOcalContextMenu = true;
+
+    contents.on('context-menu', (e, props) => {
+        if (!contents || contents.isDestroyed()) return;
+        e.preventDefault();
+        const isLocal = isLocalPageContents(contents, props);
+
+        let viewX = 0;
+        let viewY = 0;
+        let targetWin = mainWindow;
+
+        const isPrivate = typeof privateViews !== 'undefined' && privateViews.some(v => v.view && v.view.webContents.id === contents.id);
+        if (isPrivate && typeof privateWindow !== 'undefined' && privateWindow && !privateWindow.isDestroyed()) {
+            targetWin = privateWindow;
+            viewX = 0;
+            viewY = 90; // Top titlebar + navbar height
+        } else {
+            const ownerViewEntry = views.find(v => (v.view && v.view.webContents.id === contents.id) || (v.view2 && v.view2.webContents.id === contents.id));
+            if (ownerViewEntry) {
+                const vObj = (ownerViewEntry.view && ownerViewEntry.view.webContents.id === contents.id) ? ownerViewEntry.view : ownerViewEntry.view2;
+                if (vObj) {
+                    const b = vObj.getBounds();
+                    viewX = b.x;
+                    viewY = b.y;
+                }
+            }
+        }
+
+        const canBack = typeof contents.canGoBack === 'function' ? contents.canGoBack() : (contents.navigationHistory ? contents.navigationHistory.canGoBack() : false);
+        const canFwd = typeof contents.canGoForward === 'function' ? contents.canGoForward() : (contents.navigationHistory ? contents.navigationHistory.canGoForward() : false);
+
+        const menuData = {
+            x: Math.round(viewX + props.x),
+            y: Math.round(viewY + props.y),
+            targetContentsId: contents.id,
+            selectionText: props.selectionText ? props.selectionText.trim() : '',
+            linkURL: props.linkURL || '',
+            srcURL: props.srcURL || '',
+            mediaType: props.mediaType || '',
+            isEditable: !!props.isEditable,
+            editFlags: props.editFlags || {},
+            misspelledWord: props.misspelledWord || '',
+            dictionarySuggestions: props.dictionarySuggestions || [],
+            canGoBack: canBack,
+            canGoForward: canFwd,
+            isLocal: isLocal,
+            isPrivate: isPrivate,
+            pageUrl: contents.getURL()
+        };
+
+        showPageContextMenu(menuData, targetWin);
+    });
+}
+
+// ── Battery Saver Engine ──
+function applyBatterySaverGlobally() {
+    const isBatterySaver = userSettings.batterySaver;
+    const css = `
+        * { 
+            animation: none !important; 
+            transition: none !important; 
+            scroll-behavior: auto !important;
+        }
+    `;
+
+    // 1. Inject into Chrome (Main UI)
+    if (mainWindow && !mainWindow.isDestroyed()) {
+        if (isBatterySaver) mainWindow.webContents.insertCSS(css);
+        else mainWindow.webContents.reload(); // Simple way to clear injected CSS
+    }
+
+    // 2. Inject into all active tabs
+    views.forEach(v => {
+        if (v.view && !v.view.webContents.isDestroyed()) {
+            if (isBatterySaver) {
+                v.view.webContents.insertCSS(css);
+                // Pause background heavy logic if possible
+                v.view.webContents.setAudioMuted(true);
+            } else {
+                v.view.webContents.setAudioMuted(false);
+                v.view.webContents.reload();
+            }
+        }
+    });
+
+    console.log(`[Sustainability] Battery Saver Mode: ${isBatterySaver ? 'ENABLED' : 'DISABLED'}`);
+}
+
+// ── Power Monitor ──
+powerMonitor.on('on-battery', () => {
+    if (!userSettings.batterySaver) {
+        const notif = new Notification({
+            title: 'Ocal Energy Intelligence',
+            body: 'Device is now on battery power. Enable Battery Saver in settings for maximum runtime.',
+            icon: path.join(__dirname, 'icon.png')
+        });
+        notif.show();
+        notif.on('click', () => { createNewTab('ocal://settings#general'); });
+    }
+});
+
+powerMonitor.on('on-ac', () => {
+    // Optional: maybe auto-disable? User probably wants choice.
+});
+
+// ── Tab Suspension Permanently Disabled ──
+// All tabs remain active in memory without ever being suspended or discarded.
+
+
+// ─────────────────────────────────────────────────────────────────────────────
+// ── Ocal Connect / Mobile Cross-Device Sync Server ───────────────────────────
+// ─────────────────────────────────────────────────────────────────────────────
+
+const { OcalSyncServer } = require('./syncServer.js');
+let ocalSyncServerInstance = null;
+
+function initOcalSyncServer() {
+    if (ocalSyncServerInstance) return ocalSyncServerInstance;
+
+    ocalSyncServerInstance = new OcalSyncServer({
+        port: 9876,
+        deviceName: `Ocal PC (${os.hostname() || 'Windows'})`,
+
+        onOpenTab: (url, title) => {
+            console.log('[OcalSync] Remote tab requested from mobile:', url, title);
+            if (url) {
+                createNewTab(url);
+                if (mainWindow && !mainWindow.isDestroyed()) {
+                    mainWindow.focus();
+                }
+            }
+        },
+
+        onClipboardReceived: (text) => {
+            console.log('[OcalSync] Remote clipboard text received from mobile:', text ? text.substring(0, 30) : '');
+            if (text) {
+                clipboard.writeText(text);
+                if (mainWindow && !mainWindow.isDestroyed()) {
+                    mainWindow.webContents.send('show-toast', {
+                        message: 'Copied text received from mobile!',
+                        icon: 'fa-copy'
+                    });
+                }
+            }
+        },
+
+        onBookmarksReceived: (remoteBookmarks) => {
+            console.log('[OcalSync] Received bookmarks from mobile:', remoteBookmarks ? remoteBookmarks.length : 0);
+            if (Array.isArray(remoteBookmarks) && remoteBookmarks.length > 0) {
+                if (!userSettings.bookmarks) userSettings.bookmarks = [];
+                const existingUrls = new Set(userSettings.bookmarks.map(b => (b.url || '').toLowerCase()));
+                let added = 0;
+                remoteBookmarks.forEach(rb => {
+                    if (rb.url && !existingUrls.has(rb.url.toLowerCase())) {
+                        userSettings.bookmarks.push({
+                            id: 'sync_' + Date.now() + '_' + Math.random().toString(36).substring(2, 7),
+                            title: rb.title || rb.name || rb.url,
+                            url: rb.url,
+                            favicon: rb.favicon || rb.icon || '',
+                            createdAt: Date.now()
+                        });
+                        existingUrls.add(rb.url.toLowerCase());
+                        added++;
+                    }
+                });
+                if (added > 0) {
+                    saveSettings(userSettings);
+                    broadcastSettings();
+                    if (mainWindow && !mainWindow.isDestroyed()) {
+                        mainWindow.webContents.send('show-toast', {
+                            message: `Synced ${added} new bookmark(s) from mobile!`,
+                            icon: 'fa-bookmark'
+                        });
+                    }
+                }
+            }
+        },
+
+        onPasswordsReceived: (remoteVault) => {
+            console.log('[OcalSync] Received passwords from mobile:', remoteVault ? remoteVault.length : 0);
+            if (Array.isArray(remoteVault) && remoteVault.length > 0) {
+                const localVault = loadPasswordVaultRaw();
+                let changed = 0;
+                remoteVault.forEach(rp => {
+                    if (!rp.domain && !rp.url) return;
+                    const domain = rp.domain || normalizeDomainName(rp.url || '');
+                    const existingIdx = localVault.findIndex(lp =>
+                        (lp.domain && domain && lp.domain.toLowerCase() === domain.toLowerCase()) &&
+                        (lp.username === rp.username)
+                    );
+                    if (existingIdx !== -1) {
+                        if (rp.password && rp.updatedAt && (!localVault[existingIdx].updatedAt || rp.updatedAt > localVault[existingIdx].updatedAt)) {
+                            localVault[existingIdx].passwordEncrypted = encryptSecret(rp.password);
+                            localVault[existingIdx].updatedAt = rp.updatedAt || Date.now();
+                            changed++;
+                        }
+                    } else if (rp.password) {
+                        localVault.push({
+                            id: 'sync_' + Date.now() + '_' + Math.random().toString(36).substring(2, 7),
+                            domain: domain,
+                            origin: rp.origin || rp.url || '',
+                            username: rp.username || '',
+                            passwordEncrypted: encryptSecret(rp.password),
+                            createdAt: rp.createdAt || Date.now(),
+                            updatedAt: rp.updatedAt || Date.now()
+                        });
+                        changed++;
+                    }
+                });
+                if (changed > 0) {
+                    savePasswordVaultRaw(localVault);
+                    notifyPasswordStatusForActiveTab();
+                    if (mainWindow && !mainWindow.isDestroyed()) {
+                        mainWindow.webContents.send('show-toast', {
+                            message: `Synced ${changed} password credential(s) from mobile!`,
+                            icon: 'fa-key'
+                        });
+                    }
+                }
+            }
+        },
+
+        onHistoryReceived: (remoteHistory) => {
+            console.log('[OcalSync] Received history from mobile:', remoteHistory ? remoteHistory.length : 0);
+            if (Array.isArray(remoteHistory) && remoteHistory.length > 0) {
+                if (!userSettings.history) userSettings.history = [];
+                const existingUrls = new Set(userSettings.history.map(h => (h.url || '').toLowerCase()));
+                let added = 0;
+                remoteHistory.forEach(rh => {
+                    if (rh.url && !existingUrls.has(rh.url.toLowerCase())) {
+                        userSettings.history.push({
+                            title: rh.title || rh.url,
+                            url: rh.url,
+                            timestamp: rh.timestamp || rh.visitedAt || Date.now()
+                        });
+                        existingUrls.add(rh.url.toLowerCase());
+                        added++;
+                    }
+                });
+                if (added > 0) {
+                    userSettings.history.sort((a, b) => (b.timestamp || 0) - (a.timestamp || 0));
+                    if (userSettings.history.length > 3000) userSettings.history.length = 3000;
+                    saveSettings(userSettings);
+                    broadcastSettings();
+                }
+            }
+        },
+
+        getBookmarks: () => {
+            return userSettings.bookmarks || [];
+        },
+
+        getPasswords: () => {
+            const rawVault = loadPasswordVaultRaw();
+            return rawVault.map(item => ({
+                id: item.id,
+                domain: item.domain,
+                origin: item.origin,
+                username: item.username,
+                password: decryptSecret(item.passwordEncrypted),
+                createdAt: item.createdAt,
+                updatedAt: item.updatedAt
+            }));
+        },
+
+        getHistory: () => {
+            return (userSettings.history || []).slice(0, 500);
+        },
+
+        onPairingSuccess: (device) => {
+            console.log('[OcalSync] Device successfully paired:', device.name);
+            if (mainWindow && !mainWindow.isDestroyed()) {
+                mainWindow.webContents.send('sync:status-changed', ocalSyncServerInstance.getStatus());
+                mainWindow.webContents.send('show-toast', {
+                    message: `Connected to ${device.name}!`,
+                    icon: 'fa-mobile-screen'
+                });
+            }
+        },
+
+        onUnpaired: () => {
+            console.log('[OcalSync] Mobile device unpaired');
+            if (mainWindow && !mainWindow.isDestroyed()) {
+                mainWindow.webContents.send('sync:status-changed', ocalSyncServerInstance.getStatus());
+                mainWindow.webContents.send('show-toast', {
+                    message: 'Mobile device disconnected.',
+                    icon: 'fa-link-slash'
+                });
+            }
+        }
+    });
+
+    ocalSyncServerInstance.start();
+    return ocalSyncServerInstance;
+}
+
+// IPC Handlers for Ocal Sync
+ipcMain.handle('sync:get-status', () => {
+    if (!ocalSyncServerInstance) initOcalSyncServer();
+    return ocalSyncServerInstance.getStatus();
+});
+
+ipcMain.handle('sync:regenerate-pin', () => {
+    if (!ocalSyncServerInstance) initOcalSyncServer();
+    return ocalSyncServerInstance.regeneratePin();
+});
+
+ipcMain.handle('sync:start', () => {
+    if (!ocalSyncServerInstance) initOcalSyncServer();
+    return ocalSyncServerInstance.start();
+});
+
+ipcMain.handle('sync:stop', () => {
+    if (ocalSyncServerInstance) ocalSyncServerInstance.stop();
+    return { success: true };
+});
+
+ipcMain.handle('sync:send-tab', (e, tabData) => {
+    if (!ocalSyncServerInstance) initOcalSyncServer();
+    let url = tabData && tabData.url;
+    let title = tabData && tabData.title;
+    if (!url) {
+        const activeEntry = views.find(v => v.id === activeViewId);
+        if (activeEntry && activeEntry.view && activeEntry.view.webContents && !activeEntry.view.webContents.isDestroyed()) {
+            url = activeEntry.view.webContents.getURL();
+            title = activeEntry.view.webContents.getTitle();
+        }
+    }
+    return ocalSyncServerInstance.sendTabToMobile(url, title);
+});
+
+ipcMain.handle('sync:send-clipboard', (e, text) => {
+    if (!ocalSyncServerInstance) initOcalSyncServer();
+    const content = text || clipboard.readText();
+    return ocalSyncServerInstance.sendClipboardToMobile(content);
+});
+
+ipcMain.handle('sync:trigger-sync', () => {
+    if (!ocalSyncServerInstance) initOcalSyncServer();
+    return ocalSyncServerInstance.requestSyncFromMobile();
+});
+
+ipcMain.handle('sync:unpair', () => {
+    if (!ocalSyncServerInstance) initOcalSyncServer();
+    return ocalSyncServerInstance.unpairDevice();
+});
+
+ipcMain.handle('sync:setup-firewall', async () => {
+    if (!ocalSyncServerInstance) initOcalSyncServer();
+    return await ocalSyncServerInstance.ensureFirewallRule(true);
+});
+
+// ══════════════════════════════════════════════════════════════════════════════
+// ── Ocal Isolated Private Window Engine (Incognito / InPrivate) ───────────────
+// ══════════════════════════════════════════════════════════════════════════════
+let privateWindow = null;
+let privateSession = null;
+let privateViews = [];
+let activePrivateTabId = null;
+
+function getPrivateSession() {
+    if (!privateSession) {
+        // In-memory partition (strictly RAM only, no persist: prefix)
+        const partition = 'private-session-' + Date.now();
+        privateSession = session.fromPartition(partition);
+        try {
+            privateSession.setPermissionRequestHandler(handlePermissionRequest);
+            privateSession.setPermissionCheckHandler(handlePermissionCheck);
+        } catch (e) { }
+
+        // 1. Native Turbo Tracker & Ad Blocker + HTTPS Upgrade + Clean Tracking Params
+        try {
+            privateSession.webRequest.onBeforeRequest({ urls: ['*://*/*'] }, (details, callback) => {
+                const { url, resourceType, webContentsId } = details;
+                if (!url) return callback({});
+
+                // Internal URLs are always permitted
+                if (url.startsWith('ocal://') || url.startsWith('file://') || url.startsWith('chrome-extension://') || url.startsWith('devtools://')) {
+                    return callback({});
+                }
+
+                // A. HTTPS Upgrade for mainFrame navigation (excluding localhost/127.0.0.1)
+                if (resourceType === 'mainFrame' && url.startsWith('http://') && !url.includes('localhost') && !url.includes('127.0.0.1')) {
+                    try {
+                        const upgradeUrl = new URL(url);
+                        upgradeUrl.protocol = 'https:';
+                        return callback({ redirectURL: upgradeUrl.toString() });
+                    } catch (e) { }
+                }
+
+                // B. Tracking Parameter Stripper (fbclid, gclid, utm_*, etc.)
+                if (resourceType === 'mainFrame' && url.includes('?')) {
+                    const cleaned = cleanTrackingParameters(url);
+                    if (cleaned !== url) {
+                        return callback({ redirectURL: cleaned });
+                    }
+                }
+
+                // C. Tracker and Ad Blocker Enabled by Default in Private Mode
+                const blockType = isAdOrTrackerUrl(url);
+                if (blockType) {
+                    let tab = null;
+                    if (webContentsId) {
+                        tab = privateViews.find(t => t.view && !t.view.webContents.isDestroyed() && t.view.webContents.id === webContentsId);
+                    }
+                    if (!tab && activePrivateTabId) {
+                        tab = privateViews.find(t => t.id === activePrivateTabId);
+                    }
+                    if (tab) {
+                        tab.trackersBlocked = (tab.trackersBlocked || 0) + 1;
+                        if (privateWindow && !privateWindow.isDestroyed()) {
+                            privateWindow.webContents.send('private-trackers-updated', tab.trackersBlocked);
+                        }
+                    }
+                    return callback({ cancel: true });
+                }
+
+                callback({});
+            });
+        } catch (err) {
+            console.error('[PrivateWindow] Error setting up onBeforeRequest interceptor:', err);
+        }
+
+        // 2. Cookie Isolation & Privacy Headers in Outgoing Requests
+        try {
+            privateSession.webRequest.onBeforeSendHeaders({ urls: ['*://*/*'] }, (details, callback) => {
+                const headers = details.requestHeaders || {};
+                const url = details.url || '';
+                const resourceType = details.resourceType || '';
+                const initiator = details.initiator || '';
+
+                // Enforce strict Privacy Signals
+                headers['DNT'] = '1';
+                headers['Sec-GPC'] = '1';
+                headers['Sec-CH-Prefers-Color-Scheme'] = '"dark"';
+
+                // Strip Electron runtime signatures
+                delete headers['X-Requested-With'];
+                delete headers['X-Electron-Id'];
+                delete headers['X-Electron-Version'];
+
+                // ── Cookie Isolation: Block third-party / cross-site cookies ──
+                if (resourceType !== 'mainFrame' && initiator) {
+                    try {
+                        const initHost = new URL(initiator).hostname.toLowerCase();
+                        const targetHost = new URL(url).hostname.toLowerCase();
+                        const getBaseDomain = (h) => {
+                            const p = h.split('.');
+                            return p.length > 2 ? p.slice(-2).join('.') : h;
+                        };
+                        if (getBaseDomain(initHost) !== getBaseDomain(targetHost)) {
+                            delete headers['Cookie'];
+                            delete headers['cookie'];
+                        }
+                    } catch (e) { }
+                }
+
+                // Standard Chromium User-Agent & Client Hints
+                if (!url.startsWith('ocal://') && !url.startsWith('file://')) {
+                    headers['User-Agent'] = OCAL_USER_AGENT;
+                    headers['Sec-CH-UA'] = `"Chromium";v="${chromeMajor}", "Google Chrome";v="${chromeMajor}", "Not?A_Brand";v="99"`;
+                    headers['Sec-CH-UA-Mobile'] = '?0';
+                    headers['Sec-CH-UA-Platform'] = '"Windows"';
+                    headers['Sec-CH-UA-Platform-Version'] = '"15.0.0"';
+                    headers['Upgrade-Insecure-Requests'] = '1';
+                }
+
+                callback({ requestHeaders: headers });
+            });
+        } catch (err) {
+            console.error('[PrivateWindow] Error setting up onBeforeSendHeaders:', err);
+        }
+
+        // 3. Cookie Isolation: Block third-party Set-Cookie in Responses
+        try {
+            privateSession.webRequest.onHeadersReceived({ urls: ['*://*/*'] }, (details, callback) => {
+                const headers = details.responseHeaders || {};
+                const url = details.url || '';
+                const resourceType = details.resourceType || '';
+                const initiator = details.initiator || '';
+
+                // ── Cookie Isolation: Strip third-party Set-Cookie headers ──
+                if (resourceType !== 'mainFrame' && initiator) {
+                    try {
+                        const initHost = new URL(initiator).hostname.toLowerCase();
+                        const targetHost = new URL(url).hostname.toLowerCase();
+                        const getBaseDomain = (h) => {
+                            const p = h.split('.');
+                            return p.length > 2 ? p.slice(-2).join('.') : h;
+                        };
+                        if (getBaseDomain(initHost) !== getBaseDomain(targetHost)) {
+                            delete headers['Set-Cookie'];
+                            delete headers['set-cookie'];
+                        }
+                    } catch (e) { }
+                }
+
+                callback({ responseHeaders: headers });
+            });
+        } catch (err) {
+            console.error('[PrivateWindow] Error setting up onHeadersReceived:', err);
+        }
+
+        // Isolated downloads handling
+        privateSession.on('will-download', (event, item) => {
+            // Downloads are isolated; not logged into persistent browser history
+        });
+    }
+    return privateSession;
+}
+
+function openPrivateWindow(targetUrl = null) {
+    if (privateWindow && !privateWindow.isDestroyed()) {
+        privateWindow.focus();
+        if (targetUrl) {
+            createPrivateTab(targetUrl);
+        }
+        return;
+    }
+
+    const appIcon = getAppIcon();
+    const appIconPath = getAppIconPath();
+
+    const activePrivateIcon = (appIcon && !appIcon.isEmpty()) ? appIcon : (appIconPath || undefined);
+    privateWindow = new BrowserWindow({
+        width: 1350,
+        height: 900,
+        minWidth: 360,
+        minHeight: 360,
+        title: 'Ocal Browser - Private Window',
+        icon: activePrivateIcon,
+        frame: false,
+        backgroundColor: '#0c0d12',
+        resizable: true,
+        thickFrame: true,
+        titleBarStyle: 'hidden',
+        webPreferences: {
+            preload: path.join(__dirname, 'preload.js'),
+            session: getPrivateSession(),
+            contextIsolation: true,
+            nodeIntegration: false,
+            devTools: true
+        }
+    });
+
+    privateWindow.loadFile('private-window.html');
+
+    privateWindow.on('resize', () => {
+        updatePrivateViewBounds();
+    });
+
+    privateWindow.on('maximize', () => {
+        if (privateWindow && !privateWindow.isDestroyed()) {
+            privateWindow.webContents.send('window-is-maximized', true);
+        }
+    });
+
+    privateWindow.on('unmaximize', () => {
+        if (privateWindow && !privateWindow.isDestroyed()) {
+            privateWindow.webContents.send('window-is-maximized', false);
+        }
+    });
+
+    privateWindow.on('close', (e) => {
+        if (!isQuittingPrivate && userSettings.confirmExit !== false && privateViews.length > 0) {
+            e.preventDefault();
+            promptPrivateSessionClose();
+            return;
+        }
+    });
+
+    privateWindow.on('closed', async () => {
+        isQuittingPrivate = false;
+        isConfirmingPrivateSessionClose = false;
+        try {
+            if (privateSession) {
+                await privateSession.clearStorageData();
+                await privateSession.clearCache();
+                await privateSession.clearHostResolverCache();
+            }
+        } catch (e) {
+            console.error('[PrivateWindow] Cleanup error on close:', e);
+        }
+        privateViews = [];
+        activePrivateTabId = null;
+        privateWindow = null;
+        privateSession = null;
+    });
+
+    privateWindow.webContents.once('did-finish-load', () => {
+        createPrivateTab(targetUrl);
+    });
+}
+
+function updatePrivateViewBounds() {
+    if (!privateWindow || privateWindow.isDestroyed()) return;
+    const { width, height } = privateWindow.getContentBounds();
+    const topBarHeight = 90; // titlebar 42px + navbar 48px
+    const viewHeight = Math.max(0, height - topBarHeight);
+
+    const activeEntry = privateViews.find(v => v.id === activePrivateTabId);
+    if (activeEntry && activeEntry.view) {
+        activeEntry.view.setBounds({
+            x: 0,
+            y: topBarHeight,
+            width: width,
+            height: viewHeight
+        });
+    }
+}
+
+function broadcastPrivateTabs() {
+    if (!privateWindow || privateWindow.isDestroyed()) return;
+    const tabsData = privateViews.map(v => ({
+        id: v.id,
+        title: v.title || 'Private Tab',
+        url: v.url || '',
+        favicon: v.favicon || '',
+        trackersBlocked: v.trackersBlocked || 0
+    }));
+
+    privateWindow.webContents.send('private-tabs-updated', {
+        tabs: tabsData,
+        activeTabId: activePrivateTabId
+    });
+
+    const activeEntry = privateViews.find(v => v.id === activePrivateTabId);
+    if (activeEntry && activeEntry.view && !activeEntry.view.webContents.isDestroyed()) {
+        const wc = activeEntry.view.webContents;
+        const canBack = typeof wc.canGoBack === 'function' ? wc.canGoBack() : false;
+        const canFwd = typeof wc.canGoForward === 'function' ? wc.canGoForward() : false;
+        privateWindow.webContents.send('private-tab-state', {
+            url: activeEntry.url || '',
+            canGoBack: canBack,
+            canGoForward: canFwd,
+            trackersBlocked: activeEntry.trackersBlocked || 0
+        });
+    }
+}
+
+function createPrivateTab(url = null) {
+    if (!privateWindow || privateWindow.isDestroyed()) return;
+    const ses = getPrivateSession();
+    const id = 'ptab-' + Date.now() + Math.random().toString(36).substring(2, 7);
+
+    const view = new BrowserView({
+        webPreferences: {
+            preload: path.join(__dirname, 'preload.js'),
+            session: ses,
+            contextIsolation: true,
+            nodeIntegration: false,
+            sandbox: false,
+            devTools: true
+        }
+    });
+
+    view.setBackgroundColor('#0c0d12');
+    view.webContents.setUserAgent(OCAL_USER_AGENT);
+
+    // Strict Anti-Fingerprinting Shield injected into every private tab by default
+    const injectAntiFingerprint = () => {
+        if (!view || !view.webContents || view.webContents.isDestroyed()) return;
+        try {
+            const { ANTI_FINGERPRINT_SCRIPT } = require('./anti-fingerprint.js');
+            if (ANTI_FINGERPRINT_SCRIPT) {
+                view.webContents.executeJavaScript(ANTI_FINGERPRINT_SCRIPT).catch(() => { });
+            }
+        } catch (e) { }
+        try {
+            const stealthScript = `
+                (function() {
+                    try {
+                        const originalAttachShadow = Element.prototype.attachShadow;
+                        Element.prototype.attachShadow = function(options) {
+                            return originalAttachShadow.call(this, { ...options, mode: 'open' });
+                        };
+                    } catch(e) {}
+                })();
+            `;
+            view.webContents.executeJavaScript(stealthScript).catch(() => { });
+        } catch (e) { }
+        try {
+            applyBrowserPromoShield(view.webContents);
+        } catch (e) { }
+    };
+
+    view.webContents.on('did-create-document-element', injectAntiFingerprint);
+    view.webContents.on('dom-ready', injectAntiFingerprint);
+
+    // Context menu support inside private tab
+    setupContextMenu(view.webContents);
+
+    // Keyboard shortcuts inside private tab
+    view.webContents.on('before-input-event', (event, input) => {
+        if (input.type !== 'keyDown') return;
+        const cmdOrCtrl = process.platform === 'darwin' ? input.meta : input.control;
+        if (cmdOrCtrl && input.key.toLowerCase() === 't') {
+            event.preventDefault();
+            createPrivateTab();
+        } else if (cmdOrCtrl && input.key.toLowerCase() === 'w') {
+            event.preventDefault();
+            closePrivateTab(id);
+        } else if (cmdOrCtrl && input.key.toLowerCase() === 'r') {
+            event.preventDefault();
+            view.webContents.reload();
+        } else if (cmdOrCtrl && input.shift && (input.key.toLowerCase() === 'n' || input.key.toLowerCase() === 'p')) {
+            event.preventDefault();
+            createPrivateTab();
+        } else if (input.alt && input.key === 'ArrowLeft') {
+            if (view.webContents.canGoBack()) view.webContents.goBack();
+        } else if (input.alt && input.key === 'ArrowRight') {
+            if (view.webContents.canGoForward()) view.webContents.goForward();
+        }
+    });
+
+    const entry = {
+        id,
+        view,
+        url: url || '',
+        title: 'New Tab',
+        favicon: '',
+        trackersBlocked: 0
+    };
+
+    view.webContents.on('page-title-updated', (e, title) => {
+        entry.title = title || 'Private Tab';
+        broadcastPrivateTabs();
+    });
+
+    view.webContents.on('page-favicon-updated', (e, favicons) => {
+        if (favicons && favicons.length > 0) {
+            entry.favicon = favicons[0];
+            broadcastPrivateTabs();
+        }
+    });
+
+    view.webContents.on('did-start-navigation', (e, navUrl, isInPlace, isMainFrame) => {
+        if (isMainFrame) {
+            entry.url = navUrl;
+            broadcastPrivateTabs();
+        }
+    });
+
+    view.webContents.on('did-finish-load', () => {
+        entry.title = view.webContents.getTitle() || entry.title;
+        entry.url = view.webContents.getURL();
+        broadcastPrivateTabs();
+    });
+
+    privateViews.push(entry);
+
+    if (url) {
+        view.webContents.loadURL(resolveInternalURL(url));
+    } else {
+        const homeUrl = 'file:///' + path.join(__dirname, 'home.html').replace(/\\/g, '/') + '?private=true';
+        view.webContents.loadURL(homeUrl);
+    }
+
+    switchPrivateTab(id);
+}
+
+function switchPrivateTab(id) {
+    if (!privateWindow || privateWindow.isDestroyed()) return;
+    const targetEntry = privateViews.find(v => v.id === id);
+    if (!targetEntry) return;
+
+    // Remove other views from privateWindow
+    privateViews.forEach(v => {
+        if (v.id !== id && privateWindow.getBrowserViews().includes(v.view)) {
+            privateWindow.removeBrowserView(v.view);
+        }
+    });
+
+    if (!privateWindow.getBrowserViews().includes(targetEntry.view)) {
+        privateWindow.addBrowserView(targetEntry.view);
+    }
+    privateWindow.setTopBrowserView(targetEntry.view);
+
+    activePrivateTabId = id;
+    updatePrivateViewBounds();
+    broadcastPrivateTabs();
+}
+
+function closePrivateTab(id) {
+    if (privateViews.length === 1 && !isQuittingPrivate && userSettings.confirmExit !== false) {
+        promptPrivateSessionClose();
+        return;
+    }
+    const idx = privateViews.findIndex(v => v.id === id);
+    if (idx === -1) return;
+
+    const [removed] = privateViews.splice(idx, 1);
+    if (removed && removed.view && privateWindow && !privateWindow.isDestroyed()) {
+        if (privateWindow.getBrowserViews().includes(removed.view)) {
+            privateWindow.removeBrowserView(removed.view);
+        }
+        try { removed.view.webContents.destroy(); } catch (e) { }
+    }
+
+    if (privateViews.length === 0) {
+        if (privateWindow && !privateWindow.isDestroyed()) {
+            privateWindow.close();
+        }
+    } else {
+        const nextIdx = Math.max(0, idx - 1);
+        switchPrivateTab(privateViews[nextIdx].id);
+    }
+}
+
+// ── Private Window IPC Handlers ──
+ipcMain.on('private-window-ready', () => {
+    broadcastPrivateTabs();
+    updatePrivateViewBounds();
+});
+
+ipcMain.on('private-window-minimize', () => {
+    if (privateWindow && !privateWindow.isDestroyed()) privateWindow.minimize();
+});
+
+ipcMain.on('private-window-maximize', () => {
+    if (privateWindow && !privateWindow.isDestroyed()) {
+        if (privateWindow.isMaximized()) privateWindow.unmaximize();
+        else privateWindow.maximize();
+    }
+});
+
+let isConfirmingPrivateSessionClose = false;
+let isQuittingPrivate = false;
+
+function promptPrivateSessionClose() {
+    if (!privateWindow || privateWindow.isDestroyed()) return;
+    if (isConfirmingPrivateSessionClose) return;
+    isConfirmingPrivateSessionClose = true;
+
+    try {
+        const attached = privateWindow.getBrowserViews();
+        if (Array.isArray(attached)) {
+            attached.forEach(v => {
+                try { privateWindow.removeBrowserView(v); } catch (e) { }
+            });
+        }
+    } catch (e) { }
+
+    privateWindow.focus();
+    privateWindow.webContents.send('confirm-private-session-close', {
+        tabCount: privateViews.length
+    });
+}
+
+ipcMain.on('private-session-close-confirmed', () => {
+    isConfirmingPrivateSessionClose = false;
+    isQuittingPrivate = true;
+    if (privateWindow && !privateWindow.isDestroyed()) {
+        privateWindow.close();
+    }
+});
+
+ipcMain.on('private-session-close-cancelled', () => {
+    isConfirmingPrivateSessionClose = false;
+    const targetId = activePrivateTabId || (privateViews[0] ? privateViews[0].id : null);
+    if (targetId) {
+        switchPrivateTab(targetId);
+    }
+});
+
+ipcMain.on('private-window-close', () => {
+    if (privateWindow && !privateWindow.isDestroyed()) {
+        if (!isQuittingPrivate && userSettings.confirmExit !== false && privateViews.length > 0) {
+            promptPrivateSessionClose();
+            return;
+        }
+        isQuittingPrivate = true;
+        privateWindow.close();
+    }
+});
+
+ipcMain.on('private-new-tab', () => {
+    createPrivateTab();
+});
+
+ipcMain.on('private-switch-tab', (e, id) => {
+    switchPrivateTab(id);
+});
+
+ipcMain.on('private-close-tab', (e, id) => {
+    closePrivateTab(id);
+});
+
+ipcMain.on('private-navigate', (e, url) => {
+    const entry = privateViews.find(v => v.id === activePrivateTabId);
+    if (entry && entry.view && !entry.view.webContents.isDestroyed()) {
+        entry.view.webContents.loadURL(resolveInternalURL(url));
+    }
+});
+
+ipcMain.on('private-back', () => {
+    const entry = privateViews.find(v => v.id === activePrivateTabId);
+    if (entry && entry.view && !entry.view.webContents.isDestroyed()) {
+        if (entry.view.webContents.canGoBack()) entry.view.webContents.goBack();
+    }
+});
+
+ipcMain.on('private-forward', () => {
+    const entry = privateViews.find(v => v.id === activePrivateTabId);
+    if (entry && entry.view && !entry.view.webContents.isDestroyed()) {
+        if (entry.view.webContents.canGoForward()) entry.view.webContents.goForward();
+    }
+});
+
+ipcMain.on('private-reload', () => {
+    const entry = privateViews.find(v => v.id === activePrivateTabId);
+    if (entry && entry.view && !entry.view.webContents.isDestroyed()) {
+        entry.view.webContents.reload();
+    }
+});
+
+ipcMain.on('private-home', () => {
+    const entry = privateViews.find(v => v.id === activePrivateTabId);
+    if (entry && entry.view && !entry.view.webContents.isDestroyed()) {
+        const homeUrl = 'file:///' + path.join(__dirname, 'home.html').replace(/\\/g, '/') + '?private=true';
+        entry.view.webContents.loadURL(homeUrl);
+    }
+});
+
+ipcMain.on('open-private-window', (e, url) => {
+    openPrivateWindow(url);
+});
+
+ipcMain.on('splash-complete', () => {
+    try {
+        if (splashOverlayView && mainWindow && !mainWindow.isDestroyed()) {
+            if (mainWindow.getBrowserViews().includes(splashOverlayView)) {
+                mainWindow.removeBrowserView(splashOverlayView);
+            }
+            if (!splashOverlayView.webContents.isDestroyed()) {
+                splashOverlayView.webContents.destroy();
+            }
+            splashOverlayView = null;
+        }
+    } catch (e) { }
+    updateViewBounds();
+});
