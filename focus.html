@@ -30,7 +30,7 @@
     <link rel="stylesheet" href="assets/fontawesome/css/all.min.css">
     <link rel="stylesheet" href="focus.css">
 </head>
-<body>
+<body id="focus-page">
 
     <!-- ══ STICKY TOP NAVIGATION ══ -->
     <header class="focus-header">
@@ -73,6 +73,7 @@
     </header>
 
     <!-- ══ MAIN WORKSPACE ══ -->
+    <div id="focus-scroll" tabindex="0" role="region" aria-label="Focus workspace">
     <main class="focus-container">
         <div class="workspace-intro"><div><p class="eyebrow">YOUR DAILY RESET</p><h2 id="workspace-title">Make room for deep work.</h2><p id="workspace-description">One intention. A little quiet. Your next focused moment starts here.</p></div><span class="quiet-badge"><span></span> Go at your own pace</span></div>
 
@@ -375,6 +376,7 @@
         <div class="quick-reset"><div><i class="fas fa-leaf"></i><span><strong>A small break goes a long way.</strong> Try a guided exercise between focus sessions.</span></div><button id="browse-exercises">Explore exercises <span aria-hidden="true">↗</span></button></div>
         <footer class="focus-footer"><span>OCAL / FOCUS FLOW</span><span>Less noise. More presence.</span></footer>
     </main>
+    </div>
     <dialog id="practice-dialog" aria-labelledby="practice-title">
         <div class="practice-dialog-top"><span class="eyebrow" id="practice-category">GUIDED PRACTICE</span><button id="practice-close" class="icon-btn" aria-label="Close exercise"><i class="fas fa-xmark"></i></button></div>
         <h2 id="practice-title"></h2><p id="practice-description"></p>

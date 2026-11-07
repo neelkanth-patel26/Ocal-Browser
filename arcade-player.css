@@ -1,0 +1,120 @@
+/* Shared, responsive standalone & embedded game surfaces */
+html {
+    height: 100%;
+    overflow: hidden;
+}
+
+html body {
+    height: 100vh !important;
+    min-height: 0;
+    overflow-y: auto !important;
+    overflow-x: hidden !important;
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-start;
+    padding: 20px;
+    background: var(--bg, #0E0F14) !important;
+    color: var(--text-main, #eef2fa);
+    font-family: 'Plus Jakarta Sans', system-ui, -apple-system, sans-serif;
+}
+
+html[data-theme="light"] body {
+    background: var(--bg, #F3F4F6) !important;
+    color: var(--text-main, #111827) !important;
+}
+
+body.embedded {
+    padding: 8px !important;
+    overflow: hidden !important;
+}
+
+body.embedded .header-bar {
+    display: none !important;
+}
+
+.header-bar {
+    position: static;
+    width: 100%;
+    max-width: 1000px;
+    margin: 0 auto 20px;
+    flex-shrink: 0;
+    gap: 16px;
+}
+
+.game-layout {
+    margin: 0 auto;
+    max-width: 100%;
+    position: relative;
+    padding: 0;
+}
+
+.canvas-container {
+    flex-shrink: 1;
+    min-width: 0;
+    border-radius: 14px;
+}
+
+canvas#gameCanvas {
+    display: block;
+    max-width: 100%;
+    max-height: calc(100vh - 190px);
+    width: auto;
+    height: auto;
+    object-fit: contain;
+}
+
+body.embedded canvas#gameCanvas {
+    max-height: calc(100vh - 40px);
+}
+
+.overlay-modal {
+    position: absolute;
+    inset: 0;
+    border-radius: 14px;
+    background: rgba(14, 15, 20, 0.94);
+    z-index: 20;
+}
+
+html[data-theme="light"] .overlay-modal {
+    background: rgba(255, 255, 255, 0.95);
+}
+
+.overlay-modal .modal-title-text {
+    color: #f1f4fa;
+}
+
+html[data-theme="light"] .overlay-modal .modal-title-text {
+    color: #111827;
+}
+
+.overlay-modal .modal-sub-text {
+    max-width: 280px;
+    color: #aeb8c9;
+    text-align: center;
+}
+
+html[data-theme="light"] .overlay-modal .modal-sub-text {
+    color: #6b7280;
+}
+
+.side-box {
+    width: 120px;
+    min-width: 0;
+}
+
+button:focus-visible, a:focus-visible {
+    outline: 3px solid var(--accent, #10B981);
+    outline-offset: 3px;
+}
+
+@media (max-width: 600px) {
+    body { padding: 12px !important; }
+    .game-layout { gap: 10px; }
+    .side-box { width: 65px; }
+    .stat-card, .controls-card { padding: 8px; }
+    .preview-canvas { max-width: 100%; }
+    .controls-card { font-size: 9px; }
+    .brand-title { font-size: 13px; }
+    .back-btn { padding: 8px 10px; }
+    .stat-val { font-size: 18px; }
+}

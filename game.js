@@ -34,20 +34,23 @@ function updateColors() {
     const computedAccent = getComputedStyle(document.documentElement).getPropertyValue('--accent').trim();
     if (computedAccent) {
         ACCENT = computedAccent;
-        
-        const hexToRgba = (hex, alpha) => {
-            const result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
-            if (!result) return `rgba(232, 255, 71, ${alpha})`;
-            const r = parseInt(result[1], 16);
-            const g = parseInt(result[2], 16);
-            const b = parseInt(result[3], 16);
-            return `rgba(${r}, ${g}, ${b}, ${alpha})`;
-        };
-        
-        ACCENT_GLOW = hexToRgba(computedAccent, 0.4);
+        ACCENT_GLOW = `color-mix(in srgb, ${computedAccent} 40%, transparent)`;
     }
 }
 updateColors();
+
+function getThemeColors() {
+    const isLight = document.documentElement.getAttribute('data-theme') === 'light' || document.body.getAttribute('data-theme') === 'light';
+    updateColors();
+    return {
+        isLight,
+        bg: isLight ? '#FFFFFF' : '#14161F',
+        ground: isLight ? 'rgba(0, 0, 0, 0.12)' : 'rgba(255, 255, 255, 0.12)',
+        grid: isLight ? 'rgba(0, 0, 0, 0.04)' : 'rgba(255, 255, 255, 0.04)',
+        obstacleFill: isLight ? '#F1F5F9' : '#1E222D',
+        obstacleStroke: ACCENT
+    };
+}
 
 function getRgbValues(hex) {
     const result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
@@ -99,13 +102,15 @@ class Obstacle {
         if (this.x + this.w < 0) this.active = false;
     }
     draw() {
+        const c = getThemeColors();
         ctx.save();
-        ctx.fillStyle = '#1e1e1e';
-        ctx.strokeStyle = ACCENT;
-        ctx.lineWidth = 1.5;
-        // Flat sharp block matching D:\ocal corners
-        ctx.fillRect(this.x, this.y, this.w, this.h);
-        ctx.strokeRect(this.x, this.y, this.w, this.h);
+        ctx.fillStyle = c.obstacleFill;
+        ctx.strokeStyle = c.obstacleStroke;
+        ctx.lineWidth = 2;
+        ctx.beginPath();
+        ctx.roundRect(this.x, this.y, this.w, this.h, 6);
+        ctx.fill();
+        ctx.stroke();
         ctx.restore();
     }
 }
@@ -172,16 +177,20 @@ const player = {
 
 // ── Background Rendering ──────────────────────────────────────
 function drawBackground() {
+    const c = getThemeColors();
+    ctx.fillStyle = c.bg;
+    ctx.fillRect(0, 0, CANVAS_WIDTH, CANVAS_HEIGHT);
+
     // Ground line
-    ctx.strokeStyle = '#252525';
-    ctx.lineWidth = 1.5;
+    ctx.strokeStyle = c.ground;
+    ctx.lineWidth = 2;
     ctx.beginPath();
     ctx.moveTo(0, GROUND_Y);
     ctx.lineTo(CANVAS_WIDTH, GROUND_Y);
     ctx.stroke();
 
-    // Perspective lines (Flat, very thin)
-    ctx.strokeStyle = 'rgba(255, 255, 255, 0.03)';
+    // Perspective lines
+    ctx.strokeStyle = c.grid;
     ctx.lineWidth = 1;
     for (let i = -10; i < 20; i++) {
         const spacing = 100;
@@ -198,7 +207,7 @@ function drawBackground() {
         const y = GROUND_Y + i * gridSpacing - gridOffset;
         if (y < GROUND_Y) continue;
         const opacity = (y - GROUND_Y) / (CANVAS_HEIGHT - GROUND_Y);
-        ctx.strokeStyle = `rgba(${getRgbValues(ACCENT)}, ${opacity * 0.08})`;
+        ctx.strokeStyle = `rgba(${getRgbValues(ACCENT)}, ${opacity * 0.12})`;
         ctx.beginPath();
         ctx.moveTo(0, y);
         ctx.lineTo(CANVAS_WIDTH, y);
@@ -289,6 +298,11 @@ function triggerGameOver() {
 }
 
 function restartGame() {
+    if (restartBtn.disabled) return;
+    restartBtn.disabled = true;
+    cancelAnimationFrame(animationId);
+    particles.length = 0;
+    player.trail = [];
     score = 0;
     gameSpeed = 5;
     frameCount = 0;
@@ -300,13 +314,15 @@ function restartGame() {
     modalOverlay.classList.remove('active');
     setTimeout(() => {
         modalOverlay.style.display = 'none';
+        restartBtn.disabled = false;
         update();
     }, 400);
 }
 
 // Input
 window.addEventListener('keydown', (e) => {
-    if ((e.code === 'Space' || e.code === 'ArrowUp') && player.grounded) {
+    if (e.code === 'Space' || e.code === 'ArrowUp') e.preventDefault();
+    if (!isGameOver && (e.code === 'Space' || e.code === 'ArrowUp') && player.grounded) {
         player.dy = -player.jumpStrength;
         spawnParticles(player.x, player.y + 35, ACCENT, 5);
     }
@@ -318,3 +334,5 @@ restartBtn.addEventListener('click', restartGame);
 spawnParticles(400, 200, ACCENT, 50);
 
 update();
+
+canvas.addEventListener('pointerdown', () => { if (!isGameOver && player.grounded) player.dy = -player.jumpStrength; });

@@ -2,45 +2,57 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta http-equiv="Content-Security-Policy" content="default-src 'self' data: blob: 'unsafe-inline' https:; script-src 'self' 'unsafe-inline' https:; style-src 'self' 'unsafe-inline' https:; font-src 'self' https: data:; img-src 'self' data: blob: https:; frame-src 'self' data: blob: https:;">
-    <title>Ocal Pulse | Chrome Dino</title>
-    <!-- ANTI-FLASH -->
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Ocal Pulse — Cyber Dash</title>
+    <!-- ANTI-FLASH & COLOR HARMONIZER -->
+    <script src="color-harmonizer.js"></script>
     <script>
         (function () {
-            var t = localStorage.getItem('ocal-settings-theme') || 'light';
+            var t = localStorage.getItem('ocal-settings-theme') || 'dark';
             document.documentElement.setAttribute('data-theme', t);
             if (t === 'dark') {
-                document.documentElement.style.background = '#0D0E11';
+                document.documentElement.style.background = '#0E0F14';
                 document.documentElement.style.colorScheme = 'dark';
+            } else {
+                document.documentElement.style.background = '#F3F4F6';
+                document.documentElement.style.colorScheme = 'light';
+            }
+            var a = localStorage.getItem('ocal-settings-accent');
+            if (window.OcalColorHarmonizer) {
+                window.OcalColorHarmonizer.applyHarmonizedTheme(a, t);
+            }
+            if (window.self !== window.top || location.search.includes('embedded=1')) {
+                document.addEventListener('DOMContentLoaded', () => document.body.classList.add('embedded'));
             }
         })();
     </script>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;700;800&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@600;700;800&family=Space+Mono:wght@700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="assets/fontawesome/css/all.min.css">
-    
+
     <style>
         :root {
-            --bg: #0D0E11;
-            --card-bg: #16181D;
-            --border: rgba(255, 255, 255, 0.1);
-            --accent: #D4FC2B;
-            --accent-glow: rgba(212, 252, 43, 0.3);
-            --text-main: #F0F2F5;
-            --text-dim: #A0A5B1;
-            --font-main: 'Plus Jakarta Sans', sans-serif;
+            --bg: #0E0F14;
+            --surface: #161820;
+            --surface-elevated: #1F222E;
+            --border: rgba(255, 255, 255, 0.08);
+            --text-main: #F3F4F6;
+            --text-dim: #9CA3AF;
+            --accent: #10B981;
+            --accent-glow: rgba(16, 185, 129, 0.25);
+            --font-main: 'Plus Jakarta Sans', system-ui, sans-serif;
             --font-mono: 'Space Mono', monospace;
         }
 
+        html[data-theme="light"],
         body[data-theme="light"] {
-            --bg: #F0F2F5;
-            --card-bg: #FFFFFF;
+            --bg: #F3F4F6;
+            --surface: #FFFFFF;
+            --surface-elevated: #F9FAFB;
             --border: rgba(0, 0, 0, 0.08);
-            --accent: #15AC49;
-            --accent-glow: rgba(21, 172, 73, 0.25);
-            --text-main: #16181D;
-            --text-dim: #626773;
+            --text-main: #111827;
+            --text-dim: #6B7280;
         }
 
         *, *::before, *::after {
@@ -55,34 +67,35 @@
             background: var(--bg);
             color: var(--text-main);
             font-family: var(--font-main);
+            min-height: 100vh;
             display: flex;
             flex-direction: column;
             align-items: center;
             justify-content: center;
-            min-height: 100vh;
+            padding: 16px;
             overflow: hidden;
-            transition: background 0.3s ease, color 0.3s ease;
+            transition: background 0.25s ease, color 0.25s ease;
+        }
+
+        body.embedded .header-bar {
+            display: none !important;
         }
 
         .header-bar {
-            position: absolute;
-            top: 24px;
-            left: 32px;
-            right: 32px;
             display: flex;
             align-items: center;
             justify-content: space-between;
-            z-index: 10;
+            width: 100%;
+            max-width: 800px;
+            margin-bottom: 14px;
         }
 
         .brand-title {
             display: flex;
             align-items: center;
             gap: 10px;
-            font-size: 16px;
+            font-size: 17px;
             font-weight: 800;
-            letter-spacing: -0.3px;
-            color: var(--text-main);
         }
 
         .brand-title i {
@@ -90,89 +103,160 @@
         }
 
         .back-btn {
-            padding: 8px 18px;
-            border-radius: 100px;
-            background: var(--card-bg);
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            padding: 6px 14px;
+            border-radius: 999px;
+            background: var(--surface);
             border: 1px solid var(--border);
             color: var(--text-main);
             font-size: 12px;
-            font-weight: 700;
+            font-weight: 600;
             text-decoration: none;
-            display: flex;
-            align-items: center;
-            gap: 6px;
-            transition: all 0.2s ease;
         }
 
-        .back-btn:hover {
-            border-color: var(--accent);
+        .game-wrap {
+            width: 100%;
+            max-width: 800px;
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            align-items: center;
+        }
+
+        .scores {
+            display: flex;
+            gap: 16px;
+            width: 100%;
+            justify-content: flex-start;
+        }
+
+        .score-box {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            background: var(--surface);
+            border: 1px solid var(--border);
+            padding: 6px 14px;
+            border-radius: 10px;
+            font-size: 12px;
+            color: var(--text-dim);
+            font-weight: 700;
+        }
+
+        .score-box b {
+            font-family: var(--font-mono);
+            font-size: 16px;
             color: var(--accent);
         }
 
-        .game-wrapper {
+        .pulse-board {
             position: relative;
-            width: calc(100vw - 80px);
-            height: 320px;
-            max-width: 1200px;
-            border-radius: 28px;
-            background: #FFFFFF;
-            border: 1px solid var(--border);
+            width: 100%;
+            border-radius: 18px;
             overflow: hidden;
-            box-shadow: 0 16px 40px rgba(0, 0, 0, 0.15);
-            transition: background 0.3s ease;
-            margin-top: 40px;
-            display: flex;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
+            border: 1px solid var(--border);
+        }
+
+        canvas {
+            display: block;
+            width: 100%;
+            aspect-ratio: 2 / 1;
+            background: var(--surface);
+            cursor: pointer;
+        }
+
+        #gameOverModal {
+            display: none;
+            position: absolute;
+            inset: 0;
+            background: rgba(14, 15, 20, 0.9);
+            backdrop-filter: blur(8px);
             align-items: center;
             justify-content: center;
+            flex-direction: column;
+            gap: 14px;
+            z-index: 10;
         }
 
-        body[data-theme="dark"] .game-wrapper {
-            background: #202124;
+        html[data-theme="light"] #gameOverModal {
+            background: rgba(243, 244, 246, 0.92);
         }
 
-        iframe {
-            width: 100%;
-            height: 100%;
-            border: none;
+        #gameOverModal h2 {
+            font-size: 26px;
+            font-weight: 800;
+        }
+
+        #gameOverModal span {
+            font-family: var(--font-mono);
+            font-size: 15px;
+            color: var(--text-dim);
+        }
+
+        button {
+            padding: 12px 28px;
+            border: 0;
+            border-radius: 12px;
+            background: var(--accent);
+            color: #0E0F14;
+            font: inherit;
+            font-weight: 800;
+            cursor: pointer;
+            transition: transform 0.15s;
+        }
+
+        button:hover {
+            transform: scale(1.04);
+        }
+
+        .hint {
+            color: var(--text-dim);
+            font-size: 11px;
+            text-align: center;
+        }
+
+        .key-badge {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            padding: 2px 6px;
+            border-radius: 6px;
+            font-family: var(--font-mono);
+            font-weight: 700;
+            color: var(--accent);
         }
     </style>
 </head>
-<body data-theme="light">
-
+<body>
     <div class="header-bar">
         <div class="brand-title">
-            <i class="fas fa-bolt"></i> Ocal Pulse (Chrome Dino)
+            <i class="fas fa-bolt"></i> Ocal Pulse
         </div>
         <a href="games.html" class="back-btn">
-            <i class="fas fa-arrow-left"></i> Games Hub
+            <i class="fas fa-arrow-left"></i> Arcade
         </a>
     </div>
 
-    <div class="game-wrapper">
-        <iframe id="dino-iframe" src="dino/dino.html" allow="autoplay; keyboard"></iframe>
+    <div class="game-wrap">
+        <div class="scores">
+            <div class="score-box"><span>SCORE</span> <b id="score-val">0</b></div>
+            <div class="score-box"><span>BEST</span> <b id="best-val">0</b></div>
+        </div>
+
+        <div class="pulse-board">
+            <canvas id="gameCanvas" width="800" height="400" aria-label="Runner game"></canvas>
+            <div id="gameOverModal">
+                <h2>Run Complete</h2>
+                <span id="final-score">Final Score: 0</span>
+                <button id="restartBtn">Play again</button>
+            </div>
+        </div>
+
+        <p class="hint">Press <span class="key-badge">Space</span>, <span class="key-badge">↑</span>, or tap the canvas to jump.</p>
     </div>
 
-    <script>
-        (function () {
-            const t = localStorage.getItem('ocal-settings-theme') || 'light';
-            document.body.setAttribute('data-theme', t);
-            document.documentElement.setAttribute('data-theme', t);
-        })();
-
-        if (window.electronAPI) {
-            window.electronAPI.getSettings().then(s => {
-                if (s.themeMode) {
-                    document.body.setAttribute('data-theme', s.themeMode);
-                    document.documentElement.setAttribute('data-theme', s.themeMode);
-                }
-            });
-            window.electronAPI.onSettingsChanged((s) => {
-                if (s.themeMode) {
-                    document.body.setAttribute('data-theme', s.themeMode);
-                    document.documentElement.setAttribute('data-theme', s.themeMode);
-                }
-            });
-        }
-    </script>
+    <script src="game.js"></script>
 </body>
 </html>

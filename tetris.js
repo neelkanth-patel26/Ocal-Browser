@@ -19,22 +19,33 @@ const finalScoreEl = document.getElementById('finalScore');
 const ROWS = 20;
 const COLS = 10;
 const BLOCK_SIZE = 30;
-const ACCENT = '#e8ff47';
+
+function getThemePalette() {
+    const isLight = document.documentElement.getAttribute('data-theme') === 'light' || document.body.getAttribute('data-theme') === 'light';
+    const accent = getComputedStyle(document.documentElement).getPropertyValue('--accent').trim() || '#10B981';
+    return {
+        isLight,
+        accent,
+        bg: isLight ? '#FFFFFF' : '#14161F',
+        grid: isLight ? 'rgba(0, 0, 0, 0.05)' : 'rgba(255, 255, 255, 0.05)',
+        colors: [
+            null,
+            accent,                                              // 1: I (Cyan/Emerald hero)
+            `color-mix(in srgb, ${accent} 70%, #8B5CF6)`,       // 2: T (Purple)
+            `color-mix(in srgb, ${accent} 75%, #10B981)`,       // 3: S (Green)
+            `color-mix(in srgb, ${accent} 60%, #EF4444)`,       // 4: Z (Red/Coral)
+            `color-mix(in srgb, ${accent} 70%, #F59E0B)`,       // 5: O (Amber/Yellow)
+            `color-mix(in srgb, ${accent} 65%, #3B82F6)`,       // 6: J (Blue)
+            `color-mix(in srgb, ${accent} 60%, #EC4899)`        // 7: L (Orange/Pink)
+        ]
+    };
+}
+
+let ACCENT = '#10B981';
+let COLORS = getThemePalette().colors;
 
 canvas.width = COLS * BLOCK_SIZE;
 canvas.height = ROWS * BLOCK_SIZE;
-
-// Colors for pieces (Minimalist ocal theme)
-const COLORS = [
-    null,
-    '#e8ff47', // I
-    '#e8ff47', // T
-    '#e8ff47', // S
-    '#e8ff47', // Z
-    '#e8ff47', // O
-    '#e8ff47', // J
-    '#e8ff47'  // L
-];
 
 // Pieces
 const PIECES = [
@@ -56,6 +67,8 @@ let dropCounter = 0;
 let dropInterval = 1000;
 let lastTime = 0;
 let isGameOver = false;
+let isStarted = false;
+let animationId = null;
 
 function createGrid() {
     return Array.from({ length: ROWS }, () => Array(COLS).fill(0));
@@ -70,7 +83,7 @@ const player = {
 
 function playerReset() {
     if (!player.next) player.next = PIECES[Math.floor(Math.random() * (PIECES.length - 1)) + 1];
-    player.matrix = player.next;
+    player.matrix = player.next.map(row => [...row]);
     player.next = PIECES[Math.floor(Math.random() * (PIECES.length - 1)) + 1];
     player.pos.y = 0;
     player.pos.x = Math.floor(COLS / 2) - Math.floor(player.matrix[0].length / 2);
@@ -108,9 +121,9 @@ function playerDrop() {
     if (collide(grid, player)) {
         player.pos.y--;
         merge(grid, player);
-        playerReset();
         gridSweep();
         updateScore();
+        playerReset();
     }
     dropCounter = 0;
 }
@@ -149,7 +162,7 @@ function rotate(matrix, dir) {
 
 function gridSweep() {
     let rowCount = 1;
-    outer: for (let y = grid.length - 1; y > 0; --y) {
+    outer: for (let y = grid.length - 1; y >= 0; --y) {
         for (let x = 0; x < grid[y].length; ++x) {
             if (grid[y][x] === 0) continue outer;
         }
@@ -174,12 +187,16 @@ function updateScore() {
 
 // ── Graphics ──────────────────────────────────────────────────
 function draw() {
-    ctx.fillStyle = '#000000';
+    const pal = getThemePalette();
+    ACCENT = pal.accent;
+    COLORS = pal.colors;
+
+    ctx.fillStyle = pal.bg;
     ctx.fillRect(0, 0, canvas.width, canvas.height);
 
-    // Grid lines (subtle flat 0.5px borders)
-    ctx.strokeStyle = '#252525';
-    ctx.lineWidth = 0.5;
+    // Grid lines
+    ctx.strokeStyle = pal.grid;
+    ctx.lineWidth = 1;
     for (let i = 0; i <= COLS; i++) {
         ctx.beginPath(); ctx.moveTo(i * BLOCK_SIZE, 0); ctx.lineTo(i * BLOCK_SIZE, canvas.height); ctx.stroke();
     }
@@ -190,36 +207,41 @@ function draw() {
     drawMatrix(grid, { x: 0, y: 0 });
     
     // Ghost Piece
-    const ghost = { pos: { x: player.pos.x, y: player.pos.y }, matrix: player.matrix };
-    while (!collide(grid, ghost)) { ghost.pos.y++; }
-    ghost.pos.y--;
-    drawMatrix(ghost.matrix, ghost.pos, true);
-
-    drawMatrix(player.matrix, player.pos);
+    if (player.matrix) {
+        const ghost = { pos: { x: player.pos.x, y: player.pos.y }, matrix: player.matrix };
+        while (!collide(grid, ghost)) { ghost.pos.y++; }
+        ghost.pos.y--;
+        drawMatrix(ghost.matrix, ghost.pos, true);
+        drawMatrix(player.matrix, player.pos);
+    }
 }
 
 function drawMatrix(matrix, offset, isGhost = false) {
+    const pal = getThemePalette();
     matrix.forEach((row, y) => {
         row.forEach((value, x) => {
             if (value !== 0) {
                 const px = (x + offset.x) * BLOCK_SIZE;
                 const py = (y + offset.y) * BLOCK_SIZE;
+                const color = pal.colors[value] || pal.accent;
 
                 ctx.save();
                 if (isGhost) {
-                    ctx.globalAlpha = 0.15;
-                    ctx.strokeStyle = ACCENT;
-                    ctx.lineWidth = 1;
+                    ctx.globalAlpha = 0.25;
+                    ctx.strokeStyle = color;
+                    ctx.lineWidth = 2;
                     ctx.beginPath();
-                    ctx.roundRect(px + 2, py + 2, BLOCK_SIZE - 4, BLOCK_SIZE - 4, 2);
+                    ctx.roundRect(px + 2, py + 2, BLOCK_SIZE - 4, BLOCK_SIZE - 4, 4);
                     ctx.stroke();
                 } else {
-                    ctx.fillStyle = '#1e1e1e';
-                    ctx.strokeStyle = ACCENT;
-                    ctx.lineWidth = 1.5;
+                    ctx.fillStyle = color;
                     ctx.beginPath();
-                    ctx.roundRect(px + 2, py + 2, BLOCK_SIZE - 4, BLOCK_SIZE - 4, 2);
+                    ctx.roundRect(px + 2, py + 2, BLOCK_SIZE - 4, BLOCK_SIZE - 4, 4);
                     ctx.fill();
+
+                    // Subtle highlight bevel
+                    ctx.strokeStyle = 'rgba(255, 255, 255, 0.25)';
+                    ctx.lineWidth = 1.5;
                     ctx.stroke();
                 }
                 ctx.restore();
@@ -229,8 +251,11 @@ function drawMatrix(matrix, offset, isGhost = false) {
 }
 
 function drawNext() {
-    nextCtx.clearRect(0, 0, nextCanvas.width, nextCanvas.height);
+    const pal = getThemePalette();
+    nextCtx.fillStyle = pal.bg;
+    nextCtx.fillRect(0, 0, nextCanvas.width, nextCanvas.height);
     const m = player.next;
+    if (!m) return;
     const offset = { 
         x: (nextCanvas.width / BLOCK_SIZE - m[0].length) / 2, 
         y: (nextCanvas.height / BLOCK_SIZE - m.length) / 2
@@ -239,14 +264,12 @@ function drawNext() {
     m.forEach((row, y) => {
         row.forEach((value, x) => {
             if (value !== 0) {
+                const color = pal.colors[value] || pal.accent;
                 nextCtx.save();
-                nextCtx.fillStyle = '#1e1e1e';
-                nextCtx.strokeStyle = ACCENT;
-                nextCtx.lineWidth = 1.5;
+                nextCtx.fillStyle = color;
                 nextCtx.beginPath();
-                nextCtx.roundRect((x + offset.x) * BLOCK_SIZE + 2, (y + offset.y) * BLOCK_SIZE + 2, BLOCK_SIZE - 4, BLOCK_SIZE - 4, 2);
+                nextCtx.roundRect((x + offset.x) * BLOCK_SIZE + 2, (y + offset.y) * BLOCK_SIZE + 2, BLOCK_SIZE - 4, BLOCK_SIZE - 4, 3);
                 nextCtx.fill();
-                nextCtx.stroke();
                 nextCtx.restore();
             }
         });
@@ -266,7 +289,7 @@ function update(time = 0) {
     }
 
     draw();
-    animationId = requestAnimationFrame(update);
+    if (!isGameOver) animationId = requestAnimationFrame(update);
 }
 
 function gameOver() {
@@ -279,10 +302,15 @@ function gameOver() {
     }
     
     finalScoreEl.innerText = score > highScore ? `${score} (New Record!)` : score;
-    gameOverOverlay.classList.add('active');
+    gameOverOverlay.style.display = 'flex';
 }
 
 function startGame() {
+    cancelAnimationFrame(animationId);
+    isStarted = true;
+    lastTime = performance.now();
+    dropCounter = 0;
+    player.next = null;
     grid = createGrid();
     isGameOver = false;
     score = 0;
@@ -291,14 +319,15 @@ function startGame() {
     dropInterval = 1000;
     updateScore();
     playerReset();
-    startOverlay.classList.remove('active');
-    gameOverOverlay.classList.remove('active');
-    update();
+    startOverlay.style.display = 'none';
+    gameOverOverlay.style.display = 'none';
+    animationId = requestAnimationFrame(update);
 }
 
 // ── Input ─────────────────────────────────────────────────────
 window.addEventListener('keydown', event => {
-    if (isGameOver) return;
+    if (!isStarted || isGameOver || !player.matrix) return;
+    if (['ArrowLeft','ArrowRight','ArrowDown','ArrowUp',' ','q'].includes(event.key)) event.preventDefault();
 
     if (event.key === 'ArrowLeft') playerMove(-1);
     else if (event.key === 'ArrowRight') playerMove(1);
@@ -311,11 +340,9 @@ window.addEventListener('keydown', event => {
         }
         player.pos.y--;
         merge(grid, player);
-        playerReset();
         gridSweep();
         updateScore();
+        playerReset();
     }
 });
 
-document.getElementById('startBtn').addEventListener('click', startGame);
-document.getElementById('restartBtn').addEventListener('click', startGame);

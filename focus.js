@@ -834,7 +834,7 @@
             document.querySelectorAll('.section-pill-btn').forEach(item => item.setAttribute('aria-pressed', String(item === button)));
         });
     });
-    document.getElementById('browse-exercises').addEventListener('click', () => { document.querySelector('[data-tab="tab-exercises"]').click(); document.body.scrollTo({top: 0, behavior: 'smooth'}); });
+    document.getElementById('browse-exercises').addEventListener('click', () => { document.querySelector('[data-tab="tab-exercises"]').click(); document.getElementById('focus-scroll').scrollTo({top: 0, behavior: 'smooth'}); });
     document.querySelectorAll('.grounding-step-card').forEach(card => {
         card.tabIndex = 0; card.setAttribute('role', 'button'); card.setAttribute('aria-pressed', 'false');
         card.addEventListener('click', () => card.setAttribute('aria-pressed', String(card.classList.contains('completed'))));

@@ -29,19 +29,26 @@ let nextDy = 0;
 let score = 0;
 let bestScore = localStorage.getItem('ocalSnakeHighScore') || 0;
 let isGameOver = false;
+let isStarted = false;
+let animationId = null;
 let gameSpeed = 100;
 let lastTime = 0;
 
 bestEl.innerText = bestScore;
 
-// Helper to resolve the active accent color from CSS
-function updateColors() {
-    const computedAccent = getComputedStyle(document.documentElement).getPropertyValue('--accent').trim();
-    if (computedAccent) {
-        ACCENT = computedAccent;
-    }
+// Helper to resolve the active theme colors from CSS
+function getColors() {
+    const isLight = document.documentElement.getAttribute('data-theme') === 'light' || document.body.getAttribute('data-theme') === 'light';
+    const computedAccent = getComputedStyle(document.documentElement).getPropertyValue('--accent').trim() || '#10B981';
+    return {
+        isLight,
+        accent: computedAccent,
+        bg: isLight ? '#FFFFFF' : '#14161F',
+        grid: isLight ? 'rgba(0, 0, 0, 0.05)' : 'rgba(255, 255, 255, 0.05)',
+        food: isLight ? '#E11D48' : '#FF4D6D',
+        tailFill: isLight ? 'rgba(0, 0, 0, 0.04)' : '#1E222D'
+    };
 }
-updateColors();
 
 // ── Particle System ───────────────────────────────────────────
 class Particle {
@@ -72,39 +79,46 @@ const particles = [];
 
 // ── Graphics ──────────────────────────────────────────────────
 function draw() {
-    ctx.fillStyle = '#000000';
+    const c = getColors();
+    ACCENT = c.accent;
+
+    ctx.fillStyle = c.bg;
     ctx.fillRect(0, 0, CANVAS_SIZE, CANVAS_SIZE);
 
-    // Draw Grid (Subtle flat 0.5px borders)
-    ctx.strokeStyle = '#252525';
-    ctx.lineWidth = 0.5;
+    // Draw Grid
+    ctx.strokeStyle = c.grid;
+    ctx.lineWidth = 1;
     for (let i = 0; i <= TILE_COUNT; i++) {
         ctx.beginPath(); ctx.moveTo(i * GRID_SIZE, 0); ctx.lineTo(i * GRID_SIZE, CANVAS_SIZE); ctx.stroke();
         ctx.beginPath(); ctx.moveTo(0, i * GRID_SIZE); ctx.lineTo(CANVAS_SIZE, i * GRID_SIZE); ctx.stroke();
     }
 
-    // Draw Food (Flat solid white box)
+    // Draw Food (Pulsing neon orb)
     ctx.save();
-    ctx.fillStyle = '#ffffff';
+    ctx.fillStyle = c.food;
+    ctx.shadowColor = c.food;
+    ctx.shadowBlur = 8;
     ctx.beginPath();
-    ctx.roundRect(food.x * GRID_SIZE + 3, food.y * GRID_SIZE + 3, GRID_SIZE - 6, GRID_SIZE - 6, 2);
+    ctx.arc(food.x * GRID_SIZE + GRID_SIZE / 2, food.y * GRID_SIZE + GRID_SIZE / 2, GRID_SIZE / 2 - 3, 0, Math.PI * 2);
     ctx.fill();
     ctx.restore();
 
-    // Draw Snake (Flat head, outline wireframe tail segments)
+    // Draw Snake
     snake.forEach((segment, i) => {
         ctx.save();
-        const r = 2; // Sharp corners matching D:\ocal style
+        const r = 4;
         ctx.beginPath();
         ctx.roundRect(segment.x * GRID_SIZE + 2, segment.y * GRID_SIZE + 2, GRID_SIZE - 4, GRID_SIZE - 4, r);
         if (i === 0) {
-            ctx.fillStyle = ACCENT;
+            ctx.fillStyle = c.accent;
+            ctx.shadowColor = c.accent;
+            ctx.shadowBlur = 10;
             ctx.fill();
         } else {
-            ctx.fillStyle = '#1e1e1e';
-            ctx.strokeStyle = ACCENT;
+            ctx.fillStyle = c.tailFill;
+            ctx.strokeStyle = c.accent;
             ctx.lineWidth = 1.5;
-            ctx.globalAlpha = 1 - (i / snake.length) * 0.5; // Fade out towards tail
+            ctx.globalAlpha = Math.max(0.3, 1 - (i / snake.length) * 0.6);
             ctx.fill();
             ctx.stroke();
         }
@@ -129,7 +143,7 @@ function update(time) {
     }
 
     draw();
-    requestAnimationFrame(update);
+    if (!isGameOver) animationId = requestAnimationFrame(update);
 }
 
 function moveSnake() {
@@ -147,7 +161,7 @@ function moveSnake() {
     }
 
     // Self Collision
-    if (snake.some(s => s.x === head.x && s.y === head.y)) {
+    if (snake.slice(0, head.x === food.x && head.y === food.y ? snake.length : -1).some(s => s.x === head.x && s.y === head.y)) {
         return handleGameOver();
     }
 
@@ -166,12 +180,12 @@ function moveSnake() {
 }
 
 function spawnFood() {
-    food = {
-        x: Math.floor(Math.random() * TILE_COUNT),
-        y: Math.floor(Math.random() * TILE_COUNT)
-    };
-    // Ensure food doesn't spawn on snake
-    if (snake.some(s => s.x === food.x && s.y === food.y)) spawnFood();
+    const free = [];
+    for (let y = 0; y < TILE_COUNT; y++) for (let x = 0; x < TILE_COUNT; x++) {
+        if (!snake.some(segment => segment.x === x && segment.y === y)) free.push({x, y});
+    }
+    if (!free.length) { handleGameOver(); finalScoreEl.textContent = `Board complete! Score: ${score}`; return; }
+    food = free[Math.floor(Math.random() * free.length)];
 }
 
 function spawnParticles(x, y, color, count) {
@@ -188,7 +202,7 @@ function handleGameOver() {
         bestEl.innerText = bestScore;
     }
     finalScoreEl.innerText = `Final Score: ${score}`;
-    gameOverOverlay.classList.add('active');
+    gameOverOverlay.style.display = 'flex';
     spawnParticles(snake[0].x * GRID_SIZE, snake[0].y * GRID_SIZE, ACCENT, 30);
 }
 
@@ -200,12 +214,16 @@ function resetGame() {
     scoreEl.innerText = '0';
     isGameOver = false;
     spawnFood();
-    startOverlay.classList.remove('active');
-    gameOverOverlay.classList.remove('active');
+    startOverlay.style.display = 'none';
+    gameOverOverlay.style.display = 'none';
+    lastTime = performance.now();
+    particles.length = 0;
 }
 
 // ── Input ─────────────────────────────────────────────────────
 window.addEventListener('keydown', e => {
+    if (!isStarted || isGameOver) return;
+    if (['arrowup','arrowdown','arrowleft','arrowright','w','a','s','d'].includes(e.key.toLowerCase())) e.preventDefault();
     switch (e.key.toLowerCase()) {
         case 'arrowup':
         case 'w':
@@ -226,11 +244,10 @@ window.addEventListener('keydown', e => {
     }
 });
 
-document.getElementById('startBtn').addEventListener('click', () => {
+function startGame() {
+    cancelAnimationFrame(animationId);
     resetGame();
-    requestAnimationFrame(update);
-});
-
-document.getElementById('restartBtn').addEventListener('click', () => {
-    resetGame();
-});
+    isStarted = true;
+    animationId = requestAnimationFrame(update);
+}
+draw();

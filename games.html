@@ -2,612 +2,198 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta http-equiv="Content-Security-Policy" content="default-src 'self' 'unsafe-inline' data: blob: https:; script-src 'self' 'unsafe-inline' https:; style-src 'self' 'unsafe-inline' https:; font-src 'self' data: https:; img-src 'self' data: https:; frame-src 'self' blob: data: https:;">
-    <title>Ocal Games Hub</title>
-    <!-- ANTI-FLASH: must be FIRST in head -->
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="Content-Security-Policy" content="default-src 'self' data: blob: ocal: file:; script-src 'self' 'unsafe-inline' https://cdnjs.cloudflare.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com https://cdnjs.cloudflare.com; font-src 'self' data: https://fonts.gstatic.com https://cdnjs.cloudflare.com; frame-src 'self' file: ocal: blob: data:;">
+    <title>Ocal Arcade — Local &amp; Retro Games</title>
+
+    <!-- ANTI-FLASH & COLOR HARMONIZER -->
+    <script src="color-harmonizer.js"></script>
     <script>
         (function () {
-            var t = localStorage.getItem('ocal-settings-theme') || 'light';
+            var t = localStorage.getItem('ocal-settings-theme') || 'dark';
             document.documentElement.setAttribute('data-theme', t);
             if (t === 'dark') {
-                document.documentElement.style.background = '#0D0E11';
+                document.documentElement.style.background = '#0E0F14';
                 document.documentElement.style.colorScheme = 'dark';
+            } else {
+                document.documentElement.style.background = '#F3F4F6';
+                document.documentElement.style.colorScheme = 'light';
+            }
+            var a = localStorage.getItem('ocal-settings-accent');
+            if (window.OcalColorHarmonizer) {
+                window.OcalColorHarmonizer.applyHarmonizedTheme(a, t);
             }
         })();
     </script>
+
+    <!-- Fonts & Icons -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800;900&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="assets/fontawesome/css/all.min.css">
-    <link rel="stylesheet" href="home.css">
-
-    <style>
-        /* Extra Arcade Home Page Styling Adjustments */
-        .arcade-hero-card {
-            background: #FFFFFF;
-            border-radius: 28px;
-            padding: 32px 36px;
-            border: 1px solid rgba(0, 0, 0, 0.06);
-            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.03);
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            gap: 32px;
-            position: relative;
-            overflow: hidden;
-            transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
-        }
-
-        body[data-theme="dark"] .arcade-hero-card {
-            background: #16181D !important;
-            border-color: rgba(255, 255, 255, 0.08) !important;
-            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3) !important;
-        }
-
-        .arcade-hero-left {
-            display: flex;
-            flex-direction: column;
-            gap: 12px;
-            flex: 1;
-        }
-
-        :root {
-            --accent: #09f0a0;
-            --accent-dim: rgba(9, 240, 160, 0.15);
-            --accent-glow: rgba(9, 240, 160, 0.3);
-            --sp-accent: var(--accent);
-        }
-
-        .arcade-hero-tag {
-            display: inline-flex;
-            align-items: center;
-            gap: 8px;
-            font-size: 11px;
-            font-weight: 800;
-            letter-spacing: 1px;
-            text-transform: uppercase;
-            color: var(--accent) !important;
-        }
-
-        body[data-theme="dark"] .arcade-hero-tag {
-            color: var(--accent) !important;
-        }
-
-        .arcade-hero-title {
-            font-size: 28px;
-            font-weight: 800;
-            letter-spacing: -0.6px;
-            color: var(--sp-text-primary, #111111);
-            line-height: 1.2;
-        }
-
-        body[data-theme="dark"] .arcade-hero-title {
-            color: #FFFFFF !important;
-        }
-
-        .arcade-hero-desc {
-            font-size: 13.5px;
-            color: var(--sp-text-muted, #555555);
-            line-height: 1.55;
-            max-width: 540px;
-        }
-
-        body[data-theme="dark"] .arcade-hero-desc {
-            color: #A0A5B1 !important;
-        }
-
-        .arcade-hero-actions {
-            display: flex;
-            align-items: center;
-            gap: 12px;
-            margin-top: 6px;
-        }
-
-        .btn-sp-play {
-            display: inline-flex;
-            align-items: center;
-            gap: 8px;
-            padding: 12px 24px;
-            border-radius: 100px;
-            background: var(--accent) !important;
-            color: #0F172A !important;
-            font-size: 13px;
-            font-weight: 800;
-            border: none;
-            cursor: pointer;
-            transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
-            box-shadow: 0 4px 14px var(--accent-dim) !important;
-        }
-
-        body[data-theme="light"] .btn-sp-play {
-            background: var(--accent) !important;
-            color: #FFFFFF !important;
-            box-shadow: 0 4px 14px var(--accent-dim) !important;
-        }
-
-        .btn-sp-play:hover {
-            transform: translateY(-2px) scale(1.02);
-            filter: brightness(1.08);
-        }
-
-        .btn-sp-sec {
-            display: inline-flex;
-            align-items: center;
-            gap: 6px;
-            padding: 12px 20px;
-            border-radius: 100px;
-            background: rgba(0, 0, 0, 0.04);
-            border: 1px solid rgba(0, 0, 0, 0.08);
-            color: #111111;
-            font-size: 12.5px;
-            font-weight: 700;
-            cursor: pointer;
-            transition: all 0.2s ease;
-        }
-
-        body[data-theme="dark"] .btn-sp-sec {
-            background: rgba(255, 255, 255, 0.06);
-            border-color: rgba(255, 255, 255, 0.1);
-            color: #FFFFFF;
-        }
-
-        .btn-sp-sec:hover {
-            background: rgba(0, 0, 0, 0.08);
-        }
-
-        body[data-theme="dark"] .btn-sp-sec:hover {
-            background: rgba(255, 255, 255, 0.12);
-        }
-
-        .arcade-hero-preview {
-            width: 140px;
-            height: 140px;
-            border-radius: 24px;
-            background: var(--accent-dim) !important;
-            border: 1px solid color-mix(in srgb, var(--accent) 30%, transparent) !important;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            gap: 8px;
-            color: var(--accent) !important;
-            font-size: 42px;
-            flex-shrink: 0;
-        }
-
-        body[data-theme="dark"] .arcade-hero-preview {
-            background: var(--accent-dim) !important;
-            border-color: color-mix(in srgb, var(--accent) 30%, transparent) !important;
-            color: var(--accent) !important;
-        }
-
-        /* ── Games Grid Layout ── */
-        .arcade-games-grid {
-            display: grid;
-            grid-template-columns: repeat(4, 1fr);
-            gap: 18px;
-        }
-
-        @media (max-width: 1100px) {
-            .arcade-games-grid { grid-template-columns: repeat(2, 1fr); }
-        }
-
-        @media (max-width: 600px) {
-            .arcade-games-grid { grid-template-columns: 1fr; }
-            .arcade-hero-card { flex-direction: column; text-align: center; }
-            .arcade-hero-left { align-items: center; }
-        }
-
-        .sp-game-card {
-            background: #FFFFFF;
-            border-radius: 24px;
-            padding: 24px 20px;
-            border: 1px solid rgba(0, 0, 0, 0.06);
-            box-shadow: 0 4px 16px rgba(0, 0, 0, 0.03);
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            text-align: center;
-            cursor: pointer;
-            text-decoration: none;
-            color: inherit;
-            transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
-        }
-
-        body[data-theme="dark"] .sp-game-card {
-            background: #16181D !important;
-            border-color: rgba(255, 255, 255, 0.08) !important;
-            box-shadow: 0 6px 20px rgba(0, 0, 0, 0.2) !important;
-        }
-
-        .sp-game-card:hover {
-            transform: translateY(-4px);
-            border-color: var(--accent) !important;
-        }
-
-        body[data-theme="light"] .sp-game-card:hover {
-            border-color: var(--accent) !important;
-        }
-
-        .game-icon-bubble {
-            width: 56px;
-            height: 56px;
-            border-radius: 18px;
-            background: var(--accent-dim) !important;
-            border: 1px solid color-mix(in srgb, var(--accent) 30%, transparent) !important;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 24px;
-            color: var(--accent) !important;
-            margin-bottom: 14px;
-            transition: transform 0.3s ease;
-        }
-
-        body[data-theme="dark"] .game-icon-bubble {
-            background: var(--accent-dim) !important;
-            border-color: color-mix(in srgb, var(--accent) 30%, transparent) !important;
-            color: var(--accent) !important;
-        }
-
-        .sp-game-card:hover .game-icon-bubble {
-            transform: scale(1.1) rotate(-4deg);
-        }
-
-        .sp-game-title {
-            font-size: 17px;
-            font-weight: 700;
-            color: #111111;
-            margin-bottom: 6px;
-        }
-
-        body[data-theme="dark"] .sp-game-title {
-            color: #FFFFFF !important;
-        }
-
-        .sp-game-desc {
-            font-size: 12.5px;
-            color: #555555;
-            line-height: 1.5;
-            margin-bottom: 18px;
-            flex: 1;
-        }
-
-        body[data-theme="dark"] .sp-game-desc {
-            color: #A0A5B1 !important;
-        }
-
-        .sp-game-btn {
-            width: 100%;
-            padding: 8px 14px;
-            border-radius: 100px;
-            background: rgba(0, 0, 0, 0.04);
-            border: 1px solid rgba(0, 0, 0, 0.06);
-            font-size: 11.5px;
-            font-weight: 700;
-            color: #111111;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 6px;
-            transition: all 0.2s ease;
-        }
-
-        body[data-theme="dark"] .sp-game-btn {
-            background: rgba(255, 255, 255, 0.05);
-            border-color: rgba(255, 255, 255, 0.08);
-            color: #FFFFFF;
-        }
-
-        .sp-game-card:hover .sp-game-btn {
-            background: #15AC49 !important;
-            color: #FFFFFF !important;
-            border-color: #15AC49 !important;
-        }
-
-        body[data-theme="dark"] .sp-game-card:hover .sp-game-btn {
-            background: #D4FC2B !important;
-            color: #111111 !important;
-            border-color: #D4FC2B !important;
-        }
-
-        /* ── HexGL 3D Fullscreen Modal View ── */
-        .hexgl-modal-overlay {
-            position: fixed;
-            inset: 0;
-            background: #09090B;
-            z-index: 99999;
-            display: none;
-            flex-direction: column;
-        }
-
-        .hexgl-modal-overlay.active {
-            display: flex;
-        }
-
-        .hexgl-header-bar {
-            height: 52px;
-            background: #111318;
-            border-bottom: 1px solid rgba(255, 255, 255, 0.08);
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            padding: 0 20px;
-            flex-shrink: 0;
-        }
-
-        .hexgl-header-left {
-            display: flex;
-            align-items: center;
-            gap: 10px;
-            font-size: 13.5px;
-            font-weight: 700;
-            color: #FFFFFF;
-        }
-
-        .hexgl-header-left i {
-            color: #D4FC2B;
-        }
-
-        .hexgl-header-right {
-            display: flex;
-            align-items: center;
-            gap: 8px;
-        }
-
-        .hexgl-hdr-btn {
-            padding: 6px 14px;
-            border-radius: 100px;
-            background: rgba(255, 255, 255, 0.08);
-            border: 1px solid rgba(255, 255, 255, 0.12);
-            color: #FFFFFF;
-            font-size: 11.5px;
-            font-weight: 700;
-            cursor: pointer;
-            display: flex;
-            align-items: center;
-            gap: 6px;
-            transition: all 0.2s ease;
-        }
-
-        .hexgl-hdr-btn:hover {
-            background: rgba(255, 255, 255, 0.15);
-        }
-
-        .hexgl-hdr-btn.close-btn:hover {
-            background: #ef4444 !important;
-            border-color: #ef4444 !important;
-        }
-
-        .hexgl-iframe-wrapper {
-            flex: 1;
-            width: 100%;
-            height: calc(100vh - 52px);
-            background: #000000;
-        }
-
-        .hexgl-iframe-wrapper iframe {
-            width: 100%;
-            height: 100%;
-            border: none;
-        }
-    </style>
+    <link rel="stylesheet" href="games.css">
 </head>
-<body class="sp-dashboard-body">
+<body id="arcade-page">
 
-    <div class="sp-wallpaper-bg"></div>
+    <!-- ══ ANTI-FLICKER STICKY HEADER ══ -->
+    <header class="arcade-header">
+        <a href="ocal://home" class="brand">
+            <div class="brand-icon">
+                <i class="fas fa-gamepad"></i>
+            </div>
+            <div class="brand-text">
+                <h1>Ocal Arcade</h1>
+                <p>Instant local games · Play in-page</p>
+            </div>
+        </a>
 
-    <!-- Main Dashboard Container matching Home Page -->
-    <main class="sp-dashboard-wrapper">
-        
-        <!-- Header Row -->
-        <header class="sp-header-row">
-            <div class="sp-user-greeting">
-                <h1 class="sp-user-name">Ocal Arcade Hub</h1>
-                <span class="sp-user-subtitle">3D WebGL Anti-Gravity Racing & Offline Retro Games</span>
-            </div>
-
-            <!-- Dot-Matrix Stats Bar -->
-            <div class="sp-stats-bar">
-                <div class="sp-stat-item">
-                    <span class="sp-dot-num">HexGL 3D</span>
-                    <span class="sp-badge sp-badge-lime">Offline</span>
-                </div>
-                <div class="sp-stat-item">
-                    <span class="sp-dot-num">3 Games</span>
-                    <span class="sp-badge sp-badge-gray">Arcade</span>
-                </div>
-            </div>
-
-            <!-- Top Status Action Card -->
-            <div class="sp-top-actions">
-                <div class="sp-action-card sp-connect-tracker-mini">
-                    <div class="sp-ac-left">
-                        <span class="sp-ac-title">Offline Arcade<br>Ready</span>
-                    </div>
-                    <div class="sp-pulse-ring">
-                        <div class="sp-pulse-center"></div>
-                    </div>
-                </div>
-            </div>
-        </header>
-
-        <!-- Search Bar Section -->
-        <section class="sp-search-section">
-            <div class="sp-search-pill">
-                <div class="sp-search-logo">
-                    <i class="fas fa-gamepad" style="color: var(--sp-accent, #15AC49); font-size: 16px;"></i>
-                </div>
-                <input type="text" id="arcade-search-input" class="sp-search-input" placeholder="Search arcade games or filter collection..." autocomplete="off">
-            </div>
-        </section>
-
-        <!-- Featured Hero Card: HexGL 3D Anti-Gravity Racer (100% OFFLINE) -->
-        <div class="arcade-hero-card" id="hero-hexgl-card">
-            <div class="arcade-hero-left">
-                <div class="arcade-hero-tag">
-                    <i class="fas fa-bolt"></i> FEATURED 3D WEBGL RACER • OFFLINE PLAYABLE
-                </div>
-                <div class="arcade-hero-title">HexGL 3D Anti-Gravity Racer</div>
-                <div class="arcade-hero-desc">
-                    Experience ultra-fast 3D WebGL hovercraft racing across futuristic tracks. Cloned locally in your browser for 100% offline play at 60 FPS speeds.
-                </div>
-                <div class="arcade-hero-actions">
-                    <button class="btn-sp-play" onclick="launchHexGLOffline()">
-                        <i class="fas fa-play"></i> LAUNCH HEXGL 3D (OFFLINE)
-                    </button>
-                    <button class="btn-sp-sec" onclick="alert('HEXGL CONTROLS:\n\n• [W] or [Up Arrow]: Accelerate\n• [A / D] or [Left / Right]: Steer\n• [S] or [Down Arrow]: Brake\n• [Space]: Right Airbrake\n• [Shift]: Left Airbrake\n• [R]: Restart Track')">
-                        <i class="fas fa-keyboard"></i> CONTROLS GUIDE
-                    </button>
-                </div>
-            </div>
-            <div class="arcade-hero-preview">
-                <i class="fas fa-rocket"></i>
-                <span style="font-size: 11px; font-weight: 800; letter-spacing: 1px;">HEXGL 3D</span>
-            </div>
+        <!-- Search Bar -->
+        <div class="header-search">
+            <i class="fas fa-search"></i>
+            <input type="search" id="game-search" placeholder="Search games or tags… (/)" aria-label="Search games">
         </div>
 
-        <!-- Games Grid (3 Cards) -->
-        <div class="arcade-games-grid" id="arcade-games-grid">
-            
-            <!-- HexGL 3D Card -->
-            <div class="sp-game-card" data-title="hexgl 3d anti-gravity racer" onclick="launchHexGLOffline()">
-                <div class="game-icon-bubble">
-                    <i class="fas fa-rocket"></i>
-                </div>
-                <div class="sp-game-title">HexGL 3D</div>
-                <div class="sp-game-desc">Futuristic 3D anti-gravity ship racer built with WebGL Three.js. 100% offline.</div>
-                <div class="sp-game-btn">
-                    <i class="fas fa-play"></i> PLAY 3D RACER
-                </div>
-            </div>
-
-            <!-- Ocal Grid -->
-            <a href="tetris.html" class="sp-game-card" data-title="ocal grid glass tetris block puzzle">
-                <div class="game-icon-bubble">
-                    <i class="fas fa-cubes"></i>
-                </div>
-                <div class="sp-game-title">Ocal Grid</div>
-                <div class="sp-game-desc">Master the blocks in this high-fidelity glass Tetris experience with smooth rotation controls.</div>
-                <div class="sp-game-btn">
-                    <i class="fas fa-play"></i> PLAY GRID
-                </div>
+        <!-- Right Header Actions -->
+        <div class="header-actions">
+            <span class="collection-pill"><i class="fas fa-circle-check"></i> 7 Games Offline</span>
+            <button class="icon-btn" id="theme-toggle" title="Toggle Light/Dark Theme" aria-label="Toggle Theme">
+                <i class="fas fa-moon"></i>
+            </button>
+            <a href="ocal://home" class="home-btn" title="Return to Browser Homepage">
+                <i class="fas fa-house"></i> <span>Home</span>
             </a>
+        </div>
+    </header>
 
-            <!-- Ocal Snake -->
-            <a href="snake.html" class="sp-game-card" data-title="ocal snake cyber data hunter">
-                <div class="game-icon-bubble">
-                    <i class="fas fa-ring"></i>
+    <!-- ══ MAIN SCROLLABLE ARCADE WORKSPACE ══ -->
+    <div class="arcade-scroll">
+        <main class="arcade-main">
+
+            <!-- ── IN-PAGE LIVE GAME ARENA ── -->
+            <section class="stage-section" id="arcade-stage">
+                
+                <!-- 1. Idle Showcase Banner (Shown when no game is active) -->
+                <div class="stage-showcase-card" id="stage-showcase">
+                    <div class="showcase-content">
+                        <span class="eyebrow"><i class="fas fa-sparkles"></i> FEATURED / SPEED RUNNER</span>
+                        <h2>Ocal Pulse — Neon Dash</h2>
+                        <p>High-speed endless runner with procedural obstacles, double jumps, particle trails, and reactive theme physics. Play right here in the page with zero popups.</p>
+                        <div class="showcase-actions">
+                            <button class="primary-btn" id="showcase-play-btn" data-launch="pulse">
+                                <i class="fas fa-play"></i> Play in Arena
+                            </button>
+                            <span class="showcase-meta"><i class="fas fa-keyboard"></i> Space / Up / Tap to jump · 100% Offline</span>
+                        </div>
+                    </div>
+                    <div class="showcase-art" aria-hidden="true">
+                        <div class="art-pulse-ring ring-1"></div>
+                        <div class="art-pulse-ring ring-2"></div>
+                        <i class="fas fa-bolt art-center-icon"></i>
+                        <span class="art-badge">SYNTH RUNNER</span>
+                    </div>
                 </div>
-                <div class="sp-game-title">Ocal Snake</div>
-                <div class="sp-game-desc">Slither through the neon grid in this cyber data-bit hunter with custom speed controls.</div>
-                <div class="sp-game-btn">
-                    <i class="fas fa-play"></i> PLAY SNAKE
+
+                <!-- 2. Active Game Player (Shown when game is loaded) -->
+                <div class="stage-player-card" id="stage-player" style="display: none;">
+                    <!-- Player Toolbar -->
+                    <div class="stage-toolbar">
+                        <div class="stage-title-wrap">
+                            <div class="stage-icon-badge" id="stage-icon">
+                                <i class="fas fa-gamepad"></i>
+                            </div>
+                            <div class="stage-title-text">
+                                <div class="stage-heading-row">
+                                    <h2 id="stage-game-title">Ocal Snake</h2>
+                                    <span class="stage-badge" id="stage-game-cat">Arcade</span>
+                                </div>
+                                <p id="stage-game-hint">Arrow keys or WASD to steer</p>
+                            </div>
+                        </div>
+
+                        <div class="stage-actions">
+                            <div class="stage-stat-pill">
+                                <i class="fas fa-trophy"></i>
+                                <span>BEST: <strong id="stage-high-score">0</strong></span>
+                            </div>
+                            <button class="stage-btn" id="stage-restart-btn" title="Restart Game" aria-label="Restart Game">
+                                <i class="fas fa-rotate-right"></i> <span>Restart</span>
+                            </button>
+                            <button class="stage-btn" id="stage-fullscreen-btn" title="Toggle Fullscreen Arena" aria-label="Toggle Fullscreen">
+                                <i class="fas fa-expand"></i> <span>Fullscreen</span>
+                            </button>
+                            <button class="stage-btn stage-btn-close" id="stage-close-btn" title="Back to Collection" aria-label="Close Arena">
+                                <i class="fas fa-xmark"></i> <span>Close</span>
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Viewport Frame -->
+                    <div class="stage-viewport-container" id="stage-viewport">
+                        <div class="stage-loading-overlay" id="stage-loader">
+                            <i class="fas fa-circle-notch fa-spin"></i>
+                            <span>Loading game...</span>
+                        </div>
+                        <iframe id="stage-iframe" title="Active Game Viewport" allow="autoplay; fullscreen" allowfullscreen></iframe>
+                    </div>
+
+                    <!-- Quick Switcher Bar -->
+                    <div class="stage-quick-bar">
+                        <span class="quick-label"><i class="fas fa-bolt"></i> QUICK SWITCH:</span>
+                        <div class="quick-pills" id="quick-game-pills">
+                            <!-- Populated dynamically via games.js -->
+                        </div>
+                    </div>
                 </div>
-            </a>
+            </section>
 
-        </div>
+            <!-- ── CATALOG & COLLECTION ── -->
+            <section class="collection-section">
+                <div class="collection-heading-row">
+                    <div>
+                        <p class="eyebrow">LOCAL ARCADIA</p>
+                        <h2>The Game Collection</h2>
+                    </div>
 
-    </main>
+                    <!-- Category Filters -->
+                    <div class="filter-pills" role="group" aria-label="Filter games by category">
+                        <button class="filter-btn active" data-filter="all" aria-pressed="true">All (7)</button>
+                        <button class="filter-btn" data-filter="arcade" aria-pressed="false">Arcade</button>
+                        <button class="filter-btn" data-filter="puzzle" aria-pressed="false">Puzzle</button>
+                        <button class="filter-btn" data-filter="retro" aria-pressed="false">Retro &amp; Duel</button>
+                        <button class="filter-btn" data-filter="racing" aria-pressed="false">3D Racing</button>
+                    </div>
+                </div>
 
-    <!-- HexGL 3D Fullscreen WebGL Modal View -->
-    <div id="hexgl-modal" class="hexgl-modal-overlay">
-        <div class="hexgl-header-bar">
-            <div class="hexgl-header-left">
-                <i class="fas fa-rocket"></i> HexGL 3D Anti-Gravity Racer (Offline WebGL)
-            </div>
-            <div class="hexgl-header-right">
-                <button class="hexgl-hdr-btn" onclick="toggleHexGLFullscreen()">
-                    <i class="fas fa-expand"></i> Fullscreen
-                </button>
-                <button class="hexgl-hdr-btn close-btn" onclick="closeHexGLModal()">
-                    <i class="fas fa-xmark"></i> Exit Game
-                </button>
-            </div>
-        </div>
-        <div class="hexgl-iframe-wrapper">
-            <iframe id="hexgl-iframe" src="about:blank" allow="autoplay; fullscreen; keyboard"></iframe>
-        </div>
+                <!-- Games Grid -->
+                <div class="games-grid" id="games-grid">
+                    <!-- Populated dynamically by games.js -->
+                </div>
+
+                <!-- Empty Search State -->
+                <div class="empty-state" id="empty-state" hidden>
+                    <div class="empty-icon"><i class="fas fa-ghost"></i></div>
+                    <h3>No matching games found</h3>
+                    <p>Try searching for another keyword or clear the active filter.</p>
+                    <button class="action-btn" id="clear-search-btn">
+                        <i class="fas fa-filter-circle-xmark"></i> Clear Filters
+                    </button>
+                </div>
+            </section>
+
+            <!-- ── FOOTER ── -->
+            <footer class="arcade-footer">
+                <div class="footer-left">
+                    <span class="footer-brand">OCAL / ARCADE</span>
+                    <span>100% Client-Side · Zero Telemetry · Theme-Harmonized</span>
+                </div>
+                <div class="footer-right">
+                    <span>Press <kbd>/</kbd> to search · Play responsibly</span>
+                </div>
+            </footer>
+
+        </main>
     </div>
 
-    <script>
-        // ── Theme Sync from localStorage / Electron API ──
-        function applyTheme(s) {
-            if (!s) return;
-            if (s.themeMode) {
-                document.body.setAttribute('data-theme', s.themeMode);
-                document.documentElement.setAttribute('data-theme', s.themeMode);
-            }
-            if (s.accentColor) {
-                document.documentElement.style.setProperty('--accent', s.accentColor);
-                document.documentElement.style.setProperty('--sp-accent', s.accentColor);
-                const hex = s.accentColor.replace('#', '');
-                if (hex.length === 6) {
-                    const r = parseInt(hex.slice(0, 2), 16);
-                    const g = parseInt(hex.slice(2, 4), 16);
-                    const b = parseInt(hex.slice(4, 6), 16);
-                    if (!isNaN(r) && !isNaN(g) && !isNaN(b)) {
-                        document.documentElement.style.setProperty('--accent-dim', `rgba(${r}, ${g}, ${b}, 0.15)`);
-                        document.documentElement.style.setProperty('--accent-glow', `rgba(${r}, ${g}, ${b}, 0.3)`);
-                    }
-                }
-            }
-        }
-
-        if (window.electronAPI) {
-            window.electronAPI.getSettings().then(s => applyTheme(s)).catch(() => {});
-            if (window.electronAPI.onSettingsChanged) {
-                window.electronAPI.onSettingsChanged((s) => applyTheme(s));
-            }
-            if (window.electronAPI.on) {
-                window.electronAPI.on('settings-changed', (e, s) => applyTheme(s));
-            }
-        }
-
-        // ── Real-time Search Filtering ──
-        const searchInput = document.getElementById('arcade-search-input');
-        if (searchInput) {
-            searchInput.addEventListener('input', (e) => {
-                const query = e.target.value.toLowerCase().trim();
-                document.querySelectorAll('.sp-game-card').forEach(card => {
-                    const title = card.getAttribute('data-title') || '';
-                    if (!query || title.includes(query)) {
-                        card.style.display = 'flex';
-                    } else {
-                        card.style.display = 'none';
-                    }
-                });
-            });
-        }
-
-        // ── Launch Local HexGL 100% Offline ──
-        function launchHexGLOffline() {
-            const modal = document.getElementById('hexgl-modal');
-            const iframe = document.getElementById('hexgl-iframe');
-            
-            // Point to local cloned HexGL offline index.html!
-            iframe.src = 'hexgl/index.html';
-            modal.classList.add('active');
-            document.body.style.overflow = 'hidden';
-        }
-
-        function closeHexGLModal() {
-            const modal = document.getElementById('hexgl-modal');
-            const iframe = document.getElementById('hexgl-iframe');
-            
-            modal.classList.remove('active');
-            iframe.src = 'about:blank';
-            document.body.style.overflow = 'auto';
-        }
-
-        function toggleHexGLFullscreen() {
-            const iframe = document.getElementById('hexgl-iframe');
-            if (iframe.requestFullscreen) {
-                iframe.requestFullscreen();
-            } else if (iframe.webkitRequestFullscreen) {
-                iframe.webkitRequestFullscreen();
-            }
-        }
-    </script>
+    <script src="games.js"></script>
 </body>
 </html>

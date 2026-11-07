@@ -2713,10 +2713,13 @@ function resolveInternalURL(url) {
         const qIdx = url.indexOf('?');
         return 'file://' + path.join(__dirname, 'security-warning.html') + (qIdx !== -1 ? url.substring(qIdx) : '');
     }
-    if (cleanBase === 'ocal://games' || cleanBase === 'ocal://game') return 'file://' + path.join(__dirname, 'games.html');
-    if (cleanBase === 'ocal://snake') return 'file://' + path.join(__dirname, 'snake.html');
-    if (cleanBase === 'ocal://tetris') return 'file://' + path.join(__dirname, 'tetris.html');
-    if (cleanBase === 'ocal://pulse' || cleanBase === 'ocal://runner') return 'file://' + path.join(__dirname, 'game.html');
+    if (cleanBase === 'ocal://games' || cleanBase === 'ocal://game' || cleanBase === 'ocal://arcade' || cleanBase === 'games' || cleanBase === 'arcade') return 'file://' + path.join(__dirname, 'games.html');
+    if (cleanBase === 'ocal://snake' || cleanBase === 'snake') return 'file://' + path.join(__dirname, 'snake.html');
+    if (cleanBase === 'ocal://tetris' || cleanBase === 'tetris' || cleanBase === 'ocal://grid' || cleanBase === 'grid') return 'file://' + path.join(__dirname, 'tetris.html');
+    if (cleanBase === 'ocal://pulse' || cleanBase === 'ocal://runner' || cleanBase === 'pulse' || cleanBase === 'runner') return 'file://' + path.join(__dirname, 'game.html');
+    if (cleanBase === 'ocal://2048' || cleanBase === '2048') return 'file://' + path.join(__dirname, '2048.html');
+    if (cleanBase === 'ocal://pong' || cleanBase === 'pong') return 'file://' + path.join(__dirname, 'pong.html');
+    if (cleanBase === 'ocal://breakout' || cleanBase === 'breakout') return 'file://' + path.join(__dirname, 'breakout.html');
     if (cleanBase === 'ocal://ai' || cleanBase === 'ocal://ai-sidebar' || cleanBase === 'ocal://ai-sidebar/ai-sidebar.html') return 'file://' + path.join(__dirname, 'ai-sidebar.html');
 
     if (cleanBase === 'ocal://site-settings') {
@@ -11000,7 +11003,7 @@ function updateHistory(view, url) {
                 'tab-context.html', 'tabgroup.html', 'shield-popup.html', 'site-info.html',
                 'media-popup.html', 'ai-sidebar.html', 'certificate-viewer.html',
                 'bm-dropdown.html', 'file-manager.html', 'music-player.html', 'snake.html', 'tetris.html', 'page-context.html',
-                'focus.html', 'private-home.html', 'private-window.html'
+                'focus.html', 'private-home.html', 'private-window.html', '2048.html', 'pong.html', 'breakout.html'
             ].some(page => url.toLowerCase().includes(page.toLowerCase()));
 
         if (!isInternalPage) {
@@ -11057,6 +11060,11 @@ app.whenReady().then(async () => {
     if (protocol.handle) {
         protocol.handle('ocal', (request) => {
             const url = request.url;
+            if (new URL(url).hostname === 'arcade') {
+                const asset = require('./arcade-protocol.cjs').resolveArcadeAsset(url, __dirname);
+                if (!asset) return new Response('Not found', { status: 404 });
+                return net.fetch(asset).catch(() => new Response('Not found', { status: 404 }));
+            }
             const resolved = resolveInternalURL(url);
             if (resolved.startsWith('file://')) {
                 return require('electron').net.fetch(resolved);

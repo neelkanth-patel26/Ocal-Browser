@@ -2,16 +2,28 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com https://cdn.jsdelivr.net; font-src 'self' https://fonts.gstatic.com https://cdn.jsdelivr.net; img-src 'self' data:;">
     <title>Ocal Grid | Glass Tetris</title>
-    <!-- ANTI-FLASH: must be FIRST in head -->
+    <!-- ANTI-FLASH & COLOR HARMONIZER -->
+    <script src="color-harmonizer.js"></script>
     <script>
         (function () {
-            var t = localStorage.getItem('ocal-settings-theme') || 'light';
+            var t = localStorage.getItem('ocal-settings-theme') || 'dark';
             document.documentElement.setAttribute('data-theme', t);
             if (t === 'dark') {
-                document.documentElement.style.background = '#0D0E11';
+                document.documentElement.style.background = '#0E0F14';
                 document.documentElement.style.colorScheme = 'dark';
+            } else {
+                document.documentElement.style.background = '#F3F4F6';
+                document.documentElement.style.colorScheme = 'light';
+            }
+            var a = localStorage.getItem('ocal-settings-accent');
+            if (window.OcalColorHarmonizer) {
+                window.OcalColorHarmonizer.applyHarmonizedTheme(a, t);
+            }
+            if (window.self !== window.top || location.search.includes('embedded=1')) {
+                document.addEventListener('DOMContentLoaded', () => document.body.classList.add('embedded'));
             }
         })();
     </script>
@@ -22,25 +34,28 @@
     
     <style>
         :root {
-            --bg: #0D0E11;
-            --card-bg: #16181D;
+            --bg: #0E0F14;
+            --card-bg: #161820;
             --border: rgba(255, 255, 255, 0.08);
-            --accent: #D4FC2B;
-            --accent-glow: rgba(212, 252, 43, 0.3);
-            --text-main: #F0F2F5;
-            --text-dim: #A0A5B1;
+            --accent: #10B981;
+            --accent-glow: rgba(16, 185, 129, 0.25);
+            --text-main: #F3F4F6;
+            --text-dim: #9CA3AF;
             --font-main: 'Plus Jakarta Sans', sans-serif;
             --font-mono: 'Space Mono', monospace;
         }
 
+        html[data-theme="light"],
         body[data-theme="light"] {
-            --bg: #F0F2F5;
+            --bg: #F3F4F6;
             --card-bg: #FFFFFF;
             --border: rgba(0, 0, 0, 0.08);
-            --accent: #15AC49;
-            --accent-glow: rgba(21, 172, 73, 0.25);
-            --text-main: #16181D;
-            --text-dim: #626773;
+            --text-main: #111827;
+            --text-dim: #6B7280;
+        }
+
+        body.embedded .header-bar {
+            display: none !important;
         }
 
         *, *::before, *::after {
@@ -267,7 +282,7 @@
             transform: scale(1.04);
         }
     </style>
-</head>
+<link rel="stylesheet" href="arcade-player.css"></head>
 <body>
 
     <div class="header-bar">
@@ -282,10 +297,7 @@
     <div class="game-layout">
         <!-- Left Panel: Stats -->
         <div class="side-box">
-            <div class="stat-card">
-                <div class="stat-lbl">HOLD PIECE</div>
-                <canvas id="holdCanvas" class="preview-canvas" width="100" height="70"></canvas>
-            </div>
+
             <div class="stat-card">
                 <div class="stat-lbl">SCORE</div>
                 <div class="stat-val" id="score">00000</div>
@@ -317,14 +329,14 @@
                 <div><span class="key-tag">↑</span> Rotate</div>
                 <div><span class="key-tag">↓</span> Soft Drop</div>
                 <div><span class="key-tag">Space</span> Hard Drop</div>
-                <div><span class="key-tag">C</span> Hold Piece</div>
+
             </div>
         </div>
 
         <!-- Start Overlay -->
         <div class="overlay-modal" id="startOverlay">
             <div class="modal-title-text">OCAL GRID</div>
-            <div class="modal-sub-text">High-fidelity neon glass Tetris engine</div>
+            <div class="modal-sub-text">Move, rotate, and clear full rows.</div>
             <button class="modal-btn" onclick="startGame()">
                 <i class="fas fa-play"></i> START GAME
             </button>
