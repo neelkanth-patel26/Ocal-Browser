@@ -38,13 +38,13 @@ if (process.platform === 'win32') {
         const programsDir = path.join(process.env.APPDATA || '', 'Microsoft', 'Windows', 'Start Menu', 'Programs');
         const electronLnk = path.join(programsDir, 'Electron.lnk');
         if (fs.existsSync(electronLnk)) {
-            try { fs.unlinkSync(electronLnk); } catch (e) {}
+            try { fs.unlinkSync(electronLnk); } catch (e) { }
         }
         const brokenOcal = path.join(programsDir, 'Ocal Browser');
         if (fs.existsSync(brokenOcal) && !brokenOcal.endsWith('.lnk')) {
-            try { fs.unlinkSync(brokenOcal); } catch (e) {}
+            try { fs.unlinkSync(brokenOcal); } catch (e) { }
         }
-    } catch (e) {}
+    } catch (e) { }
 }
 
 // Disable deprecation warnings in the console (silences punycode and setPreloads from 3rd-party libs)
@@ -78,7 +78,7 @@ try {
     if (fs.existsSync(sPath)) {
         preStartupSettings = JSON.parse(fs.readFileSync(sPath, 'utf8'));
     }
-} catch (e) {}
+} catch (e) { }
 
 const isHwAccelEnabled = !preStartupSettings || preStartupSettings.hardwareAcceleration !== false;
 
@@ -236,7 +236,7 @@ function getArgumentURL(argv) {
             if (resolved === appDir || resolved === cwdDir || resolved.endsWith('main.js') || resolved.endsWith('electron.exe')) {
                 return false;
             }
-        } catch (e) {}
+        } catch (e) { }
 
         // Accept recognized URL protocols
         if (/^(https?|ocal|file|ftp):\/\//i.test(arg)) return true;
@@ -247,7 +247,7 @@ function getArgumentURL(argv) {
                 if (fs.existsSync(arg) && fs.statSync(arg).isFile()) {
                     return true;
                 }
-            } catch (e) {}
+            } catch (e) { }
         }
         return false;
     });
@@ -616,23 +616,23 @@ function syncSearchEngineCookies(isLight) {
     const targetSession = session.defaultSession;
     const gVal = isLight ? 'f6=9' : 'f6=8';
     if (targetSession && targetSession.cookies) {
-        targetSession.cookies.set({ url: 'https://www.google.com', name: 'PREF', value: gVal, domain: '.google.com', path: '/' }).catch(() => {});
-        targetSession.cookies.set({ url: 'https://duckduckgo.com', name: 'kae', value: isLight ? '-1' : 'd', domain: '.duckduckgo.com', path: '/' }).catch(() => {});
-        targetSession.cookies.set({ url: 'https://www.bing.com', name: 'SRCHHPGUSR', value: `BNDDARK=${isLight ? '0' : '1'}`, domain: '.bing.com', path: '/' }).catch(() => {});
-        targetSession.cookies.set({ url: 'https://search.brave.com', name: 'brave_theme', value: isLight ? 'light' : 'dark', domain: '.brave.com', path: '/' }).catch(() => {});
+        targetSession.cookies.set({ url: 'https://www.google.com', name: 'PREF', value: gVal, domain: '.google.com', path: '/' }).catch(() => { });
+        targetSession.cookies.set({ url: 'https://duckduckgo.com', name: 'kae', value: isLight ? '-1' : 'd', domain: '.duckduckgo.com', path: '/' }).catch(() => { });
+        targetSession.cookies.set({ url: 'https://www.bing.com', name: 'SRCHHPGUSR', value: `BNDDARK=${isLight ? '0' : '1'}`, domain: '.bing.com', path: '/' }).catch(() => { });
+        targetSession.cookies.set({ url: 'https://search.brave.com', name: 'brave_theme', value: isLight ? 'light' : 'dark', domain: '.brave.com', path: '/' }).catch(() => { });
     }
 
     try {
         if (typeof getProfilePartition === 'function') {
             const partSession = session.fromPartition(getProfilePartition());
             if (partSession && partSession.cookies) {
-                partSession.cookies.set({ url: 'https://www.google.com', name: 'PREF', value: gVal, domain: '.google.com', path: '/' }).catch(() => {});
-                partSession.cookies.set({ url: 'https://duckduckgo.com', name: 'kae', value: isLight ? '-1' : 'd', domain: '.duckduckgo.com', path: '/' }).catch(() => {});
-                partSession.cookies.set({ url: 'https://www.bing.com', name: 'SRCHHPGUSR', value: `BNDDARK=${isLight ? '0' : '1'}`, domain: '.bing.com', path: '/' }).catch(() => {});
-                partSession.cookies.set({ url: 'https://search.brave.com', name: 'brave_theme', value: isLight ? 'light' : 'dark', domain: '.brave.com', path: '/' }).catch(() => {});
+                partSession.cookies.set({ url: 'https://www.google.com', name: 'PREF', value: gVal, domain: '.google.com', path: '/' }).catch(() => { });
+                partSession.cookies.set({ url: 'https://duckduckgo.com', name: 'kae', value: isLight ? '-1' : 'd', domain: '.duckduckgo.com', path: '/' }).catch(() => { });
+                partSession.cookies.set({ url: 'https://www.bing.com', name: 'SRCHHPGUSR', value: `BNDDARK=${isLight ? '0' : '1'}`, domain: '.bing.com', path: '/' }).catch(() => { });
+                partSession.cookies.set({ url: 'https://search.brave.com', name: 'brave_theme', value: isLight ? 'light' : 'dark', domain: '.brave.com', path: '/' }).catch(() => { });
             }
         }
-    } catch (e) {}
+    } catch (e) { }
 }
 
 function applyThemeModeGlobally(mode) {
@@ -650,7 +650,7 @@ function applyThemeModeGlobally(mode) {
     if (typeof mainWindow !== 'undefined' && mainWindow && !mainWindow.isDestroyed()) {
         try {
             mainWindow.setBackgroundColor(bgColor);
-        } catch (e) {}
+        } catch (e) { }
     }
     if (typeof views !== 'undefined' && Array.isArray(views)) {
         views.forEach(v => {
@@ -658,12 +658,12 @@ function applyThemeModeGlobally(mode) {
             if (v.view && !v.view.webContents.isDestroyed()) {
                 v.view.setBackgroundColor('#00000000');
                 v.view.webContents.send('settings-changed', userSettings);
-                v.view.webContents.insertCSS(`:root { color-scheme: ${isLight ? 'light' : 'dark'} !important; }`).catch(() => {});
+                v.view.webContents.insertCSS(`:root { color-scheme: ${isLight ? 'light' : 'dark'} !important; }`).catch(() => { });
             }
             if (v.isSplit && v.view2 && !v.view2.webContents.isDestroyed()) {
                 v.view2.setBackgroundColor('#00000000');
                 v.view2.webContents.send('settings-changed', userSettings);
-                v.view2.webContents.insertCSS(`:root { color-scheme: ${isLight ? 'light' : 'dark'} !important; }`).catch(() => {});
+                v.view2.webContents.insertCSS(`:root { color-scheme: ${isLight ? 'light' : 'dark'} !important; }`).catch(() => { });
             }
         });
         if (typeof updateCornerRoundingOnAllViews === 'function') {
@@ -858,9 +858,9 @@ function getOptimalZoomFactor() {
         const winBounds = mainWindow.getBounds();
         const display = screen.getDisplayMatching(winBounds) || screen.getPrimaryDisplay();
         const { width, height } = display.size;
-        
+
         let optimalZoom = 1.0;
-        
+
         // Automatic sizing scale logic based on physical resolution and screen size
         if (width < 1366) {
             optimalZoom = 0.85; // Low-res screens (compact layouts, save space)
@@ -873,7 +873,7 @@ function getOptimalZoomFactor() {
         } else {
             optimalZoom = 1.25; // 4K displays and above
         }
-        
+
         return optimalZoom;
     } catch (err) {
         console.error("Failed to calculate optimal zoom factor:", err);
@@ -912,7 +912,7 @@ app.on('web-contents-created', (event, contents) => {
         if (contents.session && contents.session.setSpellCheckerLanguages) {
             contents.session.setSpellCheckerLanguages(['en-US', 'en-GB']);
         }
-    } catch (e) {}
+    } catch (e) { }
 
     // Hook master right-click context menu with spellcheck & dictionary support
     setupContextMenu(contents);
@@ -920,7 +920,7 @@ app.on('web-contents-created', (event, contents) => {
     contents.on('destroyed', () => {
         activeUiWebContents.delete(contents);
     });
-    
+
     const handleUrl = (url) => {
         if (url && (url.startsWith('file://') || url.startsWith('ocal://'))) {
             activeUiWebContents.add(contents);
@@ -959,7 +959,7 @@ const ADBLOCK_DOMAINS = new Set([
     'adservice.google.ca', 'adservice.google.co.uk', 'adservice.google.de', 'adservice.google.co.in',
     'adservice.google.fr', 'adservice.google.com.au', 'adservice.google.com.br', 'adservice.google.es',
     'adservice.google.it', 'adservice.google.co.jp', 'adservice.google.ru', 'adservice.google.com.tw',
-    
+
     // Major Ad Networks & Global Ad Exchanges
     'criteo.com', 'criteo.net', 'adnxs.com', 'ib.adnxs.com', 'taboola.com', 'outbrain.com',
     'amazon-adsystem.com', 'aax.amazon-adsystem.com', 'adroll.com', 'rubiconproject.com',
@@ -976,7 +976,7 @@ const ADBLOCK_DOMAINS = new Set([
     'popads.net', 'popcash.net', 'exoclick.com', 'juicyads.com', 'adsterra.com', 'trafficfactory.biz',
     'trafficjunky.com', 'hilltopads.net', 'clickadu.com', 'richpush.com', 'pushassist.com',
     'adblade.com', 'adbuffs.com', 'adbutler.com', 'adcash.com', 'adcovery.com', 'adf.ly',
-    
+
     // Trackers, Web Beacons & Invasive Telemetry
     'scorecardresearch.com', 'sb.scorecardresearch.com', 'quantserve.com', 'pixel.quantserve.com',
     'analytics.tiktok.com', 'connect.facebook.net', 'facebook.net', 'clarity.ms', 'c.clarity.ms',
@@ -989,7 +989,7 @@ const ADBLOCK_DOMAINS = new Set([
     'statcounter.com', 'histats.com', 'clicky.com', 'static.getclicky.com', 'newrelic.com',
     'bam.nr-data.net', 'js-agent.newrelic.com', 'inspectlet.com', 'luckyorange.com',
     'pingdom.net', 'sentry.io', 'browser.sentry-cdn.com',
-    
+
     // Cryptominers & Badware
     'coinhive.com', 'crypto-loot.com', 'webminepool.com', 'monerominer.rocks', 'coinimp.com',
     'minr.pw', 'coin-have.com', 'coinhave.com'
@@ -1111,7 +1111,7 @@ function applyShieldSettings() {
                 const upgradeUrl = new URL(url);
                 upgradeUrl.protocol = 'https:';
                 return callback({ redirectURL: upgradeUrl.toString() });
-            } catch (e) {}
+            } catch (e) { }
         }
 
         // 2. Outgoing Tracking Parameter Stripper (Accelerates navigation & protects privacy)
@@ -1243,12 +1243,12 @@ function applyShieldSettings() {
 
         // Security & Verification Endpoints (Cloudflare Turnstile, CAPTCHA, Accounts) must preserve full headers & CSP
         const isSecurityOrChallenge = url.includes('challenges.cloudflare.com') ||
-                                     url.includes('cloudflare.com') ||
-                                     url.includes('turnstile') ||
-                                     url.includes('recaptcha') ||
-                                     url.includes('hcaptcha.com') ||
-                                     url.includes('arkoselabs.com') ||
-                                     url.includes('accounts.google.com');
+            url.includes('cloudflare.com') ||
+            url.includes('turnstile') ||
+            url.includes('recaptcha') ||
+            url.includes('hcaptcha.com') ||
+            url.includes('arkoselabs.com') ||
+            url.includes('accounts.google.com');
 
         // YouTube and verification endpoints specifically need their headers preserved
         if (isSecurityOrChallenge || url.includes('googlevideo.com') || url.includes('youtube.com')) {
@@ -1257,8 +1257,8 @@ function applyShieldSettings() {
 
         // Only strip if CSP headers actually exist in response
         const hasCsp = headers['content-security-policy'] || headers['Content-Security-Policy'] ||
-                       headers['content-security-policy-report-only'] || headers['Content-Security-Policy-Report-Only'] ||
-                       headers['require-trusted-types-for'] || headers['trusted-types'];
+            headers['content-security-policy-report-only'] || headers['Content-Security-Policy-Report-Only'] ||
+            headers['require-trusted-types-for'] || headers['trusted-types'];
 
         if (!hasCsp) {
             return callback({ responseHeaders: headers });
@@ -1380,7 +1380,7 @@ async function showNextPermissionRequest() {
         if (res && typeof res.x === 'number') {
             bounds = res;
         }
-    } catch (e) {}
+    } catch (e) { }
 
     const zoom = getOptimalZoomFactor();
     const winOffset = getWinOffset();
@@ -1425,7 +1425,7 @@ async function showNextPermissionRequest() {
 function handlePermissionRequest(webContents, permission, callback, details) {
     try {
         const currentUrl = (details && details.requestingUrl) || (webContents && !webContents.isDestroyed() && webContents.getURL()) || '';
-        
+
         // Auto-allow internal Ocal pages and Chrome extensions
         if (currentUrl.startsWith('ocal://') || currentUrl.startsWith('file://') || currentUrl.startsWith('chrome-extension://')) {
             return callback(true);
@@ -1625,9 +1625,9 @@ function applyCyberStealth(webContents) {
     try {
         const { ANTI_FINGERPRINT_SCRIPT } = require('./anti-fingerprint.js');
         if (ANTI_FINGERPRINT_SCRIPT) {
-            webContents.executeJavaScript(ANTI_FINGERPRINT_SCRIPT).catch(() => {});
+            webContents.executeJavaScript(ANTI_FINGERPRINT_SCRIPT).catch(() => { });
         }
-    } catch (e) {}
+    } catch (e) { }
 
     // Additional Shadow DOM trace removal for stealth
     const stealthScript = `
@@ -1640,7 +1640,7 @@ function applyCyberStealth(webContents) {
             } catch(e) {}
         })();
     `;
-    webContents.executeJavaScript(stealthScript).catch(() => {});
+    webContents.executeJavaScript(stealthScript).catch(() => { });
 }
 
 function applyBrowserPromoShield(webContents) {
@@ -1650,7 +1650,7 @@ function applyBrowserPromoShield(webContents) {
         if (injectBrowserPromoShield) {
             injectBrowserPromoShield(webContents);
         }
-    } catch (e) {}
+    } catch (e) { }
 }
 
 function setupSecurityHeadersFix() {
@@ -1681,14 +1681,14 @@ function getAppIcon() {
         try {
             const img = nativeImage.createFromPath(icoPath);
             if (!img.isEmpty()) return img;
-        } catch (e) {}
+        } catch (e) { }
     }
     const pngPath = path.join(__dirname, 'icon.png');
     if (fs.existsSync(pngPath)) {
         try {
             const img = nativeImage.createFromPath(pngPath);
             if (!img.isEmpty()) return img;
-        } catch (e) {}
+        } catch (e) { }
     }
     return null;
 }
@@ -1709,7 +1709,7 @@ function createSplashOverlay() {
         }
     });
     splashOverlayView.setBackgroundColor(isLight ? '#F8F9FA' : '#0D0E11');
-    const splashUrl = 'file:///' + path.join(__dirname, 'splash.html').replace(/\\/g, '/') + 
+    const splashUrl = 'file:///' + path.join(__dirname, 'splash.html').replace(/\\/g, '/') +
         '?theme=' + (isLight ? 'light' : 'dark') + '&accent=' + encodeURIComponent(userSettings.accentColor || '');
     splashOverlayView.webContents.loadURL(splashUrl);
     mainWindow.addBrowserView(splashOverlayView);
@@ -1737,7 +1737,7 @@ function dismissSplash() {
         if (!splashOverlayView || splashOverlayView.webContents.isDestroyed()) return;
         try {
             splashOverlayView.webContents.send('splash-dismiss');
-        } catch (e) {}
+        } catch (e) { }
 
         // Allow 300ms for the smooth fade-out CSS animation to play
         setTimeout(() => {
@@ -1751,7 +1751,7 @@ function dismissSplash() {
                     }
                     splashOverlayView = null;
                 }
-            } catch (e) {}
+            } catch (e) { }
             updateViewBounds();
         }, 300);
     }, remainingMinTime);
@@ -1787,11 +1787,11 @@ function createMainWindow() {
     });
 
     if (activeWindowIcon) {
-        try { mainWindow.setIcon(activeWindowIcon); } catch (e) {}
+        try { mainWindow.setIcon(activeWindowIcon); } catch (e) { }
     }
     mainWindow.once('ready-to-show', () => {
         if (activeWindowIcon) {
-            try { mainWindow.setIcon(activeWindowIcon); } catch (e) {}
+            try { mainWindow.setIcon(activeWindowIcon); } catch (e) { }
         }
     });
 
@@ -1907,7 +1907,7 @@ function createMainWindow() {
                 pipWindow.destroy();
                 pipWindow = null;
             }
-        } catch (err) {}
+        } catch (err) { }
     });
 
     mainWindow.on('closed', () => {
@@ -1954,7 +1954,7 @@ setTimeout(updateMaliciousDomains, 5000);
 app.on('certificate-error', (event, webContents, url, error, certificate, callback) => {
     let hostname;
     try { hostname = new URL(url).hostname; } catch (e) { hostname = url; }
-    
+
     if (trustedSSLDomains.has(hostname)) {
         // User explicitly bypassed this error for this session
         event.preventDefault();
@@ -1980,7 +1980,7 @@ app.on('certificate-error', (event, webContents, url, error, certificate, callba
     if (volumeBoostView && webContents === volumeBoostView.webContents) return;
 
     // Verify that this webContents belongs to a registered browser tab
-    const isTab = views.some(v => 
+    const isTab = views.some(v =>
         (v.view && !v.view.webContents.isDestroyed() && v.view.webContents === webContents) ||
         (v.view2 && !v.view2.webContents.isDestroyed() && v.view2.webContents === webContents)
     );
@@ -2005,7 +2005,7 @@ app.on('certificate-error', (event, webContents, url, error, certificate, callba
     // Delay slightly so the blocked navigation clears
     setTimeout(() => {
         if (!webContents.isDestroyed()) {
-            webContents.loadURL(warnUrl).catch(() => {});
+            webContents.loadURL(warnUrl).catch(() => { });
         }
     }, 10);
 });
@@ -2020,7 +2020,7 @@ app.on('web-contents-created', (event, contents) => {
         if (level >= 3) {
             console.error(`[CONSOLE][ERROR][${contents.getType()}] ${message} (${path.basename(sourceId || '')}:${line})`);
         }
-        
+
         if (message.startsWith('SIGNAL_INIT ')) {
             try {
                 const data = JSON.parse(message.replace('SIGNAL_INIT ', ''));
@@ -2045,7 +2045,7 @@ app.on('web-contents-created', (event, contents) => {
                         hasAudibleAudio = true;
                     }
                 }
-            } catch (e) {}
+            } catch (e) { }
         });
         if (mainWindow && !mainWindow.isDestroyed()) {
             mainWindow.webContents.send('global-audio-activity-changed', { hasAudibleAudio });
@@ -2117,7 +2117,7 @@ function setupDownloadHandler() {
                     } else if (ext === 'zip' || ext === 'rar' || ext === '7z') {
                         extName = 'Archive Files';
                     }
-                    
+
                     let extensions = [ext];
                     if (ext === 'jpg' || ext === 'jpeg') {
                         extensions = ['jpg', 'jpeg'];
@@ -2379,7 +2379,7 @@ function closeOverlays() {
     }
 
     if (typeof extensionPopupWindow !== 'undefined' && extensionPopupWindow && !extensionPopupWindow.isDestroyed()) {
-        try { extensionPopupWindow.close(); } catch (e) {}
+        try { extensionPopupWindow.close(); } catch (e) { }
         extensionPopupWindow = null;
     }
 
@@ -2693,7 +2693,7 @@ function resolveInternalURL(url) {
                 const params = new URLSearchParams(url.substring(qIdx));
                 const targetUrl = params.get('url');
                 if (targetUrl) return targetUrl;
-            } catch (e) {}
+            } catch (e) { }
         }
         return 'file://' + path.join(__dirname, 'home.html');
     }
@@ -2932,13 +2932,13 @@ function applyCornerRoundingToWebContents(wc) {
             html, body {
                 border-radius: ${isNoCurve ? '0px' : '12px'} !important;
             }
-        `, { cssOrigin: 'user' }).catch(() => {});
+        `, { cssOrigin: 'user' }).catch(() => { });
         wc.executeJavaScript(`
             try {
                 if (document.documentElement) document.documentElement.style.setProperty('border-radius', '${isNoCurve ? '0px' : '12px'}', 'important');
                 if (document.body) document.body.style.setProperty('border-radius', '${isNoCurve ? '0px' : '12px'}', 'important');
             } catch (e) {}
-        `).catch(() => {});
+        `).catch(() => { });
     } else {
         const maskColor = userSettings.themeMode === 'light' ? '#EDEDF0' : '#18181B';
         wc.insertCSS(`
@@ -2970,7 +2970,7 @@ function applyCornerRoundingToWebContents(wc) {
             html:-webkit-full-screen .ocal-corner-mask {
                 display: none !important;
             }
-        `, { cssOrigin: 'user' }).catch(() => {});
+        `, { cssOrigin: 'user' }).catch(() => { });
         wc.executeJavaScript(`
             try {
                 var c = document.getElementById('ocal-corner-masks-container');
@@ -2997,7 +2997,7 @@ function applyCornerRoundingToWebContents(wc) {
                     });
                 }
             } catch (e) {}
-        `).catch(() => {});
+        `).catch(() => { });
     }
 }
 
@@ -3023,12 +3023,12 @@ function setupViewEvents(tabId, view, side = 'left') {
     // Apply corner rounding immediately on navigation and loading start (so it curves during load)
     webContents.on('did-start-navigation', (e, url, isInPlace) => {
         const isLightNav = userSettings.themeMode === 'light';
-        webContents.insertCSS(`:root { color-scheme: ${isLightNav ? 'light' : 'dark'} !important; }`).catch(() => {});
+        webContents.insertCSS(`:root { color-scheme: ${isLightNav ? 'light' : 'dark'} !important; }`).catch(() => { });
         applyCornerRoundingToWebContents(webContents);
         if (!isInPlace) {
             if (activePermissionRequest && activePermissionRequest.webContentsId === webContents.id) {
                 hidePermissionPopup();
-                try { activePermissionRequest.callback(false); } catch(e) {}
+                try { activePermissionRequest.callback(false); } catch (e) { }
                 activePermissionRequest = null;
                 showNextPermissionRequest();
             }
@@ -3082,7 +3082,7 @@ function setupViewEvents(tabId, view, side = 'left') {
                     html:-webkit-full-screen *, body:-webkit-full-screen * {
                         border-radius: 0px !important;
                     }
-                `).catch(() => {});
+                `).catch(() => { });
             } else {
                 webContents.insertCSS(`
                     html, body {
@@ -3097,7 +3097,7 @@ function setupViewEvents(tabId, view, side = 'left') {
                     html:-webkit-full-screen *, body:-webkit-full-screen * {
                         border-radius: 0px !important;
                     }
-                `).catch(() => {});
+                `).catch(() => { });
             }
         }
 
@@ -3109,7 +3109,7 @@ function setupViewEvents(tabId, view, side = 'left') {
                     background-color: ${isLight ? '#f4f5f7' : '#141416'} !important;
                     color-scheme: ${isLight ? 'light' : 'dark'} !important;
                 }
-            `).catch(() => {});
+            `).catch(() => { });
             if (url.includes('popup')) {
                 webContents.insertCSS(`
                     body {
@@ -3119,7 +3119,7 @@ function setupViewEvents(tabId, view, side = 'left') {
                         border-radius: 14px !important;
                         overflow: hidden !important;
                     }
-                `).catch(() => {});
+                `).catch(() => { });
             }
         }
 
@@ -3152,8 +3152,8 @@ function setupViewEvents(tabId, view, side = 'left') {
                     display: none !important;
                 }
 
-                html {
-                    scroll-behavior: smooth !important;
+                @media (prefers-reduced-motion: no-preference) {
+                    html { scroll-behavior: smooth; }
                 }
 
                 *, html, body {
@@ -3165,10 +3165,10 @@ function setupViewEvents(tabId, view, side = 'left') {
                     height: 0px !important;
                     display: none !important;
                 }
-            `).catch(() => {});
+            `).catch(() => { });
 
             if (url.includes('google.') && (url.includes('/search') || url.includes('google.com') || url.includes('google.co'))) {
-                webContents.executeJavaScript(`try { if (document.documentElement) document.documentElement.setAttribute('data-darkmode', '${isLight ? "false" : "true"}'); } catch(e) {}`).catch(() => {});
+                webContents.executeJavaScript(`try { if (document.documentElement) document.documentElement.setAttribute('data-darkmode', '${isLight ? "false" : "true"}'); } catch(e) {}`).catch(() => { });
             }
             const injectScript = `
                 (function() {
@@ -3198,7 +3198,7 @@ function setupViewEvents(tabId, view, side = 'left') {
                     }
                 })();
             `;
-            webContents.executeJavaScript(injectScript).catch(() => {});
+            webContents.executeJavaScript(injectScript).catch(() => { });
         }
         applyBrowserPromoShield(webContents);
     });
@@ -3214,11 +3214,11 @@ function setupViewEvents(tabId, view, side = 'left') {
             if (!cachedAdShieldScript) {
                 const adShieldPath = path.join(__dirname, 'youtube-ad-remover.js');
                 if (fs.existsSync(adShieldPath)) {
-                    try { cachedAdShieldScript = fs.readFileSync(adShieldPath, 'utf8'); } catch (e) {}
+                    try { cachedAdShieldScript = fs.readFileSync(adShieldPath, 'utf8'); } catch (e) { }
                 }
             }
             if (cachedAdShieldScript) {
-                webContents.executeJavaScript(cachedAdShieldScript).catch(() => {});
+                webContents.executeJavaScript(cachedAdShieldScript).catch(() => { });
             }
         }
     };
@@ -3253,8 +3253,8 @@ function setupViewEvents(tabId, view, side = 'left') {
     setupInteractionDismissal(webContents);
     webContents.on('will-navigate', (event, targetUrl) => {
         let hostname;
-        try { hostname = new URL(targetUrl).hostname; } catch(e) { hostname = ''; }
-        
+        try { hostname = new URL(targetUrl).hostname; } catch (e) { hostname = ''; }
+
         // Safe Browsing Check
         if (hostname && maliciousDomains.has(hostname) && !trustedMalwareDomains.has(hostname)) {
             event.preventDefault();
@@ -3285,8 +3285,8 @@ function setupViewEvents(tabId, view, side = 'left') {
 
     webContents.setWindowOpenHandler(({ url }) => {
         let hostname;
-        try { hostname = new URL(url).hostname; } catch(e) { hostname = ''; }
-        
+        try { hostname = new URL(url).hostname; } catch (e) { hostname = ''; }
+
         if (hostname && maliciousDomains.has(hostname) && !trustedMalwareDomains.has(hostname)) {
             const theme = (userSettings && userSettings.themeMode) ? userSettings.themeMode : 'dark';
             createNewTab(`ocal://security-warning?url=${encodeURIComponent(url)}&theme=${theme}`);
@@ -3446,10 +3446,10 @@ function setupViewEvents(tabId, view, side = 'left') {
         }
         broadcastTabs();
         if (mainWindow && !mainWindow.isDestroyed()) {
-            mainWindow.webContents.send('title-updated', { 
-                id: tabId, 
+            mainWindow.webContents.send('title-updated', {
+                id: tabId,
                 side,
-                title: url.includes('home.html') ? 'Ocal Home' : title 
+                title: url.includes('home.html') ? 'Ocal Home' : title
             });
         }
     });
@@ -3555,7 +3555,7 @@ setInterval(() => {
                 }
             }
         });
-    } catch (e) {}
+    } catch (e) { }
 }, 500);
 
 function broadcastTabs() {
@@ -4092,18 +4092,18 @@ function executeCloseTab(id) {
                 }
             }
 
-        delete tabMedia[id]; // Cleanup media storage
-        if (activeViewId === id) {
-            activeViewId = views.length > 0 ? views[Math.max(0, index - 1)].id : null;
+            delete tabMedia[id]; // Cleanup media storage
+            if (activeViewId === id) {
+                activeViewId = views.length > 0 ? views[Math.max(0, index - 1)].id : null;
+            }
+            if (activeViewId) {
+                setActiveTab(activeViewId);
+            } else {
+                updateViewBounds();
+            }
+            cleanupEmptyGroups();
+            broadcastTabs();
         }
-        if (activeViewId) {
-            setActiveTab(activeViewId);
-        } else {
-            updateViewBounds();
-        }
-        cleanupEmptyGroups();
-        broadcastTabs();
-    }
     } catch (err) {
         console.error('Error in executeCloseTab:', err);
     }
@@ -4125,7 +4125,7 @@ ipcMain.on('restore-last-closed-split-tab', () => {
     if (!lastClosedSplitTab) return;
 
     const id = Date.now().toString() + Math.random().toString(36).substring(2, 9);
-    
+
     const view = new BrowserView({
         webPreferences: {
             preload: path.join(__dirname, 'preload.js'),
@@ -4229,11 +4229,11 @@ function animateSplitBounds(tabId, startSplit, onComplete = null) {
     if (userSettings.bookmarkBarMode === 'always') isBmVisible = true;
     else if (userSettings.bookmarkBarMode === 'never') isBmVisible = false;
     else if (userSettings.bookmarkBarMode === 'auto') isBmVisible = isHome;
-    
+
     const hBm = !isBmVisible ? 0 : Math.round((userSettings.compactMode ? 32 : 40) * zoom);
     const yPadding = (process.platform === 'win32') ? 1 : 0;
     const yOffset = hTabs + hNav + hBm + yPadding;
-    
+
     let wSidebar = Math.round(44 * zoom);
     if (userSettings.sidebarMode === 'hidden' || userSettings.sidebarMode === 'autohide') {
         wSidebar = 0;
@@ -4371,7 +4371,7 @@ ipcMain.on('toggle-split-screen', () => {
         entry.isSplit = false;
         entry.focusedSide = 'left';
         broadcastTabs();
-        
+
         animateSplitBounds(activeViewId, false, () => {
             cleanupView2(entry);
         });
@@ -4393,7 +4393,7 @@ ipcMain.on('toggle-split-screen', () => {
         });
         view2.setBackgroundColor('#00000000');
         view2.webContents.setUserAgent(OCAL_USER_AGENT);
-        
+
         setupViewEvents(id, view2, 'right');
         view2.webContents.loadFile('home.html');
 
@@ -4405,9 +4405,9 @@ ipcMain.on('toggle-split-screen', () => {
         if (!mainWindow.getBrowserViews().includes(view2)) {
             mainWindow.addBrowserView(view2);
         }
-        
+
         broadcastTabs();
-        
+
         animateSplitBounds(activeViewId, true);
     }
 });
@@ -4523,7 +4523,7 @@ ipcMain.on('tab-drag-start', (e, tabId) => {
     currentDraggedTabId = tabId;
     const draggedEntry = views.find(v => v.id === tabId);
     const entry = views.find(v => v.id === activeViewId);
-    
+
     if (draggedEntry && draggedEntry.isSplit) return;
     if (entry && entry.isSplit) return;
 
@@ -4532,14 +4532,14 @@ ipcMain.on('tab-drag-start', (e, tabId) => {
             if (!mainWindow.getBrowserViews().includes(splitOverlayView)) {
                 mainWindow.addBrowserView(splitOverlayView);
             }
-            
+
             const { width, height } = mainWindow.getContentBounds();
             const zoom = getOptimalZoomFactor();
-            
+
             const isVerticalTabs = userSettings.tabLayout === 'vertical';
             const hTabs = isVerticalTabs ? 0 : Math.round((userSettings.compactMode ? 36 : 44) * zoom);
             const hNav = Math.round((userSettings.compactMode ? 40 : 52) * zoom);
-            
+
             let isBmVisible = bookmarkBarVisible;
             if (userSettings.bookmarkBarMode === 'always') isBmVisible = true;
             else if (userSettings.bookmarkBarMode === 'never') isBmVisible = false;
@@ -4548,11 +4548,11 @@ ipcMain.on('tab-drag-start', (e, tabId) => {
                 const url = activeView && !activeView.webContents.isDestroyed() ? activeView.webContents.getURL() : '';
                 isBmVisible = isHomeURL(url);
             }
-            
+
             const hBm = !isBmVisible ? 0 : Math.round((userSettings.compactMode ? 32 : 40) * zoom);
             const yPadding = (process.platform === 'win32') ? 1 : 0;
             const yOffset = hTabs + hNav + hBm + yPadding;
-            
+
             let wSidebar = Math.round(48 * zoom);
             if (userSettings.sidebarMode === 'hidden' || userSettings.sidebarMode === 'autohide') {
                 wSidebar = 0;
@@ -4566,21 +4566,21 @@ ipcMain.on('tab-drag-start', (e, tabId) => {
             }
 
             const wSidebarTotal = wSidebar + wVertTabs;
-            
+
             const xBase = Math.round(wSidebarTotal);
             const yBase = Math.round(yOffset);
             const totalWidth = Math.round(width - wSidebarTotal);
             const totalHeight = Math.round(height - yOffset);
-            
+
             splitOverlayView.setBounds({
                 x: xBase,
                 y: yBase,
                 width: totalWidth,
                 height: totalHeight
             });
-            
+
             mainWindow.setTopBrowserView(splitOverlayView);
-            
+
             if (!splitOverlayView.webContents.isDestroyed()) {
                 splitOverlayView.webContents.send('tab-drag-start');
             }
@@ -4662,7 +4662,7 @@ ipcMain.on('drop-tab-to-split', (e, direction) => {
             targetView.webContents.loadURL(sourceUrl);
         }
     }
-    
+
     currentDraggedTabId = null;
 });
 
@@ -4768,10 +4768,10 @@ ipcMain.on('navigate-to', (e, url) => {
     }
 
     hideSuggestions();
-    
+
     let hostname;
-    try { hostname = new URL(targetUrl).hostname; } catch(e) { hostname = ''; }
-    
+    try { hostname = new URL(targetUrl).hostname; } catch (e) { hostname = ''; }
+
     if (hostname && maliciousDomains.has(hostname) && !trustedMalwareDomains.has(hostname)) {
         const theme = (userSettings && userSettings.themeMode) ? userSettings.themeMode : 'dark';
         activeView.webContents.loadURL(`ocal://security-warning?url=${encodeURIComponent(targetUrl)}&theme=${theme}`);
@@ -4888,8 +4888,8 @@ ipcMain.on('show-snap-flyout', (event) => {
 ipcMain.on('hide-snap-flyout', () => {
     dismissNativeWindowsSnap();
 });
-ipcMain.on('cancel-hide-snap-flyout', () => {});
-ipcMain.on('show-snap-preview', () => {});
+ipcMain.on('cancel-hide-snap-flyout', () => { });
+ipcMain.on('show-snap-preview', () => { });
 
 // ── In-App Audio Dictation & Speech-to-Text Transcription ──
 ipcMain.handle('transcribe-audio', async (event, payload) => {
@@ -4966,8 +4966,8 @@ ipcMain.handle('transcribe-audio', async (event, payload) => {
 
     return { text: '' };
 });
-ipcMain.on('hide-snap-preview', () => {});
-ipcMain.on('snap-window', () => {});
+ipcMain.on('hide-snap-preview', () => { });
+ipcMain.on('snap-window', () => { });
 
 let isConfirmingSessionClose = false;
 
@@ -4983,10 +4983,10 @@ function promptSessionClose() {
             attachedViews.forEach(v => {
                 try {
                     mainWindow.removeBrowserView(v);
-                } catch (e) {}
+                } catch (e) { }
             });
         }
-    } catch (e) {}
+    } catch (e) { }
 
     if (sidebarOpen && typeof hideSidebarOverlay === 'function') hideSidebarOverlay();
     if (aiSidebarOpen && typeof hideAiSidebar === 'function') hideAiSidebar();
@@ -5181,8 +5181,8 @@ function registerWindowsDefaultBrowserRegistry() {
         const { exec } = require('child_process');
         regCommands.forEach(cmd => {
             try {
-                exec(cmd, { windowsHide: true }, () => {});
-            } catch (e) {}
+                exec(cmd, { windowsHide: true }, () => { });
+            } catch (e) { }
         });
 
         if (app.setAsDefaultProtocolClient) {
@@ -5222,7 +5222,7 @@ ipcMain.handle('set-as-default-browser', async () => {
         } catch (e) {
             try {
                 await shell.openExternal('ms-settings:defaultapps');
-            } catch (e2) {}
+            } catch (e2) { }
         }
     }
 
@@ -5548,7 +5548,7 @@ async function executeBrowserAction(action) {
                                 }
                             });
                         })()
-                    `).catch(() => {});
+                    `).catch(() => { });
                 }
                 return { success: true, message: 'Boosted media volume' };
             }
@@ -5657,7 +5657,7 @@ ipcMain.handle('get-tab-content', async (event, targetTabId) => {
         const scraped = await wc.executeJavaScript(scrapeScript).catch(() => null);
 
         let host = '';
-        try { if (url) host = new URL(url).hostname; } catch(e) {}
+        try { if (url) host = new URL(url).hostname; } catch (e) { }
 
         return {
             id: entry.id,
@@ -5716,8 +5716,8 @@ ipcMain.handle('ai-agent-execute', async (event, query) => {
 
     // Calculate persona-specific addressing
     const isPartnerPersona = ['gf', 'bf', 'wife'].includes(personaKey);
-    const companionNickname = isPartnerPersona 
-        ? (customConfig.nickname || 'babe') 
+    const companionNickname = isPartnerPersona
+        ? (customConfig.nickname || 'babe')
         : (personaKey === 'custom' ? (customConfig.nickname || rawUsername) : rawUsername);
     const userTitle = rawUsername || 'Gaming';
 
@@ -5735,7 +5735,7 @@ ipcMain.handle('ai-agent-execute', async (event, query) => {
 
         const sysInstruction = PERSONA_INSTRUCTIONS[personaKey] || PERSONA_INSTRUCTIONS.professional;
         let memoryHeader = memoryList.length > 0 ? `\n\n[Remembered User Context & Facts:\n- ${memoryList.join('\n- ')}]` : '';
-        
+
         const customDirectives = (userSettings.aiCustomInstructions && userSettings.aiCustomInstructions.trim())
             ? `\n\n[User Custom Directives & Personal Behavioral Rules]:\n${userSettings.aiCustomInstructions.trim()}`
             : '';
@@ -5791,7 +5791,7 @@ Supported Commands:
         if (fileObj && fileObj.type === 'text' && fileObj.data && !promptText.includes('[ATTACHED DOCUMENT') && !promptText.includes('[User attached')) {
             finalPrompt = `[ATTACHED DOCUMENT - File Name: "${fileObj.name}"]:\n\n${fileObj.data}\n\n[USER INSTRUCTION]:\n${fullLLMPrompt}`;
         }
-        
+
         let rawAnswer = null;
         if (activeEngine === 'gemini') {
             if (userSettings.aiApiKey && userSettings.aiApiKey.trim().length > 14) {
@@ -5831,7 +5831,7 @@ Supported Commands:
                                 const cmd = fn.name || fn.command;
                                 let args = fn.arguments || fn.params || {};
                                 if (typeof args === 'string') {
-                                    try { args = JSON.parse(args); } catch(e) {}
+                                    try { args = JSON.parse(args); } catch (e) { }
                                 }
                                 if (cmd) {
                                     executeBrowserAction({ command: cmd, ...args });
@@ -5855,7 +5855,7 @@ Supported Commands:
                             rawAnswer = parsed.reasoning;
                         }
                     }
-                } catch(e) {
+                } catch (e) {
                     // Not valid JSON, keep rawAnswer
                 }
             }
@@ -5871,7 +5871,7 @@ Supported Commands:
                     else if (actionObj.command === 'take-screenshot') actions.push({ text: 'Screenshot Captured', icon: 'fa-camera' });
                     else if (actionObj.command === 'set-theme') actions.push({ text: 'Theme Changed', icon: 'fa-palette' });
                     else actions.push({ text: actionObj.command.replace(/-/g, ' '), icon: 'fa-bolt', command: actionObj.command });
-                } catch(e) {}
+                } catch (e) { }
                 return '';
             }).trim();
         }
@@ -5881,15 +5881,15 @@ Supported Commands:
 
     try {
         // ─── COMPREHENSIVE BROWSER SETTINGS & COMMAND INTERCEPTORS ─────────────────────────
-        
+
         // 0. Developer / Creator Identity Interceptor (Instant response, offline-safe, handles typos like 'whpo is the delover')
         const isDeveloperQuery = (
             /\b(whpo|who|who's|whos)\b/i.test(q) && /\b(delover|developer|devoloper|devloper|delopver|creator|maker|author|founder|owner)\b/i.test(q)
         ) || /\bwho\s+(?:made|created|built|developed|coded|programmed|designed)\s+(?:you|ocal|this|ocal\s*browser|ocal\s*ai)\b/i.test(q)
-          || /\bwho\s+is\s+(?:your|the)\s+(?:developer|delover|devloper|creator|maker|author|owner)\b/i.test(q)
-          || /\b(?:developer|delover|devloper|creator)\s+of\s+(?:ocal|you|this\s*browser)\b/i.test(q)
-          || /^(?:who\s+is\s+)?(?:developer|delover|creator)\??$/i.test(q)
-          || /^(?:whpo|who)\s+(?:delover|developer)\??$/i.test(q);
+            || /\bwho\s+is\s+(?:your|the)\s+(?:developer|delover|devloper|creator|maker|author|owner)\b/i.test(q)
+            || /\b(?:developer|delover|devloper|creator)\s+of\s+(?:ocal|you|this\s*browser)\b/i.test(q)
+            || /^(?:who\s+is\s+)?(?:developer|delover|creator)\??$/i.test(q)
+            || /^(?:whpo|who)\s+(?:delover|developer)\??$/i.test(q);
 
         if (isDeveloperQuery) {
             return {
@@ -5958,9 +5958,9 @@ Supported Commands:
 
         // 3. Search Engine Configuration
         if ((q.includes('search engine') || q.includes('default search')) && (q.includes('change') || q.includes('set') || q.includes('switch') || q.includes('use'))) {
-            const ENGINES = { 
-                'google': 'google', 'bing': 'bing', 'duckduckgo': 'duckduckgo', 'ddg': 'duckduckgo', 
-                'brave': 'brave', 'yahoo': 'yahoo', 'ecosia': 'ecosia', 'startpage': 'startpage', 'kagi': 'kagi' 
+            const ENGINES = {
+                'google': 'google', 'bing': 'bing', 'duckduckgo': 'duckduckgo', 'ddg': 'duckduckgo',
+                'brave': 'brave', 'yahoo': 'yahoo', 'ecosia': 'ecosia', 'startpage': 'startpage', 'kagi': 'kagi'
             };
             let newEngine = null;
             for (const [name, val] of Object.entries(ENGINES)) {
@@ -5997,12 +5997,12 @@ Supported Commands:
                 }
                 await executeBrowserAction({ command: 'split-view', url: splitTarget });
                 notifyAction(`Split view active (${splitTarget})...`, 'fa-table-columns');
-                return { 
-                    text: `### 📑 Split View Activated!\n\nI've split your screen side-by-side with **${splitTarget}**.\n\nYou can say *"swap split"* to flip sides, or *"close split"* to restore full view.`, 
+                return {
+                    text: `### 📑 Split View Activated!\n\nI've split your screen side-by-side with **${splitTarget}**.\n\nYou can say *"swap split"* to flip sides, or *"close split"* to restore full view.`,
                     actions: [
                         { text: "Swap Panes", icon: "fa-arrow-right-arrow-left", command: "swap-split-panes" },
                         { text: "Close Split", icon: "fa-xmark", command: "close-split" }
-                    ] 
+                    ]
                 };
             }
         }
@@ -6025,7 +6025,7 @@ Supported Commands:
             if (q.includes('max') || q.includes('300') || q.includes('3x')) mult = 3.0;
             else if (q.includes('200') || q.includes('2x')) mult = 2.0;
             else if (q.includes('reset') || q.includes('normal') || q.includes('100') || q.includes('1x')) mult = 1.0;
-            
+
             await executeBrowserAction({ command: 'volume-boost', multiplier: mult });
             notifyAction(`Media Volume Boost: ${(mult * 100).toFixed(0)}%`, 'fa-volume-high');
             return {
@@ -6497,7 +6497,7 @@ Supported Commands:
         }
 
         // Image Generation Intercept (Typo-Resilient & Phrasing-Aware)
-        const isImageGen = 
+        const isImageGen =
             // 1. Generation verb + Image noun anywhere: "genrate me a image of a car", "generate an image", "create a picture", "make a photo", "render a wallpaper"
             /\b(?:gen|genr|genrate|generat|generte|genarate|genereate|generate|generating|generation|create|creating|make|making|draw|drow|paint|painting|sketch|sketching|render|rendering|illustrate|illustrating|synthesize|produce)\b.*\b(?:image|imager|images|img|imgs|pic|pics|picture|pictures|photo|photos|photograph|portrait|portraiture|scene|scenes|canvas|wallpaper|wallpapers|artwork|artworks|illustration|illustrations)\b/i.test(q) ||
             // 2. Image noun + Generation verb: "imager gen", "image generation", "pic maker", "photo generator"
@@ -6523,7 +6523,7 @@ Supported Commands:
             }
 
             notifyAction(`Synthesizing artwork with ${modelName}...`, 'fa-wand-magic-sparkles');
-            
+
             let imgPrompt = prompt;
             // Strip leading conversational polite phrases
             imgPrompt = imgPrompt.replace(/^(?:please|can\s+you\s+(?:please\s+)?|could\s+you\s+(?:please\s+)?|i\s+want\s+(?:you\s+to\s+)?|kindly)\s+/i, '');
@@ -6862,21 +6862,21 @@ Supported Commands:
 
                 try {
                     const res = await fetch(targetUrl, {
-                        headers: { 
+                        headers: {
                             'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
                             'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8'
                         },
                         signal: AbortSignal.timeout(6000)
                     });
-                    
+
                     if (res.ok) {
                         const html = await res.text();
                         const titleMatch = html.match(/<title[^>]*>([^<]+)<\/title>/i);
-                        const descMatch = html.match(/<meta[^>]*name=["']description["'][^>]*content=["']([^"']*)["']/i) || 
-                                          html.match(/<meta[^>]*property=["']og:description["'][^>]*content=["']([^"']*)["']/i);
+                        const descMatch = html.match(/<meta[^>]*name=["']description["'][^>]*content=["']([^"']*)["']/i) ||
+                            html.match(/<meta[^>]*property=["']og:description["'][^>]*content=["']([^"']*)["']/i);
                         const ogTitleMatch = html.match(/<meta[^>]*property=["']og:title["'][^>]*content=["']([^"']*)["']/i);
                         const siteNameMatch = html.match(/<meta[^>]*property=["']og:site_name["'][^>]*content=["']([^"']*)["']/i);
-                        
+
                         const title = (ogTitleMatch ? ogTitleMatch[1] : (titleMatch ? titleMatch[1] : targetUrl)).trim();
                         const description = descMatch ? descMatch[1].trim() : '';
                         const siteName = siteNameMatch ? siteNameMatch[1].trim() : new URL(targetUrl).hostname;
@@ -6891,7 +6891,7 @@ Supported Commands:
                             .replace(/&amp;/g, '&')
                             .replace(/\s+/g, ' ')
                             .trim();
-                        
+
                         // Extract headings
                         const headings = [];
                         const hMatches = html.matchAll(/<h([1-4])[^>]*>([\s\S]*?)<\/h\1>/gi);
@@ -6903,7 +6903,7 @@ Supported Commands:
                         }
 
                         const words = cleanText.split(' ').filter(w => w.length > 0);
-                        
+
                         pageData = {
                             meta: {
                                 title: title || siteName,
@@ -6928,7 +6928,7 @@ Supported Commands:
                 // 1. Try active tab
                 const activeTabEntry = views.find(v => v.id === activeViewId) || views[0];
                 const activeView = activeTabEntry?.view;
-                
+
                 if (activeView && !activeView.webContents.isDestroyed()) {
                     const url = activeView.webContents.getURL() || '';
                     const title = activeView.webContents.getTitle() || '';
@@ -7085,12 +7085,12 @@ INSTRUCTIONS:
                 return { text: fallbackSummary, actions: pageActions };
             }
 
-            return { 
+            return {
                 text: "### <i class=\"fas fa-wand-magic-sparkles\"></i> AI Web Summarizer\n\nNo web page is currently open in your active tab.\n\nTo summarize any article, documentation, or website:\n- Open any web page in a tab and ask *\"Summarize this page\"*\n- Or type a URL directly, e.g. *\"Summarize https://en.wikipedia.org/wiki/Artificial_intelligence\"*",
                 actions: [
                     { text: "Open Wikipedia", icon: "fa-globe", url: "https://www.wikipedia.org" },
                     { text: "Open Hacker News", icon: "fa-newspaper", url: "https://news.ycombinator.com" }
-                ] 
+                ]
             };
         }
 
@@ -7101,7 +7101,7 @@ INSTRUCTIONS:
         const isExplicitWebSearch = /\b(?:search the web|search web|browse the web|online search|look up on google|google search|duckduckgo)\b/i.test(q);
         const isSearchIntent = !fileObj && (activeEngine !== 'local' || isExplicitWebSearch) && (
             /\b(?:search|latest|news|weather|score|stock|price|who is|who was|what is|what are|when was|where is|vs|versus|compare|difference between|google|find web|release date|election|president|prime minister|ceo|founder|cost|salary|worth|net worth)\b/i.test(q)
-            || q.includes(' vs ') 
+            || q.includes(' vs ')
             || q.includes(' versus ')
             || /^(who|what|when|where|why|which|how)\b/i.test(q)
         );
@@ -7139,7 +7139,7 @@ User Question: ${prompt}
                         let domain = (s.title || '').toLowerCase();
                         try {
                             if (s.url) domain = new URL(s.url).hostname.replace(/^www\./, '').toLowerCase();
-                        } catch(e) {}
+                        } catch (e) { }
                         if (!domain || seenDomains.has(domain)) return false;
                         seenDomains.add(domain);
                         return true;
@@ -7151,7 +7151,7 @@ User Question: ${prompt}
                         let domain = s.title || 'Source';
                         try {
                             if (s.url) domain = new URL(s.url).hostname.replace(/^www\./, '');
-                        } catch(e) {}
+                        } catch (e) { }
                         let faviconUrl = `https://www.google.com/s2/favicons?sz=32&domain=${domain}`;
                         if (s.url) {
                             referencePillsHtml += `<a href="${s.url}" class="msg-ref-pill" target="_blank" rel="noopener"><img src="${faviconUrl}" alt="" /> <span>${domain}</span></a>`;
@@ -7217,25 +7217,25 @@ ${prompt}
                 const lc = textContent.toLowerCase();
 
                 // ── Advanced Entity Extraction ──
-                const amounts     = textContent.match(/(\$|₹|€|£)\s?\d+(?:,\d{3})*(?:\.\d{2})?|\b\d+(?:,\d{3})*(?:\.\d{2})?\s?(?:USD|INR|EUR|GBP)\b/gi) || [];
-                const refIds      = textContent.match(/(?:invoice|ref|transaction|txn|form|roll|doc|id|enrollment|enrol|reg(?:istration)?|application|emp(?:loyee)?|student|abc\s?id)[\s#:\-]*[A-Z0-9\-\.]{4,30}/gi) || [];
-                const allYears    = textContent.match(/\b(?:19|20)\d{2}\b/g) || [];
-                const datesFound  = textContent.match(/\b(?:jan(?:uary)?|feb(?:ruary)?|mar(?:ch)?|apr(?:il)?|may|jun(?:e)?|jul(?:y)?|aug(?:ust)?|sep(?:tember)?|oct(?:ober)?|nov(?:ember)?|dec(?:ember)?)\s+\d{1,2},?\s+\d{4}\b|\b\d{2}[.\/-]\d{2}[.\/-]\d{4}\b/gi) || [];
-                const emails      = textContent.match(/[a-zA-Z0-9._%+\-]+@[a-zA-Z0-9.\-]+\.[a-zA-Z]{2,}/g) || [];
-                const phones      = textContent.match(/(?:\+91[\-\s]?)?[6-9]\d{9}|\b\d{3}[\-.\s]\d{3}[\-.\s]\d{4}\b|\b\(\d{3}\)\s?\d{3}[\-\s]\d{4}\b/g) || [];
-                const urls        = textContent.match(/https?:\/\/[^\s]+|www\.[^\s]+\.[a-z]{2,}/gi) || [];
+                const amounts = textContent.match(/(\$|₹|€|£)\s?\d+(?:,\d{3})*(?:\.\d{2})?|\b\d+(?:,\d{3})*(?:\.\d{2})?\s?(?:USD|INR|EUR|GBP)\b/gi) || [];
+                const refIds = textContent.match(/(?:invoice|ref|transaction|txn|form|roll|doc|id|enrollment|enrol|reg(?:istration)?|application|emp(?:loyee)?|student|abc\s?id)[\s#:\-]*[A-Z0-9\-\.]{4,30}/gi) || [];
+                const allYears = textContent.match(/\b(?:19|20)\d{2}\b/g) || [];
+                const datesFound = textContent.match(/\b(?:jan(?:uary)?|feb(?:ruary)?|mar(?:ch)?|apr(?:il)?|may|jun(?:e)?|jul(?:y)?|aug(?:ust)?|sep(?:tember)?|oct(?:ober)?|nov(?:ember)?|dec(?:ember)?)\s+\d{1,2},?\s+\d{4}\b|\b\d{2}[.\/-]\d{2}[.\/-]\d{4}\b/gi) || [];
+                const emails = textContent.match(/[a-zA-Z0-9._%+\-]+@[a-zA-Z0-9.\-]+\.[a-zA-Z]{2,}/g) || [];
+                const phones = textContent.match(/(?:\+91[\-\s]?)?[6-9]\d{9}|\b\d{3}[\-.\s]\d{3}[\-.\s]\d{4}\b|\b\(\d{3}\)\s?\d{3}[\-\s]\d{4}\b/g) || [];
+                const urls = textContent.match(/https?:\/\/[^\s]+|www\.[^\s]+\.[a-z]{2,}/gi) || [];
                 const percentages = textContent.match(/\b\d{1,3}(?:\.\d+)?%/g) || [];
 
                 // ── Score-Based Document Type Detection (avoids false matches) ──
                 const docScores = {
-                    resume:      0,
-                    invoice:     0,
-                    academic:    0,
-                    contract:    0,
-                    report:      0,
-                    letter:      0,
-                    book:        0,
-                    meeting:     0,
+                    resume: 0,
+                    invoice: 0,
+                    academic: 0,
+                    contract: 0,
+                    report: 0,
+                    letter: 0,
+                    book: 0,
+                    meeting: 0,
                 };
                 // Each keyword pattern contributes a specific score
                 if (/\b(resume|curriculum vitae)\b/.test(lc)) docScores.resume += 5;
@@ -7268,19 +7268,19 @@ ${prompt}
                 if (/\b(agenda|minutes of (the )?meeting|action items|attendees)\b/.test(lc)) docScores.meeting += 5;
 
                 // Pick highest scoring doc type
-                const topDocType = Object.entries(docScores).sort((a,b) => b[1]-a[1])[0];
+                const topDocType = Object.entries(docScores).sort((a, b) => b[1] - a[1])[0];
                 let docType = 'Document';
                 let docEmoji = '📄';
                 if (topDocType[1] >= 3) {
                     const typeMap = {
-                        resume:   ['Resume / CV', '👤'],
-                        invoice:  ['Invoice / Bill', '🧾'],
+                        resume: ['Resume / CV', '👤'],
+                        invoice: ['Invoice / Bill', '🧾'],
                         academic: ['Academic / Exam Form', '🎓'],
                         contract: ['Contract / Agreement', '📋'],
-                        report:   ['Report / Analysis', '📊'],
-                        letter:   ['Letter / Correspondence', '✉️'],
-                        book:     ['Book / Article', '📚'],
-                        meeting:  ['Meeting Notes', '📝'],
+                        report: ['Report / Analysis', '📊'],
+                        letter: ['Letter / Correspondence', '✉️'],
+                        book: ['Book / Article', '📚'],
+                        meeting: ['Meeting Notes', '📝'],
                     };
                     [docType, docEmoji] = typeMap[topDocType[0]];
                 } else if (isPdf) {
@@ -7291,21 +7291,21 @@ ${prompt}
 
                 // ── Structure ──
                 const sentences = textContent.split(/[.!?]+/).filter(s => s.trim().length > 5).length;
-                const avgWPS    = sentences > 0 ? Math.round(wordCount / sentences) : 0;
+                const avgWPS = sentences > 0 ? Math.round(wordCount / sentences) : 0;
                 const readingLevel = avgWPS > 25 ? 'Advanced' : avgWPS > 15 ? 'Intermediate' : 'Simple';
-                const hasLists  = lines.filter(l => /^[-•*]\s|^\d+\.\s/.test(l)).length > 2;
+                const hasLists = lines.filter(l => /^[-•*]\s|^\d+\.\s/.test(l)).length > 2;
                 const hasTables = textContent.includes('|') && lines.filter(l => l.includes('|')).length > 2;
                 const hasNumbers = (textContent.match(/\b\d{4,}\b/g) || []).length;
 
                 // ── Topic Keywords ──
-                const stopWords = new Set(['the','a','an','and','or','but','in','on','at','to','for','of','with','by','from','is','was','are','were','be','been','has','have','had','this','that','these','those','it','its','as','do','did','will','would','can','could','not','all','one','two','about','into','up','out','so','if','than','then','when','also','which','who','what','how','no','yes']);
+                const stopWords = new Set(['the', 'a', 'an', 'and', 'or', 'but', 'in', 'on', 'at', 'to', 'for', 'of', 'with', 'by', 'from', 'is', 'was', 'are', 'were', 'be', 'been', 'has', 'have', 'had', 'this', 'that', 'these', 'those', 'it', 'its', 'as', 'do', 'did', 'will', 'would', 'can', 'could', 'not', 'all', 'one', 'two', 'about', 'into', 'up', 'out', 'so', 'if', 'than', 'then', 'when', 'also', 'which', 'who', 'what', 'how', 'no', 'yes']);
                 const wordFreq = {};
-                lc.match(/\b[a-zA-Z]{4,}\b/g)?.forEach(w => { if (!stopWords.has(w)) wordFreq[w] = (wordFreq[w]||0)+1; });
-                const topKeywords = Object.entries(wordFreq).sort((a,b) => b[1]-a[1]).slice(0,7).map(([w]) => w);
+                lc.match(/\b[a-zA-Z]{4,}\b/g)?.forEach(w => { if (!stopWords.has(w)) wordFreq[w] = (wordFreq[w] || 0) + 1; });
+                const topKeywords = Object.entries(wordFreq).sort((a, b) => b[1] - a[1]).slice(0, 7).map(([w]) => w);
 
                 // ── Sentiment ──
-                const pos = (lc.match(/\b(excellent|great|success|approved|outstanding|awarded|distinction|pass|merit|congratulations)\b/g)||[]).length;
-                const neg = (lc.match(/\b(fail|rejected|overdue|penalty|warning|urgent|unpaid|debt|risk|cancelled|declined)\b/g)||[]).length;
+                const pos = (lc.match(/\b(excellent|great|success|approved|outstanding|awarded|distinction|pass|merit|congratulations)\b/g) || []).length;
+                const neg = (lc.match(/\b(fail|rejected|overdue|penalty|warning|urgent|unpaid|debt|risk|cancelled|declined)\b/g) || []).length;
                 const sentiment = pos > neg ? '✅ Positive' : neg > pos ? '⚠️ Flagged' : '🔵 Neutral';
 
                 // ── Key paragraphs for narrative ──
@@ -7380,34 +7380,34 @@ ${prompt}
 
                     // Default persona-based overview
                     const docTypeLines = {
-                        gf:           `Okay so babe, I just read through this — it looks like it's a **${docType}**! 💕`,
-                        wife:         `Alright ${nickname}, I went through this carefully — it's a **${docType}**. 💍`,
-                        bf:           `Hey ${nickname}, checked it out — this is a **${docType}**. 💙`,
-                        funny:        `Okay so I put on my reading glasses 🤓 and this appears to be a **${docType}** — who knew!`,
-                        tech:         `[SCAN] ⚡ Document classified as: **${docType}**.`,
-                        calm:         `I gently read through this 🧘 — it appears to be a **${docType}**.`,
+                        gf: `Okay so babe, I just read through this — it looks like it's a **${docType}**! 💕`,
+                        wife: `Alright ${nickname}, I went through this carefully — it's a **${docType}**. 💍`,
+                        bf: `Hey ${nickname}, checked it out — this is a **${docType}**. 💙`,
+                        funny: `Okay so I put on my reading glasses 🤓 and this appears to be a **${docType}** — who knew!`,
+                        tech: `[SCAN] ⚡ Document classified as: **${docType}**.`,
+                        calm: `I gently read through this 🧘 — it appears to be a **${docType}**.`,
                         professional: `Analysis complete. This document is a **${docType}**.`
                     };
                     parts.push(docTypeLines[personaKey] || docTypeLines.professional);
 
                     const findings = [];
-                    if (refIds.length > 0) findings.push(`reference/ID numbers like **${[...new Set(refIds)].slice(0,2).join('** and **')}**`);
-                    if (amounts.length > 0) findings.push(`financial figures — **${[...new Set(amounts)].slice(0,2).join(', ')}**`);
+                    if (refIds.length > 0) findings.push(`reference/ID numbers like **${[...new Set(refIds)].slice(0, 2).join('** and **')}**`);
+                    if (amounts.length > 0) findings.push(`financial figures — **${[...new Set(amounts)].slice(0, 2).join(', ')}**`);
                     if (emails.length > 0) findings.push(`an email address (**${emails[0]}**)`);
                     if (phones.length > 0) findings.push(`a contact number (**${phones[0]}**)`);
                     if (datesFound.length > 0) findings.push(`dates like **${datesFound[0]}**`);
-                    if (allYears.length > 0 && datesFound.length === 0) findings.push(`years mentioned: **${[...new Set(allYears)].slice(0,3).join(', ')}**`);
-                    if (percentages.length > 0) findings.push(`percentage values (**${percentages.slice(0,2).join(', ')}**)`);
+                    if (allYears.length > 0 && datesFound.length === 0) findings.push(`years mentioned: **${[...new Set(allYears)].slice(0, 3).join(', ')}**`);
+                    if (percentages.length > 0) findings.push(`percentage values (**${percentages.slice(0, 2).join(', ')}**)`);
 
                     if (findings.length > 0) {
                         const findingLines = {
-                            gf:           `I spotted some important stuff — I can see ${findings.slice(0,3).join(', and ')}. Looks pretty important! 👀`,
-                            wife:         `I noticed some key details — ${findings.slice(0,3).join(', ')}. Make sure to keep this safe ${nickname}! 💍`,
-                            bf:           `Found some key info in there — ${findings.slice(0,3).join(', ')}. Pretty solid doc!`,
-                            funny:        `I found some very official-looking things — ${findings.slice(0,3).join(', ')}. Very fancy! 😂`,
-                            tech:         `Extracted: ${findings.slice(0,4).join(' | ')}.`,
-                            calm:         `I gently noticed ${findings.slice(0,3).join(', ')} within this document 🌿`,
-                            professional: `Key extracted data: ${findings.slice(0,4).join('; ')}.`
+                            gf: `I spotted some important stuff — I can see ${findings.slice(0, 3).join(', and ')}. Looks pretty important! 👀`,
+                            wife: `I noticed some key details — ${findings.slice(0, 3).join(', ')}. Make sure to keep this safe ${nickname}! 💍`,
+                            bf: `Found some key info in there — ${findings.slice(0, 3).join(', ')}. Pretty solid doc!`,
+                            funny: `I found some very official-looking things — ${findings.slice(0, 3).join(', ')}. Very fancy! 😂`,
+                            tech: `Extracted: ${findings.slice(0, 4).join(' | ')}.`,
+                            calm: `I gently noticed ${findings.slice(0, 3).join(', ')} within this document 🌿`,
+                            professional: `Key extracted data: ${findings.slice(0, 4).join('; ')}.`
                         };
                         parts.push(findingLines[personaKey] || findingLines.professional);
                     }
@@ -7435,7 +7435,7 @@ ${prompt}
                 detailCard += `<div style="font-size:11px; opacity:0.5; margin-top:1px;">${docType}</div>`;
                 detailCard += `</div>`;
                 detailCard += `<div style="display:flex; gap:5px; flex-wrap:wrap;">`;
-                detailCard += `<span style="font-size:10px; padding:2px 8px; border-radius:20px; background:rgba(99,102,241,0.2); color:#a5b4fc; font-weight:600;">${isPdf?'PDF':'TXT'}</span>`;
+                detailCard += `<span style="font-size:10px; padding:2px 8px; border-radius:20px; background:rgba(99,102,241,0.2); color:#a5b4fc; font-weight:600;">${isPdf ? 'PDF' : 'TXT'}</span>`;
                 detailCard += `<span style="font-size:10px; padding:2px 8px; border-radius:20px; background:rgba(16,185,129,0.15); color:#6ee7b7; font-weight:600;">~${wordCount}w</span>`;
                 detailCard += `<span style="font-size:10px; padding:2px 8px; border-radius:20px; background:rgba(251,191,36,0.12); color:#fcd34d; font-weight:600;">${lines.length} lines</span>`;
                 detailCard += `<span style="font-size:10px; padding:2px 8px; border-radius:20px; background:rgba(244,63,94,0.12); color:#fda4af; font-weight:600;">${readingLevel}</span>`;
@@ -7444,18 +7444,18 @@ ${prompt}
 
                 // Extracted details inside the card
                 detailCard += `<div style="padding:12px 14px;">`;
-                const hasDetails = amounts.length||refIds.length||datesFound.length||emails.length||phones.length||urls.length||percentages.length;
+                const hasDetails = amounts.length || refIds.length || datesFound.length || emails.length || phones.length || urls.length || percentages.length;
                 if (hasDetails) {
                     detailCard += `<div style="font-size:11.5px; font-weight:700; opacity:0.5; letter-spacing:0.06em; margin-bottom:8px;">EXTRACTED DATA</div>`;
                     detailCard += `<div style="display:flex; flex-direction:column; gap:5px; font-size:12.5px;">`;
-                    if (refIds.length)      detailCard += `<div><span style="opacity:0.55;">🆔 IDs:</span> <strong>${[...new Set(refIds)].slice(0,4).join(' · ')}</strong></div>`;
-                    if (amounts.length)     detailCard += `<div><span style="opacity:0.55;">💰 Amounts:</span> <strong>${[...new Set(amounts)].slice(0,4).join(', ')}</strong></div>`;
-                    if (datesFound.length)  detailCard += `<div><span style="opacity:0.55;">📅 Dates:</span> <strong>${[...new Set(datesFound)].slice(0,4).join(', ')}</strong></div>`;
-                    else if (allYears.length) detailCard += `<div><span style="opacity:0.55;">📅 Years:</span> <strong>${[...new Set(allYears)].slice(0,4).join(', ')}</strong></div>`;
-                    if (emails.length)      detailCard += `<div><span style="opacity:0.55;">📧 Email:</span> <strong>${[...new Set(emails)].slice(0,2).join(', ')}</strong></div>`;
-                    if (phones.length)      detailCard += `<div><span style="opacity:0.55;">📞 Phone:</span> <strong>${[...new Set(phones)].slice(0,2).join(', ')}</strong></div>`;
-                    if (percentages.length) detailCard += `<div><span style="opacity:0.55;">📊 Percentages:</span> <strong>${[...new Set(percentages)].slice(0,4).join(', ')}</strong></div>`;
-                    if (urls.length)        detailCard += `<div><span style="opacity:0.55;">🔗 URLs:</span> <strong>${[...new Set(urls)].slice(0,2).join(', ')}</strong></div>`;
+                    if (refIds.length) detailCard += `<div><span style="opacity:0.55;">🆔 IDs:</span> <strong>${[...new Set(refIds)].slice(0, 4).join(' · ')}</strong></div>`;
+                    if (amounts.length) detailCard += `<div><span style="opacity:0.55;">💰 Amounts:</span> <strong>${[...new Set(amounts)].slice(0, 4).join(', ')}</strong></div>`;
+                    if (datesFound.length) detailCard += `<div><span style="opacity:0.55;">📅 Dates:</span> <strong>${[...new Set(datesFound)].slice(0, 4).join(', ')}</strong></div>`;
+                    else if (allYears.length) detailCard += `<div><span style="opacity:0.55;">📅 Years:</span> <strong>${[...new Set(allYears)].slice(0, 4).join(', ')}</strong></div>`;
+                    if (emails.length) detailCard += `<div><span style="opacity:0.55;">📧 Email:</span> <strong>${[...new Set(emails)].slice(0, 2).join(', ')}</strong></div>`;
+                    if (phones.length) detailCard += `<div><span style="opacity:0.55;">📞 Phone:</span> <strong>${[...new Set(phones)].slice(0, 2).join(', ')}</strong></div>`;
+                    if (percentages.length) detailCard += `<div><span style="opacity:0.55;">📊 Percentages:</span> <strong>${[...new Set(percentages)].slice(0, 4).join(', ')}</strong></div>`;
+                    if (urls.length) detailCard += `<div><span style="opacity:0.55;">🔗 URLs:</span> <strong>${[...new Set(urls)].slice(0, 2).join(', ')}</strong></div>`;
                     detailCard += `</div>`;
                 }
 
@@ -7471,9 +7471,9 @@ ${prompt}
 
                 // Structure flags
                 const structureTags = [];
-                if (hasLists)        structureTags.push('📋 Lists');
-                if (hasTables)       structureTags.push('📊 Tables');
-                if (hasNumbers > 5)  structureTags.push('🔢 Numeric Data');
+                if (hasLists) structureTags.push('📋 Lists');
+                if (hasTables) structureTags.push('📊 Tables');
+                if (hasNumbers > 5) structureTags.push('🔢 Numeric Data');
                 if (structureTags.length > 0) {
                     detailCard += `<div style="display:flex; gap:5px; flex-wrap:wrap; margin-top:8px;">`;
                     structureTags.forEach(t => {
@@ -7485,7 +7485,7 @@ ${prompt}
                 detailCard += `</div></div>\n\n`;
 
                 // Collapsible raw text
-                detailCard += `<details>\n<summary style="cursor:pointer; font-size:12px; opacity:0.5; user-select:none; padding:4px 0;">📄 Show raw text (${lines.length} lines)</summary>\n<div class="details-body">\n\n\`\`\`text\n${lines.slice(0,30).join('\n')}${lines.length>30?'\n...':''}\n\`\`\`\n\n</div>\n</details>`;
+                detailCard += `<details>\n<summary style="cursor:pointer; font-size:12px; opacity:0.5; user-select:none; padding:4px 0;">📄 Show raw text (${lines.length} lines)</summary>\n<div class="details-body">\n\n\`\`\`text\n${lines.slice(0, 30).join('\n')}${lines.length > 30 ? '\n...' : ''}\n\`\`\`\n\n</div>\n</details>`;
 
                 return { text: narrative + detailCard, actions };
 
@@ -7571,7 +7571,7 @@ Instructions:
 - Highlight key roles, powers, or achievements using distinct bullet points.
 - Do NOT output bracket citation numbers like [1] or [note 1].
 - Be articulate, highly capable, and direct.`;
-            
+
             let synthesis = await queryActiveLLM(synthesisPrompt, style);
             if (!synthesis) {
                 synthesis = await queryOnlineFreeLLM(synthesisPrompt, style);
@@ -7583,7 +7583,7 @@ Instructions:
                 let domain = (s.title || '').toLowerCase();
                 try {
                     if (s.url) domain = new URL(s.url).hostname.replace(/^www\./, '').toLowerCase();
-                } catch(e) {}
+                } catch (e) { }
                 if (!domain || seenDomains.has(domain)) return false;
                 seenDomains.add(domain);
                 return true;
@@ -7595,7 +7595,7 @@ Instructions:
                 let domain = s.title || 'Source';
                 try {
                     if (s.url) domain = new URL(s.url).hostname.replace(/^www\./, '');
-                } catch(e) {}
+                } catch (e) { }
                 let faviconUrl = `https://www.google.com/s2/favicons?sz=32&domain=${domain}`;
                 if (s.url) {
                     referencePillsHtml += `<a href="${s.url}" class="msg-ref-pill" target="_blank" rel="noopener"><img src="${faviconUrl}" alt="" /> <span>${domain}</span></a>`;
@@ -7617,9 +7617,9 @@ Instructions:
         // Final Offline Fallback: Answer using local intelligence rather than failing
         const finalOfflineAns = generateOfflineLocalResponse(prompt, personaKey, style, userTitle);
         const searchUrl = `https://www.google.com/search?q=${encodeURIComponent(prompt)}`;
-        return { 
-            text: finalOfflineAns, 
-            actions: [...actions, { text: "Search Google", icon: "fa-search", url: searchUrl }] 
+        return {
+            text: finalOfflineAns,
+            actions: [...actions, { text: "Search Google", icon: "fa-search", url: searchUrl }]
         };
 
     } catch (err) {
@@ -7674,16 +7674,16 @@ async function professionalizeEmail(notes, subject, apiKey, context = {}) {
 
     // Fallbacks
     if (!result && userSettings.aiApiKey) {
-        try { result = await tryGemini(prompt, userSettings.aiApiKey, 'formal'); } catch (e) {}
+        try { result = await tryGemini(prompt, userSettings.aiApiKey, 'formal'); } catch (e) { }
     }
     if (!result && userSettings.openaiApiKey) {
-        try { result = await tryOpenAI(prompt, 'formal'); } catch (e) {}
+        try { result = await tryOpenAI(prompt, 'formal'); } catch (e) { }
     }
     if (!result && userSettings.customEndpoint) {
-        try { result = await tryCustomProvider(prompt, 'formal'); } catch (e) {}
+        try { result = await tryCustomProvider(prompt, 'formal'); } catch (e) { }
     }
     if (!result) {
-        try { result = await queryLocalLLM(prompt, 'formal'); } catch (e) {}
+        try { result = await queryLocalLLM(prompt, 'formal'); } catch (e) { }
     }
     if (result && result.length > 10) return result;
 
@@ -7777,7 +7777,7 @@ ${stylePrompt}`;
                     return getText.trim();
                 }
             }
-        } catch (getErr) {}
+        } catch (getErr) { }
     } catch (e) {
         console.warn('[Online Free LLM Error]:', e.message);
     }
@@ -7972,7 +7972,7 @@ function generateOfflineLocalResponse(promptText, personaKey = 'professional', s
                     return `### 🧮 Calculation Result\n\n\`\`\`\n${expr} = ${result}\n\`\`\`\n\n- **Input Expression:** \`${expr}\`\n- **Result:** **${result}**\n\n> ⚡ *Calculated offline by Ocal Local Engine (Gaming Network Studio)*`;
                 }
             }
-        } catch(e) {}
+        } catch (e) { }
     }
 
     // Percentage queries (e.g. "what is 15% of 250")
@@ -8087,7 +8087,7 @@ ${stylePrompt}`;
                             const mData = await mRes.json();
                             if (mData.data && mData.data.length > 0) model = mData.data[0].id;
                         }
-                    } catch (e) {}
+                    } catch (e) { }
                 }
                 if (!model) model = 'default';
 
@@ -8133,7 +8133,7 @@ ${stylePrompt}`;
                                 model = tagsData.models[0].name;
                             }
                         }
-                    } catch (e) {}
+                    } catch (e) { }
                 }
 
                 if (!model || model === 'auto') model = 'deepseek-r1:latest';
@@ -8182,7 +8182,7 @@ ${stylePrompt}`;
                             const genData = await genRes.json();
                             if (genData.response && genData.response.trim().length > 0) return genData.response.trim();
                         }
-                    } catch (genErr) {}
+                    } catch (genErr) { }
                 }
             }
         } catch (e) {
@@ -8203,7 +8203,7 @@ async function tryGemini(prompt, apiKey, style = 'detailed', fileObj = null) {
     for (const model of modelsToTry) {
         try {
             const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${apiKey}`;
-            
+
             let stylePrompt = "Keep responses brief and relevant.";
             if (style === 'detailed') {
                 stylePrompt = "Provide highly detailed, comprehensive, structured, and thoroughly explained answers. Do not keep them brief.";
@@ -8328,21 +8328,21 @@ async function researchWeb(query) {
                 if (snippets.length >= 4) break;
                 let url = match[1];
                 const text = match[2].replace(/<[^>]*>/g, '').replace(/\s+/g, ' ').trim();
-                
+
                 if (url.includes('uddg=')) {
                     try {
                         url = decodeURIComponent(url.split('uddg=')[1].split('&')[0]);
-                    } catch (e) {}
+                    } catch (e) { }
                 }
-                
+
                 const cleanedText = cleanWebSnippetText(decodeHtmlEntities(text));
                 if (cleanedText.length > 20) {
                     let title = 'Source';
                     try {
                         const parsedUrl = new URL(url);
                         title = parsedUrl.hostname.replace('www.', '');
-                    } catch(e) {}
-                    
+                    } catch (e) { }
+
                     snippets.push({
                         snippet: cleanedText,
                         url: url,
@@ -8443,7 +8443,7 @@ ipcMain.handle('get-local-models', async () => {
                         });
                     }
                 }
-            } catch (e) {}
+            } catch (e) { }
         } else {
             try {
                 const v1Url = ep.url.endsWith('/v1') ? `${ep.url}/models` : `${ep.url}/v1/models`;
@@ -8463,7 +8463,7 @@ ipcMain.handle('get-local-models', async () => {
                         });
                     }
                 }
-            } catch (e) {}
+            } catch (e) { }
         }
     }
 
@@ -8683,7 +8683,7 @@ ipcMain.on('show-tab-context', (e, data) => {
     const contentBounds = mainWindow.getContentBounds();
     const initialWidth = Math.round(260 * zoom);
     const initialHeight = Math.round(200 * zoom);
-    
+
     let initialX = data.x;
     let initialY = data.y;
     if (initialX + initialWidth > contentBounds.width) initialX = contentBounds.width - initialWidth - 5;
@@ -8886,7 +8886,7 @@ ipcMain.on('page-context-action', (e, data) => {
         }
         case 'print': {
             if (targetWc && !targetWc.isDestroyed()) {
-                try { targetWc.print(); } catch (err) {}
+                try { targetWc.print(); } catch (err) { }
             }
             break;
         }
@@ -8901,7 +8901,7 @@ ipcMain.on('page-context-action', (e, data) => {
                 try {
                     targetWc.inspectElement(data.inspectX || 0, data.inspectY || 0);
                     if (!targetWc.isDevToolsOpened()) targetWc.openDevTools();
-                } catch (err) {}
+                } catch (err) { }
             }
             break;
         }
@@ -8955,7 +8955,7 @@ ipcMain.on('page-context-action', (e, data) => {
         }
         case 'copy-image': {
             if (targetWc && !targetWc.isDestroyed()) {
-                try { targetWc.copyImageAt(data.inspectX || 0, data.inspectY || 0); } catch (err) {}
+                try { targetWc.copyImageAt(data.inspectX || 0, data.inspectY || 0); } catch (err) { }
             }
             break;
         }
@@ -8965,7 +8965,7 @@ ipcMain.on('page-context-action', (e, data) => {
         }
         case 'save-image-as': {
             if (targetWc && !targetWc.isDestroyed() && data.srcUrl) {
-                try { targetWc.downloadURL(data.srcUrl); } catch (err) {}
+                try { targetWc.downloadURL(data.srcUrl); } catch (err) { }
             }
             break;
         }
@@ -8982,13 +8982,13 @@ ipcMain.on('page-context-action', (e, data) => {
         }
         case 'replace-misspelling': {
             if (targetWc && !targetWc.isDestroyed() && data.suggestion) {
-                try { targetWc.replaceMisspelling(data.suggestion); } catch (err) {}
+                try { targetWc.replaceMisspelling(data.suggestion); } catch (err) { }
             }
             break;
         }
         case 'add-to-dictionary': {
             if (targetWc && !targetWc.isDestroyed() && data.word) {
-                try { targetWc.session.addWordToSpellCheckerDictionary(data.word); } catch (err) {}
+                try { targetWc.session.addWordToSpellCheckerDictionary(data.word); } catch (err) { }
             }
             break;
         }
@@ -9229,7 +9229,7 @@ ipcMain.on('update-setting', (e, key, val) => {
         userSettings.activeThemeCombo = val;
         if (val && val.chrome && /^#[0-9A-Fa-f]{6}$/.test(val.chrome)) {
             if (typeof mainWindow !== 'undefined' && mainWindow && !mainWindow.isDestroyed()) {
-                try { mainWindow.setBackgroundColor(val.chrome); } catch (e) {}
+                try { mainWindow.setBackgroundColor(val.chrome); } catch (e) { }
             }
         }
     }
@@ -9580,7 +9580,7 @@ function handleShortcuts(event, input) {
         if (htmlFullscreenViewId) {
             const fsView = views.find(v => v.id === htmlFullscreenViewId)?.view;
             if (fsView && !fsView.webContents.isDestroyed()) {
-                fsView.webContents.executeJavaScript('if (document.fullscreenElement) document.exitFullscreen().catch(()=>{});').catch(() => {});
+                fsView.webContents.executeJavaScript('if (document.fullscreenElement) document.exitFullscreen().catch(()=>{});').catch(() => { });
             }
             setHtmlFullscreen(htmlFullscreenViewId, false);
             didExit = true;
@@ -9719,7 +9719,7 @@ function promptWindowsAuthentication(promptMessage = 'Ocal Browser is trying to 
                     parentHwnd = handle.readInt32LE(0).toString();
                 }
             }
-        } catch (e) {}
+        } catch (e) { }
 
         const psScript = path.join(__dirname, 'bin', 'winauth.ps1');
         if (fs.existsSync(psScript)) {
@@ -9809,7 +9809,7 @@ function encryptSecret(plainText) {
                 data: safeStorage.encryptString(plainText).toString('base64')
             };
         }
-    } catch (e) {}
+    } catch (e) { }
 
     try {
         const crypto = require('crypto');
@@ -9852,7 +9852,7 @@ function decryptSecret(encObj) {
         if (encObj.mode === 'plain') {
             return Buffer.from(encObj.data, 'base64').toString('utf8');
         }
-    } catch (e) {}
+    } catch (e) { }
     return '';
 }
 
@@ -10080,7 +10080,7 @@ ipcMain.handle('passwords:autofill-active', (e, cred) => {
             activeTab.view.webContents.send('passwords:autofill-trigger', cred);
             return { success: true };
         }
-    } catch (err) {}
+    } catch (err) { }
     return { success: false };
 });
 
@@ -10136,7 +10136,7 @@ ipcMain.handle('get-diagnostics', async () => {
                 }
             }
         }
-    } catch (e) {}
+    } catch (e) { }
 
     let archDisplay = '64-bit Native';
     if (process.arch === 'x64') {
@@ -10435,7 +10435,7 @@ ipcMain.handle('download-update', async (event) => {
                     }
                 });
             }
-        } catch (e) {}
+        } catch (e) { }
     };
 
     const downloadWithRetry = async (url, dest, knownSize = 0, retries = 3) => {
@@ -10637,7 +10637,7 @@ ipcMain.on('show-shield-popup', (e, { x, y, width, height, tabId }) => {
     const sendData = () => {
         if (!shieldPopupView || shieldPopupView.webContents.isDestroyed()) return;
         shieldPopupView.webContents.send('show-popup', { x: 0, y: 0, tabId, isYouTube });
-        try { shieldPopupView.webContents.focus(); } catch (err) {}
+        try { shieldPopupView.webContents.focus(); } catch (err) { }
     };
 
     if (shieldPopupView.webContents.isLoading()) {
@@ -11086,14 +11086,15 @@ app.whenReady().then(async () => {
     });
 });
 app.on('window-all-closed', () => { if (process.platform !== 'darwin') app.quit(); });
-app.on('activate', () => { if (BrowserWindow.getAllWindows().length === 0) createMainWindow();
+app.on('activate', () => {
+    if (BrowserWindow.getAllWindows().length === 0) createMainWindow();
     // Initialize Ocal Connect Sync Server for cross-device mobile integration
     try {
         initOcalSyncServer();
     } catch (e) {
         console.error('[OcalSync] Failed to initialize sync server:', e);
     }
- });
+});
 
 // Screenshot & Thumbnail IPCs
 ipcMain.on('capture-thumbnail', async (e) => {
@@ -11366,12 +11367,12 @@ ipcMain.on('permission-response', (event, { id, decision }) => {
 
         try {
             req.callback(decision === 'allow');
-        } catch (e) {}
+        } catch (e) { }
     } else {
         // Dismissed / temporary deny
         try {
             req.callback(false);
-        } catch (e) {}
+        } catch (e) { }
     }
 
     showNextPermissionRequest();
@@ -11390,12 +11391,12 @@ ipcMain.on('open-settings', (e, section) => {
 function getAllActiveSessions() {
     const sessions = new Set();
     if (session.defaultSession) sessions.add(session.defaultSession);
-    try { sessions.add(session.fromPartition('persist:google_login')); } catch(e) {}
-    try { sessions.add(session.fromPartition(getProfilePartition())); } catch(e) {}
+    try { sessions.add(session.fromPartition('persist:google_login')); } catch (e) { }
+    try { sessions.add(session.fromPartition(getProfilePartition())); } catch (e) { }
     if (userSettings && Array.isArray(userSettings.profiles)) {
         userSettings.profiles.forEach(p => {
             if (p && p.id) {
-                try { sessions.add(session.fromPartition(`persist:profile_${p.id}`)); } catch(e) {}
+                try { sessions.add(session.fromPartition(`persist:profile_${p.id}`)); } catch (e) { }
             }
         });
     }
@@ -11406,17 +11407,17 @@ function getAllActiveSessions() {
             for (const d of dirs) {
                 try {
                     sessions.add(session.fromPartition(`persist:${d}`));
-                } catch(e) {}
+                } catch (e) { }
             }
         }
-    } catch(e) {}
+    } catch (e) { }
     if (views && Array.isArray(views)) {
         for (const v of views) {
             try {
                 if (v && v.view && v.view.webContents && !v.view.webContents.isDestroyed() && v.view.webContents.session) {
                     sessions.add(v.view.webContents.session);
                 }
-            } catch(e) {}
+            } catch (e) { }
         }
     }
     return Array.from(sessions);
@@ -11431,7 +11432,7 @@ async function getCookiesForHost(targetOriginOrHost) {
             hostname = targetOriginOrHost;
         }
     }
-    
+
     hostname = hostname.toLowerCase().trim();
     if (!hostname) return [];
 
@@ -11458,13 +11459,13 @@ async function getCookiesForHost(targetOriginOrHost) {
     };
 
     // Wipe remembered permissions for these reset origins
-        if (userSettings && userSettings.sitePermissions) {
-            for (const orig of uniqueOrigins) {
-                delete userSettings.sitePermissions[orig];
-            }
-            saveSettings(userSettings);
+    if (userSettings && userSettings.sitePermissions) {
+        for (const orig of uniqueOrigins) {
+            delete userSettings.sitePermissions[orig];
         }
-        const targetSessions = getAllActiveSessions();
+        saveSettings(userSettings);
+    }
+    const targetSessions = getAllActiveSessions();
 
     for (const ses of targetSessions) {
         try {
@@ -11472,23 +11473,23 @@ async function getCookiesForHost(targetOriginOrHost) {
             try {
                 const httpsCookies = await ses.cookies.get({ url: `https://${hostname}` });
                 httpsCookies.forEach(addCookie);
-            } catch (e) {}
+            } catch (e) { }
             try {
                 const httpCookies = await ses.cookies.get({ url: `http://${hostname}` });
                 httpCookies.forEach(addCookie);
-            } catch (e) {}
+            } catch (e) { }
 
             // 2. Query by specific domain filters
             try {
                 const hostCookies = await ses.cookies.get({ domain: hostname });
                 hostCookies.forEach(addCookie);
-            } catch (e) {}
+            } catch (e) { }
 
             if (baseDomain !== hostname) {
                 try {
                     const baseCookies = await ses.cookies.get({ domain: baseDomain });
                     baseCookies.forEach(addCookie);
-                } catch (e) {}
+                } catch (e) { }
             }
 
             // 3. Scan all session cookies to match dot-prefixed domains (e.g. .electronjs.org) and subdomains
@@ -11501,8 +11502,8 @@ async function getCookiesForHost(targetOriginOrHost) {
                         addCookie(c);
                     }
                 });
-            } catch (e) {}
-        } catch (e) {}
+            } catch (e) { }
+        } catch (e) { }
     }
 
     return Array.from(cookieMap.values());
@@ -11511,7 +11512,7 @@ async function getCookiesForHost(targetOriginOrHost) {
 ipcMain.on('get-site-data', async (event, origin) => {
     try {
         let hostname = origin;
-        try { hostname = new URL(origin).hostname; } catch(e) {}
+        try { hostname = new URL(origin).hostname; } catch (e) { }
         const cookies = await getCookiesForHost(origin);
 
         // Extract unique domains
@@ -11530,7 +11531,7 @@ ipcMain.handle('get-site-usage', async (event, origin) => {
     try {
         let hostname = origin || '';
         if (hostname.includes('://')) {
-            try { hostname = new URL(hostname).hostname; } catch(e) {}
+            try { hostname = new URL(hostname).hostname; } catch (e) { }
         }
         hostname = hostname.toLowerCase().trim();
 
@@ -11539,11 +11540,11 @@ ipcMain.handle('get-site-usage', async (event, origin) => {
         // 1. Calculate cookie data size
         let cookieBytes = 0;
         for (const c of cookies) {
-            cookieBytes += (c.name?.length || 0) + 
-                           (c.value?.length || 0) + 
-                           (c.domain?.length || 0) + 
-                           (c.path?.length || 0) + 
-                           256; // Storage overhead per record
+            cookieBytes += (c.name?.length || 0) +
+                (c.value?.length || 0) +
+                (c.domain?.length || 0) +
+                (c.path?.length || 0) +
+                256; // Storage overhead per record
         }
 
         // 2. Query live storage usage (localStorage, IndexedDB, CacheStorage) from open tab
@@ -11556,7 +11557,7 @@ ipcMain.handle('get-site-usage', async (event, origin) => {
                     const u = new URL(v.view.webContents.getURL());
                     const tabH = u.hostname.toLowerCase();
                     return tabH === hostname || tabH.endsWith('.' + hostname) || hostname.endsWith('.' + tabH);
-                } catch(e) { return false; }
+                } catch (e) { return false; }
             });
 
             if (matchingTab && !matchingTab.view.webContents.isDestroyed()) {
@@ -11587,7 +11588,7 @@ ipcMain.handle('get-site-usage', async (event, origin) => {
                     storageItems = liveStorage.count || 0;
                 }
             }
-        } catch(e) {}
+        } catch (e) { }
 
         // 3. Fallback disk check for IndexedDB directory (including profile partitions)
         if (storageUsage === 0 && hostname) {
@@ -11626,28 +11627,28 @@ ipcMain.handle('get-site-usage', async (event, origin) => {
                                     if (stat.isDirectory()) {
                                         const files = fs.readdirSync(fullEntry);
                                         for (const f of files) {
-                                            try { storageUsage += fs.statSync(path.join(fullEntry, f)).size; } catch(err) {}
+                                            try { storageUsage += fs.statSync(path.join(fullEntry, f)).size; } catch (err) { }
                                         }
                                     } else {
                                         storageUsage += stat.size;
                                     }
                                     storageItems++;
-                                } catch(err) {}
+                                } catch (err) { }
                             } else {
                                 try {
                                     if (fs.statSync(fullEntry).isDirectory() && (dir.includes('Partitions') || entry === 'IndexedDB')) {
                                         scanDir(fullEntry);
                                     }
-                                } catch(e) {}
+                                } catch (e) { }
                             }
                         }
-                    } catch(e) {}
+                    } catch (e) { }
                 };
 
                 for (const d of dirsToCheck) {
                     scanDir(d);
                 }
-            } catch(e) {}
+            } catch (e) { }
         }
 
         const totalBytes = cookieBytes + storageUsage;
@@ -11683,7 +11684,7 @@ async function executeDeleteSiteData(payload) {
         const rawTarget = origin || domain || '';
         let hostname = rawTarget;
         if (hostname.includes('://')) {
-            try { hostname = new URL(hostname).hostname; } catch(e) {}
+            try { hostname = new URL(hostname).hostname; } catch (e) { }
         }
         hostname = hostname.toLowerCase().trim();
         if (!hostname) return true;
@@ -11709,13 +11710,13 @@ async function executeDeleteSiteData(payload) {
                         const tabUrl = v.view.webContents.getURL();
                         if (!tabUrl) continue;
                         let tabH = '';
-                        try { tabH = new URL(tabUrl).hostname.toLowerCase(); } catch(e) {}
+                        try { tabH = new URL(tabUrl).hostname.toLowerCase(); } catch (e) { }
                         if (tabH && (tabH === hostname || tabH === baseDomain || tabH.endsWith('.' + baseDomain) || baseDomain.endsWith('.' + tabH))) {
-                            try { v.view.webContents.stop(); } catch(e) {}
+                            try { v.view.webContents.stop(); } catch (e) { }
                             v.view.webContents.loadURL('about:blank');
                         }
                     }
-                } catch(e) {}
+                } catch (e) { }
             }
         }
 
@@ -11743,12 +11744,12 @@ async function executeDeleteSiteData(payload) {
                         origin: orig,
                         storages: storageTypes
                     });
-                } catch(e) {}
+                } catch (e) { }
                 try {
                     await ses.clearStorageData({
                         origin: orig
                     });
-                } catch(e) {}
+                } catch (e) { }
             }
 
             // 4. Remove all matching cookies from session
@@ -11769,17 +11770,17 @@ async function executeDeleteSiteData(payload) {
                         for (const h of candHosts) {
                             if (!h) continue;
                             for (const s of ['https', 'http']) {
-                                try { await ses.cookies.remove(`${s}://${h}${cleanPath}`, c.name); } catch(e) {}
+                                try { await ses.cookies.remove(`${s}://${h}${cleanPath}`, c.name); } catch (e) { }
                                 if (cleanPath !== '/') {
-                                    try { await ses.cookies.remove(`${s}://${h}/`, c.name); } catch(e) {}
+                                    try { await ses.cookies.remove(`${s}://${h}/`, c.name); } catch (e) { }
                                 }
                             }
                         }
                     }
                 }
-            } catch(e) {}
+            } catch (e) { }
 
-            try { await ses.flushStorageData(); } catch(e) {}
+            try { await ses.flushStorageData(); } catch (e) { }
         }
 
         // 5. Clean up any lingering IndexedDB directories on disk
@@ -11806,24 +11807,24 @@ async function executeDeleteSiteData(payload) {
                             if (lowerEntry.includes(cleanH) || lowerEntry.includes(cleanBase)) {
                                 try {
                                     fs.rmSync(fullEntry, { recursive: true, force: true });
-                                } catch(err) {}
+                                } catch (err) { }
                             } else {
                                 try {
                                     if (fs.statSync(fullEntry).isDirectory()) {
                                         scanAndRemove(fullEntry);
                                     }
-                                } catch(err) {}
+                                } catch (err) { }
                             }
                         }
-                    } catch(err) {}
+                    } catch (err) { }
                 };
                 scanAndRemove(rootDir);
             }
-        } catch(e) {}
+        } catch (e) { }
 
         // Flush once more
         for (const ses of targetSessions) {
-            try { await ses.flushStorageData(); } catch(e) {}
+            try { await ses.flushStorageData(); } catch (e) { }
         }
 
         return true;
@@ -11881,7 +11882,7 @@ ipcMain.handle('get-system-drives', async () => {
                         if (totalBytes > 0) {
                             percentUsed = Math.min(100, Math.max(0, Math.round((usedBytes / totalBytes) * 100)));
                         }
-                    } catch (e) {}
+                    } catch (e) { }
 
                     drives.push({
                         name: char === 'C' ? 'Local Disk (C:)' : `Volume (${char}:)`,
@@ -11895,7 +11896,7 @@ ipcMain.handle('get-system-drives', async () => {
                         percentUsed
                     });
                 }
-            } catch (e) {}
+            } catch (e) { }
         }
     }
 
@@ -11960,12 +11961,12 @@ ipcMain.handle('get-directory-entries', async (event, dirPath, options = {}) => 
                 let isDir = false;
                 try {
                     isDir = dirent.isDirectory();
-                } catch (e) {}
+                } catch (e) { }
 
                 let stats = { size: 0, mtime: new Date(), birthtime: new Date() };
                 try {
                     stats = fs.statSync(fullPath);
-                } catch (e) {}
+                } catch (e) { }
 
                 result.push({
                     name: dirent.name,
@@ -12038,10 +12039,10 @@ ipcMain.handle('scan-system-audio', async () => {
     const seenPaths = new Set();
 
     const rootDirs = [];
-    try { if (app.getPath('music')) rootDirs.push(app.getPath('music')); } catch (e) {}
-    try { if (app.getPath('downloads')) rootDirs.push(app.getPath('downloads')); } catch (e) {}
-    try { if (app.getPath('desktop')) rootDirs.push(app.getPath('desktop')); } catch (e) {}
-    try { if (app.getPath('documents')) rootDirs.push(app.getPath('documents')); } catch (e) {}
+    try { if (app.getPath('music')) rootDirs.push(app.getPath('music')); } catch (e) { }
+    try { if (app.getPath('downloads')) rootDirs.push(app.getPath('downloads')); } catch (e) { }
+    try { if (app.getPath('desktop')) rootDirs.push(app.getPath('desktop')); } catch (e) { }
+    try { if (app.getPath('documents')) rootDirs.push(app.getPath('documents')); } catch (e) { }
 
     // Check workspace music folder
     const localMusic = path.join(__dirname, 'music');
@@ -12091,11 +12092,11 @@ ipcMain.handle('scan-system-audio', async () => {
                                 format: ext.replace('.', '').toUpperCase(),
                                 category: category
                             });
-                        } catch (e) {}
+                        } catch (e) { }
                     }
                 }
             }
-        } catch (e) {}
+        } catch (e) { }
     }
 
     for (const dir of rootDirs) {
@@ -12196,7 +12197,7 @@ ipcMain.handle('read-file-content', async (e, inputPath) => {
     try {
         if (!inputPath) return null;
         let filePath = String(inputPath).trim();
-        try { filePath = decodeURIComponent(filePath); } catch(e) {}
+        try { filePath = decodeURIComponent(filePath); } catch (e) { }
         filePath = filePath.replace(/^file:\/\/\/?/i, '');
         if (process.platform === 'win32') filePath = filePath.replace(/\//g, '\\');
 
@@ -12239,7 +12240,7 @@ ipcMain.handle('read-file-buffer', async (e, inputPath) => {
     try {
         if (!inputPath) return null;
         let filePath = String(inputPath).trim();
-        try { filePath = decodeURIComponent(filePath); } catch(e) {}
+        try { filePath = decodeURIComponent(filePath); } catch (e) { }
         filePath = filePath.replace(/^file:\/\/\/?/i, '');
         if (process.platform === 'win32') filePath = filePath.replace(/\//g, '\\');
 
@@ -12257,7 +12258,7 @@ ipcMain.handle('read-docx-structured', async (e, inputPath) => {
     try {
         if (!inputPath) return null;
         let filePath = String(inputPath).trim();
-        try { filePath = decodeURIComponent(filePath); } catch(e) {}
+        try { filePath = decodeURIComponent(filePath); } catch (e) { }
         filePath = filePath.replace(/^file:\/\/\/?/i, '');
         if (process.platform === 'win32') filePath = filePath.replace(/\//g, '\\');
 
@@ -12286,7 +12287,7 @@ ipcMain.handle('read-docx-structured', async (e, inputPath) => {
                     relsMap[id] = target;
                 }
             }
-        } catch (eRels) {}
+        } catch (eRels) { }
 
         // Base64 Data URI Map for Images
         const imageBase64Map = {};
@@ -12300,7 +12301,7 @@ ipcMain.handle('read-docx-structured', async (e, inputPath) => {
                     const mime = (ext === 'png') ? 'image/png' : (ext === 'svg') ? 'image/svg+xml' : 'image/jpeg';
                     imageBase64Map[rId] = `data:${mime};base64,${imgBuffer.toString('base64')}`;
                 }
-            } catch (eImg) {}
+            } catch (eImg) { }
         });
 
         let hasDocPageBorder = /<w:pgBorders\b/i.test(xmlStr);
@@ -12566,7 +12567,7 @@ function getLocalizedExtensionString(str, extensionPath, manifest = {}) {
                 const lang = appLocale.split(/[-_]/)[0];
                 if (lang) localesToTry.push(lang);
             }
-        } catch (e) {}
+        } catch (e) { }
 
         if (manifest.default_locale) {
             localesToTry.push(manifest.default_locale);
@@ -12604,7 +12605,7 @@ function getLocalizedExtensionString(str, extensionPath, manifest = {}) {
                                 }
                             }
                         }
-                    } catch (e) {}
+                    } catch (e) { }
                 }
             }
         }
@@ -12651,8 +12652,8 @@ function resolveExtensionMetadata(ext) {
 
                 // Extract popup action
                 const popup = (manifest.action && manifest.action.default_popup) ||
-                              (manifest.browser_action && manifest.browser_action.default_popup) ||
-                              (manifest.page_action && manifest.page_action.default_popup) || '';
+                    (manifest.browser_action && manifest.browser_action.default_popup) ||
+                    (manifest.page_action && manifest.page_action.default_popup) || '';
                 ext.popup = popup ? popup.replace(/^\//, '') : '';
                 ext.hasPopup = Boolean(ext.popup);
 
@@ -12685,7 +12686,7 @@ function resolveExtensionMetadata(ext) {
                                 const mimeType = extName === '.svg' ? 'image/svg+xml' : 'image/png';
                                 ext.iconData = `data:${mimeType};base64,` + fs.readFileSync(iconFullPath).toString('base64');
                                 break;
-                            } catch (e) {}
+                            } catch (e) { }
                         }
                     }
                 }
@@ -12740,7 +12741,7 @@ class ExtensionManager {
             const shimSource = path.join(__dirname, 'chrome-compat-shim.js');
             const shimDest = path.join(extPath, 'chrome-compat-shim.js');
             if (fs.existsSync(shimSource)) {
-                try { fs.copyFileSync(shimSource, shimDest); } catch (e) {}
+                try { fs.copyFileSync(shimSource, shimDest); } catch (e) { }
             }
 
             const manifestPath = path.join(extPath, 'manifest.json');
@@ -12797,7 +12798,7 @@ class ExtensionManager {
                             fs.writeFileSync(bgPageFile, html, 'utf8');
                             console.log(`[ExtensionCompat] Injected compatibility shim into background page: ${manifest.background.page}`);
                         }
-                    } catch (e) {}
+                    } catch (e) { }
                 }
             }
 
@@ -12813,8 +12814,8 @@ class ExtensionManager {
 
             // 4. Action / Browser Action Popups
             const popup = (manifest.action && manifest.action.default_popup) ||
-                          (manifest.browser_action && manifest.browser_action.default_popup) ||
-                          (manifest.page_action && manifest.page_action.default_popup);
+                (manifest.browser_action && manifest.browser_action.default_popup) ||
+                (manifest.page_action && manifest.page_action.default_popup);
             if (popup) {
                 const popupFile = path.join(extPath, popup.replace(/^\//, ''));
                 if (fs.existsSync(popupFile)) {
@@ -12831,7 +12832,7 @@ class ExtensionManager {
                             fs.writeFileSync(popupFile, html, 'utf8');
                             console.log(`[ExtensionCompat] Injected compatibility shim into popup: ${popup}`);
                         }
-                    } catch (e) {}
+                    } catch (e) { }
                 }
             }
 
@@ -12888,7 +12889,7 @@ class ExtensionManager {
                     this.patchExtensionForCompatibility(focusPath);
                     await ses.loadExtension(focusPath, { allowFileAccess: true });
                 }
-            } catch (e) {}
+            } catch (e) { }
         }
         if (userSettings.adBlockEnabled !== false) {
             try {
@@ -12897,7 +12898,7 @@ class ExtensionManager {
                     this.patchExtensionForCompatibility(ublockPath);
                     await ses.loadExtension(ublockPath, { allowFileAccess: true });
                 }
-            } catch (e) {}
+            } catch (e) { }
         }
         if (userSettings.youtubeDislikeEnabled !== false) {
             try {
@@ -12906,7 +12907,7 @@ class ExtensionManager {
                     this.patchExtensionForCompatibility(dislikePath);
                     await ses.loadExtension(dislikePath, { allowFileAccess: true });
                 }
-            } catch (e) {}
+            } catch (e) { }
         }
         if (userSettings.mediaMasterEnabled !== false) {
             try {
@@ -12915,7 +12916,7 @@ class ExtensionManager {
                     this.patchExtensionForCompatibility(mediaPath);
                     await ses.loadExtension(mediaPath, { allowFileAccess: true });
                 }
-            } catch (e) {}
+            } catch (e) { }
         }
     }
 
@@ -12981,7 +12982,7 @@ class ExtensionManager {
             // Check if item is a Chrome Theme (Themes are not supported in Electron)
             if (manifest.theme) {
                 if (fs.existsSync(targetPath)) {
-                    try { fs.rmSync(targetPath, { recursive: true, force: true }); } catch (e) {}
+                    try { fs.rmSync(targetPath, { recursive: true, force: true }); } catch (e) { }
                 }
                 throw new Error('Chrome Themes cannot be installed. Themes are not supported by the extension engine. You can configure extension policies in Ocal Settings > Extensions.');
             }
@@ -12989,7 +12990,7 @@ class ExtensionManager {
             // Check if item is a legacy Chrome App
             if (manifest.app && (!manifest.background || !manifest.content_scripts)) {
                 if (fs.existsSync(targetPath)) {
-                    try { fs.rmSync(targetPath, { recursive: true, force: true }); } catch (e) {}
+                    try { fs.rmSync(targetPath, { recursive: true, force: true }); } catch (e) { }
                 }
                 throw new Error('Legacy Chrome Apps are not supported. Only Chrome Extensions can be installed.');
             }
@@ -12998,11 +12999,11 @@ class ExtensionManager {
             this.patchExtensionForCompatibility(targetPath);
             try {
                 manifest = JSON.parse(fs.readFileSync(manifestPath, 'utf8'));
-            } catch (e) {}
+            } catch (e) { }
 
             const popup = (manifest.action && manifest.action.default_popup) ||
-                          (manifest.browser_action && manifest.browser_action.default_popup) ||
-                          (manifest.page_action && manifest.page_action.default_popup) || '';
+                (manifest.browser_action && manifest.browser_action.default_popup) ||
+                (manifest.page_action && manifest.page_action.default_popup) || '';
             const optionsPage = (manifest.options_ui && manifest.options_ui.page) || manifest.options_page || '';
 
             const extensionInfo = {
@@ -13050,7 +13051,7 @@ class ExtensionManager {
             throw err;
         } finally {
             if (fs.existsSync(tempPath)) {
-                try { fs.unlinkSync(tempPath); } catch (e) {}
+                try { fs.unlinkSync(tempPath); } catch (e) { }
             }
         }
     }
@@ -13117,13 +13118,13 @@ class ExtensionManager {
                 try {
                     localeMsgs = JSON.parse(locEntry.getData().toString('utf8'));
                     break;
-                } catch(e) {}
+                } catch (e) { }
             }
         }
         if (Object.keys(localeMsgs).length === 0) {
             const anyLoc = zip.getEntries().find(e => e.entryName.startsWith('_locales/') && e.entryName.endsWith('messages.json'));
             if (anyLoc) {
-                try { localeMsgs = JSON.parse(anyLoc.getData().toString('utf8')); } catch(e) {}
+                try { localeMsgs = JSON.parse(anyLoc.getData().toString('utf8')); } catch (e) { }
             }
         }
 
@@ -13210,8 +13211,8 @@ class ExtensionManager {
 
         const size = (buffer.length / (1024 * 1024)).toFixed(2) + ' MB';
         const popup = (manifest.action && manifest.action.default_popup) ||
-                      (manifest.browser_action && manifest.browser_action.default_popup) ||
-                      (manifest.page_action && manifest.page_action.default_popup) || '';
+            (manifest.browser_action && manifest.browser_action.default_popup) ||
+            (manifest.page_action && manifest.page_action.default_popup) || '';
 
         return {
             id: extensionId,
@@ -13326,12 +13327,12 @@ async function showExtensionPopup(extId, anchorBounds) {
                                         chrome.pageAction.onClicked._dispatch(currentTab);
                                     }
                                 }
-                            `).catch(() => {});
+                            `).catch(() => { });
                         }
-                    } catch (e) {}
+                    } catch (e) { }
                 });
             }
-        } catch (err) {}
+        } catch (err) { }
 
         if (resolved.optionsPage) {
             createNewTab(`chrome-extension://${runtimeId}/${resolved.optionsPage.replace(/^\//, '')}`);
@@ -13349,7 +13350,7 @@ async function showExtensionPopup(extId, anchorBounds) {
 function openExtensionWindow(extensionId, popupPath, anchorBounds, title = 'Extension') {
     if (extensionPopupWindow && !extensionPopupWindow.isDestroyed()) {
         const prevId = extensionPopupWindow.extensionId;
-        try { extensionPopupWindow.close(); } catch(e) {}
+        try { extensionPopupWindow.close(); } catch (e) { }
         extensionPopupWindow = null;
         if (prevId === extensionId) return;
     }
@@ -13409,7 +13410,7 @@ function openExtensionWindow(extensionId, popupPath, anchorBounds, title = 'Exte
     extensionPopupWindow.webContents.setWindowOpenHandler(({ url }) => {
         createNewTab(url);
         if (extensionPopupWindow && !extensionPopupWindow.isDestroyed()) {
-            try { extensionPopupWindow.close(); } catch(e) {}
+            try { extensionPopupWindow.close(); } catch (e) { }
             extensionPopupWindow = null;
         }
         return { action: 'deny' };
@@ -13551,7 +13552,7 @@ function openExtensionWindow(extensionId, popupPath, anchorBounds, title = 'Exte
                     });
                 }
             }
-        } catch (e) {}
+        } catch (e) { }
     };
 
     const attachContentObserver = async () => {
@@ -13610,7 +13611,7 @@ function openExtensionWindow(extensionId, popupPath, anchorBounds, title = 'Exte
                     mo.observe(document.documentElement, { childList: true, subtree: true, attributes: true });
                 })()
             `);
-        } catch (e) {}
+        } catch (e) { }
     };
 
     extensionPopupWindow.webContents.on('console-message', (event) => {
@@ -13636,7 +13637,7 @@ function openExtensionWindow(extensionId, popupPath, anchorBounds, title = 'Exte
     // Register blur only after show to prevent premature dismissal on startup
     extensionPopupWindow.once('ready-to-show', async () => {
         if (extensionPopupWindow && !extensionPopupWindow.isDestroyed()) {
-            try { await adjustBoundsToContent(); } catch (e) {}
+            try { await adjustBoundsToContent(); } catch (e) { }
             if (extensionPopupWindow && !extensionPopupWindow.isDestroyed()) {
                 extensionPopupWindow.show();
                 extensionPopupWindow.focus();
@@ -13644,7 +13645,7 @@ function openExtensionWindow(extensionId, popupPath, anchorBounds, title = 'Exte
                     if (extensionPopupWindow && !extensionPopupWindow.isDestroyed()) {
                         extensionPopupWindow.on('blur', () => {
                             if (extensionPopupWindow && !extensionPopupWindow.isDestroyed()) {
-                                try { extensionPopupWindow.close(); } catch(e) {}
+                                try { extensionPopupWindow.close(); } catch (e) { }
                                 extensionPopupWindow = null;
                             }
                         });
@@ -13666,7 +13667,7 @@ function openExtensionWindow(extensionId, popupPath, anchorBounds, title = 'Exte
     }).catch(err => {
         console.error('[ExtensionManager] Failed to load extension popup URL in window:', popupUrl, err);
         if (extensionPopupWindow && !extensionPopupWindow.isDestroyed()) {
-            try { extensionPopupWindow.close(); } catch(e) {}
+            try { extensionPopupWindow.close(); } catch (e) { }
             extensionPopupWindow = null;
         }
         createNewTab(popupUrl);
@@ -13680,11 +13681,11 @@ function broadcastExtensions() {
         if (webContents && typeof webContents.getAllWebContents === 'function') {
             webContents.getAllWebContents().forEach(wc => {
                 if (!wc.isDestroyed()) {
-                    try { wc.send('extensions-updated', list); } catch (e) {}
+                    try { wc.send('extensions-updated', list); } catch (e) { }
                 }
             });
         }
-    } catch (err) {}
+    } catch (err) { }
     if (extensionDropdownView && !extensionDropdownView.webContents.isDestroyed()) {
         extensionDropdownView.webContents.send('refresh-extensions', list);
     }
@@ -13761,8 +13762,8 @@ ipcMain.handle('load-unpacked-extension', async (e) => {
         const extensionId = require('crypto').createHash('md5').update(dirPath).digest('hex');
 
         const popup = (manifest.action && manifest.action.default_popup) ||
-                      (manifest.browser_action && manifest.browser_action.default_popup) ||
-                      (manifest.page_action && manifest.page_action.default_popup) || '';
+            (manifest.browser_action && manifest.browser_action.default_popup) ||
+            (manifest.page_action && manifest.page_action.default_popup) || '';
         const optionsPage = (manifest.options_ui && manifest.options_ui.page) || manifest.options_page || '';
 
         const extensionInfo = {
@@ -13794,7 +13795,7 @@ ipcMain.handle('load-unpacked-extension', async (e) => {
         for (const ses of targetSessions) {
             try {
                 await ses.loadExtension(dirPath, { allowFileAccess: true });
-            } catch (e) {}
+            } catch (e) { }
         }
 
         broadcastExtensions();
@@ -13869,7 +13870,7 @@ ipcMain.handle('toggle-extension', async (e, { id, enabled }) => {
             const extPath = ext.isLocal ? ext.localPath : path.join(extensionManager.extensionsPath, ext.id);
             if (fs.existsSync(extPath)) {
                 for (const ses of getActiveExtensionSessions()) {
-                    try { await ses.loadExtension(extPath, { allowFileAccess: true }); } catch (err) {}
+                    try { await ses.loadExtension(extPath, { allowFileAccess: true }); } catch (err) { }
                 }
             }
         }
@@ -14125,7 +14126,7 @@ ipcMain.on('delete-profile', (e, profileId) => {
     try {
         const ses = session.fromPartition('persist:profile_' + profileId);
         if (ses) {
-            ses.clearStorageData().catch(() => {});
+            ses.clearStorageData().catch(() => { });
         }
     } catch (err) { }
 
@@ -14273,12 +14274,12 @@ ipcMain.on('set-volume-boost', (e, { gain }) => {
     // Inject into the active view's webContents
     const wc = entry.view.webContents;
     if (wc && !wc.isDestroyed()) {
-        wc.executeJavaScript(boostScript).catch(() => {});
+        wc.executeJavaScript(boostScript).catch(() => { });
     }
 
     // Also boost split view if present
     if (entry.isSplit && entry.view2 && !entry.view2.webContents.isDestroyed()) {
-        entry.view2.webContents.executeJavaScript(boostScript).catch(() => {});
+        entry.view2.webContents.executeJavaScript(boostScript).catch(() => { });
     }
 
     // Notify renderer of the current boost level
@@ -14308,10 +14309,10 @@ ipcMain.on('reset-volume-boost', () => {
 
     const wc = entry.view.webContents;
     if (wc && !wc.isDestroyed()) {
-        wc.executeJavaScript(resetScript).catch(() => {});
+        wc.executeJavaScript(resetScript).catch(() => { });
     }
     if (entry.isSplit && entry.view2 && !entry.view2.webContents.isDestroyed()) {
-        entry.view2.webContents.executeJavaScript(resetScript).catch(() => {});
+        entry.view2.webContents.executeJavaScript(resetScript).catch(() => { });
     }
 
     if (mainWindow && !mainWindow.isDestroyed()) {
@@ -14372,7 +14373,7 @@ ipcMain.on('toggle-volume-boost-popup', (e, bounds) => {
     const sendVbData = () => {
         if (!volumeBoostView || volumeBoostView.webContents.isDestroyed()) return;
         volumeBoostView.webContents.send('show-popup', { tabId: activeViewId });
-        try { volumeBoostView.webContents.focus(); } catch (err) {}
+        try { volumeBoostView.webContents.focus(); } catch (err) { }
     };
 
     if (volumeBoostView.webContents.isLoading()) {
@@ -14471,7 +14472,7 @@ function isLocalPageContents(contents, props) {
     let url = '';
     try {
         url = (contents.getURL ? contents.getURL() : '') || (props && (props.pageURL || props.frameURL)) || '';
-    } catch (err) {}
+    } catch (err) { }
 
     url = (url || '').toLowerCase().trim();
     if (!url) return true;
@@ -14953,7 +14954,7 @@ function getPrivateSession() {
         try {
             privateSession.setPermissionRequestHandler(handlePermissionRequest);
             privateSession.setPermissionCheckHandler(handlePermissionCheck);
-        } catch(e) {}
+        } catch (e) { }
 
         // 1. Native Turbo Tracker & Ad Blocker + HTTPS Upgrade + Clean Tracking Params
         try {
@@ -14972,7 +14973,7 @@ function getPrivateSession() {
                         const upgradeUrl = new URL(url);
                         upgradeUrl.protocol = 'https:';
                         return callback({ redirectURL: upgradeUrl.toString() });
-                    } catch (e) {}
+                    } catch (e) { }
                 }
 
                 // B. Tracking Parameter Stripper (fbclid, gclid, utm_*, etc.)
@@ -15039,7 +15040,7 @@ function getPrivateSession() {
                             delete headers['Cookie'];
                             delete headers['cookie'];
                         }
-                    } catch (e) {}
+                    } catch (e) { }
                 }
 
                 // Standard Chromium User-Agent & Client Hints
@@ -15079,7 +15080,7 @@ function getPrivateSession() {
                             delete headers['Set-Cookie'];
                             delete headers['set-cookie'];
                         }
-                    } catch (e) {}
+                    } catch (e) { }
                 }
 
                 callback({ responseHeaders: headers });
@@ -15250,9 +15251,9 @@ function createPrivateTab(url = null) {
         try {
             const { ANTI_FINGERPRINT_SCRIPT } = require('./anti-fingerprint.js');
             if (ANTI_FINGERPRINT_SCRIPT) {
-                view.webContents.executeJavaScript(ANTI_FINGERPRINT_SCRIPT).catch(() => {});
+                view.webContents.executeJavaScript(ANTI_FINGERPRINT_SCRIPT).catch(() => { });
             }
-        } catch (e) {}
+        } catch (e) { }
         try {
             const stealthScript = `
                 (function() {
@@ -15264,11 +15265,11 @@ function createPrivateTab(url = null) {
                     } catch(e) {}
                 })();
             `;
-            view.webContents.executeJavaScript(stealthScript).catch(() => {});
-        } catch (e) {}
+            view.webContents.executeJavaScript(stealthScript).catch(() => { });
+        } catch (e) { }
         try {
             applyBrowserPromoShield(view.webContents);
-        } catch (e) {}
+        } catch (e) { }
     };
 
     view.webContents.on('did-create-document-element', injectAntiFingerprint);
@@ -15381,7 +15382,7 @@ function closePrivateTab(id) {
         if (privateWindow.getBrowserViews().includes(removed.view)) {
             privateWindow.removeBrowserView(removed.view);
         }
-        try { removed.view.webContents.destroy(); } catch (e) {}
+        try { removed.view.webContents.destroy(); } catch (e) { }
     }
 
     if (privateViews.length === 0) {
@@ -15423,10 +15424,10 @@ function promptPrivateSessionClose() {
         const attached = privateWindow.getBrowserViews();
         if (Array.isArray(attached)) {
             attached.forEach(v => {
-                try { privateWindow.removeBrowserView(v); } catch (e) {}
+                try { privateWindow.removeBrowserView(v); } catch (e) { }
             });
         }
-    } catch (e) {}
+    } catch (e) { }
 
     privateWindow.focus();
     privateWindow.webContents.send('confirm-private-session-close', {
@@ -15524,7 +15525,6 @@ ipcMain.on('splash-complete', () => {
             }
             splashOverlayView = null;
         }
-    } catch (e) {}
+    } catch (e) { }
     updateViewBounds();
 });
-

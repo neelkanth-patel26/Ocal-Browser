@@ -1746,8 +1746,8 @@ window.addEventListener('DOMContentLoaded', () => {
     const { webFrame } = require('electron');
     if (webFrame) {
         webFrame.insertCSS(`
-            html {
-                scroll-behavior: smooth !important;
+            @media (prefers-reduced-motion: no-preference) {
+                html { scroll-behavior: smooth; }
             }
             *, html, body {
                 scrollbar-width: none !important;
@@ -1984,128 +1984,29 @@ window.addEventListener('mousedown', () => {
 
 
 
-// ── Safari / iOS Inertial Smooth Scroll Engine (Mac/iOS Momentum Feel) ──────────────────
-(function() {
-    if (typeof window === 'undefined' || !window.document || !window.document.documentElement) return;
-    
-    // Inject smooth scrolling CSS globally
-    const injectCSS = () => {
-        if (document.getElementById('ocal-inertia-scroll-style')) return;
+// Wheel and touchpad scrolling use Chromium's native compositor animation
+// (enable-smooth-scrolling in main.js). Do not add a wheel-driven RAF loop:
+// it competes with native momentum, nested scroll containers, and page handlers.
+// CSS smooth scrolling below is only for anchors and programmatic navigation.
+(function installScrollNavigationStyles() {
+    function install() {
+        if (document.getElementById('ocal-scroll-navigation-style')) return;
         const style = document.createElement('style');
-        style.id = 'ocal-inertia-scroll-style';
+        style.id = 'ocal-scroll-navigation-style';
         style.textContent = `
-            html, body {
-                scroll-behavior: smooth !important;
-                -webkit-overflow-scrolling: touch !important;
+            @media (prefers-reduced-motion: no-preference) {
+                html, body { scroll-behavior: smooth; }
+            }
+            @media (prefers-reduced-motion: reduce) {
+                html, body { scroll-behavior: auto !important; }
             }
         `;
-        if (document.head) document.head.appendChild(style);
-    };
-
+        document.head?.appendChild(style);
+    }
     if (document.readyState === 'loading') {
-        document.addEventListener('DOMContentLoaded', injectCSS);
+        document.addEventListener('DOMContentLoaded', install, { once: true });
     } else {
-        injectCSS();
-    }
-
-    const isMac = navigator.platform.toUpperCase().indexOf('MAC') >= 0;
-    if (isMac) return;
-
-    let activeElement = null;
-    let targetX = 0;
-    let targetY = 0;
-    let currentX = 0;
-    let currentY = 0;
-    let isMoving = false;
-    const easeFactor = 0.14; // macOS Safari interpolation constant
-
-    function getScrollParent(element, direction) {
-        let parent = element;
-        while (parent && parent !== document.body && parent !== document.documentElement) {
-            const style = window.getComputedStyle(parent);
-            const overflow = direction === 'y' ? style.overflowY : style.overflowX;
-            const hasScrollbar = direction === 'y' 
-                ? parent.scrollHeight > parent.clientHeight 
-                : parent.scrollWidth > parent.clientWidth;
-            if (hasScrollbar && (overflow === 'auto' || overflow === 'scroll')) {
-                return parent;
-            }
-            parent = parent.parentElement;
-        }
-        return document.scrollingElement || document.documentElement;
-    }
-
-    window.addEventListener('wheel', (e) => {
-        if (e.ctrlKey || e.metaKey || e.altKey) return;
-
-        const scrollContainer = getScrollParent(e.target, Math.abs(e.deltaY) > Math.abs(e.deltaX) ? 'y' : 'x');
-        if (!scrollContainer) return;
-
-        const isWindow = scrollContainer === document.documentElement || scrollContainer === document.body;
-        const maxScrollY = isWindow 
-            ? (document.documentElement.scrollHeight - window.innerHeight) 
-            : (scrollContainer.scrollHeight - scrollContainer.clientHeight);
-        const maxScrollX = isWindow 
-            ? (document.documentElement.scrollWidth - window.innerWidth) 
-            : (scrollContainer.scrollWidth - scrollContainer.clientWidth);
-
-        if (maxScrollY <= 0 && maxScrollX <= 0) return;
-
-        const startX = isWindow ? window.scrollX : scrollContainer.scrollLeft;
-        const startY = isWindow ? window.scrollY : scrollContainer.scrollTop;
-
-        if (activeElement !== scrollContainer || !isMoving) {
-            activeElement = scrollContainer;
-            currentX = startX;
-            currentY = startY;
-            targetX = startX;
-            targetY = startY;
-        }
-
-        const multiplier = Math.abs(e.deltaY) > 50 ? 1.1 : 0.85;
-        targetX = Math.max(0, Math.min(maxScrollY > 0 ? maxScrollY : 0, targetY + e.deltaY * multiplier));
-        targetX = Math.max(0, Math.min(maxScrollX > 0 ? maxScrollX : 0, targetX + e.deltaX * multiplier));
-
-        if (!isMoving) {
-            isMoving = true;
-            step();
-        }
-    }, { passive: true });
-
-    function step() {
-        if (!activeElement) {
-            isMoving = false;
-            return;
-        }
-
-        const isWindow = activeElement === document.documentElement || activeElement === document.body;
-        const diffX = targetX - currentX;
-        const diffY = targetY - currentY;
-
-        if (Math.abs(diffX) < 0.4 && Math.abs(diffY) < 0.4) {
-            currentX = targetX;
-            currentY = targetY;
-            if (isWindow) {
-                window.scrollTo(currentX, currentY);
-            } else {
-                activeElement.scrollLeft = currentX;
-                activeElement.scrollTop = currentY;
-            }
-            isMoving = false;
-            return;
-        }
-
-        currentX += diffX * easeFactor;
-        currentY += diffY * easeFactor;
-
-        if (isWindow) {
-            window.scrollTo(currentX, currentY);
-        } else {
-            activeElement.scrollLeft = currentX;
-            activeElement.scrollTop = currentY;
-        }
-
-        requestAnimationFrame(step);
+        install();
     }
 })();
 

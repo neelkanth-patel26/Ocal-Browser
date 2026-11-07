@@ -362,7 +362,7 @@
     const BREATH_PATTERNS = {
         box: {
             name: 'Box Breathing (4-4-4-4)',
-            tip: 'Navy SEAL protocol for immediate cognitive clarity, heart rate reduction, and emotional control.',
+            tip: 'Follow four equal phases: breathe in, hold, breathe out, and hold.',
             phases: [
                 { state: 'inhale', text: 'Inhale deeply...', duration: 4, freq: 396 },
                 { state: 'hold', text: 'Hold breath...', duration: 4, freq: 432 },
@@ -372,7 +372,7 @@
         },
         relax: {
             name: '4-7-8 Deep Relaxation',
-            tip: 'Natural tranquilizer for the nervous system by Dr. Andrew Weil. Dramatically slows racing thoughts.',
+            tip: 'Breathe in for four counts, hold for seven, then breathe out for eight.',
             phases: [
                 { state: 'inhale', text: 'Inhale through nose...', duration: 4, freq: 396 },
                 { state: 'hold', text: 'Hold breath completely...', duration: 7, freq: 432 },
@@ -381,7 +381,7 @@
         },
         sigh: {
             name: 'Physiological Sigh',
-            tip: 'Stanford Neurobiology: Two quick inhales through the nose, followed by a long, slow exhale to pop open collapsed alveoli and lower cortisol immediately.',
+            tip: 'Follow two gentle inhales with one longer exhale.',
             phases: [
                 { state: 'inhale', text: 'Deep inhale...', duration: 2, freq: 396 },
                 { state: 'inhale', text: 'Second quick sniff!', duration: 1, freq: 440 },
@@ -389,8 +389,8 @@
             ]
         },
         resonant: {
-            name: 'Resonant Coherence (5.5s)',
-            tip: 'Maximizes heart-rate variability (HRV) and synchronizes brainwave alpha coherence.',
+            name: 'Even breathing (5s)',
+            tip: 'An even rhythm: five counts in and five counts out, with no holds.',
             phases: [
                 { state: 'inhale', text: 'Smooth inhale...', duration: 5, freq: 432 },
                 { state: 'exhale', text: 'Smooth exhale...', duration: 5, freq: 528 }
@@ -409,12 +409,13 @@
         stopBreathing();
         const pattern = BREATH_PATTERNS[key];
         if (breathTip) breathTip.textContent = pattern.tip;
-        if (breathInstruction) breathInstruction.textContent = 'Press Start to Begin';
+        if (breathInstruction) breathInstruction.textContent = 'Ready when you are.';
         if (breathCounter) breathCounter.textContent = `${pattern.phases[0].duration}s`;
         if (breathSphere) breathSphere.className = 'breathing-core-sphere';
 
         document.querySelectorAll('.exercise-pill-btn').forEach(btn => {
             btn.classList.toggle('active', btn.dataset.breath === key);
+            btn.setAttribute('aria-pressed', String(btn.dataset.breath === key));
         });
     }
 
@@ -453,18 +454,20 @@
         breathIsRunning = true;
         breathPhaseIdx = 0;
         if (breathPlayBtn) {
-            breathPlayBtn.innerHTML = '<i class="fas fa-pause"></i> Pause Exercise';
+            breathPlayBtn.innerHTML = '<i class="fas fa-pause"></i> Stop breathing';
             breathPlayBtn.classList.add('paused');
         }
         runBreathingStep();
     }
 
     function stopBreathing() {
+        if (breathInstruction) breathInstruction.textContent = 'Ready when you are.';
+        if (breathCounter) breathCounter.textContent = `${BREATH_PATTERNS[activeBreathKey].phases[0].duration}s`;
         breathIsRunning = false;
         clearInterval(breathTimerInterval);
         breathTimerInterval = null;
         if (breathPlayBtn) {
-            breathPlayBtn.innerHTML = '<i class="fas fa-play"></i> Start Guided Breath';
+            breathPlayBtn.innerHTML = '<i class="fas fa-play"></i> Start breathing';
             breathPlayBtn.classList.remove('paused');
         }
         if (breathSphere) {
@@ -509,7 +512,7 @@
                 if (eyeSeconds <= 0) {
                     clearInterval(eyeTimer);
                     eyeStartBtn.disabled = false;
-                    if (eyeInstruction) eyeInstruction.textContent = 'Great job! Your ciliary eye muscles have reset.';
+                    if (eyeInstruction) eyeInstruction.textContent = 'Break complete. Return to your screen when you are ready.';
                     playChime(750, 2.5);
                 }
             }, 1000);
@@ -706,6 +709,9 @@
     // ── 9. Theme Toggle Integration ──────────────────────────────────
     const themeBtn = document.getElementById('theme-toggle-btn');
     if (themeBtn) {
+        const initTheme = document.documentElement.getAttribute('data-theme') || 'dark';
+        themeBtn.innerHTML = (initTheme === 'dark') ? '<i class="fas fa-moon"></i>' : '<i class="fas fa-sun"></i>';
+
         themeBtn.addEventListener('click', () => {
             const cur = document.documentElement.getAttribute('data-theme') || 'dark';
             const next = (cur === 'dark') ? 'light' : 'dark';
@@ -722,4 +728,161 @@
     // Set initial breathing pattern
     setBreathingPattern('box');
 
+})();
+
+// Short, self-contained practices. Closing the dialog always stops its timer.
+(() => {
+    const practices = [
+        { title: 'Body scan', category: 'mind', icon: 'fa-person', seconds: 90, description: 'Notice how you feel, one small area at a time.', steps: ['Rest your feet on the floor. Notice the contact beneath them.', 'Bring attention to your legs and hips. Let them settle.', 'Notice your shoulders and hands. Allow them to soften.', 'Relax your jaw. Notice your natural breathing.'] },
+        { title: 'Shoulder reset', category: 'body', icon: 'fa-arrows-up-down', seconds: 60, description: 'A gentle pause from sitting at your desk.', steps: ['Sit comfortably and let your arms rest by your sides.', 'Slowly lift your shoulders, then let them lower. Keep the movement comfortable.', 'Make a few small, gentle backward shoulder circles.', 'Rest your shoulders and return to a comfortable posture.'] },
+        { title: 'Mindful listening', category: 'mind', icon: 'fa-ear-listen', seconds: 60, description: 'Give the sounds around you your full attention.', steps: ['Let your gaze soften. Listen to the room around you.', 'Notice a sound nearby without naming or judging it.', 'Notice a more distant sound. Let it come and go.', 'Listen to the whole space, then return your attention to your task.'] },
+        { title: 'Hand & wrist break', category: 'body', icon: 'fa-hand', seconds: 60, description: 'Put the keyboard aside and move gently.', steps: ['Rest your forearms and let your hands relax.', 'Slowly spread your fingers, then release. Repeat gently.', 'Make small wrist circles within a comfortable range.', 'Let your hands rest. Notice any change in how they feel.'] },
+        { title: 'Count your breaths', category: 'mind', icon: 'fa-wind', seconds: 120, description: 'A simple attention practice at your natural pace.', steps: ['Breathe naturally. No need to change the rhythm.', 'Count each exhale from one to five.', 'After five, begin again at one. If you lose count, simply restart.', 'Let go of counting and notice a few natural breaths.'] },
+        { title: 'Mindful observation', category: 'mind', icon: 'fa-leaf', seconds: 60, description: 'Rediscover an ordinary object with fresh eyes.', steps: ['Choose an object nearby: a cup, a leaf, or a pen.', 'Notice its outline, colors, and where the light falls.', 'Look for a small detail you had not noticed before.', 'Take in the whole object, then gently return to your work.'] },
+        { title: 'Number trail', category: 'mind', icon: 'fa-border-all', seconds: 0, description: 'Find the numbers in order, from 1 to 16. Accuracy comes first.', steps: [] }
+    ];
+    const grid = document.getElementById('practice-grid');
+    const dialog = document.getElementById('practice-dialog');
+    const clock = document.getElementById('practice-clock');
+    const instruction = document.getElementById('practice-instruction');
+    const start = document.getElementById('practice-start');
+    const progress = document.getElementById('practice-progress');
+    const numbers = document.getElementById('number-grid');
+    let selected, interval, running = false, elapsed = 0, startedAt = 0, next = 1;
+    const format = seconds => `${String(Math.floor(seconds / 60)).padStart(2, '0')}:${String(seconds % 60).padStart(2, '0')}`;
+    function pause() { clearInterval(interval); interval = null; running = false; }
+    function renderLibrary(filter = 'all') {
+        grid.replaceChildren();
+        practices.forEach((practice, index) => {
+            if (filter !== 'all' && practice.category !== filter) return;
+            const card = document.createElement('article');
+            card.className = 'practice-card';
+            card.innerHTML = `<i class="fas ${practice.icon}" aria-hidden="true"></i><span class="practice-meta">${practice.category} · ${practice.seconds ? practice.seconds / 60 + ' min' : 'Self-paced'}</span><h3>${practice.title}</h3><p>${practice.description}</p><button type="button">Begin practice <span aria-hidden="true">↗</span></button>`;
+            card.querySelector('button').setAttribute('aria-label', `Begin ${practice.title}`);
+            card.querySelector('button').addEventListener('click', () => {
+                selected = practices[index];
+                document.getElementById('practice-title').textContent = selected.title;
+                document.getElementById('practice-description').textContent = selected.description;
+                document.getElementById('practice-category').textContent = selected.category + ' / GUIDED PRACTICE';
+                reset(); dialog.showModal();
+            });
+            grid.append(card);
+        });
+    }
+    function reset() {
+        pause(); elapsed = 0; next = 1; progress.value = 0;
+        clock.textContent = format(selected.seconds);
+        start.hidden = false; start.disabled = false; start.textContent = 'Start exercise';
+        numbers.hidden = true; numbers.replaceChildren();
+        instruction.textContent = selected.seconds ? 'Settle in. Press start when you are ready.' : 'Tap each number in order. There is no time limit.';
+    }
+    function finish() {
+        pause(); progress.value = 100; start.disabled = true; start.textContent = 'Completed';
+        instruction.textContent = selected.seconds ? 'Practice complete. Take a moment, then carry on at your own pace.' : `Trail complete in ${format(elapsed)}. Nicely done.`;
+    }
+    function update() {
+        elapsed = Math.floor((Date.now() - startedAt) / 1000);
+        clock.textContent = format(selected.seconds ? Math.max(0, selected.seconds - elapsed) : elapsed);
+        if (selected.seconds) {
+            progress.value = Math.min(100, elapsed / selected.seconds * 100);
+            const text = selected.steps[Math.min(selected.steps.length - 1, Math.floor(elapsed / selected.seconds * selected.steps.length))];
+            if (instruction.textContent !== text) instruction.textContent = text;
+            if (elapsed >= selected.seconds) finish();
+        }
+    }
+    start.addEventListener('click', () => {
+        if (running) { update(); pause(); start.textContent = 'Resume'; return; }
+        running = true; startedAt = Date.now() - elapsed * 1000;
+        start.textContent = 'Pause';
+        if (!selected.seconds) {
+            start.hidden = true; numbers.hidden = false;
+            const values = Array.from({length: 16}, (_, i) => i + 1);
+            for (let i = values.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); [values[i], values[j]] = [values[j], values[i]]; }
+            values.forEach(value => {
+                const button = document.createElement('button'); button.textContent = value;
+                button.addEventListener('click', () => {
+                    if (value !== next) { instruction.textContent = `Look for ${next} next. Take your time.`; return; }
+                    button.disabled = true; next++; progress.value = (next - 1) / 16 * 100;
+                    instruction.textContent = `Find ${next} next.`;
+                    if (next === 17) { update(); finish(); }
+                }); numbers.append(button);
+            });
+            instruction.textContent = 'Find 1 to begin.';
+        }
+        update(); interval = setInterval(update, 200);
+    });
+    document.getElementById('practice-reset').addEventListener('click', reset);
+    document.getElementById('practice-close').addEventListener('click', () => dialog.close());
+    dialog.addEventListener('close', pause);
+    document.querySelectorAll('[data-filter]').forEach(button => button.addEventListener('click', () => {
+        document.querySelectorAll('[data-filter]').forEach(item => { item.classList.toggle('active', item === button); item.setAttribute('aria-pressed', String(item === button)); });
+        renderLibrary(button.dataset.filter);
+    }));
+    const headings = {
+        'tab-timers': ['Make room for deep work.', 'One intention. A little quiet. Your next focused moment starts here.'],
+        'tab-breathing': ['Find your breathing room.', 'Follow a rhythm that feels comfortable. Let everything else wait.'],
+        'tab-gym': ['Give your attention a reset.', 'Look away, notice your surroundings, and come back refreshed.'],
+        'tab-audio': ['Set the tone for your focus.', 'Find your background sound. Layer tracks and adjust each volume.'],
+        'tab-exercises': ['A little practice. A fresh start.', 'Explore seven simple ways to pause, move, and bring your attention back.']
+    };
+    document.querySelectorAll('.section-pill-btn').forEach(button => {
+        button.setAttribute('aria-pressed', String(button.classList.contains('active')));
+        button.addEventListener('click', () => {
+            const [title, description] = headings[button.dataset.tab];
+            document.getElementById('workspace-title').textContent = title;
+            document.getElementById('workspace-description').textContent = description;
+            document.querySelectorAll('.section-pill-btn').forEach(item => item.setAttribute('aria-pressed', String(item === button)));
+        });
+    });
+    document.getElementById('browse-exercises').addEventListener('click', () => { document.querySelector('[data-tab="tab-exercises"]').click(); document.body.scrollTo({top: 0, behavior: 'smooth'}); });
+    document.querySelectorAll('.grounding-step-card').forEach(card => {
+        card.tabIndex = 0; card.setAttribute('role', 'button'); card.setAttribute('aria-pressed', 'false');
+        card.addEventListener('click', () => card.setAttribute('aria-pressed', String(card.classList.contains('completed'))));
+        card.addEventListener('keydown', event => { if (event.key === 'Enter' || event.key === ' ') { event.preventDefault(); card.click(); } });
+    });
+    document.querySelectorAll('button[title]').forEach(button => button.setAttribute('aria-label', button.title));
+    document.getElementById('parking-add-btn').setAttribute('aria-label', 'Save thought');
+    document.getElementById('intention-input').setAttribute('aria-label', 'Your intention');
+    document.getElementById('parking-input').setAttribute('aria-label', 'Thought to save');
+    renderLibrary();
+})();
+// Section status and accessible mixer controls.
+(() => {
+    const senses = [...document.querySelectorAll('.grounding-step-card')];
+    const updateSenses = () => {
+        const completed = senses.filter(card => card.classList.contains('completed')).length;
+        document.getElementById('grounding-progress').textContent = completed === 5 ? 'All five senses noticed. Take a breath.' : `${completed} of 5 senses noticed`;
+    };
+    senses.forEach(card => card.addEventListener('click', updateSenses));
+    document.getElementById('grounding-reset').addEventListener('click', () => {
+        senses.forEach(card => { card.classList.remove('completed'); card.setAttribute('aria-pressed', 'false'); });
+        updateSenses();
+    });
+    const tracks = [...document.querySelectorAll('.sound-track-card')];
+    function updateMixer() {
+        let count = 0;
+        tracks.forEach(card => {
+            const playing = card.classList.contains('playing');
+            if (playing) count++;
+            const button = card.querySelector('.track-play-toggle');
+            button.setAttribute('aria-label', `${playing ? 'Pause' : 'Play'} ${card.querySelector('.track-title').textContent}`);
+            button.setAttribute('aria-pressed', String(playing));
+        });
+        document.getElementById('mixer-status').textContent = count ? `${count} sound${count === 1 ? '' : 's'} playing · Your personal mix` : 'A quiet space. No sounds playing.';
+    }
+    tracks.forEach(card => {
+        const slider = card.querySelector('.track-volume-slider');
+        const label = document.createElement('div'); label.className = 'track-volume-label';
+        label.innerHTML = '<span>VOLUME</span><output></output>';
+        slider.before(label);
+        slider.setAttribute('aria-label', `${card.querySelector('.track-title').textContent} volume`);
+        const update = () => label.querySelector('output').textContent = `${Math.round(slider.value * 100)}%`;
+        slider.addEventListener('input', update); update();
+        card.querySelector('.track-play-toggle').addEventListener('click', updateMixer);
+    });
+    document.getElementById('sounds-stop').addEventListener('click', () => {
+        tracks.filter(card => card.classList.contains('playing')).forEach(card => card.querySelector('.track-play-toggle').click());
+    });
+    document.getElementById('custom-slider').setAttribute('aria-label', 'Focus duration in minutes');
+    updateMixer();
 })();
