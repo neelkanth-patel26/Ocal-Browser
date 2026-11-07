@@ -10,14 +10,14 @@ async function downloadDislikeCountExtension() {
         const data = await res.json();
         
         // Find the chrome.zip asset
-        const asset = data.assets.find(a => (a.name.includes('chrome') || a.name.includes('chromium')) && a.name.endsWith('.zip'));
-        if (!asset) {
+        const dislikeAsset = data.assets.find(a => (a.name.includes('chrome') || a.name.includes('chromium')) && a.name.endsWith('.zip'));
+        if (!dislikeAsset) {
             console.error('Chromium/Chrome zip not found in latest release assets.');
             console.log('Available assets:', data.assets.map(a => a.name));
             return;
         }
         
-        const url = asset.browser_download_url;
+        const url = dislikeAsset.browser_download_url;
         console.log(`Downloading ${url}...`);
         
         const zipFile = path.join(__dirname, 'dislike-ext.zip');

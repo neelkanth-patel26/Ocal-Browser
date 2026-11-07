@@ -118,7 +118,7 @@
                     <span class="sp-dot-num" id="todo-count-badge">0</span>
                     <span class="sp-badge sp-badge-gray">Tasks</span>
                 </div>
-                <div class="sp-stat-item">
+                <div class="sp-stat-item sp-focus-stat-item" id="focus-stat-trigger" style="cursor: pointer;" title="Open Focus Flow Sanctuary">
                     <span class="sp-dot-num">25m</span>
                     <span class="sp-badge sp-badge-gray">Focus</span>
                 </div>
@@ -132,12 +132,6 @@
                     </span>
                     <span class="weather-btn-text">Weather</span>
                     <span class="weather-btn-temp" id="weather-btn-temp" style="display: none;"></span>
-                </button>
-
-                <button class="sp-action-trigger-btn sp-focus-trigger-btn sp-connect-tracker-mini" id="header-focus-trigger" title="Open Focus Flow & Mindfulness Sanctuary">
-                    <span class="act-btn-icon-wrap"><i class="fa-solid fa-stopwatch"></i></span>
-                    <span class="act-btn-text">Focus Flow</span>
-                    <span class="sp-pulse-ring-mini"><span class="sp-pulse-dot-mini"></span></span>
                 </button>
             </div>
         </header>
@@ -164,7 +158,7 @@
             <!-- Widget 1: Focus Flow / Pomodoro Timer (Gold-to-Green Gradient Card) -->
             <div class="sp-card sp-card-green-grad sp-focus-card">
                 <div class="sp-card-header-flex">
-                    <span class="sp-card-title"><i class="fas fa-stopwatch"></i> Focus Flow</span>
+                    <span class="sp-card-title motd-clickable" id="card-focus-trigger" style="cursor: pointer;" title="Open Focus Flow Sanctuary"><i class="fas fa-stopwatch"></i> Focus Flow <i class="fas fa-arrow-up-right-from-square" style="font-size: 10px; opacity: 0.7; margin-left: 4px;"></i></span>
                     <div class="ff-mode-toggle sp-mode-pill">
                         <span class="ff-mode active" id="ff-mode-timer">TIMER</span>
                         <span class="ff-mode" id="ff-mode-breathe">BREATHE</span>

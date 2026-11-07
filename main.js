@@ -2072,7 +2072,7 @@ app.on('web-contents-created', (event, contents) => {
             const title = contents.getTitle();
             mainWindow.webContents.send('url-updated', {
                 id,
-                url: url.includes('home.html') ? '' : url,
+                url: formatDisplayUrl(url),
                 title: url.includes('home.html') ? 'Ocal Home' : title
             });
         }
@@ -3739,7 +3739,7 @@ function setActiveTab(id) {
             const title = newWc.getTitle();
             mainWindow.webContents.send('url-updated', {
                 id,
-                url: url.includes('home.html') ? '' : url,
+                url: formatDisplayUrl(url),
                 title: url.includes('home.html') ? 'Ocal Home' : title,
                 favicon: newViewEntry.favicon || null
             });

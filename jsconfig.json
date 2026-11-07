@@ -1,0 +1,18 @@
+{
+  "compilerOptions": {
+    "target": "ES2022",
+    "module": "commonjs",
+    "checkJs": false,
+    "skipLibCheck": true
+  },
+  "exclude": [
+    "node_modules",
+    "dist",
+    "dist-store",
+    "dist-inno",
+    "dist-builder",
+    "out",
+    "scratch",
+    "hexgl"
+  ]
+}

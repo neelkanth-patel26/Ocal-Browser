@@ -899,14 +899,30 @@ class FocusTimer {
 }
 const globalFocusTimer = new FocusTimer();
 
-// Header Focus Trigger Navigation — Opens dedicated Focus Flow Sanctuary
-(function initHeaderFocusTrigger() {
+// Focus Trigger Navigation — Opens dedicated Focus Flow Sanctuary
+(function initFocusTriggers() {
+    function openFocusSanctuary(e) {
+        if (e) e.preventDefault();
+        if (window.electronAPI && typeof window.electronAPI.navigateTo === 'function') {
+            window.electronAPI.navigateTo('ocal://focus');
+        } else if (window.electronAPI && typeof window.electronAPI.newTab === 'function') {
+            window.electronAPI.newTab('ocal://focus');
+        } else {
+            window.location.href = 'focus.html';
+        }
+    }
+
+    const statTrigger = document.getElementById('focus-stat-trigger');
+    if (statTrigger) {
+        statTrigger.addEventListener('click', openFocusSanctuary);
+    }
+    const cardTrigger = document.getElementById('card-focus-trigger');
+    if (cardTrigger) {
+        cardTrigger.addEventListener('click', openFocusSanctuary);
+    }
     const headerFocusTrigger = document.getElementById('header-focus-trigger');
     if (headerFocusTrigger) {
-        headerFocusTrigger.addEventListener('click', (e) => {
-            e.preventDefault();
-            window.location.href = 'ocal://focus';
-        });
+        headerFocusTrigger.addEventListener('click', openFocusSanctuary);
     }
 })();
 

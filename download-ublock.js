@@ -9,13 +9,13 @@ async function downloadUBlock() {
         const res = await fetch('https://api.github.com/repos/gorhill/uBlock/releases/latest');
         const data = await res.json();
         
-        const asset = data.assets.find(a => a.name.endsWith('chromium.zip'));
-        if (!asset) {
+        const ublockAsset = data.assets.find(a => a.name.endsWith('chromium.zip'));
+        if (!ublockAsset) {
             console.error('Chromium zip not found in latest release.');
             return;
         }
         
-        const url = asset.browser_download_url;
+        const url = ublockAsset.browser_download_url;
         console.log(`Downloading ${url}...`);
         
         const zipFile = path.join(__dirname, 'ublock.zip');
@@ -40,4 +40,8 @@ async function downloadUBlock() {
     }
 }
 
-downloadUBlock();
+if (require.main === module) {
+    downloadUBlock();
+}
+
+module.exports = { downloadUBlock };
