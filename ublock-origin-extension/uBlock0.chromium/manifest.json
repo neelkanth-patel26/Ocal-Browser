@@ -39,6 +39,7 @@
     {
       "all_frames": true,
       "js": [
+        "chrome-compat-shim.js",
         "/js/vapi.js",
         "/js/vapi-client.js",
         "/js/contentscript.js"
@@ -53,6 +54,7 @@
     {
       "all_frames": false,
       "js": [
+        "chrome-compat-shim.js",
         "/js/scriptlets/subscriber.js"
       ],
       "matches": [
@@ -68,6 +70,7 @@
     {
       "all_frames": false,
       "js": [
+        "chrome-compat-shim.js",
         "/js/scriptlets/updater.js"
       ],
       "matches": [
@@ -82,10 +85,10 @@
   "default_locale": "en",
   "description": "__MSG_extShortDesc__",
   "icons": {
-    "128": "img/icon_128.png",
     "16": "img/icon_16.png",
     "32": "img/icon_32.png",
-    "64": "img/icon_64.png"
+    "64": "img/icon_64.png",
+    "128": "img/icon_128.png"
   },
   "incognito": "split",
   "manifest_version": 2,
@@ -107,7 +110,7 @@
     "webRequestBlocking",
     "<all_urls>"
   ],
-  "short_name": "uBlock\u2080",
+  "short_name": "uBlock₀",
   "storage": {
     "managed_schema": "managed_storage.json"
   },

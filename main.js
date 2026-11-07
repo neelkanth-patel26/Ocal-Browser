@@ -2698,6 +2698,10 @@ function resolveInternalURL(url) {
         return 'file://' + path.join(__dirname, 'home.html');
     }
     if (cleanBase === 'ocal://whats-new' || cleanBase === 'whats-new') return 'file://' + path.join(__dirname, 'whats-new.html');
+    if (cleanBase === 'focus' || cleanBase === 'ocal://focus' || cleanBase === 'focus-flow' || cleanBase === 'ocal://focus-flow') {
+        const qIdx = url.indexOf('?');
+        return getFilePath('focus.html') + (qIdx !== -1 ? url.substring(qIdx) : '');
+    }
     if (cleanBase === 'ocal://onboarding' || cleanBase === 'onboarding' || cleanBase === 'ocal://welcome' || cleanBase === 'welcome') {
         return getFilePath('onboarding.html');
     }
@@ -10112,6 +10116,78 @@ ipcMain.handle('get-settings', () => {
     };
 });
 ipcMain.handle('get-app-version', () => app.getVersion());
+ipcMain.handle('get-diagnostics', async () => {
+    let gpuCompositing = 'Direct3D 11';
+    let gpuStatusText = 'Hardware Accelerated';
+    let isGpuAccelerated = true;
+
+    try {
+        if (typeof app.getGPUFeatureStatus === 'function') {
+            const status = app.getGPUFeatureStatus();
+            if (status) {
+                if (status.gpu_compositing && status.gpu_compositing.includes('disabled')) {
+                    gpuStatusText = 'Software Rasterized';
+                    gpuCompositing = 'Software / CPU';
+                    isGpuAccelerated = false;
+                } else if (status.gpu_compositing === 'enabled') {
+                    gpuStatusText = 'Hardware Accelerated';
+                    gpuCompositing = process.platform === 'win32' ? 'Direct3D 11' : (process.platform === 'darwin' ? 'Metal' : 'Vulkan / GL');
+                    isGpuAccelerated = true;
+                }
+            }
+        }
+    } catch (e) {}
+
+    let archDisplay = '64-bit Native';
+    if (process.arch === 'x64') {
+        archDisplay = '64-bit Native';
+    } else if (process.arch === 'arm64') {
+        archDisplay = 'ARM64 Native';
+    } else if (process.arch === 'ia32') {
+        archDisplay = '32-bit Native';
+    } else {
+        archDisplay = `${process.arch.toUpperCase()} Native`;
+    }
+
+    let platformDisplay = 'Windows 64-bit';
+    let platformIcon = 'fab fa-windows';
+    if (process.platform === 'win32') {
+        platformDisplay = `Windows ${process.arch === 'x64' ? '64-bit' : process.arch}`;
+        platformIcon = 'fab fa-windows';
+    } else if (process.platform === 'darwin') {
+        platformDisplay = 'macOS Native';
+        platformIcon = 'fab fa-apple';
+    } else if (process.platform === 'linux') {
+        platformDisplay = 'Linux Native';
+        platformIcon = 'fab fa-linux';
+    }
+
+    const chromeVer = process.versions.chrome || '156.0.8078.80';
+    const electronVer = process.versions.electron || '45.2.3';
+    const v8Ver = (process.versions.v8 || '13.6').split('-')[0];
+    const nodeVer = process.versions.node || '24.19.0';
+
+    return {
+        appVersion: app.getVersion(),
+        chrome: chromeVer,
+        electron: electronVer,
+        v8: v8Ver,
+        node: nodeVer,
+        arch: archDisplay,
+        rawArch: process.arch,
+        platform: platformDisplay,
+        platformIcon: platformIcon,
+        isPackaged: app.isPackaged,
+        buildType: app.isPackaged ? 'Production Build' : 'Developer Build',
+        gpuStatus: gpuStatusText,
+        gpuBackend: gpuCompositing,
+        isGpuAccelerated: isGpuAccelerated,
+        privacyStatus: 'CyberStealth Active',
+        privacyTag: 'Zero Telemetry',
+        dspStatus: 'Ocal Media Master',
+        dspTag: 'DSP 500%'
+    };
+});
 ipcMain.handle('get-downloads', () => downloads);
 
 ipcMain.handle('select-download-directory', async () => {
@@ -10924,7 +11000,7 @@ function updateHistory(view, url) {
                 'tab-context.html', 'tabgroup.html', 'shield-popup.html', 'site-info.html',
                 'media-popup.html', 'ai-sidebar.html', 'certificate-viewer.html',
                 'bm-dropdown.html', 'file-manager.html', 'music-player.html', 'snake.html', 'tetris.html', 'page-context.html',
-                'private-home.html', 'private-window.html'
+                'focus.html', 'private-home.html', 'private-window.html'
             ].some(page => url.toLowerCase().includes(page.toLowerCase()));
 
         if (!isInternalPage) {

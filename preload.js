@@ -577,6 +577,7 @@ if (_isInternalEarly) {
 
   // Updates
   getAppVersion:  () => ipcRenderer.invoke('get-app-version'),
+  getDiagnostics: () => ipcRenderer.invoke('get-diagnostics'),
   checkForUpdate: () => ipcRenderer.invoke('check-for-update'),
   downloadUpdate: (url) => ipcRenderer.invoke('download-update', url),
   applyUpdate:    (path) => ipcRenderer.send('apply-update', path),

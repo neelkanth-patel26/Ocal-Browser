@@ -3065,9 +3065,10 @@
                                 <div class="ahs-brand-info">
                                     <div class="ahs-name-row">
                                         <span class="ahs-app-name">Ocal Browser</span>
-                                        <span class="ahs-version-pill" id="current-version-display">v9.1.03 Stable</span>
+                                        <span class="ahs-version-pill" id="current-version-display">v10.1.23 Stable</span>
                                         <span class="ahs-meta-pill" id="about-build-line"><i class="fas fa-cube"></i> Production Build</span>
-                                        <span class="ahs-meta-pill"><i class="fas fa-microchip"></i> 64-bit Native</span>
+                                        <span class="ahs-meta-pill" id="about-arch-pill"><i class="fas fa-microchip"></i> 64-bit Native</span>
+                                        <span class="ahs-meta-pill" id="about-platform-pill"><i class="fab fa-windows"></i> Windows 64-bit</span>
                                     </div>
                                     <p class="ahs-summary">Independent agentic web browser with hardware-accelerated rendering and zero telemetry tracking.</p>
                                 </div>
@@ -3119,9 +3120,9 @@
                                 <h3 class="group-title">System Architecture &amp; Engine Diagnostics</h3>
                                 <p class="group-desc">Hardware acceleration, rendering pipelines, and execution runtime specifications.</p>
                             </div>
-                            <div class="engine-active-indicator">
+                            <div class="engine-active-indicator" id="diag-engine-indicator">
                                 <span class="status-dot"></span>
-                                <span>Hardware Accelerated</span>
+                                <span id="diag-engine-status-text">Hardware Accelerated</span>
                             </div>
                         </div>
 
@@ -3132,60 +3133,60 @@
                                 <div class="spec-grid-tile">
                                     <div class="sgt-header">
                                         <div class="sgt-icon"><i class="fab fa-chrome"></i></div>
-                                        <span class="sgt-tag">Core Engine</span>
+                                        <span class="sgt-tag" id="diag-version-tag">Core Engine</span>
                                     </div>
                                     <div class="sgt-label">Chromium Core</div>
-                                    <div class="sgt-value" id="diag-version">v134.0.6998.35</div>
+                                    <div class="sgt-value" id="diag-version">v156.0.8078.80</div>
                                 </div>
 
                                 <!-- Spec Tile 2: Electron Host -->
                                 <div class="spec-grid-tile">
                                     <div class="sgt-header">
                                         <div class="sgt-icon"><i class="fas fa-bolt"></i></div>
-                                        <span class="sgt-tag">Host Shell</span>
+                                        <span class="sgt-tag" id="diag-build-tag">Host Shell</span>
                                     </div>
                                     <div class="sgt-label">Electron Framework</div>
-                                    <div class="sgt-value" id="diag-build">Runtime v35.0.0</div>
+                                    <div class="sgt-value" id="diag-build">Runtime v45.2.3</div>
                                 </div>
 
                                 <!-- Spec Tile 3: JavaScript V8 -->
                                 <div class="spec-grid-tile">
                                     <div class="sgt-header">
                                         <div class="sgt-icon"><i class="fab fa-js"></i></div>
-                                        <span class="sgt-tag">JIT Active</span>
+                                        <span class="sgt-tag" id="diag-v8-tag">JIT Active</span>
                                     </div>
                                     <div class="sgt-label">JavaScript Engine</div>
-                                    <div class="sgt-value">V8 TurboFan</div>
+                                    <div class="sgt-value" id="diag-v8">V8 TurboFan</div>
                                 </div>
 
                                 <!-- Spec Tile 4: GPU Acceleration -->
                                 <div class="spec-grid-tile">
                                     <div class="sgt-header">
                                         <div class="sgt-icon"><i class="fas fa-microchip"></i></div>
-                                        <span class="sgt-tag">Direct3D 11</span>
+                                        <span class="sgt-tag" id="diag-gpu-tag">Direct3D 11</span>
                                     </div>
                                     <div class="sgt-label">Graphics Acceleration</div>
-                                    <div class="sgt-value">Zero-Copy GPU</div>
+                                    <div class="sgt-value" id="diag-gpu">Zero-Copy GPU</div>
                                 </div>
 
                                 <!-- Spec Tile 5: Privacy Engine -->
                                 <div class="spec-grid-tile">
                                     <div class="sgt-header">
                                         <div class="sgt-icon"><i class="fas fa-shield-halved"></i></div>
-                                        <span class="sgt-tag">Zero Telemetry</span>
+                                        <span class="sgt-tag" id="diag-privacy-tag">Zero Telemetry</span>
                                     </div>
                                     <div class="sgt-label">Neural Privacy Shield</div>
-                                    <div class="sgt-value">CyberStealth Active</div>
+                                    <div class="sgt-value" id="diag-privacy">CyberStealth Active</div>
                                 </div>
 
                                 <!-- Spec Tile 6: Audio & DSP Engine -->
                                 <div class="spec-grid-tile">
                                     <div class="sgt-header">
                                         <div class="sgt-icon"><i class="fas fa-volume-high"></i></div>
-                                        <span class="sgt-tag">DSP 500%</span>
+                                        <span class="sgt-tag" id="diag-dsp-tag">DSP 500%</span>
                                     </div>
                                     <div class="sgt-label">Media &amp; Audio DSP</div>
-                                    <div class="sgt-value">Ocal Media Master</div>
+                                    <div class="sgt-value" id="diag-dsp">Ocal Media Master</div>
                                 </div>
                             </div>
                         </div>

@@ -890,28 +890,22 @@ class FocusTimer {
         const hBtn = document.getElementById('header-focus-trigger');
         if (hBtn) {
             if (this.timerId) {
-                hBtn.title = `Focus Flow: ${String(mins).padStart(2, '0')}:${String(secs).padStart(2, '0')} (Click to view)`;
+                hBtn.title = `Focus Flow: ${String(mins).padStart(2, '0')}:${String(secs).padStart(2, '0')} (Click to open Focus Sanctuary)`;
             } else {
-                hBtn.title = 'Jump to Focus Flow';
+                hBtn.title = 'Open Focus Flow & Mindfulness Sanctuary';
             }
         }
     }
 }
 const globalFocusTimer = new FocusTimer();
 
-// Header Focus Trigger Navigation
+// Header Focus Trigger Navigation — Opens dedicated Focus Flow Sanctuary
 (function initHeaderFocusTrigger() {
     const headerFocusTrigger = document.getElementById('header-focus-trigger');
     if (headerFocusTrigger) {
         headerFocusTrigger.addEventListener('click', (e) => {
             e.preventDefault();
-            const focusCard = document.querySelector('.sp-focus-card');
-            if (focusCard) {
-                focusCard.scrollIntoView({ behavior: 'smooth', block: 'center' });
-                focusCard.classList.remove('focus-card-highlight');
-                void focusCard.offsetWidth;
-                focusCard.classList.add('focus-card-highlight');
-            }
+            window.location.href = 'ocal://focus';
         });
     }
 })();

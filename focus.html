@@ -1,0 +1,392 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="Content-Security-Policy" content="default-src 'self' ocal:; script-src 'self' 'unsafe-inline' https://cdnjs.cloudflare.com https://unpkg.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com https://cdnjs.cloudflare.com https://cdn.jsdelivr.net; font-src 'self' https://fonts.gstatic.com https://cdnjs.cloudflare.com https://cdn.jsdelivr.net; img-src 'self' data: https: http: chrome-extension: blob:; connect-src 'self' https: wss: http: blob:;">
+    <title>Focus Flow Sanctuary — Ocal</title>
+
+    <!-- ANTI-FLASH & COLOR HARMONIZER -->
+    <script src="color-harmonizer.js"></script>
+    <script>
+        (function () {
+            var t = localStorage.getItem('ocal-settings-theme') || 'dark';
+            document.documentElement.setAttribute('data-theme', t);
+            if (t === 'dark') {
+                document.documentElement.style.background = '#0E0F14';
+                document.documentElement.style.colorScheme = 'dark';
+            }
+            var a = localStorage.getItem('ocal-settings-accent');
+            if (window.OcalColorHarmonizer) {
+                window.OcalColorHarmonizer.applyHarmonizedTheme(a, t);
+            }
+        })();
+    </script>
+
+    <!-- Fonts & Icons -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800;900&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="assets/fontawesome/css/all.min.css">
+    <link rel="stylesheet" href="focus.css">
+</head>
+<body>
+
+    <!-- ══ STICKY TOP NAVIGATION ══ -->
+    <header class="focus-header">
+        <a href="ocal://home" class="header-brand">
+            <div class="brand-badge">
+                <i class="fas fa-brain"></i>
+            </div>
+            <div class="brand-info">
+                <h1>Focus Flow <span class="brand-status-pill">Active Flow</span></h1>
+                <p>Cognitive Training &amp; Mindfulness Sanctuary</p>
+            </div>
+        </a>
+
+        <!-- Section Navigation Tabs -->
+        <nav class="nav-section-pills">
+            <button class="section-pill-btn active" data-tab="tab-timers">
+                <i class="fas fa-stopwatch"></i> <span>Deep Work</span>
+            </button>
+            <button class="section-pill-btn" data-tab="tab-breathing">
+                <i class="fas fa-wind"></i> <span>Breathing Reset</span>
+            </button>
+            <button class="section-pill-btn" data-tab="tab-gym">
+                <i class="fas fa-eye"></i> <span>Attention &amp; Eye Gym</span>
+            </button>
+            <button class="section-pill-btn" data-tab="tab-audio">
+                <i class="fas fa-wave-square"></i> <span>Soundscapes</span>
+            </button>
+        </nav>
+
+        <!-- Right Header Actions -->
+        <div class="header-actions">
+            <button class="icon-btn" id="theme-toggle-btn" title="Toggle Light/Dark Theme">
+                <i class="fas fa-moon"></i>
+            </button>
+            <a href="ocal://home" class="home-return-btn" title="Return to Browser Homepage">
+                <i class="fas fa-house"></i> <span>Home</span>
+            </a>
+        </div>
+    </header>
+
+    <!-- ══ MAIN WORKSPACE ══ -->
+    <main class="focus-container">
+
+        <!-- ── TAB 1: DEEP WORK & TIMERS ── -->
+        <section class="tab-view active" id="tab-timers">
+            <div class="bento-grid">
+                
+                <!-- Main Timer Hero Card (8 Cols) -->
+                <div class="bento-card col-8 timer-hero-card">
+                    <!-- Presets Selector -->
+                    <div class="timer-preset-bar">
+                        <button class="preset-pill active" data-mode="pomodoro">Pomodoro (25m)</button>
+                        <button class="preset-pill" data-mode="deep">Deep Flow (50m)</button>
+                        <button class="preset-pill" data-mode="ultradian">Ultradian (90m)</button>
+                        <button class="preset-pill" data-mode="burst">Sprint (15m)</button>
+                        <button class="preset-pill" data-mode="custom">Custom</button>
+                    </div>
+
+                    <!-- Custom Slider (Hidden by default) -->
+                    <div id="custom-slider-wrap" style="display: none; align-items: center; gap: 12px; margin-bottom: 20px; width: 100%; max-width: 320px;">
+                        <input type="range" min="5" max="120" step="5" value="30" id="custom-slider" style="flex: 1; accent-color: var(--accent);">
+                        <span id="custom-slider-val" style="font-family: var(--font-mono); font-size: 13px; font-weight: 700;">30m</span>
+                    </div>
+
+                    <!-- SVG Circular Progress & Large Countdown -->
+                    <div class="countdown-wrapper">
+                        <svg class="countdown-svg" viewBox="0 0 300 300">
+                            <circle class="countdown-circle-bg" cx="150" cy="150" r="135"></circle>
+                            <circle class="countdown-circle-progress" id="timer-progress" cx="150" cy="150" r="135"></circle>
+                        </svg>
+                        <div class="countdown-content">
+                            <div class="countdown-digits" id="timer-digits">25:00</div>
+                            <div class="countdown-phase-badge" id="timer-phase-badge">Focus Session</div>
+                            <div class="countdown-streak-sub" id="timer-streak-sub">0 sessions completed today</div>
+                        </div>
+                    </div>
+
+                    <!-- Action Controls -->
+                    <div class="timer-actions">
+                        <button class="secondary-act-btn" id="timer-reset-btn" title="Reset Session">
+                            <i class="fas fa-rotate-left"></i>
+                        </button>
+                        <button class="main-play-btn" id="timer-play-btn">
+                            <i class="fas fa-play"></i> Start Flow
+                        </button>
+                        <button class="secondary-act-btn" id="timer-skip-btn" title="Skip to Next Phase">
+                            <i class="fas fa-forward-step"></i>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Right Side Productivity Widgets (4 Cols) -->
+                <div class="col-4" style="display: flex; flex-direction: column; gap: 24px;">
+                    
+                    <!-- Intention Anchor Card -->
+                    <div class="bento-card intention-anchor-card">
+                        <div class="card-title-row">
+                            <h3><i class="fas fa-crosshairs" style="color: var(--accent);"></i> Single Focus Anchor</h3>
+                        </div>
+                        <p style="font-size: 12.5px; color: var(--text-dim); margin-bottom: 4px;">
+                            What ONE objective will make this focus block successful?
+                        </p>
+                        <div class="intention-input-wrap">
+                            <input type="text" class="intention-input" id="intention-input" placeholder="e.g. Finish writing API endpoints...">
+                            <button class="intention-lock-btn" id="intention-lock-btn" title="Lock / Unlock Intention">
+                                <i class="fas fa-lock-open"></i>
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Distraction Parking Lot Card -->
+                    <div class="bento-card parking-lot-card">
+                        <div class="card-title-row">
+                            <h3><i class="fas fa-square-parking" style="color: var(--purple);"></i> Distraction Parking Lot</h3>
+                        </div>
+                        <p style="font-size: 12.5px; color: var(--text-dim);">
+                            Write down random thoughts to keep your working memory clear, then return to flow.
+                        </p>
+                        <div class="parking-input-row">
+                            <input type="text" class="parking-input" id="parking-input" placeholder="Park a thought &amp; press Enter...">
+                            <button class="parking-add-btn" id="parking-add-btn"><i class="fas fa-plus"></i></button>
+                        </div>
+                        <ul class="parking-list" id="parking-list">
+                            <!-- Items dynamically injected -->
+                        </ul>
+                    </div>
+
+                </div>
+
+            </div>
+        </section>
+
+        <!-- ── TAB 2: BREATHING & NERVOUS SYSTEM CALMING ── -->
+        <section class="tab-view" id="tab-breathing">
+            <div class="bento-card exercise-hero-container">
+                <!-- Breathing Pattern Selection -->
+                <div class="exercise-selector-bar">
+                    <button class="exercise-pill-btn active" data-breath="box">
+                        <i class="fas fa-square"></i> Box Breathing (4-4-4-4)
+                    </button>
+                    <button class="exercise-pill-btn" data-breath="relax">
+                        <i class="fas fa-moon"></i> 4-7-8 Relaxation
+                    </button>
+                    <button class="exercise-pill-btn" data-breath="sigh">
+                        <i class="fas fa-lungs"></i> Physiological Sigh
+                    </button>
+                    <button class="exercise-pill-btn" data-breath="resonant">
+                        <i class="fas fa-heart-pulse"></i> Resonant Coherence (5.5s)
+                    </button>
+                </div>
+
+                <!-- Animated Breathing Sphere -->
+                <div class="breathing-orb-stage">
+                    <div class="breathing-outer-ring"></div>
+                    <div class="breathing-core-sphere" id="breath-sphere">
+                        <i class="fas fa-wind" style="font-size: 26px; opacity: 0.9;"></i>
+                    </div>
+                </div>
+
+                <!-- Live Guidance Text -->
+                <div class="breathing-instruction-text" id="breath-instruction">Press Start to Begin</div>
+                <div class="breathing-timer-count" id="breath-counter">4s</div>
+
+                <!-- Protocol Science Tip -->
+                <div class="breathing-tip-box" id="breath-tip">
+                    Navy SEAL protocol for immediate cognitive clarity, heart rate reduction, and emotional control.
+                </div>
+
+                <!-- Action Button -->
+                <button class="main-play-btn" id="breath-play-btn">
+                    <i class="fas fa-play"></i> Start Guided Breath
+                </button>
+            </div>
+        </section>
+
+        <!-- ── TAB 3: ATTENTION & EYE GYM ── -->
+        <section class="tab-view" id="tab-gym">
+            <div class="bento-grid">
+                
+                <!-- 20-20-20 Vision Restorer (6 Cols) -->
+                <div class="bento-card col-6">
+                    <div class="gym-card-header">
+                        <h3><i class="fas fa-glasses" style="color: var(--blue);"></i> 20-20-20 Eye Strain Reset</h3>
+                        <p>Relieves computer vision syndrome and digital eye fatigue in 20 seconds.</p>
+                    </div>
+
+                    <div class="eye-reset-stage">
+                        <div class="eye-target-box">
+                            <i class="fas fa-mountain-sun"></i>
+                        </div>
+                        <div class="eye-counter" id="eye-counter">20s</div>
+                        <p style="font-size: 13.5px; font-weight: 600; color: var(--text-primary); margin-bottom: 18px;" id="eye-instruction">
+                            Look away from your screen at an object 20 feet (6m) away.
+                        </p>
+                        <button class="main-play-btn" id="eye-start-btn" style="background: var(--blue); box-shadow: 0 4px 16px rgba(59, 130, 246, 0.3);">
+                            <i class="fas fa-play"></i> Start 20s Reset
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Single-Point Gazing / Trataka (6 Cols) -->
+                <div class="bento-card col-6">
+                    <div class="gym-card-header">
+                        <h3><i class="fas fa-bullseye" style="color: #00F0FF;"></i> Single-Point Gazing (Trataka)</h3>
+                        <p>Endurance training for visual attention and prefrontal cortex concentration.</p>
+                    </div>
+
+                    <div class="gazing-stage" id="gaze-stage">
+                        <div class="gaze-dot"></div>
+                        <div class="gazing-hud">
+                            <span id="gaze-score">Focus: 00:00</span>
+                            <span>Fixate gaze on cyan point</span>
+                        </div>
+                    </div>
+
+                    <div style="margin-top: 20px; display: flex; justify-content: center;">
+                        <button class="main-play-btn" id="gaze-toggle-btn" style="background: #00B4D8; box-shadow: 0 4px 16px rgba(0, 180, 216, 0.3);">
+                            <i class="fas fa-eye"></i> Begin Gazing
+                        </button>
+                    </div>
+                </div>
+
+                <!-- 5-4-3-2-1 Sensory Grounding (12 Cols) -->
+                <div class="bento-card col-12">
+                    <div class="gym-card-header">
+                        <h3><i class="fas fa-hand-holding-heart" style="color: var(--rose);"></i> 5-4-3-2-1 Rapid Sensory Grounding</h3>
+                        <p>Click each sense step as you acknowledge it to break mental clutter and restore presence.</p>
+                    </div>
+
+                    <div class="grounding-step-list">
+                        <div class="grounding-step-card">
+                            <div class="step-badge" style="background: var(--blue);">5</div>
+                            <div>
+                                <strong style="font-size: 13.5px;">Acknowledge 5 things you can SEE</strong>
+                                <p style="font-size: 12px; color: var(--text-dim);">A pen, shadow on the wall, keyboard edge, light reflection, cup</p>
+                            </div>
+                        </div>
+
+                        <div class="grounding-step-card">
+                            <div class="step-badge" style="background: var(--accent);">4</div>
+                            <div>
+                                <strong style="font-size: 13.5px;">Acknowledge 4 things you can physically FEEL</strong>
+                                <p style="font-size: 12px; color: var(--text-dim);">Feet flat on the floor, texture of your chair, breeze, watch on wrist</p>
+                            </div>
+                        </div>
+
+                        <div class="grounding-step-card">
+                            <div class="step-badge" style="background: var(--amber);">3</div>
+                            <div>
+                                <strong style="font-size: 13.5px;">Acknowledge 3 things you can HEAR</strong>
+                                <p style="font-size: 12px; color: var(--text-dim);">Computer fan hum, distant cars, your own steady breath</p>
+                            </div>
+                        </div>
+
+                        <div class="grounding-step-card">
+                            <div class="step-badge" style="background: var(--purple);">2</div>
+                            <div>
+                                <strong style="font-size: 13.5px;">Acknowledge 2 things you can SMELL</strong>
+                                <p style="font-size: 12px; color: var(--text-dim);">Fresh coffee, book paper, or clean room air</p>
+                            </div>
+                        </div>
+
+                        <div class="grounding-step-card">
+                            <div class="step-badge" style="background: var(--rose);">1</div>
+                            <div>
+                                <strong style="font-size: 13.5px;">Acknowledge 1 thing you can TASTE</strong>
+                                <p style="font-size: 12px; color: var(--text-dim);">Sip of cool water, lingering tea, or take one deep mindful breath</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+        </section>
+
+        <!-- ── TAB 4: AMBIENT SOUNDSCAPES & BRAINWAVES ── -->
+        <section class="tab-view" id="tab-audio">
+            <div class="bento-card">
+                <div class="card-title-row" style="margin-bottom: 24px;">
+                    <div>
+                        <h3 style="font-size: 16px; font-weight: 700;">Pure Procedural Soundscapes &amp; Brainwaves</h3>
+                        <p style="font-size: 12.5px; color: var(--text-dim); margin-top: 2px;">
+                            Generated in real-time via Web Audio API. 100% offline, private, and loop-free. Layer multiple tracks together.
+                        </p>
+                    </div>
+                </div>
+
+                <div class="sound-track-grid">
+                    
+                    <!-- Track 1: Alpha Waves (10 Hz) -->
+                    <div class="sound-track-card" data-track="alpha">
+                        <div class="track-top-row">
+                            <div class="track-info-flex">
+                                <div class="track-icon-box" style="color: var(--accent);"><i class="fas fa-brain"></i></div>
+                                <div>
+                                    <div class="track-title">Alpha Waves (10 Hz)</div>
+                                    <div class="track-sub">Deep Work &amp; Effortless Flow</div>
+                                </div>
+                            </div>
+                            <button class="track-play-toggle"><i class="fas fa-play"></i></button>
+                        </div>
+                        <input type="range" min="0" max="1" step="0.05" value="0.5" class="track-volume-slider" title="Volume">
+                    </div>
+
+                    <!-- Track 2: Theta Waves (6 Hz) -->
+                    <div class="sound-track-card" data-track="theta">
+                        <div class="track-top-row">
+                            <div class="track-info-flex">
+                                <div class="track-icon-box" style="color: var(--purple);"><i class="fas fa-lightbulb"></i></div>
+                                <div>
+                                    <div class="track-title">Theta Waves (6 Hz)</div>
+                                    <div class="track-sub">Creative Problem Solving</div>
+                                </div>
+                            </div>
+                            <button class="track-play-toggle"><i class="fas fa-play"></i></button>
+                        </div>
+                        <input type="range" min="0" max="1" step="0.05" value="0.5" class="track-volume-slider" title="Volume">
+                    </div>
+
+                    <!-- Track 3: Warm Brown Noise -->
+                    <div class="sound-track-card" data-track="brown">
+                        <div class="track-top-row">
+                            <div class="track-info-flex">
+                                <div class="track-icon-box" style="color: var(--amber);"><i class="fas fa-shield-halved"></i></div>
+                                <div>
+                                    <div class="track-title">Warm Brown Noise</div>
+                                    <div class="track-sub">Masks Open Office Noise</div>
+                                </div>
+                            </div>
+                            <button class="track-play-toggle"><i class="fas fa-play"></i></button>
+                        </div>
+                        <input type="range" min="0" max="1" step="0.05" value="0.5" class="track-volume-slider" title="Volume">
+                    </div>
+
+                    <!-- Track 4: Rain & Atmosphere -->
+                    <div class="sound-track-card" data-track="rain">
+                        <div class="track-top-row">
+                            <div class="track-info-flex">
+                                <div class="track-icon-box" style="color: var(--blue);"><i class="fas fa-cloud-showers-heavy"></i></div>
+                                <div>
+                                    <div class="track-title">Rain &amp; Atmosphere</div>
+                                    <div class="track-sub">Calming Background Droplets</div>
+                                </div>
+                            </div>
+                            <button class="track-play-toggle"><i class="fas fa-play"></i></button>
+                        </div>
+                        <input type="range" min="0" max="1" step="0.05" value="0.5" class="track-volume-slider" title="Volume">
+                    </div>
+
+                </div>
+            </div>
+        </section>
+
+    </main>
+
+    <!-- Script Controller -->
+    <script src="focus.js"></script>
+</body>
+</html>

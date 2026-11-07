@@ -19,6 +19,9 @@ dist-builder/
 !chrome-compat-shim.js
 !page-context.js
 !private-window.js
+!focus.js
+!download-dislike.js
+!download-ublock.js
 !browser-promo-shield.js
 !assets/icon-enhancer.js
 !assets/lucide.min.js
