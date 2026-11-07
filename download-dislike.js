@@ -42,4 +42,8 @@ async function downloadDislikeCountExtension() {
     }
 }
 
-downloadDislikeCountExtension();
+if (require.main === module) {
+    downloadDislikeCountExtension();
+}
+
+module.exports = { downloadDislikeCountExtension };

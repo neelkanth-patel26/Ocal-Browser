@@ -43,7 +43,7 @@
             </div>
             <div class="brand-text">
                 <h1>Ocal Arcade</h1>
-                <p>Instant local games · Play in-page</p>
+                <p>Instant local games · Play in dedicated tabs</p>
             </div>
         </a>
 
@@ -69,78 +69,26 @@
     <div class="arcade-scroll">
         <main class="arcade-main">
 
-            <!-- ── IN-PAGE LIVE GAME ARENA ── -->
-            <section class="stage-section" id="arcade-stage">
-                
-                <!-- 1. Idle Showcase Banner (Shown when no game is active) -->
-                <div class="stage-showcase-card" id="stage-showcase">
-                    <div class="showcase-content">
-                        <span class="eyebrow"><i class="fas fa-sparkles"></i> FEATURED / SPEED RUNNER</span>
-                        <h2>Ocal Pulse — Neon Dash</h2>
-                        <p>High-speed endless runner with procedural obstacles, double jumps, particle trails, and reactive theme physics. Play right here in the page with zero popups.</p>
-                        <div class="showcase-actions">
-                            <button class="primary-btn" id="showcase-play-btn" data-launch="pulse">
-                                <i class="fas fa-play"></i> Play in Arena
-                            </button>
-                            <span class="showcase-meta"><i class="fas fa-keyboard"></i> Space / Up / Tap to jump · 100% Offline</span>
-                        </div>
+            <!-- ── ARCADE HERO BANNER (Direct Tab Launch) ── -->
+            <section class="arcade-hero-section">
+                <div class="arcade-hero-card">
+                    <div class="arcade-hero-text">
+                        <span class="arcade-hero-pill"><i class="fas fa-gamepad"></i> 100% Offline &amp; Zero Latency</span>
+                        <h2 class="arcade-hero-title">Ocal Game Arcade</h2>
+                        <p class="arcade-hero-desc">Play 7 classic arcade, retro duel, puzzle, and 3D racing games directly inside your browser. Every game opens immediately in a fresh, dedicated tab with its clean internal URL, custom controls, and instant local score saving.</p>
                     </div>
-                    <div class="showcase-art" aria-hidden="true">
-                        <div class="art-pulse-ring ring-1"></div>
-                        <div class="art-pulse-ring ring-2"></div>
-                        <i class="fas fa-bolt art-center-icon"></i>
-                        <span class="art-badge">SYNTH RUNNER</span>
-                    </div>
-                </div>
-
-                <!-- 2. Active Game Player (Shown when game is loaded) -->
-                <div class="stage-player-card" id="stage-player" style="display: none;">
-                    <!-- Player Toolbar -->
-                    <div class="stage-toolbar">
-                        <div class="stage-title-wrap">
-                            <div class="stage-icon-badge" id="stage-icon">
-                                <i class="fas fa-gamepad"></i>
-                            </div>
-                            <div class="stage-title-text">
-                                <div class="stage-heading-row">
-                                    <h2 id="stage-game-title">Ocal Snake</h2>
-                                    <span class="stage-badge" id="stage-game-cat">Arcade</span>
-                                </div>
-                                <p id="stage-game-hint">Arrow keys or WASD to steer</p>
-                            </div>
+                    <div class="arcade-hero-stats">
+                        <div class="arcade-hero-stat-box">
+                            <span class="stat-num">7</span>
+                            <span class="stat-label">Games</span>
                         </div>
-
-                        <div class="stage-actions">
-                            <div class="stage-stat-pill">
-                                <i class="fas fa-trophy"></i>
-                                <span>BEST: <strong id="stage-high-score">0</strong></span>
-                            </div>
-                            <button class="stage-btn" id="stage-restart-btn" title="Restart Game" aria-label="Restart Game">
-                                <i class="fas fa-rotate-right"></i> <span>Restart</span>
-                            </button>
-                            <button class="stage-btn" id="stage-fullscreen-btn" title="Toggle Fullscreen Arena" aria-label="Toggle Fullscreen">
-                                <i class="fas fa-expand"></i> <span>Fullscreen</span>
-                            </button>
-                            <button class="stage-btn stage-btn-close" id="stage-close-btn" title="Back to Collection" aria-label="Close Arena">
-                                <i class="fas fa-xmark"></i> <span>Close</span>
-                            </button>
+                        <div class="arcade-hero-stat-box">
+                            <span class="stat-num">0</span>
+                            <span class="stat-label">Popups</span>
                         </div>
-                    </div>
-
-                    <!-- Viewport Frame -->
-                    <div class="stage-viewport-container" id="stage-viewport">
-                        <div class="stage-loading-overlay" id="stage-loader">
-                            <i class="fas fa-circle-notch fa-spin"></i>
-                            <span>Loading game...</span>
-                        </div>
-                        <iframe id="stage-iframe" title="Active Game Viewport" allow="autoplay; fullscreen" allowfullscreen></iframe>
-                    </div>
-
-                    <!-- Quick Switcher Bar -->
-                    <div class="stage-quick-bar">
-                        <span class="quick-label"><i class="fas fa-bolt"></i> QUICK SWITCH:</span>
-                        <div class="quick-pills" id="quick-game-pills">
-                            <!-- Populated dynamically via games.js -->
+                        <div class="arcade-hero-stat-box">
+                            <span class="stat-num">100%</span>
+                            <span class="stat-label">Offline</span>
                         </div>
                     </div>
                 </div>

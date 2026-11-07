@@ -70,6 +70,7 @@ app.commandLine.appendSwitch('enable-print-preview');
 // Force native smooth scrolling for mouse wheel & trackpad
 app.commandLine.appendSwitch('enable-smooth-scrolling');
 app.commandLine.appendSwitch('enable-experimental-web-platform-features');
+app.commandLine.appendSwitch('allow-file-access-from-files');
 
 // ── Check Initial Hardware Acceleration Setting ──
 let preStartupSettings = null;
@@ -1223,14 +1224,14 @@ function applyShieldSettings() {
         if (url.startsWith('ocal://')) {
             if (!headers['content-security-policy'] && !headers['Content-Security-Policy']) {
                 headers['Content-Security-Policy'] = [
-                    "default-src 'self' data: blob: ocal:; " +
-                    "script-src 'self' 'unsafe-inline' data: blob: https:; " +
-                    "style-src 'self' 'unsafe-inline' https:; " +
-                    "img-src 'self' data: blob: https: http: chrome-extension:; " +
-                    "font-src 'self' data: https:; " +
-                    "connect-src 'self' https: wss: http: blob:; " +
-                    "media-src 'self' data: blob: https:; " +
-                    "worker-src 'self' blob:;"
+                    "default-src 'self' data: blob: ocal: file:; " +
+                    "script-src 'self' 'unsafe-inline' 'unsafe-eval' data: blob: https: file: ocal:; " +
+                    "style-src 'self' 'unsafe-inline' https: file: ocal:; " +
+                    "img-src 'self' data: blob: https: http: chrome-extension: file: ocal:; " +
+                    "font-src 'self' data: https: file: ocal:; " +
+                    "connect-src 'self' https: wss: http: blob: ocal: file:; " +
+                    "media-src 'self' data: blob: https: file: ocal:; " +
+                    "worker-src 'self' blob: file: ocal:;"
                 ];
             }
             return callback({ responseHeaders: headers });
@@ -2713,13 +2714,17 @@ function resolveInternalURL(url) {
         const qIdx = url.indexOf('?');
         return 'file://' + path.join(__dirname, 'security-warning.html') + (qIdx !== -1 ? url.substring(qIdx) : '');
     }
-    if (cleanBase === 'ocal://games' || cleanBase === 'ocal://game' || cleanBase === 'ocal://arcade' || cleanBase === 'games' || cleanBase === 'arcade') return 'file://' + path.join(__dirname, 'games.html');
-    if (cleanBase === 'ocal://snake' || cleanBase === 'snake') return 'file://' + path.join(__dirname, 'snake.html');
-    if (cleanBase === 'ocal://tetris' || cleanBase === 'tetris' || cleanBase === 'ocal://grid' || cleanBase === 'grid') return 'file://' + path.join(__dirname, 'tetris.html');
-    if (cleanBase === 'ocal://pulse' || cleanBase === 'ocal://runner' || cleanBase === 'pulse' || cleanBase === 'runner') return 'file://' + path.join(__dirname, 'game.html');
-    if (cleanBase === 'ocal://2048' || cleanBase === '2048') return 'file://' + path.join(__dirname, '2048.html');
-    if (cleanBase === 'ocal://pong' || cleanBase === 'pong') return 'file://' + path.join(__dirname, 'pong.html');
-    if (cleanBase === 'ocal://breakout' || cleanBase === 'breakout') return 'file://' + path.join(__dirname, 'breakout.html');
+    if (cleanBase === 'ocal://games' || cleanBase === 'ocal://game' || cleanBase === 'ocal://arcade' || cleanBase === 'games' || cleanBase === 'arcade') return getFilePath('games.html');
+    if (cleanBase === 'ocal://hexgl' || cleanBase === 'hexgl' || cleanBase === 'ocal://arcade/hexgl' || cleanBase.startsWith('ocal://hexgl') || cleanBase.startsWith('ocal://arcade/hexgl')) {
+        const qIdx = url.indexOf('?');
+        return 'file:///' + path.join(__dirname, 'hexgl', 'index.html').replace(/\\/g, '/') + (qIdx !== -1 ? url.substring(qIdx) : '');
+    }
+    if (cleanBase === 'ocal://snake' || cleanBase === 'snake') return getFilePath('snake.html');
+    if (cleanBase === 'ocal://tetris' || cleanBase === 'tetris' || cleanBase === 'ocal://grid' || cleanBase === 'grid') return getFilePath('tetris.html');
+    if (cleanBase === 'ocal://pulse' || cleanBase === 'ocal://runner' || cleanBase === 'pulse' || cleanBase === 'runner') return getFilePath('game.html');
+    if (cleanBase === 'ocal://2048' || cleanBase === '2048') return getFilePath('2048.html');
+    if (cleanBase === 'ocal://pong' || cleanBase === 'pong') return getFilePath('pong.html');
+    if (cleanBase === 'ocal://breakout' || cleanBase === 'breakout') return getFilePath('breakout.html');
     if (cleanBase === 'ocal://ai' || cleanBase === 'ocal://ai-sidebar' || cleanBase === 'ocal://ai-sidebar/ai-sidebar.html') return 'file://' + path.join(__dirname, 'ai-sidebar.html');
 
     if (cleanBase === 'ocal://site-settings') {
@@ -2849,6 +2854,33 @@ function formatDisplayUrl(url) {
     if (url.startsWith('chrome-extension://')) return url;
     let display = url;
     if (display.includes('home.html') || display === 'ocal://home') return '';
+    if (display.includes('hexgl') || display.startsWith('ocal://hexgl') || display.startsWith('ocal://arcade/hexgl')) {
+        return 'ocal://hexgl';
+    }
+    if (display.includes('games.html') || display.startsWith('ocal://games') || display.startsWith('ocal://arcade')) {
+        return 'ocal://games';
+    }
+    if (display.includes('focus.html') || display.startsWith('ocal://focus') || display.startsWith('ocal://focus-flow')) {
+        return 'ocal://focus';
+    }
+    if (display.includes('snake.html') || display.startsWith('ocal://snake')) {
+        return 'ocal://snake';
+    }
+    if (display.includes('tetris.html') || display.startsWith('ocal://tetris') || display.startsWith('ocal://grid')) {
+        return 'ocal://tetris';
+    }
+    if (display.includes('game.html') || display.startsWith('ocal://pulse') || display.startsWith('ocal://runner')) {
+        return 'ocal://pulse';
+    }
+    if (display.includes('2048.html') || display.startsWith('ocal://2048')) {
+        return 'ocal://2048';
+    }
+    if (display.includes('pong.html') || display.startsWith('ocal://pong')) {
+        return 'ocal://pong';
+    }
+    if (display.includes('breakout.html') || display.startsWith('ocal://breakout')) {
+        return 'ocal://breakout';
+    }
     if (display.includes('photo-editor.html') || display.startsWith('ocal://photo-view') || display.startsWith('ocal://photo-editor')) {
         const qIdx = display.indexOf('?');
         return 'ocal://photo-view' + (qIdx !== -1 ? display.substring(qIdx) : '');
@@ -11003,7 +11035,7 @@ function updateHistory(view, url) {
                 'tab-context.html', 'tabgroup.html', 'shield-popup.html', 'site-info.html',
                 'media-popup.html', 'ai-sidebar.html', 'certificate-viewer.html',
                 'bm-dropdown.html', 'file-manager.html', 'music-player.html', 'snake.html', 'tetris.html', 'page-context.html',
-                'focus.html', 'private-home.html', 'private-window.html', '2048.html', 'pong.html', 'breakout.html'
+                'focus.html', 'private-home.html', 'private-window.html', '2048.html', 'pong.html', 'breakout.html', 'hexgl'
             ].some(page => url.toLowerCase().includes(page.toLowerCase()));
 
         if (!isInternalPage) {
@@ -11060,11 +11092,15 @@ app.whenReady().then(async () => {
     if (protocol.handle) {
         protocol.handle('ocal', (request) => {
             const url = request.url;
-            if (new URL(url).hostname === 'arcade') {
-                const asset = require('./arcade-protocol.cjs').resolveArcadeAsset(url, __dirname);
-                if (!asset) return new Response('Not found', { status: 404 });
-                return net.fetch(asset).catch(() => new Response('Not found', { status: 404 }));
-            }
+            try {
+                const parsed = new URL(url);
+                if (parsed.hostname === 'arcade' || parsed.hostname === 'hexgl') {
+                    const asset = require('./arcade-protocol.cjs').resolveArcadeAsset(url, __dirname);
+                    if (asset) {
+                        return net.fetch(asset).catch(() => new Response('Not found', { status: 404 }));
+                    }
+                }
+            } catch (e) { }
             const resolved = resolveInternalURL(url);
             if (resolved.startsWith('file://')) {
                 return require('electron').net.fetch(resolved);
