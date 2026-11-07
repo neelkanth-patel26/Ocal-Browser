@@ -1,21 +1,23 @@
-/* Shared, responsive standalone & embedded game surfaces */
-html {
-    height: 100%;
-    overflow: hidden;
+/* Shared, responsive standalone full-viewport game surfaces */
+html, body {
+    width: 100vw;
+    height: 100vh !important;
+    margin: 0;
+    padding: 0;
+    overflow: hidden !important;
 }
 
 html body {
-    height: 100vh !important;
     min-height: 0;
-    overflow-y: auto !important;
-    overflow-x: hidden !important;
     display: flex;
     flex-direction: column;
     justify-content: flex-start;
-    padding: 20px;
+    align-items: center;
+    padding: 12px 20px !important;
     background: var(--bg, #0E0F14) !important;
     color: var(--text-main, #eef2fa);
     font-family: 'Plus Jakarta Sans', system-ui, -apple-system, sans-serif;
+    box-sizing: border-box;
 }
 
 html[data-theme="light"] body {
@@ -24,7 +26,7 @@ html[data-theme="light"] body {
 }
 
 body.embedded {
-    padding: 8px !important;
+    padding: 0 !important;
     overflow: hidden !important;
 }
 
@@ -35,36 +37,98 @@ body.embedded .header-bar {
 .header-bar {
     position: static;
     width: 100%;
-    max-width: 1000px;
-    margin: 0 auto 20px;
+    max-width: min(1400px, 96vw);
+    margin: 0 auto 8px;
     flex-shrink: 0;
-    gap: 16px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
 }
 
 .game-layout {
-    margin: 0 auto;
-    max-width: 100%;
+    width: 100%;
+    max-width: min(1400px, 96vw);
+    flex: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 20px;
     position: relative;
-    padding: 0;
+    min-height: 0;
+    box-sizing: border-box;
+}
+
+.game-layout.column-layout {
+    flex-direction: column;
+    gap: 10px;
 }
 
 .canvas-container {
-    flex-shrink: 1;
+    flex: 1;
     min-width: 0;
-    border-radius: 14px;
+    min-height: 0;
+    max-height: calc(100vh - 120px);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    position: relative;
+    border-radius: 16px;
+    overflow: hidden;
 }
 
+/* Canvas fills container, maintaining aspect ratio */
 canvas#gameCanvas {
     display: block;
-    max-width: 100%;
-    max-height: calc(100vh - 190px);
-    width: auto;
-    height: auto;
+    width: auto !important;
+    height: auto !important;
+    max-width: 100% !important;
+    max-height: calc(100vh - 120px) !important;
     object-fit: contain;
 }
 
 body.embedded canvas#gameCanvas {
-    max-height: calc(100vh - 40px);
+    max-height: 100vh !important;
+}
+
+/* Square container for Snake (1:1) */
+.canvas-container.square-container {
+    width: min(calc(100vh - 130px), calc(100vw - 48px));
+    height: min(calc(100vh - 130px), calc(100vw - 48px));
+    max-width: calc(100vh - 130px);
+    max-height: calc(100vh - 130px);
+    aspect-ratio: 1 / 1;
+    flex-shrink: 1;
+}
+
+.canvas-container.square-container canvas#gameCanvas {
+    width: 100% !important;
+    height: 100% !important;
+    max-width: 100% !important;
+    max-height: 100% !important;
+}
+
+/* Tall container for Tetris (1:2) */
+.canvas-container.tetris-container {
+    height: calc(100vh - 110px);
+    width: calc((100vh - 110px) / 2);
+    max-height: calc(100vh - 110px);
+    aspect-ratio: 1 / 2;
+    flex-shrink: 1;
+}
+
+.canvas-container.tetris-container canvas#gameCanvas {
+    width: 100% !important;
+    height: 100% !important;
+    max-width: 100% !important;
+    max-height: 100% !important;
+}
+
+.side-box {
+    width: 150px;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    flex-shrink: 0;
 }
 
 .overlay-modal {
@@ -73,6 +137,11 @@ body.embedded canvas#gameCanvas {
     border-radius: 14px;
     background: rgba(14, 15, 20, 0.94);
     z-index: 20;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 16px;
 }
 
 html[data-theme="light"] .overlay-modal {
@@ -81,6 +150,8 @@ html[data-theme="light"] .overlay-modal {
 
 .overlay-modal .modal-title-text {
     color: #f1f4fa;
+    font-size: 26px;
+    font-weight: 800;
 }
 
 html[data-theme="light"] .overlay-modal .modal-title-text {
@@ -91,15 +162,11 @@ html[data-theme="light"] .overlay-modal .modal-title-text {
     max-width: 280px;
     color: #aeb8c9;
     text-align: center;
+    font-size: 13px;
 }
 
 html[data-theme="light"] .overlay-modal .modal-sub-text {
     color: #6b7280;
-}
-
-.side-box {
-    width: 120px;
-    min-width: 0;
 }
 
 button:focus-visible, a:focus-visible {
@@ -108,13 +175,13 @@ button:focus-visible, a:focus-visible {
 }
 
 @media (max-width: 600px) {
-    body { padding: 12px !important; }
+    body { padding: 8px !important; }
     .game-layout { gap: 10px; }
-    .side-box { width: 65px; }
+    .side-box { width: 70px; }
     .stat-card, .controls-card { padding: 8px; }
     .preview-canvas { max-width: 100%; }
     .controls-card { font-size: 9px; }
     .brand-title { font-size: 13px; }
-    .back-btn { padding: 8px 10px; }
+    .back-btn { padding: 6px 10px; }
     .stat-val { font-size: 18px; }
 }

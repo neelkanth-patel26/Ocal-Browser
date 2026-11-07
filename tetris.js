@@ -18,7 +18,7 @@ const finalScoreEl = document.getElementById('finalScore');
 // Config
 const ROWS = 20;
 const COLS = 10;
-const BLOCK_SIZE = 30;
+const BLOCK_SIZE = 40;
 
 function getThemePalette() {
     const isLight = document.documentElement.getAttribute('data-theme') === 'light' || document.body.getAttribute('data-theme') === 'light';

@@ -282,8 +282,8 @@
         </a>
     </div>
 
-    <div class="game-layout">
-        <div class="hud-row">
+    <div class="game-layout column-layout">
+        <div class="hud-row" style="max-width: min(calc(100vh - 130px), calc(100vw - 48px));">
             <div class="hud-pill">
                 <span style="font-size: 10px; font-weight: 700; color: var(--text-dim); text-transform: uppercase;">BEST</span>
                 <span class="hud-val hi" id="best">0</span>
@@ -294,11 +294,11 @@
             </div>
         </div>
 
-        <div class="canvas-container">
-            <canvas id="gameCanvas" width="440" height="440"></canvas>
+        <div class="canvas-container square-container" id="snake-canvas-container">
+            <canvas id="gameCanvas" width="800" height="800"></canvas>
         </div>
 
-        <div class="controls-hint">
+        <div class="controls-hint" style="max-width: min(calc(100vh - 130px), calc(100vw - 48px));">
             <span><span class="key-badge">W</span> <span class="key-badge">A</span> <span class="key-badge">S</span> <span class="key-badge">D</span> or <span class="key-badge">Arrows</span> TO MOVE</span>
         </div>
 

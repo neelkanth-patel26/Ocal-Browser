@@ -12,9 +12,9 @@ const gameOverOverlay = document.getElementById('gameOverOverlay');
 const finalScoreEl = document.getElementById('finalScore');
 
 // Config
-const GRID_SIZE = 20;
+const GRID_SIZE = 40;
 const TILE_COUNT = 20;
-const CANVAS_SIZE = 400;
+const CANVAS_SIZE = 800;
 let ACCENT = '#e8ff47';
 
 canvas.width = CANVAS_SIZE;
