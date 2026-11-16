@@ -10,6 +10,7 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800;900&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+    <script src="color-harmonizer.js"></script>
     <script>
         (function() {
             var t = localStorage.getItem('ocal-settings-theme') || 'dark';
@@ -18,21 +19,29 @@
                 document.documentElement.style.background = '#0E1015';
                 document.documentElement.style.colorScheme = 'dark';
             } else {
-                document.documentElement.style.background = '#F9FAFB';
+                document.documentElement.style.background = '#FFFFFF';
                 document.documentElement.style.colorScheme = 'light';
             }
+            var a = localStorage.getItem('ocal-settings-accent') || '#10B981';
+            if (window.OcalColorHarmonizer) {
+                window.OcalColorHarmonizer.applyHarmonizedTheme(a, t);
+            }
+            document.documentElement.style.setProperty('--accent', a);
+            document.documentElement.style.setProperty('--color-hero', a);
         })();
     </script>
     <style>
-        /* ── Solid Color Editorial Palette (NO GRADIENTS) ──────── */
+        /* ── Solid Color Editorial Palette (Using Active Theme Accent) ── */
         :root {
-            /* Left Solid Hero Color (Coral / Crimson matching reference image) */
-            --color-hero: #DE4E4E;
-            --color-hero-hover: #CC3D3D;
-            --color-hero-text: #FFFFFF;
-            --color-hero-muted: rgba(255, 255, 255, 0.78);
-            --color-hero-border: rgba(255, 255, 255, 0.35);
-            --color-hero-tag: rgba(0, 0, 0, 0.22);
+            /* Active Theme Accent & Hero Panel Color (Zero Gradients) */
+            --accent: #10B981;
+            --accent-text: #FFFFFF;
+            --color-hero: var(--accent, #10B981);
+            --color-hero-text: var(--accent-text, #FFFFFF);
+            --color-hero-hover: color-mix(in srgb, var(--color-hero) 85%, black);
+            --color-hero-tag: color-mix(in srgb, var(--color-hero) 70%, black 30%);
+            --color-hero-border: color-mix(in srgb, var(--color-hero-text) 35%, transparent);
+            --color-hero-muted: color-mix(in srgb, var(--color-hero-text) 80%, transparent);
 
             /* Right Solid Surfaces (Dark Theme) */
             --right-bg: #111319;
@@ -41,21 +50,14 @@
             --right-text-main: #F3F4F6;
             --right-text-muted: #9CA3AF;
             --right-text-sub: #6B7280;
-            --right-accent-solid: #DE4E4E;
-            --right-accent-text: #FFFFFF;
+            --right-accent-solid: var(--color-hero);
+            --right-accent-text: var(--color-hero-text);
 
             --font-main: 'Geist', 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
             --font-mono: 'Geist Mono', 'Space Mono', monospace;
         }
 
         html[data-theme="light"] {
-            --color-hero: #E25050;
-            --color-hero-hover: #D13F3F;
-            --color-hero-text: #FFFFFF;
-            --color-hero-muted: rgba(255, 255, 255, 0.85);
-            --color-hero-border: rgba(255, 255, 255, 0.4);
-            --color-hero-tag: rgba(0, 0, 0, 0.16);
-
             /* Right Solid Surfaces (Pure Clean White) */
             --right-bg: #FFFFFF;
             --right-surface: #F4F5F7;
@@ -63,8 +65,8 @@
             --right-text-main: #111827;
             --right-text-muted: #4B5563;
             --right-text-sub: #9CA3AF;
-            --right-accent-solid: #E25050;
-            --right-accent-text: #FFFFFF;
+            --right-accent-solid: var(--color-hero);
+            --right-accent-text: var(--color-hero-text);
         }
 
         * {
@@ -106,7 +108,7 @@
             }
         }
 
-        /* ── LEFT PANEL: Solid Hero Coral / Red ────────────────── */
+        /* ── LEFT PANEL: Solid Theme Color Panel ───────────────── */
         .split-panel-left {
             background-color: var(--color-hero);
             color: var(--color-hero-text);
@@ -116,6 +118,7 @@
             justify-content: space-between;
             position: relative;
             z-index: 1;
+            transition: background-color 0.25s ease, color 0.25s ease;
         }
 
         .left-header {
@@ -271,7 +274,7 @@
             font-weight: 500;
         }
 
-        /* ── SPLIT SEAM ICON BADGE (Like reference graphic) ───── */
+        /* ── SPLIT SEAM ICON BADGE ────────────────────────────── */
         .split-seam-badge {
             position: absolute;
             top: 50%;
@@ -292,6 +295,7 @@
             align-items: center;
             justify-content: center;
             font-size: 20px;
+            transition: border-color 0.25s ease, color 0.25s ease, background-color 0.2s ease;
         }
 
         /* ── RIGHT PANEL: Clean Solid Neutral ─────────────────── */
@@ -306,7 +310,7 @@
             z-index: 1;
         }
 
-        /* Minimalist Nav Bar (Exactly like reference image top right) */
+        /* Minimalist Nav Bar */
         .right-header {
             display: flex;
             align-items: center;
@@ -483,7 +487,7 @@
             padding: 13px 26px;
             border-radius: 9999px;
             background-color: var(--color-hero);
-            color: #FFFFFF;
+            color: var(--color-hero-text);
             font-size: 14px;
             font-weight: 750;
             text-decoration: none;
@@ -630,7 +634,7 @@
 </head>
 <body>
     <div class="split-layout">
-        <!-- ══ LEFT PANEL: Solid Hero Coral / Red ══ -->
+        <!-- ══ LEFT PANEL: Solid Theme Color Panel ══ -->
         <section class="split-panel-left">
             <header class="left-header">
                 <div class="brand-badge">
@@ -1784,6 +1788,47 @@
         let currentMessageIndex = 0;
         let filteredIndices = [];
 
+        // Apply active theme color and mode dynamically
+        function applyActiveTheme(customTheme, customAccent) {
+            const t = customTheme || localStorage.getItem('ocal-settings-theme') || 'dark';
+            const a = customAccent || localStorage.getItem('ocal-settings-accent') || '#10B981';
+
+            document.documentElement.setAttribute('data-theme', t);
+            if (t === 'dark') {
+                document.documentElement.style.background = '#0E1015';
+                document.documentElement.style.colorScheme = 'dark';
+            } else {
+                document.documentElement.style.background = '#FFFFFF';
+                document.documentElement.style.colorScheme = 'light';
+            }
+
+            if (window.OcalColorHarmonizer) {
+                window.OcalColorHarmonizer.applyHarmonizedTheme(a, t);
+            }
+
+            document.documentElement.style.setProperty('--accent', a);
+            document.documentElement.style.setProperty('--color-hero', a);
+
+            // Compute contrast text for hero panel
+            let isDark = true;
+            try {
+                const hex = a.replace('#', '');
+                const r = parseInt(hex.substr(0, 2), 16) || 0;
+                const g = parseInt(hex.substr(2, 2), 16) || 0;
+                const b = parseInt(hex.substr(4, 2), 16) || 0;
+                const yiq = ((r * 299) + (g * 587) + (b * 114)) / 1000;
+                isDark = yiq < 135;
+            } catch (_) {}
+            const contrast = isDark ? '#FFFFFF' : '#0F172A';
+            document.documentElement.style.setProperty('--color-hero-text', contrast);
+            document.documentElement.style.setProperty('--accent-text', contrast);
+
+            const icon = document.getElementById('theme-icon');
+            if (icon) {
+                icon.className = (t === 'dark') ? 'fas fa-moon' : 'fas fa-sun';
+            }
+        }
+
         function filterMessages() {
             if (currentCategory === 'all') {
                 filteredIndices = MESSAGES_DATABASE.map((_, i) => i);
@@ -1971,15 +2016,18 @@
             navigate('ocal://settings#search');
         });
 
-        // Theme Toggle
+        // Theme Toggle Button
         document.getElementById('btn-theme-toggle')?.addEventListener('click', () => {
             const current = document.documentElement.getAttribute('data-theme') || 'dark';
             const next = current === 'dark' ? 'light' : 'dark';
-            document.documentElement.setAttribute('data-theme', next);
             localStorage.setItem('ocal-settings-theme', next);
-            const icon = document.getElementById('theme-icon');
-            if (icon) {
-                icon.className = next === 'dark' ? 'fas fa-moon' : 'fas fa-sun';
+            applyActiveTheme(next);
+        });
+
+        // Cross-tab / Settings storage listener
+        window.addEventListener('storage', (e) => {
+            if (e.key === 'ocal-settings-accent' || e.key === 'ocal-settings-theme') {
+                applyActiveTheme();
             }
         });
 
@@ -2005,6 +2053,7 @@
         });
 
         // Initialize
+        applyActiveTheme();
         filterMessages();
         parseBlockedTarget();
         shuffleMessage();
