@@ -306,10 +306,11 @@ function executeSearch() {
         targetUrl = searchUrl + encodeURIComponent(q);
     }
 
-    // Intercept adult/pornographic destination sites from home search
+    // Intercept adult/pornographic queries and destination sites from home search
     const isSafe = localStorage.getItem('ocal-content-protection') !== 'false';
-    if (isSafe && (/xhamster|pornhub|xnxx|xvideos|redtube|youporn|chaturbate|stripchat|spankbang|eporner|beeg|brazzers|rule34|nhentai|erome|livejasmin/i.test(targetUrl) || targetUrl.includes('.xxx') || targetUrl.includes('.adult') || targetUrl.includes('.porn') || targetUrl.includes('.sex'))) {
-        targetUrl = 'ocal://mindful-shield?url=' + encodeURIComponent(targetUrl);
+    const ADULT_QUERY_REGEX = /\b(x\s*hamster|porn\s*hub|x\s*videos?|x\s*nxx|red\s*tube|you\s*porn|chaturbate|strip\s*chat|spank\s*bang|eporner|beeg|brazzers|rule\s*34|nhentai|erome|livejasmin|thothub|fapello|daftsex|youjizz|hqporner|thumbzilla|cam4|camsoda|bongacams|hentaihaven|hanime|javhd|missav|jable|adultfriendfinder|porn|porno|xxx|hardcore|blowjob|handjob|gangbang|creampie|threesome|masturbat|hentai|erotica|cumshot|bdsm|anal\s*sex|shemale|cam\s*girl)\b/i;
+    if (isSafe && (ADULT_QUERY_REGEX.test(q) || ADULT_QUERY_REGEX.test(targetUrl) || /xhamster|pornhub|xnxx|xvideos|redtube|youporn/i.test(targetUrl) || targetUrl.includes('.xxx') || targetUrl.includes('.adult') || targetUrl.includes('.porn') || targetUrl.includes('.sex'))) {
+        targetUrl = 'ocal://mindful-shield?' + (ADULT_QUERY_REGEX.test(q) ? ('query=' + encodeURIComponent(q)) : ('url=' + encodeURIComponent(targetUrl)));
     }
 
     navigateToTargetUrl(targetUrl);

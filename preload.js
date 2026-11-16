@@ -3045,10 +3045,11 @@ window.addEventListener('mousedown', () => {
     function findEnclosingSection(node) {
         if (!node || !node.closest) return null;
         return node.closest([
-            'div.g', 'div.MjjYud', 'div[data-sokoban-container]', 'div.hlcw0c', 'div.tF2Cxc', 'div.g-blk', 'div.isv-r', 'div[data-ri]', 'g-card', 'video-voyager',
+            'div.g', 'div.hlcw0c', 'div.tF2Cxc', 'div.g-blk', 'div.isv-r', 'div[data-ri]', 'g-card', 'video-voyager',
             'li.b_algo', '.b_ans', 'article.result', '.result', 'div.algo',
             'ytd-rich-item-renderer', 'ytd-video-renderer', 'ytd-compact-video-renderer', 'ytd-grid-video-renderer', 'ytd-reel-item-renderer', 'ytm-video-with-context-renderer',
-            'article[data-testid="tweet"]', 'shreddit-post', 'div[data-testid="post-container"]'
+            'article[data-testid="tweet"]', 'shreddit-post', 'div[data-testid="post-container"]',
+            'div[data-target="directory-game-card"]', 'article[data-a-target*="card"]'
         ].join(','));
     }
 
@@ -3057,10 +3058,11 @@ window.addEventListener('mousedown', () => {
         if (!contentProtectionActive) return;
 
         const sectionSelectors = [
-            'div.g', 'div.MjjYud', 'div[data-sokoban-container]', 'div.hlcw0c', 'div.tF2Cxc', 'div.g-blk', 'div.isv-r', 'div[data-ri]', 'g-card', 'video-voyager',
+            'div.g', 'div.hlcw0c', 'div.tF2Cxc', 'div.g-blk', 'div.isv-r', 'div[data-ri]', 'g-card', 'video-voyager',
             'li.b_algo', '.b_ans', 'article.result', '.result', 'div.algo',
             'ytd-rich-item-renderer', 'ytd-video-renderer', 'ytd-compact-video-renderer', 'ytd-grid-video-renderer', 'ytd-reel-item-renderer', 'ytm-video-with-context-renderer',
-            'article[data-testid="tweet"]', 'shreddit-post', 'div[data-testid="post-container"]'
+            'article[data-testid="tweet"]', 'shreddit-post', 'div[data-testid="post-container"]',
+            'div[data-target="directory-game-card"]', 'article[data-a-target*="card"]'
         ];
 
         const containers = root.querySelectorAll ? root.querySelectorAll(sectionSelectors.join(',')) : [];

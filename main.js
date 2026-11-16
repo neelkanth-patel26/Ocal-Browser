@@ -1287,8 +1287,19 @@ function applyShieldSettings() {
             const adultSearchQuery = extractSearchEngineQuery(url);
             if (adultSearchQuery && isAdultContentQuery(adultSearchQuery)) {
                 if (resourceType === 'mainFrame') {
-                    const shieldUrl = 'file:///' + path.join(__dirname, 'mindful-shield.html').replace(/\\/g, '/') + '?query=' + encodeURIComponent(adultSearchQuery);
-                    return callback({ redirectURL: shieldUrl });
+                    let wc = (details && details.webContents) || (webContentsId ? webContents.fromId(webContentsId) : null);
+                    if (!wc && details && details.frame) wc = details.frame.webContents;
+                    if (!wc) {
+                        const entry = views.find(v => v.id === activeViewId);
+                        if (entry && entry.view && !entry.view.webContents.isDestroyed()) wc = entry.view.webContents;
+                    }
+                    if (wc && !wc.isDestroyed()) {
+                        const targetShield = resolveInternalURL(`ocal://mindful-shield?query=${encodeURIComponent(adultSearchQuery)}`);
+                        setTimeout(() => {
+                            if (!wc.isDestroyed()) wc.loadURL(targetShield);
+                        }, 25);
+                    }
+                    return callback({ cancel: true });
                 } else {
                     return callback({ cancel: true });
                 }
@@ -1305,8 +1316,19 @@ function applyShieldSettings() {
                             if (redirect && isAdultOrPornUrl(redirect)) target = redirect;
                         }
                     } catch (_) {}
-                    const shieldUrl = 'file:///' + path.join(__dirname, 'mindful-shield.html').replace(/\\/g, '/') + '?url=' + encodeURIComponent(target);
-                    return callback({ redirectURL: shieldUrl });
+                    let wc = (details && details.webContents) || (webContentsId ? webContents.fromId(webContentsId) : null);
+                    if (!wc && details && details.frame) wc = details.frame.webContents;
+                    if (!wc) {
+                        const entry = views.find(v => v.id === activeViewId);
+                        if (entry && entry.view && !entry.view.webContents.isDestroyed()) wc = entry.view.webContents;
+                    }
+                    if (wc && !wc.isDestroyed()) {
+                        const targetShield = resolveInternalURL(`ocal://mindful-shield?url=${encodeURIComponent(target)}`);
+                        setTimeout(() => {
+                            if (!wc.isDestroyed()) wc.loadURL(targetShield);
+                        }, 25);
+                    }
+                    return callback({ cancel: true });
                 } else {
                     // Block explicit subframes, images, video assets, scripts
                     return callback({ cancel: true });
@@ -2951,7 +2973,8 @@ function resolveInternalURL(url) {
     }
     if (cleanBase === 'ocal://mindful-shield' || cleanBase === 'ocal://safe-shield' || cleanBase === 'mindful-shield') {
         const qIdx = url.indexOf('?');
-        return 'file:///' + path.join(__dirname, 'mindful-shield.html').replace(/\\/g, '/') + (qIdx !== -1 ? url.substring(qIdx) : '');
+        const shieldPath = nodePath.join(__dirname, 'mindful-shield.html');
+        return require('url').pathToFileURL(shieldPath).href + (qIdx !== -1 ? url.substring(qIdx) : '');
     }
     if (cleanBase === 'ocal://games' || cleanBase === 'ocal://game' || cleanBase === 'ocal://arcade' || cleanBase === 'games' || cleanBase === 'arcade') return getFilePath('games.html');
     if (cleanBase === 'ocal://hexgl' || cleanBase === 'hexgl' || cleanBase === 'ocal://arcade/hexgl' || cleanBase.startsWith('ocal://hexgl') || cleanBase.startsWith('ocal://arcade/hexgl')) {
@@ -3533,6 +3556,21 @@ function setupViewEvents(tabId, view, side = 'left') {
     webContents.on('will-navigate', (event, targetUrl) => {
         let hostname;
         try { hostname = new URL(targetUrl).hostname; } catch (e) { hostname = ''; }
+
+        // Content Protection & Mindful Shield Check for will-navigate
+        if (userSettings.contentProtectionEnabled !== false && userSettings.adultDomainsBlockEnabled !== false) {
+            const adultQuery = extractSearchEngineQuery(targetUrl);
+            const isAdultSite = isAdultOrPornUrl(targetUrl);
+            if (isAdultSite || (adultQuery && isAdultContentQuery(adultQuery))) {
+                event.preventDefault();
+                const param = adultQuery ? `query=${encodeURIComponent(adultQuery)}` : `url=${encodeURIComponent(targetUrl)}`;
+                const targetShield = resolveInternalURL(`ocal://mindful-shield?${param}`);
+                setImmediate(() => {
+                    if (!webContents.isDestroyed()) webContents.loadURL(targetShield);
+                });
+                return;
+            }
+        }
 
         // Safe Browsing Check
         if (hostname && maliciousDomains.has(hostname) && !trustedMalwareDomains.has(hostname)) {
@@ -5039,10 +5077,13 @@ ipcMain.on('navigate-to', (e, url) => {
         }
     }
 
-    // Intercept adult/pornographic sites with Search Security & Mindful Protection
-    if (userSettings.contentProtectionEnabled !== false && userSettings.adultDomainsBlockEnabled !== false && isAdultOrPornUrl(targetUrl)) {
+    // Intercept adult/pornographic sites and queries with Search Security & Mindful Protection
+    const searchQ = extractSearchEngineQuery(targetUrl);
+    const adultQueryToIntercept = (searchQ && isAdultContentQuery(searchQ)) ? searchQ : (isAdultContentQuery(cleanUrl) ? cleanUrl : null);
+    if (userSettings.contentProtectionEnabled !== false && userSettings.adultDomainsBlockEnabled !== false && (adultQueryToIntercept || isAdultOrPornUrl(targetUrl))) {
         hideSuggestions();
-        activeView.webContents.loadURL(`ocal://mindful-shield?url=${encodeURIComponent(targetUrl)}`);
+        const param = adultQueryToIntercept ? `query=${encodeURIComponent(adultQueryToIntercept)}` : `url=${encodeURIComponent(targetUrl)}`;
+        activeView.webContents.loadURL(resolveInternalURL(`ocal://mindful-shield?${param}`));
         return;
     }
 
@@ -11213,25 +11254,69 @@ app.whenReady().then(async () => {
     // 1. Core Extension Loading (Highest Priority)
     await extensionManager.loadAll();
 
-    // 2. Register ocal:// protocol
+    // 2. Register ocal:// protocol (Supports loose files & app.asar archives)
     if (protocol.handle) {
-        protocol.handle('ocal', (request) => {
-            const url = request.url;
+        protocol.handle('ocal', async (request) => {
+            const reqUrl = request.url;
             try {
-                const parsed = new URL(url);
+                const parsed = new URL(reqUrl);
                 if (parsed.hostname === 'arcade' || parsed.hostname === 'hexgl') {
-                    const asset = require('./arcade-protocol.cjs').resolveArcadeAsset(url, __dirname);
+                    const asset = require('./arcade-protocol.cjs').resolveArcadeAsset(reqUrl, __dirname);
                     if (asset) {
                         return net.fetch(asset).catch(() => new Response('Not found', { status: 404 }));
                     }
                 }
             } catch (e) { }
-            const resolved = resolveInternalURL(url);
-            if (resolved.startsWith('file://')) {
-                const cleanFilePath = resolved.split(/[?#]/)[0];
-                return require('electron').net.fetch(cleanFilePath);
+
+            try {
+                const resolved = resolveInternalURL(reqUrl);
+                let cleanFilePath = resolved.split(/[?#]/)[0];
+                if (cleanFilePath.startsWith('file:///')) {
+                    try {
+                        cleanFilePath = require('url').fileURLToPath(cleanFilePath);
+                    } catch (_) {
+                        cleanFilePath = cleanFilePath.replace(/^file:\/\/\//, '');
+                    }
+                } else if (cleanFilePath.startsWith('file://')) {
+                    try {
+                        cleanFilePath = require('url').fileURLToPath(cleanFilePath);
+                    } catch (_) {
+                        cleanFilePath = cleanFilePath.replace(/^file:\/\//, '');
+                    }
+                }
+
+                if (fs.existsSync(cleanFilePath)) {
+                    const ext = path.extname ? path.extname(cleanFilePath).toLowerCase() : nodePath.extname(cleanFilePath).toLowerCase();
+                    const mimeTypes = {
+                        '.html': 'text/html; charset=utf-8',
+                        '.js': 'application/javascript; charset=utf-8',
+                        '.mjs': 'application/javascript; charset=utf-8',
+                        '.css': 'text/css; charset=utf-8',
+                        '.json': 'application/json; charset=utf-8',
+                        '.png': 'image/png',
+                        '.jpg': 'image/jpeg',
+                        '.jpeg': 'image/jpeg',
+                        '.gif': 'image/gif',
+                        '.webp': 'image/webp',
+                        '.svg': 'image/svg+xml',
+                        '.ico': 'image/x-icon',
+                        '.woff2': 'font/woff2',
+                        '.woff': 'font/woff',
+                        '.ttf': 'font/ttf'
+                    };
+                    const contentType = mimeTypes[ext] || 'application/octet-stream';
+                    const fileData = fs.readFileSync(cleanFilePath);
+                    return new Response(fileData, {
+                        headers: {
+                            'Content-Type': contentType,
+                            'Content-Length': fileData.length.toString()
+                        }
+                    });
+                }
+            } catch (err) {
+                console.error('[protocol:ocal] Error resolving asset:', err);
             }
-            return new Response('Protocol mismatch', { status: 404 });
+            return new Response('Not found', { status: 404 });
         });
     }
 
