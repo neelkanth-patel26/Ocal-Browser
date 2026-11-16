@@ -19,7 +19,7 @@
     <link rel="stylesheet" href="assets/fontawesome/css/all.min.css">
 
     <style>
-        /* ── Reset & Core Variables ────────────────────────────────────────── */
+        /* ── Reset & Core Theme Variables ──────────────────────────────────── */
         *, *::before, *::after {
             box-sizing: border-box;
             margin: 0;
@@ -30,12 +30,17 @@
         }
 
         :root {
-            --split-pos: 50%;
             --coral: #E85A4F;
             --coral-dark: #D4483D;
-            --coral-soft: #FDE8E6;
-            --charcoal: #2C3E50;
-            --charcoal-hover: #1A252F;
+            --coral-light: #FFF5F4;
+            --coral-border: #FCD5D2;
+            --dark-panel: #111827;
+            --charcoal: #1E293B;
+            --slate-600: #475569;
+            --slate-400: #94A3B8;
+            --slate-200: #E2E8F0;
+            --slate-100: #F1F5F9;
+            --slate-50: #F8FAFC;
             --accent: #09F0A0;
             --font-main: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, sans-serif;
             --font-mono: 'Space Mono', monospace;
@@ -47,1281 +52,935 @@
             overflow: hidden;
             font-family: var(--font-main);
             background: #FFFFFF;
-            color: #1E293B;
+            color: #0F172A;
             -webkit-font-smoothing: antialiased;
         }
 
-        /* ── Master Viewport Stage ─────────────────────────────────────────── */
-        .onboarding-viewport {
-            position: relative;
+        /* ── Master Split Layout ───────────────────────────────────────────── */
+        .onboarding-container {
+            display: flex;
             width: 100vw;
             height: 100vh;
             overflow: hidden;
         }
 
-        /* ── Split Background Canvas ───────────────────────────────────────── */
-        .bg-layer-left {
-            position: absolute;
-            top: 0;
-            left: 0;
-            bottom: 0;
-            width: var(--split-pos);
+        /* ── Left Showcase Panel (Solid Coral) ─────────────────────────────── */
+        .showcase-panel {
+            width: 38%;
+            min-width: 380px;
+            max-width: 460px;
             background: var(--coral);
-            z-index: 1;
-            transition: width 0.04s linear;
+            color: #FFFFFF;
+            padding: 44px 40px;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            position: relative;
+            box-shadow: 4px 0 24px rgba(0, 0, 0, 0.08);
+            z-index: 10;
         }
 
-        .bg-layer-right {
-            position: absolute;
-            top: 0;
-            left: var(--split-pos);
-            right: 0;
-            bottom: 0;
-            background: #FFFFFF;
-            z-index: 1;
-            transition: left 0.04s linear;
-        }
-
-        /* ── Header Top Navigation Bar ─────────────────────────────────────── */
-        .topbar-left {
-            position: absolute;
-            top: 36px;
-            left: 56px;
-            z-index: 20;
+        /* Top Brand */
+        .brand-header {
             display: flex;
             align-items: center;
             gap: 12px;
-            cursor: pointer;
-            transition: transform 0.25s ease;
-        }
-        .topbar-left:hover {
-            transform: scale(1.05);
         }
 
-        .logo-bird-icon {
-            width: 32px;
-            height: 32px;
-            fill: #FFFFFF;
-            filter: drop-shadow(0 2px 8px rgba(0,0,0,0.15));
-        }
-
-        .topbar-right {
-            position: absolute;
-            top: 36px;
-            right: 56px;
-            z-index: 20;
+        .brand-icon-wrap {
+            width: 36px;
+            height: 36px;
+            border-radius: 10px;
+            background: rgba(255, 255, 255, 0.2);
+            backdrop-filter: blur(8px);
             display: flex;
             align-items: center;
-            gap: 32px;
-        }
-
-        .nav-links-cluster {
-            display: flex;
-            align-items: center;
-            gap: 24px;
-        }
-
-        .nav-link-item {
-            font-size: 11px;
-            font-weight: 750;
-            letter-spacing: 1.5px;
-            text-transform: uppercase;
-            color: #64748B;
-            background: none;
-            border: none;
-            cursor: pointer;
-            padding: 6px 4px;
-            transition: color 0.2s ease, transform 0.2s ease;
-        }
-        .nav-link-item:hover {
-            color: #0F172A;
-            transform: translateY(-1px);
-        }
-
-        .btn-launch-pill {
-            background: var(--charcoal);
+            justify-content: center;
+            font-size: 18px;
             color: #FFFFFF;
-            padding: 10px 26px;
-            border-radius: 9999px;
-            font-size: 11px;
-            font-weight: 750;
-            letter-spacing: 1.5px;
-            text-transform: uppercase;
-            border: none;
-            cursor: pointer;
-            display: inline-flex;
-            align-items: center;
-            gap: 8px;
-            transition: background 0.25s ease, transform 0.25s ease, box-shadow 0.25s ease;
-        }
-        .btn-launch-pill:hover {
-            background: var(--charcoal-hover);
-            transform: translateY(-2px);
-            box-shadow: 0 8px 24px rgba(44, 62, 80, 0.28);
         }
 
-        /* ── Split Hero Content (Typography & Actions) ─────────────────────── */
-        .content-layer-left {
-            position: absolute;
-            top: 0;
-            left: 0;
-            bottom: 0;
-            width: 50vw;
+        .brand-title {
+            font-size: 20px;
+            font-weight: 800;
+            letter-spacing: -0.5px;
+            color: #FFFFFF;
+        }
+
+        /* Hero / Narrative Section */
+        .showcase-body {
+            margin: auto 0;
             display: flex;
             flex-direction: column;
-            justify-content: center;
-            padding-left: 96px;
-            padding-right: 64px;
-            z-index: 10;
-            pointer-events: none;
-            animation: heroFadeSlideLeft 0.8s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+            gap: 28px;
         }
 
-        .hero-left-heading {
-            font-size: 28px;
-            font-weight: 550;
-            line-height: 1.45;
-            color: #FFFFFF;
-            max-width: 380px;
-            letter-spacing: -0.4px;
-            text-shadow: 0 2px 10px rgba(0,0,0,0.08);
-        }
-
-        .btn-view-themes {
+        .step-tag-pill {
             display: inline-flex;
             align-items: center;
-            justify-content: center;
-            width: fit-content;
-            margin-top: 34px;
-            padding: 13px 38px;
-            border-radius: 9999px;
-            border: 1.5px solid rgba(255, 255, 255, 0.85);
-            background: transparent;
-            color: #FFFFFF;
-            font-size: 11.5px;
-            font-weight: 750;
-            letter-spacing: 2px;
+            gap: 6px;
+            background: rgba(255, 255, 255, 0.18);
+            padding: 5px 12px;
+            border-radius: 999px;
+            font-size: 11px;
+            font-weight: 700;
+            letter-spacing: 1px;
             text-transform: uppercase;
-            cursor: pointer;
-            pointer-events: auto;
-            transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+            width: fit-content;
         }
-        .btn-view-themes:hover {
+
+        .showcase-heading {
+            font-size: 32px;
+            font-weight: 800;
+            line-height: 1.25;
+            letter-spacing: -0.8px;
+        }
+
+        .showcase-desc {
+            font-size: 14.5px;
+            line-height: 1.6;
+            color: rgba(255, 255, 255, 0.9);
+            font-weight: 500;
+        }
+
+        /* Stepper Progress List */
+        .stepper-nav {
+            display: flex;
+            flex-direction: column;
+            gap: 14px;
+            margin-top: 8px;
+        }
+
+        .stepper-item {
+            display: flex;
+            align-items: center;
+            gap: 14px;
+            padding: 8px 12px;
+            border-radius: 10px;
+            background: rgba(255, 255, 255, 0.08);
+            transition: all 0.25s ease;
+            cursor: pointer;
+        }
+
+        .stepper-item.active {
             background: #FFFFFF;
             color: var(--coral);
-            transform: translateY(-2px);
-            box-shadow: 0 12px 30px rgba(0, 0, 0, 0.18);
+            box-shadow: 0 4px 16px rgba(0, 0, 0, 0.15);
+            transform: translateX(4px);
         }
 
-        .content-layer-right {
-            position: absolute;
-            top: 0;
-            right: 0;
-            bottom: 0;
-            width: 50vw;
+        .stepper-item.completed {
+            background: rgba(255, 255, 255, 0.16);
+            color: #FFFFFF;
+        }
+
+        .stepper-num {
+            width: 26px;
+            height: 26px;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.25);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 12px;
+            font-weight: 700;
+            color: #FFFFFF;
+            flex-shrink: 0;
+            transition: all 0.2s ease;
+        }
+
+        .stepper-item.active .stepper-num {
+            background: var(--coral);
+            color: #FFFFFF;
+        }
+
+        .stepper-item.completed .stepper-num {
+            background: #FFFFFF;
+            color: var(--coral);
+        }
+
+        .stepper-text {
             display: flex;
             flex-direction: column;
-            justify-content: center;
-            align-items: flex-end;
-            padding-right: 96px;
-            padding-left: 64px;
-            z-index: 10;
-            pointer-events: none;
-            text-align: left;
-            animation: heroFadeSlideRight 0.8s cubic-bezier(0.16, 1, 0.3, 1) forwards;
         }
 
-        .right-text-wrap {
-            max-width: 380px;
-            width: 100%;
+        .stepper-title {
+            font-size: 13px;
+            font-weight: 700;
+            letter-spacing: -0.2px;
         }
 
-        .dual-badge-icon {
-            width: 32px;
-            height: 32px;
-            border-radius: 50%;
-            background: linear-gradient(to right, var(--coral) 50%, rgba(232, 90, 79, 0.18) 50%);
-            margin-bottom: 24px;
-            box-shadow: 0 2px 10px rgba(232, 90, 79, 0.22);
+        .stepper-sub {
+            font-size: 11px;
+            opacity: 0.75;
+            font-weight: 500;
         }
 
-        .hero-right-heading {
-            font-size: 28px;
+        .stepper-item.active .stepper-sub {
+            color: #64748B;
+            opacity: 1;
+        }
+
+        /* Footer Info */
+        .showcase-footer {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            font-size: 11.5px;
+            color: rgba(255, 255, 255, 0.8);
             font-weight: 600;
-            line-height: 1.45;
-            color: #1E293B;
-            letter-spacing: -0.4px;
+            padding-top: 16px;
+            border-top: 1px solid rgba(255, 255, 255, 0.2);
         }
 
-        .coral-highlight {
-            color: var(--coral);
-            font-weight: 750;
-        }
-
-        /* ── Centerpiece: The Dual Synchronized Browser Frame ──────────────── */
-        .ambient-glow {
-            position: absolute;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
-            width: 760px;
-            height: 520px;
-            border-radius: 50%;
-            background: radial-gradient(circle, rgba(232, 90, 79, 0.35) 0%, rgba(9, 240, 160, 0.12) 40%, transparent 70%);
-            filter: blur(48px);
-            z-index: 7;
-            pointer-events: none;
-        }
-
-        .viewport-layer-dark {
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 100vw;
+        /* ── Right Settings Panel (Clean White Wizard) ─────────────────────── */
+        .wizard-panel {
+            flex: 1;
             height: 100vh;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            clip-path: polygon(0 0, var(--split-pos) 0, var(--split-pos) 100%, 0 100%);
-            z-index: 12;
-            pointer-events: none;
-            transition: clip-path 0.03s linear;
-        }
-
-        .viewport-layer-light {
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 100vw;
-            height: 100vh;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            clip-path: polygon(var(--split-pos) 0, 100% 0, 100% 100%, var(--split-pos) 100%);
-            z-index: 12;
-            pointer-events: none;
-            transition: clip-path 0.03s linear;
-        }
-
-        /* The Browser Window Frame (same dimensions on both layers) */
-        .browser-mockup-frame {
-            width: 660px;
-            height: 420px;
-            border-radius: 18px;
-            box-shadow: 0 35px 95px rgba(0, 0, 0, 0.32), 0 10px 30px rgba(0, 0, 0, 0.16);
+            background: #FFFFFF;
             display: flex;
             flex-direction: column;
             overflow: hidden;
-            pointer-events: auto;
             position: relative;
         }
 
-        /* Dark Frame Styles */
-        .viewport-layer-dark .browser-mockup-frame {
-            background: #0F172A;
-            border: 1.5px solid rgba(255, 255, 255, 0.18);
-            color: #F8FAFC;
-        }
-
-        /* Light Frame Styles */
-        .viewport-layer-light .browser-mockup-frame {
-            background: #FFFFFF;
-            border: 1.5px solid rgba(0, 0, 0, 0.1);
-            color: #0F172A;
-        }
-
-        /* Browser Header */
-        .bm-header {
-            height: 48px;
+        /* Wizard Header */
+        .wizard-header {
             display: flex;
             align-items: center;
-            padding: 0 18px;
-            gap: 16px;
+            justify-content: space-between;
+            padding: 32px 56px 20px 56px;
+            border-bottom: 1px solid var(--slate-100);
             flex-shrink: 0;
         }
-        .viewport-layer-dark .bm-header {
-            background: #182234;
-            border-bottom: 1px solid rgba(255, 255, 255, 0.08);
-        }
-        .viewport-layer-light .bm-header {
-            background: #F8FAFC;
-            border-bottom: 1px solid #E2E8F0;
-        }
 
-        .window-dots {
+        .progress-block {
             display: flex;
-            gap: 7px;
+            flex-direction: column;
+            gap: 6px;
+            min-width: 220px;
         }
-        .dot { width: 10px; height: 10px; border-radius: 50%; }
-        .dot-red { background: #FF5F56; }
-        .dot-yellow { background: #FFBD2E; }
-        .dot-green { background: #27C93F; }
 
-        .bm-tabs {
+        .progress-label-row {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            font-size: 11px;
+            font-weight: 750;
+            letter-spacing: 0.8px;
+            text-transform: uppercase;
+            color: var(--slate-600);
+        }
+
+        .progress-track {
+            width: 100%;
+            height: 6px;
+            background: var(--slate-100);
+            border-radius: 999px;
+            overflow: hidden;
+        }
+
+        .progress-fill {
+            height: 100%;
+            width: 20%;
+            background: var(--coral);
+            border-radius: 999px;
+            transition: width 0.35s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .btn-skip-setup {
+            background: none;
+            border: none;
+            color: var(--slate-600);
+            font-size: 12.5px;
+            font-weight: 600;
+            cursor: pointer;
+            padding: 8px 14px;
+            border-radius: 8px;
+            transition: all 0.2s ease;
             display: flex;
             align-items: center;
             gap: 6px;
-            flex: 1;
         }
-        .bm-tab {
-            padding: 6px 14px;
-            border-radius: 8px;
-            font-size: 11px;
-            font-weight: 700;
-            display: flex;
-            align-items: center;
-            gap: 7px;
-        }
-        .viewport-layer-dark .bm-tab.active {
-            background: #0F172A;
-            color: #38BDF8;
-            box-shadow: 0 2px 8px rgba(0,0,0,0.3);
-        }
-        .viewport-layer-dark .bm-tab.inactive { color: #94A3B8; }
-        .viewport-layer-light .bm-tab.active {
-            background: #FFFFFF;
+
+        .btn-skip-setup:hover {
             color: #0F172A;
-            box-shadow: 0 1px 4px rgba(0,0,0,0.06);
-        }
-        .viewport-layer-light .bm-tab.inactive { color: #64748B; }
-
-        /* Address Row */
-        .bm-address-row {
-            height: 42px;
-            display: flex;
-            align-items: center;
-            padding: 0 18px;
-            gap: 12px;
-            flex-shrink: 0;
-        }
-        .viewport-layer-dark .bm-address-row {
-            background: #131B2E;
-            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
-        }
-        .viewport-layer-light .bm-address-row {
-            background: #F1F5F9;
-            border-bottom: 1px solid #E2E8F0;
+            background: var(--slate-100);
         }
 
-        .bm-nav-icons { display: flex; gap: 10px; font-size: 11px; }
-        .viewport-layer-dark .bm-nav-icons { color: #64748B; }
-        .viewport-layer-light .bm-nav-icons { color: #94A3B8; }
-
-        .bm-omnibox {
+        /* Wizard Content Stage */
+        .wizard-stage {
             flex: 1;
-            height: 28px;
-            border-radius: 6px;
-            display: flex;
-            align-items: center;
-            padding: 0 12px;
-            gap: 8px;
-            font-size: 11px;
-            font-weight: 600;
-        }
-        .viewport-layer-dark .bm-omnibox {
-            background: #0F172A;
-            border: 1px solid rgba(255, 255, 255, 0.1);
-            color: #38BDF8;
-        }
-        .viewport-layer-light .bm-omnibox {
-            background: #FFFFFF;
-            border: 1px solid #CBD5E1;
-            color: #1E293B;
-        }
-
-        .bm-shield-badge {
-            display: flex;
-            align-items: center;
-            gap: 5px;
-            font-size: 10.5px;
-            font-weight: 750;
-            padding: 3px 8px;
-            border-radius: 5px;
-        }
-        .viewport-layer-dark .bm-shield-badge {
-            background: rgba(16, 185, 129, 0.15);
-            color: #34D399;
-            border: 1px solid rgba(16, 185, 129, 0.3);
-        }
-        .viewport-layer-light .bm-shield-badge {
-            background: #DCFCE7;
-            color: #15803D;
-            border: 1px solid #86EFAC;
-        }
-
-        /* Mockup Body Content */
-        .bm-body {
-            flex: 1;
-            display: flex;
-            overflow: hidden;
-        }
-
-        /* Dark View Details */
-        .dark-content {
-            flex: 1;
-            padding: 24px;
-            display: flex;
-            flex-direction: column;
-            gap: 14px;
-            background: radial-gradient(circle at 10% 20%, #151F33 0%, #0F172A 85%);
-            font-family: var(--font-mono);
-        }
-        .dc-header {
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-        }
-        .dc-title { font-size: 12px; font-weight: 700; color: #38BDF8; letter-spacing: -0.2px; }
-        .dc-status { font-size: 9.5px; color: #34D399; background: rgba(52, 211, 153, 0.12); padding: 2px 8px; border-radius: 9999px; font-weight: 700; }
-
-        .dc-stats-grid {
-            display: grid;
-            grid-template-columns: repeat(3, 1fr);
-            gap: 10px;
-        }
-        .dc-stat-box {
-            background: rgba(255, 255, 255, 0.04);
-            border: 1px solid rgba(255, 255, 255, 0.08);
-            border-radius: 8px;
-            padding: 10px 12px;
-            display: flex;
-            flex-direction: column;
-            gap: 4px;
-        }
-        .dc-stat-lbl { font-size: 9px; color: #94A3B8; text-transform: uppercase; }
-        .dc-stat-val { font-size: 13px; font-weight: 700; color: #F8FAFC; }
-
-        .dc-code-card {
-            flex: 1;
-            background: #090D16;
-            border: 1px solid rgba(56, 189, 248, 0.2);
-            border-radius: 8px;
-            padding: 12px 14px;
-            font-size: 10px;
-            line-height: 1.6;
-            color: #94A3B8;
-        }
-
-        /* Light View Details */
-        .light-content {
-            flex: 1;
-            padding: 28px 36px;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            background: #FAFAFA;
-            font-family: var(--font-main);
-        }
-        .lc-brand {
-            font-size: 26px;
-            font-weight: 800;
-            color: #0F172A;
-            letter-spacing: -0.8px;
-            margin-bottom: 20px;
-            display: flex;
-            align-items: center;
-            gap: 8px;
-        }
-        .lc-brand i { color: var(--coral); }
-
-        .lc-search-box {
-            width: 100%;
-            height: 42px;
-            border-radius: 9999px;
-            background: #FFFFFF;
-            border: 1.5px solid #E2E8F0;
-            box-shadow: 0 4px 16px rgba(0, 0, 0, 0.04);
-            display: flex;
-            align-items: center;
-            padding: 0 16px;
-            gap: 12px;
-            font-size: 12px;
-            color: #94A3B8;
-            margin-bottom: 24px;
-        }
-
-        .lc-tiles-row { display: flex; gap: 18px; }
-        .lc-tile { display: flex; flex-direction: column; align-items: center; gap: 6px; cursor: pointer; }
-        .lc-tile-circle {
-            width: 44px;
-            height: 44px;
-            border-radius: 50%;
-            background: #FFFFFF;
-            box-shadow: 0 3px 10px rgba(0,0,0,0.06);
-            border: 1px solid #E2E8F0;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 16px;
-        }
-        .lc-tile-name { font-size: 10.5px; font-weight: 600; color: #475569; }
-
-        /* ── Center Split Divider Line & Knob ──────────────────────────────── */
-        .split-divider-line {
-            position: absolute;
-            top: 0;
-            bottom: 0;
-            left: var(--split-pos);
-            width: 2px;
-            background: rgba(255, 255, 255, 0.4);
-            z-index: 25;
-            transform: translateX(-50%);
-            cursor: ew-resize;
-            pointer-events: auto;
-            transition: left 0.04s linear;
-        }
-
-        .split-slider-knob {
-            position: absolute;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
-            width: 44px;
-            height: 44px;
-            border-radius: 50%;
-            background: var(--coral);
-            border: 3.5px solid #FFFFFF;
-            box-shadow: 0 8px 24px rgba(0, 0, 0, 0.28);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            color: #FFFFFF;
-            cursor: ew-resize;
-            transition: transform 0.2s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.2s ease;
-        }
-        .split-slider-knob:hover,
-        .split-slider-knob.dragging {
-            transform: translate(-50%, -50%) scale(1.15);
-            box-shadow: 0 12px 32px rgba(232, 90, 79, 0.65);
-        }
-        .split-slider-knob svg {
-            width: 16px;
-            height: 16px;
-        }
-
-        /* ── Hotspot Pulse Nodes ───────────────────────────────────────────── */
-        .hotspot-wrap {
-            position: absolute;
-            z-index: 30;
-            pointer-events: auto;
-            cursor: pointer;
-        }
-
-        .hotspot-dot {
-            width: 12px;
-            height: 12px;
-            border-radius: 50%;
-            background: #FFFFFF;
-            border: 2px solid var(--coral);
-            box-shadow: 0 0 10px rgba(0,0,0,0.2);
-            position: relative;
-        }
-
-        .hotspot-ring {
-            position: absolute;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
-            width: 28px;
-            height: 28px;
-            border-radius: 50%;
-            border: 1.5px solid rgba(255, 255, 255, 0.9);
-            animation: pulseWave 2.6s infinite cubic-bezier(0.2, 0.8, 0.2, 1);
-            pointer-events: none;
-        }
-
-        @keyframes pulseWave {
-            0% { transform: translate(-50%, -50%) scale(0.5); opacity: 1; }
-            70% { transform: translate(-50%, -50%) scale(1.8); opacity: 0.35; }
-            100% { transform: translate(-50%, -50%) scale(2.4); opacity: 0; }
-        }
-
-        .hotspot-card {
-            position: absolute;
-            bottom: calc(100% + 12px);
-            left: 50%;
-            transform: translateX(-50%) translateY(8px);
-            background: rgba(20, 24, 33, 0.94);
-            backdrop-filter: blur(16px);
-            -webkit-backdrop-filter: blur(16px);
-            color: #FFFFFF;
-            padding: 8px 14px;
-            border-radius: 8px;
-            border: 1px solid rgba(255, 255, 255, 0.12);
-            font-size: 11.5px;
-            font-weight: 600;
-            white-space: nowrap;
-            opacity: 0;
-            pointer-events: none;
-            transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
-            box-shadow: 0 10px 25px rgba(0,0,0,0.3);
-        }
-        .hotspot-wrap:hover .hotspot-card {
-            opacity: 1;
-            transform: translateX(-50%) translateY(0);
-        }
-
-        /* ── Keyframe Animations ───────────────────────────────────────────── */
-        @keyframes heroFadeSlideLeft {
-            0% { opacity: 0; transform: translateX(-30px); }
-            100% { opacity: 1; transform: translateX(0); }
-        }
-
-        @keyframes heroFadeSlideRight {
-            0% { opacity: 0; transform: translateX(30px); }
-            100% { opacity: 1; transform: translateX(0); }
-        }
-
-        /* ── Slide-Up Customization Drawer / Modal ──────────────────────────── */
-        .setup-drawer-overlay {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100vw;
-            height: 100vh;
-            background: rgba(15, 23, 42, 0.45);
-            backdrop-filter: blur(12px);
-            -webkit-backdrop-filter: blur(12px);
-            z-index: 100;
-            opacity: 0;
-            pointer-events: none;
-            transition: opacity 0.35s cubic-bezier(0.16, 1, 0.3, 1);
-            display: flex;
-            align-items: flex-end;
-            justify-content: center;
-        }
-        .setup-drawer-overlay.active {
-            opacity: 1;
-            pointer-events: auto;
-        }
-
-        .setup-drawer {
-            width: 100%;
-            max-width: 900px;
-            max-height: 86vh;
-            background: #FFFFFF;
-            border-top-left-radius: 24px;
-            border-top-right-radius: 24px;
-            box-shadow: 0 -12px 48px rgba(0, 0, 0, 0.25);
-            display: flex;
-            flex-direction: column;
-            overflow: hidden;
-            transform: translateY(100%);
-            transition: transform 0.4s cubic-bezier(0.16, 1, 0.3, 1);
-        }
-        .setup-drawer-overlay.active .setup-drawer {
-            transform: translateY(0);
-        }
-
-        .drawer-header {
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            padding: 20px 32px;
-            border-bottom: 1px solid #F1F5F9;
-        }
-
-        .drawer-title-group {
-            display: flex;
-            align-items: center;
-            gap: 12px;
-        }
-
-        .drawer-title {
-            font-size: 17px;
-            font-weight: 750;
-            color: #0F172A;
-            letter-spacing: -0.3px;
-        }
-
-        .drawer-close-btn {
-            width: 34px;
-            height: 34px;
-            border-radius: 50%;
-            background: #F1F5F9;
-            border: none;
-            color: #64748B;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            cursor: pointer;
-            transition: all 0.2s ease;
-        }
-        .drawer-close-btn:hover {
-            background: #E2E8F0;
-            color: #0F172A;
-        }
-
-        .drawer-nav-tabs {
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            padding: 12px 32px;
-            background: #F8FAFC;
-            border-bottom: 1px solid #F1F5F9;
-            overflow-x: auto;
-        }
-
-        .drawer-tab-btn {
-            display: inline-flex;
-            align-items: center;
-            gap: 8px;
-            padding: 8px 16px;
-            border-radius: 9999px;
-            border: none;
-            background: transparent;
-            color: #64748B;
-            font-size: 12px;
-            font-weight: 700;
-            cursor: pointer;
-            transition: all 0.2s ease;
-            white-space: nowrap;
-        }
-        .drawer-tab-btn:hover {
-            color: #0F172A;
-            background: #EEF2FF;
-        }
-        .drawer-tab-btn.active {
-            background: #2C3E50;
-            color: #FFFFFF;
-        }
-
-        .drawer-body {
-            padding: 28px 32px;
             overflow-y: auto;
-            flex: 1;
+            padding: 36px 56px;
+            display: flex;
+            flex-direction: column;
         }
 
-        .tab-panel {
+        .wizard-step-container {
+            max-width: 620px;
+            width: 100%;
+            margin: 0 auto;
+            display: flex;
+            flex-direction: column;
+            gap: 24px;
+        }
+
+        .step-panel {
             display: none;
             flex-direction: column;
-            gap: 20px;
+            gap: 22px;
+            animation: fadeInStep 0.3s cubic-bezier(0.4, 0, 0.2, 1) forwards;
         }
-        .tab-panel.active {
+
+        .step-panel.active {
             display: flex;
         }
 
-        /* Drawer Setting Rows & Cards */
-        .drawer-card-grid {
+        @keyframes fadeInStep {
+            from {
+                opacity: 0;
+                transform: translateY(8px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .step-header {
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+        }
+
+        .step-title {
+            font-size: 24px;
+            font-weight: 800;
+            letter-spacing: -0.5px;
+            color: #0F172A;
+        }
+
+        .step-description {
+            font-size: 13.5px;
+            color: var(--slate-600);
+            line-height: 1.5;
+        }
+
+        .section-label {
+            font-size: 11.5px;
+            font-weight: 750;
+            letter-spacing: 0.8px;
+            text-transform: uppercase;
+            color: var(--slate-400);
+            margin-top: 4px;
+        }
+
+        /* ── Modern Setting Selection Cards ────────────────────────────────── */
+        .cards-grid {
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+            grid-template-columns: 1fr 1fr;
             gap: 14px;
         }
 
-        .choice-card {
-            border: 1.5px solid #E2E8F0;
+        .cards-list {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        .setting-card {
+            border: 1.5px solid var(--slate-200);
             border-radius: 14px;
             padding: 16px 18px;
             background: #FFFFFF;
             cursor: pointer;
             display: flex;
-            align-items: flex-start;
+            align-items: center;
+            justify-content: space-between;
             gap: 14px;
-            transition: all 0.2s ease;
-        }
-        .choice-card:hover {
-            border-color: #CBD5E1;
-            transform: translateY(-1px);
-        }
-        .choice-card.selected {
-            border-color: var(--coral);
-            background: #FFF9F9;
+            transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+            position: relative;
         }
 
-        .choice-icon {
-            width: 36px;
-            height: 36px;
+        .setting-card:hover {
+            border-color: var(--slate-400);
+            background: var(--slate-50);
+            transform: translateY(-1px);
+        }
+
+        .setting-card.selected {
+            border-color: var(--coral);
+            background: var(--coral-light);
+            box-shadow: 0 4px 14px rgba(232, 90, 79, 0.12);
+        }
+
+        .card-main-content {
+            display: flex;
+            align-items: center;
+            gap: 14px;
+        }
+
+        .card-icon {
+            width: 38px;
+            height: 38px;
             border-radius: 10px;
-            background: #F1F5F9;
-            color: #475569;
+            background: var(--slate-100);
             display: flex;
             align-items: center;
             justify-content: center;
-            font-size: 15px;
+            font-size: 16px;
+            color: #1E293B;
             flex-shrink: 0;
             transition: all 0.2s ease;
         }
-        .choice-card.selected .choice-icon {
+
+        .setting-card.selected .card-icon {
             background: var(--coral);
             color: #FFFFFF;
         }
 
-        .choice-title {
+        .card-texts {
+            display: flex;
+            flex-direction: column;
+            gap: 3px;
+        }
+
+        .card-title {
             font-size: 13.5px;
             font-weight: 750;
             color: #0F172A;
-            margin-bottom: 3px;
-        }
-        .choice-desc {
-            font-size: 11.5px;
-            color: #64748B;
-            line-height: 1.45;
+            letter-spacing: -0.2px;
         }
 
-        /* Swatches */
-        .swatches-cluster {
+        .card-desc {
+            font-size: 11.5px;
+            color: var(--slate-600);
+            line-height: 1.4;
+        }
+
+        /* Check Indicator */
+        .check-badge {
+            width: 22px;
+            height: 22px;
+            border-radius: 50%;
+            border: 1.5px solid var(--slate-200);
             display: flex;
             align-items: center;
-            gap: 10px;
-            flex-wrap: wrap;
-            margin-top: 8px;
+            justify-content: center;
+            font-size: 10px;
+            color: transparent;
+            flex-shrink: 0;
+            transition: all 0.2s ease;
         }
 
-        .swatch-btn {
-            width: 34px;
-            height: 34px;
+        .setting-card.selected .check-badge {
+            border-color: var(--coral);
+            background: var(--coral);
+            color: #FFFFFF;
+        }
+
+        /* Accent Colors Row */
+        .accent-swatches-grid {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 8px 4px;
+        }
+
+        .swatch-circle {
+            width: 38px;
+            height: 38px;
             border-radius: 50%;
-            border: 3px solid #FFFFFF;
-            box-shadow: 0 0 0 1px #CBD5E1;
             cursor: pointer;
             display: flex;
             align-items: center;
             justify-content: center;
+            color: #FFFFFF;
             font-size: 12px;
+            box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
             transition: transform 0.2s ease, box-shadow 0.2s ease;
-        }
-        .swatch-btn:hover {
-            transform: scale(1.15);
-        }
-        .swatch-btn.active {
-            box-shadow: 0 0 0 2.5px var(--charcoal);
-            transform: scale(1.1);
+            position: relative;
         }
 
-        .drawer-footer {
+        .swatch-circle:hover {
+            transform: scale(1.15);
+        }
+
+        .swatch-circle.active {
+            transform: scale(1.18);
+            box-shadow: 0 0 0 3px #FFFFFF, 0 0 0 5px var(--coral);
+        }
+
+        .swatch-circle i {
+            display: none;
+        }
+
+        .swatch-circle.active i {
+            display: block;
+        }
+
+        /* Status notification */
+        .status-message {
+            padding: 12px 16px;
+            border-radius: 10px;
+            font-size: 12.5px;
+            font-weight: 600;
+            display: none;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .status-message.success {
+            background: #ECFDF5;
+            color: #065F46;
+            border: 1px solid #A7F3D0;
+            display: flex;
+        }
+
+        .status-message.info {
+            background: #EFF6FF;
+            color: #1E40AF;
+            border: 1px solid #BFDBFE;
+            display: flex;
+        }
+
+        .status-message.error {
+            background: #FEF2F2;
+            color: #991B1B;
+            border: 1px solid #FECACA;
+            display: flex;
+        }
+
+        /* ── Wizard Footer Navigation Bar ──────────────────────────────────── */
+        .wizard-footer {
+            padding: 20px 56px;
+            border-top: 1px solid var(--slate-100);
             display: flex;
             align-items: center;
             justify-content: space-between;
-            padding: 16px 32px;
-            background: #F8FAFC;
-            border-top: 1px solid #F1F5F9;
+            background: #FFFFFF;
+            flex-shrink: 0;
         }
 
-        .drawer-action-btn {
-            background: var(--charcoal);
-            color: #FFFFFF;
-            padding: 11px 32px;
-            border-radius: 9999px;
-            font-size: 12px;
-            font-weight: 750;
-            letter-spacing: 1px;
-            text-transform: uppercase;
-            border: none;
+        .btn-nav-back {
+            padding: 11px 22px;
+            border-radius: 10px;
+            border: 1.5px solid var(--slate-200);
+            background: #FFFFFF;
+            color: var(--slate-600);
+            font-size: 13px;
+            font-weight: 700;
             cursor: pointer;
-            transition: background 0.2s ease, transform 0.2s ease;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            transition: all 0.2s ease;
         }
-        .drawer-action-btn:hover {
-            background: #1A252F;
+
+        .btn-nav-back:hover:not(:disabled) {
+            background: var(--slate-100);
+            color: #0F172A;
+            border-color: var(--slate-400);
+        }
+
+        .btn-nav-back:disabled {
+            opacity: 0.35;
+            cursor: not-allowed;
+            pointer-events: none;
+        }
+
+        .btn-nav-next {
+            padding: 11px 28px;
+            border-radius: 10px;
+            border: none;
+            background: var(--coral);
+            color: #FFFFFF;
+            font-size: 13px;
+            font-weight: 700;
+            cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+            gap: 10px;
+            box-shadow: 0 4px 14px rgba(232, 90, 79, 0.28);
+            transition: all 0.25s ease;
+        }
+
+        .btn-nav-next:hover {
+            background: var(--coral-dark);
             transform: translateY(-1px);
+            box-shadow: 0 6px 18px rgba(232, 90, 79, 0.36);
+        }
+
+        .btn-nav-next:active {
+            transform: translateY(1px);
         }
     </style>
 </head>
 
 <body>
-    <div class="onboarding-viewport" id="viewport">
-        <!-- Dynamic Split Backgrounds -->
-        <div class="bg-layer-left" id="bg-left"></div>
-        <div class="bg-layer-right" id="bg-right"></div>
-
-        <!-- Top Left Brand Emblem -->
-        <div class="topbar-left" id="topbar-logo" onclick="openDrawer('atmosphere')">
-            <svg class="logo-bird-icon" viewBox="0 0 24 24">
-                <path d="M22 2C20 4 16 6 12 7C9 4 5 4 2 5C5 8 8 9 10 11C6 12 3 15 2 19C5 18 8 16 11 15C12 18 15 21 19 22C18 19 18 15 17 12C19 10 21 6 22 2Z"/>
-            </svg>
-        </div>
-
-        <!-- Top Right Navigation -->
-        <div class="topbar-right">
-            <div class="nav-links-cluster">
-                <button class="nav-link-item" onclick="openDrawer('atmosphere')">THEMES</button>
-                <button class="nav-link-item" onclick="openDrawer('workspace')">WORKSPACE</button>
-                <button class="nav-link-item" onclick="openDrawer('search')">SEARCH</button>
-                <button class="nav-link-item" onclick="openDrawer('shields')">SHIELDS</button>
-                <button class="nav-link-item" onclick="openDrawer('bookmarks')">BOOKMARKS</button>
-            </div>
-            <button class="btn-launch-pill" id="btn-start-browsing">
-                <span>START BROWSING</span>
-                <i class="fas fa-arrow-right"></i>
-            </button>
-        </div>
-
-        <!-- Left Half Content -->
-        <div class="content-layer-left">
-            <h1 class="hero-left-heading">The combination of great design and diligent app development.</h1>
-            <button class="btn-view-themes" id="btn-view-themes" onclick="openDrawer('atmosphere')">VIEW THEMES</button>
-        </div>
-
-        <!-- Right Half Content -->
-        <div class="content-layer-right">
-            <div class="right-text-wrap">
-                <div class="dual-badge-icon"></div>
-                <h2 class="hero-right-heading">We make <span class="coral-highlight">sleek</span> and <span class="coral-highlight">modern</span> designs for your business.</h2>
-            </div>
-        </div>
-
-        <!-- Centerpiece: The Dual Synchronized Browser Frame -->
-        <div class="ambient-glow"></div>
-
-        <!-- Synchronized Dark Viewport Layer -->
-        <div class="viewport-layer-dark">
-            <div class="browser-mockup-frame">
-                <div class="bm-header">
-                    <div class="window-dots">
-                        <span class="dot dot-red"></span>
-                        <span class="dot dot-yellow"></span>
-                        <span class="dot dot-green"></span>
-                    </div>
-                    <div class="bm-tabs">
-                        <div class="bm-tab active"><i class="fas fa-terminal"></i> <span>ocal://engine</span></div>
-                        <div class="bm-tab inactive"><span>Shield Defense</span></div>
-                    </div>
+    <div class="onboarding-container">
+        <!-- ── Left Showcase Panel ─────────────────────────────────────────── -->
+        <aside class="showcase-panel">
+            <!-- Header Brand -->
+            <div class="brand-header">
+                <div class="brand-icon-wrap">
+                    <i class="fas fa-compass"></i>
                 </div>
-                <div class="bm-address-row">
-                    <div class="bm-nav-icons">
-                        <i class="fas fa-arrow-left"></i>
-                        <i class="fas fa-arrow-right"></i>
-                        <i class="fas fa-rotate-right"></i>
-                    </div>
-                    <div class="bm-omnibox">
-                        <i class="fas fa-lock"></i>
-                        <span>ocal://cyber-stealth/active</span>
-                    </div>
-                    <div class="bm-shield-badge">
-                        <i class="fas fa-shield-halved"></i>
-                        <span>SHIELD ACTIVE</span>
-                    </div>
+                <span class="brand-title">Ocal</span>
+            </div>
+
+            <!-- Stepper Overview Narrative -->
+            <div class="showcase-body">
+                <div class="step-tag-pill">
+                    <i class="fas fa-wand-magic-sparkles"></i>
+                    <span>Setup Wizard</span>
                 </div>
-                <div class="bm-body">
-                    <div class="dark-content">
-                        <div class="dc-header">
-                            <span class="dc-title">HARDWARE ACCELERATION TELEMETRY</span>
-                            <span class="dc-status"><i class="fas fa-circle" style="font-size:6px;"></i> 144 FPS D3D11</span>
+                <h1 class="showcase-heading" id="showcase-heading">Tailor your browsing experience.</h1>
+                <p class="showcase-desc" id="showcase-desc">
+                    Fast, private, and customizable. Configure your preferred theme, tab layout, search, and defense shields.
+                </p>
+
+                <!-- Vertical Stepper Steps -->
+                <div class="stepper-nav">
+                    <div class="stepper-item active" id="step-indicator-1" onclick="jumpToStep(1)">
+                        <div class="stepper-num">1</div>
+                        <div class="stepper-text">
+                            <span class="stepper-title">Atmosphere</span>
+                            <span class="stepper-sub">Theme &amp; Accent Glow</span>
                         </div>
-                        <div class="dc-stats-grid">
-                            <div class="dc-stat-box">
-                                <span class="dc-stat-lbl">Trackers Intercepted</span>
-                                <span class="dc-stat-val" style="color:#34D399;">14,892</span>
-                            </div>
-                            <div class="dc-stat-box">
-                                <span class="dc-stat-lbl">Inactive RAM Saved</span>
-                                <span class="dc-stat-val" style="color:#38BDF8;">62% Reclaimed</span>
-                            </div>
-                            <div class="dc-stat-box">
-                                <span class="dc-stat-lbl">V8 Turbo Execution</span>
-                                <span class="dc-stat-val" style="color:#FBBF24;">0.4ms Latency</span>
-                            </div>
+                    </div>
+                    <div class="stepper-item" id="step-indicator-2" onclick="jumpToStep(2)">
+                        <div class="stepper-num">2</div>
+                        <div class="stepper-text">
+                            <span class="stepper-title">Workspace</span>
+                            <span class="stepper-sub">Tabs &amp; Sidebar Layout</span>
                         </div>
-                        <div class="dc-code-card">
-                            <span style="color:#A78BFA;">const</span> ocal = <span style="color:#FBBF24;">new</span> <span style="color:#38BDF8;">BrowserEngine</span>();<br>
-                            <span style="color:#34D399;">await</span> ocal.<span style="color:#60A5FA;">activateCyberStealth</span>({ zeroTelemetry: <span style="color:#F472B6;">true</span> });<br>
-                            <span style="color:#38BDF8;">console</span>.<span style="color:#60A5FA;">log</span>(<span style="color:#FBBF24;">"[Ocal] Zero telemetry active. 100% private browsing."</span>);
+                    </div>
+                    <div class="stepper-item" id="step-indicator-3" onclick="jumpToStep(3)">
+                        <div class="stepper-num">3</div>
+                        <div class="stepper-text">
+                            <span class="stepper-title">Search Engine</span>
+                            <span class="stepper-sub">Default Provider</span>
+                        </div>
+                    </div>
+                    <div class="stepper-item" id="step-indicator-4" onclick="jumpToStep(4)">
+                        <div class="stepper-num">4</div>
+                        <div class="stepper-text">
+                            <span class="stepper-title">Shields &amp; Privacy</span>
+                            <span class="stepper-sub">Zero-Telemetry Protection</span>
+                        </div>
+                    </div>
+                    <div class="stepper-item" id="step-indicator-5" onclick="jumpToStep(5)">
+                        <div class="stepper-num">5</div>
+                        <div class="stepper-text">
+                            <span class="stepper-title">Ready</span>
+                            <span class="stepper-sub">Bookmarks &amp; Launch</span>
                         </div>
                     </div>
                 </div>
             </div>
-        </div>
 
-        <!-- Synchronized Light Viewport Layer -->
-        <div class="viewport-layer-light">
-            <div class="browser-mockup-frame">
-                <div class="bm-header">
-                    <div class="window-dots">
-                        <span class="dot dot-red"></span>
-                        <span class="dot dot-yellow"></span>
-                        <span class="dot dot-green"></span>
-                    </div>
-                    <div class="bm-tabs">
-                        <div class="bm-tab active"><i class="fas fa-compass" style="color:var(--coral);"></i> <span>New Tab</span></div>
-                        <div class="bm-tab inactive"><span>GitHub</span></div>
-                        <div class="bm-tab inactive"><span>YouTube</span></div>
-                    </div>
-                </div>
-                <div class="bm-address-row">
-                    <div class="bm-nav-icons">
-                        <i class="fas fa-arrow-left"></i>
-                        <i class="fas fa-arrow-right"></i>
-                        <i class="fas fa-rotate-right"></i>
-                    </div>
-                    <div class="bm-omnibox">
-                        <i class="fas fa-lock" style="color:#10B981;"></i>
-                        <span>Search Google or type a URL</span>
-                    </div>
-                    <div class="bm-shield-badge">
-                        <i class="fas fa-shield-halved"></i>
-                        <span>PROTECTED</span>
-                    </div>
-                </div>
-                <div class="bm-body">
-                    <div class="light-content">
-                        <div class="lc-brand">
-                            <i class="fas fa-compass"></i> <span>Ocal</span>
-                        </div>
-                        <div class="lc-search-box">
-                            <i class="fas fa-magnifying-glass"></i>
-                            <span>Search anything with AI Copilot...</span>
-                        </div>
-                        <div class="lc-tiles-row">
-                            <div class="lc-tile">
-                                <div class="lc-tile-circle" style="color:#EA4335;"><i class="fab fa-google"></i></div>
-                                <span class="lc-tile-name">Google</span>
-                            </div>
-                            <div class="lc-tile">
-                                <div class="lc-tile-circle" style="color:#FF0000;"><i class="fab fa-youtube"></i></div>
-                                <span class="lc-tile-name">YouTube</span>
-                            </div>
-                            <div class="lc-tile">
-                                <div class="lc-tile-circle" style="color:#24292F;"><i class="fab fa-github"></i></div>
-                                <span class="lc-tile-name">GitHub</span>
-                            </div>
-                            <div class="lc-tile">
-                                <div class="lc-tile-circle" style="color:#8B5CF6;"><i class="fas fa-wand-magic-sparkles"></i></div>
-                                <span class="lc-tile-name">Copilot</span>
-                            </div>
-                        </div>
-                    </div>
-                </div>
+            <!-- Left Footer Telemetry -->
+            <div class="showcase-footer">
+                <span>Ocal Browser v10.1.23</span>
+                <span><i class="fas fa-shield-halved" style="margin-right:4px;"></i> 100% Private</span>
             </div>
-        </div>
+        </aside>
 
-        <!-- Hotspot Pulse Nodes -->
-        <div class="hotspot-wrap" style="left: calc(50vw - 230px); top: calc(50vh - 160px);" onclick="openDrawer('workspace')">
-            <div class="hotspot-ring"></div>
-            <div class="hotspot-dot"></div>
-            <div class="hotspot-card">Arc-Style Vertical &amp; Horizontal Workspaces</div>
-        </div>
-
-        <div class="hotspot-wrap" style="left: calc(50vw - 110px); top: calc(50vh - 40px);" onclick="openDrawer('shields')">
-            <div class="hotspot-ring"></div>
-            <div class="hotspot-dot"></div>
-            <div class="hotspot-card">Direct3D 11 &amp; V8 Turbo Acceleration</div>
-        </div>
-
-        <div class="hotspot-wrap" style="left: calc(50vw + 120px); top: calc(50vh - 105px);" onclick="openDrawer('search')">
-            <div class="hotspot-ring"></div>
-            <div class="hotspot-dot"></div>
-            <div class="hotspot-card">Smart Omnibox with Instant Search</div>
-        </div>
-
-        <div class="hotspot-wrap" style="left: calc(50vw + 240px); top: calc(50vh + 120px);" onclick="openDrawer('atmosphere')">
-            <div class="hotspot-ring"></div>
-            <div class="hotspot-dot"></div>
-            <div class="hotspot-card">Neural AI Copilot &amp; Multi-Tab Synthesis</div>
-        </div>
-
-        <!-- Center Slider Handle -->
-        <div class="split-divider-line" id="divider-line">
-            <div class="split-slider-knob" id="slider-knob">
-                <svg viewBox="0 0 16 16">
-                    <path d="M 5 12 L 1 8 L 5 4 M 11 12 L 15 8 L 11 4" stroke="#FFFFFF" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
-                </svg>
-            </div>
-        </div>
-    </div>
-
-    <!-- ── Interactive Customization Drawer ───────────────────────────────── -->
-    <div class="setup-drawer-overlay" id="drawer-overlay" onclick="onOverlayClick(event)">
-        <div class="setup-drawer" id="setup-drawer">
-            <!-- Header -->
-            <div class="drawer-header">
-                <div class="drawer-title-group">
-                    <div style="width:28px; height:28px; border-radius:8px; background:var(--coral); color:#FFF; display:flex; align-items:center; justify-content:center; font-size:12px;">
-                        <i class="fas fa-sliders"></i>
+        <!-- ── Right Settings Panel ────────────────────────────────────────── -->
+        <main class="wizard-panel">
+            <!-- Top Progress Header -->
+            <header class="wizard-header">
+                <div class="progress-block">
+                    <div class="progress-label-row">
+                        <span id="progress-step-text">STEP 1 OF 5</span>
+                        <span id="progress-pct-text">20%</span>
                     </div>
-                    <span class="drawer-title">Customize Your Ocal Experience</span>
-                </div>
-                <button class="drawer-close-btn" onclick="closeDrawer()"><i class="fas fa-times"></i></button>
-            </div>
-
-            <!-- Tabs -->
-            <div class="drawer-nav-tabs">
-                <button class="drawer-tab-btn active" data-tab="atmosphere" onclick="switchTab('atmosphere')"><i class="fas fa-palette"></i> Atmosphere</button>
-                <button class="drawer-tab-btn" data-tab="workspace" onclick="switchTab('workspace')"><i class="fas fa-table-columns"></i> Workspace</button>
-                <button class="drawer-tab-btn" data-tab="search" onclick="switchTab('search')"><i class="fas fa-magnifying-glass"></i> Search</button>
-                <button class="drawer-tab-btn" data-tab="shields" onclick="switchTab('shields')"><i class="fas fa-shield-halved"></i> Shields</button>
-                <button class="drawer-tab-btn" data-tab="bookmarks" onclick="switchTab('bookmarks')"><i class="fas fa-bookmark"></i> Bookmarks</button>
-            </div>
-
-            <!-- Body -->
-            <div class="drawer-body">
-                <!-- Tab 1: Atmosphere -->
-                <div class="tab-panel active" id="tab-atmosphere">
-                    <div style="font-size:12.5px; font-weight:700; color:#64748B; text-transform:uppercase; letter-spacing:1px;">Base Theme</div>
-                    <div class="drawer-card-grid">
-                        <div class="choice-card" id="theme-choice-dark" onclick="selectTheme('dark')">
-                            <div class="choice-icon"><i class="fas fa-moon"></i></div>
-                            <div>
-                                <div class="choice-title">Dark Mode</div>
-                                <div class="choice-desc">Deep onyx canvas designed for high focus and zero glare.</div>
-                            </div>
-                        </div>
-                        <div class="choice-card" id="theme-choice-light" onclick="selectTheme('light')">
-                            <div class="choice-icon"><i class="fas fa-sun"></i></div>
-                            <div>
-                                <div class="choice-title">Light Mode</div>
-                                <div class="choice-desc">Crisp daylight canvas with high contrast and clarity.</div>
-                            </div>
-                        </div>
-                    </div>
-
-                    <div style="font-size:12.5px; font-weight:700; color:#64748B; text-transform:uppercase; letter-spacing:1px; margin-top:12px;">Accent Glow Color</div>
-                    <div class="swatches-cluster">
-                        <div class="swatch-btn" data-color="#09F0A0" style="background:#09F0A0;" onclick="selectAccent('#09F0A0')"></div>
-                        <div class="swatch-btn" data-color="#8B5CF6" style="background:#8B5CF6;" onclick="selectAccent('#8B5CF6')"></div>
-                        <div class="swatch-btn" data-color="#4F46E5" style="background:#4F46E5;" onclick="selectAccent('#4F46E5')"></div>
-                        <div class="swatch-btn" data-color="#E85A4F" style="background:#E85A4F;" onclick="selectAccent('#E85A4F')"></div>
-                        <div class="swatch-btn" data-color="#F59E0B" style="background:#F59E0B;" onclick="selectAccent('#F59E0B')"></div>
-                        <div class="swatch-btn" data-color="#06B6D4" style="background:#06B6D4;" onclick="selectAccent('#06B6D4')"></div>
-                        <div class="swatch-btn" data-color="#EC4899" style="background:#EC4899;" onclick="selectAccent('#EC4899')"></div>
-                        <div class="swatch-btn" data-color="#64748B" style="background:#64748B;" onclick="selectAccent('#64748B')"></div>
+                    <div class="progress-track">
+                        <div class="progress-fill" id="progress-bar-fill"></div>
                     </div>
                 </div>
 
-                <!-- Tab 2: Workspace -->
-                <div class="tab-panel" id="tab-workspace">
-                    <div style="font-size:12.5px; font-weight:700; color:#64748B; text-transform:uppercase; letter-spacing:1px;">Tab Layout</div>
-                    <div class="drawer-card-grid">
-                        <div class="choice-card" id="ws-choice-horiz" onclick="selectTabLayout('horizontal')">
-                            <div class="choice-icon"><i class="fas fa-window-maximize"></i></div>
-                            <div>
-                                <div class="choice-title">Horizontal Tabs (Classic)</div>
-                                <div class="choice-desc">Top tab strip. Spacious and familiar for classic multitasking.</div>
+                <button class="btn-skip-setup" onclick="finishAndLaunch()">
+                    <span>Skip to Browser</span>
+                    <i class="fas fa-arrow-right"></i>
+                </button>
+            </header>
+
+            <!-- Wizard Stage -->
+            <div class="wizard-stage">
+                <div class="wizard-step-container">
+
+                    <!-- ── Step 1: Atmosphere & Theme ── -->
+                    <div class="step-panel active" id="step-panel-1">
+                        <div class="step-header">
+                            <h2 class="step-title">Choose your atmosphere</h2>
+                            <p class="step-description">Personalize Ocal with your preferred base theme and system accent glow.</p>
+                        </div>
+
+                        <div class="section-label">Base Appearance</div>
+                        <div class="cards-grid">
+                            <div class="setting-card selected" id="theme-card-dark" onclick="selectTheme('dark')">
+                                <div class="card-main-content">
+                                    <div class="card-icon"><i class="fas fa-moon"></i></div>
+                                    <div class="card-texts">
+                                        <div class="card-title">Dark Mode</div>
+                                        <div class="card-desc">Deep onyx canvas designed for high focus and zero glare.</div>
+                                    </div>
+                                </div>
+                                <div class="check-badge"><i class="fas fa-check"></i></div>
+                            </div>
+
+                            <div class="setting-card" id="theme-card-light" onclick="selectTheme('light')">
+                                <div class="card-main-content">
+                                    <div class="card-icon"><i class="fas fa-sun"></i></div>
+                                    <div class="card-texts">
+                                        <div class="card-title">Light Mode</div>
+                                        <div class="card-desc">Crisp daylight canvas with high contrast and clarity.</div>
+                                    </div>
+                                </div>
+                                <div class="check-badge"><i class="fas fa-check"></i></div>
                             </div>
                         </div>
-                        <div class="choice-card" id="ws-choice-vert" onclick="selectTabLayout('vertical')">
-                            <div class="choice-icon"><i class="fas fa-bars-staggered"></i></div>
-                            <div>
-                                <div class="choice-title">Vertical Tabs (Arc Rail)</div>
-                                <div class="choice-desc">Left rail layout. Neatly accommodates 30+ tabs without clipping.</div>
+
+                        <div class="section-label" style="margin-top: 10px;">Accent Glow</div>
+                        <div class="accent-swatches-grid">
+                            <div class="swatch-circle active" data-color="#09F0A0" style="background:#09F0A0;" onclick="selectAccent('#09F0A0')"><i class="fas fa-check"></i></div>
+                            <div class="swatch-circle" data-color="#8B5CF6" style="background:#8B5CF6;" onclick="selectAccent('#8B5CF6')"><i class="fas fa-check"></i></div>
+                            <div class="swatch-circle" data-color="#4F46E5" style="background:#4F46E5;" onclick="selectAccent('#4F46E5')"><i class="fas fa-check"></i></div>
+                            <div class="swatch-circle" data-color="#E85A4F" style="background:#E85A4F;" onclick="selectAccent('#E85A4F')"><i class="fas fa-check"></i></div>
+                            <div class="swatch-circle" data-color="#F59E0B" style="background:#F59E0B;" onclick="selectAccent('#F59E0B')"><i class="fas fa-check"></i></div>
+                            <div class="swatch-circle" data-color="#06B6D4" style="background:#06B6D4;" onclick="selectAccent('#06B6D4')"><i class="fas fa-check"></i></div>
+                            <div class="swatch-circle" data-color="#EC4899" style="background:#EC4899;" onclick="selectAccent('#EC4899')"><i class="fas fa-check"></i></div>
+                            <div class="swatch-circle" data-color="#64748B" style="background:#64748B;" onclick="selectAccent('#64748B')"><i class="fas fa-check"></i></div>
+                        </div>
+                    </div>
+
+                    <!-- ── Step 2: Workspace & Layout ── -->
+                    <div class="step-panel" id="step-panel-2">
+                        <div class="step-header">
+                            <h2 class="step-title">Choose your workspace layout</h2>
+                            <p class="step-description">Tailor tab navigation and dock behavior to best match your workflow.</p>
+                        </div>
+
+                        <div class="section-label">Tab Navigation</div>
+                        <div class="cards-grid">
+                            <div class="setting-card selected" id="tab-layout-card-horiz" onclick="selectTabLayout('horizontal')">
+                                <div class="card-main-content">
+                                    <div class="card-icon"><i class="fas fa-window-maximize"></i></div>
+                                    <div class="card-texts">
+                                        <div class="card-title">Horizontal Tabs</div>
+                                        <div class="card-desc">Classic top tab strip. Spacious, familiar, and intuitive.</div>
+                                    </div>
+                                </div>
+                                <div class="check-badge"><i class="fas fa-check"></i></div>
+                            </div>
+
+                            <div class="setting-card" id="tab-layout-card-vert" onclick="selectTabLayout('vertical')">
+                                <div class="card-main-content">
+                                    <div class="card-icon"><i class="fas fa-bars-staggered"></i></div>
+                                    <div class="card-texts">
+                                        <div class="card-title">Vertical Tabs</div>
+                                        <div class="card-desc">Left rail layout. Effortlessly organizes 30+ tabs with zero clipping.</div>
+                                    </div>
+                                </div>
+                                <div class="check-badge"><i class="fas fa-check"></i></div>
+                            </div>
+                        </div>
+
+                        <div class="section-label" style="margin-top: 10px;">Sidebar Dock</div>
+                        <div class="cards-grid">
+                            <div class="setting-card selected" id="sidebar-card-vis" onclick="selectSidebarMode('visible')">
+                                <div class="card-main-content">
+                                    <div class="card-icon"><i class="fas fa-compass"></i></div>
+                                    <div class="card-texts">
+                                        <div class="card-title">Visible Sidebar</div>
+                                        <div class="card-desc">Quick 1-click access to AI Copilot, Bookmarks, and Downloads.</div>
+                                    </div>
+                                </div>
+                                <div class="check-badge"><i class="fas fa-check"></i></div>
+                            </div>
+
+                            <div class="setting-card" id="sidebar-card-hid" onclick="selectSidebarMode('hidden')">
+                                <div class="card-main-content">
+                                    <div class="card-icon"><i class="fas fa-border-none"></i></div>
+                                    <div class="card-texts">
+                                        <div class="card-title">Hidden Sidebar</div>
+                                        <div class="card-desc">Edge-to-edge canvas with no persistent sidebar dock.</div>
+                                    </div>
+                                </div>
+                                <div class="check-badge"><i class="fas fa-check"></i></div>
                             </div>
                         </div>
                     </div>
 
-                    <div style="font-size:12.5px; font-weight:700; color:#64748B; text-transform:uppercase; letter-spacing:1px; margin-top:12px;">Sidebar Dock</div>
-                    <div class="drawer-card-grid">
-                        <div class="choice-card" id="ws-choice-sb-vis" onclick="selectSidebarMode('visible')">
-                            <div class="choice-icon"><i class="fas fa-compass"></i></div>
-                            <div>
-                                <div class="choice-title">Visible Sidebar (Recommended)</div>
-                                <div class="choice-desc">Instant access to AI Copilot, Bookmarks, and Downloads.</div>
-                            </div>
+                    <!-- ── Step 3: Search Engine ── -->
+                    <div class="step-panel" id="step-panel-3">
+                        <div class="step-header">
+                            <h2 class="step-title">Select your search provider</h2>
+                            <p class="step-description">Choose the default search engine used in the address bar and omnibox.</p>
                         </div>
-                        <div class="choice-card" id="ws-choice-sb-hid" onclick="selectSidebarMode('hidden')">
-                            <div class="choice-icon"><i class="fas fa-border-none"></i></div>
-                            <div>
-                                <div class="choice-title">Hidden Sidebar</div>
-                                <div class="choice-desc">Edge-to-edge web viewport with no persistent sidebar rail.</div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
 
-                <!-- Tab 3: Search Engine -->
-                <div class="tab-panel" id="tab-search">
-                    <div style="font-size:12.5px; font-weight:700; color:#64748B; text-transform:uppercase; letter-spacing:1px;">Default Search Engine</div>
-                    <div class="drawer-card-grid">
-                        <div class="choice-card" id="se-choice-google" onclick="selectSearchEngine('google')">
-                            <div class="choice-icon" style="color:#4285F4;"><i class="fab fa-google"></i></div>
-                            <div>
-                                <div class="choice-title">Google</div>
-                                <div class="choice-desc">Fast, comprehensive search with global knowledge graph.</div>
+                        <div class="cards-list">
+                            <div class="setting-card selected" id="search-card-google" onclick="selectSearchEngine('google')">
+                                <div class="card-main-content">
+                                    <div class="card-icon" style="color:#4285F4;"><i class="fab fa-google"></i></div>
+                                    <div class="card-texts">
+                                        <div class="card-title">Google</div>
+                                        <div class="card-desc">Fast, comprehensive results with global knowledge graph.</div>
+                                    </div>
+                                </div>
+                                <div class="check-badge"><i class="fas fa-check"></i></div>
                             </div>
-                        </div>
-                        <div class="choice-card" id="se-choice-duckduckgo" onclick="selectSearchEngine('duckduckgo')">
-                            <div class="choice-icon" style="color:#DE5833;"><i class="fas fa-shield-cat"></i></div>
-                            <div>
-                                <div class="choice-title">DuckDuckGo</div>
-                                <div class="choice-desc">Privacy first: zero tracking and no targeted search ads.</div>
-                            </div>
-                        </div>
-                        <div class="choice-card" id="se-choice-brave" onclick="selectSearchEngine('brave')">
-                            <div class="choice-icon" style="color:#FB542B;"><i class="fas fa-shield"></i></div>
-                            <div>
-                                <div class="choice-title">Brave Search</div>
-                                <div class="choice-desc">Independent search index with strict privacy guarantees.</div>
-                            </div>
-                        </div>
-                        <div class="choice-card" id="se-choice-bing" onclick="selectSearchEngine('bing')">
-                            <div class="choice-icon" style="color:#008373;"><i class="fab fa-microsoft"></i></div>
-                            <div>
-                                <div class="choice-title">Microsoft Bing</div>
-                                <div class="choice-desc">Copilot AI search intelligence and image search.</div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
 
-                <!-- Tab 4: Shields -->
-                <div class="tab-panel" id="tab-shields">
-                    <div style="font-size:12.5px; font-weight:700; color:#64748B; text-transform:uppercase; letter-spacing:1px;">Protection Suite</div>
-                    <div class="drawer-card-grid">
-                        <div class="choice-card selected" id="shield-choice-adblock" onclick="toggleShield('adBlockEnabled', this)">
-                            <div class="choice-icon"><i class="fas fa-ban"></i></div>
-                            <div>
-                                <div class="choice-title">Ocal Ad &amp; Tracker Blocker</div>
-                                <div class="choice-desc">Zero telemetry ad blocking active out-of-the-box.</div>
+                            <div class="setting-card" id="search-card-duckduckgo" onclick="selectSearchEngine('duckduckgo')">
+                                <div class="card-main-content">
+                                    <div class="card-icon" style="color:#DE5833;"><i class="fas fa-shield-cat"></i></div>
+                                    <div class="card-texts">
+                                        <div class="card-title">DuckDuckGo</div>
+                                        <div class="card-desc">Privacy first: zero tracking and no targeted search advertising.</div>
+                                    </div>
+                                </div>
+                                <div class="check-badge"><i class="fas fa-check"></i></div>
                             </div>
-                        </div>
-                        <div class="choice-card selected" id="shield-choice-fingerprint" onclick="toggleShield('fingerprintProtection', this)">
-                            <div class="choice-icon"><i class="fas fa-fingerprint"></i></div>
-                            <div>
-                                <div class="choice-title">Fingerprint Defense</div>
-                                <div class="choice-desc">Randomizes canvas and audio telemetry to stop trackers.</div>
-                            </div>
-                        </div>
-                        <div class="choice-card selected" id="shield-choice-ai" onclick="toggleShield('aiAssistantEnabled', this)">
-                            <div class="choice-icon"><i class="fas fa-robot"></i></div>
-                            <div>
-                                <div class="choice-title">Ocal AI Companion</div>
-                                <div class="choice-desc">Local and private LLM copilot for tab summaries.</div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
 
-                <!-- Tab 5: Bookmarks -->
-                <div class="tab-panel" id="tab-bookmarks">
-                    <div style="font-size:12.5px; font-weight:700; color:#64748B; text-transform:uppercase; letter-spacing:1px;">Import Bookmarks</div>
-                    <div class="drawer-card-grid">
-                        <div class="choice-card" onclick="importFrom('chrome')">
-                            <div class="choice-icon" style="color:#4285F4;"><i class="fab fa-chrome"></i></div>
-                            <div>
-                                <div class="choice-title">Google Chrome</div>
-                                <div class="choice-desc">Import bookmarks from default Chrome profile.</div>
+                            <div class="setting-card" id="search-card-brave" onclick="selectSearchEngine('brave')">
+                                <div class="card-main-content">
+                                    <div class="card-icon" style="color:#FB542B;"><i class="fas fa-shield"></i></div>
+                                    <div class="card-texts">
+                                        <div class="card-title">Brave Search</div>
+                                        <div class="card-desc">Independent privacy-focused web index with no user profiling.</div>
+                                    </div>
+                                </div>
+                                <div class="check-badge"><i class="fas fa-check"></i></div>
                             </div>
-                        </div>
-                        <div class="choice-card" onclick="importFrom('edge')">
-                            <div class="choice-icon" style="color:#0078D7;"><i class="fab fa-edge"></i></div>
-                            <div>
-                                <div class="choice-title">Microsoft Edge</div>
-                                <div class="choice-desc">Import favorites from Microsoft Edge.</div>
-                            </div>
-                        </div>
-                        <div class="choice-card" onclick="importFromFile()">
-                            <div class="choice-icon"><i class="fas fa-file-code"></i></div>
-                            <div>
-                                <div class="choice-title">HTML Bookmarks File</div>
-                                <div class="choice-desc">Select an exported bookmarks.html file from disk.</div>
+
+                            <div class="setting-card" id="search-card-bing" onclick="selectSearchEngine('bing')">
+                                <div class="card-main-content">
+                                    <div class="card-icon" style="color:#008373;"><i class="fab fa-microsoft"></i></div>
+                                    <div class="card-texts">
+                                        <div class="card-title">Microsoft Bing</div>
+                                        <div class="card-desc">Copilot AI search features and comprehensive image search.</div>
+                                    </div>
+                                </div>
+                                <div class="check-badge"><i class="fas fa-check"></i></div>
                             </div>
                         </div>
                     </div>
-                    <div id="import-notification" style="font-size:12px; font-weight:700; color:#10B981; margin-top:10px; display:none;"></div>
+
+                    <!-- ── Step 4: Shields & Privacy ── -->
+                    <div class="step-panel" id="step-panel-4">
+                        <div class="step-header">
+                            <h2 class="step-title">Configure shields &amp; defense</h2>
+                            <p class="step-description">All protection modules run locally on your device with zero telemetry.</p>
+                        </div>
+
+                        <div class="cards-list">
+                            <div class="setting-card selected" id="shield-card-adblock" onclick="toggleShield('adBlockEnabled', this)">
+                                <div class="card-main-content">
+                                    <div class="card-icon"><i class="fas fa-ban"></i></div>
+                                    <div class="card-texts">
+                                        <div class="card-title">Ocal Ad &amp; Tracker Blocker</div>
+                                        <div class="card-desc">Intercepts advertising networks, tracking scripts, and cryptominers.</div>
+                                    </div>
+                                </div>
+                                <div class="check-badge"><i class="fas fa-check"></i></div>
+                            </div>
+
+                            <div class="setting-card selected" id="shield-card-fingerprint" onclick="toggleShield('fingerprintProtection', this)">
+                                <div class="card-main-content">
+                                    <div class="card-icon"><i class="fas fa-fingerprint"></i></div>
+                                    <div class="card-texts">
+                                        <div class="card-title">Fingerprint Defense</div>
+                                        <div class="card-desc">Randomizes canvas, audio, and hardware signatures across browsing sessions.</div>
+                                    </div>
+                                </div>
+                                <div class="check-badge"><i class="fas fa-check"></i></div>
+                            </div>
+
+                            <div class="setting-card selected" id="shield-card-ai" onclick="toggleShield('aiAssistantEnabled', this)">
+                                <div class="card-main-content">
+                                    <div class="card-icon"><i class="fas fa-robot"></i></div>
+                                    <div class="card-texts">
+                                        <div class="card-title">Neural AI Companion</div>
+                                        <div class="card-desc">Private sidebar intelligence for fast tab summaries and answers.</div>
+                                    </div>
+                                </div>
+                                <div class="check-badge"><i class="fas fa-check"></i></div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- ── Step 5: Bookmarks & Launch ── -->
+                    <div class="step-panel" id="step-panel-5">
+                        <div class="step-header">
+                            <h2 class="step-title">Transfer your bookmarks</h2>
+                            <p class="step-description">Easily import your favorites and folders, or skip to start fresh.</p>
+                        </div>
+
+                        <div class="cards-list">
+                            <div class="setting-card" onclick="importFrom('chrome')">
+                                <div class="card-main-content">
+                                    <div class="card-icon" style="color:#4285F4;"><i class="fab fa-chrome"></i></div>
+                                    <div class="card-texts">
+                                        <div class="card-title">Import from Google Chrome</div>
+                                        <div class="card-desc">Automatically imports bookmarks and folders from Chrome.</div>
+                                    </div>
+                                </div>
+                                <div style="font-size:12px; font-weight:700; color:var(--coral);"><i class="fas fa-arrow-down-to-bracket"></i> Import</div>
+                            </div>
+
+                            <div class="setting-card" onclick="importFrom('edge')">
+                                <div class="card-main-content">
+                                    <div class="card-icon" style="color:#0078D7;"><i class="fab fa-edge"></i></div>
+                                    <div class="card-texts">
+                                        <div class="card-title">Import from Microsoft Edge</div>
+                                        <div class="card-desc">Automatically transfers favorites from Microsoft Edge.</div>
+                                    </div>
+                                </div>
+                                <div style="font-size:12px; font-weight:700; color:var(--coral);"><i class="fas fa-arrow-down-to-bracket"></i> Import</div>
+                            </div>
+
+                            <div class="setting-card" onclick="importFromFile()">
+                                <div class="card-main-content">
+                                    <div class="card-icon"><i class="fas fa-file-code"></i></div>
+                                    <div class="card-texts">
+                                        <div class="card-title">Import from HTML File</div>
+                                        <div class="card-desc">Select an exported bookmarks.html file from your storage.</div>
+                                    </div>
+                                </div>
+                                <div style="font-size:12px; font-weight:700; color:var(--coral);"><i class="fas fa-folder-open"></i> Browse</div>
+                            </div>
+                        </div>
+
+                        <div class="status-message" id="import-status-box"></div>
+                    </div>
+
                 </div>
             </div>
 
-            <!-- Footer -->
-            <div class="drawer-footer">
-                <button class="nav-link-item" onclick="closeDrawer()">Return to Overview</button>
-                <button class="drawer-action-btn" onclick="finishAndLaunch()">Apply &amp; Start Browsing</button>
-            </div>
-        </div>
+            <!-- Wizard Navigation Footer -->
+            <footer class="wizard-footer">
+                <button class="btn-nav-back" id="btn-back" onclick="previousStep()" disabled>
+                    <i class="fas fa-arrow-left"></i>
+                    <span>Back</span>
+                </button>
+
+                <button class="btn-nav-next" id="btn-next" onclick="nextStep()">
+                    <span id="btn-next-label">Next Step</span>
+                    <i class="fas fa-arrow-right" id="btn-next-icon"></i>
+                </button>
+            </footer>
+        </main>
     </div>
 
     <!-- ── Interaction Logic ──────────────────────────────────────────────── -->
     <script>
         (function () {
-            const root = document.documentElement;
-            const knob = document.getElementById('slider-knob');
-            let isDragging = false;
+            let currentStep = 1;
+            const totalSteps = 5;
+
             let currentSettings = {
                 themeMode: 'dark',
                 accentColor: '#09F0A0',
@@ -1333,70 +992,122 @@
                 aiAssistantEnabled: true
             };
 
-            // ── Split Slider Controller ──────────────────────────────────────
-            function setSplitPos(clientX) {
-                const width = window.innerWidth;
-                const pct = Math.max(15, Math.min(85, (clientX / width) * 100));
-                root.style.setProperty('--split-pos', `${pct}%`);
+            const stepInfo = [
+                {
+                    heading: "Tailor your browsing atmosphere.",
+                    desc: "Choose between high-contrast dark mode or clean daylight mode, and pick your system accent glow."
+                },
+                {
+                    heading: "Design your workspace layout.",
+                    desc: "Select classic horizontal tabs or modern vertical Arc rail navigation, plus configure your sidebar dock."
+                },
+                {
+                    heading: "Select your default search.",
+                    desc: "Pick your preferred search provider for address bar autocomplete and omnibox queries."
+                },
+                {
+                    heading: "Fortify your privacy shields.",
+                    desc: "Zero-telemetry tracking protection and local AI intelligence running completely on your device."
+                },
+                {
+                    heading: "Import favorites & start browsing.",
+                    desc: "Quickly migrate bookmarks from your previous browser in one click, or jump straight into the web."
+                }
+            ];
+
+            // ── Step Navigation ───────────────────────────────────────────────
+            window.jumpToStep = function (step) {
+                if (step < 1 || step > totalSteps) return;
+                currentStep = step;
+                renderStep();
+            };
+
+            window.nextStep = function () {
+                if (currentStep < totalSteps) {
+                    currentStep++;
+                    renderStep();
+                } else {
+                    finishAndLaunch();
+                }
+            };
+
+            window.previousStep = function () {
+                if (currentStep > 1) {
+                    currentStep--;
+                    renderStep();
+                }
+            };
+
+            function renderStep() {
+                // Update Panels
+                for (let i = 1; i <= totalSteps; i++) {
+                    const panel = document.getElementById(`step-panel-${i}`);
+                    if (panel) panel.classList.toggle('active', i === currentStep);
+
+                    const indicator = document.getElementById(`step-indicator-${i}`);
+                    if (indicator) {
+                        indicator.classList.toggle('active', i === currentStep);
+                        indicator.classList.toggle('completed', i < currentStep);
+                        const numEl = indicator.querySelector('.stepper-num');
+                        if (numEl) {
+                            if (i < currentStep) {
+                                numEl.innerHTML = '<i class="fas fa-check" style="font-size:11px;"></i>';
+                            } else {
+                                numEl.textContent = i;
+                            }
+                        }
+                    }
+                }
+
+                // Update Left Narrative Heading & Description
+                const info = stepInfo[currentStep - 1];
+                if (info) {
+                    const headingEl = document.getElementById('showcase-heading');
+                    const descEl = document.getElementById('showcase-desc');
+                    if (headingEl) headingEl.textContent = info.heading;
+                    if (descEl) descEl.textContent = info.desc;
+                }
+
+                // Update Progress Header
+                const pct = Math.round((currentStep / totalSteps) * 100);
+                const stepText = document.getElementById('progress-step-text');
+                const pctText = document.getElementById('progress-pct-text');
+                const barFill = document.getElementById('progress-bar-fill');
+                if (stepText) stepText.textContent = `STEP ${currentStep} OF ${totalSteps}`;
+                if (pctText) pctText.textContent = `${pct}%`;
+                if (barFill) barFill.style.width = `${pct}%`;
+
+                // Update Buttons
+                const btnBack = document.getElementById('btn-back');
+                if (btnBack) btnBack.disabled = (currentStep === 1);
+
+                const btnNextLabel = document.getElementById('btn-next-label');
+                const btnNextIcon = document.getElementById('btn-next-icon');
+                if (currentStep === totalSteps) {
+                    if (btnNextLabel) btnNextLabel.textContent = "Start Browsing";
+                    if (btnNextIcon) btnNextIcon.className = "fas fa-rocket";
+                } else {
+                    if (btnNextLabel) btnNextLabel.textContent = "Next Step";
+                    if (btnNextIcon) btnNextIcon.className = "fas fa-arrow-right";
+                }
             }
 
-            knob.addEventListener('pointerdown', (e) => {
-                isDragging = true;
-                knob.classList.add('dragging');
-                knob.setPointerCapture(e.pointerId);
-            });
-
-            window.addEventListener('pointermove', (e) => {
-                if (isDragging) {
-                    setSplitPos(e.clientX);
+            // Keyboard navigation
+            window.addEventListener('keydown', (e) => {
+                if (e.key === 'Enter') {
+                    nextStep();
+                } else if (e.key === 'Escape' || (e.key === 'ArrowLeft' && e.altKey)) {
+                    previousStep();
                 }
             });
-
-            window.addEventListener('pointerup', () => {
-                if (isDragging) {
-                    isDragging = false;
-                    knob.classList.remove('dragging');
-                }
-            });
-
-            // Click anywhere on stage to glide split line smoothly
-            window.addEventListener('click', (e) => {
-                if (e.target.closest('button') || e.target.closest('.hotspot-wrap') || e.target.closest('.setup-drawer') || isDragging) return;
-                const width = window.innerWidth;
-                const targetPct = Math.max(20, Math.min(80, (e.clientX / width) * 100));
-                root.style.setProperty('--split-pos', `${targetPct}%`);
-            });
-
-            // ── Drawer Management ────────────────────────────────────────────
-            window.openDrawer = function (tabName) {
-                const overlay = document.getElementById('drawer-overlay');
-                overlay.classList.add('active');
-                if (tabName) switchTab(tabName);
-            };
-
-            window.closeDrawer = function () {
-                const overlay = document.getElementById('drawer-overlay');
-                overlay.classList.remove('active');
-            };
-
-            window.onOverlayClick = function (e) {
-                if (e.target.id === 'drawer-overlay') closeDrawer();
-            };
-
-            window.switchTab = function (tabName) {
-                document.querySelectorAll('.drawer-tab-btn').forEach(btn => {
-                    btn.classList.toggle('active', btn.dataset.tab === tabName);
-                });
-                document.querySelectorAll('.tab-panel').forEach(panel => {
-                    panel.classList.toggle('active', panel.id === `tab-${tabName}`);
-                });
-            };
 
             // ── Settings Handlers ────────────────────────────────────────────
             window.selectTheme = function (mode) {
                 currentSettings.themeMode = mode;
-                document.getElementById('theme-choice-dark').classList.toggle('selected', mode === 'dark');
-                document.getElementById('theme-choice-light').classList.toggle('selected', mode === 'light');
+                const darkCard = document.getElementById('theme-card-dark');
+                const lightCard = document.getElementById('theme-card-light');
+                if (darkCard) darkCard.classList.toggle('selected', mode === 'dark');
+                if (lightCard) lightCard.classList.toggle('selected', mode === 'light');
                 if (window.electronAPI && window.electronAPI.updateSetting) {
                     window.electronAPI.updateSetting('themeMode', mode);
                 }
@@ -1404,7 +1115,7 @@
 
             window.selectAccent = function (hex) {
                 currentSettings.accentColor = hex;
-                document.querySelectorAll('.swatch-btn').forEach(b => {
+                document.querySelectorAll('.swatch-circle').forEach(b => {
                     b.classList.toggle('active', b.dataset.color === hex);
                 });
                 if (window.electronAPI && window.electronAPI.updateSetting) {
@@ -1414,8 +1125,10 @@
 
             window.selectTabLayout = function (layout) {
                 currentSettings.tabLayout = layout;
-                document.getElementById('ws-choice-horiz').classList.toggle('selected', layout === 'horizontal');
-                document.getElementById('ws-choice-vert').classList.toggle('selected', layout === 'vertical');
+                const horizCard = document.getElementById('tab-layout-card-horiz');
+                const vertCard = document.getElementById('tab-layout-card-vert');
+                if (horizCard) horizCard.classList.toggle('selected', layout === 'horizontal');
+                if (vertCard) vertCard.classList.toggle('selected', layout === 'vertical');
                 if (window.electronAPI && window.electronAPI.updateSetting) {
                     window.electronAPI.updateSetting('tabLayout', layout);
                 }
@@ -1423,8 +1136,10 @@
 
             window.selectSidebarMode = function (mode) {
                 currentSettings.sidebarMode = mode;
-                document.getElementById('ws-choice-sb-vis').classList.toggle('selected', mode === 'visible');
-                document.getElementById('ws-choice-sb-hid').classList.toggle('selected', mode === 'hidden');
+                const visCard = document.getElementById('sidebar-card-vis');
+                const hidCard = document.getElementById('sidebar-card-hid');
+                if (visCard) visCard.classList.toggle('selected', mode === 'visible');
+                if (hidCard) hidCard.classList.toggle('selected', mode === 'hidden');
                 if (window.electronAPI && window.electronAPI.updateSetting) {
                     window.electronAPI.updateSetting('sidebarMode', mode);
                     window.electronAPI.updateSetting('forceHideSidebar', mode === 'hidden');
@@ -1434,7 +1149,7 @@
             window.selectSearchEngine = function (engine) {
                 currentSettings.searchEngine = engine;
                 ['google', 'duckduckgo', 'brave', 'bing'].forEach(id => {
-                    const el = document.getElementById(`se-choice-${id}`);
+                    const el = document.getElementById(`search-card-${id}`);
                     if (el) el.classList.toggle('selected', id === engine);
                 });
                 if (window.electronAPI && window.electronAPI.updateSetting) {
@@ -1452,49 +1167,47 @@
             };
 
             window.importFrom = async function (source) {
-                const notif = document.getElementById('import-notification');
-                if (notif) {
-                    notif.style.display = 'block';
-                    notif.style.color = '#38BDF8';
-                    notif.textContent = `Importing from ${source}...`;
+                const box = document.getElementById('import-status-box');
+                if (box) {
+                    box.className = 'status-message info';
+                    box.innerHTML = `<i class="fas fa-spinner fa-spin"></i> Importing bookmarks from ${source}...`;
                 }
                 if (window.electronAPI && window.electronAPI.importBookmarks) {
                     const res = await window.electronAPI.importBookmarks(source);
-                    if (notif) {
+                    if (box) {
                         if (res && res.success) {
-                            notif.style.color = '#10B981';
-                            notif.textContent = `Imported ${res.count || 0} bookmarks successfully!`;
+                            box.className = 'status-message success';
+                            box.innerHTML = `<i class="fas fa-circle-check"></i> Imported ${res.count || 0} bookmarks successfully!`;
                         } else {
-                            notif.style.color = '#EF4444';
-                            notif.textContent = res?.error || 'Bookmarks not found for this browser.';
+                            box.className = 'status-message error';
+                            box.innerHTML = `<i class="fas fa-circle-exclamation"></i> ${res?.error || 'Bookmarks not found for this browser.'}`;
                         }
                     }
                 }
             };
 
             window.importFromFile = async function () {
-                const notif = document.getElementById('import-notification');
+                const box = document.getElementById('import-status-box');
                 if (window.electronAPI && window.electronAPI.importBookmarkFile) {
                     const res = await window.electronAPI.importBookmarkFile();
-                    if (notif) {
-                        notif.style.display = 'block';
+                    if (box) {
                         if (res && res.success) {
-                            notif.style.color = '#10B981';
-                            notif.textContent = `Imported ${res.count || 0} bookmarks successfully!`;
+                            box.className = 'status-message success';
+                            box.innerHTML = `<i class="fas fa-circle-check"></i> Imported ${res.count || 0} bookmarks successfully!`;
                         } else if (res && res.error !== 'Cancelled') {
-                            notif.style.color = '#EF4444';
-                            notif.textContent = res?.error || 'Could not parse bookmarks file.';
+                            box.className = 'status-message error';
+                            box.innerHTML = `<i class="fas fa-circle-exclamation"></i> ${res?.error || 'Could not parse bookmarks file.'}`;
                         }
                     }
                 }
             };
 
-            // ── Launching & Finishing ─────────────────────────────────────────
+            // ── Finishing & Launching ─────────────────────────────────────────
             window.finishAndLaunch = function () {
                 if (window.electronAPI && window.electronAPI.updateSetting) {
                     window.electronAPI.updateSetting('setupComplete', true);
                 }
-                document.body.style.transition = 'opacity 0.4s ease, transform 0.4s ease';
+                document.body.style.transition = 'opacity 0.35s ease, transform 0.35s ease';
                 document.body.style.opacity = '0';
                 document.body.style.transform = 'scale(0.98)';
                 setTimeout(() => {
@@ -1503,12 +1216,10 @@
                     } else {
                         window.location.href = 'home.html';
                     }
-                }, 350);
+                }, 300);
             };
 
-            document.getElementById('btn-start-browsing').onclick = finishAndLaunch;
-
-            // ── Boot Settings ────────────────────────────────────────────────
+            // ── Initialize Settings From Storage ──────────────────────────────
             async function boot() {
                 if (window.electronAPI && window.electronAPI.getSettings) {
                     try {
@@ -1523,6 +1234,21 @@
                 selectTabLayout(currentSettings.tabLayout || 'horizontal');
                 selectSidebarMode(currentSettings.sidebarMode || 'visible');
                 selectSearchEngine(currentSettings.searchEngine || 'google');
+
+                if (currentSettings.adBlockEnabled !== undefined) {
+                    const card = document.getElementById('shield-card-adblock');
+                    if (card) card.classList.toggle('selected', !!currentSettings.adBlockEnabled);
+                }
+                if (currentSettings.fingerprintProtection !== undefined) {
+                    const card = document.getElementById('shield-card-fingerprint');
+                    if (card) card.classList.toggle('selected', !!currentSettings.fingerprintProtection);
+                }
+                if (currentSettings.aiAssistantEnabled !== undefined) {
+                    const card = document.getElementById('shield-card-ai');
+                    if (card) card.classList.toggle('selected', !!currentSettings.aiAssistantEnabled);
+                }
+
+                renderStep();
             }
 
             boot();
