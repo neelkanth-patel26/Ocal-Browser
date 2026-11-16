@@ -149,8 +149,9 @@
             font-weight: 700;
             padding: 4px 12px;
             border-radius: 9999px;
-            background-color: var(--color-hero-tag);
-            color: var(--color-hero-text);
+            background-color: #0F172A;
+            color: #FFFFFF;
+            border: none;
             letter-spacing: 0.5px;
         }
 
@@ -169,12 +170,13 @@
             gap: 8px;
             padding: 5px 12px;
             border-radius: 9999px;
-            background-color: var(--color-hero-tag);
+            background-color: #0F172A;
             font-size: 11px;
             font-weight: 800;
             letter-spacing: 1px;
             text-transform: uppercase;
-            color: var(--color-hero-text);
+            color: #FFFFFF;
+            border: none;
             width: fit-content;
         }
 
@@ -199,7 +201,7 @@
             letter-spacing: -0.2px;
         }
 
-        /* Left Actions: Reference Pill Style */
+        /* Left Actions: Solid Color Pill Style */
         .left-actions {
             display: flex;
             align-items: center;
@@ -214,19 +216,21 @@
             gap: 10px;
             padding: 12px 24px;
             border-radius: 9999px;
-            background-color: transparent;
-            border: 2px solid var(--color-hero-text);
-            color: var(--color-hero-text);
+            background-color: #FFFFFF;
+            border: none;
+            color: var(--color-hero);
             font-size: 13.5px;
-            font-weight: 750;
+            font-weight: 800;
             cursor: pointer;
-            transition: background 0.18s ease, color 0.18s ease, transform 0.15s ease;
+            box-shadow: 0 4px 14px rgba(0, 0, 0, 0.15);
+            transition: background 0.18s ease, color 0.18s ease, transform 0.15s ease, box-shadow 0.15s ease;
         }
 
         .btn-pill-hero:hover {
-            background-color: var(--color-hero-text);
+            background-color: #F8FAFC;
             color: var(--color-hero);
             transform: translateY(-2px);
+            box-shadow: 0 6px 18px rgba(0, 0, 0, 0.2);
         }
 
         .btn-pill-hero:active {
@@ -236,36 +240,39 @@
         .kbd-hero {
             font-family: var(--font-mono);
             font-size: 10px;
-            padding: 2px 6px;
-            border-radius: 4px;
-            background-color: var(--color-hero-tag);
-            color: var(--color-hero-text);
-            border: 1px solid var(--color-hero-border);
+            font-weight: 800;
+            padding: 3px 8px;
+            border-radius: 6px;
+            background-color: color-mix(in srgb, var(--color-hero) 16%, #FFFFFF);
+            color: var(--color-hero);
+            border: none;
         }
 
         .btn-pill-hero:hover .kbd-hero {
-            background-color: var(--color-hero);
-            color: var(--color-hero-text);
-            border-color: var(--color-hero);
+            background-color: color-mix(in srgb, var(--color-hero) 24%, #FFFFFF);
+            color: var(--color-hero);
         }
 
         .btn-ghost-hero {
             display: inline-flex;
             align-items: center;
-            gap: 7px;
-            padding: 10px 18px;
+            gap: 8px;
+            padding: 12px 22px;
             border-radius: 9999px;
-            background-color: var(--color-hero-tag);
-            border: 1px solid var(--color-hero-border);
-            color: var(--color-hero-text);
-            font-size: 12.5px;
-            font-weight: 600;
+            background-color: #0F172A;
+            border: none;
+            color: #FFFFFF;
+            font-size: 13px;
+            font-weight: 750;
             cursor: pointer;
-            transition: background 0.15s ease;
+            box-shadow: 0 4px 14px rgba(0, 0, 0, 0.15);
+            transition: background 0.15s ease, transform 0.15s ease, box-shadow 0.15s ease;
         }
 
         .btn-ghost-hero:hover {
-            background-color: rgba(0, 0, 0, 0.35);
+            background-color: #1E293B;
+            transform: translateY(-2px);
+            box-shadow: 0 6px 18px rgba(0, 0, 0, 0.2);
         }
 
         .left-footer {
@@ -288,14 +295,19 @@
             width: 56px;
             height: 56px;
             border-radius: 50%;
-            background-color: var(--right-bg);
-            border: 4px solid var(--color-hero);
+            background-color: #FFFFFF;
+            border: none;
+            box-shadow: 0 4px 16px rgba(0, 0, 0, 0.14);
             color: var(--color-hero);
             display: flex;
             align-items: center;
             justify-content: center;
             font-size: 20px;
-            transition: border-color 0.25s ease, color 0.25s ease, background-color 0.2s ease;
+            transition: color 0.25s ease, background-color 0.2s ease;
+        }
+        html[data-theme="dark"] .seam-circle {
+            background-color: #1E222D;
+            color: var(--color-hero);
         }
 
         /* ── RIGHT PANEL: Clean Solid Neutral ─────────────────── */
@@ -487,50 +499,79 @@
             padding: 13px 26px;
             border-radius: 9999px;
             background-color: var(--color-hero);
-            color: var(--color-hero-text);
+            color: #FFFFFF;
             font-size: 14px;
             font-weight: 750;
             text-decoration: none;
             cursor: pointer;
             border: none;
-            transition: opacity 0.15s ease, transform 0.15s ease;
+            box-shadow: 0 4px 14px rgba(0, 0, 0, 0.14);
+            transition: opacity 0.15s ease, transform 0.15s ease, box-shadow 0.15s ease;
         }
 
         .btn-action-solid:hover {
-            opacity: 0.92;
+            opacity: 0.94;
             transform: translateY(-2px);
+            box-shadow: 0 6px 18px rgba(0, 0, 0, 0.18);
+        }
+
+        .kbd-solid-enter {
+            font-family: var(--font-mono);
+            font-size: 10px;
+            font-weight: 800;
+            padding: 3px 8px;
+            border-radius: 6px;
+            background-color: #FFFFFF;
+            color: var(--color-hero);
+            border: none;
         }
 
         .btn-action-outline {
             display: inline-flex;
             align-items: center;
-            gap: 8px;
-            padding: 12px 24px;
+            gap: 10px;
+            padding: 13px 26px;
             border-radius: 9999px;
-            background-color: transparent;
-            color: var(--right-text-main);
-            border: 1.5px solid var(--right-border);
+            background-color: #0F172A;
+            color: #FFFFFF;
+            border: none;
             font-size: 14px;
-            font-weight: 700;
+            font-weight: 750;
             text-decoration: none;
             cursor: pointer;
-            transition: border-color 0.15s ease, background 0.15s ease, transform 0.15s ease;
+            box-shadow: 0 4px 14px rgba(0, 0, 0, 0.14);
+            transition: background 0.15s ease, transform 0.15s ease, box-shadow 0.15s ease;
         }
 
         .btn-action-outline:hover {
-            border-color: var(--right-text-main);
-            background-color: var(--right-surface);
+            background-color: #1E293B;
             transform: translateY(-2px);
+            box-shadow: 0 6px 18px rgba(0, 0, 0, 0.18);
+        }
+
+        html[data-theme="dark"] .btn-action-outline {
+            background-color: #222634;
+            color: #F8FAFC;
+        }
+
+        html[data-theme="dark"] .btn-action-outline:hover {
+            background-color: #2E3446;
         }
 
         .kbd-dark {
             font-family: var(--font-mono);
             font-size: 10px;
-            padding: 2px 6px;
-            border-radius: 4px;
-            background-color: var(--right-surface);
-            color: var(--right-text-muted);
-            border: 1px solid var(--right-border);
+            font-weight: 800;
+            padding: 3px 8px;
+            border-radius: 6px;
+            background-color: #334155;
+            color: #F8FAFC;
+            border: none;
+        }
+
+        html[data-theme="dark"] .kbd-dark {
+            background-color: #3B4254;
+            color: #E2E8F0;
         }
 
         /* Build & Learn Row */
@@ -555,20 +596,20 @@
             display: inline-flex;
             align-items: center;
             gap: 6px;
-            padding: 5px 12px;
+            padding: 6px 14px;
             border-radius: 9999px;
             background-color: var(--right-surface);
-            border: 1px solid var(--right-border);
+            border: none;
             color: var(--right-text-muted);
             font-size: 12px;
             font-weight: 600;
             text-decoration: none;
-            transition: color 0.15s ease, border-color 0.15s ease;
+            transition: color 0.15s ease, background-color 0.15s ease;
         }
 
         .gateway-pill:hover {
             color: var(--right-text-main);
-            border-color: var(--color-hero);
+            background-color: color-mix(in srgb, var(--right-surface) 80%, black 20%);
         }
 
         .gateway-pill i {
@@ -614,9 +655,10 @@
             left: 50%;
             transform: translateX(-50%) translateY(20px);
             opacity: 0;
-            background-color: #1F2430;
+            background-color: #0F172A;
             color: #FFFFFF;
-            border: 1px solid rgba(255, 255, 255, 0.2);
+            border: none;
+            box-shadow: 0 6px 20px rgba(0, 0, 0, 0.25);
             padding: 8px 18px;
             border-radius: 9999px;
             font-size: 12px;
@@ -737,7 +779,7 @@
                     <a href="ocal://focus" class="btn-action-solid" id="link-focus">
                         <i class="fas fa-brain"></i>
                         <span>Launch Focus Flow</span>
-                        <kbd class="kbd-hero" style="background: rgba(0,0,0,0.2); border-color: rgba(255,255,255,0.3);">Enter</kbd>
+                        <kbd class="kbd-solid-enter">Enter</kbd>
                     </a>
 
                     <a href="ocal://home" class="btn-action-outline" id="link-home">
