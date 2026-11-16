@@ -1086,6 +1086,42 @@ const populateReleaseNotes = (version, notesHtml) => {
 const formatGitHubMarkdown = (markdown, version = currentVer || '10.1.23') => {
     if (!markdown) return '';
 
+    const stripEmojis = (str) => {
+        if (!str) return '';
+        return str
+            .replace(/[\u{1F300}-\u{1F9FF}\u{2600}-\u{26FF}\u{2700}-\u{27BF}\u{1F000}-\u{1F02F}\u{1F0A0}-\u{1F0FF}\u{1F100}-\u{1F64F}\u{1F680}-\u{1F6FF}\u{1F900}-\u{1F9FF}\u{1FA70}-\u{1FAFF}\u{FE0F}]/gu, '')
+            .trim();
+    };
+
+    const getSectionIcon = (title) => {
+        const t = (title || '').toLowerCase();
+        if (t.includes('file') || t.includes('bento') || t.includes('folder') || t.includes('explorer')) {
+            return 'fas fa-folder-open';
+        }
+        if (t.includes('ai') || t.includes('copilot') || t.includes('assistant') || t.includes('sidebar') || t.includes('bot')) {
+            return 'fas fa-robot';
+        }
+        if (t.includes('pdf') || t.includes('reader') || t.includes('document') || t.includes('viewer')) {
+            return 'fas fa-file-pdf';
+        }
+        if (t.includes('permission') || t.includes('security') || t.includes('privacy') || t.includes('prompt') || t.includes('shield')) {
+            return 'fas fa-shield-halved';
+        }
+        if (t.includes('theme') || t.includes('appearance') || t.includes('color') || t.includes('search engine') || t.includes('dark') || t.includes('light')) {
+            return 'fas fa-palette';
+        }
+        if (t.includes('perf') || t.includes('engine') || t.includes('turbo') || t.includes('speed') || t.includes('v8') || t.includes('ram') || t.includes('acceleration') || t.includes('gpu')) {
+            return 'fas fa-gauge-high';
+        }
+        if (t.includes('contributor') || t.includes('team') || t.includes('author') || t.includes('credit')) {
+            return 'fas fa-users-gear';
+        }
+        if (t.includes('artifact') || t.includes('installer') || t.includes('package') || t.includes('setup') || t.includes('download')) {
+            return 'fas fa-box-archive';
+        }
+        return 'fas fa-circle-check';
+    };
+
     const lines = markdown.split(/\r?\n/);
     let html = '';
     let currentSection = null;
@@ -1093,7 +1129,8 @@ const formatGitHubMarkdown = (markdown, version = currentVer || '10.1.23') => {
 
     function formatInline(str) {
         if (!str) return '';
-        return str
+        const cleaned = stripEmojis(str);
+        return cleaned
             .replace(/\*\*(.*?)\*\*/g, '<strong class="rel-bullet-lead">$1</strong>')
             .replace(/\*(.*?)\*/g, '<em>$1</em>')
             .replace(/`([^`]+)`/g, '<code class="rel-inline-code">$1</code>');
@@ -1102,7 +1139,7 @@ const formatGitHubMarkdown = (markdown, version = currentVer || '10.1.23') => {
     function flushSection() {
         if (!currentSection) return;
         
-        let headerTitle = currentSection.title;
+        let headerTitle = stripEmojis(currentSection.title);
         let urlBadge = '';
         
         const urlMatch = headerTitle.match(/\(`?(ocal:\/\/[^\s`)]+|https?:\/\/[^\s`)]+)`?\)/i);
@@ -1112,21 +1149,25 @@ const formatGitHubMarkdown = (markdown, version = currentVer || '10.1.23') => {
             urlBadge = `<span class="rel-feature-link" onclick="if(window.electronAPI && window.electronAPI.send){window.electronAPI.send('new-tab', '${url}');}else{window.open('${url}');}"><i class="fas fa-arrow-up-right-from-square"></i> ${url}</span>`;
         }
 
+        const iconClass = getSectionIcon(headerTitle);
+
         html += `
-        <div class="rel-section-card">
-            <div class="rel-section-header">
-                <div class="rel-section-title-wrap">
-                    <span class="rel-section-title">${headerTitle}</span>
+        <div class="rel-feature-block">
+            <div class="rel-feature-header">
+                <div class="rel-feature-icon"><i class="${iconClass}"></i></div>
+                <div class="rel-feature-title-wrap">
+                    <span class="rel-feature-title">${headerTitle}</span>
                     ${urlBadge}
                 </div>
             </div>
-            <div class="rel-section-body">
+            <div class="rel-feature-body">
         `;
 
         if (currentSection.isContributors) {
             html += `<div class="rel-contributors-grid">`;
             for (const item of sectionItems) {
-                const contribMatch = item.match(/\*\*(.*?)\*\*\s*(?:—|-)\s*\*?(.*?)\*?\s*(?:\((.*?)\))?$/);
+                const cleanItem = stripEmojis(item);
+                const contribMatch = cleanItem.match(/\*\*(.*?)\*\*\s*(?:—|-)\s*\*?(.*?)\*?\s*(?:\((.*?)\))?$/);
                 if (contribMatch) {
                     const name = contribMatch[1];
                     const role = contribMatch[2];
@@ -1141,14 +1182,15 @@ const formatGitHubMarkdown = (markdown, version = currentVer || '10.1.23') => {
                         </div>
                     </div>`;
                 } else {
-                    html += `<div class="rel-bullet-row"><span class="rel-bullet-dot"></span><div class="rel-bullet-content"><span class="rel-bullet-text">${formatInline(item)}</span></div></div>`;
+                    html += `<div class="rel-bullet-row"><span class="rel-bullet-dot"></span><div class="rel-bullet-content"><span class="rel-bullet-text">${formatInline(cleanItem)}</span></div></div>`;
                 }
             }
             html += `</div>`;
         } else if (currentSection.isArtifacts) {
             html += `<div class="rel-artifacts-grid">`;
             for (const item of sectionItems) {
-                const artMatch = item.match(/`([^`]+)`\s*(?:\((.*?)\))?/);
+                const cleanItem = stripEmojis(item);
+                const artMatch = cleanItem.match(/`([^`]+)`\s*(?:\((.*?)\))?/);
                 if (artMatch) {
                     const filename = artMatch[1];
                     const info = artMatch[2] || 'Verified Signed Package';
@@ -1161,13 +1203,14 @@ const formatGitHubMarkdown = (markdown, version = currentVer || '10.1.23') => {
                         </div>
                     </div>`;
                 } else {
-                    html += `<div class="rel-bullet-row"><span class="rel-bullet-dot"></span><div class="rel-bullet-content"><span class="rel-bullet-text">${formatInline(item)}</span></div></div>`;
+                    html += `<div class="rel-bullet-row"><span class="rel-bullet-dot"></span><div class="rel-bullet-content"><span class="rel-bullet-text">${formatInline(cleanItem)}</span></div></div>`;
                 }
             }
             html += `</div>`;
         } else {
             for (const item of sectionItems) {
-                const bulletMatch = item.match(/^\*\*(.*?)\*\*:\s*(.*)/);
+                const cleanItem = stripEmojis(item);
+                const bulletMatch = cleanItem.match(/^\*\*(.*?)\*\*:\s*(.*)/);
                 if (bulletMatch) {
                     const lead = bulletMatch[1];
                     const desc = formatInline(bulletMatch[2]);
@@ -1184,7 +1227,7 @@ const formatGitHubMarkdown = (markdown, version = currentVer || '10.1.23') => {
                     <div class="rel-bullet-row">
                         <span class="rel-bullet-dot"></span>
                         <div class="rel-bullet-content">
-                            <span class="rel-bullet-text">${formatInline(item)}</span>
+                            <span class="rel-bullet-text">${formatInline(cleanItem)}</span>
                         </div>
                     </div>`;
                 }
@@ -1236,7 +1279,7 @@ const formatGitHubMarkdown = (markdown, version = currentVer || '10.1.23') => {
                 <span class="rel-date-chip"><i class="fas fa-circle-check"></i> Verified Production Channel</span>
             </div>
         </div>
-        <div class="rel-sections-list">
+        <div class="rel-sections-card">
             ${html}
         </div>
     </div>`;
@@ -1244,13 +1287,13 @@ const formatGitHubMarkdown = (markdown, version = currentVer || '10.1.23') => {
 
 const getCurrentVersionHighlights = (v) => {
     return formatGitHubMarkdown(
-        "### 🧭 Modern Desktop Experience & Core Performance\n" +
+        "### Modern Desktop Experience & Core Performance\n" +
         "* **Upgraded Chromium & Electron Execution**: High-throughput V8 execution, hardware-accelerated Direct3D rasterization, and zero-latency tab switching.\n" +
         "* **Bento File Manager Architecture (`ocal://file-manager`)**: Sleek glassmorphic cards, instant media previewing, and dynamic directory tree navigation.\n\n" +
-        "### 🤖 AI Copilot & Multi-Tab Synthesis\n" +
+        "### AI Copilot & Multi-Tab Synthesis\n" +
         "* **Real-Time Context Synthesis**: Query, summarize, and cross-compare live tab contents with zero cloud telemetry retention.\n" +
         "* **Background Memory Saver**: Frees inactive background RAM by up to 60% while preserving tab execution states.\n\n" +
-        "### 🛡️ Privacy & Security Defense\n" +
+        "### Privacy & Security Defense\n" +
         "* **Bundled Extensions Ecosystem**: Pre-loaded uBlock Origin, Return YouTube Dislike, and Ocal Media Master with zero telemetry tracking.\n" +
         "* **Origin Permission Memory**: Transparent, shadowless permission prompts with persistent per-origin security profiles.",
         v
@@ -1998,7 +2041,7 @@ window.electronAPI.getSettings().then(s => {
                     res.models.forEach(m => {
                         const opt = document.createElement('option');
                         opt.value = m.name;
-                        opt.textContent = `⚡ [Installed] ${m.name} (${m.source} - ${m.size})`;
+                        opt.textContent = `[Installed] ${m.name} (${m.source} - ${m.size})`;
                         localModelSelect.appendChild(opt);
                         addedModelIds.add(m.name);
                     });
@@ -2012,7 +2055,7 @@ window.electronAPI.getSettings().then(s => {
                         data.models.forEach(model => {
                             const opt = document.createElement('option');
                             opt.value = model.name;
-                            opt.textContent = `⚡ [Installed] ${model.name}`;
+                            opt.textContent = `[Installed] ${model.name}`;
                             localModelSelect.appendChild(opt);
                             addedModelIds.add(model.name);
                         });
