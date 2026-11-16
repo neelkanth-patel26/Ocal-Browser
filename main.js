@@ -2951,7 +2951,8 @@ function resolveInternalURL(url) {
         return 'file://' + path.join(__dirname, 'security-warning.html') + (qIdx !== -1 ? url.substring(qIdx) : '');
     }
     if (cleanBase === 'ocal://mindful-shield' || cleanBase === 'ocal://safe-shield' || cleanBase === 'mindful-shield') {
-        return url; // Keep as ocal://mindful-shield for native protocol.handle serving
+        const qIdx = url.indexOf('?');
+        return getFilePath('mindful-shield.html') + (qIdx !== -1 ? url.substring(qIdx) : '');
     }
     if (cleanBase === 'ocal://games' || cleanBase === 'ocal://game' || cleanBase === 'ocal://arcade' || cleanBase === 'games' || cleanBase === 'arcade') return getFilePath('games.html');
     if (cleanBase === 'ocal://hexgl' || cleanBase === 'hexgl' || cleanBase === 'ocal://arcade/hexgl' || cleanBase.startsWith('ocal://hexgl') || cleanBase.startsWith('ocal://arcade/hexgl')) {
@@ -11250,16 +11251,12 @@ app.whenReady().then(async () => {
             try {
                 const parsed = new URL(reqUrl);
                 if (parsed.hostname === 'mindful-shield' || parsed.pathname.includes('mindful-shield')) {
-                    const shieldFile = nodePath.join(__dirname, 'mindful-shield.html');
-                    if (fs.existsSync(shieldFile)) {
-                        const fileData = fs.readFileSync(shieldFile);
-                        return new Response(fileData, {
-                            headers: {
-                                'Content-Type': 'text/html; charset=utf-8',
-                                'Content-Length': fileData.length.toString()
-                            }
-                        });
-                    }
+                    const subPath = parsed.pathname.replace(/^\/+/, '');
+                    const targetFile = (!subPath || subPath.endsWith('.html') || subPath === 'mindful-shield')
+                        ? path.join(__dirname, 'mindful-shield.html')
+                        : path.join(__dirname, subPath);
+                    const fileUrl = require('url').pathToFileURL(targetFile).href;
+                    return net.fetch(fileUrl).catch(() => new Response('Not found', { status: 404 }));
                 }
                 if (parsed.hostname === 'arcade' || parsed.hostname === 'hexgl') {
                     const asset = require('./arcade-protocol.cjs').resolveArcadeAsset(reqUrl, __dirname);
@@ -11287,7 +11284,7 @@ app.whenReady().then(async () => {
                 }
 
                 if (fs.existsSync(cleanFilePath)) {
-                    const ext = path.extname ? path.extname(cleanFilePath).toLowerCase() : nodePath.extname(cleanFilePath).toLowerCase();
+                    const ext = path.extname(cleanFilePath).toLowerCase();
                     const mimeTypes = {
                         '.html': 'text/html; charset=utf-8',
                         '.js': 'application/javascript; charset=utf-8',
