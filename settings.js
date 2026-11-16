@@ -1083,74 +1083,222 @@ const populateReleaseNotes = (version, notesHtml) => {
     if (catalogTag) catalogTag.textContent = `v${version}`;
 };
 
-const formatGitHubMarkdown = (markdown) => {
+const formatGitHubMarkdown = (markdown, version = currentVer || '10.1.23') => {
     if (!markdown) return '';
-    
-    return `<div style="font-family: var(--font-mono); font-size: 11.5px; color: var(--text-dim); white-space: pre-wrap; line-height: 1.6;">` + 
-        markdown
-        .replace(/^##\s+(.*)/gm, '<div style="font-family: var(--font-title); font-size: 13.5px; font-weight: 800; color: var(--accent); margin-top: 12px; margin-bottom: 6px;">$1</div>')
-        .replace(/^###\s+(.*)/gm, '<div style="font-family: var(--font-title); font-size: 12.5px; font-weight: 700; color: var(--text); margin-top: 10px; margin-bottom: 4px;">$1</div>')
-        .replace(/^\*\s+(.*)/gm, '<div style="margin-left: 8px;">• $1</div>')
-        .replace(/^- \s+(.*)/gm, '<div style="margin-left: 8px;">• $1</div>')
-        .replace(/`([^`]+)`/g, '<code style="background: color-mix(in srgb, var(--accent) 15%, transparent); color: var(--accent); padding: 1px 5px; border-radius: 4px;">$1</code>') +
-        `</div>`;
-};
 
-const getCurrentVersionHighlights = (v) => `
-    <div style="font-family: var(--font-mono); font-size: 11.5px; color: var(--text-dim); white-space: pre-wrap; line-height: 1.6;">
-<div style="font-family: var(--font-title); font-size: 14px; font-weight: 800; color: var(--accent); margin-bottom: 8px;">OCAL BROWSER v${v} STABLE</div>
-<div style="color: var(--text); font-weight: 700; margin-bottom: 12px;">Official Production Release Highlights</div>
+    const lines = markdown.split(/\r?\n/);
+    let html = '';
+    let currentSection = null;
+    let sectionItems = [];
 
-<div style="font-family: var(--font-title); font-size: 12.5px; font-weight: 700; color: var(--accent); margin-top: 10px; margin-bottom: 4px;">🧭 Modern Desktop Experience & Core Performance</div>
-• Upgraded Chromium engine and modern Electron runtime for high-throughput V8 execution and hardware-accelerated rendering.
-• Brand new first-run onboarding screen (ocal://onboarding) with instant search and theme customization.
+    function formatInline(str) {
+        if (!str) return '';
+        return str
+            .replace(/\*\*(.*?)\*\*/g, '<strong class="rel-bullet-lead">$1</strong>')
+            .replace(/\*(.*?)\*/g, '<em>$1</em>')
+            .replace(/`([^`]+)`/g, '<code class="rel-inline-code">$1</code>');
+    }
 
-<div style="font-family: var(--font-title); font-size: 12.5px; font-weight: 700; color: var(--accent); margin-top: 12px; margin-bottom: 4px;">🤖 AI Copilot & @tab Multi-Tab Synthesis</div>
-• Real-time tab awareness: query, summarize, and cross-compare live pages with zero cloud data retention.
-• Background tab memory saver frees inactive RAM by up to 60% without losing tab session states.
-
-<div style="font-family: var(--font-title); font-size: 12.5px; font-weight: 700; color: var(--accent); margin-top: 12px; margin-bottom: 4px;">🛡️ Privacy & Extension Ecosystem</div>
-• Bundled with latest uBlock Origin and Return YouTube Dislike engines with zero telemetry tracking.
-• Complete hardware-accelerated Direct3D / Vulkan graphics pipeline with zero-copy rasterization.
-    </div>
-`;
-
-const syncReleaseCatalogWithGitHub = async (v) => {
-    try {
-        const response = await fetch('https://api.github.com/repos/neelkanth-patel26/Ocal-Browser/releases/latest');
-        if (!response.ok) throw new Error('API Rate Limit');
-        const data = await response.json();
-        const gitHubVersion = (data.tag_name || '').replace(/^[vV]/, '');
+    function flushSection() {
+        if (!currentSection) return;
         
-        let htmlContent = `<p style="margin-top: 0; color: var(--text); font-weight: 800; text-transform: uppercase; letter-spacing: 0.5px;">${data.name || ('Ocal Browser v' + gitHubVersion)}</p>`;
-        htmlContent += `<div style="font-size: 12px; color: var(--text-dim); line-height: 1.6;">${formatGitHubMarkdown(data.body)}</div>`;
+        let headerTitle = currentSection.title;
+        let urlBadge = '';
         
-        // If GitHub has a newer version, trigger update available state immediately
-        if (isNewerVersion(gitHubVersion, v)) {
-            showUpdateInfo({
-                version: gitHubVersion,
-                notes: data.body || '',
-                url: data.html_url || ''
-            });
-            populateReleaseNotes(gitHubVersion, htmlContent);
+        const urlMatch = headerTitle.match(/\(`?(ocal:\/\/[^\s`)]+|https?:\/\/[^\s`)]+)`?\)/i);
+        if (urlMatch) {
+            const url = urlMatch[1];
+            headerTitle = headerTitle.replace(/\(`?[^)]+`?\)/, '').trim();
+            urlBadge = `<span class="rel-feature-link" onclick="if(window.electronAPI && window.electronAPI.send){window.electronAPI.send('new-tab', '${url}');}else{window.open('${url}');}"><i class="fas fa-arrow-up-right-from-square"></i> ${url}</span>`;
+        }
+
+        html += `
+        <div class="rel-section-card">
+            <div class="rel-section-header">
+                <div class="rel-section-title-wrap">
+                    <span class="rel-section-title">${headerTitle}</span>
+                    ${urlBadge}
+                </div>
+            </div>
+            <div class="rel-section-body">
+        `;
+
+        if (currentSection.isContributors) {
+            html += `<div class="rel-contributors-grid">`;
+            for (const item of sectionItems) {
+                const contribMatch = item.match(/\*\*(.*?)\*\*\s*(?:—|-)\s*\*?(.*?)\*?\s*(?:\((.*?)\))?$/);
+                if (contribMatch) {
+                    const name = contribMatch[1];
+                    const role = contribMatch[2];
+                    const desc = contribMatch[3] || '';
+                    html += `
+                    <div class="rel-contributor-chip">
+                        <div class="rel-contrib-avatar"><i class="fas fa-user-gear"></i></div>
+                        <div class="rel-contrib-info">
+                            <span class="rel-contrib-name">${name}</span>
+                            <span class="rel-contrib-role">${role}</span>
+                            ${desc ? `<span class="rel-contrib-desc">${desc}</span>` : ''}
+                        </div>
+                    </div>`;
+                } else {
+                    html += `<div class="rel-bullet-row"><span class="rel-bullet-dot"></span><div class="rel-bullet-content"><span class="rel-bullet-text">${formatInline(item)}</span></div></div>`;
+                }
+            }
+            html += `</div>`;
+        } else if (currentSection.isArtifacts) {
+            html += `<div class="rel-artifacts-grid">`;
+            for (const item of sectionItems) {
+                const artMatch = item.match(/`([^`]+)`\s*(?:\((.*?)\))?/);
+                if (artMatch) {
+                    const filename = artMatch[1];
+                    const info = artMatch[2] || 'Verified Signed Package';
+                    html += `
+                    <div class="rel-artifact-chip">
+                        <div class="rel-artifact-icon"><i class="fas fa-box-archive"></i></div>
+                        <div class="rel-artifact-info">
+                            <code class="rel-artifact-filename">${filename}</code>
+                            <span class="rel-artifact-desc">${info}</span>
+                        </div>
+                    </div>`;
+                } else {
+                    html += `<div class="rel-bullet-row"><span class="rel-bullet-dot"></span><div class="rel-bullet-content"><span class="rel-bullet-text">${formatInline(item)}</span></div></div>`;
+                }
+            }
+            html += `</div>`;
         } else {
-            populateReleaseNotes(v, htmlContent);
-            const statusTitle = document.getElementById('update-status-title');
-            const statusDesc = document.getElementById('update-status-desc');
-            const iconBox = document.getElementById('update-status-icon-box');
-            const icon = document.getElementById('update-status-icon');
-            if (statusTitle) statusTitle.innerText = "Browser is up to date";
-            if (statusDesc) statusDesc.innerText = `v${v} is active and verified`;
-            if (iconBox) iconBox.className = "update-icon-box up-to-date";
-            if (icon) {
-                icon.className = "fas fa-circle-check";
-                icon.style.color = "";
+            for (const item of sectionItems) {
+                const bulletMatch = item.match(/^\*\*(.*?)\*\*:\s*(.*)/);
+                if (bulletMatch) {
+                    const lead = bulletMatch[1];
+                    const desc = formatInline(bulletMatch[2]);
+                    html += `
+                    <div class="rel-bullet-row">
+                        <span class="rel-bullet-dot"></span>
+                        <div class="rel-bullet-content">
+                            <strong class="rel-bullet-lead">${lead}:</strong>
+                            <span class="rel-bullet-text">${desc}</span>
+                        </div>
+                    </div>`;
+                } else {
+                    html += `
+                    <div class="rel-bullet-row">
+                        <span class="rel-bullet-dot"></span>
+                        <div class="rel-bullet-content">
+                            <span class="rel-bullet-text">${formatInline(item)}</span>
+                        </div>
+                    </div>`;
+                }
             }
         }
-        console.log('GitHub Release Sync: Success');
-    } catch (err) {
-        console.log('GitHub Release Sync: Falling back to local manifest');
-        populateReleaseNotes(v, getCurrentVersionHighlights(v));
+
+        html += `
+            </div>
+        </div>`;
+
+        currentSection = null;
+        sectionItems = [];
+    }
+
+    for (let i = 0; i < lines.length; i++) {
+        const line = lines[i].trim();
+        if (!line) continue;
+
+        if (line.startsWith('## ')) {
+            continue;
+        } else if (line.startsWith('### ')) {
+            flushSection();
+            const title = line.replace(/^###\s+/, '').trim();
+            const isContributors = title.toLowerCase().includes('contributor');
+            const isArtifacts = title.toLowerCase().includes('artifact');
+            currentSection = { title, isContributors, isArtifacts };
+        } else if (line.startsWith('* ') || line.startsWith('- ')) {
+            const rawItem = line.replace(/^[\*\-]\s+/, '').trim();
+            sectionItems.push(rawItem);
+        } else if (currentSection) {
+            sectionItems.push(line);
+        }
+    }
+
+    flushSection();
+
+    return `
+    <div class="rel-notes-container">
+        <div class="rel-hero-banner">
+            <div class="rel-hero-left">
+                <div class="rel-hero-badge-row">
+                    <span class="rel-channel-pill"><i class="fas fa-certificate"></i> Official Release</span>
+                    <span class="rel-ver-pill">v${version} Stable</span>
+                </div>
+                <h3 class="rel-hero-heading">Release Notes &amp; Feature Catalog</h3>
+                <p class="rel-hero-sub">Complete verified change catalog for the current production milestone.</p>
+            </div>
+            <div class="rel-hero-right">
+                <span class="rel-date-chip"><i class="fas fa-circle-check"></i> Verified Production Channel</span>
+            </div>
+        </div>
+        <div class="rel-sections-list">
+            ${html}
+        </div>
+    </div>`;
+};
+
+const getCurrentVersionHighlights = (v) => {
+    return formatGitHubMarkdown(
+        "### 🧭 Modern Desktop Experience & Core Performance\n" +
+        "* **Upgraded Chromium & Electron Execution**: High-throughput V8 execution, hardware-accelerated Direct3D rasterization, and zero-latency tab switching.\n" +
+        "* **Bento File Manager Architecture (`ocal://file-manager`)**: Sleek glassmorphic cards, instant media previewing, and dynamic directory tree navigation.\n\n" +
+        "### 🤖 AI Copilot & Multi-Tab Synthesis\n" +
+        "* **Real-Time Context Synthesis**: Query, summarize, and cross-compare live tab contents with zero cloud telemetry retention.\n" +
+        "* **Background Memory Saver**: Frees inactive background RAM by up to 60% while preserving tab execution states.\n\n" +
+        "### 🛡️ Privacy & Security Defense\n" +
+        "* **Bundled Extensions Ecosystem**: Pre-loaded uBlock Origin, Return YouTube Dislike, and Ocal Media Master with zero telemetry tracking.\n" +
+        "* **Origin Permission Memory**: Transparent, shadowless permission prompts with persistent per-origin security profiles.",
+        v
+    );
+};
+
+const syncReleaseCatalogWithGitHub = async (v) => {
+    let releaseData = null;
+    try {
+        const response = await fetch('https://api.github.com/repos/neelkanth-patel26/Ocal-Browser/releases/latest');
+        if (response.ok) {
+            releaseData = await response.json();
+        }
+    } catch (_) {}
+
+    if (!releaseData) {
+        try {
+            const localResp = await fetch('release_info.json');
+            if (localResp.ok) {
+                releaseData = await localResp.json();
+            }
+        } catch (_) {}
+    }
+
+    const effectiveVer = (releaseData && releaseData.tag_name ? releaseData.tag_name : v).replace(/^[vV]/, '');
+    const bodyContent = (releaseData && releaseData.body) ? releaseData.body : '';
+    const htmlContent = bodyContent ? formatGitHubMarkdown(bodyContent, effectiveVer) : getCurrentVersionHighlights(v);
+
+    if (releaseData && isNewerVersion(effectiveVer, v)) {
+        showUpdateInfo({
+            version: effectiveVer,
+            notes: releaseData.body || '',
+            url: releaseData.html_url || ''
+        });
+        populateReleaseNotes(effectiveVer, htmlContent);
+    } else {
+        populateReleaseNotes(v, htmlContent);
+        const statusTitle = document.getElementById('update-status-title');
+        const statusDesc = document.getElementById('update-status-desc');
+        const iconBox = document.getElementById('update-status-icon-box');
+        const icon = document.getElementById('update-status-icon');
+        if (statusTitle) statusTitle.innerText = "Browser is up to date";
+        if (statusDesc) statusDesc.innerText = `v${v} is active and verified`;
+        if (iconBox) iconBox.className = "update-icon-box up-to-date";
+        if (icon) {
+            icon.className = "fas fa-circle-check";
+            icon.style.color = "";
+        }
     }
 };
 
