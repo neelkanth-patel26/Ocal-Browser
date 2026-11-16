@@ -1169,7 +1169,11 @@ function isAdultOrPornUrl(rawUrl) {
     if (!rawUrl || typeof rawUrl !== 'string') return false;
     if (rawUrl.startsWith('ocal://') || rawUrl.startsWith('file://') || rawUrl.startsWith('chrome-extension://')) return false;
     try {
-        const u = new URL(rawUrl);
+        let validUrl = rawUrl.trim();
+        if (!validUrl.includes('://')) {
+            validUrl = 'https://' + validUrl;
+        }
+        const u = new URL(validUrl);
         const host = u.hostname.toLowerCase();
         
         // Exact domain check
@@ -1187,15 +1191,12 @@ function isAdultOrPornUrl(rawUrl) {
             return true;
         }
 
-        // Adult brand in hostname (e.g. xhamster.desi, m.xhamster.com, pornhub-mirror.com)
-        if (/xhamster|pornhub|xnxx|xvideos|redtube|youporn|chaturbate|stripchat|spankbang|eporner|beeg|brazzers|rule34|nhentai|erome|livejasmin|thothub|fapello|daftsex|youjizz|hqporner|thumbzilla|cam4|camsoda|bongacams|hentaihaven|hanime|javhd|missav|jable|adultfriendfinder/i.test(host)) {
+        // Substrings inside host that indicate adult sites
+        if (/porn|xxx|nsfw|hentai|stripchat|camgirl|camsoda|xhamster|xvideos|xnxx|redtube|youporn|chaturbate|spankbang|eporner|beeg|brazzers|rule34|nhentai|erome|livejasmin|thothub|fapello|daftsex|youjizz|hqporner|thumbzilla|hentaihaven|hanime|javhd|missav|jable|adultfriendfinder|txxx|heavy-r|motherless|pornmd|coomer|faphero|nuvid|sunporno|drtuber|tnaflix|javlibrary|gelbooru|danbooru|e-hentai|luscious|alotporn|vrporn|streamate|porntrex|upornia/i.test(host)) {
             return true;
         }
 
-        // Domain pattern regex check
-        if (ADULT_URL_REGEX.test(host)) return true;
-
-        // Check search engine redirect targets (e.g. google.com/url?q=... or url=...)
+        // Check search engine redirect targets
         if (u.pathname === '/url') {
             const redirectTarget = u.searchParams.get('url') || u.searchParams.get('q');
             if (redirectTarget && isAdultOrPornUrl(redirectTarget)) {
@@ -1205,7 +1206,7 @@ function isAdultOrPornUrl(rawUrl) {
 
         // Explicit path tokens
         const pathAndQuery = (u.pathname + u.search).toLowerCase();
-        if (/\/(porn|xxx|nsfw|hentai|erotica)\//i.test(pathAndQuery)) {
+        if (/\/(porn|xxx|nsfw|hentai|erotica|sex|adult|camgirl|hardcore)\//i.test(pathAndQuery)) {
             return true;
         }
 
@@ -3610,6 +3611,17 @@ function setupViewEvents(tabId, view, side = 'left') {
             return { action: 'deny' };
         }
 
+        // Intercept adult/pornographic popups and new window targets
+        if (userSettings.contentProtectionEnabled !== false && userSettings.adultDomainsBlockEnabled !== false) {
+            const adultQuery = extractSearchEngineQuery(url);
+            const isAdultSite = isAdultOrPornUrl(url);
+            if (isAdultSite || (adultQuery && isAdultContentQuery(adultQuery))) {
+                const param = adultQuery ? `query=${encodeURIComponent(adultQuery)}` : `url=${encodeURIComponent(url)}`;
+                createNewTab(`ocal://mindful-shield?${param}`);
+                return { action: 'deny' };
+            }
+        }
+
         if (url.startsWith('ocal://')) {
             createNewTab(url);
             return { action: 'deny' };
@@ -3897,6 +3909,9 @@ function broadcastTabs() {
         }
         if (url1 === 'ocal://offline') {
             title1 = 'No Internet';
+        }
+        if (url1 && (url1.includes('mindful-shield.html') || url1.startsWith('ocal://mindful-shield'))) {
+            title1 = 'Mindful Shield';
         }
         if (!title1) {
             title1 = (url1 && (url1.includes('home.html') || url1.startsWith('ocal://home') || !url1)) ? 'Ocal Home' : 'Tab';
@@ -15605,7 +15620,15 @@ function createPrivateTab(url = null) {
     privateViews.push(entry);
 
     if (url) {
-        view.webContents.loadURL(resolveInternalURL(url));
+        let target = url;
+        if (userSettings.contentProtectionEnabled !== false && userSettings.adultDomainsBlockEnabled !== false) {
+            const adultQuery = extractSearchEngineQuery(url);
+            if (isAdultOrPornUrl(url) || (adultQuery && isAdultContentQuery(adultQuery))) {
+                const param = adultQuery ? `query=${encodeURIComponent(adultQuery)}` : `url=${encodeURIComponent(url)}`;
+                target = `ocal://mindful-shield?${param}`;
+            }
+        }
+        view.webContents.loadURL(resolveInternalURL(target));
     } else {
         const homeUrl = 'file:///' + path.join(__dirname, 'home.html').replace(/\\/g, '/') + '?private=true';
         view.webContents.loadURL(homeUrl);
@@ -15744,7 +15767,15 @@ ipcMain.on('private-close-tab', (e, id) => {
 ipcMain.on('private-navigate', (e, url) => {
     const entry = privateViews.find(v => v.id === activePrivateTabId);
     if (entry && entry.view && !entry.view.webContents.isDestroyed()) {
-        entry.view.webContents.loadURL(resolveInternalURL(url));
+        let target = url;
+        if (userSettings.contentProtectionEnabled !== false && userSettings.adultDomainsBlockEnabled !== false) {
+            const adultQuery = extractSearchEngineQuery(url);
+            if (isAdultOrPornUrl(url) || (adultQuery && isAdultContentQuery(adultQuery))) {
+                const param = adultQuery ? `query=${encodeURIComponent(adultQuery)}` : `url=${encodeURIComponent(url)}`;
+                target = `ocal://mindful-shield?${param}`;
+            }
+        }
+        entry.view.webContents.loadURL(resolveInternalURL(target));
     }
 });
 

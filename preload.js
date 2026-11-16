@@ -2870,7 +2870,7 @@ window.addEventListener('mousedown', () => {
         'jable.tv', 'adultfriendfinder.com', 'sex.com', 'faphero.com', 'fuq.com'
     ]);
 
-    const ADULT_BRAND_REGEX = /xhamster|pornhub|xnxx|xvideos|redtube|youporn|chaturbate|stripchat|spankbang|eporner|beeg|brazzers|rule34|nhentai|erome|livejasmin|thothub|fapello|daftsex|youjizz|hqporner|thumbzilla|cam4|camsoda|bongacams|hentaihaven|hanime|javhd|missav|jable|adultfriendfinder/i;
+    const ADULT_BRAND_REGEX = /porn|xxx|nsfw|hentai|stripchat|camgirl|camsoda|xhamster|xvideos|xnxx|redtube|youporn|chaturbate|spankbang|eporner|beeg|brazzers|rule34|nhentai|erome|livejasmin|thothub|fapello|daftsex|youjizz|hqporner|thumbzilla|hentaihaven|hanime|javhd|missav|jable|adultfriendfinder|txxx|heavy-r|motherless|pornmd|coomer|faphero|nuvid|sunporno|drtuber|tnaflix|javlibrary|gelbooru|danbooru|e-hentai|luscious|alotporn|vrporn|streamate|porntrex|upornia/i;
 
     const ADULT_SEARCH_TEXT_REGEX = /\b(x\s*hamster|porn\s*hub|x\s*videos?|x\s*nxx|red\s*tube|you\s*porn|chaturbate|strip\s*chat|spank\s*bang|eporner|beeg|brazzers|rule\s*34|nhentai|erome|porn|porno|pornograph\w*|xxx|hardcore\s*(?:sex|porn\w*|video\w*)|sex\s*(?:video\w*|movie\w*|clip\w*|tube|tape\w*|chat|cam\w*)|free\s*(?:sex|porn)|blowjob\w*|handjob\w*|gangbang\w*|creampie\w*|threesome\w*|masturbat\w*|hentai\w*|erotica\w*|cumshot\w*|bdsm|anal\s*sex|shemale\w*|cam\s*girl\w*)\b/i;
 
@@ -3153,6 +3153,37 @@ window.addEventListener('mousedown', () => {
                 ipc = require('electron').ipcRenderer;
             }
         } catch (_) {}
+
+        // Immediate full-page adult site shield check
+        if (contentProtectionActive && isAdultLink(href)) {
+            try { window.stop(); } catch (_) {}
+            if (document.documentElement) {
+                document.documentElement.style.display = 'none';
+            }
+            if (ipc && ipc.send) {
+                ipc.send('navigate-to', 'ocal://mindful-shield?url=' + encodeURIComponent(href));
+            } else {
+                window.location.replace('ocal://mindful-shield?url=' + encodeURIComponent(href));
+            }
+            return;
+        }
+
+        // Global capture-phase click listener: intercept clicks to adult sites instantly
+        document.addEventListener('click', (e) => {
+            if (!contentProtectionActive) return;
+            const a = e.target && e.target.closest ? e.target.closest('a[href]') : null;
+            if (!a || !a.href) return;
+            const targetLink = a.href;
+            if (isAdultLink(targetLink)) {
+                e.preventDefault();
+                e.stopPropagation();
+                if (ipc && ipc.send) {
+                    ipc.send('navigate-to', 'ocal://mindful-shield?url=' + encodeURIComponent(targetLink));
+                } else {
+                    window.location.href = 'ocal://mindful-shield?url=' + encodeURIComponent(targetLink);
+                }
+            }
+        }, true);
 
         if (ipc && ipc.invoke) {
             ipc.invoke('get-settings').then(s => {
