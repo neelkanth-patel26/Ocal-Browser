@@ -1195,12 +1195,6 @@ function isAdultOrPornUrl(rawUrl) {
         // Domain pattern regex check
         if (ADULT_URL_REGEX.test(host)) return true;
 
-        // Check search engine query parameters
-        const query = extractSearchEngineQuery(rawUrl);
-        if (query && isAdultContentQuery(query)) {
-            return true;
-        }
-
         // Check search engine redirect targets (e.g. google.com/url?q=... or url=...)
         if (u.pathname === '/url') {
             const redirectTarget = u.searchParams.get('url') || u.searchParams.get('q');
@@ -1303,21 +1297,15 @@ function applyShieldSettings() {
             // Check adult domain / URL block
             if (userSettings.adultDomainsBlockEnabled !== false && isAdultOrPornUrl(url)) {
                 if (resourceType === 'mainFrame') {
-                    const searchQ = extractSearchEngineQuery(url);
-                    let param = '';
-                    if (searchQ) {
-                        param = 'query=' + encodeURIComponent(searchQ);
-                    } else {
-                        try {
-                            const u = new URL(url);
-                            if (u.pathname === '/url') {
-                                const redirect = u.searchParams.get('url') || u.searchParams.get('q');
-                                if (redirect) param = 'url=' + encodeURIComponent(redirect);
-                            }
-                        } catch (_) {}
-                        if (!param) param = 'url=' + encodeURIComponent(url);
-                    }
-                    const shieldUrl = 'file:///' + path.join(__dirname, 'mindful-shield.html').replace(/\\/g, '/') + '?' + param;
+                    let target = url;
+                    try {
+                        const u = new URL(url);
+                        if (u.pathname === '/url') {
+                            const redirect = u.searchParams.get('url') || u.searchParams.get('q');
+                            if (redirect && isAdultOrPornUrl(redirect)) target = redirect;
+                        }
+                    } catch (_) {}
+                    const shieldUrl = 'file:///' + path.join(__dirname, 'mindful-shield.html').replace(/\\/g, '/') + '?url=' + encodeURIComponent(target);
                     return callback({ redirectURL: shieldUrl });
                 } else {
                     // Block explicit subframes, images, video assets, scripts
@@ -3066,17 +3054,8 @@ function createNewTab(url = null) {
             } catch (e) {
                 finalUrl = `ocal://pdf-viewer/?file=${encodeURIComponent(url)}`;
             }
-        } else if (userSettings.contentProtectionEnabled !== false && userSettings.adultDomainsBlockEnabled !== false && (isAdultContentQuery(url) || isAdultOrPornUrl(url))) {
-            const searchQ = extractSearchEngineQuery(url);
-            let param = '';
-            if (searchQ) {
-                param = `query=${encodeURIComponent(searchQ)}`;
-            } else if (isAdultContentQuery(url)) {
-                param = `query=${encodeURIComponent(url)}`;
-            } else {
-                param = `url=${encodeURIComponent(url)}`;
-            }
-            finalUrl = `ocal://mindful-shield?${param}`;
+        } else if (userSettings.contentProtectionEnabled !== false && userSettings.adultDomainsBlockEnabled !== false && isAdultOrPornUrl(url)) {
+            finalUrl = `ocal://mindful-shield?url=${encodeURIComponent(url)}`;
         }
     }
 
@@ -5060,19 +5039,10 @@ ipcMain.on('navigate-to', (e, url) => {
         }
     }
 
-    // Intercept adult/pornographic sites and queries with Search Security & Mindful Protection
-    if (userSettings.contentProtectionEnabled !== false && userSettings.adultDomainsBlockEnabled !== false && (isAdultContentQuery(cleanUrl) || isAdultOrPornUrl(targetUrl))) {
+    // Intercept adult/pornographic sites with Search Security & Mindful Protection
+    if (userSettings.contentProtectionEnabled !== false && userSettings.adultDomainsBlockEnabled !== false && isAdultOrPornUrl(targetUrl)) {
         hideSuggestions();
-        const searchQ = extractSearchEngineQuery(targetUrl);
-        let param = '';
-        if (searchQ) {
-            param = `query=${encodeURIComponent(searchQ)}`;
-        } else if (isAdultContentQuery(cleanUrl)) {
-            param = `query=${encodeURIComponent(cleanUrl)}`;
-        } else {
-            param = `url=${encodeURIComponent(targetUrl)}`;
-        }
-        activeView.webContents.loadURL(`ocal://mindful-shield?${param}`);
+        activeView.webContents.loadURL(`ocal://mindful-shield?url=${encodeURIComponent(targetUrl)}`);
         return;
     }
 
@@ -11258,7 +11228,8 @@ app.whenReady().then(async () => {
             } catch (e) { }
             const resolved = resolveInternalURL(url);
             if (resolved.startsWith('file://')) {
-                return require('electron').net.fetch(resolved);
+                const cleanFilePath = resolved.split(/[?#]/)[0];
+                return require('electron').net.fetch(cleanFilePath);
             }
             return new Response('Protocol mismatch', { status: 404 });
         });

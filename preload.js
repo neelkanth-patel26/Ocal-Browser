@@ -2857,6 +2857,7 @@ window.addEventListener('mousedown', () => {
     'use strict';
     let contentProtectionActive = true;
     let explicitImagesBlockActive = true;
+    const scannedImages = new WeakSet();
 
     const ADULT_DOMAINS_SET = new Set([
         'xhamster.com', 'xhamster.desi', 'www.xhamster.com', 'pornhub.com', 'www.pornhub.com',
@@ -2883,7 +2884,6 @@ window.addEventListener('mousedown', () => {
             if (ADULT_DOMAINS_SET.has(host)) return true;
             if (ADULT_BRAND_REGEX.test(host)) return true;
             if (host.endsWith('.xxx') || host.endsWith('.adult') || host.endsWith('.porn') || host.endsWith('.sex')) return true;
-            // Check search redirect links (e.g. google.com/url?q=... or url=...)
             if (u.pathname === '/url') {
                 const target = u.searchParams.get('url') || u.searchParams.get('q');
                 if (target) return isAdultLink(target);
@@ -2901,124 +2901,243 @@ window.addEventListener('mousedown', () => {
         const style = document.createElement('style');
         style.id = 'ocal-content-protection-style';
         style.textContent = `
+            .ocal-section-shielded {
+                position: relative !important;
+                overflow: hidden !important;
+                border-radius: 12px !important;
+                min-height: 48px !important;
+            }
+            .ocal-section-shielded > :not(.ocal-section-shield-overlay) {
+                filter: blur(28px) grayscale(65%) !important;
+                pointer-events: none !important;
+                user-select: none !important;
+                opacity: 0.3 !important;
+                transition: filter 0.25s ease, opacity 0.25s ease !important;
+            }
+            .ocal-section-shielded.ocal-unblurred > :not(.ocal-section-shield-overlay) {
+                filter: none !important;
+                pointer-events: auto !important;
+                user-select: auto !important;
+                opacity: 1 !important;
+            }
+            .ocal-section-shield-overlay {
+                position: absolute !important;
+                inset: 0 !important;
+                display: flex !important;
+                align-items: center !important;
+                justify-content: center !important;
+                background: rgba(15, 17, 23, 0.42) !important;
+                backdrop-filter: blur(10px) !important;
+                -webkit-backdrop-filter: blur(10px) !important;
+                z-index: 99999 !important;
+                border-radius: inherit !important;
+                pointer-events: auto !important;
+            }
+            .ocal-shield-badge-pill {
+                display: inline-flex !important;
+                align-items: center !important;
+                gap: 8px !important;
+                padding: 7px 16px !important;
+                border-radius: 9999px !important;
+                background: #111319 !important;
+                border: 1px solid rgba(255, 255, 255, 0.18) !important;
+                color: #F8FAFC !important;
+                font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif !important;
+                font-size: 12px !important;
+                font-weight: 700 !important;
+                box-shadow: 0 4px 16px rgba(0, 0, 0, 0.45) !important;
+            }
+            .ocal-shield-badge-pill i, .ocal-shield-badge-pill svg {
+                color: #10B981 !important;
+            }
+            .ocal-peek-btn {
+                background: rgba(255, 255, 255, 0.12) !important;
+                border: 1px solid rgba(255, 255, 255, 0.22) !important;
+                color: #FFFFFF !important;
+                padding: 2px 10px !important;
+                border-radius: 9999px !important;
+                font-size: 11px !important;
+                font-weight: 600 !important;
+                cursor: pointer !important;
+                margin-left: 6px !important;
+                transition: background 0.15s ease !important;
+            }
+            .ocal-peek-btn:hover {
+                background: rgba(255, 255, 255, 0.24) !important;
+            }
             .ocal-shielded-media {
-                filter: blur(34px) grayscale(65%) !important;
-                opacity: 0.12 !important;
+                filter: blur(32px) grayscale(70%) !important;
+                opacity: 0.25 !important;
                 transition: filter 0.3s ease, opacity 0.3s ease !important;
                 position: relative !important;
-                pointer-events: none !important;
-            }
-            .ocal-shielded-media:hover {
-                filter: blur(14px) grayscale(35%) !important;
-                opacity: 0.38 !important;
-            }
-            .ocal-shield-purge-notice {
-                padding: 12px 18px;
-                margin: 12px 0;
-                background: rgba(16, 185, 129, 0.08);
-                border: 1px solid rgba(16, 185, 129, 0.28);
-                border-radius: 12px;
-                color: #10b981;
-                font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-                font-size: 13px;
-                font-weight: 600;
-                display: flex;
-                align-items: center;
-                gap: 10px;
             }
         `;
         (document.head || document.documentElement).appendChild(style);
     }
 
-    // Strip adult search result blocks, cards, and sitelinks from search engines
-    function scanAndPurgeAdultSearchSections(root = document) {
+    // Client-side image recognition & skin-tone heuristic detector
+    function analyzeImageSkinExposure(img) {
+        if (!img || !img.complete || img.naturalWidth < 48 || img.naturalHeight < 48) return false;
+        try {
+            const canvas = document.createElement('canvas');
+            canvas.width = 32;
+            canvas.height = 32;
+            const ctx = canvas.getContext('2d', { willReadFrequently: true });
+            if (!ctx) return false;
+            ctx.drawImage(img, 0, 0, 32, 32);
+            const data = ctx.getImageData(0, 0, 32, 32).data;
+            let skinPixels = 0;
+            const total = 32 * 32;
+
+            for (let i = 0; i < data.length; i += 4) {
+                const r = data[i];
+                const g = data[i + 1];
+                const b = data[i + 2];
+                // Kovac et al. Human Skin Tone Classifier
+                if (r > 95 && g > 40 && b > 20 &&
+                    (Math.max(r, g, b) - Math.min(r, g, b) > 15) &&
+                    Math.abs(r - g) > 15 && r > g && r > b) {
+                    skinPixels++;
+                }
+            }
+            return (skinPixels / total) > 0.40;
+        } catch (_) {
+            return false;
+        }
+    }
+
+    // Blur and shield a specific section with an interactive overlay
+    function shieldSection(container, reason = 'Result filtered by Ocal Protection') {
+        if (!container || container.classList.contains('ocal-section-shielded')) return;
+        ensureShieldStyles();
+        container.classList.add('ocal-section-shielded');
+
+        const overlay = document.createElement('div');
+        overlay.className = 'ocal-section-shield-overlay';
+        overlay.innerHTML = `
+            <div class="ocal-shield-badge-pill">
+                <span>🛡️</span>
+                <span>${reason}</span>
+                <button type="button" class="ocal-peek-btn">Peek</button>
+            </div>
+        `;
+
+        const peekBtn = overlay.querySelector('.ocal-peek-btn');
+        if (peekBtn) {
+            peekBtn.addEventListener('click', (e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                const isUnblurred = container.classList.toggle('ocal-unblurred');
+                peekBtn.textContent = isUnblurred ? 'Hide' : 'Peek';
+                overlay.style.background = isUnblurred ? 'transparent' : 'rgba(15, 17, 23, 0.42)';
+                overlay.style.pointerEvents = isUnblurred ? 'none' : 'auto';
+                if (isUnblurred) {
+                    const badge = overlay.querySelector('.ocal-shield-badge-pill');
+                    if (badge) badge.style.pointerEvents = 'auto';
+                }
+            });
+        }
+
+        container.appendChild(overlay);
+    }
+
+    // Find the enclosing section card for a node
+    function findEnclosingSection(node) {
+        if (!node || !node.closest) return null;
+        return node.closest([
+            'div.g', 'div.MjjYud', 'div[data-sokoban-container]', 'div.hlcw0c', 'div.tF2Cxc', 'div.g-blk', 'div.isv-r', 'div[data-ri]', 'g-card', 'video-voyager',
+            'li.b_algo', '.b_ans', 'article.result', '.result', 'div.algo',
+            'ytd-rich-item-renderer', 'ytd-video-renderer', 'ytd-compact-video-renderer', 'ytd-grid-video-renderer', 'ytd-reel-item-renderer', 'ytm-video-with-context-renderer',
+            'article[data-testid="tweet"]', 'shreddit-post', 'div[data-testid="post-container"]'
+        ].join(','));
+    }
+
+    // Scan and blur search result sections and streaming video sections
+    function scanAndShieldSections(root = document) {
         if (!contentProtectionActive) return;
 
-        // Candidate search result containers across Google, Bing, DuckDuckGo, Yahoo, Brave
-        const containerSelectors = [
-            'div.g', 'div.MjjYud', 'div[data-sokoban-container]', 'div.hlcw0c', 'div.tF2Cxc', 'div.g-blk', 'div.ULSXZe',
-            'li.b_algo', '.b_ans', '.b_mrs',
-            'article.result', '.result', '.nrn-react-div',
-            'div.algo', 'li.algo', 'div.snippet', 'div.search-result'
+        const sectionSelectors = [
+            'div.g', 'div.MjjYud', 'div[data-sokoban-container]', 'div.hlcw0c', 'div.tF2Cxc', 'div.g-blk', 'div.isv-r', 'div[data-ri]', 'g-card', 'video-voyager',
+            'li.b_algo', '.b_ans', 'article.result', '.result', 'div.algo',
+            'ytd-rich-item-renderer', 'ytd-video-renderer', 'ytd-compact-video-renderer', 'ytd-grid-video-renderer', 'ytd-reel-item-renderer', 'ytm-video-with-context-renderer',
+            'article[data-testid="tweet"]', 'shreddit-post', 'div[data-testid="post-container"]'
         ];
 
-        const containers = root.querySelectorAll ? root.querySelectorAll(containerSelectors.join(',')) : [];
-        let purgedCount = 0;
-
+        const containers = root.querySelectorAll ? root.querySelectorAll(sectionSelectors.join(',')) : [];
         containers.forEach(container => {
-            if (!container || !container.parentNode) return;
+            if (!container || container.classList.contains('ocal-section-shielded')) return;
 
-            let isAdult = false;
-            // 1. Check all links inside the container
+            let isExplicit = false;
+            // 1. Check links inside container
             const links = container.querySelectorAll('a[href]');
             for (const a of links) {
                 if (isAdultLink(a.href)) {
-                    isAdult = true;
+                    isExplicit = true;
                     break;
                 }
             }
 
-            // 2. Check heading and snippet text for explicit adult terms
-            if (!isAdult) {
-                const heading = container.querySelector('h1, h2, h3, h4, [role="heading"], .b_title, .result__title');
-                const text = ((heading ? heading.textContent : '') + ' ' + (container.textContent || '')).toLowerCase();
-                if (ADULT_SEARCH_TEXT_REGEX.test(text)) {
-                    isAdult = true;
+            // 2. Check title / snippet text
+            if (!isExplicit) {
+                const titleEl = container.querySelector('#video-title, h1, h2, h3, h4, [role="heading"], .b_title, .result__title, .title, a[title]');
+                const titleText = (titleEl ? (titleEl.textContent || titleEl.getAttribute('title') || '') : '').toLowerCase();
+                const fullText = (titleText + ' ' + (container.textContent || '')).toLowerCase();
+                if (ADULT_SEARCH_TEXT_REGEX.test(titleText) || ADULT_SEARCH_TEXT_REGEX.test(fullText)) {
+                    isExplicit = true;
                 }
             }
 
-            if (isAdult) {
-                container.remove();
-                purgedCount++;
-            }
-        });
-
-        // Also sweep any individual adult links that might not be inside standard container wrappers
-        const allLinks = root.querySelectorAll ? root.querySelectorAll('a[href]') : [];
-        allLinks.forEach(a => {
-            if (isAdultLink(a.href)) {
-                const parentBlock = a.closest('.g, .MjjYud, .b_algo, .result, article, li, div[data-hveid]');
-                if (parentBlock && parentBlock.parentNode) {
-                    parentBlock.remove();
-                    purgedCount++;
-                } else if (a.parentNode) {
-                    a.remove();
-                    purgedCount++;
-                }
+            if (isExplicit) {
+                shieldSection(container, 'Filtered by Ocal Search Security');
             }
         });
     }
 
+    // Scan images and thumbnails for explicit URLs, alt texts, and computer-vision skin exposure
     function scanAndShieldImages(root = document) {
         if (!contentProtectionActive || !explicitImagesBlockActive) return;
-        const mediaElements = root.querySelectorAll ? root.querySelectorAll('img, video, [style*="background-image"]') : [];
+        const mediaElements = root.querySelectorAll ? root.querySelectorAll('img, video, ytd-thumbnail, [style*="background-image"]') : [];
+        let checkedCount = 0;
+
         mediaElements.forEach(el => {
-            if (el.classList && el.classList.contains('ocal-shielded-media')) return;
+            if (scannedImages.has(el)) return;
+            scannedImages.add(el);
+            checkedCount++;
+            if (checkedCount > 40) return; // Batch limit per cycle for 60fps performance
+
             const src = (el.src || el.getAttribute('data-src') || el.currentSrc || '').toLowerCase();
-            const alt = (el.alt || el.getAttribute('title') || el.className || '').toLowerCase();
+            const alt = (el.alt || el.getAttribute('title') || el.getAttribute('aria-label') || el.className || '').toLowerCase();
             const bg = el.style ? (el.style.backgroundImage || '').toLowerCase() : '';
-            
-            if (EXPLICIT_MEDIA_REGEX.test(src) || EXPLICIT_MEDIA_REGEX.test(alt) || EXPLICIT_MEDIA_REGEX.test(bg)) {
-                ensureShieldStyles();
-                el.classList.add('ocal-shielded-media');
-                el.setAttribute('title', 'Explicit image shielded by Ocal Search Security');
+
+            let isFlagged = EXPLICIT_MEDIA_REGEX.test(src) || EXPLICIT_MEDIA_REGEX.test(alt) || EXPLICIT_MEDIA_REGEX.test(bg);
+
+            // Computer-vision skin recognition heuristic
+            if (!isFlagged && el.tagName === 'IMG' && el.complete && el.naturalWidth >= 48) {
+                isFlagged = analyzeImageSkinExposure(el);
+            }
+
+            if (isFlagged) {
+                const parentSection = findEnclosingSection(el);
+                if (parentSection) {
+                    shieldSection(parentSection, 'Shielded by Ocal Protection');
+                } else {
+                    ensureShieldStyles();
+                    el.classList.add('ocal-shielded-media');
+                    el.setAttribute('title', 'Explicit image shielded by Ocal Search Security');
+                }
+            } else if (el.tagName === 'IMG' && !el.complete) {
+                el.addEventListener('load', () => {
+                    if (analyzeImageSkinExposure(el)) {
+                        const parent = findEnclosingSection(el);
+                        if (parent) shieldSection(parent, 'Shielded by Ocal Protection');
+                        else {
+                            ensureShieldStyles();
+                            el.classList.add('ocal-shielded-media');
+                        }
+                    }
+                }, { once: true });
             }
         });
-    }
-
-    function checkAndInterceptAdultSearchQuery() {
-        if (!contentProtectionActive) return;
-        try {
-            const loc = window.location;
-            const host = loc.hostname.toLowerCase();
-            if (host.includes('google.') || host.includes('bing.com') || host.includes('duckduckgo.com') || host.includes('yahoo.com') || host.includes('brave.com')) {
-                const params = new URLSearchParams(loc.search);
-                const q = params.get('q') || params.get('p') || params.get('query') || '';
-                if (q && ADULT_SEARCH_TEXT_REGEX.test(q.trim())) {
-                    window.location.replace(`ocal://mindful-shield?query=${encodeURIComponent(q)}`);
-                }
-            }
-        } catch (_) {}
     }
 
     function initContentProtection() {
@@ -3040,8 +3159,7 @@ window.addEventListener('mousedown', () => {
                     explicitImagesBlockActive = s.explicitImagesBlockEnabled !== false;
                 }
                 if (contentProtectionActive) {
-                    checkAndInterceptAdultSearchQuery();
-                    scanAndPurgeAdultSearchSections();
+                    scanAndShieldSections();
                     if (explicitImagesBlockActive) {
                         scanAndShieldImages();
                     }
@@ -3054,12 +3172,16 @@ window.addEventListener('mousedown', () => {
                     explicitImagesBlockActive = s.explicitImagesBlockEnabled !== false;
                 }
                 if (contentProtectionActive) {
-                    checkAndInterceptAdultSearchQuery();
-                    scanAndPurgeAdultSearchSections();
+                    scanAndShieldSections();
                     if (explicitImagesBlockActive) {
                         scanAndShieldImages();
                     }
                 } else {
+                    document.querySelectorAll('.ocal-section-shielded').forEach(el => {
+                        el.classList.remove('ocal-section-shielded', 'ocal-unblurred');
+                        const o = el.querySelector('.ocal-section-shield-overlay');
+                        if (o) o.remove();
+                    });
                     document.querySelectorAll('.ocal-shielded-media').forEach(el => {
                         el.classList.remove('ocal-shielded-media');
                     });
@@ -3067,26 +3189,22 @@ window.addEventListener('mousedown', () => {
             });
         }
 
-        // Run immediate check
-        checkAndInterceptAdultSearchQuery();
-        scanAndPurgeAdultSearchSections();
+        // Run immediate pass
+        scanAndShieldSections();
         scanAndShieldImages();
 
-        // MutationObserver for dynamically loaded content and search results
-        const observer = new MutationObserver((mutations) => {
+        // MutationObserver for dynamically loaded feed items, infinite scroll, and search results
+        let debounceTimer = null;
+        const observer = new MutationObserver(() => {
             if (!contentProtectionActive) return;
-            scanAndPurgeAdultSearchSections();
-            if (explicitImagesBlockActive) {
-                for (const m of mutations) {
-                    if (m.addedNodes && m.addedNodes.length > 0) {
-                        m.addedNodes.forEach(node => {
-                            if (node.nodeType === 1) {
-                                scanAndShieldImages(node);
-                            }
-                        });
-                    }
+            if (debounceTimer) return;
+            debounceTimer = setTimeout(() => {
+                debounceTimer = null;
+                scanAndShieldSections();
+                if (explicitImagesBlockActive) {
+                    scanAndShieldImages();
                 }
-            }
+            }, 60);
         });
 
         observer.observe(document.body || document.documentElement, {
