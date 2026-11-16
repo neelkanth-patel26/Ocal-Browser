@@ -1,0 +1,645 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="Content-Security-Policy" content="default-src 'self' ocal: file:; script-src 'self' 'unsafe-inline' ocal: file:; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com https://cdn.jsdelivr.net; font-src 'self' https://fonts.gstatic.com https://cdn.jsdelivr.net; img-src 'self' data: https: blob: ocal: file:;">
+    <title>Mindful Protection & Focus | Ocal Browser</title>
+    <link rel="stylesheet" href="assets/fontawesome/css/all.min.css">
+    <link rel="stylesheet" href="assets/fonts/geist-fonts.css">
+    <script src="color-harmonizer.js"></script>
+    <script>
+        (function() {
+            var t = localStorage.getItem('ocal-settings-theme') || 'dark';
+            document.documentElement.setAttribute('data-theme', t);
+            if (t === 'dark') {
+                document.documentElement.style.background = '#0E0F14';
+                document.documentElement.style.colorScheme = 'dark';
+            } else {
+                document.documentElement.style.background = '#F0F2F5';
+                document.documentElement.style.colorScheme = 'light';
+            }
+            var a = localStorage.getItem('ocal-settings-accent') || '#10B981';
+            if (window.OcalColorHarmonizer) {
+                window.OcalColorHarmonizer.applyHarmonizedTheme(a, t);
+            }
+        })();
+    </script>
+    <style>
+        @import url('./assets/fonts/geist-fonts.css');
+
+        :root {
+            --bg: #0C0D12;
+            --card-bg: rgba(18, 20, 29, 0.82);
+            --card-border: rgba(16, 185, 129, 0.22);
+            --text-main: #F8FAFC;
+            --text-dim: #94A3B8;
+            --text-muted: #64748B;
+            --accent: #10B981;
+            --accent-glow: rgba(16, 185, 129, 0.35);
+            --accent-dim: rgba(16, 185, 129, 0.12);
+            --gold: #F59E0B;
+            --gold-glow: rgba(245, 158, 11, 0.3);
+            --gold-dim: rgba(245, 158, 11, 0.12);
+            --danger: #EF4444;
+            --danger-dim: rgba(239, 68, 68, 0.12);
+            --font-main: 'Geist', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            --font-mono: 'Geist Mono', 'Space Mono', monospace;
+            --radius-card: 28px;
+            --radius-btn: 14px;
+            --card-shadow: 0 32px 80px rgba(0, 0, 0, 0.55), 0 0 40px rgba(16, 185, 129, 0.12);
+        }
+
+        body[data-theme="light"] {
+            --bg: #F4F6F9;
+            --card-bg: rgba(255, 255, 255, 0.94);
+            --card-border: rgba(16, 185, 129, 0.25);
+            --text-main: #0F172A;
+            --text-dim: #475569;
+            --text-muted: #94A3B8;
+            --accent: #059669;
+            --accent-glow: rgba(5, 150, 105, 0.2);
+            --accent-dim: rgba(5, 150, 105, 0.08);
+            --gold: #D97706;
+            --gold-glow: rgba(217, 119, 6, 0.2);
+            --gold-dim: rgba(217, 119, 6, 0.08);
+            --card-shadow: 0 24px 60px rgba(0, 0, 0, 0.08), 0 4px 16px rgba(0, 0, 0, 0.03), 0 0 30px rgba(16, 185, 129, 0.1);
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            background: var(--bg);
+            color: var(--text-main);
+            font-family: var(--font-main);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 28px 20px;
+            overflow-x: hidden;
+            position: relative;
+            user-select: none;
+            transition: background 0.3s ease, color 0.3s ease;
+        }
+
+        /* Ambient Uplifting Aura */
+        .ambient-aurora {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 700px;
+            height: 700px;
+            background: radial-gradient(circle, var(--accent-glow) 0%, var(--gold-glow) 35%, transparent 70%);
+            filter: blur(100px);
+            opacity: 0.65;
+            pointer-events: none;
+            z-index: 0;
+            animation: pulseAura 8s ease-in-out infinite alternate;
+        }
+
+        @keyframes pulseAura {
+            0% { transform: translate(-50%, -50%) scale(0.92); opacity: 0.55; }
+            100% { transform: translate(-50%, -50%) scale(1.08); opacity: 0.75; }
+        }
+
+        .shield-container {
+            position: relative;
+            z-index: 1;
+            width: 100%;
+            max-width: 680px;
+            background: var(--card-bg);
+            border: 1px solid var(--card-border);
+            border-radius: var(--radius-card);
+            padding: 42px 44px;
+            backdrop-filter: blur(36px);
+            -webkit-backdrop-filter: blur(36px);
+            box-shadow: var(--card-shadow);
+            animation: cardSlideUp 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+            text-align: center;
+        }
+
+        @keyframes cardSlideUp {
+            from { opacity: 0; transform: translateY(20px) scale(0.97); }
+            to { opacity: 1; transform: translateY(0) scale(1); }
+        }
+
+        /* Top Status Pill */
+        .shield-pill {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            padding: 6px 16px;
+            border-radius: 9999px;
+            background: var(--accent-dim);
+            border: 1px solid var(--accent);
+            color: var(--accent);
+            font-size: 12px;
+            font-weight: 700;
+            letter-spacing: 0.8px;
+            text-transform: uppercase;
+            margin-bottom: 24px;
+            box-shadow: 0 4px 16px var(--accent-glow);
+        }
+
+        .pulse-dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: var(--accent);
+            box-shadow: 0 0 10px var(--accent);
+            animation: dotGlow 1.8s infinite;
+        }
+
+        @keyframes dotGlow {
+            0%, 100% { opacity: 1; transform: scale(1); }
+            50% { opacity: 0.4; transform: scale(0.75); }
+        }
+
+        /* Hero Icon */
+        .shield-icon-wrapper {
+            width: 76px;
+            height: 76px;
+            margin: 0 auto 24px;
+            border-radius: 24px;
+            background: linear-gradient(135deg, rgba(16, 185, 129, 0.16), rgba(245, 158, 11, 0.16));
+            border: 1.5px solid var(--card-border);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 32px;
+            color: var(--accent);
+            box-shadow: 0 12px 30px var(--accent-glow);
+            transition: transform 0.3s ease;
+        }
+
+        .shield-container:hover .shield-icon-wrapper {
+            transform: scale(1.05) rotate(3deg);
+        }
+
+        /* Headings */
+        h1.headline {
+            font-size: 26px;
+            font-weight: 800;
+            line-height: 1.3;
+            letter-spacing: -0.5px;
+            color: var(--text-main);
+            margin-bottom: 14px;
+        }
+
+        h1.headline .highlight {
+            background: linear-gradient(135deg, #10B981 0%, #F59E0B 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        p.subheadline {
+            font-size: 14.5px;
+            line-height: 1.65;
+            color: var(--text-dim);
+            margin-bottom: 26px;
+            max-width: 580px;
+            margin-left: auto;
+            margin-right: auto;
+        }
+
+        /* Blocked Target Badge */
+        .blocked-badge-row {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            background: var(--danger-dim);
+            border: 1px solid rgba(239, 68, 68, 0.25);
+            padding: 5px 14px;
+            border-radius: 10px;
+            margin-bottom: 28px;
+            font-size: 12.5px;
+            color: #F87171;
+            font-family: var(--font-mono);
+            max-width: 90%;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+
+        /* Quote of the Moment Card */
+        .quote-card {
+            background: rgba(255, 255, 255, 0.03);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            border-radius: 18px;
+            padding: 22px 24px;
+            margin-bottom: 30px;
+            text-align: left;
+            position: relative;
+            transition: all 0.25s ease;
+        }
+
+        body[data-theme="light"] .quote-card {
+            background: rgba(0, 0, 0, 0.02);
+            border-color: rgba(0, 0, 0, 0.06);
+        }
+
+        .quote-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 10px;
+        }
+
+        .quote-tag {
+            font-size: 11px;
+            font-weight: 700;
+            color: var(--gold);
+            text-transform: uppercase;
+            letter-spacing: 0.6px;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .quote-refresh-btn {
+            background: none;
+            border: none;
+            color: var(--text-muted);
+            cursor: pointer;
+            font-size: 12px;
+            padding: 4px 8px;
+            border-radius: 6px;
+            transition: color 0.2s, background 0.2s;
+            display: inline-flex;
+            align-items: center;
+            gap: 5px;
+        }
+
+        .quote-refresh-btn:hover {
+            color: var(--text-main);
+            background: rgba(255, 255, 255, 0.06);
+        }
+
+        p.quote-text {
+            font-size: 14.5px;
+            font-style: italic;
+            color: var(--text-main);
+            line-height: 1.6;
+            margin-bottom: 8px;
+        }
+
+        span.quote-author {
+            display: block;
+            font-size: 12px;
+            font-weight: 600;
+            color: var(--accent);
+        }
+
+        /* Action Buttons Grid */
+        .action-cards-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 12px;
+            margin-bottom: 26px;
+        }
+
+        @media (max-width: 540px) {
+            .action-cards-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        .action-btn-card {
+            display: flex;
+            flex-direction: column;
+            align-items: flex-start;
+            padding: 16px 18px;
+            border-radius: 16px;
+            text-decoration: none;
+            cursor: pointer;
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            background: rgba(255, 255, 255, 0.03);
+            color: var(--text-main);
+            transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+            text-align: left;
+        }
+
+        body[data-theme="light"] .action-btn-card {
+            background: rgba(0, 0, 0, 0.02);
+            border-color: rgba(0, 0, 0, 0.06);
+        }
+
+        .action-btn-card:hover {
+            transform: translateY(-2px);
+            border-color: var(--accent);
+            background: var(--accent-dim);
+            box-shadow: 0 8px 24px var(--accent-glow);
+        }
+
+        .action-btn-card.primary {
+            background: linear-gradient(135deg, rgba(16, 185, 129, 0.2), rgba(16, 185, 129, 0.08));
+            border-color: var(--accent);
+        }
+
+        .action-btn-card.primary:hover {
+            background: linear-gradient(135deg, rgba(16, 185, 129, 0.28), rgba(16, 185, 129, 0.12));
+        }
+
+        .abc-top {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 6px;
+            width: 100%;
+        }
+
+        .abc-icon {
+            font-size: 16px;
+            color: var(--accent);
+        }
+
+        .abc-title {
+            font-size: 13.5px;
+            font-weight: 700;
+            color: var(--text-main);
+        }
+
+        .abc-desc {
+            font-size: 11.5px;
+            color: var(--text-dim);
+            line-height: 1.4;
+        }
+
+        /* Learn Shortcuts Row */
+        .learn-row {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            flex-wrap: wrap;
+            margin-bottom: 24px;
+        }
+
+        .learn-pill {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            padding: 7px 14px;
+            border-radius: 9999px;
+            font-size: 12px;
+            font-weight: 600;
+            color: var(--text-dim);
+            background: rgba(255, 255, 255, 0.04);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            text-decoration: none;
+            transition: all 0.2s ease;
+        }
+
+        body[data-theme="light"] .learn-pill {
+            background: rgba(0, 0, 0, 0.03);
+            border-color: rgba(0, 0, 0, 0.08);
+        }
+
+        .learn-pill:hover {
+            color: var(--text-main);
+            border-color: var(--accent);
+            transform: translateY(-1px);
+        }
+
+        /* Footer & Settings Link */
+        .shield-footer {
+            border-top: 1px solid rgba(255, 255, 255, 0.06);
+            padding-top: 18px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            font-size: 12px;
+            color: var(--text-muted);
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+
+        body[data-theme="light"] .shield-footer {
+            border-color: rgba(0, 0, 0, 0.06);
+        }
+
+        .settings-link-btn {
+            background: none;
+            border: none;
+            color: var(--text-dim);
+            cursor: pointer;
+            font-size: 12px;
+            font-weight: 600;
+            text-decoration: underline;
+            text-underline-offset: 3px;
+            transition: color 0.2s;
+            display: inline-flex;
+            align-items: center;
+            gap: 5px;
+        }
+
+        .settings-link-btn:hover {
+            color: var(--accent);
+        }
+    </style>
+</head>
+<body>
+    <div class="ambient-aurora"></div>
+
+    <main class="shield-container">
+        <!-- Top Status Pill -->
+        <div class="shield-pill">
+            <span class="pulse-dot"></span>
+            <span>Search Security &amp; Content Protection</span>
+        </div>
+
+        <!-- Central Icon -->
+        <div class="shield-icon-wrapper">
+            <i class="fa-solid fa-seedling"></i>
+        </div>
+
+        <!-- Main Motivational Headline (Exact user request) -->
+        <h1 class="headline">
+            Why waste time over here?<br>
+            <span class="highlight">Do some productive work and do good for society!</span>
+        </h1>
+
+        <p class="subheadline">
+            Ocal Search Security &amp; Mindful Protection intercepted this destination. Your energy and focus are too valuable to be lost. Redirect this moment into creating, learning, and contributing.
+        </p>
+
+        <!-- Blocked Target Host Badge -->
+        <div class="blocked-badge-row" id="blocked-badge-container">
+            <i class="fas fa-shield-halved"></i>
+            <span>Blocked Destination:</span>
+            <strong id="blocked-target">adult content / explicit website</strong>
+        </div>
+
+        <!-- Quote of the Moment -->
+        <div class="quote-card">
+            <div class="quote-header">
+                <span class="quote-tag"><i class="fas fa-fire"></i> Thought for the moment</span>
+                <button class="quote-refresh-btn" id="refresh-quote-btn" type="button" title="Get another inspiring quote">
+                    <i class="fas fa-rotate"></i> <span>Inspire Me</span>
+                </button>
+            </div>
+            <p class="quote-text" id="quote-display">
+                "Arise, awake, and stop not till the goal is reached. You have to grow from the inside out. None can teach you, none can make you spiritual. There is no other teacher but your own soul."
+            </p>
+            <span class="quote-author" id="quote-author-display">— Swami Vivekananda</span>
+        </div>
+
+        <!-- Action Cards: Direct links to productive work -->
+        <div class="action-cards-grid">
+            <a href="ocal://focus" class="action-btn-card primary" id="btn-focus-flow">
+                <div class="abc-top">
+                    <i class="fas fa-brain abc-icon"></i>
+                    <span class="abc-title">Open Focus Flow</span>
+                </div>
+                <span class="abc-desc">Start a 25m Pomodoro deep work sprint, guided breathwork, or eye reset</span>
+            </a>
+
+            <a href="ocal://home" class="action-btn-card" id="btn-home">
+                <div class="abc-top">
+                    <i class="fas fa-house abc-icon" style="color: var(--gold);"></i>
+                    <span class="abc-title">Return to Homepage</span>
+                </div>
+                <span class="abc-desc">Review your daily quick tasks, scratchpad notes, and priority goals</span>
+            </a>
+        </div>
+
+        <!-- Meaningful Exploration Shortcuts -->
+        <div class="learn-row">
+            <span style="font-size: 11.5px; color: var(--text-muted); font-weight: 600;">BUILD &amp; LEARN:</span>
+            <a href="https://github.com" class="learn-pill" target="_blank"><i class="fab fa-github"></i> GitHub</a>
+            <a href="https://www.freecodecamp.org" class="learn-pill" target="_blank"><i class="fas fa-code"></i> FreeCodeCamp</a>
+            <a href="https://en.wikipedia.org" class="learn-pill" target="_blank"><i class="fab fa-wikipedia-w"></i> Wikipedia</a>
+            <a href="https://www.khanacademy.org" class="learn-pill" target="_blank"><i class="fas fa-graduation-cap"></i> Khan Academy</a>
+        </div>
+
+        <!-- Footer -->
+        <div class="shield-footer">
+            <span>Ocal Protection is enabled by default to protect health and focus.</span>
+            <button type="button" class="settings-link-btn" id="open-settings-btn">
+                <i class="fas fa-sliders"></i>
+                <span>Adjust in Settings</span>
+            </button>
+        </div>
+    </main>
+
+    <script>
+        // Inspiring quotes for productivity, discipline, and doing good for society
+        const INSPIRATIONAL_QUOTES = [
+            {
+                text: "Why waste time over here? Do some productive work and do good for society. The world is built by those who focus.",
+                author: "Ocal Mindset"
+            },
+            {
+                text: "Arise, awake, and stop not till the goal is reached. You have to grow from the inside out. There is no other teacher but your own soul.",
+                author: "Swami Vivekananda"
+            },
+            {
+                text: "Waste no more time arguing what a good person should be. Be one.",
+                author: "Marcus Aurelius"
+            },
+            {
+                text: "To succeed in your mission, you must have single-minded devotion to your goal.",
+                author: "Dr. A.P.J. Abdul Kalam"
+            },
+            {
+                text: "Your time is limited, don't waste it living someone else's life. Have the courage to follow your heart and intuition.",
+                author: "Steve Jobs"
+            },
+            {
+                text: "It is not that we have a short time to live, but that we waste a lot of it. Life is long if you know how to use it.",
+                author: "Seneca"
+            },
+            {
+                text: "The secret of change is to focus all of your energy not on fighting the old, but on building the new.",
+                author: "Socrates"
+            },
+            {
+                text: "Action is the foundational key to all great achievements. Leave the world a little better than you found it.",
+                author: "Pablo Picasso"
+            },
+            {
+                text: "You cannot change your future, but you can change your habits, and surely your habits will change your future.",
+                author: "Dr. A.P.J. Abdul Kalam"
+            },
+            {
+                text: "Small deeds done are better than great deeds planned. Master your attention, master your destiny.",
+                author: "Peter Marshall"
+            },
+            {
+                text: "Discipline is choosing between what you want now and what you want most.",
+                author: "Abraham Lincoln"
+            }
+        ];
+
+        let currentQuoteIndex = 0;
+
+        function setRandomQuote() {
+            let nextIndex = Math.floor(Math.random() * INSPIRATIONAL_QUOTES.length);
+            if (nextIndex === currentQuoteIndex) {
+                nextIndex = (nextIndex + 1) % INSPIRATIONAL_QUOTES.length;
+            }
+            currentQuoteIndex = nextIndex;
+            const q = INSPIRATIONAL_QUOTES[currentQuoteIndex];
+            const textEl = document.getElementById('quote-display');
+            const authorEl = document.getElementById('quote-author-display');
+            if (textEl && authorEl) {
+                textEl.textContent = `"${q.text}"`;
+                authorEl.textContent = `— ${q.author}`;
+            }
+        }
+
+        // Parse blocked URL from query parameters safely
+        (function initBlockedTarget() {
+            try {
+                const params = new URLSearchParams(window.location.search);
+                const rawUrl = params.get('url');
+                const targetEl = document.getElementById('blocked-target');
+                if (rawUrl && targetEl) {
+                    let parsedHost = rawUrl;
+                    try {
+                        parsedHost = new URL(rawUrl).hostname || rawUrl;
+                    } catch (_) {}
+                    targetEl.textContent = parsedHost;
+                }
+            } catch (_) {}
+        })();
+
+        // Navigation helpers
+        function navigate(url) {
+            if (window.electronAPI && typeof window.electronAPI.navigateTo === 'function') {
+                window.electronAPI.navigateTo(url);
+            } else if (window.electronAPI && typeof window.electronAPI.newTab === 'function') {
+                window.electronAPI.newTab(url);
+            } else {
+                window.location.href = url;
+            }
+        }
+
+        document.getElementById('refresh-quote-btn')?.addEventListener('click', setRandomQuote);
+
+        document.getElementById('btn-focus-flow')?.addEventListener('click', (e) => {
+            e.preventDefault();
+            navigate('ocal://focus');
+        });
+
+        document.getElementById('btn-home')?.addEventListener('click', (e) => {
+            e.preventDefault();
+            navigate('ocal://home');
+        });
+
+        document.getElementById('open-settings-btn')?.addEventListener('click', (e) => {
+            e.preventDefault();
+            navigate('ocal://settings#search');
+        });
+
+        // Initialize random quote on load
+        setRandomQuote();
+    </script>
+</body>
+</html>

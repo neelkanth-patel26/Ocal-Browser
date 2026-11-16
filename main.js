@@ -682,9 +682,13 @@ if (userSettings.cyberStealthEnabled === undefined) userSettings.cyberStealthEna
 if (userSettings.aiAssistantEnabled === undefined) userSettings.aiAssistantEnabled = true;
 if (userSettings.assetVaultEnabled === undefined) userSettings.assetVaultEnabled = true;
 
-// Search Hub Defaults
+// Search Hub & Content Protection Defaults (Active by default)
 if (userSettings.instantSearchEnabled === undefined) userSettings.instantSearchEnabled = true;
-if (userSettings.safeSearchEnabled === undefined) userSettings.safeSearchEnabled = false;
+if (userSettings.safeSearchEnabled === undefined) userSettings.safeSearchEnabled = true;
+if (userSettings.contentProtectionEnabled === undefined) userSettings.contentProtectionEnabled = true;
+if (userSettings.adultDomainsBlockEnabled === undefined) userSettings.adultDomainsBlockEnabled = true;
+if (userSettings.explicitImagesBlockEnabled === undefined) userSettings.explicitImagesBlockEnabled = true;
+if (userSettings.mindfulQuotesEnabled === undefined) userSettings.mindfulQuotesEnabled = true;
 
 // Shield Stats Initialization & Migration
 if (!userSettings.shieldStats) {
@@ -1098,6 +1102,128 @@ function isAdOrTrackerUrl(rawUrl) {
     }
 }
 
+// ── Search Security & Mindful Adult Content Protection ─────────────
+const ADULT_DOMAINS = new Set([
+    'pornhub.com', 'www.pornhub.com', 'xvideos.com', 'www.xvideos.com', 'xnxx.com', 'www.xnxx.com',
+    'xhamster.com', 'www.xhamster.com', 'redtube.com', 'www.redtube.com', 'youporn.com', 'www.youporn.com',
+    'chaturbate.com', 'www.chaturbate.com', 'stripchat.com', 'www.stripchat.com', 'onlyfans.com', 'www.onlyfans.com',
+    'bongacams.com', 'www.bongacams.com', 'cam4.com', 'www.cam4.com', 'camsoda.com', 'www.camsoda.com',
+    'adultfriendfinder.com', 'www.adultfriendfinder.com', 'spankbang.com', 'www.spankbang.com',
+    'eporner.com', 'www.eporner.com', 'tube8.com', 'www.tube8.com', 'beeg.com', 'www.beeg.com',
+    'brazzers.com', 'www.brazzers.com', 'rule34.xxx', 'www.rule34.xxx', 'rule34.paheal.net',
+    'nhentai.net', 'www.nhentai.net', 'hentaihaven.xxx', 'www.hentaihaven.xxx', 'erome.com', 'www.erome.com',
+    'livejasmin.com', 'www.livejasmin.com', 'myfreecams.com', 'www.myfreecams.com', 'fapello.com', 'www.fapello.com',
+    'daftsex.com', 'www.daftsex.com', 'txxx.com', 'www.txxx.com', 'heavy-r.com', 'www.heavy-r.com',
+    'motherless.com', 'www.motherless.com', 'hclips.com', 'www.hclips.com', 'youjizz.com', 'www.youjizz.com',
+    'porndig.com', 'www.porndig.com', 'porn.com', 'www.porn.com', 'pornmd.com', 'www.pornmd.com',
+    'hqporner.com', 'www.hqporner.com', 'thothub.to', 'www.thothub.to', 'coomer.party', 'kemono.party',
+    'faphero.com', 'fuq.com', 'nuvid.com', 'sunporno.com', 'thumbzilla.com', 'porn300.com', 'drtuber.com',
+    'tnaflix.com', 'javlibrary.com', 'javhd.com', 'missav.com', 'jable.tv', 'hanime.tv', 'gelbooru.com',
+    'danbooru.donmai.us', 'e-hentai.org', 'exhentai.org', 'luscious.net', 'sex.com', 'www.sex.com',
+    'alotporn.com', 'definebabe.com', 'czechav.com', 'vrporn.com', 'freeomovie.to', 'javfinder.la',
+    'hentai.tv', 'imlive.com', 'streamate.com', 'flirt4free.com', 'camversity.com', 'livecam.com',
+    'porn555.com', 'porntrex.com', '4tube.com', 'pornone.com', 'upornia.com', 'ixxx.com'
+]);
+
+const ADULT_URL_REGEX = /(?:^|\.)(?:porn|xxx|nsfw|xvideos|xnxx|xhamster|redtube|youporn|chaturbate|stripchat|spankbang|eporner|beeg|brazzers|rule34|nhentai|erome|livejasmin|thothub|fapello|daftsex|youjizz|hqporner|thumbzilla|cam4|camsoda|bongacams|hentaihaven|hanime|javhd|missav|jable|adultfriendfinder)(?:\.|$|\/)/i;
+
+const EXPLICIT_MEDIA_KEYWORDS_REGEX = /(?:[/?&=._-])(porn|xxx|nsfw|nude|naked|erotic|boobs|penis|vagina|hentai|camgirl|stripchat|pornhub|xvideos|xnxx|xhamster|redtube|youporn|rule34|erome|fapello)(?:[/?&=._-]|$)/i;
+
+function isAdultOrPornUrl(rawUrl) {
+    if (!rawUrl || typeof rawUrl !== 'string') return false;
+    if (rawUrl.startsWith('ocal://') || rawUrl.startsWith('file://') || rawUrl.startsWith('chrome-extension://')) return false;
+    try {
+        const u = new URL(rawUrl);
+        const host = u.hostname.toLowerCase();
+        
+        // Exact domain check
+        if (ADULT_DOMAINS.has(host)) return true;
+        
+        // Subdomain matching
+        const parts = host.split('.');
+        for (let i = 1; i < parts.length - 1; i++) {
+            const sub = parts.slice(i).join('.');
+            if (ADULT_DOMAINS.has(sub)) return true;
+        }
+        
+        // Adult TLD check
+        if (host.endsWith('.xxx') || host.endsWith('.adult') || host.endsWith('.porn') || host.endsWith('.sex')) {
+            return true;
+        }
+
+        // Domain pattern regex check
+        if (ADULT_URL_REGEX.test(host)) return true;
+
+        // Explicit path tokens
+        const pathAndQuery = (u.pathname + u.search).toLowerCase();
+        if (/\/(porn|xxx|nsfw|hentai|erotica)\//i.test(pathAndQuery)) {
+            return true;
+        }
+
+        return false;
+    } catch (_) {
+        return false;
+    }
+}
+
+function isExplicitMediaUrl(rawUrl) {
+    if (!rawUrl || typeof rawUrl !== 'string') return false;
+    return isAdultOrPornUrl(rawUrl) || EXPLICIT_MEDIA_KEYWORDS_REGEX.test(rawUrl);
+}
+
+function enforceSafeSearchParams(rawUrl) {
+    if (!rawUrl || typeof rawUrl !== 'string') return rawUrl;
+    try {
+        const u = new URL(rawUrl);
+        const host = u.hostname.toLowerCase();
+        let modified = false;
+
+        // Google Search & Google Images
+        if (host.includes('google.') && (u.pathname === '/search' || u.pathname.startsWith('/search') || u.pathname.startsWith('/images'))) {
+            if (u.searchParams.get('safe') !== 'active') {
+                u.searchParams.set('safe', 'active');
+                modified = true;
+            }
+            if (u.searchParams.get('ssui') !== 'on') {
+                u.searchParams.set('ssui', 'on');
+                modified = true;
+            }
+        }
+        // Bing Search & Bing Images
+        else if (host.includes('bing.com') && (u.pathname === '/search' || u.pathname.startsWith('/images'))) {
+            if (u.searchParams.get('adlt') !== 'strict') {
+                u.searchParams.set('adlt', 'strict');
+                modified = true;
+            }
+        }
+        // DuckDuckGo
+        else if (host.includes('duckduckgo.com') && u.searchParams.has('q')) {
+            if (u.searchParams.get('kp') !== '1') {
+                u.searchParams.set('kp', '1');
+                modified = true;
+            }
+        }
+        // Yahoo Search
+        else if (host.includes('search.yahoo.com')) {
+            if (u.searchParams.get('vm') !== 'r') {
+                u.searchParams.set('vm', 'r');
+                modified = true;
+            }
+        }
+        // Brave Search
+        else if (host.includes('search.brave.com') && (u.pathname === '/search' || u.pathname.startsWith('/images'))) {
+            if (u.searchParams.get('safesearch') !== 'strict') {
+                u.searchParams.set('safesearch', 'strict');
+                modified = true;
+            }
+        }
+
+        return modified ? u.toString() : rawUrl;
+    } catch (_) {
+        return rawUrl;
+    }
+}
+
 function applyShieldSettings() {
     if (global._shieldInterceptorsRegistered) return;
     global._shieldInterceptorsRegistered = true;
@@ -1105,6 +1231,35 @@ function applyShieldSettings() {
     const masterOnBeforeRequest = (details, callback) => {
         const { url, resourceType, webContentsId } = details;
         if (!url) return callback({});
+
+        // 0. Search Security & Mindful Adult Content Protection (On by default)
+        if (userSettings.contentProtectionEnabled !== false) {
+            // Check adult domain / URL block
+            if (userSettings.adultDomainsBlockEnabled !== false && isAdultOrPornUrl(url)) {
+                if (resourceType === 'mainFrame') {
+                    const shieldUrl = 'file:///' + path.join(__dirname, 'mindful-shield.html').replace(/\\/g, '/') + '?url=' + encodeURIComponent(url);
+                    return callback({ redirectURL: shieldUrl });
+                } else {
+                    // Block explicit subframes, images, video assets, scripts
+                    return callback({ cancel: true });
+                }
+            }
+
+            // Check explicit image asset filtering
+            if (userSettings.explicitImagesBlockEnabled !== false && (resourceType === 'image' || resourceType === 'media')) {
+                if (isExplicitMediaUrl(url)) {
+                    return callback({ cancel: true });
+                }
+            }
+
+            // Enforce SafeSearch query parameters on search engines
+            if (userSettings.safeSearchEnabled !== false && (resourceType === 'mainFrame' || resourceType === 'subFrame')) {
+                const safeUrl = enforceSafeSearchParams(url);
+                if (safeUrl !== url) {
+                    return callback({ redirectURL: safeUrl });
+                }
+            }
+        }
 
         // 1. HTTPS Upgrade for mainFrame navigation (excluding localhost/127.0.0.1)
         if (userSettings.httpsUpgradeEnabled && resourceType === 'mainFrame' && url.startsWith('http://') && !url.includes('localhost') && !url.includes('127.0.0.1')) {
@@ -1193,6 +1348,18 @@ function applyShieldSettings() {
                 }
             } else {
                 headers['Cookie'] = `brave_theme=${braveTheme}`;
+            }
+        }
+
+        // Enforce strict YouTube and Google SafeSearch headers
+        if (userSettings.contentProtectionEnabled !== false && userSettings.safeSearchEnabled !== false) {
+            if (url.includes('youtube.com')) {
+                headers['YouTube-Restrict'] = 'Strict';
+            }
+            if (url.includes('google.') && headers['Cookie']) {
+                if (!headers['Cookie'].includes('f2=8000000')) {
+                    headers['Cookie'] += '; PREF=f2=8000000';
+                }
             }
         }
 
@@ -2714,6 +2881,10 @@ function resolveInternalURL(url) {
         const qIdx = url.indexOf('?');
         return 'file://' + path.join(__dirname, 'security-warning.html') + (qIdx !== -1 ? url.substring(qIdx) : '');
     }
+    if (cleanBase === 'ocal://mindful-shield' || cleanBase === 'ocal://safe-shield' || cleanBase === 'mindful-shield') {
+        const qIdx = url.indexOf('?');
+        return 'file:///' + path.join(__dirname, 'mindful-shield.html').replace(/\\/g, '/') + (qIdx !== -1 ? url.substring(qIdx) : '');
+    }
     if (cleanBase === 'ocal://games' || cleanBase === 'ocal://game' || cleanBase === 'ocal://arcade' || cleanBase === 'games' || cleanBase === 'arcade') return getFilePath('games.html');
     if (cleanBase === 'ocal://hexgl' || cleanBase === 'hexgl' || cleanBase === 'ocal://arcade/hexgl' || cleanBase.startsWith('ocal://hexgl') || cleanBase.startsWith('ocal://arcade/hexgl')) {
         const qIdx = url.indexOf('?');
@@ -2815,6 +2986,8 @@ function createNewTab(url = null) {
             } catch (e) {
                 finalUrl = `ocal://pdf-viewer/?file=${encodeURIComponent(url)}`;
             }
+        } else if (userSettings.contentProtectionEnabled !== false && userSettings.adultDomainsBlockEnabled !== false && isAdultOrPornUrl(url)) {
+            finalUrl = `ocal://mindful-shield?url=${encodeURIComponent(url)}`;
         }
     }
 
@@ -2862,6 +3035,9 @@ function formatDisplayUrl(url) {
     }
     if (display.includes('focus.html') || display.startsWith('ocal://focus') || display.startsWith('ocal://focus-flow')) {
         return 'ocal://focus';
+    }
+    if (display.includes('mindful-shield.html') || display.startsWith('ocal://mindful-shield') || display.startsWith('ocal://safe-shield')) {
+        return 'ocal://mindful-shield';
     }
     if (display.includes('snake.html') || display.startsWith('ocal://snake')) {
         return 'ocal://snake';
@@ -4779,12 +4955,13 @@ ipcMain.on('navigate-to', (e, url) => {
         else {
             const isLightMode = userSettings && userSettings.themeMode === 'light';
             const engine = userSettings.searchEngine || 'google';
-            let baseUrl = 'https://www.google.com/search?q=';
+            const isSafe = userSettings.contentProtectionEnabled !== false && userSettings.safeSearchEnabled !== false;
+            let baseUrl = 'https://www.google.com/search?' + (isSafe ? 'safe=active&ssui=on&' : '') + 'q=';
             if (engine === 'ocal') baseUrl = 'http://localhost:8080/search?q=';
-            else if (engine === 'bing') baseUrl = `https://www.bing.com/search?bnddark=${isLightMode ? '0' : '1'}&q=`;
-            else if (engine === 'duckduckgo') baseUrl = `https://duckduckgo.com/?kae=${isLightMode ? '-1' : 'd'}&q=`;
-            else if (engine === 'brave') baseUrl = `https://search.brave.com/search?theme=${isLightMode ? 'light' : 'dark'}&q=`;
-            else if (engine === 'yahoo') baseUrl = 'https://search.yahoo.com/search?p=';
+            else if (engine === 'bing') baseUrl = `https://www.bing.com/search?${isSafe ? 'adlt=strict&' : ''}bnddark=${isLightMode ? '0' : '1'}&q=`;
+            else if (engine === 'duckduckgo') baseUrl = `https://duckduckgo.com/?${isSafe ? 'kp=1&' : ''}kae=${isLightMode ? '-1' : 'd'}&q=`;
+            else if (engine === 'brave') baseUrl = `https://search.brave.com/search?${isSafe ? 'safesearch=strict&' : ''}theme=${isLightMode ? 'light' : 'dark'}&q=`;
+            else if (engine === 'yahoo') baseUrl = 'https://search.yahoo.com/search?' + (isSafe ? 'vm=r&' : '') + 'p=';
 
             if (engine === 'custom' && userSettings.customSearchUrl) {
                 targetUrl = userSettings.customSearchUrl.replace('%s', encodeURIComponent(cleanUrl));
@@ -4792,6 +4969,13 @@ ipcMain.on('navigate-to', (e, url) => {
                 targetUrl = baseUrl + encodeURIComponent(cleanUrl);
             }
         }
+    }
+
+    // Intercept adult/pornographic sites with Search Security & Mindful Protection
+    if (userSettings.contentProtectionEnabled !== false && userSettings.adultDomainsBlockEnabled !== false && isAdultOrPornUrl(targetUrl)) {
+        hideSuggestions();
+        activeView.webContents.loadURL(`ocal://mindful-shield?url=${encodeURIComponent(targetUrl)}`);
+        return;
     }
 
     const lowerUrl = targetUrl.toLowerCase();
@@ -11035,7 +11219,8 @@ function updateHistory(view, url) {
                 'tab-context.html', 'tabgroup.html', 'shield-popup.html', 'site-info.html',
                 'media-popup.html', 'ai-sidebar.html', 'certificate-viewer.html',
                 'bm-dropdown.html', 'file-manager.html', 'music-player.html', 'snake.html', 'tetris.html', 'page-context.html',
-                'focus.html', 'private-home.html', 'private-window.html', '2048.html', 'pong.html', 'breakout.html', 'hexgl'
+                'focus.html', 'private-home.html', 'private-window.html', '2048.html', 'pong.html', 'breakout.html', 'hexgl',
+                'mindful-shield.html', 'mindful-shield'
             ].some(page => url.toLowerCase().includes(page.toLowerCase()));
 
         if (!isInternalPage) {

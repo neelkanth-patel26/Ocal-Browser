@@ -295,14 +295,22 @@ function executeSearch() {
         targetUrl = 'https://' + q;
     } else {
         const isLight = document.documentElement.getAttribute('data-theme') === 'light';
-        let searchUrl = 'https://www.google.com/search?q=';
+        const isSafeSearch = localStorage.getItem('ocal-content-protection') !== 'false';
+        let searchUrl = 'https://www.google.com/search?' + (isSafeSearch ? 'safe=active&ssui=on&' : '') + 'q=';
         if (currentSearchEngine === 'ocal') searchUrl = 'http://localhost:8080/search?q=';
-        else if (currentSearchEngine === 'bing') searchUrl = `https://www.bing.com/search?bnddark=${isLight ? '0' : '1'}&q=`;
-        else if (currentSearchEngine === 'duckduckgo') searchUrl = `https://duckduckgo.com/?kae=${isLight ? '-1' : 'd'}&q=`;
-        else if (currentSearchEngine === 'brave') searchUrl = `https://search.brave.com/search?theme=${isLight ? 'light' : 'dark'}&q=`;
-        else if (currentSearchEngine === 'yahoo') searchUrl = 'https://search.yahoo.com/search?p=';
+        else if (currentSearchEngine === 'bing') searchUrl = `https://www.bing.com/search?${isSafeSearch ? 'adlt=strict&' : ''}bnddark=${isLight ? '0' : '1'}&q=`;
+        else if (currentSearchEngine === 'duckduckgo') searchUrl = `https://duckduckgo.com/?${isSafeSearch ? 'kp=1&' : ''}kae=${isLight ? '-1' : 'd'}&q=`;
+        else if (currentSearchEngine === 'brave') searchUrl = `https://search.brave.com/search?${isSafeSearch ? 'safesearch=strict&' : ''}theme=${isLight ? 'light' : 'dark'}&q=`;
+        else if (currentSearchEngine === 'yahoo') searchUrl = 'https://search.yahoo.com/search?' + (isSafeSearch ? 'vm=r&' : '') + 'p=';
         
         targetUrl = searchUrl + encodeURIComponent(q);
+    }
+
+    // Intercept adult/pornographic sites from home search
+    const ADULT_URL_REGEX = /(?:^|\.)(?:porn|xxx|nsfw|xvideos|xnxx|xhamster|redtube|youporn|chaturbate|stripchat|spankbang|eporner|beeg|brazzers|rule34|nhentai|erome|livejasmin|thothub|fapello|daftsex|youjizz|hqporner|thumbzilla|cam4|camsoda|bongacams|hentaihaven|hanime|javhd|missav|jable|adultfriendfinder)(?:\.|$|\/)/i;
+    const isSafe = localStorage.getItem('ocal-content-protection') !== 'false';
+    if (isSafe && (ADULT_URL_REGEX.test(targetUrl) || targetUrl.includes('.xxx') || targetUrl.includes('.adult') || targetUrl.includes('.porn'))) {
+        targetUrl = 'ocal://mindful-shield?url=' + encodeURIComponent(targetUrl);
     }
 
     navigateToTargetUrl(targetUrl);

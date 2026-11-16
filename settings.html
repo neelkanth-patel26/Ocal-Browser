@@ -301,12 +301,12 @@
                         </div>
                     </div>
 
-                    <!-- Group 2: Search & Address Bar Suggestions -->
+                    <!-- Group 2: Search Suggestions -->
                     <div class="settings-group-card">
                         <div class="settings-group-header">
                             <div class="group-header-text">
-                                <h3 class="group-title">Search & Address Bar Preferences</h3>
-                                <p class="group-desc">Control autocomplete suggestions and safe browsing content filtering.</p>
+                                <h3 class="group-title">Search &amp; Address Bar Preferences</h3>
+                                <p class="group-desc">Control autocomplete suggestions and real-time query predictions.</p>
                             </div>
                         </div>
 
@@ -329,21 +329,108 @@
                                     </label>
                                 </div>
                             </div>
+                        </div>
+                    </div>
 
-                            <!-- Toggle 2: SafeSearch -->
-                            <div class="settings-toggle-row">
+                    <!-- Group: Search Security & Content Protection (On by Default) -->
+                    <div class="settings-group-card" id="search-security-protection-card">
+                        <div class="settings-group-header">
+                            <div class="group-header-text">
+                                <h3 class="group-title"><i class="fas fa-shield-cat" style="color: #10b981; margin-right: 8px;"></i>Search Security &amp; Content Protection</h3>
+                                <p class="group-desc">Comprehensive adult content blocker, explicit image filter, and motivational productivity guard.</p>
+                            </div>
+                            <div class="engine-active-indicator" id="content-protection-indicator">
+                                <span class="status-dot"></span>
+                                <span id="content-protection-status-text">SHIELD ACTIVE</span>
+                            </div>
+                        </div>
+
+                        <div class="settings-list-group">
+                            <!-- Master Switch: Search Security & Adult Content Shield -->
+                            <div class="settings-toggle-row" style="background: rgba(16, 185, 129, 0.04);">
                                 <div class="str-left">
-                                    <div class="str-icon"><i class="fas fa-shield-halved"></i></div>
+                                    <div class="str-icon" style="color: #10b981; background: rgba(16, 185, 129, 0.12);"><i class="fas fa-hand-holding-heart"></i></div>
                                     <div class="str-text">
-                                        <span class="str-title">SafeSearch content filtering</span>
-                                        <span class="str-desc">Filter explicit adult content and graphic results from search queries and suggestions</span>
+                                        <span class="str-title" style="font-weight: 700;">Search Security &amp; Adult Content Shield</span>
+                                        <span class="str-desc">Block all pornographic websites and explicit content, redirecting to motivational productivity moments. <strong>(Enabled by default)</strong></span>
                                     </div>
                                 </div>
                                 <div class="str-right">
-                                    <span class="ext-status-indicator" id="status-safesearch" style="display:none;"><span class="status-dot"></span><span id="search-stat-safesearch">Off</span></span>
                                     <label class="native-switch">
-                                        <input type="checkbox" id="safe-search-toggle-cb"
+                                        <input type="checkbox" id="content-protection-toggle-cb" checked
+                                            onchange="toggleContentProtection(this.checked)">
+                                        <span class="native-switch-slider"></span>
+                                    </label>
+                                </div>
+                            </div>
+
+                            <!-- Sub-Option 1: Adult Website & Domain Filter -->
+                            <div class="settings-toggle-row">
+                                <div class="str-left">
+                                    <div class="str-icon" style="color: #ef4444; background: rgba(239, 68, 68, 0.1);"><i class="fas fa-ban"></i></div>
+                                    <div class="str-text">
+                                        <span class="str-title">Block Adult Websites &amp; Domains</span>
+                                        <span class="str-desc">Intercept adult tube networks, live cams, adult dating, and explicit domains at the network packet level</span>
+                                    </div>
+                                </div>
+                                <div class="str-right">
+                                    <label class="native-switch">
+                                        <input type="checkbox" id="adult-domains-block-cb" checked
+                                            onchange="window.electronAPI.updateSetting('adultDomainsBlockEnabled', this.checked); updateProtectionSubToggles();">
+                                        <span class="native-switch-slider"></span>
+                                    </label>
+                                </div>
+                            </div>
+
+                            <!-- Sub-Option 2: Explicit Image & Media Blocker -->
+                            <div class="settings-toggle-row">
+                                <div class="str-left">
+                                    <div class="str-icon" style="color: #3b82f6; background: rgba(59, 130, 246, 0.1);"><i class="fas fa-eye-slash"></i></div>
+                                    <div class="str-text">
+                                        <span class="str-title">Explicit Image &amp; Media Blocker</span>
+                                        <span class="str-desc">Hide, blur, or block adult and graphic images across web pages and search image feeds</span>
+                                    </div>
+                                </div>
+                                <div class="str-right">
+                                    <label class="native-switch">
+                                        <input type="checkbox" id="explicit-images-block-cb" checked
+                                            onchange="window.electronAPI.updateSetting('explicitImagesBlockEnabled', this.checked); updateProtectionSubToggles();">
+                                        <span class="native-switch-slider"></span>
+                                    </label>
+                                </div>
+                            </div>
+
+                            <!-- Sub-Option 3: Strict SafeSearch -->
+                            <div class="settings-toggle-row">
+                                <div class="str-left">
+                                    <div class="str-icon" style="color: #8b5cf6; background: rgba(139, 92, 246, 0.1);"><i class="fas fa-magnifying-glass-chart"></i></div>
+                                    <div class="str-text">
+                                        <span class="str-title">Strict Search Engine SafeSearch</span>
+                                        <span class="str-desc">Enforce strict filtering parameters across Google, Bing, DuckDuckGo, Brave, Yahoo, and YouTube</span>
+                                    </div>
+                                </div>
+                                <div class="str-right">
+                                    <label class="native-switch">
+                                        <input type="checkbox" id="safe-search-toggle-cb" checked
                                             onchange="window.electronAPI.updateSetting('safeSearchEnabled', this.checked); updateSearchFeatureBadges();">
+                                        <span class="native-switch-slider"></span>
+                                    </label>
+                                </div>
+                            </div>
+
+                            <!-- Sub-Option 4: Mindful Productivity Encouragement -->
+                            <div class="settings-toggle-row">
+                                <div class="str-left">
+                                    <div class="str-icon" style="color: #f59e0b; background: rgba(245, 158, 11, 0.1);"><i class="fas fa-seedling"></i></div>
+                                    <div class="str-text">
+                                        <span class="str-title">Mindful Productivity Interstitial</span>
+                                        <span class="str-desc">Show inspiring messages on blocked pages: <em>"Why waste time over here? Do some productive work and do good for society!"</em></span>
+                                    </div>
+                                </div>
+                                <div class="str-right">
+                                    <label class="native-switch">
+                                        <input type="checkbox" id="mindful-quotes-cb" checked
+                                            onchange="window.electronAPI.updateSetting('mindfulQuotesEnabled', this.checked); updateProtectionSubToggles();">
                                         <span class="native-switch-slider"></span>
                                     </label>
                                 </div>
@@ -1423,6 +1510,24 @@
                                     <label class="native-switch">
                                         <input type="checkbox" id="safe-browsing-toggle-cb" checked
                                             onchange="toggleSecurityFeature('safeBrowsingEnabled', this.checked)">
+                                        <span class="native-switch-slider"></span>
+                                    </label>
+                                </div>
+                            </div>
+
+                            <!-- Toggle: Search Security & Adult Content Shield -->
+                            <div class="settings-toggle-row">
+                                <div class="str-left">
+                                    <div class="str-icon" style="color: #10b981; background: rgba(16, 185, 129, 0.1);"><i class="fas fa-hand-holding-heart"></i></div>
+                                    <div class="str-text">
+                                        <span class="str-title">Search Security &amp; Content Protection</span>
+                                        <span class="str-desc">Block adult/pornographic sites, filter explicit images &amp; queries, and inspire productive work (On by default)</span>
+                                    </div>
+                                </div>
+                                <div class="str-right">
+                                    <label class="native-switch">
+                                        <input type="checkbox" id="security-content-protection-cb" checked
+                                            onchange="toggleContentProtection(this.checked)">
                                         <span class="native-switch-slider"></span>
                                     </label>
                                 </div>

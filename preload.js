@@ -2852,4 +2852,114 @@ window.addEventListener('mousedown', () => {
     }
 })();
 
+// ── Search Security & In-Page Explicit Media Shield ──
+(function() {
+    'use strict';
+    let contentProtectionActive = true;
+    let explicitImagesBlockActive = true;
+
+    const EXPLICIT_MEDIA_REGEX = /(?:^|[\/_\-?&=.])(porn|xxx|nsfw|nude|naked|erotic|boobs|penis|vagina|hentai|camgirl|stripchat|pornhub|xvideos|xnxx|xhamster|redtube|youporn|rule34|erome|fapello)(?:[\/_\-?&=.]|$)/i;
+
+    function ensureShieldStyles() {
+        if (document.getElementById('ocal-content-protection-style')) return;
+        const style = document.createElement('style');
+        style.id = 'ocal-content-protection-style';
+        style.textContent = `
+            .ocal-shielded-media {
+                filter: blur(34px) grayscale(65%) !important;
+                opacity: 0.12 !important;
+                transition: filter 0.3s ease, opacity 0.3s ease !important;
+                position: relative !important;
+                pointer-events: none !important;
+            }
+            .ocal-shielded-media:hover {
+                filter: blur(14px) grayscale(35%) !important;
+                opacity: 0.38 !important;
+            }
+        `;
+        (document.head || document.documentElement).appendChild(style);
+    }
+
+    function scanAndShieldImages(root = document) {
+        if (!contentProtectionActive || !explicitImagesBlockActive) return;
+        const mediaElements = root.querySelectorAll ? root.querySelectorAll('img, video, [style*="background-image"]') : [];
+        mediaElements.forEach(el => {
+            if (el.classList && el.classList.contains('ocal-shielded-media')) return;
+            const src = (el.src || el.getAttribute('data-src') || el.currentSrc || '').toLowerCase();
+            const alt = (el.alt || el.getAttribute('title') || el.className || '').toLowerCase();
+            const bg = el.style ? (el.style.backgroundImage || '').toLowerCase() : '';
+            
+            if (EXPLICIT_MEDIA_REGEX.test(src) || EXPLICIT_MEDIA_REGEX.test(alt) || EXPLICIT_MEDIA_REGEX.test(bg)) {
+                ensureShieldStyles();
+                el.classList.add('ocal-shielded-media');
+                el.setAttribute('title', 'Explicit image shielded by Ocal Search Security');
+            }
+        });
+    }
+
+    function initContentProtection() {
+        if (typeof window === 'undefined' || !window.location) return;
+        const href = window.location.href || '';
+        if (href.startsWith('ocal://') || href.startsWith('file://')) return;
+
+        let ipc = null;
+        try {
+            if (typeof require !== 'undefined') {
+                ipc = require('electron').ipcRenderer;
+            }
+        } catch (_) {}
+
+        if (ipc && ipc.invoke) {
+            ipc.invoke('get-settings').then(s => {
+                if (s) {
+                    contentProtectionActive = s.contentProtectionEnabled !== false;
+                    explicitImagesBlockActive = s.explicitImagesBlockEnabled !== false;
+                }
+                if (contentProtectionActive && explicitImagesBlockActive) {
+                    scanAndShieldImages();
+                }
+            }).catch(() => {});
+
+            ipc.on('settings-changed', (e, s) => {
+                if (s) {
+                    contentProtectionActive = s.contentProtectionEnabled !== false;
+                    explicitImagesBlockActive = s.explicitImagesBlockEnabled !== false;
+                }
+                if (contentProtectionActive && explicitImagesBlockActive) {
+                    scanAndShieldImages();
+                } else {
+                    document.querySelectorAll('.ocal-shielded-media').forEach(el => {
+                        el.classList.remove('ocal-shielded-media');
+                    });
+                }
+            });
+        }
+
+        // MutationObserver for dynamically loaded image feeds / search grids
+        const observer = new MutationObserver((mutations) => {
+            if (!contentProtectionActive || !explicitImagesBlockActive) return;
+            for (const m of mutations) {
+                if (m.addedNodes && m.addedNodes.length > 0) {
+                    m.addedNodes.forEach(node => {
+                        if (node.nodeType === 1) {
+                            scanAndShieldImages(node);
+                        }
+                    });
+                }
+            }
+        });
+
+        observer.observe(document.body || document.documentElement, {
+            childList: true,
+            subtree: true
+        });
+    }
+
+    if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', initContentProtection);
+    } else {
+        initContentProtection();
+    }
+})();
+
 

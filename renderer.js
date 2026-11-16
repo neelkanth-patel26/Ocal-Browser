@@ -965,10 +965,16 @@ function formatDisplayUrl(url) {
         return 'ocal://extensions';
     }
     if (url.includes('ai-sidebar.html') || url.startsWith('ocal://ai-sidebar') || url.startsWith('ocal://ai')) return 'ocal://ai';
-    if (url.includes('games.html')) return 'ocal://games';
-    if (url.includes('snake.html')) return 'ocal://snake';
-    if (url.includes('tetris.html')) return 'ocal://tetris';
-    if (url.includes('game.html')) return 'ocal://runner';
+    if (url.includes('hexgl') || url.startsWith('ocal://hexgl') || url.startsWith('ocal://arcade/hexgl')) return 'ocal://hexgl';
+    if (url.includes('games.html') || url.startsWith('ocal://games') || url.startsWith('ocal://arcade')) return 'ocal://games';
+    if (url.includes('snake.html') || url.startsWith('ocal://snake')) return 'ocal://snake';
+    if (url.includes('tetris.html') || url.startsWith('ocal://tetris') || url.startsWith('ocal://grid')) return 'ocal://tetris';
+    if (url.includes('game.html') || url.startsWith('ocal://pulse') || url.startsWith('ocal://runner')) return 'ocal://pulse';
+    if (url.includes('2048.html') || url.startsWith('ocal://2048')) return 'ocal://2048';
+    if (url.includes('pong.html') || url.startsWith('ocal://pong')) return 'ocal://pong';
+    if (url.includes('breakout.html') || url.startsWith('ocal://breakout')) return 'ocal://breakout';
+    if (url.includes('focus.html') || url.startsWith('ocal://focus') || url.startsWith('ocal://focus-flow')) return 'ocal://focus';
+    if (url.includes('mindful-shield.html') || url.startsWith('ocal://mindful-shield') || url.startsWith('ocal://safe-shield')) return 'ocal://mindful-shield';
     if (url.includes('whats-new.html')) return 'ocal://whats-new';
     if (url.includes('onboarding.html') || url.includes('welcome.html')) return 'ocal://onboarding';
     if (url.includes('suspended.html')) return 'ocal://suspended';
@@ -1027,6 +1033,15 @@ function getSimplifiedTitle(title, url) {
     if (url.includes('bookmarks.html') || url.startsWith('ocal://bookmarks') || url.startsWith('ocal://saves')) return 'Bookmarks';
     if (url.includes('history.html') || url.startsWith('ocal://history')) return 'History';
     if (url.includes('games.html') || url.startsWith('ocal://games')) return 'Games';
+    if (url.includes('hexgl') || url.startsWith('ocal://hexgl') || url.startsWith('ocal://arcade/hexgl')) return 'HexGL Racer';
+    if (url.includes('2048.html') || url.startsWith('ocal://2048')) return '2048';
+    if (url.includes('pong.html') || url.startsWith('ocal://pong')) return 'Cyber Pong';
+    if (url.includes('breakout.html') || url.startsWith('ocal://breakout')) return 'Neon Breakout';
+    if (url.includes('snake.html') || url.startsWith('ocal://snake')) return 'Retro Snake';
+    if (url.includes('tetris.html') || url.startsWith('ocal://tetris')) return 'Cyber Grid';
+    if (url.includes('game.html') || url.startsWith('ocal://pulse')) return 'Neon Pulse';
+    if (url.includes('focus.html') || url.startsWith('ocal://focus')) return 'Focus Flow';
+    if (url.includes('mindful-shield.html') || url.startsWith('ocal://mindful-shield')) return 'Mindful Shield';
     if (url.includes('whats-new.html') || url.startsWith('ocal://whats-new')) return "What's New";
     if (url.includes('onboarding.html') || url.includes('welcome.html') || url.startsWith('ocal://onboarding') || url.startsWith('ocal://welcome')) return "Welcome to Ocal";
     if (url.includes('certificate-viewer.html') || url.startsWith('ocal://certificate-viewer')) return "Certificate Explorer";

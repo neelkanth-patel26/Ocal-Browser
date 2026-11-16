@@ -2559,6 +2559,11 @@ function renderSecuritySettings(s) {
     const safeCb = document.getElementById('safe-browsing-toggle-cb');
     if (safeCb && s.safeBrowsingEnabled !== undefined) safeCb.checked = !!s.safeBrowsingEnabled;
 
+    const contentProtCb = document.getElementById('security-content-protection-cb');
+    if (contentProtCb) {
+        contentProtCb.checked = s.contentProtectionEnabled !== false;
+    }
+
     const fpCb = document.getElementById('fingerprint-protection-toggle-cb');
     if (fpCb && (s.fingerprintProtection !== undefined || s.trackingProtection !== undefined)) {
         fpCb.checked = (s.fingerprintProtection !== false && s.trackingProtection !== false);
@@ -3168,10 +3173,30 @@ function renderSearchSettings(s) {
         autoCb.checked = (s.instantSearchEnabled !== false);
     }
     const safeCb = document.getElementById('safe-search-toggle-cb');
-    if (safeCb && s.safeSearchEnabled !== undefined) {
-        safeCb.checked = !!s.safeSearchEnabled;
+    if (safeCb) {
+        safeCb.checked = (s.safeSearchEnabled !== false);
     }
     updateSearchFeatureBadges();
+
+    // Content Protection & Adult Shield switches (Default: Enabled / true)
+    const masterProtectCb = document.getElementById('content-protection-toggle-cb');
+    const isMasterProtect = (s.contentProtectionEnabled !== false);
+    if (masterProtectCb) masterProtectCb.checked = isMasterProtect;
+
+    const adultBlockCb = document.getElementById('adult-domains-block-cb');
+    if (adultBlockCb) adultBlockCb.checked = (s.adultDomainsBlockEnabled !== false);
+
+    const explicitMediaCb = document.getElementById('explicit-images-block-cb');
+    if (explicitMediaCb) explicitMediaCb.checked = (s.explicitImagesBlockEnabled !== false);
+
+    const quotesCb = document.getElementById('mindful-quotes-cb');
+    if (quotesCb) quotesCb.checked = (s.mindfulQuotesEnabled !== false);
+
+    const secProtectCb = document.getElementById('security-content-protection-cb');
+    if (secProtectCb) secProtectCb.checked = isMasterProtect;
+
+    updateContentProtectionBadges(isMasterProtect);
+    updateProtectionSubToggles();
 
     // Custom search input
     const customInp = document.getElementById('custom-search-url');
@@ -3202,6 +3227,75 @@ window.updateSearchFeatureBadges = function() {
         statusSafe.className = `ext-status-indicator ${isSafe ? 'on' : 'off'}`;
         statusSafe.innerHTML = `<span class="status-dot"></span><span>${isSafe ? 'Active' : 'Disabled'}</span>`;
     }
+};
+
+window.toggleContentProtection = function(checked) {
+    if (window.electronAPI && typeof window.electronAPI.updateSetting === 'function') {
+        window.electronAPI.updateSetting('contentProtectionEnabled', checked);
+        window.electronAPI.updateSetting('adultDomainsBlockEnabled', checked);
+        window.electronAPI.updateSetting('explicitImagesBlockEnabled', checked);
+        window.electronAPI.updateSetting('safeSearchEnabled', checked);
+        window.electronAPI.updateSetting('mindfulQuotesEnabled', checked);
+    }
+    const masterCb = document.getElementById('content-protection-toggle-cb');
+    const secCb = document.getElementById('security-content-protection-cb');
+    if (masterCb) masterCb.checked = checked;
+    if (secCb) secCb.checked = checked;
+
+    const adultBlockCb = document.getElementById('adult-domains-block-cb');
+    if (adultBlockCb) adultBlockCb.checked = checked;
+
+    const explicitMediaCb = document.getElementById('explicit-images-block-cb');
+    if (explicitMediaCb) explicitMediaCb.checked = checked;
+
+    const safeSearchCb = document.getElementById('safe-search-toggle-cb');
+    if (safeSearchCb) safeSearchCb.checked = checked;
+
+    const quotesCb = document.getElementById('mindful-quotes-cb');
+    if (quotesCb) quotesCb.checked = checked;
+
+    window.updateContentProtectionBadges(checked);
+    window.updateProtectionSubToggles();
+    if (typeof window.updateSearchFeatureBadges === 'function') window.updateSearchFeatureBadges();
+};
+
+window.updateProtectionSubToggles = function() {
+    const masterCb = document.getElementById('content-protection-toggle-cb');
+    const isMaster = masterCb ? masterCb.checked : true;
+    const subIds = ['adult-domains-block-cb', 'explicit-images-block-cb', 'safe-search-toggle-cb', 'mindful-quotes-cb'];
+    subIds.forEach(id => {
+        const el = document.getElementById(id);
+        if (el) {
+            const row = el.closest('.settings-toggle-row');
+            if (row) {
+                row.style.opacity = isMaster ? '1' : '0.45';
+                row.style.pointerEvents = isMaster ? 'auto' : 'none';
+            }
+        }
+    });
+};
+
+window.updateContentProtectionBadges = function(val) {
+    const isMaster = (val !== false);
+    const ind = document.getElementById('content-protection-indicator');
+    const txt = document.getElementById('content-protection-status-text');
+    if (ind) {
+        ind.className = `engine-active-indicator ${isMaster ? 'active' : 'inactive'}`;
+        if (isMaster) {
+            ind.style.borderColor = 'rgba(16, 185, 129, 0.4)';
+            ind.style.background = 'rgba(16, 185, 129, 0.1)';
+            ind.style.color = '#10b981';
+        } else {
+            ind.style.borderColor = 'rgba(156, 163, 175, 0.3)';
+            ind.style.background = 'rgba(156, 163, 175, 0.08)';
+            ind.style.color = 'var(--text-secondary, #9ca3af)';
+        }
+    }
+    if (txt) {
+        txt.innerText = isMaster ? 'SHIELD ACTIVE' : 'SHIELD DISABLED';
+    }
+    const secCb = document.getElementById('security-content-protection-cb');
+    if (secCb && secCb.checked !== isMaster) secCb.checked = isMaster;
 };
 
 window.testSearchPreview = function() {
