@@ -1303,7 +1303,21 @@ function applyShieldSettings() {
             // Check adult domain / URL block
             if (userSettings.adultDomainsBlockEnabled !== false && isAdultOrPornUrl(url)) {
                 if (resourceType === 'mainFrame') {
-                    const shieldUrl = 'file:///' + path.join(__dirname, 'mindful-shield.html').replace(/\\/g, '/') + '?url=' + encodeURIComponent(url);
+                    const searchQ = extractSearchEngineQuery(url);
+                    let param = '';
+                    if (searchQ) {
+                        param = 'query=' + encodeURIComponent(searchQ);
+                    } else {
+                        try {
+                            const u = new URL(url);
+                            if (u.pathname === '/url') {
+                                const redirect = u.searchParams.get('url') || u.searchParams.get('q');
+                                if (redirect) param = 'url=' + encodeURIComponent(redirect);
+                            }
+                        } catch (_) {}
+                        if (!param) param = 'url=' + encodeURIComponent(url);
+                    }
+                    const shieldUrl = 'file:///' + path.join(__dirname, 'mindful-shield.html').replace(/\\/g, '/') + '?' + param;
                     return callback({ redirectURL: shieldUrl });
                 } else {
                     // Block explicit subframes, images, video assets, scripts
@@ -3053,7 +3067,15 @@ function createNewTab(url = null) {
                 finalUrl = `ocal://pdf-viewer/?file=${encodeURIComponent(url)}`;
             }
         } else if (userSettings.contentProtectionEnabled !== false && userSettings.adultDomainsBlockEnabled !== false && (isAdultContentQuery(url) || isAdultOrPornUrl(url))) {
-            const param = isAdultContentQuery(url) ? `query=${encodeURIComponent(url)}` : `url=${encodeURIComponent(url)}`;
+            const searchQ = extractSearchEngineQuery(url);
+            let param = '';
+            if (searchQ) {
+                param = `query=${encodeURIComponent(searchQ)}`;
+            } else if (isAdultContentQuery(url)) {
+                param = `query=${encodeURIComponent(url)}`;
+            } else {
+                param = `url=${encodeURIComponent(url)}`;
+            }
             finalUrl = `ocal://mindful-shield?${param}`;
         }
     }
@@ -5041,7 +5063,15 @@ ipcMain.on('navigate-to', (e, url) => {
     // Intercept adult/pornographic sites and queries with Search Security & Mindful Protection
     if (userSettings.contentProtectionEnabled !== false && userSettings.adultDomainsBlockEnabled !== false && (isAdultContentQuery(cleanUrl) || isAdultOrPornUrl(targetUrl))) {
         hideSuggestions();
-        const param = isAdultContentQuery(cleanUrl) ? `query=${encodeURIComponent(cleanUrl)}` : `url=${encodeURIComponent(targetUrl)}`;
+        const searchQ = extractSearchEngineQuery(targetUrl);
+        let param = '';
+        if (searchQ) {
+            param = `query=${encodeURIComponent(searchQ)}`;
+        } else if (isAdultContentQuery(cleanUrl)) {
+            param = `query=${encodeURIComponent(cleanUrl)}`;
+        } else {
+            param = `url=${encodeURIComponent(targetUrl)}`;
+        }
         activeView.webContents.loadURL(`ocal://mindful-shield?${param}`);
         return;
     }
@@ -10475,6 +10505,36 @@ ipcMain.handle('get-diagnostics', async () => {
         dspTag: 'DSP 500%'
     };
 });
+
+function isNewerVersion(remote, current) {
+    if (!remote || !current) return false;
+    const parse = (v) => v.replace(/^v/i, '').split('.').map(n => parseInt(n, 10) || 0);
+    const r = parse(remote);
+    const c = parse(current);
+    for (let i = 0; i < Math.max(r.length, c.length); i++) {
+        const rv = r[i] || 0;
+        const cv = c[i] || 0;
+        if (rv > cv) return true;
+        if (rv < cv) return false;
+    }
+    return false;
+}
+
+function broadcastUpdateAvailable(payload) {
+    if (mainWindow && !mainWindow.isDestroyed()) {
+        mainWindow.webContents.send('update-available', payload);
+    }
+    if (Array.isArray(views)) {
+        views.forEach(v => {
+            if (v.view && !v.view.webContents.isDestroyed()) {
+                v.view.webContents.send('update-available', payload);
+            }
+            if (v.view2 && !v.view2.webContents.isDestroyed()) {
+                v.view2.webContents.send('update-available', payload);
+            }
+        });
+    }
+}
 
 ipcMain.handle('check-for-update', async () => {
     return new Promise((resolve) => {

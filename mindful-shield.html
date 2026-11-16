@@ -1,22 +1,25 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" data-theme="dark">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta http-equiv="Content-Security-Policy" content="default-src 'self' ocal: file:; script-src 'self' 'unsafe-inline' ocal: file:; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com https://cdn.jsdelivr.net; font-src 'self' https://fonts.gstatic.com https://cdn.jsdelivr.net; img-src 'self' data: https: blob: ocal: file:;">
-    <title>Mindful Protection & Focus | Ocal Browser</title>
+    <title>Mindful Shield &amp; Cognitive Sanctuary | Ocal</title>
     <link rel="stylesheet" href="assets/fontawesome/css/all.min.css">
     <link rel="stylesheet" href="assets/fonts/geist-fonts.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800;900&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
     <script src="color-harmonizer.js"></script>
     <script>
         (function() {
             var t = localStorage.getItem('ocal-settings-theme') || 'dark';
             document.documentElement.setAttribute('data-theme', t);
             if (t === 'dark') {
-                document.documentElement.style.background = '#0E0F14';
+                document.documentElement.style.background = '#090A0F';
                 document.documentElement.style.colorScheme = 'dark';
             } else {
-                document.documentElement.style.background = '#F0F2F5';
+                document.documentElement.style.background = '#F8FAFC';
                 document.documentElement.style.colorScheme = 'light';
             }
             var a = localStorage.getItem('ocal-settings-accent') || '#10B981';
@@ -26,597 +29,2240 @@
         })();
     </script>
     <style>
-        @import url('./assets/fonts/geist-fonts.css');
-
         :root {
-            --bg: #0C0D12;
-            --card-bg: rgba(18, 20, 29, 0.82);
-            --card-border: rgba(16, 185, 129, 0.22);
-            --text-main: #F8FAFC;
-            --text-dim: #94A3B8;
+            --bg-base: #090A0F;
+            --bg-surface: #10121A;
+            --bg-elevated: #161924;
+            --bg-glass: rgba(16, 18, 26, 0.72);
+            --border-subtle: rgba(255, 255, 255, 0.08);
+            --border-hover: rgba(255, 255, 255, 0.18);
+            --border-highlight: rgba(16, 185, 129, 0.35);
+            --text-primary: #F8FAFC;
+            --text-secondary: #94A3B8;
             --text-muted: #64748B;
             --accent: #10B981;
-            --accent-glow: rgba(16, 185, 129, 0.35);
+            --accent-glow: rgba(16, 185, 129, 0.28);
             --accent-dim: rgba(16, 185, 129, 0.12);
-            --gold: #F59E0B;
-            --gold-glow: rgba(245, 158, 11, 0.3);
-            --gold-dim: rgba(245, 158, 11, 0.12);
             --danger: #EF4444;
+            --danger-glow: rgba(239, 68, 68, 0.25);
             --danger-dim: rgba(239, 68, 68, 0.12);
-            --font-main: 'Geist', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            --gold: #F59E0B;
+            --gold-glow: rgba(245, 158, 11, 0.25);
+            --gold-dim: rgba(245, 158, 11, 0.12);
+            --purple: #8B5CF6;
+            --purple-dim: rgba(139, 92, 246, 0.12);
+            --font-main: 'Geist', 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
             --font-mono: 'Geist Mono', 'Space Mono', monospace;
-            --radius-card: 28px;
-            --radius-btn: 14px;
-            --card-shadow: 0 32px 80px rgba(0, 0, 0, 0.55), 0 0 40px rgba(16, 185, 129, 0.12);
+            --shadow-subtle: 0 4px 20px rgba(0, 0, 0, 0.4);
+            --shadow-elevated: 0 16px 48px rgba(0, 0, 0, 0.55), 0 0 32px var(--accent-glow);
         }
 
-        body[data-theme="light"] {
-            --bg: #F4F6F9;
-            --card-bg: rgba(255, 255, 255, 0.94);
-            --card-border: rgba(16, 185, 129, 0.25);
-            --text-main: #0F172A;
-            --text-dim: #475569;
+        html[data-theme="light"] {
+            --bg-base: #F8FAFC;
+            --bg-surface: #FFFFFF;
+            --bg-elevated: #F1F5F9;
+            --bg-glass: rgba(255, 255, 255, 0.85);
+            --border-subtle: rgba(0, 0, 0, 0.08);
+            --border-hover: rgba(0, 0, 0, 0.16);
+            --border-highlight: rgba(16, 185, 129, 0.4);
+            --text-primary: #0F172A;
+            --text-secondary: #475569;
             --text-muted: #94A3B8;
             --accent: #059669;
-            --accent-glow: rgba(5, 150, 105, 0.2);
+            --accent-glow: rgba(5, 150, 105, 0.18);
             --accent-dim: rgba(5, 150, 105, 0.08);
-            --gold: #D97706;
-            --gold-glow: rgba(217, 119, 6, 0.2);
-            --gold-dim: rgba(217, 119, 6, 0.08);
-            --card-shadow: 0 24px 60px rgba(0, 0, 0, 0.08), 0 4px 16px rgba(0, 0, 0, 0.03), 0 0 30px rgba(16, 185, 129, 0.1);
+            --shadow-subtle: 0 4px 20px rgba(0, 0, 0, 0.06);
+            --shadow-elevated: 0 16px 48px rgba(0, 0, 0, 0.1), 0 0 24px rgba(16, 185, 129, 0.15);
         }
 
         * {
             box-sizing: border-box;
             margin: 0;
             padding: 0;
+            user-select: none;
+            -webkit-user-select: none;
         }
 
         body {
-            background: var(--bg);
-            color: var(--text-main);
+            background-color: var(--bg-base);
+            color: var(--text-primary);
             font-family: var(--font-main);
-            min-height: 100vh;
+            height: 100vh;
+            width: 100vw;
+            overflow: hidden;
             display: flex;
-            align-items: center;
-            justify-content: center;
-            padding: 28px 20px;
-            overflow-x: hidden;
+            flex-direction: column;
             position: relative;
-            user-select: none;
-            transition: background 0.3s ease, color 0.3s ease;
+            transition: background 0.25s ease, color 0.25s ease;
         }
 
-        /* Ambient Uplifting Aura */
-        .ambient-aurora {
+        /* ── Ambient Background Canvas ────────────────────────── */
+        .ambient-glow-mesh {
             position: fixed;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
-            width: 700px;
-            height: 700px;
-            background: radial-gradient(circle, var(--accent-glow) 0%, var(--gold-glow) 35%, transparent 70%);
-            filter: blur(100px);
-            opacity: 0.65;
+            inset: 0;
             pointer-events: none;
             z-index: 0;
-            animation: pulseAura 8s ease-in-out infinite alternate;
-        }
-
-        @keyframes pulseAura {
-            0% { transform: translate(-50%, -50%) scale(0.92); opacity: 0.55; }
-            100% { transform: translate(-50%, -50%) scale(1.08); opacity: 0.75; }
-        }
-
-        .shield-container {
-            position: relative;
-            z-index: 1;
-            width: 100%;
-            max-width: 680px;
-            background: var(--card-bg);
-            border: 1px solid var(--card-border);
-            border-radius: var(--radius-card);
-            padding: 42px 44px;
-            backdrop-filter: blur(36px);
-            -webkit-backdrop-filter: blur(36px);
-            box-shadow: var(--card-shadow);
-            animation: cardSlideUp 0.4s cubic-bezier(0.16, 1, 0.3, 1);
-            text-align: center;
-        }
-
-        @keyframes cardSlideUp {
-            from { opacity: 0; transform: translateY(20px) scale(0.97); }
-            to { opacity: 1; transform: translateY(0) scale(1); }
-        }
-
-        /* Top Status Pill */
-        .shield-pill {
-            display: inline-flex;
-            align-items: center;
-            gap: 8px;
-            padding: 6px 16px;
-            border-radius: 9999px;
-            background: var(--accent-dim);
-            border: 1px solid var(--accent);
-            color: var(--accent);
-            font-size: 12px;
-            font-weight: 700;
-            letter-spacing: 0.8px;
-            text-transform: uppercase;
-            margin-bottom: 24px;
-            box-shadow: 0 4px 16px var(--accent-glow);
-        }
-
-        .pulse-dot {
-            width: 8px;
-            height: 8px;
-            border-radius: 50%;
-            background: var(--accent);
-            box-shadow: 0 0 10px var(--accent);
-            animation: dotGlow 1.8s infinite;
-        }
-
-        @keyframes dotGlow {
-            0%, 100% { opacity: 1; transform: scale(1); }
-            50% { opacity: 0.4; transform: scale(0.75); }
-        }
-
-        /* Hero Icon */
-        .shield-icon-wrapper {
-            width: 76px;
-            height: 76px;
-            margin: 0 auto 24px;
-            border-radius: 24px;
-            background: linear-gradient(135deg, rgba(16, 185, 129, 0.16), rgba(245, 158, 11, 0.16));
-            border: 1.5px solid var(--card-border);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 32px;
-            color: var(--accent);
-            box-shadow: 0 12px 30px var(--accent-glow);
-            transition: transform 0.3s ease;
-        }
-
-        .shield-container:hover .shield-icon-wrapper {
-            transform: scale(1.05) rotate(3deg);
-        }
-
-        /* Headings */
-        h1.headline {
-            font-size: 26px;
-            font-weight: 800;
-            line-height: 1.3;
-            letter-spacing: -0.5px;
-            color: var(--text-main);
-            margin-bottom: 14px;
-        }
-
-        h1.headline .highlight {
-            background: linear-gradient(135deg, #10B981 0%, #F59E0B 100%);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-        }
-
-        p.subheadline {
-            font-size: 14.5px;
-            line-height: 1.65;
-            color: var(--text-dim);
-            margin-bottom: 26px;
-            max-width: 580px;
-            margin-left: auto;
-            margin-right: auto;
-        }
-
-        /* Blocked Target Badge */
-        .blocked-badge-row {
-            display: inline-flex;
-            align-items: center;
-            gap: 8px;
-            background: var(--danger-dim);
-            border: 1px solid rgba(239, 68, 68, 0.25);
-            padding: 5px 14px;
-            border-radius: 10px;
-            margin-bottom: 28px;
-            font-size: 12.5px;
-            color: #F87171;
-            font-family: var(--font-mono);
-            max-width: 90%;
             overflow: hidden;
-            text-overflow: ellipsis;
-            white-space: nowrap;
         }
 
-        /* Quote of the Moment Card */
-        .quote-card {
-            background: rgba(255, 255, 255, 0.03);
-            border: 1px solid rgba(255, 255, 255, 0.08);
-            border-radius: 18px;
-            padding: 22px 24px;
-            margin-bottom: 30px;
-            text-align: left;
-            position: relative;
-            transition: all 0.25s ease;
+        .ambient-glow-circle-1 {
+            position: absolute;
+            top: -10%;
+            left: 20%;
+            width: 600px;
+            height: 600px;
+            border-radius: 50%;
+            background: radial-gradient(circle, var(--accent-glow) 0%, transparent 70%);
+            filter: blur(120px);
+            opacity: 0.55;
+            animation: floatGlow 14s ease-in-out infinite alternate;
         }
 
-        body[data-theme="light"] .quote-card {
-            background: rgba(0, 0, 0, 0.02);
-            border-color: rgba(0, 0, 0, 0.06);
+        .ambient-glow-circle-2 {
+            position: absolute;
+            bottom: -15%;
+            right: 15%;
+            width: 550px;
+            height: 550px;
+            border-radius: 50%;
+            background: radial-gradient(circle, var(--gold-glow) 0%, transparent 70%);
+            filter: blur(130px);
+            opacity: 0.45;
+            animation: floatGlow 18s ease-in-out infinite alternate-reverse;
         }
 
-        .quote-header {
+        @keyframes floatGlow {
+            0% { transform: translate(0, 0) scale(0.95); }
+            100% { transform: translate(40px, 30px) scale(1.1); }
+        }
+
+        /* ── Native Desktop App Header ────────────────────────── */
+        .desktop-header {
+            height: 58px;
+            padding: 0 24px;
             display: flex;
             align-items: center;
             justify-content: space-between;
-            margin-bottom: 10px;
+            border-bottom: 1px solid var(--border-subtle);
+            background: var(--bg-glass);
+            backdrop-filter: blur(28px);
+            -webkit-backdrop-filter: blur(28px);
+            z-index: 10;
+            flex-shrink: 0;
         }
 
-        .quote-tag {
-            font-size: 11px;
-            font-weight: 700;
-            color: var(--gold);
-            text-transform: uppercase;
-            letter-spacing: 0.6px;
+        .brand-cluster {
             display: flex;
             align-items: center;
-            gap: 6px;
-        }
-
-        .quote-refresh-btn {
-            background: none;
-            border: none;
-            color: var(--text-muted);
-            cursor: pointer;
-            font-size: 12px;
-            padding: 4px 8px;
-            border-radius: 6px;
-            transition: color 0.2s, background 0.2s;
-            display: inline-flex;
-            align-items: center;
-            gap: 5px;
-        }
-
-        .quote-refresh-btn:hover {
-            color: var(--text-main);
-            background: rgba(255, 255, 255, 0.06);
-        }
-
-        p.quote-text {
-            font-size: 14.5px;
-            font-style: italic;
-            color: var(--text-main);
-            line-height: 1.6;
-            margin-bottom: 8px;
-        }
-
-        span.quote-author {
-            display: block;
-            font-size: 12px;
-            font-weight: 600;
-            color: var(--accent);
-        }
-
-        /* Action Buttons Grid */
-        .action-cards-grid {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
             gap: 12px;
-            margin-bottom: 26px;
-        }
-
-        @media (max-width: 540px) {
-            .action-cards-grid {
-                grid-template-columns: 1fr;
-            }
-        }
-
-        .action-btn-card {
-            display: flex;
-            flex-direction: column;
-            align-items: flex-start;
-            padding: 16px 18px;
-            border-radius: 16px;
             text-decoration: none;
-            cursor: pointer;
-            border: 1px solid rgba(255, 255, 255, 0.08);
-            background: rgba(255, 255, 255, 0.03);
-            color: var(--text-main);
-            transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
-            text-align: left;
+            color: inherit;
         }
 
-        body[data-theme="light"] .action-btn-card {
-            background: rgba(0, 0, 0, 0.02);
-            border-color: rgba(0, 0, 0, 0.06);
-        }
-
-        .action-btn-card:hover {
-            transform: translateY(-2px);
-            border-color: var(--accent);
-            background: var(--accent-dim);
-            box-shadow: 0 8px 24px var(--accent-glow);
-        }
-
-        .action-btn-card.primary {
-            background: linear-gradient(135deg, rgba(16, 185, 129, 0.2), rgba(16, 185, 129, 0.08));
-            border-color: var(--accent);
-        }
-
-        .action-btn-card.primary:hover {
-            background: linear-gradient(135deg, rgba(16, 185, 129, 0.28), rgba(16, 185, 129, 0.12));
-        }
-
-        .abc-top {
-            display: flex;
-            align-items: center;
-            gap: 10px;
-            margin-bottom: 6px;
-            width: 100%;
-        }
-
-        .abc-icon {
-            font-size: 16px;
-            color: var(--accent);
-        }
-
-        .abc-title {
-            font-size: 13.5px;
-            font-weight: 700;
-            color: var(--text-main);
-        }
-
-        .abc-desc {
-            font-size: 11.5px;
-            color: var(--text-dim);
-            line-height: 1.4;
-        }
-
-        /* Learn Shortcuts Row */
-        .learn-row {
+        .brand-icon-shield {
+            width: 34px;
+            height: 34px;
+            border-radius: 10px;
+            background: linear-gradient(135deg, var(--accent-dim), var(--accent-glow));
+            border: 1px solid var(--border-highlight);
             display: flex;
             align-items: center;
             justify-content: center;
-            gap: 10px;
-            flex-wrap: wrap;
-            margin-bottom: 24px;
+            color: var(--accent);
+            font-size: 15px;
+            box-shadow: 0 0 14px var(--accent-glow);
         }
 
-        .learn-pill {
-            display: inline-flex;
+        .brand-meta {
+            display: flex;
+            flex-direction: column;
+            gap: 2px;
+        }
+
+        .brand-title {
+            font-size: 14.5px;
+            font-weight: 800;
+            letter-spacing: -0.3px;
+            display: flex;
             align-items: center;
-            gap: 6px;
-            padding: 7px 14px;
+            gap: 8px;
+        }
+
+        .brand-badge {
+            font-size: 10px;
+            font-weight: 700;
+            padding: 2px 7px;
+            border-radius: 6px;
+            background: var(--accent-dim);
+            color: var(--accent);
+            border: 1px solid var(--border-highlight);
+            text-transform: uppercase;
+            letter-spacing: 0.6px;
+        }
+
+        .brand-subtitle {
+            font-size: 11px;
+            color: var(--text-muted);
+            font-weight: 500;
+        }
+
+        .header-status-pill {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 5px 14px;
             border-radius: 9999px;
+            background: var(--bg-elevated);
+            border: 1px solid var(--border-subtle);
             font-size: 12px;
             font-weight: 600;
-            color: var(--text-dim);
-            background: rgba(255, 255, 255, 0.04);
-            border: 1px solid rgba(255, 255, 255, 0.08);
+            color: var(--text-secondary);
+        }
+
+        .pulse-indicator {
+            width: 7px;
+            height: 7px;
+            border-radius: 50%;
+            background: var(--accent);
+            box-shadow: 0 0 8px var(--accent);
+            animation: pulseBeat 2s infinite ease-in-out;
+        }
+
+        @keyframes pulseBeat {
+            0%, 100% { transform: scale(1); opacity: 1; }
+            50% { transform: scale(0.7); opacity: 0.45; }
+        }
+
+        .header-actions {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .btn-header {
+            display: inline-flex;
+            align-items: center;
+            gap: 7px;
+            padding: 7px 14px;
+            border-radius: 9px;
+            font-size: 12.5px;
+            font-weight: 600;
+            color: var(--text-secondary);
+            background: var(--bg-surface);
+            border: 1px solid var(--border-subtle);
+            cursor: pointer;
+            transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
             text-decoration: none;
-            transition: all 0.2s ease;
         }
 
-        body[data-theme="light"] .learn-pill {
-            background: rgba(0, 0, 0, 0.03);
-            border-color: rgba(0, 0, 0, 0.08);
-        }
-
-        .learn-pill:hover {
-            color: var(--text-main);
-            border-color: var(--accent);
+        .btn-header:hover {
+            color: var(--text-primary);
+            border-color: var(--border-hover);
+            background: var(--bg-elevated);
             transform: translateY(-1px);
         }
 
-        /* Footer & Settings Link */
-        .shield-footer {
-            border-top: 1px solid rgba(255, 255, 255, 0.06);
-            padding-top: 18px;
+        .btn-header.primary-header {
+            background: var(--accent-dim);
+            color: var(--accent);
+            border-color: var(--border-highlight);
+        }
+
+        .btn-header.primary-header:hover {
+            box-shadow: 0 0 14px var(--accent-glow);
+        }
+
+        /* ── Workspace Split Canvas ───────────────────────────── */
+        .workspace-canvas {
+            flex: 1;
+            min-height: 0;
+            display: grid;
+            grid-template-columns: 1fr 390px;
+            gap: 20px;
+            padding: 20px 24px 14px 24px;
+            position: relative;
+            z-index: 1;
+            overflow: hidden;
+        }
+
+        @media (max-width: 1040px) {
+            .workspace-canvas {
+                grid-template-columns: 1fr;
+                overflow-y: auto;
+            }
+            .sidebar-hub {
+                display: none !important;
+            }
+        }
+
+        /* ── Hero Column: The Reality Check Stage ─────────────── */
+        .hero-stage {
+            display: flex;
+            flex-direction: column;
+            gap: 14px;
+            min-height: 0;
+            justify-content: space-between;
+        }
+
+        /* Category Filter Pills */
+        .category-filter-bar {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            flex-wrap: wrap;
+        }
+
+        .filter-pill {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            padding: 6px 13px;
+            border-radius: 9999px;
+            background: var(--bg-surface);
+            border: 1px solid var(--border-subtle);
+            color: var(--text-secondary);
+            font-size: 12px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .filter-pill:hover {
+            color: var(--text-primary);
+            border-color: var(--border-hover);
+        }
+
+        .filter-pill.active {
+            background: var(--accent-dim);
+            color: var(--accent);
+            border-color: var(--accent);
+            box-shadow: 0 2px 10px var(--accent-glow);
+        }
+
+        .filter-pill .badge-count {
+            font-size: 10.5px;
+            opacity: 0.75;
+            padding: 1px 5px;
+            border-radius: 10px;
+            background: rgba(255, 255, 255, 0.08);
+        }
+
+        /* Target Intercept Banner */
+        .target-intercept-strip {
+            display: inline-flex;
+            align-items: center;
+            gap: 9px;
+            padding: 8px 16px;
+            border-radius: 12px;
+            background: var(--danger-dim);
+            border: 1px solid rgba(239, 68, 68, 0.22);
+            color: #F87171;
+            font-size: 13px;
+            font-family: var(--font-mono);
+            max-width: fit-content;
+        }
+
+        .target-intercept-strip i {
+            font-size: 14px;
+        }
+
+        .target-intercept-strip .target-value {
+            font-weight: 700;
+            color: #FCA5A5;
+            text-overflow: ellipsis;
+            overflow: hidden;
+            white-space: nowrap;
+            max-width: 450px;
+        }
+
+        /* Central Reality Check Box */
+        .reality-card {
+            flex: 1;
+            min-height: 0;
+            background: var(--bg-surface);
+            border: 1px solid var(--border-subtle);
+            border-radius: 24px;
+            padding: 32px 36px;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            position: relative;
+            box-shadow: var(--shadow-subtle);
+            backdrop-filter: blur(24px);
+            -webkit-backdrop-filter: blur(24px);
+            transition: border-color 0.3s ease, box-shadow 0.3s ease;
+        }
+
+        .reality-card:hover {
+            border-color: var(--border-highlight);
+            box-shadow: var(--shadow-elevated);
+        }
+
+        .card-top-hud {
             display: flex;
             align-items: center;
             justify-content: space-between;
+            margin-bottom: 20px;
+        }
+
+        .category-tag {
+            display: inline-flex;
+            align-items: center;
+            gap: 7px;
+            font-size: 11px;
+            font-weight: 800;
+            letter-spacing: 0.8px;
+            text-transform: uppercase;
+            padding: 4px 10px;
+            border-radius: 7px;
+        }
+
+        .category-tag.cat-roast {
+            background: var(--danger-dim);
+            color: #EF4444;
+            border: 1px solid rgba(239, 68, 68, 0.25);
+        }
+
+        .category-tag.cat-discipline {
+            background: var(--gold-dim);
+            color: var(--gold);
+            border: 1px solid rgba(245, 158, 11, 0.25);
+        }
+
+        .category-tag.cat-society {
+            background: var(--accent-dim);
+            color: var(--accent);
+            border: 1px solid var(--border-highlight);
+        }
+
+        .category-tag.cat-focus {
+            background: var(--purple-dim);
+            color: var(--purple);
+            border: 1px solid rgba(139, 92, 246, 0.25);
+        }
+
+        .card-counter {
+            font-size: 12px;
+            font-family: var(--font-mono);
+            color: var(--text-muted);
+            font-weight: 600;
+        }
+
+        /* Large Message Display */
+        .message-content-wrapper {
+            margin: auto 0;
+            padding: 10px 0;
+            transition: opacity 0.2s cubic-bezier(0.16, 1, 0.3, 1), transform 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+
+        .message-content-wrapper.cycling {
+            opacity: 0;
+            transform: translateY(8px) scale(0.98);
+        }
+
+        .reality-headline {
+            font-size: 26px;
+            font-weight: 850;
+            line-height: 1.38;
+            letter-spacing: -0.6px;
+            color: var(--text-primary);
+            margin-bottom: 14px;
+        }
+
+        .reality-author {
+            display: inline-block;
+            font-size: 13.5px;
+            font-weight: 700;
+            color: var(--accent);
+            letter-spacing: -0.2px;
+        }
+
+        /* Message Actions */
+        .card-action-bar {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding-top: 20px;
+            border-top: 1px solid var(--border-subtle);
+            margin-top: 16px;
+        }
+
+        .shuffle-btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 9px;
+            padding: 10px 20px;
+            border-radius: 12px;
+            background: var(--accent);
+            color: #090A0F;
+            font-size: 13.5px;
+            font-weight: 750;
+            border: none;
+            cursor: pointer;
+            transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+            box-shadow: 0 4px 16px var(--accent-glow);
+        }
+
+        .shuffle-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 24px var(--accent-glow);
+            filter: brightness(1.08);
+        }
+
+        .shuffle-btn:active {
+            transform: translateY(0);
+        }
+
+        .btn-copy {
+            display: inline-flex;
+            align-items: center;
+            gap: 7px;
+            padding: 8px 14px;
+            border-radius: 9px;
+            background: var(--bg-elevated);
+            color: var(--text-secondary);
+            font-size: 12px;
+            font-weight: 600;
+            border: 1px solid var(--border-subtle);
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .btn-copy:hover {
+            color: var(--text-primary);
+            border-color: var(--border-hover);
+        }
+
+        /* Hero Launch Buttons */
+        .primary-destinations {
+            display: grid;
+            grid-template-columns: 1.2fr 1fr;
+            gap: 12px;
+        }
+
+        .launch-tile {
+            display: flex;
+            align-items: center;
+            gap: 14px;
+            padding: 15px 18px;
+            border-radius: 16px;
+            background: var(--bg-surface);
+            border: 1px solid var(--border-subtle);
+            color: var(--text-primary);
+            text-decoration: none;
+            cursor: pointer;
+            transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+
+        .launch-tile:hover {
+            border-color: var(--accent);
+            background: var(--accent-dim);
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px var(--accent-glow);
+        }
+
+        .launch-tile.focus-accent {
+            background: linear-gradient(135deg, var(--accent-dim), rgba(16, 185, 129, 0.05));
+            border-color: var(--border-highlight);
+        }
+
+        .launch-icon-box {
+            width: 42px;
+            height: 42px;
+            border-radius: 12px;
+            background: var(--bg-elevated);
+            border: 1px solid var(--border-subtle);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 18px;
+            color: var(--accent);
+            flex-shrink: 0;
+        }
+
+        .launch-tile.focus-accent .launch-icon-box {
+            background: var(--accent);
+            color: #090A0F;
+            box-shadow: 0 0 14px var(--accent-glow);
+        }
+
+        .launch-tile-info {
+            display: flex;
+            flex-direction: column;
+            gap: 3px;
+        }
+
+        .lt-title {
+            font-size: 14px;
+            font-weight: 750;
+            display: flex;
+            align-items: center;
+            gap: 7px;
+        }
+
+        .lt-desc {
             font-size: 12px;
             color: var(--text-muted);
-            flex-wrap: wrap;
+        }
+
+        .kbd-badge {
+            font-size: 10px;
+            padding: 2px 5px;
+            border-radius: 4px;
+            background: rgba(255, 255, 255, 0.1);
+            color: var(--text-secondary);
+            font-family: var(--font-mono);
+            border: 1px solid var(--border-subtle);
+        }
+
+        /* ── Sidebar Column: Productive Hub ───────────────────── */
+        .sidebar-hub {
+            display: flex;
+            flex-direction: column;
+            gap: 14px;
+            min-height: 0;
+            overflow-y: auto;
+            padding-right: 2px;
+        }
+
+        .sidebar-hub::-webkit-scrollbar {
+            width: 4px;
+        }
+        .sidebar-hub::-webkit-scrollbar-thumb {
+            background: var(--border-subtle);
+            border-radius: 4px;
+        }
+
+        .hub-card {
+            background: var(--bg-surface);
+            border: 1px solid var(--border-subtle);
+            border-radius: 18px;
+            padding: 18px 20px;
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        .hub-title {
+            font-size: 12px;
+            font-weight: 750;
+            text-transform: uppercase;
+            letter-spacing: 0.6px;
+            color: var(--text-secondary);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        /* Builder Gateway Links */
+        .gateway-grid {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        .gateway-link {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 9px 12px;
+            border-radius: 10px;
+            background: var(--bg-elevated);
+            border: 1px solid var(--border-subtle);
+            color: var(--text-primary);
+            text-decoration: none;
+            font-size: 12.5px;
+            font-weight: 600;
+            transition: all 0.18s ease;
+        }
+
+        .gateway-link:hover {
+            border-color: var(--accent);
+            color: var(--accent);
+            transform: translateX(3px);
+            background: var(--accent-dim);
+        }
+
+        .gateway-left {
+            display: flex;
+            align-items: center;
             gap: 10px;
         }
 
-        body[data-theme="light"] .shield-footer {
-            border-color: rgba(0, 0, 0, 0.06);
+        .gateway-left i {
+            font-size: 14px;
+            width: 16px;
+            text-align: center;
+            color: var(--accent);
         }
 
-        .settings-link-btn {
-            background: none;
-            border: none;
-            color: var(--text-dim);
-            cursor: pointer;
+        .gateway-badge {
+            font-size: 11px;
+            color: var(--text-muted);
+            font-weight: 500;
+        }
+
+        /* Why Mindful Shield List */
+        .science-list {
+            display: flex;
+            flex-direction: column;
+            gap: 9px;
+        }
+
+        .science-item {
+            display: flex;
+            align-items: flex-start;
+            gap: 10px;
             font-size: 12px;
-            font-weight: 600;
-            text-decoration: underline;
-            text-underline-offset: 3px;
-            transition: color 0.2s;
-            display: inline-flex;
+            line-height: 1.5;
+            color: var(--text-secondary);
+        }
+
+        .science-item i {
+            color: var(--accent);
+            margin-top: 3px;
+            font-size: 13px;
+            flex-shrink: 0;
+        }
+
+        .science-item strong {
+            color: var(--text-primary);
+        }
+
+        /* Quick Sprint Card */
+        .sprint-cta {
+            background: linear-gradient(135deg, rgba(16, 185, 129, 0.14), rgba(245, 158, 11, 0.08));
+            border-color: var(--border-highlight);
+        }
+
+        .sprint-content {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .sprint-text h4 {
+            font-size: 13.5px;
+            font-weight: 750;
+            margin-bottom: 2px;
+        }
+
+        .sprint-text p {
+            font-size: 11.5px;
+            color: var(--text-muted);
+        }
+
+        .btn-start-sprint {
+            padding: 7px 14px;
+            border-radius: 9px;
+            background: var(--accent);
+            color: #090A0F;
+            border: none;
+            font-size: 12px;
+            font-weight: 750;
+            cursor: pointer;
+            transition: transform 0.15s ease;
+        }
+
+        .btn-start-sprint:hover {
+            transform: scale(1.05);
+        }
+
+        /* ── Native Desktop Footer ────────────────────────────── */
+        .desktop-footer {
+            height: 38px;
+            padding: 0 24px;
+            border-top: 1px solid var(--border-subtle);
+            background: var(--bg-glass);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            font-size: 11.5px;
+            color: var(--text-muted);
+            z-index: 10;
+            flex-shrink: 0;
+        }
+
+        .footer-left {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .footer-left i {
+            color: var(--accent);
+        }
+
+        .footer-shortcuts {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+        }
+
+        .footer-shortcut-item {
+            display: flex;
             align-items: center;
             gap: 5px;
         }
 
-        .settings-link-btn:hover {
+        .footer-shortcut-item kbd {
+            font-family: var(--font-mono);
+            font-size: 10px;
+            padding: 1px 4px;
+            border-radius: 4px;
+            background: var(--bg-elevated);
+            border: 1px solid var(--border-subtle);
+            color: var(--text-secondary);
+        }
+
+        .footer-right a {
+            color: var(--text-secondary);
+            text-decoration: none;
+            transition: color 0.2s ease;
+            cursor: pointer;
+        }
+
+        .footer-right a:hover {
             color: var(--accent);
+        }
+
+        /* Toast feedback */
+        .toast-bubble {
+            position: fixed;
+            bottom: 50px;
+            left: 50%;
+            transform: translateX(-50%) translateY(20px);
+            opacity: 0;
+            background: var(--bg-elevated);
+            border: 1px solid var(--border-highlight);
+            color: var(--text-primary);
+            padding: 8px 18px;
+            border-radius: 9999px;
+            font-size: 12px;
+            font-weight: 600;
+            pointer-events: none;
+            transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+            z-index: 100;
+            box-shadow: 0 8px 24px rgba(0, 0, 0, 0.3);
+        }
+
+        .toast-bubble.show {
+            opacity: 1;
+            transform: translateX(-50%) translateY(0);
         }
     </style>
 </head>
 <body>
-    <div class="ambient-aurora"></div>
+    <div class="ambient-glow-mesh">
+        <div class="ambient-glow-circle-1"></div>
+        <div class="ambient-glow-circle-2"></div>
+    </div>
 
-    <main class="shield-container">
-        <!-- Top Status Pill -->
-        <div class="shield-pill">
-            <span class="pulse-dot"></span>
-            <span>Search Security &amp; Content Protection</span>
+    <!-- ══ DESKTOP HEADER ══ -->
+    <header class="desktop-header">
+        <div class="brand-cluster">
+            <div class="brand-icon-shield">
+                <i class="fa-solid fa-shield-halved"></i>
+            </div>
+            <div class="brand-meta">
+                <div class="brand-title">
+                    <span>Ocal Mindful Shield</span>
+                    <span class="brand-badge">Defense v2.6</span>
+                </div>
+                <span class="brand-subtitle">Search Security &amp; Attention Protection</span>
+            </div>
         </div>
 
-        <!-- Central Icon -->
-        <div class="shield-icon-wrapper">
-            <i class="fa-solid fa-seedling"></i>
+        <div class="header-status-pill" id="protection-status-indicator">
+            <span class="pulse-indicator"></span>
+            <span>Protection Active (Default)</span>
         </div>
 
-        <!-- Main Motivational Headline (Exact user request) -->
-        <h1 class="headline">
-            Why waste time over here?<br>
-            <span class="highlight">Do some productive work and do good for society!</span>
-        </h1>
-
-        <p class="subheadline">
-            Ocal Search Security &amp; Mindful Protection intercepted this destination. Your energy and focus are too valuable to be lost. Redirect this moment into creating, learning, and contributing.
-        </p>
-
-        <!-- Blocked Target Host Badge -->
-        <div class="blocked-badge-row" id="blocked-badge-container">
-            <i class="fas fa-shield-halved"></i>
-            <span id="blocked-label">Blocked Destination:</span>
-            <strong id="blocked-target">adult content / explicit website</strong>
+        <div class="header-actions">
+            <button class="btn-header" id="btn-theme-toggle" type="button" title="Toggle Theme">
+                <i class="fas fa-moon" id="theme-icon"></i>
+            </button>
+            <a href="ocal://home" class="btn-header" id="btn-header-home" title="Return to Homepage (Esc)">
+                <i class="fas fa-house"></i>
+                <span>Home</span>
+            </a>
+            <a href="ocal://settings#search" class="btn-header primary-header" id="btn-header-settings" title="Adjust Content Protection Settings">
+                <i class="fas fa-sliders"></i>
+                <span>Settings</span>
+            </a>
         </div>
+    </header>
 
-        <!-- Quote of the Moment -->
-        <div class="quote-card">
-            <div class="quote-header">
-                <span class="quote-tag"><i class="fas fa-fire"></i> Thought for the moment</span>
-                <button class="quote-refresh-btn" id="refresh-quote-btn" type="button" title="Get another inspiring quote">
-                    <i class="fas fa-rotate"></i> <span>Inspire Me</span>
+    <!-- ══ MAIN WORKSPACE CANVAS ══ -->
+    <main class="workspace-canvas">
+        <!-- ── Left Column: Reality Check Stage ── -->
+        <section class="hero-stage">
+            <!-- Category Selector Tabs -->
+            <div class="category-filter-bar">
+                <button class="filter-pill active" data-category="all">
+                    <span>🎲 All</span>
+                    <span class="badge-count">200</span>
+                </button>
+                <button class="filter-pill" data-category="roast">
+                    <span>🔥 Savage Roasts</span>
+                    <span class="badge-count">65</span>
+                </button>
+                <button class="filter-pill" data-category="discipline">
+                    <span>🏛️ Stoic Will</span>
+                    <span class="badge-count">45</span>
+                </button>
+                <button class="filter-pill" data-category="society">
+                    <span>🚀 Build For Society</span>
+                    <span class="badge-count">45</span>
+                </button>
+                <button class="filter-pill" data-category="focus">
+                    <span>⚡ Deep Focus</span>
+                    <span class="badge-count">45</span>
                 </button>
             </div>
-            <p class="quote-text" id="quote-display">
-                "Arise, awake, and stop not till the goal is reached. You have to grow from the inside out. None can teach you, none can make you spiritual. There is no other teacher but your own soul."
-            </p>
-            <span class="quote-author" id="quote-author-display">— Swami Vivekananda</span>
-        </div>
 
-        <!-- Action Cards: Direct links to productive work -->
-        <div class="action-cards-grid">
-            <a href="ocal://focus" class="action-btn-card primary" id="btn-focus-flow">
-                <div class="abc-top">
-                    <i class="fas fa-brain abc-icon"></i>
-                    <span class="abc-title">Open Focus Flow</span>
+            <!-- Intercepted Target HUD Strip (Never displays google.com) -->
+            <div class="target-intercept-strip" id="intercept-strip">
+                <i class="fas fa-filter"></i>
+                <span id="intercept-label">Filtered Adult Search:</span>
+                <span class="target-value" id="intercept-value">"Explicit Query Intercepted"</span>
+            </div>
+
+            <!-- Central Reality Check Card -->
+            <div class="reality-card">
+                <div class="card-top-hud">
+                    <span class="category-tag cat-roast" id="card-tag">
+                        <i class="fas fa-bolt"></i> <span id="card-tag-text">Savage Reality Check</span>
+                    </span>
+                    <span class="card-counter" id="card-counter">#1 / 200</span>
                 </div>
-                <span class="abc-desc">Start a 25m Pomodoro deep work sprint, guided breathwork, or eye reset</span>
-            </a>
 
-            <a href="ocal://home" class="action-btn-card" id="btn-home">
-                <div class="abc-top">
-                    <i class="fas fa-house abc-icon" style="color: var(--gold);"></i>
-                    <span class="abc-title">Return to Homepage</span>
+                <div class="message-content-wrapper" id="message-wrapper">
+                    <h1 class="reality-headline" id="reality-text">
+                        "Why waste time over here? Do some productive work and do good for society!"
+                    </h1>
+                    <span class="reality-author" id="reality-author">— Ocal Mindset Principle</span>
                 </div>
-                <span class="abc-desc">Review your daily quick tasks, scratchpad notes, and priority goals</span>
-            </a>
-        </div>
 
-        <!-- Meaningful Exploration Shortcuts -->
-        <div class="learn-row">
-            <span style="font-size: 11.5px; color: var(--text-muted); font-weight: 600;">BUILD &amp; LEARN:</span>
-            <a href="https://github.com" class="learn-pill" target="_blank"><i class="fab fa-github"></i> GitHub</a>
-            <a href="https://www.freecodecamp.org" class="learn-pill" target="_blank"><i class="fas fa-code"></i> FreeCodeCamp</a>
-            <a href="https://en.wikipedia.org" class="learn-pill" target="_blank"><i class="fab fa-wikipedia-w"></i> Wikipedia</a>
-            <a href="https://www.khanacademy.org" class="learn-pill" target="_blank"><i class="fas fa-graduation-cap"></i> Khan Academy</a>
-        </div>
+                <div class="card-action-bar">
+                    <button class="shuffle-btn" id="btn-shuffle" type="button" title="Shuffle Message (Space)">
+                        <i class="fas fa-shuffle"></i>
+                        <span>Next Reality Check</span>
+                        <kbd class="kbd-badge" style="background: rgba(0,0,0,0.18); color: #090A0F;">Space</kbd>
+                    </button>
 
-        <!-- Footer -->
-        <div class="shield-footer">
-            <span>Ocal Protection is enabled by default to protect health and focus.</span>
-            <button type="button" class="settings-link-btn" id="open-settings-btn">
-                <i class="fas fa-sliders"></i>
-                <span>Adjust in Settings</span>
-            </button>
-        </div>
+                    <button class="btn-copy" id="btn-copy-quote" type="button" title="Copy to clipboard">
+                        <i class="fas fa-copy"></i>
+                        <span>Copy</span>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Primary Action Launchers -->
+            <div class="primary-destinations">
+                <a href="ocal://focus" class="launch-tile focus-accent" id="link-focus">
+                    <div class="launch-icon-box">
+                        <i class="fas fa-brain"></i>
+                    </div>
+                    <div class="launch-tile-info">
+                        <div class="lt-title">
+                            <span>Launch Focus Flow</span>
+                            <kbd class="kbd-badge">Enter</kbd>
+                        </div>
+                        <span class="lt-desc">Start a 25m Pomodoro deep sprint or guided breathing</span>
+                    </div>
+                </a>
+
+                <a href="ocal://home" class="launch-tile" id="link-home">
+                    <div class="launch-icon-box">
+                        <i class="fas fa-house" style="color: var(--gold);"></i>
+                    </div>
+                    <div class="launch-tile-info">
+                        <div class="lt-title">
+                            <span>Return to Homepage</span>
+                            <kbd class="kbd-badge">Esc</kbd>
+                        </div>
+                        <span class="lt-desc">Tasks, scratchpad notes, and daily workspace</span>
+                    </div>
+                </a>
+            </div>
+        </section>
+
+        <!-- ── Right Column: Sidebar Hub ── -->
+        <aside class="sidebar-hub">
+            <!-- Focus Quick Sprint -->
+            <div class="hub-card sprint-cta">
+                <div class="sprint-content">
+                    <div class="sprint-text">
+                        <h4>⚡ Quick Dopamine Reset</h4>
+                        <p>25m Pomodoro sprint starting now</p>
+                    </div>
+                    <button class="btn-start-sprint" id="btn-quick-sprint" type="button">Start</button>
+                </div>
+            </div>
+
+            <!-- Builder & Creator Gateway -->
+            <div class="hub-card">
+                <div class="hub-title">
+                    <span>🚀 High-Value Gateway</span>
+                    <i class="fas fa-code"></i>
+                </div>
+                <div class="gateway-grid">
+                    <a href="https://github.com" class="gateway-link" target="_blank">
+                        <div class="gateway-left">
+                            <i class="fab fa-github"></i>
+                            <span>GitHub</span>
+                        </div>
+                        <span class="gateway-badge">Build &amp; Ship</span>
+                    </a>
+                    <a href="https://www.freecodecamp.org" class="gateway-link" target="_blank">
+                        <div class="gateway-left">
+                            <i class="fas fa-laptop-code"></i>
+                            <span>FreeCodeCamp</span>
+                        </div>
+                        <span class="gateway-badge">Learn Coding</span>
+                    </a>
+                    <a href="https://leetcode.com" class="gateway-link" target="_blank">
+                        <div class="gateway-left">
+                            <i class="fas fa-terminal"></i>
+                            <span>LeetCode</span>
+                        </div>
+                        <span class="gateway-badge">Sharpen Logic</span>
+                    </a>
+                    <a href="https://en.wikipedia.org" class="gateway-link" target="_blank">
+                        <div class="gateway-left">
+                            <i class="fab fa-wikipedia-w"></i>
+                            <span>Wikipedia</span>
+                        </div>
+                        <span class="gateway-badge">World Wisdom</span>
+                    </a>
+                    <a href="https://www.khanacademy.org" class="gateway-link" target="_blank">
+                        <div class="gateway-left">
+                            <i class="fas fa-graduation-cap"></i>
+                            <span>Khan Academy</span>
+                        </div>
+                        <span class="gateway-badge">Math &amp; Science</span>
+                    </a>
+                </div>
+            </div>
+
+            <!-- Why Mindful Shield Intercepted This -->
+            <div class="hub-card">
+                <div class="hub-title">
+                    <span>🧠 Why We Shielded This</span>
+                    <i class="fas fa-brain"></i>
+                </div>
+                <div class="science-list">
+                    <div class="science-item">
+                        <i class="fas fa-shield-virus"></i>
+                        <span><strong>Preserve Executive Control:</strong> Instant gratification weakens dopamine receptors and fractures sustained willpower.</span>
+                    </div>
+                    <div class="science-item">
+                        <i class="fas fa-clock"></i>
+                        <span><strong>Save 3+ Hours:</strong> Distraction loops drain high-value cognitive energy that could be spent building and learning.</span>
+                    </div>
+                    <div class="science-item">
+                        <i class="fas fa-earth-americas"></i>
+                        <span><strong>Serve Society:</strong> The world needs disciplined builders, engineers, and thinkers—not doom-scrollers.</span>
+                    </div>
+                </div>
+            </div>
+        </aside>
     </main>
 
+    <!-- ══ DESKTOP FOOTER ══ -->
+    <footer class="desktop-footer">
+        <div class="footer-left">
+            <i class="fas fa-circle-check"></i>
+            <span>Ocal Search Security &amp; Mindful Content Protection (Active by Default)</span>
+        </div>
+
+        <div class="footer-shortcuts">
+            <div class="footer-shortcut-item">
+                <kbd>Space</kbd>
+                <span>Shuffle</span>
+            </div>
+            <div class="footer-shortcut-item">
+                <kbd>Enter</kbd>
+                <span>Focus Flow</span>
+            </div>
+            <div class="footer-shortcut-item">
+                <kbd>Esc</kbd>
+                <span>Home</span>
+            </div>
+        </div>
+
+        <div class="footer-right">
+            <a href="ocal://settings#search" id="footer-settings-link">
+                <i class="fas fa-gear"></i> Preferences
+            </a>
+        </div>
+    </footer>
+
+    <div class="toast-bubble" id="toast-bubble">Copied to clipboard</div>
+
+    <!-- ══ 200 MESSAGES & CONTROLLER ══ -->
     <script>
-        // Inspiring quotes for productivity, discipline, and doing good for society
-        const INSPIRATIONAL_QUOTES = [
-            {
-                text: "Why waste time over here? Do some productive work and do good for society. The world is built by those who focus.",
-                author: "Ocal Mindset"
-            },
-            {
-                text: "Arise, awake, and stop not till the goal is reached. You have to grow from the inside out. There is no other teacher but your own soul.",
-                author: "Swami Vivekananda"
-            },
-            {
-                text: "Waste no more time arguing what a good person should be. Be one.",
-                author: "Marcus Aurelius"
-            },
-            {
-                text: "To succeed in your mission, you must have single-minded devotion to your goal.",
-                author: "Dr. A.P.J. Abdul Kalam"
-            },
-            {
-                text: "Your time is limited, don't waste it living someone else's life. Have the courage to follow your heart and intuition.",
-                author: "Steve Jobs"
-            },
-            {
-                text: "It is not that we have a short time to live, but that we waste a lot of it. Life is long if you know how to use it.",
-                author: "Seneca"
-            },
-            {
-                text: "The secret of change is to focus all of your energy not on fighting the old, but on building the new.",
-                author: "Socrates"
-            },
-            {
-                text: "Action is the foundational key to all great achievements. Leave the world a little better than you found it.",
-                author: "Pablo Picasso"
-            },
-            {
-                text: "You cannot change your future, but you can change your habits, and surely your habits will change your future.",
-                author: "Dr. A.P.J. Abdul Kalam"
-            },
-            {
-                text: "Small deeds done are better than great deeds planned. Master your attention, master your destiny.",
-                author: "Peter Marshall"
-            },
-            {
-                text: "Discipline is choosing between what you want now and what you want most.",
-                author: "Abraham Lincoln"
-            }
-        ];
+        const MESSAGES_DATABASE = [
+  {
+    "text": "Bro really thought searching for that was gonna fix his life 💀 Go hit the gym.",
+    "author": "Reality Check",
+    "category": "roast"
+  },
+  {
+    "text": "Zero pushups done today, zero dollars earned, zero bugs fixed, but you're out here typing this? Stand up.",
+    "author": "Reality Check",
+    "category": "roast"
+  },
+  {
+    "text": "Down atrocious. Close this tab, look in the mirror, wash your face with cold water, and get back to work.",
+    "author": "Reality Check",
+    "category": "roast"
+  },
+  {
+    "text": "Bro got caught in 4K by his own browser's mindful shield. Have some self-respect.",
+    "author": "Reality Check",
+    "category": "roast"
+  },
+  {
+    "text": "Your ancestors fought sabertooth tigers and survived ice ages so you could get stopped by an Electron browser filter. Do better.",
+    "author": "Reality Check",
+    "category": "roast"
+  },
+  {
+    "text": "Is this what your 5-year plan looks like? Sitting alone giving away your dopamine for free?",
+    "author": "Reality Check",
+    "category": "roast"
+  },
+  {
+    "text": "You wanted to be a founder, a leader, a visionary. Now look at what you just searched. Go drink some water.",
+    "author": "Reality Check",
+    "category": "roast"
+  },
+  {
+    "text": "Your future self is currently watching you through a time machine with both hands on his forehead, deeply disappointed.",
+    "author": "Reality Check",
+    "category": "roast"
+  },
+  {
+    "text": "Imagine explaining what you were about to click on to your 10-year-old self. Close the tab.",
+    "author": "Reality Check",
+    "category": "roast"
+  },
+  {
+    "text": "The dopamine receptors in your brain are currently begging for mercy. Give the poor things a rest.",
+    "author": "Neuro-Roast",
+    "category": "roast"
+  },
+  {
+    "text": "Bro is trading his life force, testosterone, and ambition for pixels on a screen. Make it make sense.",
+    "author": "Reality Check",
+    "category": "roast"
+  },
+  {
+    "text": "There are people your exact age building rockets and launching companies, and you're over here wrestling browser filters.",
+    "author": "Reality Check",
+    "category": "roast"
+  },
+  {
+    "text": "Did you finish all your tasks today? No? Then what on earth are you doing here?",
+    "author": "Accountability Bot",
+    "category": "roast"
+  },
+  {
+    "text": "Your computer has 16GB of RAM, an 8-core CPU, and fiber internet, and you chose to use it for this? What a tragic waste of electricity.",
+    "author": "Hardware Roast",
+    "category": "roast"
+  },
+  {
+    "text": "Delete that thought from your mind right now. Go do 25 pushups and come back when you have self-control.",
+    "author": "Discipline Drill",
+    "category": "roast"
+  },
+  {
+    "text": "You're better than this. Actually, right now you're not, but you *could* be if you close this tab right now.",
+    "author": "Savage Truth",
+    "category": "roast"
+  },
+  {
+    "text": "Bro looked at a blank address bar and said 'Yeah, today is the day I ruin my focus completely.' Not on Ocal's watch.",
+    "author": "Ocal Shield",
+    "category": "roast"
+  },
+  {
+    "text": "Don't let a 3-second biological urge dictate your whole day, chief.",
+    "author": "Reality Check",
+    "category": "roast"
+  },
+  {
+    "text": "If you spent half the energy you waste on seeking cheap dopamine into learning, you'd have retired by now.",
+    "author": "Savage Truth",
+    "category": "roast"
+  },
+  {
+    "text": "Your goals don't care about your urges. Close the tab and earn your self-respect back.",
+    "author": "Discipline",
+    "category": "roast"
+  },
+  {
+    "text": "Bro got humbled by a client-side URL interceptor. Take the L, close the tab, and go build something useful.",
+    "author": "Ocal Shield",
+    "category": "roast"
+  },
+  {
+    "text": "Pixels on a screen will never love you back. Go outside, touch grass, and talk to real human beings.",
+    "author": "Reality Check",
+    "category": "roast"
+  },
+  {
+    "text": "Congratulations, you just triggered the shield. Your penalty is writing 50 lines of clean code or reading a book.",
+    "author": "Penal Code",
+    "category": "roast"
+  },
+  {
+    "text": "You have dreams, ambitions, and people counting on you. Act like it.",
+    "author": "Savage Truth",
+    "category": "roast"
+  },
+  {
+    "text": "This isn't hunger, bro. This is just boredom, low impulse control, and an idle mind. Go find a hard problem to solve.",
+    "author": "Reality Check",
+    "category": "roast"
+  },
+  {
+    "text": "Bro is really sitting in a dimly lit room letting algorithms exploit his monkey brain. Snap out of it.",
+    "author": "Neuro-Roast",
+    "category": "roast"
+  },
+  {
+    "text": "Your ancestors hunted mammoths; you are getting baited by pixels generated for ad revenue.",
+    "author": "Ancestral Shame",
+    "category": "roast"
+  },
+  {
+    "text": "A moment of weak pleasure followed by hours of brain fog and regret. Is that really the trade you want to make?",
+    "author": "Logic Check",
+    "category": "roast"
+  },
+  {
+    "text": "Bro thought he was slick searching that. The browser literally intercepted you in 2 milliseconds.",
+    "author": "Ocal Shield",
+    "category": "roast"
+  },
+  {
+    "text": "Stop searching for filth and start searching for financial freedom.",
+    "author": "Reality Check",
+    "category": "roast"
+  },
+  {
+    "text": "You promised yourself this week would be different. Don't fold on a random afternoon.",
+    "author": "Accountability",
+    "category": "roast"
+  },
+  {
+    "text": "Weak men seek comfort and cheap stimulation. Strong men build discipline and conquer their impulses.",
+    "author": "Iron Truth",
+    "category": "roast"
+  },
+  {
+    "text": "Bro is down bad in 4K HDR 120fps. Close the tab before you regret it for the next 48 hours.",
+    "author": "Savage Roast",
+    "category": "roast"
+  },
+  {
+    "text": "Your frontal lobe just called: it wants its executive function back.",
+    "author": "Brain Alert",
+    "category": "roast"
+  },
+  {
+    "text": "Every time you give in to an urge like this, you train your brain to be weak. Train for strength instead.",
+    "author": "Mindset",
+    "category": "roast"
+  },
+  {
+    "text": "You are one click away from losing your focus for the entire evening. Turn around while you still can.",
+    "author": "Warning",
+    "category": "roast"
+  },
+  {
+    "text": "Bro typed that search query with full confidence just to get redirected to a motivational lecture. Take the hint.",
+    "author": "Ocal Shield",
+    "category": "roast"
+  },
+  {
+    "text": "Do you want to be the guy who creates value in the world, or the guy who consumes junk in the dark?",
+    "author": "Savage Truth",
+    "category": "roast"
+  },
+  {
+    "text": "Your bank account has not grown enough for you to be wasting time on this nonsense.",
+    "author": "Financial Roast",
+    "category": "roast"
+  },
+  {
+    "text": "Imagine if your dream job interviewer saw what you just tried to navigate to. Lock in.",
+    "author": "Career Check",
+    "category": "roast"
+  },
+  {
+    "text": "You have unread books on your shelf, unwritten code in your editor, and unworked muscles on your body. Get moving.",
+    "author": "Wakeup Call",
+    "category": "roast"
+  },
+  {
+    "text": "Bro is about to trade his post-work energy for 10 minutes of shame. Close this tab and walk away.",
+    "author": "Reality Check",
+    "category": "roast"
+  },
+  {
+    "text": "The universe did not give you consciousness and cognitive faculties so you could do *this* with your afternoon.",
+    "author": "Existential Roast",
+    "category": "roast"
+  },
+  {
+    "text": "Don't be a spectator in other people's lives. Be the main character in your own.",
+    "author": "Truth Bomb",
+    "category": "roast"
+  },
+  {
+    "text": "Bro is letting a dopamine hit that lasts 30 seconds rob him of 4 hours of deep sleep and confidence.",
+    "author": "Bio-Roast",
+    "category": "roast"
+  },
+  {
+    "text": "Go clean your room. If your desk looks like a warzone and your life is disorganized, start there.",
+    "author": "Jordan Peterson Energy",
+    "category": "roast"
+  },
+  {
+    "text": "Bro is looking for a shortcut to happiness in a browser tab. It doesn't exist here.",
+    "author": "Reality Check",
+    "category": "roast"
+  },
+  {
+    "text": "Close the tab. Take three deep breaths. Remember who you are trying to become.",
+    "author": "Gentle Roast",
+    "category": "roast"
+  },
+  {
+    "text": "You were literally about to fall for the oldest trap in the digital era. Thank the shield and move on.",
+    "author": "Ocal Defense",
+    "category": "roast"
+  },
+  {
+    "text": "Look at your hands. They were made to craft, build, code, and write. Not to click on trash.",
+    "author": "Craftsman Roast",
+    "category": "roast"
+  },
+  {
+    "text": "Bro is getting distracted when he hasn't even hit his goals for the quarter yet. Unacceptable.",
+    "author": "Quarterly Review",
+    "category": "roast"
+  },
+  {
+    "text": "If you put this much dedication into learning a new skill, you'd be a senior engineer by next month.",
+    "author": "Skill Check",
+    "category": "roast"
+  },
+  {
+    "text": "Stop acting like a passenger in your own brain. Grab the steering wheel.",
+    "author": "Mindset",
+    "category": "roast"
+  },
+  {
+    "text": "Bro got caught red-handed. We won't tell anyone, but you owe society 2 hours of focused work now.",
+    "author": "Ocal Shield",
+    "category": "roast"
+  },
+  {
+    "text": "The only thing you should be grinding is your craft, not your dopamine receptors.",
+    "author": "Reality Check",
+    "category": "roast"
+  },
+  {
+    "text": "Remember the guilt you felt last time? Don't repeat the cycle. Break it right now.",
+    "author": "Cycle Breaker",
+    "category": "roast"
+  },
+  {
+    "text": "You are too smart to be this easily manipulated by basic biological wiring. Overrule it.",
+    "author": "Cognitive Check",
+    "category": "roast"
+  },
+  {
+    "text": "Bro thought he was entering incognito mode, but his conscience is always watching.",
+    "author": "Conscience Alert",
+    "category": "roast"
+  },
+  {
+    "text": "What you do when nobody is watching defines who you truly are. Choose wisely.",
+    "author": "Character Test",
+    "category": "roast"
+  },
+  {
+    "text": "Bro, you have an exam, a project, or a deadline coming up. Stop running away from discomfort.",
+    "author": "Procrastination Callout",
+    "category": "roast"
+  },
+  {
+    "text": "Cheap thrills produce expensive regrets. Close the tab.",
+    "author": "Savage Truth",
+    "category": "roast"
+  },
+  {
+    "text": "You are not a slave to impulses. You are an intelligent human being with agency. Act like one.",
+    "author": "Agency Check",
+    "category": "roast"
+  },
+  {
+    "text": "Go drink a glass of water, do a plank for 60 seconds, and come back with a clear mind.",
+    "author": "Physical Reset",
+    "category": "roast"
+  },
+  {
+    "text": "Bro is trying to escape stress through digital junk food. Face the stress and solve the problem.",
+    "author": "Stress Check",
+    "category": "roast"
+  },
+  {
+    "text": "The shield blocked you because it respects your potential more than you did 5 seconds ago.",
+    "author": "Ocal Mindset",
+    "category": "roast"
+  },
+  {
+    "text": "Waste no more time arguing what a good person should be. Be one.",
+    "author": "Marcus Aurelius",
+    "category": "discipline"
+  },
+  {
+    "text": "No man is free who is not master of himself.",
+    "author": "Epictetus",
+    "category": "discipline"
+  },
+  {
+    "text": "It is not that we have a short time to live, but that we waste a lot of it. Life is long if you know how to use it.",
+    "author": "Seneca",
+    "category": "discipline"
+  },
+  {
+    "text": "Arise, awake, and stop not till the goal is reached. You have to grow from the inside out.",
+    "author": "Swami Vivekananda",
+    "category": "discipline"
+  },
+  {
+    "text": "Discipline is choosing between what you want now and what you want most.",
+    "author": "Abraham Lincoln",
+    "category": "discipline"
+  },
+  {
+    "text": "There is nothing outside of yourself that can ever enable you to get better, stronger, richer, quicker, or smarter. Everything is within.",
+    "author": "Miyamoto Musashi",
+    "category": "discipline"
+  },
+  {
+    "text": "He who conquers himself is the mightiest warrior.",
+    "author": "Confucius",
+    "category": "discipline"
+  },
+  {
+    "text": "You have power over your mind - not outside events. Realize this, and you will find strength.",
+    "author": "Marcus Aurelius",
+    "category": "discipline"
+  },
+  {
+    "text": "Self-conquest is the greatest of victories; to be conquered by your own nature is the worst of all defeats.",
+    "author": "Plato",
+    "category": "discipline"
+  },
+  {
+    "text": "First say to yourself what you would be; and then do what you have to do.",
+    "author": "Epictetus",
+    "category": "discipline"
+  },
+  {
+    "text": "We suffer more often in imagination than in reality. Direct your mind to what is noble.",
+    "author": "Seneca",
+    "category": "discipline"
+  },
+  {
+    "text": "Small disciplines repeated with consistency every day lead to great achievements gained slowly over time.",
+    "author": "John C. Maxwell",
+    "category": "discipline"
+  },
+  {
+    "text": "Man is not made for defeat. A man can be destroyed but not defeated by impulses.",
+    "author": "Ernest Hemingway",
+    "category": "discipline"
+  },
+  {
+    "text": "The first and best victory is to conquer self.",
+    "author": "Plato",
+    "category": "discipline"
+  },
+  {
+    "text": "Freedom is the only worthy goal in life. It is won by disregarding things that lie beyond our control.",
+    "author": "Epictetus",
+    "category": "discipline"
+  },
+  {
+    "text": "If you want to master the world, master your own attention first.",
+    "author": "Ancient Proverb",
+    "category": "discipline"
+  },
+  {
+    "text": "Hold yourself responsible for a higher standard than anybody else expects of you.",
+    "author": "Henry Ward Beecher",
+    "category": "discipline"
+  },
+  {
+    "text": "He who has a why to live can bear almost any how. Find your purpose.",
+    "author": "Friedrich Nietzsche",
+    "category": "discipline"
+  },
+  {
+    "text": "The mind is everything. What you think you become.",
+    "author": "Gautama Buddha",
+    "category": "discipline"
+  },
+  {
+    "text": "Strength does not come from winning. Your struggles develop your strengths.",
+    "author": "Arnold Schwarzenegger",
+    "category": "discipline"
+  },
+  {
+    "text": "Purity, patience, and perseverance are the three essentials to success and, above all: love.",
+    "author": "Swami Vivekananda",
+    "category": "discipline"
+  },
+  {
+    "text": "A man who suffers before it is necessary, suffers more than is necessary.",
+    "author": "Seneca",
+    "category": "discipline"
+  },
+  {
+    "text": "Begin at once to live, and count each separate day as a new life.",
+    "author": "Seneca",
+    "category": "discipline"
+  },
+  {
+    "text": "Do not pray for an easy life, pray for the strength to endure a difficult one.",
+    "author": "Bruce Lee",
+    "category": "discipline"
+  },
+  {
+    "text": "Mastering others is strength. Mastering yourself is true power.",
+    "author": "Lao Tzu",
+    "category": "discipline"
+  },
+  {
+    "text": "Dwell on the beauty of life. Watch the stars, and see yourself running with them.",
+    "author": "Marcus Aurelius",
+    "category": "discipline"
+  },
+  {
+    "text": "It does not matter how slowly you go as long as you do not stop.",
+    "author": "Confucius",
+    "category": "discipline"
+  },
+  {
+    "text": "To control attention is to control experience, and therefore the quality of life.",
+    "author": "Mihaly Csikszentmihalyi",
+    "category": "discipline"
+  },
+  {
+    "text": "Curb your desire—don't set your heart on so many things and you will get what you need.",
+    "author": "Epictetus",
+    "category": "discipline"
+  },
+  {
+    "text": "True liberty is to have power over oneself in all things.",
+    "author": "Michel de Montaigne",
+    "category": "discipline"
+  },
+  {
+    "text": "He who cannot obey himself will be commanded. That is the nature of living creatures.",
+    "author": "Friedrich Nietzsche",
+    "category": "discipline"
+  },
+  {
+    "text": "A disciplined mind brings happiness.",
+    "author": "Dhammapada",
+    "category": "discipline"
+  },
+  {
+    "text": "You cannot change your destination overnight, but you can change your direction overnight.",
+    "author": "Jim Rohn",
+    "category": "discipline"
+  },
+  {
+    "text": "Character is simply habit long continued.",
+    "author": "Plutarch",
+    "category": "discipline"
+  },
+  {
+    "text": "The soul becomes dyed with the color of its thoughts.",
+    "author": "Marcus Aurelius",
+    "category": "discipline"
+  },
+  {
+    "text": "Discipline is the bridge between goals and accomplishment.",
+    "author": "Jim Rohn",
+    "category": "discipline"
+  },
+  {
+    "text": "The brave man is not he who does not feel afraid, but he who conquers that fear and impulse.",
+    "author": "Nelson Mandela",
+    "category": "discipline"
+  },
+  {
+    "text": "Rule your mind or it will rule you.",
+    "author": "Horace",
+    "category": "discipline"
+  },
+  {
+    "text": "Without self-discipline, success is impossible, period.",
+    "author": "Lou Holtz",
+    "category": "discipline"
+  },
+  {
+    "text": "It is during our darkest moments that we must focus to see the light.",
+    "author": "Aristotle Onassis",
+    "category": "discipline"
+  },
+  {
+    "text": "When you arise in the morning think of what a privilege it is to be alive, to think, to enjoy, to love.",
+    "author": "Marcus Aurelius",
+    "category": "discipline"
+  },
+  {
+    "text": "Do what you must, and bear what you must, without complaining.",
+    "author": "Marcus Aurelius",
+    "category": "discipline"
+  },
+  {
+    "text": "Only the disciplined ones in life are free. The undisciplined are slaves to their moods and passions.",
+    "author": "Eliud Kipchoge",
+    "category": "discipline"
+  },
+  {
+    "text": "Control your breath, control your mind, control your destiny.",
+    "author": "Yoga Sutras",
+    "category": "discipline"
+  },
+  {
+    "text": "The chief task in life is simply this: to identify and separate matters that are within my control from those that are not.",
+    "author": "Epictetus",
+    "category": "discipline"
+  },
+  {
+    "text": "Why waste time over here? Do some productive work and do good for society. The world is built by those who focus.",
+    "author": "Ocal Principle",
+    "category": "society"
+  },
+  {
+    "text": "To succeed in your mission, you must have single-minded devotion to your goal.",
+    "author": "Dr. A.P.J. Abdul Kalam",
+    "category": "society"
+  },
+  {
+    "text": "Your time is limited, don't waste it living someone else's life. Have the courage to follow your heart and intuition.",
+    "author": "Steve Jobs",
+    "category": "society"
+  },
+  {
+    "text": "The present is theirs; the future, for which I really worked, is mine. Work tirelessly for humanity.",
+    "author": "Nikola Tesla",
+    "category": "society"
+  },
+  {
+    "text": "Action is the foundational key to all great achievements. Leave the world a little better than you found it.",
+    "author": "Pablo Picasso",
+    "category": "society"
+  },
+  {
+    "text": "You cannot change your future, but you can change your habits, and surely your habits will change your future.",
+    "author": "Dr. A.P.J. Abdul Kalam",
+    "category": "society"
+  },
+  {
+    "text": "Small deeds done are better than great deeds planned. Master your attention, build something of service.",
+    "author": "Peter Marshall",
+    "category": "society"
+  },
+  {
+    "text": "The best way to find yourself is to lose yourself in the service of others.",
+    "author": "Mahatma Gandhi",
+    "category": "society"
+  },
+  {
+    "text": "We are what we repeatedly do. Excellence, then, is not an act, but a habit. Channel it into public good.",
+    "author": "Will Durant",
+    "category": "society"
+  },
+  {
+    "text": "The greatest use of a life is to spend it on something that will outlast it.",
+    "author": "William James",
+    "category": "society"
+  },
+  {
+    "text": "Ask not what your country can do for you – ask what you can do for your country.",
+    "author": "John F. Kennedy",
+    "category": "society"
+  },
+  {
+    "text": "If you want to shine like a sun, first burn like a sun.",
+    "author": "Dr. A.P.J. Abdul Kalam",
+    "category": "society"
+  },
+  {
+    "text": "Those who are crazy enough to think they can change the world usually do.",
+    "author": "Steve Jobs",
+    "category": "society"
+  },
+  {
+    "text": "Civilization advances by extending the number of important operations which we can perform without thinking about them.",
+    "author": "Alfred North Whitehead",
+    "category": "society"
+  },
+  {
+    "text": "Live as if you were to die tomorrow. Learn as if you were to live forever.",
+    "author": "Mahatma Gandhi",
+    "category": "society"
+  },
+  {
+    "text": "Strive not to be a success, but rather to be of value to your community.",
+    "author": "Albert Einstein",
+    "category": "society"
+  },
+  {
+    "text": "An unexamined life is not worth living. Live with purpose, honor, and civic duty.",
+    "author": "Socrates",
+    "category": "society"
+  },
+  {
+    "text": "Write 100 lines of clean code, solve a real engineering challenge, and advance human knowledge.",
+    "author": "Builder Ethos",
+    "category": "society"
+  },
+  {
+    "text": "A society grows great when old men plant trees in whose shade they shall never sit.",
+    "author": "Greek Proverb",
+    "category": "society"
+  },
+  {
+    "text": "Every problem in the world today is waiting for an engineer, a scientist, or a builder with focus to solve it.",
+    "author": "Maker Creed",
+    "category": "society"
+  },
+  {
+    "text": "Do not wait for leaders; do it alone, person to person. Be the catalyst of positive change.",
+    "author": "Mother Teresa",
+    "category": "society"
+  },
+  {
+    "text": "The purpose of human life is to serve, and to show compassion and the will to help others.",
+    "author": "Albert Schweitzer",
+    "category": "society"
+  },
+  {
+    "text": "Nothing in life is to be feared, it is only to be understood. Now is the time to understand more, so that we may fear less.",
+    "author": "Marie Curie",
+    "category": "society"
+  },
+  {
+    "text": "I have not failed. I've just found 10,000 ways that won't work. Keep building.",
+    "author": "Thomas Edison",
+    "category": "society"
+  },
+  {
+    "text": "Give me six hours to chop down a tree and I will spend the first four sharpening the axe.",
+    "author": "Abraham Lincoln",
+    "category": "society"
+  },
+  {
+    "text": "Knowledge without application is like a book on the back of a donkey. Apply your mind to human progress.",
+    "author": "Eastern Wisdom",
+    "category": "society"
+  },
+  {
+    "text": "The true measure of any society can be found in how it treats its most vulnerable members.",
+    "author": "Mahatma Gandhi",
+    "category": "society"
+  },
+  {
+    "text": "Never doubt that a small group of thoughtful, committed citizens can change the world; indeed, it's the only thing that ever has.",
+    "author": "Margaret Mead",
+    "category": "society"
+  },
+  {
+    "text": "Genius is one percent inspiration and ninety-nine percent perspiration.",
+    "author": "Thomas Edison",
+    "category": "society"
+  },
+  {
+    "text": "Science and everyday life cannot and should not be separated.",
+    "author": "Rosalind Franklin",
+    "category": "society"
+  },
+  {
+    "text": "Whatever you do will be insignificant, but it is very important that you do it.",
+    "author": "Mahatma Gandhi",
+    "category": "society"
+  },
+  {
+    "text": "The secret to living is giving. When you focus on lifting others, your own small impulses vanish.",
+    "author": "Tony Robbins",
+    "category": "society"
+  },
+  {
+    "text": "Dream, dream, dream. Dreams transform into thoughts and thoughts result in action.",
+    "author": "Dr. A.P.J. Abdul Kalam",
+    "category": "society"
+  },
+  {
+    "text": "A hero is an ordinary individual who finds the strength to persevere and endure in spite of overwhelming obstacles.",
+    "author": "Christopher Reeve",
+    "category": "society"
+  },
+  {
+    "text": "Real education has to draw out the best from the boys and girls to be tutored.",
+    "author": "Mahatma Gandhi",
+    "category": "society"
+  },
+  {
+    "text": "One child, one teacher, one book, one pen can change the world.",
+    "author": "Malala Yousafzai",
+    "category": "society"
+  },
+  {
+    "text": "What we do for ourselves dies with us. What we do for others and the world remains and is immortal.",
+    "author": "Albert Pike",
+    "category": "society"
+  },
+  {
+    "text": "There is immense work to be done in education, healthcare, clean water, and code. Pick one and contribute.",
+    "author": "Maker Creed",
+    "category": "society"
+  },
+  {
+    "text": "Be the change you wish to see in this world.",
+    "author": "Mahatma Gandhi",
+    "category": "society"
+  },
+  {
+    "text": "Look up at the stars and not down at your feet. Try to make sense of what you see, and wonder about what makes the universe exist.",
+    "author": "Stephen Hawking",
+    "category": "society"
+  },
+  {
+    "text": "The only limit to our realization of tomorrow will be our doubts of today.",
+    "author": "Franklin D. Roosevelt",
+    "category": "society"
+  },
+  {
+    "text": "Energy and persistence conquer all things. Pour them into societal uplifting.",
+    "author": "Benjamin Franklin",
+    "category": "society"
+  },
+  {
+    "text": "In a world where you can be anything, be kind, be useful, and be an engineer of hope.",
+    "author": "Civic Vision",
+    "category": "society"
+  },
+  {
+    "text": "Dedicate your mental bandwidth to eradicating poverty, building open software, and teaching the youth.",
+    "author": "Social Impact Creed",
+    "category": "society"
+  },
+  {
+    "text": "Your intellect is a gift intended to alleviate suffering and elevate civilization. Honor that responsibility.",
+    "author": "Philosophic Ideal",
+    "category": "society"
+  },
+  {
+    "text": "Deep work is the ability to focus without distraction on a cognitively demanding task. It makes you produce at an elite level.",
+    "author": "Cal Newport",
+    "category": "focus"
+  },
+  {
+    "text": "The secret of change is to focus all of your energy not on fighting the old, but on building the new.",
+    "author": "Socrates",
+    "category": "focus"
+  },
+  {
+    "text": "Every time you resist an impulse, you strengthen the prefrontal cortex and rewire neuroplastic pathways.",
+    "author": "Cognitive Neuroscience",
+    "category": "focus"
+  },
+  {
+    "text": "Dopamine is a sacred cognitive currency. Do not spend it on low-resolution digital noise.",
+    "author": "Neuroscience Reset",
+    "category": "focus"
+  },
+  {
+    "text": "Focus is a muscle. The more you shield it from distraction, the stronger your intellect becomes.",
+    "author": "Deep Work Doctrine",
+    "category": "focus"
+  },
+  {
+    "text": "Where attention goes, energy flows and results show. Guard your attention with your life.",
+    "author": "Attention Sovereignty",
+    "category": "focus"
+  },
+  {
+    "text": "Concentrate all your thoughts upon the work in hand. The sun's rays do not burn until brought to a focus.",
+    "author": "Alexander Graham Bell",
+    "category": "focus"
+  },
+  {
+    "text": "Clarity of mind leads to precision of action. Step back, breathe, and regain your center.",
+    "author": "Zen Master",
+    "category": "focus"
+  },
+  {
+    "text": "Simplicity is about subtracting the obvious and adding the meaningful.",
+    "author": "John Maeda",
+    "category": "focus"
+  },
+  {
+    "text": "The successful warrior is the average man, with laser-like focus.",
+    "author": "Bruce Lee",
+    "category": "focus"
+  },
+  {
+    "text": "Beware the barrenness of a busy, distracted life. Seek depth over digital noise.",
+    "author": "Socrates",
+    "category": "focus"
+  },
+  {
+    "text": "Multitasking is merely the ability to screw up more than one thing at a time. Do one thing deeply.",
+    "author": "Steve Uzzell",
+    "category": "focus"
+  },
+  {
+    "text": "A 25-minute uninterrupted sprint can accomplish more than 4 hours of fragmented scrolling.",
+    "author": "Pomodoro Principle",
+    "category": "focus"
+  },
+  {
+    "text": "When you eliminate the non-essential, what remains is pure mastery.",
+    "author": "Essentialism",
+    "category": "focus"
+  },
+  {
+    "text": "Your brain adapts to whatever you feed it. Feed it mathematics, literature, and code—not hyper-stimulating sludge.",
+    "author": "Neuro-Hygiene",
+    "category": "focus"
+  },
+  {
+    "text": "Calmness of mind is one of the beautiful jewels of wisdom.",
+    "author": "James Allen",
+    "category": "focus"
+  },
+  {
+    "text": "The ability to perform deep work is becoming increasingly rare at exactly the same time it is becoming increasingly valuable.",
+    "author": "Cal Newport",
+    "category": "focus"
+  },
+  {
+    "text": "Do not let what is urgent get in the way of what is essential.",
+    "author": "Dwight D. Eisenhower",
+    "category": "focus"
+  },
+  {
+    "text": "Silence is the sanctuary of creativity and sustained focus.",
+    "author": "Solitude Ethos",
+    "category": "focus"
+  },
+  {
+    "text": "In an age of speed, nothing could be more invigorating than going slow. In an age of distraction, nothing could be more luxurious than paying attention.",
+    "author": "Pico Iyer",
+    "category": "focus"
+  },
+  {
+    "text": "Attention is the rarest and purest form of generosity.",
+    "author": "Simone Weil",
+    "category": "focus"
+  },
+  {
+    "text": "You don't need more time. You need more focused attention.",
+    "author": "Productivity Rule",
+    "category": "focus"
+  },
+  {
+    "text": "The art of being wise is the art of knowing what to overlook.",
+    "author": "William James",
+    "category": "focus"
+  },
+  {
+    "text": "Reset your dopamine baseline. Let yourself experience boredom so creativity can take root.",
+    "author": "Dopamine Fasting",
+    "category": "focus"
+  },
+  {
+    "text": "Focus is saying no to 1,000 other good ideas so you can execute the one that matters.",
+    "author": "Steve Jobs",
+    "category": "focus"
+  },
+  {
+    "text": "Great things are done by a series of small things brought together with unwavering focus.",
+    "author": "Vincent Van Gogh",
+    "category": "focus"
+  },
+  {
+    "text": "Master your morning, master your mind, master your day.",
+    "author": "Focus Routine",
+    "category": "focus"
+  },
+  {
+    "text": "When attention is fractured, human potential is fractured. Reclaim your wholeness.",
+    "author": "Cognitive Freedom",
+    "category": "focus"
+  },
+  {
+    "text": "Deep breathing activates the parasympathetic nervous system, cooling down impulse loops in seconds.",
+    "author": "Physiology",
+    "category": "focus"
+  },
+  {
+    "text": "Distraction is the thief of greatness. Protect your temple.",
+    "author": "Mindset",
+    "category": "focus"
+  },
+  {
+    "text": "Give your undivided focus to one task for the next 25 minutes. Watch how fast reality shifts.",
+    "author": "Sprint Rule",
+    "category": "focus"
+  },
+  {
+    "text": "Clear thinking requires an uncluttered mind. Empty out the trash.",
+    "author": "Mental Hygiene",
+    "category": "focus"
+  },
+  {
+    "text": "The mind will not remain idle; if you do not feed it purpose, it will feast on low-vibration distractions.",
+    "author": "Psychology",
+    "category": "focus"
+  },
+  {
+    "text": "Energy is finite; focus is the magnifying glass that ignites it.",
+    "author": "Cognitive Principle",
+    "category": "focus"
+  },
+  {
+    "text": "Unplug from the trivial many and plug into the vital few.",
+    "author": "Greg McKeown",
+    "category": "focus"
+  },
+  {
+    "text": "The master of attention is the architect of reality.",
+    "author": "Stoic Insight",
+    "category": "focus"
+  },
+  {
+    "text": "True concentration is the total surrender of self to the subject at hand.",
+    "author": "Flow State",
+    "category": "focus"
+  },
+  {
+    "text": "Quiet the external noise so you can finally hear your own brilliance.",
+    "author": "Deep Focus",
+    "category": "focus"
+  },
+  {
+    "text": "Your brain's reward system was designed for survival and progress, not algorithmic exploitation. Take back control.",
+    "author": "Neuroscience",
+    "category": "focus"
+  },
+  {
+    "text": "Recharge with sleep, nature, and stillness, never with scrolling and hyper-stimulation.",
+    "author": "Restoration",
+    "category": "focus"
+  },
+  {
+    "text": "A focused mind cuts through obstacles like a diamond through glass.",
+    "author": "Clarity",
+    "category": "focus"
+  },
+  {
+    "text": "Take a deep breath in through your nose, hold it for four seconds, and release all tension.",
+    "author": "Breathwork",
+    "category": "focus"
+  },
+  {
+    "text": "Attention is the currency of the 21st century. Refuse to be bankrupted by junk content.",
+    "author": "Digital Health",
+    "category": "focus"
+  },
+  {
+    "text": "Put your phone in another room, close all unnecessary tabs, and write the next chapter of your success.",
+    "author": "Action Step",
+    "category": "focus"
+  },
+  {
+    "text": "The flow state awaits you on the other side of this momentary discomfort. Step across.",
+    "author": "Flow State",
+    "category": "focus"
+  }
+];
 
-        let currentQuoteIndex = 0;
+        let currentCategory = 'all';
+        let currentMessageIndex = 0;
+        let filteredIndices = [];
 
-        function setRandomQuote() {
-            let nextIndex = Math.floor(Math.random() * INSPIRATIONAL_QUOTES.length);
-            if (nextIndex === currentQuoteIndex) {
-                nextIndex = (nextIndex + 1) % INSPIRATIONAL_QUOTES.length;
-            }
-            currentQuoteIndex = nextIndex;
-            const q = INSPIRATIONAL_QUOTES[currentQuoteIndex];
-            const textEl = document.getElementById('quote-display');
-            const authorEl = document.getElementById('quote-author-display');
-            if (textEl && authorEl) {
-                textEl.textContent = `"${q.text}"`;
-                authorEl.textContent = `— ${q.author}`;
+        // Synthesize a clean, subtle native click sound using Web Audio API
+        function playChime() {
+            try {
+                const AudioCtx = window.AudioContext || window.webkitAudioContext;
+                if (!AudioCtx) return;
+                const ctx = new AudioCtx();
+                const osc = ctx.createOscillator();
+                const gain = ctx.createGain();
+                osc.type = 'sine';
+                osc.frequency.setValueAtTime(587.33, ctx.currentTime); // D5
+                osc.frequency.exponentialRampToValueAtTime(880, ctx.currentTime + 0.08); // A5
+                gain.gain.setValueAtTime(0.04, ctx.currentTime);
+                gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.12);
+                osc.connect(gain);
+                gain.connect(ctx.destination);
+                osc.start();
+                osc.stop(ctx.currentTime + 0.12);
+            } catch (_) {}
+        }
+
+        function filterMessages() {
+            if (currentCategory === 'all') {
+                filteredIndices = MESSAGES_DATABASE.map((_, i) => i);
+            } else {
+                filteredIndices = [];
+                for (let i = 0; i < MESSAGES_DATABASE.length; i++) {
+                    if (MESSAGES_DATABASE[i].category === currentCategory) {
+                        filteredIndices.push(i);
+                    }
+                }
             }
         }
 
-        // Parse blocked URL or query from parameters safely
-        (function initBlockedTarget() {
+        function displayMessage(index, animate = true) {
+            const msg = MESSAGES_DATABASE[index];
+            if (!msg) return;
+
+            const wrapper = document.getElementById('message-wrapper');
+            const headline = document.getElementById('reality-text');
+            const author = document.getElementById('reality-author');
+            const tagContainer = document.getElementById('card-tag');
+            const tagText = document.getElementById('card-tag-text');
+            const counter = document.getElementById('card-counter');
+
+            const applyData = () => {
+                headline.textContent = `"${msg.text}"`;
+                author.textContent = `— ${msg.author}`;
+
+                // Update Tag
+                tagContainer.className = 'category-tag cat-' + msg.category;
+                if (msg.category === 'roast') {
+                    tagText.textContent = 'Savage Reality Check';
+                    tagContainer.querySelector('i').className = 'fas fa-fire';
+                } else if (msg.category === 'discipline') {
+                    tagText.textContent = 'Stoic Will & Discipline';
+                    tagContainer.querySelector('i').className = 'fas fa-landmark';
+                } else if (msg.category === 'society') {
+                    tagText.textContent = 'Build For Society';
+                    tagContainer.querySelector('i').className = 'fas fa-rocket';
+                } else {
+                    tagText.textContent = 'Deep Focus & Reset';
+                    tagContainer.querySelector('i').className = 'fas fa-brain';
+                }
+
+                // Counter
+                const positionInFiltered = filteredIndices.indexOf(index) + 1;
+                counter.textContent = `#${positionInFiltered > 0 ? positionInFiltered : (index + 1)} / ${filteredIndices.length}`;
+            };
+
+            if (animate && wrapper) {
+                wrapper.classList.add('cycling');
+                setTimeout(() => {
+                    applyData();
+                    wrapper.classList.remove('cycling');
+                }, 140);
+            } else {
+                applyData();
+            }
+        }
+
+        function shuffleMessage() {
+            playChime();
+            if (filteredIndices.length === 0) filterMessages();
+            let nextIndex = filteredIndices[Math.floor(Math.random() * filteredIndices.length)];
+            if (filteredIndices.length > 1 && nextIndex === currentMessageIndex) {
+                const candidates = filteredIndices.filter(i => i !== currentMessageIndex);
+                nextIndex = candidates[Math.floor(Math.random() * candidates.length)];
+            }
+            currentMessageIndex = nextIndex;
+            displayMessage(currentMessageIndex, true);
+        }
+
+        // Parse blocked target: NEVER show google.com or search engines as the destination
+        function parseBlockedTarget() {
             try {
                 const params = new URLSearchParams(window.location.search);
-                const rawQuery = params.get('query') || params.get('q');
-                const rawUrl = params.get('url');
-                const labelEl = document.getElementById('blocked-label');
-                const targetEl = document.getElementById('blocked-target');
-                if (rawQuery && targetEl) {
-                    if (labelEl) labelEl.textContent = 'Filtered Adult Query:';
-                    targetEl.textContent = `"${rawQuery}"`;
-                } else if (rawUrl && targetEl) {
-                    let parsedHost = rawUrl;
-                    try {
-                        parsedHost = new URL(rawUrl).hostname || rawUrl;
-                    } catch (_) {}
-                    if (labelEl) labelEl.textContent = 'Blocked Destination:';
-                    targetEl.textContent = parsedHost;
-                }
-            } catch (_) {}
-        })();
+                const query = params.get('query') || params.get('q');
+                const rawUrl = params.get('url') || params.get('target');
+                const labelEl = document.getElementById('intercept-label');
+                const valueEl = document.getElementById('intercept-value');
 
-        // Navigation helpers
+                if (query) {
+                    if (labelEl) labelEl.textContent = 'Filtered Adult Search:';
+                    if (valueEl) valueEl.textContent = `"${query}"`;
+                    return;
+                }
+
+                if (rawUrl) {
+                    try {
+                        const parsed = new URL(rawUrl);
+                        const host = parsed.hostname.toLowerCase();
+                        const isSearchEngine = host.includes('google.') || host.includes('bing.') || 
+                                              host.includes('duckduckgo.') || host.includes('brave.com') || 
+                                              host.includes('yahoo.') || host.includes('yandex.') || 
+                                              host.includes('ecosia.');
+
+                        // Handle Google / search redirect url
+                        if (parsed.pathname === '/url') {
+                            const redirect = parsed.searchParams.get('url') || parsed.searchParams.get('q');
+                            if (redirect) {
+                                try {
+                                    const rParsed = new URL(redirect);
+                                    if (labelEl) labelEl.textContent = 'Blocked Destination:';
+                                    if (valueEl) valueEl.textContent = rParsed.hostname || redirect;
+                                    return;
+                                } catch (_) {}
+                            }
+                        }
+
+                        if (isSearchEngine) {
+                            const sq = parsed.searchParams.get('q') || parsed.searchParams.get('query') || parsed.searchParams.get('p');
+                            if (labelEl) labelEl.textContent = 'Filtered Adult Search:';
+                            if (valueEl) valueEl.textContent = sq ? `"${sq}"` : '"Explicit Search Terms"';
+                            return;
+                        }
+
+                        // Regular adult domain
+                        if (labelEl) labelEl.textContent = 'Blocked Destination:';
+                        if (valueEl) valueEl.textContent = host || rawUrl;
+                        return;
+                    } catch (_) {
+                        if (labelEl) labelEl.textContent = 'Blocked Destination:';
+                        if (valueEl) valueEl.textContent = rawUrl;
+                        return;
+                    }
+                }
+
+                if (labelEl) labelEl.textContent = 'Filtered Destination:';
+                if (valueEl) valueEl.textContent = '"Explicit Content Intercepted"';
+            } catch (_) {}
+        }
+
+        // Navigation
         function navigate(url) {
             if (window.electronAPI && typeof window.electronAPI.navigateTo === 'function') {
                 window.electronAPI.navigateTo(url);
@@ -627,25 +2273,112 @@
             }
         }
 
-        document.getElementById('refresh-quote-btn')?.addEventListener('click', setRandomQuote);
+        function showToast(msg) {
+            const toast = document.getElementById('toast-bubble');
+            if (!toast) return;
+            toast.textContent = msg;
+            toast.classList.add('show');
+            setTimeout(() => toast.classList.remove('show'), 2000);
+        }
 
-        document.getElementById('btn-focus-flow')?.addEventListener('click', (e) => {
+        // Category pills handling
+        document.querySelectorAll('.filter-pill').forEach(btn => {
+            btn.addEventListener('click', () => {
+                document.querySelectorAll('.filter-pill').forEach(p => p.classList.remove('active'));
+                btn.classList.add('active');
+                currentCategory = btn.getAttribute('data-category');
+                filterMessages();
+                shuffleMessage();
+            });
+        });
+
+        // Button clicks
+        document.getElementById('btn-shuffle')?.addEventListener('click', shuffleMessage);
+
+        document.getElementById('btn-copy-quote')?.addEventListener('click', () => {
+            const msg = MESSAGES_DATABASE[currentMessageIndex];
+            if (msg) {
+                const text = `"${msg.text}" — ${msg.author}`;
+                navigator.clipboard.writeText(text).then(() => {
+                    showToast('Quote copied to clipboard!');
+                }).catch(() => {
+                    showToast('Copied!');
+                });
+            }
+        });
+
+        document.getElementById('link-focus')?.addEventListener('click', (e) => {
             e.preventDefault();
             navigate('ocal://focus');
         });
 
-        document.getElementById('btn-home')?.addEventListener('click', (e) => {
+        document.getElementById('btn-quick-sprint')?.addEventListener('click', (e) => {
+            e.preventDefault();
+            navigate('ocal://focus');
+        });
+
+        document.getElementById('link-home')?.addEventListener('click', (e) => {
             e.preventDefault();
             navigate('ocal://home');
         });
 
-        document.getElementById('open-settings-btn')?.addEventListener('click', (e) => {
+        document.getElementById('btn-header-home')?.addEventListener('click', (e) => {
+            e.preventDefault();
+            navigate('ocal://home');
+        });
+
+        document.getElementById('btn-header-settings')?.addEventListener('click', (e) => {
             e.preventDefault();
             navigate('ocal://settings#search');
         });
 
-        // Initialize random quote on load
-        setRandomQuote();
+        document.getElementById('footer-settings-link')?.addEventListener('click', (e) => {
+            e.preventDefault();
+            navigate('ocal://settings#search');
+        });
+
+        // Theme Toggle
+        document.getElementById('btn-theme-toggle')?.addEventListener('click', () => {
+            const current = document.documentElement.getAttribute('data-theme') || 'dark';
+            const next = current === 'dark' ? 'light' : 'dark';
+            document.documentElement.setAttribute('data-theme', next);
+            localStorage.setItem('ocal-settings-theme', next);
+            const icon = document.getElementById('theme-icon');
+            if (icon) {
+                icon.className = next === 'dark' ? 'fas fa-moon' : 'fas fa-sun';
+            }
+            const a = localStorage.getItem('ocal-settings-accent') || '#10B981';
+            if (window.OcalColorHarmonizer) {
+                window.OcalColorHarmonizer.applyHarmonizedTheme(a, next);
+            }
+        });
+
+        // Keyboard Shortcuts
+        window.addEventListener('keydown', (e) => {
+            // Ignore if active inside input or textarea
+            if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA') return;
+
+            if (e.code === 'Space') {
+                e.preventDefault();
+                shuffleMessage();
+            } else if (e.code === 'Enter') {
+                e.preventDefault();
+                navigate('ocal://focus');
+            } else if (e.code === 'Escape') {
+                e.preventDefault();
+                navigate('ocal://home');
+            } else if (e.key === 's' || e.key === 'S') {
+                e.preventDefault();
+                navigate('ocal://settings#search');
+            } else if (e.key === 'c' || e.key === 'C') {
+                document.getElementById('btn-copy-quote')?.click();
+            }
+        });
+
+        // Initialization
+        filterMessages();
+        parseBlockedTarget();
+        shuffleMessage();
     </script>
 </body>
 </html>
