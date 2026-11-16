@@ -2903,86 +2903,250 @@ window.addEventListener('mousedown', () => {
         style.textContent = `
             .ocal-section-shielded {
                 position: relative !important;
-                overflow: hidden !important;
-                border-radius: 12px !important;
-                min-height: 48px !important;
+                margin: 6px 0 !important;
+                border-radius: 8px !important;
+                transition: all 0.2s ease !important;
+                clear: both !important;
             }
-            .ocal-section-shielded > :not(.ocal-section-shield-overlay) {
-                filter: blur(36px) grayscale(90%) !important;
-                pointer-events: none !important;
-                user-select: none !important;
-                opacity: 0.08 !important;
-                transition: filter 0.25s ease, opacity 0.25s ease !important;
+            /* When collapsed, completely hide the bulky explicit content and prevent massive layout slabs */
+            .ocal-section-shielded:not(.ocal-unblurred) > :not(.ocal-section-shield-overlay) {
+                display: none !important;
             }
+            /* When peeked, reveal the original result cleanly below the header bar */
             .ocal-section-shielded.ocal-unblurred > :not(.ocal-section-shield-overlay) {
-                filter: none !important;
+                display: block !important;
+                opacity: 1 !important;
                 pointer-events: auto !important;
                 user-select: auto !important;
-                opacity: 1 !important;
+                margin-top: 6px !important;
             }
+            /* Sleek, solid, minimal notification bar (zero muddy blur / zero massive dark gray slabs) */
             .ocal-section-shield-overlay {
-                position: absolute !important;
-                inset: 0 !important;
+                position: relative !important;
                 display: flex !important;
                 align-items: center !important;
-                justify-content: center !important;
-                background: rgba(15, 17, 23, 0.42) !important;
-                backdrop-filter: blur(10px) !important;
-                -webkit-backdrop-filter: blur(10px) !important;
-                z-index: 99999 !important;
-                border-radius: inherit !important;
-                pointer-events: auto !important;
+                justify-content: space-between !important;
+                gap: 8px !important;
+                padding: 7px 12px !important;
+                background: #F8FAFC !important;
+                border: 1px solid #E2E8F0 !important;
+                border-radius: 8px !important;
+                box-sizing: border-box !important;
+                width: 100% !important;
+                font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif !important;
+                font-size: 12px !important;
+                line-height: 1.4 !important;
+                color: #475569 !important;
+                user-select: none !important;
+                box-shadow: 0 1px 2px rgba(0, 0, 0, 0.03) !important;
             }
-            .ocal-shield-badge-pill {
-                display: inline-flex !important;
+            @media (prefers-color-scheme: dark) {
+                .ocal-section-shield-overlay {
+                    background: #18191E !important;
+                    border-color: rgba(255, 255, 255, 0.1) !important;
+                    color: #94A3B8 !important;
+                    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.2) !important;
+                }
+            }
+            [data-darkreader-scheme="dark"] .ocal-section-shield-overlay,
+            [data-theme="dark"] .ocal-section-shield-overlay,
+            html.dark .ocal-section-shield-overlay,
+            .ocal-section-shield-overlay.ocal-dark-surface {
+                background: #18191E !important;
+                border-color: rgba(255, 255, 255, 0.1) !important;
+                color: #94A3B8 !important;
+                box-shadow: 0 1px 2px rgba(0, 0, 0, 0.2) !important;
+            }
+            .ocal-shield-left {
+                display: flex !important;
                 align-items: center !important;
                 gap: 8px !important;
-                padding: 7px 16px !important;
-                border-radius: 9999px !important;
-                background: #111319 !important;
-                border: 1px solid rgba(255, 255, 255, 0.18) !important;
-                color: #F8FAFC !important;
-                font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif !important;
-                font-size: 12px !important;
-                font-weight: 700 !important;
-                box-shadow: 0 4px 16px rgba(0, 0, 0, 0.45) !important;
+                min-width: 0 !important;
+                overflow: hidden !important;
             }
-            .ocal-shield-badge-pill i, .ocal-shield-badge-pill svg {
-                color: #10B981 !important;
+            .ocal-shield-icon-badge {
+                display: inline-flex !important;
+                align-items: center !important;
+                justify-content: center !important;
+                width: 22px !important;
+                height: 22px !important;
+                border-radius: 6px !important;
+                background: #ECFDF5 !important;
+                flex-shrink: 0 !important;
+            }
+            @media (prefers-color-scheme: dark) {
+                .ocal-shield-icon-badge {
+                    background: rgba(16, 185, 129, 0.15) !important;
+                }
+            }
+            .ocal-section-shield-overlay.ocal-dark-surface .ocal-shield-icon-badge {
+                background: rgba(16, 185, 129, 0.15) !important;
+            }
+            .ocal-shield-title {
+                font-weight: 500 !important;
+                color: #1E293B !important;
+                white-space: nowrap !important;
+                font-size: 12px !important;
+            }
+            @media (prefers-color-scheme: dark) {
+                .ocal-shield-title {
+                    color: #F1F5F9 !important;
+                }
+            }
+            .ocal-section-shield-overlay.ocal-dark-surface .ocal-shield-title {
+                color: #F1F5F9 !important;
+            }
+            .ocal-shield-domain-pill {
+                display: inline-block !important;
+                background: #F1F5F9 !important;
+                color: #64748B !important;
+                border: 1px solid #E2E8F0 !important;
+                padding: 1px 7px !important;
+                border-radius: 4px !important;
+                font-size: 11px !important;
+                font-weight: 500 !important;
+                font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace !important;
+                max-width: 180px !important;
+                overflow: hidden !important;
+                text-overflow: ellipsis !important;
+                white-space: nowrap !important;
+            }
+            @media (prefers-color-scheme: dark) {
+                .ocal-shield-domain-pill {
+                    background: rgba(255, 255, 255, 0.06) !important;
+                    border-color: rgba(255, 255, 255, 0.08) !important;
+                    color: #94A3B8 !important;
+                }
+            }
+            .ocal-section-shield-overlay.ocal-dark-surface .ocal-shield-domain-pill {
+                background: rgba(255, 255, 255, 0.06) !important;
+                border-color: rgba(255, 255, 255, 0.08) !important;
+                color: #94A3B8 !important;
+            }
+            .ocal-shield-actions {
+                display: flex !important;
+                align-items: center !important;
+                gap: 6px !important;
+                flex-shrink: 0 !important;
             }
             .ocal-peek-btn {
-                background: rgba(255, 255, 255, 0.12) !important;
-                border: 1px solid rgba(255, 255, 255, 0.22) !important;
-                color: #FFFFFF !important;
-                padding: 2px 10px !important;
-                border-radius: 9999px !important;
+                background: #E2E8F0 !important;
+                border: none !important;
+                color: #334155 !important;
+                padding: 3px 9px !important;
+                border-radius: 5px !important;
                 font-size: 11px !important;
                 font-weight: 600 !important;
                 cursor: pointer !important;
-                margin-left: 6px !important;
-                transition: background 0.15s ease !important;
+                line-height: 1.4 !important;
+                outline: none !important;
+                transition: background 0.15s ease, color 0.15s ease !important;
             }
             .ocal-peek-btn:hover {
-                background: rgba(255, 255, 255, 0.24) !important;
+                background: #CBD5E1 !important;
+                color: #0F172A !important;
+            }
+            @media (prefers-color-scheme: dark) {
+                .ocal-peek-btn {
+                    background: rgba(255, 255, 255, 0.1) !important;
+                    color: #E2E8F0 !important;
+                }
+                .ocal-peek-btn:hover {
+                    background: rgba(255, 255, 255, 0.18) !important;
+                    color: #FFFFFF !important;
+                }
+            }
+            .ocal-section-shield-overlay.ocal-dark-surface .ocal-peek-btn {
+                background: rgba(255, 255, 255, 0.1) !important;
+                color: #E2E8F0 !important;
+            }
+            .ocal-section-shield-overlay.ocal-dark-surface .ocal-peek-btn:hover {
+                background: rgba(255, 255, 255, 0.18) !important;
+                color: #FFFFFF !important;
+            }
+            .ocal-remove-btn {
+                background: transparent !important;
+                border: none !important;
+                color: #94A3B8 !important;
+                padding: 3px 6px !important;
+                border-radius: 4px !important;
+                font-size: 12px !important;
+                line-height: 1.2 !important;
+                cursor: pointer !important;
+                outline: none !important;
+                transition: background 0.15s ease, color 0.15s ease !important;
+            }
+            .ocal-remove-btn:hover {
+                background: #FEE2E2 !important;
+                color: #EF4444 !important;
+            }
+            @media (prefers-color-scheme: dark) {
+                .ocal-remove-btn:hover {
+                    background: rgba(239, 68, 68, 0.18) !important;
+                    color: #F87171 !important;
+                }
+            }
+            .ocal-section-shield-overlay.ocal-dark-surface .ocal-remove-btn:hover {
+                background: rgba(239, 68, 68, 0.18) !important;
+                color: #F87171 !important;
             }
             .ocal-shielded-media {
-                filter: blur(32px) grayscale(70%) !important;
-                opacity: 0.25 !important;
-                transition: filter 0.3s ease, opacity 0.3s ease !important;
-                position: relative !important;
+                filter: blur(28px) !important;
+                opacity: 0.15 !important;
+                pointer-events: none !important;
+                user-select: none !important;
+                transition: filter 0.2s ease, opacity 0.2s ease !important;
             }
         `;
         (document.head || document.documentElement).appendChild(style);
+    }
+
+    function isDarkContext() {
+        try {
+            const bg = window.getComputedStyle(document.body).backgroundColor;
+            const rgb = bg.match(/\d+/g);
+            if (rgb && rgb.length >= 3) {
+                const brightness = (parseInt(rgb[0]) * 299 + parseInt(rgb[1]) * 587 + parseInt(rgb[2]) * 114) / 1000;
+                return brightness < 128;
+            }
+        } catch (_) {}
+        return window.matchMedia && window.matchMedia("(prefers-color-scheme: dark)").matches;
+    }
+
+    function extractSectionDomain(container) {
+        if (!container) return "";
+        try {
+            const links = container.querySelectorAll("a[href]");
+            for (const a of links) {
+                const rawHref = a.href || "";
+                if (!rawHref) continue;
+                try {
+                    const u = new URL(rawHref, window.location.href);
+                    if (u.pathname === "/url") {
+                        const target = u.searchParams.get("url") || u.searchParams.get("q");
+                        if (target) {
+                            const tu = new URL(target);
+                            return tu.hostname.replace(/^www\./i, "");
+                        }
+                    }
+                    const host = u.hostname.replace(/^www\./i, "");
+                    if (host && !host.includes("google.") && !host.includes("bing.") && !host.includes("duckduckgo.")) {
+                        return host;
+                    }
+                } catch (_) {}
+            }
+        } catch (_) {}
+        return "";
     }
 
     // Client-side image recognition & skin-tone heuristic detector
     function analyzeImageSkinExposure(img) {
         if (!img || !img.complete || img.naturalWidth < 48 || img.naturalHeight < 48) return false;
         try {
-            const canvas = document.createElement('canvas');
+            const canvas = document.createElement("canvas");
             canvas.width = 32;
             canvas.height = 32;
-            const ctx = canvas.getContext('2d', { willReadFrequently: true });
+            const ctx = canvas.getContext("2d", { willReadFrequently: true });
             if (!ctx) return false;
             ctx.drawImage(img, 0, 0, 32, 32);
             const data = ctx.getImageData(0, 0, 32, 32).data;
@@ -3006,41 +3170,58 @@ window.addEventListener('mousedown', () => {
         }
     }
 
-    // Blur and shield a specific section with an interactive overlay
-    function shieldSection(container, reason = 'Result filtered by Ocal Protection') {
-        if (!container || container.classList.contains('ocal-section-shielded')) return;
+    // Shield a specific section with a sleek, clean, modern notification row
+    function shieldSection(container, reason = "Explicit result hidden") {
+        if (!container || container.classList.contains("ocal-section-shielded")) return;
         ensureShieldStyles();
-        container.classList.add('ocal-section-shielded');
+        container.classList.add("ocal-section-shielded");
 
-        const overlay = document.createElement('div');
-        overlay.className = 'ocal-section-shield-overlay';
+        const domain = extractSectionDomain(container);
+        const isDark = isDarkContext();
+
+        const overlay = document.createElement("div");
+        overlay.className = "ocal-section-shield-overlay" + (isDark ? " ocal-dark-surface" : "");
         overlay.innerHTML = `
-            <div class="ocal-shield-badge-pill">
-                <span>🛡️</span>
-                <span>${reason}</span>
-                <button type="button" class="ocal-peek-btn">Peek</button>
+            <div class="ocal-shield-left">
+                <span class="ocal-shield-icon-badge" aria-hidden="true">
+                    <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#10B981" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
+                    </svg>
+                </span>
+                <span class="ocal-shield-title">${reason}</span>
+                ${domain ? `<span class="ocal-shield-domain-pill">${domain}</span>` : ""}
+            </div>
+            <div class="ocal-shield-actions">
+                <button type="button" class="ocal-peek-btn" title="Peek content">Peek</button>
+                <button type="button" class="ocal-remove-btn" title="Remove this result">✕</button>
             </div>
         `;
 
-        const peekBtn = overlay.querySelector('.ocal-peek-btn');
+        const peekBtn = overlay.querySelector(".ocal-peek-btn");
         if (peekBtn) {
-            peekBtn.addEventListener('click', (e) => {
+            peekBtn.addEventListener("click", (e) => {
                 e.preventDefault();
                 e.stopPropagation();
-                const isUnblurred = container.classList.toggle('ocal-unblurred');
-                peekBtn.textContent = isUnblurred ? 'Hide' : 'Peek';
-                overlay.style.background = isUnblurred ? 'transparent' : 'rgba(15, 17, 23, 0.42)';
-                overlay.style.pointerEvents = isUnblurred ? 'none' : 'auto';
-                if (isUnblurred) {
-                    const badge = overlay.querySelector('.ocal-shield-badge-pill');
-                    if (badge) badge.style.pointerEvents = 'auto';
-                }
+                const isUnblurred = container.classList.toggle("ocal-unblurred");
+                peekBtn.textContent = isUnblurred ? "Hide" : "Peek";
             });
         }
 
-        container.appendChild(overlay);
-    }
+        const removeBtn = overlay.querySelector(".ocal-remove-btn");
+        if (removeBtn) {
+            removeBtn.addEventListener("click", (e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                container.remove();
+            });
+        }
 
+        if (container.firstChild) {
+            container.insertBefore(overlay, container.firstChild);
+        } else {
+            container.appendChild(overlay);
+        }
+    }
     // Find the enclosing section card for a node
     function findEnclosingSection(node) {
         if (!node || !node.closest) return null;
@@ -3090,7 +3271,7 @@ window.addEventListener('mousedown', () => {
             }
 
             if (isExplicit) {
-                shieldSection(container, 'Filtered by Ocal Search Security');
+                shieldSection(container, 'Explicit result hidden');
             }
         });
     }
@@ -3121,7 +3302,7 @@ window.addEventListener('mousedown', () => {
             if (isFlagged) {
                 const parentSection = findEnclosingSection(el);
                 if (parentSection) {
-                    shieldSection(parentSection, 'Shielded by Ocal Protection');
+                    shieldSection(parentSection, 'Explicit media hidden');
                 } else {
                     ensureShieldStyles();
                     el.classList.add('ocal-shielded-media');
@@ -3131,7 +3312,7 @@ window.addEventListener('mousedown', () => {
                 el.addEventListener('load', () => {
                     if (analyzeImageSkinExposure(el)) {
                         const parent = findEnclosingSection(el);
-                        if (parent) shieldSection(parent, 'Shielded by Ocal Protection');
+                        if (parent) shieldSection(parent, 'Explicit media hidden');
                         else {
                             ensureShieldStyles();
                             el.classList.add('ocal-shielded-media');
