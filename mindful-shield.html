@@ -4,75 +4,67 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta http-equiv="Content-Security-Policy" content="default-src 'self' ocal: file:; script-src 'self' 'unsafe-inline' ocal: file:; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com https://cdn.jsdelivr.net; font-src 'self' https://fonts.gstatic.com https://cdn.jsdelivr.net; img-src 'self' data: https: blob: ocal: file:;">
-    <title>Mindful Shield &amp; Cognitive Sanctuary | Ocal</title>
+    <title>Mindful Shield | Ocal</title>
     <link rel="stylesheet" href="assets/fontawesome/css/all.min.css">
     <link rel="stylesheet" href="assets/fonts/geist-fonts.css">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800;900&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
-    <script src="color-harmonizer.js"></script>
     <script>
         (function() {
             var t = localStorage.getItem('ocal-settings-theme') || 'dark';
             document.documentElement.setAttribute('data-theme', t);
             if (t === 'dark') {
-                document.documentElement.style.background = '#090A0F';
+                document.documentElement.style.background = '#0E1015';
                 document.documentElement.style.colorScheme = 'dark';
             } else {
-                document.documentElement.style.background = '#F8FAFC';
+                document.documentElement.style.background = '#F9FAFB';
                 document.documentElement.style.colorScheme = 'light';
-            }
-            var a = localStorage.getItem('ocal-settings-accent') || '#10B981';
-            if (window.OcalColorHarmonizer) {
-                window.OcalColorHarmonizer.applyHarmonizedTheme(a, t);
             }
         })();
     </script>
     <style>
+        /* ── Solid Color Editorial Palette (NO GRADIENTS) ──────── */
         :root {
-            --bg-base: #090A0F;
-            --bg-surface: #10121A;
-            --bg-elevated: #161924;
-            --bg-glass: rgba(16, 18, 26, 0.72);
-            --border-subtle: rgba(255, 255, 255, 0.08);
-            --border-hover: rgba(255, 255, 255, 0.18);
-            --border-highlight: rgba(16, 185, 129, 0.35);
-            --text-primary: #F8FAFC;
-            --text-secondary: #94A3B8;
-            --text-muted: #64748B;
-            --accent: #10B981;
-            --accent-glow: rgba(16, 185, 129, 0.28);
-            --accent-dim: rgba(16, 185, 129, 0.12);
-            --danger: #EF4444;
-            --danger-glow: rgba(239, 68, 68, 0.25);
-            --danger-dim: rgba(239, 68, 68, 0.12);
-            --gold: #F59E0B;
-            --gold-glow: rgba(245, 158, 11, 0.25);
-            --gold-dim: rgba(245, 158, 11, 0.12);
-            --purple: #8B5CF6;
-            --purple-dim: rgba(139, 92, 246, 0.12);
+            /* Left Solid Hero Color (Coral / Crimson matching reference image) */
+            --color-hero: #DE4E4E;
+            --color-hero-hover: #CC3D3D;
+            --color-hero-text: #FFFFFF;
+            --color-hero-muted: rgba(255, 255, 255, 0.78);
+            --color-hero-border: rgba(255, 255, 255, 0.35);
+            --color-hero-tag: rgba(0, 0, 0, 0.22);
+
+            /* Right Solid Surfaces (Dark Theme) */
+            --right-bg: #111319;
+            --right-surface: #181B24;
+            --right-border: #262A36;
+            --right-text-main: #F3F4F6;
+            --right-text-muted: #9CA3AF;
+            --right-text-sub: #6B7280;
+            --right-accent-solid: #DE4E4E;
+            --right-accent-text: #FFFFFF;
+
             --font-main: 'Geist', 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
             --font-mono: 'Geist Mono', 'Space Mono', monospace;
-            --shadow-subtle: 0 4px 20px rgba(0, 0, 0, 0.4);
-            --shadow-elevated: 0 16px 48px rgba(0, 0, 0, 0.55), 0 0 32px var(--accent-glow);
         }
 
         html[data-theme="light"] {
-            --bg-base: #F8FAFC;
-            --bg-surface: #FFFFFF;
-            --bg-elevated: #F1F5F9;
-            --bg-glass: rgba(255, 255, 255, 0.85);
-            --border-subtle: rgba(0, 0, 0, 0.08);
-            --border-hover: rgba(0, 0, 0, 0.16);
-            --border-highlight: rgba(16, 185, 129, 0.4);
-            --text-primary: #0F172A;
-            --text-secondary: #475569;
-            --text-muted: #94A3B8;
-            --accent: #059669;
-            --accent-glow: rgba(5, 150, 105, 0.18);
-            --accent-dim: rgba(5, 150, 105, 0.08);
-            --shadow-subtle: 0 4px 20px rgba(0, 0, 0, 0.06);
-            --shadow-elevated: 0 16px 48px rgba(0, 0, 0, 0.1), 0 0 24px rgba(16, 185, 129, 0.15);
+            --color-hero: #E25050;
+            --color-hero-hover: #D13F3F;
+            --color-hero-text: #FFFFFF;
+            --color-hero-muted: rgba(255, 255, 255, 0.85);
+            --color-hero-border: rgba(255, 255, 255, 0.4);
+            --color-hero-tag: rgba(0, 0, 0, 0.16);
+
+            /* Right Solid Surfaces (Pure Clean White) */
+            --right-bg: #FFFFFF;
+            --right-surface: #F4F5F7;
+            --right-border: #E5E7EB;
+            --right-text-main: #111827;
+            --right-text-muted: #4B5563;
+            --right-text-sub: #9CA3AF;
+            --right-accent-solid: #E25050;
+            --right-accent-text: #FFFFFF;
         }
 
         * {
@@ -84,1024 +76,706 @@
         }
 
         body {
-            background-color: var(--bg-base);
-            color: var(--text-primary);
+            background-color: var(--right-bg);
+            color: var(--right-text-main);
             font-family: var(--font-main);
             height: 100vh;
             width: 100vw;
             overflow: hidden;
             display: flex;
-            flex-direction: column;
             position: relative;
-            transition: background 0.25s ease, color 0.25s ease;
+            transition: background 0.2s ease, color 0.2s ease;
         }
 
-        /* ── Ambient Background Canvas ────────────────────────── */
-        .ambient-glow-mesh {
-            position: fixed;
-            inset: 0;
-            pointer-events: none;
-            z-index: 0;
-            overflow: hidden;
-        }
-
-        .ambient-glow-circle-1 {
-            position: absolute;
-            top: -10%;
-            left: 20%;
-            width: 600px;
-            height: 600px;
-            border-radius: 50%;
-            background: radial-gradient(circle, var(--accent-glow) 0%, transparent 70%);
-            filter: blur(120px);
-            opacity: 0.55;
-            animation: floatGlow 14s ease-in-out infinite alternate;
-        }
-
-        .ambient-glow-circle-2 {
-            position: absolute;
-            bottom: -15%;
-            right: 15%;
-            width: 550px;
-            height: 550px;
-            border-radius: 50%;
-            background: radial-gradient(circle, var(--gold-glow) 0%, transparent 70%);
-            filter: blur(130px);
-            opacity: 0.45;
-            animation: floatGlow 18s ease-in-out infinite alternate-reverse;
-        }
-
-        @keyframes floatGlow {
-            0% { transform: translate(0, 0) scale(0.95); }
-            100% { transform: translate(40px, 30px) scale(1.1); }
-        }
-
-        /* ── Native Desktop App Header ────────────────────────── */
-        .desktop-header {
-            height: 58px;
-            padding: 0 24px;
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            border-bottom: 1px solid var(--border-subtle);
-            background: var(--bg-glass);
-            backdrop-filter: blur(28px);
-            -webkit-backdrop-filter: blur(28px);
-            z-index: 10;
-            flex-shrink: 0;
-        }
-
-        .brand-cluster {
-            display: flex;
-            align-items: center;
-            gap: 12px;
-            text-decoration: none;
-            color: inherit;
-        }
-
-        .brand-icon-shield {
-            width: 34px;
-            height: 34px;
-            border-radius: 10px;
-            background: linear-gradient(135deg, var(--accent-dim), var(--accent-glow));
-            border: 1px solid var(--border-highlight);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            color: var(--accent);
-            font-size: 15px;
-            box-shadow: 0 0 14px var(--accent-glow);
-        }
-
-        .brand-meta {
-            display: flex;
-            flex-direction: column;
-            gap: 2px;
-        }
-
-        .brand-title {
-            font-size: 14.5px;
-            font-weight: 800;
-            letter-spacing: -0.3px;
-            display: flex;
-            align-items: center;
-            gap: 8px;
-        }
-
-        .brand-badge {
-            font-size: 10px;
-            font-weight: 700;
-            padding: 2px 7px;
-            border-radius: 6px;
-            background: var(--accent-dim);
-            color: var(--accent);
-            border: 1px solid var(--border-highlight);
-            text-transform: uppercase;
-            letter-spacing: 0.6px;
-        }
-
-        .brand-subtitle {
-            font-size: 11px;
-            color: var(--text-muted);
-            font-weight: 500;
-        }
-
-        .header-status-pill {
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            padding: 5px 14px;
-            border-radius: 9999px;
-            background: var(--bg-elevated);
-            border: 1px solid var(--border-subtle);
-            font-size: 12px;
-            font-weight: 600;
-            color: var(--text-secondary);
-        }
-
-        .pulse-indicator {
-            width: 7px;
-            height: 7px;
-            border-radius: 50%;
-            background: var(--accent);
-            box-shadow: 0 0 8px var(--accent);
-            animation: pulseBeat 2s infinite ease-in-out;
-        }
-
-        @keyframes pulseBeat {
-            0%, 100% { transform: scale(1); opacity: 1; }
-            50% { transform: scale(0.7); opacity: 0.45; }
-        }
-
-        .header-actions {
-            display: flex;
-            align-items: center;
-            gap: 8px;
-        }
-
-        .btn-header {
-            display: inline-flex;
-            align-items: center;
-            gap: 7px;
-            padding: 7px 14px;
-            border-radius: 9px;
-            font-size: 12.5px;
-            font-weight: 600;
-            color: var(--text-secondary);
-            background: var(--bg-surface);
-            border: 1px solid var(--border-subtle);
-            cursor: pointer;
-            transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
-            text-decoration: none;
-        }
-
-        .btn-header:hover {
-            color: var(--text-primary);
-            border-color: var(--border-hover);
-            background: var(--bg-elevated);
-            transform: translateY(-1px);
-        }
-
-        .btn-header.primary-header {
-            background: var(--accent-dim);
-            color: var(--accent);
-            border-color: var(--border-highlight);
-        }
-
-        .btn-header.primary-header:hover {
-            box-shadow: 0 0 14px var(--accent-glow);
-        }
-
-        /* ── Workspace Split Canvas ───────────────────────────── */
-        .workspace-canvas {
-            flex: 1;
-            min-height: 0;
+        /* ── Split Layout Container ────────────────────────────── */
+        .split-layout {
             display: grid;
-            grid-template-columns: 1fr 390px;
-            gap: 20px;
-            padding: 20px 24px 14px 24px;
+            grid-template-columns: 46% 54%;
+            width: 100%;
+            height: 100%;
             position: relative;
-            z-index: 1;
-            overflow: hidden;
         }
 
-        @media (max-width: 1040px) {
-            .workspace-canvas {
+        @media (max-width: 900px) {
+            .split-layout {
                 grid-template-columns: 1fr;
                 overflow-y: auto;
             }
-            .sidebar-hub {
+            .split-seam-badge {
                 display: none !important;
             }
         }
 
-        /* ── Hero Column: The Reality Check Stage ─────────────── */
-        .hero-stage {
+        /* ── LEFT PANEL: Solid Hero Coral / Red ────────────────── */
+        .split-panel-left {
+            background-color: var(--color-hero);
+            color: var(--color-hero-text);
+            padding: 40px 52px;
             display: flex;
             flex-direction: column;
-            gap: 14px;
-            min-height: 0;
             justify-content: space-between;
+            position: relative;
+            z-index: 1;
         }
 
-        /* Category Filter Pills */
-        .category-filter-bar {
+        .left-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            width: 100%;
+        }
+
+        .brand-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 10px;
+            font-size: 13px;
+            font-weight: 800;
+            letter-spacing: 1.2px;
+            text-transform: uppercase;
+            color: var(--color-hero-text);
+        }
+
+        .brand-badge i {
+            font-size: 18px;
+        }
+
+        .counter-pill {
+            font-family: var(--font-mono);
+            font-size: 12px;
+            font-weight: 700;
+            padding: 4px 12px;
+            border-radius: 9999px;
+            background-color: var(--color-hero-tag);
+            color: var(--color-hero-text);
+            letter-spacing: 0.5px;
+        }
+
+        /* Central Reality Check Quote Block */
+        .left-body {
+            margin: auto 0;
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+            max-width: 540px;
+        }
+
+        .category-tag {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            padding: 5px 12px;
+            border-radius: 9999px;
+            background-color: var(--color-hero-tag);
+            font-size: 11px;
+            font-weight: 800;
+            letter-spacing: 1px;
+            text-transform: uppercase;
+            color: var(--color-hero-text);
+            width: fit-content;
+        }
+
+        .quote-headline {
+            font-size: 32px;
+            font-weight: 850;
+            line-height: 1.35;
+            letter-spacing: -0.6px;
+            color: var(--color-hero-text);
+            transition: opacity 0.15s ease, transform 0.15s ease;
+        }
+
+        .quote-headline.animating {
+            opacity: 0;
+            transform: translateY(6px);
+        }
+
+        .quote-author {
+            font-size: 15px;
+            font-weight: 600;
+            color: var(--color-hero-muted);
+            letter-spacing: -0.2px;
+        }
+
+        /* Left Actions: Reference Pill Style */
+        .left-actions {
+            display: flex;
+            align-items: center;
+            gap: 14px;
+            margin-top: 10px;
+            flex-wrap: wrap;
+        }
+
+        .btn-pill-hero {
+            display: inline-flex;
+            align-items: center;
+            gap: 10px;
+            padding: 12px 24px;
+            border-radius: 9999px;
+            background-color: transparent;
+            border: 2px solid var(--color-hero-text);
+            color: var(--color-hero-text);
+            font-size: 13.5px;
+            font-weight: 750;
+            cursor: pointer;
+            transition: background 0.18s ease, color 0.18s ease, transform 0.15s ease;
+        }
+
+        .btn-pill-hero:hover {
+            background-color: var(--color-hero-text);
+            color: var(--color-hero);
+            transform: translateY(-2px);
+        }
+
+        .btn-pill-hero:active {
+            transform: translateY(0);
+        }
+
+        .kbd-hero {
+            font-family: var(--font-mono);
+            font-size: 10px;
+            padding: 2px 6px;
+            border-radius: 4px;
+            background-color: var(--color-hero-tag);
+            color: var(--color-hero-text);
+            border: 1px solid var(--color-hero-border);
+        }
+
+        .btn-pill-hero:hover .kbd-hero {
+            background-color: var(--color-hero);
+            color: var(--color-hero-text);
+            border-color: var(--color-hero);
+        }
+
+        .btn-ghost-hero {
+            display: inline-flex;
+            align-items: center;
+            gap: 7px;
+            padding: 10px 18px;
+            border-radius: 9999px;
+            background-color: var(--color-hero-tag);
+            border: 1px solid var(--color-hero-border);
+            color: var(--color-hero-text);
+            font-size: 12.5px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: background 0.15s ease;
+        }
+
+        .btn-ghost-hero:hover {
+            background-color: rgba(0, 0, 0, 0.35);
+        }
+
+        .left-footer {
+            font-size: 12px;
+            color: var(--color-hero-muted);
+            font-weight: 500;
+        }
+
+        /* ── SPLIT SEAM ICON BADGE (Like reference graphic) ───── */
+        .split-seam-badge {
+            position: absolute;
+            top: 50%;
+            left: 46%;
+            transform: translate(-50%, -50%);
+            z-index: 10;
+            pointer-events: none;
+        }
+
+        .seam-circle {
+            width: 56px;
+            height: 56px;
+            border-radius: 50%;
+            background-color: var(--right-bg);
+            border: 4px solid var(--color-hero);
+            color: var(--color-hero);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 20px;
+        }
+
+        /* ── RIGHT PANEL: Clean Solid Neutral ─────────────────── */
+        .split-panel-right {
+            background-color: var(--right-bg);
+            color: var(--right-text-main);
+            padding: 40px 52px;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            position: relative;
+            z-index: 1;
+        }
+
+        /* Minimalist Nav Bar (Exactly like reference image top right) */
+        .right-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            width: 100%;
+            gap: 16px;
+        }
+
+        .category-nav {
             display: flex;
             align-items: center;
             gap: 8px;
             flex-wrap: wrap;
         }
 
-        .filter-pill {
-            display: inline-flex;
-            align-items: center;
-            gap: 6px;
-            padding: 6px 13px;
-            border-radius: 9999px;
-            background: var(--bg-surface);
-            border: 1px solid var(--border-subtle);
-            color: var(--text-secondary);
-            font-size: 12px;
-            font-weight: 600;
-            cursor: pointer;
-            transition: all 0.2s ease;
-        }
-
-        .filter-pill:hover {
-            color: var(--text-primary);
-            border-color: var(--border-hover);
-        }
-
-        .filter-pill.active {
-            background: var(--accent-dim);
-            color: var(--accent);
-            border-color: var(--accent);
-            box-shadow: 0 2px 10px var(--accent-glow);
-        }
-
-        .filter-pill .badge-count {
-            font-size: 10.5px;
-            opacity: 0.75;
-            padding: 1px 5px;
-            border-radius: 10px;
-            background: rgba(255, 255, 255, 0.08);
-        }
-
-        /* Target Intercept Banner */
-        .target-intercept-strip {
-            display: inline-flex;
-            align-items: center;
-            gap: 9px;
-            padding: 8px 16px;
-            border-radius: 12px;
-            background: var(--danger-dim);
-            border: 1px solid rgba(239, 68, 68, 0.22);
-            color: #F87171;
-            font-size: 13px;
-            font-family: var(--font-mono);
-            max-width: fit-content;
-        }
-
-        .target-intercept-strip i {
-            font-size: 14px;
-        }
-
-        .target-intercept-strip .target-value {
-            font-weight: 700;
-            color: #FCA5A5;
-            text-overflow: ellipsis;
-            overflow: hidden;
-            white-space: nowrap;
-            max-width: 450px;
-        }
-
-        /* Central Reality Check Box */
-        .reality-card {
-            flex: 1;
-            min-height: 0;
-            background: var(--bg-surface);
-            border: 1px solid var(--border-subtle);
-            border-radius: 24px;
-            padding: 32px 36px;
-            display: flex;
-            flex-direction: column;
-            justify-content: space-between;
-            position: relative;
-            box-shadow: var(--shadow-subtle);
-            backdrop-filter: blur(24px);
-            -webkit-backdrop-filter: blur(24px);
-            transition: border-color 0.3s ease, box-shadow 0.3s ease;
-        }
-
-        .reality-card:hover {
-            border-color: var(--border-highlight);
-            box-shadow: var(--shadow-elevated);
-        }
-
-        .card-top-hud {
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            margin-bottom: 20px;
-        }
-
-        .category-tag {
-            display: inline-flex;
-            align-items: center;
-            gap: 7px;
-            font-size: 11px;
-            font-weight: 800;
-            letter-spacing: 0.8px;
-            text-transform: uppercase;
-            padding: 4px 10px;
-            border-radius: 7px;
-        }
-
-        .category-tag.cat-roast {
-            background: var(--danger-dim);
-            color: #EF4444;
-            border: 1px solid rgba(239, 68, 68, 0.25);
-        }
-
-        .category-tag.cat-discipline {
-            background: var(--gold-dim);
-            color: var(--gold);
-            border: 1px solid rgba(245, 158, 11, 0.25);
-        }
-
-        .category-tag.cat-society {
-            background: var(--accent-dim);
-            color: var(--accent);
-            border: 1px solid var(--border-highlight);
-        }
-
-        .category-tag.cat-focus {
-            background: var(--purple-dim);
-            color: var(--purple);
-            border: 1px solid rgba(139, 92, 246, 0.25);
-        }
-
-        .card-counter {
-            font-size: 12px;
-            font-family: var(--font-mono);
-            color: var(--text-muted);
-            font-weight: 600;
-        }
-
-        /* Large Message Display */
-        .message-content-wrapper {
-            margin: auto 0;
-            padding: 10px 0;
-            transition: opacity 0.2s cubic-bezier(0.16, 1, 0.3, 1), transform 0.2s cubic-bezier(0.16, 1, 0.3, 1);
-        }
-
-        .message-content-wrapper.cycling {
-            opacity: 0;
-            transform: translateY(8px) scale(0.98);
-        }
-
-        .reality-headline {
-            font-size: 26px;
-            font-weight: 850;
-            line-height: 1.38;
-            letter-spacing: -0.6px;
-            color: var(--text-primary);
-            margin-bottom: 14px;
-        }
-
-        .reality-author {
-            display: inline-block;
-            font-size: 13.5px;
-            font-weight: 700;
-            color: var(--accent);
-            letter-spacing: -0.2px;
-        }
-
-        /* Message Actions */
-        .card-action-bar {
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            padding-top: 20px;
-            border-top: 1px solid var(--border-subtle);
-            margin-top: 16px;
-        }
-
-        .shuffle-btn {
-            display: inline-flex;
-            align-items: center;
-            gap: 9px;
-            padding: 10px 20px;
-            border-radius: 12px;
-            background: var(--accent);
-            color: #090A0F;
-            font-size: 13.5px;
-            font-weight: 750;
+        .nav-pill {
+            background: none;
             border: none;
+            color: var(--right-text-muted);
+            font-size: 12px;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.8px;
+            padding: 6px 12px;
+            border-radius: 8px;
             cursor: pointer;
-            transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
-            box-shadow: 0 4px 16px var(--accent-glow);
-        }
-
-        .shuffle-btn:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 8px 24px var(--accent-glow);
-            filter: brightness(1.08);
-        }
-
-        .shuffle-btn:active {
-            transform: translateY(0);
-        }
-
-        .btn-copy {
+            transition: color 0.15s ease, background 0.15s ease;
             display: inline-flex;
             align-items: center;
-            gap: 7px;
-            padding: 8px 14px;
-            border-radius: 9px;
-            background: var(--bg-elevated);
-            color: var(--text-secondary);
-            font-size: 12px;
-            font-weight: 600;
-            border: 1px solid var(--border-subtle);
-            cursor: pointer;
-            transition: all 0.2s ease;
+            gap: 5px;
         }
 
-        .btn-copy:hover {
-            color: var(--text-primary);
-            border-color: var(--border-hover);
+        .nav-pill:hover {
+            color: var(--right-text-main);
+            background-color: var(--right-surface);
         }
 
-        /* Hero Launch Buttons */
-        .primary-destinations {
-            display: grid;
-            grid-template-columns: 1.2fr 1fr;
-            gap: 12px;
+        .nav-pill.active {
+            color: var(--right-accent-solid);
+            background-color: var(--right-surface);
+            font-weight: 800;
         }
 
-        .launch-tile {
+        .nav-count {
+            font-size: 10px;
+            opacity: 0.7;
+        }
+
+        .right-header-tools {
             display: flex;
             align-items: center;
-            gap: 14px;
-            padding: 15px 18px;
-            border-radius: 16px;
-            background: var(--bg-surface);
-            border: 1px solid var(--border-subtle);
-            color: var(--text-primary);
-            text-decoration: none;
-            cursor: pointer;
-            transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+            gap: 10px;
         }
 
-        .launch-tile:hover {
-            border-color: var(--accent);
-            background: var(--accent-dim);
-            transform: translateY(-2px);
-            box-shadow: 0 6px 20px var(--accent-glow);
-        }
-
-        .launch-tile.focus-accent {
-            background: linear-gradient(135deg, var(--accent-dim), rgba(16, 185, 129, 0.05));
-            border-color: var(--border-highlight);
-        }
-
-        .launch-icon-box {
-            width: 42px;
-            height: 42px;
-            border-radius: 12px;
-            background: var(--bg-elevated);
-            border: 1px solid var(--border-subtle);
+        .btn-theme {
+            background-color: var(--right-surface);
+            border: 1px solid var(--right-border);
+            color: var(--right-text-muted);
+            width: 34px;
+            height: 34px;
+            border-radius: 50%;
             display: flex;
             align-items: center;
             justify-content: center;
-            font-size: 18px;
-            color: var(--accent);
-            flex-shrink: 0;
+            cursor: pointer;
+            font-size: 13px;
+            transition: color 0.15s ease, border-color 0.15s ease;
         }
 
-        .launch-tile.focus-accent .launch-icon-box {
-            background: var(--accent);
-            color: #090A0F;
-            box-shadow: 0 0 14px var(--accent-glow);
+        .btn-theme:hover {
+            color: var(--right-text-main);
+            border-color: var(--right-text-muted);
         }
 
-        .launch-tile-info {
-            display: flex;
-            flex-direction: column;
-            gap: 3px;
-        }
-
-        .lt-title {
-            font-size: 14px;
-            font-weight: 750;
-            display: flex;
-            align-items: center;
-            gap: 7px;
-        }
-
-        .lt-desc {
-            font-size: 12px;
-            color: var(--text-muted);
-        }
-
-        .kbd-badge {
-            font-size: 10px;
-            padding: 2px 5px;
-            border-radius: 4px;
-            background: rgba(255, 255, 255, 0.1);
-            color: var(--text-secondary);
-            font-family: var(--font-mono);
-            border: 1px solid var(--border-subtle);
-        }
-
-        /* ── Sidebar Column: Productive Hub ───────────────────── */
-        .sidebar-hub {
-            display: flex;
-            flex-direction: column;
-            gap: 14px;
-            min-height: 0;
-            overflow-y: auto;
-            padding-right: 2px;
-        }
-
-        .sidebar-hub::-webkit-scrollbar {
-            width: 4px;
-        }
-        .sidebar-hub::-webkit-scrollbar-thumb {
-            background: var(--border-subtle);
-            border-radius: 4px;
-        }
-
-        .hub-card {
-            background: var(--bg-surface);
-            border: 1px solid var(--border-subtle);
-            border-radius: 18px;
-            padding: 18px 20px;
-            display: flex;
-            flex-direction: column;
-            gap: 12px;
-        }
-
-        .hub-title {
+        .btn-login-style {
+            background-color: var(--right-accent-solid);
+            color: var(--right-accent-text);
+            border: none;
+            padding: 8px 18px;
+            border-radius: 9999px;
             font-size: 12px;
             font-weight: 750;
             text-transform: uppercase;
             letter-spacing: 0.6px;
-            color: var(--text-secondary);
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-        }
-
-        /* Builder Gateway Links */
-        .gateway-grid {
-            display: flex;
-            flex-direction: column;
-            gap: 8px;
-        }
-
-        .gateway-link {
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            padding: 9px 12px;
-            border-radius: 10px;
-            background: var(--bg-elevated);
-            border: 1px solid var(--border-subtle);
-            color: var(--text-primary);
-            text-decoration: none;
-            font-size: 12.5px;
-            font-weight: 600;
-            transition: all 0.18s ease;
-        }
-
-        .gateway-link:hover {
-            border-color: var(--accent);
-            color: var(--accent);
-            transform: translateX(3px);
-            background: var(--accent-dim);
-        }
-
-        .gateway-left {
-            display: flex;
-            align-items: center;
-            gap: 10px;
-        }
-
-        .gateway-left i {
-            font-size: 14px;
-            width: 16px;
-            text-align: center;
-            color: var(--accent);
-        }
-
-        .gateway-badge {
-            font-size: 11px;
-            color: var(--text-muted);
-            font-weight: 500;
-        }
-
-        /* Why Mindful Shield List */
-        .science-list {
-            display: flex;
-            flex-direction: column;
-            gap: 9px;
-        }
-
-        .science-item {
-            display: flex;
-            align-items: flex-start;
-            gap: 10px;
-            font-size: 12px;
-            line-height: 1.5;
-            color: var(--text-secondary);
-        }
-
-        .science-item i {
-            color: var(--accent);
-            margin-top: 3px;
-            font-size: 13px;
-            flex-shrink: 0;
-        }
-
-        .science-item strong {
-            color: var(--text-primary);
-        }
-
-        /* Quick Sprint Card */
-        .sprint-cta {
-            background: linear-gradient(135deg, rgba(16, 185, 129, 0.14), rgba(245, 158, 11, 0.08));
-            border-color: var(--border-highlight);
-        }
-
-        .sprint-content {
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-        }
-
-        .sprint-text h4 {
-            font-size: 13.5px;
-            font-weight: 750;
-            margin-bottom: 2px;
-        }
-
-        .sprint-text p {
-            font-size: 11.5px;
-            color: var(--text-muted);
-        }
-
-        .btn-start-sprint {
-            padding: 7px 14px;
-            border-radius: 9px;
-            background: var(--accent);
-            color: #090A0F;
-            border: none;
-            font-size: 12px;
-            font-weight: 750;
             cursor: pointer;
-            transition: transform 0.15s ease;
-        }
-
-        .btn-start-sprint:hover {
-            transform: scale(1.05);
-        }
-
-        /* ── Native Desktop Footer ────────────────────────────── */
-        .desktop-footer {
-            height: 38px;
-            padding: 0 24px;
-            border-top: 1px solid var(--border-subtle);
-            background: var(--bg-glass);
-            display: flex;
+            text-decoration: none;
+            display: inline-flex;
             align-items: center;
-            justify-content: space-between;
-            font-size: 11.5px;
-            color: var(--text-muted);
-            z-index: 10;
+            gap: 6px;
+            transition: opacity 0.15s ease;
+        }
+
+        .btn-login-style:hover {
+            opacity: 0.9;
+        }
+
+        /* Right Content Body */
+        .right-body {
+            margin: auto 0;
+            display: flex;
+            flex-direction: column;
+            gap: 22px;
+            max-width: 580px;
+        }
+
+        /* Intercepted Destination Badge */
+        .intercept-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 9px;
+            padding: 8px 16px;
+            border-radius: 10px;
+            background-color: var(--right-surface);
+            border: 1px solid var(--right-border);
+            font-size: 13px;
+            width: fit-content;
+            max-width: 100%;
+        }
+
+        .intercept-dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background-color: var(--color-hero);
             flex-shrink: 0;
         }
 
-        .footer-left {
+        .intercept-label {
+            color: var(--right-text-muted);
+            font-weight: 600;
+        }
+
+        .intercept-target {
+            color: var(--right-text-main);
+            font-family: var(--font-mono);
+            font-weight: 700;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+            max-width: 320px;
+        }
+
+        .right-headline {
+            font-size: 34px;
+            font-weight: 850;
+            line-height: 1.25;
+            letter-spacing: -0.8px;
+            color: var(--right-text-main);
+        }
+
+        .right-headline .accent-word {
+            color: var(--color-hero);
+        }
+
+        .right-desc {
+            font-size: 15px;
+            line-height: 1.65;
+            color: var(--right-text-muted);
+        }
+
+        /* Right Action Buttons (Solid Clean Styling) */
+        .action-row {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            flex-wrap: wrap;
+            margin-top: 4px;
+        }
+
+        .btn-action-solid {
+            display: inline-flex;
+            align-items: center;
+            gap: 10px;
+            padding: 13px 26px;
+            border-radius: 9999px;
+            background-color: var(--color-hero);
+            color: #FFFFFF;
+            font-size: 14px;
+            font-weight: 750;
+            text-decoration: none;
+            cursor: pointer;
+            border: none;
+            transition: opacity 0.15s ease, transform 0.15s ease;
+        }
+
+        .btn-action-solid:hover {
+            opacity: 0.92;
+            transform: translateY(-2px);
+        }
+
+        .btn-action-outline {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            padding: 12px 24px;
+            border-radius: 9999px;
+            background-color: transparent;
+            color: var(--right-text-main);
+            border: 1.5px solid var(--right-border);
+            font-size: 14px;
+            font-weight: 700;
+            text-decoration: none;
+            cursor: pointer;
+            transition: border-color 0.15s ease, background 0.15s ease, transform 0.15s ease;
+        }
+
+        .btn-action-outline:hover {
+            border-color: var(--right-text-main);
+            background-color: var(--right-surface);
+            transform: translateY(-2px);
+        }
+
+        .kbd-dark {
+            font-family: var(--font-mono);
+            font-size: 10px;
+            padding: 2px 6px;
+            border-radius: 4px;
+            background-color: var(--right-surface);
+            color: var(--right-text-muted);
+            border: 1px solid var(--right-border);
+        }
+
+        /* Build & Learn Row */
+        .gateway-bar {
             display: flex;
             align-items: center;
             gap: 8px;
+            flex-wrap: wrap;
+            padding-top: 10px;
+            border-top: 1px solid var(--right-border);
         }
 
-        .footer-left i {
-            color: var(--accent);
+        .gateway-title {
+            font-size: 11px;
+            font-weight: 800;
+            letter-spacing: 0.8px;
+            color: var(--right-text-sub);
+            text-transform: uppercase;
+        }
+
+        .gateway-pill {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            padding: 5px 12px;
+            border-radius: 9999px;
+            background-color: var(--right-surface);
+            border: 1px solid var(--right-border);
+            color: var(--right-text-muted);
+            font-size: 12px;
+            font-weight: 600;
+            text-decoration: none;
+            transition: color 0.15s ease, border-color 0.15s ease;
+        }
+
+        .gateway-pill:hover {
+            color: var(--right-text-main);
+            border-color: var(--color-hero);
+        }
+
+        .gateway-pill i {
+            font-size: 12px;
+        }
+
+        /* Right Footer */
+        .right-footer {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            font-size: 12px;
+            color: var(--right-text-sub);
+            padding-top: 12px;
         }
 
         .footer-shortcuts {
             display: flex;
             align-items: center;
-            gap: 16px;
+            gap: 14px;
         }
 
-        .footer-shortcut-item {
+        .footer-shortcut {
             display: flex;
             align-items: center;
             gap: 5px;
         }
 
-        .footer-shortcut-item kbd {
+        .footer-shortcut kbd {
             font-family: var(--font-mono);
             font-size: 10px;
-            padding: 1px 4px;
+            padding: 1px 5px;
             border-radius: 4px;
-            background: var(--bg-elevated);
-            border: 1px solid var(--border-subtle);
-            color: var(--text-secondary);
+            background-color: var(--right-surface);
+            border: 1px solid var(--right-border);
+            color: var(--right-text-muted);
         }
 
-        .footer-right a {
-            color: var(--text-secondary);
-            text-decoration: none;
-            transition: color 0.2s ease;
-            cursor: pointer;
-        }
-
-        .footer-right a:hover {
-            color: var(--accent);
-        }
-
-        /* Toast feedback */
-        .toast-bubble {
+        /* Clean Toast Alert */
+        .toast-notification {
             position: fixed;
-            bottom: 50px;
+            bottom: 24px;
             left: 50%;
             transform: translateX(-50%) translateY(20px);
             opacity: 0;
-            background: var(--bg-elevated);
-            border: 1px solid var(--border-highlight);
-            color: var(--text-primary);
+            background-color: #1F2430;
+            color: #FFFFFF;
+            border: 1px solid rgba(255, 255, 255, 0.2);
             padding: 8px 18px;
             border-radius: 9999px;
             font-size: 12px;
             font-weight: 600;
             pointer-events: none;
-            transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+            transition: all 0.2s ease;
             z-index: 100;
-            box-shadow: 0 8px 24px rgba(0, 0, 0, 0.3);
         }
 
-        .toast-bubble.show {
+        .toast-notification.active {
             opacity: 1;
             transform: translateX(-50%) translateY(0);
         }
     </style>
 </head>
 <body>
-    <div class="ambient-glow-mesh">
-        <div class="ambient-glow-circle-1"></div>
-        <div class="ambient-glow-circle-2"></div>
-    </div>
-
-    <!-- ══ DESKTOP HEADER ══ -->
-    <header class="desktop-header">
-        <div class="brand-cluster">
-            <div class="brand-icon-shield">
-                <i class="fa-solid fa-shield-halved"></i>
-            </div>
-            <div class="brand-meta">
-                <div class="brand-title">
-                    <span>Ocal Mindful Shield</span>
-                    <span class="brand-badge">Defense v2.6</span>
+    <div class="split-layout">
+        <!-- ══ LEFT PANEL: Solid Hero Coral / Red ══ -->
+        <section class="split-panel-left">
+            <header class="left-header">
+                <div class="brand-badge">
+                    <i class="fa-solid fa-shield-halved"></i>
+                    <span>Ocal Shield</span>
                 </div>
-                <span class="brand-subtitle">Search Security &amp; Attention Protection</span>
-            </div>
-        </div>
+                <div class="counter-pill" id="card-counter">#1 / 200</div>
+            </header>
 
-        <div class="header-status-pill" id="protection-status-indicator">
-            <span class="pulse-indicator"></span>
-            <span>Protection Active (Default)</span>
-        </div>
-
-        <div class="header-actions">
-            <button class="btn-header" id="btn-theme-toggle" type="button" title="Toggle Theme">
-                <i class="fas fa-moon" id="theme-icon"></i>
-            </button>
-            <a href="ocal://home" class="btn-header" id="btn-header-home" title="Return to Homepage (Esc)">
-                <i class="fas fa-house"></i>
-                <span>Home</span>
-            </a>
-            <a href="ocal://settings#search" class="btn-header primary-header" id="btn-header-settings" title="Adjust Content Protection Settings">
-                <i class="fas fa-sliders"></i>
-                <span>Settings</span>
-            </a>
-        </div>
-    </header>
-
-    <!-- ══ MAIN WORKSPACE CANVAS ══ -->
-    <main class="workspace-canvas">
-        <!-- ── Left Column: Reality Check Stage ── -->
-        <section class="hero-stage">
-            <!-- Category Selector Tabs -->
-            <div class="category-filter-bar">
-                <button class="filter-pill active" data-category="all">
-                    <span>🎲 All</span>
-                    <span class="badge-count">200</span>
-                </button>
-                <button class="filter-pill" data-category="roast">
-                    <span>🔥 Savage Roasts</span>
-                    <span class="badge-count">65</span>
-                </button>
-                <button class="filter-pill" data-category="discipline">
-                    <span>🏛️ Stoic Will</span>
-                    <span class="badge-count">45</span>
-                </button>
-                <button class="filter-pill" data-category="society">
-                    <span>🚀 Build For Society</span>
-                    <span class="badge-count">45</span>
-                </button>
-                <button class="filter-pill" data-category="focus">
-                    <span>⚡ Deep Focus</span>
-                    <span class="badge-count">45</span>
-                </button>
-            </div>
-
-            <!-- Intercepted Target HUD Strip (Never displays google.com) -->
-            <div class="target-intercept-strip" id="intercept-strip">
-                <i class="fas fa-filter"></i>
-                <span id="intercept-label">Filtered Adult Search:</span>
-                <span class="target-value" id="intercept-value">"Explicit Query Intercepted"</span>
-            </div>
-
-            <!-- Central Reality Check Card -->
-            <div class="reality-card">
-                <div class="card-top-hud">
-                    <span class="category-tag cat-roast" id="card-tag">
-                        <i class="fas fa-bolt"></i> <span id="card-tag-text">Savage Reality Check</span>
-                    </span>
-                    <span class="card-counter" id="card-counter">#1 / 200</span>
+            <div class="left-body">
+                <div class="category-tag" id="card-tag">
+                    <i class="fas fa-fire"></i>
+                    <span id="card-tag-text">Savage Reality Check</span>
                 </div>
 
-                <div class="message-content-wrapper" id="message-wrapper">
-                    <h1 class="reality-headline" id="reality-text">
-                        "Why waste time over here? Do some productive work and do good for society!"
-                    </h1>
-                    <span class="reality-author" id="reality-author">— Ocal Mindset Principle</span>
+                <h1 class="quote-headline" id="reality-text">
+                    "Bro really thought searching for that was gonna fix his life 💀 Go hit the gym."
+                </h1>
+
+                <div class="quote-author" id="reality-author">
+                    — Savage Reality Check
                 </div>
 
-                <div class="card-action-bar">
-                    <button class="shuffle-btn" id="btn-shuffle" type="button" title="Shuffle Message (Space)">
+                <div class="left-actions">
+                    <button class="btn-pill-hero" id="btn-shuffle" type="button" title="Shuffle Reality Check (Space)">
                         <i class="fas fa-shuffle"></i>
                         <span>Next Reality Check</span>
-                        <kbd class="kbd-badge" style="background: rgba(0,0,0,0.18); color: #090A0F;">Space</kbd>
+                        <kbd class="kbd-hero">Space</kbd>
                     </button>
 
-                    <button class="btn-copy" id="btn-copy-quote" type="button" title="Copy to clipboard">
+                    <button class="btn-ghost-hero" id="btn-copy-quote" type="button" title="Copy quote">
                         <i class="fas fa-copy"></i>
                         <span>Copy</span>
                     </button>
                 </div>
             </div>
 
-            <!-- Primary Action Launchers -->
-            <div class="primary-destinations">
-                <a href="ocal://focus" class="launch-tile focus-accent" id="link-focus">
-                    <div class="launch-icon-box">
-                        <i class="fas fa-brain"></i>
-                    </div>
-                    <div class="launch-tile-info">
-                        <div class="lt-title">
-                            <span>Launch Focus Flow</span>
-                            <kbd class="kbd-badge">Enter</kbd>
-                        </div>
-                        <span class="lt-desc">Start a 25m Pomodoro deep sprint or guided breathing</span>
-                    </div>
-                </a>
-
-                <a href="ocal://home" class="launch-tile" id="link-home">
-                    <div class="launch-icon-box">
-                        <i class="fas fa-house" style="color: var(--gold);"></i>
-                    </div>
-                    <div class="launch-tile-info">
-                        <div class="lt-title">
-                            <span>Return to Homepage</span>
-                            <kbd class="kbd-badge">Esc</kbd>
-                        </div>
-                        <span class="lt-desc">Tasks, scratchpad notes, and daily workspace</span>
-                    </div>
-                </a>
-            </div>
+            <footer class="left-footer">
+                <span>Cognitive Sanctuary &amp; Attention Defense</span>
+            </footer>
         </section>
 
-        <!-- ── Right Column: Sidebar Hub ── -->
-        <aside class="sidebar-hub">
-            <!-- Focus Quick Sprint -->
-            <div class="hub-card sprint-cta">
-                <div class="sprint-content">
-                    <div class="sprint-text">
-                        <h4>⚡ Quick Dopamine Reset</h4>
-                        <p>25m Pomodoro sprint starting now</p>
-                    </div>
-                    <button class="btn-start-sprint" id="btn-quick-sprint" type="button">Start</button>
-                </div>
-            </div>
-
-            <!-- Builder & Creator Gateway -->
-            <div class="hub-card">
-                <div class="hub-title">
-                    <span>🚀 High-Value Gateway</span>
-                    <i class="fas fa-code"></i>
-                </div>
-                <div class="gateway-grid">
-                    <a href="https://github.com" class="gateway-link" target="_blank">
-                        <div class="gateway-left">
-                            <i class="fab fa-github"></i>
-                            <span>GitHub</span>
-                        </div>
-                        <span class="gateway-badge">Build &amp; Ship</span>
-                    </a>
-                    <a href="https://www.freecodecamp.org" class="gateway-link" target="_blank">
-                        <div class="gateway-left">
-                            <i class="fas fa-laptop-code"></i>
-                            <span>FreeCodeCamp</span>
-                        </div>
-                        <span class="gateway-badge">Learn Coding</span>
-                    </a>
-                    <a href="https://leetcode.com" class="gateway-link" target="_blank">
-                        <div class="gateway-left">
-                            <i class="fas fa-terminal"></i>
-                            <span>LeetCode</span>
-                        </div>
-                        <span class="gateway-badge">Sharpen Logic</span>
-                    </a>
-                    <a href="https://en.wikipedia.org" class="gateway-link" target="_blank">
-                        <div class="gateway-left">
-                            <i class="fab fa-wikipedia-w"></i>
-                            <span>Wikipedia</span>
-                        </div>
-                        <span class="gateway-badge">World Wisdom</span>
-                    </a>
-                    <a href="https://www.khanacademy.org" class="gateway-link" target="_blank">
-                        <div class="gateway-left">
-                            <i class="fas fa-graduation-cap"></i>
-                            <span>Khan Academy</span>
-                        </div>
-                        <span class="gateway-badge">Math &amp; Science</span>
-                    </a>
-                </div>
-            </div>
-
-            <!-- Why Mindful Shield Intercepted This -->
-            <div class="hub-card">
-                <div class="hub-title">
-                    <span>🧠 Why We Shielded This</span>
-                    <i class="fas fa-brain"></i>
-                </div>
-                <div class="science-list">
-                    <div class="science-item">
-                        <i class="fas fa-shield-virus"></i>
-                        <span><strong>Preserve Executive Control:</strong> Instant gratification weakens dopamine receptors and fractures sustained willpower.</span>
-                    </div>
-                    <div class="science-item">
-                        <i class="fas fa-clock"></i>
-                        <span><strong>Save 3+ Hours:</strong> Distraction loops drain high-value cognitive energy that could be spent building and learning.</span>
-                    </div>
-                    <div class="science-item">
-                        <i class="fas fa-earth-americas"></i>
-                        <span><strong>Serve Society:</strong> The world needs disciplined builders, engineers, and thinkers—not doom-scrollers.</span>
-                    </div>
-                </div>
-            </div>
-        </aside>
-    </main>
-
-    <!-- ══ DESKTOP FOOTER ══ -->
-    <footer class="desktop-footer">
-        <div class="footer-left">
-            <i class="fas fa-circle-check"></i>
-            <span>Ocal Search Security &amp; Mindful Content Protection (Active by Default)</span>
-        </div>
-
-        <div class="footer-shortcuts">
-            <div class="footer-shortcut-item">
-                <kbd>Space</kbd>
-                <span>Shuffle</span>
-            </div>
-            <div class="footer-shortcut-item">
-                <kbd>Enter</kbd>
-                <span>Focus Flow</span>
-            </div>
-            <div class="footer-shortcut-item">
-                <kbd>Esc</kbd>
-                <span>Home</span>
+        <!-- ══ SEAM EMBLEM ══ -->
+        <div class="split-seam-badge">
+            <div class="seam-circle">
+                <i class="fa-solid fa-bolt-lightning"></i>
             </div>
         </div>
 
-        <div class="footer-right">
-            <a href="ocal://settings#search" id="footer-settings-link">
-                <i class="fas fa-gear"></i> Preferences
-            </a>
-        </div>
-    </footer>
+        <!-- ══ RIGHT PANEL: Solid Clean Contrasting Side ══ -->
+        <section class="split-panel-right">
+            <header class="right-header">
+                <nav class="category-nav">
+                    <button class="nav-pill active" data-category="all">
+                        All <span class="nav-count">200</span>
+                    </button>
+                    <button class="nav-pill" data-category="roast">
+                        Roasts <span class="nav-count">65</span>
+                    </button>
+                    <button class="nav-pill" data-category="discipline">
+                        Stoic <span class="nav-count">45</span>
+                    </button>
+                    <button class="nav-pill" data-category="society">
+                        Society <span class="nav-count">45</span>
+                    </button>
+                    <button class="nav-pill" data-category="focus">
+                        Focus <span class="nav-count">45</span>
+                    </button>
+                </nav>
 
-    <div class="toast-bubble" id="toast-bubble">Copied to clipboard</div>
+                <div class="right-header-tools">
+                    <button class="btn-theme" id="btn-theme-toggle" type="button" title="Toggle Light/Dark Theme">
+                        <i class="fas fa-moon" id="theme-icon"></i>
+                    </button>
+                    <a href="ocal://settings#search" class="btn-login-style" id="btn-header-settings">
+                        <i class="fas fa-sliders"></i>
+                        <span>Settings</span>
+                    </a>
+                </div>
+            </header>
 
-    <!-- ══ 200 MESSAGES & CONTROLLER ══ -->
+            <div class="right-body">
+                <!-- Intercept Target Badge (Never shows google.com) -->
+                <div class="intercept-badge" id="intercept-strip">
+                    <span class="intercept-dot"></span>
+                    <span class="intercept-label" id="intercept-label">Filtered Adult Search:</span>
+                    <strong class="intercept-target" id="intercept-value">"Explicit Query Intercepted"</strong>
+                </div>
+
+                <h2 class="right-headline">
+                    Why waste time over here?<br>
+                    <span class="accent-word">Do some productive work and do good for society.</span>
+                </h2>
+
+                <p class="right-desc">
+                    Ocal Mindful Shield intercepted this destination. Your energy and focus are too valuable to be lost. Redirect this moment into creating, writing code, learning, and contributing.
+                </p>
+
+                <div class="action-row">
+                    <a href="ocal://focus" class="btn-action-solid" id="link-focus">
+                        <i class="fas fa-brain"></i>
+                        <span>Launch Focus Flow</span>
+                        <kbd class="kbd-hero" style="background: rgba(0,0,0,0.2); border-color: rgba(255,255,255,0.3);">Enter</kbd>
+                    </a>
+
+                    <a href="ocal://home" class="btn-action-outline" id="link-home">
+                        <i class="fas fa-house"></i>
+                        <span>Return to Homepage</span>
+                        <kbd class="kbd-dark">Esc</kbd>
+                    </a>
+                </div>
+
+                <div class="gateway-bar">
+                    <span class="gateway-title">Build &amp; Learn:</span>
+                    <a href="https://github.com" target="_blank" class="gateway-pill"><i class="fab fa-github"></i> GitHub</a>
+                    <a href="https://www.freecodecamp.org" target="_blank" class="gateway-pill"><i class="fas fa-code"></i> FreeCodeCamp</a>
+                    <a href="https://leetcode.com" target="_blank" class="gateway-pill"><i class="fas fa-terminal"></i> LeetCode</a>
+                    <a href="https://en.wikipedia.org" target="_blank" class="gateway-pill"><i class="fab fa-wikipedia-w"></i> Wikipedia</a>
+                    <a href="https://www.khanacademy.org" target="_blank" class="gateway-pill"><i class="fas fa-graduation-cap"></i> Khan Academy</a>
+                </div>
+            </div>
+
+            <footer class="right-footer">
+                <span>Ocal Protection is enabled by default to protect health and focus.</span>
+                <div class="footer-shortcuts">
+                    <div class="footer-shortcut">
+                        <kbd>Space</kbd>
+                        <span>Next</span>
+                    </div>
+                    <div class="footer-shortcut">
+                        <kbd>Enter</kbd>
+                        <span>Focus</span>
+                    </div>
+                    <div class="footer-shortcut">
+                        <kbd>Esc</kbd>
+                        <span>Home</span>
+                    </div>
+                </div>
+            </footer>
+        </section>
+    </div>
+
+    <div class="toast-notification" id="toast-el">Copied to clipboard!</div>
+
+    <!-- ══ 200 MESSAGES DATABASE & SCRIPT ══ -->
     <script>
         const MESSAGES_DATABASE = [
   {
@@ -2110,26 +1784,6 @@
         let currentMessageIndex = 0;
         let filteredIndices = [];
 
-        // Synthesize a clean, subtle native click sound using Web Audio API
-        function playChime() {
-            try {
-                const AudioCtx = window.AudioContext || window.webkitAudioContext;
-                if (!AudioCtx) return;
-                const ctx = new AudioCtx();
-                const osc = ctx.createOscillator();
-                const gain = ctx.createGain();
-                osc.type = 'sine';
-                osc.frequency.setValueAtTime(587.33, ctx.currentTime); // D5
-                osc.frequency.exponentialRampToValueAtTime(880, ctx.currentTime + 0.08); // A5
-                gain.gain.setValueAtTime(0.04, ctx.currentTime);
-                gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.12);
-                osc.connect(gain);
-                gain.connect(ctx.destination);
-                osc.start();
-                osc.stop(ctx.currentTime + 0.12);
-            } catch (_) {}
-        }
-
         function filterMessages() {
             if (currentCategory === 'all') {
                 filteredIndices = MESSAGES_DATABASE.map((_, i) => i);
@@ -2147,7 +1801,6 @@
             const msg = MESSAGES_DATABASE[index];
             if (!msg) return;
 
-            const wrapper = document.getElementById('message-wrapper');
             const headline = document.getElementById('reality-text');
             const author = document.getElementById('reality-author');
             const tagContainer = document.getElementById('card-tag');
@@ -2158,40 +1811,40 @@
                 headline.textContent = `"${msg.text}"`;
                 author.textContent = `— ${msg.author}`;
 
-                // Update Tag
-                tagContainer.className = 'category-tag cat-' + msg.category;
-                if (msg.category === 'roast') {
-                    tagText.textContent = 'Savage Reality Check';
-                    tagContainer.querySelector('i').className = 'fas fa-fire';
-                } else if (msg.category === 'discipline') {
-                    tagText.textContent = 'Stoic Will & Discipline';
-                    tagContainer.querySelector('i').className = 'fas fa-landmark';
-                } else if (msg.category === 'society') {
-                    tagText.textContent = 'Build For Society';
-                    tagContainer.querySelector('i').className = 'fas fa-rocket';
-                } else {
-                    tagText.textContent = 'Deep Focus & Reset';
-                    tagContainer.querySelector('i').className = 'fas fa-brain';
+                if (tagText) {
+                    if (msg.category === 'roast') {
+                        tagText.textContent = 'Savage Reality Check';
+                        tagContainer.querySelector('i').className = 'fas fa-fire';
+                    } else if (msg.category === 'discipline') {
+                        tagText.textContent = 'Stoic Will & Discipline';
+                        tagContainer.querySelector('i').className = 'fas fa-landmark';
+                    } else if (msg.category === 'society') {
+                        tagText.textContent = 'Build For Society';
+                        tagContainer.querySelector('i').className = 'fas fa-rocket';
+                    } else {
+                        tagText.textContent = 'Deep Focus & Reset';
+                        tagContainer.querySelector('i').className = 'fas fa-brain';
+                    }
                 }
 
-                // Counter
                 const positionInFiltered = filteredIndices.indexOf(index) + 1;
-                counter.textContent = `#${positionInFiltered > 0 ? positionInFiltered : (index + 1)} / ${filteredIndices.length}`;
+                if (counter) {
+                    counter.textContent = `#${positionInFiltered > 0 ? positionInFiltered : (index + 1)} / ${filteredIndices.length}`;
+                }
             };
 
-            if (animate && wrapper) {
-                wrapper.classList.add('cycling');
+            if (animate && headline) {
+                headline.classList.add('animating');
                 setTimeout(() => {
                     applyData();
-                    wrapper.classList.remove('cycling');
-                }, 140);
+                    headline.classList.remove('animating');
+                }, 120);
             } else {
                 applyData();
             }
         }
 
         function shuffleMessage() {
-            playChime();
             if (filteredIndices.length === 0) filterMessages();
             let nextIndex = filteredIndices[Math.floor(Math.random() * filteredIndices.length)];
             if (filteredIndices.length > 1 && nextIndex === currentMessageIndex) {
@@ -2202,7 +1855,7 @@
             displayMessage(currentMessageIndex, true);
         }
 
-        // Parse blocked target: NEVER show google.com or search engines as the destination
+        // Parse blocked target: NEVER show google.com or search engines
         function parseBlockedTarget() {
             try {
                 const params = new URLSearchParams(window.location.search);
@@ -2226,7 +1879,6 @@
                                               host.includes('yahoo.') || host.includes('yandex.') || 
                                               host.includes('ecosia.');
 
-                        // Handle Google / search redirect url
                         if (parsed.pathname === '/url') {
                             const redirect = parsed.searchParams.get('url') || parsed.searchParams.get('q');
                             if (redirect) {
@@ -2246,7 +1898,6 @@
                             return;
                         }
 
-                        // Regular adult domain
                         if (labelEl) labelEl.textContent = 'Blocked Destination:';
                         if (valueEl) valueEl.textContent = host || rawUrl;
                         return;
@@ -2262,7 +1913,6 @@
             } catch (_) {}
         }
 
-        // Navigation
         function navigate(url) {
             if (window.electronAPI && typeof window.electronAPI.navigateTo === 'function') {
                 window.electronAPI.navigateTo(url);
@@ -2274,17 +1924,17 @@
         }
 
         function showToast(msg) {
-            const toast = document.getElementById('toast-bubble');
+            const toast = document.getElementById('toast-el');
             if (!toast) return;
             toast.textContent = msg;
-            toast.classList.add('show');
-            setTimeout(() => toast.classList.remove('show'), 2000);
+            toast.classList.add('active');
+            setTimeout(() => toast.classList.remove('active'), 2000);
         }
 
-        // Category pills handling
-        document.querySelectorAll('.filter-pill').forEach(btn => {
+        // Navigation pills
+        document.querySelectorAll('.nav-pill').forEach(btn => {
             btn.addEventListener('click', () => {
-                document.querySelectorAll('.filter-pill').forEach(p => p.classList.remove('active'));
+                document.querySelectorAll('.nav-pill').forEach(p => p.classList.remove('active'));
                 btn.classList.add('active');
                 currentCategory = btn.getAttribute('data-category');
                 filterMessages();
@@ -2292,7 +1942,6 @@
             });
         });
 
-        // Button clicks
         document.getElementById('btn-shuffle')?.addEventListener('click', shuffleMessage);
 
         document.getElementById('btn-copy-quote')?.addEventListener('click', () => {
@@ -2312,27 +1961,12 @@
             navigate('ocal://focus');
         });
 
-        document.getElementById('btn-quick-sprint')?.addEventListener('click', (e) => {
-            e.preventDefault();
-            navigate('ocal://focus');
-        });
-
         document.getElementById('link-home')?.addEventListener('click', (e) => {
             e.preventDefault();
             navigate('ocal://home');
         });
 
-        document.getElementById('btn-header-home')?.addEventListener('click', (e) => {
-            e.preventDefault();
-            navigate('ocal://home');
-        });
-
         document.getElementById('btn-header-settings')?.addEventListener('click', (e) => {
-            e.preventDefault();
-            navigate('ocal://settings#search');
-        });
-
-        document.getElementById('footer-settings-link')?.addEventListener('click', (e) => {
             e.preventDefault();
             navigate('ocal://settings#search');
         });
@@ -2347,15 +1981,10 @@
             if (icon) {
                 icon.className = next === 'dark' ? 'fas fa-moon' : 'fas fa-sun';
             }
-            const a = localStorage.getItem('ocal-settings-accent') || '#10B981';
-            if (window.OcalColorHarmonizer) {
-                window.OcalColorHarmonizer.applyHarmonizedTheme(a, next);
-            }
         });
 
         // Keyboard Shortcuts
         window.addEventListener('keydown', (e) => {
-            // Ignore if active inside input or textarea
             if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA') return;
 
             if (e.code === 'Space') {
@@ -2375,7 +2004,7 @@
             }
         });
 
-        // Initialization
+        // Initialize
         filterMessages();
         parseBlockedTarget();
         shuffleMessage();
