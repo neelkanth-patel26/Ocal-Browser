@@ -22,17 +22,18 @@
 
 :root[data-theme="dark"],
 body[data-theme="dark"] {
-    --bg: #18181B;
-    --card-bg: #222226;
-    --header-bg: #18181B;
-    --sidebar-bg: #18181B;
-    --text: #FFFFFF;
+    --bg: #101115;
+    --card-bg: #1C1F26;
+    --header-bg: #181B20;
+    --sidebar-bg: #14161C;
+    --text: #F3F4F6;
     --text-dim: #9CA3AF;
     --text-muted: #6B7280;
-    --chrome-border: rgba(255, 255, 255, 0.08);
+    --chrome-border: rgba(255, 255, 255, 0.07);
+    --row-border: rgba(255, 255, 255, 0.05);
 
-    --nav-hover-bg: #2E2E33;
-    --nav-active-bg: var(--accent);
+    --nav-hover-bg: rgba(255, 255, 255, 0.05);
+    --nav-active-bg: rgba(255, 255, 255, 0.08);
     --accent-border: var(--accent);
     --lime-accent: var(--accent);
 }
@@ -47,26 +48,28 @@ body[data-theme-combo] {
     --text-dim: var(--text-dim, #9CA3AF);
     --text-muted: var(--text-dim, #6B7280);
     --chrome-border: var(--border, rgba(255, 255, 255, 0.08));
+    --row-border: rgba(255, 255, 255, 0.05);
     --nav-hover-bg: var(--surface-card, #2E2E33);
     --nav-active-bg: var(--accent);
     --accent-border: var(--accent);
     --lime-accent: var(--accent);
 }
 
-/* ── Light Theme ── */
+/* ── Light Theme (Opera Native Light Theme) ── */
 :root[data-theme="light"],
 body[data-theme="light"] {
-    --bg: #EDEDF0;
+    --bg: #E9ECEF;
     --card-bg: #FFFFFF;
-    --header-bg: #EDEDF0;
-    --sidebar-bg: #EDEDF0;
-    --text: #111111;
-    --text-dim: #555860;
-    --text-muted: #888888;
-    --chrome-border: rgba(0, 0, 0, 0.06);
+    --header-bg: #FFFFFF;
+    --sidebar-bg: #E9ECEF;
+    --text: #111827;
+    --text-dim: #555E6C;
+    --text-muted: #8892A0;
+    --chrome-border: #DEE2E6;
+    --row-border: #F1F3F5;
 
-    --nav-hover-bg: #FFFFFF;
-    --nav-active-bg: var(--accent);
+    --nav-hover-bg: rgba(0, 0, 0, 0.04);
+    --nav-active-bg: rgba(0, 0, 0, 0.05);
     --accent-border: var(--accent);
 }
 
@@ -137,13 +140,13 @@ select,
     -webkit-user-select: text;
 }
 
-/* ── Top Header (Bento Showroom Header) ───────────────────── */
+/* ── Top Header (Opera Native Desktop Header) ───────────────────── */
 .settings-header {
     position: fixed;
     top: 0;
     left: 0;
     right: 0;
-    height: 60px;
+    height: 52px;
     background: var(--header-bg) !important;
     backdrop-filter: none;
     -webkit-backdrop-filter: none;
@@ -162,101 +165,98 @@ select,
 }
 
 .header-logo {
-    width: 32px;
-    height: 32px;
-    border-radius: 10px;
+    width: 28px;
+    height: 28px;
+    border-radius: 6px;
     display: flex;
     align-items: center;
     justify-content: center;
-    transition: transform 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+    transition: transform 0.2s ease;
 }
 
 .header-logo:hover {
-    transform: scale(1.08);
+    transform: scale(1.05);
 }
 
 .header-logo-img {
-    width: 24px;
-    height: 24px;
-    border-radius: 6px;
+    width: 22px;
+    height: 22px;
+    border-radius: 4px;
     object-fit: contain;
     filter: var(--logo-filter, none);
-    transition: transform 0.25s cubic-bezier(0.16, 1, 0.3, 1), filter 0.35s ease;
+    transition: transform 0.2s ease, filter 0.35s ease;
 }
 
 .header-logo-text {
     font-family: var(--font-title);
-    font-size: 17px;
+    font-size: 16px;
     font-weight: 700;
-    letter-spacing: -0.4px;
+    letter-spacing: -0.2px;
     color: var(--text);
 }
 
 .header-search {
-    position: absolute;
-    left: 50%;
-    transform: translateX(-50%);
-    max-width: 480px;
-    width: calc(100% - 320px);
-    margin: 0;
+    position: relative;
+    width: 240px;
+    margin-left: auto;
 }
 
 .header-search .search-icon {
     position: absolute;
-    left: 15px;
+    left: 12px;
     top: 50%;
     transform: translateY(-50%);
-    color: var(--text-dim);
+    color: #8E8E93;
     font-size: 13px;
     pointer-events: none;
-    opacity: 0.75;
+    opacity: 0.9;
     z-index: 2;
 }
 
 .header-search input[type="text"] {
     width: 100%;
-    height: 38px;
-    background: var(--card-bg);
-    border: 1px solid rgba(0, 0, 0, 0.12);
-    border-radius: 12px;
-    padding: 0 16px 0 42px !important;
+    height: 32px;
+    background: #EBEDF0;
+    border: 1px solid transparent;
+    border-radius: 9999px;
+    padding: 0 16px 0 34px !important;
     color: var(--text);
     font-family: var(--font-main);
     font-size: 13px;
     font-weight: 500;
     outline: none;
-    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04);
-    transition: all 0.22s cubic-bezier(0.16, 1, 0.3, 1);
+    box-shadow: none;
+    transition: all 0.2s ease;
 }
 
 body[data-theme="dark"] .header-search input[type="text"] {
-    background: #222226;
-    border-color: rgba(255, 255, 255, 0.1);
+    background: #232730;
+    border-color: rgba(255, 255, 255, 0.08);
     box-shadow: none;
 }
 
 .header-search input[type="text"]:focus {
-    background: var(--card-bg);
+    background: #FFFFFF;
     border-color: var(--accent);
-    box-shadow: 0 0 0 3px color-mix(in srgb, var(--accent) 22%, transparent);
+    box-shadow: 0 0 0 2px color-mix(in srgb, var(--accent) 20%, transparent);
 }
 
 body[data-theme="dark"] .header-search input[type="text"]:focus {
-    background: #28282D;
+    background: #282C37;
     border-color: var(--accent);
-    box-shadow: 0 0 0 3px color-mix(in srgb, var(--accent) 25%, transparent);
+    box-shadow: 0 0 0 2px color-mix(in srgb, var(--accent) 25%, transparent);
 }
 
 .settings-container {
     display: flex;
-    height: calc(100vh - 60px);
-    margin-top: 60px;
+    height: calc(100vh - 52px);
+    margin-top: 52px;
     overflow: hidden;
 }
 
-/* ── Sidebar (Bento Showroom Sidebar) ─────────────────────── */
+/* ── Sidebar (Opera Clean Minimal Sidebar) ─────────────────────── */
 .sidebar {
-    width: 240px;
+    width: 210px;
     background: var(--sidebar-bg) !important;
     backdrop-filter: none;
     -webkit-backdrop-filter: none;
@@ -264,7 +264,7 @@ body[data-theme="dark"] .header-search input[type="text"]:focus {
     height: 100%;
     display: flex;
     flex-direction: column;
-    padding-top: 14px;
+    padding-top: 10px;
     flex-shrink: 0;
     overflow-y: auto;
 }
@@ -272,25 +272,25 @@ body[data-theme="dark"] .header-search input[type="text"]:focus {
 .sidebar-nav {
     display: flex;
     flex-direction: column;
-    gap: 3px;
-    padding: 0 4px;
+    gap: 2px;
+    padding: 0 8px;
 }
 
 .nav-item {
     display: flex;
     align-items: center;
-    gap: 11px;
-    height: 36px;
+    gap: 10px;
+    height: 34px;
     padding: 0 10px;
-    color: var(--text-dim, #9ca3af);
+    color: var(--text-dim, #555E6C);
     font-size: 13px;
     font-weight: 500;
-    letter-spacing: -0.15px;
-    border-radius: 8px !important;
+    letter-spacing: -0.1px;
+    border-radius: 6px !important;
     cursor: pointer;
-    margin: 1px 6px;
-    transition: background-color 0.15s ease, color 0.15s ease, border-color 0.15s ease !important;
-    border: 1px solid transparent;
+    margin: 1px 0;
+    transition: background 0.15s ease, color 0.15s ease;
+    border: none !important;
     white-space: nowrap;
     position: relative;
     user-select: none;
@@ -298,77 +298,69 @@ body[data-theme="dark"] .header-search input[type="text"]:focus {
 
 .nav-item:hover {
     background: rgba(0, 0, 0, 0.04) !important;
-    color: var(--text, #111111);
-    border-color: transparent;
+    color: var(--text, #111827);
 }
 
 body[data-theme="dark"] .nav-item:hover {
     background: rgba(255, 255, 255, 0.05) !important;
-    border-color: transparent;
     color: #FFFFFF;
 }
 
-/* Monochromatic native squircle icon containers */
+/* Opera-style Clean Unboxed Icon */
 .nav-item-icon {
-    width: 26px;
-    height: 26px;
-    border-radius: 7px;
+    width: 18px;
+    height: 18px;
     display: flex;
     align-items: center;
     justify-content: center;
-    font-size: 12px;
+    font-size: 13px;
     flex-shrink: 0;
-    transition: background-color 0.18s ease, color 0.18s ease, border-color 0.18s ease, box-shadow 0.18s ease !important;
-    background: rgba(0, 0, 0, 0.04);
-    border: 1px solid rgba(0, 0, 0, 0.04);
-    color: #64748b;
+    background: transparent !important;
+    border: none !important;
+    box-shadow: none !important;
+    color: #6B7280;
+    transition: color 0.15s ease;
 }
 
 body[data-theme="dark"] .nav-item-icon {
-    background: rgba(255, 255, 255, 0.04);
-    border: 1px solid rgba(255, 255, 255, 0.05);
-    color: rgba(255, 255, 255, 0.65);
+    color: #9CA3AF;
 }
 
 .nav-item:hover .nav-item-icon {
-    background: rgba(0, 0, 0, 0.07);
-    color: #0f172a;
-    border-color: rgba(0, 0, 0, 0.08);
+    color: var(--text, #111827);
 }
 
 body[data-theme="dark"] .nav-item:hover .nav-item-icon {
-    background: rgba(255, 255, 255, 0.08);
     color: #FFFFFF;
-    border-color: rgba(255, 255, 255, 0.09);
 }
 
-/* Theme-matched Active State (Dynamically follows user-selected accent theme color) */
+/* Opera-style Active State: clean bold text, active icon color */
 .nav-item.active,
 body[data-theme="light"] .nav-item.active {
-    background: color-mix(in srgb, var(--accent) 10%, rgba(0, 0, 0, 0.02)) !important;
-    color: #0f172a !important;
-    border: 1px solid color-mix(in srgb, var(--accent) 26%, transparent) !important;
-    border-radius: 8px !important;
+    background: rgba(0, 0, 0, 0.04) !important;
+    color: #111827 !important;
+    border: none !important;
+    border-radius: 6px !important;
     box-shadow: none !important;
-    font-weight: 600 !important;
+    font-weight: 700 !important;
 }
 
 body[data-theme="dark"] .nav-item.active {
-    background: color-mix(in srgb, var(--accent) 12%, rgba(255, 255, 255, 0.03)) !important;
+    background: rgba(255, 255, 255, 0.07) !important;
     color: #FFFFFF !important;
-    border: 1px solid color-mix(in srgb, var(--accent) 28%, transparent) !important;
-    border-radius: 8px !important;
+    border: none !important;
+    border-radius: 6px !important;
     box-shadow: none !important;
-    font-weight: 600 !important;
+    font-weight: 700 !important;
 }
 
 .nav-item.active .nav-item-icon,
 body[data-theme="light"] .nav-item.active .nav-item-icon,
 body[data-theme="dark"] .nav-item.active .nav-item-icon {
-    background: var(--accent) !important;
-    color: #FFFFFF !important;
-    border: 1px solid color-mix(in srgb, var(--accent) 80%, #ffffff) !important;
-    box-shadow: 0 1px 4px color-mix(in srgb, var(--accent) 32%, transparent) !important;
+    background: transparent !important;
+    color: var(--accent) !important;
+    border: none !important;
+    box-shadow: none !important;
 }
 
 /* External link indicator for Web Store */
@@ -393,7 +385,7 @@ body[data-theme="dark"] .nav-item.active .nav-item-icon {
 .nav-divider {
     height: 1px;
     background: var(--chrome-border);
-    margin: 8px 10px;
+    margin: 6px 8px;
 }
 
 .nav-section-label {
@@ -402,58 +394,53 @@ body[data-theme="dark"] .nav-item.active .nav-item-icon {
     color: var(--text-muted);
     text-transform: uppercase;
     letter-spacing: 0.8px;
-    padding: 8px 24px 4px;
+    padding: 8px 16px 4px;
 }
 
 .sidebar-footer {
     margin-top: auto;
-    padding: 14px 10px;
+    padding: 12px 14px;
     border-top: 1px solid var(--chrome-border);
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
 }
 
 .version-status-card {
-    background: var(--card-bg);
-    border: 1px solid var(--chrome-border);
-    border-radius: 14px;
-    padding: 12px 14px;
+    background: transparent !important;
+    border: none !important;
+    border-radius: 0 !important;
+    padding: 0 !important;
+    box-shadow: none !important;
     display: flex;
     flex-direction: column;
-    gap: 8px;
-    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.02);
-    transition: all 0.22s cubic-bezier(0.16, 1, 0.3, 1);
-}
-
-body[data-theme="dark"] .version-status-card {
-    background: #222226;
-    border-color: rgba(255, 255, 255, 0.08);
+    gap: 4px;
 }
 
 .version-status-card:hover {
-    transform: translateY(-1px);
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
-    border-color: rgba(148, 163, 184, 0.25);
+    transform: none !important;
+    box-shadow: none !important;
 }
 
 .version-status-pill {
     display: flex;
     align-items: center;
-    gap: 8px;
+    gap: 6px;
 }
 
 .version-code {
-    font-family: 'Space Mono', monospace;
-    font-size: 11px;
-    font-weight: 700;
-    color: var(--text);
-    letter-spacing: -0.2px;
+    font-family: var(--font-main);
+    font-size: 11.5px;
+    font-weight: 500;
+    color: var(--text-dim);
 }
 
 .secure-architecture-badge {
     display: flex;
     align-items: center;
     gap: 6px;
-    font-size: 10.5px;
-    color: var(--text-dim);
+    font-size: 11px;
+    color: var(--text-muted);
 }
 
 .secure-architecture-badge i {
@@ -461,68 +448,73 @@ body[data-theme="dark"] .version-status-card {
     font-size: 11px;
 }
 
-/* ── Content Area ────────────────────────────────────────── */
+/* ── Content Area (Opera Clean Centered Layout) ─────────────────────── */
 .content {
     flex-grow: 1;
     overflow-y: auto;
     height: 100%;
-    padding: 28px 36px 80px;
+    padding: 24px 40px 80px;
     background: var(--bg) !important;
 }
 
 .section {
     display: none;
+    max-width: 760px;
+    margin: 0 auto;
     width: 100%;
 }
 
 .section.active {
     display: block;
-    animation: fadeIn 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+    animation: fadeIn 0.25s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
 @keyframes fadeIn {
     from {
         opacity: 0;
-        transform: translateY(6px);
+        transform: translateY(4px);
     }
-
     to {
         opacity: 1;
         transform: translateY(0);
     }
 }
 
+.settings-page-header,
 .page-header {
     max-width: 100%;
-    margin: 0 auto 24px;
-    border-bottom: 1px solid var(--chrome-border);
-    padding-bottom: 16px;
+    margin: 0 auto 14px;
+    border-bottom: none !important;
+    padding-bottom: 0 !important;
 }
 
+.settings-page-title,
 .page-title {
     font-family: var(--font-title);
-    font-size: 24px;
-    font-weight: 600;
+    font-size: 17px;
+    font-weight: 700;
     color: var(--text);
-    letter-spacing: -0.4px;
+    letter-spacing: -0.3px;
+    margin: 0 0 2px 0;
     line-height: 1.3;
 }
 
+.settings-page-subtitle,
 .page-desc {
     font-family: var(--font-title);
-    font-size: 14px;
+    font-size: 12px;
     color: var(--text-dim);
-    margin-top: 6px;
-    line-height: 1.6;
+    margin: 0;
+    line-height: 1.4;
 }
 
 .page-eyebrow {
     font-family: var(--font-title);
-    font-size: 12px;
+    font-size: 11.5px;
     text-transform: uppercase;
-    letter-spacing: 0.8px;
+    letter-spacing: 0.6px;
     color: var(--accent);
-    margin-bottom: 6px;
+    margin-bottom: 4px;
     font-weight: 600;
 }
 
@@ -531,25 +523,39 @@ body[data-theme="dark"] .version-status-card {
     margin: 0 auto;
     display: flex;
     flex-direction: column;
-    gap: 24px;
+    gap: 16px;
 }
 
-/* ── Cards and Rows (Superpower Pill Container Architecture) ───────────── */
+/* ── Cards and Rows (Opera Clean White Card Architecture) ───────────── */
 .card,
 .studio-card,
 .pref-module,
 .profile-card,
 .add-profile-card,
-.verified-source-card {
-    background: var(--card-bg) !important;
-    border: 1px solid var(--chrome-border) !important;
-    border-radius: 28px !important;
+.verified-source-card,
+.settings-group-card {
+    background: var(--card-bg, #FFFFFF) !important;
+    border: 1px solid var(--chrome-border, rgba(0, 0, 0, 0.08)) !important;
+    border-radius: 10px !important;
     overflow: hidden;
     width: 100%;
     backdrop-filter: none;
     -webkit-backdrop-filter: none;
-    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.03) !important;
-    transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1) !important;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.03) !important;
+    transition: none !important;
+    margin-bottom: 16px;
+}
+
+body[data-theme="dark"] .card,
+body[data-theme="dark"] .studio-card,
+body[data-theme="dark"] .pref-module,
+body[data-theme="dark"] .profile-card,
+body[data-theme="dark"] .add-profile-card,
+body[data-theme="dark"] .verified-source-card,
+body[data-theme="dark"] .settings-group-card {
+    background: #1C1F26 !important;
+    border-color: rgba(255, 255, 255, 0.07) !important;
+    box-shadow: none !important;
 }
 
 .card:not(.ext-card-row):hover,
@@ -557,29 +563,21 @@ body[data-theme="dark"] .version-status-card {
 .pref-module:hover,
 .profile-card:hover,
 .add-profile-card:hover,
-.verified-source-card:hover {
-    transform: translateY(-2px) !important;
-    box-shadow: 0 12px 32px rgba(0, 0, 0, 0.15) !important;
-    border-color: rgba(255, 255, 255, 0.15) !important;
+.verified-source-card:hover,
+.settings-group-card:hover {
+    transform: none !important;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.03) !important;
 }
 
-body[data-theme="light"] .card,
-body[data-theme="light"] .studio-card,
-body[data-theme="light"] .pref-module,
-body[data-theme="light"] .profile-card,
-body[data-theme="light"] .add-profile-card,
-body[data-theme="light"] .verified-source-card {
-    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.04) !important;
-}
-
-body[data-theme="light"] .card:not(.ext-card-row):hover,
-body[data-theme="light"] .studio-card:hover,
-body[data-theme="light"] .pref-module:hover,
-body[data-theme="light"] .profile-card:hover,
-body[data-theme="light"] .add-profile-card:hover,
-body[data-theme="light"] .verified-source-card:hover {
-    box-shadow: 0 12px 32px rgba(0, 0, 0, 0.06) !important;
-    border-color: rgba(0, 0, 0, 0.15) !important;
+body[data-theme="dark"] .card:not(.ext-card-row):hover,
+body[data-theme="dark"] .studio-card:hover,
+body[data-theme="dark"] .pref-module:hover,
+body[data-theme="dark"] .profile-card:hover,
+body[data-theme="dark"] .add-profile-card:hover,
+body[data-theme="dark"] .verified-source-card:hover,
+body[data-theme="dark"] .settings-group-card:hover {
+    transform: none !important;
+    box-shadow: none !important;
 }
 
 /* Clean groups to structure sections */
@@ -2299,31 +2297,31 @@ body[data-theme="light"] select option {
     font-size: 22px;
     font-weight: 600;
     color: var(--text);
-    letter-spacing: -0.4px;
-    margin: 0 0 4px 0;
+    letter-spacing: -0.3px;
+    margin: 0 0 2px 0;
     line-height: 1.3;
 }
 
 .settings-page-subtitle {
-    font-size: 13px;
+    font-size: 12px;
     color: var(--text-dim);
     margin: 0;
     font-weight: 400;
 }
 
-/* ── Grouped Settings Card (Native macOS / Windows 11 style) ── */
+/* ── Grouped Settings Card (Opera Clean White Card Architecture) ── */
 .settings-group-card {
-    background: var(--card-bg, #FFFFFF);
-    border: 1px solid var(--border, rgba(0, 0, 0, 0.08));
-    border-radius: 12px;
-    margin-bottom: 18px;
+    background: var(--card-bg, #FFFFFF) !important;
+    border: 1px solid var(--chrome-border, rgba(0, 0, 0, 0.08)) !important;
+    border-radius: 10px !important;
+    margin-bottom: 16px !important;
     overflow: hidden;
-    box-shadow: none !important;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.03) !important;
 }
 
 body[data-theme="dark"] .settings-group-card {
-    background: #202124;
-    border-color: rgba(255, 255, 255, 0.08);
+    background: #1C1F26 !important;
+    border-color: rgba(255, 255, 255, 0.07) !important;
     box-shadow: none !important;
 }
 
@@ -2594,14 +2592,14 @@ body[data-theme="dark"] .engine-active-indicator {
     background: #10B981;
 }
 
-/* ── Toggle Rows ── */
+/* ── Toggle Rows (Opera Native Clean Rows) ── */
 .settings-toggle-row {
     display: flex;
     align-items: center;
     justify-content: space-between;
     padding: 13px 20px;
     gap: 16px;
-    border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+    border-bottom: 1px solid var(--row-border, #F1F3F5);
 }
 
 body[data-theme="dark"] .settings-toggle-row {
@@ -2615,57 +2613,60 @@ body[data-theme="dark"] .settings-toggle-row {
 .str-left {
     display: flex;
     align-items: center;
-    gap: 14px;
+    gap: 12px;
+    flex: 1;
 }
 
 .str-icon {
-    width: 32px;
-    height: 32px;
-    border-radius: 8px;
+    width: 28px;
+    height: 28px;
+    border-radius: 6px;
     display: flex;
     align-items: center;
     justify-content: center;
     font-size: 13px;
-    background: rgba(0, 0, 0, 0.04);
-    border: 1px solid rgba(0, 0, 0, 0.06);
+    background: rgba(0, 0, 0, 0.03);
+    border: none;
     color: var(--text-dim);
     flex-shrink: 0;
 }
 
 body[data-theme="dark"] .str-icon {
     background: rgba(255, 255, 255, 0.05);
-    border-color: rgba(255, 255, 255, 0.08);
+    border: none;
     color: var(--text-dim);
 }
 
 .str-text {
     display: flex;
     flex-direction: column;
-    gap: 1px;
+    gap: 2px;
 }
 
 .str-title {
     font-size: 13.5px;
-    font-weight: 600;
+    font-weight: 500;
     color: var(--text);
 }
 
 .str-desc {
     font-size: 12px;
     color: var(--text-dim);
+    line-height: 1.4;
 }
 
 .str-right {
     display: flex;
     align-items: center;
     gap: 12px;
+    flex-shrink: 0;
 }
 
-/* ── Native Desktop Switch (macOS / Windows 11 style) ── */
+/* ── Native Desktop Switch (Opera Sleek Pill Toggle) ── */
 .native-switch {
     position: relative;
     display: inline-block;
-    width: 38px;
+    width: 40px;
     height: 22px;
     flex-shrink: 0;
 }
@@ -2681,13 +2682,13 @@ body[data-theme="dark"] .str-icon {
     position: absolute;
     cursor: pointer;
     inset: 0;
-    background: rgba(0, 0, 0, 0.18);
-    border-radius: 22px;
-    transition: 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+    background: #CBD5E1;
+    border-radius: 9999px;
+    transition: background 0.18s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
 body[data-theme="dark"] .native-switch-slider {
-    background: rgba(255, 255, 255, 0.2);
+    background: #374151;
 }
 
 .native-switch-slider::before {
@@ -2696,19 +2697,19 @@ body[data-theme="dark"] .native-switch-slider {
     height: 18px;
     width: 18px;
     left: 2px;
-    bottom: 2px;
+    top: 2px;
     background: #FFFFFF;
     border-radius: 50%;
-    transition: 0.2s cubic-bezier(0.16, 1, 0.3, 1);
-    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.2);
+    transition: transform 0.18s cubic-bezier(0.16, 1, 0.3, 1);
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.18);
 }
 
-.native-switch input:checked+.native-switch-slider {
-    background: var(--accent);
+.native-switch input:checked + .native-switch-slider {
+    background: var(--accent, #5B3CEB);
 }
 
-.native-switch input:checked+.native-switch-slider::before {
-    transform: translateX(16px);
+.native-switch input:checked + .native-switch-slider::before {
+    transform: translateX(18px);
 }
 
 /* ── Settings Group Body & Desktop Input Fields ── */
@@ -12784,17 +12785,17 @@ body[data-theme="light"] .profiles-card-header {
    SYSTEM & PERFORMANCE SECTION (MATCHING HOMEPAGE SETTINGS-GROUP-CARD STYLE)
    ══════════════════════════════════════════════════════════════════════════ */
 #system .settings-group-card {
-    background: var(--card-bg, #FFFFFF);
-    border: 1px solid var(--border, rgba(0, 0, 0, 0.08));
-    border-radius: 12px;
-    margin-bottom: 18px;
+    background: var(--card-bg, #FFFFFF) !important;
+    border: 1px solid var(--chrome-border, rgba(0, 0, 0, 0.08)) !important;
+    border-radius: 10px !important;
+    margin-bottom: 16px !important;
     overflow: hidden;
-    box-shadow: none !important;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.03) !important;
 }
 
 body[data-theme="dark"] #system .settings-group-card {
-    background: #202124;
-    border-color: rgba(255, 255, 255, 0.08);
+    background: #1C1F26 !important;
+    border-color: rgba(255, 255, 255, 0.07) !important;
     box-shadow: none !important;
 }
 
@@ -12947,17 +12948,17 @@ body[data-theme="dark"] .downloads-path-code {
    SECURITY & PRIVACY SECTION (MATCHING HOMEPAGE SETTINGS-GROUP-CARD STYLE)
    ══════════════════════════════════════════════════════════════════════════ */
 #security .settings-group-card {
-    background: var(--card-bg, #FFFFFF);
-    border: 1px solid var(--border, rgba(0, 0, 0, 0.08));
-    border-radius: 12px;
-    margin-bottom: 18px;
+    background: var(--card-bg, #FFFFFF) !important;
+    border: 1px solid var(--chrome-border, rgba(0, 0, 0, 0.08)) !important;
+    border-radius: 10px !important;
+    margin-bottom: 16px !important;
     overflow: hidden;
-    box-shadow: none !important;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.03) !important;
 }
 
 body[data-theme="dark"] #security .settings-group-card {
-    background: #202124;
-    border-color: rgba(255, 255, 255, 0.08);
+    background: #1C1F26 !important;
+    border-color: rgba(255, 255, 255, 0.07) !important;
     box-shadow: none !important;
 }
 

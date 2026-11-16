@@ -2996,16 +2996,36 @@ window.filterGlobalSettings = function() {
     if (!currentSection) return;
     
     const groups = currentSection.querySelectorAll('.group');
-    const cards = currentSection.querySelectorAll('.card, .pref-module, .ext-card-row, .ext-item-card, .about-card, .update-card, .shortcut-row');
-    
-    cards.forEach(card => {
-        const text = card.innerText.toLowerCase();
-        const match = !query || text.includes(query);
-        card.style.display = match ? '' : 'none';
-    });
+    const cards = currentSection.querySelectorAll('.card, .pref-module, .ext-card-row, .ext-item-card, .about-card, .update-card, .shortcut-row, .settings-group-card');
+    const rows = currentSection.querySelectorAll('.settings-toggle-row, .settings-engine-row');
+
+    if (rows.length > 0 && query) {
+        rows.forEach(row => {
+            const text = row.innerText.toLowerCase();
+            const match = text.includes(query);
+            row.style.display = match ? '' : 'none';
+        });
+        cards.forEach(card => {
+            const cardRows = card.querySelectorAll('.settings-toggle-row, .settings-engine-row');
+            if (cardRows.length > 0) {
+                const anyVisible = Array.from(cardRows).some(r => r.style.display !== 'none');
+                card.style.display = anyVisible ? '' : 'none';
+            } else {
+                const text = card.innerText.toLowerCase();
+                card.style.display = text.includes(query) ? '' : 'none';
+            }
+        });
+    } else {
+        rows.forEach(row => { row.style.display = ''; });
+        cards.forEach(card => {
+            const text = card.innerText.toLowerCase();
+            const match = !query || text.includes(query);
+            card.style.display = match ? '' : 'none';
+        });
+    }
     
     groups.forEach(group => {
-        const visibleItems = Array.from(group.querySelectorAll('.card, .pref-module, .ext-card-row, .ext-item-card, .about-card, .update-card, .shortcut-row')).some(c => c.style.display !== 'none');
+        const visibleItems = Array.from(group.querySelectorAll('.card, .pref-module, .ext-card-row, .ext-item-card, .about-card, .update-card, .shortcut-row, .settings-group-card')).some(c => c.style.display !== 'none');
         group.style.display = (visibleItems || !query) ? '' : 'none';
     });
 };
