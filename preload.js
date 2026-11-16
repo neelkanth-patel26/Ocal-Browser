@@ -2908,10 +2908,10 @@ window.addEventListener('mousedown', () => {
                 min-height: 48px !important;
             }
             .ocal-section-shielded > :not(.ocal-section-shield-overlay) {
-                filter: blur(28px) grayscale(65%) !important;
+                filter: blur(36px) grayscale(90%) !important;
                 pointer-events: none !important;
                 user-select: none !important;
-                opacity: 0.3 !important;
+                opacity: 0.08 !important;
                 transition: filter 0.25s ease, opacity 0.25s ease !important;
             }
             .ocal-section-shielded.ocal-unblurred > :not(.ocal-section-shield-overlay) {

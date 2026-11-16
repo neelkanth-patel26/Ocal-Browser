@@ -1284,29 +1284,7 @@ function applyShieldSettings() {
 
         // 0. Search Security & Mindful Adult Content Protection (On by default)
         if (userSettings.contentProtectionEnabled !== false) {
-            // Check adult search query on search engines
-            const adultSearchQuery = extractSearchEngineQuery(url);
-            if (adultSearchQuery && isAdultContentQuery(adultSearchQuery)) {
-                if (resourceType === 'mainFrame') {
-                    let wc = (details && details.webContents) || (webContentsId ? webContents.fromId(webContentsId) : null);
-                    if (!wc && details && details.frame) wc = details.frame.webContents;
-                    if (!wc) {
-                        const entry = views.find(v => v.id === activeViewId);
-                        if (entry && entry.view && !entry.view.webContents.isDestroyed()) wc = entry.view.webContents;
-                    }
-                    if (wc && !wc.isDestroyed()) {
-                        const targetShield = resolveInternalURL(`ocal://mindful-shield?query=${encodeURIComponent(adultSearchQuery)}`);
-                        setTimeout(() => {
-                            if (!wc.isDestroyed()) wc.loadURL(targetShield);
-                        }, 25);
-                    }
-                    return callback({ cancel: true });
-                } else {
-                    return callback({ cancel: true });
-                }
-            }
-
-            // Check adult domain / URL block
+            // Check direct adult domain / URL block (Search queries on Google/Bing load normally; explicit cards are blurred in-page)
             if (userSettings.adultDomainsBlockEnabled !== false && isAdultOrPornUrl(url)) {
                 if (resourceType === 'mainFrame') {
                     let target = url;
@@ -1324,10 +1302,10 @@ function applyShieldSettings() {
                         if (entry && entry.view && !entry.view.webContents.isDestroyed()) wc = entry.view.webContents;
                     }
                     if (wc && !wc.isDestroyed()) {
-                        const targetShield = resolveInternalURL(`ocal://mindful-shield?url=${encodeURIComponent(target)}`);
+                        const targetShield = `ocal://mindful-shield?url=${encodeURIComponent(target)}`;
                         setTimeout(() => {
                             if (!wc.isDestroyed()) wc.loadURL(targetShield);
-                        }, 25);
+                        }, 20);
                     }
                     return callback({ cancel: true });
                 } else {
@@ -2973,9 +2951,7 @@ function resolveInternalURL(url) {
         return 'file://' + path.join(__dirname, 'security-warning.html') + (qIdx !== -1 ? url.substring(qIdx) : '');
     }
     if (cleanBase === 'ocal://mindful-shield' || cleanBase === 'ocal://safe-shield' || cleanBase === 'mindful-shield') {
-        const qIdx = url.indexOf('?');
-        const shieldPath = nodePath.join(__dirname, 'mindful-shield.html');
-        return require('url').pathToFileURL(shieldPath).href + (qIdx !== -1 ? url.substring(qIdx) : '');
+        return url; // Keep as ocal://mindful-shield for native protocol.handle serving
     }
     if (cleanBase === 'ocal://games' || cleanBase === 'ocal://game' || cleanBase === 'ocal://arcade' || cleanBase === 'games' || cleanBase === 'arcade') return getFilePath('games.html');
     if (cleanBase === 'ocal://hexgl' || cleanBase === 'hexgl' || cleanBase === 'ocal://arcade/hexgl' || cleanBase.startsWith('ocal://hexgl') || cleanBase.startsWith('ocal://arcade/hexgl')) {
@@ -3560,12 +3536,10 @@ function setupViewEvents(tabId, view, side = 'left') {
 
         // Content Protection & Mindful Shield Check for will-navigate
         if (userSettings.contentProtectionEnabled !== false && userSettings.adultDomainsBlockEnabled !== false) {
-            const adultQuery = extractSearchEngineQuery(targetUrl);
             const isAdultSite = isAdultOrPornUrl(targetUrl);
-            if (isAdultSite || (adultQuery && isAdultContentQuery(adultQuery))) {
+            if (isAdultSite) {
                 event.preventDefault();
-                const param = adultQuery ? `query=${encodeURIComponent(adultQuery)}` : `url=${encodeURIComponent(targetUrl)}`;
-                const targetShield = resolveInternalURL(`ocal://mindful-shield?${param}`);
+                const targetShield = `ocal://mindful-shield?url=${encodeURIComponent(targetUrl)}`;
                 setImmediate(() => {
                     if (!webContents.isDestroyed()) webContents.loadURL(targetShield);
                 });
@@ -5092,13 +5066,13 @@ ipcMain.on('navigate-to', (e, url) => {
         }
     }
 
-    // Intercept adult/pornographic sites and queries with Search Security & Mindful Protection
-    const searchQ = extractSearchEngineQuery(targetUrl);
-    const adultQueryToIntercept = (searchQ && isAdultContentQuery(searchQ)) ? searchQ : (isAdultContentQuery(cleanUrl) ? cleanUrl : null);
-    if (userSettings.contentProtectionEnabled !== false && userSettings.adultDomainsBlockEnabled !== false && (adultQueryToIntercept || isAdultOrPornUrl(targetUrl))) {
+    // Intercept DIRECT adult/pornographic websites with Search Security & Mindful Protection
+    // (Search queries on Google/Bing are allowed through so the search engine loads, while adult cards are blurred in-page)
+    const isSearchEngineUrl = !!extractSearchEngineQuery(targetUrl);
+    if (!isSearchEngineUrl && userSettings.contentProtectionEnabled !== false && userSettings.adultDomainsBlockEnabled !== false && (isAdultOrPornUrl(targetUrl) || isAdultOrPornUrl(cleanUrl))) {
         hideSuggestions();
-        const param = adultQueryToIntercept ? `query=${encodeURIComponent(adultQueryToIntercept)}` : `url=${encodeURIComponent(targetUrl)}`;
-        activeView.webContents.loadURL(resolveInternalURL(`ocal://mindful-shield?${param}`));
+        const directTarget = targetUrl || cleanUrl;
+        activeView.webContents.loadURL(`ocal://mindful-shield?url=${encodeURIComponent(directTarget)}`);
         return;
     }
 
@@ -11275,6 +11249,18 @@ app.whenReady().then(async () => {
             const reqUrl = request.url;
             try {
                 const parsed = new URL(reqUrl);
+                if (parsed.hostname === 'mindful-shield' || parsed.pathname.includes('mindful-shield')) {
+                    const shieldFile = nodePath.join(__dirname, 'mindful-shield.html');
+                    if (fs.existsSync(shieldFile)) {
+                        const fileData = fs.readFileSync(shieldFile);
+                        return new Response(fileData, {
+                            headers: {
+                                'Content-Type': 'text/html; charset=utf-8',
+                                'Content-Length': fileData.length.toString()
+                            }
+                        });
+                    }
+                }
                 if (parsed.hostname === 'arcade' || parsed.hostname === 'hexgl') {
                     const asset = require('./arcade-protocol.cjs').resolveArcadeAsset(reqUrl, __dirname);
                     if (asset) {
