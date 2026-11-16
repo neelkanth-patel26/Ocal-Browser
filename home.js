@@ -306,11 +306,11 @@ function executeSearch() {
         targetUrl = searchUrl + encodeURIComponent(q);
     }
 
-    // Intercept adult/pornographic sites from home search
-    const ADULT_URL_REGEX = /(?:^|\.)(?:porn|xxx|nsfw|xvideos|xnxx|xhamster|redtube|youporn|chaturbate|stripchat|spankbang|eporner|beeg|brazzers|rule34|nhentai|erome|livejasmin|thothub|fapello|daftsex|youjizz|hqporner|thumbzilla|cam4|camsoda|bongacams|hentaihaven|hanime|javhd|missav|jable|adultfriendfinder)(?:\.|$|\/)/i;
+    // Intercept adult/pornographic queries and sites from home search
+    const ADULT_QUERY_REGEX = /\b(x\s*hamster|porn\s*hub|x\s*videos?|x\s*nxx|red\s*tube|you\s*porn|chaturbate|strip\s*chat|spank\s*bang|eporner|beeg|brazzers|rule\s*34|nhentai|erome|livejasmin|thothub|fapello|daftsex|youjizz|hqporner|thumbzilla|cam4|camsoda|bongacams|hentaihaven|hanime|javhd|missav|jable|adultfriendfinder|onlyfans\s*leak\w*|leak\w*\s*nudes?|porn|porno|pornograph\w*|xxx|hardcore\s*(?:sex|porn\w*|video\w*)|sex\s*(?:video\w*|movie\w*|clip\w*|tube|tape\w*|chat|cam\w*)|free\s*(?:sex|porn)|live\s*sex|nude\s*(?:girl\w*|women|pic\w*|photo\w*|video\w*)|naked\s*(?:girl\w*|women|pic\w*|photo\w*|video\w*)|blowjob\w*|handjob\w*|gangbang\w*|creampie\w*|threesome\w*|masturbat\w*|hentai\w*|erotica\w*|cumshot\w*|bdsm|anal\s*sex|shemale\w*|cam\s*girl\w*)\b/i;
     const isSafe = localStorage.getItem('ocal-content-protection') !== 'false';
-    if (isSafe && (ADULT_URL_REGEX.test(targetUrl) || targetUrl.includes('.xxx') || targetUrl.includes('.adult') || targetUrl.includes('.porn'))) {
-        targetUrl = 'ocal://mindful-shield?url=' + encodeURIComponent(targetUrl);
+    if (isSafe && (ADULT_QUERY_REGEX.test(q) || ADULT_QUERY_REGEX.test(targetUrl) || /xhamster|pornhub|xnxx|xvideos/i.test(targetUrl) || targetUrl.includes('.xxx') || targetUrl.includes('.adult') || targetUrl.includes('.porn'))) {
+        targetUrl = 'ocal://mindful-shield?query=' + encodeURIComponent(q);
     }
 
     navigateToTargetUrl(targetUrl);

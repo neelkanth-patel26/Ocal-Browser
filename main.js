@@ -1127,7 +1127,43 @@ const ADULT_DOMAINS = new Set([
 
 const ADULT_URL_REGEX = /(?:^|\.)(?:porn|xxx|nsfw|xvideos|xnxx|xhamster|redtube|youporn|chaturbate|stripchat|spankbang|eporner|beeg|brazzers|rule34|nhentai|erome|livejasmin|thothub|fapello|daftsex|youjizz|hqporner|thumbzilla|cam4|camsoda|bongacams|hentaihaven|hanime|javhd|missav|jable|adultfriendfinder)(?:\.|$|\/)/i;
 
+const ADULT_QUERY_REGEX = /\b(x\s*hamster|porn\s*hub|x\s*videos?|x\s*nxx|red\s*tube|you\s*porn|chaturbate|strip\s*chat|spank\s*bang|eporner|beeg|brazzers|rule\s*34|nhentai|erome|livejasmin|thothub|fapello|daftsex|youjizz|hqporner|thumbzilla|cam4|camsoda|bongacams|hentaihaven|hanime|javhd|missav|jable|adultfriendfinder|onlyfans\s*leak\w*|leak\w*\s*nudes?|porn|porno|pornograph\w*|xxx|hardcore\s*(?:sex|porn\w*|video\w*)|sex\s*(?:video\w*|movie\w*|clip\w*|tube|tape\w*|chat|cam\w*)|free\s*(?:sex|porn)|live\s*sex|nude\s*(?:girl\w*|women|pic\w*|photo\w*|video\w*)|naked\s*(?:girl\w*|women|pic\w*|photo\w*|video\w*)|blowjob\w*|handjob\w*|gangbang\w*|creampie\w*|threesome\w*|masturbat\w*|hentai\w*|erotica\w*|cumshot\w*|bdsm|anal\s*sex|shemale\w*|cam\s*girl\w*)\b/i;
+
 const EXPLICIT_MEDIA_KEYWORDS_REGEX = /(?:[/?&=._-])(porn|xxx|nsfw|nude|naked|erotic|boobs|penis|vagina|hentai|camgirl|stripchat|pornhub|xvideos|xnxx|xhamster|redtube|youporn|rule34|erome|fapello)(?:[/?&=._-]|$)/i;
+
+function isAdultContentQuery(text) {
+    if (!text || typeof text !== 'string') return false;
+    const clean = text.trim();
+    if (!clean) return false;
+    if (ADULT_QUERY_REGEX.test(clean)) return true;
+    const tokens = clean.toLowerCase().split(/[\s,._\-/+]+/);
+    for (const tok of tokens) {
+        if (tok.length >= 4 && (ADULT_DOMAINS.has(tok + '.com') || ADULT_DOMAINS.has(tok))) {
+            return true;
+        }
+    }
+    return false;
+}
+
+function extractSearchEngineQuery(rawUrl) {
+    if (!rawUrl || typeof rawUrl !== 'string') return '';
+    try {
+        const u = new URL(rawUrl);
+        const host = u.hostname.toLowerCase();
+        if (host.includes('google.') || host.includes('bing.com') || host.includes('duckduckgo.com') || host.includes('brave.com') || host.includes('ecosia.org')) {
+            return u.searchParams.get('q') || '';
+        }
+        if (host.includes('yahoo.com')) {
+            return u.searchParams.get('p') || '';
+        }
+        if (host.includes('yandex.')) {
+            return u.searchParams.get('text') || '';
+        }
+        return u.searchParams.get('q') || u.searchParams.get('query') || '';
+    } catch (_) {
+        return '';
+    }
+}
 
 function isAdultOrPornUrl(rawUrl) {
     if (!rawUrl || typeof rawUrl !== 'string') return false;
@@ -1151,8 +1187,27 @@ function isAdultOrPornUrl(rawUrl) {
             return true;
         }
 
+        // Adult brand in hostname (e.g. xhamster.desi, m.xhamster.com, pornhub-mirror.com)
+        if (/xhamster|pornhub|xnxx|xvideos|redtube|youporn|chaturbate|stripchat|spankbang|eporner|beeg|brazzers|rule34|nhentai|erome|livejasmin|thothub|fapello|daftsex|youjizz|hqporner|thumbzilla|cam4|camsoda|bongacams|hentaihaven|hanime|javhd|missav|jable|adultfriendfinder/i.test(host)) {
+            return true;
+        }
+
         // Domain pattern regex check
         if (ADULT_URL_REGEX.test(host)) return true;
+
+        // Check search engine query parameters
+        const query = extractSearchEngineQuery(rawUrl);
+        if (query && isAdultContentQuery(query)) {
+            return true;
+        }
+
+        // Check search engine redirect targets (e.g. google.com/url?q=... or url=...)
+        if (u.pathname === '/url') {
+            const redirectTarget = u.searchParams.get('url') || u.searchParams.get('q');
+            if (redirectTarget && isAdultOrPornUrl(redirectTarget)) {
+                return true;
+            }
+        }
 
         // Explicit path tokens
         const pathAndQuery = (u.pathname + u.search).toLowerCase();
@@ -1234,6 +1289,17 @@ function applyShieldSettings() {
 
         // 0. Search Security & Mindful Adult Content Protection (On by default)
         if (userSettings.contentProtectionEnabled !== false) {
+            // Check adult search query on search engines
+            const adultSearchQuery = extractSearchEngineQuery(url);
+            if (adultSearchQuery && isAdultContentQuery(adultSearchQuery)) {
+                if (resourceType === 'mainFrame') {
+                    const shieldUrl = 'file:///' + path.join(__dirname, 'mindful-shield.html').replace(/\\/g, '/') + '?query=' + encodeURIComponent(adultSearchQuery);
+                    return callback({ redirectURL: shieldUrl });
+                } else {
+                    return callback({ cancel: true });
+                }
+            }
+
             // Check adult domain / URL block
             if (userSettings.adultDomainsBlockEnabled !== false && isAdultOrPornUrl(url)) {
                 if (resourceType === 'mainFrame') {
@@ -2986,8 +3052,9 @@ function createNewTab(url = null) {
             } catch (e) {
                 finalUrl = `ocal://pdf-viewer/?file=${encodeURIComponent(url)}`;
             }
-        } else if (userSettings.contentProtectionEnabled !== false && userSettings.adultDomainsBlockEnabled !== false && isAdultOrPornUrl(url)) {
-            finalUrl = `ocal://mindful-shield?url=${encodeURIComponent(url)}`;
+        } else if (userSettings.contentProtectionEnabled !== false && userSettings.adultDomainsBlockEnabled !== false && (isAdultContentQuery(url) || isAdultOrPornUrl(url))) {
+            const param = isAdultContentQuery(url) ? `query=${encodeURIComponent(url)}` : `url=${encodeURIComponent(url)}`;
+            finalUrl = `ocal://mindful-shield?${param}`;
         }
     }
 
@@ -4971,10 +5038,11 @@ ipcMain.on('navigate-to', (e, url) => {
         }
     }
 
-    // Intercept adult/pornographic sites with Search Security & Mindful Protection
-    if (userSettings.contentProtectionEnabled !== false && userSettings.adultDomainsBlockEnabled !== false && isAdultOrPornUrl(targetUrl)) {
+    // Intercept adult/pornographic sites and queries with Search Security & Mindful Protection
+    if (userSettings.contentProtectionEnabled !== false && userSettings.adultDomainsBlockEnabled !== false && (isAdultContentQuery(cleanUrl) || isAdultOrPornUrl(targetUrl))) {
         hideSuggestions();
-        activeView.webContents.loadURL(`ocal://mindful-shield?url=${encodeURIComponent(targetUrl)}`);
+        const param = isAdultContentQuery(cleanUrl) ? `query=${encodeURIComponent(cleanUrl)}` : `url=${encodeURIComponent(targetUrl)}`;
+        activeView.webContents.loadURL(`ocal://mindful-shield?${param}`);
         return;
     }
 
@@ -10355,7 +10423,7 @@ ipcMain.handle('get-diagnostics', async () => {
                 }
             }
         }
-    } catch (e) { }
+    } catch (e) {}
 
     let archDisplay = '64-bit Native';
     if (process.arch === 'x64') {
@@ -10407,164 +10475,6 @@ ipcMain.handle('get-diagnostics', async () => {
         dspTag: 'DSP 500%'
     };
 });
-ipcMain.handle('get-downloads', () => downloads);
-
-ipcMain.handle('select-download-directory', async () => {
-    try {
-        const currentPath = userSettings.downloadPath || app.getPath('downloads');
-        const result = await dialog.showOpenDialog(mainWindow, {
-            title: 'Select Default Download Directory',
-            defaultPath: currentPath,
-            properties: ['openDirectory', 'createDirectory']
-        });
-        if (result.canceled || !result.filePaths || result.filePaths.length === 0) {
-            return null;
-        }
-        const selectedPath = result.filePaths[0];
-        userSettings.downloadPath = selectedPath;
-        saveSettings(userSettings);
-        return selectedPath;
-    } catch (err) {
-        console.error('Error selecting download directory:', err);
-        return null;
-    }
-});
-
-ipcMain.handle('get-ambient-tracks', async () => {
-    try {
-        const musicDir = path.join(__dirname, 'music');
-        if (!fs.existsSync(musicDir)) {
-            fs.mkdirSync(musicDir, { recursive: true });
-        }
-        const files = fs.readdirSync(musicDir);
-        const audioExtensions = ['.mp3', '.wav', '.ogg', '.m4a', '.flac', '.aac'];
-        const tracks = files
-            .filter(f => audioExtensions.includes(path.extname(f).toLowerCase()))
-            .map(f => {
-                const ext = path.extname(f);
-                const baseName = path.basename(f, ext);
-                let displayName = baseName;
-                if (f === 'Ocal.mp3') displayName = 'Ocal Theme';
-                else if (f === 'ocal [usesuno.com].mp3') displayName = 'Ocal Suno Beats';
-                else if (f === 'ocal [usesuno.com] (1).mp3') displayName = 'Ocal Suno Chill';
-                else if (f === 'ocal [usesuno.com] (2).mp3') displayName = 'Ocal Suno Focus';
-                else {
-                    displayName = baseName
-                        .replace(/\[.*?\]/g, '')
-                        .replace(/[_-]/g, ' ')
-                        .replace(/\s+/g, ' ')
-                        .trim();
-                    if (!displayName) displayName = baseName;
-                }
-                return {
-                    id: f,
-                    fileName: f,
-                    name: displayName,
-                    path: path.join(musicDir, f),
-                    relativePath: `music/${f}`
-                };
-            });
-        return tracks;
-    } catch (err) {
-        console.error('[Ambient Tracks] Error listing tracks:', err);
-        return [];
-    }
-});
-
-ipcMain.handle('select-custom-ambient-file', async () => {
-    try {
-        const result = await dialog.showOpenDialog(mainWindow, {
-            title: 'Select Ambient Audio File',
-            filters: [
-                { name: 'Audio Files', extensions: ['mp3', 'wav', 'ogg', 'm4a', 'flac', 'aac'] }
-            ],
-            properties: ['openFile']
-        });
-        if (result.canceled || result.filePaths.length === 0) return null;
-        const sourcePath = result.filePaths[0];
-        const fileName = path.basename(sourcePath);
-        const musicDir = path.join(__dirname, 'music');
-        if (!fs.existsSync(musicDir)) fs.mkdirSync(musicDir, { recursive: true });
-        const destPath = path.join(musicDir, fileName);
-        fs.copyFileSync(sourcePath, destPath);
-        return {
-            id: fileName,
-            fileName: fileName,
-            name: path.basename(fileName, path.extname(fileName)).replace(/[_-]/g, ' '),
-            path: destPath,
-            relativePath: `music/${fileName}`
-        };
-    } catch (err) {
-        console.error('[Select Ambient File Error]', err);
-        return null;
-    }
-});
-
-function broadcastUpdateAvailable(updateData) {
-    if (mainWindow && !mainWindow.isDestroyed()) {
-        mainWindow.webContents.send('update-available', updateData);
-    }
-    if (Array.isArray(views)) {
-        views.forEach(v => {
-            if (v.view && !v.view.webContents.isDestroyed()) {
-                v.view.webContents.send('update-available', updateData);
-            }
-            if (v.isSplit && v.view2 && !v.view2.webContents.isDestroyed()) {
-                v.view2.webContents.send('update-available', updateData);
-            }
-        });
-    }
-}
-
-function isNewerVersion(latest, current) {
-    if (!latest || !current) return false;
-    const l = String(latest).replace(/^[vV]/, '').split(/[.-]/).map(n => parseInt(n, 10) || 0);
-    const c = String(current).replace(/^[vV]/, '').split(/[.-]/).map(n => parseInt(n, 10) || 0);
-    for (let i = 0; i < Math.max(l.length, c.length); i++) {
-        const ln = l[i] || 0;
-        const cn = c[i] || 0;
-        if (ln > cn) return true;
-        if (ln < cn) return false;
-    }
-    return false;
-}
-
-async function checkForUpdatesSilently() {
-    if (!userSettings.autoCheckUpdates) return;
-    try {
-        const { net } = require('electron');
-        const request = net.request({
-            method: 'GET',
-            url: 'https://api.github.com/repos/neelkanth-patel26/Ocal-Browser/releases/latest',
-            redirect: 'follow'
-        });
-        request.setHeader('User-Agent', 'Ocal-Browser');
-        request.on('response', (response) => {
-            let data = '';
-            response.on('data', (chunk) => data += chunk.toString());
-            response.on('end', () => {
-                if (response.statusCode === 200) {
-                    try {
-                        const json = JSON.parse(data);
-                        const latest = (json.tag_name || '').replace(/^[vV]/, '');
-                        const current = app.getVersion();
-                        if (isNewerVersion(latest, current)) {
-                            broadcastUpdateAvailable({
-                                version: latest,
-                                notes: json.body || '',
-                                url: json.html_url || '',
-                                currentVersion: current,
-                                isUpdateAvailable: true
-                            });
-                        }
-                    } catch (e) { }
-                }
-            });
-        });
-        request.on('error', () => { });
-        request.end();
-    } catch (e) { }
-}
 
 ipcMain.handle('check-for-update', async () => {
     return new Promise((resolve) => {
@@ -10597,7 +10507,7 @@ ipcMain.handle('check-for-update', async () => {
                                 const json = JSON.parse(data);
                                 const latest = (json.tag_name || '').replace(/^[vV]/, '');
                                 const current = app.getVersion();
-                                const isUpdate = isNewerVersion(latest, current);
+                                const isUpdate = typeof isNewerVersion === 'function' ? isNewerVersion(latest, current) : false;
                                 const payload = {
                                     version: latest,
                                     notes: json.body || '',
@@ -10605,7 +10515,7 @@ ipcMain.handle('check-for-update', async () => {
                                     currentVersion: current,
                                     isUpdateAvailable: isUpdate
                                 };
-                                if (isUpdate) {
+                                if (isUpdate && typeof broadcastUpdateAvailable === 'function') {
                                     broadcastUpdateAvailable(payload);
                                 }
                                 resolve(payload);
@@ -11385,6 +11295,10 @@ ipcMain.on('capture-screenshot', async (e, type) => {
 // Deduplicated search utility functions removed here
 ipcMain.on('suggest-search', async (e, query) => {
     if (!query) { hideSuggestions(); return; }
+    if (userSettings.contentProtectionEnabled !== false && isAdultContentQuery(query)) {
+        hideSuggestions();
+        return;
+    }
     try {
         let suggestions = [];
         let refinements = [];
@@ -11437,8 +11351,16 @@ ipcMain.on('suggest-search', async (e, query) => {
             if (idx > -1) savedMatches.splice(idx, 1);
         }
 
-        // Combine and limit
-        const finalSuggestions = [...savedMatches.slice(0, 3), ...suggestions].slice(0, 8);
+        // Combine and limit with content protection filter
+        let finalSuggestions = [...savedMatches.slice(0, 3), ...suggestions];
+        if (userSettings.contentProtectionEnabled !== false) {
+            finalSuggestions = finalSuggestions.filter(s => !isAdultContentQuery(s.text) && !isAdultOrPornUrl(s.url || s.text));
+            refinements = refinements.filter(r => !isAdultContentQuery(r));
+            if (bestMatch && (isAdultContentQuery(bestMatch.text) || isAdultOrPornUrl(bestMatch.url || bestMatch.text))) {
+                bestMatch = null;
+            }
+        }
+        finalSuggestions = finalSuggestions.slice(0, 8);
 
         if (finalSuggestions.length > 0 || bestMatch || refinements.length > 0) {
             if (suggestionsView) {

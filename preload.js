@@ -2852,13 +2852,49 @@ window.addEventListener('mousedown', () => {
     }
 })();
 
-// ── Search Security & In-Page Explicit Media Shield ──
+// ── Search Security, Adult Content Purge & In-Page Explicit Media Shield ──
 (function() {
     'use strict';
     let contentProtectionActive = true;
     let explicitImagesBlockActive = true;
 
+    const ADULT_DOMAINS_SET = new Set([
+        'xhamster.com', 'xhamster.desi', 'www.xhamster.com', 'pornhub.com', 'www.pornhub.com',
+        'xvideos.com', 'www.xvideos.com', 'xnxx.com', 'www.xnxx.com', 'redtube.com', 'www.redtube.com',
+        'youporn.com', 'www.youporn.com', 'chaturbate.com', 'stripchat.com', 'spankbang.com',
+        'eporner.com', 'beeg.com', 'brazzers.com', 'rule34.xxx', 'nhentai.net',
+        'erome.com', 'livejasmin.com', 'thothub.to', 'fapello.com', 'daftsex.com',
+        'youjizz.com', 'hqporner.com', 'thumbzilla.com', 'cam4.com', 'camsoda.com',
+        'bongacams.com', 'hentaihaven.xxx', 'hanime.tv', 'javhd.com', 'missav.com',
+        'jable.tv', 'adultfriendfinder.com', 'sex.com', 'faphero.com', 'fuq.com'
+    ]);
+
+    const ADULT_BRAND_REGEX = /xhamster|pornhub|xnxx|xvideos|redtube|youporn|chaturbate|stripchat|spankbang|eporner|beeg|brazzers|rule34|nhentai|erome|livejasmin|thothub|fapello|daftsex|youjizz|hqporner|thumbzilla|cam4|camsoda|bongacams|hentaihaven|hanime|javhd|missav|jable|adultfriendfinder/i;
+
+    const ADULT_SEARCH_TEXT_REGEX = /\b(x\s*hamster|porn\s*hub|x\s*videos?|x\s*nxx|red\s*tube|you\s*porn|chaturbate|strip\s*chat|spank\s*bang|eporner|beeg|brazzers|rule\s*34|nhentai|erome|porn|porno|pornograph\w*|xxx|hardcore\s*(?:sex|porn\w*|video\w*)|sex\s*(?:video\w*|movie\w*|clip\w*|tube|tape\w*|chat|cam\w*)|free\s*(?:sex|porn)|blowjob\w*|handjob\w*|gangbang\w*|creampie\w*|threesome\w*|masturbat\w*|hentai\w*|erotica\w*|cumshot\w*|bdsm|anal\s*sex|shemale\w*|cam\s*girl\w*)\b/i;
+
     const EXPLICIT_MEDIA_REGEX = /(?:^|[\/_\-?&=.])(porn|xxx|nsfw|nude|naked|erotic|boobs|penis|vagina|hentai|camgirl|stripchat|pornhub|xvideos|xnxx|xhamster|redtube|youporn|rule34|erome|fapello)(?:[\/_\-?&=.]|$)/i;
+
+    function isAdultLink(href) {
+        if (!href || typeof href !== 'string') return false;
+        try {
+            const u = new URL(href, window.location.href);
+            const host = u.hostname.toLowerCase();
+            if (ADULT_DOMAINS_SET.has(host)) return true;
+            if (ADULT_BRAND_REGEX.test(host)) return true;
+            if (host.endsWith('.xxx') || host.endsWith('.adult') || host.endsWith('.porn') || host.endsWith('.sex')) return true;
+            // Check search redirect links (e.g. google.com/url?q=... or url=...)
+            if (u.pathname === '/url') {
+                const target = u.searchParams.get('url') || u.searchParams.get('q');
+                if (target) return isAdultLink(target);
+            }
+            const pathAndQuery = (u.pathname + u.search).toLowerCase();
+            if (/\/(porn|xxx|nsfw|hentai|erotica)\//i.test(pathAndQuery)) return true;
+            return false;
+        } catch (_) {
+            return false;
+        }
+    }
 
     function ensureShieldStyles() {
         if (document.getElementById('ocal-content-protection-style')) return;
@@ -2876,8 +2912,81 @@ window.addEventListener('mousedown', () => {
                 filter: blur(14px) grayscale(35%) !important;
                 opacity: 0.38 !important;
             }
+            .ocal-shield-purge-notice {
+                padding: 12px 18px;
+                margin: 12px 0;
+                background: rgba(16, 185, 129, 0.08);
+                border: 1px solid rgba(16, 185, 129, 0.28);
+                border-radius: 12px;
+                color: #10b981;
+                font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+                font-size: 13px;
+                font-weight: 600;
+                display: flex;
+                align-items: center;
+                gap: 10px;
+            }
         `;
         (document.head || document.documentElement).appendChild(style);
+    }
+
+    // Strip adult search result blocks, cards, and sitelinks from search engines
+    function scanAndPurgeAdultSearchSections(root = document) {
+        if (!contentProtectionActive) return;
+
+        // Candidate search result containers across Google, Bing, DuckDuckGo, Yahoo, Brave
+        const containerSelectors = [
+            'div.g', 'div.MjjYud', 'div[data-sokoban-container]', 'div.hlcw0c', 'div.tF2Cxc', 'div.g-blk', 'div.ULSXZe',
+            'li.b_algo', '.b_ans', '.b_mrs',
+            'article.result', '.result', '.nrn-react-div',
+            'div.algo', 'li.algo', 'div.snippet', 'div.search-result'
+        ];
+
+        const containers = root.querySelectorAll ? root.querySelectorAll(containerSelectors.join(',')) : [];
+        let purgedCount = 0;
+
+        containers.forEach(container => {
+            if (!container || !container.parentNode) return;
+
+            let isAdult = false;
+            // 1. Check all links inside the container
+            const links = container.querySelectorAll('a[href]');
+            for (const a of links) {
+                if (isAdultLink(a.href)) {
+                    isAdult = true;
+                    break;
+                }
+            }
+
+            // 2. Check heading and snippet text for explicit adult terms
+            if (!isAdult) {
+                const heading = container.querySelector('h1, h2, h3, h4, [role="heading"], .b_title, .result__title');
+                const text = ((heading ? heading.textContent : '') + ' ' + (container.textContent || '')).toLowerCase();
+                if (ADULT_SEARCH_TEXT_REGEX.test(text)) {
+                    isAdult = true;
+                }
+            }
+
+            if (isAdult) {
+                container.remove();
+                purgedCount++;
+            }
+        });
+
+        // Also sweep any individual adult links that might not be inside standard container wrappers
+        const allLinks = root.querySelectorAll ? root.querySelectorAll('a[href]') : [];
+        allLinks.forEach(a => {
+            if (isAdultLink(a.href)) {
+                const parentBlock = a.closest('.g, .MjjYud, .b_algo, .result, article, li, div[data-hveid]');
+                if (parentBlock && parentBlock.parentNode) {
+                    parentBlock.remove();
+                    purgedCount++;
+                } else if (a.parentNode) {
+                    a.remove();
+                    purgedCount++;
+                }
+            }
+        });
     }
 
     function scanAndShieldImages(root = document) {
@@ -2895,6 +3004,21 @@ window.addEventListener('mousedown', () => {
                 el.setAttribute('title', 'Explicit image shielded by Ocal Search Security');
             }
         });
+    }
+
+    function checkAndInterceptAdultSearchQuery() {
+        if (!contentProtectionActive) return;
+        try {
+            const loc = window.location;
+            const host = loc.hostname.toLowerCase();
+            if (host.includes('google.') || host.includes('bing.com') || host.includes('duckduckgo.com') || host.includes('yahoo.com') || host.includes('brave.com')) {
+                const params = new URLSearchParams(loc.search);
+                const q = params.get('q') || params.get('p') || params.get('query') || '';
+                if (q && ADULT_SEARCH_TEXT_REGEX.test(q.trim())) {
+                    window.location.replace(`ocal://mindful-shield?query=${encodeURIComponent(q)}`);
+                }
+            }
+        } catch (_) {}
     }
 
     function initContentProtection() {
@@ -2915,8 +3039,12 @@ window.addEventListener('mousedown', () => {
                     contentProtectionActive = s.contentProtectionEnabled !== false;
                     explicitImagesBlockActive = s.explicitImagesBlockEnabled !== false;
                 }
-                if (contentProtectionActive && explicitImagesBlockActive) {
-                    scanAndShieldImages();
+                if (contentProtectionActive) {
+                    checkAndInterceptAdultSearchQuery();
+                    scanAndPurgeAdultSearchSections();
+                    if (explicitImagesBlockActive) {
+                        scanAndShieldImages();
+                    }
                 }
             }).catch(() => {});
 
@@ -2925,8 +3053,12 @@ window.addEventListener('mousedown', () => {
                     contentProtectionActive = s.contentProtectionEnabled !== false;
                     explicitImagesBlockActive = s.explicitImagesBlockEnabled !== false;
                 }
-                if (contentProtectionActive && explicitImagesBlockActive) {
-                    scanAndShieldImages();
+                if (contentProtectionActive) {
+                    checkAndInterceptAdultSearchQuery();
+                    scanAndPurgeAdultSearchSections();
+                    if (explicitImagesBlockActive) {
+                        scanAndShieldImages();
+                    }
                 } else {
                     document.querySelectorAll('.ocal-shielded-media').forEach(el => {
                         el.classList.remove('ocal-shielded-media');
@@ -2935,16 +3067,24 @@ window.addEventListener('mousedown', () => {
             });
         }
 
-        // MutationObserver for dynamically loaded image feeds / search grids
+        // Run immediate check
+        checkAndInterceptAdultSearchQuery();
+        scanAndPurgeAdultSearchSections();
+        scanAndShieldImages();
+
+        // MutationObserver for dynamically loaded content and search results
         const observer = new MutationObserver((mutations) => {
-            if (!contentProtectionActive || !explicitImagesBlockActive) return;
-            for (const m of mutations) {
-                if (m.addedNodes && m.addedNodes.length > 0) {
-                    m.addedNodes.forEach(node => {
-                        if (node.nodeType === 1) {
-                            scanAndShieldImages(node);
-                        }
-                    });
+            if (!contentProtectionActive) return;
+            scanAndPurgeAdultSearchSections();
+            if (explicitImagesBlockActive) {
+                for (const m of mutations) {
+                    if (m.addedNodes && m.addedNodes.length > 0) {
+                        m.addedNodes.forEach(node => {
+                            if (node.nodeType === 1) {
+                                scanAndShieldImages(node);
+                            }
+                        });
+                    }
                 }
             }
         });

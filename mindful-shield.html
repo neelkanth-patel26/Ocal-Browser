@@ -472,7 +472,7 @@
         <!-- Blocked Target Host Badge -->
         <div class="blocked-badge-row" id="blocked-badge-container">
             <i class="fas fa-shield-halved"></i>
-            <span>Blocked Destination:</span>
+            <span id="blocked-label">Blocked Destination:</span>
             <strong id="blocked-target">adult content / explicit website</strong>
         </div>
 
@@ -594,17 +594,23 @@
             }
         }
 
-        // Parse blocked URL from query parameters safely
+        // Parse blocked URL or query from parameters safely
         (function initBlockedTarget() {
             try {
                 const params = new URLSearchParams(window.location.search);
+                const rawQuery = params.get('query') || params.get('q');
                 const rawUrl = params.get('url');
+                const labelEl = document.getElementById('blocked-label');
                 const targetEl = document.getElementById('blocked-target');
-                if (rawUrl && targetEl) {
+                if (rawQuery && targetEl) {
+                    if (labelEl) labelEl.textContent = 'Filtered Adult Query:';
+                    targetEl.textContent = `"${rawQuery}"`;
+                } else if (rawUrl && targetEl) {
                     let parsedHost = rawUrl;
                     try {
                         parsedHost = new URL(rawUrl).hostname || rawUrl;
                     } catch (_) {}
+                    if (labelEl) labelEl.textContent = 'Blocked Destination:';
                     targetEl.textContent = parsedHost;
                 }
             } catch (_) {}
