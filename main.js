@@ -687,7 +687,10 @@ if (userSettings.instantSearchEnabled === undefined) userSettings.instantSearchE
 if (userSettings.safeSearchEnabled === undefined) userSettings.safeSearchEnabled = true;
 if (userSettings.contentProtectionEnabled === undefined) userSettings.contentProtectionEnabled = true;
 if (userSettings.adultDomainsBlockEnabled === undefined) userSettings.adultDomainsBlockEnabled = true;
-if (userSettings.explicitImagesBlockEnabled === undefined) userSettings.explicitImagesBlockEnabled = true;
+// Explicit images filtering: must default to true, and heal any legacy inconsistency when content protection is active
+if (userSettings.explicitImagesBlockEnabled === undefined || (userSettings.contentProtectionEnabled !== false && userSettings.explicitImagesBlockEnabled === false && userSettings.adultDomainsBlockEnabled !== false)) {
+    userSettings.explicitImagesBlockEnabled = true;
+}
 if (userSettings.mindfulQuotesEnabled === undefined) userSettings.mindfulQuotesEnabled = true;
 
 // Shield Stats Initialization & Migration
@@ -11277,6 +11280,14 @@ ipcMain.on('toggle-adblock', (e, enabled) => {
 // History Management
 ipcMain.on('delete-history-item', (e, timestamp) => {
     userSettings.history = userSettings.history.filter(h => h.timestamp !== timestamp);
+    saveSettings(userSettings);
+    broadcastHistory();
+});
+
+ipcMain.on('delete-history-items', (e, timestamps) => {
+    if (!Array.isArray(timestamps) || timestamps.length === 0) return;
+    const tsSet = new Set(timestamps);
+    userSettings.history = userSettings.history.filter(h => !tsSet.has(h.timestamp));
     saveSettings(userSettings);
     broadcastHistory();
 });

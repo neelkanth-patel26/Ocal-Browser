@@ -654,6 +654,58 @@ function getHistoricalIcon(url, title = '', storedIcon = '') {
 }
 
 // ── History ────────────────────────────────────────────────────────────────
+
+function getDisplayTitle(item) {
+    if (!item) return '';
+    const rawUrl = item.url || '';
+    let title = (item.title || '').trim();
+
+    // 1. Try to extract search query if it is a search engine URL
+    try {
+        const u = new URL(rawUrl.startsWith('http') ? rawUrl : 'https://' + rawUrl);
+        const host = u.hostname.toLowerCase().replace(/^www\./i, '');
+        const path = u.pathname.toLowerCase();
+
+        const isSearchEngine = host.includes('google.') || host.includes('bing.') || host.includes('duckduckgo.') ||
+                               host.includes('brave.com') || host.includes('yahoo.') || host.includes('ecosia.org') ||
+                               host.includes('kagi.com') || host.includes('startpage.com') || host.includes('qwant.com') ||
+                               host.includes('searx') || host.includes('youtube.com') || path.includes('/search') || path.includes('/results');
+
+        if (isSearchEngine) {
+            const params = ['q', 'query', 'search_query', 'oq', 'p', 'search', 'term', 'k'];
+            for (const param of params) {
+                const val = u.searchParams.get(param);
+                if (val && val.trim()) {
+                    let cleaned = decodeURIComponent(val.replace(/\+/g, ' ')).trim();
+                    if (cleaned) {
+                        return cleaned;
+                    }
+                }
+            }
+        }
+    } catch {}
+
+    // 2. If title has " - Google Search" or similar, strip search engine suffix
+    if (title) {
+        title = title.replace(/\s*[-–—|•]\s*(Google Search|Google|YouTube|Bing|DuckDuckGo|Yahoo Search|Brave Search)$/i, '').trim();
+    }
+
+    // 3. If title is still just the raw URL or starts with http/www or contains /search?
+    if (!title || title === rawUrl || title.startsWith('http://') || title.startsWith('https://') || title.includes('/search?') || title.includes('/results?')) {
+        try {
+            const u = new URL(rawUrl.startsWith('http') ? rawUrl : 'https://' + rawUrl);
+            if (u.pathname && u.pathname !== '/') {
+                return decodeURIComponent(u.pathname.replace(/^\//, '') + u.search);
+            }
+            return u.hostname.replace(/^www\./i, '');
+        } catch {
+            return rawUrl;
+        }
+    }
+
+    return title;
+}
+
 function renderHistory() {
     const q = searchFilter;
     const items = historyItems.filter(h => {
@@ -662,32 +714,46 @@ function renderHistory() {
             return false;
         }
         if (q) {
-            return h.title?.toLowerCase().includes(q) || h.url?.toLowerCase().includes(q);
+            const disp = getDisplayTitle(h).toLowerCase();
+            return h.title?.toLowerCase().includes(q) || h.url?.toLowerCase().includes(q) || disp.includes(q);
         }
         return true;
     });
 
-    // 1. Open Tabs Section
+    if (items.length === 0) {
+        sbContent.innerHTML = `
+            <div class="empty-state">
+                <i class="fas fa-clock-rotate-left"></i>
+                <div class="empty-title">${searchFilter ? 'No matching history' : 'No history yet'}</div>
+                <div class="empty-sub">${searchFilter ? 'No visited pages match your search term' : 'Websites and pages you browse will appear here'}</div>
+            </div>`;
+        if (clearHistoryBtn) clearHistoryBtn.style.display = 'none';
+        return;
+    }
+
+    // 1. Open Tabs Section (Opera-Style Grouped Card)
     if (!q && activeTabs.length > 0) {
         const openWrap = document.createElement('div');
         openWrap.className = 'hist-open-tabs';
-        openWrap.innerHTML = `<div class="recom-title"><i class="fas fa-layer-group"></i>Open Tabs</div><div class="open-tabs-list"></div>`;
-        const list = openWrap.querySelector('.open-tabs-list');
+        openWrap.innerHTML = `<div class="hist-date-label"><i class="fas fa-layer-group"></i>Open Tabs</div><div class="hist-date-card"></div>`;
+        const list = openWrap.querySelector('.hist-date-card');
         
         activeTabs.forEach(tab => {
-            const domain = (() => { try { return new URL(tab.url).hostname; } catch { return ''; } })();
+            const domain = (() => { try { return new URL(tab.url).hostname.replace(/^www\./i, ''); } catch { return ''; } })();
+            const isCurrent = tab.id === activeTabId;
             const item = document.createElement('div');
-            item.className = 'hist-item active-tab-entry';
-            if (tab.id === activeTabId) item.classList.add('current-active');
+            item.className = `hist-row ${isCurrent ? 'active-tab-entry current-active' : ''}`;
             
             const iconHtml = getHistoricalIcon(tab.url, tab.title, tab.favicon);
 
             item.innerHTML = `
-                ${iconHtml}
-                <div class="hist-info">
-                    <div class="hist-title">${esc(tab.title || 'New Tab')}</div>
-                    <div class="hist-meta">${esc(domain || 'ocal://')} · Open Now</div>
+                <span class="hist-row-time" style="color:var(--accent);font-weight:700;font-size:10px;letter-spacing:0.04em;">${isCurrent ? 'ACTIVE' : 'TAB'}</span>
+                <div class="hist-row-icon">${iconHtml}</div>
+                <div class="hist-row-content">
+                    <span class="hist-row-domain">${esc(domain || 'ocal://')}</span>
+                    <span class="hist-row-title">${esc(tab.title || 'New Tab')}</span>
                 </div>
+                <span class="open-tab-switch-badge"><i class="fas fa-arrow-right"></i></span>
             `;
             item.onclick = () => {
                 window.electronAPI.send('switch-tab', tab.id);
@@ -698,48 +764,113 @@ function renderHistory() {
         sbContent.appendChild(openWrap);
     }
 
-    // 2. Recommendations (Top Domains)
+    // 2. Quick Access / Recommendations (High Resolution Native Web Icons)
+    const GOOGLE_SVG = `<svg viewBox="0 0 24 24" width="20" height="20"><path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/><path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/><path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.06H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.94l2.85-2.22.81-.63z"/><path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.06l3.66 2.84c.87-2.6 3.3-4.52 6.16-4.52z"/></svg>`;
+    const YOUTUBE_SVG = `<svg viewBox="0 0 24 24" width="20" height="20"><path fill="#FF0000" d="M23.498 6.186a3.016 3.016 0 0 0-2.122-2.136C19.505 3.545 12 3.545 12 3.545s-7.505 0-9.377.505A3.017 3.017 0 0 0 .502 6.186C0 8.07 0 12 0 12s0 3.93.502 5.814a3.016 3.016 0 0 0 2.122 2.136c1.871.505 9.376.505 9.376.505s7.505 0 9.377-.505a3.015 3.015 0 0 0 2.122-2.136C24 15.93 24 12 24 12s0-3.93-.502-5.814zM9.545 15.568V8.432L15.818 12l-6.273 3.568z"/></svg>`;
+
+    function getHighResWebIcon(dom) {
+        const d = String(dom || '').toLowerCase().replace(/^www\./, '');
+        
+        // 1. Internal Ocal System / Home
+        if (d.startsWith('ocal:settings')) {
+            return '<i class="fas fa-gear" style="color:var(--accent);font-size:15px;"></i>';
+        }
+        if (d.startsWith('ocal:home') || d === 'ocal:' || d.includes('ocalsoftware')) {
+            return '<img src="assets/icon.png" class="recom-web-icon" alt="Ocal" onerror="this.replaceWith(Object.assign(document.createElement(\'i\'), {className: \'fas fa-compass\', style: \'color:var(--accent);font-size:15px;\'}));">';
+        }
+
+        // 2. Official High-Resolution Multi-Color Vector SVGs
+        if (d.includes('google.') && !d.includes('chrome') && !d.includes('drive')) {
+            return GOOGLE_SVG;
+        }
+        if (d.includes('youtube.') || d.includes('youtu.be')) {
+            return YOUTUBE_SVG;
+        }
+        if (d.includes('chromewebstore') || d.includes('chrome.google.com')) {
+            return '<img src="https://ssl.gstatic.com/chrome/webstore/images/icon_144px.png" class="recom-web-icon" alt="Chrome Web Store" onerror="this.onerror=null; this.src=\'https://www.google.com/s2/favicons?domain=chromewebstore.google.com&sz=128\';">';
+        }
+
+        // 3. Stored High-Resolution Native Favicon from Visited Pages
+        let storedFavicon = '';
+        for (const h of historyItems) {
+            if (!h || !h.url || !h.favicon) continue;
+            try {
+                const u = new URL(h.url);
+                if (u.hostname.toLowerCase().replace(/^www\./, '') === d) {
+                    storedFavicon = h.favicon;
+                    break;
+                }
+            } catch {}
+        }
+
+        if (storedFavicon) {
+            return `<img src="${storedFavicon}" class="recom-web-icon" alt="${d}" onerror="this.onerror=null; this.src='https://www.google.com/s2/favicons?domain=${encodeURIComponent(d)}&sz=128'; this.onerror=function(){ this.replaceWith(Object.assign(document.createElement('i'), {className: 'fas fa-globe', style: 'color:var(--text-dim);font-size:14px;'})); };">`;
+        }
+
+        // 4. High-Resolution Fallback (Google sz=128 -> DuckDuckGo -> Crisp Vector)
+        return `<img src="https://www.google.com/s2/favicons?domain=${encodeURIComponent(d)}&sz=128" class="recom-web-icon" alt="${d}" onerror="this.onerror=null; this.src='https://icons.duckduckgo.com/ip3/${encodeURIComponent(d)}.ico'; this.onerror=function(){ this.replaceWith(Object.assign(document.createElement('i'), {className: 'fas fa-globe', style: 'color:var(--text-dim);font-size:14px;'})); };">`;
+    }
+
+    function getQuickAccessName(dom) {
+        let name = String(dom || '').replace(/^www\./i, '');
+        if (name.includes('chromewebstore')) return 'Web Store';
+        if (name.includes('gamingnetworkstudio')) return 'GamingNet';
+        if (name.includes('ocalsoftware') || name === 'ocal:home') return 'Ocal';
+        if (name === 'ocal:settings') return 'Settings';
+        if (name.includes('unboundmusic')) return 'Unbound';
+        if (name.includes('gnstudioxrage')) return 'GN Studio';
+        if (name.includes('open-meteo')) return 'OpenMeteo';
+        if (name.includes('rocketreach')) return 'RocketReach';
+        if (name.includes('mongodb')) return 'MongoDB';
+        if (name.includes('google')) return 'Google';
+        if (name.includes('youtube')) return 'YouTube';
+        if (name.includes('github')) return 'GitHub';
+        if (name.includes('reddit')) return 'Reddit';
+        if (name.includes('discord')) return 'Discord';
+        if (name.includes('spotify')) return 'Spotify';
+
+        // Clean suffixes
+        name = name.replace(/\.(vercel\.app|wixstudio\.com|netlify\.app|github\.io|pages\.dev)$/i, '');
+        name = name.replace(/\.(com|org|net|co|io|app|dev|edu|gov)$/i, '');
+        if (name.length <= 11 && /^[a-z0-9]+$/i.test(name)) {
+            name = name.charAt(0).toUpperCase() + name.slice(1);
+        }
+        return name;
+    }
+
     if (!q && historyItems.length > 5) {
         const counts = {};
         historyItems.forEach(h => {
             try {
-                // Skip internal browser files/pages
                 if (h.url.startsWith('ocal://') || h.url.startsWith('file://')) return;
-                
                 const u = new URL(h.url);
                 if (u.protocol === 'file:' || u.protocol === 'ocal:') return;
-                
                 const dom = u.hostname;
                 if (dom) counts[dom] = (counts[dom] || 0) + 1;
             } catch {}
         });
         const top = Object.entries(counts).sort((a,b) => b[1] - a[1]).slice(0, 8);
 
-        const recomWrap = document.createElement('div');
-        recomWrap.className = 'hist-recom';
-        recomWrap.innerHTML = `<div class="recom-title"><i class="fas fa-bolt"></i>Quick Access</div><div class="recom-grid"></div>`;
-        const grid = recomWrap.querySelector('.recom-grid');
-        
-        top.forEach(([dom, count]) => {
-            const item = document.createElement('div');
-            item.className = 'recom-item';
+        if (top.length > 0) {
+            const recomWrap = document.createElement('div');
+            recomWrap.className = 'hist-recom';
+            recomWrap.innerHTML = `<div class="hist-date-label"><i class="fas fa-compass" style="color:var(--accent);"></i>Quick Access</div><div class="recom-grid"></div>`;
+            const grid = recomWrap.querySelector('.recom-grid');
             
-            let iconHtml = '';
-            let name = dom.replace('www.','');
-            
-            if (dom.startsWith('ocal:')) {
-                const isSettings = dom === 'ocal:settings';
-                name = isSettings ? 'Settings' : 'Home';
-                iconHtml = `<div class="icon-wrapper" style="display:flex;align-items:center;justify-content:center;background:var(--accent-dim);color:var(--accent);font-size:10px;"><i class="fas ${isSettings?'fa-gear':'fa-house'}"></i></div>`;
-            } else {
-                iconHtml = `<img src="https://www.google.com/s2/favicons?domain=${dom}&sz=64" onerror="const d=document.createElement('div'); d.className='hist-favicon-fallback'; d.innerHTML='<i class=\\'fas fa-globe\\'></i>'; this.replaceWith(d);">`;
-            }
+            top.forEach(([dom, count]) => {
+                const item = document.createElement('div');
+                item.className = 'recom-item';
+                item.title = `${dom} (${count} visits)`;
+                
+                const iconHtml = `<div class="icon-wrapper">${getHighResWebIcon(dom)}</div>`;
+                const cleanName = getQuickAccessName(dom);
 
-            item.innerHTML = `${iconHtml}<div class="recom-name">${esc(name)}</div>`;
-            item.onclick = () => window.electronAPI.navigateTo(dom.startsWith('ocal:') ? `ocal://${name.toLowerCase()}` : `https://${dom}`);
-            grid.appendChild(item);
-        });
-        sbContent.appendChild(recomWrap);
+                item.innerHTML = `${iconHtml}<div class="recom-name">${esc(cleanName)}</div>`;
+                item.onclick = () => window.electronAPI.navigateTo(dom.startsWith('ocal:') ? (dom === 'ocal:settings' ? 'ocal://settings' : 'ocal://home') : `https://${dom}`);
+                grid.appendChild(item);
+            });
+            sbContent.appendChild(recomWrap);
+        }
     }
 
     // 3. Toggle Header Clear History Button
@@ -747,26 +878,53 @@ function renderHistory() {
         clearHistoryBtn.style.display = items.length ? 'flex' : 'none';
     }
 
-    // 4. History List Grouped by Date
+    // Helper: Opera-Style Full Date Formatter
+    function formatOperaDateHeader(d) {
+        const weekday = d.toLocaleDateString('en-US', { weekday: 'long' });
+        const fullDate = d.toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' });
+        if (isToday(d)) {
+            return `Today — ${weekday}, ${fullDate}`;
+        }
+        if (isYesterday(d)) {
+            return `Yesterday — ${weekday}, ${fullDate}`;
+        }
+        return `${weekday}, ${fullDate}`;
+    }
+
+    // 4. History List Grouped by Date (Opera-Style Unified Cards)
     const groups = {};
     items.forEach(h => {
         const d = new Date(h.timestamp);
-        const label = isToday(d) ? 'Today' : isYesterday(d) ? 'Yesterday' : d.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
-        if (!groups[label]) groups[label] = [];
-        groups[label].push(h);
+        const dateKey = d.toDateString();
+        if (!groups[dateKey]) {
+            groups[dateKey] = {
+                date: d,
+                items: []
+            };
+        }
+        groups[dateKey].items.push(h);
     });
 
-    Object.entries(groups).forEach(([label, group]) => {
-        const lbl = document.createElement('div');
-        lbl.className = 'hist-date-label';
-        lbl.innerHTML = label;
-        sbContent.appendChild(lbl);
+    Object.values(groups).forEach(gData => {
+        const d = gData.date;
+        const groupItems = gData.items;
+
+        // Date Header
+        const dateLabel = document.createElement('div');
+        dateLabel.className = 'hist-date-label';
+        dateLabel.textContent = formatOperaDateHeader(d);
+        sbContent.appendChild(dateLabel);
+
+        // Unified Opera-Style Card Container
+        const dateCard = document.createElement('div');
+        dateCard.className = 'hist-date-card';
+        sbContent.appendChild(dateCard);
 
         // Group the group's items by domain (preserving chronological order)
         const domainGroups = [];
         const domainMap = new Map();
 
-        group.forEach(h => {
+        groupItems.forEach(h => {
             let domain = (() => { try { return new URL(h.url).hostname; } catch { return ''; } })();
             const normDomain = domain.replace(/^www\./i, '') || 'Local Page';
             
@@ -785,47 +943,64 @@ function renderHistory() {
         domainGroups.forEach(g => {
             if (g.items.length === 1) {
                 const h = g.items[0];
-                const domain = g.rawDomain;
+                const domain = g.rawDomain ? g.rawDomain.replace(/^www\./i, '') : 'Local Page';
                 const time = new Date(h.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
                 const iconHtml = getHistoricalIcon(h.url, h.title, h.favicon);
+                const displayTitle = getDisplayTitle(h);
+                const isSame = displayTitle.toLowerCase() === domain.toLowerCase();
 
                 const el = document.createElement('div');
-                el.className = 'hist-item';
+                el.className = 'hist-row';
                 el.innerHTML = `
-                    ${iconHtml}
-                    <div class="hist-info">
-                        <div class="hist-title">${esc(h.title || h.url)}</div>
-                        <div class="hist-meta">${esc(domain || 'Local Page')} · ${time}</div>
+                    <span class="hist-row-time">${time}</span>
+                    <div class="hist-row-icon">${iconHtml}</div>
+                    <div class="hist-row-content">
+                        <span class="hist-row-domain">${esc(domain)}</span>
+                        ${isSame ? '' : `<span class="hist-row-title">${esc(displayTitle)}</span>`}
                     </div>
-                    <div class="hist-del" title="Remove"><i class="fas fa-xmark"></i></div>
+                    <button class="hist-row-del" title="Remove"><i class="fas fa-trash-can"></i></button>
                 `;
-                el.querySelector('.hist-del').onclick = (e) => {
+
+                el.querySelector('.hist-row-del').onclick = (e) => {
                     e.stopPropagation();
                     window.electronAPI.send('delete-history-item', h.timestamp);
+                    historyItems = historyItems.filter(item => item.timestamp !== h.timestamp);
+                    el.remove();
+                    if (dateCard.children.length === 0) {
+                        dateLabel.remove();
+                        dateCard.remove();
+                    }
+                    if (historyItems.length === 0) {
+                        renderHistory();
+                    }
                 };
+
                 el.onclick = () => {
                     window.electronAPI.navigateTo(h.url);
                     closeSidebar();
                 };
-                sbContent.appendChild(el);
+
+                dateCard.appendChild(el);
             } else {
-                const container = document.createElement('div');
-                container.className = 'hist-group-container';
+                // Multi-visit domain group (Accordion inside Opera Card)
+                const groupWrap = document.createElement('div');
+                groupWrap.className = 'hist-group-wrapper';
 
                 const latestItem = g.items[0];
                 const latestTime = new Date(latestItem.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
                 const iconHtml = getHistoricalIcon(latestItem.url, latestItem.title, latestItem.favicon);
 
                 const header = document.createElement('div');
-                header.className = 'hist-group-header';
+                header.className = 'hist-row hist-group-row';
                 header.innerHTML = `
                     <i class="fas fa-chevron-right toggle-chevron"></i>
-                    ${iconHtml}
-                    <div class="hist-info">
-                        <div class="hist-group-title">${esc(g.domain)}</div>
-                        <div class="hist-meta">${g.items.length} pages visited · latest ${latestTime}</div>
+                    <span class="hist-row-time">${latestTime}</span>
+                    <div class="hist-row-icon">${iconHtml}</div>
+                    <div class="hist-row-content">
+                        <span class="hist-row-domain">${esc(g.domain)}</span>
+                        <span class="hist-group-badge">${g.items.length} pages visited</span>
                     </div>
-                    <div class="hist-del" title="Remove All"><i class="fas fa-trash-can"></i></div>
+                    <button class="hist-row-del hist-group-del" title="Remove all"><i class="fas fa-trash-can"></i></button>
                 `;
 
                 const childrenContainer = document.createElement('div');
@@ -835,57 +1010,77 @@ function renderHistory() {
                 g.items.forEach(h => {
                     const time = new Date(h.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
                     const childIconHtml = getHistoricalIcon(h.url, h.title, h.favicon);
+                    const childDisplayTitle = getDisplayTitle(h);
                     
                     const childEl = document.createElement('div');
-                    childEl.className = 'hist-item';
+                    childEl.className = 'hist-row hist-child-row';
                     childEl.innerHTML = `
-                        ${childIconHtml}
-                        <div class="hist-info">
-                            <div class="hist-title">${esc(h.title || h.url)}</div>
-                            <div class="hist-meta">${time}</div>
+                        <span class="hist-row-time">${time}</span>
+                        <div class="hist-row-icon" style="opacity:0.75;">${childIconHtml}</div>
+                        <div class="hist-row-content">
+                            <span class="hist-row-title">${esc(childDisplayTitle)}</span>
                         </div>
-                        <div class="hist-del" title="Remove"><i class="fas fa-xmark"></i></div>
+                        <button class="hist-row-del" title="Remove"><i class="fas fa-trash-can"></i></button>
                     `;
-                    childEl.querySelector('.hist-del').onclick = (e) => {
+
+                    childEl.querySelector('.hist-row-del').onclick = (e) => {
                         e.stopPropagation();
                         window.electronAPI.send('delete-history-item', h.timestamp);
+                        historyItems = historyItems.filter(item => item.timestamp !== h.timestamp);
                         childEl.remove();
-                        if (childrenContainer.children.length === 0) {
-                            container.remove();
+                        const remaining = childrenContainer.querySelectorAll('.hist-child-row').length;
+                        if (remaining === 0) {
+                            groupWrap.remove();
+                            if (dateCard.children.length === 0) {
+                                dateLabel.remove();
+                                dateCard.remove();
+                            }
                         } else {
-                            const count = childrenContainer.children.length;
-                            header.querySelector('.hist-meta').innerText = `${count} pages visited · latest ${latestTime}`;
+                            header.querySelector('.hist-group-badge').textContent = `${remaining} pages visited`;
+                        }
+                        if (historyItems.length === 0) {
+                            renderHistory();
                         }
                     };
+
                     childEl.onclick = () => {
                         window.electronAPI.navigateTo(h.url);
                         closeSidebar();
                     };
+
                     childrenContainer.appendChild(childEl);
                 });
 
-                header.onclick = () => {
+                header.onclick = (e) => {
+                    if (e.target.closest('.hist-row-del')) return;
                     const isExpanded = header.classList.toggle('expanded');
                     childrenContainer.style.display = isExpanded ? 'block' : 'none';
                 };
 
-                header.querySelector('.hist-del').onclick = (e) => {
+                // Group deletion: works directly and instantly, exactly like individual items!
+                header.querySelector('.hist-group-del').onclick = (e) => {
                     e.stopPropagation();
-                    showModal({
-                        title: 'Delete Group History',
-                        message: `Are you sure you want to delete all ${g.items.length} history items from ${g.domain}?`,
-                        onConfirm: () => {
-                            g.items.forEach(h => {
-                                window.electronAPI.send('delete-history-item', h.timestamp);
-                            });
-                            container.remove();
-                        }
-                    });
+                    const timestamps = g.items.map(h => h.timestamp);
+                    if (window.electronAPI && window.electronAPI.send) {
+                        window.electronAPI.send('delete-history-items', timestamps);
+                        timestamps.forEach(ts => window.electronAPI.send('delete-history-item', ts));
+                    }
+                    const tsSet = new Set(timestamps);
+                    historyItems = historyItems.filter(h => !tsSet.has(h.timestamp));
+
+                    groupWrap.remove();
+                    if (dateCard.children.length === 0) {
+                        dateLabel.remove();
+                        dateCard.remove();
+                    }
+                    if (historyItems.length === 0) {
+                        renderHistory();
+                    }
                 };
 
-                container.appendChild(header);
-                container.appendChild(childrenContainer);
-                sbContent.appendChild(container);
+                groupWrap.appendChild(header);
+                groupWrap.appendChild(childrenContainer);
+                dateCard.appendChild(groupWrap);
             }
         });
     });
@@ -1061,7 +1256,7 @@ function renderDownloads() {
     if (finished.length > 0) {
         const lbl = document.createElement('div');
         lbl.className = 'dl-section-label';
-        lbl.textContent = `Completed & Saved Files (${finished.length})`;
+        lbl.innerHTML = `<i class="fas fa-circle-check"></i>Completed & Saved Files (${finished.length})`;
         sbContent.appendChild(lbl);
 
         const finContainer = document.createElement('div');
@@ -1088,7 +1283,7 @@ function renderDownloads() {
                     }
                 </div>
                 <div class="dl-info">
-                    <div class="dl-name" title="${esc(dl.name)}">${esc(dl.name)}</div>
+                    <div class="dl-name">${esc(dl.name)}</div>
                     <div class="dl-meta-row">
                         <span class="dl-status-chip">${dl.state === 'completed' ? 'Completed' : dl.state}</span>
                         <span class="dl-dot-separator"></span>

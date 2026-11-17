@@ -3414,6 +3414,27 @@ function renderSearchSettings(s) {
     if (customInp && s.customSearchUrl) {
         customInp.value = s.customSearchUrl;
     }
+
+    if (typeof setupSearchToggleRowClicks === 'function') {
+        setupSearchToggleRowClicks();
+    }
+}
+
+function setupSearchToggleRowClicks() {
+    const rows = document.querySelectorAll('#search .settings-toggle-row');
+    rows.forEach(row => {
+        if (row._clickSetup) return;
+        row._clickSetup = true;
+        row.style.cursor = 'pointer';
+        row.addEventListener('click', (e) => {
+            if (e.target.closest('.native-switch') || e.target.closest('button') || e.target.closest('input')) return;
+            const cb = row.querySelector('.native-switch input[type="checkbox"]');
+            if (cb && !cb.disabled) {
+                cb.checked = !cb.checked;
+                cb.dispatchEvent(new Event('change', { bubbles: true }));
+            }
+        });
+    });
 }
 
 window.updateSearchFeatureBadges = function() {
@@ -3491,15 +3512,15 @@ window.updateContentProtectionBadges = function(val) {
     const ind = document.getElementById('content-protection-indicator');
     const txt = document.getElementById('content-protection-status-text');
     if (ind) {
-        ind.className = `engine-active-indicator ${isMaster ? 'active' : 'inactive'}`;
+        ind.className = `engine-active-indicator desktop-caption-badge ${isMaster ? 'active' : 'inactive'}`;
         if (isMaster) {
-            ind.style.borderColor = 'rgba(16, 185, 129, 0.4)';
-            ind.style.background = 'rgba(16, 185, 129, 0.1)';
+            ind.style.borderColor = 'rgba(16, 185, 129, 0.35)';
+            ind.style.background = 'rgba(16, 185, 129, 0.08)';
             ind.style.color = '#10b981';
         } else {
-            ind.style.borderColor = 'rgba(156, 163, 175, 0.3)';
-            ind.style.background = 'rgba(156, 163, 175, 0.08)';
-            ind.style.color = 'var(--text-secondary, #9ca3af)';
+            ind.style.borderColor = 'rgba(156, 163, 175, 0.2)';
+            ind.style.background = 'rgba(156, 163, 175, 0.05)';
+            ind.style.color = 'var(--text-dim, #9ca3af)';
         }
     }
     if (txt) {
@@ -3597,14 +3618,18 @@ window.handleNewsToggle = function(checked) {
 window.selectTabLayout = function(mode) {
     window.electronAPI.updateSetting('tabLayout', mode);
     const cards = document.querySelectorAll('.tab-choice-card');
-    cards.forEach(c => c.classList.toggle('active', c.dataset.value === mode));
+    cards.forEach(c => {
+        const isMatch = (c.dataset.value === mode);
+        c.classList.toggle('active', isMatch);
+        c.setAttribute('aria-checked', isMatch ? 'true' : 'false');
+    });
     
     const statLayout = document.getElementById('homepage-stat-layout');
-    if (statLayout) statLayout.innerText = mode === 'vertical' ? 'Vertical Arc' : 'Horizontal';
+    if (statLayout) statLayout.innerText = mode === 'vertical' ? 'Vertical Rail' : 'Horizontal';
 
     const tuning = document.getElementById('vt-tuning-section');
     if (tuning) {
-        tuning.style.opacity = mode === 'vertical' ? '1' : '0.6';
+        tuning.style.display = (mode === 'vertical') ? 'block' : 'none';
     }
 };
 
@@ -4033,7 +4058,12 @@ function renderHomepageSettings(s) {
 
     // Custom Swatch Trigger & Popover Toggle
     if (customSwatch && customPopover) {
-        customSwatch.onclick = () => {
+        customPopover.addEventListener('click', (e) => {
+            e.stopPropagation();
+        });
+
+        customSwatch.onclick = (e) => {
+            if (e) e.stopPropagation();
             presetSwatches.forEach(s2 => s2.classList.remove('active'));
             customSwatch.classList.add('active');
             const isHidden = (customPopover.style.display === 'none' || !customPopover.style.display);
@@ -4044,6 +4074,21 @@ function renderHomepageSettings(s) {
             }
             applyAccent(activeCustom, false, true);
         };
+
+        // Close on click outside
+        document.addEventListener('click', (e) => {
+            if (!customPopover || customPopover.style.display === 'none') return;
+            if (!customPopover.contains(e.target) && !customSwatch.contains(e.target)) {
+                customPopover.style.display = 'none';
+            }
+        });
+
+        // Close on Escape key
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'Escape' && customPopover && customPopover.style.display !== 'none') {
+                customPopover.style.display = 'none';
+            }
+        });
     }
 
     if (ccpCloseBtn && customPopover) {
@@ -4205,6 +4250,32 @@ function renderHomepageSettings(s) {
     if (weatherDisp) {
         weatherDisp.textContent = curSavedLoc ? `Synced: ${curSavedLoc}` : 'Synced with Home Dashboard (Auto GPS)';
     }
+
+    const vtTuning = document.getElementById('vt-tuning-section');
+    if (vtTuning) {
+        vtTuning.style.display = (tabLayout === 'vertical') ? 'block' : 'none';
+    }
+
+    if (typeof setupHomepageToggleRowClicks === 'function') {
+        setupHomepageToggleRowClicks();
+    }
+}
+
+function setupHomepageToggleRowClicks() {
+    const rows = document.querySelectorAll('.settings-toggle-row');
+    rows.forEach(row => {
+        if (row._clickSetup) return;
+        row._clickSetup = true;
+        row.style.cursor = 'pointer';
+        row.addEventListener('click', (e) => {
+            if (e.target.closest('.native-switch') || e.target.closest('.ext-toggle-wrap') || e.target.closest('button') || e.target.closest('input') || e.target.closest('select') || e.target.closest('a') || e.target.closest('.hbc-color-swatches') || e.target.closest('.custom-color-popover') || e.target.closest('.vt-width-pills')) return;
+            const cb = row.querySelector('.native-switch input[type="checkbox"], .ext-toggle-wrap input[type="checkbox"]');
+            if (cb && !cb.disabled) {
+                cb.checked = !cb.checked;
+                cb.dispatchEvent(new Event('change', { bubbles: true }));
+            }
+        });
+    });
 }
 
 // ══════════════════════════════════════════════════════════════════════════

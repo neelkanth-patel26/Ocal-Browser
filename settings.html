@@ -122,14 +122,9 @@
             </nav>
 
             <div class="sidebar-footer">
-                <div class="version-status-card">
-                    <div class="version-status-pill">
-                        <span id="sidebar-version-label" class="version-code">Core v4.0.00-beta</span>
-                    </div>
-                    <div class="secure-architecture-badge">
-                        <i class="fas fa-shield-halved"></i>
-                        <span>Secure Architecture</span>
-                    </div>
+                <div class="sidebar-app-meta">
+                    <span class="meta-app-name"><i class="fas fa-shield-halved"></i> Ocal</span>
+                    <span id="sidebar-version-label" class="version-code">v10.1.23</span>
                 </div>
             </div>
         </aside>
@@ -144,32 +139,27 @@
             <!-- ── SEARCH ENGINE (NATIVE DESKTOP SETTINGS STYLE) ── -->
             <section id="search" class="section active">
                 <div class="settings-page-header">
-                    <h1 class="settings-page-title">Search engine</h1>
-                    <p class="settings-page-subtitle">Manage default search engine used in the address bar and omnibox.</p>
+                    <h1 class="settings-page-title">Search</h1>
+                    <p class="settings-page-subtitle">Configure default search provider, omnibox suggestions, and content filters.</p>
                 </div>
 
                 <div class="page-body">
 
                     <!-- Group 1: Default Search Engine Provider List -->
-                    <div class="settings-group-card">
-                        <div class="settings-group-header">
-                            <div class="group-header-text">
-                                <h3 class="group-title">Default search engine</h3>
-                                <p class="group-desc">Search engine used in the address bar when navigating or querying.</p>
-                            </div>
-                            <div class="engine-active-indicator" id="current-engine-pill">
-                                <span class="status-dot"></span>
-                                <span id="search-stat-engine">Google</span>
-                            </div>
-                        </div>
+                    <div class="desktop-group-caption">
+                        <span>Default Search Provider</span>
+                        <span id="search-stat-engine" style="display:none;"></span>
+                        <div id="current-engine-pill" style="display:none;"></div>
+                    </div>
 
-                        <div class="settings-list-group" id="search-engine-grid">
+                    <div class="settings-group-card desktop-inset-card">
+                        <div class="settings-list-group" id="search-engine-grid" role="radiogroup">
 
                             <!-- Google -->
-                            <div class="settings-engine-row search-provider-card active" data-search-engine="google" data-value="google">
+                            <div class="settings-engine-row search-provider-card active" data-search-engine="google" data-value="google" role="radio" aria-checked="true">
                                 <div class="ser-left">
                                     <div class="ser-icon">
-                                        <svg width="22" height="22" viewBox="0 0 24 24"><path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="#4285F4"/><path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98 1.06-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853"/><path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l3.66-2.84z" fill="#FBBC05"/><path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" fill="#EA4335"/></svg>
+                                        <svg width="20" height="20" viewBox="0 0 24 24"><path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="#4285F4"/><path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98 1.06-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853"/><path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l3.66-2.84z" fill="#FBBC05"/><path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" fill="#EA4335"/></svg>
                                     </div>
                                     <div class="ser-info">
                                         <span class="ser-name">Google</span>
@@ -178,16 +168,19 @@
                                 </div>
                                 <div class="ser-right">
                                     <input type="radio" name="search-engine" value="google" checked style="display:none;">
-                                    <span class="spc-status active"><span class="status-dot"></span><span>Default</span></span>
-                                    <button class="spc-action-btn active" type="button"><i class="fas fa-check"></i><span>Default</span></button>
+                                    <span class="spc-status active" style="display:none;"></span>
+                                    <button class="spc-action-btn active" type="button" style="display:none;"></button>
+                                    <div class="desktop-radio-indicator">
+                                        <div class="desktop-radio-pip"></div>
+                                    </div>
                                 </div>
                             </div>
 
                             <!-- Microsoft Bing -->
-                            <div class="settings-engine-row search-provider-card" data-search-engine="bing" data-value="bing">
+                            <div class="settings-engine-row search-provider-card" data-search-engine="bing" data-value="bing" role="radio" aria-checked="false">
                                 <div class="ser-left">
                                     <div class="ser-icon">
-                                        <svg width="20" height="20" viewBox="0 0 24 24"><path fill="#F25022" d="M1 1h10v10H1z"/><path fill="#7FBA00" d="M13 1h10v10H13z"/><path fill="#00A4EF" d="M1 13h10v10H1z"/><path fill="#FFB900" d="M13 13h10v10H13z"/></svg>
+                                        <svg width="18" height="18" viewBox="0 0 24 24"><path fill="#F25022" d="M1 1h10v10H1z"/><path fill="#7FBA00" d="M13 1h10v10H13z"/><path fill="#00A4EF" d="M1 13h10v10H1z"/><path fill="#FFB900" d="M13 13h10v10H13z"/></svg>
                                     </div>
                                     <div class="ser-info">
                                         <span class="ser-name">Microsoft Bing</span>
@@ -196,38 +189,19 @@
                                 </div>
                                 <div class="ser-right">
                                     <input type="radio" name="search-engine" value="bing" style="display:none;">
-                                    <span class="spc-status"><span class="status-dot"></span><span>Available</span></span>
-                                    <button class="spc-action-btn" type="button"><span>Make default</span></button>
+                                    <span class="spc-status" style="display:none;"></span>
+                                    <button class="spc-action-btn" type="button" style="display:none;"></button>
+                                    <div class="desktop-radio-indicator">
+                                        <div class="desktop-radio-pip"></div>
+                                    </div>
                                 </div>
                             </div>
 
                             <!-- DuckDuckGo -->
-                            <div class="settings-engine-row search-provider-card" data-search-engine="duckduckgo" data-value="duckduckgo">
+                            <div class="settings-engine-row search-provider-card" data-search-engine="duckduckgo" data-value="duckduckgo" role="radio" aria-checked="false">
                                 <div class="ser-left">
                                     <div class="ser-icon">
-                                        <svg width="22" height="22" viewBox="0 0 32 32" style="display: block; flex-shrink: 0;" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
-                                            <g transform="matrix(.266667 0 0 .266667 -17.954934 -5.057333)">
-                                                <circle cx="127.332" cy="78.966" r="51.15" fill="#de5833"/>
-                                                <defs><path id="ddg_sett_A" d="M178.684 78.824c0 28.316-23.035 51.354-51.354 51.354-28.313 0-51.348-23.04-51.348-51.354s23.036-51.35 51.354-51.35c28.318 0 51.354 23.036 51.354 51.35z"/></defs>
-                                                <clipPath id="ddg_sett_B"><use xlink:href="#ddg_sett_A" href="#ddg_sett_A"/></clipPath>
-                                                <g clip-path="url(#ddg_sett_B)">
-                                                    <path d="M148.293 155.158c-1.8-8.285-12.262-27.04-16.23-34.97s-7.938-19.1-6.13-26.322c.328-1.312-3.436-11.308-2.354-12.015 8.416-5.5 10.632.6 14.002-1.862 1.734-1.273 4.1 1.047 4.7-1.06 2.158-7.567-3.006-20.76-8.77-26.526-1.885-1.88-4.77-3.06-8.03-3.687-1.254-1.713-3.275-3.36-6.138-4.88-3.188-1.697-10.12-3.938-13.717-4.535-2.492-.4-3.055.287-4.12.46.992.088 5.7 2.414 6.615 2.55-.916.62-3.607-.028-5.324.742-.865.392-1.512 1.877-1.506 2.58 4.9-.496 12.574-.016 17.1 2-3.602.4-9.08.867-11.436 2.105-6.848 3.608-9.873 12.035-8.07 22.133 1.804 10.075 9.738 46.85 12.262 59.13 2.525 12.264-5.408 20.2-10.455 22.354l5.408.363-1.8 3.967c6.484.72 13.695-1.44 13.695-1.44-1.438 3.965-11.176 5.412-11.176 5.412s4.7 1.438 12.258-1.447l12.263-4.688 3.604 9.373 6.854-6.847 2.885 7.2c.014-.001 5.424-1.808 3.62-10.103z" fill="#d5d7d8"/>
-                                                    <path d="M150.47 153.477c-1.795-8.3-12.256-27.043-16.228-34.98s-7.935-19.112-6.13-26.32c.335-1.3.34-6.668 1.43-7.38 8.4-5.494 7.812-.184 11.187-2.645 1.74-1.27 3.133-2.806 3.738-4.912 2.164-7.572-3.006-20.76-8.773-26.53-1.88-1.88-4.768-3.062-8.023-3.686-1.252-1.718-3.27-3.36-6.13-4.882-5.4-2.862-12.074-4.006-18.266-2.883 1 .1 3.256 2.138 4.168 2.273-1.38.936-5.053.815-5.03 2.896 4.916-.492 10.303.285 14.834 2.297-3.602.4-6.955 1.3-9.3 2.543-6.854 3.603-8.656 10.812-6.854 20.914 1.807 10.097 9.742 46.873 12.256 59.126 2.527 12.26-5.402 20.188-10.45 22.354l5.408.36-1.8 3.973c6.484.72 13.695-1.44 13.695-1.44-1.438 3.974-11.176 5.406-11.176 5.406s4.686 1.44 12.258-1.445l12.27-4.688 3.604 9.373 6.852-6.85 2.9 7.215c-.016.007 5.388-1.797 3.58-10.088z" fill="#fff"/>
-                                                    <path d="M109.02 70.69c0-2.093 1.693-3.787 3.79-3.787 2.1 0 3.785 1.694 3.785 3.787s-1.695 3.786-3.785 3.786c-2.096.001-3.79-1.692-3.79-3.786z" fill="#2d4f8e"/>
-                                                    <path d="M113.507 69.43a.98.98 0 0 1 .98-.983c.543 0 .984.438.984.983s-.44.984-.984.984c-.538.001-.98-.44-.98-.984z" fill="#fff"/>
-                                                    <path d="M134.867 68.445c0-1.793 1.46-3.25 3.252-3.25 1.8 0 3.256 1.457 3.256 3.25 0 1.8-1.455 3.258-3.256 3.258a3.26 3.26 0 0 1-3.252-3.258z" fill="#2d4f8e"/>
-                                                    <path d="M138.725 67.363c0-.463.38-.843.838-.843a.84.84 0 0 1 .846.843c0 .47-.367.842-.846.842a.84.84 0 0 1-.838-.842z" fill="#fff"/>
-                                                    <linearGradient id="ddg_sett_C" gradientUnits="userSpaceOnUse" x1="105.318" y1="60.979" x2="113.887" y2="60.979"><stop offset=".006" stop-color="#6176b9"/><stop offset=".691" stop-color="#394a9f"/></linearGradient>
-                                                    <path d="M113.886 59.718s-2.854-1.3-5.63.453-2.668 3.523-2.668 3.523-1.473-3.283 2.453-4.892 5.844.916 5.844.916z" fill="url(#ddg_sett_C)"/>
-                                                    <linearGradient id="ddg_sett_D" gradientUnits="userSpaceOnUse" x1="132.273" y1="58.371" x2="140.078" y2="58.371"><stop offset=".006" stop-color="#6176b9"/><stop offset=".691" stop-color="#394a9f"/></linearGradient>
-                                                    <path d="M140.078 59.458s-2.05-1.172-3.643-1.152c-3.27.043-4.162 1.488-4.162 1.488s.55-3.445 4.732-2.754c2.268.377 3.073 2.418 3.073 2.418z" fill="url(#ddg_sett_D)"/>
-                                                </g>
-                                                <path d="M124.4 85.295c.38-2.3 6.3-6.625 10.5-6.887 4.2-.265 5.5-.205 9-1.043s12.535-3.088 15.033-4.242c2.504-1.156 13.104.572 5.63 4.738-3.232 1.8-11.943 5.13-18.172 6.987-6.22 1.86-10-1.776-12.06 1.28-1.646 2.432-.334 5.762 7.1 6.453 10.037.93 19.66-4.52 20.72-1.625s-8.625 6.508-14.525 6.623c-5.893.1-17.77-3.896-19.555-5.137s-4.165-4.13-3.67-7.148z" fill="#fdd20a"/>
-                                                <path d="M128.943 115.592s-14.102-7.52-14.332-4.47c-.238 3.056 0 15.5 1.643 16.45s13.396-6.108 13.396-6.108zm5.403-.474s9.635-7.285 11.754-6.815c2.1.48 2.582 15.5.7 16.23-1.88.7-12.908-3.813-12.908-3.813z" fill="#65bc46"/>
-                                                <path d="M125.53 116.4c0 4.932-.7 7.05 1.4 7.52s6.104 0 7.518-.938.232-7.28-.232-8.465c-.477-1.174-8.696-.232-8.696 1.884z" fill="#43a244"/>
-                                                <path d="M126.426 115.292c0 4.933-.707 7.05 1.4 7.52 2.106.48 6.104 0 7.52-.938 1.4-.94.23-7.28-.236-8.466-.473-1.173-8.692-.227-8.692 1.885z" fill="#65bc46"/>
-                                            </g>
-                                        </svg>
+                                        <img src="assets/duckduckgo.svg" width="20" height="20" alt="DuckDuckGo">
                                     </div>
                                     <div class="ser-info">
                                         <span class="ser-name">DuckDuckGo</span>
@@ -236,89 +210,134 @@
                                 </div>
                                 <div class="ser-right">
                                     <input type="radio" name="search-engine" value="duckduckgo" style="display:none;">
-                                    <span class="spc-status"><span class="status-dot"></span><span>Available</span></span>
-                                    <button class="spc-action-btn" type="button"><span>Make default</span></button>
+                                    <span class="spc-status" style="display:none;"></span>
+                                    <button class="spc-action-btn" type="button" style="display:none;"></button>
+                                    <div class="desktop-radio-indicator">
+                                        <div class="desktop-radio-pip"></div>
+                                    </div>
                                 </div>
                             </div>
 
                             <!-- Brave Search -->
-                            <div class="settings-engine-row search-provider-card" data-search-engine="brave" data-value="brave">
+                            <div class="settings-engine-row search-provider-card" data-search-engine="brave" data-value="brave" role="radio" aria-checked="false">
                                 <div class="ser-left">
                                     <div class="ser-icon">
-                                        <svg width="20" height="20" viewBox="0 0 24 24" fill="#FB542B"><path d="M12 2L4 6v6c0 5.5 3.5 10 8 11 4.5-1 8-5.5 8-11V6l-8-4zm0 2.2l6 3v4.8c0 4.3-2.7 8-6 8.9-3.3-.9-6-4.6-6-8.9V7.2l6-3zm-1 5.8a1 1 0 00-1 1v2a1 1 0 002 0V11a1 1 0 00-1-1zm2 0a1 1 0 00-1 1v2a1 1 0 002 0V11a1 1 0 00-1-1z"/></svg>
+                                        <svg width="18" height="18" viewBox="0 0 24 24" fill="#FB542B"><path d="M12 2L4 6v6c0 5.5 3.5 10 8 11 4.5-1 8-5.5 8-11V6l-8-4zm0 2.2l6 3v4.8c0 4.3-2.7 8-6 8.9-3.3-.9-6-4.6-6-8.9V7.2l6-3zm-1 5.8a1 1 0 00-1 1v2a1 1 0 002 0V11a1 1 0 00-1-1zm2 0a1 1 0 00-1 1v2a1 1 0 002 0V11a1 1 0 00-1-1z"/></svg>
                                     </div>
                                     <div class="ser-info">
                                         <span class="ser-name">Brave Search</span>
-                                        <span class="ser-sub">search.brave.com &middot; Independent</span>
+                                        <span class="ser-sub">search.brave.com &middot; Independent index</span>
                                     </div>
                                 </div>
                                 <div class="ser-right">
                                     <input type="radio" name="search-engine" value="brave" style="display:none;">
-                                    <span class="spc-status"><span class="status-dot"></span><span>Available</span></span>
-                                    <button class="spc-action-btn" type="button"><span>Make default</span></button>
+                                    <span class="spc-status" style="display:none;"></span>
+                                    <button class="spc-action-btn" type="button" style="display:none;"></button>
+                                    <div class="desktop-radio-indicator">
+                                        <div class="desktop-radio-pip"></div>
+                                    </div>
                                 </div>
                             </div>
 
                             <!-- Yahoo -->
-                            <div class="settings-engine-row search-provider-card" data-search-engine="yahoo" data-value="yahoo">
+                            <div class="settings-engine-row search-provider-card" data-search-engine="yahoo" data-value="yahoo" role="radio" aria-checked="false">
                                 <div class="ser-left">
                                     <div class="ser-icon">
-                                        <svg width="20" height="20" viewBox="0 0 24 24"><rect width="24" height="24" rx="6" fill="#720DEA"/><path d="M6.5 6L10.5 13.2V18H13.5V13.2L17.5 6H14.5L12 11.2L9.5 6H6.5Z" fill="#FFFFFF"/><circle cx="19" cy="17" r="1.3" fill="#FFFFFF"/></svg>
+                                        <svg width="18" height="18" viewBox="0 0 24 24"><rect width="24" height="24" rx="5" fill="#720DEA"/><path d="M6.5 6L10.5 13.2V18H13.5V13.2L17.5 6H14.5L12 11.2L9.5 6H6.5Z" fill="#FFFFFF"/><circle cx="19" cy="17" r="1.3" fill="#FFFFFF"/></svg>
                                     </div>
                                     <div class="ser-info">
-                                        <span class="ser-name">Yahoo! Search</span>
+                                        <span class="ser-name">Yahoo</span>
                                         <span class="ser-sub">search.yahoo.com</span>
                                     </div>
                                 </div>
                                 <div class="ser-right">
                                     <input type="radio" name="search-engine" value="yahoo" style="display:none;">
-                                    <span class="spc-status"><span class="status-dot"></span><span>Available</span></span>
-                                    <button class="spc-action-btn" type="button"><span>Make default</span></button>
+                                    <span class="spc-status" style="display:none;"></span>
+                                    <button class="spc-action-btn" type="button" style="display:none;"></button>
+                                    <div class="desktop-radio-indicator">
+                                        <div class="desktop-radio-pip"></div>
+                                    </div>
                                 </div>
                             </div>
 
                             <!-- Custom Search Engine -->
-                            <div class="settings-engine-row search-provider-card" data-search-engine="custom" data-value="custom">
+                            <div class="settings-engine-row search-provider-card" data-search-engine="custom" data-value="custom" role="radio" aria-checked="false">
                                 <div class="ser-left">
-                                    <div class="ser-icon">
-                                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line><line x1="8" y1="11" x2="14" y2="11"></line><line x1="11" y1="8" x2="11" y2="14"></line></svg>
+                                    <div class="ser-icon ser-icon-custom">
+                                        <i class="fas fa-sliders"></i>
                                     </div>
                                     <div class="ser-info">
                                         <span class="ser-name">Custom Engine</span>
-                                        <span class="ser-sub">Self-hosted, SearXNG, Kagi, or local proxy</span>
+                                        <span class="ser-sub">Use custom URL pattern configured below</span>
                                     </div>
                                 </div>
                                 <div class="ser-right">
                                     <input type="radio" name="search-engine" value="custom" style="display:none;">
-                                    <span class="spc-status"><span class="status-dot"></span><span>Available</span></span>
-                                    <button class="spc-action-btn" type="button"><span>Make default</span></button>
+                                    <span class="spc-status" style="display:none;"></span>
+                                    <button class="spc-action-btn" type="button" style="display:none;"></button>
+                                    <div class="desktop-radio-indicator">
+                                        <div class="desktop-radio-pip"></div>
+                                    </div>
                                 </div>
                             </div>
 
                         </div>
                     </div>
 
-                    <!-- Group 2: Search Suggestions -->
-                    <div class="settings-group-card">
-                        <div class="settings-group-header">
-                            <div class="group-header-text">
-                                <h3 class="group-title">Search &amp; Address Bar Preferences</h3>
-                                <p class="group-desc">Control autocomplete suggestions and real-time query predictions.</p>
+                    <!-- Group 2: Custom Search Engine Configuration -->
+                    <div class="desktop-group-caption">
+                        <span>Custom Engine Configuration</span>
+                    </div>
+
+                    <div class="settings-group-card desktop-inset-card">
+                        <div class="desktop-card-inner">
+                            <div class="desktop-field-header">
+                                <span class="desktop-field-title">Search URL Pattern</span>
+                                <span class="desktop-field-desc">Specify a URL pattern with <code>%s</code> as the keyword query placeholder.</span>
+                            </div>
+
+                            <div class="desktop-input-group">
+                                <div class="desktop-input-wrapper">
+                                    <i class="fas fa-link desktop-input-icon"></i>
+                                    <input type="text" class="desktop-text-field" id="custom-search-url" placeholder="https://kagi.com/search?q=%s" spellcheck="false">
+                                </div>
+                                <button class="desktop-action-btn desktop-primary-btn" onclick="saveCustomSearchURL()">
+                                    <i class="fas fa-check"></i>
+                                    <span>Save URL</span>
+                                </button>
+                            </div>
+
+                            <div class="desktop-presets-container">
+                                <span class="presets-caption">Quick presets:</span>
+                                <div class="desktop-chips-row">
+                                    <button class="preset-tag-btn" onclick="setCustomPreset('https://kagi.com/search?q=%s', 'Kagi')">Kagi</button>
+                                    <button class="preset-tag-btn" onclick="setCustomPreset('https://searx.be/search?q=%s', 'SearXNG')">SearXNG</button>
+                                    <button class="preset-tag-btn" onclick="setCustomPreset('https://www.ecosia.org/search?q=%s', 'Ecosia')">Ecosia</button>
+                                    <button class="preset-tag-btn" onclick="setCustomPreset('https://www.startpage.com/sp/search?query=%s', 'Startpage')">Startpage</button>
+                                    <button class="preset-tag-btn" onclick="setCustomPreset('https://www.qwant.com/?q=%s', 'Qwant')">Qwant</button>
+                                </div>
                             </div>
                         </div>
+                    </div>
 
+                    <!-- Group 3: Search & Address Bar Preferences -->
+                    <div class="desktop-group-caption">
+                        <span>Address Bar & Autocomplete</span>
+                    </div>
+
+                    <div class="settings-group-card desktop-inset-card">
                         <div class="settings-list-group">
-                            <!-- Toggle 1: Autocomplete -->
                             <div class="settings-toggle-row">
                                 <div class="str-left">
-                                    <div class="str-icon"><i class="fas fa-wand-magic-sparkles"></i></div>
+                                    <div class="str-icon str-icon-cyan">
+                                        <i class="fas fa-bolt"></i>
+                                    </div>
                                     <div class="str-text">
-                                        <span class="str-title">Autocomplete suggestions</span>
-                                        <span class="str-desc">Show search queries and web suggestions as you type in the address bar</span>
+                                        <span class="str-title">Search & URL suggestions</span>
+                                        <span class="str-desc">Display instant query and URL recommendations as you type in the address bar</span>
                                     </div>
                                 </div>
                                 <div class="str-right">
-                                    <span class="ext-status-indicator on" id="status-autocomplete" style="display:none;"><span class="status-dot"></span><span id="search-stat-autocomplete">Active</span></span>
                                     <label class="native-switch">
                                         <input type="checkbox" id="instant-search-toggle-cb" checked
                                             onchange="window.electronAPI.updateSetting('instantSearchEnabled', this.checked); updateSearchFeatureBadges();">
@@ -329,78 +348,40 @@
                         </div>
                     </div>
 
-                    <!-- Group: Search Security & Content Protection (On by Default) -->
-                    <div class="settings-group-card" id="search-security-protection-card">
-                        <div class="settings-group-header">
-                            <div class="group-header-text">
-                                <h3 class="group-title"><i class="fas fa-shield-cat" style="color: #10b981; margin-right: 8px;"></i>Search Security &amp; Content Protection</h3>
-                                <p class="group-desc">Comprehensive adult content blocker, explicit image filter, and motivational productivity guard.</p>
-                            </div>
-                            <div class="engine-active-indicator" id="content-protection-indicator">
-                                <span class="status-dot"></span>
-                                <span id="content-protection-status-text">SHIELD ACTIVE</span>
-                            </div>
-                        </div>
+                    <!-- Group 4: Search Shield & Content Protection -->
+                    <div class="desktop-group-caption">
+                        <span>Search Shield & Content Protection</span>
+                        <div id="content-protection-indicator" style="display:none;"><span id="content-protection-status-text"></span></div>
+                    </div>
 
+                    <div class="settings-group-card desktop-inset-card" id="search-security-protection-card">
                         <div class="settings-list-group">
-                            <!-- Master Switch: Search Security & Adult Content Shield -->
+                            <!-- Master Protection Toggle Row -->
                             <div class="settings-toggle-row">
                                 <div class="str-left">
-                                    <div class="str-icon" style="color: #10b981; background: rgba(16, 185, 129, 0.12);"><i class="fas fa-hand-holding-heart"></i></div>
+                                    <div class="str-icon str-icon-shield">
+                                        <i class="fas fa-shield-halved"></i>
+                                    </div>
                                     <div class="str-text">
-                                        <span class="str-title" style="font-weight: 700;">Search Security &amp; Adult Content Shield</span>
-                                        <span class="str-desc">Block all pornographic websites and explicit content, redirecting to motivational productivity moments. <strong>(Enabled by default)</strong></span>
+                                        <span class="str-title">Zero-Telemetry & Content Protection Shield</span>
+                                        <span class="str-desc">Master switch: Enforces SafeSearch, strips tracker parameters, and prevents DNS leaks</span>
                                     </div>
                                 </div>
                                 <div class="str-right">
                                     <label class="native-switch">
                                         <input type="checkbox" id="content-protection-toggle-cb" checked
-                                            onchange="toggleContentProtection(this.checked)">
+                                            onchange="toggleContentProtection(this.checked);">
                                         <span class="native-switch-slider"></span>
                                     </label>
                                 </div>
                             </div>
 
-                            <!-- Sub-Option 1: Adult Website & Domain Filter -->
+                            <!-- Option 1: Strict SafeSearch -->
                             <div class="settings-toggle-row">
                                 <div class="str-left">
-                                    <div class="str-icon" style="color: #ef4444; background: rgba(239, 68, 68, 0.1);"><i class="fas fa-ban"></i></div>
-                                    <div class="str-text">
-                                        <span class="str-title">Block Adult Websites &amp; Domains</span>
-                                        <span class="str-desc">Intercept adult tube networks, live cams, adult dating, and explicit domains at the network packet level</span>
+                                    <div class="str-icon str-icon-green">
+                                        <i class="fas fa-magnifying-glass"></i>
                                     </div>
-                                </div>
-                                <div class="str-right">
-                                    <label class="native-switch">
-                                        <input type="checkbox" id="adult-domains-block-cb" checked
-                                            onchange="window.electronAPI.updateSetting('adultDomainsBlockEnabled', this.checked); updateProtectionSubToggles();">
-                                        <span class="native-switch-slider"></span>
-                                    </label>
-                                </div>
-                            </div>
-
-                            <!-- Sub-Option 2: Explicit Image & Media Blocker -->
-                            <div class="settings-toggle-row">
-                                <div class="str-left">
-                                    <div class="str-icon" style="color: #3b82f6; background: rgba(59, 130, 246, 0.1);"><i class="fas fa-eye-slash"></i></div>
-                                    <div class="str-text">
-                                        <span class="str-title">Explicit Image &amp; Media Blocker</span>
-                                        <span class="str-desc">Hide, blur, or block adult and graphic images across web pages and search image feeds</span>
-                                    </div>
-                                </div>
-                                <div class="str-right">
-                                    <label class="native-switch">
-                                        <input type="checkbox" id="explicit-images-block-cb" checked
-                                            onchange="window.electronAPI.updateSetting('explicitImagesBlockEnabled', this.checked); updateProtectionSubToggles();">
-                                        <span class="native-switch-slider"></span>
-                                    </label>
-                                </div>
-                            </div>
-
-                            <!-- Sub-Option 3: Strict SafeSearch -->
-                            <div class="settings-toggle-row">
-                                <div class="str-left">
-                                    <div class="str-icon" style="color: #8b5cf6; background: rgba(139, 92, 246, 0.1);"><i class="fas fa-magnifying-glass-chart"></i></div>
                                     <div class="str-text">
                                         <span class="str-title">Strict Search Engine SafeSearch</span>
                                         <span class="str-desc">Enforce strict filtering parameters across Google, Bing, DuckDuckGo, Brave, Yahoo, and YouTube</span>
@@ -415,13 +396,55 @@
                                 </div>
                             </div>
 
-                            <!-- Sub-Option 4: Mindful Productivity Encouragement -->
+                            <!-- Option 2: Adult Domain Blocking -->
                             <div class="settings-toggle-row">
                                 <div class="str-left">
-                                    <div class="str-icon" style="color: #f59e0b; background: rgba(245, 158, 11, 0.1);"><i class="fas fa-seedling"></i></div>
+                                    <div class="str-icon str-icon-red">
+                                        <i class="fas fa-ban"></i>
+                                    </div>
+                                    <div class="str-text">
+                                        <span class="str-title">Adult & Pornographic Domain Blocking</span>
+                                        <span class="str-desc">Block connections to known adult, sexually explicit, and high-risk domains</span>
+                                    </div>
+                                </div>
+                                <div class="str-right">
+                                    <label class="native-switch">
+                                        <input type="checkbox" id="adult-domains-block-cb" checked
+                                            onchange="window.electronAPI.updateSetting('adultDomainsBlockEnabled', this.checked); updateProtectionSubToggles();">
+                                        <span class="native-switch-slider"></span>
+                                    </label>
+                                </div>
+                            </div>
+
+                            <!-- Option 3: Explicit Media Filtering -->
+                            <div class="settings-toggle-row">
+                                <div class="str-left">
+                                    <div class="str-icon str-icon-purple">
+                                        <i class="fas fa-eye-slash"></i>
+                                    </div>
+                                    <div class="str-text">
+                                        <span class="str-title">Explicit Media & Image Filtering</span>
+                                        <span class="str-desc">Strip explicit image thumbnails and media previews from omnibox and search results</span>
+                                    </div>
+                                </div>
+                                <div class="str-right">
+                                    <label class="native-switch">
+                                        <input type="checkbox" id="explicit-images-block-cb" checked
+                                            onchange="window.electronAPI.updateSetting('explicitImagesBlockEnabled', this.checked); updateProtectionSubToggles();">
+                                        <span class="native-switch-slider"></span>
+                                    </label>
+                                </div>
+                            </div>
+
+                            <!-- Option 4: Mindful Productivity Interstitial -->
+                            <div class="settings-toggle-row">
+                                <div class="str-left">
+                                    <div class="str-icon str-icon-amber">
+                                        <i class="fas fa-compass"></i>
+                                    </div>
                                     <div class="str-text">
                                         <span class="str-title">Mindful Productivity Interstitial</span>
-                                        <span class="str-desc">Show inspiring messages on blocked pages: <em>"Why waste time over here? Do some productive work and do good for society!"</em></span>
+                                        <span class="str-desc">Show inspiring focus prompts when navigating towards restricted destinations</span>
                                     </div>
                                 </div>
                                 <div class="str-right">
@@ -432,38 +455,7 @@
                                     </label>
                                 </div>
                             </div>
-                        </div>
-                    </div>
 
-                    <!-- Group 3: Custom Search Engine Configuration -->
-                    <div class="settings-group-card">
-                        <div class="settings-group-header">
-                            <div class="group-header-text">
-                                <h3 class="group-title">Custom Search Engine URL</h3>
-                                <p class="group-desc">Specify a URL pattern with <code>%s</code> as the keyword placeholder to route searches.</p>
-                            </div>
-                        </div>
-
-                        <div class="settings-group-body">
-                            <div class="desktop-input-group">
-                                <div class="desktop-input-wrapper">
-                                    <i class="fas fa-link desktop-input-icon"></i>
-                                    <input type="text" class="desktop-text-field" id="custom-search-url" placeholder="https://kagi.com/search?q=%s" spellcheck="false">
-                                </div>
-                                <button class="desktop-action-btn desktop-primary-btn" onclick="saveCustomSearchURL()">
-                                    <i class="fas fa-check"></i>
-                                    <span>Save URL</span>
-                                </button>
-                            </div>
-
-                            <div class="desktop-presets-row">
-                                <span class="presets-caption">Quick presets:</span>
-                                <button class="preset-tag-btn" onclick="setCustomPreset('https://kagi.com/search?q=%s', 'Kagi')">Kagi</button>
-                                <button class="preset-tag-btn" onclick="setCustomPreset('https://searx.be/search?q=%s', 'SearXNG')">SearXNG</button>
-                                <button class="preset-tag-btn" onclick="setCustomPreset('https://www.ecosia.org/search?q=%s', 'Ecosia')">Ecosia</button>
-                                <button class="preset-tag-btn" onclick="setCustomPreset('https://www.startpage.com/sp/search?query=%s', 'Startpage')">Startpage</button>
-                                <button class="preset-tag-btn" onclick="setCustomPreset('https://www.qwant.com/?q=%s', 'Qwant')">Qwant</button>
-                            </div>
                         </div>
                     </div>
 
@@ -474,7 +466,7 @@
             <section id="homepage" class="section">
                 <div class="settings-page-header">
                     <h1 class="settings-page-title">Appearance & Homepage</h1>
-                    <p class="settings-page-subtitle">Customize theme, tab strip orientation, accent palette, and workspace layouts.</p>
+                    <p class="settings-page-subtitle">Configure theme mode, system accent colors, tab strip layout, and workspace density.</p>
                     <span id="homepage-stat-theme" style="display:none;"></span>
                     <span id="homepage-stat-layout" style="display:none;"></span>
                     <span id="homepage-stat-accent" style="display:none;"></span>
@@ -482,23 +474,23 @@
 
                 <div class="page-body">
 
-                    <!-- Group 1: Theme & Visual Appearance -->
-                    <div class="settings-group-card">
-                        <div class="settings-group-header">
-                            <div class="group-header-text">
-                                <h3 class="group-title">Visual Appearance</h3>
-                                <p class="group-desc">Theme mode, accent highlight palette, and adaptive surface tones.</p>
-                            </div>
-                        </div>
+                    <!-- Group 1: Visual Appearance -->
+                    <div class="desktop-group-caption">
+                        <span>Visual Appearance</span>
+                    </div>
 
+                    <div class="settings-group-card desktop-inset-card" style="overflow: visible; z-index: 50;">
                         <div class="settings-list-group">
-                            <!-- Dark System Interface -->
+
+                            <!-- Dark system interface -->
                             <div class="settings-toggle-row">
                                 <div class="str-left">
-                                    <div class="str-icon"><i class="fas fa-moon"></i></div>
+                                    <div class="str-icon str-icon-indigo">
+                                        <i class="fas fa-moon"></i>
+                                    </div>
                                     <div class="str-text">
                                         <span class="str-title">Dark system interface</span>
-                                        <span class="str-desc">Switch between dark mode (#18181B) and crisp light mode (#EDEDF0)</span>
+                                        <span class="str-desc">Switch between deep dark mode (#18181B) and crisp daylight canvas (#EDEDF0)</span>
                                     </div>
                                 </div>
                                 <div class="str-right">
@@ -510,159 +502,154 @@
                                 </div>
                             </div>
 
-                            <!-- Accent Highlight Palette -->
-                            <div class="settings-toggle-row" style="flex-direction: column; align-items: stretch; gap: 14px;">
-                                <div style="display: flex; align-items: center; justify-content: space-between; width: 100%;">
-                                    <div class="str-left">
-                                        <div class="str-icon"><i class="fas fa-palette"></i></div>
-                                        <div class="str-text">
-                                            <span class="str-title">Accent highlight palette</span>
-                                            <span class="str-desc">Primary focus accent for active tabs, omnibox highlights, and interactive toggles</span>
-                                        </div>
+                            <!-- Accent highlight palette -->
+                            <div class="settings-toggle-row accent-palette-row">
+                                <div class="str-left">
+                                    <div class="str-icon str-icon-violet">
+                                        <i class="fas fa-palette"></i>
                                     </div>
+                                    <div class="str-text">
+                                        <span class="str-title">Accent highlight palette</span>
+                                        <span class="str-desc">Primary focus accent for active tabs, omnibox highlights, and interactive toggles</span>
+                                    </div>
+                                </div>
+                                <div class="str-right">
                                     <div class="custom-color-badge" id="custom-color-badge" style="display: none;">
                                         <span class="custom-color-dot" id="custom-color-dot"></span>
                                         <span class="custom-color-text" id="custom-color-text">#8B5CF6</span>
                                     </div>
                                 </div>
+                            </div>
 
-                                <div class="hbc-color-swatches-container" style="padding-left: 46px;">
-                                    <div class="hbc-color-swatches" id="accent-swatches-row">
-                                        <div class="hbc-swatch" data-color="#4F46E5" data-dark-color="#6366F1" style="--swatch-color: #4F46E5;" title="Ocal Indigo"><span class="swatch-check"><i class="fas fa-check"></i></span></div>
-                                        <div class="hbc-swatch" data-color="#15AC49" data-dark-color="#09F0A0" style="--swatch-color: #15AC49;" title="Emerald Green"><span class="swatch-check"><i class="fas fa-check"></i></span></div>
-                                        <div class="hbc-swatch" data-color="#2563EB" data-dark-color="#3B82F6" style="--swatch-color: #2563EB;" title="Ocean Sapphire"><span class="swatch-check"><i class="fas fa-check"></i></span></div>
-                                        <div class="hbc-swatch" data-color="#7C3AED" data-dark-color="#A855F7" style="--swatch-color: #7C3AED;" title="Neon Violet"><span class="swatch-check"><i class="fas fa-check"></i></span></div>
-                                        <div class="hbc-swatch" data-color="#EA580C" data-dark-color="#FB923C" style="--swatch-color: #EA580C;" title="Sunset Coral"><span class="swatch-check"><i class="fas fa-check"></i></span></div>
-                                        <div class="hbc-swatch" data-color="#E11D48" data-dark-color="#F43F5E" style="--swatch-color: #E11D48;" title="Crimson Rose"><span class="swatch-check"><i class="fas fa-check"></i></span></div>
-                                        <div class="hbc-swatch" data-color="#D97706" data-dark-color="#FACC15" style="--swatch-color: #D97706;" title="Solar Amber"><span class="swatch-check"><i class="fas fa-check"></i></span></div>
-                                        <div class="hbc-swatch" data-color="#0891B2" data-dark-color="#06B6D4" style="--swatch-color: #0891B2;" title="Electric Cyan"><span class="swatch-check"><i class="fas fa-check"></i></span></div>
-                                        <div class="hbc-swatch" data-color="#0F172A" data-dark-color="#E2E8F0" style="--swatch-color: #0F172A;" title="Slate Minimal"><span class="swatch-check"><i class="fas fa-check"></i></span></div>
-                                        
-                                        <!-- Custom Color Swatch Trigger -->
-                                        <div class="hbc-swatch custom-swatch" id="custom-accent-swatch" style="--swatch-color: #8B5CF6;" title="Custom Color Studio">
-                                            <i class="fas fa-eye-dropper custom-icon"></i>
-                                            <span class="swatch-check"><i class="fas fa-check"></i></span>
+                            <!-- Color Swatches Row with Floating Popover -->
+                            <div class="hbc-color-swatches-container">
+                                <div class="hbc-color-swatches" id="accent-swatches-row">
+                                    <div class="hbc-swatch" data-color="#4F46E5" data-dark-color="#6366F1" style="--swatch-color: #4F46E5;" title="Ocal Indigo"><span class="swatch-check"><i class="fas fa-check"></i></span></div>
+                                    <div class="hbc-swatch" data-color="#15AC49" data-dark-color="#09F0A0" style="--swatch-color: #15AC49;" title="Emerald Green"><span class="swatch-check"><i class="fas fa-check"></i></span></div>
+                                    <div class="hbc-swatch" data-color="#2563EB" data-dark-color="#3B82F6" style="--swatch-color: #2563EB;" title="Ocean Sapphire"><span class="swatch-check"><i class="fas fa-check"></i></span></div>
+                                    <div class="hbc-swatch" data-color="#7C3AED" data-dark-color="#A855F7" style="--swatch-color: #7C3AED;" title="Neon Violet"><span class="swatch-check"><i class="fas fa-check"></i></span></div>
+                                    <div class="hbc-swatch" data-color="#EA580C" data-dark-color="#FB923C" style="--swatch-color: #EA580C;" title="Sunset Coral"><span class="swatch-check"><i class="fas fa-check"></i></span></div>
+                                    <div class="hbc-swatch" data-color="#E11D48" data-dark-color="#F43F5E" style="--swatch-color: #E11D48;" title="Crimson Rose"><span class="swatch-check"><i class="fas fa-check"></i></span></div>
+                                    <div class="hbc-swatch" data-color="#D97706" data-dark-color="#FACC15" style="--swatch-color: #D97706;" title="Solar Amber"><span class="swatch-check"><i class="fas fa-check"></i></span></div>
+                                    <div class="hbc-swatch" data-color="#0891B2" data-dark-color="#06B6D4" style="--swatch-color: #0891B2;" title="Electric Cyan"><span class="swatch-check"><i class="fas fa-check"></i></span></div>
+                                    <div class="hbc-swatch" data-color="#0F172A" data-dark-color="#E2E8F0" style="--swatch-color: #0F172A;" title="Slate Minimal"><span class="swatch-check"><i class="fas fa-check"></i></span></div>
+                                    
+                                    <!-- Custom Color Swatch Trigger -->
+                                    <div class="hbc-swatch custom-swatch" id="custom-accent-swatch" style="--swatch-color: #8B5CF6;" title="Custom Color Studio">
+                                        <i class="fas fa-eye-dropper custom-icon"></i>
+                                        <span class="swatch-check"><i class="fas fa-check"></i></span>
+                                    </div>
+                                </div>
+
+                                <!-- Custom UI Color Studio Floating Popover Card -->
+                                <div class="custom-color-popover" id="custom-color-popover" style="display: none;">
+                                    <div class="ccp-header">
+                                        <div class="ccp-title">
+                                            <i class="fas fa-sliders-h"></i>
+                                            <span>Custom Accent Studio</span>
+                                        </div>
+                                        <button class="ccp-close-btn" id="ccp-close-btn" type="button" title="Close"><i class="fas fa-times"></i></button>
+                                    </div>
+
+                                    <!-- 2D Saturation / Value Gradient Area -->
+                                    <div class="ccp-saturation-area" id="ccp-sat-area">
+                                        <div class="ccp-sat-white"></div>
+                                        <div class="ccp-sat-black"></div>
+                                        <div class="ccp-sat-pointer" id="ccp-sat-pointer"></div>
+                                    </div>
+
+                                    <!-- Hue Track & Controls Row -->
+                                    <div class="ccp-controls-row">
+                                        <button class="ccp-eyedropper-btn" id="ccp-eyedropper-btn" type="button" title="Pick color from screen">
+                                            <i class="fas fa-eye-dropper"></i>
+                                        </button>
+                                        <div class="ccp-hue-slider-wrap">
+                                            <input type="range" class="ccp-hue-slider" id="ccp-hue-slider" min="0" max="360" value="270" step="1">
+                                        </div>
+                                        <div class="ccp-preview-swatch" id="ccp-preview-swatch" style="--preview-color: #8B5CF6;"></div>
+                                    </div>
+
+                                    <!-- Quick Palette Swatches -->
+                                    <div class="ccp-quick-palette">
+                                        <span class="ccp-chip" data-color="#FF3B30" style="--chip-c: #FF3B30;" title="Ruby Red"></span>
+                                        <span class="ccp-chip" data-color="#FF9500" style="--chip-c: #FF9500;" title="Tangerine"></span>
+                                        <span class="ccp-chip" data-color="#FFCC00" style="--chip-c: #FFCC00;" title="Cyber Gold"></span>
+                                        <span class="ccp-chip" data-color="#34C759" style="--chip-c: #34C759;" title="Mint Green"></span>
+                                        <span class="ccp-chip" data-color="#00C7BE" style="--chip-c: #00C7BE;" title="Aqua Teal"></span>
+                                        <span class="ccp-chip" data-color="#007AFF" style="--chip-c: #007AFF;" title="Electric Blue"></span>
+                                        <span class="ccp-chip" data-color="#5856D6" style="--chip-c: #5856D6;" title="Indigo"></span>
+                                        <span class="ccp-chip" data-color="#AF52DE" style="--chip-c: #AF52DE;" title="Purple"></span>
+                                        <span class="ccp-chip" data-color="#FF2D55" style="--chip-c: #FF2D55;" title="Neon Pink"></span>
+                                        <span class="ccp-chip" data-color="#FFFFFF" style="--chip-c: #FFFFFF;" title="Pure White"></span>
+                                    </div>
+
+                                    <!-- Inputs Row (HEX, R, G, B) -->
+                                    <div class="ccp-inputs-row">
+                                        <div class="ccp-input-group hex-group">
+                                            <span class="ccp-input-label">HEX</span>
+                                            <div class="ccp-hex-field">
+                                                <span class="ccp-hash">#</span>
+                                                <input type="text" id="ccp-hex-input" maxlength="6" value="8B5CF6" spellcheck="false">
+                                            </div>
+                                        </div>
+                                        <div class="ccp-input-group rgb-group">
+                                            <span class="ccp-input-label">R</span>
+                                            <input type="number" id="ccp-r-input" min="0" max="255" value="139">
+                                        </div>
+                                        <div class="ccp-input-group rgb-group">
+                                            <span class="ccp-input-label">G</span>
+                                            <input type="number" id="ccp-g-input" min="0" max="255" value="92">
+                                        </div>
+                                        <div class="ccp-input-group rgb-group">
+                                            <span class="ccp-input-label">B</span>
+                                            <input type="number" id="ccp-b-input" min="0" max="255" value="246">
                                         </div>
                                     </div>
 
-                                    <!-- Custom UI Color Studio Popover Card -->
-                                    <div class="custom-color-popover" id="custom-color-popover" style="display: none;">
-                                        <div class="ccp-header">
-                                            <div class="ccp-title">
-                                                <i class="fas fa-sliders-h"></i>
-                                                <span>Custom Accent Studio</span>
+                                    <!-- AI Color Intelligence & Real-time Suggestions Section -->
+                                    <div class="ccp-ai-section" id="ccp-ai-section">
+                                        <div class="ccp-ai-header">
+                                            <div class="ccp-ai-title">
+                                                <i class="fas fa-wand-magic-sparkles"></i>
+                                                <span>AI Harmonic Palette</span>
                                             </div>
-                                            <button class="ccp-close-btn" id="ccp-close-btn" type="button" title="Close"><i class="fas fa-times"></i></button>
+                                            <span class="ccp-ai-mood-badge" id="ccp-ai-mood-badge">Sapphire Focus</span>
                                         </div>
-
-                                        <!-- 2D Saturation / Value Gradient Area -->
-                                        <div class="ccp-saturation-area" id="ccp-sat-area">
-                                            <div class="ccp-sat-white"></div>
-                                            <div class="ccp-sat-black"></div>
-                                            <div class="ccp-sat-pointer" id="ccp-sat-pointer"></div>
+                                        <div class="ccp-ai-sub-info" id="ccp-ai-sub-info">
+                                            Cool Sapphire &bull; Ultra Vivid &bull; High Contrast UI
                                         </div>
-
-                                        <!-- Hue Track & Controls Row -->
-                                        <div class="ccp-controls-row">
-                                            <button class="ccp-eyedropper-btn" id="ccp-eyedropper-btn" type="button" title="Pick color from screen">
-                                                <i class="fas fa-eye-dropper"></i>
-                                            </button>
-                                            <div class="ccp-hue-slider-wrap">
-                                                <input type="range" class="ccp-hue-slider" id="ccp-hue-slider" min="0" max="360" value="270" step="1">
-                                            </div>
-                                            <div class="ccp-preview-swatch" id="ccp-preview-swatch" style="--preview-color: #8B5CF6;"></div>
+                                        <div class="ccp-ai-suggestions-grid" id="ccp-ai-suggestions-grid">
                                         </div>
+                                    </div>
 
-                                        <!-- Quick Palette Swatches -->
-                                        <div class="ccp-quick-palette">
-                                            <span class="ccp-chip" data-color="#FF3B30" style="--chip-c: #FF3B30;" title="Ruby Red"></span>
-                                            <span class="ccp-chip" data-color="#FF9500" style="--chip-c: #FF9500;" title="Tangerine"></span>
-                                            <span class="ccp-chip" data-color="#FFCC00" style="--chip-c: #FFCC00;" title="Cyber Gold"></span>
-                                            <span class="ccp-chip" data-color="#34C759" style="--chip-c: #34C759;" title="Mint Green"></span>
-                                            <span class="ccp-chip" data-color="#00C7BE" style="--chip-c: #00C7BE;" title="Aqua Teal"></span>
-                                            <span class="ccp-chip" data-color="#007AFF" style="--chip-c: #007AFF;" title="Electric Blue"></span>
-                                            <span class="ccp-chip" data-color="#5856D6" style="--chip-c: #5856D6;" title="Indigo"></span>
-                                            <span class="ccp-chip" data-color="#AF52DE" style="--chip-c: #AF52DE;" title="Purple"></span>
-                                            <span class="ccp-chip" data-color="#FF2D55" style="--chip-c: #FF2D55;" title="Neon Pink"></span>
-                                            <span class="ccp-chip" data-color="#FFFFFF" style="--chip-c: #FFFFFF;" title="Pure White"></span>
-                                        </div>
-
-                                        <!-- Inputs Row (HEX, R, G, B) -->
-                                        <div class="ccp-inputs-row">
-                                            <div class="ccp-input-group hex-group">
-                                                <span class="ccp-input-label">HEX</span>
-                                                <div class="ccp-hex-field">
-                                                    <span class="ccp-hash">#</span>
-                                                    <input type="text" id="ccp-hex-input" maxlength="6" value="8B5CF6" spellcheck="false">
-                                                </div>
-                                            </div>
-                                            <div class="ccp-input-group rgb-group">
-                                                <span class="ccp-input-label">R</span>
-                                                <input type="number" id="ccp-r-input" min="0" max="255" value="139">
-                                            </div>
-                                            <div class="ccp-input-group rgb-group">
-                                                <span class="ccp-input-label">G</span>
-                                                <input type="number" id="ccp-g-input" min="0" max="255" value="92">
-                                            </div>
-                                            <div class="ccp-input-group rgb-group">
-                                                <span class="ccp-input-label">B</span>
-                                                <input type="number" id="ccp-b-input" min="0" max="255" value="246">
-                                            </div>
-                                        </div>
-
-                                        <!-- AI Color Intelligence & Real-time Suggestions Section -->
-                                        <div class="ccp-ai-section" id="ccp-ai-section">
-                                            <div class="ccp-ai-header">
-                                                <div class="ccp-ai-title">
-                                                    <i class="fas fa-wand-magic-sparkles"></i>
-                                                    <span>AI Harmonic Palette</span>
-                                                </div>
-                                                <span class="ccp-ai-mood-badge" id="ccp-ai-mood-badge">Sapphire Focus</span>
-                                            </div>
-                                            <div class="ccp-ai-sub-info" id="ccp-ai-sub-info">
-                                                Cool Sapphire &bull; Ultra Vivid &bull; High Contrast UI
-                                            </div>
-                                            <div class="ccp-ai-suggestions-grid" id="ccp-ai-suggestions-grid">
-                                                <!-- Dynamically populated by settings.js -->
-                                            </div>
+                                    <!-- Live AI Dynamic Palette Preview Strip -->
+                                    <div class="ccp-ai-preview-strip">
+                                        <div class="ccp-ai-strip-bar">
+                                            <div class="ccp-strip-color primary" id="ai-grad-preview-primary" style="background: #8B5CF6;"></div>
+                                            <div class="ccp-strip-color secondary" id="ai-grad-preview-secondary" style="background: #6366F1;"></div>
                                         </div>
                                     </div>
                                 </div>
                             </div>
 
-                            <!-- Adaptive Surface Gradients -->
-                            <div class="settings-toggle-row">
-                                <div class="str-left">
-                                    <div class="str-icon"><i class="fas fa-wand-magic-sparkles"></i></div>
-                                    <div class="str-text">
-                                        <span class="str-title">Adaptive surface gradients</span>
-                                        <span class="str-desc">Harmonized multi-stop gradients synthesized for widgets and surfaces</span>
-                                    </div>
-                                </div>
-                                <div class="str-right">
-                                    <div class="ai-harmonic-pills-preview">
-                                        <div class="ai-pill-swatch" id="ai-grad-preview-primary" style="background: var(--sp-primary-grad);" title="Primary Arc Gradient"><span>Primary</span></div>
-                                        <div class="ai-pill-swatch" id="ai-grad-preview-secondary" style="background: var(--sp-secondary-grad);" title="Secondary Surface Gradient"><span>Secondary</span></div>
-                                    </div>
-                                </div>
-                            </div>
                         </div>
                     </div>
 
-                    <!-- Group 2: Workspace Density & Toolbars -->
-                    <div class="settings-group-card">
-                        <div class="settings-group-header">
-                            <div class="group-header-text">
-                                <h3 class="group-title">Workspace Density & Toolbars</h3>
-                                <p class="group-desc">Control toolbar visibility, chrome density, and new tab news feeds.</p>
-                            </div>
-                        </div>
 
+                    <!-- Group 2: Workspace Density & Toolbars -->
+                    <div class="desktop-group-caption">
+                        <span>Workspace Density & Toolbars</span>
+                    </div>
+
+                    <div class="settings-group-card desktop-inset-card">
                         <div class="settings-list-group">
+
                             <!-- Compact Interface Density -->
                             <div class="settings-toggle-row">
                                 <div class="str-left">
-                                    <div class="str-icon"><i class="fas fa-compress"></i></div>
+                                    <div class="str-icon str-icon-sky">
+                                        <i class="fas fa-compress"></i>
+                                    </div>
                                     <div class="str-text">
                                         <span class="str-title">Compact interface density</span>
                                         <span class="str-desc">Condense address bar margins and padding to maximize web viewing area</span>
@@ -677,10 +664,12 @@
                                 </div>
                             </div>
 
-                            <!-- Bookmarks Bar Toolbar -->
+                            <!-- Bookmarks Bar -->
                             <div class="settings-toggle-row">
                                 <div class="str-left">
-                                    <div class="str-icon"><i class="fas fa-bookmark"></i></div>
+                                    <div class="str-icon str-icon-amber">
+                                        <i class="fas fa-bookmark"></i>
+                                    </div>
                                     <div class="str-text">
                                         <span class="str-title">Bookmarks bar</span>
                                         <span class="str-desc">Show persistent quick-access bookmarks strip directly below the address bar</span>
@@ -698,7 +687,9 @@
                             <!-- Home News Feed Hub -->
                             <div class="settings-toggle-row">
                                 <div class="str-left">
-                                    <div class="str-icon"><i class="fas fa-newspaper"></i></div>
+                                    <div class="str-icon str-icon-emerald">
+                                        <i class="fas fa-newspaper"></i>
+                                    </div>
                                     <div class="str-text">
                                         <span class="str-title">Home news feed hub</span>
                                         <span class="str-desc">Live news button and trending category stream on the Home Dashboard</span>
@@ -716,7 +707,9 @@
                             <!-- Startup Opening Animation -->
                             <div class="settings-toggle-row">
                                 <div class="str-left">
-                                    <div class="str-icon"><i class="fas fa-play"></i></div>
+                                    <div class="str-icon str-icon-rose">
+                                        <i class="fas fa-play"></i>
+                                    </div>
                                     <div class="str-text">
                                         <span class="str-title">Startup opening animation</span>
                                         <span class="str-desc">Play a clean, minimalist launch animation while Ocal initializes and loads tabs</span>
@@ -730,108 +723,119 @@
                                     </label>
                                 </div>
                             </div>
+
                         </div>
                     </div>
 
-                    <!-- Group 3: Tab Orientation & Navigation Rail -->
-                    <div class="settings-group-card">
-                        <div class="settings-group-header">
-                            <div class="group-header-text">
-                                <h3 class="group-title">Tab Strip Orientation</h3>
-                                <p class="group-desc">Classic horizontal top tabs vs modern Arc/Crescent vertical left rail.</p>
-                            </div>
-                        </div>
 
-                        <div class="settings-group-body">
-                            <div class="tab-orientation-picker" id="tab-layout-grid">
-                                <!-- Horizontal Choice Card -->
-                                <div class="tab-choice-card active" data-value="horizontal" onclick="selectTabLayout('horizontal')">
-                                    <div class="tcc-header">
-                                        <div class="tcc-icon">
-                                            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                                                <rect width="18" height="18" x="3" y="3" rx="4"/>
-                                                <line x1="3" y1="9" x2="21" y2="9"/>
-                                            </svg>
-                                        </div>
-                                        <div class="tcc-radio">
-                                            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round">
-                                                <polyline points="20 6 9 17 4 12"></polyline>
-                                            </svg>
-                                        </div>
-                                    </div>
-                                    <h4 class="tcc-title">Horizontal Tabs</h4>
-                                    <p class="tcc-desc">Traditional top tab bar with elevated active tabs, proportional auto-scaling, and inline new tab action.</p>
-                                    <div class="tcc-tag">DEFAULT STANDARD</div>
-                                </div>
-
-                                <!-- Vertical Choice Card -->
-                                <div class="tab-choice-card" data-value="vertical" onclick="selectTabLayout('vertical')">
-                                    <div class="tcc-header">
-                                        <div class="tcc-icon">
-                                            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                                                <rect width="18" height="18" x="3" y="3" rx="4"/>
-                                                <line x1="9" y1="3" x2="9" y2="21"/>
-                                            </svg>
-                                        </div>
-                                        <div class="tcc-radio">
-                                            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round">
-                                                <polyline points="20 6 9 17 4 12"></polyline>
-                                            </svg>
-                                        </div>
-                                    </div>
-                                    <h4 class="tcc-title">Vertical Tabs (Arc Style)</h4>
-                                    <p class="tcc-desc">Modern left docking rail with collapsible icon mode, smooth drag reordering, and distraction-free wide web viewports.</p>
-                                    <div class="tcc-tag arc">ARC / CRESCENT DOCK</div>
-                                </div>
-                            </div>
-
-                            <!-- Vertical Dock Advanced Tuning Row -->
-                            <div class="vt-tuning-container" id="vt-tuning-section" style="margin-top: 16px;">
-                                <div class="settings-toggle-row" id="vt-collapse-setting-row" style="padding: 12px 0 6px 0; border: none;">
-                                    <div class="str-left">
-                                        <div class="str-icon"><i class="fas fa-table-columns"></i></div>
-                                        <div class="str-text">
-                                            <span class="str-title">Collapsed mini mode</span>
-                                            <span class="str-desc">Start vertical tabs in a slim icon rail (56px) that expands smoothly on hover</span>
-                                        </div>
-                                    </div>
-                                    <div class="str-right">
-                                        <label class="native-switch">
-                                            <input type="checkbox" id="vertical-tabs-collapsed-toggle-cb"
-                                                onchange="window.electronAPI.updateSetting('verticalTabsCollapsed', this.checked)">
-                                            <span class="native-switch-slider"></span>
-                                        </label>
-                                    </div>
-                                </div>
-
-                                <div class="vt-width-row">
-                                    <div class="hbc-row-info">
-                                        <h4>Vertical Dock Expanded Width</h4>
-                                        <p>Custom pixel width when vertical tabs panel is expanded</p>
-                                    </div>
-                                    <div class="vt-width-pills" id="vt-width-grid">
-                                        <button class="vt-pill-btn" data-value="200" onclick="selectVtWidth(200)"><i class="fas fa-mobile-screen"></i> 200px Compact</button>
-                                        <button class="vt-pill-btn active" data-value="240" onclick="selectVtWidth(240)"><i class="fas fa-tablet-screen-button"></i> 240px Standard</button>
-                                        <button class="vt-pill-btn" data-value="280" onclick="selectVtWidth(280)"><i class="fas fa-desktop"></i> 280px Spacious</button>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
+                    <!-- Group 3: Tab Strip Orientation -->
+                    <div class="desktop-group-caption">
+                        <span>Tab Strip Orientation</span>
                     </div>
 
-                    <!-- Group 4: Sidebar Controls & Companion Apps -->
-                    <div class="settings-group-card">
-                        <div class="settings-group-header">
-                            <div class="group-header-text">
-                                <h3 class="group-title">Sidebar & WebApp Slideover Drawer</h3>
-                                <p class="group-desc">Docked companion apps for AI assistant, WhatsApp, Spotify, Discord, and ChatGPT.</p>
+                    <div class="settings-group-card desktop-inset-card">
+                        <div class="settings-list-group" id="tab-layout-grid" role="radiogroup">
+
+                            <!-- Horizontal Choice Row -->
+                            <div class="settings-engine-row tab-choice-card active" data-value="horizontal" role="radio" aria-checked="true" onclick="selectTabLayout('horizontal')">
+                                <div class="ser-left">
+                                    <div class="str-icon str-icon-indigo">
+                                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                                            <rect width="18" height="18" x="3" y="3" rx="4"/>
+                                            <line x1="3" y1="9" x2="21" y2="9"/>
+                                        </svg>
+                                    </div>
+                                    <div class="ser-text">
+                                        <span class="ser-title">Horizontal Tabs (Classic)</span>
+                                        <span class="ser-domain">Traditional top tab bar with elevated active tabs, proportional auto-scaling, and inline actions</span>
+                                    </div>
+                                </div>
+                                <div class="ser-right">
+                                    <div class="desktop-radio-indicator">
+                                        <div class="desktop-radio-pip"></div>
+                                    </div>
+                                </div>
                             </div>
+
+                            <!-- Vertical Choice Row -->
+                            <div class="settings-engine-row tab-choice-card" data-value="vertical" role="radio" aria-checked="false" onclick="selectTabLayout('vertical')">
+                                <div class="ser-left">
+                                    <div class="str-icon str-icon-violet">
+                                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                                            <rect width="18" height="18" x="3" y="3" rx="4"/>
+                                            <line x1="9" y1="3" x2="9" y2="21"/>
+                                        </svg>
+                                    </div>
+                                    <div class="ser-text">
+                                        <span class="ser-title">Vertical Tabs (Rail Dock)</span>
+                                        <span class="ser-domain">Modern left docking rail with collapsible icon mode, smooth drag reordering, and distraction-free canvas</span>
+                                    </div>
+                                </div>
+                                <div class="ser-right">
+                                    <div class="desktop-radio-indicator">
+                                        <div class="desktop-radio-pip"></div>
+                                    </div>
+                                </div>
+                            </div>
+
                         </div>
 
-                        <div class="settings-list-group">
+                        <!-- Vertical Dock Advanced Tuning Rows -->
+                        <div class="vt-tuning-container" id="vt-tuning-section" style="display: none; border-top: 1px solid #F1F3F5;">
+                            <div class="settings-toggle-row" id="vt-collapse-setting-row">
+                                <div class="str-left">
+                                    <div class="str-icon str-icon-teal">
+                                        <i class="fas fa-table-columns"></i>
+                                    </div>
+                                    <div class="str-text">
+                                        <span class="str-title">Collapsed mini mode</span>
+                                        <span class="str-desc">Start vertical tabs in a slim icon rail (56px) that expands smoothly on hover</span>
+                                    </div>
+                                </div>
+                                <div class="str-right">
+                                    <label class="native-switch">
+                                        <input type="checkbox" id="vertical-tabs-collapsed-toggle-cb"
+                                            onchange="window.electronAPI.updateSetting('verticalTabsCollapsed', this.checked)">
+                                        <span class="native-switch-slider"></span>
+                                    </label>
+                                </div>
+                            </div>
+
                             <div class="settings-toggle-row">
                                 <div class="str-left">
-                                    <div class="str-icon"><i class="fas fa-eye-slash"></i></div>
+                                    <div class="str-icon str-icon-slate">
+                                        <i class="fas fa-arrows-left-right"></i>
+                                    </div>
+                                    <div class="str-text">
+                                        <span class="str-title">Vertical dock expanded width</span>
+                                        <span class="str-desc">Custom pixel width when vertical tabs panel is expanded</span>
+                                    </div>
+                                </div>
+                                <div class="str-right">
+                                    <div class="vt-width-pills" id="vt-width-grid">
+                                        <button class="vt-pill-btn" data-value="200" onclick="selectVtWidth(200)">200px</button>
+                                        <button class="vt-pill-btn active" data-value="240" onclick="selectVtWidth(240)">240px</button>
+                                        <button class="vt-pill-btn" data-value="280" onclick="selectVtWidth(280)">280px</button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+
+                    <!-- Group 4: Sidebar Controls & Companion Apps -->
+                    <div class="desktop-group-caption">
+                        <span>Sidebar Controls & Companion Apps</span>
+                    </div>
+
+                    <div class="settings-group-card desktop-inset-card">
+                        <div class="settings-list-group">
+
+                            <div class="settings-toggle-row">
+                                <div class="str-left">
+                                    <div class="str-icon str-icon-teal">
+                                        <i class="fas fa-eye-slash"></i>
+                                    </div>
                                     <div class="str-text">
                                         <span class="str-title">Hide sidebar on launch</span>
                                         <span class="str-desc">Keep sidebar collapsed on startup to provide an edge-to-edge web workspace</span>
@@ -848,7 +852,9 @@
 
                             <div class="settings-toggle-row">
                                 <div class="str-left">
-                                    <div class="str-icon"><i class="fas fa-table-columns"></i></div>
+                                    <div class="str-icon str-icon-blue">
+                                        <i class="fas fa-table-columns"></i>
+                                    </div>
                                     <div class="str-text">
                                         <span class="str-title">Default sidebar state</span>
                                         <span class="str-desc">Visibility preference when opening a new browser window</span>
@@ -856,15 +862,17 @@
                                 </div>
                                 <div class="str-right">
                                     <div class="vt-width-pills" id="sidebar-mode-grid">
-                                        <button class="vt-pill-btn active" data-value="hidden" onclick="selectSidebarMode('hidden')"><i class="fas fa-eye-slash"></i> Hidden (Recommended)</button>
-                                        <button class="vt-pill-btn" data-value="visible" onclick="selectSidebarMode('visible')"><i class="fas fa-eye"></i> Always Visible</button>
+                                        <button class="vt-pill-btn active" data-value="hidden" onclick="selectSidebarMode('hidden')">Hidden (Default)</button>
+                                        <button class="vt-pill-btn" data-value="visible" onclick="selectSidebarMode('visible')">Always Visible</button>
                                     </div>
                                 </div>
                             </div>
 
                             <div class="settings-toggle-row">
                                 <div class="str-left">
-                                    <div class="str-icon"><i class="fas fa-arrows-left-right"></i></div>
+                                    <div class="str-icon str-icon-slate">
+                                        <i class="fas fa-arrows-left-right"></i>
+                                    </div>
                                     <div class="str-text">
                                         <span class="str-title">WebApp slideover drawer width</span>
                                         <span class="str-desc">Adjust width for web applications running inside the sidebar drawer</span>
@@ -879,23 +887,23 @@
                                     </div>
                                 </div>
                             </div>
+
                         </div>
                     </div>
 
-                    <!-- Group 5: Weather Intelligence & Location -->
-                    <div class="settings-group-card">
-                        <div class="settings-group-header">
-                            <div class="group-header-text">
-                                <h3 class="group-title">Weather Intelligence Location</h3>
-                                <p class="group-desc">Live forecast and temperature synced with Home Dashboard widgets.</p>
-                            </div>
-                            <div class="engine-active-indicator" id="weather-status-pill">
-                                <span class="status-dot"></span>
-                                <span id="settings-weather-active-city-display">Synced with Home Dashboard</span>
-                            </div>
-                        </div>
 
-                        <div class="settings-group-body">
+                    <!-- Group 5: Weather Intelligence Location -->
+                    <div class="desktop-group-caption">
+                        <span>Weather Intelligence Location</span>
+                    </div>
+
+                    <div class="settings-group-card desktop-inset-card">
+                        <div class="desktop-card-inner">
+                            <div class="desktop-field-header">
+                                <span class="desktop-field-title">Weather Location & Forecast Sync</span>
+                                <span class="desktop-field-desc" id="settings-weather-active-city-display">Synced with Home Dashboard (Auto GPS)</span>
+                            </div>
+
                             <div class="desktop-input-group">
                                 <div class="desktop-input-wrapper">
                                     <i class="fas fa-location-dot desktop-input-icon"></i>
@@ -911,13 +919,15 @@
                                 </button>
                             </div>
 
-                            <div class="desktop-presets-row" style="margin-top: 14px;">
-                                <span class="presets-caption">Popular presets:</span>
-                                <button type="button" class="preset-tag-btn" onclick="setQuickWeatherCity('Ahmedabad')">Ahmedabad</button>
-                                <button type="button" class="preset-tag-btn" onclick="setQuickWeatherCity('London')">London</button>
-                                <button type="button" class="preset-tag-btn" onclick="setQuickWeatherCity('New York')">New York</button>
-                                <button type="button" class="preset-tag-btn" onclick="setQuickWeatherCity('Tokyo')">Tokyo</button>
-                                <button type="button" class="preset-tag-btn" onclick="setQuickWeatherCity('Paris')">Paris</button>
+                            <div class="desktop-presets-container">
+                                <span class="presets-caption">Quick presets:</span>
+                                <div class="desktop-presets-list">
+                                    <button type="button" class="preset-tag-btn" onclick="setQuickWeatherCity('Ahmedabad')">Ahmedabad</button>
+                                    <button type="button" class="preset-tag-btn" onclick="setQuickWeatherCity('London')">London</button>
+                                    <button type="button" class="preset-tag-btn" onclick="setQuickWeatherCity('New York')">New York</button>
+                                    <button type="button" class="preset-tag-btn" onclick="setQuickWeatherCity('Tokyo')">Tokyo</button>
+                                    <button type="button" class="preset-tag-btn" onclick="setQuickWeatherCity('Paris')">Paris</button>
+                                </div>
                             </div>
                         </div>
                     </div>
