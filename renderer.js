@@ -3370,3 +3370,119 @@ function animateVerticalTabs(targetCollapsed) {
 window.electronAPI.on('trigger-vt-collapse-anim', (e, targetCollapsed) => {
     animateVerticalTabs(targetCollapsed);
 });
+
+
+// ── Live Download Notification Dot & Sidebar Indicators ──────────────
+let lastKnownCompletedDownloads = 0;
+let hasUnacknowledgedDownload = false;
+
+function updateDownloadIndicators(dls) {
+    if (!Array.isArray(dls)) return;
+    const active = dls.filter(d => d.state === 'progressing');
+    const completed = dls.filter(d => d.state === 'completed');
+
+    const dots = [
+        document.getElementById('dl-notify-dot'),
+        document.getElementById('sb-dl-notify-dot'),
+        document.getElementById('vt-dl-notify-dot')
+    ].filter(Boolean);
+
+    const buttons = [
+        document.getElementById('download-icon-btn'),
+        document.getElementById('sb-downloads-btn'),
+        document.getElementById('vt-downloads-btn')
+    ].filter(Boolean);
+
+    if (active.length > 0) {
+        hasUnacknowledgedDownload = false;
+        dots.forEach(dot => {
+            dot.style.display = 'block';
+            dot.className = 'dl-notify-dot active-downloading';
+        });
+
+        const latest = active[active.length - 1];
+        const pct = latest.total > 0 ? Math.round((latest.received / latest.total) * 100) : 0;
+        const speedMb = latest.speed > 0 ? (latest.speed / (1024 * 1024)).toFixed(1) + ' MB/s' : 'Downloading';
+        buttons.forEach(btn => {
+            btn.title = `Downloading: ${latest.name} (${pct}% • ${speedMb})`;
+        });
+    } else {
+        if (completed.length > lastKnownCompletedDownloads && lastKnownCompletedDownloads !== 0) {
+            hasUnacknowledgedDownload = true;
+        }
+        lastKnownCompletedDownloads = completed.length;
+
+        if (hasUnacknowledgedDownload) {
+            dots.forEach(dot => {
+                dot.style.display = 'block';
+                dot.className = 'dl-notify-dot completed-download';
+            });
+            buttons.forEach(btn => {
+                btn.title = `Download Completed (${completed.length} total)`;
+            });
+        } else {
+            dots.forEach(dot => {
+                dot.style.display = 'none';
+                dot.className = 'dl-notify-dot';
+            });
+            buttons.forEach(btn => {
+                btn.title = 'Downloads & Files';
+            });
+        }
+    }
+}
+
+function clearDownloadNotificationDot() {
+    hasUnacknowledgedDownload = false;
+    const dots = [
+        document.getElementById('dl-notify-dot'),
+        document.getElementById('sb-dl-notify-dot'),
+        document.getElementById('vt-dl-notify-dot')
+    ].filter(Boolean);
+    dots.forEach(dot => {
+        if (!dot.classList.contains('active-downloading')) {
+            dot.style.display = 'none';
+            dot.className = 'dl-notify-dot';
+        }
+    });
+}
+
+if (window.electronAPI && window.electronAPI.onDownloadUpdated) {
+    window.electronAPI.onDownloadUpdated((dls) => {
+        updateDownloadIndicators(dls);
+    });
+    if (window.electronAPI.getDownloads) {
+        window.electronAPI.getDownloads().then(dls => {
+            if (dls) {
+                lastKnownCompletedDownloads = dls.filter(d => d.state === 'completed').length;
+                updateDownloadIndicators(dls);
+            }
+        }).catch(() => {});
+    }
+}
+
+
+    const sbDlBtn = document.getElementById('sb-downloads-btn');
+    if (sbDlBtn) {
+        sbDlBtn.onclick = () => {
+            clearDownloadNotificationDot();
+            window.electronAPI.send('toggle-sidebar', true);
+            window.electronAPI.send('switch-sidebar-tab', 'downloads');
+        };
+    }
+    const vtDlBtn = document.getElementById('vt-downloads-btn');
+    if (vtDlBtn) {
+        vtDlBtn.onclick = () => {
+            clearDownloadNotificationDot();
+            window.electronAPI.send('toggle-sidebar', true);
+            window.electronAPI.send('switch-sidebar-tab', 'downloads');
+        };
+    }
+    if (dlBtn) {
+        const origDlClick = dlBtn.onclick;
+        dlBtn.onclick = (e) => {
+            clearDownloadNotificationDot();
+            if (origDlClick) origDlClick.call(dlBtn, e);
+        };
+    }
+

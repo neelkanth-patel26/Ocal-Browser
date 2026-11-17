@@ -2253,6 +2253,9 @@ function setupCompatibilityHandler() {
 }
 
 app.on('web-contents-created', (event, contents) => {
+    if (contents && contents.session) {
+        try { attachDownloadHandlerToSession(contents.session); } catch (e) { }
+    }
     // Only log actual errors or internal messages to prevent stdout I/O from stalling the event loop
     contents.on('console-message', (e, level, message, line, sourceId) => {
         if (level >= 3) {
@@ -2331,101 +2334,180 @@ app.on('web-contents-created', (event, contents) => {
     });
 });
 
-function setupDownloadHandler() {
-    session.defaultSession.on('will-download', (event, item, webContents) => {
-        const downloadId = Date.now().toString();
-        const fileName = item.getFilename();
+const activeDownloadItems = new Map();
+let saveDownloadsTimer = null;
+const sessionsWithDownloadHandler = new WeakSet();
 
-        let savePath = lastSaveAsPath;
-        const targetDir = userSettings.downloadPath || app.getPath('downloads');
-        if (!savePath) {
-            if (userSettings.askSaveLocation || userSettings.askSavePath) {
-                const filters = [];
-                const ext = path.extname(fileName).toLowerCase().replace(/^\./, '');
-                if (ext) {
-                    let extName = `${ext.toUpperCase()} File`;
-                    if (['png', 'jpg', 'jpeg', 'gif', 'webp', 'bmp', 'svg'].includes(ext)) {
-                        extName = 'Image Files';
-                    } else if (ext === 'pdf') {
-                        extName = 'PDF Document';
-                    } else if (ext === 'html' || ext === 'htm') {
-                        extName = 'HTML Document';
-                    } else if (ext === 'txt' || ext === 'log') {
-                        extName = 'Text Files';
-                    } else if (ext === 'zip' || ext === 'rar' || ext === '7z') {
-                        extName = 'Archive Files';
-                    }
+function debouncedSaveDownloads() {
+    if (saveDownloadsTimer) return;
+    saveDownloadsTimer = setTimeout(() => {
+        saveDownloadsTimer = null;
+        userSettings.downloads = downloads;
+        saveSettings(userSettings);
+    }, 1500);
+}
 
-                    let extensions = [ext];
-                    if (ext === 'jpg' || ext === 'jpeg') {
-                        extensions = ['jpg', 'jpeg'];
-                    } else if (ext === 'html' || ext === 'htm') {
-                        extensions = ['html', 'htm'];
-                    }
-                    filters.push({ name: extName, extensions: extensions });
+function handleSessionWillDownload(event, item, webContents) {
+    const downloadId = Date.now().toString() + '_' + Math.random().toString(36).substring(2, 6);
+    const fileName = item.getFilename() || 'download';
+
+    let savePath = lastSaveAsPath;
+    const targetDir = userSettings.downloadPath || app.getPath('downloads');
+    if (!savePath) {
+        if (userSettings.askSaveLocation || userSettings.askSavePath) {
+            const filters = [];
+            const ext = path.extname(fileName).toLowerCase().replace(/^\./, '');
+            if (ext) {
+                let extName = `${ext.toUpperCase()} File`;
+                if (['png', 'jpg', 'jpeg', 'gif', 'webp', 'bmp', 'svg'].includes(ext)) {
+                    extName = 'Image Files';
+                } else if (ext === 'pdf') {
+                    extName = 'PDF Document';
+                } else if (ext === 'html' || ext === 'htm') {
+                    extName = 'HTML Document';
+                } else if (ext === 'txt' || ext === 'log') {
+                    extName = 'Text Files';
+                } else if (ext === 'zip' || ext === 'rar' || ext === '7z') {
+                    extName = 'Archive Files';
                 }
-                filters.push({ name: 'All Files', extensions: ['*'] });
 
-                const result = dialog.showSaveDialogSync(mainWindow, {
-                    title: 'Save File',
-                    defaultPath: path.join(targetDir, fileName),
-                    buttonLabel: 'Save',
-                    filters: filters
-                });
-
-                if (result) {
-                    savePath = result;
-                } else {
-                    event.preventDefault();
-                    return;
+                let extensions = [ext];
+                if (ext === 'jpg' || ext === 'jpeg') {
+                    extensions = ['jpg', 'jpeg'];
+                } else if (ext === 'html' || ext === 'htm') {
+                    extensions = ['html', 'htm'];
                 }
+                filters.push({ name: extName, extensions: extensions });
+            }
+            filters.push({ name: 'All Files', extensions: ['*'] });
+
+            const parentWin = mainWindow && !mainWindow.isDestroyed() ? mainWindow : null;
+            const result = dialog.showSaveDialogSync(parentWin, {
+                title: 'Save File',
+                defaultPath: path.join(targetDir, fileName),
+                buttonLabel: 'Save',
+                filters: filters
+            });
+
+            if (result) {
+                savePath = result;
             } else {
-                savePath = path.join(targetDir, fileName);
+                event.preventDefault();
+                return;
+            }
+        } else {
+            savePath = path.join(targetDir, fileName);
+        }
+    }
+
+    lastSaveAsPath = null;
+    try { item.setSavePath(savePath); } catch (e) { }
+
+    const dlItem = {
+        id: downloadId,
+        name: path.basename(savePath),
+        state: 'progressing',
+        received: 0,
+        total: item.getTotalBytes() || 0,
+        path: savePath,
+        timestamp: Date.now(),
+        speed: 0,
+        eta: 0
+    };
+    downloads.unshift(dlItem);
+    activeDownloadItems.set(downloadId, item);
+    debouncedSaveDownloads();
+
+    if (!downloadsView) createDownloadsView();
+
+    if (mainWindow && !mainWindow.isDestroyed()) {
+        mainWindow.webContents.send('open-downloads-popup-ui');
+    }
+    if (downloadsView && !downloadsView.webContents.isDestroyed()) {
+        downloadsView.webContents.send('download-updated', downloads);
+    }
+    broadcastToSidebars('download-updated', downloads);
+
+    let lastReceivedBytes = 0;
+    let lastUpdateTime = Date.now();
+    let speed = 0;
+
+    item.on('updated', (event, state) => {
+        dlItem.state = state;
+        if (state === 'progressing') {
+            const now = Date.now();
+            const received = item.getReceivedBytes();
+            const elapsedSec = (now - lastUpdateTime) / 1000;
+            if (elapsedSec >= 0.35) {
+                speed = Math.max(0, (received - lastReceivedBytes) / elapsedSec);
+                lastReceivedBytes = received;
+                lastUpdateTime = now;
+            }
+            dlItem.received = received;
+            dlItem.total = item.getTotalBytes() || dlItem.total;
+            dlItem.speed = Math.round(speed);
+            if (speed > 0 && dlItem.total > dlItem.received) {
+                dlItem.eta = Math.round((dlItem.total - dlItem.received) / speed);
+            } else {
+                dlItem.eta = 0;
             }
         }
-
-        lastSaveAsPath = null;
-        item.setSavePath(savePath);
-
-        const dlItem = {
-            id: downloadId,
-            name: path.basename(savePath),
-            state: 'progressing',
-            received: 0,
-            total: item.getTotalBytes(),
-            path: savePath,
-            timestamp: Date.now()
-        };
-        downloads.push(dlItem);
-        saveDownloadsToSettings();
-
-        if (!downloadsView) createDownloadsView();
-
-        mainWindow.webContents.send('open-downloads-popup-ui');
-        if (downloadsView) downloadsView.webContents.send('download-updated', downloads);
+        if (downloadsView && !downloadsView.webContents.isDestroyed()) {
+            downloadsView.webContents.send('download-updated', downloads);
+        }
         broadcastToSidebars('download-updated', downloads);
-
-        item.on('updated', (event, state) => {
-            dlItem.state = state;
-            if (state === 'progressing') dlItem.received = item.getReceivedBytes();
-            if (downloadsView) downloadsView.webContents.send('download-updated', downloads);
-            broadcastToSidebars('download-updated', downloads);
-            saveDownloadsToSettings();
-        });
-
-        item.once('done', (event, state) => {
-            dlItem.state = state;
-            if (state === 'completed') dlItem.received = dlItem.total;
-            if (downloadsView) downloadsView.webContents.send('download-updated', downloads);
-            broadcastToSidebars('download-updated', downloads);
-            saveDownloadsToSettings();
-        });
+        debouncedSaveDownloads();
     });
+
+    item.once('done', (event, state) => {
+        activeDownloadItems.delete(downloadId);
+        dlItem.state = state;
+        dlItem.speed = 0;
+        dlItem.eta = 0;
+        if (state === 'completed') dlItem.received = dlItem.total || dlItem.received;
+        if (downloadsView && !downloadsView.webContents.isDestroyed()) {
+            downloadsView.webContents.send('download-updated', downloads);
+        }
+        broadcastToSidebars('download-updated', downloads);
+        saveDownloadsToSettings();
+    });
+}
+
+function attachDownloadHandlerToSession(ses) {
+    if (!ses || sessionsWithDownloadHandler.has(ses)) return;
+    sessionsWithDownloadHandler.add(ses);
+    try {
+        ses.on('will-download', (event, item, webContents) => {
+            handleSessionWillDownload(event, item, webContents);
+        });
+    } catch (err) {
+        console.warn('[Downloads] Could not attach will-download to session:', err);
+    }
+}
+
+function setupDownloadHandler() {
+    try { attachDownloadHandlerToSession(session.defaultSession); } catch (e) { }
+    try {
+        if (typeof getProfilePartition === 'function') {
+            attachDownloadHandlerToSession(session.fromPartition(getProfilePartition()));
+        }
+    } catch (e) { }
+    try { attachDownloadHandlerToSession(session.fromPartition('persist:google_login')); } catch (e) { }
+    if (userSettings && Array.isArray(userSettings.profiles)) {
+        userSettings.profiles.forEach(p => {
+            if (p && p.id) {
+                try { attachDownloadHandlerToSession(session.fromPartition(`persist:profile_${p.id}`)); } catch (e) { }
+            }
+        });
+    }
 }
 
 function broadcastToSidebars(channel, data) {
     if (sidebarOverlayView && !sidebarOverlayView.webContents.isDestroyed()) {
         sidebarOverlayView.webContents.send(channel, data);
+    }
+    if (mainWindow && !mainWindow.isDestroyed()) {
+        mainWindow.webContents.send(channel, data);
     }
 }
 
@@ -9282,6 +9364,44 @@ ipcMain.on('page-context-action', (e, data) => {
             if (data.srcUrl) clipboard.writeText(data.srcUrl);
             break;
         }
+        case 'save-link-as': {
+            if (targetWc && !targetWc.isDestroyed() && data.linkUrl) {
+                try { targetWc.downloadURL(data.linkUrl); } catch (err) { }
+            }
+            break;
+        }
+        case 'save-page-as': {
+            if (targetWc && !targetWc.isDestroyed()) {
+                try {
+                    const pageTitle = (targetWc.getTitle() || 'page').replace(/[/\\?%*:|"<>]/g, '_');
+                    const targetDir = userSettings.downloadPath || app.getPath('downloads');
+                    const savePath = dialog.showSaveDialogSync(mainWindow, {
+                        title: 'Save Page As',
+                        defaultPath: path.join(targetDir, `${pageTitle}.html`),
+                        filters: [{ name: 'Webpage, Complete (*.html, *.htm)', extensions: ['html', 'htm'] }, { name: 'All Files', extensions: ['*'] }]
+                    });
+                    if (savePath) {
+                        targetWc.savePage(savePath, 'HTMLComplete').then(() => {
+                            const dlItem = {
+                                id: Date.now().toString(),
+                                name: path.basename(savePath),
+                                state: 'completed',
+                                received: 0,
+                                total: 0,
+                                path: savePath,
+                                timestamp: Date.now(),
+                                speed: 0,
+                                eta: 0
+                            };
+                            downloads.unshift(dlItem);
+                            saveDownloadsToSettings();
+                            broadcastToSidebars('download-updated', downloads);
+                        }).catch(err => console.error('Save page error:', err));
+                    }
+                } catch (err) { }
+            }
+            break;
+        }
         case 'save-image-as': {
             if (targetWc && !targetWc.isDestroyed() && data.srcUrl) {
                 try { targetWc.downloadURL(data.srcUrl); } catch (err) { }
@@ -11211,6 +11331,43 @@ function updateHistory(view, url) {
 function broadcastHistory() {
     broadcastSettings(userSettings);
 }
+
+// ── Downloads Manager Core IPC Handlers ─────────────────────────────────────
+ipcMain.handle('get-downloads', () => {
+    return downloads || [];
+});
+
+ipcMain.on('clear-all-downloads', () => {
+    downloads = downloads.filter(d => d.state === 'progressing');
+    saveDownloadsToSettings();
+    broadcastToSidebars('download-updated', downloads);
+});
+
+ipcMain.on('cancel-download', (e, id) => {
+    const item = activeDownloadItems.get(id);
+    if (item) {
+        try { item.cancel(); } catch (err) { }
+        activeDownloadItems.delete(id);
+    }
+    const dl = downloads.find(d => d.id === id);
+    if (dl) {
+        dl.state = 'cancelled';
+        dl.speed = 0;
+        dl.eta = 0;
+        saveDownloadsToSettings();
+        broadcastToSidebars('download-updated', downloads);
+    }
+});
+
+ipcMain.on('open-downloads-folder', () => {
+    const targetDir = userSettings.downloadPath || app.getPath('downloads');
+    try {
+        if (!fs.existsSync(targetDir)) {
+            fs.mkdirSync(targetDir, { recursive: true });
+        }
+        shell.openPath(targetDir);
+    } catch (e) { }
+});
 
 ipcMain.on('open-download', (e, filePath) => {
     if (!filePath) return;

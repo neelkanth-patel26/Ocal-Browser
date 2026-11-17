@@ -2,12 +2,10 @@
 <html lang="en" data-theme="dark">
 <head>
     <meta charset="UTF-8">
-    <meta http-equiv="Content-Security-Policy" content="default-src 'self' ocal:; script-src 'self' 'unsafe-inline' https://cdnjs.cloudflare.com https://unpkg.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com https://cdnjs.cloudflare.com https://cdn.jsdelivr.net; font-src 'self' https://fonts.gstatic.com https://cdnjs.cloudflare.com https://cdn.jsdelivr.net; img-src 'self' data: https: http: chrome-extension:; connect-src 'self' https://suggestqueries.google.com https://api.github.com https://cdnjs.cloudflare.com https://unpkg.com https://clients2.google.com;">
+    <meta http-equiv="Content-Security-Policy" content="default-src 'self' ocal:; script-src 'self' 'unsafe-inline' https://cdnjs.cloudflare.com https://unpkg.com; style-src 'self' 'unsafe-inline' https://cdnjs.cloudflare.com https://cdn.jsdelivr.net; font-src 'self' https://cdnjs.cloudflare.com https://cdn.jsdelivr.net; img-src 'self' data: https: http: chrome-extension:; connect-src 'self' https://suggestqueries.google.com https://api.github.com https://cdnjs.cloudflare.com https://unpkg.com https://clients2.google.com;">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Ocal</title>
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="assets/fonts/fonts.css">
     <link rel="stylesheet" href="style.css">
     <link rel="stylesheet" href="assets/fontawesome/css/all.min.css">
     <script src="assets/lucide.min.js"></script>
@@ -74,6 +72,10 @@
             <button class="sidebar-item" id="sb-history-btn" title="History">
                 <i data-lucide="history"></i>
             </button>
+            <button class="sidebar-item" id="sb-downloads-btn" title="Downloads & Files" style="position: relative;">
+                <i data-lucide="download"></i>
+                <span class="dl-notify-dot" id="sb-dl-notify-dot" style="display:none;"></span>
+            </button>
             <button class="sidebar-item" id="sb-settings-btn" title="Easy Setup / Settings">
                 <i data-lucide="sliders-horizontal"></i>
             </button>
@@ -113,6 +115,10 @@
             <button class="vt-footer-btn" id="vt-switch-horizontal-btn" title="Switch to Top Tab Bar">
                 <i data-lucide="panels-top-left"></i>
                 <span class="vt-footer-label">Top Tabs</span>
+            </button>
+            <button class="vt-footer-btn" id="vt-downloads-btn" title="Downloads & Files" style="position: relative;">
+                <i data-lucide="download"></i>
+                <span class="dl-notify-dot" id="vt-dl-notify-dot" style="display:none;"></span>
             </button>
             <button class="vt-footer-btn" id="vt-settings-btn" title="Tab & Appearance Settings">
                 <i data-lucide="sliders-horizontal"></i>
@@ -188,7 +194,7 @@
                 <button class="omni-btn" id="omni-file-manager-btn" title="File Manager (ocal://file-manager)"><i data-lucide="folder"></i></button>
                 <button class="omni-btn" id="bookmark-heart-btn" title="Bookmark this page"><i data-lucide="heart"></i></button>
                 <button class="omni-btn" id="screenshot-btn" title="Screenshot"><i data-lucide="camera"></i></button>
-                <button class="omni-btn" id="download-icon-btn" title="Downloads"><i data-lucide="download"></i></button>
+                <button class="omni-btn" id="download-icon-btn" title="Downloads" style="position: relative;"><i data-lucide="download"></i><span class="dl-notify-dot" id="dl-notify-dot" style="display:none;"></span></button>
             </div>
         </div>
 

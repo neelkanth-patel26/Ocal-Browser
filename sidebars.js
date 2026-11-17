@@ -72,9 +72,22 @@ function switchTab(id) {
     const titles = { bookmarks: 'Saves', history: 'History', downloads: 'Files' };
     sbTitle.textContent = titles[id] || id;
     bmToolbar.style.display = id === 'bookmarks' ? 'flex' : 'none';
+    
+    const dlToolbar = document.getElementById('dl-toolbar');
+    if (dlToolbar) dlToolbar.style.display = id === 'downloads' ? 'flex' : 'none';
+
     if (clearHistoryBtn) {
         clearHistoryBtn.style.display = (id === 'history' && historyItems.length > 0) ? 'flex' : 'none';
     }
+    const openDlFolderBtn = document.getElementById('open-dl-folder-btn');
+    if (openDlFolderBtn) {
+        openDlFolderBtn.style.display = id === 'downloads' ? 'flex' : 'none';
+    }
+    const clearDlBtn = document.getElementById('clear-downloads-btn');
+    if (clearDlBtn) {
+        clearDlBtn.style.display = (id === 'downloads' && downloadItems.length > 0) ? 'flex' : 'none';
+    }
+
     sbSearch.placeholder = `Search ${titles[id] || id}...`;
     render();
 }
@@ -194,8 +207,9 @@ window.electronAPI.onSettingsChanged((s) => {
 });
 
 window.electronAPI.onDownloadUpdated((data) => {
-    downloadItems = data;
-    if (currentTab === 'downloads') render();
+    downloadItems = data || [];
+    updateDownloadBadge();
+    if (currentTab === 'downloads') updateOrRenderDownloads();
 });
 
 window.electronAPI.onTabsChanged((data) => {
@@ -881,71 +895,251 @@ function isToday(d) { const n = new Date(); return d.toDateString() === n.toDate
 function isYesterday(d) { const y = new Date(); y.setDate(y.getDate()-1); return d.toDateString() === y.toDateString(); }
 
 // ── Downloads ──────────────────────────────────────────────────────────────
+
+let currentDlFilter = 'all';
+
+function formatBytes(bytes) {
+    if (!bytes || bytes <= 0) return '0 B';
+    const k = 1024;
+    const sizes = ['B', 'KB', 'MB', 'GB', 'TB'];
+    const i = Math.floor(Math.log(bytes) / Math.log(k));
+    const val = (bytes / Math.pow(k, i)).toFixed(i >= 2 ? 1 : 0);
+    return `${val} ${sizes[i]}`;
+}
+
+function formatEta(sec) {
+    if (!sec || sec <= 0 || !isFinite(sec)) return '';
+    if (sec < 60) return `~${sec}s left`;
+    const m = Math.floor(sec / 60);
+    const s = sec % 60;
+    if (m < 60) return `~${m}m ${s}s left`;
+    const h = Math.floor(m / 60);
+    return `~${h}h ${m % 60}m left`;
+}
+
+function formatTimestamp(ts) {
+    if (!ts) return '';
+    const d = new Date(ts);
+    if (isNaN(d.getTime())) return '';
+    if (isToday(d)) {
+        return 'Today, ' + d.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+    }
+    if (isYesterday(d)) {
+        return 'Yesterday, ' + d.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+    }
+    return d.toLocaleDateString([], { month: 'short', day: 'numeric' });
+}
+
+function updateDownloadBadge() {
+    const badge = document.getElementById('tab-dl-badge');
+    if (!badge) return;
+    const active = downloadItems.filter(d => d.state === 'progressing');
+    if (active.length > 0) {
+        badge.style.display = 'inline-flex';
+        badge.textContent = active.length;
+        badge.classList.add('active-pulse');
+    } else {
+        badge.style.display = 'none';
+        badge.classList.remove('active-pulse');
+    }
+}
+
+function matchesFilter(dl, filter) {
+    if (filter === 'all') return true;
+    const type = getFileType(dl.name);
+    if (filter === 'media') return type === 'img' || type === 'media';
+    if (filter === 'docs') return type === 'pdf' || type === 'code' || type === 'doc';
+    if (filter === 'archives') return type === 'archive';
+    return true;
+}
+
+function updateOrRenderDownloads() {
+    if (!sbContent) return;
+    const active = downloadItems.filter(d => d.state === 'progressing');
+    const activeContainer = document.getElementById('dl-active-container');
+    if (activeContainer && active.length > 0) {
+        let matches = true;
+        for (const dl of active) {
+            const card = document.getElementById(`dl-active-${dl.id}`);
+            if (!card) { matches = false; break; }
+        }
+        if (matches) {
+            for (const dl of active) {
+                const pct = dl.total > 0 ? Math.round((dl.received / dl.total) * 100) : 0;
+                const bar = document.getElementById(`dl-active-bar-${dl.id}`);
+                if (bar) bar.style.width = pct + '%';
+                const pctEl = document.getElementById(`dl-active-pct-${dl.id}`);
+                if (pctEl) pctEl.textContent = pct + '%';
+                const sizeEl = document.getElementById(`dl-active-size-${dl.id}`);
+                if (sizeEl) sizeEl.textContent = `${formatBytes(dl.received)} / ${formatBytes(dl.total)}`;
+                const speedEl = document.getElementById(`dl-active-speed-${dl.id}`);
+                if (speedEl) speedEl.textContent = dl.speed > 0 ? `${formatBytes(dl.speed)}/s` : 'Downloading...';
+                const etaEl = document.getElementById(`dl-active-eta-${dl.id}`);
+                if (etaEl) etaEl.textContent = formatEta(dl.eta);
+            }
+            return;
+        }
+    }
+    render();
+}
+
 function renderDownloads() {
-    if (!downloadItems.length) return;
-    downloadItems.forEach(dl => {
-        const el = document.createElement('div');
-        el.className = 'dl-item';
-        const type = getFileType(dl.name);
-        el.dataset.type = type;
+    const q = (searchFilter || '').trim().toLowerCase();
+    const filtered = downloadItems.filter(dl => {
+        if (q && !dl.name.toLowerCase().includes(q)) return false;
+        return matchesFilter(dl, currentDlFilter);
+    });
 
-        const isFinished = dl.state === 'completed' || dl.state === 'cancelled' || dl.state === 'interrupted';
-        const pct = isFinished ? (dl.state === 'completed' ? 100 : 0) : (dl.total > 0 ? Math.round((dl.received / dl.total) * 100) : 0);
-        const icon = getFileIcon(dl.name);
-        
-        const sizeInfo = dl.total > 0 
-            ? `${(dl.received / (1024*1024)).toFixed(1)} / ${(dl.total / (1024*1024)).toFixed(1)} MB`
-            : `${(dl.received / (1024*1024)).toFixed(1)} MB`;
-
-        const hasPreview = type === 'img' && dl.state === 'completed' && dl.path;
-        const fileUrl = hasPreview ? 'file:///' + dl.path.replace(/\\/g, '/') : '';
-
-        el.innerHTML = `
-            <div class="dl-icon">
-                ${hasPreview 
-                    ? `<img class="dl-preview" src="${fileUrl}" onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">
-                       <i class="fas ${icon}" style="display:none; align-items:center; justify-content:center;"></i>`
-                    : `<i class="fas ${icon}"></i>`
-                }
-            </div>
-            <div class="dl-info">
-                <div class="dl-name" title="${esc(dl.name)}">${esc(dl.name)}</div>
-                <div class="dl-status">
-                    <span style="${dl.state === 'completed' ? 'color:var(--accent);font-weight:700' : ''}">${dl.state === 'progressing' ? sizeInfo : dl.state}</span>
-                    ${dl.state === 'progressing' ? `<span>${pct}%</span>` : ''}
-                </div>
-                ${dl.state === 'progressing' ? `<div class="dl-bar-bg"><div class="dl-bar" style="width:${pct}%"></div></div>` : ''}
-            </div>
-            <div class="dl-actions">
-                <button class="dl-action-btn folder-btn" title="Show in folder"><i class="fas fa-folder-open"></i></button>
-                <button class="dl-action-btn del del-btn" title="Remove"><i class="fas fa-times"></i></button>
+    if (!filtered.length) {
+        sbContent.innerHTML = `
+            <div class="dl-empty-state">
+                <div class="dl-empty-icon-wrap"><i class="fas fa-cloud-arrow-down"></i></div>
+                <div class="dl-empty-title">${q ? 'No matching downloads' : 'No Downloads Yet'}</div>
+                <div class="dl-empty-sub">${q ? 'Try searching with another filename or keyword' : 'Files, images, and documents you download or save will appear here.'}</div>
+                ${!q ? `<button class="dl-empty-folder-btn" id="empty-open-dl-btn"><i class="fas fa-folder-open"></i> Open Downloads Folder</button>` : ''}
             </div>
         `;
+        const emptyBtn = document.getElementById('empty-open-dl-btn');
+        if (emptyBtn) emptyBtn.onclick = () => window.electronAPI.send('open-downloads-folder');
+        return;
+    }
 
-        el.querySelector('.folder-btn').onclick = (e) => {
-            e.stopPropagation();
-            window.electronAPI.send('show-item-in-folder', dl.path);
-        };
-        el.querySelector('.del-btn').onclick = (e) => {
-            e.stopPropagation();
-            window.electronAPI.send('remove-download-item', dl.id);
-        };
+    const active = filtered.filter(d => d.state === 'progressing');
+    const finished = filtered.filter(d => d.state !== 'progressing');
 
-        el.onclick = () => window.electronAPI.send('open-download', dl.path);
-        sbContent.appendChild(el);
-    });
+    if (active.length > 0) {
+        const lbl = document.createElement('div');
+        lbl.className = 'dl-section-label';
+        lbl.textContent = `Active Downloads (${active.length})`;
+        sbContent.appendChild(lbl);
+
+        const container = document.createElement('div');
+        container.id = 'dl-active-container';
+
+        active.forEach(dl => {
+            const pct = dl.total > 0 ? Math.round((dl.received / dl.total) * 100) : 0;
+            const icon = getFileIcon(dl.name);
+            const speedStr = dl.speed > 0 ? `${formatBytes(dl.speed)}/s` : 'Downloading...';
+            const etaStr = formatEta(dl.eta);
+            const sizeStr = dl.total > 0 ? `${formatBytes(dl.received)} / ${formatBytes(dl.total)}` : formatBytes(dl.received);
+
+            const card = document.createElement('div');
+            card.className = 'dl-hero-card';
+            card.id = `dl-active-${dl.id}`;
+            card.innerHTML = `
+                <div class="dl-hero-top">
+                    <div class="dl-hero-icon"><i class="fas ${icon}"></i></div>
+                    <div class="dl-hero-title-box">
+                        <div class="dl-hero-name" title="${esc(dl.name)}">${esc(dl.name)}</div>
+                        <div class="dl-hero-metrics">
+                            <span class="dl-hero-badge">DOWNLOADING</span>
+                            <span class="dl-hero-speed" id="dl-active-speed-${dl.id}">${speedStr}</span>
+                            <span class="dl-hero-eta" id="dl-active-eta-${dl.id}">${etaStr}</span>
+                        </div>
+                    </div>
+                    <button class="dl-hero-cancel-btn" title="Cancel Download"><i class="fas fa-xmark"></i></button>
+                </div>
+                <div class="dl-hero-bar-bg">
+                    <div class="dl-hero-bar-fill" id="dl-active-bar-${dl.id}" style="width: ${pct}%;"></div>
+                </div>
+                <div class="dl-hero-bottom">
+                    <span id="dl-active-size-${dl.id}">${sizeStr}</span>
+                    <span id="dl-active-pct-${dl.id}" style="font-weight:700; color:var(--text);">${pct}%</span>
+                </div>
+            `;
+
+            card.querySelector('.dl-hero-cancel-btn').onclick = (e) => {
+                e.stopPropagation();
+                window.electronAPI.send('cancel-download', dl.id);
+            };
+
+            container.appendChild(card);
+        });
+        sbContent.appendChild(container);
+    }
+
+    if (finished.length > 0) {
+        const lbl = document.createElement('div');
+        lbl.className = 'dl-section-label';
+        lbl.textContent = `Completed & Saved Files (${finished.length})`;
+        sbContent.appendChild(lbl);
+
+        const finContainer = document.createElement('div');
+        finContainer.id = 'dl-finished-container';
+
+        finished.forEach(dl => {
+            const el = document.createElement('div');
+            el.className = 'dl-item';
+            const type = getFileType(dl.name);
+            el.dataset.type = type;
+            const icon = getFileIcon(dl.name);
+            const sizeInfo = dl.total > 0 ? formatBytes(dl.total) : (dl.received > 0 ? formatBytes(dl.received) : 'File');
+            const timeStr = formatTimestamp(dl.timestamp);
+
+            const hasPreview = type === 'img' && dl.state === 'completed' && dl.path;
+            const fileUrl = hasPreview ? 'file:///' + dl.path.replace(/\\/g, '/') : '';
+
+            el.innerHTML = `
+                <div class="dl-icon">
+                    ${hasPreview 
+                        ? `<img class="dl-preview" src="${fileUrl}" onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">
+                           <i class="fas ${icon}" style="display:none; align-items:center; justify-content:center;"></i>`
+                        : `<i class="fas ${icon}"></i>`
+                    }
+                </div>
+                <div class="dl-info">
+                    <div class="dl-name" title="${esc(dl.name)}">${esc(dl.name)}</div>
+                    <div class="dl-meta-row">
+                        <span class="dl-status-chip">${dl.state === 'completed' ? 'Completed' : dl.state}</span>
+                        <span class="dl-dot-separator"></span>
+                        <span>${sizeInfo}</span>
+                        ${timeStr ? `<span class="dl-dot-separator"></span><span>${timeStr}</span>` : ''}
+                    </div>
+                </div>
+                <div class="dl-actions">
+                    <button class="dl-action-btn folder-btn" title="Show in folder"><i class="fas fa-folder-open"></i></button>
+                    <button class="dl-action-btn del del-btn" title="Remove from list"><i class="fas fa-xmark"></i></button>
+                </div>
+            `;
+
+            el.querySelector('.folder-btn').onclick = (e) => {
+                e.stopPropagation();
+                window.electronAPI.send('show-item-in-folder', dl.path);
+            };
+            el.querySelector('.del-btn').onclick = (e) => {
+                e.stopPropagation();
+                window.electronAPI.send('remove-download-item', dl.id);
+            };
+            el.onclick = () => window.electronAPI.send('open-download', dl.path);
+
+            finContainer.appendChild(el);
+        });
+        sbContent.appendChild(finContainer);
+    }
 }
 
 function getFileIcon(filename) {
     const ext = filename.split('.').pop().toLowerCase();
     const map = {
         pdf: 'fa-file-pdf',
+        doc: 'fa-file-word',
+        docx: 'fa-file-word',
+        txt: 'fa-file-lines',
+        md: 'fa-file-lines',
         zip: 'fa-file-zipper',
         rar: 'fa-file-zipper',
-        exe: 'fa-file-code',
+        '7z': 'fa-file-zipper',
+        tar: 'fa-file-zipper',
+        gz: 'fa-file-zipper',
+        iso: 'fa-compact-disc',
+        exe: 'fa-box-archive',
+        msi: 'fa-box-archive',
         js:  'fa-file-code',
+        ts:  'fa-file-code',
         css: 'fa-file-code',
         html: 'fa-file-code',
+        py: 'fa-file-code',
+        json: 'fa-file-code',
         jpg: 'fa-file-image',
         jpeg: 'fa-file-image',
         png: 'fa-file-image',
@@ -955,6 +1149,7 @@ function getFileIcon(filename) {
         webp: 'fa-file-image',
         mp4: 'fa-file-video',
         mov: 'fa-file-video',
+        mkv: 'fa-file-video',
         mp3: 'fa-file-audio',
         wav: 'fa-file-audio'
     };
@@ -964,9 +1159,11 @@ function getFileIcon(filename) {
 function getFileType(filename) {
     const ext = filename.split('.').pop().toLowerCase();
     if (ext === 'pdf') return 'pdf';
-    if (['jpg', 'jpeg', 'png', 'gif', 'svg', 'avif', 'webp'].includes(ext)) return 'img';
-    if (['mp4', 'mov', 'mp3', 'wav', 'm4a'].includes(ext)) return 'media';
-    if (['js', 'html', 'css', 'json', 'py', 'cpp', 'rs', 'go'].includes(ext)) return 'code';
+    if (['doc', 'docx', 'txt', 'rtf', 'odt', 'pages', 'md', 'epub'].includes(ext)) return 'doc';
+    if (['jpg', 'jpeg', 'png', 'gif', 'svg', 'avif', 'webp', 'bmp', 'ico'].includes(ext)) return 'img';
+    if (['mp4', 'mov', 'mp3', 'wav', 'm4a', 'flac', 'webm', 'mkv', 'avi'].includes(ext)) return 'media';
+    if (['zip', 'rar', '7z', 'tar', 'gz', 'bz2', 'iso', 'exe', 'msi', 'dmg', 'pkg', 'apk'].includes(ext)) return 'archive';
+    if (['js', 'html', 'css', 'json', 'py', 'cpp', 'rs', 'go', 'ts', 'jsx', 'tsx', 'java', 'c'].includes(ext)) return 'code';
     return 'other';
 }
 
@@ -1064,4 +1261,35 @@ if (window.electronAPI && window.electronAPI.getDownloads) {
             if (currentTab === 'downloads') render();
         }
     }).catch(() => {});
+}
+
+// ── Downloads Toolbar & Filter Listeners ─────────────────────────────
+document.querySelectorAll('.dl-filter-btn[data-filter]').forEach(btn => {
+    btn.onclick = () => {
+        document.querySelectorAll('.dl-filter-btn[data-filter]').forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+        currentDlFilter = btn.dataset.filter;
+        render();
+    };
+});
+
+const quickFolderBtn = document.getElementById('quick-folder-btn');
+if (quickFolderBtn) {
+    quickFolderBtn.onclick = () => window.electronAPI.send('open-downloads-folder');
+}
+
+const headerOpenFolderBtn = document.getElementById('open-dl-folder-btn');
+if (headerOpenFolderBtn) {
+    headerOpenFolderBtn.onclick = () => window.electronAPI.send('open-downloads-folder');
+}
+
+const headerClearDlBtn = document.getElementById('clear-downloads-btn');
+if (headerClearDlBtn) {
+    headerClearDlBtn.onclick = () => {
+        showModal({
+            title: 'Clear Downloads List',
+            message: 'Are you sure you want to clear your completed downloads list? The files on your disk will not be deleted.',
+            onConfirm: () => window.electronAPI.send('clear-all-downloads')
+        });
+    };
 }

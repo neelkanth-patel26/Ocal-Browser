@@ -1,0 +1,262 @@
+/* ==========================================================================
+   OCAL LOCAL FONTS - 100% Offline & Private (Zero Remote CDN / Telemetry)
+   ========================================================================== */
+
+/* --- Geist Sans --- */
+@font-face {
+  font-family: 'Geist Sans';
+  font-style: normal;
+  font-display: swap;
+  font-weight: 400;
+  src: url('./geist-sans/geist-sans-latin-400-normal.woff2') format('woff2'),
+       url('./geist-sans/geist-sans-latin-400-normal.woff') format('woff');
+}
+
+@font-face {
+  font-family: 'Geist Sans';
+  font-style: normal;
+  font-display: swap;
+  font-weight: 500;
+  src: url('./geist-sans/geist-sans-latin-500-normal.woff2') format('woff2');
+}
+
+@font-face {
+  font-family: 'Geist Sans';
+  font-style: normal;
+  font-display: swap;
+  font-weight: 600;
+  src: url('./geist-sans/geist-sans-latin-600-normal.woff2') format('woff2');
+}
+
+@font-face {
+  font-family: 'Geist Sans';
+  font-style: normal;
+  font-display: swap;
+  font-weight: 700;
+  src: url('./geist-sans/geist-sans-latin-700-normal.woff2') format('woff2'),
+       url('./geist-sans/geist-sans-latin-700-normal.woff') format('woff');
+}
+
+/* --- Geist Mono --- */
+@font-face {
+  font-family: 'Geist Mono';
+  font-style: normal;
+  font-display: swap;
+  font-weight: 400;
+  src: url('./geist-mono/geist-mono-latin-400-normal.woff2') format('woff2'),
+       url('./geist-mono/geist-mono-latin-400-normal.woff') format('woff');
+}
+
+@font-face {
+  font-family: 'Geist Mono';
+  font-style: normal;
+  font-display: swap;
+  font-weight: 700;
+  src: url('./geist-mono/geist-mono-latin-700-normal.woff2') format('woff2');
+}
+
+/* --- Inter --- */
+@font-face {
+  font-family: 'Inter';
+  font-style: normal;
+  font-display: swap;
+  font-weight: 400;
+  src: local('Inter Regular'), local('Inter-Regular'), local('Inter'),
+       url('./inter/Inter-Regular.woff2') format('woff2');
+}
+
+@font-face {
+  font-family: 'Inter';
+  font-style: normal;
+  font-display: swap;
+  font-weight: 500;
+  src: local('Inter Medium'), local('Inter-Medium'), local('Inter SemiBold'), local('Inter'),
+       url('./inter/Inter-SemiBold.woff2') format('woff2');
+}
+
+@font-face {
+  font-family: 'Inter';
+  font-style: normal;
+  font-display: swap;
+  font-weight: 600;
+  src: local('Inter SemiBold'), local('Inter-SemiBold'), local('Inter'),
+       url('./inter/Inter-SemiBold.woff2') format('woff2');
+}
+
+@font-face {
+  font-family: 'Inter';
+  font-style: normal;
+  font-display: swap;
+  font-weight: 700;
+  src: local('Inter Bold'), local('Inter-Bold'), local('Inter'),
+       url('./inter/Inter-SemiBold.woff2') format('woff2');
+}
+
+/* --- Plus Jakarta Sans (Prefers OS-installed local font, crisp Geist Sans fallback) --- */
+@font-face {
+  font-family: 'Plus Jakarta Sans';
+  font-style: normal;
+  font-display: swap;
+  font-weight: 300;
+  src: local('Plus Jakarta Sans Light'), local('Plus Jakarta Sans'), local('PlusJakartaSans-Light'),
+       url('./geist-sans/geist-sans-latin-400-normal.woff2') format('woff2');
+}
+
+@font-face {
+  font-family: 'Plus Jakarta Sans';
+  font-style: normal;
+  font-display: swap;
+  font-weight: 400;
+  src: local('Plus Jakarta Sans Regular'), local('Plus Jakarta Sans'), local('PlusJakartaSans-Regular'),
+       url('./geist-sans/geist-sans-latin-400-normal.woff2') format('woff2'),
+       url('./geist-sans/geist-sans-latin-400-normal.woff') format('woff');
+}
+
+@font-face {
+  font-family: 'Plus Jakarta Sans';
+  font-style: normal;
+  font-display: swap;
+  font-weight: 500;
+  src: local('Plus Jakarta Sans Medium'), local('Plus Jakarta Sans'), local('PlusJakartaSans-Medium'),
+       url('./geist-sans/geist-sans-latin-500-normal.woff2') format('woff2');
+}
+
+@font-face {
+  font-family: 'Plus Jakarta Sans';
+  font-style: normal;
+  font-display: swap;
+  font-weight: 600;
+  src: local('Plus Jakarta Sans SemiBold'), local('Plus Jakarta Sans'), local('PlusJakartaSans-SemiBold'),
+       url('./geist-sans/geist-sans-latin-600-normal.woff2') format('woff2');
+}
+
+@font-face {
+  font-family: 'Plus Jakarta Sans';
+  font-style: normal;
+  font-display: swap;
+  font-weight: 700;
+  src: local('Plus Jakarta Sans Bold'), local('Plus Jakarta Sans'), local('PlusJakartaSans-Bold'),
+       url('./geist-sans/geist-sans-latin-700-normal.woff2') format('woff2'),
+       url('./geist-sans/geist-sans-latin-700-normal.woff') format('woff');
+}
+
+@font-face {
+  font-family: 'Plus Jakarta Sans';
+  font-style: normal;
+  font-display: swap;
+  font-weight: 800;
+  src: local('Plus Jakarta Sans ExtraBold'), local('Plus Jakarta Sans Bold'), local('Plus Jakarta Sans'),
+       url('./geist-sans/geist-sans-latin-700-normal.woff2') format('woff2');
+}
+
+@font-face {
+  font-family: 'Plus Jakarta Sans';
+  font-style: normal;
+  font-display: swap;
+  font-weight: 900;
+  src: local('Plus Jakarta Sans ExtraBold'), local('Plus Jakarta Sans Bold'), local('Plus Jakarta Sans'),
+       url('./geist-sans/geist-sans-latin-700-normal.woff2') format('woff2');
+}
+
+/* --- Outfit (Prefers OS-installed local font, crisp local fallback) --- */
+@font-face {
+  font-family: 'Outfit';
+  font-style: normal;
+  font-display: swap;
+  font-weight: 300;
+  src: local('Outfit Light'), local('Outfit'), local('Outfit-Light'),
+       url('./geist-sans/geist-sans-latin-400-normal.woff2') format('woff2');
+}
+
+@font-face {
+  font-family: 'Outfit';
+  font-style: normal;
+  font-display: swap;
+  font-weight: 400;
+  src: local('Outfit Regular'), local('Outfit'), local('Outfit-Regular'),
+       url('./geist-sans/geist-sans-latin-400-normal.woff2') format('woff2');
+}
+
+@font-face {
+  font-family: 'Outfit';
+  font-style: normal;
+  font-display: swap;
+  font-weight: 500;
+  src: local('Outfit Medium'), local('Outfit'), local('Outfit-Medium'),
+       url('./geist-sans/geist-sans-latin-500-normal.woff2') format('woff2');
+}
+
+@font-face {
+  font-family: 'Outfit';
+  font-style: normal;
+  font-display: swap;
+  font-weight: 600;
+  src: local('Outfit SemiBold'), local('Outfit'), local('Outfit-SemiBold'),
+       url('./geist-sans/geist-sans-latin-600-normal.woff2') format('woff2');
+}
+
+@font-face {
+  font-family: 'Outfit';
+  font-style: normal;
+  font-display: swap;
+  font-weight: 700;
+  src: local('Outfit Bold'), local('Outfit'), local('Outfit-Bold'),
+       url('./geist-sans/geist-sans-latin-700-normal.woff2') format('woff2');
+}
+
+@font-face {
+  font-family: 'Outfit';
+  font-style: normal;
+  font-display: swap;
+  font-weight: 800;
+  src: local('Outfit ExtraBold'), local('Outfit Bold'), local('Outfit'),
+       url('./geist-sans/geist-sans-latin-700-normal.woff2') format('woff2');
+}
+
+/* --- Space Mono (Prefers OS-installed local font, crisp Geist Mono fallback) --- */
+@font-face {
+  font-family: 'Space Mono';
+  font-style: normal;
+  font-display: swap;
+  font-weight: 400;
+  src: local('Space Mono Regular'), local('Space Mono'), local('SpaceMono-Regular'),
+       url('./geist-mono/geist-mono-latin-400-normal.woff2') format('woff2'),
+       url('./geist-mono/geist-mono-latin-400-normal.woff') format('woff');
+}
+
+@font-face {
+  font-family: 'Space Mono';
+  font-style: normal;
+  font-display: swap;
+  font-weight: 700;
+  src: local('Space Mono Bold'), local('Space Mono'), local('SpaceMono-Bold'),
+       url('./geist-mono/geist-mono-latin-700-normal.woff2') format('woff2');
+}
+
+/* --- JetBrains Mono --- */
+@font-face {
+  font-family: 'JetBrains Mono';
+  font-style: normal;
+  font-display: swap;
+  font-weight: 400;
+  src: local('JetBrains Mono Regular'), local('JetBrains Mono'), local('JetBrainsMono-Regular'),
+       url('./geist-mono/geist-mono-latin-400-normal.woff2') format('woff2');
+}
+
+@font-face {
+  font-family: 'JetBrains Mono';
+  font-style: normal;
+  font-display: swap;
+  font-weight: 500;
+  src: local('JetBrains Mono Medium'), local('JetBrains Mono'), local('JetBrainsMono-Medium'),
+       url('./geist-mono/geist-mono-latin-400-normal.woff2') format('woff2');
+}
+
+@font-face {
+  font-family: 'JetBrains Mono';
+  font-style: normal;
+  font-display: swap;
+  font-weight: 700;
+  src: local('JetBrains Mono Bold'), local('JetBrains Mono'), local('JetBrainsMono-Bold'),
+       url('./geist-mono/geist-mono-latin-700-normal.woff2') format('woff2');
+}

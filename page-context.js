@@ -115,6 +115,9 @@ window.electronAPI?.on?.('render-page-context', (event, data) => {
         addOption(container, 'Copy Link Address', 'fa-link', '', () => {
             sendAction('copy-link-address', { linkUrl: data.linkURL });
         });
+        addOption(container, 'Save Link As...', 'fa-download', '', () => {
+            sendAction('save-link-as', { linkUrl: data.linkURL });
+        });
         hasPriorSection = true;
     }
 
@@ -162,6 +165,7 @@ window.electronAPI?.on?.('render-page-context', (event, data) => {
         addOption(container, 'Forward', 'fa-arrow-right', 'Alt+Right', () => sendAction('forward'), '', !data.canGoForward);
         addOption(container, 'Reload', 'fa-rotate-right', 'Ctrl+R', () => sendAction('reload'));
         addSeparator(container);
+        addOption(container, 'Save Page As...', 'fa-download', 'Ctrl+S', () => sendAction('save-page-as'));
         addOption(container, 'Print...', 'fa-print', 'Ctrl+P', () => sendAction('print'));
 
         if (!data.isLocal) {

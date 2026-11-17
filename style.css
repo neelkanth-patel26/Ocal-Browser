@@ -6407,3 +6407,43 @@ body[data-theme="dark"] .sp-badge.sp-badge-amber {
   color: #FBBF24 !important;
   border-color: rgba(245, 158, 11, 0.4) !important;
 }
+
+/* ── Download Notification Dots & Badges ─────────────────── */
+.dl-notify-dot {
+    position: absolute;
+    top: 4px;
+    right: 4px;
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: var(--accent, #4F46E5);
+    border: 1.5px solid var(--card-bg, #FFFFFF);
+    display: none;
+    pointer-events: none;
+    z-index: 10;
+    box-sizing: content-box;
+}
+.sidebar-item .dl-notify-dot {
+    top: 6px;
+    right: 6px;
+}
+.vt-footer-btn .dl-notify-dot {
+    top: 5px;
+    right: 5px;
+}
+.dl-notify-dot.active-downloading {
+    display: block !important;
+    background: #06B6D4 !important;
+    box-shadow: 0 0 0 0 rgba(6, 182, 212, 0.7);
+    animation: dlNotifyPulse 1.4s ease-in-out infinite;
+}
+.dl-notify-dot.completed-download {
+    display: block !important;
+    background: #10B981 !important;
+    animation: none !important;
+}
+@keyframes dlNotifyPulse {
+    0% { transform: scale(0.85); opacity: 0.8; }
+    50% { transform: scale(1.3); opacity: 1; }
+    100% { transform: scale(0.85); opacity: 0.8; }
+}
