@@ -1682,8 +1682,21 @@ document.addEventListener('DOMContentLoaded', () => {
             });
         };
     }
-    if (bmBtn) bmBtn.onclick = () => { window.electronAPI.send('toggle-sidebar', true); window.electronAPI.send('switch-sidebar-tab', 'bookmarks'); };
-    if (hiBtn) hiBtn.onclick = () => { window.electronAPI.send('toggle-sidebar', true); window.electronAPI.send('switch-sidebar-tab', 'history'); };
+    let currentActiveSidebarTab = 'bookmarks';
+    function toggleSidebarWithTab(tab) {
+        const isOpen = document.body.classList.contains('sidebar-open');
+        if (isOpen && currentActiveSidebarTab === tab) {
+            window.electronAPI.send('toggle-sidebar', false);
+        } else {
+            currentActiveSidebarTab = tab;
+            window.electronAPI.send('toggle-sidebar', true);
+            window.electronAPI.send('switch-sidebar-tab', tab);
+        }
+    }
+    window.toggleSidebarWithTab = toggleSidebarWithTab;
+
+    if (bmBtn) bmBtn.onclick = () => toggleSidebarWithTab('bookmarks');
+    if (hiBtn) hiBtn.onclick = () => toggleSidebarWithTab('history');
     if (fmBtn) fmBtn.onclick = () => window.electronAPI.navigateTo('ocal://file-manager');
     if (omniFmBtn) {
         omniFmBtn.onclick = (e) => {
@@ -1778,10 +1791,13 @@ document.addEventListener('DOMContentLoaded', () => {
     const sbGamesBtn = document.getElementById('sb-games-btn');
 
     if (sbPrivateBtn) sbPrivateBtn.onclick = () => window.electronAPI.send('open-private-window');
-    if (sbSavesBtn) sbSavesBtn.onclick = () => { window.electronAPI.send('toggle-sidebar', true); window.electronAPI.send('switch-sidebar-tab', 'bookmarks'); };
-    if (sbHistoryBtn) sbHistoryBtn.onclick = () => { window.electronAPI.send('toggle-sidebar', true); window.electronAPI.send('switch-sidebar-tab', 'history'); };
+    if (sbSavesBtn) sbSavesBtn.onclick = () => toggleSidebarWithTab('bookmarks');
+    if (sbHistoryBtn) sbHistoryBtn.onclick = () => toggleSidebarWithTab('history');
     if (sbSettingsBtn) sbSettingsBtn.onclick = () => window.electronAPI.send('open-settings');
-    if (sbLogoBtn) sbLogoBtn.onclick = () => window.electronAPI.send('toggle-sidebar', true);
+    if (sbLogoBtn) sbLogoBtn.onclick = () => {
+        const isOpen = document.body.classList.contains('sidebar-open');
+        window.electronAPI.send('toggle-sidebar', !isOpen);
+    };
 
     // Bookmarks and Games Hub Top Shortcuts Click Handling
     if (sbBookBtn) {
@@ -1966,10 +1982,7 @@ document.addEventListener('DOMContentLoaded', () => {
     };
     
     // Wire to new dedicated Downloads Module
-    if (dlBtn) dlBtn.onclick = () => { 
-        window.electronAPI.send('toggle-sidebar', true); 
-        window.electronAPI.send('switch-sidebar-tab', 'downloads'); 
-    };
+    if (dlBtn) dlBtn.onclick = () => toggleSidebarWithTab('downloads');
     
     // Auto-reveal the popup when a background download starts
     window.electronAPI.on('open-downloads-popup-ui', () => {
@@ -2368,7 +2381,10 @@ function syncGlobalAmbientSound(ambient) {
 }
 
 window.electronAPI.on('toggle-sidebar', (e, open) => {
-    document.body.classList.toggle('sidebar-open', open);
+    document.body.classList.toggle('sidebar-open', !!open);
+    if (!open && typeof currentActiveSidebarTab !== 'undefined') {
+        currentActiveSidebarTab = null;
+    }
 });
 
 window.electronAPI.on('sync-bookmark-visibility', (isBmVisible) => {
@@ -3466,16 +3482,28 @@ if (window.electronAPI && window.electronAPI.onDownloadUpdated) {
     if (sbDlBtn) {
         sbDlBtn.onclick = () => {
             clearDownloadNotificationDot();
-            window.electronAPI.send('toggle-sidebar', true);
-            window.electronAPI.send('switch-sidebar-tab', 'downloads');
+            if (typeof toggleSidebarWithTab === 'function') {
+                toggleSidebarWithTab('downloads');
+            } else if (typeof window.toggleSidebarWithTab === 'function') {
+                window.toggleSidebarWithTab('downloads');
+            } else {
+                window.electronAPI.send('toggle-sidebar', true);
+                window.electronAPI.send('switch-sidebar-tab', 'downloads');
+            }
         };
     }
     const vtDlBtn = document.getElementById('vt-downloads-btn');
     if (vtDlBtn) {
         vtDlBtn.onclick = () => {
             clearDownloadNotificationDot();
-            window.electronAPI.send('toggle-sidebar', true);
-            window.electronAPI.send('switch-sidebar-tab', 'downloads');
+            if (typeof toggleSidebarWithTab === 'function') {
+                toggleSidebarWithTab('downloads');
+            } else if (typeof window.toggleSidebarWithTab === 'function') {
+                window.toggleSidebarWithTab('downloads');
+            } else {
+                window.electronAPI.send('toggle-sidebar', true);
+                window.electronAPI.send('switch-sidebar-tab', 'downloads');
+            }
         };
     }
     if (dlBtn) {

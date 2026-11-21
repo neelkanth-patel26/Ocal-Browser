@@ -2779,70 +2779,20 @@ window.addEventListener('mousedown', () => {
     }
 
     function applyEffect(state) {
-        if (!state) return;
-        activeEffectState = { ...activeEffectState, ...state };
-
-        if (isSettingsPage()) {
-            return; // Leave settings UI clean; it has its own sandbox monitor
-        }
-
-        ensureEffectStyles();
         const root = document.documentElement;
         if (!root) return;
-
-        // Clear all previous effect classes on root
         const classList = Array.from(root.classList);
         classList.forEach(c => {
             if (c.startsWith('ocal-fx-')) root.classList.remove(c);
         });
-
-        const overlay = ensureEffectOverlay();
-
-        if (activeEffectState.enabled && activeEffectState.effect && activeEffectState.effect !== 'none') {
-            const fxClass = `ocal-fx-${activeEffectState.effect}`;
-            root.classList.add(fxClass);
-            if (overlay) {
-                overlay.style.display = 'block';
-                overlay.style.opacity = `${activeEffectState.intensity || 1.0}`;
-            }
-        } else {
-            if (overlay) {
-                overlay.style.opacity = '0';
-                setTimeout(() => {
-                    if (!activeEffectState.enabled || activeEffectState.effect === 'none') {
-                        overlay.style.display = 'none';
-                    }
-                }, 250);
-            }
+        const overlay = document.getElementById('ocal-page-effects-overlay');
+        if (overlay) {
+            overlay.remove();
         }
     }
 
-    // Initialize on DOM ready
     function initPageEffects() {
-        ensureEffectStyles();
-
-        if (electronIpc) {
-            // Listen for direct broadcast
-            electronIpc.on('page-effect-changed', (e, fx) => {
-                applyEffect(fx);
-            });
-
-            // Listen for general settings broadcast
-            electronIpc.on('settings-changed', (e, s) => {
-                if (s && s.pageEffect) {
-                    applyEffect(s.pageEffect);
-                }
-            });
-
-            // Request initial state from main process
-            if (electronIpc.invoke) {
-                electronIpc.invoke('get-settings').then(s => {
-                    if (s && s.pageEffect) {
-                        applyEffect(s.pageEffect);
-                    }
-                }).catch(() => {});
-            }
-        }
+        applyEffect();
     }
 
     if (document.readyState === 'loading') {
@@ -2862,12 +2812,32 @@ window.addEventListener('mousedown', () => {
     const ADULT_DOMAINS_SET = new Set([
         'xhamster.com', 'xhamster.desi', 'www.xhamster.com', 'pornhub.com', 'www.pornhub.com',
         'xvideos.com', 'www.xvideos.com', 'xnxx.com', 'www.xnxx.com', 'redtube.com', 'www.redtube.com',
-        'youporn.com', 'www.youporn.com', 'chaturbate.com', 'stripchat.com', 'spankbang.com',
-        'eporner.com', 'beeg.com', 'brazzers.com', 'rule34.xxx', 'nhentai.net',
-        'erome.com', 'livejasmin.com', 'thothub.to', 'fapello.com', 'daftsex.com',
-        'youjizz.com', 'hqporner.com', 'thumbzilla.com', 'cam4.com', 'camsoda.com',
-        'bongacams.com', 'hentaihaven.xxx', 'hanime.tv', 'javhd.com', 'missav.com',
-        'jable.tv', 'adultfriendfinder.com', 'sex.com', 'faphero.com', 'fuq.com'
+        'youporn.com', 'www.youporn.com', 'chaturbate.com', 'www.chaturbate.com', 'stripchat.com', 'www.stripchat.com',
+        'onlyfans.com', 'www.onlyfans.com', 'spankbang.com', 'www.spankbang.com',
+        'eporner.com', 'www.eporner.com', 'tube8.com', 'www.tube8.com', 'beeg.com', 'www.beeg.com',
+        'brazzers.com', 'www.brazzers.com', 'rule34.xxx', 'www.rule34.xxx', 'rule34.paheal.net',
+        'nhentai.net', 'www.nhentai.net', 'hentaihaven.xxx', 'www.hentaihaven.xxx',
+        'erome.com', 'www.erome.com', 'livejasmin.com', 'www.livejasmin.com', 'myfreecams.com', 'www.myfreecams.com',
+        'thothub.to', 'www.thothub.to', 'fapello.com', 'www.fapello.com', 'daftsex.com', 'www.daftsex.com',
+        'youjizz.com', 'www.youjizz.com', 'hqporner.com', 'www.hqporner.com', 'thumbzilla.com', 'www.thumbzilla.com',
+        'cam4.com', 'www.cam4.com', 'camsoda.com', 'www.camsoda.com', 'bongacams.com', 'www.bongacams.com',
+        'hanime.tv', 'javhd.com', 'missav.com', 'jable.tv', 'adultfriendfinder.com', 'www.adultfriendfinder.com',
+        'sex.com', 'www.sex.com', 'faphero.com', 'fuq.com', 'txxx.com', 'heavy-r.com', 'motherless.com',
+        'porndig.com', 'porn.com', 'pornmd.com', 'coomer.party', 'kemono.party', 'nuvid.com', 'sunporno.com',
+        'porn300.com', 'drtuber.com', 'tnaflix.com', 'javlibrary.com', 'gelbooru.com', 'danbooru.donmai.us',
+        'e-hentai.org', 'exhentai.org', 'luscious.net', 'alotporn.com', 'definebabe.com', 'czechav.com',
+        'vrporn.com', 'freeomovie.to', 'javfinder.la', 'hentai.tv', 'imlive.com', 'streamate.com',
+        'flirt4free.com', 'camversity.com', 'livecam.com', 'porn555.com', 'porntrex.com', '4tube.com',
+        'pornone.com', 'upornia.com', 'ixxx.com'
+    ]);
+
+    const TRUSTED_CONTENT_DOMAINS = new Set([
+        'bbc.com', 'bbc.co.uk', 'wikipedia.org', 'theguardian.com', 'nytimes.com', 'reuters.com',
+        'apnews.com', 'bloomberg.com', 'washingtonpost.com', 'forbes.com', 'theverge.com', 'wired.com',
+        'wsj.com', 'cnn.com', 'nbcnews.com', 'cbsnews.com', 'abcnews.go.com', 'nature.com', 'nih.gov',
+        'cdc.gov', 'gov.uk', 'gov.au', 'canada.ca', 'apple.com', 'microsoft.com', 'google.com',
+        'github.com', 'stackoverflow.com', 'reddit.com', 'youtube.com', 'medium.com', 'techcrunch.com',
+        'arstechnica.com', 'nationalgeographic.com', 'britannica.com', 'imdb.com'
     ]);
 
     const ADULT_BRAND_REGEX = /porn|xxx|nsfw|hentai|stripchat|camgirl|camsoda|xhamster|xvideos|xnxx|redtube|youporn|chaturbate|spankbang|eporner|beeg|brazzers|rule34|nhentai|erome|livejasmin|thothub|fapello|daftsex|youjizz|hqporner|thumbzilla|hentaihaven|hanime|javhd|missav|jable|adultfriendfinder|txxx|heavy-r|motherless|pornmd|coomer|faphero|nuvid|sunporno|drtuber|tnaflix|javlibrary|gelbooru|danbooru|e-hentai|luscious|alotporn|vrporn|streamate|porntrex|upornia/i;
@@ -2876,20 +2846,57 @@ window.addEventListener('mousedown', () => {
 
     const EXPLICIT_MEDIA_REGEX = /(?:^|[\/_\-?&=.])(porn|xxx|nsfw|nude|naked|erotic|boobs|penis|vagina|hentai|camgirl|stripchat|pornhub|xvideos|xnxx|xhamster|redtube|youporn|rule34|erome|fapello)(?:[\/_\-?&=.]|$)/i;
 
+    function isAdultHost(host) {
+        if (!host || typeof host !== 'string') return false;
+        const clean = host.toLowerCase().trim().replace(/^https?:\/\//i, '').split('/')[0].split(':')[0].replace(/^www\./i, '');
+        if (!clean) return false;
+        if (TRUSTED_CONTENT_DOMAINS.has(clean) || Array.from(TRUSTED_CONTENT_DOMAINS).some(t => clean === t || clean.endsWith('.' + t))) {
+            return false;
+        }
+        if (ADULT_DOMAINS_SET.has(clean) || ADULT_DOMAINS_SET.has('www.' + clean)) return true;
+        const parts = clean.split('.');
+        for (let i = 1; i < parts.length - 1; i++) {
+            const sub = parts.slice(i).join('.');
+            if (ADULT_DOMAINS_SET.has(sub)) return true;
+        }
+        if (clean.endsWith('.xxx') || clean.endsWith('.adult') || clean.endsWith('.porn') || clean.endsWith('.sex')) return true;
+        if (ADULT_BRAND_REGEX.test(clean)) return true;
+        return false;
+    }
+
     function isAdultLink(href) {
         if (!href || typeof href !== 'string') return false;
         try {
             const u = new URL(href, window.location.href);
             const host = u.hostname.toLowerCase();
-            if (ADULT_DOMAINS_SET.has(host)) return true;
-            if (ADULT_BRAND_REGEX.test(host)) return true;
-            if (host.endsWith('.xxx') || host.endsWith('.adult') || host.endsWith('.porn') || host.endsWith('.sex')) return true;
-            if (u.pathname === '/url') {
-                const target = u.searchParams.get('url') || u.searchParams.get('q');
-                if (target) return isAdultLink(target);
+            
+            if (isAdultHost(host)) return true;
+
+            // Search redirects: Google (/url?q=... or /url?url=...), DuckDuckGo (/l/?uddg=...), Bing (/ck/a?...&u=a1...), Yahoo (...RU=...)
+            if (u.pathname === '/url' || u.pathname === '/l/' || u.pathname.includes('/ck/a')) {
+                const target = u.searchParams.get('url') || u.searchParams.get('q') || u.searchParams.get('uddg') || u.searchParams.get('target') || u.searchParams.get('dest');
+                if (target && target !== href) return isAdultLink(target);
+
+                const uParam = u.searchParams.get('u');
+                if (uParam && uParam.startsWith('a1')) {
+                    try {
+                        const decoded = atob(uParam.slice(2));
+                        if (decoded && decoded !== href) return isAdultLink(decoded);
+                    } catch (_) {}
+                }
             }
-            const pathAndQuery = (u.pathname + u.search).toLowerCase();
-            if (/\/(porn|xxx|nsfw|hentai|erotica)\//i.test(pathAndQuery)) return true;
+
+            if (u.searchParams.has('RU')) {
+                const ru = u.searchParams.get('RU');
+                if (ru && ru !== href) return isAdultLink(ru);
+            }
+
+            // Exclude trusted domains from generic path token matches
+            const baseHost = host.replace(/^www\./i, '');
+            if (!TRUSTED_CONTENT_DOMAINS.has(baseHost) && !Array.from(TRUSTED_CONTENT_DOMAINS).some(t => baseHost === t || baseHost.endsWith('.' + t))) {
+                const pathAndQuery = (u.pathname + u.search).toLowerCase();
+                if (/\/(porn|xxx|nsfw|hentai|erotica)\//i.test(pathAndQuery)) return true;
+            }
             return false;
         } catch (_) {
             return false;
@@ -3116,21 +3123,50 @@ window.addEventListener('mousedown', () => {
     function extractSectionDomain(container) {
         if (!container) return "";
         try {
+            const citeEl = container.querySelector('cite, .byrWWr, .TbwUpd, span.VuuXrf');
+            if (citeEl) {
+                const citeText = (citeEl.textContent || '').trim();
+                const match = citeText.match(/(?:https?:\/\/)?(?:www\.)?([a-zA-Z0-9.-]+\.[a-zA-Z]{2,})/);
+                if (match && match[1]) {
+                    const host = match[1].toLowerCase();
+                    if (!host.includes('google.') && !host.includes('bing.') && !host.includes('duckduckgo.') && !host.includes('yahoo.')) {
+                        return host.replace(/^www\./i, '');
+                    }
+                }
+            }
+
             const links = container.querySelectorAll("a[href]");
             for (const a of links) {
                 const rawHref = a.href || "";
-                if (!rawHref) continue;
+                if (!rawHref || rawHref.startsWith('javascript:')) continue;
                 try {
                     const u = new URL(rawHref, window.location.href);
-                    if (u.pathname === "/url") {
-                        const target = u.searchParams.get("url") || u.searchParams.get("q");
+                    if (u.pathname === "/url" || u.pathname === "/l/" || u.pathname.includes('/ck/a')) {
+                        const target = u.searchParams.get("url") || u.searchParams.get("q") || u.searchParams.get("uddg") || u.searchParams.get("target") || u.searchParams.get("dest");
                         if (target) {
                             const tu = new URL(target);
                             return tu.hostname.replace(/^www\./i, "");
                         }
+                        const uParam = u.searchParams.get('u');
+                        if (uParam && uParam.startsWith('a1')) {
+                            try {
+                                const decoded = atob(uParam.slice(2));
+                                if (decoded) {
+                                    const tu = new URL(decoded);
+                                    return tu.hostname.replace(/^www\./i, "");
+                                }
+                            } catch (_) {}
+                        }
+                    }
+                    if (u.searchParams.has('RU')) {
+                        const ru = u.searchParams.get('RU');
+                        if (ru) {
+                            const tu = new URL(ru);
+                            return tu.hostname.replace(/^www\./i, "");
+                        }
                     }
                     const host = u.hostname.replace(/^www\./i, "");
-                    if (host && !host.includes("google.") && !host.includes("bing.") && !host.includes("duckduckgo.")) {
+                    if (host && !host.includes("google.") && !host.includes("bing.") && !host.includes("duckduckgo.") && !host.includes("yahoo.")) {
                         return host;
                     }
                 } catch (_) {}
@@ -3234,9 +3270,11 @@ window.addEventListener('mousedown', () => {
         ].join(','));
     }
 
-    // Scan and blur search result sections and streaming video sections
+    // Scan and shield search result sections and streaming video sections
     function scanAndShieldSections(root = document) {
         if (!contentProtectionActive) return;
+
+        const isSearchPage = /google\.|bing\.com|duckduckgo\.com|search\.yahoo\.com|ecosia\.org|qwant\.com|startpage\.com|brave\.com/i.test(window.location.hostname);
 
         const sectionSelectors = [
             'div.g', 'div.hlcw0c', 'div.tF2Cxc', 'div.g-blk', 'div.isv-r', 'div[data-ri]', 'g-card', 'video-voyager',
@@ -3251,24 +3289,40 @@ window.addEventListener('mousedown', () => {
             if (!container || container.classList.contains('ocal-section-shielded')) return;
 
             let isExplicit = false;
-            // 1. Check links inside container
-            const links = container.querySelectorAll('a[href]');
-            for (const a of links) {
-                if (isAdultLink(a.href)) {
-                    isExplicit = true;
-                    break;
+
+            // 1. Check destination domain
+            const domain = extractSectionDomain(container);
+            if (domain && isAdultHost(domain)) {
+                isExplicit = true;
+            }
+
+            // 2. Check all links inside container
+            if (!isExplicit) {
+                const links = container.querySelectorAll('a[href]');
+                for (const a of links) {
+                    if (isAdultLink(a.href) || (a.dataset && a.dataset.href && isAdultLink(a.dataset.href))) {
+                        isExplicit = true;
+                        break;
+                    }
                 }
             }
 
-            // 2. Check title / snippet text
-            if (!isExplicit) {
-                const titleEl = container.querySelector('#video-title, h1, h2, h3, h4, [role="heading"], .b_title, .result__title, .title, a[title]');
-                const titleText = (titleEl ? (titleEl.textContent || titleEl.getAttribute('title') || '') : '').toLowerCase();
-                const fullText = (titleText + ' ' + (container.textContent || '')).toLowerCase();
-                if (ADULT_SEARCH_TEXT_REGEX.test(titleText) || ADULT_SEARCH_TEXT_REGEX.test(fullText)) {
-                    isExplicit = true;
+            // 3. In non-search-engine contexts (e.g. Reddit feeds, Twitch directories):
+            // Check for explicit platform-native NSFW indicators
+            if (!isSearchPage && !isExplicit) {
+                if (container.matches && (container.matches('shreddit-post, div[data-testid="post-container"]') || container.querySelector('[data-testid="post-container"]'))) {
+                    const isNsfw = container.hasAttribute('nsfw') || !!container.querySelector('[aria-label*="NSFW" i], .nsfw-badge, [data-testid="nsfw-badge"]');
+                    const sub = (container.getAttribute('subreddit-prefixed-name') || '').toLowerCase();
+                    if (isNsfw || /r\/(porn|xxx|nsfw|hentai|gonewild|rule34)\b/i.test(sub)) {
+                        isExplicit = true;
+                    }
                 }
             }
+
+            // On search engines:
+            // If the search result links to a legitimate site (e.g., BBC, Wikipedia, NYTimes),
+            // it MUST NEVER be hidden simply because its title or snippet mentions an adult site or term!
+            // isExplicit remains false for all legitimate sites.
 
             if (isExplicit) {
                 shieldSection(container, 'Explicit result hidden');
@@ -3279,6 +3333,7 @@ window.addEventListener('mousedown', () => {
     // Scan images and thumbnails for explicit URLs, alt texts, and computer-vision skin exposure
     function scanAndShieldImages(root = document) {
         if (!contentProtectionActive || !explicitImagesBlockActive) return;
+        const isSearchPage = /google\.|bing\.com|duckduckgo\.com|search\.yahoo\.com|ecosia\.org|qwant\.com|startpage\.com|brave\.com/i.test(window.location.hostname);
         const mediaElements = root.querySelectorAll ? root.querySelectorAll('img, video, ytd-thumbnail, [style*="background-image"]') : [];
         let checkedCount = 0;
 
@@ -3292,7 +3347,8 @@ window.addEventListener('mousedown', () => {
             const alt = (el.alt || el.getAttribute('title') || el.getAttribute('aria-label') || el.className || '').toLowerCase();
             const bg = el.style ? (el.style.backgroundImage || '').toLowerCase() : '';
 
-            let isFlagged = EXPLICIT_MEDIA_REGEX.test(src) || EXPLICIT_MEDIA_REGEX.test(alt) || EXPLICIT_MEDIA_REGEX.test(bg);
+            // In search results, alt text usually contains the news article headline / query terms. Don't flag based on alt in search results.
+            let isFlagged = EXPLICIT_MEDIA_REGEX.test(src) || EXPLICIT_MEDIA_REGEX.test(bg) || (!isSearchPage && EXPLICIT_MEDIA_REGEX.test(alt));
 
             // Computer-vision skin recognition heuristic
             if (!isFlagged && el.tagName === 'IMG' && el.complete && el.naturalWidth >= 48) {
@@ -3302,7 +3358,15 @@ window.addEventListener('mousedown', () => {
             if (isFlagged) {
                 const parentSection = findEnclosingSection(el);
                 if (parentSection) {
-                    shieldSection(parentSection, 'Explicit media hidden');
+                    const parentDomain = extractSectionDomain(parentSection);
+                    if (parentDomain && !isAdultHost(parentDomain)) {
+                        // Legitimate site parent (e.g. BBC, Wikipedia) - never shield the whole news card!
+                        ensureShieldStyles();
+                        el.classList.add('ocal-shielded-media');
+                        el.setAttribute('title', 'Explicit image shielded by Ocal Search Security');
+                    } else {
+                        shieldSection(parentSection, 'Explicit media hidden');
+                    }
                 } else {
                     ensureShieldStyles();
                     el.classList.add('ocal-shielded-media');
@@ -3312,8 +3376,15 @@ window.addEventListener('mousedown', () => {
                 el.addEventListener('load', () => {
                     if (analyzeImageSkinExposure(el)) {
                         const parent = findEnclosingSection(el);
-                        if (parent) shieldSection(parent, 'Explicit media hidden');
-                        else {
+                        if (parent) {
+                            const parentDomain = extractSectionDomain(parent);
+                            if (parentDomain && !isAdultHost(parentDomain)) {
+                                ensureShieldStyles();
+                                el.classList.add('ocal-shielded-media');
+                            } else {
+                                shieldSection(parent, 'Explicit media hidden');
+                            }
+                        } else {
                             ensureShieldStyles();
                             el.classList.add('ocal-shielded-media');
                         }

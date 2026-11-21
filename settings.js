@@ -111,29 +111,106 @@ const initToggle = (id, settingKey, initialValue) => {
     };
 };
 
-// Grid Selectors — works with both .grid-item and .choice-item
+// ── AI Engine Dynamic Visibility & Live Switcher ──────────────────────────
+window.updateAISettingsVisibility = function(engine) {
+    if (!engine) engine = 'local';
+    const geminiRow = document.getElementById('gemini-key-row');
+    const openaiKeyRow = document.getElementById('openai-key-row');
+    const customEndpointRow = document.getElementById('custom-endpoint-row');
+    const customModelRow = document.getElementById('custom-model-row');
+    const customKeyRow = document.getElementById('custom-key-row');
+    const localModelRow = document.getElementById('local-model-row');
+    const localEndpointRow = document.getElementById('local-endpoint-row');
+
+    const isGemini = (engine === 'gemini');
+    const isOpenAI = (engine === 'openai');
+    const isCustom = (engine === 'custom');
+    const isLocal  = (engine === 'local');
+
+    const setRowVis = (row, show) => {
+        if (!row) return;
+        if (show) {
+            row.style.setProperty('display', 'flex', 'important');
+            row.classList.remove('hidden');
+            row.classList.remove('is-hidden');
+        } else {
+            row.style.setProperty('display', 'none', 'important');
+            row.classList.add('hidden');
+            row.classList.add('is-hidden');
+        }
+    };
+
+    setRowVis(geminiRow, isGemini);
+    setRowVis(openaiKeyRow, isOpenAI);
+    setRowVis(customEndpointRow, isCustom);
+    setRowVis(customModelRow, isCustom);
+    setRowVis(customKeyRow, isCustom);
+    setRowVis(localModelRow, isLocal);
+    setRowVis(localEndpointRow, isLocal);
+};
+
+// Grid Selectors — works with both .grid-item, .choice-item, and .settings-engine-row
 function initGridSelector(gridId, settingsKey, transform = null) {
     const grid = document.getElementById(gridId);
     if (!grid) return;
-    grid.querySelectorAll('.grid-item, .choice-item, .settings-engine-row').forEach(item => {
+    const items = grid.querySelectorAll('.grid-item, .choice-item, .settings-engine-row, .search-provider-card, .dns-provider-card, .ai-provider-card, .ai-provider-row');
+    items.forEach(item => {
         item.onclick = () => {
-            const rawVal = item.dataset.value;
+            const rawVal = item.dataset.value || item.dataset.aiEngine || item.dataset.searchEngine;
             const val = transform ? transform(rawVal) : rawVal;
-            grid.querySelectorAll('.grid-item, .choice-item, .settings-engine-row').forEach(i => i.classList.remove('active'));
-            item.classList.add('active');
-            
-            // Check radio button if present
-            const radio = item.querySelector('input[type="radio"]');
-            if (radio) {
-                radio.checked = true;
+            if (!val) return;
+
+            items.forEach(i => {
+                const iVal = i.dataset.value || i.dataset.aiEngine || i.dataset.searchEngine;
+                const isMatch = (iVal === rawVal);
+                i.classList.toggle('active', isMatch);
+                i.setAttribute('aria-checked', isMatch ? 'true' : 'false');
+                const radio = i.querySelector('input[type="radio"]');
+                if (radio) radio.checked = isMatch;
+                const spcStatus = i.querySelector('.spc-status');
+                if (spcStatus) spcStatus.classList.toggle('active', isMatch);
+                const spcBtn = i.querySelector('.spc-action-btn');
+                if (spcBtn) spcBtn.classList.toggle('active', isMatch);
+            });
+
+            if (window.electronAPI && window.electronAPI.updateSetting) {
+                window.electronAPI.updateSetting(settingsKey, val);
             }
-            
-            window.electronAPI.updateSetting(settingsKey, val);
-            
 
             // Real-time theme application
             if (gridId === 'theme-mode-grid') {
-                applyTheme(val);
+                if (typeof applyTheme === 'function') applyTheme(val);
+            }
+
+            // Real-time AI engine switching and dynamic subrows visibility
+            if (gridId === 'ai-engine-grid' || settingsKey === 'aiEngine') {
+                if (typeof window.selectAIEngine === 'function') {
+                    window.selectAIEngine(val);
+                } else if (typeof window.updateAISettingsVisibility === 'function') {
+                    window.updateAISettingsVisibility(val);
+                }
+            }
+
+            // Real-time search engine switching
+            if (gridId === 'search-grid' || gridId === 'search-engine-grid' || settingsKey === 'searchEngine') {
+                if (typeof renderSearchSettings === 'function') {
+                    if (window.electronAPI && window.electronAPI.getSettings) {
+                        window.electronAPI.getSettings().then(st => {
+                            st.searchEngine = val;
+                            renderSearchSettings(st);
+                        }).catch(() => renderSearchSettings({ searchEngine: val }));
+                    } else {
+                        renderSearchSettings({ searchEngine: val });
+                    }
+                }
+            }
+
+            // Real-time tab layout tuning section toggle
+            if (gridId === 'tab-layout-grid') {
+                const vtTuning = document.getElementById('vt-tuning-section');
+                if (vtTuning) {
+                    vtTuning.style.display = (val === 'vertical') ? 'block' : 'none';
+                }
             }
         };
     });
@@ -156,8 +233,17 @@ document.querySelectorAll('.extension-card .btn.secondary, .extension-card .btn.
 function setGridValue(gridId, value) {
     const grid = document.getElementById(gridId);
     if (!grid) return;
-    grid.querySelectorAll('.grid-item, .choice-item, .settings-engine-row, .search-provider-pill').forEach(item => {
-        item.classList.toggle('active', item.dataset.value === value);
+    grid.querySelectorAll('.grid-item, .choice-item, .settings-engine-row, .search-provider-pill, .search-provider-card, .dns-provider-card, .ai-provider-card, .ai-provider-row').forEach(item => {
+        const itemVal = item.dataset.value || item.dataset.aiEngine || item.dataset.searchEngine;
+        const isMatch = (itemVal === value);
+        item.classList.toggle('active', isMatch);
+        item.setAttribute('aria-checked', isMatch ? 'true' : 'false');
+        const radio = item.querySelector('input[type="radio"]');
+        if (radio) radio.checked = isMatch;
+        const spcStatus = item.querySelector('.spc-status');
+        if (spcStatus) spcStatus.classList.toggle('active', isMatch);
+        const spcBtn = item.querySelector('.spc-action-btn');
+        if (spcBtn) spcBtn.classList.toggle('active', isMatch);
     });
 }
 
@@ -1465,9 +1551,13 @@ async function initAboutDiagnostics() {
     // Initialize Catalog (Live Sync with GitHub)
     syncReleaseCatalogWithGitHub(currentVer);
 
-    // Sidebar footer — show version dynamically
+    // Sidebar footer — show version & status cleanly
     const sidebarVer = document.getElementById('sidebar-version-label');
-    if (sidebarVer) sidebarVer.textContent = `v${currentVer} · Up to date`;
+    const sidebarTag = document.getElementById('sidebar-version-tag');
+    if (sidebarTag) sidebarTag.textContent = `v${currentVer}`;
+    if (sidebarVer) {
+        sidebarVer.innerHTML = '<span class="meta-status-text">Up to date</span>';
+    }
 }
 
 initAboutDiagnostics();
@@ -1603,8 +1693,10 @@ function showUpdateInfo(latest) {
     if (iconBox) {
         iconBox.className = "update-icon-box update-available";
     }
+    const sidebarTag = document.getElementById('sidebar-version-tag');
+    if (sidebarTag) sidebarTag.textContent = `v${currentVer}`;
     if (sidebarVer) {
-        sidebarVer.innerHTML = `v${currentVer} · <span class="sidebar-update-badge"><span class="sidebar-update-dot"></span>Update Available</span>`;
+        sidebarVer.innerHTML = `<span class="meta-status-text update">Update v${latest.version} Available</span>`;
     }
     if (updateBtn) {
         updateBtn.dataset.hasUpdate = 'true';
@@ -1697,6 +1789,7 @@ window.electronAPI.getSettings().then(s => {
     renderAISettings(s);
     renderSystemSettings(s);
     setGridValue('search-grid', s.searchEngine || 'google');
+    setGridValue('search-engine-grid', s.searchEngine || 'google');
     setGridValue('dns-grid', s.dns || 'default');
     
     // 1. Compact Workspace Density Toggle
@@ -1810,6 +1903,7 @@ window.electronAPI.getSettings().then(s => {
     }
 
     initGridSelector('search-grid', 'searchEngine');
+    initGridSelector('search-engine-grid', 'searchEngine');
     initGridSelector('dns-grid', 'dns');
     initGridSelector('sidebar-mode-grid', 'sidebarMode');
     initGridSelector('sidebar-app-width-grid', 'sidebarAppWidth');
@@ -1987,13 +2081,26 @@ window.electronAPI.getSettings().then(s => {
         const isCustom = engine === 'custom';
         const isLocal  = engine === 'local';
 
-        if (geminiRow) geminiRow.style.setProperty('display', isGemini ? 'flex' : 'none', 'important');
-        if (openaiKeyRow) openaiKeyRow.style.setProperty('display', isOpenAI ? 'flex' : 'none', 'important');
-        if (customEndpointRow) customEndpointRow.style.setProperty('display', isCustom ? 'flex' : 'none', 'important');
-        if (customModelRow) customModelRow.style.setProperty('display', isCustom ? 'flex' : 'none', 'important');
-        if (customKeyRow) customKeyRow.style.setProperty('display', isCustom ? 'flex' : 'none', 'important');
-        if (localModelRow) localModelRow.style.setProperty('display', isLocal ? 'flex' : 'none', 'important');
-        if (localEndpointRow) localEndpointRow.style.setProperty('display', isLocal ? 'flex' : 'none', 'important');
+        const setRowVis = (row, show) => {
+            if (!row) return;
+            if (show) {
+                row.style.setProperty('display', 'flex', 'important');
+                row.classList.remove('hidden');
+                row.classList.remove('is-hidden');
+            } else {
+                row.style.setProperty('display', 'none', 'important');
+                row.classList.add('hidden');
+                row.classList.add('is-hidden');
+            }
+        };
+
+        setRowVis(geminiRow, isGemini);
+        setRowVis(openaiKeyRow, isOpenAI);
+        setRowVis(customEndpointRow, isCustom);
+        setRowVis(customModelRow, isCustom);
+        setRowVis(customKeyRow, isCustom);
+        setRowVis(localModelRow, isLocal);
+        setRowVis(localEndpointRow, isLocal);
     };
 
     const activeEngine = s.aiEngine || 'local';
@@ -2003,12 +2110,17 @@ window.electronAPI.getSettings().then(s => {
 
     const aiEngineGrid = document.getElementById('ai-engine-grid');
     if (aiEngineGrid) {
-        aiEngineGrid.querySelectorAll('.choice-item').forEach(item => {
-            const originalClick = item.onclick;
-            item.onclick = () => {
-                if (originalClick) originalClick();
-                window.updateAISettingsVisibility(item.dataset.value);
-            };
+        aiEngineGrid.querySelectorAll('.settings-engine-row, .ai-provider-row, .ai-provider-card, .choice-item').forEach(item => {
+            item.addEventListener('click', () => {
+                const eng = item.dataset.value || item.dataset.aiEngine;
+                if (eng) {
+                    if (typeof window.selectAIEngine === 'function') {
+                        window.selectAIEngine(eng);
+                    } else if (typeof window.updateAISettingsVisibility === 'function') {
+                        window.updateAISettingsVisibility(eng);
+                    }
+                }
+            });
         });
     }
 
@@ -4282,21 +4394,29 @@ function setupHomepageToggleRowClicks() {
 // OCAL AI ASSISTANT HOME-STYLE HANDLERS
 // ══════════════════════════════════════════════════════════════════════════
 window.selectAIEngine = function(engine) {
+    if (!engine) return;
     // Flush any pending API keys before switching engines
     const activeKeyInp = document.getElementById('ai-api-key-input');
-    if (activeKeyInp && activeKeyInp.value) {
+    if (activeKeyInp && activeKeyInp.value && window.electronAPI && window.electronAPI.updateSetting) {
         window.electronAPI.updateSetting('aiApiKey', activeKeyInp.value.trim());
     }
     const activeOpenAIInp = document.getElementById('openai-api-key-input');
-    if (activeOpenAIInp && activeOpenAIInp.value) {
+    if (activeOpenAIInp && activeOpenAIInp.value && window.electronAPI && window.electronAPI.updateSetting) {
         window.electronAPI.updateSetting('openaiApiKey', activeOpenAIInp.value.trim());
     }
 
-    window.electronAPI.updateSetting('aiEngine', engine);
-    const cards = document.querySelectorAll('.ai-provider-card, .ai-provider-row');
+    if (window.electronAPI && window.electronAPI.updateSetting) {
+        window.electronAPI.updateSetting('aiEngine', engine);
+    }
+
+    const cards = document.querySelectorAll('#ai-engine-grid .settings-engine-row, #ai-engine-grid .ai-provider-card, #ai-engine-grid .ai-provider-row, .ai-provider-card, .ai-provider-row');
     cards.forEach(c => {
-        const isActive = c.dataset.value === engine;
+        const cVal = c.dataset.value || c.dataset.aiEngine;
+        const isActive = (cVal === engine);
         c.classList.toggle('active', isActive);
+        c.setAttribute('aria-checked', isActive ? 'true' : 'false');
+        const radio = c.querySelector('input[type="radio"]');
+        if (radio) radio.checked = isActive;
         const statusEl = c.querySelector('.spc-status');
         const actionBtn = c.querySelector('.spc-action-btn');
         if (statusEl) {
@@ -4316,7 +4436,9 @@ window.selectAIEngine = function(engine) {
     if (typeof window.updateAISettingsVisibility === 'function') {
         window.updateAISettingsVisibility(engine);
     }
-    updateAIStats();
+    if (typeof updateAIStats === 'function') {
+        try { updateAIStats(); } catch (e) {}
+    }
 };
 
 window.selectAIPersona = function(style) {

@@ -504,12 +504,7 @@ let userSettings = loadSettings() || {
         smartDucking: true,
         duckVolume: 0.0
     },
-    pageEffect: {
-        enabled: false,
-        effect: 'none',
-        intensity: 1.0,
-        global: true
-    }
+    pageEffect: { enabled: false, effect: 'none', intensity: 1.0, global: false }
 };
 
 if (!userSettings.ambientSound) {
@@ -1168,6 +1163,15 @@ function extractSearchEngineQuery(rawUrl) {
     }
 }
 
+const TRUSTED_CONTENT_DOMAINS = new Set([
+    'bbc.com', 'bbc.co.uk', 'wikipedia.org', 'theguardian.com', 'nytimes.com', 'reuters.com',
+    'apnews.com', 'bloomberg.com', 'washingtonpost.com', 'forbes.com', 'theverge.com', 'wired.com',
+    'wsj.com', 'cnn.com', 'nbcnews.com', 'cbsnews.com', 'abcnews.go.com', 'nature.com', 'nih.gov',
+    'cdc.gov', 'gov.uk', 'gov.au', 'canada.ca', 'apple.com', 'microsoft.com', 'google.com',
+    'github.com', 'stackoverflow.com', 'reddit.com', 'youtube.com', 'medium.com', 'techcrunch.com',
+    'arstechnica.com', 'nationalgeographic.com', 'britannica.com', 'imdb.com'
+]);
+
 function isAdultOrPornUrl(rawUrl) {
     if (!rawUrl || typeof rawUrl !== 'string') return false;
     if (rawUrl.startsWith('ocal://') || rawUrl.startsWith('file://') || rawUrl.startsWith('chrome-extension://')) return false;
@@ -1178,6 +1182,12 @@ function isAdultOrPornUrl(rawUrl) {
         }
         const u = new URL(validUrl);
         const host = u.hostname.toLowerCase();
+        const baseHost = host.replace(/^www\./i, '');
+        
+        // Trusted content and news domains are never treated as adult URLs
+        if (TRUSTED_CONTENT_DOMAINS.has(baseHost) || Array.from(TRUSTED_CONTENT_DOMAINS).some(t => baseHost === t || baseHost.endsWith('.' + t))) {
+            return false;
+        }
         
         // Exact domain check
         if (ADULT_DOMAINS.has(host)) return true;
@@ -2564,24 +2574,61 @@ function showSidebarOverlay() {
     }
 }
 
-function hideSidebarOverlay() {
+function focusActiveWebview() {
+    if (!mainWindow || mainWindow.isDestroyed()) return;
+    const activeEntry = views.find(v => v.id === activeViewId) || views[0];
+    if (activeEntry && activeEntry.view && !activeEntry.view.webContents.isDestroyed()) {
+        const topView = (activeEntry.isSplit && activeEntry.focusedSide === 'right' && activeEntry.view2 && !activeEntry.view2.webContents.isDestroyed())
+            ? activeEntry.view2
+            : activeEntry.view;
+        if (!mainWindow.getBrowserViews().includes(topView)) {
+            try {
+                mainWindow.addBrowserView(topView);
+            } catch (e) {}
+        }
+        try {
+            mainWindow.setTopBrowserView(topView);
+            topView.webContents.focus();
+        } catch (e) {}
+    }
+}
+
+function hideSidebarOverlay(notifySidebar = true) {
     if (!sidebarOpen && (!sidebarOverlayView || !mainWindow || mainWindow.isDestroyed() || !mainWindow.getBrowserViews().includes(sidebarOverlayView))) {
+        focusActiveWebview();
         return;
     }
     sidebarOpen = false;
-    if (sidebarOverlayView && !sidebarOverlayView.webContents.isDestroyed()) {
-        sidebarOverlayView.webContents.send('toggle-sidebar', false);
-        sidebarOverlayView.webContents.send('start-sidebar-exit');
-    }
     clearTimeout(sidebarCloseTimeout);
-    sidebarCloseTimeout = setTimeout(() => {
-        if (!sidebarOpen && sidebarOverlayView && !sidebarOverlayView.webContents.isDestroyed() && mainWindow && !mainWindow.isDestroyed()) {
-            if (mainWindow.getBrowserViews().includes(sidebarOverlayView)) {
+    sidebarCloseTimeout = null;
+
+    if (notifySidebar && sidebarOverlayView && !sidebarOverlayView.webContents.isDestroyed()) {
+        try {
+            sidebarOverlayView.webContents.send('toggle-sidebar', false);
+        } catch (e) {}
+    }
+
+    if (mainWindow && !mainWindow.isDestroyed() && !mainWindow.webContents.isDestroyed()) {
+        try {
+            mainWindow.webContents.send('toggle-sidebar', false);
+        } catch (e) {}
+    }
+
+    if (sidebarOverlayView && !sidebarOverlayView.webContents.isDestroyed() && mainWindow && !mainWindow.isDestroyed()) {
+        if (mainWindow.getBrowserViews().includes(sidebarOverlayView)) {
+            try {
+                sidebarOverlayView.setBounds({ x: 0, y: 0, width: 0, height: 0 });
                 mainWindow.removeBrowserView(sidebarOverlayView);
-            }
+            } catch (e) {}
         }
-        updateViewBounds();
-    }, 290);
+    }
+
+    updateViewBounds();
+    focusActiveWebview();
+}
+
+function cleanupSidebarOverlay() {
+    hideSidebarOverlay(false);
 }
 
 function showAiSidebar() {
@@ -2610,26 +2657,24 @@ function hideAiSidebar() {
     aiSidebarOpen = false;
     if (aiSidebarView && !aiSidebarView.webContents.isDestroyed() && mainWindow && !mainWindow.isDestroyed()) {
         if (mainWindow.getBrowserViews().includes(aiSidebarView)) {
+            aiSidebarView.setBounds({ x: 0, y: 0, width: 0, height: 0 });
             mainWindow.removeBrowserView(aiSidebarView);
         }
     }
     updateViewBounds();
+    focusActiveWebview();
 }
 
 ipcMain.on('sidebar-exit-complete', () => {
-    if (aiSidebarView && !aiSidebarView.webContents.isDestroyed() &&
-        mainWindow && !mainWindow.isDestroyed() &&
-        mainWindow.getBrowserViews().includes(aiSidebarView)) {
-        mainWindow.removeBrowserView(aiSidebarView);
-        updateViewBounds();
-    }
-    if (!sidebarOpen && sidebarOverlayView && !sidebarOverlayView.webContents.isDestroyed() &&
-        mainWindow && !mainWindow.isDestroyed() &&
-        mainWindow.getBrowserViews().includes(sidebarOverlayView)) {
-        clearTimeout(sidebarCloseTimeout);
-        mainWindow.removeBrowserView(sidebarOverlayView);
-        updateViewBounds();
-    }
+    cleanupSidebarOverlay();
+});
+
+ipcMain.on('close-sidebar-overlay', () => {
+    hideSidebarOverlay(false);
+});
+
+ipcMain.on('sidebar-closing', () => {
+    hideSidebarOverlay(false);
 });
 
 function createSuggestionsView() {
@@ -4396,10 +4441,10 @@ ipcMain.on('resize-sidebar-app', (e, newWidth) => {
 
 
 // IPC Handlers
-ipcMain.on('new-tab', (e, url) => createNewTab(url));
-ipcMain.on('switch-tab', (e, id) => setActiveTab(id));
+ipcMain.on('new-tab', (e, url) => { if (sidebarOpen) hideSidebarOverlay(); createNewTab(url); });
+ipcMain.on('switch-tab', (e, id) => { if (sidebarOpen) hideSidebarOverlay(); setActiveTab(id); });
 ipcMain.on('request-tabs', () => broadcastTabs());
-ipcMain.on('open-external', (e, url) => createNewTab(url));
+ipcMain.on('open-external', (e, url) => { if (sidebarOpen) hideSidebarOverlay(); createNewTab(url); });
 ipcMain.on('hide-popups', (e) => {
     if (e && e.sender) {
         if (webAppView && e.sender === webAppView.webContents) return;
@@ -5111,6 +5156,7 @@ ipcMain.on('merge-tabs-to-split', (e, { sourceTabId, targetTabId }) => {
 });
 
 ipcMain.on('navigate-to', (e, url) => {
+    if (sidebarOpen) hideSidebarOverlay(true);
     if (!url || typeof url !== 'string') return;
     const activeView = getActiveViewForNavigation();
     if (!activeView) return;

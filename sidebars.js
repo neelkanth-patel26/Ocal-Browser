@@ -30,11 +30,17 @@ function openSidebar() {
     backdrop.classList.remove('closing');
     sidebar.classList.add('open');
     backdrop.classList.add('show');
+    if (backdrop) {
+        backdrop.style.pointerEvents = 'auto';
+    }
 }
 
-function closeSidebar() {
-    if (!sidebar.classList.contains('open') && !backdrop.classList.contains('show')) {
-        window.electronAPI.send?.('sidebar-exit-complete');
+function closeSidebar(fromMain = false) {
+    const isFromMain = (fromMain === true);
+    if (!sidebar.classList.contains('open') && !backdrop.classList.contains('show') && !isClosingSidebar) {
+        if (!isFromMain && window.electronAPI && window.electronAPI.send) {
+            window.electronAPI.send('close-sidebar-overlay');
+        }
         return;
     }
     if (isClosingSidebar) return;
@@ -44,13 +50,26 @@ function closeSidebar() {
     sidebar.classList.add('closing');
     backdrop.classList.remove('show');
     backdrop.classList.add('closing');
+    if (backdrop) {
+        backdrop.style.pointerEvents = 'none';
+    }
+
+    // Only notify main process if this close was initiated inside the sidebar (not an echo from main)
+    if (!isFromMain && window.electronAPI && window.electronAPI.send) {
+        window.electronAPI.send('close-sidebar-overlay');
+    }
 
     setTimeout(() => {
         isClosingSidebar = false;
         sidebar.classList.remove('closing');
         backdrop.classList.remove('closing');
-        window.electronAPI.send?.('sidebar-exit-complete');
-    }, 280);
+        if (backdrop) {
+            backdrop.style.pointerEvents = 'none';
+        }
+        if (!isFromMain && window.electronAPI && window.electronAPI.send) {
+            window.electronAPI.send('sidebar-exit-complete');
+        }
+    }, 240);
 }
 
 // ── Tab switching ──────────────────────────────────────────────────────────
@@ -96,11 +115,15 @@ sbSearch.addEventListener('input', e => { searchFilter = e.target.value.toLowerC
 
 // ── IPC listeners ──────────────────────────────────────────────────────────
 window.electronAPI.onToggleSidebar((e, open) => {
-    if (open) openSidebar(); else closeSidebar();
+    if (open) {
+        openSidebar();
+    } else {
+        closeSidebar(true);
+    }
 });
 
 window.electronAPI.on?.('start-sidebar-exit', () => {
-    closeSidebar();
+    closeSidebar(true);
 });
 
 window.electronAPI.onSwitchTab((tab) => {
@@ -608,6 +631,9 @@ function sortBookmarks() {
 }
 
 // ── History ────────────────────────────────────────────────────────────────
+const GOOGLE_SVG = `<svg viewBox="0 0 24 24" width="16" height="16"><path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/><path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/><path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.06H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.94l2.85-2.22.81-.63z"/><path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.06l3.66 2.84c.87-2.6 3.3-4.52 6.16-4.52z"/></svg>`;
+const YOUTUBE_SVG = `<svg viewBox="0 0 24 24" width="16" height="16"><path fill="#FF0000" d="M23.498 6.186a3.016 3.016 0 0 0-2.122-2.136C19.505 3.545 12 3.545 12 3.545s-7.505 0-9.377.505A3.017 3.017 0 0 0 .502 6.186C0 8.07 0 12 0 12s0 3.93.502 5.814a3.016 3.016 0 0 0 2.122 2.136c1.871.505 9.376.505 9.376.505s7.505 0 9.377-.505a3.015 3.015 0 0 0 2.122-2.136C24 15.93 24 12 24 12s0-3.93-.502-5.814zM9.545 15.568V8.432L15.818 12l-6.273 3.568z"/></svg>`;
+
 function getHistoricalIcon(url, title = '', storedIcon = '') {
     const u = String(url || '').toLowerCase();
     
@@ -637,16 +663,41 @@ function getHistoricalIcon(url, title = '', storedIcon = '') {
                 onerror="const d=document.createElement('div'); d.className='hist-favicon-fallback'; d.innerHTML='<i class=\\'fas fa-globe\\'></i>'; this.replaceWith(d);">`;
     }
 
-    // 3. Extracted domain for normal websites (Fallback to Google Service)
+    // 3. Extracted domain for normal websites
     let domain = '';
     try {
         const urlObj = new URL(url);
-        domain = urlObj.hostname;
+        domain = urlObj.hostname.toLowerCase().replace(/^www\./i, '');
         if (urlObj.protocol === 'file:') domain = '';
     } catch {}
 
     if (!domain) {
         return `<div class="hist-favicon-fallback"><i class="fas fa-globe"></i></div>`;
+    }
+
+    if (domain.includes('google.') && !domain.includes('chrome') && !domain.includes('drive')) {
+        return `<div class="hist-favicon" style="display:flex;align-items:center;justify-content:center;">${GOOGLE_SVG}</div>`;
+    }
+    if (domain.includes('youtube.') || domain.includes('youtu.be')) {
+        return `<div class="hist-favicon" style="display:flex;align-items:center;justify-content:center;">${YOUTUBE_SVG}</div>`;
+    }
+    if (domain.includes('gamingnetworkstudio') || domain.includes('gamingnet')) {
+        return `<div class="hist-favicon" style="display:flex;align-items:center;justify-content:center;"><i class="fas fa-gamepad" style="color:#8B5CF6;font-size:13px;"></i></div>`;
+    }
+    if (domain.includes('unboundmusic')) {
+        return `<div class="hist-favicon" style="display:flex;align-items:center;justify-content:center;"><i class="fas fa-music" style="color:#EC4899;font-size:13px;"></i></div>`;
+    }
+    if (domain.includes('rocketreach')) {
+        return `<div class="hist-favicon" style="display:flex;align-items:center;justify-content:center;"><i class="fas fa-rocket" style="color:#3B82F6;font-size:13px;"></i></div>`;
+    }
+    if (domain.includes('gnstudio')) {
+        return `<div class="hist-favicon" style="display:flex;align-items:center;justify-content:center;"><i class="fas fa-palette" style="color:#6366F1;font-size:13px;"></i></div>`;
+    }
+    if (domain.includes('open-meteo')) {
+        return `<div class="hist-favicon" style="display:flex;align-items:center;justify-content:center;"><i class="fas fa-cloud-sun" style="color:#F59E0B;font-size:13px;"></i></div>`;
+    }
+    if (domain.includes('mongodb')) {
+        return `<div class="hist-favicon" style="display:flex;align-items:center;justify-content:center;"><i class="fas fa-leaf" style="color:#10B981;font-size:13px;"></i></div>`;
     }
 
     return `<img class="hist-favicon" src="https://www.google.com/s2/favicons?domain=${domain}&sz=32" 
@@ -776,10 +827,10 @@ function renderHistory() {
             return '<i class="fas fa-gear" style="color:var(--accent);font-size:15px;"></i>';
         }
         if (d.startsWith('ocal:home') || d === 'ocal:' || d.includes('ocalsoftware')) {
-            return '<img src="assets/icon.png" class="recom-web-icon" alt="Ocal" onerror="this.replaceWith(Object.assign(document.createElement(\'i\'), {className: \'fas fa-compass\', style: \'color:var(--accent);font-size:15px;\'}));">';
+            return '<i class="fas fa-compass" style="color:var(--accent);font-size:16px;"></i>';
         }
 
-        // 2. Official High-Resolution Multi-Color Vector SVGs
+        // 2. Official High-Resolution Multi-Color Vector SVGs & Curated App Icons
         if (d.includes('google.') && !d.includes('chrome') && !d.includes('drive')) {
             return GOOGLE_SVG;
         }
@@ -788,6 +839,36 @@ function renderHistory() {
         }
         if (d.includes('chromewebstore') || d.includes('chrome.google.com')) {
             return '<img src="https://ssl.gstatic.com/chrome/webstore/images/icon_144px.png" class="recom-web-icon" alt="Chrome Web Store" onerror="this.onerror=null; this.src=\'https://www.google.com/s2/favicons?domain=chromewebstore.google.com&sz=128\';">';
+        }
+        if (d.includes('gamingnetworkstudio') || d.includes('gamingnet')) {
+            return '<i class="fas fa-gamepad" style="color:#8B5CF6;font-size:16px;"></i>';
+        }
+        if (d.includes('unboundmusic') || d.includes('unbound')) {
+            return '<i class="fas fa-music" style="color:#EC4899;font-size:16px;"></i>';
+        }
+        if (d.includes('rocketreach')) {
+            return '<i class="fas fa-rocket" style="color:#3B82F6;font-size:16px;"></i>';
+        }
+        if (d.includes('gnstudio') || d.includes('gnstudioxrage')) {
+            return '<i class="fas fa-palette" style="color:#6366F1;font-size:16px;"></i>';
+        }
+        if (d.includes('open-meteo') || d.includes('openmeteo')) {
+            return '<i class="fas fa-cloud-sun" style="color:#F59E0B;font-size:16px;"></i>';
+        }
+        if (d.includes('mongodb')) {
+            return '<i class="fas fa-leaf" style="color:#10B981;font-size:16px;"></i>';
+        }
+        if (d.includes('discord')) {
+            return '<i class="fab fa-discord" style="color:#5865F2;font-size:16px;"></i>';
+        }
+        if (d.includes('reddit')) {
+            return '<i class="fab fa-reddit" style="color:#FF4500;font-size:16px;"></i>';
+        }
+        if (d.includes('spotify')) {
+            return '<i class="fab fa-spotify" style="color:#1DB954;font-size:16px;"></i>';
+        }
+        if (d.includes('github')) {
+            return '<i class="fab fa-github" style="color:#24292F;font-size:16px;"></i>';
         }
 
         // 3. Stored High-Resolution Native Favicon from Visited Pages
@@ -866,7 +947,7 @@ function renderHistory() {
                 const cleanName = getQuickAccessName(dom);
 
                 item.innerHTML = `${iconHtml}<div class="recom-name">${esc(cleanName)}</div>`;
-                item.onclick = () => window.electronAPI.navigateTo(dom.startsWith('ocal:') ? (dom === 'ocal:settings' ? 'ocal://settings' : 'ocal://home') : `https://${dom}`);
+                item.onclick = () => { window.electronAPI.navigateTo(dom.startsWith('ocal:') ? (dom === 'ocal:settings' ? 'ocal://settings' : 'ocal://home') : `https://${dom}`); closeSidebar(); };
                 grid.appendChild(item);
             });
             sbContent.appendChild(recomWrap);
@@ -1063,7 +1144,6 @@ function renderHistory() {
                     const timestamps = g.items.map(h => h.timestamp);
                     if (window.electronAPI && window.electronAPI.send) {
                         window.electronAPI.send('delete-history-items', timestamps);
-                        timestamps.forEach(ts => window.electronAPI.send('delete-history-item', ts));
                     }
                     const tsSet = new Set(timestamps);
                     historyItems = historyItems.filter(h => !tsSet.has(h.timestamp));
@@ -1397,9 +1477,12 @@ async function handleAiClassify() {
 }
 
 // ── Final Event Listener Assignment ──────────────────────────────────────
-if (backdrop) backdrop.addEventListener('click', closeSidebar);
+if (backdrop) backdrop.addEventListener('click', () => closeSidebar(false));
 const sbCloseBtn = document.getElementById('sb-close-btn');
-if (sbCloseBtn) sbCloseBtn.addEventListener('click', closeSidebar);
+if (sbCloseBtn) sbCloseBtn.addEventListener('click', () => closeSidebar(false));
+document.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape') closeSidebar(false);
+});
 
 const addFolderBtn = document.getElementById('add-folder-btn');
 if (addFolderBtn) addFolderBtn.addEventListener('click', addFolder);

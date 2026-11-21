@@ -103,10 +103,9 @@
             flex-shrink: 0;
             background: var(--theme-accent);
             color: var(--theme-accent-contrast);
-            padding: 44px 36px;
+            padding: 28px 32px 24px 32px;
             display: flex;
             flex-direction: column;
-            justify-content: space-between;
             position: relative;
             box-shadow: none;
             border-right: 1px solid rgba(0, 0, 0, 0.08);
@@ -118,24 +117,20 @@
         .brand-header {
             display: flex;
             align-items: center;
-            gap: 12px;
+            gap: 8px;
         }
 
         .brand-icon-wrap {
-            width: 38px;
-            height: 38px;
-            border-radius: 10px;
-            background: rgba(255, 255, 255, 0.22);
-            backdrop-filter: blur(8px);
+            width: 28px;
+            height: 28px;
             display: flex;
             align-items: center;
             justify-content: center;
-            font-size: 19px;
-            color: var(--theme-accent-contrast);
+            flex-shrink: 0;
         }
 
         .brand-title {
-            font-size: 21px;
+            font-size: 20px;
             font-weight: 800;
             letter-spacing: -0.5px;
             color: var(--theme-accent-contrast);
@@ -143,10 +138,10 @@
 
         /* Hero / Narrative Section */
         .showcase-body {
-            margin: auto 0;
+            margin: 24px 0 0 0;
             display: flex;
             flex-direction: column;
-            gap: 24px;
+            gap: 18px;
         }
 
         .step-tag-pill {
@@ -265,6 +260,7 @@
 
         /* Footer Info */
         .showcase-footer {
+            margin-top: auto;
             display: flex;
             align-items: center;
             justify-content: space-between;
@@ -378,18 +374,18 @@
         .wizard-stage {
             flex: 1;
             overflow-y: auto;
-            padding: 24px 56px 40px 56px;
+            padding: 28px 56px 40px 56px;
             display: flex;
             flex-direction: column;
         }
 
         .wizard-step-container {
-            max-width: 660px;
+            max-width: 680px;
             width: 100%;
-            margin: auto;
+            margin: 0 auto;
             display: flex;
             flex-direction: column;
-            gap: 26px;
+            gap: 24px;
         }
 
         .step-panel {
@@ -442,6 +438,161 @@
             margin-top: 6px;
         }
 
+        /* ── Segmented Progress Bar & Interactive Header ─────────────────── */
+        .progress-block {
+            display: flex;
+            flex-direction: column;
+            gap: 9px;
+            min-width: 280px;
+        }
+
+        .progress-label-row {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            font-size: 11px;
+            font-weight: 750;
+            letter-spacing: 0.8px;
+            text-transform: uppercase;
+            color: var(--text-secondary);
+        }
+
+        .step-chip-pill {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            background: rgba(0, 0, 0, 0.05);
+            padding: 3px 10px;
+            border-radius: 999px;
+            font-size: 11px;
+            font-weight: 750;
+            letter-spacing: 0.6px;
+            color: var(--text-primary);
+        }
+
+        [data-theme="dark"] .step-chip-pill {
+            background: rgba(255, 255, 255, 0.08);
+            color: var(--text-primary);
+        }
+
+        .step-chip-pill span {
+            color: var(--theme-accent);
+        }
+
+        .progress-segments {
+            display: flex;
+            gap: 6px;
+            width: 280px;
+            align-items: center;
+        }
+
+        .progress-seg {
+            flex: 1;
+            height: 6px;
+            border-radius: 999px;
+            background: var(--bg-track);
+            cursor: pointer;
+            transition: all 0.22s cubic-bezier(0.16, 1, 0.3, 1);
+            position: relative;
+        }
+
+        .progress-seg:hover {
+            transform: scaleY(1.35);
+            background: rgba(0, 0, 0, 0.22);
+        }
+
+        [data-theme="dark"] .progress-seg {
+            background: rgba(255, 255, 255, 0.12);
+        }
+
+        [data-theme="dark"] .progress-seg:hover {
+            background: rgba(255, 255, 255, 0.28);
+        }
+
+        .progress-seg.active {
+            background: var(--theme-accent) !important;
+            box-shadow: none !important;
+        }
+
+        .progress-seg.completed {
+            background: var(--theme-accent) !important;
+            opacity: 0.85;
+            box-shadow: none !important;
+        }
+
+        /* ── Accent Swatches Enhanced Interactivity ──────────────────────── */
+        
+
+        
+
+        
+
+        .swatches-row {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            flex-wrap: wrap;
+            padding: 4px 0;
+        }
+
+        .swatch-circle {
+            width: 38px;
+            height: 38px;
+            border-radius: 50%;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: transparent;
+            font-size: 13px;
+            transition: transform 0.2s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.2s ease;
+            position: relative;
+            border: 2px solid rgba(255, 255, 255, 0.2);
+            flex-shrink: 0;
+        }
+
+        .swatch-circle:hover {
+            transform: scale(1.16);
+            box-shadow: 0 4px 14px rgba(0, 0, 0, 0.18);
+        }
+
+        .swatch-circle:active {
+            transform: scale(0.96);
+        }
+
+        .swatch-circle.active {
+            transform: scale(1.1);
+            box-shadow: 0 0 0 3px var(--bg-wizard), 0 0 0 6px var(--theme-accent);
+            color: #FFFFFF;
+        }
+
+        /* ── Keyboard Shortcut Navigation Pill in Footer ─────────────────── */
+        .kbd-hint {
+            display: inline-flex;
+            align-items: center;
+            gap: 5px;
+            font-size: 11.5px;
+            color: var(--text-muted);
+            font-weight: 600;
+        }
+
+        .kbd-hint kbd {
+            background: rgba(0, 0, 0, 0.05);
+            border: 1px solid rgba(0, 0, 0, 0.1);
+            padding: 2px 7px;
+            border-radius: 5px;
+            font-family: var(--font-mono);
+            font-size: 10px;
+            color: var(--text-secondary);
+        }
+
+        [data-theme="dark"] .kbd-hint kbd {
+            background: rgba(255, 255, 255, 0.08);
+            border-color: rgba(255, 255, 255, 0.14);
+            color: var(--text-primary);
+        }
+
+        
         /* ── Solid Cards (Zero Fuzzy Colored Shadows) ──────────────────────── */
         .cards-grid {
             display: grid;
@@ -466,7 +617,7 @@
             align-items: center;
             justify-content: space-between;
             gap: 16px;
-            transition: border-color 0.18s ease;
+            transition: background 0.2s ease, border-color 0.2s ease, color 0.2s ease, box-shadow 0.2s ease;
             position: relative;
         }
 
@@ -477,11 +628,22 @@
             transform: none;
         }
 
-        .setting-card.selected {
-            border-color: var(--theme-accent);
-            background: var(--bg-card);
-            box-shadow: none;
+        /* Full Solid Color for Selected Card (not just borders) */
+        .setting-card.selected,
+        .setting-card.selected:hover {
+            border-color: var(--theme-accent) !important;
+            background: var(--theme-accent) !important;
+            color: var(--theme-accent-contrast, #FFFFFF) !important;
+            box-shadow: 0 4px 16px rgba(0, 0, 0, 0.08) !important;
             transform: none;
+        }
+
+        .setting-card.selected .card-title {
+            color: var(--theme-accent-contrast, #FFFFFF) !important;
+        }
+
+        .setting-card.selected .card-desc {
+            color: rgba(255, 255, 255, 0.88) !important;
         }
 
         .card-main-content {
@@ -504,9 +666,31 @@
             transition: all 0.2s ease;
         }
 
+        /* Generic icons on selected solid card: frosted translucent white */
         .setting-card.selected .card-icon {
-            background: var(--theme-accent);
-            color: var(--theme-accent-contrast);
+            background: rgba(255, 255, 255, 0.22) !important;
+            color: #FFFFFF !important;
+            border: none !important;
+        }
+
+        /* Brand icons: keep white squircle so brand vectors are vivid on solid card */
+        .card-icon.brand-icon {
+            background: var(--card-icon-bg) !important;
+            color: inherit !important;
+            border: 1px solid var(--border-card);
+        }
+
+        .setting-card.selected .card-icon.brand-icon {
+            background: #FFFFFF !important;
+            color: inherit !important;
+            border: none !important;
+            box-shadow: 0 2px 6px rgba(0, 0, 0, 0.12) !important;
+        }
+
+        .card-icon.brand-icon svg,
+        .card-icon.brand-icon img {
+            display: block;
+            flex-shrink: 0;
         }
 
         .card-texts {
@@ -546,10 +730,10 @@
         }
 
         .setting-card.selected .check-badge {
-            border: none;
-            background: var(--theme-accent);
-            color: var(--theme-accent-contrast);
-            box-shadow: none;
+            border: none !important;
+            background: #FFFFFF !important;
+            color: var(--theme-accent) !important;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15) !important;
         }
 
         /* Accent Colors Cluster */
@@ -691,7 +875,220 @@
         .btn-nav-next:active {
             filter: brightness(0.85);
         }
-    </style>
+    
+        /* ── Ambient Music Controls (Zero Fuzzy Shadows, Pure Solid Theme Accent) ── */
+        .ambient-music-panel {
+            background: var(--bg-card);
+            border: 2px solid var(--border-card);
+            border-radius: 14px;
+            padding: 18px 20px;
+            margin-top: 14px;
+            display: none;
+            flex-direction: column;
+            gap: 14px;
+            box-shadow: none;
+            transition: all 0.2s ease;
+            width: 100%;
+        }
+
+        .ambient-music-panel.active {
+            display: flex;
+        }
+
+        .ambient-panel-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .ambient-panel-label {
+            font-size: 11px;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.08em;
+            color: var(--text-secondary);
+        }
+
+        .ambient-tracks-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+        }
+
+        .ambient-track-chip {
+            border: 2px solid var(--border-card);
+            border-radius: 10px;
+            padding: 10px 14px;
+            background: var(--bg-page);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 10px;
+            cursor: pointer;
+            transition: background 0.18s ease, border-color 0.18s ease, color 0.18s ease;
+            box-shadow: none;
+        }
+
+        .ambient-track-chip:hover {
+            border-color: var(--border-card-hover);
+        }
+
+        .ambient-track-chip.active {
+            border-color: var(--theme-accent) !important;
+            background: var(--theme-accent) !important;
+            color: var(--theme-accent-contrast, #FFFFFF) !important;
+        }
+
+        .chip-left {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            min-width: 0;
+        }
+
+        .chip-icon {
+            font-size: 14px;
+            width: 28px;
+            height: 28px;
+            border-radius: 7px;
+            background: var(--card-icon-bg);
+            color: var(--card-icon-color);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
+            transition: all 0.18s ease;
+        }
+
+        .ambient-track-chip.active .chip-icon {
+            background: rgba(255, 255, 255, 0.25) !important;
+            color: #FFFFFF !important;
+        }
+
+        .chip-info {
+            display: flex;
+            flex-direction: column;
+            min-width: 0;
+        }
+
+        .chip-title {
+            font-size: 13px;
+            font-weight: 600;
+            color: var(--text-primary);
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .ambient-track-chip.active .chip-title {
+            color: var(--theme-accent-contrast, #FFFFFF) !important;
+        }
+
+        .chip-sub {
+            font-size: 11px;
+            color: var(--text-secondary);
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .ambient-track-chip.active .chip-sub {
+            color: rgba(255, 255, 255, 0.85) !important;
+        }
+
+        .chip-check {
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            border: 2px solid var(--border-card);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 10px;
+            color: transparent;
+            flex-shrink: 0;
+            transition: all 0.18s ease;
+        }
+
+        .ambient-track-chip.active .chip-check {
+            border: none !important;
+            background: #FFFFFF !important;
+            color: var(--theme-accent) !important;
+        }
+
+        /* Volume Control Row */
+        .ambient-vol-control {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            padding-top: 10px;
+            border-top: 1px solid var(--border-card);
+        }
+
+        .ambient-vol-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .ambient-vol-badge {
+            font-size: 12px;
+            font-weight: 700;
+            font-family: var(--font-mono);
+            color: var(--theme-accent);
+            background: rgba(0, 0, 0, 0.05);
+            padding: 2px 8px;
+            border-radius: 6px;
+        }
+
+        [data-theme="dark"] .ambient-vol-badge {
+            background: rgba(255, 255, 255, 0.08);
+        }
+
+        .ambient-vol-slider-row {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            width: 100%;
+        }
+
+        .ambient-vol-slider-row i {
+            font-size: 14px;
+            color: var(--text-secondary);
+            width: 18px;
+            text-align: center;
+        }
+
+        .ambient-range-slider {
+            -webkit-appearance: none;
+            appearance: none;
+            flex: 1;
+            height: 6px;
+            border-radius: 3px;
+            background: linear-gradient(to right, var(--theme-accent) 0%, var(--theme-accent) var(--slider-fill, 35%), var(--border-card) var(--slider-fill, 35%), var(--border-card) 100%);
+            outline: none;
+            cursor: pointer;
+            transition: background 0.1s ease;
+        }
+
+        .ambient-range-slider::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            appearance: none;
+            width: 18px;
+            height: 18px;
+            border-radius: 50%;
+            background: var(--theme-accent);
+            border: 2px solid #FFFFFF;
+            cursor: pointer;
+            box-shadow: 0 2px 6px rgba(0, 0, 0, 0.2);
+            transition: transform 0.1s ease;
+        }
+
+        .ambient-range-slider::-webkit-slider-thumb:hover {
+            transform: scale(1.15);
+        }
+
+</style>
 </head>
 
 <body>
@@ -701,7 +1098,7 @@
             <!-- Header Brand -->
             <div class="brand-header">
                 <div class="brand-icon-wrap">
-                    <i class="fas fa-compass"></i>
+                    <img src="assets/Dark.png" onerror="if(this.src!=='Dark.png')this.src='Dark.png'" width="28" height="28" alt="Ocal" style="object-fit: contain; display: block;">
                 </div>
                 <span class="brand-title">Ocal</span>
             </div>
@@ -766,19 +1163,24 @@
 
         <!-- ── Right Settings Panel (Matches Browser Tab BG #EDEDF0 / #18181B) ── -->
         <main class="wizard-panel">
-            <!-- Top Progress Header -->
+            <!-- Top Progress Header (Clean & Interactive) -->
             <header class="wizard-header">
                 <div class="progress-block">
                     <div class="progress-label-row">
-                        <span class="step-chip-pill" id="progress-step-text">STEP 1 OF 5</span>
+                        <span class="step-chip-pill" id="progress-step-text">STEP 1 OF 5 · <span id="progress-step-name">Atmosphere</span></span>
                         <span id="progress-pct-text">20%</span>
                     </div>
-                    <div class="progress-track">
-                        <div class="progress-fill" id="progress-bar-fill"></div>
+                    <div class="progress-segments" id="progress-segments">
+                        <div class="progress-seg active" id="pseg-1" onclick="jumpToStep(1)" title="Step 1: Atmosphere"></div>
+                        <div class="progress-seg" id="pseg-2" onclick="jumpToStep(2)" title="Step 2: Workspace"></div>
+                        <div class="progress-seg" id="pseg-3" onclick="jumpToStep(3)" title="Step 3: Search"></div>
+                        <div class="progress-seg" id="pseg-4" onclick="jumpToStep(4)" title="Step 4: Shields"></div>
+                        <div class="progress-seg" id="pseg-5" onclick="jumpToStep(5)" title="Step 5: Bookmarks"></div>
                     </div>
+                    <div class="progress-fill" id="progress-bar-fill" style="display:none;"></div>
                 </div>
 
-                <button class="btn-skip-setup" onclick="finishAndLaunch()">
+                <button class="btn-skip-setup" onclick="finishAndLaunch()" type="button">
                     <span>Skip to Browser</span>
                     <i class="fas fa-arrow-right"></i>
                 </button>
@@ -808,7 +1210,7 @@
                                 <div class="check-badge"><i class="fas fa-check"></i></div>
                             </div>
 
-                            <div class="setting-card" id="theme-card-light" onclick="selectTheme('light')">
+                            <div class="setting-card selected" id="theme-card-light" onclick="selectTheme('light')">
                                 <div class="card-main-content">
                                     <div class="card-icon"><i class="fas fa-sun"></i></div>
                                     <div class="card-texts">
@@ -820,20 +1222,94 @@
                             </div>
                         </div>
 
-                        <div class="section-label" style="margin-top: 10px;">Accent Glow</div>
-                        <div class="accent-swatches-grid">
-                            <div class="swatch-circle" data-color="#09F0A0" style="background:#09F0A0;" onclick="selectAccent('#09F0A0')"><i class="fas fa-check"></i></div>
-                            <div class="swatch-circle" data-color="#8B5CF6" style="background:#8B5CF6;" onclick="selectAccent('#8B5CF6')"><i class="fas fa-check"></i></div>
-                            <div class="swatch-circle" data-color="#4F46E5" style="background:#4F46E5;" onclick="selectAccent('#4F46E5')"><i class="fas fa-check"></i></div>
-                            <div class="swatch-circle" data-color="#E85A4F" style="background:#E85A4F;" onclick="selectAccent('#E85A4F')"><i class="fas fa-check"></i></div>
-                            <div class="swatch-circle" data-color="#F59E0B" style="background:#F59E0B;" onclick="selectAccent('#F59E0B')"><i class="fas fa-check"></i></div>
-                            <div class="swatch-circle" data-color="#06B6D4" style="background:#06B6D4;" onclick="selectAccent('#06B6D4')"><i class="fas fa-check"></i></div>
-                            <div class="swatch-circle" data-color="#EC4899" style="background:#EC4899;" onclick="selectAccent('#EC4899')"><i class="fas fa-check"></i></div>
-                            <div class="swatch-circle" data-color="#64748B" style="background:#64748B;" onclick="selectAccent('#64748B')"><i class="fas fa-check"></i></div>
+                        <div class="section-label" style="margin-top: 14px;">Accent Glow</div>
+                        <div class="swatches-row">
+                            <div class="swatch-circle" data-color="#10B981" onclick="selectAccent('#10B981')" style="background: #10B981;"><i class="fas fa-check"></i></div>
+                            <div class="swatch-circle" data-color="#8B5CF6" onclick="selectAccent('#8B5CF6')" style="background: #8B5CF6;"><i class="fas fa-check"></i></div>
+                            <div class="swatch-circle" data-color="#4F46E5" onclick="selectAccent('#4F46E5')" style="background: #4F46E5;"><i class="fas fa-check"></i></div>
+                            <div class="swatch-circle active" data-color="#E85A4F" onclick="selectAccent('#E85A4F')" style="background: #E85A4F;"><i class="fas fa-check"></i></div>
+                            <div class="swatch-circle" data-color="#F59E0B" onclick="selectAccent('#F59E0B')" style="background: #F59E0B;"><i class="fas fa-check"></i></div>
+                            <div class="swatch-circle" data-color="#06B6D4" onclick="selectAccent('#06B6D4')" style="background: #06B6D4;"><i class="fas fa-check"></i></div>
+                            <div class="swatch-circle" data-color="#EC4899" onclick="selectAccent('#EC4899')" style="background: #EC4899;"><i class="fas fa-check"></i></div>
+                            <div class="swatch-circle" data-color="#64748B" onclick="selectAccent('#64748B')" style="background: #64748B;"><i class="fas fa-check"></i></div>
+                        </div>
+
+                        <div class="section-label" style="margin-top: 14px;">Atmosphere Music &amp; Audio</div>
+                        <div class="setting-card" id="ambient-music-card" onclick="toggleAmbientMusic(this)">
+                            <div class="card-main-content">
+                                <div class="card-icon"><i class="fas fa-headphones"></i></div>
+                                <div class="card-texts">
+                                    <div class="card-title">Ambient Lo-Fi &amp; Focus Music</div>
+                                    <div class="card-desc">Play relaxing background soundscapes while browsing with smart media ducking.</div>
+                                </div>
+                            </div>
+                            <div class="check-badge"><i class="fas fa-check"></i></div>
+                        </div>
+
+                        <!-- Ambient Music Controls (Completely Separate Panel) -->
+                        <div class="ambient-music-panel" id="ambient-music-panel">
+                            <div class="ambient-panel-header">
+                                <span class="ambient-panel-label">Select Soundscape</span>
+                            </div>
+                            <div class="ambient-tracks-grid" id="ambient-tracks-grid">
+                                <div class="ambient-track-chip active" data-track="Ocal.mp3" onclick="selectAmbientTrack('Ocal.mp3', this)">
+                                    <div class="chip-left">
+                                        <div class="chip-icon"><i class="fas fa-compact-disc"></i></div>
+                                        <div class="chip-info">
+                                            <span class="chip-title">Ocal Theme</span>
+                                            <span class="chip-sub">Signature Soundscape</span>
+                                        </div>
+                                    </div>
+                                    <div class="chip-check"><i class="fas fa-check"></i></div>
+                                </div>
+                                <div class="ambient-track-chip" data-track="ocal [usesuno.com].mp3" onclick="selectAmbientTrack('ocal [usesuno.com].mp3', this)">
+                                    <div class="chip-left">
+                                        <div class="chip-icon"><i class="fas fa-radio"></i></div>
+                                        <div class="chip-info">
+                                            <span class="chip-title">Lo-Fi Beats</span>
+                                            <span class="chip-sub">Chill Rhythm &amp; Beats</span>
+                                        </div>
+                                    </div>
+                                    <div class="chip-check"><i class="fas fa-check"></i></div>
+                                </div>
+                                <div class="ambient-track-chip" data-track="ocal [usesuno.com] (1).mp3" onclick="selectAmbientTrack('ocal [usesuno.com] (1).mp3', this)">
+                                    <div class="chip-left">
+                                        <div class="chip-icon"><i class="fas fa-water"></i></div>
+                                        <div class="chip-info">
+                                            <span class="chip-title">Ambient Chill</span>
+                                            <span class="chip-sub">Smooth Acoustic Wave</span>
+                                        </div>
+                                    </div>
+                                    <div class="chip-check"><i class="fas fa-check"></i></div>
+                                </div>
+                                <div class="ambient-track-chip" data-track="ocal [usesuno.com] (2).mp3" onclick="selectAmbientTrack('ocal [usesuno.com] (2).mp3', this)">
+                                    <div class="chip-left">
+                                        <div class="chip-icon"><i class="fas fa-brain"></i></div>
+                                        <div class="chip-info">
+                                            <span class="chip-title">Deep Focus</span>
+                                            <span class="chip-sub">Synth &amp; Binaural Flow</span>
+                                        </div>
+                                    </div>
+                                    <div class="chip-check"><i class="fas fa-check"></i></div>
+                                </div>
+                            </div>
+
+                            <div class="ambient-vol-control">
+                                <div class="ambient-vol-header">
+                                    <span class="ambient-panel-label">Volume Control</span>
+                                    <span class="ambient-vol-badge" id="ambient-vol-badge">35%</span>
+                                </div>
+                                <div class="ambient-vol-slider-row">
+                                    <i class="fas fa-volume-low" id="ambient-vol-icon"></i>
+                                    <input type="range" class="ambient-range-slider" id="ambient-volume-slider" min="0" max="100" value="35"
+                                        oninput="handleAmbientVolumeInput(this.value)"
+                                        onchange="handleAmbientVolumeChange(this.value)">
+                                    <i class="fas fa-volume-high"></i>
+                                </div>
+                            </div>
                         </div>
                     </div>
 
-                    <!-- ── Step 2: Workspace & Layout ── -->
                     <div class="step-panel" id="step-panel-2">
                         <div class="step-header">
                             <h2 class="step-title">Choose your workspace layout</h2>
@@ -865,7 +1341,7 @@
                             </div>
                         </div>
 
-                        <div class="section-label" style="margin-top: 10px;">Sidebar Dock</div>
+                        <div class="section-label" style="margin-top: 14px;">Sidebar Dock</div>
                         <div class="cards-grid">
                             <div class="setting-card selected" id="sidebar-card-vis" onclick="selectSidebarMode('visible')">
                                 <div class="card-main-content">
@@ -891,7 +1367,6 @@
                         </div>
                     </div>
 
-                    <!-- ── Step 3: Search Engine ── -->
                     <div class="step-panel" id="step-panel-3">
                         <div class="step-header">
                             <h2 class="step-title">Select your search provider</h2>
@@ -901,7 +1376,9 @@
                         <div class="cards-list">
                             <div class="setting-card selected" id="search-card-google" onclick="selectSearchEngine('google')">
                                 <div class="card-main-content">
-                                    <div class="card-icon" style="color:#4285F4;"><i class="fab fa-google"></i></div>
+                                    <div class="card-icon brand-icon">
+                                        <svg width="22" height="22" viewBox="0 0 24 24"><path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="#4285F4"/><path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98 1.06-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853"/><path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l3.66-2.84z" fill="#FBBC05"/><path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" fill="#EA4335"/></svg>
+                                    </div>
                                     <div class="card-texts">
                                         <div class="card-title">Google</div>
                                         <div class="card-desc">Fast, comprehensive results with global knowledge graph.</div>
@@ -912,7 +1389,9 @@
 
                             <div class="setting-card" id="search-card-duckduckgo" onclick="selectSearchEngine('duckduckgo')">
                                 <div class="card-main-content">
-                                    <div class="card-icon" style="color:#DE5833;"><i class="fas fa-shield-cat"></i></div>
+                                    <div class="card-icon brand-icon">
+                                        <img src="assets/duckduckgo.svg" width="26" height="26" alt="DuckDuckGo">
+                                    </div>
                                     <div class="card-texts">
                                         <div class="card-title">DuckDuckGo</div>
                                         <div class="card-desc">Privacy first: zero tracking and no targeted search advertising.</div>
@@ -923,7 +1402,9 @@
 
                             <div class="setting-card" id="search-card-brave" onclick="selectSearchEngine('brave')">
                                 <div class="card-main-content">
-                                    <div class="card-icon" style="color:#FB542B;"><i class="fas fa-shield"></i></div>
+                                    <div class="card-icon brand-icon">
+                                        <img src="assets/brave.svg" width="26" height="26" alt="Brave Search">
+                                    </div>
                                     <div class="card-texts">
                                         <div class="card-title">Brave Search</div>
                                         <div class="card-desc">Independent privacy-focused web index with no user profiling.</div>
@@ -934,7 +1415,9 @@
 
                             <div class="setting-card" id="search-card-bing" onclick="selectSearchEngine('bing')">
                                 <div class="card-main-content">
-                                    <div class="card-icon" style="color:#008373;"><i class="fab fa-microsoft"></i></div>
+                                    <div class="card-icon brand-icon">
+                                        <svg width="20" height="20" viewBox="0 0 24 24"><path fill="#F25022" d="M1 1h10v10H1z"/><path fill="#7FBA00" d="M13 1h10v10H13z"/><path fill="#00A4EF" d="M1 13h10v10H1z"/><path fill="#FFB900" d="M13 13h10v10H13z"/></svg>
+                                    </div>
                                     <div class="card-texts">
                                         <div class="card-title">Microsoft Bing</div>
                                         <div class="card-desc">Copilot AI search features and comprehensive image search.</div>
@@ -942,6 +1425,18 @@
                                 </div>
                                 <div class="check-badge"><i class="fas fa-check"></i></div>
                             </div>
+                        <div class="section-label" style="margin-top: 14px;">Search Defense</div>
+                            <div class="setting-card selected" id="search-protection-card" onclick="toggleSearchProtection(this)">
+                                <div class="card-main-content">
+                                    <div class="card-icon"><i class="fas fa-user-shield"></i></div>
+                                    <div class="card-texts">
+                                        <div class="card-title">SafeSearch &amp; Adult Content Shield</div>
+                                        <div class="card-desc">Enforces strict filtering to protect from showing adult content and strips query trackers.</div>
+                                    </div>
+                                </div>
+                                <div class="check-badge"><i class="fas fa-check"></i></div>
+                            </div>
+                                        
                         </div>
                     </div>
 
@@ -985,6 +1480,18 @@
                                 </div>
                                 <div class="check-badge"><i class="fas fa-check"></i></div>
                             </div>
+
+                            <div class="setting-card selected" id="shield-card-search" onclick="toggleShield('safeSearchEnabled', this)">
+                                <div class="card-main-content">
+                                    <div class="card-icon"><i class="fas fa-user-shield"></i></div>
+                                    <div class="card-texts">
+                                        <div class="card-title">SafeSearch &amp; Adult Content Protection</div>
+                                        <div class="card-desc">Enforces strict SafeSearch to protect from showing adult content, explicit results, and query telemetry.</div>
+                                    </div>
+                                </div>
+                                <div class="check-badge"><i class="fas fa-check"></i></div>
+                            </div>
+                                        
                         </div>
                     </div>
 
@@ -998,7 +1505,9 @@
                         <div class="cards-list">
                             <div class="setting-card" onclick="importFrom('chrome')">
                                 <div class="card-main-content">
-                                    <div class="card-icon" style="color:#4285F4;"><i class="fab fa-chrome"></i></div>
+                                    <div class="card-icon brand-icon">
+                                        <svg width="22" height="22" viewBox="0 0 48 48"><circle cx="24" cy="24" r="12" fill="#fff" /><path d="M24,12H44.78a24,24,0,0,0-41.56,0L13.61,30A12,12,0,0,1,24,12Z" fill="#EA4335" /><circle cx="24" cy="24" r="9.5" fill="#1A73E8" /><path d="M34.39,30,24,48A24,24,0,0,0,44.78,12H24A12,12,0,0,1,34.39,30Z" fill="#FBBC04" /><path d="M13.61,30,3.22,12A24,24,0,0,0,24,48L34.39,30A12,12,0,0,1,13.61,30Z" fill="#34A853" /></svg>
+                                    </div>
                                     <div class="card-texts">
                                         <div class="card-title">Import from Google Chrome</div>
                                         <div class="card-desc">Automatically imports bookmarks and folders from Chrome.</div>
@@ -1009,7 +1518,9 @@
 
                             <div class="setting-card" onclick="importFrom('edge')">
                                 <div class="card-main-content">
-                                    <div class="card-icon" style="color:#0078D7;"><i class="fab fa-edge"></i></div>
+                                    <div class="card-icon brand-icon">
+                                        <svg width="22" height="22" viewBox="0 0 24 24" fill="#0078D7"><path d="M21.86 17.86q.14 0 .25.12q.1.13.1.25t-.11.33l-.32.46l-.43.53l-.44.5q-.21.25-.38.42l-.22.23q-.58.53-1.34 1.04t-1.6.91q-.86.4-1.74.64t-1.67.24q-.9 0-1.69-.28q-.8-.28-1.48-.78T9.57 21.3q-.53-.66-.92-1.44q-.38-.77-.58-1.6t-.2-1.67q0-1 .32-1.96q.33-.97.87-1.8q.14.95.55 1.77t1.02 1.5q.6.68 1.38 1.21q.78.54 1.64.9t1.77.56q.92.2 1.8.2q1.12 0 2.18-.24q1.06-.23 2.06-.72l.2-.1zm-15.5-1.27q0 1.1.27 2.15q.27 1.06.78 2.03q.51.96 1.24 1.77q.74.82 1.66 1.4q-1.47-.2-2.8-.74q-1.33-.55-2.48-1.37q-1.15-.83-2.08-1.9q-.92-1.07-1.58-2.33T.36 14.94Q0 13.54 0 12.06q0-.81.32-1.49q.31-.68.83-1.23q.53-.55 1.2-.96q.66-.4 1.35-.66q.74-.27 1.5-.39q.78-.12 1.55-.12q.7 0 1.42.1q.72.12 1.4.35t1.32.57q.63.35 1.16.83q-.35 0-.7.07q-.33.07-.65.23v-.02q-.63.28-1.2.74t-1.05 1.04t-.87 1.26q-.38.67-.65 1.39q-.27.71-.42 1.44q-.15.72-.15 1.38M11.96.06q1.7 0 3.33.39q1.63.38 3.07 1.15q1.43.77 2.62 1.93q1.18 1.16 1.98 2.7q.49.94.76 1.96q.28 1 .28 2.08q0 .89-.23 1.7q-.24.8-.69 1.48t-1.1 1.22q-.64.53-1.45.88q-.54.24-1.11.36q-.58.13-1.16.13q-.42 0-.97-.03q-.54-.03-1.1-.12q-.55-.1-1.05-.28q-.5-.19-.84-.5q-.12-.09-.23-.24q-.1-.16-.1-.33q0-.15.16-.35t.35-.5q.2-.28.36-.68t.16-.95q0-1.06-.4-1.96q-.4-.91-1.06-1.64q-.66-.74-1.52-1.28q-.86-.55-1.79-.89q-.84-.3-1.72-.44q-.87-.14-1.76-.14q-1.55 0-3.06.45T.94 7.55q.71-1.74 1.81-3.13q1.1-1.38 2.52-2.35Q6.68 1.1 8.37.58q1.7-.52 3.58-.52Z"/></svg>
+                                    </div>
                                     <div class="card-texts">
                                         <div class="card-title">Import from Microsoft Edge</div>
                                         <div class="card-desc">Automatically transfers favorites from Microsoft Edge.</div>
@@ -1038,12 +1549,18 @@
 
             <!-- Wizard Navigation Footer -->
             <footer class="wizard-footer">
-                <button class="btn-nav-back" id="btn-back" onclick="previousStep()" disabled>
+                <button class="btn-nav-back" id="btn-back" onclick="previousStep()" disabled type="button">
                     <i class="fas fa-arrow-left"></i>
                     <span>Back</span>
                 </button>
 
-                <button class="btn-nav-next" id="btn-next" onclick="nextStep()">
+                <div class="kbd-hint">
+                    <kbd>→</kbd> <kbd>Enter</kbd> <span>Next</span>
+                    <span style="opacity:0.4; margin: 0 4px;">·</span>
+                    <kbd>1</kbd>–<kbd>5</kbd> <span>Jump</span>
+                </div>
+
+                <button class="btn-nav-next" id="btn-next" onclick="nextStep()" type="button">
                     <span id="btn-next-label">Next Step</span>
                     <i class="fas fa-arrow-right" id="btn-next-icon"></i>
                 </button>
@@ -1105,6 +1622,19 @@
                 return lum > 155 ? '#0F172A' : '#FFFFFF';
             }
 
+            
+            const accentColorNames = {
+                '#09F0A0': 'Emerald Green',
+                '#8B5CF6': 'Purple Glow',
+                '#4F46E5': 'Electric Indigo',
+                '#E85A4F': 'Coral Red',
+                '#EF4444': 'Coral Red',
+                '#F59E0B': 'Warm Amber',
+                '#06B6D4': 'Ocean Cyan',
+                '#EC4899': 'Vivid Magenta',
+                '#64748B': 'Cool Slate'
+            };
+
             function applyAccent(color) {
                 if (!color) color = '#4F46E5';
                 currentSettings.accentColor = color;
@@ -1119,6 +1649,8 @@
                     const c = (b.dataset.color || '').toUpperCase();
                     b.classList.toggle('active', c === color.toUpperCase());
                 });
+
+                
 
                 try {
                     localStorage.setItem('ocal-settings-accent', color);
@@ -1165,7 +1697,7 @@
             };
 
             function renderStep() {
-                // Update Panels
+                // Update Panels & Left Stepper
                 for (let i = 1; i <= totalSteps; i++) {
                     const panel = document.getElementById(`step-panel-${i}`);
                     if (panel) panel.classList.toggle('active', i === currentStep);
@@ -1183,6 +1715,13 @@
                             }
                         }
                     }
+
+                    // Update Top Segmented Progress Bar
+                    const seg = document.getElementById(`pseg-${i}`);
+                    if (seg) {
+                        seg.classList.toggle('active', i === currentStep);
+                        seg.classList.toggle('completed', i < currentStep);
+                    }
                 }
 
                 // Update Left Narrative Heading & Description
@@ -1194,13 +1733,20 @@
                     if (descEl) descEl.textContent = info.desc;
                 }
 
-                // Update Progress Header
+                // Update Header Progress Label & Dynamic Step Name
+                const stepNames = ['Atmosphere', 'Workspace', 'Search', 'Shields', 'Bookmarks'];
+                const currentName = stepNames[currentStep - 1] || 'Atmosphere';
+                
+                const stepTextEl = document.getElementById('progress-step-text');
+                if (stepTextEl) {
+                    stepTextEl.innerHTML = `STEP ${currentStep} OF ${totalSteps} · <span>${currentName}</span>`;
+                }
+
                 const pct = Math.round((currentStep / totalSteps) * 100);
-                const stepText = document.getElementById('progress-step-text');
-                const pctText = document.getElementById('progress-pct-text');
+                const pctEl = document.getElementById('progress-pct-text');
+                if (pctEl) pctEl.textContent = `${pct}%`;
+
                 const barFill = document.getElementById('progress-bar-fill');
-                if (stepText) stepText.textContent = `STEP ${currentStep} OF ${totalSteps}`;
-                if (pctText) pctText.textContent = `${pct}%`;
                 if (barFill) barFill.style.width = `${pct}%`;
 
                 // Update Buttons
@@ -1220,10 +1766,16 @@
 
             // Keyboard navigation
             window.addEventListener('keydown', (e) => {
+                if (['INPUT', 'TEXTAREA'].includes(document.activeElement?.tagName)) return;
+
                 if (e.key === 'Enter') {
                     nextStep();
-                } else if (e.key === 'Escape' || (e.key === 'ArrowLeft' && e.altKey)) {
-                    previousStep();
+                } else if (e.key === 'ArrowRight') {
+                    if (currentStep < totalSteps) jumpToStep(currentStep + 1);
+                } else if (e.key === 'ArrowLeft') {
+                    if (currentStep > 1) jumpToStep(currentStep - 1);
+                } else if (e.key >= '1' && e.key <= '5') {
+                    jumpToStep(parseInt(e.key, 10));
                 }
             });
 
@@ -1276,68 +1828,129 @@
                 }
             };
 
+            let currentAmbientTrack = 'Ocal.mp3';
+            let currentAmbientVolume = 0.35;
+
+            function syncAmbientSettings() {
+                if (window.electronAPI && window.electronAPI.updateSetting) {
+                    window.electronAPI.updateSetting('ambientSound', {
+                        enabled: !!currentSettings.ambientSoundEnabled,
+                        track: currentAmbientTrack || 'Ocal.mp3',
+                        volume: typeof currentAmbientVolume === 'number' ? currentAmbientVolume : 0.35,
+                        smartDucking: true,
+                        duckVolume: 0.0
+                    });
+                }
+            }
+
+            window.toggleAmbientMusic = function (el) {
+                const active = !el.classList.contains('selected');
+                el.classList.toggle('selected', active);
+                currentSettings.ambientSoundEnabled = active;
+                
+                const panel = document.getElementById('ambient-music-panel');
+                if (panel) {
+                    panel.classList.toggle('active', active);
+                }
+
+                try {
+                    localStorage.setItem('ocal-ambient-sound-enabled', active ? 'true' : 'false');
+                } catch(e) {}
+
+                syncAmbientSettings();
+            };
+
+            window.selectAmbientTrack = function (trackFile, el) {
+                currentAmbientTrack = trackFile;
+                currentSettings.ambientSoundTrack = trackFile;
+
+                const chips = document.querySelectorAll('.ambient-track-chip');
+                chips.forEach(c => {
+                    c.classList.toggle('active', c.getAttribute('data-track') === trackFile);
+                });
+
+                try {
+                    localStorage.setItem('ocal-ambient-sound-track', trackFile);
+                } catch(e) {}
+
+                syncAmbientSettings();
+            };
+
+            window.handleAmbientVolumeInput = function (val) {
+                const num = parseInt(val, 10);
+                const volFraction = num / 100;
+                currentAmbientVolume = volFraction;
+                currentSettings.ambientSoundVolume = volFraction;
+
+                const badge = document.getElementById('ambient-vol-badge');
+                if (badge) badge.textContent = num === 0 ? 'Mute' : (num + '%');
+
+                const icon = document.getElementById('ambient-vol-icon');
+                if (icon) {
+                    icon.className = num === 0 ? 'fas fa-volume-xmark' : (num <= 50 ? 'fas fa-volume-low' : 'fas fa-volume-high');
+                }
+
+                const slider = document.getElementById('ambient-volume-slider');
+                if (slider) {
+                    slider.style.setProperty('--slider-fill', num + '%');
+                }
+            };
+
+            window.handleAmbientVolumeChange = function (val) {
+                window.handleAmbientVolumeInput(val);
+                try {
+                    localStorage.setItem('ocal-ambient-sound-volume', (parseInt(val, 10) / 100).toString());
+                } catch(e) {}
+                syncAmbientSettings();
+            };
+
+            window.toggleSearchProtection = function (el) {
+                const active = !el.classList.contains('selected');
+                el.classList.toggle('selected', active);
+                currentSettings.safeSearchEnabled = active;
+                currentSettings.contentProtectionEnabled = active;
+                currentSettings.adultDomainsBlockEnabled = active;
+
+                const s4Card = document.getElementById('shield-card-search');
+                if (s4Card) s4Card.classList.toggle('selected', active);
+
+                try {
+                    localStorage.setItem('ocal-settings-safesearch', active ? 'true' : 'false');
+                } catch(e) {}
+
+                if (window.electronAPI && window.electronAPI.updateSetting) {
+                    window.electronAPI.updateSetting('safeSearchEnabled', active);
+                    window.electronAPI.updateSetting('contentProtectionEnabled', active);
+                    window.electronAPI.updateSetting('adultDomainsBlockEnabled', active);
+                }
+            };
+
             window.toggleShield = function (key, el) {
                 const active = !el.classList.contains('selected');
                 el.classList.toggle('selected', active);
                 currentSettings[key] = active;
+
+                if (key === 'safeSearchEnabled') {
+                    currentSettings.contentProtectionEnabled = active;
+                    currentSettings.adultDomainsBlockEnabled = active;
+                    const spCard = document.getElementById('search-protection-card');
+                    if (spCard) spCard.classList.toggle('selected', active);
+
+                    if (window.electronAPI && window.electronAPI.updateSetting) {
+                        window.electronAPI.updateSetting('contentProtectionEnabled', active);
+                        window.electronAPI.updateSetting('adultDomainsBlockEnabled', active);
+                    }
+                }
+
+                try {
+                    localStorage.setItem('ocal-shield-' + key, active ? 'true' : 'false');
+                } catch (e) {}
+
                 if (window.electronAPI && window.electronAPI.updateSetting) {
                     window.electronAPI.updateSetting(key, active);
                 }
             };
 
-            window.importFrom = async function (source) {
-                const box = document.getElementById('import-status-box');
-                if (box) {
-                    box.className = 'status-message info';
-                    box.innerHTML = `<i class="fas fa-spinner fa-spin"></i> Importing bookmarks from ${source}...`;
-                }
-                if (window.electronAPI && window.electronAPI.importBookmarks) {
-                    const res = await window.electronAPI.importBookmarks(source);
-                    if (box) {
-                        if (res && res.success) {
-                            box.className = 'status-message success';
-                            box.innerHTML = `<i class="fas fa-circle-check"></i> Imported ${res.count || 0} bookmarks successfully!`;
-                        } else {
-                            box.className = 'status-message error';
-                            box.innerHTML = `<i class="fas fa-circle-exclamation"></i> ${res?.error || 'Bookmarks not found for this browser.'}`;
-                        }
-                    }
-                }
-            };
-
-            window.importFromFile = async function () {
-                const box = document.getElementById('import-status-box');
-                if (window.electronAPI && window.electronAPI.importBookmarkFile) {
-                    const res = await window.electronAPI.importBookmarkFile();
-                    if (box) {
-                        if (res && res.success) {
-                            box.className = 'status-message success';
-                            box.innerHTML = `<i class="fas fa-circle-check"></i> Imported ${res.count || 0} bookmarks successfully!`;
-                        } else if (res && res.error !== 'Cancelled') {
-                            box.className = 'status-message error';
-                            box.innerHTML = `<i class="fas fa-circle-exclamation"></i> ${res?.error || 'Could not parse bookmarks file.'}`;
-                        }
-                    }
-                }
-            };
-
-            // ── Finishing & Launching ─────────────────────────────────────────
-            window.finishAndLaunch = function () {
-                if (window.electronAPI && window.electronAPI.updateSetting) {
-                    window.electronAPI.updateSetting('setupComplete', true);
-                }
-                document.body.style.transition = 'opacity 0.25s ease';
-                document.body.style.opacity = '0';
-                setTimeout(() => {
-                    if (window.electronAPI && window.electronAPI.navigateTo) {
-                        window.electronAPI.navigateTo('ocal://home');
-                    } else {
-                        window.location.href = 'home.html';
-                    }
-                }, 200);
-            };
-
-            // ── Initialize Settings From Storage ──────────────────────────────
             async function boot() {
                 if (window.electronAPI && window.electronAPI.getSettings) {
                     try {
@@ -1372,6 +1985,20 @@
                     const card = document.getElementById('shield-card-ai');
                     if (card) card.classList.toggle('selected', !!currentSettings.aiAssistantEnabled);
                 }
+
+                // Ambient Music state initialization
+                const ambientInit = (currentSettings.ambientSound && currentSettings.ambientSound.enabled) ||
+                                    (localStorage.getItem('ocal-ambient-sound-enabled') === 'true');
+                const ambCard = document.getElementById('ambient-music-card');
+                if (ambCard) ambCard.classList.toggle('selected', !!ambientInit);
+
+                // Search Protection state initialization (defaults to true)
+                const searchProtectInit = (currentSettings.safeSearchEnabled !== false) &&
+                                          (localStorage.getItem('ocal-settings-safesearch') !== 'false');
+                const spCard = document.getElementById('search-protection-card');
+                if (spCard) spCard.classList.toggle('selected', searchProtectInit);
+                const s4Card = document.getElementById('shield-card-search');
+                if (s4Card) s4Card.classList.toggle('selected', searchProtectInit);
 
                 renderStep();
             }
