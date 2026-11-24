@@ -188,21 +188,147 @@
         }
     ];
 
+    // ── AI Dynamic Harmonic Gradient Generator for Custom Colors ─────────────
+    function getHarmonicGradientStyles(hexColor) {
+        const cleanHex = hexColor ? hexColor.toString().trim() : '#15AC49';
+        const rgb = hexToRgb(cleanHex);
+        const hsl = rgbToHsl(rgb.r, rgb.g, rgb.b);
+        const H = hsl.h;
+        const S = Math.max(50, Math.min(95, hsl.s));
+        const L = Math.max(35, Math.min(65, hsl.l));
+
+        // 1. Aura Flow (Analogous Harmony): Smooth natural neighboring hue drift
+        const a_p1 = hslToHex((H - 16 + 360) % 360, Math.min(100, S + 5), Math.min(84, L + 22)); // Luminous sunlit highlight
+        const a_p2 = hslToHex((H - 6 + 360) % 360, S, Math.min(72, L + 10));                     // Harmonious midtone
+        const a_p3 = hslToHex(H, S, L);                                                            // Pure custom accent
+        const a_p4 = hslToHex((H + 12) % 360, Math.min(100, S + 8), Math.max(20, L - 18));        // Deep rich root
+        const aura_primary = `linear-gradient(135deg, ${a_p1} 0%, ${a_p2} 28%, ${a_p3} 68%, ${a_p4} 100%)`;
+
+        const a_s1 = hslToHex((H + 24) % 360, Math.max(25, S - 15), 88);                          // Soft crystal frost
+        const a_s2 = hslToHex((H + 28) % 360, S, Math.min(70, L + 14));                           // Glow bridge
+        const a_s3 = hslToHex((H + 34) % 360, Math.min(100, S + 8), Math.max(30, L - 8));         // Rich counterpart
+        const aura_secondary = `linear-gradient(135deg, ${a_s1} 0%, ${a_s2} 36%, ${a_s3} 100%)`;
+        const aura_accent = `linear-gradient(135deg, ${a_p2} 0%, ${a_p3} 100%)`;
+
+        // 2. Pure Depth (Monochrome Elegance): 100% hue purity, zero clashing colors
+        const m_p1 = hslToHex(H, Math.max(30, S - 15), 78);                                        // Pure tint
+        const m_p2 = hslToHex(H, S, Math.min(65, L + 10));                                         // Vibrant midtone
+        const m_p3 = hslToHex(H, Math.min(100, S + 5), L);                                         // Base custom
+        const m_p4 = hslToHex(H, Math.min(100, S + 10), Math.max(16, L - 22));                     // Deep onyx shade
+        const mono_primary = `linear-gradient(135deg, ${m_p1} 0%, ${m_p2} 30%, ${m_p3} 70%, ${m_p4} 100%)`;
+
+        const m_s1 = hslToHex(H, Math.max(20, S - 30), 92);                                        // Ice highlight
+        const m_s2 = hslToHex(H, S, Math.min(72, L + 16));                                         // Luminous wash
+        const m_s3 = hslToHex(H, Math.min(100, S + 5), Math.max(36, L - 5));                      // Saturated anchor
+        const mono_secondary = `linear-gradient(135deg, ${m_s1} 0%, ${m_s2} 40%, ${m_s3} 100%)`;
+        const mono_accent = `linear-gradient(135deg, ${m_p2} 0%, ${m_p3} 100%)`;
+
+        // 3. Cosmic Twilight (Celestial Dusk): Deep celestial space tones fused with glowing nebula
+        const c_p1 = hslToHex((H + 15) % 360, Math.min(100, S + 10), 74);                         // Radiant nebula
+        const c_p2 = hslToHex(H, S, L);                                                            // Core custom accent
+        const c_p3 = hslToHex((H - 25 + 360) % 360, Math.max(50, S), Math.max(24, L - 22));        // Deep twilight
+        const c_p4 = hslToHex((H - 35 + 360) % 360, Math.max(60, S + 10), Math.max(14, L - 32));   // Midnight void
+        const cosmic_primary = `linear-gradient(135deg, ${c_p1} 0%, ${c_p2} 32%, ${c_p3} 72%, ${c_p4} 100%)`;
+
+        const c_s1 = hslToHex((H - 20 + 360) % 360, Math.max(30, S - 20), 90);                    // Starlight frost
+        const c_s2 = hslToHex(H, S, Math.min(68, L + 12));                                         // Nebula glow
+        const c_s3 = hslToHex((H + 20) % 360, Math.min(100, S + 8), Math.max(32, L - 10));        // Deep cosmic aura
+        const cosmic_secondary = `linear-gradient(135deg, ${c_s1} 0%, ${c_s2} 38%, ${c_s3} 100%)`;
+        const cosmic_accent = `linear-gradient(135deg, ${c_p2} 0%, ${c_p3} 100%)`;
+
+        // 4. Sunset Radiance (Warm Solar Fusion): Sunlit warm gold/coral into the custom color
+        const s_p2 = hslToHex((H - 12 + 360) % 360, S, Math.min(66, L + 10));
+        const s_p3 = hslToHex(H, S, L);
+        const s_p4 = hslToHex((H + 16) % 360, Math.min(100, S + 10), Math.max(22, L - 18));
+        const sunset_primary = `linear-gradient(135deg, #FDE047 0%, ${s_p2} 32%, ${s_p3} 70%, ${s_p4} 100%)`;
+
+        const s_s2 = hslToHex((H + 40) % 360, S, Math.min(70, L + 12));
+        const s_s3 = hslToHex((H + 20) % 360, Math.min(100, S + 8), Math.max(36, L - 8));
+        const sunset_secondary = `linear-gradient(135deg, #FFF1F2 0%, ${s_s2} 38%, ${s_s3} 100%)`;
+        const sunset_accent = `linear-gradient(135deg, ${s_p2} 0%, ${s_p3} 100%)`;
+
+        // 5. Cyber Glow (Electric Modern Duo): High-energy calibrated neon flow
+        const cy_p1 = hslToHex((H - 22 + 360) % 360, 98, 70);
+        const cy_p2 = hslToHex(H, 96, 52);
+        const cy_p3 = hslToHex((H + 18) % 360, 100, 36);
+        const cyber_primary = `linear-gradient(135deg, ${cy_p1} 0%, ${cy_p2} 48%, ${cy_p3} 100%)`;
+
+        const cy_s1 = hslToHex((H + 160) % 360, 45, 90);
+        const cy_s2 = hslToHex((H + 170) % 360, 85, 62);
+        const cy_s3 = hslToHex((H + 180) % 360, 92, 46);
+        const cyber_secondary = `linear-gradient(135deg, ${cy_s1} 0%, ${cy_s2} 42%, ${cy_s3} 100%)`;
+        const cyber_accent = `linear-gradient(135deg, ${cy_p1} 0%, ${cy_p2} 100%)`;
+
+        return [
+            {
+                id: 'aura',
+                name: 'Aura Flow',
+                subtitle: 'Analogous Harmony',
+                description: 'Smooth neighboring hue drift with luminous highlights',
+                primary: aura_primary,
+                secondary: aura_secondary,
+                accentGrad: aura_accent
+            },
+            {
+                id: 'monochrome',
+                name: 'Pure Depth',
+                subtitle: 'Clean Monochrome',
+                description: 'Deep onyx shade to luminous tints of your exact custom color',
+                primary: mono_primary,
+                secondary: mono_secondary,
+                accentGrad: mono_accent
+            },
+            {
+                id: 'cosmic',
+                name: 'Cosmic Twilight',
+                subtitle: 'Celestial Dusk',
+                description: 'Deep space tones fused with glowing nebula highlights',
+                primary: cosmic_primary,
+                secondary: cosmic_secondary,
+                accentGrad: cosmic_accent
+            },
+            {
+                id: 'sunset',
+                name: 'Sunset Radiance',
+                subtitle: 'Warm Solar Fusion',
+                description: 'Rich amber and coral sunrise blending into your accent',
+                primary: sunset_primary,
+                secondary: sunset_secondary,
+                accentGrad: sunset_accent
+            },
+            {
+                id: 'cyber',
+                name: 'Cyber Glow',
+                subtitle: 'Vibrant Modern Duo',
+                description: 'High-contrast energetic flow calibrated for clean readability',
+                primary: cyber_primary,
+                secondary: cyber_secondary,
+                accentGrad: cyber_accent
+            }
+        ];
+    }
+
     // ── AI Dynamic Harmonic Gradient Synthesis ───────────────────────────────
-    function synthesizeHarmonicGradients(hexColor) {
+    function synthesizeHarmonicGradients(hexColor, requestedStyleId, isCustom = false) {
         const cleanHex = hexColor ? hexColor.toLowerCase().trim() : '#15ac49';
         const rgb = hexToRgb(cleanHex);
         const hsl = rgbToHsl(rgb.r, rgb.g, rgb.b);
 
-        // 1. Check exact preset matches
-        for (const preset of CURATED_PRESETS) {
-            if (preset.names.some(n => n === cleanHex || cleanHex.includes(n.replace('#', '')))) {
-                return {
-                    primary: preset.primary,
-                    secondary: preset.secondary,
-                    accentGrad: preset.accentGrad,
-                    matchedPreset: true
-                };
+        const storedStyle = (typeof localStorage !== 'undefined') ? localStorage.getItem('ocal-settings-gradient-style') : null;
+        const styleId = requestedStyleId || storedStyle || 'aura';
+
+        // 1. Check exact preset matches ONLY if NOT a custom color and NO custom gradient style requested
+        if (!isCustom && !requestedStyleId && !storedStyle) {
+            for (const preset of CURATED_PRESETS) {
+                if (preset.names.some(n => n === cleanHex || cleanHex.includes(n.replace('#', '')))) {
+                    return {
+                        primary: preset.primary,
+                        secondary: preset.secondary,
+                        accentGrad: preset.accentGrad,
+                        styleId: 'preset',
+                        matchedPreset: true
+                    };
+                }
             }
         }
 
@@ -213,61 +339,22 @@
                 primary: slatePreset.primary,
                 secondary: slatePreset.secondary,
                 accentGrad: slatePreset.accentGrad,
+                styleId: 'slate',
                 matchedPreset: true
             };
         }
 
-        // 3. Match by hue range in curated presets if close
-        for (const preset of CURATED_PRESETS) {
-            if (preset.hueRange && hsl.h >= preset.hueRange[0] && hsl.h <= preset.hueRange[1]) {
-                return {
-                    primary: preset.primary,
-                    secondary: preset.secondary,
-                    accentGrad: preset.accentGrad,
-                    matchedPreset: true
-                };
-            }
-        }
-
-        // 4. Algorithmic Harmonic Color Synthesis (for any arbitrary custom color)
-        const H = hsl.h;
-        const S = Math.max(50, Math.min(95, hsl.s));
-        const L = Math.max(35, Math.min(65, hsl.l));
-
-        // Primary 4-stop gradient: Analogous luminous arc
-        const p1_h = (H - 42 + 360) % 360;
-        const p1 = hslToHex(p1_h, Math.min(100, S + 10), 74); // Warm Sunlit Highlight
-
-        const p2_h = (H - 18 + 360) % 360;
-        const p2 = hslToHex(p2_h, S, Math.min(68, L + 12));  // Harmonious Mid-tone
-
-        const p3_h = H;
-        const p3 = hslToHex(p3_h, S, L);                     // Vivid Base Anchor
-
-        const p4_h = (H + 12) % 360;
-        const p4 = hslToHex(p4_h, Math.min(100, S + 15), Math.max(22, L - 16)); // Deep Shadow Anchor
-
-        const primaryGrad = `linear-gradient(135deg, ${p1} 0%, ${p2} 28%, ${p3} 68%, ${p4} 100%)`;
-
-        // Secondary complementary / triadic 3-stop gradient (e.g. for Weather card)
-        const sec_h = (H + 145) % 360; // Harmonic golden offset
-        const s1_h = (sec_h - 35 + 360) % 360;
-        const s1 = hslToHex(s1_h, 35, 92); // Frost highlight
-
-        const s2_h = (sec_h - 12 + 360) % 360;
-        const s2 = hslToHex(s2_h, 85, 70); // Warm sunrise bridge
-
-        const s3_h = sec_h;
-        const s3 = hslToHex(s3_h, 95, 52); // Saturated complementary base
-
-        const secondaryGrad = `linear-gradient(135deg, ${s1} 0%, ${s2} 35%, ${s3} 100%)`;
-
-        const accentGrad = `linear-gradient(135deg, ${p2} 0%, ${p3} 100%)`;
+        // 3. Dynamic Harmonic Gradient Selection (from the exact custom color)
+        const styles = getHarmonicGradientStyles(cleanHex);
+        const chosen = styles.find(s => s.id === styleId) || styles[0];
 
         return {
-            primary: primaryGrad,
-            secondary: secondaryGrad,
-            accentGrad: accentGrad,
+            primary: chosen.primary,
+            secondary: chosen.secondary,
+            accentGrad: chosen.accentGrad,
+            styleId: chosen.id,
+            styleName: chosen.name,
+            allStyles: styles,
             matchedPreset: false
         };
     }
@@ -312,8 +399,25 @@
         return false;
     }
 
+    // ── Set & Apply Gradient Style ──────────────────────────────────────────
+    function setGradientStyle(styleId, targetDoc) {
+        if (!styleId) return null;
+        try {
+            if (typeof localStorage !== 'undefined') {
+                localStorage.setItem('ocal-settings-gradient-style', styleId);
+                localStorage.setItem('ocal-settings-custom-color', 'true');
+            }
+        } catch (e) {}
+
+        const doc = targetDoc || (typeof document !== 'undefined' ? document : null);
+        const storedTheme = (typeof localStorage !== 'undefined' ? localStorage.getItem('ocal-settings-theme') : null) || 'dark';
+        const storedAccent = (typeof localStorage !== 'undefined' ? localStorage.getItem('ocal-settings-accent') : null) || (storedTheme === 'light' ? '#15AC49' : '#09F0A0');
+
+        return applyHarmonizedTheme(storedAccent, storedTheme, doc, true, null, styleId);
+    }
+
     // ── Apply & Sync to DOM ──────────────────────────────────────────────────
-    function applyHarmonizedTheme(accentHex, themeMode, targetDoc, broadcastToElectron = false, isPrivateOverride = null) {
+    function applyHarmonizedTheme(accentHex, themeMode, targetDoc, broadcastToElectron = false, isPrivateOverride = null, styleId = null) {
         if (_isHarmonizing) return;
         _isHarmonizing = true;
         try {
@@ -327,24 +431,33 @@
             const isLight = (currentTheme === 'light');
 
             const storedAccent = !isPrivate && (typeof localStorage !== 'undefined' ? localStorage.getItem('ocal-settings-accent') : null);
-            let baseColor = accentHex || (isPrivate ? '#a855f7' : (storedAccent || (isLight ? '#15AC49' : '#09F0A0')));
+            let baseColor = accentHex || (isPrivate ? '#f87d51' : (storedAccent || (isLight ? '#15AC49' : '#09F0A0')));
             if (typeof baseColor === 'string') {
                 baseColor = baseColor.trim();
                 if (!/^#[0-9A-Fa-f]{3,8}$/.test(baseColor)) {
-                    baseColor = isPrivate ? '#a855f7' : (isLight ? '#15AC49' : '#09F0A0');
+                    baseColor = isPrivate ? '#f87d51' : (isLight ? '#15AC49' : '#09F0A0');
                 }
             }
+
+            const activeStyle = styleId || (!isPrivate && typeof localStorage !== 'undefined' ? localStorage.getItem('ocal-settings-gradient-style') : null) || 'aura';
+            const isCustom = !isPrivate && (typeof localStorage !== 'undefined' ? (localStorage.getItem('ocal-settings-custom-color') === 'true') : false);
 
             const root = doc.documentElement;
             const body = doc.body;
 
-            // Avoid redundant styling if already identical
-            if (root && root.getAttribute('data-theme') === currentTheme && root.style.getPropertyValue('--accent') === baseColor && (!isPrivate || root.classList.contains('sp-private-mode'))) {
-                return;
+            // Synthesize harmonic gradients with the active style
+            const harmony = synthesizeHarmonicGradients(baseColor, activeStyle, isCustom);
+
+            // Avoid redundant styling if already identical across theme, accent, and gradients
+            const curPrimary = root ? root.style.getPropertyValue('--sp-primary-grad') : '';
+            if (root && 
+                root.getAttribute('data-theme') === currentTheme && 
+                root.style.getPropertyValue('--accent') === baseColor && 
+                curPrimary === harmony.primary &&
+                (!isPrivate || root.classList.contains('sp-private-mode'))) {
+                return harmony;
             }
 
-            // Synthesize harmonic gradients and logo color filter
-            const harmony = synthesizeHarmonicGradients(baseColor);
             const contrastText = getContrastColor(baseColor);
             const logoFilter = calculateLogoFilter(baseColor);
             const logoGlow = `0 0 16px ${baseColor}`;
@@ -389,7 +502,6 @@
             updateLogoElements(doc, currentTheme);
 
             // Save to localStorage ONLY if NOT in private mode and values changed
-            // (Private mode must NEVER mutate normal browser localStorage or dispatch cross-tab storage events!)
             if (!isPrivate) {
                 try {
                     if (localStorage.getItem('ocal-settings-accent') !== baseColor) {
@@ -398,6 +510,7 @@
                     if (localStorage.getItem('ocal-settings-theme') !== currentTheme) {
                         localStorage.setItem('ocal-settings-theme', currentTheme);
                     }
+                    localStorage.setItem('ocal-settings-gradient-style', activeStyle);
                     localStorage.setItem('ocal-settings-primary-grad', harmony.primary);
                     localStorage.setItem('ocal-settings-secondary-grad', harmony.secondary);
                     localStorage.setItem('ocal-settings-accent-grad', harmony.accentGrad);
@@ -415,6 +528,7 @@
                     _lastBroadcastAccent = baseColor;
                     window.electronAPI.updateSetting('accentColor', baseColor);
                 }
+                window.electronAPI.updateSetting('gradientStyle', activeStyle);
             }
 
             // Dispatch notification event in the local window
@@ -423,6 +537,7 @@
                     detail: {
                         accent: baseColor,
                         theme: currentTheme,
+                        gradientStyle: activeStyle,
                         primaryGrad: harmony.primary,
                         secondaryGrad: harmony.secondary,
                         accentGrad: harmony.accentGrad,
@@ -763,7 +878,7 @@
             // In private mode: do NOT pull normal user settings from localStorage!
             // Apply signature private theme locally without touching localStorage:
             try {
-                applyHarmonizedTheme('#a855f7', 'dark', document, false, true);
+                applyHarmonizedTheme('#f87d51', 'dark', document, false, true);
             } catch (e) {}
             return; // Do NOT attach normal storage listener in private context!
         }
@@ -788,7 +903,7 @@
 
                 if (e.key === 'ocal-home-wallpaper' || e.key === 'ocal-home-wallpaper-blur' || e.key === 'ocal-home-wallpaper-dim') {
                     applySavedWallpaper();
-                } else if (e.key === 'ocal-settings-accent' || e.key === 'ocal-settings-theme') {
+                } else if (e.key === 'ocal-settings-accent' || e.key === 'ocal-settings-theme' || e.key === 'ocal-settings-gradient-style' || e.key === 'ocal-settings-primary-grad') {
                     // Ignore private purple values if they somehow arrived via storage
                     if (e.newValue === '#a855f7' || e.newValue === '#8b5cf6') return;
 
@@ -797,11 +912,8 @@
                     if (stAccent === '#a855f7' || stAccent === '#8b5cf6') {
                         stAccent = (stTheme === 'light' ? '#15AC49' : '#09F0A0');
                     }
-                    const root = typeof document !== 'undefined' ? document.documentElement : null;
-                    if (root && root.getAttribute('data-theme') === stTheme && root.style.getPropertyValue('--accent') === stAccent) {
-                        return;
-                    }
-                    applyHarmonizedTheme(stAccent, stTheme);
+                    const stStyle = (typeof localStorage !== 'undefined' ? localStorage.getItem('ocal-settings-gradient-style') : null) || 'aura';
+                    applyHarmonizedTheme(stAccent, stTheme, null, false, false, stStyle);
                 }
             });
         }
@@ -856,6 +968,8 @@
         getContrastColor,
         calculateLogoFilter,
         updateLogoElements,
+        getHarmonicGradientStyles,
+        setGradientStyle,
         synthesizeHarmonicGradients,
         analyzeColorIntelligence,
         applyHarmonizedTheme,

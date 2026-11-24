@@ -2,17 +2,45 @@
 let currentOrigin = '';
 
 window.electronAPI.onUpdateSiteInfo((data) => {
+    if (!data) return;
+    const isPrivate = !!data.isPrivate;
+    if (isPrivate) {
+        document.documentElement.classList.add('inprivate-mode');
+        document.body.classList.add('inprivate-mode');
+        document.documentElement.setAttribute('data-theme', 'inprivate');
+        document.body.setAttribute('data-theme', 'inprivate');
+
+        const secDesc = document.querySelector('#main-screen .sip-row-desc');
+        if (secDesc) {
+            secDesc.textContent = 'Your info is private. Searches, cookies & site data leave zero trace on exit.';
+        }
+        const siteDataDesc = document.querySelector('#cookies-screen .security-desc');
+        if (siteDataDesc) {
+            siteDataDesc.innerHTML = '<strong>InPrivate Sandbox:</strong> Site data is temporarily kept in RAM and wiped automatically on exit.';
+        }
+    } else {
+        document.documentElement.classList.remove('inprivate-mode');
+        document.body.classList.remove('inprivate-mode');
+        const t = localStorage.getItem('ocal-settings-theme') || 'dark';
+        document.documentElement.setAttribute('data-theme', t);
+        document.body.setAttribute('data-theme', t);
+    }
     const mainTitle = document.querySelector('#main-screen .sip-title');
     const secDomain = document.querySelector('#security-screen .sip-domain');
     
     try {
         const url = new URL(data.url);
         currentOrigin = url.origin;
-        if (mainTitle) mainTitle.textContent = url.hostname;
-        if (secDomain) secDomain.textContent = url.hostname;
+        let displayName = url.hostname;
+        if (!displayName || displayName === 'null' || url.protocol === 'file:') {
+            displayName = isPrivate ? 'InPrivate Browsing' : 'Ocal Browser';
+        }
+        if (mainTitle) mainTitle.textContent = displayName;
+        if (secDomain) secDomain.textContent = displayName;
     } catch (e) {
-        if (mainTitle) mainTitle.textContent = data.url;
-        if (secDomain) secDomain.textContent = data.url;
+        const displayName = isPrivate ? 'InPrivate Browsing' : 'Ocal Browser';
+        if (mainTitle) mainTitle.textContent = displayName;
+        if (secDomain) secDomain.textContent = displayName;
     }
 
     // Restore toggle states from passed data (fetched from session in main process)
@@ -167,6 +195,7 @@ function getModeAccent(color, isLight) {
 }
 
 async function applyTheme() {
+    if (document.documentElement.classList.contains('inprivate-mode') || document.body.classList.contains('inprivate-mode')) return;
     try {
         const s = await window.electronAPI.invoke('get-settings');
         if (s.themeMode === 'light') {
@@ -187,6 +216,7 @@ async function applyTheme() {
 }
 applyTheme();
 window.electronAPI.on('settings-changed', (e, s) => {
+    if (document.documentElement.classList.contains('inprivate-mode') || document.body.classList.contains('inprivate-mode')) return;
     if (s.themeMode === 'light') {
         document.body.setAttribute('data-theme', 'light');
     } else {

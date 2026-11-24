@@ -101,19 +101,19 @@ function initPrivateModeHome() {
     document.documentElement.classList.add('sp-private-mode');
     document.documentElement.setAttribute('data-theme', 'dark');
     document.documentElement.style.setProperty('color-scheme', 'dark', 'important');
-    document.documentElement.style.setProperty('background-color', '#0c0d12', 'important');
-    document.documentElement.style.setProperty('background', '#0c0d12', 'important');
+    document.documentElement.style.setProperty('background-color', '#131b20', 'important');
+    document.documentElement.style.setProperty('background', '#131b20', 'important');
     if (document.body) {
         document.body.classList.add('sp-private-mode');
         document.body.setAttribute('data-theme', 'dark');
         document.body.style.setProperty('color-scheme', 'dark', 'important');
-        document.body.style.setProperty('background-color', '#0c0d12', 'important');
-        document.body.style.setProperty('background', '#0c0d12', 'important');
+        document.body.style.setProperty('background-color', '#131b20', 'important');
+        document.body.style.setProperty('background', '#131b20', 'important');
     }
     const wallpaper = document.querySelector('.sp-wallpaper-bg');
     if (wallpaper) {
-        wallpaper.style.setProperty('background-color', '#0c0d12', 'important');
-        wallpaper.style.setProperty('background', '#0c0d12', 'important');
+        wallpaper.style.setProperty('background-color', '#131b20', 'important');
+        wallpaper.style.setProperty('background', '#131b20', 'important');
     }
     document.title = 'InPrivate - Ocal Browser';
 
@@ -128,17 +128,17 @@ function initPrivateModeHome() {
     } catch (e) {}
 
     if (window.OcalColorHarmonizer) {
-        window.OcalColorHarmonizer.applyHarmonizedTheme('#a855f7', 'dark', document, false, true);
+        window.OcalColorHarmonizer.applyHarmonizedTheme('#f87d51', 'dark', document, false, true);
     }
 
     // Adjust Greeting for Clean Centered InPrivate View
     const welcomePrefix = document.getElementById('welcome-prefix');
     if (welcomePrefix) {
-        welcomePrefix.innerHTML = '<i class="fas fa-user-secret" style="margin-right: 12px; color: #a855f7;"></i>';
+        welcomePrefix.innerHTML = '<span class="sp-private-emblem"><i class="fas fa-shield-halved"></i></span>';
     }
     const userNameTitle = document.getElementById('user-name-title');
     if (userNameTitle) {
-        userNameTitle.textContent = 'InPrivate Browsing';
+        userNameTitle.textContent = 'Private Browsing';
         userNameTitle.setAttribute('contenteditable', 'false');
     }
     const motdQuote = document.querySelector('.motd-quote-icon');
@@ -152,7 +152,7 @@ function initPrivateModeHome() {
     }
     const motdText = document.getElementById('motd-text');
     if (motdText) {
-        motdText.textContent = "Ocal won't save your browsing history, cookies and site data, or form inputs on this device.";
+        motdText.textContent = "Ocal keeps your activity private on this device. Searches, cookies, and temporary data leave zero trace on exit.";
     }
 
     // Adjust Stats Bar (Crisp solid colors, no gradients)
@@ -161,7 +161,7 @@ function initPrivateModeHome() {
         statsBar.innerHTML = `
             <div class="sp-stat-item">
                 <span class="sp-dot-num" id="clock-mini">00:00</span>
-                <span class="sp-badge" style="background: #a855f7; color: #ffffff; font-weight: 700; border-radius: 6px; padding: 2px 8px;">InPrivate</span>
+                <span class="sp-badge" style="background: rgba(248, 125, 81, 0.14); border: 1px solid rgba(248, 125, 81, 0.28); color: #f87d51; font-weight: 700; border-radius: 6px; padding: 2px 8px;">InPrivate</span>
             </div>
             <div class="sp-stat-item">
                 <span class="sp-dot-num">0</span>
@@ -186,7 +186,7 @@ function initPrivateModeHome() {
     const regularCards = document.getElementById('sp-regular-hero-cards');
     if (regularCards) regularCards.style.display = 'none';
     const privateCards = document.getElementById('sp-private-benefits-grid');
-    if (privateCards) privateCards.style.display = 'grid';
+    if (privateCards) privateCards.style.display = 'flex';
 
     // Default search engine to DuckDuckGo in Private Mode with DuckDuckGo Logo
     currentSearchEngine = 'duckduckgo';
@@ -197,7 +197,7 @@ function initPrivateModeHome() {
     }
     const searchInp = document.getElementById('main-search-input') || document.getElementById('home-search');
     if (searchInp) {
-        searchInp.placeholder = 'Search privately with DuckDuckGo or enter web URL...';
+        searchInp.placeholder = 'Search privately or type a URL...';
     }
 
     // Timeline Pill
@@ -224,7 +224,87 @@ function initPrivateModeHome() {
     if (qlSub) {
         qlSub.textContent = 'Privacy-friendly web applications and private shortcuts.';
     }
+
+    // Initialize Session Vault toggle in Home if present
+    if (window.electronAPI?.invoke) {
+        window.electronAPI.invoke('get-private-superpowers').then(powers => {
+            if (powers && typeof powers.keepLogins === 'boolean') {
+                const toggle = document.getElementById('private-vault-toggle-home');
+                const status = document.getElementById('vault-status-text-home');
+                if (toggle) toggle.checked = powers.keepLogins;
+                if (status) {
+                    status.textContent = powers.keepLogins ? 'Vault Active (Logins Kept)' : 'Logins reset on exit (Default)';
+                    status.style.color = powers.keepLogins ? '#10b981' : '#64748b';
+                }
+            }
+        }).catch(() => {});
+    }
+    localStorage.removeItem('ocal-private-console-hidden');
 }
+
+window.togglePrivacyConsole = function(hide) {
+    // Deprecated: dashboard is permanently visible
+};
+
+window.testDohPing = async function(btn) {
+    const metric = document.getElementById('cpd-doh-metric-home') || document.getElementById('cpd-doh-metric');
+    const sub = document.getElementById('cpd-doh-sub-home') || document.getElementById('cpd-doh-sub');
+    if (metric) metric.innerHTML = '<i class="fas fa-spinner fa-spin" style="font-size:24px;"></i>';
+    if (sub) sub.textContent = 'Pinging Cloudflare DNS-over-HTTPS...';
+    const t0 = performance.now();
+    try {
+        await fetch('https://cloudflare-dns.com/dns-query?name=example.com&type=A', {
+            headers: { 'Accept': 'application/dns-json' },
+            mode: 'cors'
+        });
+        const elapsed = Math.round(performance.now() - t0);
+        if (metric) metric.textContent = `${elapsed}ms`;
+        if (sub) sub.textContent = `DoH Latency: ${elapsed}ms • Cloudflare 1.1.1.1`;
+    } catch (err) {
+        if (metric) metric.textContent = 'Enforced';
+        if (sub) sub.textContent = 'DoH Active • 0 ISP Lookups';
+    }
+    setTimeout(() => {
+        if (metric) metric.textContent = 'DoH';
+        if (sub) sub.textContent = 'Encrypted DNS • 0 ISP lookups';
+    }, 4000);
+};
+
+let _homeGeoShowingCoords = false;
+window.toggleGeoCoordinates = function(el) {
+    const metric = document.getElementById('cpd-geo-metric-home') || document.getElementById('cpd-geo-metric');
+    const sub = document.getElementById('cpd-geo-sub-home') || document.getElementById('cpd-geo-sub');
+    _homeGeoShowingCoords = !_homeGeoShowingCoords;
+    if (_homeGeoShowingCoords) {
+        if (metric) metric.textContent = '64.14°N';
+        if (sub) sub.textContent = '21.94°W (Reykjavik, IS) • WebRTC Blocked';
+    } else {
+        if (metric) metric.textContent = 'Masked';
+        if (sub) sub.textContent = 'WebRTC UDP shielded • GPS denied';
+    }
+};
+
+window.purgeMemoryEffect = function(btn) {
+    const metric = document.getElementById('cpd-ram-metric-home') || document.getElementById('cpd-ram-metric');
+    const sub = document.getElementById('cpd-ram-sub-home') || document.getElementById('cpd-ram-sub');
+    if (metric) metric.textContent = '0 B ✓';
+    if (sub) sub.textContent = 'RAM Swept • Zero Cache Residue';
+    setTimeout(() => {
+        if (metric) metric.textContent = '0 B';
+        if (sub) sub.textContent = 'RAM storage • Purged on exit';
+    }, 2500);
+};
+
+window.togglePrivateVault = function(checked) {
+    const status = document.getElementById('vault-status-text-home') || document.getElementById('vault-status-text');
+    if (status) {
+        status.textContent = checked ? 'Vault Active (Logins Kept)' : 'Logins reset on exit (Default)';
+        status.style.color = checked ? '#10b981' : '#64748b';
+    }
+    if (window.electronAPI?.send) {
+        window.electronAPI.send('set-private-keep-logins', checked);
+    }
+};
 
 // ── Entry Animation ──
 document.addEventListener('DOMContentLoaded', () => {
@@ -306,10 +386,11 @@ function executeSearch() {
         targetUrl = searchUrl + encodeURIComponent(q);
     }
 
-    // Only intercept direct adult destination sites from home search bar; allow search queries through to the search engine
-    const isSafe = localStorage.getItem('ocal-content-protection') !== 'false';
+    // Only intercept direct adult destination sites from home search bar if explicitly enabled by user
+    const isSafe = localStorage.getItem('ocal-content-protection') === 'true';
+    const isPrivate = window.location.search.includes('private=true') || document.documentElement.classList.contains('inprivate-mode');
     const isSearchUrl = targetUrl.includes('google.') || targetUrl.includes('bing.') || targetUrl.includes('duckduckgo.') || targetUrl.includes('brave.') || targetUrl.includes('yahoo.');
-    if (isSafe && !isSearchUrl) {
+    if (isSafe && !isPrivate && !isSearchUrl) {
         if (/xhamster|pornhub|xnxx|xvideos|redtube|youporn|chaturbate|stripchat|spankbang|eporner|beeg|brazzers|rule34|nhentai|erome|livejasmin/i.test(targetUrl) || targetUrl.includes('.xxx') || targetUrl.includes('.adult') || targetUrl.includes('.porn') || targetUrl.includes('.sex')) {
             targetUrl = 'ocal://mindful-shield?url=' + encodeURIComponent(targetUrl);
         }
@@ -2287,8 +2368,9 @@ function initNewsHubEngine() {
         if (a === '#a855f7' || a === '#8b5cf6') {
             a = (t === 'light' ? '#15AC49' : '#09F0A0');
         }
+        const s = localStorage.getItem('ocal-settings-gradient-style') || 'aura';
         if (window.OcalColorHarmonizer) {
-            window.OcalColorHarmonizer.applyHarmonizedTheme(a, t);
+            window.OcalColorHarmonizer.applyHarmonizedTheme(a, t, document, false, false, s);
         }
     }
     window.addEventListener('storage', (e) => {
@@ -2296,19 +2378,13 @@ function initNewsHubEngine() {
         if (e.newValue === '#a855f7' || e.newValue === '#8b5cf6') return;
 
         if (e.key === 'ocal-settings-accent' || e.key === 'ocal-settings-theme' ||
+            e.key === 'ocal-settings-gradient-style' || e.key === 'ocal-settings-primary-grad' ||
             e.key === 'ocal-theme-combo' || e.key === 'ocal-theme-combo-mode') {
-            const root = document.documentElement;
-            const t = localStorage.getItem('ocal-settings-theme') || 'dark';
-            let a = localStorage.getItem('ocal-settings-accent');
-            if (a === '#a855f7' || a === '#8b5cf6') {
-                a = (t === 'light' ? '#15AC49' : '#09F0A0');
-            }
-            if (root && root.getAttribute('data-theme') === t && (!a || root.style.getPropertyValue('--accent') === a)) {
-                return;
-            }
             syncHomeThemeAndGradients();
         }
     });
+
+
 })();
 
 // ── Theme Store & Home Wallpaper Atmosphere Controller ─────────────

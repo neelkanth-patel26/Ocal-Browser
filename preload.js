@@ -2805,8 +2805,15 @@ window.addEventListener('mousedown', () => {
 // ── Search Security, Adult Content Purge & In-Page Explicit Media Shield ──
 (function() {
     'use strict';
-    let contentProtectionActive = true;
-    let explicitImagesBlockActive = true;
+    const isPrivateContext = (function() {
+        try {
+            if (typeof process !== 'undefined' && process.argv && process.argv.includes('--is-private-window')) return true;
+            if (window.location && (window.location.search.includes('private=true') || window.location.pathname.includes('private-window') || window.location.pathname.includes('private-home'))) return true;
+        } catch (_) {}
+        return false;
+    })();
+    let contentProtectionActive = false;
+    let explicitImagesBlockActive = false;
     const scannedImages = new WeakSet();
 
     const ADULT_DOMAINS_SET = new Set([
@@ -3406,8 +3413,8 @@ window.addEventListener('mousedown', () => {
             }
         } catch (_) {}
 
-        // Immediate full-page adult site shield check
-        if (contentProtectionActive && isAdultLink(href)) {
+        // Immediate full-page adult site shield check (bypassed in private window or when protection is disabled)
+        if (!isPrivateContext && contentProtectionActive && isAdultLink(href)) {
             try { window.stop(); } catch (_) {}
             if (document.documentElement) {
                 document.documentElement.style.display = 'none';
@@ -3440,8 +3447,8 @@ window.addEventListener('mousedown', () => {
         if (ipc && ipc.invoke) {
             ipc.invoke('get-settings').then(s => {
                 if (s) {
-                    contentProtectionActive = s.contentProtectionEnabled !== false;
-                    explicitImagesBlockActive = s.explicitImagesBlockEnabled !== false;
+                    contentProtectionActive = !isPrivateContext && (s.contentProtectionEnabled === true);
+                    explicitImagesBlockActive = !isPrivateContext && (s.explicitImagesBlockEnabled === true);
                 }
                 if (contentProtectionActive) {
                     scanAndShieldSections();
@@ -3453,8 +3460,8 @@ window.addEventListener('mousedown', () => {
 
             ipc.on('settings-changed', (e, s) => {
                 if (s) {
-                    contentProtectionActive = s.contentProtectionEnabled !== false;
-                    explicitImagesBlockActive = s.explicitImagesBlockEnabled !== false;
+                    contentProtectionActive = !isPrivateContext && (s.contentProtectionEnabled === true);
+                    explicitImagesBlockActive = !isPrivateContext && (s.explicitImagesBlockEnabled === true);
                 }
                 if (contentProtectionActive) {
                     scanAndShieldSections();

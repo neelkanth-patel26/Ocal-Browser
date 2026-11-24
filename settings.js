@@ -328,6 +328,9 @@ function applyAccent(color, skipIpc = false, immediateIpc = false) {
     if (window.OcalColorHarmonizer) {
         const harmony = window.OcalColorHarmonizer.applyHarmonizedTheme(activeAccent, isLight ? 'light' : 'dark');
         updateAIGradientPreviews(harmony);
+        if (typeof window.renderGlobalGradientStyleOptions === 'function') {
+            window.renderGlobalGradientStyleOptions(activeAccent);
+        }
     }
 
     try {
@@ -1169,7 +1172,7 @@ const populateReleaseNotes = (version, notesHtml) => {
     if (catalogTag) catalogTag.textContent = `v${version}`;
 };
 
-const formatGitHubMarkdown = (markdown, version = currentVer || '10.1.23') => {
+const formatGitHubMarkdown = (markdown, version = currentVer || '10.1.24') => {
     if (!markdown) return '';
 
     const stripEmojis = (str) => {
@@ -1446,7 +1449,7 @@ function isNewerVersion(latest, current) {
 
 async function initAboutDiagnostics() {
     let diag = null;
-    let v = '10.1.23';
+    let v = '10.1.24';
 
     try {
         if (window.electronAPI && typeof window.electronAPI.getDiagnostics === 'function') {
@@ -4102,6 +4105,121 @@ function renderHomepageSettings(s) {
         }
     }
 
+    function renderGradientStyleOptions(hex) {
+        if (!window.OcalColorHarmonizer || typeof window.OcalColorHarmonizer.getHarmonicGradientStyles !== 'function') return;
+        const color = hex || localStorage.getItem('ocal-settings-accent') || '#15AC49';
+        const styles = window.OcalColorHarmonizer.getHarmonicGradientStyles(color);
+        if (!Array.isArray(styles) || styles.length === 0) return;
+
+        const currentStyleId = localStorage.getItem('ocal-settings-gradient-style') || 'aura';
+        const activeStyle = styles.find(s => s.id === currentStyleId) || styles[0];
+
+        // 1. Update Main Settings Page Option Grid
+        const mainGrid = document.getElementById('settings-gradient-options-grid');
+        const mainBadge = document.getElementById('settings-active-grad-badge');
+        if (mainBadge) mainBadge.innerText = activeStyle.name;
+
+        if (mainGrid) {
+            mainGrid.innerHTML = styles.map(s => {
+                const isActive = (s.id === activeStyle.id);
+                return `
+                    <div class="settings-grad-card ${isActive ? 'active' : ''}" data-style-id="${s.id}" title="${s.description}">
+                        <div class="settings-grad-card-left">
+                            <div class="settings-grad-preview-pill">
+                                <div class="settings-grad-half primary" style="background: ${s.primary};"></div>
+                                <div class="settings-grad-half secondary" style="background: ${s.secondary};"></div>
+                            </div>
+                            <div class="settings-grad-text">
+                                <span class="settings-grad-name">${s.name}</span>
+                                <span class="settings-grad-desc">${s.subtitle}</span>
+                            </div>
+                        </div>
+                        <div class="settings-grad-check"><i class="fas fa-check"></i></div>
+                    </div>
+                `;
+            }).join('');
+
+            mainGrid.querySelectorAll('.settings-grad-card').forEach(card => {
+                card.onclick = (e) => {
+                    e.stopPropagation();
+                    const styleId = card.dataset.styleId;
+                    if (!styleId) return;
+
+                    handleGradientStyleSelect(styleId);
+                };
+            });
+        }
+
+        // 2. Update Popover Grid (if present)
+        const popoverGrid = document.getElementById('ccp-gradient-options-grid');
+        const popoverBadge = document.getElementById('ccp-gss-active-badge');
+        if (popoverBadge) popoverBadge.innerText = activeStyle.name;
+
+        if (popoverGrid) {
+            popoverGrid.innerHTML = styles.map(s => {
+                const isActive = (s.id === activeStyle.id);
+                return `
+                    <div class="ccp-grad-card ${isActive ? 'active' : ''}" data-style-id="${s.id}" title="${s.description}">
+                        <div class="ccp-grad-dual-preview">
+                            <div class="ccp-grad-swatch-half primary" style="background: ${s.primary};">
+                                <span class="ccp-grad-tag"><i class="fas fa-stopwatch"></i> Focus</span>
+                            </div>
+                            <div class="ccp-grad-swatch-half secondary" style="background: ${s.secondary};">
+                                <span class="ccp-grad-tag"><i class="fas fa-cloud-sun"></i> Weather</span>
+                            </div>
+                        </div>
+                        <div class="ccp-grad-card-bottom">
+                            <div class="ccp-grad-card-info">
+                                <span class="ccp-grad-card-name">${s.name}</span>
+                                <span class="ccp-grad-card-desc">${s.subtitle}</span>
+                            </div>
+                            <div class="ccp-grad-check"><i class="fas fa-check"></i></div>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+
+            popoverGrid.querySelectorAll('.ccp-grad-card').forEach(card => {
+                card.onclick = (e) => {
+                    e.stopPropagation();
+                    const styleId = card.dataset.styleId;
+                    if (!styleId) return;
+
+                    handleGradientStyleSelect(styleId);
+                };
+            });
+        }
+
+        function handleGradientStyleSelect(styleId) {
+            const match = styles.find(s => s.id === styleId);
+            const styleName = match ? match.name : styleId;
+
+            if (mainBadge) mainBadge.innerText = styleName;
+            if (popoverBadge) popoverBadge.innerText = styleName;
+
+            if (mainGrid) {
+                mainGrid.querySelectorAll('.settings-grad-card').forEach(c => c.classList.toggle('active', c.dataset.styleId === styleId));
+            }
+            if (popoverGrid) {
+                popoverGrid.querySelectorAll('.ccp-grad-card').forEach(c => c.classList.toggle('active', c.dataset.styleId === styleId));
+            }
+
+            try {
+                localStorage.setItem('ocal-settings-gradient-style', styleId);
+                localStorage.setItem('ocal-settings-custom-color', 'true');
+            } catch (err) {}
+
+            if (window.OcalColorHarmonizer && window.OcalColorHarmonizer.setGradientStyle) {
+                window.OcalColorHarmonizer.setGradientStyle(styleId);
+            }
+
+            if (window.electronAPI && window.electronAPI.updateSetting) {
+                window.electronAPI.updateSetting('gradientStyle', styleId);
+            }
+        }
+    }
+    window.renderGlobalGradientStyleOptions = renderGradientStyleOptions;
+
     function syncStudioUI(source = 'hsv', skipIpc = false) {
         const rgb = hsvToRgb(currentHsv.h, currentHsv.s, currentHsv.v);
         const hex = rgbToHex(rgb.r, rgb.g, rgb.b);
@@ -4125,7 +4243,12 @@ function renderHomepageSettings(s) {
         if (customDot) customDot.style.background = hex;
         if (statAccent) statAccent.innerText = `Custom (${hex})`;
 
+        try {
+            localStorage.setItem('ocal-settings-custom-color', 'true');
+        } catch (e) {}
+
         renderAISuggestions(hex);
+        renderGradientStyleOptions(hex);
         applyAccent(hex, skipIpc);
     }
 
@@ -4303,6 +4426,8 @@ function renderHomepageSettings(s) {
     if (rInput) rInput.oninput = handleRgbInput;
     if (gInput) gInput.oninput = handleRgbInput;
     if (bInput) bInput.oninput = handleRgbInput;
+
+    renderGradientStyleOptions(currentAccent);
 
     // Compact mode
     const compactCb = document.getElementById('compact-toggle-cb');

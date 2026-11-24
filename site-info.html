@@ -8,11 +8,18 @@
     <script src="color-harmonizer.js"></script>
     <script>
         (function () {
-            var t = localStorage.getItem('ocal-settings-theme') || 'dark';
-            document.documentElement.setAttribute('data-theme', t);
-            var a = localStorage.getItem('ocal-settings-accent');
-            if (window.OcalColorHarmonizer) {
-                window.OcalColorHarmonizer.applyHarmonizedTheme(a, t);
+            var params = new URLSearchParams(window.location.search);
+            var isPrivate = params.get('isPrivate') === 'true' || window.location.hash.includes('inprivate');
+            if (isPrivate) {
+                document.documentElement.classList.add('inprivate-mode');
+                document.documentElement.setAttribute('data-theme', 'inprivate');
+            } else {
+                var t = localStorage.getItem('ocal-settings-theme') || 'dark';
+                document.documentElement.setAttribute('data-theme', t);
+                var a = localStorage.getItem('ocal-settings-accent');
+                if (window.OcalColorHarmonizer) {
+                    window.OcalColorHarmonizer.applyHarmonizedTheme(a, t);
+                }
             }
         })();
     </script>
@@ -289,11 +296,12 @@
         .sip-toggle {
             position: relative;
             display: inline-block;
-            width: 36px;
-            height: 20px;
+            width: 38px;
+            height: 22px;
             flex-shrink: 0;
-            background: rgba(148, 163, 184, 0.3);
-            transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+            background: rgba(148, 163, 184, 0.25);
+            border: 1.5px solid rgba(148, 163, 184, 0.3);
+            transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
             border-radius: 100px;
             cursor: pointer;
         }
@@ -302,16 +310,17 @@
             position: absolute;
             height: 14px;
             width: 14px;
-            left: 3px;
-            top: 3px;
+            left: 2.5px;
+            top: 2.5px;
             background: #FFFFFF;
-            transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+            transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
             border-radius: 50%;
-            box-shadow: none !important;
+            box-shadow: 0 1px 2px rgba(0, 0, 0, 0.25);
         }
 
         .sip-toggle.on {
             background: var(--accent) !important;
+            border-color: var(--accent) !important;
         }
 
         .sip-toggle.on .sip-toggle-dot {
@@ -365,28 +374,43 @@
         
         /* Modern Reset Button */
         .sip-reset-btn { 
-            background: rgba(239, 68, 68, 0.08); 
-            border: 1px solid rgba(239, 68, 68, 0.2); 
+            background: var(--card-bg); 
+            border: 1px solid var(--card-border); 
             cursor: pointer;
             width: 100%; 
-            text-align: center; 
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 7px;
             padding: 8px 12px;
-            font-size: 10.5px; 
-            font-weight: 800; 
-            color: #EF4444;
+            font-size: 11.5px; 
+            font-weight: 600; 
+            color: var(--text-primary);
             transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
-            border-radius: 12px;
+            border-radius: 10px;
             font-family: inherit;
-            text-transform: uppercase;
-            letter-spacing: 0.6px;
-            margin: 2px 0;
+            text-transform: none;
+            letter-spacing: normal;
+            margin: 3px 0;
             outline: none;
+            box-shadow: none !important;
+        }
+
+        .sip-reset-btn i {
+            font-size: 11px;
+            color: var(--accent);
+            transition: transform 0.25s ease;
         }
 
         .sip-reset-btn:hover {
-            background: #EF4444;
-            border-color: #EF4444;
-            color: #FFFFFF;
+            background: var(--accent);
+            border-color: var(--accent);
+            color: var(--accent-text);
+        }
+
+        .sip-reset-btn:hover i {
+            color: var(--accent-text);
+            transform: rotate(-60deg);
         }
 
         .sip-btn {
@@ -489,13 +513,249 @@
             color: #EF4444; 
             border-color: #EF4444; 
         }
+    
+        /* ── InPrivate Mode Theme (Deep Petrol & Terracotta Coral) ── */
+        html.inprivate-mode,
+        body.inprivate-mode,
+        [data-theme="inprivate"],
+        body[data-theme="inprivate"] {
+            --accent: #f87d51 !important;
+            --accent-hover: #ff8e66 !important;
+            --accent-glow: rgba(248, 125, 81, 0.22) !important;
+            --accent-dim: rgba(248, 125, 81, 0.12) !important;
+            --accent-text: #ffffff !important;
+            --bg-glass: #1e2b33 !important;
+            --border-glass: #283944 !important;
+            --card-bg: #253642 !important;
+            --card-border: #2e414e !important;
+            --card-hover-bg: #2d3f4d !important;
+            --text-primary: #ffffff !important;
+            --text-secondary: #94a3b8 !important;
+            --text-muted: #64748b !important;
+            color-scheme: dark !important;
+        }
+
+        body.inprivate-mode {
+            color-scheme: dark !important;
+        }
+
+        body.inprivate-mode .site-info-popup {
+            background: #1e2b33 !important;
+            border: 1px solid #283944 !important;
+            border-radius: 16px !important;
+            box-shadow: none !important;
+        }
+
+        body.inprivate-mode .sip-header {
+            border-bottom: 1px solid #283944 !important;
+        }
+
+        body.inprivate-mode .sip-title {
+            color: #ffffff !important;
+            font-weight: 700 !important;
+        }
+
+        body.inprivate-mode .sip-row {
+            background: #253642 !important;
+            border: 1px solid #2e414e !important;
+            border-radius: 12px !important;
+        }
+
+        body.inprivate-mode .sip-row:hover {
+            background: #2d3f4d !important;
+            border-color: #f87d51 !important;
+        }
+
+        body.inprivate-mode .sip-row-icon.secure {
+            background: rgba(248, 125, 81, 0.15) !important;
+            border: 1px solid rgba(248, 125, 81, 0.35) !important;
+            color: #f87d51 !important;
+        }
+
+        body.inprivate-mode .sip-row-title {
+            color: #ffffff !important;
+        }
+
+        body.inprivate-mode .sip-row-desc {
+            color: #94a3b8 !important;
+        }
+
+        body.inprivate-mode .sip-perm-item {
+            background: #253642 !important;
+            border: 1px solid #2e414e !important;
+            border-radius: 12px !important;
+        }
+
+        body.inprivate-mode .sip-perm-item:hover {
+            background: #2d3f4d !important;
+            border-color: rgba(248, 125, 81, 0.4) !important;
+        }
+
+        body.inprivate-mode .sip-perm-label {
+            color: #ffffff !important;
+            font-weight: 600 !important;
+        }
+
+        body.inprivate-mode .sip-perm-label i {
+            background: #1e2b33 !important;
+            border: 1px solid #283944 !important;
+            color: #f87d51 !important;
+        }
+
+        body.inprivate-mode .sip-toggle {
+            background: #18242b !important;
+            border: 1.5px solid #384c59 !important;
+        }
+
+        body.inprivate-mode .sip-toggle .sip-toggle-dot {
+            background: #e2e8f0 !important;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.4) !important;
+        }
+
+        body.inprivate-mode .sip-toggle:hover {
+            border-color: #f87d51 !important;
+        }
+
+        body.inprivate-mode .sip-toggle:hover .sip-toggle-dot {
+            background: #ffffff !important;
+        }
+
+        body.inprivate-mode .sip-toggle.on {
+            background: #f87d51 !important;
+            border-color: #f87d51 !important;
+        }
+
+        body.inprivate-mode .sip-toggle.on .sip-toggle-dot {
+            transform: translateX(16px) !important;
+            background: #ffffff !important;
+        }
+
+        body.inprivate-mode .sip-footer-item {
+            background: #253642 !important;
+            border: 1px solid #2e414e !important;
+            border-radius: 12px !important;
+        }
+
+        body.inprivate-mode .sip-footer-item:hover {
+            background: #2d3f4d !important;
+            border-color: rgba(248, 125, 81, 0.4) !important;
+        }
+
+        body.inprivate-mode .sip-footer-item i.fas {
+            background: #1e2b33 !important;
+            border: 1px solid #283944 !important;
+            color: #f87d51 !important;
+        }
+
+        body.inprivate-mode .sip-footer-label {
+            color: #ffffff !important;
+            font-weight: 600 !important;
+        }
+
+        body.inprivate-mode .sip-close,
+        body.inprivate-mode .sip-back-btn {
+            background: transparent !important;
+            border: none !important;
+            color: #94a3b8 !important;
+        }
+
+        body.inprivate-mode .sip-close:hover,
+        body.inprivate-mode .sip-back-btn:hover {
+            background: rgba(255, 255, 255, 0.08) !important;
+            color: #ffffff !important;
+            transform: none !important;
+        }
+
+        body.inprivate-mode .sip-reset-btn {
+            background: #253642 !important;
+            border: 1px solid #384c59 !important;
+            color: #f87d51 !important;
+            border-radius: 10px !important;
+            font-size: 11.5px !important;
+            font-weight: 600 !important;
+            text-transform: none !important;
+            letter-spacing: normal !important;
+            padding: 8px 12px !important;
+            display: flex !important;
+            align-items: center !important;
+            justify-content: center !important;
+            gap: 7px !important;
+            cursor: pointer !important;
+            transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1) !important;
+            box-shadow: none !important;
+            margin: 3px 0 !important;
+        }
+
+        body.inprivate-mode .sip-reset-btn i {
+            font-size: 11px !important;
+            color: #f87d51 !important;
+            transition: transform 0.25s ease !important;
+        }
+
+        body.inprivate-mode .sip-reset-btn:hover {
+            background: #f87d51 !important;
+            border-color: #f87d51 !important;
+            color: #ffffff !important;
+        }
+
+        body.inprivate-mode .sip-reset-btn:hover i {
+            color: #ffffff !important;
+            transform: rotate(-60deg) !important;
+        }
+
+        body.inprivate-mode .sip-separator {
+            background: #283944 !important;
+        }
+
+        body.inprivate-mode .cookie-item {
+            background: #253642 !important;
+            border: 1px solid #2e414e !important;
+            color: #ffffff !important;
+            border-radius: 10px !important;
+        }
+
+        body.inprivate-mode .cookie-item:hover {
+            background: #2d3f4d !important;
+            border-color: #f87d51 !important;
+        }
+
+        body.inprivate-mode .cookie-domain {
+            color: #ffffff !important;
+        }
+
+        body.inprivate-mode .cookie-action {
+            border-color: #283944 !important;
+            color: #94a3b8 !important;
+        }
+
+        body.inprivate-mode .cookie-action:hover {
+            background: rgba(239, 68, 68, 0.2) !important;
+            color: #ef4444 !important;
+            border-color: #ef4444 !important;
+        }
+
+        body.inprivate-mode .sip-btn.primary {
+            background: #f87d51 !important;
+            color: #ffffff !important;
+        }
+
+        body.inprivate-mode .sip-btn.primary:hover {
+            background: #ff8e66 !important;
+        }
     </style>
+
 </head>
 <body data-theme="dark">
     <script>
         (function () {
-            const t = localStorage.getItem('ocal-settings-theme') || 'dark';
-            document.body.setAttribute('data-theme', t);
+            var isPrivate = document.documentElement.classList.contains('inprivate-mode') || document.documentElement.getAttribute('data-theme') === 'inprivate';
+            if (isPrivate) {
+                document.body.classList.add('inprivate-mode');
+                document.body.setAttribute('data-theme', 'inprivate');
+            } else {
+                var t = localStorage.getItem('ocal-settings-theme') || 'dark';
+                document.body.setAttribute('data-theme', t);
+            }
         })();
     </script>
     <div class="site-info-popup">
@@ -545,7 +805,7 @@
                     </div>
                 </div>
                 
-                <button class="sip-reset-btn">Reset permissions</button>
+                <button class="sip-reset-btn" id="sip-reset-btn"><i class="fas fa-rotate-left"></i> Reset permissions</button>
                 
                 <div class="sip-separator"></div>
                 

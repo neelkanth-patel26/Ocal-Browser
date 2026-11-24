@@ -1680,12 +1680,43 @@
                 renderStep();
             };
 
+            window.finishAndLaunch = function () {
+                // 1. Mark setup as completed in settings and local storage
+                currentSettings.setupComplete = true;
+                currentSettings.hasCompletedOnboarding = true;
+
+                try {
+                    localStorage.setItem('ocal-setup-complete', 'true');
+                    localStorage.setItem('ocal-onboarding-completed', 'true');
+                } catch (e) {}
+
+                // 2. Persist to main settings
+                if (window.electronAPI && window.electronAPI.updateSetting) {
+                    window.electronAPI.updateSetting('setupComplete', true);
+                    window.electronAPI.updateSetting('hasCompletedOnboarding', true);
+                }
+
+                // 3. Notify main process to finalize onboarding
+                if (window.electronAPI && window.electronAPI.send) {
+                    window.electronAPI.send('finish-onboarding');
+                }
+
+                // 4. Navigate current view to home tab (Start Browsing!)
+                if (window.electronAPI && window.electronAPI.navigateTo) {
+                    window.electronAPI.navigateTo('ocal://home');
+                } else if (window.electronAPI && window.electronAPI.send) {
+                    window.electronAPI.send('navigate-to', 'ocal://home');
+                } else {
+                    window.location.href = 'home.html';
+                }
+            };
+
             window.nextStep = function () {
                 if (currentStep < totalSteps) {
                     currentStep++;
                     renderStep();
                 } else {
-                    finishAndLaunch();
+                    window.finishAndLaunch();
                 }
             };
 

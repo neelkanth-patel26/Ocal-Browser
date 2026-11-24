@@ -10954,6 +10954,170 @@ body[data-theme="light"] .ccp-aic-tag {
     border-color: color-mix(in srgb, var(--chip-c) 30%, transparent);
 }
 
+/* ── Custom Color Studio Card Gradient Style Selection ── */
+.ccp-gradient-styles-section {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    padding-top: 12px;
+    border-top: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+body[data-theme="light"] .ccp-gradient-styles-section {
+    border-top-color: rgba(0, 0, 0, 0.08);
+}
+
+.ccp-gss-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+
+.ccp-gss-title {
+    display: flex;
+    align-items: center;
+    gap: 7px;
+    font-size: 12px;
+    font-weight: 700;
+    color: var(--text, #FFFFFF);
+    letter-spacing: -0.1px;
+}
+
+.ccp-gss-title i {
+    color: var(--accent);
+    font-size: 11px;
+}
+
+.ccp-gss-badge {
+    font-size: 9.5px;
+    font-weight: 750;
+    padding: 2.5px 8px;
+    border-radius: 6px;
+    background: var(--accent);
+    color: var(--accent-text, #FFFFFF);
+    text-transform: uppercase;
+    letter-spacing: 0.3px;
+}
+
+.ccp-gss-subtitle {
+    font-size: 10.5px;
+    color: var(--text-dim, #94A3B8);
+    margin-top: -3px;
+}
+
+.ccp-gradient-options-grid {
+    display: flex;
+    flex-direction: column;
+    gap: 7px;
+    margin-top: 2px;
+}
+
+.ccp-grad-card {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    padding: 8px 10px;
+    border-radius: 10px;
+    background: rgba(255, 255, 255, 0.04);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    cursor: pointer;
+    transition: all 0.16s ease;
+    user-select: none;
+}
+
+body[data-theme="light"] .ccp-grad-card {
+    background: #F8FAFC;
+    border-color: #E2E8F0;
+}
+
+.ccp-grad-card:hover {
+    background: rgba(255, 255, 255, 0.08);
+    border-color: rgba(255, 255, 255, 0.16);
+    transform: translateY(-1px);
+}
+
+body[data-theme="light"] .ccp-grad-card:hover {
+    background: #F1F5F9;
+    border-color: #CBD5E1;
+}
+
+.ccp-grad-card.active {
+    background: color-mix(in srgb, var(--accent) 12%, rgba(255, 255, 255, 0.03));
+    border: 1.5px solid var(--accent);
+}
+
+body[data-theme="light"] .ccp-grad-card.active {
+    background: color-mix(in srgb, var(--accent) 10%, #FFFFFF);
+    border: 1.5px solid var(--accent);
+}
+
+.ccp-grad-dual-preview {
+    display: flex;
+    gap: 4px;
+    height: 24px;
+    border-radius: 6px;
+    overflow: hidden;
+}
+
+.ccp-grad-swatch-half {
+    flex: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 4px;
+}
+
+.ccp-grad-tag {
+    font-size: 9px;
+    font-weight: 750;
+    color: #FFFFFF;
+    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.5);
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    opacity: 0.95;
+}
+
+.ccp-grad-card-bottom {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0 2px;
+}
+
+.ccp-grad-card-info {
+    display: flex;
+    align-items: baseline;
+    gap: 6px;
+}
+
+.ccp-grad-card-name {
+    font-size: 11.5px;
+    font-weight: 700;
+    color: var(--text, #FFFFFF);
+}
+
+.ccp-grad-card-desc {
+    font-size: 10px;
+    color: var(--text-dim, #94A3B8);
+}
+
+.ccp-grad-check {
+    width: 16px;
+    height: 16px;
+    border-radius: 50%;
+    background: var(--accent);
+    color: var(--accent-text, #FFFFFF);
+    display: none;
+    align-items: center;
+    justify-content: center;
+    font-size: 8px;
+}
+
+.ccp-grad-card.active .ccp-grad-check {
+    display: flex;
+}
+
 @keyframes popoverSlideIn {
     from {
         opacity: 0;
@@ -24567,4 +24731,150 @@ body[data-theme="dark"] #specials input[type="range"]#ambient-volume-slider {
     padding: 0 !important;
     box-shadow: none !important;
     cursor: pointer !important;
+}
+
+/* ── Main Settings Card Gradient Harmony Row & Options ── */
+.card-gradient-harmony-row {
+    border-top: 1px solid rgba(255, 255, 255, 0.06);
+    margin-top: 8px;
+    padding-top: 16px !important;
+}
+
+body[data-theme="light"] .card-gradient-harmony-row {
+    border-top-color: #E2E8F0;
+}
+
+.str-icon-pink {
+    background: rgba(236, 72, 153, 0.15);
+    color: #EC4899;
+}
+
+body[data-theme="light"] .str-icon-pink {
+    background: #FDF2F8;
+    color: #DB2777;
+}
+
+.settings-active-badge-pill {
+    display: inline-flex;
+    align-items: center;
+    font-size: 11px;
+    font-weight: 750;
+    padding: 3px 10px;
+    border-radius: 8px;
+    background: var(--accent);
+    color: var(--accent-text, #FFFFFF);
+    text-transform: uppercase;
+    letter-spacing: 0.4px;
+}
+
+.settings-gradient-options-container {
+    padding: 0 16px 16px 16px;
+}
+
+.settings-gradient-options-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 10px;
+}
+
+.settings-grad-card {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 10px 14px;
+    border-radius: 12px;
+    background: #23242B;
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    cursor: pointer;
+    transition: all 0.16s ease;
+    user-select: none;
+}
+
+body[data-theme="light"] .settings-grad-card {
+    background: #F8FAFC;
+    border: 1px solid #E2E8F0;
+}
+
+.settings-grad-card:hover {
+    background: #2A2B34;
+    border-color: rgba(255, 255, 255, 0.18);
+    transform: translateY(-1px);
+}
+
+body[data-theme="light"] .settings-grad-card:hover {
+    background: #F1F5F9;
+    border-color: #CBD5E1;
+}
+
+.settings-grad-card.active {
+    background: color-mix(in srgb, var(--accent) 14%, #23242B);
+    border: 1.5px solid var(--accent);
+}
+
+body[data-theme="light"] .settings-grad-card.active {
+    background: color-mix(in srgb, var(--accent) 10%, #FFFFFF);
+    border: 1.5px solid var(--accent);
+}
+
+.settings-grad-card-left {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.settings-grad-preview-pill {
+    display: flex;
+    width: 38px;
+    height: 22px;
+    border-radius: 6px;
+    overflow: hidden;
+    gap: 1.5px;
+    flex-shrink: 0;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.25);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+body[data-theme="light"] .settings-grad-preview-pill {
+    border-color: rgba(0, 0, 0, 0.08);
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
+}
+
+.settings-grad-half {
+    flex: 1;
+    height: 100%;
+}
+
+.settings-grad-text {
+    display: flex;
+    flex-direction: column;
+    gap: 1px;
+}
+
+.settings-grad-name {
+    font-size: 13px;
+    font-weight: 750;
+    color: var(--text, #FFFFFF);
+    letter-spacing: -0.1px;
+}
+
+.settings-grad-desc {
+    font-size: 11px;
+    color: var(--text-dim, #94A3B8);
+}
+
+.settings-grad-check {
+    width: 20px;
+    height: 20px;
+    border-radius: 50%;
+    background: var(--accent);
+    color: var(--accent-text, #FFFFFF);
+    display: none;
+    align-items: center;
+    justify-content: center;
+    font-size: 9.5px;
+    flex-shrink: 0;
+}
+
+.settings-grad-card.active .settings-grad-check {
+    display: flex;
 }

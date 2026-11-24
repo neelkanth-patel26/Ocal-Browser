@@ -26,6 +26,24 @@
             --icon-color: #09f0a0;
         }
 
+        
+        [data-theme="inprivate"], body[data-theme="inprivate"] {
+            --bg-card: #1e2b33;
+            --border-card: #283944;
+            --text-primary: #ffffff;
+            --text-secondary: #94a3b8;
+            --text-muted: #64748b;
+            --btn-block-bg: #253642;
+            --btn-block-border: #2e414e;
+            --btn-block-hover: rgba(239, 68, 68, 0.15);
+            --btn-block-text: #94a3b8;
+            --btn-block-text-hover: #f87171;
+            --icon-bg: rgba(248, 125, 81, 0.15);
+            --icon-border: rgba(248, 125, 81, 0.35);
+            --icon-color: #f87d51;
+            --accent: #f87d51;
+        }
+
         [data-theme="light"], body[data-theme="light"] {
             --bg-card: rgba(255, 255, 255, 0.98);
             --border-card: rgba(0, 0, 0, 0.1);
@@ -289,12 +307,14 @@
         let currentRequestId = null;
 
         function applyTheme(themeMode, accentColor) {
-            const isLight = themeMode === 'light';
-            document.documentElement.setAttribute('data-theme', isLight ? 'light' : 'dark');
-            document.body.setAttribute('data-theme', isLight ? 'light' : 'dark');
+            const isPrivate = themeMode === 'inprivate';
+            const isLight = !isPrivate && themeMode === 'light';
+            const mode = isPrivate ? 'inprivate' : (isLight ? 'light' : 'dark');
+            document.documentElement.setAttribute('data-theme', mode);
+            document.body.setAttribute('data-theme', mode);
             if (accentColor) {
                 document.documentElement.style.setProperty('--accent', accentColor);
-                document.documentElement.style.setProperty('--accent-glow', isLight ? 'rgba(5, 143, 96, 0.25)' : 'rgba(9, 240, 160, 0.25)');
+                document.documentElement.style.setProperty('--accent-glow', isPrivate ? 'rgba(248, 125, 81, 0.25)' : (isLight ? 'rgba(5, 143, 96, 0.25)' : 'rgba(9, 240, 160, 0.25)'));
                 document.documentElement.style.setProperty('--icon-color', accentColor);
             }
         }

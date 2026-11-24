@@ -18,7 +18,7 @@ Write-Host "--- 🌌 Ocal Browser v$version Premium Build ---" -ForegroundColor 
 
 # 1. Directory Cleanup
 Write-Host "[1/4] Cleaning build artifacts..." -ForegroundColor Gray
-@("dist-inno", "out", "dist-builder", "scratch") | ForEach-Object {
+@("dist-inno", "out", "dist-builder") | ForEach-Object {
     if (Test-Path $_) {
         try { Remove-Item -Recurse -Force $_ -ErrorAction SilentlyContinue } catch {}
     }

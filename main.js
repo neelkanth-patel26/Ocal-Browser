@@ -137,6 +137,8 @@ const enabledFeatures = [
     'SmoothScrolling',
     'PercentBasedScrolling',
     'TouchpadOverscrollHistoryNavigation',
+    'DnsOverHttps',
+    'EncryptedClientHello',
     ...(isHwAccelEnabled ? [
         'CanvasOopRasterization',
         'DirectCompositionOverlays',
@@ -157,6 +159,11 @@ app.commandLine.appendSwitch('enable-parallel-downloading');
 app.commandLine.appendSwitch('enable-tcp-fast-open');
 app.commandLine.appendSwitch('dns-prefetch-disable', 'false');
 app.commandLine.appendSwitch('enable-fast-unload');
+
+// Anti-Surveillance & IP Leak Shield: DoH & WebRTC IP Cloaking
+app.commandLine.appendSwitch('force-webrtc-ip-handling-policy', 'disable_non_proxied_udp');
+app.commandLine.appendSwitch('dns-over-https-mode', 'automatic');
+app.commandLine.appendSwitch('dns-over-https-templates', 'https://cloudflare-dns.com/dns-query{?dns} https://dns.quad9.net/dns-query');
 
 // Optimize JavaScript engine heap memory limit for heavy web apps
 app.commandLine.appendSwitch('js-flags', '--max-old-space-size=4096');
@@ -677,16 +684,14 @@ if (userSettings.cyberStealthEnabled === undefined) userSettings.cyberStealthEna
 if (userSettings.aiAssistantEnabled === undefined) userSettings.aiAssistantEnabled = true;
 if (userSettings.assetVaultEnabled === undefined) userSettings.assetVaultEnabled = true;
 
-// Search Hub & Content Protection Defaults (Active by default)
+// Search Hub & Content Protection Defaults (Unrestricted / No Barriers by default)
 if (userSettings.instantSearchEnabled === undefined) userSettings.instantSearchEnabled = true;
-if (userSettings.safeSearchEnabled === undefined) userSettings.safeSearchEnabled = true;
-if (userSettings.contentProtectionEnabled === undefined) userSettings.contentProtectionEnabled = true;
-if (userSettings.adultDomainsBlockEnabled === undefined) userSettings.adultDomainsBlockEnabled = true;
-// Explicit images filtering: must default to true, and heal any legacy inconsistency when content protection is active
-if (userSettings.explicitImagesBlockEnabled === undefined || (userSettings.contentProtectionEnabled !== false && userSettings.explicitImagesBlockEnabled === false && userSettings.adultDomainsBlockEnabled !== false)) {
-    userSettings.explicitImagesBlockEnabled = true;
-}
-if (userSettings.mindfulQuotesEnabled === undefined) userSettings.mindfulQuotesEnabled = true;
+if (userSettings.safeSearchEnabled === undefined) userSettings.safeSearchEnabled = false;
+if (userSettings.contentProtectionEnabled === undefined) userSettings.contentProtectionEnabled = false;
+if (userSettings.adultDomainsBlockEnabled === undefined) userSettings.adultDomainsBlockEnabled = false;
+if (userSettings.explicitImagesBlockEnabled === undefined) userSettings.explicitImagesBlockEnabled = false;
+if (userSettings.mindfulQuotesEnabled === undefined) userSettings.mindfulQuotesEnabled = false;
+if (userSettings.confirmPrivateExit === undefined) userSettings.confirmPrivateExit = false;
 
 // Shield Stats Initialization & Migration
 if (!userSettings.shieldStats) {
@@ -1434,7 +1439,7 @@ function applyShieldSettings() {
         }
 
         // Enforce strict YouTube and Google SafeSearch headers
-        if (userSettings.contentProtectionEnabled !== false && userSettings.safeSearchEnabled !== false) {
+        if (userSettings.contentProtectionEnabled === true && userSettings.safeSearchEnabled === true) {
             if (url.includes('youtube.com')) {
                 headers['YouTube-Restrict'] = 'Strict';
             }
@@ -2104,8 +2109,8 @@ function createMainWindow() {
         // Always open a tab on startup: onboarding only on fresh setup, otherwise home tab
         if (views.length === 0) {
             const startupUrl = getArgumentURL(process.argv);
-            // User requested: "and for now let the onbordignshow up when open the app"
-            const isFreshSetup = true; // temporarily show onboarding on every startup
+            // Onboarding only appears on a fresh install (when setupComplete is false)
+            const isFreshSetup = !userSettings || userSettings.setupComplete === false;
             if (startupUrl) {
                 createNewTab(startupUrl);
             } else if (isFreshSetup) {
@@ -3186,7 +3191,7 @@ function createNewTab(url = null) {
             } catch (e) {
                 finalUrl = `ocal://pdf-viewer/?file=${encodeURIComponent(url)}`;
             }
-        } else if (userSettings.contentProtectionEnabled !== false && userSettings.adultDomainsBlockEnabled !== false && isAdultOrPornUrl(url)) {
+        } else if (userSettings.contentProtectionEnabled === true && userSettings.adultDomainsBlockEnabled === true && isAdultOrPornUrl(url)) {
             finalUrl = `ocal://mindful-shield?url=${encodeURIComponent(url)}`;
         }
     }
@@ -3667,7 +3672,7 @@ function setupViewEvents(tabId, view, side = 'left') {
         try { hostname = new URL(targetUrl).hostname; } catch (e) { hostname = ''; }
 
         // Content Protection & Mindful Shield Check for will-navigate
-        if (userSettings.contentProtectionEnabled !== false && userSettings.adultDomainsBlockEnabled !== false) {
+        if (userSettings.contentProtectionEnabled === true && userSettings.adultDomainsBlockEnabled === true) {
             const isAdultSite = isAdultOrPornUrl(targetUrl);
             if (isAdultSite) {
                 event.preventDefault();
@@ -5202,7 +5207,7 @@ ipcMain.on('navigate-to', (e, url) => {
     // Intercept DIRECT adult/pornographic websites with Search Security & Mindful Protection
     // (Search queries on Google/Bing are allowed through so the search engine loads, while adult cards are blurred in-page)
     const isSearchEngineUrl = !!extractSearchEngineQuery(targetUrl);
-    if (!isSearchEngineUrl && userSettings.contentProtectionEnabled !== false && userSettings.adultDomainsBlockEnabled !== false && (isAdultOrPornUrl(targetUrl) || isAdultOrPornUrl(cleanUrl))) {
+    if (!isSearchEngineUrl && userSettings.contentProtectionEnabled === true && userSettings.adultDomainsBlockEnabled === true && (isAdultOrPornUrl(targetUrl) || isAdultOrPornUrl(cleanUrl))) {
         hideSuggestions();
         const directTarget = targetUrl || cleanUrl;
         activeView.webContents.loadURL(`ocal://mindful-shield?url=${encodeURIComponent(directTarget)}`);
@@ -11624,7 +11629,7 @@ ipcMain.on('capture-screenshot', async (e, type) => {
 // Deduplicated search utility functions removed here
 ipcMain.on('suggest-search', async (e, query) => {
     if (!query) { hideSuggestions(); return; }
-    if (userSettings.contentProtectionEnabled !== false && isAdultContentQuery(query)) {
+    if (userSettings.contentProtectionEnabled === true && isAdultContentQuery(query)) {
         hideSuggestions();
         return;
     }
@@ -11785,7 +11790,7 @@ ipcMain.on('show-site-info', (e, bounds) => {
     const zoom = getOptimalZoomFactor();
     const winOffset = getWinOffset();
     const popupWidth = Math.round(336 * zoom);
-    const popupHeight = Math.round(480 * zoom);
+    const popupHeight = Math.round(540 * zoom);
     siteInfoView.setBounds({
         x: Math.max(10, Math.round(bounds.x + winOffset)),
         y: Math.round(bounds.y + bounds.height + 3 + winOffset),
@@ -11794,6 +11799,24 @@ ipcMain.on('show-site-info', (e, bounds) => {
     });
 
     targetWin.setTopBrowserView(siteInfoView);
+
+    // Apply InPrivate theme immediately to prevent any white flash
+    if (isPrivate) {
+        siteInfoView.webContents.executeJavaScript(`
+            document.documentElement.classList.add('inprivate-mode');
+            document.body.classList.add('inprivate-mode');
+            document.documentElement.setAttribute('data-theme', 'inprivate');
+            document.body.setAttribute('data-theme', 'inprivate');
+        `).catch(() => {});
+    } else {
+        siteInfoView.webContents.executeJavaScript(`
+            document.documentElement.classList.remove('inprivate-mode');
+            document.body.classList.remove('inprivate-mode');
+            const t = localStorage.getItem('ocal-settings-theme') || 'dark';
+            document.documentElement.setAttribute('data-theme', t);
+            document.body.setAttribute('data-theme', t);
+        `).catch(() => {});
+    }
 
     // Fetch permissions for this origin to pass to the popup
     let permissions = { notifications: 'default', popups: 'default', audio: 'default', camera: 'default', microphone: 'default', geolocation: 'default' };
@@ -15630,7 +15653,7 @@ function openPrivateWindow(targetUrl = null) {
     });
 
     privateWindow.on('close', (e) => {
-        if (!isQuittingPrivate && userSettings.confirmExit !== false && privateViews.length > 0) {
+        if (!isQuittingPrivate && userSettings.confirmPrivateExit === true && privateViews.length > 1) {
             e.preventDefault();
             promptPrivateSessionClose();
             return;
@@ -15718,7 +15741,8 @@ function createPrivateTab(url = null) {
             contextIsolation: true,
             nodeIntegration: false,
             sandbox: false,
-            devTools: true
+            devTools: true,
+            additionalArguments: ['--is-private-window']
         }
     });
 
@@ -15819,13 +15843,7 @@ function createPrivateTab(url = null) {
 
     if (url) {
         let target = url;
-        if (userSettings.contentProtectionEnabled !== false && userSettings.adultDomainsBlockEnabled !== false) {
-            const adultQuery = extractSearchEngineQuery(url);
-            if (isAdultOrPornUrl(url) || (adultQuery && isAdultContentQuery(adultQuery))) {
-                const param = adultQuery ? `query=${encodeURIComponent(adultQuery)}` : `url=${encodeURIComponent(url)}`;
-                target = `ocal://mindful-shield?${param}`;
-            }
-        }
+        // InPrivate mode has zero barriers: adult content, keywords, and domains are never blocked or redirected
         view.webContents.loadURL(resolveInternalURL(target));
     } else {
         const homeUrl = 'file:///' + path.join(__dirname, 'home.html').replace(/\\/g, '/') + '?private=true';
@@ -15858,8 +15876,15 @@ function switchPrivateTab(id) {
 }
 
 function closePrivateTab(id) {
-    if (privateViews.length === 1 && !isQuittingPrivate && userSettings.confirmExit !== false) {
-        promptPrivateSessionClose();
+    if (privateViews.length === 1) {
+        if (!isQuittingPrivate && userSettings.confirmPrivateExit === true) {
+            promptPrivateSessionClose();
+            return;
+        }
+        isQuittingPrivate = true;
+        if (privateWindow && !privateWindow.isDestroyed()) {
+            privateWindow.close();
+        }
         return;
     }
     const idx = privateViews.findIndex(v => v.id === id);
@@ -15941,7 +15966,7 @@ ipcMain.on('private-session-close-cancelled', () => {
 
 ipcMain.on('private-window-close', () => {
     if (privateWindow && !privateWindow.isDestroyed()) {
-        if (!isQuittingPrivate && userSettings.confirmExit !== false && privateViews.length > 0) {
+        if (!isQuittingPrivate && userSettings.confirmPrivateExit === true && privateViews.length > 1) {
             promptPrivateSessionClose();
             return;
         }
@@ -15965,15 +15990,8 @@ ipcMain.on('private-close-tab', (e, id) => {
 ipcMain.on('private-navigate', (e, url) => {
     const entry = privateViews.find(v => v.id === activePrivateTabId);
     if (entry && entry.view && !entry.view.webContents.isDestroyed()) {
-        let target = url;
-        if (userSettings.contentProtectionEnabled !== false && userSettings.adultDomainsBlockEnabled !== false) {
-            const adultQuery = extractSearchEngineQuery(url);
-            if (isAdultOrPornUrl(url) || (adultQuery && isAdultContentQuery(adultQuery))) {
-                const param = adultQuery ? `query=${encodeURIComponent(adultQuery)}` : `url=${encodeURIComponent(url)}`;
-                target = `ocal://mindful-shield?${param}`;
-            }
-        }
-        entry.view.webContents.loadURL(resolveInternalURL(target));
+        // InPrivate mode has zero barriers: navigate directly without blocking or mindful shield
+        entry.view.webContents.loadURL(resolveInternalURL(url));
     }
 });
 

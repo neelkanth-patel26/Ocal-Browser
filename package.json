@@ -1,7 +1,7 @@
 {
   "name": "ocal",
   "productName": "Ocal Browser",
-  "version": "10.1.23",
+  "version": "10.1.24",
   "description": "Ocal Browser - Fast, Secure, and Agentic.",
   "main": "main.js",
   "author": "Gaming Network Studio",
@@ -49,7 +49,7 @@
   "build": {
     "appId": "com.ocal.browser.v2",
     "productName": "Ocal Browser",
-    "copyright": "Copyright © 2026 Gaming Network Studio Media Group",
+    "copyright": "Copyright \u00a9 2026 Gaming Network Studio Media Group",
     "directories": {
       "output": "dist-builder",
       "buildResources": "build"
