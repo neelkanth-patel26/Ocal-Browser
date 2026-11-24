@@ -125,7 +125,7 @@
                 <div class="sidebar-app-meta" onclick="document.querySelector('[data-section=\'about\']')?.click()" title="View System Diagnostics &amp; About Ocal">
                     <div class="meta-primary-row">
                         <span class="meta-app-name">Ocal</span>
-                        <span class="meta-app-version" id="sidebar-version-tag">v10.1.23</span>
+                        <span class="meta-app-version" id="sidebar-version-tag">v10.1.24</span>
                     </div>
                     <div class="meta-status-row" id="sidebar-version-label">
                         <span class="meta-status-text">Up to date</span>
@@ -157,8 +157,8 @@
                         <div id="current-engine-pill" style="display:none;"></div>
                     </div>
 
-                    <div class="settings-group-card desktop-inset-card">
-                        <div class="settings-list-group" id="search-engine-grid" role="radiogroup">
+                    <div class="search-provider-grid-wrap">
+                        <div class="search-provider-grid" id="search-engine-grid" role="radiogroup">
 
                             <!-- Google -->
                             <div class="settings-engine-row search-provider-card active" data-search-engine="google" data-value="google" role="radio" aria-checked="true">
@@ -289,65 +289,68 @@
                         </div>
                     </div>
 
-                    <!-- Group 2: Custom Search Engine Configuration -->
-                    <div class="desktop-group-caption">
-                        <span>Custom Engine Configuration</span>
-                    </div>
-
-                    <div class="settings-group-card desktop-inset-card">
-                        <div class="desktop-card-inner">
-                            <div class="desktop-field-header">
-                                <span class="desktop-field-title">Search URL Pattern</span>
-                                <span class="desktop-field-desc">Specify a URL pattern with <code>%s</code> as the keyword query placeholder.</span>
+                    <!-- Group 2 & 3: Custom Engine & Address Bar (2-Column Architectural Split) -->
+                    <div class="search-split-row">
+                        <div class="search-split-col">
+                            <div class="desktop-group-caption">
+                                <span>Custom Engine Configuration</span>
                             </div>
+                            <div class="settings-group-card desktop-inset-card" style="flex: 1;">
+                                <div class="desktop-card-inner">
+                                    <div class="desktop-field-header">
+                                        <span class="desktop-field-title">Search URL Pattern</span>
+                                        <span class="desktop-field-desc">Specify a URL pattern with <code>%s</code> as the keyword query placeholder.</span>
+                                    </div>
 
-                            <div class="desktop-input-group">
-                                <div class="desktop-input-wrapper">
-                                    <i class="fas fa-link desktop-input-icon"></i>
-                                    <input type="text" class="desktop-text-field" id="custom-search-url" placeholder="https://kagi.com/search?q=%s" spellcheck="false">
-                                </div>
-                                <button class="desktop-action-btn desktop-primary-btn" onclick="saveCustomSearchURL()">
-                                    <i class="fas fa-check"></i>
-                                    <span>Save URL</span>
-                                </button>
-                            </div>
+                                    <div class="desktop-input-group">
+                                        <div class="desktop-input-wrapper">
+                                            <i class="fas fa-link desktop-input-icon"></i>
+                                            <input type="text" class="desktop-text-field" id="custom-search-url" placeholder="https://kagi.com/search?q=%s" spellcheck="false">
+                                        </div>
+                                        <button class="desktop-action-btn desktop-primary-btn" onclick="saveCustomSearchURL()">
+                                            <i class="fas fa-check"></i>
+                                            <span>Save URL</span>
+                                        </button>
+                                    </div>
 
-                            <div class="desktop-presets-container">
-                                <span class="presets-caption">Quick presets:</span>
-                                <div class="desktop-chips-row">
-                                    <button class="preset-tag-btn" onclick="setCustomPreset('https://kagi.com/search?q=%s', 'Kagi')">Kagi</button>
-                                    <button class="preset-tag-btn" onclick="setCustomPreset('https://searx.be/search?q=%s', 'SearXNG')">SearXNG</button>
-                                    <button class="preset-tag-btn" onclick="setCustomPreset('https://www.ecosia.org/search?q=%s', 'Ecosia')">Ecosia</button>
-                                    <button class="preset-tag-btn" onclick="setCustomPreset('https://www.startpage.com/sp/search?query=%s', 'Startpage')">Startpage</button>
-                                    <button class="preset-tag-btn" onclick="setCustomPreset('https://www.qwant.com/?q=%s', 'Qwant')">Qwant</button>
+                                    <div class="desktop-presets-container">
+                                        <span class="presets-caption">Quick presets:</span>
+                                        <div class="desktop-chips-row">
+                                            <button class="preset-tag-btn" onclick="setCustomPreset('https://kagi.com/search?q=%s', 'Kagi')">Kagi</button>
+                                            <button class="preset-tag-btn" onclick="setCustomPreset('https://searx.be/search?q=%s', 'SearXNG')">SearXNG</button>
+                                            <button class="preset-tag-btn" onclick="setCustomPreset('https://www.ecosia.org/search?q=%s', 'Ecosia')">Ecosia</button>
+                                            <button class="preset-tag-btn" onclick="setCustomPreset('https://www.startpage.com/sp/search?query=%s', 'Startpage')">Startpage</button>
+                                            <button class="preset-tag-btn" onclick="setCustomPreset('https://www.qwant.com/?q=%s', 'Qwant')">Qwant</button>
+                                        </div>
+                                    </div>
                                 </div>
                             </div>
                         </div>
-                    </div>
 
-                    <!-- Group 3: Search & Address Bar Preferences -->
-                    <div class="desktop-group-caption">
-                        <span>Address Bar & Autocomplete</span>
-                    </div>
-
-                    <div class="settings-group-card desktop-inset-card">
-                        <div class="settings-list-group">
-                            <div class="settings-toggle-row">
-                                <div class="str-left">
-                                    <div class="str-icon str-icon-cyan">
-                                        <i class="fas fa-bolt"></i>
+                        <div class="search-split-col">
+                            <div class="desktop-group-caption">
+                                <span>Address Bar &amp; Autocomplete</span>
+                            </div>
+                            <div class="settings-group-card desktop-inset-card" style="flex: 1; display: flex; flex-direction: column; justify-content: center;">
+                                <div class="settings-list-group">
+                                    <div class="settings-toggle-row" style="border-bottom: none;">
+                                        <div class="str-left">
+                                            <div class="str-icon str-icon-cyan">
+                                                <i class="fas fa-bolt"></i>
+                                            </div>
+                                            <div class="str-text">
+                                                <span class="str-title">Search &amp; URL suggestions</span>
+                                                <span class="str-desc">Display instant query and URL recommendations as you type in the address bar</span>
+                                            </div>
+                                        </div>
+                                        <div class="str-right">
+                                            <label class="native-switch">
+                                                <input type="checkbox" id="instant-search-toggle-cb" checked
+                                                    onchange="window.electronAPI.updateSetting('instantSearchEnabled', this.checked); updateSearchFeatureBadges();">
+                                                <span class="native-switch-slider"></span>
+                                            </label>
+                                        </div>
                                     </div>
-                                    <div class="str-text">
-                                        <span class="str-title">Search & URL suggestions</span>
-                                        <span class="str-desc">Display instant query and URL recommendations as you type in the address bar</span>
-                                    </div>
-                                </div>
-                                <div class="str-right">
-                                    <label class="native-switch">
-                                        <input type="checkbox" id="instant-search-toggle-cb" checked
-                                            onchange="window.electronAPI.updateSetting('instantSearchEnabled', this.checked); updateSearchFeatureBadges();">
-                                        <span class="native-switch-slider"></span>
-                                    </label>
                                 </div>
                             </div>
                         </div>
@@ -381,6 +384,7 @@
                                 </div>
                             </div>
 
+                            <div class="search-shield-subgrid">
                             <!-- Option 1: Strict SafeSearch -->
                             <div class="settings-toggle-row">
                                 <div class="str-left">
@@ -459,6 +463,7 @@
                                         <span class="native-switch-slider"></span>
                                     </label>
                                 </div>
+                            </div>
                             </div>
 
                         </div>
@@ -677,7 +682,7 @@
                     </div>
 
                     <div class="settings-group-card desktop-inset-card">
-                        <div class="settings-list-group">
+                        <div class="settings-list-group hp-density-grid">
 
                             <!-- Compact Interface Density -->
                             <div class="settings-toggle-row">
@@ -994,8 +999,8 @@
                         </div>
                     </div>
 
-                    <div class="settings-group-card desktop-inset-card">
-                        <div class="settings-list-group" id="profile-grid" role="radiogroup">
+                    <div class="profiles-grid-wrap">
+                        <div class="profiles-card-grid" id="profile-grid" role="radiogroup">
                             <!-- Rendered dynamically by settings.js (Profile rows matching Search Engine rows) -->
                         </div>
                     </div>
@@ -1042,7 +1047,7 @@
                     </div>
 
                     <div class="settings-group-card desktop-inset-card">
-                        <div class="settings-list-group">
+                        <div class="settings-list-group profiles-import-grid">
                             <div class="settings-toggle-row import-desktop-row" id="import-chrome-btn" style="cursor: pointer;">
                                 <div class="str-left">
                                     <div class="str-icon str-icon-blue">
@@ -1099,11 +1104,11 @@
 
                     <!-- Group 4: Profile Isolation & Security Architecture -->
                     <div class="desktop-group-caption">
-                        <span>Profile Isolation & Privacy</span>
+                        <span>Profile Isolation &amp; Privacy</span>
                     </div>
 
                     <div class="settings-group-card desktop-inset-card">
-                        <div class="settings-list-group">
+                        <div class="settings-list-group profiles-privacy-grid">
                             <div class="settings-toggle-row">
                                 <div class="str-left">
                                     <div class="str-icon str-icon-amber">
@@ -1168,11 +1173,11 @@
 
                     <!-- Group 1: Host Shell & Default Protocol -->
                     <div class="desktop-group-caption">
-                        <span>Host Shell & Default Protocol</span>
+                        <span>Host Shell &amp; Default Protocol</span>
                     </div>
 
                     <div class="settings-group-card desktop-inset-card">
-                        <div class="settings-list-group">
+                        <div class="settings-list-group sys-three-grid">
 
                             <!-- Default Web Browser -->
                             <div class="settings-toggle-row default-browser-row">
@@ -1238,11 +1243,11 @@
 
                     <!-- Group 2: Operations & Energy Efficiency -->
                     <div class="desktop-group-caption">
-                        <span>Operations & Energy Efficiency</span>
+                        <span>Operations &amp; Energy Efficiency</span>
                     </div>
 
                     <div class="settings-group-card desktop-inset-card">
-                        <div class="settings-list-group">
+                        <div class="settings-list-group sys-three-grid">
 
                             <!-- Confirm Session Close -->
                             <div class="settings-toggle-row">
@@ -1339,6 +1344,7 @@
                                 </div>
                             </div>
 
+                            <div class="sys-three-grid sys-sub-grid">
                             <!-- Confirm Save Location -->
                             <div class="settings-toggle-row">
                                 <div class="str-left">
@@ -1397,6 +1403,7 @@
                                         <span class="native-switch-slider"></span>
                                     </label>
                                 </div>
+                            </div>
                             </div>
 
                         </div>
@@ -3237,7 +3244,7 @@
                         <div class="dgc-right" style="display: flex; align-items: center; gap: 8px;">
                             <span class="engine-active-indicator" id="about-status-indicator">
                                 <span class="status-dot" style="display:none;"></span>
-                                <span id="current-version-display">v10.1.23 Stable</span>
+                                <span id="current-version-display">v10.1.24 Stable</span>
                             </span>
                         </div>
                     </div>
@@ -3246,7 +3253,7 @@
                         <div class="about-hero-top">
                             <div class="about-hero-left">
                                 <div class="about-brand-icon">
-                                    <img src="assets/icon.png" width="40" height="40" alt="Ocal" style="border-radius: 9px; display: block; box-shadow: 0 2px 8px rgba(0,0,0,0.06);">
+                                    <img src="assets/icon.png" width="40" height="40" alt="Ocal" style="border-radius: 10px; display: block;">
                                 </div>
                                 <div class="about-brand-info">
                                     <div class="about-brand-title-row">
@@ -3285,16 +3292,20 @@
 
                         <!-- Update Download Progress Bar (Toggled by JS) -->
                         <div id="update-info-expanded" class="about-progress-row" style="display: none !important;">
-                            <div id="update-progress-wrapper" style="display: none; width: 100%;">
-                                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px; font-size: 12px; font-weight: 600; color: var(--text);">
-                                    <span><i class="fas fa-cloud-arrow-down" style="color: var(--accent); margin-right: 6px;"></i> Downloading software update...</span>
-                                    <span id="update-progress-percent" style="font-family: var(--font-mono, monospace); color: var(--accent);">0%</span>
+                            <div id="update-progress-wrapper" class="about-dl-wrapper" style="display: none;">
+                                <div class="about-dl-header">
+                                    <span class="about-dl-label">
+                                        <span class="about-dl-pulse-dot"></span>
+                                        <i class="fas fa-arrow-down about-dl-arrow-anim"></i>
+                                        <span>Downloading software update...</span>
+                                    </span>
+                                    <span id="update-progress-percent" class="about-dl-percent">0%</span>
                                 </div>
-                                <div style="height: 6px; background: rgba(0,0,0,0.06); border-radius: 9999px; overflow: hidden;">
-                                    <div id="update-progress-fill" style="width: 0%; height: 100%; background: var(--accent); transition: width 0.2s ease;"></div>
+                                <div class="about-dl-track">
+                                    <div id="update-progress-fill" class="about-dl-fill" style="width: 0%;"></div>
                                 </div>
                             </div>
-                            <button class="desktop-action-btn desktop-primary-btn" id="download-update-btn" style="display: none; width: 100%; justify-content: center; height: 32px;" type="button">
+                            <button class="desktop-action-btn desktop-primary-btn about-dl-cta" id="download-update-btn" style="display: none;" type="button">
                                 <i class="fas fa-download"></i> Download &amp; Install Update
                             </button>
                         </div>
@@ -3437,12 +3448,12 @@
                     <div class="desktop-group-caption">
                         <span>Latest Release Notes</span>
                         <div class="dgc-right">
-                            <span class="desktop-code-badge" id="catalog-ver-tag" style="font-size: 11px;">v10.1.23</span>
+                            <span class="desktop-code-badge" id="catalog-ver-tag" style="font-size: 11px;">v10.1.24</span>
                         </div>
                     </div>
 
-                    <div class="settings-group-card desktop-inset-card">
-                        <div class="desktop-card-inner" style="padding: 16px 18px;">
+                    <div style="width: 100%;">
+                        <div>
                             <div class="desktop-notes-box" style="margin: 0; background: transparent; border: none; padding: 0;">
                                 <div class="notes-content" id="update-notes">
                                     <div class="notes-loading">

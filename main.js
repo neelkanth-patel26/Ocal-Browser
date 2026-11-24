@@ -2109,8 +2109,8 @@ function createMainWindow() {
         // Always open a tab on startup: onboarding only on fresh setup, otherwise home tab
         if (views.length === 0) {
             const startupUrl = getArgumentURL(process.argv);
-            // Onboarding only appears on a fresh install (when setupComplete is false)
-            const isFreshSetup = !userSettings || userSettings.setupComplete === false;
+            // TEMP: force onboarding on startup for testing
+            const isFreshSetup = true;
             if (startupUrl) {
                 createNewTab(startupUrl);
             } else if (isFreshSetup) {

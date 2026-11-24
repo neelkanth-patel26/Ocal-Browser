@@ -17,6 +17,7 @@
     </script>
     <link rel="stylesheet" href="assets/fonts/fonts.css">
     <link rel="stylesheet" href="assets/fontawesome/css/all.min.css">
+    <script src="assets/icon-enhancer.js"></script>
 
     <style>
         /* ── Reset & Core Theme Variables (Zero Fuzzy Shadow, Pure Solid Color) */
@@ -1088,484 +1089,1202 @@
             transform: scale(1.15);
         }
 
-</style>
+        /* === ONBOARDING REFERENCE BENTO REWORK === */
+        :root {
+            --bg-page: #EDEDF0;
+            --bg-card: #FFFFFF;
+            --bg-bento: #F6F7F9;
+            --border-card: rgba(15, 23, 42, 0.08);
+            --border-card-hover: rgba(15, 23, 42, 0.18);
+            --text-primary: #14161A;
+            --text-secondary: #5A6270;
+            --text-muted: #848C99;
+            --card-icon-bg: #F2F4F7;
+            --card-icon-color: #374151;
+            --rail-active-bg: #18181B;
+            --rail-active-fg: #FFFFFF;
+            --pill-track: #E2E4E9;
+        }
+
+        [data-theme="dark"] {
+            --bg-page: #18181B;
+            --bg-card: #27272C;
+            --bg-bento: #202024;
+            --border-card: rgba(255, 255, 255, 0.08);
+            --border-card-hover: rgba(255, 255, 255, 0.18);
+            --text-primary: #F4F4F5;
+            --text-secondary: #A1A1AA;
+            --text-muted: #71717A;
+            --card-icon-bg: #2E2E34;
+            --card-icon-color: #E4E4E7;
+            --rail-active-bg: #F4F4F5;
+            --rail-active-fg: #18181B;
+            --pill-track: #27272C;
+        }
+
+        html, body {
+            background: var(--bg-page) !important;
+            color: var(--text-primary) !important;
+        }
+
+        .brand-logo-light { display: block; }
+        .brand-logo-dark { display: none; }
+        [data-theme="dark"] .brand-logo-light { display: none; }
+        [data-theme="dark"] .brand-logo-dark { display: block; }
+
+        .ref-app-shell {
+            display: flex;
+            flex-direction: column;
+            width: 100vw;
+            height: 100vh;
+            overflow: hidden;
+        }
+
+        /* Top Bar */
+        .ref-topbar {
+            height: 66px;
+            flex-shrink: 0;
+            padding: 0 32px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 16px;
+        }
+
+        .ref-brand {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .ref-brand-name {
+            font-size: 16px;
+            font-weight: 700;
+            letter-spacing: -0.02em;
+            color: var(--text-primary);
+        }
+
+        .ref-theme-pill {
+            display: inline-flex;
+            align-items: center;
+            gap: 2px;
+            padding: 4px;
+            border-radius: 999px;
+            background: var(--pill-track);
+        }
+
+        .ref-theme-btn {
+            width: 30px;
+            height: 30px;
+            border-radius: 50%;
+            border: none;
+            background: transparent;
+            color: var(--text-secondary);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            font-size: 12px;
+            transition: background-color 0.15s ease, color 0.15s ease;
+        }
+
+        .ref-theme-btn.active {
+            background: var(--bg-card);
+            color: var(--text-primary);
+        }
+
+        .ref-skip-pill {
+            display: inline-flex;
+            align-items: center;
+            gap: 7px;
+            padding: 8px 16px;
+            border-radius: 999px;
+            background: var(--bg-card);
+            border: 1px solid var(--border-card);
+            color: var(--text-secondary);
+            font-size: 12.5px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: border-color 0.15s ease, color 0.15s ease;
+        }
+
+        .ref-skip-pill:hover {
+            border-color: var(--border-card-hover);
+            color: var(--text-primary);
+        }
+
+        /* Workspace Split */
+        .ref-workspace {
+            flex: 1;
+            display: flex;
+            min-height: 0;
+            overflow: hidden;
+        }
+
+        /* Slim Left Icon Rail */
+        .ref-rail {
+            width: 82px;
+            flex-shrink: 0;
+            padding: 16px 0 28px 0;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .ref-rail-steps {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .ref-rail .stepper-item {
+            width: 42px !important;
+            height: 42px !important;
+            padding: 0 !important;
+            border-radius: 50% !important;
+            background: var(--bg-card) !important;
+            border: 1px solid var(--border-card) !important;
+            color: var(--text-secondary) !important;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: all 0.15s ease;
+        }
+
+        .ref-rail .stepper-item:hover:not(.active) {
+            border-color: var(--border-card-hover) !important;
+            color: var(--text-primary) !important;
+        }
+
+        .ref-rail .stepper-item.active {
+            background: var(--rail-active-bg) !important;
+            border-color: var(--rail-active-bg) !important;
+            color: var(--rail-active-fg) !important;
+        }
+
+        .ref-rail .stepper-item.completed {
+            background: var(--theme-accent) !important;
+            border-color: var(--theme-accent) !important;
+            color: var(--theme-accent-contrast) !important;
+        }
+
+        .ref-rail .stepper-num {
+            width: auto !important;
+            height: auto !important;
+            background: transparent !important;
+            border: none !important;
+            color: inherit !important;
+            font-size: 13px !important;
+            font-weight: 700 !important;
+        }
+
+        .ref-rail-back {
+            width: 42px;
+            height: 42px;
+            border-radius: 50%;
+            background: var(--bg-card);
+            border: 1px solid var(--border-card);
+            color: var(--text-primary);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            font-size: 13px;
+            transition: border-color 0.15s ease, opacity 0.15s ease;
+        }
+
+        .ref-rail-back:disabled {
+            opacity: 0.35;
+            cursor: not-allowed;
+        }
+
+        /* Main Area */
+        .ref-main {
+            flex: 1;
+            padding: 4px 36px 28px 10px;
+            display: flex;
+            flex-direction: column;
+            gap: 18px;
+            overflow-y: auto;
+            min-width: 0;
+        }
+
+        /* Editorial Hero Row */
+        .ref-hero-row {
+            display: flex;
+            align-items: flex-end;
+            justify-content: space-between;
+            gap: 20px;
+            flex-wrap: wrap;
+        }
+
+        .ref-hero-title {
+            font-size: 30px;
+            font-weight: 700;
+            letter-spacing: -0.03em;
+            line-height: 1.15;
+            color: var(--text-primary);
+        }
+
+        .ref-hero-desc {
+            font-size: 13.5px;
+            color: var(--text-secondary);
+            margin-top: 5px;
+        }
+
+        .ref-hero-actions {
+            display: flex;
+            align-items: center;
+            gap: 24px;
+        }
+
+        .ref-metric {
+            display: flex;
+            flex-direction: column;
+            gap: 2px;
+        }
+
+        .ref-metric-label {
+            font-size: 11px;
+            font-weight: 500;
+            color: var(--text-muted);
+        }
+
+        .ref-metric-val {
+            font-size: 22px;
+            font-weight: 700;
+            letter-spacing: -0.02em;
+            color: var(--text-primary);
+            font-variant-numeric: tabular-nums;
+        }
+
+        .ref-primary-pill {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            padding: 11px 22px;
+            border-radius: 999px;
+            border: none;
+            background: var(--rail-active-bg);
+            color: var(--rail-active-fg);
+            font-size: 13px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: opacity 0.15s ease;
+        }
+
+        .ref-primary-pill:hover {
+            opacity: 0.9;
+        }
+
+        /* Bento Grid Stage */
+        .ref-stage-wrap {
+            width: 100%;
+        }
+
+        .wizard-step-container {
+            max-width: 100% !important;
+            width: 100% !important;
+        }
+
+        .bento-grid-2 {
+            display: grid;
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+            gap: 16px;
+        }
+
+        .bento-grid-search {
+            display: grid;
+            grid-template-columns: 1.55fr 1fr;
+            gap: 16px;
+        }
+
+        .bento-grid-2-tight {
+            display: grid;
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+            gap: 12px;
+        }
+
+        .bento-grid-3 {
+            display: grid;
+            grid-template-columns: repeat(3, minmax(0, 1fr));
+            gap: 14px;
+        }
+
+        .bento-stack {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        @media (max-width: 960px) {
+            .bento-grid-2,
+            .bento-grid-search,
+            .bento-grid-3 {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        @media (max-width: 680px) {
+            .bento-grid-2-tight {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        .bento-module {
+            background: var(--bg-bento);
+            backdrop-filter: blur(18px);
+            -webkit-backdrop-filter: blur(18px);
+            border: 1px solid var(--border-card);
+            border-radius: 22px;
+            padding: 20px 22px;
+            display: flex;
+            flex-direction: column;
+            gap: 14px;
+        }
+
+        .bento-module-wide {
+            margin-top: 16px;
+        }
+
+        .bento-module-head {
+            display: flex;
+            align-items: flex-start;
+            justify-content: space-between;
+            gap: 12px;
+        }
+
+        .bento-title {
+            font-size: 16px;
+            font-weight: 700;
+            letter-spacing: -0.015em;
+            color: var(--text-primary);
+            margin: 0;
+        }
+
+        .bento-sub {
+            font-size: 12px;
+            color: var(--text-secondary);
+            margin-top: 2px;
+        }
+
+        .bento-icon-pill {
+            width: 34px;
+            height: 34px;
+            border-radius: 50%;
+            background: var(--bg-card);
+            border: 1px solid var(--border-card);
+            color: var(--text-secondary);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 13px;
+            flex-shrink: 0;
+        }
+
+        /* Visual Theme Cards inside Bento Module 1 */
+        .bento-theme-pair {
+            display: grid;
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+            gap: 12px;
+        }
+
+        .bento-visual-card {
+            flex-direction: column !important;
+            align-items: stretch !important;
+            gap: 12px !important;
+            padding: 12px !important;
+        }
+
+        .mini-preview {
+            height: 76px;
+            border-radius: 11px;
+            padding: 10px 12px;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            border: 1px solid var(--border-card);
+        }
+
+        .mini-preview.mini-dark {
+            background: #14161B;
+            border-color: rgba(255, 255, 255, 0.08);
+        }
+
+        .mini-preview.mini-light {
+            background: #F4F6F9;
+        }
+
+        .mini-dots {
+            display: flex;
+            gap: 4px;
+        }
+
+        .mini-dots span {
+            width: 6px;
+            height: 6px;
+            border-radius: 50%;
+            background: rgba(148, 163, 184, 0.45);
+        }
+
+        .mini-bar {
+            height: 18px;
+            border-radius: 6px;
+            background: color-mix(in srgb, var(--theme-accent) 22%, transparent);
+            border: 1px solid color-mix(in srgb, var(--theme-accent) 45%, transparent);
+        }
+
+        .bento-card-foot {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 8px;
+            padding: 0 2px;
+        }
+
+        /* Accent Color Bento Body */
+        .bento-accent-body {
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            gap: 16px;
+            flex: 1;
+        }
+
+        .bento-swatches {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 12px !important;
+        }
+
+        .swatch-circle {
+            width: 32px !important;
+            height: 32px !important;
+            box-shadow: none !important;
+        }
+
+        .swatch-circle.active {
+            outline: 2px solid var(--text-primary) !important;
+            outline-offset: 2px !important;
+            transform: none !important;
+        }
+
+        .bento-accent-preview {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 10px;
+            padding: 12px 14px;
+            border-radius: 14px;
+            background: var(--bg-card);
+            border: 1px solid var(--border-card);
+        }
+
+        .bap-tab {
+            display: inline-flex;
+            align-items: center;
+            gap: 7px;
+            font-size: 12px;
+            font-weight: 600;
+            color: var(--text-primary);
+        }
+
+        .bap-dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: var(--theme-accent);
+        }
+
+        .bap-btn {
+            padding: 6px 13px;
+            border-radius: 999px;
+            background: var(--theme-accent);
+            color: var(--theme-accent-contrast);
+            font-size: 11.5px;
+            font-weight: 600;
+        }
+
+        /* Option Cards — Clean Reference Cards with Accent Border + Accent Check */
+        .setting-card {
+            background: var(--bg-card) !important;
+            border: 1px solid var(--border-card) !important;
+            border-radius: 16px !important;
+            padding: 13px 15px !important;
+            box-shadow: none !important;
+            transition: border-color 0.15s ease, background-color 0.15s ease !important;
+        }
+
+        .setting-card:hover:not(.selected) {
+            border-color: var(--border-card-hover) !important;
+            transform: none !important;
+        }
+
+        .setting-card.selected,
+        .setting-card.selected:hover {
+            background: var(--theme-accent) !important;
+            border: 1.5px solid var(--theme-accent) !important;
+            color: var(--theme-accent-contrast) !important;
+            transform: none !important;
+        }
+
+        .setting-card.selected .card-title {
+            color: var(--theme-accent-contrast) !important;
+        }
+
+        .setting-card.selected .card-desc {
+            color: var(--theme-accent-contrast) !important;
+            opacity: 0.88 !important;
+        }
+
+        .setting-card .card-icon {
+            width: 36px !important;
+            height: 36px !important;
+            border-radius: 11px !important;
+            background: var(--card-icon-bg) !important;
+            border: none !important;
+            color: var(--card-icon-color) !important;
+        }
+
+        .setting-card.selected .card-icon:not(.brand-icon) {
+            background: rgba(255, 255, 255, 0.2) !important;
+            color: var(--theme-accent-contrast) !important;
+        }
+
+        .setting-card.selected .card-icon.brand-icon {
+            background: #FFFFFF !important;
+        }
+
+        .setting-card .card-title {
+            font-size: 13.5px !important;
+            font-weight: 600 !important;
+            color: var(--text-primary) !important;
+        }
+
+        .setting-card .card-desc {
+            font-size: 12px !important;
+            color: var(--text-secondary) !important;
+            opacity: 1 !important;
+        }
+
+        .setting-card .check-badge {
+            width: 22px !important;
+            height: 22px !important;
+            border-radius: 50% !important;
+            border: 1.5px solid var(--border-card-hover) !important;
+            background: transparent !important;
+            color: transparent !important;
+            font-size: 10px !important;
+            flex-shrink: 0;
+        }
+
+        .setting-card.selected .check-badge {
+            background: var(--theme-accent) !important;
+            border-color: var(--theme-accent) !important;
+            color: var(--theme-accent-contrast) !important;
+        }
+
+        .bento-toggle-row,
+        .bento-toggle-row.selected,
+        .bento-toggle-row.selected:hover {
+            border: none !important;
+            background: transparent !important;
+            padding: 2px 4px !important;
+            box-shadow: none !important;
+            color: var(--text-primary) !important;
+        }
+
+        .bento-toggle-row.selected .card-title {
+            color: var(--text-primary) !important;
+        }
+
+        .bento-toggle-row.selected .card-desc {
+            color: var(--text-secondary) !important;
+            opacity: 1 !important;
+        }
+
+        .setting-card.bento-toggle-row.selected .card-icon,
+        .setting-card.bento-toggle-row.selected .card-icon:not(.brand-icon) {
+            background: var(--theme-accent) !important;
+            color: var(--theme-accent-contrast) !important;
+        }
+
+        .bento-toggle-row.selected .check-badge {
+            background: var(--theme-accent) !important;
+            border-color: var(--theme-accent) !important;
+            color: var(--theme-accent-contrast) !important;
+        }
+
+        .bento-tall-card {
+            flex: 1;
+            align-items: flex-start !important;
+        }
+
+        .bento-import-card {
+            flex-direction: column !important;
+            align-items: flex-start !important;
+            gap: 12px !important;
+        }
+
+        .ref-import-tag {
+            font-size: 12px;
+            font-weight: 600;
+            color: var(--theme-accent);
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        /* Ambient Music Panel */
+        .ambient-music-panel {
+            background: var(--bg-card) !important;
+            border: 1px solid var(--border-card) !important;
+            border-radius: 16px !important;
+            box-shadow: none !important;
+            padding: 14px 16px !important;
+        }
+
+        .ambient-tracks-grid {
+            display: grid !important;
+            grid-template-columns: repeat(4, minmax(0, 1fr)) !important;
+            gap: 10px !important;
+        }
+
+        @media (max-width: 960px) {
+            .ambient-tracks-grid {
+                grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+            }
+        }
+
+        @media (max-width: 560px) {
+            .ambient-tracks-grid {
+                grid-template-columns: 1fr !important;
+            }
+        }
+
+        .ambient-track-chip {
+            background: var(--bg-page) !important;
+            border: 1px solid var(--border-card) !important;
+            border-radius: 12px !important;
+            color: var(--text-primary) !important;
+        }
+
+        .ambient-track-chip.active {
+            background: var(--theme-accent) !important;
+            border-color: var(--theme-accent) !important;
+            color: var(--theme-accent-contrast) !important;
+        }
+
+        .ambient-track-chip.active .chip-title,
+        .ambient-track-chip.active .chip-sub {
+            color: var(--theme-accent-contrast) !important;
+        }
+
+        .ambient-track-chip.active .chip-icon {
+            background: rgba(255, 255, 255, 0.2) !important;
+            color: var(--theme-accent-contrast) !important;
+        }
+
+        .ambient-track-chip.active .chip-check {
+            background: var(--theme-accent-contrast) !important;
+            border-color: var(--theme-accent-contrast) !important;
+            color: var(--theme-accent) !important;
+        }
+    </style>
 </head>
 
 <body>
-    <div class="onboarding-container">
-        <!-- ── Left Showcase Panel ─────────────────────────────────────────── -->
-        <aside class="showcase-panel">
-            <!-- Header Brand -->
-            <div class="brand-header">
-                <div class="brand-icon-wrap">
-                    <img src="assets/Dark.png" onerror="if(this.src!=='Dark.png')this.src='Dark.png'" width="28" height="28" alt="Ocal" style="object-fit: contain; display: block;">
-                </div>
-                <span class="brand-title">Ocal</span>
+    <div class="ref-app-shell">
+        <!-- Top Bar -->
+        <header class="ref-topbar">
+            <div class="ref-brand">
+                <img src="assets/Light.png" width="28" height="28" alt="Ocal" class="brand-logo-light" style="object-fit: contain; border-radius: 7px;">
+                <img src="assets/Dark.png" width="28" height="28" alt="Ocal" class="brand-logo-dark" style="object-fit: contain; border-radius: 7px;">
+                <span class="ref-brand-name">Ocal</span>
             </div>
 
-            <!-- Stepper Overview Narrative -->
-            <div class="showcase-body">
-                <div class="step-tag-pill">
-                    <i class="fas fa-wand-magic-sparkles"></i>
-                    <span>Setup Wizard</span>
-                </div>
-                <h1 class="showcase-heading" id="showcase-heading">Tailor your browsing atmosphere.</h1>
-                <p class="showcase-desc" id="showcase-desc">
-                    Fast, private, and customizable. Configure your preferred theme, tab layout, search, and defense shields.
-                </p>
-
-                <!-- Vertical Stepper Steps -->
-                <div class="stepper-nav">
-                    <div class="stepper-item active" id="step-indicator-1" onclick="jumpToStep(1)">
-                        <div class="stepper-num">1</div>
-                        <div class="stepper-text">
-                            <span class="stepper-title">Atmosphere</span>
-                            <span class="stepper-sub">Theme &amp; Accent Glow</span>
-                        </div>
-                    </div>
-                    <div class="stepper-item" id="step-indicator-2" onclick="jumpToStep(2)">
-                        <div class="stepper-num">2</div>
-                        <div class="stepper-text">
-                            <span class="stepper-title">Workspace</span>
-                            <span class="stepper-sub">Tabs &amp; Sidebar Layout</span>
-                        </div>
-                    </div>
-                    <div class="stepper-item" id="step-indicator-3" onclick="jumpToStep(3)">
-                        <div class="stepper-num">3</div>
-                        <div class="stepper-text">
-                            <span class="stepper-title">Search Engine</span>
-                            <span class="stepper-sub">Default Provider</span>
-                        </div>
-                    </div>
-                    <div class="stepper-item" id="step-indicator-4" onclick="jumpToStep(4)">
-                        <div class="stepper-num">4</div>
-                        <div class="stepper-text">
-                            <span class="stepper-title">Shields &amp; Privacy</span>
-                            <span class="stepper-sub">Zero-Telemetry Protection</span>
-                        </div>
-                    </div>
-                    <div class="stepper-item" id="step-indicator-5" onclick="jumpToStep(5)">
-                        <div class="stepper-num">5</div>
-                        <div class="stepper-text">
-                            <span class="stepper-title">Ready</span>
-                            <span class="stepper-sub">Bookmarks &amp; Launch</span>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Left Footer Telemetry -->
-            <div class="showcase-footer">
-                <span>Ocal Browser v10.1.23</span>
-                <span><i class="fas fa-shield-halved" style="margin-right:4px;"></i> 100% Private</span>
-            </div>
-        </aside>
-
-        <!-- ── Right Settings Panel (Matches Browser Tab BG #EDEDF0 / #18181B) ── -->
-        <main class="wizard-panel">
-            <!-- Top Progress Header (Clean & Interactive) -->
-            <header class="wizard-header">
-                <div class="progress-block">
-                    <div class="progress-label-row">
-                        <span class="step-chip-pill" id="progress-step-text">STEP 1 OF 5 · <span id="progress-step-name">Atmosphere</span></span>
-                        <span id="progress-pct-text">20%</span>
-                    </div>
-                    <div class="progress-segments" id="progress-segments">
-                        <div class="progress-seg active" id="pseg-1" onclick="jumpToStep(1)" title="Step 1: Atmosphere"></div>
-                        <div class="progress-seg" id="pseg-2" onclick="jumpToStep(2)" title="Step 2: Workspace"></div>
-                        <div class="progress-seg" id="pseg-3" onclick="jumpToStep(3)" title="Step 3: Search"></div>
-                        <div class="progress-seg" id="pseg-4" onclick="jumpToStep(4)" title="Step 4: Shields"></div>
-                        <div class="progress-seg" id="pseg-5" onclick="jumpToStep(5)" title="Step 5: Bookmarks"></div>
-                    </div>
-                    <div class="progress-fill" id="progress-bar-fill" style="display:none;"></div>
-                </div>
-
-                <button class="btn-skip-setup" onclick="finishAndLaunch()" type="button">
-                    <span>Skip to Browser</span>
-                    <i class="fas fa-arrow-right"></i>
+            <div class="ref-theme-pill" role="group" aria-label="Theme Mode">
+                <button type="button" class="ref-theme-btn" id="top-theme-dark" onclick="selectTheme('dark')" title="Dark Mode">
+                    <i class="fas fa-moon"></i>
                 </button>
-            </header>
-
-            <!-- Wizard Stage -->
-            <div class="wizard-stage">
-                <div class="wizard-step-container">
-
-                    <!-- ── Step 1: Atmosphere & Theme ── -->
-                    <div class="step-panel active" id="step-panel-1">
-                        <div class="step-header">
-                            <h2 class="step-title">Choose your atmosphere</h2>
-                            <p class="step-description">Personalize Ocal with your preferred base theme and system accent glow.</p>
-                        </div>
-
-                        <div class="section-label">Base Appearance</div>
-                        <div class="cards-grid">
-                            <div class="setting-card" id="theme-card-dark" onclick="selectTheme('dark')">
-                                <div class="card-main-content">
-                                    <div class="card-icon"><i class="fas fa-moon"></i></div>
-                                    <div class="card-texts">
-                                        <div class="card-title">Dark Mode</div>
-                                        <div class="card-desc">Deep onyx canvas designed for high focus and zero glare.</div>
-                                    </div>
-                                </div>
-                                <div class="check-badge"><i class="fas fa-check"></i></div>
-                            </div>
-
-                            <div class="setting-card selected" id="theme-card-light" onclick="selectTheme('light')">
-                                <div class="card-main-content">
-                                    <div class="card-icon"><i class="fas fa-sun"></i></div>
-                                    <div class="card-texts">
-                                        <div class="card-title">Light Mode</div>
-                                        <div class="card-desc">Crisp daylight canvas with high contrast and clarity.</div>
-                                    </div>
-                                </div>
-                                <div class="check-badge"><i class="fas fa-check"></i></div>
-                            </div>
-                        </div>
-
-                        <div class="section-label" style="margin-top: 14px;">Accent Glow</div>
-                        <div class="swatches-row">
-                            <div class="swatch-circle" data-color="#10B981" onclick="selectAccent('#10B981')" style="background: #10B981;"><i class="fas fa-check"></i></div>
-                            <div class="swatch-circle" data-color="#8B5CF6" onclick="selectAccent('#8B5CF6')" style="background: #8B5CF6;"><i class="fas fa-check"></i></div>
-                            <div class="swatch-circle" data-color="#4F46E5" onclick="selectAccent('#4F46E5')" style="background: #4F46E5;"><i class="fas fa-check"></i></div>
-                            <div class="swatch-circle active" data-color="#E85A4F" onclick="selectAccent('#E85A4F')" style="background: #E85A4F;"><i class="fas fa-check"></i></div>
-                            <div class="swatch-circle" data-color="#F59E0B" onclick="selectAccent('#F59E0B')" style="background: #F59E0B;"><i class="fas fa-check"></i></div>
-                            <div class="swatch-circle" data-color="#06B6D4" onclick="selectAccent('#06B6D4')" style="background: #06B6D4;"><i class="fas fa-check"></i></div>
-                            <div class="swatch-circle" data-color="#EC4899" onclick="selectAccent('#EC4899')" style="background: #EC4899;"><i class="fas fa-check"></i></div>
-                            <div class="swatch-circle" data-color="#64748B" onclick="selectAccent('#64748B')" style="background: #64748B;"><i class="fas fa-check"></i></div>
-                        </div>
-
-                        <div class="section-label" style="margin-top: 14px;">Atmosphere Music &amp; Audio</div>
-                        <div class="setting-card" id="ambient-music-card" onclick="toggleAmbientMusic(this)">
-                            <div class="card-main-content">
-                                <div class="card-icon"><i class="fas fa-headphones"></i></div>
-                                <div class="card-texts">
-                                    <div class="card-title">Ambient Lo-Fi &amp; Focus Music</div>
-                                    <div class="card-desc">Play relaxing background soundscapes while browsing with smart media ducking.</div>
-                                </div>
-                            </div>
-                            <div class="check-badge"><i class="fas fa-check"></i></div>
-                        </div>
-
-                        <!-- Ambient Music Controls (Completely Separate Panel) -->
-                        <div class="ambient-music-panel" id="ambient-music-panel">
-                            <div class="ambient-panel-header">
-                                <span class="ambient-panel-label">Select Soundscape</span>
-                            </div>
-                            <div class="ambient-tracks-grid" id="ambient-tracks-grid">
-                                <div class="ambient-track-chip active" data-track="Ocal.mp3" onclick="selectAmbientTrack('Ocal.mp3', this)">
-                                    <div class="chip-left">
-                                        <div class="chip-icon"><i class="fas fa-compact-disc"></i></div>
-                                        <div class="chip-info">
-                                            <span class="chip-title">Ocal Theme</span>
-                                            <span class="chip-sub">Signature Soundscape</span>
-                                        </div>
-                                    </div>
-                                    <div class="chip-check"><i class="fas fa-check"></i></div>
-                                </div>
-                                <div class="ambient-track-chip" data-track="ocal [usesuno.com].mp3" onclick="selectAmbientTrack('ocal [usesuno.com].mp3', this)">
-                                    <div class="chip-left">
-                                        <div class="chip-icon"><i class="fas fa-radio"></i></div>
-                                        <div class="chip-info">
-                                            <span class="chip-title">Lo-Fi Beats</span>
-                                            <span class="chip-sub">Chill Rhythm &amp; Beats</span>
-                                        </div>
-                                    </div>
-                                    <div class="chip-check"><i class="fas fa-check"></i></div>
-                                </div>
-                                <div class="ambient-track-chip" data-track="ocal [usesuno.com] (1).mp3" onclick="selectAmbientTrack('ocal [usesuno.com] (1).mp3', this)">
-                                    <div class="chip-left">
-                                        <div class="chip-icon"><i class="fas fa-water"></i></div>
-                                        <div class="chip-info">
-                                            <span class="chip-title">Ambient Chill</span>
-                                            <span class="chip-sub">Smooth Acoustic Wave</span>
-                                        </div>
-                                    </div>
-                                    <div class="chip-check"><i class="fas fa-check"></i></div>
-                                </div>
-                                <div class="ambient-track-chip" data-track="ocal [usesuno.com] (2).mp3" onclick="selectAmbientTrack('ocal [usesuno.com] (2).mp3', this)">
-                                    <div class="chip-left">
-                                        <div class="chip-icon"><i class="fas fa-brain"></i></div>
-                                        <div class="chip-info">
-                                            <span class="chip-title">Deep Focus</span>
-                                            <span class="chip-sub">Synth &amp; Binaural Flow</span>
-                                        </div>
-                                    </div>
-                                    <div class="chip-check"><i class="fas fa-check"></i></div>
-                                </div>
-                            </div>
-
-                            <div class="ambient-vol-control">
-                                <div class="ambient-vol-header">
-                                    <span class="ambient-panel-label">Volume Control</span>
-                                    <span class="ambient-vol-badge" id="ambient-vol-badge">35%</span>
-                                </div>
-                                <div class="ambient-vol-slider-row">
-                                    <i class="fas fa-volume-low" id="ambient-vol-icon"></i>
-                                    <input type="range" class="ambient-range-slider" id="ambient-volume-slider" min="0" max="100" value="35"
-                                        oninput="handleAmbientVolumeInput(this.value)"
-                                        onchange="handleAmbientVolumeChange(this.value)">
-                                    <i class="fas fa-volume-high"></i>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-
-                    <div class="step-panel" id="step-panel-2">
-                        <div class="step-header">
-                            <h2 class="step-title">Choose your workspace layout</h2>
-                            <p class="step-description">Tailor tab navigation and dock behavior to best match your workflow.</p>
-                        </div>
-
-                        <div class="section-label">Tab Navigation</div>
-                        <div class="cards-grid">
-                            <div class="setting-card selected" id="tab-layout-card-horiz" onclick="selectTabLayout('horizontal')">
-                                <div class="card-main-content">
-                                    <div class="card-icon"><i class="fas fa-window-maximize"></i></div>
-                                    <div class="card-texts">
-                                        <div class="card-title">Horizontal Tabs</div>
-                                        <div class="card-desc">Classic top tab strip. Spacious, familiar, and intuitive.</div>
-                                    </div>
-                                </div>
-                                <div class="check-badge"><i class="fas fa-check"></i></div>
-                            </div>
-
-                            <div class="setting-card" id="tab-layout-card-vert" onclick="selectTabLayout('vertical')">
-                                <div class="card-main-content">
-                                    <div class="card-icon"><i class="fas fa-bars-staggered"></i></div>
-                                    <div class="card-texts">
-                                        <div class="card-title">Vertical Tabs</div>
-                                        <div class="card-desc">Left rail layout. Effortlessly organizes 30+ tabs with zero clipping.</div>
-                                    </div>
-                                </div>
-                                <div class="check-badge"><i class="fas fa-check"></i></div>
-                            </div>
-                        </div>
-
-                        <div class="section-label" style="margin-top: 14px;">Sidebar Dock</div>
-                        <div class="cards-grid">
-                            <div class="setting-card selected" id="sidebar-card-vis" onclick="selectSidebarMode('visible')">
-                                <div class="card-main-content">
-                                    <div class="card-icon"><i class="fas fa-compass"></i></div>
-                                    <div class="card-texts">
-                                        <div class="card-title">Visible Sidebar</div>
-                                        <div class="card-desc">Quick 1-click access to AI Copilot, Bookmarks, and Downloads.</div>
-                                    </div>
-                                </div>
-                                <div class="check-badge"><i class="fas fa-check"></i></div>
-                            </div>
-
-                            <div class="setting-card" id="sidebar-card-hid" onclick="selectSidebarMode('hidden')">
-                                <div class="card-main-content">
-                                    <div class="card-icon"><i class="fas fa-border-none"></i></div>
-                                    <div class="card-texts">
-                                        <div class="card-title">Hidden Sidebar</div>
-                                        <div class="card-desc">Edge-to-edge canvas with no persistent sidebar dock.</div>
-                                    </div>
-                                </div>
-                                <div class="check-badge"><i class="fas fa-check"></i></div>
-                            </div>
-                        </div>
-                    </div>
-
-                    <div class="step-panel" id="step-panel-3">
-                        <div class="step-header">
-                            <h2 class="step-title">Select your search provider</h2>
-                            <p class="step-description">Choose the default search engine used in the address bar and omnibox.</p>
-                        </div>
-
-                        <div class="cards-list">
-                            <div class="setting-card selected" id="search-card-google" onclick="selectSearchEngine('google')">
-                                <div class="card-main-content">
-                                    <div class="card-icon brand-icon">
-                                        <svg width="22" height="22" viewBox="0 0 24 24"><path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="#4285F4"/><path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98 1.06-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853"/><path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l3.66-2.84z" fill="#FBBC05"/><path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" fill="#EA4335"/></svg>
-                                    </div>
-                                    <div class="card-texts">
-                                        <div class="card-title">Google</div>
-                                        <div class="card-desc">Fast, comprehensive results with global knowledge graph.</div>
-                                    </div>
-                                </div>
-                                <div class="check-badge"><i class="fas fa-check"></i></div>
-                            </div>
-
-                            <div class="setting-card" id="search-card-duckduckgo" onclick="selectSearchEngine('duckduckgo')">
-                                <div class="card-main-content">
-                                    <div class="card-icon brand-icon">
-                                        <img src="assets/duckduckgo.svg" width="26" height="26" alt="DuckDuckGo">
-                                    </div>
-                                    <div class="card-texts">
-                                        <div class="card-title">DuckDuckGo</div>
-                                        <div class="card-desc">Privacy first: zero tracking and no targeted search advertising.</div>
-                                    </div>
-                                </div>
-                                <div class="check-badge"><i class="fas fa-check"></i></div>
-                            </div>
-
-                            <div class="setting-card" id="search-card-brave" onclick="selectSearchEngine('brave')">
-                                <div class="card-main-content">
-                                    <div class="card-icon brand-icon">
-                                        <img src="assets/brave.svg" width="26" height="26" alt="Brave Search">
-                                    </div>
-                                    <div class="card-texts">
-                                        <div class="card-title">Brave Search</div>
-                                        <div class="card-desc">Independent privacy-focused web index with no user profiling.</div>
-                                    </div>
-                                </div>
-                                <div class="check-badge"><i class="fas fa-check"></i></div>
-                            </div>
-
-                            <div class="setting-card" id="search-card-bing" onclick="selectSearchEngine('bing')">
-                                <div class="card-main-content">
-                                    <div class="card-icon brand-icon">
-                                        <svg width="20" height="20" viewBox="0 0 24 24"><path fill="#F25022" d="M1 1h10v10H1z"/><path fill="#7FBA00" d="M13 1h10v10H13z"/><path fill="#00A4EF" d="M1 13h10v10H1z"/><path fill="#FFB900" d="M13 13h10v10H13z"/></svg>
-                                    </div>
-                                    <div class="card-texts">
-                                        <div class="card-title">Microsoft Bing</div>
-                                        <div class="card-desc">Copilot AI search features and comprehensive image search.</div>
-                                    </div>
-                                </div>
-                                <div class="check-badge"><i class="fas fa-check"></i></div>
-                            </div>
-                        <div class="section-label" style="margin-top: 14px;">Search Defense</div>
-                            <div class="setting-card selected" id="search-protection-card" onclick="toggleSearchProtection(this)">
-                                <div class="card-main-content">
-                                    <div class="card-icon"><i class="fas fa-user-shield"></i></div>
-                                    <div class="card-texts">
-                                        <div class="card-title">SafeSearch &amp; Adult Content Shield</div>
-                                        <div class="card-desc">Enforces strict filtering to protect from showing adult content and strips query trackers.</div>
-                                    </div>
-                                </div>
-                                <div class="check-badge"><i class="fas fa-check"></i></div>
-                            </div>
-                                        
-                        </div>
-                    </div>
-
-                    <!-- ── Step 4: Shields & Privacy ── -->
-                    <div class="step-panel" id="step-panel-4">
-                        <div class="step-header">
-                            <h2 class="step-title">Configure shields &amp; defense</h2>
-                            <p class="step-description">All protection modules run locally on your device with zero telemetry.</p>
-                        </div>
-
-                        <div class="cards-list">
-                            <div class="setting-card selected" id="shield-card-adblock" onclick="toggleShield('adBlockEnabled', this)">
-                                <div class="card-main-content">
-                                    <div class="card-icon"><i class="fas fa-ban"></i></div>
-                                    <div class="card-texts">
-                                        <div class="card-title">Ocal Ad &amp; Tracker Blocker</div>
-                                        <div class="card-desc">Intercepts advertising networks, tracking scripts, and cryptominers.</div>
-                                    </div>
-                                </div>
-                                <div class="check-badge"><i class="fas fa-check"></i></div>
-                            </div>
-
-                            <div class="setting-card selected" id="shield-card-fingerprint" onclick="toggleShield('fingerprintProtection', this)">
-                                <div class="card-main-content">
-                                    <div class="card-icon"><i class="fas fa-fingerprint"></i></div>
-                                    <div class="card-texts">
-                                        <div class="card-title">Fingerprint Defense</div>
-                                        <div class="card-desc">Randomizes canvas, audio, and hardware signatures across browsing sessions.</div>
-                                    </div>
-                                </div>
-                                <div class="check-badge"><i class="fas fa-check"></i></div>
-                            </div>
-
-                            <div class="setting-card selected" id="shield-card-ai" onclick="toggleShield('aiAssistantEnabled', this)">
-                                <div class="card-main-content">
-                                    <div class="card-icon"><i class="fas fa-robot"></i></div>
-                                    <div class="card-texts">
-                                        <div class="card-title">Neural AI Companion</div>
-                                        <div class="card-desc">Private sidebar intelligence for fast tab summaries and answers.</div>
-                                    </div>
-                                </div>
-                                <div class="check-badge"><i class="fas fa-check"></i></div>
-                            </div>
-
-                            <div class="setting-card selected" id="shield-card-search" onclick="toggleShield('safeSearchEnabled', this)">
-                                <div class="card-main-content">
-                                    <div class="card-icon"><i class="fas fa-user-shield"></i></div>
-                                    <div class="card-texts">
-                                        <div class="card-title">SafeSearch &amp; Adult Content Protection</div>
-                                        <div class="card-desc">Enforces strict SafeSearch to protect from showing adult content, explicit results, and query telemetry.</div>
-                                    </div>
-                                </div>
-                                <div class="check-badge"><i class="fas fa-check"></i></div>
-                            </div>
-                                        
-                        </div>
-                    </div>
-
-                    <!-- ── Step 5: Bookmarks & Launch ── -->
-                    <div class="step-panel" id="step-panel-5">
-                        <div class="step-header">
-                            <h2 class="step-title">Transfer your bookmarks</h2>
-                            <p class="step-description">Easily import your favorites and folders, or skip to start fresh.</p>
-                        </div>
-
-                        <div class="cards-list">
-                            <div class="setting-card" onclick="importFrom('chrome')">
-                                <div class="card-main-content">
-                                    <div class="card-icon brand-icon">
-                                        <svg width="22" height="22" viewBox="0 0 48 48"><circle cx="24" cy="24" r="12" fill="#fff" /><path d="M24,12H44.78a24,24,0,0,0-41.56,0L13.61,30A12,12,0,0,1,24,12Z" fill="#EA4335" /><circle cx="24" cy="24" r="9.5" fill="#1A73E8" /><path d="M34.39,30,24,48A24,24,0,0,0,44.78,12H24A12,12,0,0,1,34.39,30Z" fill="#FBBC04" /><path d="M13.61,30,3.22,12A24,24,0,0,0,24,48L34.39,30A12,12,0,0,1,13.61,30Z" fill="#34A853" /></svg>
-                                    </div>
-                                    <div class="card-texts">
-                                        <div class="card-title">Import from Google Chrome</div>
-                                        <div class="card-desc">Automatically imports bookmarks and folders from Chrome.</div>
-                                    </div>
-                                </div>
-                                <div style="font-size:12px; font-weight:750; color:var(--theme-accent);"><i class="fas fa-arrow-down-to-bracket"></i> Import</div>
-                            </div>
-
-                            <div class="setting-card" onclick="importFrom('edge')">
-                                <div class="card-main-content">
-                                    <div class="card-icon brand-icon">
-                                        <svg width="22" height="22" viewBox="0 0 24 24" fill="#0078D7"><path d="M21.86 17.86q.14 0 .25.12q.1.13.1.25t-.11.33l-.32.46l-.43.53l-.44.5q-.21.25-.38.42l-.22.23q-.58.53-1.34 1.04t-1.6.91q-.86.4-1.74.64t-1.67.24q-.9 0-1.69-.28q-.8-.28-1.48-.78T9.57 21.3q-.53-.66-.92-1.44q-.38-.77-.58-1.6t-.2-1.67q0-1 .32-1.96q.33-.97.87-1.8q.14.95.55 1.77t1.02 1.5q.6.68 1.38 1.21q.78.54 1.64.9t1.77.56q.92.2 1.8.2q1.12 0 2.18-.24q1.06-.23 2.06-.72l.2-.1zm-15.5-1.27q0 1.1.27 2.15q.27 1.06.78 2.03q.51.96 1.24 1.77q.74.82 1.66 1.4q-1.47-.2-2.8-.74q-1.33-.55-2.48-1.37q-1.15-.83-2.08-1.9q-.92-1.07-1.58-2.33T.36 14.94Q0 13.54 0 12.06q0-.81.32-1.49q.31-.68.83-1.23q.53-.55 1.2-.96q.66-.4 1.35-.66q.74-.27 1.5-.39q.78-.12 1.55-.12q.7 0 1.42.1q.72.12 1.4.35t1.32.57q.63.35 1.16.83q-.35 0-.7.07q-.33.07-.65.23v-.02q-.63.28-1.2.74t-1.05 1.04t-.87 1.26q-.38.67-.65 1.39q-.27.71-.42 1.44q-.15.72-.15 1.38M11.96.06q1.7 0 3.33.39q1.63.38 3.07 1.15q1.43.77 2.62 1.93q1.18 1.16 1.98 2.7q.49.94.76 1.96q.28 1 .28 2.08q0 .89-.23 1.7q-.24.8-.69 1.48t-1.1 1.22q-.64.53-1.45.88q-.54.24-1.11.36q-.58.13-1.16.13q-.42 0-.97-.03q-.54-.03-1.1-.12q-.55-.1-1.05-.28q-.5-.19-.84-.5q-.12-.09-.23-.24q-.1-.16-.1-.33q0-.15.16-.35t.35-.5q.2-.28.36-.68t.16-.95q0-1.06-.4-1.96q-.4-.91-1.06-1.64q-.66-.74-1.52-1.28q-.86-.55-1.79-.89q-.84-.3-1.72-.44q-.87-.14-1.76-.14q-1.55 0-3.06.45T.94 7.55q.71-1.74 1.81-3.13q1.1-1.38 2.52-2.35Q6.68 1.1 8.37.58q1.7-.52 3.58-.52Z"/></svg>
-                                    </div>
-                                    <div class="card-texts">
-                                        <div class="card-title">Import from Microsoft Edge</div>
-                                        <div class="card-desc">Automatically transfers favorites from Microsoft Edge.</div>
-                                    </div>
-                                </div>
-                                <div style="font-size:12px; font-weight:750; color:var(--theme-accent);"><i class="fas fa-arrow-down-to-bracket"></i> Import</div>
-                            </div>
-
-                            <div class="setting-card" onclick="importFromFile()">
-                                <div class="card-main-content">
-                                    <div class="card-icon"><i class="fas fa-file-code"></i></div>
-                                    <div class="card-texts">
-                                        <div class="card-title">Import from HTML File</div>
-                                        <div class="card-desc">Select an exported bookmarks.html file from your storage.</div>
-                                    </div>
-                                </div>
-                                <div style="font-size:12px; font-weight:750; color:var(--theme-accent);"><i class="fas fa-folder-open"></i> Browse</div>
-                            </div>
-                        </div>
-
-                        <div class="status-message" id="import-status-box"></div>
-                    </div>
-
-                </div>
+                <button type="button" class="ref-theme-btn active" id="top-theme-light" onclick="selectTheme('light')" title="Light Mode">
+                    <i class="fas fa-sun"></i>
+                </button>
             </div>
 
-            <!-- Wizard Navigation Footer -->
-            <footer class="wizard-footer">
-                <button class="btn-nav-back" id="btn-back" onclick="previousStep()" disabled type="button">
+            <button class="ref-skip-pill" onclick="finishAndLaunch()" type="button">
+                <span>Skip to Browser</span>
+                <i class="fas fa-arrow-right"></i>
+            </button>
+        </header>
+
+        <!-- Main Workspace -->
+        <div class="ref-workspace">
+            <aside class="ref-rail">
+                <nav class="ref-rail-steps" aria-label="Setup Steps">
+                    <button type="button" class="stepper-item active" id="step-indicator-1" onclick="jumpToStep(1)" title="1. Appearance">
+                        <span class="stepper-num">1</span>
+                    </button>
+                    <button type="button" class="stepper-item" id="step-indicator-2" onclick="jumpToStep(2)" title="2. Workspace">
+                        <span class="stepper-num">2</span>
+                    </button>
+                    <button type="button" class="stepper-item" id="step-indicator-3" onclick="jumpToStep(3)" title="3. Search Engine">
+                        <span class="stepper-num">3</span>
+                    </button>
+                    <button type="button" class="stepper-item" id="step-indicator-4" onclick="jumpToStep(4)" title="4. Shields &amp; Privacy">
+                        <span class="stepper-num">4</span>
+                    </button>
+                    <button type="button" class="stepper-item" id="step-indicator-5" onclick="jumpToStep(5)" title="5. Bookmarks &amp; Launch">
+                        <span class="stepper-num">5</span>
+                    </button>
+                </nav>
+
+                <button class="ref-rail-back" id="btn-back" onclick="previousStep()" disabled type="button" title="Previous Step">
                     <i class="fas fa-arrow-left"></i>
-                    <span>Back</span>
                 </button>
+            </aside>
 
-                <div class="kbd-hint">
-                    <kbd>→</kbd> <kbd>Enter</kbd> <span>Next</span>
-                    <span style="opacity:0.4; margin: 0 4px;">·</span>
-                    <kbd>1</kbd>–<kbd>5</kbd> <span>Jump</span>
+            <main class="ref-main">
+                <!-- Editorial Hero Row -->
+                <div class="ref-hero-row">
+                    <div class="ref-hero-text">
+                        <h1 class="ref-hero-title" id="showcase-heading">Set up your browser.</h1>
+                        <p class="ref-hero-desc" id="showcase-desc">Choose light or dark mode and pick your browser accent color.</p>
+                    </div>
+
+                    <div class="ref-hero-actions">
+                        <div class="ref-metric">
+                            <span class="ref-metric-label">Current step</span>
+                            <span class="ref-metric-val" id="progress-step-text">1 / 5</span>
+                        </div>
+                        <div class="ref-metric">
+                            <span class="ref-metric-label">Completed</span>
+                            <span class="ref-metric-val" id="progress-pct-text">20%</span>
+                        </div>
+                        <button class="ref-primary-pill" id="btn-next" onclick="nextStep()" type="button">
+                            <span id="btn-next-label">Next Step</span>
+                            <i class="fas fa-arrow-right" id="btn-next-icon"></i>
+                        </button>
+                    </div>
                 </div>
 
-                <button class="btn-nav-next" id="btn-next" onclick="nextStep()" type="button">
-                    <span id="btn-next-label">Next Step</span>
-                    <i class="fas fa-arrow-right" id="btn-next-icon"></i>
-                </button>
-            </footer>
-        </main>
+                <!-- Bento Grid Stage (True Multi-Card Bento Layout like Reference) -->
+                <div class="ref-stage-wrap">
+                    <div class="wizard-step-container">
+
+                        <!-- ── Step 1: Appearance (2-Row Bento Grid) ── -->
+                        <div class="step-panel active" id="step-panel-1">
+                            <div class="bento-grid-2">
+                                <!-- Bento Module 1: Base Theme -->
+                                <div class="bento-module">
+                                    <div class="bento-module-head">
+                                        <div>
+                                            <h3 class="bento-title">Base Appearance</h3>
+                                            <p class="bento-sub">Select your preferred browser canvas.</p>
+                                        </div>
+                                        <span class="bento-icon-pill"><i class="fas fa-circle-half-stroke"></i></span>
+                                    </div>
+                                    <div class="bento-theme-pair">
+                                        <div class="setting-card bento-visual-card" id="theme-card-dark" onclick="selectTheme('dark')">
+                                            <div class="mini-preview mini-dark">
+                                                <div class="mini-dots"><span></span><span></span><span></span></div>
+                                                <div class="mini-bar"></div>
+                                            </div>
+                                            <div class="bento-card-foot">
+                                                <div class="card-texts">
+                                                    <div class="card-title">Dark Mode</div>
+                                                    <div class="card-desc">Low-glare dark canvas</div>
+                                                </div>
+                                                <div class="check-badge"><i class="fas fa-check"></i></div>
+                                            </div>
+                                        </div>
+
+                                        <div class="setting-card bento-visual-card selected" id="theme-card-light" onclick="selectTheme('light')">
+                                            <div class="mini-preview mini-light">
+                                                <div class="mini-dots"><span></span><span></span><span></span></div>
+                                                <div class="mini-bar"></div>
+                                            </div>
+                                            <div class="bento-card-foot">
+                                                <div class="card-texts">
+                                                    <div class="card-title">Light Mode</div>
+                                                    <div class="card-desc">Crisp daylight canvas</div>
+                                                </div>
+                                                <div class="check-badge"><i class="fas fa-check"></i></div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <!-- Bento Module 2: Accent Color -->
+                                <div class="bento-module">
+                                    <div class="bento-module-head">
+                                        <div>
+                                            <h3 class="bento-title">Accent Color</h3>
+                                            <p class="bento-sub">Applied to active tabs, buttons, and highlights.</p>
+                                        </div>
+                                        <span class="bento-icon-pill"><i class="fas fa-palette"></i></span>
+                                    </div>
+                                    <div class="bento-accent-body">
+                                        <div class="swatches-row bento-swatches">
+                                            <div class="swatch-circle" data-color="#10B981" onclick="selectAccent('#10B981')" style="background: #10B981;"><i class="fas fa-check"></i></div>
+                                            <div class="swatch-circle" data-color="#8B5CF6" onclick="selectAccent('#8B5CF6')" style="background: #8B5CF6;"><i class="fas fa-check"></i></div>
+                                            <div class="swatch-circle" data-color="#4F46E5" onclick="selectAccent('#4F46E5')" style="background: #4F46E5;"><i class="fas fa-check"></i></div>
+                                            <div class="swatch-circle active" data-color="#E85A4F" onclick="selectAccent('#E85A4F')" style="background: #E85A4F;"><i class="fas fa-check"></i></div>
+                                            <div class="swatch-circle" data-color="#F59E0B" onclick="selectAccent('#F59E0B')" style="background: #F59E0B;"><i class="fas fa-check"></i></div>
+                                            <div class="swatch-circle" data-color="#06B6D4" onclick="selectAccent('#06B6D4')" style="background: #06B6D4;"><i class="fas fa-check"></i></div>
+                                            <div class="swatch-circle" data-color="#EC4899" onclick="selectAccent('#EC4899')" style="background: #EC4899;"><i class="fas fa-check"></i></div>
+                                            <div class="swatch-circle" data-color="#64748B" onclick="selectAccent('#64748B')" style="background: #64748B;"><i class="fas fa-check"></i></div>
+                                        </div>
+                                        <div class="bento-accent-preview">
+                                            <span class="bap-tab"><span class="bap-dot"></span> Active Tab</span>
+                                            <span class="bap-btn">Primary Action</span>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Bento Module 3: Focus Audio -->
+                            <div class="bento-module bento-module-wide">
+                                <div class="setting-card bento-toggle-row" id="ambient-music-card" onclick="toggleAmbientMusic(this)">
+                                    <div class="card-main-content">
+                                        <div class="card-icon"><i class="fas fa-headphones"></i></div>
+                                        <div class="card-texts">
+                                            <div class="card-title">Focus Audio &amp; Ambient Lo-Fi</div>
+                                            <div class="card-desc">Play background soundscapes while browsing with automatic media ducking.</div>
+                                        </div>
+                                    </div>
+                                    <div class="check-badge"><i class="fas fa-check"></i></div>
+                                </div>
+
+                                <div class="ambient-music-panel" id="ambient-music-panel">
+                                    <div class="ambient-tracks-grid" id="ambient-tracks-grid">
+                                        <div class="ambient-track-chip active" data-track="Ocal.mp3" onclick="selectAmbientTrack('Ocal.mp3', this)">
+                                            <div class="chip-left">
+                                                <div class="chip-icon"><i class="fas fa-compact-disc"></i></div>
+                                                <div class="chip-info">
+                                                    <span class="chip-title">Ocal Theme</span>
+                                                    <span class="chip-sub">Signature Soundscape</span>
+                                                </div>
+                                            </div>
+                                            <div class="chip-check"><i class="fas fa-check"></i></div>
+                                        </div>
+                                        <div class="ambient-track-chip" data-track="ocal [usesuno.com].mp3" onclick="selectAmbientTrack('ocal [usesuno.com].mp3', this)">
+                                            <div class="chip-left">
+                                                <div class="chip-icon"><i class="fas fa-radio"></i></div>
+                                                <div class="chip-info">
+                                                    <span class="chip-title">Lo-Fi Beats</span>
+                                                    <span class="chip-sub">Chill Rhythm &amp; Beats</span>
+                                                </div>
+                                            </div>
+                                            <div class="chip-check"><i class="fas fa-check"></i></div>
+                                        </div>
+                                        <div class="ambient-track-chip" data-track="ocal [usesuno.com] (1).mp3" onclick="selectAmbientTrack('ocal [usesuno.com] (1).mp3', this)">
+                                            <div class="chip-left">
+                                                <div class="chip-icon"><i class="fas fa-water"></i></div>
+                                                <div class="chip-info">
+                                                    <span class="chip-title">Ambient Chill</span>
+                                                    <span class="chip-sub">Smooth Acoustic Wave</span>
+                                                </div>
+                                            </div>
+                                            <div class="chip-check"><i class="fas fa-check"></i></div>
+                                        </div>
+                                        <div class="ambient-track-chip" data-track="ocal [usesuno.com] (2).mp3" onclick="selectAmbientTrack('ocal [usesuno.com] (2).mp3', this)">
+                                            <div class="chip-left">
+                                                <div class="chip-icon"><i class="fas fa-brain"></i></div>
+                                                <div class="chip-info">
+                                                    <span class="chip-title">Deep Focus</span>
+                                                    <span class="chip-sub">Synth &amp; Binaural Flow</span>
+                                                </div>
+                                            </div>
+                                            <div class="chip-check"><i class="fas fa-check"></i></div>
+                                        </div>
+                                    </div>
+
+                                    <div class="ambient-vol-control">
+                                        <div class="ambient-vol-header">
+                                            <span class="ambient-panel-label">Volume</span>
+                                            <span class="ambient-vol-badge" id="ambient-vol-badge">35%</span>
+                                        </div>
+                                        <div class="ambient-vol-slider-row">
+                                            <i class="fas fa-volume-low" id="ambient-vol-icon"></i>
+                                            <input type="range" class="ambient-range-slider" id="ambient-volume-slider" min="0" max="100" value="35"
+                                                oninput="handleAmbientVolumeInput(this.value)"
+                                                onchange="handleAmbientVolumeChange(this.value)">
+                                            <i class="fas fa-volume-high"></i>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- ── Step 2: Workspace (2-Column Bento Modules) ── -->
+                        <div class="step-panel" id="step-panel-2">
+                            <div class="bento-grid-2">
+                                <div class="bento-module">
+                                    <div class="bento-module-head">
+                                        <div>
+                                            <h3 class="bento-title">Tab Navigation</h3>
+                                            <p class="bento-sub">Choose how your open tabs are arranged.</p>
+                                        </div>
+                                        <span class="bento-icon-pill"><i class="fas fa-window-restore"></i></span>
+                                    </div>
+                                    <div class="bento-stack">
+                                        <div class="setting-card selected" id="tab-layout-card-horiz" onclick="selectTabLayout('horizontal')">
+                                            <div class="card-main-content">
+                                                <div class="card-icon"><i class="fas fa-window-maximize"></i></div>
+                                                <div class="card-texts">
+                                                    <div class="card-title">Horizontal Tabs</div>
+                                                    <div class="card-desc">Classic top tab strip. Spacious and familiar.</div>
+                                                </div>
+                                            </div>
+                                            <div class="check-badge"><i class="fas fa-check"></i></div>
+                                        </div>
+                                        <div class="setting-card" id="tab-layout-card-vert" onclick="selectTabLayout('vertical')">
+                                            <div class="card-main-content">
+                                                <div class="card-icon"><i class="fas fa-bars-staggered"></i></div>
+                                                <div class="card-texts">
+                                                    <div class="card-title">Vertical Tabs</div>
+                                                    <div class="card-desc">Left rail layout for organizing many tabs cleanly.</div>
+                                                </div>
+                                            </div>
+                                            <div class="check-badge"><i class="fas fa-check"></i></div>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="bento-module">
+                                    <div class="bento-module-head">
+                                        <div>
+                                            <h3 class="bento-title">Sidebar Dock</h3>
+                                            <p class="bento-sub">Control quick-access tools on the side edge.</p>
+                                        </div>
+                                        <span class="bento-icon-pill"><i class="fas fa-compass"></i></span>
+                                    </div>
+                                    <div class="bento-stack">
+                                        <div class="setting-card selected" id="sidebar-card-vis" onclick="selectSidebarMode('visible')">
+                                            <div class="card-main-content">
+                                                <div class="card-icon"><i class="fas fa-compass"></i></div>
+                                                <div class="card-texts">
+                                                    <div class="card-title">Visible Sidebar</div>
+                                                    <div class="card-desc">Quick 1-click access to AI, Bookmarks &amp; Downloads.</div>
+                                                </div>
+                                            </div>
+                                            <div class="check-badge"><i class="fas fa-check"></i></div>
+                                        </div>
+                                        <div class="setting-card" id="sidebar-card-hid" onclick="selectSidebarMode('hidden')">
+                                            <div class="card-main-content">
+                                                <div class="card-icon"><i class="fas fa-border-none"></i></div>
+                                                <div class="card-texts">
+                                                    <div class="card-title">Hidden Sidebar</div>
+                                                    <div class="card-desc">Edge-to-edge canvas with no persistent dock.</div>
+                                                </div>
+                                            </div>
+                                            <div class="check-badge"><i class="fas fa-check"></i></div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- ── Step 3: Search (2x2 Providers + Search Defense Bento) ── -->
+                        <div class="step-panel" id="step-panel-3">
+                            <div class="bento-grid-search">
+                                <div class="bento-module">
+                                    <div class="bento-module-head">
+                                        <div>
+                                            <h3 class="bento-title">Default Search Engine</h3>
+                                            <p class="bento-sub">Used in the address bar and omnibox.</p>
+                                        </div>
+                                        <span class="bento-icon-pill"><i class="fas fa-magnifying-glass"></i></span>
+                                    </div>
+                                    <div class="bento-grid-2-tight">
+                                        <div class="setting-card selected" id="search-card-google" onclick="selectSearchEngine('google')">
+                                            <div class="card-main-content">
+                                                <div class="card-icon brand-icon">
+                                                    <svg width="20" height="20" viewBox="0 0 24 24"><path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="#4285F4"/><path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98 1.06-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853"/><path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l3.66-2.84z" fill="#FBBC05"/><path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" fill="#EA4335"/></svg>
+                                                </div>
+                                                <div class="card-texts">
+                                                    <div class="card-title">Google</div>
+                                                    <div class="card-desc">Fast global search</div>
+                                                </div>
+                                            </div>
+                                            <div class="check-badge"><i class="fas fa-check"></i></div>
+                                        </div>
+
+                                        <div class="setting-card" id="search-card-duckduckgo" onclick="selectSearchEngine('duckduckgo')">
+                                            <div class="card-main-content">
+                                                <div class="card-icon brand-icon">
+                                                    <img src="assets/duckduckgo.svg" width="22" height="22" alt="DuckDuckGo">
+                                                </div>
+                                                <div class="card-texts">
+                                                    <div class="card-title">DuckDuckGo</div>
+                                                    <div class="card-desc">Zero tracking</div>
+                                                </div>
+                                            </div>
+                                            <div class="check-badge"><i class="fas fa-check"></i></div>
+                                        </div>
+
+                                        <div class="setting-card" id="search-card-brave" onclick="selectSearchEngine('brave')">
+                                            <div class="card-main-content">
+                                                <div class="card-icon brand-icon">
+                                                    <img src="assets/brave.svg" width="22" height="22" alt="Brave Search">
+                                                </div>
+                                                <div class="card-texts">
+                                                    <div class="card-title">Brave Search</div>
+                                                    <div class="card-desc">Independent index</div>
+                                                </div>
+                                            </div>
+                                            <div class="check-badge"><i class="fas fa-check"></i></div>
+                                        </div>
+
+                                        <div class="setting-card" id="search-card-bing" onclick="selectSearchEngine('bing')">
+                                            <div class="card-main-content">
+                                                <div class="card-icon brand-icon">
+                                                    <svg width="18" height="18" viewBox="0 0 24 24"><path fill="#F25022" d="M1 1h10v10H1z"/><path fill="#7FBA00" d="M13 1h10v10H13z"/><path fill="#00A4EF" d="M1 13h10v10H1z"/><path fill="#FFB900" d="M13 13h10v10H13z"/></svg>
+                                                </div>
+                                                <div class="card-texts">
+                                                    <div class="card-title">Microsoft Bing</div>
+                                                    <div class="card-desc">Visual &amp; web search</div>
+                                                </div>
+                                            </div>
+                                            <div class="check-badge"><i class="fas fa-check"></i></div>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="bento-module">
+                                    <div class="bento-module-head">
+                                        <div>
+                                            <h3 class="bento-title">Search Defense</h3>
+                                            <p class="bento-sub">Filter explicit results &amp; strip query trackers.</p>
+                                        </div>
+                                        <span class="bento-icon-pill"><i class="fas fa-user-shield"></i></span>
+                                    </div>
+                                    <div class="setting-card selected bento-tall-card" id="search-protection-card" onclick="toggleSearchProtection(this)">
+                                        <div class="card-main-content">
+                                            <div class="card-icon"><i class="fas fa-user-shield"></i></div>
+                                            <div class="card-texts">
+                                                <div class="card-title">SafeSearch &amp; Content Shield</div>
+                                                <div class="card-desc">Enforces strict filtering to block adult content and strips tracking parameters from search URLs.</div>
+                                            </div>
+                                        </div>
+                                        <div class="check-badge"><i class="fas fa-check"></i></div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- ── Step 4: Shields (2x2 Bento Grid) ── -->
+                        <div class="step-panel" id="step-panel-4">
+                            <div class="bento-module">
+                                <div class="bento-module-head">
+                                    <div>
+                                        <h3 class="bento-title">Privacy &amp; Protection Modules</h3>
+                                        <p class="bento-sub">All modules execute locally on your device with zero telemetry.</p>
+                                    </div>
+                                    <span class="bento-icon-pill"><i class="fas fa-shield-halved"></i></span>
+                                </div>
+                                <div class="bento-grid-2-tight">
+                                    <div class="setting-card selected" id="shield-card-adblock" onclick="toggleShield('adBlockEnabled', this)">
+                                        <div class="card-main-content">
+                                            <div class="card-icon"><i class="fas fa-ban"></i></div>
+                                            <div class="card-texts">
+                                                <div class="card-title">Ad &amp; Tracker Blocker</div>
+                                                <div class="card-desc">Blocks ad networks, trackers, and cryptominers.</div>
+                                            </div>
+                                        </div>
+                                        <div class="check-badge"><i class="fas fa-check"></i></div>
+                                    </div>
+
+                                    <div class="setting-card selected" id="shield-card-fingerprint" onclick="toggleShield('fingerprintProtection', this)">
+                                        <div class="card-main-content">
+                                            <div class="card-icon"><i class="fas fa-fingerprint"></i></div>
+                                            <div class="card-texts">
+                                                <div class="card-title">Fingerprint Defense</div>
+                                                <div class="card-desc">Randomizes canvas, audio, and hardware signals.</div>
+                                            </div>
+                                        </div>
+                                        <div class="check-badge"><i class="fas fa-check"></i></div>
+                                    </div>
+
+                                    <div class="setting-card selected" id="shield-card-ai" onclick="toggleShield('aiAssistantEnabled', this)">
+                                        <div class="card-main-content">
+                                            <div class="card-icon"><i class="fas fa-robot"></i></div>
+                                            <div class="card-texts">
+                                                <div class="card-title">AI Sidebar Assistant</div>
+                                                <div class="card-desc">Private sidebar for tab summaries and answers.</div>
+                                            </div>
+                                        </div>
+                                        <div class="check-badge"><i class="fas fa-check"></i></div>
+                                    </div>
+
+                                    <div class="setting-card selected" id="shield-card-search" onclick="toggleShield('safeSearchEnabled', this)">
+                                        <div class="card-main-content">
+                                            <div class="card-icon"><i class="fas fa-user-shield"></i></div>
+                                            <div class="card-texts">
+                                                <div class="card-title">SafeSearch Protection</div>
+                                                <div class="card-desc">Enforces SafeSearch and blocks explicit domains.</div>
+                                            </div>
+                                        </div>
+                                        <div class="check-badge"><i class="fas fa-check"></i></div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- ── Step 5: Bookmarks (3-Column Bento Grid) ── -->
+                        <div class="step-panel" id="step-panel-5">
+                            <div class="bento-module">
+                                <div class="bento-module-head">
+                                    <div>
+                                        <h3 class="bento-title">Import Bookmarks</h3>
+                                        <p class="bento-sub">Bring your favorites from another browser or start fresh.</p>
+                                    </div>
+                                    <span class="bento-icon-pill"><i class="fas fa-bookmark"></i></span>
+                                </div>
+                                <div class="bento-grid-3">
+                                    <div class="setting-card bento-import-card" onclick="importFrom('chrome')">
+                                        <div class="card-icon brand-icon">
+                                            <svg width="22" height="22" viewBox="0 0 48 48"><circle cx="24" cy="24" r="12" fill="#fff" /><path d="M24,12H44.78a24,24,0,0,0-41.56,0L13.61,30A12,12,0,0,1,24,12Z" fill="#EA4335" /><circle cx="24" cy="24" r="9.5" fill="#1A73E8" /><path d="M34.39,30,24,48A24,24,0,0,0,44.78,12H24A12,12,0,0,1,34.39,30Z" fill="#FBBC04" /><path d="M13.61,30,3.22,12A24,24,0,0,0,24,48L34.39,30A12,12,0,0,1,13.61,30Z" fill="#34A853" /></svg>
+                                        </div>
+                                        <div class="card-texts">
+                                            <div class="card-title">Google Chrome</div>
+                                            <div class="card-desc">Import bookmarks and folders automatically.</div>
+                                        </div>
+                                        <div class="ref-import-tag"><i class="fas fa-arrow-down-to-bracket"></i> Import</div>
+                                    </div>
+
+                                    <div class="setting-card bento-import-card" onclick="importFrom('edge')">
+                                        <div class="card-icon brand-icon">
+                                            <svg width="22" height="22" viewBox="0 0 24 24" fill="#0078D7"><path d="M21.86 17.86q.14 0 .25.12q.1.13.1.25t-.11.33l-.32.46l-.43.53l-.44.5q-.21.25-.38.42l-.22.23q-.58.53-1.34 1.04t-1.6.91q-.86.4-1.74.64t-1.67.24q-.9 0-1.69-.28q-.8-.28-1.48-.78T9.57 21.3q-.53-.66-.92-1.44q-.38-.77-.58-1.6t-.2-1.67q0-1 .32-1.96q.33-.97.87-1.8q.14.95.55 1.77t1.02 1.5q.6.68 1.38 1.21q.78.54 1.64.9t1.77.56q.92.2 1.8.2q1.12 0 2.18-.24q1.06-.23 2.06-.72l.2-.1zm-15.5-1.27q0 1.1.27 2.15q.27 1.06.78 2.03q.51.96 1.24 1.77q.74.82 1.66 1.4q-1.47-.2-2.8-.74q-1.33-.55-2.48-1.37q-1.15-.83-2.08-1.9q-.92-1.07-1.58-2.33T.36 14.94Q0 13.54 0 12.06q0-.81.32-1.49q.31-.68.83-1.23q.53-.55 1.2-.96q.66-.4 1.35-.66q.74-.27 1.5-.39q.78-.12 1.55-.12q.7 0 1.42.1q.72.12 1.4.35t1.32.57q.63.35 1.16.83q-.35 0-.7.07q-.33.07-.65.23v-.02q-.63.28-1.2.74t-1.05 1.04t-.87 1.26q-.38.67-.65 1.39q-.27.71-.42 1.44q-.15.72-.15 1.38M11.96.06q1.7 0 3.33.39q1.63.38 3.07 1.15q1.43.77 2.62 1.93q1.18 1.16 1.98 2.7q.49.94.76 1.96q.28 1 .28 2.08q0 .89-.23 1.7q-.24.8-.69 1.48t-1.1 1.22q-.64.53-1.45.88q-.54.24-1.11.36q-.58.13-1.16.13q-.42 0-.97-.03q-.54-.03-1.1-.12q-.55-.1-1.05-.28q-.5-.19-.84-.5q-.12-.09-.23-.24q-.1-.16-.1-.33q0-.15.16-.35t.35-.5q.2-.28.36-.68t.16-.95q0-1.06-.4-1.96q-.4-.91-1.06-1.64q-.66-.74-1.52-1.28q-.86-.55-1.79-.89q-.84-.3-1.72-.44q-.87-.14-1.76-.14q-1.55 0-3.06.45T.94 7.55q.71-1.74 1.81-3.13q1.1-1.38 2.52-2.35Q6.68 1.1 8.37.58q1.7-.52 3.58-.52Z"/></svg>
+                                        </div>
+                                        <div class="card-texts">
+                                            <div class="card-title">Microsoft Edge</div>
+                                            <div class="card-desc">Transfer favorites from Edge automatically.</div>
+                                        </div>
+                                        <div class="ref-import-tag"><i class="fas fa-arrow-down-to-bracket"></i> Import</div>
+                                    </div>
+
+                                    <div class="setting-card bento-import-card" onclick="importFromFile()">
+                                        <div class="card-icon"><i class="fas fa-file-code"></i></div>
+                                        <div class="card-texts">
+                                            <div class="card-title">HTML File</div>
+                                            <div class="card-desc">Select an exported bookmarks.html file.</div>
+                                        </div>
+                                        <div class="ref-import-tag"><i class="fas fa-folder-open"></i> Browse</div>
+                                    </div>
+                                </div>
+                                <div class="status-message" id="import-status-box"></div>
+                            </div>
+                        </div>
+
+                    </div>
+                </div>
+            </main>
+        </div>
     </div>
 
     <!-- ── Interaction Logic ──────────────────────────────────────────────── -->
@@ -1587,8 +2306,8 @@
 
             const stepInfo = [
                 {
-                    heading: "Tailor your browsing atmosphere.",
-                    desc: "Choose between high-contrast dark mode or clean daylight mode, and pick your system accent glow."
+                    heading: "Set up your browser.",
+                    desc: "Choose light or dark mode and pick your browser accent color."
                 },
                 {
                     heading: "Design your workspace layout.",
@@ -1667,6 +2386,10 @@
                 const lightCard = document.getElementById('theme-card-light');
                 if (darkCard) darkCard.classList.toggle('selected', mode === 'dark');
                 if (lightCard) lightCard.classList.toggle('selected', mode === 'light');
+                const topDark = document.getElementById('top-theme-dark');
+                const topLight = document.getElementById('top-theme-light');
+                if (topDark) topDark.classList.toggle('active', mode === 'dark');
+                if (topLight) topLight.classList.toggle('active', mode === 'light');
 
                 try {
                     localStorage.setItem('ocal-settings-theme', mode);
@@ -1765,12 +2488,12 @@
                 }
 
                 // Update Header Progress Label & Dynamic Step Name
-                const stepNames = ['Atmosphere', 'Workspace', 'Search', 'Shields', 'Bookmarks'];
-                const currentName = stepNames[currentStep - 1] || 'Atmosphere';
+                const stepNames = ['Appearance', 'Workspace', 'Search', 'Shields', 'Bookmarks'];
+                const currentName = stepNames[currentStep - 1] || 'Appearance';
                 
                 const stepTextEl = document.getElementById('progress-step-text');
                 if (stepTextEl) {
-                    stepTextEl.innerHTML = `STEP ${currentStep} OF ${totalSteps} · <span>${currentName}</span>`;
+                    stepTextEl.textContent = `${currentStep} / ${totalSteps}`;
                 }
 
                 const pct = Math.round((currentStep / totalSteps) * 100);

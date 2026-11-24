@@ -868,7 +868,7 @@ function createProfilePrompt() {
 
                 <!-- Profile Name Input -->
                 <div class="sm-field-group">
-                    <label for="new-profile-name">Profile Alias / Workspace</label>
+                    <label for="new-profile-name">Profile Name</label>
                     <div class="sm-input-wrap">
                         <i class="fas fa-pen-to-square sm-input-icon"></i>
                         <input type="text" id="new-profile-name" placeholder="e.g. Work, Personal, Gaming..." autocomplete="off" spellcheck="false" oninput="window.updateProfileModalPreview()">
@@ -951,8 +951,8 @@ async function editProfilePrompt(id) {
                 <div class="sm-title">
                     <div class="sm-icon-badge"><i class="fas fa-user-pen"></i></div>
                     <div class="sm-text-group">
-                        <h3>Modify Profile Node</h3>
-                        <span>Update identity parameters & visual theme</span>
+                        <h3>Edit Profile</h3>
+                        <span>Customize profile name, accent color, and icon</span>
                     </div>
                 </div>
                 <button type="button" class="sm-close-btn" onclick="window.closeModal()" title="Close"><i class="fas fa-times"></i></button>
@@ -962,7 +962,7 @@ async function editProfilePrompt(id) {
                 <!-- Live Interactive Preview Card matching Home Page -->
                 <div class="sm-preview-card">
                     <div class="sm-preview-left">
-                        <div class="sm-preview-tile-icon" id="sm-preview-profile-icon" style="background: ${window._selectedProfileColor}; color: #FFFFFF; border: none; box-shadow: 0 4px 12px color-mix(in srgb, ${window._selectedProfileColor} 30%, transparent);">
+                        <div class="sm-preview-tile-icon" id="sm-preview-profile-icon" style="background: ${window._selectedProfileColor}; color: #FFFFFF; border: none; ">
                             <i class="fas ${window._selectedProfileIcon}"></i>
                         </div>
                         <div class="sm-preview-details">
@@ -972,13 +972,13 @@ async function editProfilePrompt(id) {
                     </div>
                     <div class="sm-preview-badge">
                         <i class="fas fa-cube"></i>
-                        <span>NODE ${id}</span>
+                        <span>${id === "default" ? "Default" : "Isolated"}</span>
                     </div>
                 </div>
 
                 <!-- Profile Name Input -->
                 <div class="sm-field-group">
-                    <label for="edit-profile-name">Profile Alias / Workspace</label>
+                    <label for="edit-profile-name">Profile Name</label>
                     <div class="sm-input-wrap">
                         <i class="fas fa-pen-to-square sm-input-icon"></i>
                         <input type="text" id="edit-profile-name" value="${profile.name}" autocomplete="off" spellcheck="false" oninput="window.updateProfileModalPreview()">
@@ -1730,7 +1730,7 @@ function showUpdateInfo(latest) {
         downloadBtn.innerHTML = `<i class="fas fa-download"></i> Download &amp; Install v${latest.version}`;
         downloadBtn.onclick = async () => {
             downloadBtn.disabled = true;
-            downloadBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> DOWNLOADING UPDATE...';
+            downloadBtn.innerHTML = '<i class="fas fa-circle-notch fa-spin"></i> Preparing Download...';
             
             const progWrapper = document.getElementById('update-progress-wrapper');
             const fill = document.getElementById('update-progress-fill');
@@ -1745,7 +1745,8 @@ function showUpdateInfo(latest) {
                 if (fill) fill.style.width = '100%';
                 if (pText) pText.innerText = '100% (Ready to Install)';
                 
-                downloadBtn.innerHTML = 'RESTART TO UPDATE <i class="fas fa-power-off"></i>';
+                if (progWrapper) progWrapper.classList.add('is-complete');
+                downloadBtn.innerHTML = '<i class="fas fa-power-off"></i> Restart to Install Update';
                 downloadBtn.style.background = 'var(--accent, #4F46E5)';
                 downloadBtn.disabled = false;
                 downloadBtn.onclick = () => window.electronAPI.applyUpdate(path);
@@ -1777,7 +1778,7 @@ if (window.electronAPI && window.electronAPI.onUpdateProgress) {
         }
         const dlBtn = document.getElementById('download-update-btn');
         if (dlBtn && dlBtn.disabled) {
-            dlBtn.innerHTML = `<i class="fas fa-cloud-arrow-down fa-bounce"></i> DOWNLOADING... ${p}%`;
+            dlBtn.innerHTML = `<i class="fas fa-circle-notch fa-spin"></i> Downloading Update... ${p}%`;
         }
     });
 }
@@ -3109,17 +3110,13 @@ async function checkDefaultBrowser() {
             statusText.innerText = "Default Browser";
             statusText.className = "system-status-pill status-active";
             if (statShell) statShell.innerText = "Default";
-            setBtn.innerText = "Default";
-            setBtn.disabled = true;
-            setBtn.classList.remove('primary');
-            setBtn.classList.add('secondary');
-            setBtn.style.opacity = "0.5";
-            setBtn.style.cursor = "default";
+            setBtn.style.display = "none";
         } else {
             statusText.innerText = "Not Default";
             statusText.className = "system-status-pill status-warning";
             if (statShell) statShell.innerText = "Not Default";
             setBtn.innerText = "Make Default";
+            setBtn.style.display = "inline-flex";
             setBtn.disabled = false;
             setBtn.classList.add('primary');
             setBtn.classList.remove('secondary');
